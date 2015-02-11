@@ -1,0 +1,20 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: MOONS.aux
+The style file: unsrt.bst
+Database file #1: ../../../LATEX/MHD.bib
+Database file #2: ../../../LATEX/handpicked.bib
+Database file #3: ../../../LATEX/CFD.bib
+Repeated entry---line 1 of file ../../../LATEX/CFD.bib
+ : @book{griebel1997numerical
+ :                           ,
+I'm skipping whatever remains of this entry
+Database file #4: ../../../LATEX/math.bib
+Database file #5: ../../../LATEX/fluids.bib
+Database file #6: ../../../LATEX/interface.bib
+Repeated entry---line 1 of file ../../../LATEX/interface.bib
+ : @article{Carvalho2013
+ :                      ,
+I'm skipping whatever remains of this entry
+Warning--empty journal in Carvalho2013
+Warning--there's a number but no volume in Carvalho2013
+Warning--empty journal in Mcdonough2008
+(There were 2 error messages)

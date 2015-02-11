@@ -1,0 +1,13 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: DERIVATIONS.aux
+The style file: unsrt.bst
+Database file #1: ../../../LATEX/MHD.bib
+Database file #2: ../../../LATEX/handpicked.bib
+Database file #3: ../../../LATEX/CFD.bib
+Repeated entry---line 1 of file ../../../LATEX/CFD.bib
+ : @book{griebel1997numerical
+ :                           ,
+I'm skipping whatever remains of this entry
+Database file #4: ../../../LATEX/math.bib
+Database file #5: ../../../LATEX/fluids.bib
+Database file #6: ../../../LATEX/interface.bib
+(There was 1 error message)

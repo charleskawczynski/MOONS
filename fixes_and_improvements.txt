@@ -1,0 +1,245 @@
+FIXES AND IMPROVEMENTS FOR MOONS
+
+************************************************************** TO DO: IMMEDIATE
+
+- Look into zeroBoundaries() routine instead of using f = zero (N^3 operations)
+- FLOPS seem to be the dominating factor in computational time, this should
+  be looked at to optimize for time
+
+- Migrate solver specific operations to that solver so that allocations can be avoided.
+
+- Right now, the CT method results in non-zero div(B). It's possible
+  that this is due to non-zero div(U) at the start of the simulation.
+  To REALLY test the CT method, run the momentum equation until div(U)
+  is very small, then solve the induction with the CT method until steady
+  state. It's possible that this will result in the expected zero div(B)
+  result.
+
+- Re-run BMC against Guj and Stella with hmin = -1, hmax = 1 and adjusted Re like Sergey
+  did. This will reduce the number of geometries.
+
+- Check if maxval(jxe),maxval(jye),maxval(jze) are zero with CT method (should be
+  close to zero (numerically) if equivalent to when mixed term is ignored)
+
+- Make a BMC for a purely hydrodynamic turbulent flow (Re=2,000 and 3,200 compare with literature)
+
+- Re-run BMC=100 and BMC=101 to compare transient data and result
+
+- Look into Kolmogorov scale for LDC and try DNS
+
+- Compute magnitude of B and U fields
+
+- Update export: make a switch to control what to export:
+      U-field: (face, cc, node)_interior (face, cc, node)_total domain
+      B-field: (face, cc, node)_interior (face, cc, node)_total domain
+      J-field: (face, cc, node)_interior (face, cc, node)_total domain
+      
+
+- Make initialize controlled by only preDefined, and not BMCs. This will
+  be more scalable as the number of BMCs is increased.
+
+
+************************************************************** TO DO: TODAY
+
+- For transient output, write probe location to file, and record u(0,0,0) 
+  (& B(0,0,0)) and n_mhd only. This way, for transient problems when n_mhd 
+  gets large, the solution file isn't huge.
+
+- Add Pseudo time step into rundata so that it can be saved for different
+  BMCs. This will be really helpful for multi-material domains.
+
+- Right now, myFaceAdvectDonor seems like it uses too many interpolations.
+  try to fix this, but this will need lots of testing.
+
+- Interpolate to get B(0,0,0) vs time. Finalize probe for f/cc/n locations.
+Do this for face/cc/node/edge data. Maybe just localize in myExport.
+This seems to work correctly for the face data, but needs to be done for
+total domain nodes/cc
+
+- Implement useOpenMP for IO if possible
+
+- Derive new induction equation with Rem scaling
+
+- Look into literature on how to handle diffusion term with grad(div(B))
+
+- Compare uniform / non-uniform of BMC_102 (so that the wall thickness stays the same)
+
+************************************************************** TO DO: PRIORITY = 1
+
+- Make a prepare directory routine in MOONS
+
+- Eventually, write/read uf,vf,wf out to binary file, since it will only be used for restart. Ref:
+http://stackoverflow.com/questions/20006643/writing-out-a-binary-file-from-fortran-and-reading-in-c
+
+- Try to see if the makefile works
+
+- maybe write a program to generate the makefile with all necessary files 
+in dependent order (if necessary)
+
+- Save version of MOONS (implemented CT method, fixed myFaceAdvectDonor using
+  correct implementation of myFace2Edge)
+
+- Try contacting Prof. Karagozian's student, Hai Lee
+
+- Consider linking instead of including everything in one file 
+(this may slow down the program)
+
+- consider moving select case in myDiff to myDel as before and see how this 
+affects performance, try profiling again
+
+- make a date/time stamp in parameters
+
+- introduce simulation time, t, into rundata and export transient
+t as a function of n_mhd just like in himag.
+
+- Consider adding a "add to dfdh" or "multiplyTo" in myDel, this may help 
+ avoid extra allocations. Check with profiling
+
+- Talk with Sergey about the possibility of changing over to Fortran 2003.
+This standard allows allocatables inside modules, a HUGE advantage
+(pointers can be avoided).
+
+- Try changing the suffix to .F2003 and see if MOONS will successfully compile.
+
+- See if the grid can be defined at compile time. This may result in significant 
+speed-up if they never have to be allocated. - This seem to be very verbose,
+and will not scale well for time evolving grids..
+
+- Develop a hard-coded tempFields module that is allocated and deallocated at the 
+beginning and end of MOONS. It should have (minimum)
+      - tempF%CellCenterTot
+      - tempF%CellCenterIn
+      - tempF%NodeTot
+      - tempF%NodeIn
+      - tempF%FaceTot (maybe?)
+      - tempF%FaceIn
+The problem with this is that pointers will have to be used for all of the fields.
+Pointers are dangerous to use, remember?
+
+- Add factor (a/b)^2 in momentum equation for when a != b !! This is important
+if the cube changes to be a rectangle! - determine if necessary
+
+- Consider changing myDel to insist strict sizes for upwinding. This may erraticate 
+any size mismatch problems
+
+- use the gfortran profiler to see where bottlenecks are.
+
+- Calculate cw in griddata or rundata!
+
+- See if there is a way to write the BCs in a more general way.
+
+- Export the applied field, dummy!
+
+- Implement CT method for inductionSolver, make appropriate simParams
+
+************************************************************** TO DO: PRIORITY = 2
+
+- Consider making an obstacle module that allows for more complex flows
+e.g. flow over a sphere
+
+- Try refinement studies to make sure order of accuracy is correct
+
+- Consider moving all important parameters in griddata.f90 to the top as globals
+and have locals assigned inside setGriddata.
+
+- Consider making higher order interpolation routines. It might be best to make a 
+module that takes griddata and makes a stencil for interpolations (gridStencils.f90)
+
+- Try adding the fringing field and running caseB2. 
+- Also try the 'consistent' fringing field and run caseB2
+
+- Implement an upwind scheme for the non-uniform grid.
+
+- Currently, there is an A-symmetry problem. The possible culprits are:
+     o U-Solution
+          - Ni being even / odd
+          - Incorrect indexing (hopefully not)
+          - Interpolation (try looking at face2Node)
+     o B-Solution
+          - Maybe divB is not symmetric since the solution
+            is approximated. Try different source terms.
+ What to do:
+     o Make a benchmarkCase to test for symmetry
+     o Check result under refinement
+
+************************************************************** TO DO: PRIORITY = 3
+
+- Consider making a getCCProbeData, getNodeProbeData
+
+- Consider trying to minimize using myAllocate() so frequently. It's far from
+being optimized for speed.
+
+- Talk with Sergey about LDC, one layer of velocity with lid and BCs for Bfield
+compared to how I did the LDC before, this may warrent changing back to solving
+Bfield on the CC.
+
+- Implement Newtons method for estimating betaw. Check if betai/betaw
+are above 1000, if so just use uniform grid.
+
+- Somehow make grid generation make sure that the wall is monotonically increasing
+as you go from interior to wall to HALF WAY through the wall.
+
+- Make a diagram for indexing scheme. shape() is used, so the indexing
+scheme will not change because it is too useful.
+
+- Consider other ways of parallelizing MOONS
+
+- Make a dynamic 'exportSolutionNow' parameter that is read
+with the same frequency as the killSwitch
+
+- Soon change all dble(N) to real(N,dpn). This way, quadruple precision can be used..
+
+- set double precision flag in compiler to make sure double precision is 
+always used.
+
+- Find some way to know that dpn is used everywhere, maybe a compiler flag.
+
+- Try to remove unnecessary allocations in MHDSolver.
+
+************************************************************** TO DO: PRIORITY = 4
+
+- implement: 1) chimney flow 2) impinging jet flow
+
+- test the cylinder driven flow case =)
+
+- Fix Time module: export and import time so that the average can be appropriately
+printed to the screen.
+
+- SimParams may need to become a local variable in order to change for implementing
+benchmarkCase without rewriting a ton of code.. This may be annoying, but look into it.
+
+- Finish developing solverSettings estimateRemaining() subroutine
+
+- Clean up mySOR, there is a lot of code repetition.
+
+- Consider renaming and re-vamping myAllocate_mod and its use
+
+- Look into how expensive shape() is.
+
+- For some reason, this first L2 error of the PPE is
+15 E-324 or something. Maybe this is a compiler problem
+since compaq doesn't do this... Try to fix this...
+write(*,*) 'L2PPE',getL2(errPPE)
+
+- Move all fixes / Improvements to here.
+
+- Consider moving dTime and Nmax__ etc to rundata.f90
+
+- Make sure no steps are repeated between MOONS and MHDSolver (currently there are)
+
+- Consider making calculateOmegaPsi a program itself, so it can be run after MOONS.
+
+- Once the CT method is implemented successfully, remove BLoc, ULoc etc. Maybe just make 
+and index variable for each grid type.
+
+- Remove unnecessary routines from vectorOps.f90
+
+- Make a .f90 file in static\ that prints information about MOONS including name, email etc.
+
+- Further document code to ensure it can be handed off.
+
+- Consider making an obstacle module that is passed into the solver.
+This could assign the velocity to satisfy any desired BCs and internal
+velocity (likely u=0 inside). More tests could be done this way.
+
+**************************************************************

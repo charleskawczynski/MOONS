@@ -1,0 +1,43 @@
+\begin{thebibliography}{1}
+
+\bibitem{griebel1997numerical}
+Michael Griebel, Thomas Dornseifer, and Tilman Neunhoeffer.
+\newblock {\em Numerical simulation in fluid dynamics: a practical
+  introduction}, volume~3.
+\newblock Siam, 1997.
+
+\bibitem{Toth2000}
+G\'{a}bor T\'{o}th.
+\newblock {The divergence Constraint in Shock-Capturing MHD Codes}.
+\newblock {\em Journal of Computational Physics}, 161(2):605--652, July 2000.
+
+\bibitem{Brackbill1980}
+J.U. Brackbill.
+\newblock {The Effect of Nonzero V . B on the Numerical Solution of MHD
+  Equations}.
+\newblock {\em JCP}, 430:426--430, 1980.
+
+\bibitem{Carvalho2013}
+Neil Franco~De Carvalho.
+\newblock {METHODS FOR CALCULATING THE THERMAL CONDUCTIVITY AT THE
+  CONTROL-VOLUME SURFACES}.
+\newblock (Cobem), 2013.
+
+\bibitem{Yang2009}
+Shiming Yang and Matthias~K. Gobbert.
+\newblock {The optimal relaxation parameter for the SOR method applied to the
+  Poisson equation in any space dimensions}.
+\newblock {\em Applied Mathematics Letters}, 22(3):325--331, March 2009.
+
+\bibitem{Mcdonough2008}
+J~M Mcdonough.
+\newblock {LECTURES on COMPUTATIONAL NUMERICAL of PARTIAL DIFFERENTIAL
+  EQUATIONS}.
+\newblock 2008.
+
+\bibitem{pletcher2012computational}
+Richard~H Pletcher, John~C Tannehill, and Dale Anderson.
+\newblock {\em Computational fluid mechanics and heat transfer}.
+\newblock CRC Press, 2012.
+
+\end{thebibliography}

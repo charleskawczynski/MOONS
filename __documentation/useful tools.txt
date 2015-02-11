@@ -1,0 +1,3 @@
+When comparing different versions of the code, I used a text comparison tool:
+
+https://www.diffchecker.com/diff

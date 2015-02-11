@@ -1,0 +1,41 @@
+function [x,y,z,Nx,Ny,Nz,varx,vary,varz] = getVecField(dir,name,components)
+
+addpath([dir.working name.field])
+
+data = importdata([name.file '.dat']);
+try
+    temp = data.data;
+    varx = temp(:,components(1));
+    vary = temp(:,components(2));
+    varz = temp(:,components(3));
+catch err
+    % This section is used when the data is stored in data.textdata
+    % when letters appear in the .dat file (e.g. 5.23E-2.0).
+    % A different approach needs to be used to extract the data.
+    disp(['Different data file:' err.identifier])
+    % starti must be the first row where the data starts.
+    starti = 2;
+    t = sprintf('%s*', data.textdata{starti:end,:});
+    N = sscanf(t, '%f*');
+    s = size(data.textdata(starti:end,:));
+    temp = reshape(N,s);
+    varx = temp(:,components(1));
+    vary = temp(:,components(2));
+    varz = temp(:,components(3));
+end
+
+% temp = myImport(name,components);
+
+[Nx Ny Nz] = getN(temp);
+
+varx = reshape(varx,Nx,Ny,Nz);
+vary = reshape(vary,Nx,Ny,Nz);
+varz = reshape(varz,Nx,Ny,Nz);
+
+temp2 = reshape(temp(:,1),Nx,Ny,Nz); x = temp2(:,1,1); x = reshape(x,1,Nx);
+temp2 = reshape(temp(:,2),Nx,Ny,Nz); y = temp2(1,:,1); y = reshape(y,1,Ny);
+temp2 = reshape(temp(:,3),Nx,Ny,Nz); z = temp2(1,1,:); z = reshape(z,1,Nz);
+
+rmpath([dir.working name.field])
+
+end

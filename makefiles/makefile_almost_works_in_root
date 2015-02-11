@@ -1,0 +1,83 @@
+TARGET_DIR = C:\\Users\\Charlie\\Desktop\\development\\makeFile
+
+VPATH =\
+	user \
+	user\\initialize\\induction \
+	user\\initialize\\momentum \
+	static \
+	computations \
+	solvers\\steadyState \
+	solvers\\transient
+
+FC      = gfortran
+TOP_DIR = .
+MOD_DIR = $(TOP_DIR)\\mod
+OBJ_DIR = $(TOP_DIR)\\obj
+
+FCFLAGS = -g
+FCFLAGS += -J$(MOD_DIR) -fopenmp -fimplicit-none -Wuninitialized
+
+TARGET = $(TARGET_DIR)\\testParametricStudy
+
+SRCS_F =\
+	user\\constants.f90 \
+	static\\myExceptions.f90 \
+	static\\myDebug.f90 \
+	static\\myIO.f90 \
+	user\\simParams.f90 \
+	static\\solverSettings.f90 \
+	static\\myTime.f90 \
+	computations\\myError.f90 \
+	static\\coordinates.f90 \
+	user\\griddata.f90 \
+	static\\myAllocate.f90 \
+	static\\BCs.f90 \
+	user\\rundata.f90 \
+	computations\\myDel.f90 \
+	computations\\vectorOps.f90 \
+	static\\myExport.f90 \
+	computations\\applyBCs.f90 \
+	solvers\\steadyState\\mySOR.f90 \
+	solvers\\steadyState\\myPoisson.f90 \
+	static\\calcOmegaPsi.f90 \
+	user\\initialize\\induction\\initializeBBCs.f90 \
+	user\\initialize\\induction\\initializeBfield.f90 \
+	user\\initialize\\induction\\initializeSigmaMu.f90 \
+	user\\initialize\\momentum\\initializeUBCs.f90 \
+	user\\initialize\\momentum\\initializeUfield.f90 \
+	solvers\\transient\\inductionSolver.f90 \
+	solvers\\transient\\momentumSolver.f90 \
+	solvers\\transient\\MHDSolver.f90 \
+	user\\MOONS.f90 \
+	parametricStudy.f90
+
+#OBJS_F = $(patsubst %.f90,%.o,$(SRCS_F))
+#OBJS_F = $(patsubst %.f90,$(OBJ_DIR)\\%.o,$(notdir $(SRCS_F)))
+OBJS_T = $(patsubst %.f90,%.o,$(SRCS_F))
+OBJS_F = $(notdir $(OBJS_T))
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS_F)
+	$(FC) -o $@ $(FCFLAGS)  $(OBJS_F)
+$(OBJS_F): $(SRCS_F)
+	$(FC) $(FCFLAGS) -c $(SRCS_F)
+
+clean:
+	del $(OBJ_DIR)\\*.o $(MOD_DIR)\\*.mod parametricStudy.exe
+list:;  @echo " "
+	@echo " "
+	@echo "Source files:"
+	@echo $(SRCS_F)
+	@echo " "
+	@echo "Object files:"
+	@echo $(OBJS_F)
+	@echo " "
+	@echo "Compiler          : $(FC)"
+	@echo "Include directory : $(INC_DIR)"
+	@echo "Root directory    : $(ROOT_DIR)"
+	@echo "Bin directory     : $(BIN_DIR)"
+	@echo "Modules directory : $(MOD_DIR)"
+	@echo "Modules directory : $(MOD_DIR)"
+	@echo "Object directory  : $(OBJ_DIR)"
+	@echo " "
