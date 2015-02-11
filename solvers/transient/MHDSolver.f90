@@ -15,6 +15,7 @@
        use solverSettings_mod
        use BCs_mod
 
+       ! adding documentation here...
        use myPoisson_mod
        use momentumSolver_mod
        use inductionSolver_mod
