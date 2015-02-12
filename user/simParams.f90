@@ -14,13 +14,14 @@
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
-       logical,parameter :: useOpenMP = .true.   ! Parallelization for SOR.f90
-
-       ! useOpenMP=.true. + -fopenMP flag parallelizes the following:
+       ! Use the -fopenMP flag to parallelize the following:
        !     - myError.f90 (LnError3D,LnError3DUniform)
        !     - myDel.f90 (myDel) done
-       !   * - mySOR.f90 (Poisson loop)
+       !     - mySOR.f90 (Poisson loop)
        !     - vectorOps.f90 (interpO2,myCollocatedCross,myNodeAdvect,myNodeMagnitude)
+       !     - myTriOperator.f90 (applyTriOperator)
+       !     - myTriSolver.f90 (applyTriSolver)
+       ! 
        !     - myExport.f90 (exporting results), needs improvements
        ! 
        !     - myIO.f90 not yet (even possible?)

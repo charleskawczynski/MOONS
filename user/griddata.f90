@@ -27,7 +27,7 @@
        public :: getN,getNi,getNwtop,getNwbot
 
        public :: printGriddata
-       public :: writeGriddata
+       public :: exportGriddata
        public :: checkGrid
 
        public :: N_probe,Ni_probe
@@ -83,10 +83,9 @@
        ! ---------------------- VALIDATION CASES ---------------------
 
        ! benchmarkCase = 100
-       ! integer,dimension(3),parameter :: Ni = 20, Nwtop = 0, Nwbot = 0
        ! integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 101
-       integer,dimension(3),parameter :: Ni = 52, Nwtop = 0, Nwbot = 0
+       ! integer,dimension(3),parameter :: Ni = 52, Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
@@ -98,7 +97,7 @@
        ! benchmarkCase = 105
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 106
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,0,11/), Nwbot = 11
        ! benchmarkCase = 107
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 108
@@ -317,10 +316,14 @@
          case (103); twtop = 0.01539d0;  twbot = 0.01539d0
          case (104); twtop = 0.0005d0;   twbot = 0.0005d0
 
-         case (105); twtop = 0.467d0;    twbot = 0.467d0
-         case (106); twtop = 0.467d0;    twbot = 0.467d0
-         case (107); twtop = 0.467d0;    twbot = 0.467d0
-         case (108); twtop = 0.467d0;    twbot = 0.467d0
+         case (105); twtop = 0.48888d0;   twbot = 0.48888d0
+                     twtop(2) = 0.0d0
+         case (106); twtop = 0.48888d0;   twbot = 0.48888d0
+                     twtop(2) = 0.0d0
+         case (107); twtop = 0.48888d0;   twbot = 0.48888d0
+                     twtop(2) = 0.0d0
+         case (108); twtop = 0.48888d0;   twbot = 0.48888d0
+                     twtop(2) = 0.0d0
 
          case (109); twtop = 0.4d0;    twbot = 0.4d0
                      twtop(2) = 0.01d0;  twbot(2) = 0.01d0
@@ -1560,7 +1563,7 @@
 
 ! -------------------- PRINT / WRITE ROUTINES ---------------------------------
 
-       subroutine writeGriddata(this,dir)
+       subroutine exportGriddata(this,dir)
          implicit none
          type(griddata), intent(in) :: this
          character(len=*),intent(in) :: dir

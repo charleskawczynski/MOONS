@@ -112,7 +112,6 @@
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 2
          case (100); NmaxPPE = 50; NmaxB = 0; NmaxMHD = 5
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         ! case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 200
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
@@ -170,6 +169,8 @@
          ! *************** CHECK IF CONDITIONS ARE OK *******************
          call printGriddata(gd)
          call printRundata(rd)
+         call exportGriddata(gd,dir)
+         call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
          call computeDivergence(mom,gd)

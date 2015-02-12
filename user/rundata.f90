@@ -21,7 +21,7 @@
        public :: getRe,getHa,getRem
        public :: getInteractionNumber
        public :: printRundata
-       public :: writeRundata
+       public :: exportRundata
 
        type rundata
          private
@@ -217,7 +217,7 @@
          Rem = this%Rem
        end function
 
-       subroutine writeRundata(this,dir)
+       subroutine exportRundata(this,dir)
          implicit none
          type(rundata),intent(in) :: this
          character(len=*),intent(in) :: dir
