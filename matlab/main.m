@@ -7,7 +7,8 @@ chdir(thisDir); myDir.this = thisDir;
 % ***************************************
 %% DIRECTORIES
 % Root and plot tools
-myDir.MOONSdir = 'C:\Users\Charlie\Dropbox\UCLA\FUSION_SHARED\CHARLIES_RESEARCH\FORTRAN_LIB\';
+%myDir.MOONSdir = 'C:\Users\Charlie\Dropbox\UCLA\FUSION_SHARED\CHARLIES_RESEARCH\FORTRAN_LIB\';
+myDir.MOONSdir = 'C:\Users\Charlie\Documents\GitHub\MOONS\';
 myDir.deskTop = 'C:\Users\Charlie\Desktop';
 addpath([myDir.MOONSdir 'matlab\tools'])
 addpath([myDir.MOONSdir 'matlab\plotResults'])
@@ -84,8 +85,8 @@ includePlot.transientOnly = true;
 %% TRANSIENT U,B,J DATA
 PT = plotTransient();
 PT.U(myDir,myPlot,includePlot,name)
-% PT.B(myDir,myPlot,includePlot,name)
-% PT.J(myDir,myPlot,includePlot,name)
+PT.B(myDir,myPlot,includePlot,name)
+PT.J(myDir,myPlot,includePlot,name)
 
 
 PR = plotResults();

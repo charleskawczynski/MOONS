@@ -223,7 +223,7 @@
          character(len=*),intent(in) :: dir
          integer :: NewU
 
-         NewU = newAndOpen(dir,'Rundata')
+         NewU = newAndOpen(dir//'parameters/','Rundata')
          call writeRundataToFileOrScreen(this,newU)
          close(NewU)
          call closeAndMessage(newU,'Rundata',dir)

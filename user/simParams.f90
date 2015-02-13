@@ -44,11 +44,11 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
+       logical :: solveInduction = .true.
        logical :: restartB = .false.
 
        integer,parameter :: solveBMethod = 5
-       !  1 : Low Rem (Poisson)
+       !  1 : Low Rem (Poisson, assumes uniform properties)
        !  2 : Low Rem (Pseudo time step for uniform properties)
        !  3 : Low Rem (Pseudo time step)
        !  4 : Full Induction Equation
@@ -59,7 +59,7 @@
        logical :: multiMaterials = .false.
 
        ! ************************** MHD *************************
-       logical :: solveCoupled = .false.
+       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -77,7 +77,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 101
+       integer,parameter :: benchmarkCase = 105
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

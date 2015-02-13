@@ -1567,9 +1567,9 @@
          implicit none
          type(griddata), intent(in) :: this
          character(len=*),intent(in) :: dir
-         integer :: NewU
+         integer :: newU
 
-         NewU = newAndOpen(dir,'Griddata')
+         newU = newAndOpen(dir//'parameters/','Griddata')
          call writeGriddataToFileOrScreen(this,newU)
          call closeAndMessage(newU,'Griddata',dir)
        end subroutine
