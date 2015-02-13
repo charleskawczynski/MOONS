@@ -319,6 +319,8 @@
                call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
              case (3); symmetry = sum(abs(B(:,:,N_probe(3))))
                call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
+             case default
+             write(*,*) 'Error: symmetryPlane must = 1,2,3 in exportTransientSymmetryB.';stop
              end select
 
            endif
@@ -334,6 +336,8 @@
            case (1); utemp = getUnit(dir//'Bfield/','transient_Bx')
            case (2); utemp = getUnit(dir//'Bfield/','transient_By')
            case (3); utemp = getUnit(dir//'Bfield/','transient_Bz')
+           case default
+           write(*,*) 'Error: transientExportXYZ must = 1,2,3 in closeTransientUnits.';stop
            end select
            close(utemp)
            utemp = getUnit(dir//'Bfield/','transient_divB')
@@ -343,6 +347,8 @@
            case (1); utemp = getUnit(dir//'Jfield/','transient_jx')
            case (2); utemp = getUnit(dir//'Jfield/','transient_jy')
            case (3); utemp = getUnit(dir//'Jfield/','transient_jz')
+           case default
+           write(*,*) 'Error: transientExportXYZ must = 1,2,3 in closeTransientUnits.';stop
            end select
            close(utemp)
            utemp = getUnit(dir//'Jfield/','transient_divJ')

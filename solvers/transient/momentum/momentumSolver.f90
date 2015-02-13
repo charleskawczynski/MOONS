@@ -280,6 +280,8 @@
              case (1); c = 'u'; x=1;y=0;z=0
              case (2); c = 'v'; x=0;y=1;z=0
              case (3); c = 'w'; x=0;y=0;z=1
+             case default
+             write(*,*) 'Error:component must = 1,2,3 in  exportTransientU.';stop
              end select
              s = shape(u)
              k = mod(Ni,2) ! 0 if Ni(component) is even, 1 if odd
@@ -338,12 +340,16 @@
                case (1); symmetry = sum(abs((u(Nin_probe(1),:,:)+u(Nin_probe(1)+1,:,:))/two))/dble(s(2)*s(3))
                case (2); symmetry = sum(abs((u(:,Nin_probe(2),:)+u(:,Nin_probe(2)+1,:))/two))/dble(s(1)*s(3))
                case (3); symmetry = sum(abs((u(:,:,Nin_probe(3))+u(:,:,Nin_probe(3)+1))/two))/dble(s(1)*s(2))
+               case default
+               write(*,*) 'Error: symmetryPlane must = 1,2,3 in exportTransientSymmetryU.';stop
                end select
              else                        ! N is even
                select case (symmetryPlane)
                case (1); symmetry = sum(abs(u(Nic_probe(1),:,:)))/dble(s(2)*s(3))
                case (2); symmetry = sum(abs(u(:,Nic_probe(2),:)))/dble(s(1)*s(3))
                case (3); symmetry = sum(abs(u(:,:,Nic_probe(3))))/dble(s(1)*s(2))
+               case default
+               write(*,*) 'Error: symmetryPlane must = 1,2,3 in exportTransientSymmetryU.';stop
                end select
              endif
              call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
@@ -360,6 +366,8 @@
            case (1); utemp = getUnit(dir//'Ufield/','transient_u')
            case (2); utemp = getUnit(dir//'Ufield/','transient_v')
            case (3); utemp = getUnit(dir//'Ufield/','transient_w')
+           case default
+           write(*,*) 'Error: transientExportXYZ must = 1,2,3 in closeTransientUnits.';stop
            end select
            close(utemp)
            utemp = getUnit(dir//'Ufield/','transient_divU')
