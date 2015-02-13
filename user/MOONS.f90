@@ -117,9 +117,9 @@
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
          case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
 
-         case (105); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
+         case (105); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6000
          case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
-         case (107); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000 ! ds = 1.0d-6, NmaxB = 50
+         case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
          case (108); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000

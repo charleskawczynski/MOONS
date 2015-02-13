@@ -55,8 +55,10 @@
 
          type(mySOR) :: SOR_B, SOR_cleanB
 
-         real(dpn) :: ds = 1.0d-4     ! Pseudo time step
-         integer :: NmaxB = 5         ! Maximum number of pseudo steps
+         ! real(dpn) :: ds = 1.0d-4     ! Pseudo time step
+         ! integer :: NmaxB = 5         ! Maximum number of pseudo steps
+         real(dpn) :: ds = 1.0d-6     ! Pseudo time step
+         integer :: NmaxB = 50         ! Maximum number of pseudo steps
          integer :: NmaxCleanB = 5    ! Maximum number of cleaning steps
        end type
 
