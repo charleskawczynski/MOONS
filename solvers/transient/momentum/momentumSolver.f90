@@ -111,11 +111,14 @@
          call initialize(mom%u_center,dir//'Ufield/','transient_u',&
          .not.restartU,shape(mom%U%x),(shape(mom%U%x)+1)/2,gd,1)
 
+         write(*,*) '     momentum probes initialized'
          call initialize(mom%transient_divU,dir//'Ufield/','transient_divU',.not.restartU)
          call initialize(mom%transient_ppe,dir//'Ufield/','transient_ppe',.not.restartU)
+         write(*,*) '     momentum probes initialized'
 
          call initialize(mom%u_symmetry,dir//'Ufield/','u_symmetry',&
          .not.restartU,shape(mom%U%z),(shape(mom%U%z)+1)/2,gd,3)
+         write(*,*) '     momentum probes initialized'
 
          call export(mom%u_center)
          call export(mom%transient_ppe)
@@ -151,7 +154,11 @@
          call delete(mom%w_bcs)
          call delete(mom%p_bcs)
          call delete(mom%divU)
-         call closeTransientUnits(dir)
+
+         call delete(mom%u_center)
+         call delete(mom%transient_ppe)
+         call delete(mom%transient_divU)
+         call delete(mom%u_symmetry)
          write(*,*) 'Momentum object deleted'
        end subroutine
 

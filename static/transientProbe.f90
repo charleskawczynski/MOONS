@@ -20,7 +20,7 @@
        private
        public :: probe
        public :: initialize,set,apply
-       public :: export, printProbe
+       public :: export, printProbe,delete
 
        type probe
          real(dpn) :: d                       ! transient data
@@ -35,6 +35,7 @@
        interface apply;         module procedure applyProbe;                end interface
        interface export;        module procedure exportProbe;               end interface
        interface printProbe;    module procedure printTransientProbe;       end interface
+       interface delete;        module procedure deleteProbe;               end interface
 
        contains
 
@@ -64,6 +65,14 @@
           adjustl(trim(p%name)),p%TF_freshStart)
          p%TF_freshStart = .false.
        end subroutine
+
+       subroutine deleteProbe(p)
+        implicit none
+        type(probe),intent(in) :: p
+        integer :: utemp
+        utemp = getUnit(trim(adjustl(p%dir)),trim(adjustl(p%name)))
+        close(utemp)
+      end subroutine
 
        subroutine printTransientProbe(p,u)
          implicit none

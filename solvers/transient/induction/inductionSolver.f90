@@ -209,7 +209,12 @@
          call delete(ind%By_bcs)
          call delete(ind%Bz_bcs)
          call delete(ind%phi_bcs)
-         call closeTransientUnits(dir)
+
+         call delete(ind%probe_B)
+         call delete(ind%probe_J)
+         call delete(ind%probe_divB)
+         call delete(ind%probe_divJ)
+
          write(*,*) 'Induction object deleted'
        end subroutine
 
