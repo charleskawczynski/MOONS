@@ -90,7 +90,7 @@
          case (105); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
          case (106); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-2
          case (107); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-7; dTime = 3.0d-2
-         case (108); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-2
+         case (108); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-7; dTime = 1.0d-2 ! Has not worked yet
 
          case (109); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
 
@@ -109,9 +109,7 @@
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
-         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 2
-         case (100); NmaxPPE = 50; NmaxB = 0; NmaxMHD = 5
-         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
@@ -119,7 +117,7 @@
 
          case (105); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6000
          case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
-         case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
+         case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 60000 ! ds = 1.0d-7, NmaxB = 50
          case (108); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000

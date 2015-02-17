@@ -41,7 +41,7 @@ classdef plotTransient
             obj.transient(myDir,name,myPlot);
 
             myPlot.subPlotNum = 4;
-            name.file = 'transient_symmetry_w';
+            name.file = 'u_symmetry';
             name.title = 'Transient symmetry';
             obj.transient(myDir,name,myPlot);
 
@@ -113,9 +113,9 @@ classdef plotTransient
 
         end
         
-        function transient(obj,dir,name,myPlot)
+        function transient(obj,myDir,name,myPlot)
 
-            addpath([dir.working name.field])
+            addpath([myDir.working name.field])
 
             data = importdata([name.file '.dat']);
             data = data.data;
@@ -148,14 +148,66 @@ classdef plotTransient
             title(name.title)
             axis square
 
-            saveMyPlot(dir,name)
+            saveMyPlot(myDir,name)
 
-            rmpath([dir.working name.field])
+            rmpath([myDir.working name.field])
 
         end
-        function transientSolution(obj,dir,name,myPlot)
+        
+        function transientSolution(obj,myDir,name,myPlot)
 
-            addpath([dir.working name.field])
+            addpath([myDir.working name.field])
+
+            data = importdata([name.file '.dat']);
+            data = data.data;
+            % data = myImport(name,1);
+
+            data = importdata([name.file '.dat']);
+            data = data.data;
+            n = data(:,1);
+            var = data(:,2);
+
+            data2 = importdata([name.file '_info.dat']);
+            h = data2.data(2,:);
+            x = h(1); y = h(2); z = h(3);
+            
+            if isfield(myPlot,'subPlotNum')
+                if myPlot.subPlotNum==1
+                    figure('Position',myPlot.vector);
+                end
+                subplot(2,2,myPlot.subPlotNum)
+            else
+                figure('Position',myPlot.vector);
+            end
+            plot(n,var)
+            
+            T = [n(:) var(:)]; %#ok
+            save([myDir.working name.field '\' 'transient_' name.varx(1) '_tecplot.dat'] ,'T','-ascii')
+
+            if strcmp(name.field,'Bfield')
+                xlabel('n_{induction}')
+            else
+                xlabel('n_{mhd}')
+            end
+            ylabel(name.title)
+            title([name.title ' at x = ' num2str(x) ', y = ' num2str(y) ', z = ' num2str(z)])
+            axis square
+
+            temp = name;
+            if isfield(name,'saveFile')
+                name.file = ['transient_' name.saveFile];
+            else
+                name.file = ['transient_' name.file];
+                saveMyPlot(myDir,name)
+            end
+            name = temp; clear temp
+
+            rmpath([myDir.working name.field])
+
+        end
+        function transientSolutionOld(obj,myDir,name,myPlot)
+
+            addpath([myDir.working name.field])
 
             data = importdata([name.file '.dat']);
             data = data.data;
@@ -178,7 +230,7 @@ classdef plotTransient
             plot(n,var)
             
             T = [n(:) var(:)]; %#ok
-            save([dir.working name.field '\' 'transient_' name.varx(1) '_tecplot.dat'] ,'T','-ascii')
+            save([myDir.working name.field '\' 'transient_' name.varx(1) '_tecplot.dat'] ,'T','-ascii')
 
             if strcmp(name.field,'Bfield')
                 xlabel('n_{induction}')
@@ -194,11 +246,11 @@ classdef plotTransient
                 name.file = ['transient_' name.saveFile];
             else
                 name.file = ['transient_' name.file];
-                saveMyPlot(dir,name)
+                saveMyPlot(myDir,name)
             end
             name = temp; clear temp
 
-            rmpath([dir.working name.field])
+            rmpath([myDir.working name.field])
 
         end
     end

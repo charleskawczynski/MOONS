@@ -22,6 +22,7 @@
        use solverSettings_mod
        use mySOR_mod
        use myPoisson_mod
+       use baseProbes_mod
 
        implicit none
 
@@ -55,10 +56,14 @@
 
          type(mySOR) :: SOR_B, SOR_cleanB
 
-         ! real(dpn) :: ds = 1.0d-4     ! Pseudo time step
-         ! integer :: NmaxB = 5         ! Maximum number of pseudo steps
-         real(dpn) :: ds = 1.0d-6     ! Pseudo time step
-         integer :: NmaxB = 50         ! Maximum number of pseudo steps
+         type(indexProbe) :: probe_B,probe_J
+         type(errorProbe) :: probe_divB,probe_divJ
+
+         real(dpn) :: ds = 1.0d-4     ! Pseudo time step
+         integer :: NmaxB = 5         ! Maximum number of pseudo steps
+         ! real(dpn) :: ds = 1.0d-6     ! S = 100
+         ! real(dpn) :: ds = 1.0d-7     ! S = 1000
+         ! integer :: NmaxB = 50        ! Maximum number of pseudo steps
          integer :: NmaxCleanB = 5    ! Maximum number of cleaning steps
        end type
 
@@ -138,6 +143,26 @@
          call initializeSigmaMu(ind%sigma%phi,ind%mu%phi,gd)
          write(*,*) '     Materials initialized'
 
+         call initialize(ind%probe_B,dir//'Bfield/','transient_Bx',&
+         .not.restartB,shape(ind%B%x),(shape(ind%B%x)+1)*2/3,gd)
+
+         call initialize(ind%probe_J,dir//'Jfield/','transient_Jx',&
+         .not.restartB,shape(ind%J_cc%x),(shape(ind%J_cc%x)+1)*2/3,gd)
+
+         call initialize(ind%probe_divB,dir//'Bfield/','transient_divB',.not.restartB)
+         call initialize(ind%probe_divJ,dir//'Jfield/','transient_divJ',.not.restartB)
+
+         call export(ind%probe_B)
+         call export(ind%probe_J)
+         call export(ind%probe_divB)
+         call export(ind%probe_divJ)
+         write(*,*) '     B/J probes initialized'
+
+         call initialize(ind%err_divB)
+         call initialize(ind%err_DivJ)
+         call initialize(ind%err_cleanB)
+         call initialize(ind%err_residual)
+
          ! Initialize solver settings
          call initializeSolverSettings(ind%ss_ind)
          call setName(ind%ss_ind,'SS B equation       ')
@@ -208,151 +233,14 @@
          type(griddata),intent(in) :: gd
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
-
-         select case (transientExportXYZ)
-         case (1); call exportTransientB(ind,ind%B%x,gd,ss_MHD,dir,'x')
-                   call exportTransientJ(ind,ind%J_cc%x,gd,ss_MHD,dir,'x')
-         case (2); call exportTransientB(ind,ind%B%y,gd,ss_MHD,dir,'y')
-                   call exportTransientJ(ind,ind%J_cc%y,gd,ss_MHD,dir,'y')
-         case (3); call exportTransientB(ind,ind%B%z,gd,ss_MHD,dir,'z')
-                   call exportTransientJ(ind,ind%J_cc%z,gd,ss_MHD,dir,'z')
-         end select
-
-         select case (symmetryPlane)
-         case (1); call exportTransientSymmetryB(ind%B%x,ss_MHD,dir,'Bx')
-         case (2); call exportTransientSymmetryB(ind%B%y,ss_MHD,dir,'By')
-         case (3); call exportTransientSymmetryB(ind%B%z,ss_MHD,dir,'Bz')
-         end select
-       end subroutine
-
-       subroutine exportTransientB(ind,B,gd,ss_MHD,dir,component)
-         implicit none
-         type(induction),intent(inout) :: ind
-         real(dpn),dimension(:,:,:),intent(in) :: B
-         type(griddata),intent(in) :: gd
-         type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
-         character(len=1),intent(in) :: component
-         ! Locals
-         integer :: n_mhd
-         logical :: TF
-         n_mhd = getIteration(ss_MHD)
-
-         TF = (n_mhd.eq.0).and.(solveInduction)
-
-         if (TF.or.(getExportTransient(ss_MHD))) then
-           ! B-FIELD
-           if (solveInduction) then
-             ! Nx,Ny,Nz must be odd for this!!!
-             call writeTransientToFile(gd%xnt(N_probe(1)),gd%ynt(N_probe(2)),gd%znt(N_probe(3)),&
-                                       n_mhd,B(N_probe(1),N_probe(2),N_probe(3)),&
-                                       dir//'Bfield/','transient_B'//component,TF)
-           endif
+         if ((getExportTransient(ss_MHD))) then
+           call apply(ind%probe_B,getIteration(ss_MHD),ind%B%x)
+           call apply(ind%probe_J,getIteration(ss_MHD),ind%J_cc%x)
          endif
 
-         if (TF.or.(getExportErrors(ss_MHD))) then
-           ! EXPORT ERRORS
-           if (solveInduction) then
-             call computeError(ind%err_DivB,dble(0.0),ind%divB%phi)
-             call writeTransientToFile(n_mhd,getLinf(ind%err_DivB),&
-                                       dir//'Bfield/','transient_divB',TF)
-           endif
-         endif
-       end subroutine
-
-       subroutine exportTransientJ(ind,J,gd,ss_MHD,dir,component)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(griddata),intent(in) :: gd
-         type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
-         real(dpn),dimension(:,:,:),intent(in) :: J
-         character(len=1),intent(in) :: component
-         ! Locals
-         integer :: n_mhd
-         logical :: TF
-         n_mhd = getIteration(ss_MHD)
-
-         TF = (n_mhd.eq.0).and.(solveInduction)
-
-         if (TF.or.(getExportTransient(ss_MHD))) then
-           ! J-FIELD
-           if (solveInduction) then
-             ! Nx,Ny,Nz must be odd for this!!!
-             call writeTransientToFile(gd%xnt(N_probe(1)),gd%ynt(N_probe(2)),gd%znt(N_probe(3)),&
-                                       n_mhd,J(N_probe(1),N_probe(2),N_probe(3)),&
-                                       dir//'Jfield/','transient_J'//component,TF)
-           endif
-         endif
-
-         if (TF.or.(getExportErrors(ss_MHD))) then
-           ! EXPORT ERRORS
-           if (solveInduction) then
-             call computeError(ind%err_DivJ,dble(0.0),ind%divJ%phi)
-             call writeTransientToFile(n_mhd,getLinf(ind%err_DivJ),&
-                                       dir//'Jfield/','transient_divJ',TF)
-           endif
-         endif
-       end subroutine
-
-       subroutine exportTransientSymmetryB(B,ss_MHD,dir,component)
-         implicit none
-         real(dpn),dimension(:,:,:),intent(in) :: B
-         type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
-         character(len=1),intent(in) :: component
-         integer :: n_mhd
-         ! Locals
-         logical :: TF
-         real(dpn) :: symmetry
-         n_mhd = getIteration(ss_MHD)
-
-         TF = (n_mhd.eq.0).and.(solveInduction)
-
-         if (TF.or.(getExportTransient(ss_MHD))) then
-           ! B-FIELD
-           if (solveInduction) then
-             select case (symmetryPlane)
-             case (1); symmetry = sum(abs(B(N_probe(1),:,:)))
-               call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
-             case (2); symmetry = sum(abs(B(:,N_probe(2),:)))
-               call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
-             case (3); symmetry = sum(abs(B(:,:,N_probe(3))))
-               call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
-             case default
-             write(*,*) 'Error: symmetryPlane must = 1,2,3 in exportTransientSymmetryB.';stop
-             end select
-
-           endif
-         endif
-       end subroutine
-
-       subroutine closeTransientUnits(dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         integer :: utemp
-         if (solveInduction) then
-           select case (transientExportXYZ)
-           case (1); utemp = getUnit(dir//'Bfield/','transient_Bx')
-           case (2); utemp = getUnit(dir//'Bfield/','transient_By')
-           case (3); utemp = getUnit(dir//'Bfield/','transient_Bz')
-           case default
-           write(*,*) 'Error: transientExportXYZ must = 1,2,3 in closeTransientUnits.';stop
-           end select
-           close(utemp)
-           utemp = getUnit(dir//'Bfield/','transient_divB')
-           close(utemp)
-
-           select case (transientExportXYZ)
-           case (1); utemp = getUnit(dir//'Jfield/','transient_jx')
-           case (2); utemp = getUnit(dir//'Jfield/','transient_jy')
-           case (3); utemp = getUnit(dir//'Jfield/','transient_jz')
-           case default
-           write(*,*) 'Error: transientExportXYZ must = 1,2,3 in closeTransientUnits.';stop
-           end select
-           close(utemp)
-           utemp = getUnit(dir//'Jfield/','transient_divJ')
-           close(utemp)
+         if (getExportErrors(ss_MHD)) then
+           call apply(ind%probe_divB,getIteration(ss_MHD),ind%divB%phi)
+           call apply(ind%probe_divJ,getIteration(ss_MHD),ind%divJ%phi)
          endif
        end subroutine
 

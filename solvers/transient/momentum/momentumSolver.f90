@@ -19,6 +19,8 @@
        use mySOR_mod
        use myADI_mod
        use myPoisson_mod
+       use baseProbes_mod
+       use derivedProbes_mod
        
        implicit none
        private
@@ -39,6 +41,11 @@
          type(mySOR) :: SOR_p
          type(myADI) :: ADI_p
          integer :: nstep
+          
+         ! Transient probes
+         type(aveProbe) :: u_center
+         type(errorProbe) :: transient_ppe,transient_divU
+         type(avePlaneErrorProbe) :: u_symmetry
        end type
 
        interface initialize;         module procedure initializeMomentum          ; end interface
@@ -96,15 +103,35 @@
          call applyAllBCs(mom%w_bcs,mom%U%z,gd)
          call applyAllBCs(mom%p_bcs,mom%p%phi,gd)
          write(*,*) '     BCs applied'
+
+         call initialize(mom%err_DivU)
+         call initialize(mom%err_PPE)
+
+         ! (p,dir,name,TF_freshStart,s,i,gd,component)
+         call initialize(mom%u_center,dir//'Ufield/','transient_u',&
+         .not.restartU,shape(mom%U%x),(shape(mom%U%x)+1)/2,gd,1)
+
+         call initialize(mom%transient_divU,dir//'Ufield/','transient_divU',.not.restartU)
+         call initialize(mom%transient_ppe,dir//'Ufield/','transient_ppe',.not.restartU)
+
+         call initialize(mom%u_symmetry,dir//'Ufield/','u_symmetry',&
+         .not.restartU,shape(mom%U%z),(shape(mom%U%z)+1)/2,gd,3)
+
+         call export(mom%u_center)
+         call export(mom%transient_ppe)
+         call export(mom%transient_divU)
+         call export(mom%u_symmetry)
+         write(*,*) '     momentum probes initialized'
+
          ! Initialize solver settings
          call initializeSolverSettings(mom%ss_ppe)
          call setName(mom%ss_ppe,'pressure poisson    ')
          call setMaxIterations(mom%ss_ppe,5)
          call setSubtractMean(mom%ss_ppe)
-         write(*,*) '     Solver settings initialized'
+         ! call setMinTolerance(mom%ss_ppe,real(10.0**(-6.0),dpn))
+         ! call setMixedConditions(mom%ss_ppe)
          mom%nstep = 0
-         !   call setMinTolerance(ss_ppe,dble(10.0**-5.0))
-         !   call setMixedConditions(ss_ppe)
+         write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
        end subroutine
 
@@ -234,146 +261,16 @@
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
 
-         select case (transientExportXYZ)
-         case (1); call exportTransientU(mom,mom%U%x,gd,ss_MHD,dir,1)
-         case (2); call exportTransientU(mom,mom%U%y,gd,ss_MHD,dir,2)
-         case (3); call exportTransientU(mom,mom%U%z,gd,ss_MHD,dir,3)
-         end select
-
-         select case (transientExportXYZ)
-         case (1); call exportTransientU(mom,mom%U%x,gd,ss_MHD,dir,1)
-         case (2); call exportTransientU(mom,mom%U%y,gd,ss_MHD,dir,2)
-         case (3); call exportTransientU(mom,mom%U%z,gd,ss_MHD,dir,3)
-         end select
-
-         select case (symmetryPlane)
-         case (1); call exportTransientSymmetryU(mom%U%x,gd,ss_MHD,dir,'u')
-         case (2); call exportTransientSymmetryU(mom%U%y,gd,ss_MHD,dir,'v')
-         case (3); call exportTransientSymmetryU(mom%U%z,gd,ss_MHD,dir,'w')
-         end select
-       end subroutine
-
-       subroutine exportTransientU(mom,u,gd,ss_MHD,dir,component)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         real(dpn),dimension(:,:,:),intent(in) :: u
-         type(griddata),intent(in) :: gd
-         type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
-         integer,intent(in) :: component
-         ! Locals
-         integer :: x,y,z,n_mhd
-         integer,dimension(3) :: Ni,p,k,s
-         real(dpn) :: xc,yc,zc,uc
-         character(len=1) :: c
-         logical :: TF
-
-         n_mhd = getIteration(ss_MHD)
-         TF = (n_mhd.eq.0).and.(solveMomentum)
-
-         if (TF.or.(getExportTransient(ss_MHD))) then
-           ! U-FIELD
-           if (solveMomentum) then
-             call getNi(gd,Ni)
-
-             select case (component)
-             case (1); c = 'u'; x=1;y=0;z=0
-             case (2); c = 'v'; x=0;y=1;z=0
-             case (3); c = 'w'; x=0;y=0;z=1
-             case default
-             write(*,*) 'Error:component must = 1,2,3 in  exportTransientU.';stop
-             end select
-             s = shape(u)
-             k = mod(Ni,2) ! 0 if Ni(component) is even, 1 if odd
-             p = (s+1-k)/2
-             uc = (u(p(1),p(2),p(3))+dble(k(component))*u(p(1)+x,p(2)+y,p(3)+z))/(1.0d0+dble(k(component)))
-
-             xc = (gd%xni(p(1))+dble(k(component))*gd%xni(p(1)+1))/(1.0d0+dble(k(component)))
-             yc = (gd%yni(p(2))+dble(k(component))*gd%yni(p(2)+1))/(1.0d0+dble(k(component)))
-             zc = (gd%zni(p(3))+dble(k(component))*gd%zni(p(3)+1))/(1.0d0+dble(k(component)))
-             call writeTransientToFile(xc,yc,zc,n_mhd,uc,dir//'Ufield/','transient_'//c,TF)
-           endif
+         if ((getExportTransient(ss_MHD))) then
+           call apply(mom%u_center,getIteration(ss_MHD),mom%U%x)
          endif
 
-         if (TF.or.(getExportErrors(ss_MHD))) then
-           ! EXPORT ERRORS
-           if (solveMomentum) then
-             call computeError(mom%err_DivU,real(0.0,dpn),mom%divU%phi)
-             call writeTransientToFile(n_mhd,getL2(mom%err_DivU),&
-                                       dir//'Ufield/','transient_divU',TF)
+         if (getExportErrors(ss_MHD)) then
+           call set(mom%transient_ppe,getIteration(ss_MHD),getL2(mom%err_PPE))
+           call apply(mom%transient_ppe)
 
-             ! For some reason, this first L2 error of the PPE is
-             ! 15 E-324 or something. Maybe this is a compiler problem
-             ! since compaq doesn't do this... Try to fix this...
-             ! write(*,*) 'L2PPE',getL2(errPPE)
-             if (n_mhd.lt.3) then
-             call writeTransientToFile(n_mhd,zero,dir//'Ufield/','transient_ppe',TF)
-             else
-             call writeTransientToFile(n_mhd,getL2(mom%err_PPE),dir//'Ufield/','transient_ppe',TF)
-             endif
-           endif
-         endif
-       end subroutine
-
-       subroutine exportTransientSymmetryU(u,gd,ss_MHD,dir,component)
-         implicit none
-         real(dpn),dimension(:,:,:),intent(in) :: u
-         type(griddata),intent(in) :: gd
-         type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
-         character(len=1),intent(in) :: component
-         integer :: n_mhd
-         logical :: TF
-         integer,dimension(3) :: s,Ni
-         real(dpn) :: symmetry
-         call getNi(gd,Ni)
-         n_mhd = getIteration(ss_MHD)
-
-         TF = (n_mhd.eq.0).and.(solveMomentum)
-
-         if (TF.or.(getExportTransient(ss_MHD))) then
-           ! U-FIELD
-           if (solveMomentum) then
-             s = shape(u)
-             if (mod(Ni(symmetryPlane),1).eq.1) then ! N is odd
-               select case (symmetryPlane)
-               case (1); symmetry = sum(abs((u(Nin_probe(1),:,:)+u(Nin_probe(1)+1,:,:))/two))/dble(s(2)*s(3))
-               case (2); symmetry = sum(abs((u(:,Nin_probe(2),:)+u(:,Nin_probe(2)+1,:))/two))/dble(s(1)*s(3))
-               case (3); symmetry = sum(abs((u(:,:,Nin_probe(3))+u(:,:,Nin_probe(3)+1))/two))/dble(s(1)*s(2))
-               case default
-               write(*,*) 'Error: symmetryPlane must = 1,2,3 in exportTransientSymmetryU.';stop
-               end select
-             else                        ! N is even
-               select case (symmetryPlane)
-               case (1); symmetry = sum(abs(u(Nic_probe(1),:,:)))/dble(s(2)*s(3))
-               case (2); symmetry = sum(abs(u(:,Nic_probe(2),:)))/dble(s(1)*s(3))
-               case (3); symmetry = sum(abs(u(:,:,Nic_probe(3))))/dble(s(1)*s(2))
-               case default
-               write(*,*) 'Error: symmetryPlane must = 1,2,3 in exportTransientSymmetryU.';stop
-               end select
-             endif
-             call writeTransientToFile(n_mhd,symmetry,dir//'Ufield/','transient_symmetry_'//component,TF)
-           endif
-         endif
-       end subroutine
-
-       subroutine closeTransientUnits(dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         integer :: utemp
-         if (solveMomentum) then
-           select case (transientExportXYZ)
-           case (1); utemp = getUnit(dir//'Ufield/','transient_u')
-           case (2); utemp = getUnit(dir//'Ufield/','transient_v')
-           case (3); utemp = getUnit(dir//'Ufield/','transient_w')
-           case default
-           write(*,*) 'Error: transientExportXYZ must = 1,2,3 in closeTransientUnits.';stop
-           end select
-           close(utemp)
-           utemp = getUnit(dir//'Ufield/','transient_divU')
-           close(utemp)
-           utemp = getUnit(dir//'Ufield/','transient_ppe')
-           close(utemp)
+           call apply(mom%transient_divU,getIteration(ss_MHD),mom%divU%phi)
+           call apply(mom%u_symmetry,getIteration(ss_MHD),mom%U%z)
          endif
        end subroutine
 

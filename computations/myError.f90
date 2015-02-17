@@ -61,7 +61,7 @@
        public :: printMyError ! printMyError(err,name)
        public :: writeMyError ! writeMyError(err,name,dir)
        public :: writeToFile  ! writeErrorsToFile(e,dir[,u])
-       public :: initializeError
+       public :: initialize
 
        public :: getL1, getL1Rel
        public :: getL2, getL2Rel
@@ -72,27 +72,29 @@
 
        type myError
          private
-         real(dpn) :: L1
-         real(dpn) :: L2
-         real(dpn) :: Linf
-         real(dpn) :: L1rel
-         real(dpn) :: L2rel
-         real(dpn) :: Linfrel
+         ! Absolute errors:
+         real(dpn) :: L1,L2,Linf
+         ! Relative errors:
+         real(dpn) :: L1rel,L2rel,Linfrel
        end type
 
-       interface computeError
-         module procedure computeError3
-         module procedure computeError3Uniform
-       end interface
+       interface initialize;      module procedure initializeError;        end interface
+       interface writeToFile;     module procedure writeErrorsToFile;      end interface
 
-       interface LnError
-         module procedure LnError3D
-         module procedure LnError3DUniform
-       end interface
+       interface computeError;    module procedure computeError1;          end interface
+       interface computeError;    module procedure computeError1Uniform;   end interface
+       interface computeError;    module procedure computeError2;          end interface
+       interface computeError;    module procedure computeError2Uniform;   end interface
+       interface computeError;    module procedure computeError3;          end interface
+       interface computeError;    module procedure computeError3Uniform;   end interface
 
-       interface writeToFile
-         module procedure writeErrorsToFile
-       end interface
+       interface LnError;         module procedure LnError1D;              end interface
+       interface LnError;         module procedure LnError1DUniform;       end interface
+       interface LnError;         module procedure LnError2D;              end interface
+       interface LnError;         module procedure LnError2DUniform;       end interface
+       interface LnError;         module procedure LnError3D;              end interface
+       interface LnError;         module procedure LnError3DUniform;       end interface
+
 
        contains
 
@@ -194,11 +196,135 @@
          endif
        end subroutine
 
+       subroutine LnError1D(exact,approx,n,e,er,denom)
+         implicit none
+         real(dpn),intent(in),dimension(:) :: exact,approx
+         real(dpn),intent(in) :: n
+         real(dpn),intent(inout) :: e,er,denom
+         integer,dimension(2) :: s
+         real(dpn) :: eTemp,denomTemp
+         integer :: i
+         s = size(exact); e = 0.0; denom = 0.0
+         eTemp = 0.0; denomTemp = 0.0
+         !$OMP PARALLEL
+         !$OMP DO
+         do i=1,s(1)
+           eTemp = eTemp + abs(exact(i) - approx(i))**n
+           denomTemp = denomTemp + abs(exact(i))**n
+         enddo
+         !$OMP END DO
+
+         !$OMP ATOMIC
+         e = e + etemp
+         denom = denom + denomTemp
+         !$OMP END PARALLEL
+
+         e = e**(1.0/n)/(dble(s(1)))
+         denom = denom/(dble(s(1)))
+         if (denom.gt.tol) then; er = e/denom
+         else; er = e/(denom+1.0); endif
+       end subroutine
+
+       subroutine LnError1DUniform(exact,approx,n,e,er,denom)
+         implicit none
+         real(dpn),intent(in),dimension(:) :: approx
+         real(dpn),intent(in) :: exact
+         real(dpn),intent(in) :: n
+         real(dpn),intent(inout) :: e,er,denom
+         integer,dimension(2) :: s
+         real(dpn) :: eTemp,denomTemp
+         integer :: i,j
+         s = size(approx); e = 0.0; denom = 0.0
+         eTemp = 0.0; denomTemp = 0.0
+         !$OMP PARALLEL
+         !$OMP DO
+         do j=1,s(2)
+           do i=1,s(1)
+             e = e + abs(exact - approx(i))**n
+             denom = denom + abs(exact)**n
+           enddo
+         enddo
+         !$OMP END DO
+         
+         !$OMP ATOMIC
+         e = e + etemp
+         denom = denom + denomTemp
+         !$OMP END PARALLEL
+
+         e = e**(1.0/n)/(dble(s(1)))
+         denom = denom/(dble(s(1)))
+         if (denom.gt.tol) then; er = e/denom
+         else; er = e/(denom+1.0); endif
+       end subroutine
+
+       subroutine LnError2D(exact,approx,n,e,er,denom)
+         implicit none
+         real(dpn),intent(in),dimension(:,:) :: exact,approx
+         real(dpn),intent(in) :: n
+         real(dpn),intent(inout) :: e,er,denom
+         integer,dimension(2) :: s
+         real(dpn) :: eTemp,denomTemp
+         integer :: i,j
+         s = shape(exact); e = 0.0; denom = 0.0
+         eTemp = 0.0; denomTemp = 0.0
+         !$OMP PARALLEL
+         !$OMP DO
+         do j=1,s(2)
+           do i=1,s(1)
+             eTemp = eTemp + abs(exact(i,j) - approx(i,j))**n
+             denomTemp = denomTemp + abs(exact(i,j))**n
+           enddo
+         enddo
+         !$OMP END DO
+
+         !$OMP ATOMIC
+         e = e + etemp
+         denom = denom + denomTemp
+         !$OMP END PARALLEL
+
+         e = e**(1.0/n)/(dble(s(1)*s(2)))
+         denom = denom/(dble(s(1)*s(2)))
+         if (denom.gt.tol) then; er = e/denom
+         else; er = e/(denom+1.0); endif
+       end subroutine
+
+       subroutine LnError2DUniform(exact,approx,n,e,er,denom)
+         implicit none
+         real(dpn),intent(in),dimension(:,:) :: approx
+         real(dpn),intent(in) :: exact
+         real(dpn),intent(in) :: n
+         real(dpn),intent(inout) :: e,er,denom
+         integer,dimension(2) :: s
+         real(dpn) :: eTemp,denomTemp
+         integer :: i,j
+         s = shape(approx); e = 0.0; denom = 0.0
+         eTemp = 0.0; denomTemp = 0.0
+         !$OMP PARALLEL
+         !$OMP DO
+         do j=1,s(2)
+           do i=1,s(1)
+             e = e + abs(exact - approx(i,j))**n
+             denom = denom + abs(exact)**n
+           enddo
+         enddo
+         !$OMP END DO
+         
+         !$OMP ATOMIC
+         e = e + etemp
+         denom = denom + denomTemp
+         !$OMP END PARALLEL
+
+         e = e**(1.0/n)/(dble(s(1)*s(2)))
+         denom = denom/(dble(s(1)*s(2)))
+         if (denom.gt.tol) then; er = e/denom
+         else; er = e/(denom+1.0); endif
+       end subroutine
+
        subroutine LnError3D(exact,approx,n,e,er,denom)
          implicit none
          real(dpn),intent(in),dimension(:,:,:) :: exact,approx
          real(dpn),intent(in) :: n
-         real(dpn),intent(out) :: e,er,denom
+         real(dpn),intent(inout) :: e,er,denom
          integer,dimension(3) :: s
          real(dpn) :: eTemp,denomTemp
          integer :: i,j,k
@@ -232,7 +358,7 @@
          real(dpn),intent(in),dimension(:,:,:) :: approx
          real(dpn),intent(in) :: exact
          real(dpn),intent(in) :: n
-         real(dpn),intent(out) :: e,er,denom
+         real(dpn),intent(inout) :: e,er,denom
          integer,dimension(3) :: s
          real(dpn) :: eTemp,denomTemp
          integer :: i,j,k
@@ -274,6 +400,68 @@
          type(myError),intent(inout) :: e2
          e2%L1 = e1%L1; e2%L2 = e1%L2; e2%Linf = e1%Linf
          e2%L1rel = e1%L1rel; e2%L2rel = e1%L2rel; e2%Linfrel = e1%Linfrel
+       end subroutine
+
+       subroutine computeError1(e,exact,approx)
+         implicit none
+         type(myError),intent(inout) :: e
+         real(dpn),intent(in),dimension(:) :: exact,approx
+         real(dpn) :: n,denom
+
+         call initializeError(e)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         !n = infinity
+         e%Linf = maxval(abs(exact-approx))
+         if (denom.gt.tol) then; e%Linfrel = e%Linf/maxval(abs(exact))
+         else; e%Linfrel = (e%Linf)/maxval(abs(exact)+1.0); endif
+       end subroutine
+
+       subroutine computeError1Uniform(e,exact,approx)
+         implicit none
+         type(myError),intent(inout) :: e
+         real(dpn),intent(in),dimension(:) :: approx
+         real(dpn),intent(in) :: exact
+         real(dpn) :: n,denom
+
+         call initializeError(e)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         !n = infinity
+         e%Linf = maxval(abs(exact-approx))
+         if (denom.gt.tol) then; e%Linfrel = e%Linf/(abs(exact))
+         else; e%Linfrel = (e%Linf)/(abs(exact)+1.0); endif
+       end subroutine
+
+       subroutine computeError2(e,exact,approx)
+         implicit none
+         type(myError),intent(inout) :: e
+         real(dpn),intent(in),dimension(:,:) :: exact,approx
+         real(dpn) :: n,denom
+
+         call initializeError(e)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         !n = infinity
+         e%Linf = maxval(abs(exact-approx))
+         if (denom.gt.tol) then; e%Linfrel = e%Linf/maxval(abs(exact))
+         else; e%Linfrel = (e%Linf)/maxval(abs(exact)+1.0); endif
+       end subroutine
+
+       subroutine computeError2Uniform(e,exact,approx)
+         implicit none
+         type(myError),intent(inout) :: e
+         real(dpn),intent(in),dimension(:,:) :: approx
+         real(dpn),intent(in) :: exact
+         real(dpn) :: n,denom
+
+         call initializeError(e)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         !n = infinity
+         e%Linf = maxval(abs(exact-approx))
+         if (denom.gt.tol) then; e%Linfrel = e%Linf/(abs(exact))
+         else; e%Linfrel = (e%Linf)/(abs(exact)+1.0); endif
        end subroutine
 
        subroutine computeError3(e,exact,approx)

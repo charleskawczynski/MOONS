@@ -77,7 +77,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 106
+       integer,parameter :: benchmarkCase = 102
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
