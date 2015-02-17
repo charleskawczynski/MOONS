@@ -42,7 +42,7 @@
        public :: indexProbe,errorProbe
        public :: initialize,set,apply
        public :: export, print
-       public :: defineH,resetH
+       public :: defineH,resetH,delete
 
        type indexProbe
          type(probe) :: p                             ! probe
@@ -77,6 +77,9 @@
 
        interface export;        module procedure exportIndexProbe;          end interface
        interface export;        module procedure exportErrorProbe;          end interface
+
+       interface delete;        module procedure deleteIndexProbe;          end interface
+       interface delete;        module procedure deleteErrorProbe;          end interface
 
        contains
 
@@ -288,6 +291,18 @@
          if (.not.present(u)) then
            call closeAndMessage(newU,ep%p%name//'_info',ep%p%dir)
          endif
+       end subroutine
+
+       subroutine deleteIndexProbe(ip)
+         implicit none
+         type(indexProbe), intent(in) :: ip
+         call delete(ip%p)
+       end subroutine
+
+       subroutine deleteErrorProbe(ep)
+         implicit none
+         type(errorProbe), intent(in) :: ep
+         call delete(ep%p)
        end subroutine
 
        end module

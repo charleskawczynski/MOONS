@@ -132,12 +132,6 @@
            write(*,*) 'Incorrect benchmarkCase in MOONS';stop
          end select
 
-         ! **************************************************************
-         call setGriddata(gd,Re,Ha)
-         call initialize(mom,gd,dir)
-         call initialize(ind,gd,dir)
-         ! call initialize(vecOps,gd)
-
          write(*,*) 'MOONS output directory = ',dir
 
          ! ****************** CLEAN DIRECTORY ***************************
@@ -153,6 +147,13 @@
 
          call printVersion()
          call exportVersion(dir)
+
+         ! **************************************************************
+
+         call setGriddata(gd,Re,Ha)
+         call initialize(mom,gd,dir)
+         call initialize(ind,gd,dir)
+         ! call initialize(vecOps,gd)
 
          ! ****************** INITIALIZE RUNDATA ************************
          ! These all need to be re-evaluated because the Fo and Co now depend

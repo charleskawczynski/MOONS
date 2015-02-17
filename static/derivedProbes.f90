@@ -73,7 +73,7 @@
        public :: centerProbe,aveProbe
        public :: planeErrorProbe,avePlaneErrorProbe
        public :: initialize,apply
-       public :: export, print
+       public :: export, print, delete
 
        type centerProbe
          type(indexProbe) :: ip                       ! index probe
@@ -96,25 +96,30 @@
          real(dpn) :: h                               ! location of plane
        end type
 
-       interface initialize;    module procedure initializeCenterProbe;        end interface
-       interface initialize;    module procedure initializeAveProbe;           end interface
-       interface initialize;    module procedure initializePlaneErrorProbe;    end interface
-       interface initialize;    module procedure initializeAvePlaneErrorProbe; end interface
+       interface initialize;    module procedure initializeCenterProbe;         end interface
+       interface initialize;    module procedure initializeAveProbe;            end interface
+       interface initialize;    module procedure initializePlaneErrorProbe;     end interface
+       interface initialize;    module procedure initializeAvePlaneErrorProbe;  end interface
 
-       interface apply;         module procedure applyCenterProbe;             end interface
-       interface apply;         module procedure applyAveProbe;                end interface
-       interface apply;         module procedure applyPlaneErrorProbe;         end interface
-       interface apply;         module procedure applyAvePlaneErrorProbe;      end interface
+       interface apply;         module procedure applyCenterProbe;              end interface
+       interface apply;         module procedure applyAveProbe;                 end interface
+       interface apply;         module procedure applyPlaneErrorProbe;          end interface
+       interface apply;         module procedure applyAvePlaneErrorProbe;       end interface
 
-       interface export;        module procedure exportCenterProbe;            end interface
-       interface export;        module procedure exportAveProbe;               end interface
-       interface export;        module procedure exportPlaneErrorProbe;        end interface
-       interface export;        module procedure exportAvePlaneErrorProbe;     end interface
+       interface export;        module procedure exportCenterProbe;             end interface
+       interface export;        module procedure exportAveProbe;                end interface
+       interface export;        module procedure exportPlaneErrorProbe;         end interface
+       interface export;        module procedure exportAvePlaneErrorProbe;      end interface
 
-       interface print;        module procedure printCenterProbe;              end interface
-       interface print;        module procedure printAveProbe;                 end interface
-       interface print;        module procedure printPlaneErrorProbe;          end interface
-       interface print;        module procedure printAvePlaneErrorProbe;       end interface
+       interface print;         module procedure printCenterProbe;              end interface
+       interface print;         module procedure printAveProbe;                 end interface
+       interface print;         module procedure printPlaneErrorProbe;          end interface
+       interface print;         module procedure printAvePlaneErrorProbe;       end interface
+
+       interface delete;        module procedure deleteCenterProbe;             end interface
+       interface delete;        module procedure deleteAveProbe;                end interface
+       interface delete;        module procedure deletePlaneErrorProbe;         end interface
+       interface delete;        module procedure deleteAvePlaneErrorProbe;      end interface
 
        contains
 
@@ -381,5 +386,32 @@
          write(u,*) ' dir = ',p%dir
          write(u,*) ' h = ',p%h
        end subroutine
+
+
+       ! -------------------------- DELETE ROUTINES --------------------
+
+        subroutine deleteCenterProbe(p)
+          implicit none
+          type(centerProbe),intent(in) :: p
+          call delete(p%ip)
+        end subroutine
+
+        subroutine deleteAveProbe(p)
+          implicit none
+          type(aveProbe),intent(in) :: p
+          call delete(p%ip)
+        end subroutine
+
+        subroutine deletePlaneErrorProbe(p)
+          implicit none
+          type(planeErrorProbe),intent(in) :: p
+          call delete(p%ep)
+        end subroutine
+
+        subroutine deleteAvePlaneErrorProbe(p)
+          implicit none
+          type(avePlaneErrorProbe),intent(in) :: p
+          call delete(p%ep)
+        end subroutine
 
        end module
