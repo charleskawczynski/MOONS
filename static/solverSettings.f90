@@ -9,7 +9,7 @@
       private
 
       public :: solverSettings
-      public :: initializeSolverSettings
+      public :: init
       public :: setName,getName
 
       public :: setIteration ! (Current value)
@@ -79,6 +79,10 @@
         logical :: mixedConditions = .false.
         character(len=nameLength) :: name
       end type
+
+      interface init
+        module procedure initializeSolverSettings
+      end interface
 
       contains
 

@@ -59,12 +59,12 @@
          sigma = sigma_w/sigma_l
 
          ! Interior domain
-         select case (BLoc)
-         case (dom_cc_tot)
-           sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = one
-         case (dom_n_tot)
-           sigma(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = one
-         end select
+
+         ! sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = one
+         
+         ! Make lid have fluid conductivity (what HIMAG does)
+         sigma(Nice1(1):Nice2(1),Nice1(2):Nici2(2),Nice1(3):Nice2(3)) = one
+
        end subroutine
 
        subroutine initializeUserSigmaMu(sigma,mu,gd)
@@ -80,15 +80,10 @@
         
          sigma = one
          mu = one
+         sigma_l = 1.0d0; sigma_w = 1.0d0
+         sigma = sigma_w/sigma_l
 
-         select case (BLoc)
-         case (dom_cc_tot)
-         sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = 0.9d0
-         case (dom_n_tot)
-         sigma(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = 0.9d0
-         case default
-         write(*,*) 'No sigma defined..';stop
-         end select
+         sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = one
 
          sigma = one
 

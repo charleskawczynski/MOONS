@@ -18,6 +18,7 @@
        use solverSettings_mod
        use mySOR_mod
        use myADI_mod
+       use myTime_mod
        use myPoisson_mod
        use baseProbes_mod
        use derivedProbes_mod
@@ -48,14 +49,14 @@
          type(avePlaneErrorProbe) :: u_symmetry
        end type
 
-       interface initialize;         module procedure initializeMomentum          ; end interface
-       interface delete;             module procedure deleteMomentum              ; end interface
-       interface solve;              module procedure solveMomentumEquation       ; end interface
-       interface export;             module procedure momentumExport              ; end interface
-       interface exportRaw;          module procedure momentumExportRaw           ; end interface
-       interface exportTransient;    module procedure momentumExportTransient     ; end interface
-       interface printExportBCs;     module procedure printExportMomentumBCs      ; end interface
-       interface computeDivergence;  module procedure computeDivergenceMomentum   ; end interface
+       interface initialize;          module procedure initializeMomentum;         end interface
+       interface delete;              module procedure deleteMomentum;             end interface
+       interface solve;               module procedure solveMomentumEquation;      end interface
+       interface export;              module procedure momentumExport;             end interface
+       interface exportRaw;           module procedure momentumExportRaw;          end interface
+       interface exportTransient;     module procedure momentumExportTransient;    end interface
+       interface printExportBCs;      module procedure printExportMomentumBCs;     end interface
+       interface computeDivergence;   module procedure computeDivergenceMomentum;  end interface
 
        contains
 
@@ -127,38 +128,29 @@
          write(*,*) '     momentum probes initialized'
 
          ! Initialize solver settings
-         call initializeSolverSettings(mom%ss_ppe)
+         call init(mom%ss_ppe)
          call setName(mom%ss_ppe,'pressure poisson    ')
          call setMaxIterations(mom%ss_ppe,5)
          call setSubtractMean(mom%ss_ppe)
-         ! call setMinTolerance(mom%ss_ppe,real(10.0**(-6.0),dpn))
+
+         ! call setMinTolerance(mom%ss_ppe,real(1.0**(-6.0),dpn))
          ! call setMixedConditions(mom%ss_ppe)
          mom%nstep = 0
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
        end subroutine
 
-       subroutine deleteMomentum(mom,dir)
+       subroutine deleteMomentum(mom)
          implicit none
          type(momentum),intent(inout) :: mom
-         character(len=*),intent(in) :: dir
-         call delete(mom%U)
-         call delete(mom%Ustar)
-         call delete(mom%F)
-         call delete(mom%TempVF)
-         call delete(mom%p)
-         call delete(mom%Temp)
+         call delete(mom%U);               call delete(mom%Ustar);   call delete(mom%F)
+         call delete(mom%TempVF);          call delete(mom%p);       call delete(mom%Temp)
 
-         call delete(mom%u_bcs)
-         call delete(mom%v_bcs)
-         call delete(mom%w_bcs)
-         call delete(mom%p_bcs)
-         call delete(mom%divU)
+         call delete(mom%u_bcs);           call delete(mom%v_bcs);   call delete(mom%w_bcs);
+         call delete(mom%p_bcs);           call delete(mom%divU)
 
-         call delete(mom%u_center)
-         call delete(mom%transient_ppe)
-         call delete(mom%transient_divU)
-         call delete(mom%u_symmetry)
+         call delete(mom%u_center);        call delete(mom%transient_ppe)
+         call delete(mom%transient_divU);  call delete(mom%u_symmetry)
          write(*,*) 'Momentum object deleted'
        end subroutine
 
@@ -226,7 +218,7 @@
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
-           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,gd,&
+           call myPoisson(mom%ADI_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,gd,&
             mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
 
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,gd)
@@ -261,12 +253,10 @@
          call writeAllBoundaries(mom%p_bcs,dir//'parameters/','p')
        end subroutine
 
-       subroutine momentumExportTransient(mom,gd,ss_MHD,dir)
+       subroutine momentumExportTransient(mom,ss_MHD)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(griddata),intent(in) :: gd
          type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
 
          if ((getExportTransient(ss_MHD))) then
            call apply(mom%u_center,getIteration(ss_MHD),mom%U%x)
@@ -291,7 +281,6 @@
          call writeToFile(gd%xci,gd%yni,gd%zci,mom%U%y,dir//'Ufield/','vfi')
          call writeToFile(gd%xci,gd%yci,gd%zni,mom%U%z,dir//'Ufield/','wfi')
          call writeToFile(gd%xci,gd%yci,gd%zci,mom%p%phi,dir//'Ufield/','pci')
-         ! ----------------------- DIVERGENCE QUANTITIES --------------------------
          call writeToFile(gd%xci,gd%yci,gd%zci,mom%divU%phi,dir//'Ufield/','divUci')
          write(*,*) 'Exported Raw Solutions for U'
        end subroutine

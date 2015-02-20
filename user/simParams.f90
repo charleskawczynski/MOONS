@@ -44,22 +44,24 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .true.
+       logical :: solveInduction = .false.
        logical :: restartB = .false.
 
-       integer,parameter :: solveBMethod = 5
+       integer,parameter :: solveBMethod = 4
        !  1 : Low Rem (Poisson, assumes uniform properties)
        !  2 : Low Rem (Pseudo time step for uniform properties)
        !  3 : Low Rem (Pseudo time step)
-       !  4 : Full Induction Equation
+       !  4 : Low Rem Constrained Transport (CT) Method
        !  5 : Constrained Transport (CT) Method
+       !  6 : Full Induction Equation, Not sure how this is supposed 
+       !      to be different from CT method if it is conservative..
 
        logical :: cleanB = .false.
 
        logical :: multiMaterials = .false.
 
        ! ************************** MHD *************************
-       logical :: solveCoupled = .true.
+       logical :: solveCoupled = .false.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -77,7 +79,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 102
+       integer,parameter :: benchmarkCase = 100
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

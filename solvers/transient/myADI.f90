@@ -91,10 +91,10 @@
         allocate(upDiag(s(dir)-1))
         allocate(loDiag(s(dir)-1))
 
-        call setUpSystem(loDiag,diag,upDiag,0.5d0*ADI%dt*alpha,dhn,dhc,s,dir)
+        call setUpSystem(loDiag,diag,upDiag,0.5d0*ADI%dt*alpha,dhn,dhc,s(dir))
         call initialize(ADI%triOperator(dir),loDiag,diag,upDiag)
 
-        call setUpSystem(loDiag,diag,upDiag,-0.5d0*ADI%dt*alpha,dhn,dhc,s,dir)
+        call setUpSystem(loDiag,diag,upDiag,-0.5d0*ADI%dt*alpha,dhn,dhc,s(dir))
         call addIdentity(diag)
         call initialize(ADI%triSolver(dir),loDiag,diag,upDiag)
 
@@ -115,6 +115,9 @@
 
         ! Set multi-scale time steps:
         ADI%nTimeLevels = floor(log(real(s(1)+1))/log(real(2.0,dpn)))
+        ! Try
+        ! p = 0,1,...,2/dx = 2*M levels. This might be the issue
+
         h0 = getDhMin(gd)
         allocate(ADI%dtj(ADI%nTimeLevels))
         do j = 1,ADI%nTimeLevels
@@ -283,19 +286,19 @@
         !                                  V
         call initialize(ADI,s,gd,gridType,one,Af)
 
-        Nt = 5
+        Nt = 1
 
         do i=1,Nt
 
           ! Begin V-cycle of multi-scale
           do j = 1,ADI%nTimeLevels
             call setDt(ADI,ADI%dtj(j))
-            ADI%dt = 1.0d-4
+            ADI%dt = 1.0d-2
             call relax3D(ADI,u,f,u_bcs,gd)
           enddo
           do j = ADI%nTimeLevels, 1, -1
             call setDt(ADI,ADI%dtj(j))
-            ADI%dt = 1.0d-4
+            ADI%dt = 1.0d-2
             call relax3D(ADI,u,f,u_bcs,gd)
           enddo
 
@@ -325,24 +328,23 @@
         call delete(ADI)
       end subroutine
 
-      subroutine setUpSystem(loDiag,diag,upDiag,alpha,dhn,dhc,s,dir)
+      subroutine setUpSystem(loDiag,diag,upDiag,alpha,dhn,dhc,s)
         implicit none
         real(dpn),dimension(:),intent(inout) :: loDiag,diag,upDiag
         real(dpn),intent(in) :: alpha
         real(dpn),dimension(:),intent(in) :: dhn,dhc
-        integer,dimension(3),intent(in) :: s
-        integer,intent(in) :: dir
+        integer,intent(in) :: s
         integer :: j
 
         diag(1) = real(1.0,dpn)
         upDiag(1) = real(0.0,dpn)
-        do j=2,s(dir)-1
+        do j=2,s-1
           loDiag(j-1) = alpha/(dhn(j-1)*dhc(j-1))
           diag(j) = -real(2.0,dpn)*alpha/(dhn(j-1)*dhc(j-1))
           upDiag(j) = alpha/(dhn(j-1)*dhc(j-1))
         enddo
-        diag(s(dir)) = real(1.0,dpn)
-        loDiag(s(dir)-1) = real(0.0,dpn)
+        diag(s) = real(1.0,dpn)
+        loDiag(s-1) = real(0.0,dpn)
       end subroutine
 
       ! --------------------- 1D TESTS ---------------------
@@ -395,14 +397,14 @@
 
           ! Begin V-cycle of multi-scale
           do j = 1,nTimeLevels
-            hj = (2.0**dble(j))*h0;
-            dt = 4.0*(hj**2.0)/(ADI%alpha*PI**2.0);
+            hj = (2.0**dble(j))*h0
+            dt = 4.0*(hj**2.0)/(ADI%alpha*PI**2.0)
             call setDt(ADI,dt)
             call relax1D(ADI,u,f,u_bcs,gd,1)
           enddo
           do j = nTimeLevels, 1, -1
-            hj = (2.0**dble(j))*h0;
-            dt = 4.0*(hj**2.0)/(PI**2.0);
+            hj = (2.0**dble(j))*h0
+            dt = 4.0*(hj**2.0)/(PI**2.0)
             call setDt(ADI,dt)
             call relax1D(ADI,u,f,u_bcs,gd,1)
           enddo
@@ -410,8 +412,8 @@
         enddo
 
         do j = 1,nTimeLevels
-          hj = (2.0**dble(j))*h0;
-          dt = 4.0*(hj**2.0)/(PI**2.0);
+          hj = (2.0**dble(j))*h0
+          dt = 4.0*(hj**2.0)/(PI**2.0)
           write(*,*) 'dt(',j,') = ',dt
         enddo
       end subroutine

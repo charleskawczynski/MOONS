@@ -65,6 +65,7 @@
        ! 
        ! *********************** USER DEFINED ************************
        ! integer,dimension(3),parameter :: Ni = 1, Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = 45, Nwtop = 0, Nwbot = 0
 
        ! integer,dimension(3),parameter :: Ni = (/46,46,46/) ! Number of cells in fluid
        ! integer,dimension(3),parameter :: Nwtop = (/11,11,11/) ! Number of cells in wall
@@ -88,7 +89,7 @@
        ! integer,dimension(3),parameter :: Ni = 52, Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 103
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104

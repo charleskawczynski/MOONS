@@ -5,28 +5,25 @@ function [x,y] = graphDigitizer(dir,name,griddata,smoothness,direction)
 % The plot must be positioned in the corner with the origin at
 % the pixel location (0,0) with one, and ONLY one line.
 
-% name = name.file (string)
-%        name.ext  (string)
-% dir  = dir.working
+% name = string of file name
+% name = string of file name
 
-% griddata = griddata.xmin
-%            griddata.xmax
-%            griddata.ymin
-%            griddata.ymax
+% griddata must have
+%     griddata.xmin
+%     griddata.xmax
+%     griddata.ymin
+%     griddata.ymax
 % 
 % smoothness > 1
 % direction = 1,2
 
-% samplingFrequency > 1
-% darknessTol = ?
-% 
-% Example:
-% gd = struct; name = struct;
-% gd.xmin = -15;   gd.xmax = 10;
-% gd.ymin = -0.01; gd.ymax = 0.06;
-% name.file = 'square duct - cleaned - ANL 3D Code'; name.ext = '.png';
-% [x_ANL3D dP_ANL3D] = graphDigitizer(myDir,name,gd,1,1);
+% smoothness = ss.smoothness;
+% direction = ss.direction;
+% samplingFrequency = ss.samplingFrequency;
+% darknessTol = ss.darknessTol;
 
+% smoothness = ss.smoothness;
+% direction = ss.direction;
 samplingFrequency = 1;
 darknessTol = 0.5;
 

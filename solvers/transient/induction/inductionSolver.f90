@@ -59,11 +59,11 @@
          type(indexProbe) :: probe_B,probe_J
          type(errorProbe) :: probe_divB,probe_divJ
 
-         real(dpn) :: ds = 1.0d-4     ! Pseudo time step
-         integer :: NmaxB = 5         ! Maximum number of pseudo steps
-         ! real(dpn) :: ds = 1.0d-6     ! S = 100
+         ! real(dpn) :: ds = 1.0d-4     ! Pseudo time step
+         ! integer :: NmaxB = 5         ! Maximum number of pseudo steps
+         real(dpn) :: ds = 1.0d-6     ! S = 100
          ! real(dpn) :: ds = 1.0d-7     ! S = 1000
-         ! integer :: NmaxB = 50        ! Maximum number of pseudo steps
+         integer :: NmaxB = 50        ! Maximum number of pseudo steps
          integer :: NmaxCleanB = 5    ! Maximum number of cleaning steps
        end type
 
@@ -77,6 +77,8 @@
        interface computeDivergence;  module procedure computeDivergenceInduction; end interface
 
        contains
+
+       ! ******************* INIT/DELETE ***********************
 
        subroutine initializeInduction(ind,gd,dir)
          implicit none
@@ -164,12 +166,12 @@
          call initialize(ind%err_residual)
 
          ! Initialize solver settings
-         call initializeSolverSettings(ind%ss_ind)
+         call init(ind%ss_ind)
          call setName(ind%ss_ind,'SS B equation       ')
          call setMaxIterations(ind%ss_ind,ind%NmaxB)
          write(*,*) '     Solver settings for B initialized'
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
-         call initializeSolverSettings(ind%ss_cleanB)
+         call init(ind%ss_cleanB)
          call setName(ind%ss_cleanB,'cleaning B          ')
          call setMaxIterations(ind%ss_cleanB,ind%NmaxCleanB)
          write(*,*) '     Solver settings for cleaning initialized'
@@ -177,10 +179,9 @@
          write(*,*) '     Finished'
        end subroutine
 
-       subroutine deleteInduction(ind,dir)
+       subroutine deleteInduction(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         character(len=*),intent(in) :: dir
          call delete(ind%B)
          call delete(ind%Bstar)
          call delete(ind%B0)
@@ -218,6 +219,8 @@
          write(*,*) 'Induction object deleted'
        end subroutine
 
+       ! ******************* EXPORT ****************************
+
        subroutine printExportInductionBCs(ind,dir)
          implicit none
          type(induction),intent(in) :: ind
@@ -232,12 +235,10 @@
          if (cleanB)         call writeAllBoundaries(ind%phi_bcs,dir//'parameters/','phi')
        end subroutine
 
-       subroutine inductionExportTransient(ind,gd,ss_MHD,dir)
+       subroutine inductionExportTransient(ind,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
-         type(griddata),intent(in) :: gd
          type(solverSettings),intent(in) :: ss_MHD
-         character(len=*),intent(in) :: dir
          if ((getExportTransient(ss_MHD))) then
            call apply(ind%probe_B,getIteration(ss_MHD),ind%B%x)
            call apply(ind%probe_J,getIteration(ss_MHD),ind%J_cc%x)
@@ -254,14 +255,13 @@
          type(induction),intent(in) :: ind
          type(griddata),intent(in) :: gd
          character(len=*),intent(in) :: dir
-         ! ------------------------------- B/J FIELD ------------------------------
          if (solveInduction) then
            call writeToFile(gd%xct,gd%yct,gd%zct,ind%B%x,ind%B%y,ind%B%z,dir//'Bfield/','Bxct','Byct','Bzct')
            call writeToFile(gd%xct,gd%yct,gd%zct,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,dir//'Jfield/','jxct','jyct','jzct')
-         ! ---------------------------- SIGMA/MU FIELD ----------------------------
+
            call writeToFile(gd%xct,gd%yct,gd%zct,ind%sigma%phi,dir//'material/','sigmac')
            call writeToFile(gd%xct,gd%yct,gd%zct,ind%mu%phi,dir//'material/','muc')
-         ! ----------------------- DIVERGENCE QUANTITIES --------------------------
+
            call writeToFile(gd%xct,gd%yct,gd%zct,ind%divB%phi,dir//'Bfield/','divBct')
            call writeToFile(gd%xct,gd%yct,gd%zct,ind%divJ%phi,dir//'Jfield/','divJct')
            write(*,*) 'Exported Raw Solutions for B'
@@ -316,6 +316,8 @@
          endif
        end subroutine
 
+       ! ******************* SOLVER ****************************
+
        subroutine inductionSolver(ind,U,gd,rd,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
@@ -329,8 +331,10 @@
          case (1); call lowRemPoisson(ind,U,gd,ss_MHD)
          case (2); call lowRemPseudoTimeStepUniform(ind,U,gd)
          case (3); call lowRemPseudoTimeStep(ind,U,gd)
-         case (4); call fullInduction(ind,U,gd,rd)
-         case (5); call CTmethod(ind,U,gd)
+         case (4); call lowRemCTmethod(ind,U,gd)
+         case (5); call CTmethod(ind,U,gd,rd)
+         case (6); call fullInduction(ind,U,gd,rd)
+         case (7); call semi_implicit_ADI(ind,U,gd,rd)
          end select
          if (cleanB) then
            call cleanBSolution(ind,gd,ss_MHD)
@@ -453,6 +457,128 @@
          enddo
        end subroutine
 
+       subroutine lowRemCTmethod(ind,U,gd)
+         ! inductionSolverCT solves the induction equation using the
+         ! Constrained Transport (CT) Method. The magnetic field is
+         ! stored and collocated at the cell center. The magnetic
+         ! field is updated using Faraday's Law, where the electric
+         ! field is solved for using appropriate fluxes as described
+         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         ! The velocity field is assumed to be cell centered.
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U
+         type(griddata),intent(in) :: gd
+         ! ********************** LOCAL VARIABLES ***********************
+         integer :: i
+
+         do i=1,ind%NmaxB
+
+           ! Compute current from appropriate fluxes:
+           call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,gd,1)
+           call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,gd,2)
+           call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,gd,3)
+
+           ! Compute fluxes of u cross B0
+           call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,1)
+           call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,2)
+           call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,3)
+           call myCellCenter2Edge(ind%E%x,ind%tempVF%x,gd,1)
+           call myCellCenter2Edge(ind%E%y,ind%tempVF%y,gd,2)
+           call myCellCenter2Edge(ind%E%z,ind%tempVF%z,gd,3)
+
+           ! E = j/sig - uxB
+           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
+           call multiply(ind%J,ind%sigmaInv_edge)
+           call subtract(zero,ind%E)
+           call add(ind%E,ind%J)
+
+           ! F = Curl(E)
+           call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,gd,1)
+           call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,gd,2)
+           call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,gd,3)
+           ! tempVF = interp(F)_face->cc
+           call myFace2CellCenter(ind%tempVF%x,ind%F%x,gd,1)
+           call myFace2CellCenter(ind%tempVF%y,ind%F%y,gd,2)
+           call myFace2CellCenter(ind%tempVF%z,ind%F%z,gd,3)
+
+           ! Add induced field of previous time step (B^n)
+           ! ind%B = ind%B - ind%ds*ind%tempVF
+           call multiply(ind%tempVF,ind%ds)
+           call subtract(ind%B,ind%tempVF)
+
+           ! Impose BCs:
+           call applyAllBCs(ind%Bx_bcs,ind%B%x,gd)
+           call applyAllBCs(ind%By_bcs,ind%B%y,gd)
+           call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
+         enddo
+       end subroutine
+
+       subroutine CTmethod(ind,U,gd,rd)
+         ! inductionSolverCT solves the induction equation using the
+         ! Constrained Transport (CT) Method. The magnetic field is
+         ! stored and collocated at the cell center. The magnetic
+         ! field is updated using Faraday's Law, where the electric
+         ! field is solved for using appropriate fluxes as described
+         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         ! The velocity field is assumed to be cell centered.
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U
+         type(griddata),intent(in) :: gd
+         type(rundata),intent(in) :: rd
+         ! ********************** LOCAL VARIABLES ***********************
+         real(dpn) :: dt,Rem
+
+         dt = getDtime(rd)
+         Rem = getRem(rd)
+
+         ! Compute current from appropriate fluxes:
+         call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,gd,1)
+         call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,gd,2)
+         call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,gd,3)
+
+         ! Compute fluxes of u cross (B+B0)
+         call add(ind%B,ind%B0)
+         call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,1)
+         call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,2)
+         call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,3)
+         call subtract(ind%B,ind%B0)
+         call myCellCenter2Edge(ind%E%x,ind%tempVF%x,gd,1)
+         call myCellCenter2Edge(ind%E%y,ind%tempVF%y,gd,2)
+         call myCellCenter2Edge(ind%E%z,ind%tempVF%z,gd,3)
+
+         ! E = j/sig - uxB
+         ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
+         call multiply(ind%J,ind%sigmaInv_edge)
+         call divide(ind%J,Rem)
+         call subtract(zero,ind%E)
+         call add(ind%E,ind%J)
+
+         ! F = Curl(E)
+         call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,gd,1)
+         call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,gd,2)
+         call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,gd,3)
+         ! tempVF = interp(F)_face->cc
+         call myFace2CellCenter(ind%tempVF%x,ind%F%x,gd,1)
+         call myFace2CellCenter(ind%tempVF%y,ind%F%y,gd,2)
+         call myFace2CellCenter(ind%tempVF%z,ind%F%z,gd,3)
+
+         ! Add induced field of previous time step (B^n)
+         ! ind%B = ind%B - dt*ind%tempVF
+         call multiply(ind%tempVF,dt)
+         call subtract(ind%B,ind%tempVF)
+
+         ! Impose BCs:
+         call applyAllBCs(ind%Bx_bcs,ind%B%x,gd)
+         call applyAllBCs(ind%By_bcs,ind%B%y,gd)
+         call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
+       end subroutine
+
        subroutine fullInduction(ind,U,gd,rd)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
@@ -522,10 +648,10 @@
          call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
        end subroutine
 
-       subroutine CTmethod(ind,U,gd)
+       subroutine semi_implicit_ADI(ind,U,gd,rd)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
-         ! stored, and collocated, at the cell center. The magnetic
+         ! stored and collocated at the cell center. The magnetic
          ! field is updated using Faraday's Law, where the electric
          ! field is solved for using appropriate fluxes as described
          ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
@@ -536,48 +662,57 @@
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(griddata),intent(in) :: gd
+         type(rundata),intent(in) :: rd
          ! ********************** LOCAL VARIABLES ***********************
-         integer :: i
+         real(dpn) :: dt,Rem
 
-         do i=1,ind%NmaxB
+         dt = getDtime(rd)
+         Rem = getRem(rd)
 
-           ! Compute current from appropriate fluxes:
-           call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,gd,1)
-           call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,gd,2)
-           call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,gd,3)
+         ! Compute current from appropriate fluxes:
+         call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,gd,1)
+         call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,gd,2)
+         call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,gd,3)
 
-           ! Compute fluxes of u cross B
-           call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,1)
-           call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,2)
-           call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,3)
-           call myCellCenter2Edge(ind%E%x,ind%tempVF%x,gd,1)
-           call myCellCenter2Edge(ind%E%y,ind%tempVF%y,gd,2)
-           call myCellCenter2Edge(ind%E%z,ind%tempVF%z,gd,3)
+         ! Compute fluxes of u cross (B+B0)
+         call add(ind%B,ind%B0)
+         call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,1)
+         call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,2)
+         call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,3)
+         call subtract(ind%B,ind%B0)
+         call myCellCenter2Edge(ind%E%x,ind%tempVF%x,gd,1)
+         call myCellCenter2Edge(ind%E%y,ind%tempVF%y,gd,2)
+         call myCellCenter2Edge(ind%E%z,ind%tempVF%z,gd,3)
 
-           ! E = j/sig - uxB
-           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-           call multiply(ind%J,ind%sigmaInv_edge)
-           call subtract(zero,ind%E)
-           call add(ind%E,ind%J)
+         ! E = j/sig - uxB
+         ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
+         call multiply(ind%J,ind%sigmaInv_edge)
+         call divide(ind%J,Rem)
+         call subtract(zero,ind%E)
+         call add(ind%E,ind%J)
 
-           ! Add induced field of previous time step (B^n)
-           call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,gd,1)
-           call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,gd,2)
-           call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,gd,3)
-           call myFace2CellCenter(ind%tempVF%x,ind%F%x,gd,1)
-           call myFace2CellCenter(ind%tempVF%y,ind%F%y,gd,2)
-           call myFace2CellCenter(ind%tempVF%z,ind%F%z,gd,3)
+         ! F = Curl(E)
+         call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,gd,1)
+         call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,gd,2)
+         call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,gd,3)
+         ! tempVF = interp(F)_face->cc
+         call myFace2CellCenter(ind%tempVF%x,ind%F%x,gd,1)
+         call myFace2CellCenter(ind%tempVF%y,ind%F%y,gd,2)
+         call myFace2CellCenter(ind%tempVF%z,ind%F%z,gd,3)
 
-           ! ind%B = ind%B - ind%ds*ind%tempVF
-           call multiply(ind%tempVF,ind%ds)
-           call subtract(ind%B,ind%tempVF)
+         ! Add induced field of previous time step (B^n)
+         ! ind%B = ind%B - dt*ind%tempVF
+         call multiply(ind%tempVF,dt)
+         call subtract(ind%B,ind%tempVF)
 
-           ! Impose BCs:
-           call applyAllBCs(ind%Bx_bcs,ind%B%x,gd)
-           call applyAllBCs(ind%By_bcs,ind%B%y,gd)
-           call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
-         enddo
+         ! Impose BCs:
+         call applyAllBCs(ind%Bx_bcs,ind%B%x,gd)
+         call applyAllBCs(ind%By_bcs,ind%B%y,gd)
+         call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
        end subroutine
+
+
+       ! ******************* CLEANING **************************
 
        subroutine cleanBSolution(ind,gd,ss_MHD)
          implicit none
@@ -604,6 +739,8 @@
          call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
          call stopTime(ind%time_CP,ind%ss_cleanB)
        end subroutine
+
+       ! ********************* AUX *****************************
 
        subroutine computeJCrossB(jcrossB,ind,gd,Re,Ha)
          ! computeJCrossB computes the ith component of Ha^2/Re j x B

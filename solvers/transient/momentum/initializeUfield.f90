@@ -144,7 +144,7 @@
              enddo
            enddo
            allocate(psi(Nx+2,Ny+2,Nz+2))
-           call initializeSolverSettings(ss_psi)
+           call init(ss_psi)
            call setMaxIterations(ss_psi,100)
            omega = -omega
 !            call initialize(SOR,omega,gd,1)

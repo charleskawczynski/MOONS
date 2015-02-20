@@ -133,8 +133,8 @@
              call printTime(time,'MHD solver')
            endif
            ! **************************** EXPORT TRANSIENT DATA *****************************
-           call exportTransient(mom,gd,ss_MHD,dir)
-           call exportTransient(ind,gd,ss_MHD,dir)
+           call exportTransient(mom,ss_MHD)
+           call exportTransient(ind,ss_MHD)
            n_mhd = n_mhd + 1
            if (solveInduction) n_ind = n_ind + 1
            ! ************************ READ KILL SWITCH FROM FILE ****************************
@@ -159,8 +159,8 @@
          call writeLastStepToFile(n_ind,dir//'parameters/','n_ind')
 
          ! **************************** EXPORT TRANSIENT DATA *****************************
-         call exportTransient(mom,gd,ss_MHD,dir)
-         call exportTransient(ind,gd,ss_MHD,dir)
+         call exportTransient(mom,ss_MHD)
+         call exportTransient(ind,ss_MHD)
 
          ! ********************* RECORD TIME ****************************
          call writeTime(time,dir,'MHD solver')

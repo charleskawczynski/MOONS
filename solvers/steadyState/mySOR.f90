@@ -230,7 +230,7 @@
             call applyAllBCs(u_bcs,u,gd)
           endif
 
-          if (getMinToleranceTF(ss)) then
+          if (getMinToleranceTF(ss).and.(ijk.eq.2)) then
             select case (SOR%gridType)
             case (1); call myCC2CCLap(SOR%lapu,u,gd)
             case (2); call myNodeLap(SOR%lapu,u,gd)

@@ -62,6 +62,11 @@
          module procedure initializeTime
        end interface
 
+       interface stopTime
+       	 module procedure stopTimeSS
+       	 module procedure stopTimeNoSS
+       end interface
+
        contains
 
       subroutine initializeTime(this)
@@ -94,7 +99,7 @@
         this%t_start = dble(this%i_start)
       end subroutine
 
-      subroutine stopTime(this,ss)
+      subroutine stopTimeSS(this,ss)
         implicit none
         type(myTime),intent(inout) :: this
         type(solverSettings),intent(in) :: ss
@@ -115,6 +120,17 @@
         endif
         this%iterPerSec = floor(1.0/this%runTimeAve)
         this%iterPerDay = floor(1.0/this%runTimeAve*3600.0*24.0)
+      end subroutine
+
+      subroutine stopTimeNoSS(this)
+        implicit none
+        type(myTime),intent(inout) :: this
+        call system_clock(this%i_finish,this%countRate)
+        this%t_finish = dble(this%i_finish)
+        ! this%N = this%N + 1
+        this%runTime = (this%t_finish - this%t_start)/dble(this%countRate)
+        this%runTimeCumulative = this%runTimeCumulative + this%runTime
+        this%runTimeAve = (this%t_finish - this%t_start)/dble(this%countRate)
       end subroutine
 
       subroutine estimateRemaining(this,ss)

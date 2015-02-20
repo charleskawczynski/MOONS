@@ -38,7 +38,7 @@
          if (calculateOmegaPsi) then
            ! Poisson Equation solver settings
            call setName(ss_poisson,'psi poisson         ')
-           call initializeSolverSettings(ss_poisson)
+           call init(ss_poisson)
            call setMaxIterations(ss_poisson,200)
 
            ! x - component

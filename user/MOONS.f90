@@ -109,7 +109,8 @@
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
@@ -199,7 +200,7 @@
          call writeKillSwitchToFile(.true.,dir//'parameters/','killSwitch')
 
          ! ******************* SET MHD SOLVER SETTINGS *******************
-         call initializeSolverSettings(ss_MHD)
+         call init(ss_MHD)
 
          call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
          call setIteration(ss_MHD,n_mhd)
@@ -211,19 +212,72 @@
          ! ********************* SET B SOLVER SETTINGS *******************
 
          ! call unitTestRelax(ind%B%x,gd,dir)
-         call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+         call unitTestADI(ind%B%x,gd,dir)
+         ! call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 
          ! if (calculateOmegaPsi) call calcOmegaPsi(u,v,w,gd,dir)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
-         call delete(ind,dir)
-         call delete(mom,dir)
+         call delete(ind)
+         call delete(mom)
          ! call delete(vecOps)
          call delete(gd)
 
          call computationComplete(time)
        end subroutine
+
+       subroutine unitTestADI(B,gd,dir)
+        implicit none
+        type(griddata),intent(in) :: gd
+        real(dpn),dimension(:,:,:),intent(in) :: B
+        character(len=*),intent(in) :: dir
+        real(dpn),dimension(:,:,:),allocatable :: u,u_exact,f
+        real(dpn),dimension(:,:),allocatable :: bvals
+        type(myADI) :: ADI
+        type(BCs) :: u_bcs
+        type(myError) :: e
+    	type(solverSettings) :: ss
+        real(dpn) :: alpha
+        integer :: i,j,k
+        real(dpn) :: p,q,r
+        integer,dimension(3) :: s
+        s = shape(B)
+        s = s-1
+        alpha = 2.0d0
+        ADI%alpha = alpha
+        call setAllZero(u_bcs,s(1),s(2),s(3),4)
+
+        call setGrid(u_bcs,gd)
+        call checkBCs(u_bcs)
+
+        allocate(u(s(1),s(2),s(3)))
+        allocate(u_exact(s(1),s(2),s(3)))
+        allocate(f(s(1),s(2),s(3)))
+        p = 2.0; q = 2.0; r = 2.0
+        do k = 1,s(3)
+        do j = 1,s(2)
+        do i = 1,s(1)
+          f(i,j,k) = cos(p*PI*gd%xni(i))*cos(q*PI*gd%yni(j))*cos(r*PI*gd%zni(k))
+          u_exact(i,j,k) = -PI**2.0*(p**2.0+q**2.0+r**2.0)*f(i,j,k)
+        enddo
+        enddo
+        enddo
+
+        call init(ss)
+        call setName(ss,'u     ')
+        call setMaxIterations(ss,10)
+        call myPoisson(ADI,u,f,u_bcs,gd,ss,e,2,.true.)
+        call computeError(e,u_exact,u)
+        call printMyError(e,'u')
+
+        call writeToFile(gd%xni,gd%yni,gd%zni,u,dir,'u')
+        call writeToFile(gd%xni,gd%yni,gd%zni,u_exact,dir,'u_exact')
+        call writeToFile(gd%xni,gd%yni,gd%zni,f,dir,'f')
+
+        deallocate(u,u_exact,f)
+      end subroutine
+
 
        subroutine unitTestRelax(B,gd,dir)
         implicit none
