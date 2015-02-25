@@ -6,6 +6,7 @@
        use version_mod
        use myTime_mod
        use myAllocate_mod
+       use grid_mod
        use griddata_mod
        use rundata_mod
        use myError_mod
@@ -27,11 +28,13 @@
        use momentumSolver_mod
        use inductionSolver_mod
 
+       use mySOR_mod
        use myADI_mod
        use myPoisson_mod
 
        use MHDSolver_mod
        use omp_lib
+       use grid_mod
 
        implicit none
        contains
@@ -68,6 +71,7 @@
          ! **************************************************************
          type(momentum) :: mom
          type(induction) :: ind
+         type(grid) :: grid_mom,grid_ind
          ! type(vectorOps) :: vecOps
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
@@ -151,9 +155,11 @@
 
          ! **************************************************************
 
-         call setGriddata(gd,Re,Ha)
-         call initialize(mom,gd,dir)
-         call initialize(ind,gd,dir)
+         call setGriddata(gd,grid_mom,grid_ind,Re,Ha)
+         ! call initialize(mom,gd,dir)
+         ! call initialize(ind,gd,dir)
+         call init(mom,gd,grid_mom,dir)
+         call init(ind,gd,grid_ind,dir)
          ! call initialize(vecOps,gd)
 
          ! ****************** INITIALIZE RUNDATA ************************
@@ -212,8 +218,9 @@
          ! ********************* SET B SOLVER SETTINGS *******************
 
          ! call unitTestRelax(ind%B%x,gd,dir)
-         call unitTestADI(ind%B%x,gd,dir)
-         ! call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+         ! call unitTestADI(ind%B%x,gd,dir)
+         ! call unitTestMG(ind%B%x,gd,dir)
+         call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 
          ! if (calculateOmegaPsi) call calcOmegaPsi(u,v,w,gd,dir)
 
@@ -227,26 +234,50 @@
          call computationComplete(time)
        end subroutine
 
+       subroutine unitTestMG(B,gd,dir)
+        implicit none
+        type(griddata),intent(in) :: gd
+        real(dpn),dimension(:,:,:),intent(in) :: B
+        character(len=*),intent(in) :: dir
+        integer,parameter :: Nlevels = 8
+        integer :: i
+        type(grid),dimension(Nlevels) :: g
+
+        call init(g(1),gd%xnt,gd%ynt,gd%znt,2)
+        do i = 1,Nlevels
+          call init(g(i),gd%xnt,gd%ynt,gd%znt,2)
+        enddo
+
+        call export(g(1),dir,'grid_1')
+        do i = 1,Nlevels-1
+          call restrict(g(i+1),g(i))
+          call export(g(i+1),dir,'grid_'//int2str(i+1))
+          write(*,*) 'Finished level',i
+          ! call delete(g(i))
+        enddo
+        do i = 1,Nlevels
+          call delete(g(i))
+        enddo
+       end subroutine
+
        subroutine unitTestADI(B,gd,dir)
         implicit none
         type(griddata),intent(in) :: gd
         real(dpn),dimension(:,:,:),intent(in) :: B
         character(len=*),intent(in) :: dir
         real(dpn),dimension(:,:,:),allocatable :: u,u_exact,f
-        real(dpn),dimension(:,:),allocatable :: bvals
         type(myADI) :: ADI
+        type(mySOR) :: SOR
         type(BCs) :: u_bcs
         type(myError) :: e
-    	type(solverSettings) :: ss
-        real(dpn) :: alpha
+        type(solverSettings) :: ss
         integer :: i,j,k
         real(dpn) :: p,q,r
         integer,dimension(3) :: s
         s = shape(B)
         s = s-1
-        alpha = 2.0d0
-        ADI%alpha = alpha
-        call setAllZero(u_bcs,s(1),s(2),s(3),4)
+        ! call setAllZero(u_bcs,s(1),s(2),s(3),1) ! Dirichlet
+        call setAllZero(u_bcs,s(1),s(2),s(3),4) ! Neumann
 
         call setGrid(u_bcs,gd)
         call checkBCs(u_bcs)
@@ -254,20 +285,25 @@
         allocate(u(s(1),s(2),s(3)))
         allocate(u_exact(s(1),s(2),s(3)))
         allocate(f(s(1),s(2),s(3)))
-        p = 2.0; q = 2.0; r = 2.0
+        p = 21.0; q = 3.0; r = 3.0
         do k = 1,s(3)
         do j = 1,s(2)
         do i = 1,s(1)
-          f(i,j,k) = cos(p*PI*gd%xni(i))*cos(q*PI*gd%yni(j))*cos(r*PI*gd%zni(k))
-          u_exact(i,j,k) = -PI**2.0*(p**2.0+q**2.0+r**2.0)*f(i,j,k)
+          ! u_exact(i,j,k) = sin(p*PI*gd%xni(i))*sin(q*PI*gd%yni(j))*sin(r*PI*gd%zni(k)) ! Dirichlet
+          u_exact(i,j,k) = cos(p*PI*gd%xni(i))*cos(q*PI*gd%yni(j))*cos(r*PI*gd%zni(k)) ! Neumann
+          f(i,j,k) = -PI**2.0*(p**2.0+q**2.0+r**2.0)*u_exact(i,j,k)
         enddo
         enddo
         enddo
 
         call init(ss)
-        call setName(ss,'u     ')
+        call setName(ss,'u                   ')
         call setMaxIterations(ss,10)
+        call setSubtractMean(ss)
+        call setAlpha(ADI,one)
         call myPoisson(ADI,u,f,u_bcs,gd,ss,e,2,.true.)
+        ! call myPoisson(SOR,u,f,u_bcs,gd,ss,e,2,.true.)
+
         call computeError(e,u_exact,u)
         call printMyError(e,'u')
 
@@ -276,66 +312,6 @@
         call writeToFile(gd%xni,gd%yni,gd%zni,f,dir,'f')
 
         deallocate(u,u_exact,f)
-      end subroutine
-
-
-       subroutine unitTestRelax(B,gd,dir)
-        implicit none
-        type(griddata),intent(in) :: gd
-        character(len=*),intent(in) :: dir
-        real(dpn),dimension(:,:,:),intent(in) :: B
-        real(dpn),dimension(:,:,:),allocatable :: u,u_exact,f
-        real(dpn),dimension(:,:),allocatable :: bvals
-        type(myADI) :: ADI
-        type(BCs) :: u_bcs
-        type(myError) :: e
-        real(dpn) :: alpha
-        integer :: i
-        integer,dimension(3) :: s
-        s = shape(B)
-        s = s-1
-        alpha = 2.0d0
-        ADI%alpha = alpha
-        call setAllZero(u_bcs,s(1),s(2),s(3),1)
-        allocate(bvals(s(2),s(3)))
-        bvals = -1.0d0/(4.0d0*PI**2.0d0*alpha)
-        ! write(*,*) 'shape(bvals) = ',shape(bvals)
-        call setXminVals(u_bcs,bvals)
-        call setXmaxVals(u_bcs,bvals)
-        deallocate(bvals)
-        call setGrid(u_bcs,gd)
-        call checkBCs(u_bcs)
-
-        allocate(u(s(1),s(2),s(3)))
-        allocate(u_exact(s(1),s(2),s(3)))
-        allocate(f(s(1),s(2),s(3)))
-        do i=1,s(1)
-          f(i,:,:) = cos(2.0d0*PI*gd%xni(i))
-        enddo
-        ! do i=1,s(1)
-        !   write(*,*) 'xni(',i,') = ',gd%xni(i)
-        ! enddo
-        call applyBCFace(u_bcs,u,gd,1)
-        call applyBCFace(u_bcs,u,gd,4)
-
-        call writeToFile(gd%xni,u(:,3,3),dir//'Test/','u0',.false.)
-        ADI%dt = 0.01d0
-        call solveADI1D(ADI,u,f,u_bcs,gd)
-
-        do i=1,s(1)
-          u_exact(i,:,:) = -cos(2.0d0*PI*gd%xni(i))/(4.0d0*PI**2.0d0*alpha)
-        enddo
-        call computeError(e,u_exact,u)
-        call printMyError(e,'u')
-        call writeToFile(gd%xni,gd%yni,gd%zni,u,dir//'Test/','u')
-        call writeToFile(gd%xni,gd%yni,gd%zni,u_exact,dir//'Test/','u_exact')
-        call writeToFile(gd%xni,gd%yni,gd%zni,f,dir//'Test/','f')
-
-        call writeToFile(gd%xni,u(:,3,3),dir//'Test/','u1D',.false.)
-        call writeToFile(gd%xni,u_exact(:,3,3),dir//'Test/','u_exact1D',.false.)
-        call writeToFile(gd%xni,f(:,3,3),dir//'Test/','f1D',.false.)
-
-        deallocate(u,u_exact,f)
-      end subroutine
+       end subroutine
 
        end module

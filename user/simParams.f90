@@ -32,6 +32,9 @@
        ! ************************ U-FIELD ***********************
        logical :: solveMomentum = .true.
        logical :: restartU = .false.
+       integer,parameter :: solveUMethod = 1
+       !                                   1 : Explicit Euler
+       !                                   2 : Semi-Implicit 3D ADI (Douglas), Not yet working
 
        integer :: advectiveUFormulation = 1
        !                                  1 : Donor-Cell (conservative form)
@@ -44,24 +47,22 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
+       logical :: solveInduction = .true.
        logical :: restartB = .false.
-
-       integer,parameter :: solveBMethod = 4
-       !  1 : Low Rem (Poisson, assumes uniform properties)
-       !  2 : Low Rem (Pseudo time step for uniform properties)
-       !  3 : Low Rem (Pseudo time step)
-       !  4 : Low Rem Constrained Transport (CT) Method
-       !  5 : Constrained Transport (CT) Method
-       !  6 : Full Induction Equation, Not sure how this is supposed 
-       !      to be different from CT method if it is conservative..
-
        logical :: cleanB = .false.
-
        logical :: multiMaterials = .false.
 
+       integer,parameter :: solveBMethod = 4
+       !                                   1 : Low Rem (Poisson, assumes uniform properties)
+       !                                   2 : Low Rem (Pseudo time step for uniform properties)
+       !                                   3 : Low Rem (Pseudo time step)
+       !                                   4 : Low Rem Constrained Transport (CT) Method
+       !                                   5 : Constrained Transport (CT) Method
+       !                                   6 : Full Induction Equation, Not sure how this is supposed 
+       !                                       to be different from CT method if it is conservative..
+
        ! ************************** MHD *************************
-       logical :: solveCoupled = .false.
+       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -79,7 +80,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 100
+       integer,parameter :: benchmarkCase = 102
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

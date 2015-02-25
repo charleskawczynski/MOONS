@@ -58,6 +58,7 @@
 
         module procedure write2DVecFieldToFile
         module procedure write3DVecFieldToFile
+        module procedure write3DMeshToFile
       end interface
 
       interface writeTecPlotHeader
@@ -436,6 +437,31 @@
         do j = 1,sy
           do i = 1,sx
             write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
+          enddo
+        enddo
+        call closeAndMessage(u,name,dir)
+      end subroutine
+
+      subroutine write3DMeshToFile(x,y,z,val,dir,name,headerTecplotTemp)
+        character(len=*),intent(in) :: dir,name
+        real(dpn),dimension(:),intent(in) :: x,y,z
+        real(dpn),intent(in) :: val
+        logical,intent(in),optional :: headerTecplotTemp
+        integer u,i,j,k,sx,sy,sz
+        sx = size(x); sy = size(y); sz = size(z)
+        u = newAndOpen(dir,name)
+
+        if (present(headerTecplotTemp)) then
+          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
+        else
+          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+        endif
+
+        do k = 1,sz
+          do j = 1,sy
+            do i = 1,sx
+              write(u,'(4'//arrfmt//')') x(i),y(j),z(k),val
+            enddo
           enddo
         enddo
         call closeAndMessage(u,name,dir)

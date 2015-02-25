@@ -38,7 +38,8 @@
       private
 
       public :: mySOR,solve
-      private :: initialize,delete
+      
+      private :: init,delete
 
       logical, parameter :: useGaussSeidel = .true.
 
@@ -52,13 +53,13 @@
         integer,dimension(3) :: s
       end type
 
-      interface initialize;  module procedure initializeSOR; end interface
+      interface init;        module procedure initSOR;       end interface
       interface delete;      module procedure deleteSOR;     end interface
       interface solve;       module procedure solveSOR;      end interface
 
       contains
 
-      subroutine initializeSOR(SOR,f,gd,gridType)
+      subroutine initSOR(SOR,f,gd,gridType)
         implicit none
         type(mySOR),intent(inout) :: SOR
         real(dpn),dimension(:,:,:),intent(in) :: f
@@ -138,7 +139,7 @@
         logical :: TF,continueLoop,TF_allDirichlet
         integer :: maxIterations
 
-        call initialize(SOR,f,gd,gridType)
+        call init(SOR,f,gd,gridType)
 
         s = shape(f)
 

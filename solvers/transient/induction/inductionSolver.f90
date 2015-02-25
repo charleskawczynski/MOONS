@@ -12,6 +12,7 @@
        use initializeBfield_mod
        use initializeSigmaMu_mod
 
+       use grid_mod
        use griddata_mod
        use rundata_mod
        use myError_mod
@@ -20,6 +21,7 @@
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
+       use myADI_mod
        use mySOR_mod
        use myPoisson_mod
        use baseProbes_mod
@@ -27,7 +29,7 @@
        implicit none
 
        private
-       public :: induction,initialize,delete,solve
+       public :: induction,init,delete,solve
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeJCrossB
@@ -47,27 +49,28 @@
          type(BCs) :: Bx_bcs,By_bcs,Bz_bcs
          type(BCs) :: phi_bcs
          ! Solver settings
-         type(solverSettings) :: ss_ind,ss_cleanB
+         type(solverSettings) :: ss_ind,ss_cleanB,ss_ADI
          ! Errors
-         type(myError) :: err_divB,err_DivJ
+         type(myError) :: err_divB,err_DivJ,err_ADI
          type(myError) :: err_cleanB,err_residual
          type(myTime) :: time_CP
          integer :: nstep
 
          type(mySOR) :: SOR_B, SOR_cleanB
+         type(myADI) :: ADI_B
 
          type(indexProbe) :: probe_B,probe_J
          type(errorProbe) :: probe_divB,probe_divJ
 
-         ! real(dpn) :: ds = 1.0d-4     ! Pseudo time step
-         ! integer :: NmaxB = 5         ! Maximum number of pseudo steps
-         real(dpn) :: ds = 1.0d-6     ! S = 100
+         real(dpn) :: ds = 1.0d-4     ! Pseudo time step
+         integer :: NmaxB = 5         ! Maximum number of pseudo steps
+         ! real(dpn) :: ds = 1.0d-6     ! S = 100
          ! real(dpn) :: ds = 1.0d-7     ! S = 1000
-         integer :: NmaxB = 50        ! Maximum number of pseudo steps
+         ! integer :: NmaxB = 50        ! Maximum number of pseudo steps
          integer :: NmaxCleanB = 5    ! Maximum number of cleaning steps
        end type
 
-       interface initialize;         module procedure initializeInduction;        end interface
+       interface init;               module procedure initInduction;              end interface
        interface delete;             module procedure deleteInduction;            end interface
        interface solve;              module procedure inductionSolver;            end interface
        interface printExportBCs;     module procedure printExportInductionBCs;    end interface
@@ -80,16 +83,18 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initializeInduction(ind,gd,dir)
+       subroutine initInduction(ind,gd,g,dir)
          implicit none
          type(induction),intent(inout) :: ind
          type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
          write(*,*) 'Initializing induction:'
 
          ! --- Vector Fields ---
          call myAllocate(Nx,Ny,Nz,gd,BLoc)
+         ! g%c(1)%sc
          call allocateVectorField(ind%B,Nx,Ny,Nz)
          call allocateVectorField(ind%Bstar,Nx,Ny,Nz)
          call allocateVectorField(ind%B0,Nx,Ny,Nz)
@@ -334,7 +339,7 @@
          case (4); call lowRemCTmethod(ind,U,gd)
          case (5); call CTmethod(ind,U,gd,rd)
          case (6); call fullInduction(ind,U,gd,rd)
-         case (7); call semi_implicit_ADI(ind,U,gd,rd)
+         case (7); call LowRem_semi_implicit_ADI(ind,U,gd,ss_MHD)
          end select
          if (cleanB) then
            call cleanBSolution(ind,gd,ss_MHD)
@@ -648,7 +653,7 @@
          call applyAllBCs(ind%Bz_bcs,ind%B%z,gd)
        end subroutine
 
-       subroutine semi_implicit_ADI(ind,U,gd,rd)
+       subroutine LowRem_semi_implicit_ADI(ind,U,gd,ss_MHD)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
@@ -662,24 +667,19 @@
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(griddata),intent(in) :: gd
-         type(rundata),intent(in) :: rd
-         ! ********************** LOCAL VARIABLES ***********************
-         real(dpn) :: dt,Rem
-
-         dt = getDtime(rd)
-         Rem = getRem(rd)
+         type(solverSettings),intent(inout) :: ss_MHD
 
          ! Compute current from appropriate fluxes:
          call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,gd,1)
          call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,gd,2)
          call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,gd,3)
 
-         ! Compute fluxes of u cross (B+B0)
-         call add(ind%B,ind%B0)
+         ! Compute fluxes of u cross (B)
+         ! call add(ind%B,ind%B0) ! For finite Rem
          call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,1)
          call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,2)
          call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,3)
-         call subtract(ind%B,ind%B0)
+         ! call subtract(ind%B,ind%B0) ! For finite Rem
          call myCellCenter2Edge(ind%E%x,ind%tempVF%x,gd,1)
          call myCellCenter2Edge(ind%E%y,ind%tempVF%y,gd,2)
          call myCellCenter2Edge(ind%E%z,ind%tempVF%z,gd,3)
@@ -687,7 +687,7 @@
          ! E = j/sig - uxB
          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
          call multiply(ind%J,ind%sigmaInv_edge)
-         call divide(ind%J,Rem)
+         ! call divide(ind%J,Rem) ! For finite Rem
          call subtract(zero,ind%E)
          call add(ind%E,ind%J)
 
@@ -702,8 +702,18 @@
 
          ! Add induced field of previous time step (B^n)
          ! ind%B = ind%B - dt*ind%tempVF
-         call multiply(ind%tempVF,dt)
-         call subtract(ind%B,ind%tempVF)
+         call setDt(ind%ADI_B,ind%ds)
+         call setAlpha(ind%ADI_B,one)
+
+         call init(ind%ss_ADI)
+         call setName(ind%ss_ADI,'ADI for B-field     ')
+
+         call apply(ind%ADI_B,ind%Bstar%x,ind%F%x,ind%Bx_bcs,gd,&
+            ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
+         call apply(ind%ADI_B,ind%Bstar%y,ind%F%y,ind%By_bcs,gd,&
+            ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
+         call apply(ind%ADI_B,ind%Bstar%z,ind%F%z,ind%Bz_bcs,gd,&
+            ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,gd)

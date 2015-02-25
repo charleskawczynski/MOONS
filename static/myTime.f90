@@ -63,8 +63,8 @@
        end interface
 
        interface stopTime
-       	 module procedure stopTimeSS
-       	 module procedure stopTimeNoSS
+         module procedure stopTimeSS
+         module procedure stopTimeNoSS
        end interface
 
        contains

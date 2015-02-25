@@ -1,14 +1,19 @@
       module myADI_mod
-      ! call solve(ADI,u,f,u_bcs,gd,ss,err,gridType,displayTF)
-      ! Solves the equation:
+      ! call solve(ADI,u,f,u_bcs,gd,ss,err,gridType,displayTF) ! To steady state, multi-scale time step
+      !     u_t = alpha*(u_xx + u_yy + u_zz) - f = 0
       ! 
-      !     u_xx + u_yy + u_zz = f
+      ! call apply(ADI,u,f,u_bcs,gd,ss,err,gridType,displayTF) ! One time step
+      !     u_t = alpha*(u_xx + u_yy + u_zz) - f
       ! 
-      ! to steady state using the Alternating Direction 
-      ! Implicit (ADI) method described in:
-      ! 
+      ! using the Alternating Direction Implicit (ADI) 
+      ! method described in:
       ! "Douglas, J. Alternating direction methods for 
       ! three space variables. Numer. Math. 4, 41–63 (1962)."
+      ! 
+      ! NOTE: Before solve() and apply(), must set:
+      ! 
+      ! call setDt(ADI,dt)           ! Required for apply
+      ! call setAlpha(ADI,alpha)     ! Required for both
       ! 
       use constants_mod
       use myIO_mod
@@ -25,11 +30,10 @@
 
       private
 
-      public :: myADI,solve
-      private :: initialize,delete
+      public :: myADI,solve,apply
+      public :: setDt,setAlpha
 
-      public :: solveADI1D ! for 1D testing
-      private :: relax1D   ! for 1D testing
+      private :: init,delete
 
       type myADI
         type(myTrisolver),dimension(3) :: triSolver
@@ -37,28 +41,28 @@
         real(dpn),dimension(:,:,:),allocatable :: lapu
         real(dpn),dimension(:),allocatable :: dtj
         integer,dimension(3) :: s
-        integer :: nTimeLevels
+        integer :: nTimeLevels,gridType
         real(dpn) :: alpha,dt
-        integer :: gridType
       end type
 
-      interface initialize;  module procedure initializeADI; end interface
+      interface init;        module procedure initADI;       end interface
       interface delete;      module procedure deleteADI;     end interface
       interface solve;       module procedure solveADI;      end interface
+      interface apply;       module procedure applyADI;      end interface
 
       contains
 
-      subroutine initialize1D(ADI,s,gd,gridType,alpha,dir)
+      subroutine initSystem(ADI,s,gd,gridType,dir)
         implicit none
         type(myADI),intent(inout) :: ADI
         integer,dimension(3),intent(in) :: s
         type(griddata),intent(in) :: gd
         integer,intent(in) :: gridType
-        real(dpn),intent(in) :: alpha
         integer,intent(in) :: dir
         real(dpn),dimension(:),allocatable :: dhn,dhc
         real(dpn),dimension(:),allocatable :: upDiag,diag,loDiag
 
+        ! This needs to be modified for a face-centered data
         select case (gridType)
         case (1) ! For cell-centered data
           select case (dir)
@@ -69,7 +73,7 @@
           case (3); allocate(dhn(s(3)-2)); call getDZn(gd,dhn)
                     allocate(dhc(s(3)-1)); call getDZcc(gd,dhc)
           case default
-            write(*,*) 'Error: dir must = 1,2,3 in initialize1D.';stop
+            write(*,*) 'Error: dir must = 1,2,3 in initSystem.';stop
           end select
         case (2) ! For node-based data
           select case (dir)
@@ -80,10 +84,10 @@
           case (3); allocate(dhn(s(3)-1)); call getDZn(gd,dhn)
                     allocate(dhc(s(3)));   call getDZcc(gd,dhc)
           case default
-            write(*,*) 'Error: dir must = 1,2,3 in initialize1D.';stop
+            write(*,*) 'Error: dir must = 1,2,3 in initSystem.';stop
           end select
         case default
-          write(*,*) 'Error: gridType must = 1,2 in initialize1D of myADI';stop
+          write(*,*) 'Error: gridType must = 1,2 in initSystem of myADI';stop
         end select
 
         ! Prep matrix:
@@ -91,45 +95,44 @@
         allocate(upDiag(s(dir)-1))
         allocate(loDiag(s(dir)-1))
 
-        call setUpSystem(loDiag,diag,upDiag,0.5d0*ADI%dt*alpha,dhn,dhc,s(dir))
+        call setUpSystem(loDiag,diag,upDiag,0.5d0*ADI%dt*ADI%alpha,dhn,dhc,s(dir))
+        call delete(ADI%triOperator(dir))
         call initialize(ADI%triOperator(dir),loDiag,diag,upDiag)
 
-        call setUpSystem(loDiag,diag,upDiag,-0.5d0*ADI%dt*alpha,dhn,dhc,s(dir))
+        call setUpSystem(loDiag,diag,upDiag,-0.5d0*ADI%dt*ADI%alpha,dhn,dhc,s(dir))
         call addIdentity(diag)
+        call delete(ADI%triSolver(dir))
         call initialize(ADI%triSolver(dir),loDiag,diag,upDiag)
 
         deallocate(upDiag,diag,loDiag)
       end subroutine
 
-      subroutine initializeADI(ADI,s,gd,gridType,alpha,Af)
+      subroutine initADI(ADI,s,gd,gridType)
         implicit none
         type(myADI),intent(inout) :: ADI
         integer,dimension(3),intent(in) :: s
         type(griddata),intent(in) :: gd
-        real(dpn),intent(in) :: alpha,Af
         integer,intent(in) :: gridType
-        integer :: j
+        integer :: j,smean
         real(dpn) :: hj,h0
         ! Set preliminary parameters
-        ADI%gridType = gridType; ADI%alpha = alpha; ADI%s = s
+        ADI%gridType = gridType; ADI%s = s
 
         ! Set multi-scale time steps:
-        ADI%nTimeLevels = floor(log(real(s(1)+1))/log(real(2.0,dpn)))
-        ! Try
-        ! p = 0,1,...,2/dx = 2*M levels. This might be the issue
+        smean = (s(1)+s(2)+s(3))/3
+        ! Try p = 0,1,...,2/dx = 2*M levels. This might be the issue
 
         h0 = getDhMin(gd)
+        if (allocated(ADI%dtj)) deallocate(ADI%dtj)
+        ADI%nTimeLevels = floor(log(real(smean+1))/log(real(2.0,dpn)))
         allocate(ADI%dtj(ADI%nTimeLevels))
         do j = 1,ADI%nTimeLevels
-          hj = (2.0**dble(j))*h0;
-          ADI%dtj(j) = Af/ADI%alpha*4.0*(hj**2.0)/(PI**2.0)
+          hj = (2.0**dble(j-1))*h0
+          ADI%dtj(j) = 4.0*(hj**2.0)/(ADI%alpha*PI**2.0)
         enddo
 
         ! Set up tridiagonal systems:
         allocate(ADI%lapu(s(1),s(2),s(3)))
-        call initialize1D(ADI,s,gd,gridType,alpha,1)
-        call initialize1D(ADI,s,gd,gridType,alpha,2)
-        call initialize1D(ADI,s,gd,gridType,alpha,3)
       end subroutine
 
       subroutine deleteADI(ADI)
@@ -143,50 +146,6 @@
        call delete(ADI%triOperator(3))
        if (allocated(ADI%lapu)) deallocate(ADI%lapu)
        if (allocated(ADI%dtj)) deallocate(ADI%dtj)
-      end subroutine
-
-      subroutine setDt(ADI,dt)
-       implicit none
-       type(myADI),intent(inout) :: ADI
-       real(dpn),intent(in) :: dt
-       ADI%dt = dt
-      end subroutine
-
-      subroutine interiorAdd(a,b,dir)
-       implicit none
-       real(dpn),dimension(:,:,:),intent(inout) :: a
-       real(dpn),dimension(:,:,:),intent(in) :: b
-       integer,intent(in) :: dir
-       integer,dimension(3) :: s
-       integer :: i,j,k,x,y,z
-       select case (dir)
-       case (1); x=1;y=0;z=0
-       case (2); x=0;y=1;z=0
-       case (3); x=0;y=0;z=1
-       case default
-       write(*,*) 'Error: dir must = 1,2,3 in interiorAdd.'; stop
-       end select
-       s = shape(a)
-
-       !$OMP PARALLEL DO
-       do i=1+x,s(1)-x
-        do j=1+y,s(2)-y
-         do k=1+z,s(3)-z
-          a(i,j,k) = a(i,j,k) + b(i,j,k)
-         enddo
-        enddo
-       enddo
-       !$OMP END PARALLEL DO
-      end subroutine
-
-      subroutine addIdentity(diag)
-        implicit none
-        real(dpn),dimension(:),intent(inout) :: diag
-        integer :: j,s
-        s = size(diag)
-        do j = 2,s-1
-          diag(j) = 1.0 + diag(j)
-        enddo
       end subroutine
 
       subroutine relax3D(ADI,u,f,u_bcs,gd)
@@ -255,7 +214,51 @@
         ! Solve (I-0.5 dt d_z) u^* = fstar
         call apply(ADI%triSolver(3),u,fstar,3,1)
 
+        ! Re-apply BCs for u along x and y
+        call applyAllBCs(u_bcs,u,gd)
+        ! call applyBCFace(u_bcs,u,gd,1)
+        ! call applyBCFace(u_bcs,u,gd,3)
+        ! call applyBCFace(u_bcs,u,gd,4)
+        ! call applyBCFace(u_bcs,u,gd,2)
+        ! call applyBCFace(u_bcs,u,gd,5)
+        ! call applyBCFace(u_bcs,u,gd,6)
+
         deallocate(temp1,temp2,temp3,fstar)
+      end subroutine
+
+      subroutine applyADI(ADI,u,f,u_bcs,gd,ss,err,gridType,displayTF)
+        implicit none
+        type(myADI),intent(inout) :: ADI
+        real(dpn),dimension(:,:,:),intent(inout) :: u
+        real(dpn),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(griddata),intent(in) :: gd
+        type(solverSettings),intent(in) :: ss
+        type(myError),intent(inout) :: err
+        integer,intent(in) :: gridType
+        logical,intent(in) :: displayTF
+        integer,dimension(3) :: s
+
+        s = shape(f); ADI%s = s
+        call initADI(ADI,s,gd,gridType)
+
+        call initSystem(ADI,s,gd,gridType,1)
+        call initSystem(ADI,s,gd,gridType,2)
+        call initSystem(ADI,s,gd,gridType,3)
+        call relax3D(ADI,u,f,u_bcs,gd)
+
+        if (displayTF) then
+          write(*,*) 'ADI time step = ',ADI%dtj
+
+          select case (ADI%gridType)
+          case (1); call myCC2CCLap(ADI%lapu,u,gd)
+          case (2); call myNodeLap(ADI%lapu,u,gd)
+          end select
+          call computeError(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),ADI%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+          call printMyError(err,'ADI Residuals for '//trim(adjustl(getName(ss))))
+        endif
+
+        call delete(ADI)
       end subroutine
 
       subroutine solveADI(ADI,u,f,u_bcs,gd,ss,err,gridType,displayTF)
@@ -270,21 +273,10 @@
         integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
-        real(dpn) :: Af
         integer :: i,j,Nt
 
         s = shape(f); ADI%s = s
-        ! Af = (maxval(f)-minval(f))/2.0d0 ! Amplitude of f
-        ! Af = 1.0d-3
-        ! Af = 1.0d-2
-        Af = 1.0d0
-        ! write(*,*) 'Af = ',Af
-        ! Alpha, may not be 1.          MAKE SURE
-        !                                  |
-        !                                  |
-        !                                  |
-        !                                  V
-        call initialize(ADI,s,gd,gridType,one,Af)
+        call initADI(ADI,s,gd,gridType)
 
         Nt = 1
 
@@ -293,27 +285,25 @@
           ! Begin V-cycle of multi-scale
           do j = 1,ADI%nTimeLevels
             call setDt(ADI,ADI%dtj(j))
-            ADI%dt = 1.0d-2
+            ! call setDt(ADI,real(1.0d-4,dpn))
+            call initSystem(ADI,s,gd,gridType,1)
+            call initSystem(ADI,s,gd,gridType,2)
+            call initSystem(ADI,s,gd,gridType,3)
             call relax3D(ADI,u,f,u_bcs,gd)
           enddo
           do j = ADI%nTimeLevels, 1, -1
             call setDt(ADI,ADI%dtj(j))
-            ADI%dt = 1.0d-2
+            ! call setDt(ADI,real(1.0d-4,dpn))
+            call initSystem(ADI,s,gd,gridType,1)
+            call initSystem(ADI,s,gd,gridType,2)
+            call initSystem(ADI,s,gd,gridType,3)
             call relax3D(ADI,u,f,u_bcs,gd)
           enddo
 
         enddo
 
-        ! select case (ADI%gridType)
-        ! case (1); call myCC2CCLap(ADI%lapu,u,gd)
-        ! case (2); call myNodeLap(ADI%lapu,u,gd)
-        ! end select
-        ! call computeError(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),ADI%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
-
-        ! if (getSubtractMean(ss)) u = u - sum(u)/(max(1,size(u)))
-
         if (displayTF) then
-          write(*,*) 'Multi-scale Time Steps = ',ADI%dtj
+          write(*,*) 'ADI Multi-scale Time Steps = ',ADI%dtj
           write(*,*) 'Number of multi-scale sweeps = ',Nt
           write(*,*) 'Number of ADI iterations = ',real(Nt,dpn)*ADI%nTimeLevels
 
@@ -347,74 +337,54 @@
         loDiag(s-1) = real(0.0,dpn)
       end subroutine
 
-      ! --------------------- 1D TESTS ---------------------
-
-      subroutine relax1D(ADI,u,f,u_bcs,gd,dir)
-        ! Solves
-        ! (I - 0.5*dt*A)*uOut = (I + 0.5*dt*A)*uIn - dt*f
-        implicit none
-        type(myADI),intent(inout) :: ADI
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(griddata),intent(in) :: gd
-        integer,intent(in) :: dir
-        real(dpn),dimension(:,:,:),allocatable :: fstar
-        ADI%s = shape(f)
-        
-        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
-        call initialize1D(ADI,ADI%s,gd,2,ADI%alpha,dir)
-
-        fstar = 0.0d0
-        call apply(ADI%triOperator(dir),fstar,u,dir,0)
-
-        call interiorAdd(fstar,u,dir)
-        call interiorAdd(fstar,-ADI%dt*f,dir)
-
-        call applyBCFace(u_bcs,fstar,gd,1)
-        call applyBCFace(u_bcs,fstar,gd,4)
-
-        call apply(ADI%triSolver(dir),u,fstar,dir,0)
-        deallocate(fstar)
+      subroutine setDt(ADI,dt)
+       implicit none
+       type(myADI),intent(inout) :: ADI
+       real(dpn),intent(in) :: dt
+       ADI%dt = dt
       end subroutine
 
-      subroutine solveADI1D(ADI,u,f,u_bcs,gd)
-        implicit none
-        type(myADI),intent(inout) :: ADI
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(griddata),intent(in) :: gd
-        real(dpn) :: dt,h0,hj
-        integer :: i,j,nTimeLevels,Nt
+      subroutine setAlpha(ADI,alpha)
+       implicit none
+       type(myADI),intent(inout) :: ADI
+       real(dpn),intent(in) :: alpha
+       ADI%alpha = alpha
+      end subroutine
 
-        ADI%s = shape(f)
-        nTimeLevels = floor(log(real(ADI%s(1)+1))/log(real(2.0,dpn)))
-        Nt = 5
-        h0 = getDhMin(gd)
+      subroutine interiorAdd(a,b,dir)
+       implicit none
+       real(dpn),dimension(:,:,:),intent(inout) :: a
+       real(dpn),dimension(:,:,:),intent(in) :: b
+       integer,intent(in) :: dir
+       integer,dimension(3) :: s
+       integer :: i,j,k,x,y,z
+       select case (dir)
+       case (1); x=1;y=0;z=0
+       case (2); x=0;y=1;z=0
+       case (3); x=0;y=0;z=1
+       case default
+       write(*,*) 'Error: dir must = 1,2,3 in interiorAdd.'; stop
+       end select
+       s = shape(a)
 
-        do i=1,Nt
-
-          ! Begin V-cycle of multi-scale
-          do j = 1,nTimeLevels
-            hj = (2.0**dble(j))*h0
-            dt = 4.0*(hj**2.0)/(ADI%alpha*PI**2.0)
-            call setDt(ADI,dt)
-            call relax1D(ADI,u,f,u_bcs,gd,1)
-          enddo
-          do j = nTimeLevels, 1, -1
-            hj = (2.0**dble(j))*h0
-            dt = 4.0*(hj**2.0)/(PI**2.0)
-            call setDt(ADI,dt)
-            call relax1D(ADI,u,f,u_bcs,gd,1)
-          enddo
-
+       !$OMP PARALLEL DO
+       do i=1+x,s(1)-x
+        do j=1+y,s(2)-y
+         do k=1+z,s(3)-z
+          a(i,j,k) = a(i,j,k) + b(i,j,k)
+         enddo
         enddo
+       enddo
+       !$OMP END PARALLEL DO
+      end subroutine
 
-        do j = 1,nTimeLevels
-          hj = (2.0**dble(j))*h0
-          dt = 4.0*(hj**2.0)/(PI**2.0)
-          write(*,*) 'dt(',j,') = ',dt
+      subroutine addIdentity(diag)
+        implicit none
+        real(dpn),dimension(:),intent(inout) :: diag
+        integer :: j,s
+        s = size(diag)
+        do j = 2,s-1
+          diag(j) = 1.0 + diag(j)
         enddo
       end subroutine
 

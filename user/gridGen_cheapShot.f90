@@ -3,8 +3,7 @@
        use constants_mod
        use myIO_mod
        use myDebug_mod
-       use grid_mod
-       use coordinatesOld_mod
+       use coordinates_mod
        use myExceptions_mod
        implicit none
 
@@ -87,10 +86,10 @@
        ! benchmarkCase = 100
        ! integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 101
-       ! integer,dimension(3),parameter :: Ni = 64, Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = 52, Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 103
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104
@@ -205,12 +204,6 @@
          deallocate(this%xnt,this%ynt,this%znt)
          write(*,*) 'Griddata object deleted'
        end subroutine
-
-
-       ! subroutine setGriddata(this,g_mom,g_ind,Re,Ha)
-       !   implicit none
-       !   type(griddata),intent(out) :: this
-       !   type(grid),intent(inout) :: g_mom,g_ind
 
        subroutine setGriddata(this,g_mom,g_ind,Re,Ha)
          implicit none
@@ -364,12 +357,13 @@
          call setSmallestSpatialStep(this)
          call setLargestRange(this)
 
-         call init(g_ind,this%xnt,1,2)
-         call init(g_ind,this%ynt,2,2)
-         call init(g_ind,this%znt,3,2)
-         call init(g_mom,this%xni,1,2)
-         call init(g_mom,this%yni,2,2)
-         call init(g_mom,this%zni,3,2)
+         call init(g_ind,this%xnt,1)
+         call init(g_ind,this%ynt,2)
+         call init(g_ind,this%znt,3)
+
+         call init(g_mom,this%xni,1)
+         call init(g_mom,this%yni,2)
+         call init(g_mom,this%zni,3)
        end subroutine
 
        subroutine setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,dir)

@@ -9,6 +9,7 @@
        use initializeUField_mod
 
        use myIO_mod
+       use grid_mod
        use griddata_mod
        use rundata_mod
        use myError_mod
@@ -26,7 +27,7 @@
        implicit none
        private
        
-       public :: momentum,initialize,delete,solve
+       public :: momentum,init,delete,solve
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeDivergence
@@ -37,19 +38,21 @@
          type(scalarField) :: p,Temp,divU
 
          type(BCs) :: u_bcs,v_bcs,w_bcs,p_bcs
-         type(solverSettings) :: ss_mom,ss_ppe
-         type(myError) :: err_PPE,err_DivU
+         type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
+         type(myError) :: err_PPE,err_DivU,err_ADI
          type(mySOR) :: SOR_p
-         type(myADI) :: ADI_p
+         type(myADI) :: ADI_p,ADI_u
          integer :: nstep
-          
+
+         real(dpn) :: dt,Re
+
          ! Transient probes
          type(aveProbe) :: u_center
          type(errorProbe) :: transient_ppe,transient_divU
          type(avePlaneErrorProbe) :: u_symmetry
        end type
 
-       interface initialize;          module procedure initializeMomentum;         end interface
+       interface init;                module procedure initMomentum;               end interface
        interface delete;              module procedure deleteMomentum;             end interface
        interface solve;               module procedure solveMomentumEquation;      end interface
        interface export;              module procedure momentumExport;             end interface
@@ -60,10 +63,11 @@
 
        contains
 
-       subroutine initializeMomentum(mom,gd,dir)
+       subroutine initMomentum(mom,gd,g,dir)
          implicit none
          type(momentum),intent(inout) :: mom
          type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
          write(*,*) 'Initializing momentum:'
@@ -133,6 +137,11 @@
          call setMaxIterations(mom%ss_ppe,5)
          call setSubtractMean(mom%ss_ppe)
 
+         ! Init ADI ss
+         call init(mom%ss_ADI)
+         call setName(mom%ss_ADI,'momentum ADI        ')
+         call setMaxIterations(mom%ss_ADI,1)
+
          ! call setMinTolerance(mom%ss_ppe,real(1.0**(-6.0),dpn))
          ! call setMixedConditions(mom%ss_ppe)
          mom%nstep = 0
@@ -155,6 +164,112 @@
        end subroutine
 
        subroutine solveMomentumEquation(mom,gd,rd,ss_MHD)
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(momentum),intent(inout) :: mom
+         type(griddata),intent(in) :: gd
+         type(rundata),intent(in) :: rd
+         type(solverSettings),intent(in) :: ss_MHD
+         select case(solveUMethod)
+         case (1); call explicitEuler(mom,gd,rd,ss_MHD)
+         case (2); call semi_implicit_ADI(mom,gd,rd,ss_MHD)
+         case default
+         write(*,*) 'Error: solveUMethod must = 1,2 in solveMomentumEquation.';stop
+         end select
+         ! This seems to be the best place for increasing the time step
+         ! mom%nstep = mom%nstep + 1
+       end subroutine
+
+       subroutine semi_implicit_ADI(mom,gd,rd,ss_MHD)
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(momentum),intent(inout) :: mom
+         type(griddata),intent(in) :: gd
+         type(rundata),intent(in) :: rd
+         type(solverSettings),intent(in) :: ss_MHD
+         ! ********************** LOCAL VARIABLES ***********************
+         real(dpn) :: Re,dt
+
+         dt = getDtime(rd)
+         Re = getRe(rd)
+
+         call setAlpha(mom%ADI_u,one/Re)
+         call setDt(mom%ADI_u,dt)
+
+         ! Advection Terms -----------------------------------------
+         select case (advectiveUFormulation)
+         case (1)
+           ! call myFaceAdvectDonor(mom%TempVF,U,U,gd,1)
+           ! call myFaceAdvectDonor(mom%TempVF%x,U,U%x,gd,1)
+           call myFaceAdvectDonor(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,gd,1)
+           call myFaceAdvectDonor(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,gd,2)
+           call myFaceAdvectDonor(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,gd,3)
+         case (2)
+           call myFaceAdvect(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,gd,1)
+           call myFaceAdvect(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,gd,2)
+           call myFaceAdvect(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,gd,3)
+         case (3)
+           call myFaceAdvectHybrid(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,gd,1)
+           call myFaceAdvectHybrid(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,gd,2)
+           call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,gd,3)
+         end select
+
+         ! mom%Ustar = -mom%TempVF
+         call multiply(mom%TempVF,(-one))
+         call assign(mom%Ustar,mom%TempVF)
+
+         ! Source Terms (e.g. N j x B) -----------------------------
+         ! mom%Ustar = mom%Ustar + dt*mom%F
+         call add(mom%Ustar,mom%F)
+
+         ! Velocity at Previous Time Step Terms --------------------
+         ! mom%Ustar = mom%Ustar + mom%U
+         call add(mom%Ustar,mom%U)
+
+         ! Solve momentum with ADI --------------------
+         ! u_t = 1/Re*(u_xx + u_yy + u_zz) - f
+         ! mom%Ustar = mom%Ustar + mom%U
+         call setDt(mom%ADI_u,dt)
+         call setAlpha(mom%ADI_u,one/Re)
+
+         call apply(mom%ADI_u,mom%Ustar%x,mom%F%x,mom%u_bcs,gd,&
+            mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+         call apply(mom%ADI_u,mom%Ustar%y,mom%F%y,mom%v_bcs,gd,&
+            mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+         call apply(mom%ADI_u,mom%Ustar%z,mom%F%z,mom%w_bcs,gd,&
+            mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+         
+         ! Pressure Correction -------------------------------------
+         if (mom%nstep.gt.1) then
+           call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,gd)
+           ! call myFaceDiv(mom%Temp,mom%Ustar,gd)
+           ! mom%Temp = (one/dt)*mom%Temp
+           call divide(mom%Temp,dt)
+
+           ! IMPORTANT: Must include entire pressure since BCs are 
+           ! based on last elements (located on boundary)
+           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,gd,&
+            mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
+
+           call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,gd)
+
+           ! mom%Ustar = mom%Ustar - dt*mom%TempVF
+           call multiply(mom%TempVF,dt)
+           call subtract(mom%Ustar,mom%TempVF)
+         endif
+
+         ! mom%U = mom%Ustar
+         call assign(mom%U,mom%Ustar)
+
+         ! call applyVectorBCs(mom%u_bcs,U,gd)
+         call applyAllBCs(mom%u_bcs,mom%U%x,gd)
+         call applyAllBCs(mom%v_bcs,mom%U%y,gd)
+         call applyAllBCs(mom%w_bcs,mom%U%z,gd)
+
+         mom%nstep = mom%nstep + 1
+       end subroutine
+
+       subroutine explicitEuler(mom,gd,rd,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
@@ -218,7 +333,94 @@
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
-           call myPoisson(mom%ADI_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,gd,&
+           ! call setDt(mom%ADI_p,dt)
+           ! call setAlpha(mom%ADI_p,one)
+           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,gd,&
+            mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
+
+           call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,gd)
+
+           ! mom%Ustar = mom%Ustar - dt*mom%TempVF
+           call multiply(mom%TempVF,dt)
+           call subtract(mom%Ustar,mom%TempVF)
+         endif
+
+         ! mom%U = mom%Ustar
+         call assign(mom%U,mom%Ustar)
+
+         ! call applyVectorBCs(mom%u_bcs,U,gd)
+         call applyAllBCs(mom%u_bcs,mom%U%x,gd)
+         call applyAllBCs(mom%v_bcs,mom%U%y,gd)
+         call applyAllBCs(mom%w_bcs,mom%U%z,gd)
+
+         mom%nstep = mom%nstep + 1
+       end subroutine
+
+       subroutine solveMomentumEquationOld(mom,gd,rd,ss_MHD)
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(momentum),intent(inout) :: mom
+         type(griddata),intent(in) :: gd
+         type(rundata),intent(in) :: rd
+         type(solverSettings),intent(in) :: ss_MHD
+         ! ********************** LOCAL VARIABLES ***********************
+         real(dpn) :: Re,dt
+
+         dt = getDtime(rd)
+         Re = getRe(rd)
+
+         ! Advection Terms -----------------------------------------
+         select case (advectiveUFormulation)
+         case (1)
+           ! call myFaceAdvectDonor(mom%TempVF,U,U,gd,1)
+           ! call myFaceAdvectDonor(mom%TempVF%x,U,U%x,gd,1)
+           call myFaceAdvectDonor(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,gd,1)
+           call myFaceAdvectDonor(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,gd,2)
+           call myFaceAdvectDonor(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,gd,3)
+         case (2)
+           call myFaceAdvect(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,gd,1)
+           call myFaceAdvect(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,gd,2)
+           call myFaceAdvect(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,gd,3)
+         case (3)
+           call myFaceAdvectHybrid(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,gd,1)
+           call myFaceAdvectHybrid(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,gd,2)
+           call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,gd,3)
+         end select
+
+         ! mom%Ustar = (-dt)*mom%TempVF
+         call multiply(mom%TempVF,(-dt))
+         call assign(mom%Ustar,mom%TempVF)
+
+         ! Laplacian Terms -----------------------------------------
+         ! call myFaceLap(mom%TempVF,U,gd)
+
+         call myFaceLap(mom%TempVF%x,mom%U%x,gd,1)
+         call myFaceLap(mom%TempVF%y,mom%U%y,gd,2)
+         call myFaceLap(mom%TempVF%z,mom%U%z,gd,3)
+
+         ! mom%Ustar = mom%Ustar + (dt/Re)*mom%TempVF
+         call multiply(mom%TempVF,(dt/Re))
+         call add(mom%Ustar,mom%TempVF)
+
+         ! Source Terms (e.g. N j x B) -----------------------------
+         ! mom%Ustar = mom%Ustar + dt*mom%F
+         call multiply(mom%F,dt)
+         call add(mom%Ustar,mom%F)
+
+         ! Velocity at Previous Time Step Terms --------------------
+         ! mom%Ustar = mom%Ustar + mom%U
+         call add(mom%Ustar,mom%U)
+         
+         ! Pressure Correction -------------------------------------
+         if (mom%nstep.gt.1) then
+           call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,gd)
+           ! call myFaceDiv(mom%Temp,mom%Ustar,gd)
+           ! mom%Temp = (one/dt)*mom%Temp
+           call divide(mom%Temp,dt)
+
+           ! IMPORTANT: Must include entire pressure since BCs are 
+           ! based on last elements (located on boundary)
+           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,gd,&
             mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
 
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,gd)
