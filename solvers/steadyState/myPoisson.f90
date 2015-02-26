@@ -33,7 +33,7 @@
 
       use constants_mod
       use solverSettings_mod
-      use griddata_mod
+      use grid_mod
       use BCs_mod
       use myError_mod
 
@@ -43,43 +43,39 @@
       implicit none
 
       private
-
       public :: myPoisson
 
-      interface myPoisson
-        module procedure myPoisson_SOR
-!         module procedure myPoisson_MG
-        module procedure myPoisson_ADI
-      end interface
+      interface myPoisson;    module procedure myPoisson_SOR;   end interface
+      interface myPoisson;    module procedure myPoisson_ADI;   end interface
 
       contains
 
-      subroutine myPoisson_SOR(SOR,u,f,ab,gd,ss,err,gridType,displayTF)
+      subroutine myPoisson_SOR(SOR,u,f,ab,g,ss,err,gridType,displayTF)
         implicit none
         type(mySOR),intent(inout) :: SOR
         real(dpn),dimension(:,:,:),intent(inout) :: u
         real(dpn),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: ab
-        type(griddata),intent(in) :: gd
+        type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
         integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(SOR,u,f,ab,gd,ss,err,gridType,displayTF)
+        call solve(SOR,u,f,ab,g,ss,err,gridType,displayTF)
       end subroutine
 
-      subroutine myPoisson_ADI(ADI,u,f,ab,gd,ss,err,gridType,displayTF)
+      subroutine myPoisson_ADI(ADI,u,f,ab,g,ss,err,gridType,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(dpn),dimension(:,:,:),intent(inout) :: u
         real(dpn),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: ab
-        type(griddata),intent(in) :: gd
+        type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
         integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(ADI,u,f,ab,gd,ss,err,gridType,displayTF)
+        call solve(ADI,u,f,ab,g,ss,err,gridType,displayTF)
       end subroutine
 
 !       subroutine myPoisson_ADI(ADI,u,f,ab,gd,ss,err,gridType,displayTF)

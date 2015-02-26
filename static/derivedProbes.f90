@@ -3,7 +3,7 @@
        ! 
        ! iProbe:
        !       type(iProbe) :: p
-       !       call initialize(p,gd,s,i,dir,name,TF_freshStart)
+       !       call init(p,g,s,i,dir,name,TF_freshStart)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -14,7 +14,7 @@
        ! 
        ! centerProbe:
        !       type(centerProbe) :: p
-       !       call initialize(p,s,dir,name,TF_freshStart)
+       !       call init(p,s,dir,name,TF_freshStart)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -25,7 +25,7 @@
        ! 
        ! aveProbe:
        !       type(aveProbe) :: p
-       !       call initialize(p,gd,s,i,component,dir,name,TF_freshStart)
+       !       call init(p,g,s,i,component,dir,name,TF_freshStart)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -36,7 +36,7 @@
        ! 
        ! planeErrorProbe:
        !       type(planeErrorProbe) :: p
-       !       call initialize(p,s,n)
+       !       call init(p,s,n)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -47,7 +47,7 @@
        ! 
        ! errorProbe:
        !       type(errorProbe) :: p
-       !       call initialize(p,s,n)
+       !       call init(p,s,n)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -56,15 +56,14 @@
        !         call apply(p)                                  ! exports transient data (n,d)
        !       enddo
        ! 
-       ! NOTE: initialize prints the index location if one exists.
+       ! NOTE: init prints the index location if one exists.
        ! 
        use simParams_mod
-       use constants_mod
        use transientProbe_mod
        use baseProbes_mod
        use myIO_mod
 
-       use griddata_mod
+       use grid_mod
        use myError_mod
 
        implicit none
@@ -72,8 +71,19 @@
        private
        public :: centerProbe,aveProbe
        public :: planeErrorProbe,avePlaneErrorProbe
-       public :: initialize,apply
+       public :: init,apply
        public :: export, print, delete
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
 
        type centerProbe
          type(indexProbe) :: ip                       ! index probe
@@ -87,19 +97,19 @@
        type planeErrorProbe
          type(errorProbe) :: ep                       ! probe
          integer :: i,dir                             ! index for plane, direction of plane
-         real(dpn) :: h                               ! location of plane
+         real(cp) :: h                               ! location of plane
        end type
 
        type avePlaneErrorProbe
          type(errorProbe) :: ep                       ! probe
          integer :: i,dir                             ! index for plane, direction of plane
-         real(dpn) :: h                               ! location of plane
+         real(cp) :: h                               ! location of plane
        end type
 
-       interface initialize;    module procedure initializeCenterProbe;         end interface
-       interface initialize;    module procedure initializeAveProbe;            end interface
-       interface initialize;    module procedure initializePlaneErrorProbe;     end interface
-       interface initialize;    module procedure initializeAvePlaneErrorProbe;  end interface
+       interface init;          module procedure initCenterProbe;               end interface
+       interface init;          module procedure initAveProbe;                  end interface
+       interface init;          module procedure initPlaneErrorProbe;           end interface
+       interface init;          module procedure initAvePlaneErrorProbe;        end interface
 
        interface apply;         module procedure applyCenterProbe;              end interface
        interface apply;         module procedure applyAveProbe;                 end interface
@@ -125,88 +135,88 @@
 
         ! ------------------ INITIALIZE PROBE -----------------------
 
-        subroutine initializeCenterProbe(p,dir,name,TF_freshStart,s,gd)
+        subroutine initCenterProbe(p,dir,name,TF_freshStart,s,g)
           implicit none
           type(centerProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer,dimension(3),intent(in) :: s
-          type(griddata),intent(in) :: gd
-          call initialize(p%ip,dir,name,TF_freshStart,s,(s+1)/2,gd)
+          type(grid),intent(in) :: g
+          call init(p%ip,dir,name,TF_freshStart,s,(s+1)/2,g)
         end subroutine
 
-        subroutine initializeAveProbe(p,dir,name,TF_freshStart,s,i,gd,component)
+        subroutine initAveProbe(p,dir,name,TF_freshStart,s,i,g,component)
           implicit none
           type(aveProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer,dimension(3),intent(in) :: s,i
-          type(griddata),intent(in) :: gd
+          type(grid),intent(in) :: g
           integer,intent(in) :: component
           ! Local variables
-          real(dpn),dimension(3) :: h1,h2,h
+          real(cp),dimension(3) :: h1,h2,h
           integer,dimension(3) :: i1,i2
-          call initialize(p%ip,dir,name,TF_freshStart,s,i,gd)
+          call init(p%ip,dir,name,TF_freshStart,s,i,g)
 
           select case (component)
           case (1); p%x=1;p%y=0;p%z=0
           case (2); p%x=0;p%y=1;p%z=0
           case (3); p%x=0;p%y=0;p%z=1
           case default
-            write(*,*) 'Error: component must = 1,2,3 in initializeaveProbe.';stop
+            write(*,*) 'Error: component must = 1,2,3 in initaveProbe.';stop
           end select
 
           ! Define location based on average:
           i1 = i; h1 = p%ip%h
           i2 = (/i1(1)+p%x,i1(2)+p%y,i1(3)+p%z/)
-          call defineH(i2,gd,s,h2)
-          h = real(0.5,dpn)*(h1 + h2)
+          call defineH(i2,g,s,h2)
+          h = real(0.5,cp)*(h1 + h2)
           call resetH(p%ip,h)
         end subroutine
 
-        subroutine initializePlaneErrorProbe(p,dir,name,TF_freshStart,s,i,gd,direction)
+        subroutine initPlaneErrorProbe(p,dir,name,TF_freshStart,s,i,g,direction)
           implicit none
           type(planeErrorProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
-          type(griddata),intent(in) :: gd
+          type(grid),intent(in) :: g
           integer,dimension(3),intent(in) :: s,i
           integer,intent(in) :: direction
           ! Local variables
-          real(dpn),dimension(3) :: h
-          call initialize(p%ep,dir,name,TF_freshStart)
+          real(cp),dimension(3) :: h
+          call init(p%ep,dir,name,TF_freshStart)
           p%i = i(direction)
           p%dir = direction
           ! DANGER: this passes nonsense to directions orthogonal to 'direction':
-          call defineH((/i(direction),i(direction),i(direction)/),gd,s,h)
+          call defineH((/i(direction),i(direction),i(direction)/),g,s,h)
           p%h = h(direction)
         end subroutine
 
-        subroutine initializeAvePlaneErrorProbe(p,dir,name,TF_freshStart,s,i,gd,direction)
+        subroutine initAvePlaneErrorProbe(p,dir,name,TF_freshStart,s,i,g,direction)
           implicit none
           type(avePlaneErrorProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer,dimension(3),intent(in) :: s,i
-          type(griddata),intent(in) :: gd
+          type(grid),intent(in) :: g
           integer,intent(in) :: direction
           ! Local variables
-          real(dpn),dimension(3) :: h1,h2
+          real(cp),dimension(3) :: h1,h2
 
-          call initialize(p%ep,dir,name,TF_freshStart)
+          call init(p%ep,dir,name,TF_freshStart)
           p%i = i(direction)
           p%dir = direction
 
           ! DANGER: this passes nonsense to directions orthogonal to 'direction':
-          call defineH((/i(direction),i(direction),i(direction)/),gd,s,h1)
-          call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),gd,s,h2)
+          call defineH((/i(direction),i(direction),i(direction)/),g,s,h1)
+          call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),g,s,h2)
 
           ! Define location based on average:
-          p%h = real(0.5,dpn)*(h1(direction) + h2(direction))
+          p%h = real(0.5,cp)*(h1(direction) + h2(direction))
         end subroutine
 
         ! ------------------ APPLY PROBE -----------------------
@@ -215,7 +225,7 @@
          implicit none
           type(centerProbe),intent(inout) :: p
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
+          real(cp),dimension(:,:,:),intent(in) :: u
           call set(p%ip,n,u(p%ip%i(1),p%ip%i(2),p%ip%i(3)))
           call apply(p%ip)
         end subroutine
@@ -224,9 +234,9 @@
          implicit none
           type(aveProbe),intent(inout) :: p
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
-          real(dpn) :: d
-          d = real(0.5,dpn)*(u(p%ip%i(1)    ,p%ip%i(2)    ,p%ip%i(3)) +&
+          real(cp),dimension(:,:,:),intent(in) :: u
+          real(cp) :: d
+          d = real(0.5,cp)*(u(p%ip%i(1)    ,p%ip%i(2)    ,p%ip%i(3)) +&
                              u(p%ip%i(1)+p%x,p%ip%i(2)+p%y,p%ip%i(3)+p%z))
           call set(p%ip,n,d)
           call apply(p%ip)
@@ -236,11 +246,11 @@
           implicit none
           type(planeErrorProbe),intent(inout) :: p
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
+          real(cp),dimension(:,:,:),intent(in) :: u
           select case (p%dir)
-          case (1); call computeError(p%ep%e,zero,u(p%i,:,:))
-          case (2); call computeError(p%ep%e,zero,u(:,p%i,:))
-          case (3); call computeError(p%ep%e,zero,u(:,:,p%i))
+          case (1); call computeError(p%ep%e,real(0.0,cp),u(p%i,:,:))
+          case (2); call computeError(p%ep%e,real(0.0,cp),u(:,p%i,:))
+          case (3); call computeError(p%ep%e,real(0.0,cp),u(:,:,p%i))
           case default
             write(*,*) 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.';stop
           end select
@@ -252,11 +262,11 @@
           implicit none
           type(avePlaneErrorProbe),intent(inout) :: p
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
+          real(cp),dimension(:,:,:),intent(in) :: u
           select case (p%dir)
-          case (1); call computeError(p%ep%e,zero,real(0.5,dpn)*(u(p%i,:,:)+u(p%i+1,:,:)))
-          case (2); call computeError(p%ep%e,zero,real(0.5,dpn)*(u(:,p%i,:)+u(:,p%i+1,:)))
-          case (3); call computeError(p%ep%e,zero,real(0.5,dpn)*(u(:,:,p%i)+u(:,:,p%i+1)))
+          case (1); call computeError(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(p%i,:,:)+u(p%i+1,:,:)))
+          case (2); call computeError(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,p%i,:)+u(:,p%i+1,:)))
+          case (3); call computeError(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,:,p%i)+u(:,:,p%i+1)))
           case default
             write(*,*) 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.';stop
           end select

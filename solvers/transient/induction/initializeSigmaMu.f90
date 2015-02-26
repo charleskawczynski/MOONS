@@ -1,57 +1,67 @@
        module initializeSigmaMu_mod
-       use constants_mod
+       use grid_mod
        use griddata_mod
        use simParams_mod
        implicit none
 
        private
-       public :: initializeSigmaMu
+       public :: initSigmaMu
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
        contains
 
-       subroutine initializeSigmaMu(sigma,mu,gd)
+       subroutine initSigmaMu(sigma,mu,g)
          implicit none
-         type(griddata),intent(in) :: gd
-         real(dpn),dimension(:,:,:),intent(inout) :: sigma,mu
+         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
          if (benchmarkCase.ne.0) then
-           call initializeBenchmarkSigmaMu(sigma,mu)
+           call initBenchmarkSigmaMu(sigma,mu)
          elseif (preDefined_SigmaMu.ne.0) then
-           call initializePredefinedSigmaMu(sigma,mu,gd)
+           call initPredefinedSigmaMu(sigma,mu,g)
          else
-           call initializeUserSigmaMu(sigma,mu,gd)
+           call initUserSigmaMu(sigma,mu)
          endif
        end subroutine
 
-       subroutine initializeBenchmarkSigmaMu(sigma,mu)
+       subroutine initBenchmarkSigmaMu(sigma,mu)
          implicit none
          ! Auxiliary data types
-         real(dpn),dimension(:,:,:),intent(inout) :: sigma,mu
-         real(dpn) :: sigma_w,sigma_l
+         real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
+         real(cp) :: sigma_w,sigma_l
         
-         sigma = one; mu = one
-         sigma_l = one; sigma_w = one
+         sigma = real(1.0,cp); mu = real(1.0,cp)
+         sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          select case (benchmarkCase)
          ! Hydrodynamic cases
-         case (100); sigma_l = 1.0d0; sigma_w = 1.0d0
-         case (101); sigma_l = 1.0d0; sigma_w = 1.0d0
+         case (100); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (101); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
 
-         case (102); sigma_l = 1.0d0; sigma_w = 1.0d0
-         case (103); sigma_l = 1.0d0; sigma_w = 1.0d0
-         case (104); sigma_l = 1.0d0; sigma_w = 1.0d0
+         case (102); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (103); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (104); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
 
          ! Multi-material tests
-         case (105); sigma_l = 1.0d0; sigma_w = 1.0d0
-         case (106); sigma_l = 1.0d2; sigma_w = 1.0d0
-         case (107); sigma_l = 1.0d3; sigma_w = 1.0d0
-         case (108); sigma_l = 1.0d6; sigma_w = 1.0d0
+         case (105); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (106); sigma_l = real(1.0d2,cp); sigma_w = real(1.0,cp)
+         case (107); sigma_l = real(1.0d3,cp); sigma_w = real(1.0,cp)
+         case (108); sigma_l = real(1.0d6,cp); sigma_w = real(1.0,cp)
 
-         case (109); sigma_l = 1.0d0; sigma_w = 1.0d0
+         case (109); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
 
-         case (200); sigma_l = 1.0d0; sigma_w = 1.0d0
-         case (201); sigma_l = 1.0d0; sigma_w = 1.0d0
-         case (202); sigma_l = 1.0d0; sigma_w = 1.0d0
+         case (200); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (201); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (202); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case default
-           write(*,*) 'Incorrect benchmarkCase in initializeBenchmarkSigmaMu'
+           write(*,*) 'Incorrect benchmarkCase in initBenchmarkSigmaMu'
            stop
          end select
 
@@ -60,45 +70,28 @@
 
          ! Interior domain
 
-         ! sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = one
+         ! sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
          
          ! Make lid have fluid conductivity (what HIMAG does)
-         sigma(Nice1(1):Nice2(1),Nice1(2):Nici2(2),Nice1(3):Nice2(3)) = one
+         sigma(Nice1(1):Nice2(1),Nice1(2):Nici2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
 
        end subroutine
 
-       subroutine initializeUserSigmaMu(sigma,mu,gd)
+       subroutine initUserSigmaMu(sigma,mu)
          implicit none
          ! Auxiliary data types
-         type(griddata),intent(in) :: gd
-         real(dpn),dimension(:,:,:),intent(inout) :: sigma,mu
-         integer,dimension(3) :: N,Ni
-         real(dpn) :: sigma_w,sigma_l
+         real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
+         real(cp) :: sigma_w,sigma_l
 
-         call getN(gd,N)
-         call getNi(gd,Ni)
-        
-         sigma = one
-         mu = one
-         sigma_l = 1.0d0; sigma_w = 1.0d0
+         sigma = real(1.0,cp)
+         mu = real(1.0,cp)
+         sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          sigma = sigma_w/sigma_l
 
-         sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = one
+         sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
 
-         sigma = one
+         sigma = real(1.0,cp)
 
-         if (multiMaterials) then
-           sigma_l = 1.0
-           sigma_w = 1.0             ! Conducting
-           ! sigma_w = 10.0**(-6.0)   ! Insulating
-           ! sigma_w = 10.0**(6.0)    ! Perfectly conducting
-           ! Outside
-           sigma = sigma_w/sigma_l
-           ! Interface
-           ! sigma(:,Nyw-1:Ny-(Nyw-1)+1,Nzw-1:Nz-(Nzw-1)+1) = 2.0*sigma_w/(sigma_w + sigma_l) ! Harmonic mean
-           ! Interior
-           ! sigma(:,Nyw:Ny-Nyw+1,Nzw:Nz-Nzw+1) = sigma_l
-         endif
        end subroutine
 
        end module

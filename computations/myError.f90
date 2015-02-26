@@ -61,7 +61,7 @@
        public :: printMyError ! printMyError(err,name)
        public :: writeMyError ! writeMyError(err,name,dir)
        public :: writeToFile  ! writeErrorsToFile(e,dir[,u])
-       public :: initialize
+       public :: init
 
        public :: getL1, getL1Rel
        public :: getL2, getL2Rel
@@ -78,7 +78,7 @@
          real(dpn) :: L1rel,L2rel,Linfrel
        end type
 
-       interface initialize;      module procedure initializeError;        end interface
+       interface init;            module procedure initError;              end interface
        interface writeToFile;     module procedure writeErrorsToFile;      end interface
 
        interface computeError;    module procedure computeError1;          end interface
@@ -387,7 +387,7 @@
          else; er = e/(denom+1.0); endif
        end subroutine
 
-       subroutine initializeError(e)
+       subroutine initError(e)
          implicit none
          type(myError),intent(inout) :: e
          e%L1 = 0.0; e%L2 = 0.0; e%Linf = 0.0
@@ -408,7 +408,7 @@
          real(dpn),intent(in),dimension(:) :: exact,approx
          real(dpn) :: n,denom
 
-         call initializeError(e)
+         call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
          n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
          !n = infinity
@@ -424,7 +424,7 @@
          real(dpn),intent(in) :: exact
          real(dpn) :: n,denom
 
-         call initializeError(e)
+         call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
          n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
          !n = infinity
@@ -439,7 +439,7 @@
          real(dpn),intent(in),dimension(:,:) :: exact,approx
          real(dpn) :: n,denom
 
-         call initializeError(e)
+         call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
          n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
          !n = infinity
@@ -455,7 +455,7 @@
          real(dpn),intent(in) :: exact
          real(dpn) :: n,denom
 
-         call initializeError(e)
+         call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
          n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
          !n = infinity
@@ -470,7 +470,7 @@
          real(dpn),intent(in),dimension(:,:,:) :: exact,approx
          real(dpn) :: n,denom
 
-         call initializeError(e)
+         call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
          n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
          !n = infinity
@@ -486,7 +486,7 @@
          real(dpn),intent(in) :: exact
          real(dpn) :: n,denom
 
-         call initializeError(e)
+         call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
          n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
          !n = infinity

@@ -81,26 +81,26 @@
 
            ! ************** SOLVE MOMENTUM EQUATION **********************
            if (solveMomentum) then
-             call solve(mom,gd,rd,ss_MHD)
+             call solve(mom,mom%g,rd,ss_MHD)
            endif
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
-             call embedVelocity(mom%U,ind%U_cct,mom%temp,gd)
-             call solve(ind,ind%U_cct,gd,rd,ss_MHD)
+             call embedVelocity(mom%U,ind%U_cct,mom%temp,mom%g)
+             call solve(ind,ind%U_cct,ind%g,rd,ss_MHD)
            endif
 
            ! ************************** COMPUTE DIVERGENCES *******************************
            if (getExportErrors(ss_MHD)) then
-             call computeDivergence(mom,gd)
-             call computeDivergence(ind,gd)
+             call computeDivergence(mom,mom%g)
+             call computeDivergence(ind,ind%g)
            endif
 
            ! ************************** COMPUTE J CROSS B *******************************
            if (solveInduction) then
-             call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,gd)
+             call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
-               call computeJCrossB(mom%F,ind,gd,Re,Ha)
+               call computeJCrossB(mom%F,ind,mom%g,ind%g,Re,Ha)
              endif
            else
              ! mom%F = zero
@@ -169,10 +169,10 @@
          ! ind%B = ind%B + ind%B0
          call add(ind%B,ind%B0)
 
-         call exportRaw(mom,gd,dir)
-         call exportRaw(ind,gd,dir)
-         call export(mom,gd,dir)
-         call export(ind,gd,dir)
+         call exportRaw(mom,mom%g,dir)
+         call exportRaw(ind,ind%g,dir)
+         call export(mom,mom%g,dir)
+         call export(ind,ind%g,dir)
 
          ! ****************** DEALLOCATE LOCALS *************************
 

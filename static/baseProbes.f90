@@ -3,7 +3,7 @@
        ! 
        ! indexProbe:
        !       type(indexProbe) :: p                              ! 
-       !       call initialize(p,gd,s,i,dir,name,TF_freshStart)   ! enables other routines
+       !       call init(p,g,s,i,dir,name,TF_freshStart)   ! enables other routines
        !       call resetH(p,h)                                   ! if h needs to be reset
        !       call print(p)                                      ! prints basic info (no data)
        !       call export(p)                                     ! exports basic probe info (no data)
@@ -16,7 +16,7 @@
        ! 
        ! errorProbe:
        !       type(errorProbe) :: p                              ! 
-       !       call initialize(p,dir,name,TF_freshStart)          ! enables other routines
+       !       call init(p,dir,name,TF_freshStart)          ! enables other routines
        !       call resetH(p,h)                                   ! if h needs to be reset
        !       call print(p)                                      ! prints basic info (no data)
        !       call export(p)                                     ! exports basic probe info (no data)
@@ -27,26 +27,36 @@
        !         call apply(p)                                    ! exports transient data (n,d)
        !       enddo
        ! 
-       ! NOTE: initialize prints the index location if one exists.
+       ! NOTE: init prints the index location if one exists.
        ! 
        use simParams_mod
-       use constants_mod
        use transientProbe_mod
        use myIO_mod
-       use griddata_mod
+       use grid_mod
        use myError_mod
 
        implicit none
 
        private
        public :: indexProbe,errorProbe
-       public :: initialize,set,apply
+       public :: init,set,apply
        public :: export, print
        public :: defineH,resetH,delete
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
+
        type indexProbe
          type(probe) :: p                             ! probe
-         real(dpn),dimension(3) :: h                  ! probe location
+         real(cp),dimension(3) :: h                  ! probe location
          integer,dimension(3) :: i                    ! index of location
        end type
 
@@ -55,8 +65,8 @@
          type(myError) :: e                           ! for computing data
        end type
 
-       interface initialize;    module procedure initializeIndexProbe;      end interface
-       interface initialize;    module procedure initializeErrorProbe;      end interface
+       interface init;          module procedure initIndexProbe;            end interface
+       interface init;          module procedure initErrorProbe;            end interface
 
        interface set;           module procedure setIndexData;              end interface
        interface set;           module procedure setIndexData1;             end interface
@@ -83,32 +93,32 @@
 
        contains
 
-        subroutine initializeIndexProbe(ip,dir,name,TF_freshStart,s,i,gd)
+        subroutine initIndexProbe(ip,dir,name,TF_freshStart,s,i,g)
           implicit none
           type(indexProbe),intent(inout) :: ip
-          type(griddata),intent(in) :: gd
+          type(grid),intent(in) :: g
           integer,dimension(3),intent(in) :: s,i
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
-          call initialize(ip%p,dir,name,TF_freshStart)
-          call defineH(i,gd,s,ip%h)
+          call init(ip%p,dir,name,TF_freshStart)
+          call defineH(i,g,s,ip%h)
           ip%i = i
         end subroutine
 
-        subroutine initializeErrorProbe(ep,dir,name,TF_freshStart)
+        subroutine initErrorProbe(ep,dir,name,TF_freshStart)
           implicit none
           type(errorProbe),intent(inout) :: ep
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
-          call initialize(ep%p,dir,name,TF_freshStart)
+          call init(ep%p,dir,name,TF_freshStart)
         end subroutine
 
         subroutine resetH(ip,h)
          implicit none
           type(indexProbe),intent(inout) :: ip
-          real(dpn),dimension(3),intent(in) :: h
+          real(cp),dimension(3),intent(in) :: h
           ip%h = h
         end subroutine
 
@@ -116,7 +126,7 @@
          implicit none
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
-          real(dpn),intent(in) :: d
+          real(cp),intent(in) :: d
           call set(ip%p,n,d)
         end subroutine
 
@@ -124,7 +134,7 @@
          implicit none
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
+          real(cp),dimension(:,:,:),intent(in) :: u
           call set(ip%p,n,u(ip%i(1),ip%i(2),ip%i(3)))
         end subroutine
 
@@ -132,7 +142,7 @@
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(dpn),intent(in) :: d
+          real(cp),intent(in) :: d
           call set(ep%p,n,d)
         end subroutine
 
@@ -140,8 +150,8 @@
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(dpn),dimension(:),intent(in) :: u
-          call computeError(ep%e,zero,u)
+          real(cp),dimension(:),intent(in) :: u
+          call computeError(ep%e,real(0.0,cp),u)
           call set(ep%p,n,getL2(ep%e))
         end subroutine
 
@@ -149,8 +159,8 @@
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(dpn),dimension(:,:),intent(in) :: u
-          call computeError(ep%e,zero,u)
+          real(cp),dimension(:,:),intent(in) :: u
+          call computeError(ep%e,real(0.0,cp),u)
           call set(ep%p,n,getL2(ep%e))
         end subroutine
 
@@ -158,8 +168,8 @@
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
-          call computeError(ep%e,zero,u)
+          real(cp),dimension(:,:,:),intent(in) :: u
+          call computeError(ep%e,real(0.0,cp),u)
           call set(ep%p,n,getL2(ep%e))
         end subroutine
 
@@ -167,7 +177,7 @@
          implicit none
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
+          real(cp),dimension(:,:,:),intent(in) :: u
           call set(ip,n,u)
           call apply(ip%p)
         end subroutine
@@ -188,36 +198,32 @@
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(dpn),dimension(:,:,:),intent(in) :: u
+          real(cp),dimension(:,:,:),intent(in) :: u
           call set(ep,n,u)
           call apply(ep%p)
         end subroutine
 
-        subroutine defineH(i,gd,s,h)
+        subroutine defineH(i,g,s,h)
          implicit none
           integer,dimension(3),intent(in) :: i
-          type(griddata),intent(in) :: gd
+          type(grid),intent(in) :: g
           integer,dimension(3),intent(in) :: s
-          real(dpn),dimension(3),intent(inout) :: h
-          integer,dimension(3) :: Ni,N
-          call getNi(gd,Ni)
-          call getN(gd,N)
+          real(cp),dimension(3),intent(inout) :: h
           h = 0
-          if (s(1).eq.Ni(1)+2) h(1) = gd%xci(i(1))
-          if (s(1).eq.N(1)+2)  h(1) = gd%xct(i(1))
-          if (s(2).eq.Ni(2)+2) h(2) = gd%yci(i(2))
-          if (s(2).eq.N(2)+2)  h(2) = gd%yct(i(2))
-          if (s(3).eq.Ni(3)+2) h(3) = gd%zci(i(3))
-          if (s(3).eq.N(3)+2)  h(3) = gd%zct(i(3))
+          if (s(1).eq.g%c(1)%sc) h(1) = g%c(1)%hc(i(1))
+          if (s(1).eq.g%c(1)%sc) h(1) = g%c(1)%hc(i(1))
+          if (s(2).eq.g%c(2)%sc) h(2) = g%c(2)%hc(i(2))
+          if (s(2).eq.g%c(2)%sc) h(2) = g%c(2)%hc(i(2))
+          if (s(3).eq.g%c(3)%sc) h(3) = g%c(3)%hc(i(3))
+          if (s(3).eq.g%c(3)%sc) h(3) = g%c(3)%hc(i(3))
 
-          if (s(1).eq.Ni(1)+1) h(1) = gd%xni(i(1))
-          if (s(1).eq.N(1)+1)  h(1) = gd%xnt(i(1))
-          if (s(2).eq.Ni(2)+1) h(2) = gd%yni(i(2))
-          if (s(2).eq.N(2)+1)  h(2) = gd%ynt(i(2))
-          if (s(3).eq.Ni(3)+1) h(3) = gd%zni(i(3))
-          if (s(3).eq.N(3)+1)  h(3) = gd%znt(i(3))
+          if (s(1).eq.g%c(1)%sn) h(1) = g%c(1)%hn(i(1))
+          if (s(1).eq.g%c(1)%sn) h(1) = g%c(1)%hn(i(1))
+          if (s(2).eq.g%c(2)%sn) h(2) = g%c(2)%hn(i(2))
+          if (s(2).eq.g%c(2)%sn) h(2) = g%c(2)%hn(i(2))
+          if (s(3).eq.g%c(3)%sn) h(3) = g%c(3)%hn(i(3))
+          if (s(3).eq.g%c(3)%sn) h(3) = g%c(3)%hn(i(3))
         end subroutine
-
 
         ! ------------------ PRINT / EXPORT PROBE --------------------- index probe
 

@@ -42,55 +42,47 @@
        !           .
 
        use constants_mod
-       use myAllocate_mod
        use BCs_mod
-       use griddata_mod
-       use myExceptions_mod
+       use grid_mod
        implicit none
 
        private
-
        public :: applyAllBCs,applyBCFace
 
-       interface applyAllBCs
-         module procedure applyAllBCs3D
-       end interface
-
-       interface applyBCs
-         module procedure applyBCs3D
-       end interface
+       interface applyAllBCs;    module procedure applyAllBCs3D;     end interface
+       interface applyBCs;       module procedure applyBCs3D;        end interface
 
        contains
 
-       subroutine applyAllBCs3D(b,u,gd)
+       subroutine applyAllBCs3D(b,u,g)
         ! Note that these boundary conditions are applied in a NON- arbitrary
         ! order and changing them WILL change the outcome of the results.
         ! Consider changing BCs to only affect interior data.
          implicit none
          type(BCs),intent(in) :: b
          real(dpn),dimension(:,:,:),intent(inout) :: u
-         type(griddata),intent(in) :: gd
-         call applyBCs(u,b%xMinType,1,b%xMinVals,b%xn,b%xc,b%s(1))
-         call applyBCs(u,b%yMinType,2,b%yMinVals,b%yn,b%yc,b%s(2))
-         call applyBCs(u,b%zMinType,3,b%zMinVals,b%zn,b%zc,b%s(3))
-         call applyBCs(u,b%xMaxType,4,b%xMaxVals,b%xn,b%xc,b%s(1))
-         call applyBCs(u,b%zMaxType,6,b%zMaxVals,b%zn,b%zc,b%s(3))
-         call applyBCs(u,b%yMaxType,5,b%yMaxVals,b%yn,b%yc,b%s(2))
+         type(grid),intent(in) :: g
+         call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
+         call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
        end subroutine
 
-       subroutine applyBCFace(b,u,gd,face)
+       subroutine applyBCFace(b,u,g,face)
          implicit none
          type(BCs),intent(in) :: b
          real(dpn),dimension(:,:,:),intent(inout) :: u
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: g
          integer,intent(in) :: face
          select case (face)
-         case (1); call applyBCs(u,b%xMinType,1,b%xMinVals,b%xn,b%xc,b%s(1))
-         case (2); call applyBCs(u,b%yMinType,2,b%yMinVals,b%yn,b%yc,b%s(2))
-         case (3); call applyBCs(u,b%zMinType,3,b%zMinVals,b%zn,b%zc,b%s(3))
-         case (4); call applyBCs(u,b%xMaxType,4,b%xMaxVals,b%xn,b%xc,b%s(1))
-         case (6); call applyBCs(u,b%zMaxType,6,b%zMaxVals,b%zn,b%zc,b%s(3))
-         case (5); call applyBCs(u,b%yMaxType,5,b%yMaxVals,b%yn,b%yc,b%s(2))
+         case (1); call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         case (2); call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
+         case (3); call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         case (4); call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         case (6); call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         case (5); call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
          case default
          write(*,*) 'Error: face must = 1,2,3,4,5,6 in applyBCs.';stop
          end select

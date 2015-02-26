@@ -19,8 +19,7 @@
       ! 5/15/2014
 
       use constants_mod
-      use myAllocate_mod
-      use griddata_mod
+      use grid_mod
       implicit none
 
       private
@@ -130,33 +129,17 @@
         implicit none
         real(dpn),dimension(:,:,:),intent(inout) :: dfdh
         real(dpn),dimension(:,:,:),intent(in) :: f
-        type(griddata),intent(in) :: gd
+        type(grid),intent(in) :: gd
         integer,intent(in) :: nth,dir,diffType,pad
         logical,intent(in),optional :: addTo
         integer,dimension(3) :: s
         real(dpn),dimension(:),allocatable :: dhc,dhn
         integer :: i,j,k,Nx,Ny,Nz
 
-        call myAllocate(Nx,Ny,Nz,gd,f) ! Gets the size of Nx,Ny,Nz based on f
+        Nx = gd%c(1)%N; Ny = gd%c(2)%N; Nz = gd%c(3)%N
+        ! call myAllocate(Nx,Ny,Nz,gd,f) ! Gets the size of Nx,Ny,Nz based on f
 
         s = shape(f)
-
-        ! The following snippet will be used to debug MOONS for 
-        ! size mis-matching.
-        ! if ((diffType.eq.3).or.(diffType.eq.4)) then
-        !    s2 = shape(dfdh)
-        !    if (s(1).eq.s2(1)) then
-        !    if (s(2).eq.s2(2)) then
-        !    if (s(3).eq.s2(3)) then
-        !    write(*,*) 'Sizes do not match between f and dfdh.'
-        !    write(*,*) 'diffType = ',diffType
-        !    write(*,*) 'shape(f) = ',s
-        !    write(*,*) 'shape(dfdh) = ',s2
-        !    stop
-        !    endif
-        !    endif
-        !    endif
-        ! endif
 
         if (.not.present(addTo)) then
           dfdh = zero ! Zero result first
@@ -165,8 +148,8 @@
         select case (dir)
         case (1)
           allocate(dhc(Nx+1),dhn(Nx))
-          call getDxcc(gd,dhc)
-          call getDxn(gd,dhn)
+          dhc = gd%c(dir)%dhc
+          dhn = gd%c(dir)%dhn
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad
             do j=1+pad,s(2)-pad
@@ -176,8 +159,8 @@
           !$OMP END PARALLEL DO
         case (2)
           allocate(dhc(Ny+1),dhn(Ny))
-          call getDycc(gd,dhc)
-          call getDyn(gd,dhn)
+          dhc = gd%c(dir)%dhc
+          dhn = gd%c(dir)%dhn
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad
             do i=1+pad,s(1)-pad
@@ -187,8 +170,8 @@
           !$OMP END PARALLEL DO
         case (3)
           allocate(dhc(Nz+1),dhn(Nz))
-          call getDzcc(gd,dhc)
-          call getDzn(gd,dhn)
+          dhc = gd%c(dir)%dhc
+          dhn = gd%c(dir)%dhn
           !$OMP PARALLEL DO
           do j=1+pad,s(2)-pad
             do i=1+pad,s(1)-pad

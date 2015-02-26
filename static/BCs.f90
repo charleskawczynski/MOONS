@@ -6,11 +6,7 @@
        !           integer :: Nx,Ny,Nz,neumann,dirichlet
        !  
        !           ! B-field boundary conditions
-       !           call myAllocate(Nx,Ny,Nz,gd,BLoc)
-       !           select case (BLoc)
-       !           case (dom_cc_tot); dirichlet = 2; neumann = 5
-       !           case (dom_n_tot);  dirichlet = 1; neumann = 4
-       !           end select
+       !           dirichlet = 2; neumann = 5 ! See applyBCs module
        !           
        !           call setAllZero(Bx_bcs,Nx,Ny,Nz,dirichlet)
        !           call setXminType(Bx_bcs,neumann)
@@ -42,7 +38,7 @@
        !           .
 
        use constants_mod
-       use griddata_mod
+       use grid_mod
        use myExceptions_mod
        use myAllocate_mod
        use myIO_mod
@@ -92,18 +88,9 @@
          logical :: BCsDefined = .false.
        end type
 
-       interface initialize
-         module procedure initializeBCs
-       end interface
-
-       interface delete
-         module procedure deallocateBCs
-       end interface
-
-       interface setGrid
-        module procedure setBCGrid
-       end interface
-
+       interface initialize; module procedure initializeBCs;    end interface
+       interface delete;     module procedure deallocateBCs;    end interface
+       interface setGrid;    module procedure setGridBCs;        end interface
 
        contains
 
@@ -138,21 +125,19 @@
          this%TFgrid = .false.
        end subroutine
 
-       subroutine setBCGrid(this,gd)
+       subroutine setGridBCs(this,gd)
          implicit none
          type(BCs),intent(inout) :: this
-         type(griddata),intent(in) :: gd
-         integer :: Nx,Ny,Nz
-         call myAllocate(Nx,Ny,Nz,gd,this%s)
-         allocate(this%xc(Nx+2),this%xn(Nx+1))
-         call getXcc(gd,this%xc)
-         call getXn(gd,this%xn)
-         allocate(this%yc(Ny+2),this%yn(Ny+1))
-         call getYcc(gd,this%yc)
-         call getYn(gd,this%yn)
-         allocate(this%zc(Nz+2),this%zn(Nz+1))
-         call getZcc(gd,this%zc)
-         call getZn(gd,this%zn)
+         type(grid),intent(in) :: gd
+         allocate(this%xc(gd%c(1)%sc),this%xn(gd%c(1)%sn))
+         allocate(this%yc(gd%c(2)%sc),this%yn(gd%c(2)%sn))
+         allocate(this%zc(gd%c(3)%sc),this%zn(gd%c(3)%sn))
+         this%xc = gd%c(1)%hc
+         this%xn = gd%c(1)%hn
+         this%yc = gd%c(2)%hc
+         this%yn = gd%c(2)%hn
+         this%zc = gd%c(3)%hc
+         this%zn = gd%c(3)%hn
          this%TFgrid = .true.
        end subroutine
 

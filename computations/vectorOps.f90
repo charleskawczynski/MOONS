@@ -41,7 +41,6 @@
        !                        -------> edgeDir
        ! 
        ! 
-       use constants_mod
        use scalarField_mod
        use vectorField_mod
        use myDel_mod
@@ -49,11 +48,21 @@
        use simParams_mod
        use myIO_mod
 !        use myDebug_mod
-       use myAllocate_mod
+       use grid_mod
        use griddata_mod
        implicit none
 
        private
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
        ! ------------------------------- INTERPOLATION ROUTINES ---------------------------------
        public :: myFaceAverage        ! call myFaceAverage(faceAve,f,gd,dir,aveLoc)
@@ -108,17 +117,8 @@
        public :: computeCurrent
        public :: embedVelocity
 
-       interface interp
-         module procedure interpO2
-         ! module procedure interpO4
-         ! module procedure interpO6
-       end interface
-
-       interface extrap
-         module procedure extrapO2
-         ! module procedure extrapO4
-         ! module procedure extrapO6
-       end interface
+       interface interp;         module procedure interpO2;       end interface
+       interface extrap;         module procedure extrapO2;       end interface
 
        contains
 
@@ -130,20 +130,20 @@
 
        ! ******************************* INTERPOLATION ROUTINES *********************************
 
-       subroutine interpO2(f,g,gd,dir,grid) ! Seems to be working.
+       subroutine interpO2(f,g,gd,dir,gridType) ! Seems to be working.
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
          ! f lives between g. That is:
          ! 
-         ! grid = 1   :   f(cc grid), g(node/face grid)
+         ! gridType = 1   :   f(cc grid), g(node/face grid)
          !                extrapolation required
          ! 
          !            f  g  f  g  f  g  f
          !            o--|--o--|--o--|--o   --> dir
          !                  *     *
          ! 
-         ! grid = 2   :   f(node/face grid), g(cc grid)
+         ! gridType = 2   :   f(node/face grid), g(cc grid)
          !                no extrapolation required
          ! 
          !            g  f  g  f  g  f  g
@@ -157,13 +157,13 @@
          ! Therefore, shape(g) = shape(f) + 1 along dir
          ! Otherwise, shape(g) = shape(f)
          ! 
-         ! When grid = 1, f is assumed to be located at the cell center.
+         ! When gridType = 1, f is assumed to be located at the cell center.
          ! 
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: g
          real(dpn),dimension(:,:,:),intent(inout) :: f
-         type(griddata),intent(in) :: gd
-         integer,intent(in) :: dir,grid
+         type(grid),intent(in) :: gd
+         integer,intent(in) :: dir,gridType
          integer :: i,j,k,t,x,y,z
          real(dpn) :: alpha
          real(dpn),dimension(:),allocatable :: hn,hc
@@ -172,25 +172,25 @@
 
          select case (dir)
          case (1); x=1;y=0;z=0
-         if (grid.eq.2) then
-           allocate(hn(sg(1)-1)); call getXn(gd,hn)
-           allocate(hc(sg(1))); call getXcc(gd,hc)
+         if (gridType.eq.2) then
+           allocate(hn(sg(1)-1)); hn = gd%c(dir)%hn
+           allocate(hc(sg(1)));   hc = gd%c(dir)%hc
          endif
          case (2); x=0;y=1;z=0
-         if (grid.eq.2) then
-           allocate(hn(sg(2)-1)); call getYn(gd,hn)
-           allocate(hc(sg(2))); call getYcc(gd,hc)
+         if (gridType.eq.2) then
+           allocate(hn(sg(2)-1)); hn = gd%c(dir)%hn
+           allocate(hc(sg(2)));   hc = gd%c(dir)%hc
          endif
          case (3); x=0;y=0;z=1
-         if (grid.eq.2) then
-           allocate(hn(sg(3)-1)); call getZn(gd,hn)
-           allocate(hc(sg(3))); call getZcc(gd,hc)
+         if (gridType.eq.2) then
+           allocate(hn(sg(3)-1)); hn = gd%c(dir)%hn
+           allocate(hc(sg(3)));   hc = gd%c(dir)%hc
          endif
          case default
            write(*,*) 'Error: dir must = 1,2,3 in interpO2.';stop
          end select
 
-         select case (grid)
+         select case (gridType)
          case (1) ! f(cc grid), g(node/face grid)
          !            f  g  f  g  f  g  f
          !            o--|--o--|--o--|--o   --> dir
@@ -200,7 +200,7 @@
          do k=1,sg(3)-z
            do j=1,sg(2)-y
              do i=1,sg(1)-x
-               f(i+x,j+y,k+z) = (g(i,j,k)+g(i+x,j+y,k+z))/two
+               f(i+x,j+y,k+z) = (g(i,j,k)+g(i+x,j+y,k+z))/real(2.0,cp)
              enddo
            enddo
          enddo
@@ -218,17 +218,17 @@
                t = i*x + j*y + k*z
                alpha = (hn(t) - hc(t+1))/(hc(t) - hc(t+1))
                f(i,j,k) = g(i,j,k)*alpha +&
-                             g(i+x,j+y,k+z)*(one-alpha)
+                             g(i+x,j+y,k+z)*(real(1.0,cp)-alpha)
              enddo
            enddo
          enddo
          !$OMP END DO
          !$OMP END PARALLEL
          case default
-           write(*,*) 'grid must be 1 or 2. Terminating.';stop
+           write(*,*) 'gridType must be 1 or 2. Terminating.';stop
          end select
 
-         if (grid.eq.2) then
+         if (gridType.eq.2) then
            deallocate(hn,hc)
          endif
        end subroutine
@@ -256,7 +256,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: g
          real(dpn),dimension(:,:,:),intent(inout) :: f
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn) :: a1,a2 ! differences in Taylor expansion
          real(dpn) :: c1,c2 ! Coefficients of function values
@@ -264,12 +264,12 @@
          integer,dimension(3) :: sg,sf
          sg = shape(g); sf = shape(f)
          select case (dir)
-         case (1); allocate(hn(sf(1)-1)); call getXn(gd,hn)
-         allocate(hc(sf(1))); call getXcc(gd,hc)
-         case (2); allocate(hn(sf(2)-1)); call getYn(gd,hn)
-         allocate(hc(sf(2))); call getYcc(gd,hc)
-         case (3); allocate(hn(sf(3)-1)); call getZn(gd,hn)
-         allocate(hc(sf(3))); call getZcc(gd,hc)
+         case (1); allocate(hn(sf(1)-1)); hn = gd%c(1)%hn
+                   allocate(hc(sf(1)));   hc = gd%c(1)%hc
+         case (2); allocate(hn(sf(2)-1)); hn = gd%c(2)%hn
+                   allocate(hc(sf(2)));   hc = gd%c(2)%hc
+         case (3); allocate(hn(sf(3)-1)); hn = gd%c(3)%hn
+                   allocate(hc(sf(3)));   hc = gd%c(3)%hc
          case default
            write(*,*) 'Error: dir must = 1,2,3 in extrapO2.';stop
          end select
@@ -279,15 +279,12 @@
          !            *
          a1 = hc(1) - hn(1)
          a2 = hn(1) - hn(2)
-         c1 = one + a1/a2
+         c1 = real(1.0,cp) + a1/a2
          c2 = -a1/a2
          select case (dir)
-         case (1)
-         f(1,:,:) = c1*g(1,:,:) + c2*g(2,:,:)
-         case (2)
-         f(:,1,:) = c1*g(:,1,:) + c2*g(:,2,:)
-         case (3)
-         f(:,:,1) = c1*g(:,:,1) + c2*g(:,:,2)
+         case (1); f(1,:,:) = c1*g(1,:,:) + c2*g(2,:,:)
+         case (2); f(:,1,:) = c1*g(:,1,:) + c2*g(:,2,:)
+         case (3); f(:,:,1) = c1*g(:,:,1) + c2*g(:,:,2)
          end select
          ! FORWARD EXTRAPOLATION (* = assigned)
          !            f  g  f  g  f  g  f
@@ -295,15 +292,12 @@
          !                              *
          a1 = hc(sf(dir)) - hn(sf(dir)-1)
          a2 = hn(sg(dir)) - hn(sg(dir)-1)
-         c1 = one + a1/a2
+         c1 = real(1.0,cp) + a1/a2
          c2 = -a1/a2
          select case (dir)
-         case (1)
-         f(sf(1),:,:)=c1*g(sg(1),:,:)+c2*g(sg(1)-1,:,:)
-         case (2)
-         f(:,sf(2),:)=c1*g(:,sg(2),:)+c2*g(:,sg(2)-1,:)
-         case (3)
-         f(:,:,sf(3))=c1*g(:,:,sg(3))+c2*g(:,:,sg(3)-1)
+         case (1); f(sf(1),:,:)=c1*g(sg(1),:,:)+c2*g(sg(1)-1,:,:)
+         case (2); f(:,sf(2),:)=c1*g(:,sg(2),:)+c2*g(:,sg(2)-1,:)
+         case (3); f(:,:,sf(3))=c1*g(:,:,sg(3))+c2*g(:,:,sg(3)-1)
          end select
          deallocate(hn,hc)
        end subroutine
@@ -315,9 +309,9 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in)    :: face        ! size = (Nn+1,Nt+2)
          real(dpn),dimension(:,:,:),intent(inout) :: cellCenter  ! size = (Nn+2,Nt+2)
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
-         cellCenter = zero
+         cellCenter = real(0.0,cp)
          call interp(cellCenter,face,gd,faceDir,1)
          call extrap(cellCenter,face,gd,faceDir)
        end subroutine
@@ -341,7 +335,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in)    :: face ! size = (Nn+1,Nt+2)
          real(dpn),dimension(:,:,:),intent(inout) :: edge ! size = (Nn+1,Nt+1,Nt+2)
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: edgeDir,faceDir
          real(dpn),dimension(:,:,:),allocatable :: tempCC
          integer :: orthDir
@@ -359,7 +353,7 @@
          real(dpn),dimension(:,:,:),intent(in) :: face
          real(dpn),dimension(:,:,:),intent(inout) :: faceAve
          real(dpn),dimension(:,:,:),allocatable :: cellCenter
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir,aveLoc
          integer :: x,y,z
          integer,dimension(3) :: s
@@ -384,7 +378,7 @@
          real(dpn),dimension(:,:,:),intent(in) :: face
          real(dpn),dimension(:,:,:),intent(inout) :: nodeAverage
          real(dpn),dimension(:,:,:),allocatable :: tempcc
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          integer,dimension(3) :: s
          integer :: x,y,z
@@ -408,7 +402,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: cellCenter
          real(dpn),dimension(:,:,:),intent(inout) :: face
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          call interp(face,cellCenter,gd,faceDir,2)
        end subroutine
@@ -418,28 +412,28 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: cellCenter
          real(dpn),dimension(:,:,:),intent(inout) :: nodeAverage
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          real(dpn),dimension(:,:,:),allocatable :: temp,tempcc
          integer,dimension(3) :: sc
          sc = shape(cellCenter)
 
-         nodeAverage = zero
+         nodeAverage = real(0.0,cp)
          allocate(tempcc(sc(1),sc(2),sc(3)))
          tempcc = cellCenter
 
          allocate(temp(sc(1)-1,sc(2),sc(3)))
          call myCellCenter2Face(temp,tempcc,gd,1)
-         tempcc(1:sc(1)-1,:,:) = temp; tempcc(sc(1),:,:) = zero
+         tempcc(1:sc(1)-1,:,:) = temp; tempcc(sc(1),:,:) = real(0.0,cp)
          deallocate(temp)
 
          allocate(temp(sc(1),sc(2)-1,sc(3)))
          call myCellCenter2Face(temp,tempcc,gd,2)
-         tempcc(:,1:sc(2)-1,:) = temp; tempcc(:,sc(2),:) = zero
+         tempcc(:,1:sc(2)-1,:) = temp; tempcc(:,sc(2),:) = real(0.0,cp)
          deallocate(temp)
 
          allocate(temp(sc(1),sc(2),sc(3)-1))
          call myCellCenter2Face(temp,tempcc,gd,3)
-         tempcc(:,:,1:sc(3)-1) = temp; tempcc(:,:,sc(3)) = zero
+         tempcc(:,:,1:sc(3)-1) = temp; tempcc(:,:,sc(3)) = real(0.0,cp)
          deallocate(temp)
          
          nodeAverage = tempcc(1:sc(1)-1,1:sc(2)-1,1:sc(3)-1)
@@ -450,7 +444,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: cellCenter
          real(dpn),dimension(:,:,:),intent(inout) :: edge
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: edgeDir
          real(dpn),dimension(:,:,:),allocatable :: faceTemp
          integer,dimension(3) :: s
@@ -478,7 +472,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: node       ! size = Nn+1,Nt+1
          real(dpn),dimension(:,:,:),intent(inout) :: edge    ! size = Nn+2,Nt+1
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: edgeDir
          call interp(edge,node,gd,edgeDir,1)
          call extrap(edge,node,gd,edgeDir)
@@ -489,7 +483,7 @@
          real(dpn),dimension(:,:,:),intent(inout) :: face
          real(dpn),dimension(:,:,:),intent(in) :: node
          real(dpn),dimension(:,:,:),allocatable :: tempe
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          integer,dimension(3) :: s
          s = shape(node)
@@ -520,7 +514,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(in) :: edge    ! size = Ne+2,N+1
          real(dpn),dimension(:,:,:),intent(inout) :: face ! size = Nf+1,Nt+2
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir,edgeDir
          integer :: orthDir
          orthDir = orthogonalDirection(edgeDir,faceDir)
@@ -543,8 +537,8 @@
          do k=1,s(3)
           do j=1,s(2)
            do i=1,s(1)
-            mag(i,j,k) = sqrt(u(i,j,k)**two +&
-             v(i,j,k)**two + w(i,j,k)**two)
+            mag(i,j,k) = sqrt(u(i,j,k)**real(2.0,cp) +&
+             v(i,j,k)**real(2.0,cp) + w(i,j,k)**real(2.0,cp))
            enddo
           enddo
          enddo
@@ -611,7 +605,7 @@
          integer,intent(in) :: gridType
          integer,intent(in),optional :: faceDir
 
-         f = zero ! This is VERY expensive need to fix
+         f = real(0.0,cp) ! This is VERY expensive need to fix
 
          select case (gridType)
            case (1) ! Cell center (excluding walls)
@@ -712,9 +706,9 @@
          real(dpn),dimension(:,:,:),intent(inout) :: divF
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
          real(dpn),dimension(:,:,:),allocatable :: temp
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,dimension(3) :: s,sd
-         divF = zero
+         divF = real(0.0,cp)
          sd = shape(divF)
 
          s = shape(u)
@@ -743,12 +737,12 @@
          real(dpn),dimension(:,:,:),intent(inout) :: lapF
          real(dpn),dimension(:,:,:),intent(in) :: f
          real(dpn),dimension(:,:,:),allocatable :: temp
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          integer,dimension(3) :: s
          integer :: x,y,z
          s = shape(f)
-         lapF = zero
+         lapF = real(0.0,cp)
          select case (dir)
          case (1); x=2;y=1;z=1
          case (2); x=1;y=2;z=1
@@ -792,7 +786,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: psi
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w,phi
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: temp,tempAve
          integer,dimension(3) :: s
@@ -802,7 +796,7 @@
          allocate(temp(s(1),s(2),s(3)))
          allocate(tempAve(s(1),s(2),s(3)))
 
-         psi = zero
+         psi = real(0.0,cp)
          ! -------------------------- u d/dx --------------------------
          call myFaceAverage(tempAve,u,gd,1,dir)
          if (dir.eq.1) then
@@ -848,7 +842,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: psi
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w,ui
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          real(dpn),dimension(:,:,:),allocatable :: tempCC,tempAveCC
          real(dpn),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
@@ -867,7 +861,7 @@
          allocate(tempCC(   s(1)+x,s(2)+y,s(3)+z))
          allocate(tempAveCC(s(1)+x,s(2)+y,s(3)+z))
 
-         psi = zero
+         psi = real(0.0,cp)
          ! -------------------------- d/dx (u u_i) --------------------------
          if (faceDir.eq.1) then
            call myFace2CellCenter(tempAveCC,u,gd,1)
@@ -948,7 +942,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: psi
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w,ui
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          real(dpn),dimension(:,:,:),allocatable :: tempCC,tempAveCC
          real(dpn),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
@@ -967,7 +961,7 @@
          allocate(tempCC(   s(1)+x,s(2)+y,s(3)+z))
          allocate(tempAveCC(s(1)+x,s(2)+y,s(3)+z))
 
-         psi = zero
+         psi = real(0.0,cp)
          ! -------------------------- d/dx (u u_i) --------------------------
          if (faceDir.eq.1) then
            call myFace2CellCenter(tempAveCC,u,gd,1)
@@ -1037,17 +1031,15 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: curlU
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: dwdy,dvdz
          real(dpn),dimension(:,:,:),allocatable :: dwdx,dudz
          real(dpn),dimension(:,:,:),allocatable :: dvdx,dudy
          integer,dimension(3) :: s
          integer :: Nx,Ny,Nz
-         integer,dimension(3) :: N
 
-         call getN(gd,N)
-         Nx = N(1); Ny = N(2); Nz = N(3)
+         Nx = gd%c(1)%N; Ny = gd%c(2)%N; Nz = gd%c(3)%N
 
          select case (dir)
          case (1)
@@ -1102,10 +1094,10 @@
          real(dpn),dimension(:,:,:),intent(inout) :: divU
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
          real(dpn),dimension(:,:,:),allocatable :: temp
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,dimension(3) :: s
          s = shape(u)
-         divU = zero
+         divU = real(0.0,cp)
          allocate(temp(s(1),s(2),s(3)))
          call myDel(temp,u,gd,1,1,1,0)
          divU = divU + temp
@@ -1121,10 +1113,10 @@
          real(dpn),dimension(:,:,:),intent(inout) :: lapU
          real(dpn),dimension(:,:,:),intent(in) :: u
          real(dpn),dimension(:,:,:),allocatable :: temp
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,dimension(3) :: s
          s = shape(u)
-         lapU = zero
+         lapU = real(0.0,cp)
 
          allocate(temp(s(1),s(2),s(3)))
 
@@ -1148,7 +1140,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: gradx,grady,gradz
          real(dpn),dimension(:,:,:),intent(in) :: p
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          call myDel(gradx,p,gd,1,1,3,1) ! Padding avoids calcs on fictive cells
          call myDel(grady,p,gd,1,2,3,1) ! Padding avoids calcs on fictive cells
          call myDel(gradz,p,gd,1,3,3,1) ! Padding avoids calcs on fictive cells
@@ -1158,7 +1150,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: gradp
          real(dpn),dimension(:,:,:),intent(in) :: p
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          call myDel(gradp,p,gd,1,dir,1,0)
        end subroutine
@@ -1169,7 +1161,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: curl
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: temp1,temp2
          integer,dimension(3) :: s
@@ -1204,7 +1196,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: curl
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: tempfx,tempfy,tempfz
          real(dpn),dimension(:,:,:),allocatable :: tempe
@@ -1272,7 +1264,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: df
          real(dpn),dimension(:,:,:),intent(in) :: f,k
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir1,dir2
          real(dpn),dimension(:,:,:),allocatable :: temp1,temp2
          integer,dimension(3) :: s
@@ -1316,7 +1308,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: gradx,grady,gradz
          real(dpn),dimension(:,:,:),intent(in) :: f
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          ! call myNode2CellCenter(cellCenter,node,1,gd)
          ! call myCellGrad(gradx,grady,gradz,f,gd)
          call myDel(gradx,f,gd,1,1,2,0)
@@ -1333,7 +1325,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: df
          real(dpn),dimension(:,:,:),intent(in) :: f
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          ! Padding is necessary for the divergence.
          call myDel(df,f,gd,1,dir,2,0)
@@ -1348,7 +1340,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: df
          real(dpn),dimension(:,:,:),intent(in) :: f
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          integer,dimension(3) :: s
          integer :: x,y,z
@@ -1375,10 +1367,10 @@
          real(dpn),dimension(:,:,:),intent(inout) :: divU
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
          real(dpn),dimension(:,:,:),allocatable :: temp
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,dimension(3) :: s
          s = shape(u)
-         divU = zero
+         divU = real(0.0,cp)
 
          allocate(temp(s(1),s(2),s(3)))
          call myNode2NodeDelUpwind(temp,u,gd,1)
@@ -1396,7 +1388,7 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: curl
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: temp1,temp2
          integer,dimension(3) :: s
@@ -1430,10 +1422,10 @@
          real(dpn),dimension(:,:,:),intent(inout) :: lapU
          real(dpn),dimension(:,:,:),intent(in) :: u
          real(dpn),dimension(:,:,:),allocatable :: temp
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,dimension(3) :: s
          s = shape(u)
-         lapU = zero
+         lapU = real(0.0,cp)
          allocate(temp(s(1),s(2),s(3)))
 
          call myDel(temp,u,gd,2,1,2,1)
@@ -1450,14 +1442,14 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: psi
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w,phi
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          real(dpn),dimension(:,:,:),allocatable :: temp
          real(dpn),dimension(:,:,:),allocatable :: xi
          integer :: i,j,k
          integer,dimension(3) :: s
          s = shape(u)
 
-         psi = zero
+         psi = real(0.0,cp)
          allocate(temp(s(1),s(2),s(3)))
          allocate(xi(s(1),s(2),s(3)))
 
@@ -1511,12 +1503,12 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: curl
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: curlDir
          real(dpn),dimension(:,:,:),allocatable :: tempU,tempV,tempW
          integer,dimension(3) :: su,sv,sw,s
          s = shape(curl)
-         curl = zero
+         curl = real(0.0,cp)
          select case (curlDir)
          case (1)
            sv = shape(v); sw = shape(w)
@@ -1570,14 +1562,14 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: div
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w,Bx,By,Bz
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: temp1,temp2
          integer,dimension(3) :: s
          s = shape(div)
          allocate(temp1(s(1),s(2),s(3)))
          allocate(temp2(s(1),s(2),s(3)))
-         div = zero
+         div = real(0.0,cp)
 
          ! * = needs interpolation --         *    *
          ! -------------------------- d/dx (u Bi - ui Bx)
@@ -1643,12 +1635,12 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: div
          real(dpn),dimension(:,:,:),intent(in) :: Bx,By,Bz,sigmaInv
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: temp1
          integer,dimension(3) :: s
          s = shape(div)
-         div = zero
+         div = real(0.0,cp)
          allocate(temp1(s(1),s(2),s(3)))
          ! -------------------------- d/dx [ sigmaInv ( d/dxi (Bx/mu) - d/dx (Bi/mu) ) ]
          select case (dir)
@@ -1694,12 +1686,12 @@
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: jcrossB
          real(dpn),dimension(:,:,:),intent(in) :: Bx,By,Bz,mu
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
          real(dpn),dimension(:,:,:),allocatable :: temp1,temp2,temp3
          integer,dimension(3) :: s
          s = shape(jcrossB)
-         jcrossB = zero
+         jcrossB = real(0.0,cp)
          allocate(temp1(s(1),s(2),s(3)))
          allocate(temp2(s(1),s(2),s(3)))
          allocate(temp3(s(1),s(2),s(3)))
@@ -1769,7 +1761,7 @@
          type(vectorField),intent(inout) :: B,J
          type(vectorField),intent(in) :: B0
          type(scalarField),intent(in) :: mu
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          ! B = (B + B0)/mu
          call add(B,B0)
          call divide(B,mu)
@@ -1786,9 +1778,10 @@
          type(vectorField),intent(in) :: U_fi
          type(vectorField),intent(inout) :: U_cct
          type(scalarField),intent(inout) :: U_cci
-         type(griddata),intent(in) :: gd
+         type(grid),intent(in) :: gd
          integer,dimension(3) :: Ni
-         call getNi(gd,Ni)
+
+         Ni = (/gd%c(1)%sc-2,gd%c(2)%sc-2,gd%c(3)%sc-2/) ! minus fictitious cells
          ! (exclude fictitious cells)
          call myFace2CellCenter(U_cci%phi,U_fi%x,gd,1)
           U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &

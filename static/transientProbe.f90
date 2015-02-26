@@ -2,7 +2,7 @@
        ! Implementation:
        ! 
        !       type(probe) :: p
-       !       call initialize(p,dir,name,TF_freshStart)        ! enables print/export
+       !       call init(p,dir,name,TF_freshStart)        ! enables print/export
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -19,7 +19,7 @@
 
        private
        public :: probe
-       public :: initialize,set,apply
+       public :: init,set,apply
        public :: export, printProbe,delete
 
        type probe
@@ -30,16 +30,16 @@
          logical :: TF_freshStart             ! simulation starts from t=0
        end type
 
-       interface initialize;    module procedure initializeProbe;           end interface
-       interface set;           module procedure setProbeData;              end interface
-       interface apply;         module procedure applyProbe;                end interface
-       interface export;        module procedure exportProbe;               end interface
-       interface printProbe;    module procedure printTransientProbe;       end interface
-       interface delete;        module procedure deleteProbe;               end interface
+       interface init;        module procedure initProbe;            end interface
+       interface set;         module procedure setProbeData;         end interface
+       interface apply;       module procedure applyProbe;           end interface
+       interface export;      module procedure exportProbe;          end interface
+       interface printProbe;  module procedure printTransientProbe;  end interface
+       interface delete;      module procedure deleteProbe;          end interface
 
        contains
 
-       subroutine initializeProbe(p,dir,name,TF_freshStart)
+       subroutine initProbe(p,dir,name,TF_freshStart)
          implicit none
          type(probe),intent(inout) :: p
          character(len=*),intent(in) :: dir

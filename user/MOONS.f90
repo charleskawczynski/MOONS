@@ -113,8 +113,8 @@
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
-         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
@@ -154,18 +154,20 @@
          call exportVersion(dir)
 
          ! **************************************************************
-
          call setGriddata(gd,grid_mom,grid_ind,Re,Ha)
          ! call initialize(mom,gd,dir)
          ! call initialize(ind,gd,dir)
-         call init(mom,gd,grid_mom,dir)
-         call init(ind,gd,grid_ind,dir)
+         call init(mom,grid_mom,dir)
+         write(*,*) 'reached 1'
+         call init(ind,grid_ind,dir)
+         write(*,*) 'reached 2'
          ! call initialize(vecOps,gd)
 
          ! ****************** INITIALIZE RUNDATA ************************
          ! These all need to be re-evaluated because the Fo and Co now depend
          ! on the smallest spatial step (dhMin)
 
+         write(*,*) 'reached 3'
          call setRunData(rd,dTime,ds,Re,Ha,Rem,&
           mom%U%x,mom%U%y,mom%U%z,gd,solveCoupled,solveBMethod)
 
@@ -179,17 +181,18 @@
          call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
-         call computeDivergence(mom,gd)
-         call computeDivergence(ind,gd)
+         call computeDivergence(mom,mom%g)
+         call computeDivergence(ind,ind%g)
 
          ! call computeCurrent(jx,jy,jz,Bx,By,Bz,Bx0,By0,Bz0,mu,Re,Ha,gd)
 
          if ((.not.(restartU.and.restartB)).and.(.not.quickStart)) then
-           call exportRaw(mom,gd,dir)
-           call exportRaw(ind,gd,dir)
+           call exportRaw(mom,mom%g,dir)
+           call exportRaw(ind,ind%g,dir)
          endif
 
          call checkGrid(gd)
+         write(*,*) 'reached 4'
 
          write(*,*) ''
          write(*,*) 'Press enter if these parameters are okay.'
@@ -217,9 +220,10 @@
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
-         ! call unitTestRelax(ind%B%x,gd,dir)
-         ! call unitTestADI(ind%B%x,gd,dir)
-         ! call unitTestMG(ind%B%x,gd,dir)
+         ! call unitTestRelax(ind%B%x,ind%g,dir)
+         ! call unitTestADI(ind%B%x,ind%g,dir)
+         ! call unitTestMG(ind%B%x,ind%g,dir)
+         write(*,*) 'reached 5'
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 
          ! if (calculateOmegaPsi) call calcOmegaPsi(u,v,w,gd,dir)
@@ -236,16 +240,15 @@
 
        subroutine unitTestMG(B,gd,dir)
         implicit none
-        type(griddata),intent(in) :: gd
+        type(grid),intent(in) :: gd
         real(dpn),dimension(:,:,:),intent(in) :: B
         character(len=*),intent(in) :: dir
         integer,parameter :: Nlevels = 8
         integer :: i
         type(grid),dimension(Nlevels) :: g
 
-        call init(g(1),gd%xnt,gd%ynt,gd%znt,2)
         do i = 1,Nlevels
-          call init(g(i),gd%xnt,gd%ynt,gd%znt,2)
+          call init(g(i),gd)
         enddo
 
         call export(g(1),dir,'grid_1')
@@ -262,7 +265,7 @@
 
        subroutine unitTestADI(B,gd,dir)
         implicit none
-        type(griddata),intent(in) :: gd
+        type(grid),intent(in) :: gd
         real(dpn),dimension(:,:,:),intent(in) :: B
         character(len=*),intent(in) :: dir
         real(dpn),dimension(:,:,:),allocatable :: u,u_exact,f
@@ -290,7 +293,7 @@
         do j = 1,s(2)
         do i = 1,s(1)
           ! u_exact(i,j,k) = sin(p*PI*gd%xni(i))*sin(q*PI*gd%yni(j))*sin(r*PI*gd%zni(k)) ! Dirichlet
-          u_exact(i,j,k) = cos(p*PI*gd%xni(i))*cos(q*PI*gd%yni(j))*cos(r*PI*gd%zni(k)) ! Neumann
+          u_exact(i,j,k) = cos(p*PI*gd%c(1)%hn(i))*cos(q*PI*gd%c(2)%hn(j))*cos(r*PI*gd%c(3)%hn(k)) ! Neumann
           f(i,j,k) = -PI**2.0*(p**2.0+q**2.0+r**2.0)*u_exact(i,j,k)
         enddo
         enddo
@@ -307,9 +310,9 @@
         call computeError(e,u_exact,u)
         call printMyError(e,'u')
 
-        call writeToFile(gd%xni,gd%yni,gd%zni,u,dir,'u')
-        call writeToFile(gd%xni,gd%yni,gd%zni,u_exact,dir,'u_exact')
-        call writeToFile(gd%xni,gd%yni,gd%zni,f,dir,'f')
+        call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,u,dir,'u')
+        call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,u_exact,dir,'u_exact')
+        call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,f,dir,'f')
 
         deallocate(u,u_exact,f)
        end subroutine

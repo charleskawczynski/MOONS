@@ -24,6 +24,7 @@
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc
        end type
 
+       interface init;       module procedure initGridCopy;   end interface
        interface init;       module procedure initGrid1;      end interface
        interface init;       module procedure initGrid2;      end interface
        interface init;       module procedure initGrid3;      end interface
@@ -45,6 +46,15 @@
          integer :: i
          do i = 1,3; call delete(g%c(i)) ;enddo
          write(*,*) 'Grid deleted'
+       end subroutine
+
+       subroutine initGridCopy(g,f)
+        implicit none
+        type(grid),intent(inout) :: g
+        type(grid),intent(in) :: f
+        call init(g%c(1),f%c(1)%hn,2)
+        call init(g%c(2),f%c(2)%hn,2)
+        call init(g%c(3),f%c(3)%hn,2)
        end subroutine
 
        subroutine initGrid1(g,h,dir,gridType)

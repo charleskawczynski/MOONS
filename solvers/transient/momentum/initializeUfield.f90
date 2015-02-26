@@ -3,8 +3,7 @@
        use myIO_mod
        use myDebug_mod
        use simParams_mod
-       use myAllocate_mod
-       use griddata_mod
+       use grid_mod
        use myDel_mod
        use vectorOps_mod
        use BCs_mod
@@ -16,91 +15,88 @@
        implicit none
 
        private
-       public :: initializeUfield
+       public :: initUfield
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
        contains
 
-       subroutine initializeUfield(u,v,w,p,gd,dir)
+       subroutine initUfield(u,v,w,p,g,dir)
          implicit none
          ! Auxiliary data types
          character(len=*),intent(in) :: dir
-         type(griddata),intent(in) :: gd
-         real(dpn),dimension(:,:,:),intent(inout) :: u,v,w,p
+         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
          if (restartU) then
-           call initializeRestartUfield(u,v,w,p,gd,dir)
+           call initRestartUfield(u,v,w,p,g,dir)
          elseif (preDefinedU_ICs.ne.0) then
-           call initializePreDefinedUfield(u,v,w,p,gd,dir)
+           call initPreDefinedUfield(u,v,w,p,g,dir)
          else
-           call initializeUserUfield(u,v,w,p,gd)
+           call initUserUfield(u,v,w,p)
          endif
        end subroutine
        
-       subroutine initializeRestartUfield(u,v,w,p,gd,dir)
+       subroutine initRestartUfield(u,v,w,p,g,dir)
          implicit none
          ! Auxiliary data types
          character(len=*),intent(in) :: dir
-         type(griddata),intent(in) :: gd
-         real(dpn),dimension(:,:,:),intent(inout) :: u,v,w,p
-         integer :: Nx,Ny,Nz
+         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
          ! Coordinates
-         real(dpn),dimension(:),allocatable :: xc,yc,zc
-         real(dpn),dimension(:),allocatable :: xn,yn,zn
-
-         call myAllocate(Nx,Ny,Nz,gd,interiorCC)
-         allocate(xc(Nx),yc(Ny),zc(Nz))
-         call myAllocate(Nx,Ny,Nz,gd,interiorN)
-         allocate(xn(Nx),yn(Ny),zn(Nz))
-
-         call getXYZcc(gd,xc,yc,zc)
-         call getXYZn(gd,xn,yn,zn)
-
-         call readFromFile(xn,yc,zc,u,dir//'Ufield/','ufi')
-         call readFromFile(xc,yn,zc,v,dir//'Ufield/','vfi')
-         call readFromFile(xc,yc,zn,w,dir//'Ufield/','wfi')
-         call readFromFile(xc,yc,zc,p,dir//'Ufield/','pci')
-
-         deallocate(xn,yn,zn)
-         deallocate(xc,yc,zc)
+         call readFromFile(g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u,dir//'Ufield/','ufi')
+         call readFromFile(g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,v,dir//'Ufield/','vfi')
+         call readFromFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,w,dir//'Ufield/','wfi')
+         call readFromFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,p,dir//'Ufield/','pci')
        end subroutine
        
-       subroutine initializePreDefinedUfield(u,v,w,p,gd,dir)
+       subroutine initPreDefinedUfield(u,v,w,p,g,dir)
          implicit none
          ! Auxiliary data types
          character(len=*),intent(in) :: dir
-         type(griddata),intent(in) :: gd
-         real(dpn),dimension(:,:,:),intent(inout) :: u,v,w,p
+         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
 
-         ! real(dpn),dimension(:,:),allocatable :: bvals
+         ! real(cp),dimension(:,:),allocatable :: bvals
          integer :: Nx,Ny,Nz
-         real(dpn) :: x_0,x_N
-         real(dpn) :: y_0,y_N
-         real(dpn) :: z_0,z_N
+         real(cp) :: x_0,x_N
+         real(cp) :: y_0,y_N
+         real(cp) :: z_0,z_N
          integer :: i,j,k
          ! Coordinates
-         real(dpn),dimension(:),allocatable :: xc,yc,zc
-         real(dpn),dimension(:),allocatable :: xn,yn,zn
+         real(cp),dimension(:),allocatable :: xn,yn,zn
+         real(cp),dimension(:),allocatable :: xc,yc,zc
 
          ! Vortex variables
-         real(dpn) :: omega0,r,alpha,r0
-         real(dpn),dimension(:,:,:),allocatable :: omega,psi
+         real(cp) :: omega0,r,alpha,r0
+         real(cp),dimension(:,:,:),allocatable :: omega,psi
          type(BCs) :: psi_bcs
          type(solverSettings) :: ss_psi
-         real(dpn),dimension(:,:,:),allocatable :: tempx,tempy,tempz,temp
+         real(cp),dimension(:,:,:),allocatable :: tempx,tempy,tempz,temp
          type(myError) :: err
-         real(dpn),dimension(3) :: hmin,hmax
+         real(cp),dimension(3) :: hmin,hmax
          type(mySOR) :: SOR
 
-         call getRange(gd,hmin,hmax)
-         x_0 = hmin(1); y_0 = hmin(2); z_0 = hmin(3)
-         x_N = hmax(1); y_N = hmax(2); z_N = hmax(3)
 
-         call myAllocate(Nx,Ny,Nz,gd,interiorCC)
-         allocate(xc(Nx),yc(Ny),zc(Nz))
-         call myAllocate(Nx,Ny,Nz,gd,interiorN)
-         allocate(xn(Nx),yn(Ny),zn(Nz))
+         hmin = (/g%c(1)%hmin,g%c(2)%hmin,g%c(3)%hmin/)
+         hmax = (/g%c(1)%hmax,g%c(2)%hmax,g%c(3)%hmax/)
 
-         call getXYZcc(gd,xc,yc,zc)
-         call getXYZn(gd,xn,yn,zn)
+         x_0 = g%c(1)%hmin; y_0 = g%c(2)%hmin; z_0 = g%c(3)%hmin
+         x_N = g%c(1)%hmax; y_N = g%c(2)%hmax; z_N = g%c(3)%hmax
+
+         allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
+         allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
+
+         xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
+         xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
+
 
          u = 0.0; v = 0.0; v = 0.0
          p = 0.0
@@ -123,7 +119,7 @@
                w(:,j,k) = 0.0
              enddo
            enddo
-           call initializeFullyDevelopedDuctFlow(u,v,w,p,gd,1)
+           call initFullyDevelopedDuctFlow(u,v,w,p,g,1)
 
          case (3) ! Vortex
 
@@ -147,10 +143,8 @@
            call init(ss_psi)
            call setMaxIterations(ss_psi,100)
            omega = -omega
-!            call initialize(SOR,omega,gd,1)
-           call myPoisson(SOR,psi,omega,psi_bcs,gd,ss_psi,err,1,.true.)
-!            call delete(SOR)
-!            call myPoisson(psi,omega,psi_bcs,gd,ss_psi,err,1,.true.)
+           call myPoisson(SOR,psi,omega,psi_bcs,g,ss_psi,err,1,.true.)
+!            call myPoisson(psi,omega,psi_bcs,g,ss_psi,err,1,.true.)
 
            call writeToFile(xc,yc,zc,omega,dir//'Ufield/','omega')
            call writeToFile(xc,yc,zc,psi,dir//'Ufield/','psi')
@@ -161,13 +155,13 @@
            allocate(tempz(Nx+2,Ny+2,Nz+2))
            allocate( temp(Nx+2,Ny+2,Nz+2))
 
-           call myCC2FaceGrad(tempx,tempy,tempz,psi,gd)
+           call myCC2FaceGrad(tempx,tempy,tempz,psi,g)
 
-           call myFace2CellCenter(temp,tempy(:,1:Ny+1,:),gd,2)
-           call myCellCenter2Face(u,temp,gd,1)
+           call myFace2CellCenter(temp,tempy(:,1:Ny+1,:),g,2)
+           call myCellCenter2Face(u,temp,g,1)
 
-           call myFace2CellCenter(temp,tempx(1:Nx+1,:,:),gd,1)
-           call myCellCenter2Face(v,temp,gd,2)
+           call myFace2CellCenter(temp,tempx(1:Nx+1,:,:),g,1)
+           call myCellCenter2Face(v,temp,g,2)
            v = -v
 
            deallocate(psi)
@@ -180,38 +174,35 @@
          deallocate(xc,yc,zc)
        end subroutine
 
-       subroutine initializeFullyDevelopedDuctFlow(u,v,w,p,gd,dir)
+       subroutine initFullyDevelopedDuctFlow(u,v,w,p,g,dir)
          ! This routine initializes a fully developed duct flow
          ! profile along direction dir.
          implicit none
-         real(dpn),dimension(:,:,:),intent(inout) :: u,v,w,p
-         type(griddata),intent(in) :: gd
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
+         type(grid),intent(in) :: g
          integer,intent(in) :: dir
 
-         integer :: Nx,Ny,Nz
          integer :: i,j,imax,jmax
          ! Coordinates
-         real(dpn),dimension(:),allocatable :: xc,yc,zc
-         real(dpn),dimension(:),allocatable :: xn,yn,zn
-         real(dpn),dimension(:),allocatable :: hx,hy
+         real(cp),dimension(:),allocatable :: xc,yc,zc
+         real(cp),dimension(:),allocatable :: xn,yn,zn
+         real(cp),dimension(:),allocatable :: hx,hy
 
          ! Vortex variables
-         real(dpn) :: alpha,height,width,F,A,A1,A2,A3
-         real(dpn),dimension(:,:),allocatable :: u_temp
-         real(dpn),dimension(3) :: hmin,hmax
+         real(cp) :: alpha,height,width,F,A,A1,A2,A3
+         real(cp),dimension(:,:),allocatable :: u_temp
+         real(cp),dimension(3) :: hmin,hmax
          integer :: n,m,nMax,mMax,x,y,z
          integer,dimension(3) :: s,Ni
 
-         call getRange(gd,hmin,hmax)
-         call getNi(gd,Ni)
+         hmin = (/g%c(1)%hmin,g%c(2)%hmin,g%c(3)%hmin/)
+         hmax = (/g%c(1)%hmax,g%c(2)%hmax,g%c(3)%hmax/)
+         Ni = (/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
 
-         call myAllocate(Nx,Ny,Nz,gd,interiorCC)
-         allocate(xc(Nx),yc(Ny),zc(Nz))
-         call myAllocate(Nx,Ny,Nz,gd,interiorN)
-         allocate(xn(Nx),yn(Ny),zn(Nz))
-
-         call getXYZcc(gd,xc,yc,zc)
-         call getXYZn(gd,xn,yn,zn)
+         allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
+         allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
+         xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
+         xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
 
          u = 0.0d0; v = 0.0d0; w = 0.0d0; p = 0.0d0
 
@@ -282,10 +273,9 @@
          deallocate(xc,yc,zc)
        end subroutine
 
-       subroutine initializeUserUfield(u,v,w,p,gd)
+       subroutine initUserUfield(u,v,w,p)
          implicit none
-         type(griddata),intent(in) :: gd
-         real(dpn),dimension(:,:,:),intent(inout) :: u,v,w,p
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
 
          u = 0.0d0; v = 0.0d0; w = 0.0d0
          p = 0.0d0
