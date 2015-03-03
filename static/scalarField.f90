@@ -9,7 +9,6 @@
         !         _DEBUG_FIELD_ ! not yet implemented
         !         _PARALLELIZE_SCALAR_FIELD_
 
-      use constants_mod
         implicit none
         private
 
@@ -29,9 +28,19 @@
         public :: printScalarField
         public :: checkScalarField
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
         type scalarField
           integer,dimension(3) :: s
-          real(dpn),dimension(:,:,:),allocatable :: phi
+          real(cp),dimension(:,:,:),allocatable :: phi
         end type
 
       interface delete
@@ -109,7 +118,7 @@
         subroutine scalarAssignOp(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           f%phi = g
         end subroutine
 
@@ -135,7 +144,7 @@
         function fieldScalarAddOp(f,g) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = f%phi + g
           q%s = f%s
@@ -143,7 +152,7 @@
         function scalarFieldAddOp(g,f) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = f%phi + g
           q%s = f%s
@@ -163,7 +172,7 @@
         function fieldScalarSubtractOp(f,g) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = f%phi - g
           q%s = f%s
@@ -171,7 +180,7 @@
         function scalarFieldSubtractOp(g,f) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = g - f%phi
           q%s = f%s
@@ -191,7 +200,7 @@
         function fieldScalarMultiplyOp(f,g) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = f%phi*g
           q%s = f%s
@@ -199,7 +208,7 @@
         function scalarFieldMultiplyOp(g,f) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = f%phi*g
           q%s = f%s
@@ -219,7 +228,7 @@
         function fieldScalarDivideOp(f,g) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = f%phi/g
           q%s = f%s
@@ -227,7 +236,7 @@
         function scalarFieldDivideOp(g,f) result(q)
           implicit none
           type(scalarField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(scalarField) :: q
           q%phi = g/f%phi
           q%s = f%s
@@ -259,7 +268,7 @@
         subroutine scalarAssign(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -301,7 +310,7 @@
         subroutine fieldScalarAdd(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -320,7 +329,7 @@
         subroutine scalarFieldAdd(g2,f)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -362,7 +371,7 @@
         subroutine fieldScalarSubtract(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -381,7 +390,7 @@
         subroutine scalarFieldSubtract(g2,f)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -423,7 +432,7 @@
         subroutine fieldScalarMultiply(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -442,7 +451,7 @@
         subroutine scalarFieldMultiply(g2,f)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -484,7 +493,7 @@
         subroutine fieldScalarDivide(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -503,7 +512,7 @@
         subroutine scalarFieldDivide(g2,f)
           implicit none
           type(scalarField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_SCALAR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO

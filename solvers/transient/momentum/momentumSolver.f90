@@ -1,7 +1,7 @@
        module momentumSolver_mod
        use simParams_mod
-       use constants_mod
-       use myAllocate_mod
+       use rundata_mod
+       
        use scalarField_mod
        use vectorField_mod
 
@@ -10,16 +10,20 @@
 
        use myIO_mod
        use grid_mod
-       use rundata_mod
+
        use myError_mod
        use vectorOps_mod
+
        use BCs_mod
        use applyBCs_mod
+
        use solverSettings_mod
+       use myTime_mod
+
        use mySOR_mod
        use myADI_mod
-       use myTime_mod
        use myPoisson_mod
+
        use baseProbes_mod
        use derivedProbes_mod
        
@@ -220,8 +224,8 @@
            call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
          end select
 
-         ! mom%Ustar = (-dt)*mom%TempVF
-         call multiply(mom%TempVF,(-dt))
+         ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
+         call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
 
          ! Laplacian Terms -----------------------------------------
@@ -231,17 +235,18 @@
          call myFaceLap(mom%TempVF%y,mom%U%y,g,2)
          call myFaceLap(mom%TempVF%z,mom%U%z,g,3)
 
-         ! mom%Ustar = mom%Ustar + (dt/Re)*mom%TempVF
-         call multiply(mom%TempVF,(dt/Re))
+         ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
+         call multiply(mom%TempVF,(real(1.0,cp)/Re))
          call add(mom%Ustar,mom%TempVF)
 
          ! Source Terms (e.g. N j x B) -----------------------------
-         ! mom%Ustar = mom%Ustar + dt*mom%F
-         call multiply(mom%F,dt)
+         ! mom%Ustar = mom%Ustar + real(1.0,cp)*mom%F
+         call multiply(mom%F,real(1.0,cp))
          call add(mom%Ustar,mom%F)
 
-         ! Velocity at Previous Time Step Terms --------------------
-         ! mom%Ustar = mom%Ustar + mom%U
+         ! Solve with explicit Euler --------------------
+         ! mom%Ustar = mom%U + dt*mom%Ustar
+         call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
          
          ! Pressure Correction -------------------------------------
@@ -288,9 +293,6 @@
          dt = getDtime(rd)
          Re = getRe(rd)
 
-         call setAlpha(mom%ADI_u,real(1.0,cp)/Re)
-         call setDt(mom%ADI_u,dt)
-
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
          case (1)
@@ -307,30 +309,33 @@
            call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
          end select
 
-         ! mom%Ustar = -mom%TempVF
+         ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
 
          ! Source Terms (e.g. N j x B) -----------------------------
-         ! mom%Ustar = mom%Ustar + dt*mom%F
+         ! mom%Ustar = mom%Ustar + real(1.0,cp)*mom%F
+         call multiply(mom%F,real(1.0,cp))
          call add(mom%Ustar,mom%F)
-
-         ! Velocity at Previous Time Step Terms --------------------
-         ! mom%Ustar = mom%Ustar + mom%U
-         call add(mom%Ustar,mom%U)
 
          ! Solve momentum with ADI --------------------
          ! u_t = 1/Re*(u_xx + u_yy + u_zz) - f
+         ! Where f = RHS of NS
          ! mom%Ustar = mom%Ustar + mom%U
          call setDt(mom%ADI_u,dt)
          call setAlpha(mom%ADI_u,real(1.0,cp)/Re)
 
-         call apply(mom%ADI_u,mom%Ustar%x,mom%F%x,mom%u_bcs,g,&
+         call assign(mom%F,mom%Ustar)
+         call multiply(mom%F,real(-1.0,cp))
+
+         call apply(mom%ADI_u,mom%U%x,mom%F%x,mom%u_bcs,g,&
             mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
-         call apply(mom%ADI_u,mom%Ustar%y,mom%F%y,mom%v_bcs,g,&
+         call apply(mom%ADI_u,mom%U%y,mom%F%y,mom%v_bcs,g,&
             mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
-         call apply(mom%ADI_u,mom%Ustar%z,mom%F%z,mom%w_bcs,g,&
+         call apply(mom%ADI_u,mom%U%z,mom%F%z,mom%w_bcs,g,&
             mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+
+         call assign(mom%Ustar,mom%U)
          
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.1) then
@@ -438,18 +443,16 @@
          deallocate(tempnx,tempny,tempnz,tempn)
 
          ! ****************** EXPORT IN CELL CENTERS ************************
-         if (outputAlternativeFormats) then
-           ! Velocities at cell centers:
-           Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-           allocate(tempccx(Nx,Ny,Nz))
-           allocate(tempccy(Nx,Ny,Nz))
-           allocate(tempccz(Nx,Ny,Nz))
-           call myFace2CellCenter(tempccx,mom%U%x,g,1)
-           call myFace2CellCenter(tempccy,mom%U%y,g,2)
-           call myFace2CellCenter(tempccz,mom%U%z,g,3)
-           call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,tempccy,tempccz,dir//'Ufield/','uci','vci','wci')
-           deallocate(tempccx,tempccy,tempccz)
-         endif
+         ! Velocities at cell centers:
+         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+         allocate(tempccx(Nx,Ny,Nz))
+         allocate(tempccy(Nx,Ny,Nz))
+         allocate(tempccz(Nx,Ny,Nz))
+         call myFace2CellCenter(tempccx,mom%U%x,g,1)
+         call myFace2CellCenter(tempccy,mom%U%y,g,2)
+         call myFace2CellCenter(tempccz,mom%U%z,g,3)
+         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,tempccy,tempccz,dir//'Ufield/','uci','vci','wci')
+         deallocate(tempccx,tempccy,tempccz)
        end subroutine
 
        subroutine computeDivergenceMomentum(mom,g)

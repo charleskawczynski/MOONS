@@ -8,7 +8,6 @@
        ! - efficiency = runtime*L2norm (think error vs run time ~ 1/t, we want closest to origin)
 
 
-       use constants_mod
        use myIO_mod
        use simParams_mod
        use solverSettings_mod
@@ -17,59 +16,67 @@
        private
 
        public :: myTime
-       public :: initialize
+       public :: init,print
 
        public :: startTime,stopTime
        public :: getTotRunTime
        public :: getRunTime
        public :: estimateRemaining
 
-       public :: printTime
        public :: printTimeWithUnits
        public :: writeTime
 
        public :: computationInProgress
        public :: computationComplete
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
+
        type myTime
         private
         ! Known Quantities
-        real(dpn) :: t_start_sim
-        real(dpn) :: t_finish_sim
-        real(dpn) :: runTime_sim
-        real(dpn) :: t_start
-        real(dpn) :: t_finish
-        real(dpn) :: runTime
-        real(dpn) :: runTimeCumulative
+        real(cp) :: t_start_sim
+        real(cp) :: t_finish_sim
+        real(cp) :: runTime_sim
+        real(cp) :: t_start
+        real(cp) :: t_finish
+        real(cp) :: runTime
+        real(cp) :: runTimeCumulative
         integer :: N
         integer :: i_start
         integer :: i_finish
         integer :: i_start_sim
         integer :: i_finish_sim
         integer :: countRate
-        real(dpn) :: runTimeAve
+        real(cp) :: runTimeAve
         integer :: iterPerSec
         integer :: iterPerDay
         ! Estimated Quantities
         integer :: NMax
         integer :: NRemaining
-        real(dpn) :: estimatedRemaining
-        real(dpn) :: estimatedTotal
-        real(dpn) :: percentageComplete
+        real(cp) :: estimatedRemaining
+        real(cp) :: estimatedTotal
+        real(cp) :: percentageComplete
        end type
 
-       interface initialize
-         module procedure initializeTime
-       end interface
-
-       interface stopTime
-         module procedure stopTimeSS
-         module procedure stopTimeNoSS
-       end interface
+       interface init;              module procedure initTime;               end interface
+       interface stopTime;          module procedure stopTimeSS;             end interface
+       interface stopTime;          module procedure stopTimeNoSS;           end interface
+       interface estimateRemaining; module procedure estimateRemainingNoSS;  end interface
+       interface estimateRemaining; module procedure estimateRemainingSS;    end interface
+       interface print;             module procedure printTime;              end interface
 
        contains
 
-      subroutine initializeTime(this)
+      subroutine initTime(this)
         implicit none
         type(myTime),intent(inout) :: this
         this%t_start = 0.0
@@ -99,6 +106,17 @@
         this%t_start = dble(this%i_start)
       end subroutine
 
+      subroutine stopTimeNoSS(this)
+        implicit none
+        type(myTime),intent(inout) :: this
+        call system_clock(this%i_finish,this%countRate)
+        this%t_finish = dble(this%i_finish)
+        this%N = this%N + 1
+        this%runTime = (this%t_finish - this%t_start)/dble(this%countRate)
+        this%runTimeCumulative = this%runTimeCumulative + this%runTime
+        this%runTimeAve = (this%t_finish - this%t_start)/dble(this%countRate)
+      end subroutine
+
       subroutine stopTimeSS(this,ss)
         implicit none
         type(myTime),intent(inout) :: this
@@ -122,25 +140,26 @@
         this%iterPerDay = floor(1.0/this%runTimeAve*3600.0*24.0)
       end subroutine
 
-      subroutine stopTimeNoSS(this)
+      subroutine estimateRemainingNoSS(this,Nmax)
         implicit none
         type(myTime),intent(inout) :: this
-        call system_clock(this%i_finish,this%countRate)
-        this%t_finish = dble(this%i_finish)
-        ! this%N = this%N + 1
-        this%runTime = (this%t_finish - this%t_start)/dble(this%countRate)
-        this%runTimeCumulative = this%runTimeCumulative + this%runTime
-        this%runTimeAve = (this%t_finish - this%t_start)/dble(this%countRate)
+        integer,intent(in) :: Nmax
+        this%NMax = Nmax
+        this%estimatedRemaining = LIPx(dble(0.0),dble(this%N-1),&
+        this%runTimeAve,dble(this%N),dble(this%NMax))
+        this%estimatedTotal = this%runTimeAve*this%NMax
+        this%percentageComplete = dble(this%N)/dble(this%NMax)*100.0
+        this%NRemaining = this%NMax - this%N
       end subroutine
 
-      subroutine estimateRemaining(this,ss)
+      subroutine estimateRemainingSS(this,ss)
         implicit none
         type(myTime),intent(inout) :: this
         type(solverSettings),intent(in) :: ss
         if (getMaxIterationsTF(ss)) then
           this%NMax = getMaxIterations(ss)
           this%estimatedRemaining = LIPx(dble(0.0),dble(this%N-1),&
-          this%runTimeAve,dble(this%N),dble(getMaxIterations(ss)))
+          this%runTimeAve,dble(this%N),dble(this%NMax))
           this%estimatedTotal = this%runTimeAve*this%NMax
           this%percentageComplete = dble(this%N)/dble(this%NMax)*100.0
         elseif (getMaxSimulationTimeTF(ss)) then
@@ -164,17 +183,10 @@
 
       function LIPx(x1,y1,x2,y2,y3) result(x3)
         implicit none
-        real(dpn),intent(in) :: x1,y1,x2,y2,y3
-        real(dpn) :: x3
+        real(cp),intent(in) :: x1,y1,x2,y2,y3
+        real(cp) :: x3
         x3 = x1 + (y3-y1)/(y2-y1)*(x2-x1)
       end function
-
-      ! function LIPy(x1,y1,x2,y2,x3) result(y3)
-      !   implicit none
-      !   real(dpn),intent(in) :: x1,y1,x2,y2,x3
-      !   real(dpn) :: y3
-      !   y3 = y1 + (x3-x1)/(x2-x1)*(y2-y1)
-      ! end function
 
       subroutine writeTime(this,dir,name)
         implicit none
@@ -192,14 +204,14 @@
       function getTotRunTime(this) result(runTime)
         implicit none
         type(myTime),intent(in) :: this
-        real(dpn) :: runTime
+        real(cp) :: runTime
         runTime = this%runTime
       end function
 
       function getRunTime(this) result(runTimeCumulative)
         implicit none
         type(myTime),intent(in) :: this
-        real(dpn) :: runTimeCumulative
+        real(cp) :: runTimeCumulative
         runTimeCumulative = this%runTimeCumulative
       end function
 
@@ -215,7 +227,7 @@
         type(myTime),intent(in) :: this
         integer,intent(in) :: NewU
         character(len=*),intent(in) :: name
-        real(dpn) :: temp
+        real(cp) :: temp
         character :: u
         write(newU,*) ''
         write(newU,*) '********* WALL CLOCK TIME INFO FOR '// trim(adjustl(name)) //' *******'
@@ -269,7 +281,7 @@
         type(myTime),intent(inout) :: this
         logical,intent(in),optional :: TF
         character :: u
-        real(dpn) :: temp
+        real(cp) :: temp
         call system_clock(this%i_finish_sim,this%countRate)
         this%t_finish_sim = this%i_finish_sim
         this%runTime_sim = (this%t_finish_sim - this%t_start_sim)/dble(this%countRate)
@@ -285,9 +297,9 @@
 
       subroutine printTimeWithUnits(t,name)
         implicit none
-        real(dpn),intent(in) :: t
+        real(cp),intent(in) :: t
         character(len=*),intent(in) :: name
-        real(dpn) :: temp
+        real(cp) :: temp
         character :: u
         temp = t
         call getTimeWithUnits(temp,u)
@@ -296,7 +308,7 @@
 
       subroutine getTimeWithUnits(t,u)
         implicit none
-        real(dpn),intent(inout) :: t
+        real(cp),intent(inout) :: t
         character,intent(out) :: u
          if ((t.ge.60.0).and.(t.lt.3600.0)) then
           t = t/60.0; u = 'm'

@@ -11,7 +11,6 @@
         !         _PARALLELIZE_VECTOR_FIELD_
 
         use scalarField_mod
-        use constants_mod
         implicit none
         private
 
@@ -32,9 +31,19 @@
         public :: checkVectorField
         public :: printVectorField
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
         type vectorField
           integer,dimension(3) :: sx,sy,sz
-          real(dpn),dimension(:,:,:),allocatable :: x,y,z
+          real(cp),dimension(:,:,:),allocatable :: x,y,z
         end type
 
 #ifdef _DEBUG_VECTOR_
@@ -192,7 +201,7 @@
         subroutine vectorScalarAssignOp(f,g)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           f%x = g
           f%y = g
           f%z = g
@@ -248,7 +257,7 @@
         function vectorScalarAddOp(f,g) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = f%x + g
           q%y = f%y + g
@@ -260,7 +269,7 @@
         function scalarVectorAddOp(g,f) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = f%x + g
           q%y = f%y + g
@@ -321,7 +330,7 @@
         function vectorScalarSubtractOp(f,g) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = f%x - g
           q%y = f%y - g
@@ -333,7 +342,7 @@
         function scalarVectorSubtractOp(g,f) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = g - f%x
           q%y = g - f%y
@@ -394,7 +403,7 @@
         function vectorScalarMultiplyOp(f,g) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = f%x * g
           q%y = f%y * g
@@ -406,7 +415,7 @@
         function scalarVectorMultiplyOp(g,f) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = f%x * g
           q%y = f%y * g
@@ -467,7 +476,7 @@
         function vectorScalarDivideOp(f,g) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = f%x / g
           q%y = f%y / g
@@ -479,7 +488,7 @@
         function scalarVectorDivideOp(g,f) result(q)
           implicit none
           type(vectorField),intent(in) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
           type(vectorField) :: q
           q%x = g / f%x
           q%y = g / f%y
@@ -614,7 +623,7 @@
         subroutine vectorScalarAssign(f,g)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -784,7 +793,7 @@
         subroutine vectorScalarAdd(f,g)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -823,7 +832,7 @@
         subroutine scalarVectorAdd(g2,f)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -993,7 +1002,7 @@
         subroutine vectorScalarSubtract(f,g)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -1032,7 +1041,7 @@
         subroutine scalarVectorSubtract(g2,f)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -1202,7 +1211,7 @@
         subroutine vectorScalarMultiply(f,g)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -1241,7 +1250,7 @@
         subroutine scalarVectorMultiply(g2,f)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -1411,7 +1420,7 @@
         subroutine vectorScalarDivide(f,g)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g
+          real(cp),intent(in) :: g
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
@@ -1450,7 +1459,7 @@
         subroutine scalarVectorDivide(g2,f)
           implicit none
           type(vectorField),intent(inout) :: f
-          real(dpn),intent(in) :: g2
+          real(cp),intent(in) :: g2
 #ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO

@@ -47,7 +47,6 @@
        use solverSettings_mod
        use simParams_mod
        use myIO_mod
-!        use myDebug_mod
        use grid_mod
        use griddata_mod
        implicit none
@@ -78,7 +77,6 @@
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
        public :: myNodeMagnitude      ! call myNodeMagnitude(mag,u,v,w)
        public :: myCollocatedCross    ! call myCollocatedCross(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
-       public :: assignInterior       ! call assignInterior(f,g,gridType[,faceDir])
 
        ! --------------------------------- DERIVATIVE ROUTINES ---------------------------------
        ! Face based derivatives
@@ -91,7 +89,7 @@
 
        ! Cell-center based derivatives
        public :: myCC2CCDiv           ! call myCC2CCDiv(divU,u,v,w,gd)
-       public :: myCC2CCLap           ! call myCC2CCLap(lapU,u,gd)
+       public :: CC2CCLap             ! call myCC2CCLap(lapU,u,gd)
        public :: myCC2FaceGrad        ! call myCC2FaceGrad(gradx,grady,gradz,p,gd)
        public :: myCC2CCDel           ! call myCC2CCDel(gradp,p,gd,dir)
        public :: myCCCurl             ! call myCCCurl(curl,u,v,w,gd,dir)
@@ -117,8 +115,11 @@
        public :: computeCurrent
        public :: embedVelocity
 
-       interface interp;         module procedure interpO2;       end interface
-       interface extrap;         module procedure extrapO2;       end interface
+       interface interp;     module procedure interpO2;            end interface
+       interface extrap;     module procedure extrapO2;            end interface
+       interface CC2CCLap;   module procedure CC2CCLapVariCoeff;   end interface
+       interface CC2CCLap;   module procedure CC2CCLapUnifCoeff;   end interface
+
 
        contains
 
@@ -591,71 +592,6 @@
          end select
        end subroutine
 
-       subroutine assignInterior(f,g,gridType,faceDir)
-         ! Based on the grid gridType, this routine assigns 
-         !     f(interior) = g(interior)
-         ! Where
-         !      gridType = 1 Cell centers (excluding walls)
-         !                 2 Cell centers (including walls)
-         !                 3 Cell corners (nodes, including boundaries)
-         !                 4 Cell faces (including boundaries)
-         implicit none
-         real(dpn),dimension(:,:,:),intent(inout) :: f
-         real(dpn),dimension(:,:,:),intent(in) :: g
-         integer,intent(in) :: gridType
-         integer,intent(in),optional :: faceDir
-
-         f = real(0.0,cp) ! This is VERY expensive need to fix
-
-         select case (gridType)
-           case (1) ! Cell center (excluding walls)
-           f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-           g(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-           case (2) ! Cell center (including walls)
-           f(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
-           g(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3))
-           case (3) ! Cell corner
-           f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-           g(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3))
-           case (4) ! Cell face
-           if (present(faceDir)) then
-           select case(faceDir)
-           case (1);
-             f(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-             g(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-           case (2);
-             f(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
-             g(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3))
-           case (3);
-             f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
-             g(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3))
-           case default
-             write(*,*) 'faceDir must be 1,2,3. Terminating';stop
-           end select
-           else
-             write(*,*) 'faceDir must be present. Terminating';stop
-           endif
-           case (5) ! Cell center after upwinding
-           if (present(faceDir)) then
-           select case(faceDir)
-           case (1);
-             f(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
-             g(Nici1(1):Nice2(1)-1,Nici1(2):Nici2(2),Nici1(3):Nici2(3))
-           case (2);
-             f(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-             g(Nici1(1):Nici2(1),Nici1(2):Nice2(2)-1,Nici1(3):Nici2(3))
-           case (3);
-             f(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-             g(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nice2(3)-1)
-           case default
-             write(*,*) 'faceDir must be 1,2,3. Terminating';stop
-           end select
-           else
-             write(*,*) 'faceDir must be present. Terminating';stop
-           endif
-         end select
-       end subroutine
-
        function orthogonalDirection(dir1,dir2) result(orthDir)
          implicit none
          integer,intent(in) :: dir1,dir2
@@ -1108,7 +1044,7 @@
          deallocate(temp)
        end subroutine
 
-       subroutine myCC2CCLap(lapU,u,gd) ! Finished
+       subroutine CC2CCLapUnifCoeff(lapU,u,gd) ! Finished
          implicit none
          real(dpn),dimension(:,:,:),intent(inout) :: lapU
          real(dpn),dimension(:,:,:),intent(in) :: u
@@ -1130,6 +1066,41 @@
          lapU = lapU + temp
 
          deallocate(temp)
+       end subroutine
+
+       subroutine CC2CCLapVariCoeff(df,f,k,gd,dir) ! Finished, needs to be checked
+         ! myCCVaryDel computes
+         ! 
+         !  df = ∇(k∇f)
+         ! 
+         ! Where f and k live at the cell center.
+         ! Note that k may vary in space.
+         ! 
+         implicit none
+         real(dpn),dimension(:,:,:),intent(inout) :: df
+         real(dpn),dimension(:,:,:),intent(in) :: f,k
+         type(grid),intent(in) :: gd
+         integer,intent(in) :: dir
+         real(dpn),dimension(:,:,:),allocatable :: temp1,temp2
+         integer,dimension(3) :: s
+         integer :: x,y,z
+         s = shape(f)
+         select case (dir)
+         case (1); x=1;y=0;z=0
+         case (2); x=0;y=1;z=0
+         case (3); x=0;y=0;z=1
+         case default
+           write(*,*) 'Error: dir must = 1,2,3 in myCCVaryDel.'; stop
+         end select
+
+         allocate(temp1(s(1)-x,s(2)-y,s(3)-z))
+         allocate(temp2(s(1)-x,s(2)-y,s(3)-z))
+         call myDel(temp1,f,gd,1,dir,3,0)
+         call interp(temp2,k,gd,dir,2)
+         temp1 = temp1*temp2
+         call myDel(temp2,temp1,gd,1,dir,4,0)
+         df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)
+         deallocate(temp1,temp2)
        end subroutine
 
        subroutine myCC2FaceGrad(gradx,grady,gradz,p,gd) ! Finsihed

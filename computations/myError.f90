@@ -57,8 +57,8 @@
        private
 
        public :: myError
-       public :: computeError ! computeError(exact,approx) result(e)
-       public :: printMyError ! printMyError(err,name)
+       public :: compute ! compute(exact,approx) result(e)
+       public :: print   ! print(err,name)
        public :: writeMyError ! writeMyError(err,name,dir)
        public :: writeToFile  ! writeErrorsToFile(e,dir[,u])
        public :: init
@@ -81,12 +81,12 @@
        interface init;            module procedure initError;              end interface
        interface writeToFile;     module procedure writeErrorsToFile;      end interface
 
-       interface computeError;    module procedure computeError1;          end interface
-       interface computeError;    module procedure computeError1Uniform;   end interface
-       interface computeError;    module procedure computeError2;          end interface
-       interface computeError;    module procedure computeError2Uniform;   end interface
-       interface computeError;    module procedure computeError3;          end interface
-       interface computeError;    module procedure computeError3Uniform;   end interface
+       interface compute;         module procedure computeError1;          end interface
+       interface compute;         module procedure computeError1Uniform;   end interface
+       interface compute;         module procedure computeError2;          end interface
+       interface compute;         module procedure computeError2Uniform;   end interface
+       interface compute;         module procedure computeError3;          end interface
+       interface compute;         module procedure computeError3Uniform;   end interface
 
        interface LnError;         module procedure LnError1D;              end interface
        interface LnError;         module procedure LnError1DUniform;       end interface
@@ -94,6 +94,8 @@
        interface LnError;         module procedure LnError2DUniform;       end interface
        interface LnError;         module procedure LnError3D;              end interface
        interface LnError;         module procedure LnError3DUniform;       end interface
+
+       interface print;           module procedure printMyError;           end interface
 
 
        contains

@@ -21,7 +21,8 @@
        public :: restrict
 
        type grid
-         type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc
+         real(cp) :: dhMin,maxRange
+         type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
        end type
 
        interface init;       module procedure initGridCopy;   end interface
@@ -49,60 +50,82 @@
        end subroutine
 
        subroutine initGridCopy(g,f)
-        implicit none
-        type(grid),intent(inout) :: g
-        type(grid),intent(in) :: f
-        call init(g%c(1),f%c(1)%hn,2)
-        call init(g%c(2),f%c(2)%hn,2)
-        call init(g%c(3),f%c(3)%hn,2)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: f
+         integer :: i
+         do i=1,3; call init(g%c(i),f%c(i)%hn,2); enddo
+         call initProps(g)
        end subroutine
 
        subroutine initGrid1(g,h,dir,gridType)
-        implicit none
-        type(grid),intent(inout) :: g
-        real(cp),dimension(:),intent(in) :: h
-        integer,intent(in) :: dir,gridType
-        call init(g%c(dir),h,gridType)
+         implicit none
+         type(grid),intent(inout) :: g
+         real(cp),dimension(:),intent(in) :: h
+         integer,intent(in) :: dir,gridType
+         integer :: i
+         call init(g%c(dir),h,gridType)
+         if (all((/(allocated(g%c(i)%hn),i=1,3)/))) then
+           call initProps(g)
+#ifdef _CHECK_GRID_
+           call checkGrid(g)
+#endif
+         endif
        end subroutine
 
        subroutine initGrid2(g,h1,h2,h3,gridType)
-        implicit none
-        type(grid),intent(inout) :: g
-        real(cp),dimension(:),intent(in) :: h1,h2,h3
-        integer,intent(in) :: gridType
-        call init(g%c(1),h1,gridType)
-        call init(g%c(2),h2,gridType)
-        call init(g%c(3),h3,gridType)
+         implicit none
+         type(grid),intent(inout) :: g
+         real(cp),dimension(:),intent(in) :: h1,h2,h3
+         integer,intent(in) :: gridType
+         integer :: i
+         do i=1,3; call init(g%c(i),h1,gridType); enddo
+         call initProps(g)
        end subroutine
 
        subroutine initGrid3(g,h1,h2,h3,gridType)
-        implicit none
-        type(grid),intent(inout) :: g
-        real(cp),dimension(:),intent(in) :: h1,h2,h3
-        integer,dimension(3),intent(in) :: gridType
-        call init(g%c(1),h1,gridType(1))
-        call init(g%c(2),h2,gridType(2))
-        call init(g%c(3),h3,gridType(3))
+         implicit none
+         type(grid),intent(inout) :: g
+         real(cp),dimension(:),intent(in) :: h1,h2,h3
+         integer,dimension(3),intent(in) :: gridType
+         integer :: i
+         do i=1,3; call init(g%c(i),h1,gridType(i)); enddo
+         call initProps(g)
        end subroutine
 
+       subroutine initProps(g)
+         implicit none
+         type(grid),intent(inout) :: g
+         g%dhMin = minval((/g%c(1)%dhMin,g%c(2)%dhMin,g%c(3)%dhMin/))
+         g%maxRange = maxval((/g%c(1)%maxRange,g%c(2)%maxRange,g%c(3)%maxRange/))
+       end subroutine
+        
        ! ------------------- restrict (for multigrid) --------------
 
        subroutine restrictGrid1(r,g,dir)
-        type(grid),intent(inout) :: r
-        type(grid),intent(in) :: g
-        integer,intent(in) :: dir
-        call restrict(r%c(dir),g%c(dir))
+         type(grid),intent(inout) :: r
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir
+         call restrict(r%c(dir),g%c(dir))
        end subroutine
 
        subroutine restrictGrid3(r,g)
-        type(grid),intent(inout) :: r
-        type(grid),intent(in) :: g
-        call restrict(r%c(1),g%c(1))
-        call restrict(r%c(2),g%c(2))
-        call restrict(r%c(3),g%c(3))
+         type(grid),intent(inout) :: r
+         type(grid),intent(in) :: g
+         integer :: i
+         do i=1,3; call restrict(r%c(i),g%c(i)); enddo
        end subroutine
 
-       ! ----------------------------------------------
+       ! ---------------------------------------------- check grid
+
+#ifdef _CHECK_GRID_
+       subroutine checkGrid(g)
+         implicit none
+         type(grid),intent(in) :: g
+         integer :: i
+         do i=1,3; call checkCoordinates(g%c(i)); enddo
+       end subroutine
+#endif
 
        subroutine exportGrid(g,dir,name)
          implicit none
@@ -119,18 +142,16 @@
        subroutine printGrid(g)
          implicit none
          type(grid), intent(in) :: g
-         call print(g%c(1))
-         call print(g%c(2))
-         call print(g%c(3))
+         integer :: i
+         do i=1,3; call print(g%c(i)); enddo
        end subroutine
 
        subroutine addToFileGrid(g,u)
          implicit none
          type(grid), intent(in) :: g
          integer,intent(in) :: u
-         call addToFile(g%c(1),u)
-         call addToFile(g%c(2),u)
-         call addToFile(g%c(3),u)
+         integer :: i
+         do i=1,3; call addToFile(g%c(i),u); enddo
        end subroutine
 
        end module

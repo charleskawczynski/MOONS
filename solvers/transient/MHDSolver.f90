@@ -1,7 +1,6 @@
        module MHDSolver_mod
        use simParams_mod
        use constants_mod
-       use myAllocate_mod
        use myDebug_mod
        use scalarField_mod
        use vectorField_mod
@@ -114,7 +113,7 @@
              call stopTime(time,ss_MHD)
              call printGridData(gd)
              call printRunData(rd)
-             call printTime(time,'MHD solver')
+             call print(time,'MHD solver')
              exit
            endif
            ! ********************************** DISPLAY OUTPUT ****************************
@@ -130,7 +129,7 @@
              call estimateRemaining(time,ss_MHD)
              call printGridData(gd)
              call printRunData(rd)
-             call printTime(time,'MHD solver')
+             call print(time,'MHD solver')
            endif
            ! **************************** EXPORT TRANSIENT DATA *****************************
            call exportTransient(mom,ss_MHD)

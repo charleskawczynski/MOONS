@@ -37,10 +37,7 @@
        !           .
        !           .
 
-       use constants_mod
        use grid_mod
-       use myExceptions_mod
-       use myAllocate_mod
        use myIO_mod
        implicit none
 
@@ -48,6 +45,16 @@
 
        public :: BCs
        public :: initialize,delete,setGrid
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
        public :: setXminType,getXminType
        public :: setXmaxType,getXmaxType
@@ -76,11 +83,11 @@
          integer :: xminType,xmaxType
          integer :: yminType,ymaxType
          integer :: zminType,zmaxType
-         real(dpn),dimension(:,:),allocatable :: xminVals,xmaxVals
-         real(dpn),dimension(:,:),allocatable :: yminVals,ymaxVals
-         real(dpn),dimension(:,:),allocatable :: zminVals,zmaxVals
-         real(dpn),dimension(:),allocatable :: xn,yn,zn
-         real(dpn),dimension(:),allocatable :: xc,yc,zc
+         real(cp),dimension(:,:),allocatable :: xminVals,xmaxVals
+         real(cp),dimension(:,:),allocatable :: yminVals,ymaxVals
+         real(cp),dimension(:,:),allocatable :: zminVals,zmaxVals
+         real(cp),dimension(:),allocatable :: xn,yn,zn
+         real(cp),dimension(:),allocatable :: xc,yc,zc
          integer,dimension(3) :: s
          logical,dimension(6) :: TFb
          logical :: TFgrid
@@ -88,8 +95,8 @@
          logical :: BCsDefined = .false.
        end type
 
-       interface initialize; module procedure initializeBCs;    end interface
-       interface delete;     module procedure deallocateBCs;    end interface
+       interface initialize; module procedure initializeBCs;     end interface
+       interface delete;     module procedure deleteBCs;         end interface
        interface setGrid;    module procedure setGridBCs;        end interface
 
        contains
@@ -104,7 +111,7 @@
          this%BCsDefined = .false.
        end subroutine
 
-       subroutine deallocateBCs(this)
+       subroutine deleteBCs(this)
          implicit none
          type(BCs),intent(inout) :: this
          if (allocated(this%xminVals)) deallocate(this%xminVals)
@@ -129,6 +136,12 @@
          implicit none
          type(BCs),intent(inout) :: this
          type(grid),intent(in) :: gd
+         if (allocated(this%xc)) deallocate(this%xc)
+         if (allocated(this%yc)) deallocate(this%yc)
+         if (allocated(this%zc)) deallocate(this%zc)
+         if (allocated(this%xn)) deallocate(this%xn)
+         if (allocated(this%yn)) deallocate(this%yn)
+         if (allocated(this%zn)) deallocate(this%zn)
          allocate(this%xc(gd%c(1)%sc),this%xn(gd%c(1)%sn))
          allocate(this%yc(gd%c(2)%sc),this%yn(gd%c(2)%sn))
          allocate(this%zc(gd%c(3)%sc),this%zn(gd%c(3)%sn))
@@ -144,7 +157,7 @@
        subroutine setXminVals(this,xminVals)
          implicit none
          type(BCs),intent(inout) :: this
-         real(dpn),dimension(:,:),intent(in) :: xminVals
+         real(cp),dimension(:,:),intent(in) :: xminVals
          integer,dimension(2) :: s
          s = shape(xminVals)
          if (allocated(this%xminVals)) deallocate(this%xminVals)
@@ -156,14 +169,14 @@
        subroutine getXminVals(this,xminVals)
          implicit none
          type(BCs),intent(in) :: this
-         real(dpn),dimension(:,:),intent(inout) :: xminVals
+         real(cp),dimension(:,:),intent(inout) :: xminVals
          xminVals = this%xminVals
        end subroutine
 
        subroutine setXmaxVals(this,xmaxVals)
          implicit none
          type(BCs),intent(inout) :: this
-         real(dpn),dimension(:,:),intent(in) :: xmaxVals
+         real(cp),dimension(:,:),intent(in) :: xmaxVals
          integer,dimension(2) :: s
          s = shape(xmaxVals)
          if (allocated(this%xmaxVals)) deallocate(this%xmaxVals)
@@ -175,14 +188,14 @@
        subroutine getXmaxVals(this,xmaxVals)
          implicit none
          type(BCs),intent(in) :: this
-         real(dpn),dimension(:,:),intent(inout) :: xmaxVals
+         real(cp),dimension(:,:),intent(inout) :: xmaxVals
          xmaxVals = this%xmaxVals
        end subroutine
 
        subroutine setYminVals(this,yminVals)
          implicit none
          type(BCs),intent(inout) :: this
-         real(dpn),dimension(:,:),intent(in) :: yminVals
+         real(cp),dimension(:,:),intent(in) :: yminVals
          integer,dimension(2) :: s
          s = shape(yminVals)
          if (allocated(this%yminVals)) deallocate(this%yminVals)
@@ -194,14 +207,14 @@
        subroutine getYminVals(this,yminVals)
          implicit none
          type(BCs),intent(in) :: this
-         real(dpn),dimension(:,:),intent(inout) :: yminVals
+         real(cp),dimension(:,:),intent(inout) :: yminVals
          yminVals = this%yminVals
        end subroutine
 
        subroutine setYmaxVals(this,ymaxVals)
          implicit none
          type(BCs),intent(inout) :: this
-         real(dpn),dimension(:,:),intent(in) :: ymaxVals
+         real(cp),dimension(:,:),intent(in) :: ymaxVals
          integer,dimension(2) :: s
          s = shape(ymaxVals)
          if (allocated(this%ymaxVals)) deallocate(this%ymaxVals)
@@ -213,14 +226,14 @@
        subroutine getYmaxVals(this,ymaxVals)
          implicit none
          type(BCs),intent(in) :: this
-         real(dpn),dimension(:,:),intent(inout) :: ymaxVals
+         real(cp),dimension(:,:),intent(inout) :: ymaxVals
          ymaxVals = this%ymaxVals
        end subroutine
 
        subroutine setZminVals(this,zminVals)
          implicit none
          type(BCs),intent(inout) :: this
-         real(dpn),dimension(:,:),intent(in) :: zminVals
+         real(cp),dimension(:,:),intent(in) :: zminVals
          integer,dimension(2) :: s
          s = shape(zminVals)
          if (allocated(this%zminVals)) deallocate(this%zminVals)
@@ -232,14 +245,14 @@
        subroutine getZminVals(this,zminVals)
          implicit none
          type(BCs),intent(in) :: this
-         real(dpn),dimension(:,:),intent(inout) :: zminVals
+         real(cp),dimension(:,:),intent(inout) :: zminVals
          zminVals = this%zminVals
        end subroutine
 
        subroutine setZmaxVals(this,zmaxVals)
          implicit none
          type(BCs),intent(inout) :: this
-         real(dpn),dimension(:,:),intent(in) :: zmaxVals
+         real(cp),dimension(:,:),intent(in) :: zmaxVals
          integer,dimension(2) :: s
          s = shape(zmaxVals)
          if (allocated(this%zmaxVals)) deallocate(this%zmaxVals)
@@ -251,7 +264,7 @@
        subroutine getZmaxVals(this,zmaxVals)
          implicit none
          type(BCs),intent(in) :: this
-         real(dpn),dimension(:,:),intent(inout) :: zmaxVals
+         real(cp),dimension(:,:),intent(inout) :: zmaxVals
          zmaxVals = this%zmaxVals
        end subroutine
 
@@ -260,28 +273,28 @@
          type(BCs),intent(inout) :: this
          integer,intent(in) :: Nx,Ny,Nz
          integer,intent(in) :: bctype
-         real(dpn),dimension(:,:),allocatable :: bvals
+         real(cp),dimension(:,:),allocatable :: bvals
 
          call initializeBCs(this)
          this%s = (/Nx,Ny,Nz/)
 
          allocate(bvals(Ny,Nz)); call setXminType(this,bctype)
-         bvals = 0.0; call setXminVals(this,bvals); deallocate(bvals)
+         bvals = real(0.0,cp); call setXminVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Ny,Nz)); call setXmaxType(this,bctype)
-         bvals = 0.0; call setXmaxVals(this,bvals); deallocate(bvals)
+         bvals = real(0.0,cp); call setXmaxVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Nz)); call setYminType(this,bctype)
-         bvals = 0.0; call setYminVals(this,bvals); deallocate(bvals)
+         bvals = real(0.0,cp); call setYminVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Nz)); call setYmaxType(this,bctype)
-         bvals = 0.0; call setYmaxVals(this,bvals); deallocate(bvals)
+         bvals = real(0.0,cp); call setYmaxVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Ny)); call setZminType(this,bctype)
-         bvals = 0.0; call setZminVals(this,bvals); deallocate(bvals)
+         bvals = real(0.0,cp); call setZminVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Ny)); call setZmaxType(this,bctype)
-         bvals = 0.0; call setZmaxVals(this,bvals); deallocate(bvals)
+         bvals = real(0.0,cp); call setZmaxVals(this,bvals); deallocate(bvals)
 
        end subroutine
 

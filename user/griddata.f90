@@ -1,43 +1,35 @@
        module griddata_mod
        use simParams_mod
-       use constants_mod
        use myIO_mod
-       use myDebug_mod
        use grid_mod
-       use coordinatesOld_mod
-       use myExceptions_mod
+       use coordinates_mod
        implicit none
 
        private
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
        public :: griddata
        public :: delete
 
-       public :: setGriddata
-       public :: getRange,getDhMin,getDhiMin
-       public :: getMaxRange,getMaxRangei
-       public :: getXYZn,getXYZcc
-       public :: getXn,getXcc
-       public :: getYn,getYcc
-       public :: getZn,getZcc
-
-       public :: getDxn,getDxcc
-       public :: getDyn,getDycc
-       public :: getDzn,getDzcc
-
-       public :: getN,getNi,getNwtop,getNwbot
+       public :: init
 
        public :: printGriddata
        public :: exportGriddata
        public :: checkGrid
 
-       public :: N_probe,Ni_probe
-       public :: Nic_probe,Nin_probe
-       public :: Nc_probe,Nn_probe
-
        public :: Nin1,Nin2
        public :: Nici1,Nici2
        public :: Nice1,Nice2
+
        public :: xyzfmt,hfmt
 
        ! Export/print format. May need to adjust # in 3F_#_ if betaw is large
@@ -120,19 +112,6 @@
        ! benchmarkCase = 301
        ! integer,dimension(3),parameter :: Ni = 101, Nwtop = 0, Nwbot = 0
 
-       ! ******************** INDEX OF PROBES ************************
-       ! 
-       ! Does not care if number of cells are odd or even (for monitor only)
-       integer,dimension(3),parameter :: Ni_probe  = Ni/2 +1           ! Interior probe index
-       integer,dimension(3),parameter :: N_probe   = (Nwbot+Ni)/2 +1   ! Total domain probe index
-
-       ! Assumes number of cells (N/Ni) is EVEN
-       integer,dimension(3),parameter :: Nin_probe = (Ni+2)/2                 ! Interior domain probe index
-       integer,dimension(3),parameter :: Nn_probe  = (Ni+Nwtop+Nwbot+2)/2     ! Total domain probe index
-       ! Assumes number of cells (N/Ni) is ODD
-       integer,dimension(3),parameter :: Nic_probe = (Ni+1)/2 +1              ! Interior domain probe index
-       integer,dimension(3),parameter :: Nc_probe  = (Ni+Nwtop+Nwbot+1)/2 +1  ! Total domain probe index
-
        ! ********************* INDEX OF CELLS ************************ (DO NOT CHANGE)
        integer,dimension(3),parameter :: N        = Ni+Nwtop+Nwbot    ! Total number of cells
        integer,dimension(3),parameter :: Nin1     = Nwbot+1           ! Node of min wall
@@ -143,7 +122,7 @@
        integer,dimension(3),parameter :: Nici2    = N-Nwtop+2         ! CC of max wall (including ghost)
 
        type griddata
-         ! private ! figure out a way to still do this
+         private ! figure out a way to still do this
          ! Number of cells
          integer,dimension(3) :: N
          integer,dimension(3) :: Nwtop
@@ -151,76 +130,47 @@
          integer,dimension(3) :: Ni
 
          ! Wall thicknesses
-         real(dpn),dimension(3) :: twtop
-         real(dpn),dimension(3) :: twbot
+         real(cp),dimension(3) :: twtop
+         real(cp),dimension(3) :: twbot
 
          ! Fluid domain boundaries
-         real(dpn),dimension(3) :: hmin
-         real(dpn),dimension(3) :: hmax
+         real(cp),dimension(3) :: hmin
+         real(cp),dimension(3) :: hmax
 
          ! Spatial discretization
-         real(dpn),dimension(3) :: dh
-         real(dpn),dimension(3) :: alphai,betai
-         real(dpn),dimension(3) :: alphaw,betaw
+         real(cp),dimension(3) :: dh
+         real(cp),dimension(3) :: alphai,betai
+         real(cp),dimension(3) :: alphaw,betaw
 
-         real(dpn) :: dhMin,dhiMin       ! Smallest spatial steps (total/interior)
-         real(dpn) :: maxRange,maxRangei ! Largest length in domain
+         real(cp) :: dhMin,dhiMin       ! Smallest spatial steps (total/interior)
+         real(cp) :: maxRange,maxRangei ! Largest length in domain
 
          ! Coordinates
-         type(coordinates3D) :: xyz_ni,xyz_cci ! Interior coordinates
-         type(coordinates3D) :: xyz_n,xyz_cc   ! Total coordinates
-
-         ! Derivatives
-         type(coordinates3D) :: dxyz_ni,dxyz_cci ! Interior
-         type(coordinates3D) :: dxyz_n,dxyz_cc   ! Total
-
-         ! Public coordinates:
-         real(dpn),dimension(:),allocatable :: xci,yci,zci
-         real(dpn),dimension(:),allocatable :: xni,yni,zni
-         real(dpn),dimension(:),allocatable :: xct,yct,zct
-         real(dpn),dimension(:),allocatable :: xnt,ynt,znt
+         type(grid) :: hi,ht
        end type
 
-       interface delete
-         module procedure deleteGriddata
-       end interface
+       interface delete;       module procedure deleteGriddata;      end interface
+       interface init;         module procedure initGriddata;        end interface
        
        contains
 
        subroutine deleteGriddata(this)
          implicit none
          type(griddata),intent(inout) :: this
-         call delete(this%xyz_ni)
-         call delete(this%xyz_cci)
-         call delete(this%xyz_n)
-         call delete(this%xyz_cc)
-         
-         call delete(this%dxyz_ni)
-         call delete(this%dxyz_cci)
-         call delete(this%dxyz_n)
-         call delete(this%dxyz_cc)
-         deallocate(this%xci,this%yci,this%zci)
-         deallocate(this%xni,this%yni,this%zni)
-         deallocate(this%xct,this%yct,this%zct)
-         deallocate(this%xnt,this%ynt,this%znt)
+         call delete(this%hi)
+         call delete(this%ht)
          write(*,*) 'Griddata object deleted'
        end subroutine
 
-
-       ! subroutine setGriddata(this,g_mom,g_ind,Re,Ha)
-       !   implicit none
-       !   type(griddata),intent(out) :: this
-       !   type(grid),intent(inout) :: g_mom,g_ind
-
-       subroutine setGriddata(this,g_mom,g_ind,Re,Ha)
+       subroutine initGriddata(this,g_mom,g_ind,Re,Ha)
          implicit none
          type(griddata),intent(out) :: this
          type(grid),intent(inout) :: g_mom,g_ind
-         real(dpn),intent(in) :: Re,Ha
-         real(dpn),dimension(3) :: twtop,twbot
-         real(dpn),dimension(3) :: hmin,hmax
-         real(dpn),dimension(3) :: alphai,betai
-         real(dpn),dimension(3) :: alphaw,betaw
+         real(cp),intent(in) :: Re,Ha
+         real(cp),dimension(3) :: twtop,twbot
+         real(cp),dimension(3) :: hmin,hmax
+         real(cp),dimension(3) :: alphai,betai
+         real(cp),dimension(3) :: alphaw,betaw
 
          ! **************** USER DEFINED GRIDDATA ********************
 
@@ -281,7 +231,7 @@
          case (300); hmin = -one; hmax = one ! for xyz
          case (301); hmin = -one; hmax = one ! for xyz
          case default
-           write(*,*) 'Incorrect benchmarkCase in setGriddata';stop
+           write(*,*) 'Incorrect benchmarkCase in initGriddata';stop
          end select
 
          ! Grid stretching for benchmarks
@@ -358,36 +308,32 @@
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,2) ! y
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,3) ! z
 
-         call setEasyAccessGrid(this)
-
          call reComputeTw(this)
-         call setSmallestSpatialStep(this)
-         call setLargestRange(this)
 
-         call init(g_ind,this%xnt,1,2)
-         call init(g_ind,this%ynt,2,2)
-         call init(g_ind,this%znt,3,2)
-         call init(g_mom,this%xni,1,2)
-         call init(g_mom,this%yni,2,2)
-         call init(g_mom,this%zni,3,2)
+         call init(g_ind,this%ht%c(1)%hn,1,2)
+         call init(g_ind,this%ht%c(2)%hn,2,2)
+         call init(g_ind,this%ht%c(3)%hn,3,2)
+         call init(g_mom,this%hi%c(1)%hn,1,2)
+         call init(g_mom,this%hi%c(2)%hn,2,2)
+         call init(g_mom,this%hi%c(3)%hn,3,2)
        end subroutine
 
        subroutine setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,dir)
          implicit none
          type(griddata),intent(inout) :: this
-         real(dpn),dimension(3),intent(in) :: hmin,hmax
-         real(dpn),dimension(3),intent(in) :: alphai,betai
-         real(dpn),dimension(3),intent(in) :: twtop
-         real(dpn),dimension(3),intent(in) :: twbot
-         real(dpn),dimension(3),intent(in) :: alphaw
-         real(dpn),dimension(3),intent(inout) :: betaw
+         real(cp),dimension(3),intent(in) :: hmin,hmax
+         real(cp),dimension(3),intent(in) :: alphai,betai
+         real(cp),dimension(3),intent(in) :: twtop
+         real(cp),dimension(3),intent(in) :: twbot
+         real(cp),dimension(3),intent(in) :: alphaw
+         real(cp),dimension(3),intent(inout) :: betaw
          integer,intent(in) :: dir ! direction
 
-         real(dpn),dimension(:),allocatable :: hn,hc
-         real(dpn),dimension(:),allocatable :: dhn,dhc
+         real(cp),dimension(:),allocatable :: hn,hc
+         real(cp),dimension(:),allocatable :: dhn,dhc
 
-         real(dpn),dimension(:),allocatable :: hni,hci
-         real(dpn),dimension(:),allocatable :: dhni,dhci
+         real(cp),dimension(:),allocatable :: hni,hci
+         real(cp),dimension(:),allocatable :: dhni,dhci
 
          ! --------------------- ALLOCATE GRID -----------------------
          ! Interior
@@ -407,30 +353,9 @@
           alphai(dir),betai(dir),twtop(dir),twbot(dir),&
           Nwtop(dir),Nwbot(dir),alphaw(dir),betaw(dir))
 
-         call getHcAndDh(hn,hc,dhn,dhc)
-         call getHcAndDh(hni,hci,dhni,dhci)
-
          ! -------------------- STORE COORDINATES --------------------
-         select case (dir)
-         case (1)
-           call setX(this%xyz_n,hn);     call setX(this%xyz_cc,hc)
-           call setX(this%xyz_ni,hni);   call setX(this%xyz_cci,hci)
-
-           call setX(this%dxyz_n,dhn);   call setX(this%dxyz_cc,dhc)
-           call setX(this%dxyz_ni,dhni); call setX(this%dxyz_cci,dhci)
-         case (2)
-           call setY(this%xyz_n,hn);     call setY(this%xyz_cc,hc)
-           call setY(this%xyz_ni,hni);   call setY(this%xyz_cci,hci)
-
-           call setY(this%dxyz_n,dhn);   call setY(this%dxyz_cc,dhc)
-           call setY(this%dxyz_ni,dhni); call setY(this%dxyz_cci,dhci)
-         case (3)
-           call setZ(this%xyz_n,hn);     call setZ(this%xyz_cc,hc)
-           call setZ(this%xyz_ni,hni);   call setZ(this%xyz_cci,hci)
-
-           call setZ(this%dxyz_n,dhn);   call setZ(this%dxyz_cc,dhc)
-           call setZ(this%dxyz_ni,dhni); call setZ(this%dxyz_cci,dhci)
-         end select
+         call init(this%hi,hni,dir,2)
+         call init(this%ht,hn,dir,2)
          ! ------------------ STORE DATA ------------------
          this%hmin(dir) = hmin(dir)
          this%hmax(dir) = hmax(dir)
@@ -461,33 +386,6 @@
          deallocate(dhn,dhc)
          deallocate(hni,hci)
          deallocate(dhni,dhci)
-       end subroutine
-
-       subroutine setEasyAccessGrid(this)
-         implicit none
-         type(griddata),intent(inout) :: this
-         integer :: dir
-         dir = 1
-         allocate(this%xni(Ni(dir)+1))
-         allocate(this%xci(Ni(dir)+2))
-         allocate(this%xnt(Ni(dir)+Nwtop(dir)+Nwbot(dir)+1))
-         allocate(this%xct(Ni(dir)+Nwtop(dir)+Nwbot(dir)+2))
-         dir = 2
-         allocate(this%yni(Ni(dir)+1))
-         allocate(this%yci(Ni(dir)+2))
-         allocate(this%ynt(Ni(dir)+Nwtop(dir)+Nwbot(dir)+1))
-         allocate(this%yct(Ni(dir)+Nwtop(dir)+Nwbot(dir)+2))
-
-         dir = 3
-         allocate(this%zni(Ni(dir)+1))
-         allocate(this%zci(Ni(dir)+2))
-         allocate(this%znt(Ni(dir)+Nwtop(dir)+Nwbot(dir)+1))
-         allocate(this%zct(Ni(dir)+Nwtop(dir)+Nwbot(dir)+2))
-         call getXYZn(this,this%xni,this%yni,this%zni)
-         call getXYZn(this,this%xnt,this%ynt,this%znt)
-
-         call getXYZcc(this,this%xci,this%yci,this%zci)
-         call getXYZcc(this,this%xct,this%yct,this%zct)
        end subroutine
 
        subroutine gridGen(hn,hni,hmin,hmax,Ni,alpha,beta,&
@@ -538,13 +436,13 @@
          !    beta errors can always be avoided.
          ! 
          implicit none
-         real(dpn),dimension(:),intent(inout) :: hn,hni
-         real(dpn),intent(in) :: hmin,hmax,alpha,beta,twtop,twbot,alphaw
-         real(dpn),intent(inout) :: betaw
+         real(cp),dimension(:),intent(inout) :: hn,hni
+         real(cp),intent(in) :: hmin,hmax,alpha,beta,twtop,twbot,alphaw
+         real(cp),intent(inout) :: betaw
          integer,intent(in) :: Ni,Nwtop,Nwbot
-         real(dpn) :: dh,betawtemp
+         real(cp) :: dh,betawtemp
          integer :: N
-         real(dpn),dimension(:),allocatable  :: hnw1,hnw2
+         real(cp),dimension(:),allocatable  :: hnw1,hnw2
          N = Ni + Nwtop + Nwbot
          ! **************** Interior fluid domain **********************
          ! |----wall-----|----interior-------|------wall-------|
@@ -651,22 +549,22 @@
          ! so that it need not start at y=0.
          ! 
          implicit none
-         real(dpn),dimension(:),intent(inout) :: hn
-         real(dpn),intent(in) :: hmin,hmax,alpha,beta
+         real(cp),dimension(:),intent(inout) :: hn
+         real(cp),intent(in) :: hmin,hmax,alpha,beta
          integer,intent(in) :: N
-         real(dpn),dimension(:),allocatable :: hnbar
+         real(cp),dimension(:),allocatable :: hnbar
          integer :: s
-         real(dpn) :: dh ! Uniform dh
+         real(cp) :: dh ! Uniform dh
          integer :: i
-         real(dpn) :: a,b,g ! alpha,beta,gamma
+         real(cp) :: a,b,g ! alpha,beta,gamma
          s = size(hn)
          allocate(hnbar(s))
          a = alpha; b = beta
          g = (b+one)/(b-one)
          ! Where N is the number of cells in the wall
-         dh = (hmax - hmin)/dble(N)
+         dh = (hmax - hmin)/real(N,cp)
          ! Total coordinates (uniform)
-         hnbar = (/(hmin+dble(i-1)*dh,i=1,N+1)/)
+         hnbar = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
          ! Push coordinates to zero, and normalize for stretching
          hnbar = (hnbar - hmin)/(hmax-hmin)
          ! Total coordinates (non-uniform Roberts stretching function)
@@ -689,31 +587,14 @@
          !      hmax     = maximum value
          !      N        = N segments of dh
          implicit none
-         real(dpn),dimension(:),intent(inout) :: hn
-         real(dpn),intent(in) :: hmin,hmax
+         real(cp),dimension(:),intent(inout) :: hn
+         real(cp),intent(in) :: hmin,hmax
          integer,intent(in) :: N
          integer :: i
-         real(dpn) :: dh
-         dh = (hmax - hmin)/dble(N)
-         hn = (/(hmin+dble(i-1)*dh,i=1,N+1)/)
+         real(cp) :: dh
+         dh = (hmax - hmin)/real(N,cp)
+         hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
        end subroutine
-
-       ! subroutine linspace2(hn,hmin,hmax,N)
-       !   ! This routine returns a uniform grid from
-       !   ! hmin to hmax using N points.
-       !   ! 
-       !   ! NOTE: hmin and hmax are included in the result.
-       !   ! 
-       !   ! INPUT:
-       !   !      hmin     = minimum value
-       !   !      hmax     = maximum value
-       !   !      N        = N points in segment
-       !   implicit none
-       !   real(dpn),dimension(:),intent(inout) :: hn
-       !   real(dpn),intent(in) :: hmin,hmax
-       !   integer,intent(in) :: N
-       !   call linspace1(hn,hmin,hmax,N-1)
-       ! end subroutine
 
        subroutine uniformGrid1(hn,hstart,dh,dir)
          ! This routine returns a uniform grid beginning
@@ -729,13 +610,13 @@
          !      N        = N points in segment
          !      dir      = (1,-1)
          implicit none
-         real(dpn),dimension(:),intent(inout) :: hn
-         real(dpn),intent(in) :: hstart,dh
+         real(cp),dimension(:),intent(inout) :: hn
+         real(cp),intent(in) :: hstart,dh
          integer,intent(in) :: dir
          integer :: s,i
          s = size(hn)
          ! Total coordinates (uniform)
-         hn = (/(hstart+dble(dir)*dble(i-1)*dh,i=1,s)/)
+         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,s)/)
        end subroutine
 
        subroutine robertsGridBL(beta,delta,hmin,hmax)
@@ -749,9 +630,9 @@
          !      hmax     = wall boundary (maximum value)
          !      delta    = thickness of boundary layer
          implicit none
-         real(dpn),dimension(3),intent(in) :: hmin,hmax
-         real(dpn),intent(in) :: delta
-         real(dpn),dimension(3),intent(inout) :: beta
+         real(cp),dimension(3),intent(in) :: hmin,hmax
+         real(cp),intent(in) :: delta
+         real(cp),dimension(3),intent(inout) :: beta
          integer :: i
          do i=1,3
            beta(i) = (one - delta/(hmax(i)-hmin(i)))**(-oneHalf)
@@ -761,11 +642,11 @@
        subroutine estimateBetaW(betaw,betai,betamin,betamax,&
          dbeta,alphaw,Nw,hmin,hmax,dh)
          implicit none
-         real(dpn),intent(inout) :: betaw,betamin,betamax,dbeta
+         real(cp),intent(inout) :: betaw,betamin,betamax,dbeta
          integer,intent(in) :: Nw
-         real(dpn),intent(in) :: betai,dh,alphaw,hmax,hmin
-         real(dpn),dimension(:),allocatable :: root,beta,gammaN,gammaNm1
-         real(dpn) :: dhstar
+         real(cp),intent(in) :: betai,dh,alphaw,hmax,hmin
+         real(cp),dimension(:),allocatable :: root,beta,gammaN,gammaNm1
+         real(cp) :: dhstar
          integer :: i,N
          integer,dimension(1) :: hstar
          N = 10000 ! Ten thousand
@@ -774,10 +655,10 @@
          if (betai.lt.one) then
            write(*,*) 'betai must be <1.';stop
          endif
-         dbeta = (betamax-betamin)/dble(N)
-         beta = (/(betamin + dble(i)*dbeta,i=1,N)/)
+         dbeta = (betamax-betamin)/real(N,cp)
+         beta = (/(betamin + real(i,cp)*dbeta,i=1,N)/)
          ! prep root
-         dhstar = one/(dble(Nw))
+         dhstar = one/(real(Nw,cp))
          gammaN = ((beta+one)/(beta-one))**((one-alphaw)/(one-alphaw))
          gammaNm1 = ((beta+one)/(beta-one))**((one-dhstar-alphaw)/(one-alphaw))
 
@@ -796,10 +677,10 @@
 
        subroutine estimateBetaWRecursive(betaw,betai,alphaw,Nw,hmin,hmax,dh)
          implicit none
-         real(dpn),intent(inout) :: betaw
+         real(cp),intent(inout) :: betaw
          integer,intent(in) :: Nw
-         real(dpn),intent(in) :: betai,dh,alphaw,hmax,hmin
-         real(dpn) :: betamin,betamax,dbeta
+         real(cp),intent(in) :: betai,dh,alphaw,hmax,hmin
+         real(cp) :: betamin,betamax,dbeta
          integer :: i
          ! Initial range
          betamin = one + (betai - one)/1000.0d0
@@ -813,378 +694,11 @@
          enddo
        end subroutine
 
-       subroutine setSmallestSpatialStep(gd)
-         ! setSmallestSpatialStep defines the smallest
-         ! spatial step in the grid. This includes the
-         ! walls and is set based on hn, not hc, since
-         ! dhn will ALWAYS be smaller than, or equal to
-         ! dhc (this can easily be verified on paper).
-         implicit none
-         type(griddata),intent(inout) :: gd
-         real(dpn),dimension(:),allocatable :: xn,yn,zn
-         integer :: Nx,Ny,Nz,i
-         integer,dimension(3) :: N
-         ! Total domain
-         call getN(gd,N)
-         Nx = N(1); Ny = N(2); Nz = N(3)
-         allocate(xn(Nx+1),yn(Ny+1),zn(Nz+1))
-         call getXYZn(gd,xn,yn,zn)
-         gd%dhMin = xn(2)-xn(1)
-         do i=1,Nx
-           gd%dhMin = minval((/gd%dhMin,xn(i+1)-xn(i)/))
-         enddo
-         do i=1,Ny
-           gd%dhMin = minval((/gd%dhMin,yn(i+1)-yn(i)/))
-         enddo
-         do i=1,Nz
-           gd%dhMin = minval((/gd%dhMin,zn(i+1)-zn(i)/))
-         enddo
-         deallocate(xn,yn,zn)
-         ! Interior domain
-         call getNi(gd,N)
-         Nx = N(1); Ny = N(2); Nz = N(3)
-         allocate(xn(Nx+1),yn(Ny+1),zn(Nz+1))
-         call getXYZn(gd,xn,yn,zn)
-         gd%dhiMin = xn(2)-xn(1)
-         do i=1,Nx
-           gd%dhiMin = minval((/gd%dhiMin,xn(i+1)-xn(i)/))
-         enddo
-         do i=1,Ny
-           gd%dhiMin = minval((/gd%dhiMin,yn(i+1)-yn(i)/))
-         enddo
-         do i=1,Nz
-           gd%dhiMin = minval((/gd%dhiMin,zn(i+1)-zn(i)/))
-         enddo
-         deallocate(xn,yn,zn)
-       end subroutine
-
-       subroutine setLargestRange(gd)
-         ! setLargestRange defines the largest length
-         ! of the total and interior domain
-         implicit none
-         type(griddata),intent(inout) :: gd
-         real(dpn),dimension(:),allocatable :: xn,yn,zn
-         real(dpn) :: tempMax1,tempMax2,tempMax3
-         integer :: Nx,Ny,Nz
-         integer,dimension(3) :: N
-
-         ! Total domain
-         call getN(gd,N)
-         Nx = N(1); Ny = N(2); Nz = N(3)
-         allocate(xn(Nx+1),yn(Ny+1),zn(Nz+1))
-         call getXYZn(gd,xn,yn,zn)
-         tempMax1 = maxval(xn) - minval(xn)
-         tempMax2 = maxval(yn) - minval(yn)
-         tempMax3 = maxval(zn) - minval(zn)
-         deallocate(xn,yn,zn)
-         gd%maxRange = maxval((/tempMax1,tempMax2,tempMax3/))
-         ! Interior domain
-         call getNi(gd,N)
-         Nx = N(1); Ny = N(2); Nz = N(3)
-         allocate(xn(Nx+1),yn(Ny+1),zn(Nz+1))
-         call getXYZn(gd,xn,yn,zn)
-         tempMax1 = maxval(xn) - minval(xn)
-         tempMax2 = maxval(yn) - minval(yn)
-         tempMax3 = maxval(zn) - minval(zn)
-         deallocate(xn,yn,zn)
-         gd%maxRangei = maxval((/tempMax1,tempMax2,tempMax3/))
-       end subroutine
-
 ! ------------------ GET ROUTINES -------------------------------------
 
-       subroutine getHcAndDh(hn,hc,dhn,dhc)
-         implicit none
-         real(dpn),dimension(:),intent(in) :: hn
-         real(dpn),dimension(:),intent(inout) :: hc,dhn,dhc
-         integer :: i,sn,sc
-         sn = size(hn)
-         sc = size(hc)
-         hc(2:sc-1) = (/(hn(i-1)+oneHalf*(hn(i)-hn(i-1)),i=2,sn)/)
-         ! Make fictive cells equal in size to first interior cell:
-         hc(1) = hn(1) - oneHalf*(hn(2)-hn(1))
-         hc(sc) = hn(sn) + oneHalf*(hn(sn)-hn(sn-1))
-         dhn = (/(hn(i+1)-hn(i),i=1,sn-1)/)
-         dhc = (/(hc(i+1)-hc(i),i=1,sc-1)/)
-       end subroutine
-
-       subroutine getXn(this,x)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: x
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(x)
-         if (s.eq.Ni(1)+1) then
-           call getX(this%xyz_ni,x)
-         elseif (s.eq.N(1)+1) then
-           call getX(this%xyz_n,x)
-         else
-         write(*,*) 'No correct sizes were selected in getXn.';stop
-         endif
-       end subroutine
-
-       subroutine getYn(this,y)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: y
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(y)
-         if (s.eq.Ni(2)+1) then; call getY(this%xyz_ni,y)
-         elseif (s.eq.N(2)+1) then; call getY(this%xyz_n,y)
-         else
-         write(*,*) 'No correct sizes were selected in getYn.';stop
-         endif
-       end subroutine
-
-       subroutine getZn(this,z)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: z
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(z)
-         if (s.eq.Ni(3)+1) then; call getZ(this%xyz_ni,z)
-         elseif (s.eq.N(3)+1) then;  call getZ(this%xyz_n,z)
-         else
-          write(*,*) 'No correct sizes were selected in getZn.';stop
-         endif
-       end subroutine
-
-       subroutine getXcc(this,x)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: x
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(x)
-         if (s.eq.Ni(1)+2) then; call getX(this%xyz_cci,x)
-         elseif (s.eq.N(1)+2) then; call getX(this%xyz_cc,x)
-         else
-         write(*,*) 'No correct sizes were selected in getXcc.';stop
-         endif
-       end subroutine
-
-       subroutine getYcc(this,y)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: y
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(y)
-         if (s.eq.Ni(2)+2) then; call getY(this%xyz_cci,y)
-         elseif (s.eq.N(2)+2) then; call getY(this%xyz_cc,y)
-         else
-         write(*,*) 'No correct sizes were selected in getYcc.';stop
-         endif
-       end subroutine
-
-       subroutine getZcc(this,z)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: z
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(z)
-         if (s.eq.Ni(3)+2) then; call getZ(this%xyz_cci,z)
-         elseif (s.eq.N(3)+2) then;  call getZ(this%xyz_cc,z)
-         else
-          write(*,*) 'No correct sizes were selected in getZcc.';stop
-         endif
-       end subroutine
-
-       subroutine getXYZn(this,x,y,z)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: x,y,z
-         type(griddata),intent(in) :: this
-         integer :: sx,sy,sz
-         sx = size(x); sy = size(y); sz = size(z)
-         if (sx.eq.Ni(1)+1) then ! Interior
-           call getX(this%xyz_ni,x)
-         elseif (sx.eq.N(1)+1) then ! Total domain
-           call getX(this%xyz_n,x)
-         else
-          write(*,*) 'No correct sizes were selected in getXYZn.';stop
-         endif
-         if (sy.eq.Ni(2)+1) then ! Interior
-           call getY(this%xyz_ni,y)
-         elseif (sy.eq.N(2)+1) then ! Total domain
-           call getY(this%xyz_n,y)
-         else
-          write(*,*) 'No correct sizes were selected in getXYZn.';stop
-         endif
-         if (sz.eq.Ni(3)+1) then ! Interior
-           call getZ(this%xyz_ni,z)
-         elseif (sz.eq.N(3)+1) then ! Total domain
-           call getZ(this%xyz_n,z)
-         else
-          write(*,*) 'No correct sizes were selected in getXYZn.';stop
-         endif
-       end subroutine
-
-       subroutine getXYZcc(this,x,y,z)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: x,y,z
-         type(griddata),intent(in) :: this
-         integer :: sx,sy,sz
-         sx = size(x); sy = size(y); sz = size(z)
-         if (sx.eq.Ni(1)+2) then ! Interior
-           call getX(this%xyz_cci,x)
-         elseif (sx.eq.N(1)+2) then ! Total domain
-           call getX(this%xyz_cc,x)
-         else
-          write(*,*) 'No correct sizes were selected in getXYZn.';stop
-         endif
-         if (sy.eq.Ni(2)+2) then ! Interior
-           call getY(this%xyz_cci,y)
-         elseif (sy.eq.N(2)+2) then ! Total domain
-           call getY(this%xyz_cc,y)
-         else
-          write(*,*) 'No correct sizes were selected in getXYZn.';stop
-         endif
-         if (sz.eq.Ni(3)+2) then ! Interior
-           call getZ(this%xyz_cci,z)
-         elseif (sz.eq.N(3)+2) then ! Total domain
-           call getZ(this%xyz_cc,z)
-         else
-          write(*,*) 'No correct sizes were selected in getXYZn.';stop
-         endif
-       end subroutine
-
-       subroutine getDxn(this,x)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: x
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(x)
-         if (s.eq.Ni(1)) then; call getX(this%dxyz_ni,x)
-         elseif (s.eq.N(1)) then;  call getX(this%dxyz_n,x)
-         else
-         write(*,*) 'No correct sizes were selected in getDxn'; stop
-         endif
-       end subroutine
-
-       subroutine getDyn(this,y)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: y
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(y)
-         if (s.eq.Ni(2)) then; call getY(this%dxyz_ni,y)
-         elseif (s.eq.N(2)) then;  call getY(this%dxyz_n,y)
-         else
-         write(*,*) 'No correct sizes were selected in getDyn'; stop
-         endif
-       end subroutine
-
-       subroutine getDzn(this,z)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: z
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(z)
-         if (s.eq.Ni(3)) then; call getZ(this%dxyz_ni,z)
-         elseif (s.eq.N(3)) then;  call getZ(this%dxyz_n,z)
-         else
-         write(*,*) 'No correct sizes were selected in getDzn'; stop
-         endif
-       end subroutine
-
-       subroutine getDxcc(this,x)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: x
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(x)
-         if (s.eq.Ni(1)+1) then; call getX(this%dxyz_cci,x)
-         elseif (s.eq.N(1)+1) then;  call getX(this%dxyz_cc,x)
-         else
-         write(*,*) 'No correct sizes were selected in getDxcc'; stop
-         endif
-       end subroutine
-
-       subroutine getDycc(this,y)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: y
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(y)
-         if (s.eq.Ni(2)+1) then; call getY(this%dxyz_cci,y)
-         elseif (s.eq.N(2)+1) then;  call getY(this%dxyz_cc,y)
-         else
-         write(*,*) 'No correct sizes were selected in getDycc'; stop
-         endif
-       end subroutine
-
-       subroutine getDzcc(this,z)
-         implicit none
-         real(dpn),dimension(:),intent(inout) :: z
-         type(griddata),intent(in) :: this
-         integer :: s
-         s = size(z)
-         if (s.eq.Ni(3)+1) then; call getZ(this%dxyz_cci,z)
-         elseif (s.eq.N(3)+1) then;  call getZ(this%dxyz_cc,z)
-         else
-         write(*,*) 'No correct sizes were selected in getDzcc'; stop
-         endif
-       end subroutine
-
-       subroutine getN(this,N)
-         implicit none
-         integer,dimension(3),intent(inout) :: N
-         type(griddata),intent(in) :: this
-         N = this%N
-       end subroutine
-
-       subroutine getNi(this,N)
-         implicit none
-         integer,dimension(3),intent(inout) :: N
-         type(griddata),intent(in) :: this
-         N = this%Ni
-       end subroutine
-
-       subroutine getNwtop(this,N)
-         implicit none
-         integer,dimension(3),intent(inout) :: N
-         type(griddata),intent(in) :: this
-         N = this%Nwtop
-       end subroutine
-
-       subroutine getNwbot(this,N)
-         implicit none
-         integer,dimension(3),intent(inout) :: N
-         type(griddata),intent(in) :: this
-         N = this%Nwbot
-       end subroutine
-
-       subroutine getRange(this,hmin,hmax)
-         implicit none
-         real(dpn),dimension(3),intent(inout) :: hmin,hmax
-         type(griddata),intent(in) :: this
-         hmin = this%hmin; hmax = this%hmax
-       end subroutine
-
-       function getDhMin(gd) result(dhMin)
-         type(griddata),intent(in) :: gd
-         real(dpn) :: dhMin
-         dhMin = gd%dhMin
-       end function
-
-       function getDhiMin(gd) result(dhiMin)
-         type(griddata),intent(in) :: gd
-         real(dpn) :: dhiMin
-         dhiMin = gd%dhiMin
-       end function
-
-       function getMaxRange(gd) result(maxRange)
-         type(griddata),intent(in) :: gd
-         real(dpn) :: maxRange
-         maxRange = gd%maxRange
-       end function
-
-       function getMaxRangei(gd) result(maxRangei)
-         type(griddata),intent(in) :: gd
-         real(dpn) :: maxRangei
-         maxRangei = gd%maxRangei
-       end function
-
        subroutine reverseIndex(h)
-         real(dpn),dimension(:),intent(inout) :: h
-         real(dpn),dimension(:),allocatable :: temp
+         real(cp),dimension(:),intent(inout) :: h
+         real(cp),dimension(:),allocatable :: temp
          integer :: i,s
          s = size(h)
          allocate(temp(s))
@@ -1209,18 +723,14 @@
          implicit none
          type(griddata),intent(in) :: gd
          integer,intent(in) :: dir
-         real(dpn),dimension(:),allocatable :: hn
-         real(dpn) :: temp,tol
+         real(cp),dimension(:),allocatable :: hn
+         real(cp) :: temp,tol
          integer :: Ndir,i,j
-         integer,dimension(3) :: N
-         call getN(gd,N)
-         Ndir = N(dir)
+
+         Ndir = gd%N(dir)
          allocate(hn(Ndir+1))
-         select case (dir)
-         case (1); call getXn(gd,hn)
-         case (2); call getYn(gd,hn)
-         case (3); call getZn(gd,hn)
-         end select
+         hn = gd%ht%c(dir)%hn
+
          tol = abs(gd%dhMin/two) ! tol must be positive
 
          do i=1,Ndir
@@ -1283,18 +793,13 @@
 
          type(griddata),intent(in) :: gd
          integer,intent(in) :: dir
-         real(dpn),dimension(:),allocatable :: hn
-         real(dpn) :: temp,frac
+         real(cp),dimension(:),allocatable :: hn
+         real(cp) :: temp,frac
          integer :: Ndir,i
-         integer,dimension(3) :: N
-         call getN(gd,N)
-         Ndir = N(dir)
+
+         Ndir = gd%N(dir)
          allocate(hn(Ndir+1))
-         select case (dir)
-         case (1); call getXn(gd,hn)
-         case (2); call getYn(gd,hn)
-         case (3); call getZn(gd,hn)
-         end select
+         hn = gd%ht%c(dir)%hn
 
          frac = 0.5d0
 
@@ -1364,21 +869,16 @@
          implicit none
          type(griddata),intent(in) :: gd
          integer,intent(in) :: dir
-         real(dpn),dimension(:),allocatable :: hn,hc
+         real(cp),dimension(:),allocatable :: hn,hc
          integer :: Ndir,i
-         integer,dimension(3) :: N
-         real(dpn) :: tol,temp1,temp2
+         real(cp) :: tol,temp1,temp2
 
-         call getN(gd,N)
-         Ndir = N(dir)
+         Ndir = gd%N(dir)
          allocate(hn(Ndir+1),hc(Ndir+2))
-         select case (dir)
-         case (1); call getXn(gd,hn); call getXcc(gd,hc)
-         case (2); call getYn(gd,hn); call getYcc(gd,hc)
-         case (3); call getZn(gd,hn); call getZcc(gd,hc)
-         end select
+         hn = gd%ht%c(dir)%hn
+         hc = gd%ht%c(dir)%hc
 
-         tol = gd%dhMin*10.0d0**(-6.0d0)
+         tol = gd%ht%dhMin*10.0d0**(-6.0d0)
          do i=1,Ndir
            temp1 = hc(i+1)-hn(i)
            temp2 = hn(i+1)-hc(i+1)
@@ -1427,23 +927,19 @@
          implicit none
          type(griddata),intent(in) :: gd
          integer,intent(in) :: dir
-         real(dpn),dimension(:),allocatable :: hn
-         real(dpn),dimension(:),allocatable :: hc
-         integer,dimension(3) :: N
+         real(cp),dimension(:),allocatable :: hn
+         real(cp),dimension(:),allocatable :: hc
          integer :: i,Ndir
-         real(dpn) :: tol,temp1,temp2
+         real(cp) :: tol,temp1,temp2
 
-         call getN(gd,N)
-         Ndir = N(dir)
+         Ndir = gd%N(dir)
          allocate(hn(Ndir+1),hc(Ndir+2))
-         select case (dir)
-         case (1); call getXn(gd,hn); call getXcc(gd,hc)
-         case (2); call getYn(gd,hn); call getYcc(gd,hc)
-         case (3); call getZn(gd,hn); call getZcc(gd,hc)
-         end select
+
+         hn = gd%ht%c(dir)%hn
+         hc = gd%ht%c(dir)%hc
 
          ! Node grid
-         tol = getDhMin(gd)/10000.0d0
+         tol = gd%ht%dhMin/10000.0d0
          temp1 = hn(2)-hn(1)
          do i=1,Ndir
            temp2 = hn(i+1)-hn(i)
@@ -1487,7 +983,7 @@
          implicit none
          type(griddata),intent(in) :: gd
          integer,intent(in) :: dir
-         real(dpn) :: tol
+         real(cp) :: tol
 
          tol = gd%dhMin*10.0d0**(-6.0d0)
          ! ---------------- zero tw
@@ -1532,25 +1028,20 @@
          implicit none
          type(griddata),intent(inout) :: gd
          integer,intent(in) :: dir
-         real(dpn),dimension(:),allocatable :: hni
+         real(cp),dimension(:),allocatable :: hni
          integer :: Ndir
-         integer,dimension(3) :: Ni
 
-         call getNi(gd,Ni)
-         Ndir = Ni(dir)
+         Ndir = gd%Ni(dir)
          allocate(hni(Ndir+1))
-         select case (dir)
-         case (1); call getXn(gd,hni)
-         case (2); call getYn(gd,hni)
-         case (3); call getZn(gd,hni)
-         end select
+
+         hni = gd%hi%c(dir)%hn
 
          if (Nwtop(dir).gt.0) then
-           gd%twtop = dble(Nwtop(dir))*(hni(Ndir+1)-hni(Ndir))
+           gd%twtop = real(Nwtop(dir),cp)*(hni(Ndir+1)-hni(Ndir))
          endif
 
          if (Nwbot(dir).gt.0) then
-           gd%twbot = dble(Nwbot(dir))*(hni(2)-hni(1))
+           gd%twbot = real(Nwbot(dir),cp)*(hni(2)-hni(1))
          endif
 
          deallocate(hni)
@@ -1598,7 +1089,7 @@
 
        subroutine printH(h)
          implicit none
-         real(dpn),dimension(:), intent(in) :: h
+         real(cp),dimension(:), intent(in) :: h
          integer s,i
          s = size(h)
          do i=1,s
@@ -1624,7 +1115,7 @@
          write(u,'(A9,'//xyzifmt//')') ' Nwtop = ',this%Nwtop
          write(u,'(A9,'//xyzifmt//')') ' Nwbot = ',this%Nwbot
          write(u,'(A5,'//xyzifmt//')') ' N = ',this%N
-         write(u,'(A16,2'//hfmt//')')  ' dhiMin,dhMin = ',this%dhiMin,this%dhMin
+         write(u,'(A16,2'//hfmt//')')  ' dhiMin,dhMin = ',this%hi%dhMin,this%ht%dhMin
          ! Stretching information:
          if (nonUniformGridFluid.or.nonUniformGridWall) then
            write(u,'(A10,'//xyzfmt//')') ' alphai = ',this%alphai

@@ -3,36 +3,45 @@
       ! Implementation:
       ! 
       ! type(myTriOperator) :: T
-      ! real(dpn),dimension(:,:,:) :: uOut,uIn
+      ! real(cp),dimension(:,:,:) :: uOut,uIn
       ! integer :: dir,pad
       ! call apply(T,uOut,uIn,dir,pad) 
       ! 
       ! See applyTriOperator for more details
 
-      use constants_mod
       implicit none
       
       private
       public :: myTriOperator
-      public :: initialize, delete, apply
+      public :: init, delete, apply
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
       type myTriOperator
         private
-        real(dpn),dimension(:),allocatable :: loDiag,diag,upDiag
+        real(cp),dimension(:),allocatable :: loDiag,diag,upDiag
         integer :: s
       end type
 
-      interface initialize;   module procedure initializeTriOperator;   end interface
+      interface init;         module procedure initTriOperator;         end interface
       interface delete;       module procedure deleteTriOperator;       end interface
       interface apply;        module procedure applyTriOperator;        end interface
       interface triOperate;   module procedure triOperateAnderson;      end interface
 
       contains
 
-      subroutine initializeTriOperator(T,loDiag,diag,upDiag)
+      subroutine initTriOperator(T,loDiag,diag,upDiag)
         implicit none
         type(myTriOperator),intent(inout) :: T
-        real(dpn),dimension(:),intent(in) :: loDiag,diag,upDiag
+        real(cp),dimension(:),intent(in) :: loDiag,diag,upDiag
         T%s = size(diag)
         if (allocated(T%loDiag)) deallocate(T%loDiag)
         if (allocated(T%diag))   deallocate(T%diag)
@@ -76,8 +85,8 @@
         !        |                                  0           1       |
         implicit none
         type(myTriOperator),intent(in) :: T
-        real(dpn),dimension(:,:,:),intent(inout) :: uOut ! fstar
-        real(dpn),dimension(:,:,:),intent(in) :: uIn
+        real(cp),dimension(:,:,:),intent(inout) :: uOut ! fstar
+        real(cp),dimension(:,:,:),intent(in) :: uIn
         integer,intent(in) :: dir
         integer,intent(in) :: pad
         integer :: i,j,k
@@ -119,9 +128,9 @@
 
       subroutine triOperateAnderson(uOut,uIn,loDiag,diag,upDiag,n)
         implicit none
-        real(dpn),dimension(:),intent(inout) :: uOut
-        real(dpn),dimension(:),intent(in) :: uIn,diag
-        real(dpn),dimension(:),intent(in) :: loDiag,upDiag
+        real(cp),dimension(:),intent(inout) :: uOut
+        real(cp),dimension(:),intent(in) :: uIn,diag
+        real(cp),dimension(:),intent(in) :: loDiag,upDiag
         integer,intent(in) :: n
         integer :: j
         if (n.eq.1) then

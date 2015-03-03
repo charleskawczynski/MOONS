@@ -15,9 +15,7 @@
       !     displayTF    = print residuals to screen (T,F)
 
       use constants_mod
-      use griddata_mod
       use allBCs_mod
-      use myAllocate_mod
       use coordinates_mod
       use applyBCs_mod
       use myError_mod

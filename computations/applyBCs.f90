@@ -6,11 +6,8 @@
        !           integer :: Nx,Ny,Nz,neumann,dirichlet
        !  
        !           ! B-field boundary conditions
-       !           call myAllocate(Nx,Ny,Nz,gd,BLoc)
-       !           select case (BLoc)
-       !           case (dom_cc_tot); dirichlet = 2; neumann = 5
-       !           case (dom_n_tot);  dirichlet = 1; neumann = 4
-       !           end select
+       !           Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+       !           dirichlet = 2; neumann = 5
        !           
        !           call setAllZero(Bx_bcs,Nx,Ny,Nz,dirichlet)
        !           call setXminType(Bx_bcs,neumann)
@@ -41,13 +38,22 @@
        !           .
        !           .
 
-       use constants_mod
        use BCs_mod
        use grid_mod
        implicit none
 
        private
        public :: applyAllBCs,applyBCFace
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
        interface applyAllBCs;    module procedure applyAllBCs3D;     end interface
        interface applyBCs;       module procedure applyBCs3D;        end interface
@@ -60,7 +66,7 @@
         ! Consider changing BCs to only affect interior data.
          implicit none
          type(BCs),intent(in) :: b
-         real(dpn),dimension(:,:,:),intent(inout) :: u
+         real(cp),dimension(:,:,:),intent(inout) :: u
          type(grid),intent(in) :: g
          call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
          call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
@@ -73,7 +79,7 @@
        subroutine applyBCFace(b,u,g,face)
          implicit none
          type(BCs),intent(in) :: b
-         real(dpn),dimension(:,:,:),intent(inout) :: u
+         real(cp),dimension(:,:,:),intent(inout) :: u
          type(grid),intent(in) :: g
          integer,intent(in) :: face
          select case (face)
@@ -90,13 +96,13 @@
 
        subroutine applyBCs3D(u,bctype,face,bvals,hn,hc,s)
          implicit none
-         real(dpn),intent(inout),dimension(:,:,:) :: u
-         real(dpn),intent(in),dimension(:) :: hn,hc
-         real(dpn),dimension(:,:),intent(in) :: bvals
+         real(cp),intent(inout),dimension(:,:,:) :: u
+         real(cp),intent(in),dimension(:) :: hn,hc
+         real(cp),dimension(:,:),intent(in) :: bvals
          integer,intent(in) :: bctype,face
          integer,intent(in) :: s
          integer :: i,j,k
-         real(dpn) :: a,b ! (alpha,beta)
+         real(cp) :: a,b ! (alpha,beta)
          select case (bctype)
          ! *************************** DIRICHLET *****************************
          case (1) ! Dirichlet - direct - wall coincident
@@ -155,30 +161,30 @@
          ! These have not yet been prepared for non-uniform grids:
          case (6) ! Periodic - direct - wall coincident ~O(dh)
            select case (face)
-           case (1); u(1,:,:) = 0.5*(u(2,:,:) + u(s-1,:,:))
-           case (2); u(:,1,:) = 0.5*(u(:,2,:) + u(:,s-1,:))
-           case (3); u(:,:,1) = 0.5*(u(:,:,2) + u(:,:,s-1))
-           case (4); u(s,:,:) = 0.5*(u(s-1,:,:) + u(2,:,:))
-           case (5); u(:,s,:) = 0.5*(u(:,s-1,:) + u(:,2,:))
-           case (6); u(:,:,s) = 0.5*(u(:,:,s-1) + u(:,:,2))
+           case (1); u(1,:,:) = real(0.5,cp)*(u(2,:,:) + u(s-1,:,:))
+           case (2); u(:,1,:) = real(0.5,cp)*(u(:,2,:) + u(:,s-1,:))
+           case (3); u(:,:,1) = real(0.5,cp)*(u(:,:,2) + u(:,:,s-1))
+           case (4); u(s,:,:) = real(0.5,cp)*(u(s-1,:,:) + u(2,:,:))
+           case (5); u(:,s,:) = real(0.5,cp)*(u(:,s-1,:) + u(:,2,:))
+           case (6); u(:,:,s) = real(0.5,cp)*(u(:,:,s-1) + u(:,:,2))
            end select
          case (7) ! Periodic - interpolated - wall incoincident ~O(dh)
            select case (face)
-           case (1); u(1,:,:) = 0.5*(u(2,:,:) + u(s-1,:,:))
-           case (2); u(:,1,:) = 0.5*(u(:,2,:) + u(:,s-1,:))
-           case (3); u(:,:,1) = 0.5*(u(:,:,2) + u(:,:,s-1))
-           case (4); u(s,:,:) = 0.5*(u(s-1,:,:) + u(2,:,:))
-           case (5); u(:,s,:) = 0.5*(u(:,s-1,:) + u(:,2,:))
-           case (6); u(:,:,s) = 0.5*(u(:,:,s-1) + u(:,:,2))
+           case (1); u(1,:,:) = real(0.5,cp)*(u(2,:,:) + u(s-1,:,:))
+           case (2); u(:,1,:) = real(0.5,cp)*(u(:,2,:) + u(:,s-1,:))
+           case (3); u(:,:,1) = real(0.5,cp)*(u(:,:,2) + u(:,:,s-1))
+           case (4); u(s,:,:) = real(0.5,cp)*(u(s-1,:,:) + u(2,:,:))
+           case (5); u(:,s,:) = real(0.5,cp)*(u(:,s-1,:) + u(:,2,:))
+           case (6); u(:,:,s) = real(0.5,cp)*(u(:,:,s-1) + u(:,:,2))
            end select
          case (8) ! Periodic - interpolated - wall incoincident ~O(dh^2)
            select case (face)
-           case (1); u(1,:,:) = 1.0/3.0*(3.0*u(2,:,:) + u(s-1,:,:) - u(3,:,:))
-           case (2); u(:,1,:) = 1.0/3.0*(3.0*u(:,2,:) + u(:,s-1,:) - u(:,3,:))
-           case (3); u(:,:,1) = 1.0/3.0*(3.0*u(:,:,2) + u(:,:,s-1) - u(:,:,3))
-           case (4); u(s,:,:) = -1.0/3.0*(u(s-2,:,:) - 3.0*u(s-1,:,:) - u(2,:,:))
-           case (5); u(:,s,:) = -1.0/3.0*(u(:,s-2,:) - 3.0*u(:,s-1,:) - u(:,2,:))
-           case (6); u(:,:,s) = -1.0/3.0*(u(:,:,s-2) - 3.0*u(:,:,s-1) - u(:,:,2))
+           case (1); u(1,:,:) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(2,:,:) + u(s-1,:,:) - u(3,:,:))
+           case (2); u(:,1,:) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(:,2,:) + u(:,s-1,:) - u(:,3,:))
+           case (3); u(:,:,1) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(:,:,2) + u(:,:,s-1) - u(:,:,3))
+           case (4); u(s,:,:) = real(-1.0,cp)/real(3.0,cp)*(u(s-2,:,:) - real(3.0,cp)*u(s-1,:,:) - u(2,:,:))
+           case (5); u(:,s,:) = real(-1.0,cp)/real(3.0,cp)*(u(:,s-2,:) - real(3.0,cp)*u(:,s-1,:) - u(:,2,:))
+           case (6); u(:,:,s) = real(-1.0,cp)/real(3.0,cp)*(u(:,:,s-2) - real(3.0,cp)*u(:,:,s-1) - u(:,:,2))
            end select
          end select
        end subroutine

@@ -58,7 +58,7 @@
        ! 
        ! NOTE: init prints the index location if one exists.
        ! 
-       use simParams_mod
+       ! use simParams_mod
        use transientProbe_mod
        use baseProbes_mod
        use myIO_mod
@@ -248,9 +248,9 @@
           integer,intent(in) :: n
           real(cp),dimension(:,:,:),intent(in) :: u
           select case (p%dir)
-          case (1); call computeError(p%ep%e,real(0.0,cp),u(p%i,:,:))
-          case (2); call computeError(p%ep%e,real(0.0,cp),u(:,p%i,:))
-          case (3); call computeError(p%ep%e,real(0.0,cp),u(:,:,p%i))
+          case (1); call compute(p%ep%e,real(0.0,cp),u(p%i,:,:))
+          case (2); call compute(p%ep%e,real(0.0,cp),u(:,p%i,:))
+          case (3); call compute(p%ep%e,real(0.0,cp),u(:,:,p%i))
           case default
             write(*,*) 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.';stop
           end select
@@ -264,9 +264,9 @@
           integer,intent(in) :: n
           real(cp),dimension(:,:,:),intent(in) :: u
           select case (p%dir)
-          case (1); call computeError(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(p%i,:,:)+u(p%i+1,:,:)))
-          case (2); call computeError(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,p%i,:)+u(:,p%i+1,:)))
-          case (3); call computeError(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,:,p%i)+u(:,:,p%i+1)))
+          case (1); call compute(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(p%i,:,:)+u(p%i+1,:,:)))
+          case (2); call compute(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,p%i,:)+u(:,p%i+1,:)))
+          case (3); call compute(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,:,p%i)+u(:,:,p%i+1)))
           case default
             write(*,*) 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.';stop
           end select

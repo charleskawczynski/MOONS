@@ -2,7 +2,7 @@
        ! Implementation:
        ! 
        !       type(probe) :: p
-       !       call init(p,dir,name,TF_freshStart)        ! enables print/export
+       !       call init(p,dir,name,TF_freshStart)              ! enables print/export
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -11,8 +11,8 @@
        !         call apply(p)                                  ! exports transient data (n,d)
        !       enddo
        ! 
-       use simParams_mod
-       use constants_mod
+       ! use simParams_mod
+       ! use constants_mod
        use myIO_mod
 
        implicit none
@@ -22,8 +22,18 @@
        public :: init,set,apply
        public :: export, printProbe,delete
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
        type probe
-         real(dpn) :: d                       ! transient data
+         real(cp) :: d                       ! transient data
          integer :: n                         ! n associated with data
          character(len=16) :: dir             ! probe directory
          character(len=16) :: name            ! probe name
@@ -54,7 +64,7 @@
          implicit none
          type(probe),intent(inout) :: p
          integer,intent(in) :: n
-         real(dpn),intent(in) :: d
+         real(cp),intent(in) :: d
          p%n = n; p%d = d
        end subroutine
 

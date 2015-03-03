@@ -1,7 +1,7 @@
        module rundata_mod
        use constants_mod
        use simParams_mod
-       use griddata_mod
+       use grid_mod
        use myError_mod
        use myTime_mod
        use myIO_mod
@@ -14,6 +14,7 @@
        ! real(dpn),parameter :: Ha = 100.0d0
        ! real(dpn),parameter :: Rem = 100.0d0
        ! real(dpn),parameter :: dTime = 100.0d0
+       character(len=5),parameter :: hfmt = 'F15.6'
 
        public :: rundata,setRundata
        public :: setDtime,getDtime,getDPseudoTime
@@ -60,12 +61,12 @@
        contains
 
        subroutine setRundata(this,dtime,ds,Re,Ha,Rem,&
-         u,v,w,gd,solveCoupled,solveBMethod)
+         u,v,w,g_mom,g_ind,solveCoupled,solveBMethod)
          implicit none
          type(rundata),intent(inout) :: this
          real(dpn), intent(in) :: dtime,ds,Re,Ha,Rem
          real(dpn),dimension(:,:,:),intent(in) :: u,v,w
-         type(griddata), intent(in) :: gd
+         type(grid), intent(in) :: g_mom,g_ind
          logical, intent(in) :: solveCoupled
          integer, intent(in) :: solveBMethod
          real(dpn) :: tempMax1,tempMax2,tempMax3
@@ -90,7 +91,7 @@
          ! This is not true in general and must be adjusted by
          ! the user.
 
-         this%L_c = 0.5d0*getMaxRangei(gd)
+         this%L_c = 0.5d0*g_mom%maxRange
 
          ! Is this even necessary? I think setting U_c = 1
          ! might be better since velocity is basically controlled
@@ -124,8 +125,8 @@
 
          ! ********************* STABILITY ***********************
 
-         this%dhMin = getDhMin(gd)
-         this%dhiMin = getDhiMin(gd)
+         this%dhMin = g_ind%dhMin
+         this%dhiMin = g_mom%dhMin
 
          ! Grid velocity
          this%u_grid = this%dhiMin/this%dtime

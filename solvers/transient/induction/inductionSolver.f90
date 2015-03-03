@@ -4,7 +4,6 @@
        use myIO_mod
        use myDebug_mod
        use myTime_mod
-       use myAllocate_mod
        use scalarField_mod
        use vectorField_mod
 
@@ -13,7 +12,7 @@
        use initializeSigmaMu_mod
 
        use grid_mod
-       ! use griddata_mod
+       use griddata_mod
        use rundata_mod
        use myError_mod
        use myDel_mod
@@ -35,6 +34,15 @@
        public :: computeJCrossB
        public :: computeDivergence
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
        type induction
          character(len=9) :: name = 'induction'
@@ -63,10 +71,10 @@
          type(errorProbe) :: probe_divB,probe_divJ
          type(grid) :: g
 
-         real(dpn) :: ds = 1.0d-4     ! Pseudo time step
+         real(cp) :: ds = 1.0d-4     ! Pseudo time step
          integer :: NmaxB = 5         ! Maximum number of pseudo steps
-         ! real(dpn) :: ds = 1.0d-6     ! S = 100
-         ! real(dpn) :: ds = 1.0d-7     ! S = 1000
+         ! real(cp) :: ds = 1.0d-6     ! S = 100
+         ! real(cp) :: ds = 1.0d-7     ! S = 1000
          ! integer :: NmaxB = 50        ! Maximum number of pseudo steps
          integer :: NmaxCleanB = 5    ! Maximum number of cleaning steps
        end type
@@ -284,7 +292,7 @@
          ! Locals
          integer :: Nx,Ny,Nz
          ! Interior
-         real(dpn),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz,tempn,tempcc
+         real(cp),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz,tempn,tempcc
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          ! Magnetic field/currents:
@@ -543,7 +551,7 @@
          type(grid),intent(in) :: g
          type(rundata),intent(in) :: rd
          ! ********************** LOCAL VARIABLES ***********************
-         real(dpn) :: dt,Rem
+         real(cp) :: dt,Rem
 
          dt = getDtime(rd)
          Rem = getRem(rd)
@@ -598,7 +606,7 @@
          type(grid),intent(in) :: g
          type(rundata),intent(in) :: rd
          ! ********************** LOCAL VARIABLES ***********************
-         real(dpn) :: Rem,dt
+         real(cp) :: Rem,dt
 
          dt = getDtime(rd)
          Rem = getRem(rd)
@@ -680,12 +688,10 @@
          call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
          call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
 
-         ! Compute fluxes of u cross (B)
-         ! call add(ind%B,ind%B0) ! For finite Rem
-         call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,1)
-         call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,2)
-         call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,3)
-         ! call subtract(ind%B,ind%B0) ! For finite Rem
+         ! Compute fluxes of u cross B0
+         call myCollocatedCross(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,1)
+         call myCollocatedCross(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,2)
+         call myCollocatedCross(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,3)
          call myCellCenter2Edge(ind%E%x,ind%tempVF%x,g,1)
          call myCellCenter2Edge(ind%E%y,ind%tempVF%y,g,2)
          call myCellCenter2Edge(ind%E%z,ind%tempVF%z,g,3)
@@ -693,7 +699,6 @@
          ! E = j/sig - uxB
          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
          call multiply(ind%J,ind%sigmaInv_edge)
-         ! call divide(ind%J,Rem) ! For finite Rem
          call subtract(zero,ind%E)
          call add(ind%E,ind%J)
 
@@ -706,19 +711,26 @@
          call myFace2CellCenter(ind%tempVF%y,ind%F%y,g,2)
          call myFace2CellCenter(ind%tempVF%z,ind%F%z,g,3)
 
-         ! Add induced field of previous time step (B^n)
-         ! ind%B = ind%B - dt*ind%tempVF
+         ! Subtract laplacian from B^n
+         call CC2CCLap(ind%Bstar%x,ind%B%x,ind%sigmaInv%phi,g,1)
+         call CC2CCLap(ind%Bstar%y,ind%B%y,ind%sigmaInv%phi,g,2)
+         call CC2CCLap(ind%Bstar%z,ind%B%z,ind%sigmaInv%phi,g,3)
+         ! ind%tempVF = ind%tempVF - ind%Bstar
+         call subtract(ind%tempVF,ind%Bstar)
+
+         ! Solve with semi-implicit ADI
          call setDt(ind%ADI_B,ind%ds)
-         call setAlpha(ind%ADI_B,one)
+         call setAlpha(ind%ADI_B,real(1.0,cp))
+         ! call setAlpha(ind%ADI_B,ind%sigmaInv)
 
          call init(ind%ss_ADI)
          call setName(ind%ss_ADI,'ADI for B-field     ')
 
-         call apply(ind%ADI_B,ind%Bstar%x,ind%F%x,ind%Bx_bcs,g,&
+         call apply(ind%ADI_B,ind%B%x,ind%tempVF%x,ind%Bx_bcs,g,&
             ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
-         call apply(ind%ADI_B,ind%Bstar%y,ind%F%y,ind%By_bcs,g,&
+         call apply(ind%ADI_B,ind%B%y,ind%tempVF%y,ind%By_bcs,g,&
             ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
-         call apply(ind%ADI_B,ind%Bstar%z,ind%F%z,ind%Bz_bcs,g,&
+         call apply(ind%ADI_B,ind%B%z,ind%tempVF%z,ind%Bz_bcs,g,&
             ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
 
          ! Impose BCs:
@@ -767,7 +779,7 @@
          type(vectorField),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g_mom,g_ind
-         real(dpn),intent(in) :: Re,Ha
+         real(cp),intent(in) :: Re,Ha
          ! *********************** LOCAL VARIABLES **********************
          integer :: Nx,Ny,Nz,dir
          ! **************************************************************

@@ -3,7 +3,7 @@
        ! 
        ! indexProbe:
        !       type(indexProbe) :: p                              ! 
-       !       call init(p,g,s,i,dir,name,TF_freshStart)   ! enables other routines
+       !       call init(p,g,s,i,dir,name,TF_freshStart)          ! enables other routines
        !       call resetH(p,h)                                   ! if h needs to be reset
        !       call print(p)                                      ! prints basic info (no data)
        !       call export(p)                                     ! exports basic probe info (no data)
@@ -16,7 +16,7 @@
        ! 
        ! errorProbe:
        !       type(errorProbe) :: p                              ! 
-       !       call init(p,dir,name,TF_freshStart)          ! enables other routines
+       !       call init(p,dir,name,TF_freshStart)                ! enables other routines
        !       call resetH(p,h)                                   ! if h needs to be reset
        !       call print(p)                                      ! prints basic info (no data)
        !       call export(p)                                     ! exports basic probe info (no data)
@@ -29,7 +29,7 @@
        ! 
        ! NOTE: init prints the index location if one exists.
        ! 
-       use simParams_mod
+       ! use simParams_mod
        use transientProbe_mod
        use myIO_mod
        use grid_mod
@@ -151,7 +151,7 @@
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
           real(cp),dimension(:),intent(in) :: u
-          call computeError(ep%e,real(0.0,cp),u)
+          call compute(ep%e,real(0.0,cp),u)
           call set(ep%p,n,getL2(ep%e))
         end subroutine
 
@@ -160,7 +160,7 @@
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
           real(cp),dimension(:,:),intent(in) :: u
-          call computeError(ep%e,real(0.0,cp),u)
+          call compute(ep%e,real(0.0,cp),u)
           call set(ep%p,n,getL2(ep%e))
         end subroutine
 
@@ -169,7 +169,7 @@
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
           real(cp),dimension(:,:,:),intent(in) :: u
-          call computeError(ep%e,real(0.0,cp),u)
+          call compute(ep%e,real(0.0,cp),u)
           call set(ep%p,n,getL2(ep%e))
         end subroutine
 

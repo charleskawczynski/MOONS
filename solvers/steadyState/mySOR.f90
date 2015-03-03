@@ -25,8 +25,6 @@
       ! To parallelize, use pre-processor directive:
       !                  _PARALLELIZE_SOR_
 
-      use constants_mod
-      use simParams_mod
       use grid_mod
       use BCs_mod
       use applyBCs_mod
@@ -36,33 +34,49 @@
       implicit none
 
       private
-
       public :: mySOR,solve
-
       private :: init,delete
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+      real(cp),parameter :: PI = 3.14159265358979
 
       logical, parameter :: useGaussSeidel = .true.
 
       type mySOR
         character(len=3) :: name
         integer :: gridType
-        real(dpn),dimension(:),allocatable :: dx1,dy1,dz1
-        real(dpn),dimension(:),allocatable :: dx2,dy2,dz2
-        real(dpn),dimension(:,:,:),allocatable :: lapu
-        real(dpn) :: omega
+        real(cp),dimension(:),allocatable :: dxp,dyp,dzp
+        real(cp),dimension(:),allocatable :: dxd,dyd,dzd
+        real(cp),dimension(:,:,:),allocatable :: lapu
+        real(cp) :: omega
         integer,dimension(3) :: s
       end type
 
+      interface mySOR;       module procedure SOR;           end interface
       interface init;        module procedure initSOR;       end interface
       interface delete;      module procedure deleteSOR;     end interface
       interface solve;       module procedure solveSOR;      end interface
 
       contains
 
+      function SOR() result(S)
+        implicit none
+        type(mySOR) :: S
+        S%name = 'SOR'
+      end function
+
       subroutine initSOR(SOR,f,g,gridType)
         implicit none
         type(mySOR),intent(inout) :: SOR
-        real(dpn),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f
         integer,intent(in) :: gridType
         type(grid),intent(in) :: g
         integer :: Nx,Ny,Nz
@@ -72,36 +86,37 @@
 
         select case (gridType)
         case (1) ! Cell based (for pressure)
-          Nx = SOR%s(1)-2; Ny = SOR%s(2)-2; Nz = SOR%s(3)-2
-          allocate(SOR%dx1(Nx+1),SOR%dy1(Ny+1),SOR%dz1(Nz+1))
-          allocate(SOR%dx2(Nx),SOR%dy2(Ny),SOR%dz2(Nz))
-          SOR%dx1 = g%c(1)%dhc
-          SOR%dy1 = g%c(2)%dhc
-          SOR%dz1 = g%c(3)%dhc
-          SOR%dx2 = g%c(1)%dhn
-          SOR%dy2 = g%c(2)%dhn
-          SOR%dz2 = g%c(3)%dhn
+          Nx = SOR%s(1)-2; Ny = SOR%s(2)-2; Nz = SOR%s(3)-2   ! number of cells (excluding ghost)
+          allocate(SOR%dxp(Nx+1),SOR%dyp(Ny+1),SOR%dzp(Nz+1)) ! Primary grid
+          allocate(SOR%dxd(Nx),SOR%dyd(Ny),SOR%dzd(Nz))       ! Dual grid
+          SOR%dxp = g%c(1)%dhc
+          SOR%dyp = g%c(2)%dhc
+          SOR%dzp = g%c(3)%dhc
+          SOR%dxd = g%c(1)%dhn
+          SOR%dyd = g%c(2)%dhn
+          SOR%dzd = g%c(3)%dhn
         case (2) ! Node based (for magnetic field)
-          Nx = SOR%s(1)-1; Ny = SOR%s(2)-1; Nz = SOR%s(3)-1
-          allocate(SOR%dx2(Nx+1),SOR%dy2(Ny+1),SOR%dz2(Nz+1))
-          allocate(SOR%dx1(Nx),SOR%dy1(Ny),SOR%dz1(Nz))
-          SOR%dx2 = g%c(1)%dhc
-          SOR%dy2 = g%c(2)%dhc
-          SOR%dz2 = g%c(3)%dhc
-          SOR%dx1 = g%c(1)%dhn
-          SOR%dy1 = g%c(2)%dhn
-          SOR%dz1 = g%c(3)%dhn
+          Nx = SOR%s(1)-1; Ny = SOR%s(2)-1; Nz = SOR%s(3)-1   ! number of cells (excluding ghost)
+          allocate(SOR%dxd(Nx+1),SOR%dyd(Ny+1),SOR%dzd(Nz+1)) ! Primary grid
+          allocate(SOR%dxp(Nx),SOR%dyp(Ny),SOR%dzp(Nz))       ! Dual grid
+          SOR%dxd = g%c(1)%dhc
+          SOR%dyd = g%c(2)%dhc
+          SOR%dzd = g%c(3)%dhc
+          SOR%dxp = g%c(1)%dhn
+          SOR%dyp = g%c(2)%dhn
+          SOR%dzp = g%c(3)%dhn
         case default
           write(*,*) 'gridType in SOR must be 1 or 2. Terminating';stop
         end select
         allocate(SOR%lapu(SOR%s(1),SOR%s(2),SOR%s(3)))
 
         if (useGaussSeidel) then
-          SOR%omega = 1.0
+          SOR%omega = real(1.0,cp)
           SOR%name = 'GS '
         else
-          SOR%omega = 2.0/(one + sqrt(one - & 
-           ((cos(PI/dble(Nx+1)) + cos(PI/dble(Ny+1)) + cos(PI/dble(Nz+1)))/3.0)**2.0))
+          SOR%omega = real(2.0,cp)/(real(1.0,cp) + sqrt(real(1.0,cp) - & 
+           ((cos(PI/real(Nx+1,cp)) + cos(PI/real(Ny+1,cp)) + &
+             cos(PI/real(Nz+1,cp)))/real(3.0,cp))**real(2.0,cp)))
           SOR%name = 'SOR'
         endif
       end subroutine
@@ -109,12 +124,12 @@
       subroutine deleteSOR(SOR)
         implicit none
         type(mySOR),intent(inout) :: SOR
-        deallocate(SOR%dx1)
-        deallocate(SOR%dy1)
-        deallocate(SOR%dz1)
-        deallocate(SOR%dx2)
-        deallocate(SOR%dy2)
-        deallocate(SOR%dz2)
+        deallocate(SOR%dxp)
+        deallocate(SOR%dyp)
+        deallocate(SOR%dzp)
+        deallocate(SOR%dxd)
+        deallocate(SOR%dyd)
+        deallocate(SOR%dzd)
         deallocate(SOR%lapu)
 
         ! write(*,*) 'SOR object deleted'
@@ -124,8 +139,8 @@
       subroutine solveSOR(SOR,u,f,u_bcs,g,ss,err,gridType,displayTF)
         implicit none
         type(mySOR),intent(inout) :: SOR
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
@@ -135,7 +150,7 @@
         ! Locals
         integer,dimension(3) :: s
         integer :: i,j,k,ijk
-        real(dpn) :: r
+        real(cp) :: r
         logical :: TF,continueLoop,TF_allDirichlet
         integer :: maxIterations
 
@@ -165,18 +180,18 @@
           do k=2,s(3)-1,2
             do j=2,s(2)-1
               do i=2,s(1)-1
-                r = one/SOR%dx2(i-1)*(one/SOR%dx1(i) + one/SOR%dx1(i-1)) + & 
-                    one/SOR%dy2(j-1)*(one/SOR%dy1(j) + one/SOR%dy1(j-1)) + & 
-                    one/SOR%dz2(k-1)*(one/SOR%dz1(k) + one/SOR%dz1(k-1))
+                r = real(1.0,cp)/SOR%dxd(i-1)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
+                    real(1.0,cp)/SOR%dyd(j-1)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
+                    real(1.0,cp)/SOR%dzd(k-1)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
 
-                u(i,j,k) = u(i,j,k)*(one-SOR%omega) + &
+                u(i,j,k) = u(i,j,k)*(real(1.0,cp)-SOR%omega) + &
 
-               SOR%omega*( u(i-1,j,k)/(SOR%dx1(i-1) * SOR%dx2(i-1)) + &
-                           u(i+1,j,k)/(SOR%dx1( i ) * SOR%dx2(i-1)) + &
-                           u(i,j-1,k)/(SOR%dy1(j-1) * SOR%dy2(j-1)) + &
-                           u(i,j+1,k)/(SOR%dy1( j ) * SOR%dy2(j-1)) + &
-                           u(i,j,k-1)/(SOR%dz1(k-1) * SOR%dz2(k-1)) + &
-                           u(i,j,k+1)/(SOR%dz1( k ) * SOR%dz2(k-1)) &
+               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1)) + &
+                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1)) + &
+                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1)) + &
+                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1)) + &
+                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1)) + &
+                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1)) &
                          - f(i,j,k) )/r
               enddo
             enddo
@@ -187,18 +202,18 @@
           do k=3,s(3)-1,2
             do j=2,s(2)-1
               do i=2,s(1)-1
-                r = one/SOR%dx2(i-1)*(one/SOR%dx1(i) + one/SOR%dx1(i-1)) + & 
-                    one/SOR%dy2(j-1)*(one/SOR%dy1(j) + one/SOR%dy1(j-1)) + & 
-                    one/SOR%dz2(k-1)*(one/SOR%dz1(k) + one/SOR%dz1(k-1))
+                r = real(1.0,cp)/SOR%dxd(i-1)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
+                    real(1.0,cp)/SOR%dyd(j-1)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
+                    real(1.0,cp)/SOR%dzd(k-1)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
 
-                u(i,j,k) = u(i,j,k)*(one-SOR%omega) + &
+                u(i,j,k) = u(i,j,k)*(real(1.0,cp)-SOR%omega) + &
 
-               SOR%omega*( u(i-1,j,k)/(SOR%dx1(i-1) * SOR%dx2(i-1)) + &
-                           u(i+1,j,k)/(SOR%dx1( i ) * SOR%dx2(i-1)) + &
-                           u(i,j-1,k)/(SOR%dy1(j-1) * SOR%dy2(j-1)) + &
-                           u(i,j+1,k)/(SOR%dy1( j ) * SOR%dy2(j-1)) + &
-                           u(i,j,k-1)/(SOR%dz1(k-1) * SOR%dz2(k-1)) + &
-                           u(i,j,k+1)/(SOR%dz1( k ) * SOR%dz2(k-1)) &
+               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1)) + &
+                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1)) + &
+                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1)) + &
+                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1)) + &
+                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1)) + &
+                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1)) &
                          - f(i,j,k) )/r
               enddo
             enddo
@@ -209,18 +224,18 @@
           do k=2,s(3)-1
             do j=2,s(2)-1
               do i=2,s(1)-1
-                r = one/SOR%dx2(i-1)*(one/SOR%dx1(i) + one/SOR%dx1(i-1)) + & 
-                    one/SOR%dy2(j-1)*(one/SOR%dy1(j) + one/SOR%dy1(j-1)) + & 
-                    one/SOR%dz2(k-1)*(one/SOR%dz1(k) + one/SOR%dz1(k-1))
+                r = real(1.0,cp)/SOR%dxd(i-1)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
+                    real(1.0,cp)/SOR%dyd(j-1)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
+                    real(1.0,cp)/SOR%dzd(k-1)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
 
-                u(i,j,k) = u(i,j,k)*(one-SOR%omega) + &
+                u(i,j,k) = u(i,j,k)*(real(1.0,cp)-SOR%omega) + &
 
-               SOR%omega*( u(i-1,j,k)/(SOR%dx1(i-1) * SOR%dx2(i-1)) + &
-                           u(i+1,j,k)/(SOR%dx1( i ) * SOR%dx2(i-1)) + &
-                           u(i,j-1,k)/(SOR%dy1(j-1) * SOR%dy2(j-1)) + &
-                           u(i,j+1,k)/(SOR%dy1( j ) * SOR%dy2(j-1)) + &
-                           u(i,j,k-1)/(SOR%dz1(k-1) * SOR%dz2(k-1)) + &
-                           u(i,j,k+1)/(SOR%dz1( k ) * SOR%dz2(k-1)) &
+               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1)) + &
+                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1)) + &
+                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1)) + &
+                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1)) + &
+                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1)) + &
+                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1)) &
                          - f(i,j,k) )/r
               enddo
             enddo
@@ -233,10 +248,10 @@
 
           if (getMinToleranceTF(ss).and.(ijk.eq.2)) then
             select case (SOR%gridType)
-            case (1); call myCC2CCLap(SOR%lapu,u,g)
+            case (1); call CC2CCLap(SOR%lapu,u,g)
             case (2); call myNodeLap(SOR%lapu,u,g)
             end select
-            call computeError(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+            call compute(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
             call setTolerance(ss,getL2Rel(err))
           endif
 
@@ -260,11 +275,11 @@
           write(*,*) '(Final,max) '//SOR%name//' iteration = ',ijk,maxIterations
 
           select case (SOR%gridType)
-          case (1); call myCC2CCLap(SOR%lapu,u,g)
+          case (1); call CC2CCLap(SOR%lapu,u,g)
           case (2); call myNodeLap(SOR%lapu,u,g)
           end select
-          call computeError(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
-          call printMyError(err,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
+          call compute(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+          call print(err,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
         call delete(SOR)

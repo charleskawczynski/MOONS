@@ -1,10 +1,10 @@
       module myDel_mod
-      ! call myDel(dfdh,f,gd,n,dir,diffType,pad) returns an nth-derivative of the
+      ! call myDel(dfdh,f,g,n,dir,diffType,pad) returns an nth-derivative of the
       ! scalar field, f, along direction dir (1,2,3) which corresponds to (x,y,z).
       ! 
       ! INPUT:
       !     f            = f(x,y,z)
-      !     gd           = griddata (dxc,dyc,dzc,dxn,dyn,dzn)
+      !     g            = grid (g%c(1,2,3)%dhn, g%c(1,2,3)%dhc)
       !     n            = nth derivative (n=1,2 supported)
       !     dir          = direction along which to take the derivative (1,2,3)
       !     diffType     = (1,2,3,4) derivative type, refer to myDiff for more details
@@ -18,22 +18,30 @@
       ! CharlieKawczynski@gmail.com
       ! 5/15/2014
 
-      use constants_mod
       use grid_mod
       implicit none
 
       private
+      public :: myDel ! call myDel(dfdh,f,g,n,dir,diffType,pad)
 
-      public :: myDel ! call myDel(dfdh,f,gd,n,dir,diffType,pad)
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
       contains
 
       subroutine myDiff(dfdh,f,dhc,dhn,n,diffType,s)
         implicit none
-        real(dpn),dimension(:),intent(in) :: f
-        real(dpn),dimension(:),intent(in) :: dhc,dhn
+        real(cp),dimension(:),intent(in) :: f
+        real(cp),dimension(:),intent(in) :: dhc,dhn
         integer,intent(in) :: n,diffType,s
-        real(dpn),dimension(:),intent(inout) :: dfdh
+        real(cp),dimension(:),intent(inout) :: dfdh
 
         select case (diffType)
         case (1); call diff(dfdh,f,dhc,dhn,n,s)      ! Collocated CellCenter derivative
@@ -46,9 +54,9 @@
 
       subroutine upwind(dfdh,f,dh,s)
         implicit none
-        real(dpn),dimension(:),intent(in) :: f
-        real(dpn),dimension(:),intent(inout) :: dfdh
-        real(dpn),dimension(:),intent(in) :: dh
+        real(cp),dimension(:),intent(in) :: f
+        real(cp),dimension(:),intent(inout) :: dfdh
+        real(cp),dimension(:),intent(in) :: dh
         integer,intent(in) :: s
         integer :: i
         ! Interior
@@ -57,12 +65,12 @@
 
       subroutine diff(dfdh,f,dh1,dh2,n,s)
         implicit none
-        real(dpn),intent(in),dimension(:) :: f
-        real(dpn),dimension(:),intent(inout) :: dfdh
-        real(dpn),intent(in),dimension(:) :: dh1,dh2
+        real(cp),intent(in),dimension(:) :: f
+        real(cp),dimension(:),intent(inout) :: dfdh
+        real(cp),intent(in),dimension(:) :: dh1,dh2
         integer,intent(in) :: n,s
         integer :: i,j,k
-        real(dpn) :: alpha,beta
+        real(cp) :: alpha,beta
 
         select case (n)
         case (1)
@@ -124,63 +132,49 @@
         end select
       end subroutine
 
-      subroutine myDel(dfdh,f,gd,nth,dir,diffType,pad,addTo)
+      subroutine myDel(dfdh,f,g,nth,dir,diffType,pad,addTo)
         ! The order in the loops have been changed for better memory caching.
         implicit none
-        real(dpn),dimension(:,:,:),intent(inout) :: dfdh
-        real(dpn),dimension(:,:,:),intent(in) :: f
-        type(grid),intent(in) :: gd
+        real(cp),dimension(:,:,:),intent(inout) :: dfdh
+        real(cp),dimension(:,:,:),intent(in) :: f
+        type(grid),intent(in) :: g
         integer,intent(in) :: nth,dir,diffType,pad
         logical,intent(in),optional :: addTo
         integer,dimension(3) :: s
-        real(dpn),dimension(:),allocatable :: dhc,dhn
-        integer :: i,j,k,Nx,Ny,Nz
-
-        Nx = gd%c(1)%N; Ny = gd%c(2)%N; Nz = gd%c(3)%N
-        ! call myAllocate(Nx,Ny,Nz,gd,f) ! Gets the size of Nx,Ny,Nz based on f
+        integer :: i,j,k
 
         s = shape(f)
 
         if (.not.present(addTo)) then
-          dfdh = zero ! Zero result first
+          dfdh = real(0.0,cp) ! Zero result first
         endif
         
         select case (dir)
         case (1)
-          allocate(dhc(Nx+1),dhn(Nx))
-          dhc = gd%c(dir)%dhc
-          dhn = gd%c(dir)%dhn
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad
             do j=1+pad,s(2)-pad
-              call myDiff(dfdh(:,j,k),f(:,j,k),dhc,dhn,nth,diffType,s(1))
+              call myDiff(dfdh(:,j,k),f(:,j,k),g%c(dir)%dhc,g%c(dir)%dhn,nth,diffType,s(1))
             enddo
           enddo
           !$OMP END PARALLEL DO
         case (2)
-          allocate(dhc(Ny+1),dhn(Ny))
-          dhc = gd%c(dir)%dhc
-          dhn = gd%c(dir)%dhn
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad
             do i=1+pad,s(1)-pad
-              call myDiff(dfdh(i,:,k),f(i,:,k),dhc,dhn,nth,diffType,s(2))
+              call myDiff(dfdh(i,:,k),f(i,:,k),g%c(dir)%dhc,g%c(dir)%dhn,nth,diffType,s(2))
             enddo
           enddo
           !$OMP END PARALLEL DO
         case (3)
-          allocate(dhc(Nz+1),dhn(Nz))
-          dhc = gd%c(dir)%dhc
-          dhn = gd%c(dir)%dhn
           !$OMP PARALLEL DO
           do j=1+pad,s(2)-pad
             do i=1+pad,s(1)-pad
-              call myDiff(dfdh(i,j,:),f(i,j,:),dhc,dhn,nth,diffType,s(3))
+              call myDiff(dfdh(i,j,:),f(i,j,:),g%c(dir)%dhc,g%c(dir)%dhn,nth,diffType,s(3))
             enddo
           enddo
           !$OMP END PARALLEL DO
         end select
-        deallocate(dhc,dhn)
       end subroutine
 
       end module

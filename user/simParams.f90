@@ -34,7 +34,7 @@
        logical :: restartU = .false.
        integer,parameter :: solveUMethod = 1
        !                                   1 : Explicit Euler
-       !                                   2 : Semi-Implicit 3D ADI (Douglas), Not yet working
+       !                                   2 : Semi-Implicit 3D ADI (Douglas)
 
        integer :: advectiveUFormulation = 1
        !                                  1 : Donor-Cell (conservative form)
@@ -60,6 +60,7 @@
        !                                   5 : Constrained Transport (CT) Method
        !                                   6 : Full Induction Equation, Not sure how this is supposed 
        !                                       to be different from CT method if it is conservative..
+       !                                   7 : Low Rem Semi-Implicit 3D ADI (Douglas) (good for highly insulating walls)
 
        ! ************************** MHD *************************
        logical :: solveCoupled = .true.
@@ -224,42 +225,9 @@
 
 
        ! ************************ DEBUGGING *********************
-       logical :: checkSourceTermsBTF = .false.
-       logical :: checkInterpolations = .false. ! Maybe make a separate program for unit testing?
-       logical :: calculateOmegaPsi = .false.
-       logical :: outputAlternativeFormats = .true.
-
-       ! *************** STAGGERED GRID LOCATIONS ***************
-       ! Refer to myAllocate to see where 
-       ! the each variable is stored:
-
-       ! Interior
-       integer,parameter :: dom_f_in      = 1 ! Face domain - interior
-       integer,parameter :: dom_cc_in     = 2 ! Cell center domain - interior
-       integer,parameter :: dom_n_in      = 3 ! Node domain - interior
-       ! Entire domain
-       integer,parameter :: dom_f_tot     = 4 ! Cell center domain - total
-       integer,parameter :: dom_cc_tot    = 5 ! Cell center domain - total
-       integer,parameter :: dom_n_tot     = 6 ! Node domain - total
-
-       ! GRID:
-       integer,parameter :: interiorCC    = 2 ! Cell center domain - total
-       integer,parameter :: interiorN     = 3 ! Node domain - total
-       integer,parameter :: totalCC       = 5 ! Cell center domain - total
-       integer,parameter :: totalN        = 6 ! Node domain - total
-
-       ! VARIABLES:
-       integer,parameter :: ULoc          = dom_f_in
-       integer,parameter :: PLoc          = dom_cc_in
-       integer,parameter :: divULoc       = PLoc
-
-       integer,parameter :: BLoc          = dom_cc_tot
-       integer,parameter :: JLoc          = BLoc
-       integer,parameter :: sigmaLoc      = BLoc
-       integer,parameter :: muLoc         = BLoc
-
-       integer,parameter :: phiLoc        = BLoc
-       integer,parameter :: divBLoc       = BLoc
-       integer,parameter :: divJLoc       = BLoc
+       ! logical :: checkSourceTermsBTF = .false.
+       ! logical :: checkInterpolations = .false. ! Maybe make a separate program for unit testing?
+       ! logical :: calculateOmegaPsi = .false.
+       ! logical :: outputAlternativeFormats = .true.
 
        end module

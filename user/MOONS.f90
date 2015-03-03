@@ -5,7 +5,6 @@
        use myIO_mod
        use version_mod
        use myTime_mod
-       use myAllocate_mod
        use grid_mod
        use griddata_mod
        use rundata_mod
@@ -34,7 +33,6 @@
 
        use MHDSolver_mod
        use omp_lib
-       use grid_mod
 
        implicit none
        contains
@@ -86,8 +84,10 @@
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
          case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
          case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
          case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
          case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 3.0d-4
          case (104); Re = 1000d0;   Ha = 1000.0d0 ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.9d-6
 
@@ -117,6 +117,7 @@
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
          case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
 
@@ -154,25 +155,20 @@
          call exportVersion(dir)
 
          ! **************************************************************
-         call setGriddata(gd,grid_mom,grid_ind,Re,Ha)
-         ! call initialize(mom,gd,dir)
-         ! call initialize(ind,gd,dir)
+         call init(gd,grid_mom,grid_ind,Re,Ha)
          call init(mom,grid_mom,dir)
-         write(*,*) 'reached 1'
          call init(ind,grid_ind,dir)
-         write(*,*) 'reached 2'
-         ! call initialize(vecOps,gd)
+         ! call init(vecOps,gd)
 
          ! ****************** INITIALIZE RUNDATA ************************
          ! These all need to be re-evaluated because the Fo and Co now depend
          ! on the smallest spatial step (dhMin)
 
-         write(*,*) 'reached 3'
          call setRunData(rd,dTime,ds,Re,Ha,Rem,&
-          mom%U%x,mom%U%y,mom%U%z,gd,solveCoupled,solveBMethod)
+          mom%U%x,mom%U%y,mom%U%z,grid_mom,grid_ind,solveCoupled,solveBMethod)
 
          ! ****************** INITIALIZE TIME ***************************
-         call initialize(time)
+         call init(time)
 
          ! *************** CHECK IF CONDITIONS ARE OK *******************
          call printGriddata(gd)
@@ -192,7 +188,6 @@
          endif
 
          call checkGrid(gd)
-         write(*,*) 'reached 4'
 
          write(*,*) ''
          write(*,*) 'Press enter if these parameters are okay.'
@@ -223,7 +218,6 @@
          ! call unitTestRelax(ind%B%x,ind%g,dir)
          ! call unitTestADI(ind%B%x,ind%g,dir)
          ! call unitTestMG(ind%B%x,ind%g,dir)
-         write(*,*) 'reached 5'
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 
          ! if (calculateOmegaPsi) call calcOmegaPsi(u,v,w,gd,dir)
@@ -276,11 +270,13 @@
         type(solverSettings) :: ss
         integer :: i,j,k
         real(dpn) :: p,q,r
+        real(dpn),dimension(:,:),allocatable :: bvals
         integer,dimension(3) :: s
         s = shape(B)
         s = s-1
-        ! call setAllZero(u_bcs,s(1),s(2),s(3),1) ! Dirichlet
-        call setAllZero(u_bcs,s(1),s(2),s(3),4) ! Neumann
+        call setAllZero(u_bcs,s(1),s(2),s(3),1) ! Dirichlet
+        ! call setAllZero(u_bcs,s(1),s(2),s(3),4) ! Neumann
+        allocate(bvals(s(2),s(3)))
 
         call setGrid(u_bcs,gd)
         call checkBCs(u_bcs)
@@ -293,11 +289,16 @@
         do j = 1,s(2)
         do i = 1,s(1)
           ! u_exact(i,j,k) = sin(p*PI*gd%xni(i))*sin(q*PI*gd%yni(j))*sin(r*PI*gd%zni(k)) ! Dirichlet
-          u_exact(i,j,k) = cos(p*PI*gd%c(1)%hn(i))*cos(q*PI*gd%c(2)%hn(j))*cos(r*PI*gd%c(3)%hn(k)) ! Neumann
-          f(i,j,k) = -PI**2.0*(p**2.0+q**2.0+r**2.0)*u_exact(i,j,k)
+          u_exact(i,j,k) = sin(p/2.0*PI*gd%c(1)%hn(i))*sin(q*PI*gd%c(2)%hn(j))*sin(r*PI*gd%c(3)%hn(k)) ! Neumann
+          ! f(i,j,k) = -PI**2.0*((p/2.0)**2.0+q**2.0+r**2.0)*u_exact(i,j,k)
+          bvals(j,k) = 1.0
+          f(i,j,k) = 0.0
         enddo
         enddo
         enddo
+        call setXmaxVals(u_bcs,bvals)
+        deallocate(bvals)
+
 
         call init(ss)
         call setName(ss,'u                   ')
@@ -307,8 +308,8 @@
         call myPoisson(ADI,u,f,u_bcs,gd,ss,e,2,.true.)
         ! call myPoisson(SOR,u,f,u_bcs,gd,ss,e,2,.true.)
 
-        call computeError(e,u_exact,u)
-        call printMyError(e,'u')
+        call compute(e,u_exact,u)
+        call print(e,'u')
 
         call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,u,dir,'u')
         call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,u_exact,dir,'u_exact')
