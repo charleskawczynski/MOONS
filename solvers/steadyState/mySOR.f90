@@ -136,7 +136,7 @@
       end subroutine
 
 
-      subroutine solveSOR(SOR,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      subroutine solveSOR(SOR,u,f,u_bcs,g,ss,norms,gridType,displayTF)
         implicit none
         type(mySOR),intent(inout) :: SOR
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -144,7 +144,7 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: err
+        type(myError),intent(inout) :: norms
         integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
         ! Locals
@@ -251,8 +251,8 @@
             case (1); call CC2CCLap(SOR%lapu,u,g)
             case (2); call myNodeLap(SOR%lapu,u,g)
             end select
-            call compute(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
-            call setTolerance(ss,getL2Rel(err))
+            call compute(norms,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+            call setTolerance(ss,getL2Rel(norms))
           endif
 
           call setIteration(ss,ijk)
@@ -278,8 +278,8 @@
           case (1); call CC2CCLap(SOR%lapu,u,g)
           case (2); call myNodeLap(SOR%lapu,u,g)
           end select
-          call compute(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
-          call print(err,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
+          call compute(norms,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+          call print(norms,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
         call delete(SOR)

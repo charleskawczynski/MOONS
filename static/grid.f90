@@ -54,7 +54,7 @@
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: f
          integer :: i
-         do i=1,3; call init(g%c(i),f%c(i)%hn,2); enddo
+         do i = 1,3; call init(g%c(i),f%c(i)%hn,2) ;enddo
          call initProps(g)
        end subroutine
 
@@ -74,13 +74,14 @@
        end subroutine
 
        subroutine initGrid2(g,h1,h2,h3,gridType)
-         implicit none
-         type(grid),intent(inout) :: g
-         real(cp),dimension(:),intent(in) :: h1,h2,h3
-         integer,intent(in) :: gridType
-         integer :: i
-         do i=1,3; call init(g%c(i),h1,gridType); enddo
-         call initProps(g)
+        implicit none
+        type(grid),intent(inout) :: g
+        real(cp),dimension(:),intent(in) :: h1,h2,h3
+        integer,intent(in) :: gridType
+        call init(g%c(1),h1,gridType)
+        call init(g%c(2),h2,gridType)
+        call init(g%c(3),h3,gridType)
+        call initProps(g)
        end subroutine
 
        subroutine initGrid3(g,h1,h2,h3,gridType)
@@ -88,8 +89,9 @@
          type(grid),intent(inout) :: g
          real(cp),dimension(:),intent(in) :: h1,h2,h3
          integer,dimension(3),intent(in) :: gridType
-         integer :: i
-         do i=1,3; call init(g%c(i),h1,gridType(i)); enddo
+         call init(g%c(1),h1,gridType(1))
+         call init(g%c(2),h2,gridType(2))
+         call init(g%c(3),h3,gridType(3))
          call initProps(g)
        end subroutine
 
@@ -113,7 +115,7 @@
          type(grid),intent(inout) :: r
          type(grid),intent(in) :: g
          integer :: i
-         do i=1,3; call restrict(r%c(i),g%c(i)); enddo
+         do i = 1,3; call restrict(r%c(i),g%c(i)) ;enddo
        end subroutine
 
        ! ---------------------------------------------- check grid
@@ -143,7 +145,7 @@
          implicit none
          type(grid), intent(in) :: g
          integer :: i
-         do i=1,3; call print(g%c(i)); enddo
+         do i = 1,3; call print(g%c(i)) ;enddo
        end subroutine
 
        subroutine addToFileGrid(g,u)
@@ -151,7 +153,7 @@
          type(grid), intent(in) :: g
          integer,intent(in) :: u
          integer :: i
-         do i=1,3; call addToFile(g%c(i),u); enddo
+         do i = 1,3; call addToFile(g%c(i),u) ;enddo
        end subroutine
 
        end module

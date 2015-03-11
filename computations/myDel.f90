@@ -96,7 +96,7 @@
           dfdh(i) = dfdh(i) + (f( i )*(alpha/beta-beta/alpha) +&
                     f(i+k)*beta/alpha + &
                     f(i+j)*(-alpha/beta))/(beta-alpha)
-          
+
         case (2)
           ! Interior
           do i=2,s-1

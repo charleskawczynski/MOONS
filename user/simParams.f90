@@ -3,11 +3,12 @@
        implicit none
 
        ! ************************* GRID *************************
+       ! Combine these two or be more specific
        logical :: checkICs                  = .false.   ! Check initial conditions
        logical :: quickStart                = .true.    ! Don't export initial fields
+
        logical :: printGrid                 = .false.   ! Print grid to screen
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
-       integer :: symmetryPlane             = 3         ! 1,2,3 = x,y,z (for symmetry probe)
 
        logical :: nonUniformGridFluid       = .false.    ! (T/F)
        logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
@@ -61,7 +62,19 @@
        !                                   6 : Full Induction Equation, Not sure how this is supposed 
        !                                       to be different from CT method if it is conservative..
        !                                   7 : Low Rem Semi-Implicit 3D ADI (Douglas) (good for highly insulating walls)
+       
 
+       ! More difficult parameters to have pre-defined cases for:
+       integer,parameter :: preDefinedGeometry = 0
+       !                                         0 : User-defined case (no override)
+       !                                         1 : Square, hmin=-1/2, hmax = 1/2, tw = 0.0
+       !                                         2 : Square, hmin=-1, hmax = 1, tw = 0.0
+       !                                         3 : Square, hmin=-1/2, hmax = 1/2, tw = 0.1
+       !                                         4 : Square, hmin=-1, hmax = 1, tw = 0.1
+       !                                         5 : Duct, L=25, a=1/2, tw = 0.0
+       !                                         6 : Duct, L=25, a=1, tw = 0.0
+       !                                         7 : Duct, L=25, a=1/2, tw = 0.1
+       !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
        logical :: solveCoupled = .true.
 
@@ -117,15 +130,23 @@
        ! 
        !    109 : LDC , Re=100  , Ha=10   , S=1     (Sergey and Peter)
        ! 
+       ! 
        ! 200-series (Duct flows)
        ! 
        !    200 : Duct Flow   , Re=100.0  , Ha=0   (test case)
+       !    201 : Duct Flow   , Re=1000   , Ha=100 (mhd test case)
        ! 
-       !    210 : Duct Flow   , Re=15574.07   , Ha=2900    (case B2)
+       !    110 : FD Duct Flow  , Re=100  , Ha=500  , Rem=0    (Sergey/HIMAG/MOONS)
+       ! 
+       !    250 : Duct Flow   , Re=15574.07   , Ha=2900    (case B2)
        ! 
        ! 300-series (Cylinder driven cavity flows)
        ! 
-       !    100 : CDC , Re=400
+       !    300 : CDC , Re=400
+       ! 
+       ! 400-series (Plasma disruption modeling)
+       ! 
+       !    400 : PD , Re=100   , Ha=10  (Sergey/MOONS/Peter)
        ! 
        ! In order to make new benchmarkCases, prepare the following
        !    - MOONS.f90 (Number of steps, time step etc.)
@@ -144,74 +165,7 @@
        ! non-zero, then the simulation will stop and ask what you
        ! meant to do.
 
-       integer,parameter :: preDefinedU_ICs = 1
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Rest (u,v,w = 0)
-       !                                      2 : Parabolic Duct Flow (in x)
-       !                                      3 : Vortex
-
        ! ----------------------------------------
-       integer,parameter :: preDefinedU_BCs = 1
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Lid Driven Cavity
-       !                                      2 : No Slip Cavity
-       !                                      3 : Duct Flow (in x)
-       !                                      4 : Cylinder Driven Cavity Flow (tornado)
-       ! Lid Driven Cavity parameters:
-       integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
-       integer,parameter :: drivenDirection = 1 ! (1,2,3) = (x,y,z)
-       integer,parameter :: drivenSign      = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
-       ! Duct Flow parameters:
-       integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
-       ! Cylinder Driven Cavity parameters:
-       integer,parameter :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
-       integer,parameter :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
-       ! ----------------------------------------
-
-       integer,parameter :: preDefinedB_BCs = 1
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
-       !                                      2 : B = 0
-       
-       integer,parameter :: preDefinedB_ICs = 1
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Uniform applied (set applied_B_dir)
-       !                                      2 : Fringing Magnetic field
-       !                                      3 : Fringing Magnetic field (consistent)
-
-       integer,parameter :: applied_B_dir = 3
-       !                                    0 : No applied field:      B0 = (0,0,0)
-       !                                    1 : Uniform applied field: B0 = (1,0,0)
-       !                                    2 : Uniform applied field: B0 = (0,1,0)
-       !                                    3 : Uniform applied field: B0 = (0,0,1)
-
-       ! Below are settings that do not override benchmarkCase
-
-       integer,parameter :: preDefined_Sigma = 0 ! sigma* = sigma_wall/sigma_l
-       !                                       0 : User-defined case (no override)
-       !                                       1 : sigma* = 1 (uniform, conducting)
-       !                                       2 : sigma* = 10^-2 (insulating, need small dt for B)
-       !                                       3 : sigma* = 10^-3 (insulating, need small dt for B)
-       !                                       4 : sigma* = 10^-6 (insulating, need small dt for B)
-       !                                       5 : sigma* = 10^2 (conducting)
-       !                                       6 : sigma* = 10^3 (conducting)
-       !                                       7 : sigma* = 10^6 (conducting)
-
-       integer,parameter :: preDefined_SigmaMu = 0
-       !                                         0 : User-defined case (no override)
-       !                                         1 : sigma = mu = 1
-
-       ! More difficult parameters to have pre-defined cases for:
-       integer,parameter :: preDefinedGeometry = 0
-       !                                         0 : User-defined case (no override)
-       !                                         1 : Square, hmin=-1/2, hmax = 1/2, tw = 0.0
-       !                                         2 : Square, hmin=-1, hmax = 1, tw = 0.0
-       !                                         3 : Square, hmin=-1/2, hmax = 1/2, tw = 0.1
-       !                                         4 : Square, hmin=-1, hmax = 1, tw = 0.1
-       !                                         5 : Duct, L=25, a=1/2, tw = 0.0
-       !                                         6 : Duct, L=25, a=1, tw = 0.0
-       !                                         7 : Duct, L=25, a=1/2, tw = 0.1
-       !                                         8 : Duct, L=25, a=1, tw = 0.1
 
 
 
@@ -222,12 +176,5 @@
        integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
        integer :: nskip_print                = 10     ! Printed data (cheap)
        integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
-
-
-       ! ************************ DEBUGGING *********************
-       ! logical :: checkSourceTermsBTF = .false.
-       ! logical :: checkInterpolations = .false. ! Maybe make a separate program for unit testing?
-       ! logical :: calculateOmegaPsi = .false.
-       ! logical :: outputAlternativeFormats = .true.
 
        end module

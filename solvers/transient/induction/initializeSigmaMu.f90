@@ -7,6 +7,22 @@
        private
        public :: initSigmaMu
 
+       ! This gets overridden by benchmarkCase
+       integer,parameter :: preDefined_Sigma = 0 ! sigma* = sigma_wall/sigma_l
+       !                                       0 : User-defined case (no override)
+       !                                       1 : sigma* = 1 (uniform, conducting)
+       !                                       2 : sigma* = 10^-2 (insulating, need small dt for B)
+       !                                       3 : sigma* = 10^-3 (insulating, need small dt for B)
+       !                                       4 : sigma* = 10^-6 (insulating, need small dt for B)
+       !                                       5 : sigma* = 10^2 (conducting)
+       !                                       6 : sigma* = 10^3 (conducting)
+       !                                       7 : sigma* = 10^6 (conducting)
+
+       integer,parameter :: preDefined_SigmaMu = 0
+       !                                         0 : User-defined case (no override)
+       !                                         1 : sigma = mu = 1
+
+
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
 #endif
@@ -36,8 +52,8 @@
          implicit none
          ! Auxiliary data types
          real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
-         real(cp) :: sigma_w,sigma_l
-        
+         real(cp) :: sigma_w,sigma_l,cw,tw,sigma_star
+         
          sigma = real(1.0,cp); mu = real(1.0,cp)
          sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          select case (benchmarkCase)
@@ -60,6 +76,13 @@
          case (200); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case (201); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case (202); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (250); 
+         ! cw = sigma_star*tw/L_parallel
+         ! sigma_star = cw/tw for L = 1
+         cw = real(0.07,cp)
+         tw = real(0.142394,cp)
+         sigma_star = cw/tw
+         sigma_l = real(1.0,cp); sigma_w = sigma_star
          case default
            write(*,*) 'Incorrect benchmarkCase in initBenchmarkSigmaMu'
            stop
@@ -72,8 +95,11 @@
 
          ! sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
          
+         ! For duct flow:
+         sigma(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
+
          ! Make lid have fluid conductivity (what HIMAG does)
-         sigma(Nice1(1):Nice2(1),Nice1(2):Nici2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
+         ! sigma(Nice1(1):Nice2(1),Nice1(2):Nici2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
 
        end subroutine
 

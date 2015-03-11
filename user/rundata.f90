@@ -10,10 +10,6 @@
        ! Fixes / Improvements: 
        private
        
-       ! real(dpn),parameter :: Re = 100.0d0
-       ! real(dpn),parameter :: Ha = 100.0d0
-       ! real(dpn),parameter :: Rem = 100.0d0
-       ! real(dpn),parameter :: dTime = 100.0d0
        character(len=5),parameter :: hfmt = 'F15.6'
 
        public :: rundata,setRundata

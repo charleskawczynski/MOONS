@@ -137,19 +137,19 @@
            n_mhd = n_mhd + 1
            if (solveInduction) n_ind = n_ind + 1
            ! ************************ READ KILL SWITCH FROM FILE ****************************
-           ! call debug(10)
+
            if (getPrintParams(ss_MHD)) then
              call readKillSwitchFromFile(continueLoop,dir//'parameters/','killSwitch')
            endif
 
-           ! if (getExportRawSolution(ss_MHD)) then
-           !   call exportRaw(mom,gd,dir)
-           !   call exportRaw(ind,gd,dir)
-           ! endif
-           ! if (getExportSolution(ss_MHD)) then
-           !   call export(mom,gd,dir)
-           !   call export(ind,gd,dir)
-           ! endif
+           if (getExportRawSolution(ss_MHD)) then
+             call exportRaw(mom,mom%g,dir)
+             call exportRaw(ind,ind%g,dir)
+           endif
+           if (getExportSolution(ss_MHD)) then
+             call export(mom,mom%g,dir)
+             call export(ind,ind%g,dir)
+           endif
 
          enddo
 

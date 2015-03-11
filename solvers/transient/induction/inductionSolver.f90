@@ -16,6 +16,7 @@
        use rundata_mod
        use myError_mod
        use myDel_mod
+       use interpOps_mod
        use vectorOps_mod
        use BCs_mod
        use applyBCs_mod
@@ -71,8 +72,9 @@
          type(errorProbe) :: probe_divB,probe_divJ
          type(grid) :: g
 
-         real(cp) :: ds = 1.0d-4     ! Pseudo time step
+         ! real(cp) :: ds = 2.0d-8     ! Pseudo time step case B2
          integer :: NmaxB = 5         ! Maximum number of pseudo steps
+         real(cp) :: ds = 1.0d-4     ! S = 1
          ! real(cp) :: ds = 1.0d-6     ! S = 100
          ! real(cp) :: ds = 1.0d-7     ! S = 1000
          ! integer :: NmaxB = 50        ! Maximum number of pseudo steps
@@ -141,7 +143,7 @@
 
 
          ! --- Initialize Fields ---
-         call initBBCs(ind%Bx_bcs,ind%By_bcs,ind%Bz_bcs,ind%phi_bcs,g)
+         call initBBCs(ind%Bx_bcs,ind%By_bcs,ind%Bz_bcs,ind%phi_bcs,g,cleanB)
          write(*,*) '     BCs initialized'
 
          call initBfield(ind%B%x,ind%B%y,ind%B%z,ind%B0%x,ind%B0%y,ind%B0%z,g,dir)
@@ -272,11 +274,13 @@
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          if (solveInduction) then
+           call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%B0%x,ind%B0%y,ind%B0%z,dir//'Bfield/','B0xct','B0yct','B0zct')
+
            call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%B%x,ind%B%y,ind%B%z,dir//'Bfield/','Bxct','Byct','Bzct')
            call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,dir//'Jfield/','jxct','jyct','jzct')
 
            call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%sigma%phi,dir//'material/','sigmac')
-           call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%mu%phi,dir//'material/','muc')
+           ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%mu%phi,dir//'material/','muc')
 
            call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%divB%phi,dir//'Bfield/','divBct')
            call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,ind%divJ%phi,dir//'Jfield/','divJct')
@@ -301,27 +305,24 @@
            allocate(tempnx(Nx,Ny,Nz))
            allocate(tempny(Nx,Ny,Nz))
            allocate(tempnz(Nx,Ny,Nz))
-           allocate(tempn (Nx,Ny,Nz))
            call myCellCenter2Node(tempnx,ind%B%x,g)
            call myCellCenter2Node(tempny,ind%B%y,g)
            call myCellCenter2Node(tempnz,ind%B%z,g)
 
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Bfield/','Bxnt','Bynt','Bznt')
-           call myNodeDiv(tempn,tempnx,tempny,tempnz,g)
-           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempn,dir//'Bfield/','divBnt')
            call myCellCenter2Node(tempnx,ind%J_cc%x,g)
            call myCellCenter2Node(tempny,ind%J_cc%y,g)
            call myCellCenter2Node(tempnz,ind%J_cc%z,g)
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Jfield/','jxnt','jynt','jznt')
-           deallocate(tempnx,tempny,tempnz,tempn)
+           deallocate(tempnx,tempny,tempnz)
 
          ! ----------------------- SIGMA/MU FIELD AT NODES ------------------------
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            allocate(tempn(Nx,Ny,Nz))
            call myCellCenter2Node(tempn,ind%sigma%phi,g)
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempn,dir//'material/','sigman')
-           call myCellCenter2Node(tempn,ind%mu%phi,g)
-           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempn,dir//'material/','mun')
+           ! call myCellCenter2Node(tempn,ind%mu%phi,g)
+           ! call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempn,dir//'material/','mun')
            deallocate(tempn)
 
          ! -------------------------- TOTAL DOMAIN VELOCITY -----------------------
@@ -834,7 +835,5 @@
            end select
          endif
        end subroutine
-
-
 
        end module

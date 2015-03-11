@@ -102,10 +102,13 @@
          case (201); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-4
          case (202); Re = 1000d0;   Ha = 500.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
 
+         case (250); Re = 15574.07d0;   Ha = 2900.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-6
+         ! case (250); Re = 1000.07d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
+
          case (300); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (301); Re = 2000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case default
-           write(*,*) 'Incorrect benchmarkCase in MOONS';stop
+           stop 'Incorrect benchmarkCase in MOONS'
          end select
 
          select case (benchmarkCase)
@@ -128,14 +131,17 @@
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
 
-         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000
+         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 2000
          case (201); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 15000
          case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
+
+         ! case (250); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10
+         case (250); NmaxPPE = 15; NmaxB = 5; NmaxMHD = 10**6
 
          case (300); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100000
          case (301); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100000
          case default
-           write(*,*) 'Incorrect benchmarkCase in MOONS';stop
+           stop 'Incorrect benchmarkCase in MOONS'
          end select
 
          write(*,*) 'MOONS output directory = ',dir
@@ -185,8 +191,9 @@
          if ((.not.(restartU.and.restartB)).and.(.not.quickStart)) then
            call exportRaw(mom,mom%g,dir)
            call exportRaw(ind,ind%g,dir)
+           call export(mom,mom%g,dir)
+           call export(ind,ind%g,dir)
          endif
-
          call checkGrid(gd)
 
          write(*,*) ''

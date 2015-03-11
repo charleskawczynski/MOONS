@@ -107,6 +107,10 @@
        ! benchmarkCase = 202
        ! integer,dimension(3),parameter :: Ni = (/181,47,47/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
 
+       ! benchmarkCase = 250
+       ! integer,dimension(3),parameter :: Ni = (/200,51,56/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
+       ! integer,dimension(3),parameter :: Ni = (/30,10,10/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
+
        ! benchmarkCase = 300
        ! integer,dimension(3),parameter :: Ni = 51, Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 301
@@ -228,6 +232,9 @@
          case (202); hmin = -one; hmax = one
          hmin(1) = zero; hmax(1) = 40.0d0
 
+         case (250); hmin = -one; hmax = one
+         hmin(1) = zero; hmax(1) = real(25.0,cp)
+
          case (300); hmin = -one; hmax = one ! for xyz
          case (301); hmin = -one; hmax = one ! for xyz
          case default
@@ -256,6 +263,10 @@
          case (200); betai = 100.0d0
          case (201); betai = 1.01d0; betai(1) = 1000.0d0
          case (202); betai = 1.001d0; betai(1) = 1000.0d0
+
+         ! case (250); betai = 1.00008d0; betai(1) = 1000.0d0
+         ! case (250); betai = 1.0001d0; betai(1) = 1000.0d0
+         case (250); betai = 1.001d0; betai(1) = 1000.0d0
 
          case (300); betai = 1000.0d0
          case (301); betai = 1000.0d0
@@ -293,10 +304,13 @@
          case (202); twtop = 0.1d0;    twbot = 0.1d0
                      twtop(1) = zero;  twbot(1) = zero
 
+         case (250); twtop = real(0.142394,cp); twbot = real(0.142394,cp)
+                     twtop(1) = real(0.0,cp);  twbot(1) = real(0.0,cp)
+
          case (300); twtop = 0.0d0;      twbot = 0.0d0
          case (301); twtop = 0.0d0;      twbot = 0.0d0
          case default
-           write(*,*) 'Incorrect benchmarkCase in setGriddata';stop
+           stop 'Error: Incorrect benchmarkCase in setGriddata'
          end select
 
          if (benchmarkCase.ne.0) then
@@ -308,7 +322,9 @@
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,2) ! y
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,3) ! z
 
-         call reComputeTw(this)
+         if (.not.nonUniformGridWall) then
+           call reComputeTw(this)
+         endif
 
          call init(g_ind,this%ht%c(1)%hn,1,2)
          call init(g_ind,this%ht%c(2)%hn,2,2)
@@ -711,50 +727,6 @@
 
 ! ---------------------- CHECK GRID ROUTINES -------------------------------
 
-       subroutine checkAllPointsConsecutive(gd)
-         implicit none
-         type(griddata),intent(in) :: gd
-         call checkPtsConsecDirless(gd,1)
-         call checkPtsConsecDirless(gd,2)
-         call checkPtsConsecDirless(gd,3)
-       end subroutine
-
-       subroutine checkPtsConsecDirless(gd,dir)
-         implicit none
-         type(griddata),intent(in) :: gd
-         integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: hn
-         real(cp) :: temp,tol
-         integer :: Ndir,i,j
-
-         Ndir = gd%N(dir)
-         allocate(hn(Ndir+1))
-         hn = gd%ht%c(dir)%hn
-
-         tol = abs(gd%dhMin/two) ! tol must be positive
-
-         do i=1,Ndir
-           temp = hn(i+1)-hn(i)
-           if (temp.lt.tol) then
-              write(*,*) 'hn is not consecutivein direction',dir
-              write(*,*) 'tol',tol
-              write(*,*) 'i,temp',i,temp
-              write(*,*) 'Ndir',Ndir
-              write(*,*) 'hn = '
-              do j=1,Ndir
-                if (j.eq.i) then
-                  write(*,*) hn(j),'***'
-                else
-                  write(*,*) hn(j)
-                endif
-              enddo
-              stop
-           endif
-         enddo
-
-         deallocate(hn)
-       end subroutine
-
        subroutine checkTwIsAcceptable(gd)
          ! checkWallThicknessIsAcceptable checks if
          ! the wall thickness is acceptable for a given
@@ -839,62 +811,6 @@
          endif
 
          deallocate(hn)
-       end subroutine
-
-       subroutine checkCellCentersAreCentered(gd)
-         ! This routine makes sure that the cell center
-         ! grid is in fact located at the center of the cell.
-         ! That is
-         !     hc(i+1)-hn(i) = hn(i+1)-hc(i+1)
-         ! for all i.
-         ! The tolerance used is 10^(-6)*dhmin
-         ! 
-         implicit none
-         type(griddata),intent(in) :: gd
-         call checkCCAreCCDirectionless(gd,1)
-         call checkCCAreCCDirectionless(gd,2)
-         call checkCCAreCCDirectionless(gd,3)
-       end subroutine
-
-       subroutine checkCCAreCCDirectionless(gd,dir)
-         ! This routine makes sure that the cell center
-         ! grid is in fact located at the center of the cell.
-         ! That is
-         !     hc(i+1)-hn(i) = hn(i+1)-hc(i+1)
-         ! for all i for INTERIOR cell centers.
-         ! The tolerance used is 10^(-6)*dhmin
-         ! It is assumed that hc(1) and hc(Ndir+2)
-         ! are correctly located.
-
-         implicit none
-         type(griddata),intent(in) :: gd
-         integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: hn,hc
-         integer :: Ndir,i
-         real(cp) :: tol,temp1,temp2
-
-         Ndir = gd%N(dir)
-         allocate(hn(Ndir+1),hc(Ndir+2))
-         hn = gd%ht%c(dir)%hn
-         hc = gd%ht%c(dir)%hc
-
-         tol = gd%ht%dhMin*10.0d0**(-6.0d0)
-         do i=1,Ndir
-           temp1 = hc(i+1)-hn(i)
-           temp2 = hn(i+1)-hc(i+1)
-           if (abs(temp1-temp2).gt.tol) then
-              write(*,*) 'Cell centers are not centered in direction',dir
-              write(*,*) 'i,temp1,temp2',i,temp1,temp2
-              write(*,*) 'Ndir',Ndir
-              write(*,*) 'hn = '
-              call printH(hn)
-              write(*,*) 'hc = '
-              call printH(hc)
-              stop
-           endif
-         enddo
-
-         deallocate(hn,hc)
        end subroutine
 
        subroutine checkIfTwAndNw(gd)
@@ -1006,6 +922,8 @@
          if ((gd%twbot(dir).gt.tol).and.(Nwbot(dir).lt.2)) then
            write(*,*) 'The BOTTOM wall thickness is larger than zero'
            write(*,*) 'but Nw is less than 2 along direction',dir
+           write(*,*) 'twbot = ',gd%twbot(dir)
+           write(*,*) 'Nwbot = ',Nwbot(dir)
            stop
          endif
 
@@ -1061,10 +979,8 @@
        subroutine checkGrid(gd)
          implicit none
          type(griddata),intent(in) :: gd
-         call checkAllPointsConsecutive(gd)    ! Seem to protect correctly
          call checkIfTwAndNw(gd)               ! Seem to protect correctly
          call checkTwIsAcceptable(gd)          ! Seem to protect correctly
-         call checkCellCentersAreCentered(gd)  ! Seem to protect correctly
          call checkUniformGrid(gd)             ! Need to check if protects
        end subroutine
 

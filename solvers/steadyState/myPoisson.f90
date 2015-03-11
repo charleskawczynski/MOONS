@@ -39,7 +39,8 @@
 
       use mySOR_mod
       use myADI_mod
-!      use myMG_mod
+      use myMG_mod
+      
       implicit none
 
       private
@@ -47,50 +48,50 @@
 
       interface myPoisson;    module procedure myPoisson_SOR;   end interface
       interface myPoisson;    module procedure myPoisson_ADI;   end interface
+      interface myPoisson;    module procedure myPoisson_MG;    end interface
 
       contains
 
-      subroutine myPoisson_SOR(SOR,u,f,ab,g,ss,err,gridType,displayTF)
+      subroutine myPoisson_SOR(SOR,u,f,u_bcs,g,ss,err,gridType,displayTF)
         implicit none
         type(mySOR),intent(inout) :: SOR
         real(dpn),dimension(:,:,:),intent(inout) :: u
         real(dpn),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: ab
+        type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
         integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(SOR,u,f,ab,g,ss,err,gridType,displayTF)
+        call solve(SOR,u,f,u_bcs,g,ss,err,gridType,displayTF)
       end subroutine
 
-      subroutine myPoisson_ADI(ADI,u,f,ab,g,ss,err,gridType,displayTF)
+      subroutine myPoisson_ADI(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(dpn),dimension(:,:,:),intent(inout) :: u
         real(dpn),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: ab
+        type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
         integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(ADI,u,f,ab,g,ss,err,gridType,displayTF)
+        call solve(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
       end subroutine
 
-!       subroutine myPoisson_ADI(ADI,u,f,ab,gd,ss,err,gridType,displayTF)
-!         implicit none
-!         type(myADI),intent(inout) :: ADI
-!         real(dpn),dimension(:,:,:),intent(inout) :: u
-!         real(dpn),dimension(:,:,:),intent(in) :: f
-!         type(BCs),intent(in) :: ab
-!         type(griddata),intent(in) :: gd
-!         type(myError),intent(inout) :: err
-!         integer,intent(in) :: gridType
-!         type(solverSettings),intent(inout) :: ss
-!         logical,intent(in) :: displayTF
-!         call solve(ADI,u,f,ab,gd,ss,err,gridType,displayTF)
-!       end subroutine
-
+      subroutine myPoisson_MG(MG,u,f,u_bcs,g,ss,err,gridType,displayTF)
+        implicit none
+        type(multiGrid),dimension(:),intent(inout) :: MG
+        real(dpn),dimension(:,:,:),intent(inout) :: u
+        real(dpn),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(grid),intent(in) :: g
+        type(solverSettings),intent(inout) :: ss
+        type(myError),intent(inout) :: err
+        integer,intent(in) :: gridType
+        logical,intent(in) :: displayTF
+        call solve(MG,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      end subroutine
 
       end module

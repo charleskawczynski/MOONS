@@ -181,11 +181,24 @@
          implicit none
          type(coordinates),intent(in) :: c
          integer :: i
+         real(cp) :: tol
+         ! Check if consectutive
          do i=1,c%sn-1
            if (c%hn(i+1)-c%hn(i).lt.c%dhMin/real(2.0,cp)) then
               write(*,*) 'i,dh',i,c%hn(i+1)-c%hn(i)
               write(*,*) 'hn = ',c%hn
               stop 'Error: coordinates are not consecutive.'
+           endif
+         enddo
+         ! Check if cell centeres are in cell center
+         tol = c%dhMin*real(1.0**(-6.0),cp)
+         do i=1,c%sn-1
+           if (abs((c%hc(i+1)-c%hn(i))-(c%hn(i+1)-c%hc(i+1))).gt.tol) then
+              write(*,*) 'Cell centers are not centered'
+              write(*,*) 'i = ',i
+              write(*,*) 'hn = ',c%hn
+              write(*,*) 'hc = ',c%hc
+              stop 'Error: cell centeres are not in cell centers.'
            endif
          enddo
        end subroutine

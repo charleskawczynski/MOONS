@@ -76,18 +76,22 @@
         type(grid),intent(in) :: g
         integer,intent(in) :: dir
         real(cp),dimension(:),allocatable :: upDiag,diag,loDiag
+        integer :: temp
 
         ! Prep matrix:
         allocate(diag(s(dir)))
         allocate(upDiag(s(dir)-1))
         allocate(loDiag(s(dir)-1))
 
-        call setUpSystem(loDiag,diag,upDiag,real(0.5,cp)*ADI%dt*ADI%alpha,&
-         g%c(dir)%dhn,g%c(dir)%dhc,s(dir))
+        if (ADI%gridType.eq.1) temp = 0
+        if (ADI%gridType.eq.2) temp = 1
+
+        call setUpSystemNew(loDiag,diag,upDiag,real(0.5,cp)*ADI%dt*ADI%alpha,&
+         g%c(dir)%dhn,g%c(dir)%dhc,s(dir),temp)
         call init(ADI%triOperator(dir),loDiag,diag,upDiag)
 
-        call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
-         g%c(dir)%dhn,g%c(dir)%dhc,s(dir))
+        call setUpSystemNew(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
+         g%c(dir)%dhn,g%c(dir)%dhc,s(dir),temp)
         call addIdentity(diag)
         call init(ADI%triSolver(dir),loDiag,diag,upDiag)
 
@@ -229,7 +233,7 @@
         allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp)
+        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
 
         ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
         call apply(ADI%triOperator(1),temp1,u,1,0)
@@ -243,6 +247,7 @@
         call addInterior(fstar,temp1,1)
         call addInterior(fstar,real(2.0,cp)*temp2,1)
         call addInterior(fstar,real(2.0,cp)*temp3,1)
+
         call addInterior(fstar,-ADI%dt*f,1)
 
         ! Apply BCs along x
@@ -255,10 +260,9 @@
         ! ---------- Step in y ----------------
         ! Compute RHS:
         ! fstar = un* - .5 dt d_yy
-        fstar = temp1 - temp2
-        ! fstar = temp1
-        ! call addInterior(fstar,-temp2,2)
-
+        ! fstar = temp1 - temp2
+        fstar = temp1
+        call addInterior(fstar,-temp2,2)
 
         ! Apply BCs along y
         call applyBCFace(u_bcs,fstar,g,2)
@@ -270,9 +274,9 @@
         ! ---------- Step in z ----------------
         ! Compute RHS:
         ! fstar = un** - .5 dt d_zz
-        fstar = temp1 - temp3
-        ! fstar = temp1
-        ! call addInterior(fstar,-temp3,3)
+        ! fstar = temp1 - temp3
+        fstar = temp1
+        call addInterior(fstar,-temp3,3)
 
         ! Apply BCs along z
         call applyBCFace(u_bcs,fstar,g,3)
@@ -291,6 +295,40 @@
         ! call applyBCFace(u_bcs,u,g,5)
 
         deallocate(temp1,temp2,temp3,fstar)
+      end subroutine
+
+      subroutine relax1D(ADI,u,f,u_bcs,g)
+        implicit none
+        type(myADI),intent(inout) :: ADI
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(grid),intent(in) :: g
+        ! Locals
+        real(cp),dimension(:,:,:),allocatable :: temp1,fstar
+
+        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
+        fstar = real(0.0,cp)
+
+        ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
+        call apply(ADI%triOperator(1),temp1,u,1,0)
+
+        ! ---------- Step in x ----------------
+        ! Compute RHS:
+        ! fstar = (I + .5 dt d_xx)u - dt*f
+        call addInterior(fstar,u,1)
+        call addInterior(fstar,temp1,1)
+        call addInterior(fstar,-ADI%dt*f,1)
+
+        ! Apply BCs along x
+        call applyBCFace(u_bcs,fstar,g,1)
+        call applyBCFace(u_bcs,fstar,g,4)
+
+        ! Solve (I - 0.5 dt d_xx) u^* = fstar
+        call apply(ADI%triSolver(1),temp1,fstar,1,1)
+
+        deallocate(temp1,fstar)
       end subroutine
 
       subroutine applyADI(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
@@ -348,7 +386,7 @@
         call initADI(ADI,s,g,gridType)
 
         Nt = maxval((/getMaxIterations(ss)/ADI%nTimeLevels/2, 1/))
-        Nt = 10
+        ! Nt = 10
 
         do i=1,Nt
 
@@ -408,46 +446,31 @@
         loDiag(s-1) = real(0.0,cp)
       end subroutine
 
-      subroutine setUpSystemNew(loDiag,diag,upDiag,alpha,dh_p,dh_d,s)
-        ! dh_p = primary grid (data lives on primary grid)
-        ! dh_d = dual    grid (data lives on primary grid)
+      subroutine setUpSystemNew(loDiag,diag,upDiag,alpha,dhp,dhd,s,gt)
+        ! dhp = primary grid (data lives on primary grid)
+        ! dhd = dual    grid (data lives on primary grid)
         ! diag = size(f)
-        ! size(dh_p) = size(f)-1
-        ! size(dh_d) = ??
+        ! size(dhp) = size(f)-1
         implicit none
         real(cp),dimension(:),intent(inout) :: loDiag,diag,upDiag
         real(cp),intent(in) :: alpha
-        real(cp),dimension(:),intent(in) :: dh_p,dh_d
-        integer,intent(in) :: s
-        integer :: j
+        real(cp),dimension(:),intent(in) :: dhp,dhd
+        integer,intent(in) :: s,gt
+        integer :: i
 
-        diag(1) = real(1.0,cp)
-        upDiag(1) = real(0.0,cp)
-        do j=2,s-1
-          loDiag(j-1) = alpha/(dh_p(j-1)*dh_d(j-1))
-          diag(j) = -real(2.0,cp)*alpha/(dh_p(j-1)*dh_d(j-1))
-          upDiag(j) = alpha/(dh_p(j-1)*dh_d(j-1))
+        diag(1) = -(alpha/(dhp(2)*dhd(1+gt)))
+        upDiag(1) = alpha/(dhp(2)*dhd(1+gt))
+        ! diag(1) = real(1.0,cp)
+        ! upDiag(1) = real(0.0,cp)
+        do i=2,s-1
+          loDiag(i-1) = alpha/(dhp(i-1)*dhd(i-1+gt))
+          diag(i) = -(alpha/(dhp(i-1)*dhd(i-1+gt))+alpha/(dhp(i)*dhd(i-1+gt)))
+          upDiag(i) = alpha/(dhp(i)*dhd(i-1+gt))
         enddo
-        diag(s) = real(1.0,cp)
-        loDiag(s-1) = real(0.0,cp)
-      end subroutine
-
-      subroutine setUpSystemVarCoeff(loDiag,diag,upDiag,alpha,dhn,dhc,s)
-        implicit none
-        real(cp),dimension(:),intent(inout) :: loDiag,diag,upDiag
-        real(cp),dimension(:),intent(in) :: dhn,dhc,alpha
-        integer,intent(in) :: s
-        integer :: j
-
-        diag(1) = real(1.0,cp)
-        upDiag(1) = real(0.0,cp)
-        do j=2,s-1
-          loDiag(j-1) = alpha(j-1)/(dhn(j-1)*dhc(j-1))
-          diag(j) = -real(2.0,cp)*alpha(j-1)/(dhn(j-1)*dhc(j-1))
-          upDiag(j) = alpha(j-1)/(dhn(j-1)*dhc(j-1))
-        enddo
-        diag(s) = real(1.0,cp)
-        loDiag(s-1) = real(0.0,cp)
+        ! diag(s) = real(1.0,cp)
+        ! loDiag(s-1) = real(0.0,cp)
+        diag(s) = -(alpha/(dhp(s-1)*dhd(s-1+gt)))
+        loDiag(s-1) = alpha/(dhp(s-1)*dhd(s-1+gt))
       end subroutine
 
       subroutine setDt(ADI,dt)
@@ -496,6 +519,26 @@
        do i=1+x,s(1)-x
         do j=1+y,s(2)-y
          do k=1+z,s(3)-z
+          a(i,j,k) = a(i,j,k) + b(i,j,k)
+         enddo
+        enddo
+       enddo
+       !$OMP END PARALLEL DO
+      end subroutine
+
+      subroutine addInteriorNew(a,b,dir)
+       implicit none
+       real(cp),dimension(:,:,:),intent(inout) :: a
+       real(cp),dimension(:,:,:),intent(in) :: b
+       integer,intent(in) :: dir
+       integer,dimension(3) :: s
+       integer :: i,j,k
+       s = shape(a)
+
+       !$OMP PARALLEL DO
+       do i=2,s(1)-1
+        do j=2,s(2)-1
+         do k=2,s(3)-1
           a(i,j,k) = a(i,j,k) + b(i,j,k)
          enddo
         enddo

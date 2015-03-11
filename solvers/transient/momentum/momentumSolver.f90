@@ -12,6 +12,8 @@
        use grid_mod
 
        use myError_mod
+       use interpOps_mod
+       use del_mod
        use vectorOps_mod
 
        use BCs_mod
@@ -35,6 +37,25 @@
        public :: printExportBCs
        public :: computeDivergence
 
+
+!        logical,parameter :: solveMomentum = .true.
+!        logical,parameter :: restartU      = .false.
+       
+!        integer,parameter :: solveUMethod = 1
+!        !                                   1 : Explicit Euler
+!        !                                   2 : Semi-Implicit 3D ADI (Douglas)
+
+!        integer :: advectiveUFormulation = 1
+!        !                                  1 : Donor-Cell (conservative form)
+!        !                                  2 : Advective form
+!        !                                  3 : Upwind (not yet implemented)
+!        !                                  4 : Hybrid (not yet implemented)
+
+!        real(dpn) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 )
+!        !                                                       pure         central
+!        !                                                      upwind       difference
+
+
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
 #endif
@@ -46,17 +67,22 @@
 #endif
 
        type momentum
-         character(len=8) :: name = 'momentum'
+         ! Field Quantities
          type(vectorField) :: U,Ustar,F,TempVF
          type(scalarField) :: p,Temp,divU
 
+         ! Boundary conditions
          type(BCs) :: u_bcs,v_bcs,w_bcs,p_bcs
+
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
-         type(myError) :: err_PPE,err_DivU,err_ADI
          type(mySOR) :: SOR_p
          type(myADI) :: ADI_p,ADI_u
-         integer :: nstep
 
+         ! Residuals
+         type(myError) :: err_PPE,err_DivU,err_ADI
+
+         ! Time step, Reynolds number, grid
+         integer :: nstep
          real(cp) :: dt,Re
          type(grid) :: g
 
@@ -106,7 +132,7 @@
          call allocateField(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          call allocateField(mom%divU,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          call allocateField(mom%temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
-         
+
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
          call initUBCs(mom%u_bcs,mom%v_bcs,mom%w_bcs,mom%p_bcs,g)
@@ -204,7 +230,6 @@
          type(solverSettings),intent(in) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
-
          dt = getDtime(rd)
          Re = getRe(rd)
 
@@ -423,7 +448,7 @@
          ! Interior
          ! real(cp),dimension(:,:,:),allocatable :: tempx,tempy,tempz
          real(cp),dimension(:,:,:),allocatable :: tempccx,tempccy,tempccz
-         real(cp),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz,tempn
+         real(cp),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz
 
          ! ************************ EXPORT IN OTHER FORMATS ***********************
 
@@ -432,15 +457,12 @@
          allocate(tempnx(Nx,Ny,Nz))
          allocate(tempny(Nx,Ny,Nz))
          allocate(tempnz(Nx,Ny,Nz))
-         allocate(tempn (Nx,Ny,Nz))
          call myFace2Node(tempnx,mom%U%x,g,1)
          call myFace2Node(tempny,mom%U%y,g,2)
          call myFace2Node(tempnz,mom%U%z,g,3)
 
-         call myNodeDiv(tempn,tempnx,tempny,tempnz,g)
          call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Ufield/','uni','vni','wni')
-         call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempn,dir//'Ufield/','divUni')
-         deallocate(tempnx,tempny,tempnz,tempn)
+         deallocate(tempnx,tempny,tempnz)
 
          ! ****************** EXPORT IN CELL CENTERS ************************
          ! Velocities at cell centers:

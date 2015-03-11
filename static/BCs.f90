@@ -44,7 +44,7 @@
        private
 
        public :: BCs
-       public :: initialize,delete,setGrid
+       public :: init,delete,setGrid
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -93,15 +93,17 @@
          logical :: TFgrid
          logical,dimension(6) :: TFvals
          logical :: BCsDefined = .false.
+         type(grid) :: g
        end type
 
-       interface initialize; module procedure initializeBCs;     end interface
+       interface init;       module procedure initBCs;           end interface
+       interface init;       module procedure initBCsCopy;       end interface
        interface delete;     module procedure deleteBCs;         end interface
        interface setGrid;    module procedure setGridBCs;        end interface
 
        contains
 
-       subroutine initializeBCs(this)
+       subroutine initBCs(this)
          implicit none
          type(BCs),intent(inout) :: this
          this%xminType = 0; this%xmaxType = 0
@@ -109,6 +111,54 @@
          this%zminType = 0; this%zmaxType = 0
          this%TFb = .false.
          this%BCsDefined = .false.
+       end subroutine
+
+       subroutine initBCsCopy(this,u_bcs)
+         implicit none
+         type(BCs),intent(inout) :: this
+         type(BCs),intent(in) :: u_bcs
+         real(cp),dimension(:,:), allocatable :: bvals
+         integer :: Nx,Ny,Nz
+         this%xminType = u_bcs%xminType; this%xmaxType = u_bcs%xmaxType
+         this%yminType = u_bcs%yminType; this%ymaxType = u_bcs%ymaxType
+         this%zminType = u_bcs%zminType; this%zmaxType = u_bcs%zmaxType
+         call init(this%g,u_bcs%g)
+
+         this%s = u_bcs%s
+         Nx = this%s(1); Ny = this%s(2); Nz = this%s(3)
+
+         allocate(bvals(Ny,Nz));
+         call getXminVals(u_bcs,bvals)
+         call setXminVals(this,bvals)
+         deallocate(bvals)
+
+         allocate(bvals(Ny,Nz));
+         call getXmaxVals(u_bcs,bvals)
+         call setXmaxVals(this,bvals)
+         deallocate(bvals)
+
+         allocate(bvals(Nx,Nz));
+         call getYminVals(u_bcs,bvals)
+         call setYminVals(this,bvals)
+         deallocate(bvals)
+
+         allocate(bvals(Nx,Nz));
+         call getYmaxVals(u_bcs,bvals)
+         call setYmaxVals(this,bvals)
+         deallocate(bvals)
+
+         allocate(bvals(Nx,Ny));
+         call getZminVals(u_bcs,bvals)
+         call setZminVals(this,bvals)
+         deallocate(bvals)
+
+         allocate(bvals(Nx,Ny));
+         call getZmaxVals(u_bcs,bvals)
+         call setZmaxVals(this,bvals)
+         deallocate(bvals)
+
+         this%TFb = .true.
+         this%BCsDefined = .true.
        end subroutine
 
        subroutine deleteBCs(this)
@@ -132,25 +182,26 @@
          this%TFgrid = .false.
        end subroutine
 
-       subroutine setGridBCs(this,gd)
+       subroutine setGridBCs(this,g)
          implicit none
          type(BCs),intent(inout) :: this
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          if (allocated(this%xc)) deallocate(this%xc)
          if (allocated(this%yc)) deallocate(this%yc)
          if (allocated(this%zc)) deallocate(this%zc)
          if (allocated(this%xn)) deallocate(this%xn)
          if (allocated(this%yn)) deallocate(this%yn)
          if (allocated(this%zn)) deallocate(this%zn)
-         allocate(this%xc(gd%c(1)%sc),this%xn(gd%c(1)%sn))
-         allocate(this%yc(gd%c(2)%sc),this%yn(gd%c(2)%sn))
-         allocate(this%zc(gd%c(3)%sc),this%zn(gd%c(3)%sn))
-         this%xc = gd%c(1)%hc
-         this%xn = gd%c(1)%hn
-         this%yc = gd%c(2)%hc
-         this%yn = gd%c(2)%hn
-         this%zc = gd%c(3)%hc
-         this%zn = gd%c(3)%hn
+         allocate(this%xc(g%c(1)%sc),this%xn(g%c(1)%sn))
+         allocate(this%yc(g%c(2)%sc),this%yn(g%c(2)%sn))
+         allocate(this%zc(g%c(3)%sc),this%zn(g%c(3)%sn))
+         this%xc = g%c(1)%hc
+         this%xn = g%c(1)%hn
+         this%yc = g%c(2)%hc
+         this%yn = g%c(2)%hn
+         this%zc = g%c(3)%hc
+         this%zn = g%c(3)%hn
+         call init(this%g,g)
          this%TFgrid = .true.
        end subroutine
 
@@ -275,7 +326,7 @@
          integer,intent(in) :: bctype
          real(cp),dimension(:,:),allocatable :: bvals
 
-         call initializeBCs(this)
+         call initBCs(this)
          this%s = (/Nx,Ny,Nz/)
 
          allocate(bvals(Ny,Nz)); call setXminType(this,bctype)
@@ -431,6 +482,7 @@
          character(len=*),intent(in) :: name
          integer,intent(in) :: NewU
          write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
+         ! write(*,*) 'shape(BC) = ',this%s
          if (this%TFb(1)) then; call writeBoundary(1,this%xminType,newU); endif
          if (this%TFb(2)) then; call writeBoundary(2,this%xmaxType,newU); endif
          if (this%TFb(3)) then; call writeBoundary(3,this%yminType,newU); endif

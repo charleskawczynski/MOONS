@@ -1,9 +1,6 @@
        module initializeUBCs_mod
-       use myIO_mod
        use grid_mod
-       use simParams_mod
        use BCs_mod
-       use applyBCs_mod
        implicit none
        ! From applyBCs.f90:
        ! bctype = 1 ! Dirichlet - direct - wall coincident
@@ -15,6 +12,27 @@
        private
        public :: initUBCs
 
+       integer,parameter :: preDefinedU_BCs = 1
+       !                                      0 : User-defined case in initUserUBCs() (no override)
+       !                                      1 : Lid Driven Cavity
+       !                                      2 : No Slip Cavity
+       !                                      3 : Duct Flow (in ductDirection)
+       !                                      4 : Cylinder Driven Cavity Flow (tornado)
+       !                                      5 : Fully developed duct Flow (in ductDirection)
+
+       ! Lid Driven Cavity parameters:
+       integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
+       integer,parameter :: drivenDirection = 1 ! (1,2,3) = (x,y,z)
+       integer,parameter :: drivenSign      = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+       ! Duct Flow parameters: 
+       integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
+       integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+       ! Cylinder Driven Cavity parameters: 
+       ! (not yet developed/used)
+       integer,parameter :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
+       integer,parameter :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
+
+
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
 #endif
@@ -24,6 +42,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
+       real(cp),parameter :: PI = 3.14159265358979
        
        contains
 
@@ -54,50 +73,30 @@
          type(grid),intent(in) :: g
          type(BCs),intent(inout) :: p_bcs
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         real(cp),dimension(:,:),allocatable :: bvals
-         ! Coordinates
          integer :: Nx,Ny,Nz
 
          select case (preDefinedU_BCs)
          case (1) ! Lid Driven Cavity
-
-           ! U-field boundary conditions
            call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
-
-           call initLidDrivenBCs(u_bcs,v_bcs,w_bcs,g,&
+           call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,&
             drivenFace,drivenDirection,drivenSign)
 
          case (2) ! No Slip Cavity
            call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
 
          case (3) ! Duct Flow (in x)
-
-           ! U-field boundary conditions
-           Nx = g%c(1)%sn; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-           call setAllZero(u_bcs,Nx,Ny,Nz,2)
-           call setXminType(u_bcs,1) ! Dirichlet
-           allocate(bvals(Ny,Nz)); bvals = 1.0
-           call setXminVals(u_bcs,bvals); deallocate(bvals)
-           call setXmaxType(u_bcs,3) ! Neumann
-
-           Nx = g%c(1)%sc; Ny = g%c(2)%sn; Nz = g%c(3)%sc
-           call setAllZero(v_bcs,Nx,Ny,Nz,2)
-           call setYminType(v_bcs,1)
-           call setYmaxType(v_bcs,1)
-           call setXmaxType(v_bcs,5) ! Neumann
-
-           Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sn
-           call setAllZero(w_bcs,Nx,Ny,Nz,2)
-           call setZminType(w_bcs,1)
-           call setZmaxType(w_bcs,1)
-           call setXmaxType(w_bcs,5) ! Neumann
-
-           ! P-field boundary conditions
-           Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-           call setAllZero(p_bcs,Nx,Ny,Nz,5)
+           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
+           call ductFlowBCs(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
 
          case (4) ! Cylinder Driven Cavity Flow (tornado)
-           call initCylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
+           call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
+
+         case (5) ! Fully Developed Duct Flow
+           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
+           call fullyDevelopedDuctFlowBCs(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
+
+         case default
+           stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
          end select
 
          ! P-field boundary conditions
@@ -115,15 +114,14 @@
          ! U-field boundary conditions
          call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
 
-         call initLidDrivenBCs(u_bcs,v_bcs,w_bcs,g,&
+         call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,&
           drivenFace,drivenDirection,drivenSign)
 
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
          call setAllZero(p_bcs,Nx,Ny,Nz,5)
-
        end subroutine
 
-       subroutine initLidDrivenBCs(u_bcs,v_bcs,w_bcs,g,face,dir,posNeg)
+       subroutine lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,face,dir,posNeg)
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
          type(grid),intent(in) :: g
@@ -136,12 +134,12 @@
          case (2); Nx = g%c(1)%sc; Ny = g%c(2)%sn; Nz = g%c(3)%sc
          case (3); Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sn
          case default
-         write(*,*) 'Error: dir must = 1,2,3 in initLidDrivenBCs.';stop
+         write(*,*) 'Error: dir must = 1,2,3 in lidDrivenBCs.';stop
          end select
 
          select case (face)
          case (1) ! xmin
-           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),dble(posNeg));
+           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); write(*,*) 'Lid driven BCs is violating flow through.';stop
            case (2); call setXminVals(v_bcs,bvals)
@@ -149,7 +147,7 @@
            end select
 
          case (2) ! xmax
-           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),dble(posNeg));
+           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); write(*,*) 'Lid driven BCs is violating flow through.';stop
            case (3); call setXmaxVals(v_bcs,bvals)
@@ -157,7 +155,7 @@
            end select
 
          case (3) ! ymin
-           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),dble(posNeg));
+           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); call setYminVals(u_bcs,bvals)
            case (2); write(*,*) 'Lid driven BCs is violating flow through.';stop
@@ -165,7 +163,7 @@
            end select
 
          case (4) ! ymax
-           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),dble(posNeg));
+           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); call setYmaxVals(u_bcs,bvals)
            case (2); write(*,*) 'Lid driven BCs is violating flow through.';stop
@@ -173,7 +171,7 @@
            end select
 
          case (5) ! zmin
-           allocate(bvals(Nx,Ny)); bvals = sign(real(1.0,cp),dble(posNeg));
+           allocate(bvals(Nx,Ny)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); call setZminVals(u_bcs,bvals)
            case (2); call setZminVals(v_bcs,bvals)
@@ -181,7 +179,7 @@
            end select
 
          case (6) ! zmax
-           allocate(bvals(Nx,Ny)); bvals = sign(real(1.0,cp),dble(posNeg));
+           allocate(bvals(Nx,Ny)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); call setZmaxVals(u_bcs,bvals)
            case (2); call setZmaxVals(v_bcs,bvals)
@@ -190,6 +188,136 @@
 
          end select
          deallocate(bvals)
+       end subroutine
+
+       subroutine ductFlowBCs(u_bcs,v_bcs,w_bcs,g,dir,posNeg)
+         implicit none
+         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir,posNeg
+         real(cp),dimension(:,:),allocatable :: bvals
+         integer :: Nx,Ny,Nz
+
+         select case(dir)
+         case (1); Nx = g%c(1)%sn; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+         case (2); Nx = g%c(1)%sc; Ny = g%c(2)%sn; Nz = g%c(3)%sc
+         case (3); Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sn
+         case default
+         write(*,*) 'Error: dir must = 1,2,3 in lidDrivenBCs.';stop
+         end select
+
+         select case (dir)
+         case (1)
+           call setXminType(u_bcs,1) ! Dirichlet
+           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
+           call setXminVals(u_bcs,bvals); deallocate(bvals)
+           call setXmaxType(u_bcs,4) ! Neumann
+         case (2)
+           call setYminType(v_bcs,1) ! Dirichlet
+           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
+           call setYminVals(v_bcs,bvals); deallocate(bvals)
+           call setYmaxType(v_bcs,4) ! Neumann
+         case (3)
+           call setZminType(w_bcs,1) ! Dirichlet
+           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
+           call setZminVals(w_bcs,bvals); deallocate(bvals)
+           call setZmaxType(w_bcs,4) ! Neumann
+         end select
+       end subroutine
+
+       subroutine fullyDevelopedDuctFlowBCs(u_bcs,v_bcs,w_bcs,g,dir,posNeg)
+         ! This routine initializes a fully developed duct flow
+         ! profile along direction dir.
+         ! 
+         ! There is a copy of this routine inside initUBCs.
+         ! THE MASTER COPY OF THIS ROUTINE SHOULD
+         ! RESIDE IN INITIALIZE UFIELD, NOT
+         ! INITIALIZE UBCs
+         implicit none
+         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir,posNeg
+
+         integer :: i,j,imax,jmax
+         real(cp),dimension(:),allocatable :: hx,hy
+         real(cp) :: alpha,height,width,F,A,A1,A2,A3
+         real(cp),dimension(:,:),allocatable :: u_temp
+         real(cp),dimension(3) :: hmin,hmax
+         integer :: n,m,nMax,mMax
+         integer,dimension(3) :: s,Ni
+
+         hmin = (/g%c(1)%hmin,g%c(2)%hmin,g%c(3)%hmin/)
+         hmax = (/g%c(1)%hmax,g%c(2)%hmax,g%c(3)%hmax/)
+         Ni = (/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+
+         ! For max number of iterations in 
+         ! infinite series solution:
+         nMax = 100; mMax = 100
+         F = real(1.0,cp)
+
+         select case (dir)
+         case (1) ! u(y,z)
+           s = g%c(1)%sn
+           width = (hmax(2) - hmin(2))/real(2.0,cp)
+           height = (hmax(3) - hmin(3))/real(2.0,cp)
+           imax = Ni(2); jmax = Ni(3)
+           allocate(hx(imax)); hx = g%c(2)%hc
+           allocate(hy(jmax)); hy = g%c(3)%hc
+           allocate(u_temp(s(2),s(3)))
+         case (2) ! v(x,z)
+           s = g%c(2)%sn
+           width = (hmax(1) - hmin(1))/real(2.0,cp)
+           height = (hmax(3) - hmin(3))/real(2.0,cp)
+           imax = Ni(1); jmax = Ni(3)
+           allocate(hx(imax)); hx = g%c(1)%hc
+           allocate(hy(jmax)); hy = g%c(3)%hc
+           allocate(u_temp(s(1),s(3)))
+         case (3) ! w(x,y)
+           s = g%c(3)%sn
+           width = (hmax(1) - hmin(1))/real(2.0,cp)
+           height = (hmax(2) - hmin(2))/real(2.0,cp)
+           imax = Ni(1); jmax = Ni(2)
+           allocate(hx(imax)); hx = g%c(1)%hc
+           allocate(hy(jmax)); hy = g%c(2)%hc
+           allocate(u_temp(s(1),s(2)))
+         end select
+         alpha = width/height
+
+         do i=1,imax
+           do j=1,jmax
+             do m=1,mMax
+               do n=1,nMax
+               A1 = real(16.0,cp)*F*alpha**real(2.0,cp)*height**real(2.0,cp)/&
+               ((real(m,cp)*PI)**real(2.0,cp)+(alpha*real(n,cp)*PI)**real(2.0,cp))
+               A2 = real(1.0,cp)/(real(m,cp)*PI)*real(1.0,cp)/(real(n,cp)*PI)
+               A3 = (real(1.0,cp)-cos(real(m,cp)*PI))*(real(1.0,cp)-cos(real(n,cp)*PI))
+               A = A1*A2*A3
+               u_temp(i,j) = u_temp(i,j) + A*sin(real(m,cp)*PI*(hx(i)-hmin(1))/(real(2.0,cp)*width))*&
+                                             sin(real(n,cp)*PI*(hy(j)-hmin(2))/(real(2.0,cp)*height))
+               enddo
+             enddo
+           enddo
+         enddo
+
+         select case (posNeg)
+         case (1)
+           select case (dir)
+           case (1); call setXminType(u_bcs,1); call setXminType(u_bcs,4); call setXminVals(u_bcs,u_temp)
+           case (2); call setYminType(v_bcs,1); call setYminType(v_bcs,4); call setXminVals(v_bcs,u_temp)
+           case (3); call setZminType(w_bcs,1); call setZminType(w_bcs,4); call setXminVals(w_bcs,u_temp)
+           end select
+         case (-1)
+           select case (dir)
+           case (1); call setXmaxType(u_bcs,1); call setXmaxType(u_bcs,4); call setXmaxVals(u_bcs,-u_temp)
+           case (2); call setYmaxType(v_bcs,1); call setYmaxType(v_bcs,4); call setXmaxVals(v_bcs,-u_temp)
+           case (3); call setZmaxType(w_bcs,1); call setZmaxType(w_bcs,4); call setXmaxVals(w_bcs,-u_temp)
+           end select
+         case default
+         stop 'Error: posNeg must = 1,-1 in initFullyDevelopedDuctFlow.'
+         end select
+
+         deallocate(u_temp)
+         deallocate(hx,hy)
        end subroutine
 
        subroutine noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
@@ -214,7 +342,7 @@
          call setZmaxType(w_bcs,1)
        end subroutine
 
-       subroutine initCylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,dir)
+       subroutine cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,dir)
          implicit none
          ! Auxiliary data types
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
