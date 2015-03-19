@@ -20,8 +20,6 @@
        public :: restrict
        public :: prolongate
 
-       ! interface restrict;     module procedure restrictGrid;       end interface
-
        interface restrict;     module procedure restrictField1D;    end interface
        interface restrict;     module procedure restrictField;      end interface
 
@@ -34,13 +32,6 @@
        ! interface restrict;     module procedure restrictBCs;        end interface
 
        contains
-
-      ! **********************************************************
-      ! **********************************************************
-      ! ******************* RESTRICT GRID ************************
-      ! **********************************************************
-      ! **********************************************************
-
 
       ! **********************************************************
       ! **********************************************************
@@ -102,8 +93,12 @@
            do j=1+2*y,s(2)-2*y,1+y
             do k=1+2*z,s(3)-2*z,1+z
               t = i*x + j*y + k*z
-              ! alpha = (c%hn(t)-c%hn(t+1))/(c%hn(t-1)-c%hn(t+1))
-              alpha = 0.5
+              ! This idea might work BUT
+              ! Indexing needs to be checked (since t might need to
+              ! be 2*t or 2*t-1 or something)
+              ! alpha = (c%hn(t+1)-c%hn(t))/(c%hn(t)-c%hn(t-1))
+              alpha = c%dhn(t)/c%dhn(t-1)
+              ! alpha = 0.5
               r(i*(1-x)+x*(i+1)/2,j*(1-y)+y*(j+1)/2,k*(1-z)+z*(k+1)/2) = real(0.5,cp)*(u(i,j,k) + &
               u(i-x,j-y,k-z)*alpha + &
               u(i+x,j+y,k+z)*(real(1.0,cp)-alpha))

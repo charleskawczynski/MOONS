@@ -133,7 +133,7 @@
            case (3); a = hn(2)-hn(1); b = hn(3) - hn(1); i = 1; k = 1; j = 2
            u(:,:,i)=(bvals*(b-a)-b/a*u(:,:,i+k)+a/b*u(:,:,i+j))/(a/b-b/a)
            case (4); a = -(hn(s)-hn(s-1)); b = -(hn(s) - hn(s-2)); i = s; k = -1; j = -2
-           u(i,:,:)=(u(i,:,:)*(b-a)-b/a*u(i+k,:,:)+a/b*u(i+j,:,:))/(a/b-b/a)
+           u(i,:,:)=(bvals*(b-a)-b/a*u(i+k,:,:)+a/b*u(i+j,:,:))/(a/b-b/a)
            case (5); a = -(hn(s)-hn(s-1)); b = -(hn(s) - hn(s-2)); i = s; k = -1; j = -2
            u(:,i,:)=(bvals*(b-a)-b/a*u(:,i+k,:)+a/b*u(:,i+j,:))/(a/b-b/a)
            case (6); a = -(hn(s)-hn(s-1)); b = -(hn(s) - hn(s-2)); i = s; k = -1; j = -2

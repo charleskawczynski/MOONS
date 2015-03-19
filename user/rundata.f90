@@ -54,6 +54,8 @@
          integer :: solveBMethod   ! Method for solving for B-Field
        end type
 
+       interface setDtime;    module procedure setDtimeRundata;    end interface
+
        contains
 
        subroutine setRundata(this,dtime,ds,Re,Ha,Rem,&
@@ -193,7 +195,7 @@
          Ha = this%Ha
        end function
 
-       subroutine setDtime(this,dtime)
+       subroutine setDtimeRundata(this,dtime)
          implicit none
          type(rundata),intent(inout) :: this
          real(dpn),intent(in) :: dtime

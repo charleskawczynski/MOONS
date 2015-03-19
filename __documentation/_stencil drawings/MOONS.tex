@@ -1,0 +1,390 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\height}{0.4}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{12}
+\newcommand{\Deltah}{1.6666}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+
+\section{Drawing 1}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [thick] (0,0) to (4,0);
+      \draw [thick,dashed] (4,0) to (6,0);
+      \draw [thick] (6,0) to (10,0);
+
+      \draw [black] (0,0) circle [radius=0.1];
+      \draw [radius=0.1] (0,0) node [black,below=12] {$f_{1}$};
+
+      \draw [thick] (1,-0.3) to (1,0.3);
+
+      \draw [black] (2,0) circle [radius=0.1];
+      \draw [radius=0.1] (2,0) node [black,below=12] {$f_{2}$};
+
+      \draw [thick] (3,-0.3) to (3,0.3);
+
+      \draw [thick] (7,-0.3) to (7,0.3);
+
+      \draw [black] (8,0) circle [radius=0.1];
+      \draw [radius=0.1] (8,0) node [black,below=12] {$f_{sc-1}$};
+
+      \draw [thick] (9,-0.3) to (9,0.3);
+
+      \draw [black] (10,0) circle [radius=0.1];
+      \draw [radius=0.1] (10,0) node [black,below=12] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for cell center / edge data}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [thick] (0,0) to (4,0);
+      \draw [thick,dashed] (4,0) to (6,0);
+      \draw [thick] (6,0) to (10,0);
+
+      \draw [thick] (0,-0.3) to (0,0.3);
+      \draw [radius=0.1] (0,0) node [black,below=12] {$f_{1}$};
+
+      \draw [black] (1,0) circle [radius=0.1];
+
+      \draw [thick] (2,-0.3) to (2,0.3);
+      \draw [radius=0.1] (2,0) node [black,below=12] {$f_{2}$};
+
+      \draw [thick] (8,-0.3) to (8,0.3);
+      \draw [radius=0.1] (8,0) node [black,below=12] {$f_{sn-1}$};
+
+      \draw [black] (9,0) circle [radius=0.1];
+
+      \draw [thick] (10,-0.3) to (10,0.3);
+      \draw [radius=0.1] (10,0) node [black,below=12] {$f_{sn}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+
+\section{Drawing 2}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [thick] (0,0) to (4,0);
+      \draw [thick,dashed] (4,0) to (6,0);
+      \draw [thick] (6,0) to (10,0);
+
+      \draw [black] (0,0) circle [radius=0.1];
+      \draw [radius=0.1] (0,0) node [black,below=12] {$f_{1}$};
+
+      \draw [thick] (1,-0.3) to (1,0.3);
+
+      \draw [black] (2,0) circle [radius=0.1];
+      \draw [radius=0.1] (2,0) node [black,below=12] {$f_{2}$};
+
+      \draw [thick] (3,-0.3) to (3,0.3);
+
+      \draw [thick] (7,-0.3) to (7,0.3);
+
+      \draw [black] (8,0) circle [radius=0.1];
+      \draw [radius=0.1] (8,0) node [black,below=12] {$f_{sc-1}$};
+
+      \draw [thick] (9,-0.3) to (9,0.3);
+
+      \draw [black] (10,0) circle [radius=0.1];
+      \draw [radius=0.1] (10,0) node [black,below=12] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for cell center / edge data}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [thick] (0,0) to (4,0);
+      \draw [thick,dashed] (4,0) to (6,0);
+      \draw [thick] (6,0) to (10,0);
+
+      \draw [black] (0,0) circle [radius=0.1];
+      \draw [radius=0.1] (1,0) node [black,below=12] {$f_{1}$};
+
+      \draw [thick] (1,-0.3) to (1,0.3);
+
+      \draw [black] (2,0) circle [radius=0.1];
+      \draw [radius=0.1] (3,0) node [black,below=12] {$f_{2}$};
+
+      \draw [thick] (3,-0.3) to (3,0.3);
+
+      \draw [thick] (7,-0.3) to (7,0.3);
+
+      \draw [black] (8,0) circle [radius=0.1];
+      \draw [radius=0.1] (7,0) node [black,below=12] {$f_{sn-1}$};
+
+      \draw [thick] (9,-0.3) to (9,0.3);
+
+      \draw [black] (10,0) circle [radius=0.1];
+      \draw [radius=0.1] (9,0) node [black,below=12] {$f_{sn}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+\section{Drawing 3}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [thick] (0,0) to (4,0);
+      \draw [thick,dashed] (4,0) to (6,0);
+      \draw [thick] (6,0) to (10,0);
+
+      \draw [thick] (0,-0.3) to (0,0.3);
+      \draw [radius=0.1] (1,0) node [black,below=12] {$f_{1}$};
+
+      \draw [black] (1,0) circle [radius=0.1];
+
+      \draw [thick] (2,-0.3) to (2,0.3);
+      \draw [radius=0.1] (3,0) node [black,below=12] {$f_{2}$};
+
+      \draw [black] (3,0) circle [radius=0.1];
+
+      \draw [black] (7,0) circle [radius=0.1];
+
+      \draw [thick] (8,-0.3) to (8,0.3);
+      \draw [radius=0.1] (7,0) node [black,below=12] {$f_{sc-1}$};
+
+      \draw [black] (9,0) circle [radius=0.1];
+
+      \draw [thick] (10,-0.3) to (10,0.3);
+      \draw [radius=0.1] (9,0) node [black,below=12] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for cell center / edge data}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [thick] (0,0) to (4,0);
+      \draw [thick,dashed] (4,0) to (6,0);
+      \draw [thick] (6,0) to (10,0);
+
+      \draw [thick] (0,-0.3) to (0,0.3);
+      \draw [radius=0.1] (0,0) node [black,below=12] {$f_{1}$};
+
+      \draw [black] (1,0) circle [radius=0.1];
+
+      \draw [thick] (2,-0.3) to (2,0.3);
+      \draw [radius=0.1] (2,0) node [black,below=12] {$f_{2}$};
+
+      \draw [thick] (8,-0.3) to (8,0.3);
+      \draw [radius=0.1] (8,0) node [black,below=12] {$f_{sn-1}$};
+
+      \draw [black] (9,0) circle [radius=0.1];
+
+      \draw [thick] (10,-0.3) to (10,0.3);
+      \draw [radius=0.1] (10,0) node [black,below=12] {$f_{sn}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+\section{Drawing 4 - Organized with variables}
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (4.5,0);
+      \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black] (5.5,0) to (10,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah,-\height) to (0+0*\Deltah,\height);
+      \draw [black] (1*\Deltah,-\height) to (0+1*\Deltah,\height);
+      \draw [black] (2*\Deltah,-\height) to (0+2*\Deltah,\height);
+      % \draw [black] (3*\Deltah,-\height) to (0+3*\Deltah,\height);
+      \draw [black] (4*\Deltah,-\height) to (0+4*\Deltah,\height);
+      \draw [black] (5*\Deltah,-\height) to (0+5*\Deltah,\height);
+      \draw [black] (6*\Deltah,-\height) to (0+6*\Deltah,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      % \draw [black] (2*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      % \draw [black] (3*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah+\Deltah/2,0) circle [radius=\radius];
+
+      \draw (0*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{1}$};
+      \draw (1*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{2}$};
+      \draw (4*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{sc-1}$};
+      \draw (5*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for cell center / edge data}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (4.5,0);
+      \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black] (5.5,0) to (10,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah,-\height) to (0+0*\Deltah,\height);
+      \draw [black] (1*\Deltah,-\height) to (0+1*\Deltah,\height);
+      \draw [black] (2*\Deltah,-\height) to (0+2*\Deltah,\height);
+      % \draw [black] (3*\Deltah,-\height) to (0+3*\Deltah,\height);
+      \draw [black] (4*\Deltah,-\height) to (0+4*\Deltah,\height);
+      \draw [black] (5*\Deltah,-\height) to (0+5*\Deltah,\height);
+      \draw [black] (6*\Deltah,-\height) to (0+6*\Deltah,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      % \draw [black] (2*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      % \draw [black] (3*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah+\Deltah/2,0) circle [radius=\radius];
+
+      \draw (0*\Deltah,0) node [black,below=\offSet] {$f_{1}$};
+      \draw (1*\Deltah,0) node [black,below=\offSet] {$f_{2}$};
+      \draw (2*\Deltah,0) node [black,below=\offSet] {$f_{3}$};
+
+      \draw (4*\Deltah,0) node [black,below=\offSet] {$f_{sn-2}$};
+      \draw (5*\Deltah,0) node [black,below=\offSet] {$f_{sn-1}$};
+      \draw (6*\Deltah,0) node [black,below=\offSet] {$f_{sn}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+
+
+
+\section{Drawing 5 - Organized with variables}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (4.5,0);
+      \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black] (5.5,0) to (10,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah+\Deltah/2,-\height) to (0+0*\Deltah+\Deltah/2,\height);
+      \draw [black] (1*\Deltah+\Deltah/2,-\height) to (0+1*\Deltah+\Deltah/2,\height);
+      \draw [black] (2*\Deltah+\Deltah/2,-\height) to (0+2*\Deltah+\Deltah/2,\height);
+      \draw [black] (3*\Deltah+\Deltah/2,-\height) to (0+3*\Deltah+\Deltah/2,\height);
+      \draw [black] (4*\Deltah+\Deltah/2,-\height) to (0+4*\Deltah+\Deltah/2,\height);
+      \draw [black] (5*\Deltah+\Deltah/2,-\height) to (0+5*\Deltah+\Deltah/2,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah,0) circle [radius=\radius];
+      \draw [black] (2*\Deltah,0) circle [radius=\radius];
+      % \draw [black] (3*\Deltah,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah,0) circle [radius=\radius];
+      \draw [black] (6*\Deltah,0) circle [radius=\radius];
+
+      \draw (0*\Deltah,0) node [black,below=\offSet] {$f_{1}$};
+      \draw (1*\Deltah,0) node [black,below=\offSet] {$f_{2}$};
+      \draw (5*\Deltah,0) node [black,below=\offSet] {$f_{sc-1}$};
+      \draw (6*\Deltah,0) node [black,below=\offSet] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for cell center / edge data}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (4.5,0);
+      \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black] (5.5,0) to (10,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah+\Deltah/2,-\height) to (0+0*\Deltah+\Deltah/2,\height);
+      \draw [black] (1*\Deltah+\Deltah/2,-\height) to (0+1*\Deltah+\Deltah/2,\height);
+      \draw [black] (2*\Deltah+\Deltah/2,-\height) to (0+2*\Deltah+\Deltah/2,\height);
+      \draw [black] (3*\Deltah+\Deltah/2,-\height) to (0+3*\Deltah+\Deltah/2,\height);
+      \draw [black] (4*\Deltah+\Deltah/2,-\height) to (0+4*\Deltah+\Deltah/2,\height);
+      \draw [black] (5*\Deltah+\Deltah/2,-\height) to (0+5*\Deltah+\Deltah/2,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah,0) circle [radius=\radius];
+      \draw [black] (2*\Deltah,0) circle [radius=\radius];
+      % \draw [black] (3*\Deltah,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah,0) circle [radius=\radius];
+      \draw [black] (6*\Deltah,0) circle [radius=\radius];
+
+      \draw (0*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{1}$};
+      \draw (1*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{2}$};
+      \draw (4*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{sc-1}$};
+      \draw (5*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+
+\end{document}
+
+

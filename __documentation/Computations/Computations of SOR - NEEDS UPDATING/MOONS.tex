@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Computations of SOR (Uniform coefficient)}
+The finite difference equation to solve begins with the Poisson equation
+
+
+\begin{equation}
+	\nabla^2 u = f
+\end{equation}
+
+Since the 2nd derivative of a field lives on the same grid as the field itself, the only need to distinguish cell centered vs cell corner derivatives has to do with where the index starts (which depends on the ratio of ghost cells between the two grids).
+
+\subsection{Non-uniform grid for cell centered data}
+Using the definition
+\begin{equation}
+	\Delta h_{c,i} = h_{c,i+1} - h_{c,i}
+\end{equation}
+\begin{equation}
+	\Delta h_{n,i} = h_{n,i+1} - h_{n,i}
+\end{equation}
+Our 2nd order accurate spatially discrete Poisson equation is
+
+\begin{multline}
+	\frac{\frac{u_{i+1,j,k}-u_{i,j,k}}{\Delta x_{c,i}} - \frac{u_{i,j,k}-u_{i-1,j,k}}{\Delta x_{c,i}}}{\Delta x_{n,i}} + 
+	\frac{\frac{u_{i,j+1,k}-u_{i,j,k}}{\Delta y_{c,i}} - \frac{u_{i,j,k}-u_{i,j-1,k}}{\Delta y_{c,i}}}{\Delta y_{n,i}} +
+	\frac{\frac{u_{i,j,k+1}-u_{i,j,k}}{\Delta z_{c,i}} - \frac{u_{i,j,k}-u_{i,j,k-1}}{\Delta z_{c,i}}}{\Delta z_{n,i}} = f_{i,j,k}
+\end{multline}
+
+Collecting terms, we have
+
+
+\subsection{Non-uniform grid for cell corner data}
+
+
+\section{Computations of SOR (non-uniform coefficient)}
+
+
+
+
+
+
+
+
+
+\end{document}
+
+

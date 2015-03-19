@@ -23,7 +23,7 @@
       use applyBCs_mod
       use myError_mod
       use MG_tools_mod
-      use vectorOps_mod
+      use delOps_mod
       use mySOR_mod
       implicit none
 

@@ -18,10 +18,20 @@
        !                                      2 : No Slip Cavity
        !                                      3 : Duct Flow (in ductDirection)
        !                                      4 : Cylinder Driven Cavity Flow (tornado)
-       !                                      5 : Fully developed duct Flow (in ductDirection)
+       !                                      5 : Fully Developed duct Flow (in ductDirection)
+       !                                      6 : Fully Developed (Neumann) (in ductDirection)
 
        ! Lid Driven Cavity parameters:
        integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
+
+       ! integer,parameter :: drivenFace      = 4 
+       !                                      1 {x_min}
+       !                                      2 {x_max}
+       !                                      3 {y_min}
+       !                                      4 {y_max}
+       !                                      5 {z_min}
+       !                                      6 {z_max}
+
        integer,parameter :: drivenDirection = 1 ! (1,2,3) = (x,y,z)
        integer,parameter :: drivenSign      = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
        ! Duct Flow parameters: 
@@ -94,6 +104,10 @@
          case (5) ! Fully Developed Duct Flow
            call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
            call fullyDevelopedDuctFlowBCs(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
+
+         case (6) ! Fully Developed Duct Flow
+           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
+           call fullyDevelopedBCs(u_bcs,v_bcs,w_bcs,ductDirection)
 
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
@@ -280,6 +294,8 @@
            allocate(hx(imax)); hx = g%c(1)%hc
            allocate(hy(jmax)); hy = g%c(2)%hc
            allocate(u_temp(s(1),s(2)))
+         case default
+         stop 'Error: dir must = 1,2,3 in fullyDevelopedDuctFlowBCs.'
          end select
          alpha = width/height
 
@@ -318,6 +334,22 @@
 
          deallocate(u_temp)
          deallocate(hx,hy)
+       end subroutine
+
+       subroutine fullyDevelopedBCs(u_bcs,v_bcs,w_bcs,dir)
+         ! This routine initializes a fully developed 
+         ! profile along direction dir. This routine assumes that the bvals
+         ! along dir are zero.
+         implicit none
+         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         integer,intent(in) :: dir
+         select case (dir)
+         case (1); call setXminType(u_bcs,4); call setXminType(u_bcs,4)
+         case (2); call setYminType(v_bcs,4); call setYminType(v_bcs,4)
+         case (3); call setZminType(w_bcs,4); call setZminType(w_bcs,4)
+         case default
+         stop 'Error: dir must = 1,2,3 in fullyDevelopedBCs.'
+         end select
        end subroutine
 
        subroutine noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)

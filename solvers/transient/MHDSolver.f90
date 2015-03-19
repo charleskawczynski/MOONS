@@ -9,7 +9,7 @@
        use griddata_mod
        use rundata_mod
        use myError_mod
-       use vectorOps_mod
+       use delOps_mod
 
        use solverSettings_mod
        use BCs_mod
@@ -46,16 +46,14 @@
          type(myTime),intent(inout) :: time
          character(len=*),intent(in) :: dir ! Output directory
          ! *********************** LOCAL VARIABLES **********************
-         real(dpn) :: Re,Ha,dtime
+         real(dpn) :: Ha
          integer :: n_ind,n_mhd
          ! **************************************************************
          logical :: continueLoop
          ! **************************************************************
 
          call computationInProgress(time)
-         dtime = getDtime(rd)
          Ha = getHa(rd)
-         Re = getRe(rd)
 
          ! ********************** PREP LOOP ******************************
          continueLoop = .true.
@@ -80,13 +78,13 @@
 
            ! ************** SOLVE MOMENTUM EQUATION **********************
            if (solveMomentum) then
-             call solve(mom,mom%g,rd,ss_MHD)
+             call solve(mom,mom%g,ss_MHD)
            endif
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
              call embedVelocity(mom%U,ind%U_cct,mom%temp,mom%g)
-             call solve(ind,ind%U_cct,ind%g,rd,ss_MHD)
+             call solve(ind,ind%U_cct,ind%g,ss_MHD)
            endif
 
            ! ************************** COMPUTE DIVERGENCES *******************************
@@ -99,8 +97,11 @@
            if (solveInduction) then
              call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
-               call computeJCrossB(mom%F,ind,mom%g,ind%g,Re,Ha)
+               call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
              endif
+             ! ind%B0%x = exp(-ind%t)
+             ! ind%B0%y = exp(-ind%t)
+             ! ind%B0%z = real(1.0)
            else
              ! mom%F = zero
              call assign(mom%F,zero)
@@ -120,12 +121,19 @@
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
              ! call debug(9)
-             write(*,'(A14,'//xyzfmt//')') ' maxval(u,v,w)',maxval(mom%U%x),maxval(mom%U%y),maxval(mom%U%z)
-             write(*,'(A14,'//xyzfmt//')') ' minval(u,v,w)',minval(mom%U%x),minval(mom%U%y),minval(mom%U%z)
+             ! write(*,'(A14,'//xyzfmt//')') ' maxval(u,v,w)',maxval(mom%U%x),maxval(mom%U%y),maxval(mom%U%z)
+             ! write(*,'(A14,'//xyzfmt//')') ' minval(u,v,w)',minval(mom%U%x),minval(mom%U%y),minval(mom%U%z)
+             write(*,*) ' maxval(u,v,w)',maxval(mom%U%x),maxval(mom%U%y),maxval(mom%U%z)
+             write(*,*) ' minval(u,v,w)',minval(mom%U%x),minval(mom%U%y),minval(mom%U%z)
              if (solveInduction) then
-               write(*,'(A17,'//xyzfmt//')') ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
-               write(*,'(A17,'//xyzfmt//')') ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
+               ! write(*,'(A17,'//xyzfmt//')') ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
+               ! write(*,'(A17,'//xyzfmt//')') ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
+               write(*,*) ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
+               write(*,*) ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
+               ! write(*,*) ' maxval(B0x,B0y,B0z)',maxval(ind%B0%x),maxval(ind%B0%y),maxval(ind%B0%z)
+               ! write(*,*) ' minval(B0x,B0y,B0z)',minval(ind%B0%x),minval(ind%B0%y),minval(ind%B0%z)
              endif
+             write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)
              call printGridData(gd)
              call printRunData(rd)

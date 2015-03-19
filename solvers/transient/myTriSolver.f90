@@ -33,9 +33,9 @@
 
       interface init;    module procedure initTriSolver;            end interface
       interface delete;  module procedure deleteTriSolver;          end interface
-      ! interface apply;   module procedure applyTriSolver;           end interface
+      interface apply;   module procedure applyTriSolver;           end interface
 
-      interface apply;   module procedure applyTriSolverInterior;   end interface
+!       interface apply;   module procedure applyTriSolverInterior;   end interface
 
       contains
 

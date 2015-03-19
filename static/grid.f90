@@ -15,6 +15,8 @@
 
        private
 
+       logical,parameter :: exportLight = .false. ! (T/F) => (cannot/can visualize)
+
        public :: grid
        public :: init,delete
        public :: print,export
@@ -134,11 +136,13 @@
          type(grid), intent(in) :: g
          character(len=*),intent(in) :: dir,name
          integer :: newU
-         newU = newAndOpen(dir,'gridXYZ_'//name)
-         call addToFile(g,newU)
-         call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,real(1.0,cp),dir,name//'_c')
-         close(newU)
+         if (exportLight) then
+           newU = newAndOpen(dir,'gridXYZ_'//name)
+           call addToFile(g,newU); close(newU)
+         else
+           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
+           ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,real(1.0,cp),dir,name//'_c')
+         endif
        end subroutine
 
        subroutine printGrid(g)

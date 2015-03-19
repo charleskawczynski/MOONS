@@ -12,12 +12,10 @@
        use initializeSigmaMu_mod
 
        use grid_mod
-       use griddata_mod
-       use rundata_mod
+       ! use griddata_mod
        use myError_mod
-       use myDel_mod
        use interpOps_mod
-       use vectorOps_mod
+       use delOps_mod
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
@@ -30,10 +28,15 @@
 
        private
        public :: induction,init,delete,solve
+
+       public :: setDTime,setNmaxB,setRem,setNmaxCleanB
+
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeJCrossB
        public :: computeDivergence
+       public :: computeCurrent
+       public :: embedVelocity
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -63,7 +66,6 @@
          type(myError) :: err_divB,err_DivJ,err_ADI
          type(myError) :: err_cleanB,err_residual
          type(myTime) :: time_CP
-         integer :: nstep
 
          type(mySOR) :: SOR_B, SOR_cleanB
          type(myADI) :: ADI_B
@@ -72,13 +74,13 @@
          type(errorProbe) :: probe_divB,probe_divJ
          type(grid) :: g
 
-         ! real(cp) :: ds = 2.0d-8     ! Pseudo time step case B2
-         integer :: NmaxB = 5         ! Maximum number of pseudo steps
-         real(cp) :: ds = 1.0d-4     ! S = 1
-         ! real(cp) :: ds = 1.0d-6     ! S = 100
-         ! real(cp) :: ds = 1.0d-7     ! S = 1000
-         ! integer :: NmaxB = 50        ! Maximum number of pseudo steps
-         integer :: NmaxCleanB = 5    ! Maximum number of cleaning steps
+         integer :: nstep             ! Nth time step
+         integer :: NmaxB             ! Maximum number iterations in solving B (if iterative)
+         integer :: NmaxCleanB        ! Maximum number iterations to clean B
+         real(cp) :: dTime            ! Time step
+         real(cp) :: t                ! Time
+         real(cp) :: Rem              ! Magnetic Reynolds number
+         real(cp) :: omega            ! Intensity of time changing magnetic field
        end type
 
        interface init;               module procedure initInduction;              end interface
@@ -89,6 +91,8 @@
        interface exportRaw;          module procedure inductionExportRaw;         end interface
        interface exportTransient;    module procedure inductionExportTransient;   end interface
        interface computeDivergence;  module procedure computeDivergenceInduction; end interface
+
+       interface setDTime;           module procedure setDTimeInduction;          end interface
 
        contains
 
@@ -193,6 +197,8 @@
          call setMaxIterations(ind%ss_cleanB,ind%NmaxCleanB)
          write(*,*) '     Solver settings for cleaning initialized'
 
+         ind%t = real(0.0,cp)
+         ind%omega = real(1.0,cp)
          write(*,*) '     Finished'
        end subroutine
 
@@ -235,6 +241,34 @@
          call delete(ind%g)
 
          write(*,*) 'Induction object deleted'
+       end subroutine
+
+       subroutine setDTimeInduction(ind,dt)
+         implicit none
+         type(induction),intent(inout) :: ind
+         real(cp),intent(in) :: dt
+         ind%dTime = dt
+       end subroutine
+
+       subroutine setNmaxB(ind,NmaxB)
+         implicit none
+         type(induction),intent(inout) :: ind
+         integer,intent(in) :: NmaxB
+         ind%NmaxB = NmaxB
+       end subroutine
+
+       subroutine setRem(ind,Rem)
+         implicit none
+         type(induction),intent(inout) :: ind
+         real(cp),intent(in) :: Rem
+         ind%Rem = Rem
+       end subroutine
+
+       subroutine setNmaxCleanB(ind,NmaxCleanB)
+         implicit none
+         type(induction),intent(inout) :: ind
+         integer,intent(in) :: NmaxCleanB
+         ind%NmaxCleanB = NmaxCleanB
        end subroutine
 
        ! ******************* EXPORT ****************************
@@ -310,6 +344,13 @@
            call myCellCenter2Node(tempnz,ind%B%z,g)
 
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Bfield/','Bxnt','Bynt','Bznt')
+
+           call myCellCenter2Node(tempnx,ind%B0%x,g)
+           call myCellCenter2Node(tempny,ind%B0%y,g)
+           call myCellCenter2Node(tempnz,ind%B0%z,g)
+
+           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Bfield/','B0xnt','B0ynt','B0znt')
+
            call myCellCenter2Node(tempnx,ind%J_cc%x,g)
            call myCellCenter2Node(tempny,ind%J_cc%y,g)
            call myCellCenter2Node(tempnz,ind%J_cc%z,g)
@@ -338,13 +379,12 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine inductionSolver(ind,U,g,rd,ss_MHD)
+       subroutine inductionSolver(ind,U,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         type(rundata),intent(in) :: rd
          type(solverSettings),intent(inout) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
          select case (solveBMethod)
@@ -352,14 +392,15 @@
          case (2); call lowRemPseudoTimeStepUniform(ind,U,g)
          case (3); call lowRemPseudoTimeStep(ind,U,g)
          case (4); call lowRemCTmethod(ind,U,g)
-         case (5); call CTmethod(ind,U,g,rd)
-         case (6); call fullInduction(ind,U,g,rd)
+         case (5); call CTmethod(ind,U,g)
+         case (6); call fullInduction(ind,U,g)
          case (7); call LowRem_semi_implicit_ADI(ind,U,g,ss_MHD)
          end select
          if (cleanB) then
            call cleanBSolution(ind,g,ss_MHD)
          endif
          ind%nstep = ind%nstep + 1
+         ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
        end subroutine
 
        subroutine lowRemPoisson(ind,U,g,ss_MHD)
@@ -401,20 +442,20 @@
          do i=1,ind%NmaxB
            ind%Bstar = zero
            ! ------------- diffusion term -------------
-           call myCC2CCLap(ind%temp%phi,ind%B%x,g)
-           ind%Bstar%x = ind%Bstar%x + ind%ds*ind%temp%phi
-           call myCC2CCLap(ind%temp%phi,ind%B%y,g)
-           ind%Bstar%y = ind%Bstar%y + ind%ds*ind%temp%phi
-           call myCC2CCLap(ind%temp%phi,ind%B%z,g)
-           ind%Bstar%z = ind%Bstar%z + ind%ds*ind%temp%phi
+           call CC2CCLap(ind%temp%phi,ind%B%x,g)
+           ind%Bstar%x = ind%Bstar%x + ind%dTime*ind%temp%phi
+           call CC2CCLap(ind%temp%phi,ind%B%y,g)
+           ind%Bstar%y = ind%Bstar%y + ind%dTime*ind%temp%phi
+           call CC2CCLap(ind%temp%phi,ind%B%z,g)
+           ind%Bstar%z = ind%Bstar%z + ind%dTime*ind%temp%phi
            
            ! ------------- source term -------------
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-           ind%Bstar%x = ind%Bstar%x - ind%ds*ind%temp%phi
+           ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-           ind%Bstar%y = ind%Bstar%y - ind%ds*ind%temp%phi
+           ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-           ind%Bstar%z = ind%Bstar%z - ind%ds*ind%temp%phi
+           ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
            ! Add induced field of previous time step (B^n)
            ind%B = ind%B*ind%mu + ind%Bstar
@@ -441,31 +482,31 @@
            ind%B = ind%B/ind%mu
            ! ------------- diffusion term -------------
            call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,1)
-           ind%Bstar%x = ind%Bstar%x - ind%ds*ind%temp%phi
+           ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
            call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,2)
-           ind%Bstar%y = ind%Bstar%y - ind%ds*ind%temp%phi
+           ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
            call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,3)
-           ind%Bstar%z = ind%Bstar%z - ind%ds*ind%temp%phi
+           ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
            ! Try converting to:
            ! call myCCBfieldDiffuse(ind%tempVF%x,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,1)
            ! call myCCBfieldDiffuse(ind%tempVF%y,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,2)
            ! call myCCBfieldDiffuse(ind%tempVF%z,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,3)
-           ! ind%Bstar = ind%Bstar - ind%ds*ind%tempVF
+           ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
            
            ! ------------- source term -------------
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-           ind%Bstar%x = ind%Bstar%x - ind%ds*ind%temp%phi
+           ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-           ind%Bstar%y = ind%Bstar%y - ind%ds*ind%temp%phi
+           ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-           ind%Bstar%z = ind%Bstar%z - ind%ds*ind%temp%phi
+           ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
            ! Try converting to:
            ! call myCCBfieldAdvect(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
            ! call myCCBfieldAdvect(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
            ! call myCCBfieldAdvect(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-           ! ind%Bstar = ind%Bstar - ind%ds*ind%tempVF
+           ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
 
            ! Add induced field of previous time step (B^n)
            ind%B = ind%B*ind%mu + ind%Bstar
@@ -525,8 +566,8 @@
            call myFace2CellCenter(ind%tempVF%z,ind%F%z,g,3)
 
            ! Add induced field of previous time step (B^n)
-           ! ind%B = ind%B - ind%ds*ind%tempVF
-           call multiply(ind%tempVF,ind%ds)
+           ! ind%B = ind%B - ind%dTime*ind%tempVF
+           call multiply(ind%tempVF,ind%dTime)
            call subtract(ind%B,ind%tempVF)
 
            ! Impose BCs:
@@ -536,7 +577,7 @@
          enddo
        end subroutine
 
-       subroutine CTmethod(ind,U,g,rd)
+       subroutine CTmethod(ind,U,g)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
@@ -550,12 +591,7 @@
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         type(rundata),intent(in) :: rd
          ! ********************** LOCAL VARIABLES ***********************
-         real(cp) :: dt,Rem
-
-         dt = getDtime(rd)
-         Rem = getRem(rd)
 
          ! Compute current from appropriate fluxes:
          call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
@@ -575,7 +611,7 @@
          ! E = j/sig - uxB
          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
          call multiply(ind%J,ind%sigmaInv_edge)
-         call divide(ind%J,Rem)
+         call divide(ind%J,ind%Rem)
          call subtract(zero,ind%E)
          call add(ind%E,ind%J)
 
@@ -589,8 +625,15 @@
          call myFace2CellCenter(ind%tempVF%z,ind%F%z,g,3)
 
          ! Add induced field of previous time step (B^n)
-         ! ind%B = ind%B - dt*ind%tempVF
-         call multiply(ind%tempVF,dt)
+         ! ind%B = ind%B - ind%dTime*ind%tempVF
+         call multiply(ind%tempVF,ind%dTime)
+         call subtract(ind%B,ind%tempVF)
+
+         ! Add time changing applied magnetic field
+         ! ind%B = ind%B - ind%dTime*ind%tempVF
+         ind%tempVF%x = -ind%dTime*ind%omega*ind%B0%x*exp(-ind%omega*ind%t)
+         ind%tempVF%y = -ind%dTime*ind%omega*ind%B0%y*exp(-ind%omega*ind%t)
+         ind%tempVF%z = real(0.0,cp)
          call subtract(ind%B,ind%tempVF)
 
          ! Impose BCs:
@@ -599,42 +642,37 @@
          call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
        end subroutine
 
-       subroutine fullInduction(ind,U,g,rd)
+       subroutine fullInduction(ind,U,g)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         type(rundata),intent(in) :: rd
-         ! ********************** LOCAL VARIABLES ***********************
-         real(cp) :: Rem,dt
 
-         dt = getDtime(rd)
-         Rem = getRem(rd)
          ind%Bstar = zero
 
          ! ------------- advection term -------------
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,1)
-         ind%Bstar%x = ind%Bstar%x - dt*ind%temp%phi
+         ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,2)
-         ind%Bstar%y = ind%Bstar%y - dt*ind%temp%phi
+         ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,3)
-         ind%Bstar%z = ind%Bstar%z - dt*ind%temp%phi
+         ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
          ! Try converting to:
          ! call myCCBfieldAdvect(ind%tempVF%x,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,1)
          ! call myCCBfieldAdvect(ind%tempVF%y,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,2)
          ! call myCCBfieldAdvect(ind%tempVF%z,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,3)
-         ! ind%Bstar = ind%Bstar - dt*ind%tempVF
+         ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
 
          ! ------------- diffusion term -------------
          ind%B = ind%B/ind%mu
          call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,1)
-         ind%Bstar%x = ind%Bstar%x - dt/Rem*ind%temp%phi
+         ind%Bstar%x = ind%Bstar%x - ind%dTime/ind%Rem*ind%temp%phi
          call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,2)
-         ind%Bstar%y = ind%Bstar%y - dt/Rem*ind%temp%phi
+         ind%Bstar%y = ind%Bstar%y - ind%dTime/ind%Rem*ind%temp%phi
          call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,3)
-         ind%Bstar%z = ind%Bstar%z - dt/Rem*ind%temp%phi
+         ind%Bstar%z = ind%Bstar%z - ind%dTime/ind%Rem*ind%temp%phi
          ind%B = ind%B*ind%mu
 
          ! Try converting to:
@@ -642,22 +680,22 @@
          ! call myCCBfieldDiffuse(ind%tempVF%x,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,1)
          ! call myCCBfieldDiffuse(ind%tempVF%y,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,2)
          ! call myCCBfieldDiffuse(ind%tempVF%z,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,3)
-         ! ind%Bstar = ind%Bstar - dt/Rem*ind%tempVF
+         ! ind%Bstar = ind%Bstar - ind%dTime/ind%Rem*ind%tempVF
          ! ind%B = ind%B*ind%mu
 
          ! ------------- source term -------------
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-         ind%Bstar%x = ind%Bstar%x - dt*ind%temp%phi
+         ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-         ind%Bstar%y = ind%Bstar%y - dt*ind%temp%phi
+         ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-         ind%Bstar%z = ind%Bstar%z - dt*ind%temp%phi
+         ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
          ! Try converting to:
          ! call myCCBfieldAdvect(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
          ! call myCCBfieldAdvect(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
          ! call myCCBfieldAdvect(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-         ! ind%Bstar = ind%Bstar - dt*ind%tempVF
+         ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
 
          ! Add induced field of previous time step (B^n)
          ind%B = ind%B + ind%Bstar
@@ -720,7 +758,7 @@
          call subtract(ind%tempVF,ind%Bstar)
 
          ! Solve with semi-implicit ADI
-         call setDt(ind%ADI_B,ind%ds)
+         call setDt(ind%ADI_B,ind%dTime)
          call setAlpha(ind%ADI_B,real(1.0,cp))
          ! call setAlpha(ind%ADI_B,ind%sigmaInv)
 
@@ -739,7 +777,6 @@
          call applyAllBCs(ind%By_bcs,ind%B%y,g)
          call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
        end subroutine
-
 
        ! ******************* CLEANING **************************
 
@@ -834,6 +871,46 @@
              call myCC2CCDiv(ind%divJ%phi,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,g)
            end select
          endif
+       end subroutine
+
+       subroutine computeCurrent(J,B,B0,mu,gd)
+         implicit none
+         type(vectorField),intent(inout) :: B,J
+         type(vectorField),intent(in) :: B0
+         type(scalarField),intent(in) :: mu
+         type(grid),intent(in) :: gd
+         ! B = (B + B0)/mu
+         call add(B,B0)
+         call divide(B,mu)
+         call myCCCurl(J%x,B%x,B%y,B%z,gd,1)
+         call myCCCurl(J%y,B%x,B%y,B%z,gd,2)
+         call myCCCurl(J%z,B%x,B%y,B%z,gd,3)
+         call multiply(B,mu)
+         call subtract(B,B0)
+         ! B = B*mu - B0
+       end subroutine
+
+       subroutine embedVelocity(U_fi,U_cct,U_cci,gd)
+         implicit none
+         type(vectorField),intent(in) :: U_fi
+         type(vectorField),intent(inout) :: U_cct
+         type(scalarField),intent(inout) :: U_cci
+         type(grid),intent(in) :: gd
+         integer,dimension(3) :: Ni
+
+         Ni = (/gd%c(1)%sc-2,gd%c(2)%sc-2,gd%c(3)%sc-2/) ! minus fictitious cells
+         ! (exclude fictitious cells)
+         call myFace2CellCenter(U_cci%phi,U_fi%x,gd,1)
+          U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
+
+         call myFace2CellCenter(U_cci%phi,U_fi%y,gd,2)
+          U_cct%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
+
+         call myFace2CellCenter(U_cci%phi,U_fi%z,gd,3)
+          U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
        end subroutine
 
        end module

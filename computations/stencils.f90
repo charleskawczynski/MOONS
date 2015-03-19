@@ -7,9 +7,17 @@
         !     dfdh         = dfdhf(:)
         !     dhp          = dh of primary grid data (dh=h2-h1 where df=f2-f1) 
         !     dhd          = dh of dual    grid data (for 2nd derivatives only, dfdh lives on dual grid)
-        !
+        !     hp           = h of primary  grid data
+        !     hd           = h of dual     grid data
+        !     s            = size(f)
+        !     gt           = 0 :  f {CC}
+        !                    1 :  f {N}
+        ! 
         ! INDEXING: The index range of the incoming scalar field is assumed to begin at one.
         !
+        ! Insight to these stencils were adopted from
+        ! http://wissrech.ins.uni-bonn.de/research/projects/NaSt3DGP/documentation/userguide.pdf
+        ! 
         ! CharlieKawczynski@gmail.com
 
       implicit none
@@ -95,8 +103,8 @@
         ! grid. The result lives on the primary grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}
-        !      1 :  f {N}  , dfdh {CC}
+        ! gt = 0 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+        !      1 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
         ! 
         ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
         ! 
@@ -117,8 +125,8 @@
         ! grid. The result lives on the primary grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}
-        !      1 :  f {N}  , dfdh {CC}
+        ! gt = 0 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+        !      1 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
         ! 
         ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
         ! 
@@ -147,8 +155,8 @@
         ! grid. The result lives on the primary grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}
-        !      1 :  f {N}  , dfdh {CC}
+        ! gt = 0 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+        !      1 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
         ! 
         ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
         ! 

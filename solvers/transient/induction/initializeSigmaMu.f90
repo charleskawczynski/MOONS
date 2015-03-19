@@ -7,6 +7,13 @@
        private
        public :: initSigmaMu
 
+       public :: Nin1
+       public :: Nin2
+       public :: Nice1
+       public :: Nice2
+       public :: Nici1
+       public :: Nici2
+
        ! This gets overridden by benchmarkCase
        integer,parameter :: preDefined_Sigma = 0 ! sigma* = sigma_wall/sigma_l
        !                                       0 : User-defined case (no override)
@@ -21,7 +28,6 @@
        integer,parameter :: preDefined_SigmaMu = 0
        !                                         0 : User-defined case (no override)
        !                                         1 : sigma = mu = 1
-
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -83,6 +89,10 @@
          tw = real(0.142394,cp)
          sigma_star = cw/tw
          sigma_l = real(1.0,cp); sigma_w = sigma_star
+
+         case (1001); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (1002); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (1003); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case default
            write(*,*) 'Incorrect benchmarkCase in initBenchmarkSigmaMu'
            stop

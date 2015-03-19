@@ -29,7 +29,7 @@
       use BCs_mod
       use applyBCs_mod
       use myError_mod
-      use vectorOps_mod
+      use delOps_mod
       use solverSettings_mod
       implicit none
 
@@ -60,18 +60,19 @@
         integer,dimension(3) :: s
       end type
 
-      interface mySOR;       module procedure SOR;           end interface
+      ! interface mySOR;       module procedure SOR;           end interface
+      
       interface init;        module procedure initSOR;       end interface
       interface delete;      module procedure deleteSOR;     end interface
       interface solve;       module procedure solveSOR;      end interface
 
       contains
 
-      function SOR() result(S)
-        implicit none
-        type(mySOR) :: S
-        S%name = 'SOR'
-      end function
+      ! function SOR() result(S) ! Delete this, causes error in Hoffmann build
+      !   implicit none
+      !   type(mySOR) :: S
+      !   S%name = 'SOR'
+      ! end function
 
       subroutine initSOR(SOR,f,g,gridType)
         implicit none

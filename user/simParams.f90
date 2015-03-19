@@ -3,12 +3,11 @@
        implicit none
 
        ! ************************* GRID *************************
-       ! Combine these two or be more specific
-       logical :: checkICs                  = .false.   ! Check initial conditions
-       logical :: quickStart                = .true.    ! Don't export initial fields
+       logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
+       logical :: exportRawICs              = .false.   ! Export all Grids before starting simulation
+       logical :: exportICs                 = .false.   ! Export all Grids before starting simulation
 
-       logical :: printGrid                 = .false.   ! Print grid to screen
-       logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
+       logical :: autoMatchBetas            = .false.    ! Auto match stretching at wall
 
        logical :: nonUniformGridFluid       = .false.    ! (T/F)
        logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
@@ -147,6 +146,15 @@
        ! 400-series (Plasma disruption modeling)
        ! 
        !    400 : PD , Re=100   , Ha=10  (Sergey/MOONS/Peter)
+       ! 
+       ! 1000-series (Purely sequential)
+       ! 
+       !    1001: Case 1A, LDC, Ha = 10   Re = 100, tw = 0.1, sig_l = sig_w, Rem = 0, conducting walls except lid
+       !                B            100
+       !                C            1000
+       !    1002: Case 2A, FD square duct flow, Ha = 500, Rem = 0, All walls insulating
+       !                B                                          Hartmann walls conducting, tw = 0.01, sig_l = sig_w, side walls insulating
+       !    1003: Case 3, Plasma disruption, Refer to powerpoint
        ! 
        ! In order to make new benchmarkCases, prepare the following
        !    - MOONS.f90 (Number of steps, time step etc.)

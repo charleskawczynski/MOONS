@@ -141,6 +141,8 @@
            allocate(hx(imax)); hx = g%c(1)%hc
            allocate(hy(jmax)); hy = g%c(2)%hc
            allocate(u_temp(s(1),s(2)))
+         case default
+         stop 'Error: dir must = 1,2,3 in initFullyDevelopedDuctFlow.'
          end select
          alpha = width/height
 

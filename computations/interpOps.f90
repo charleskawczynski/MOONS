@@ -28,8 +28,6 @@
        !                      \|______|_____ x
        !                        -------> edgeDir
        ! 
-       use scalarField_mod
-       use vectorField_mod
        use grid_mod
        implicit none
 
@@ -49,7 +47,7 @@
 
        ! ------------------------------- INTERPOLATION ROUTINES ---------------------------------
        ! Base interpolation
-       public :: interp               ! call interp(f,g,gd,dir,gridType)
+       ! public :: interp               ! call interp(f,g,gd,dir)
 
        ! Derived interpolations
        public :: myFaceAverage        ! call myFaceAverage(faceAve,f,gd,dir,aveLoc)
@@ -76,7 +74,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2(f,g,gd,dir,gridType) ! Seems to be working.
+       subroutine interpO2(f,g,gd,dir) ! Seems to be working.
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
@@ -84,14 +82,17 @@
          ! 
          ! Reminder: f = interp(g)
          ! 
-         ! gridType = 1   :   f(cc grid), g(node/face grid)
+         ! gridType is now determined internally based on the shape of
+         ! the fields compared with the incoming grid.
+         ! 
+         ! gridType = 1   :   g(node/face grid) -->   f(cc grid)
          !                extrapolation required
          ! 
          !            f  g  f  g  f  g  f
          !            o--|--o--|--o--|--o   --> dir
          !                  *     *
          ! 
-         ! gridType = 2   :   f(node/face grid), g(cc grid)
+         ! gridType = 2   :   g(cc grid)        -->   f(node/face grid)
          !                no extrapolation required
          ! 
          !            g  f  g  f  g  f  g
@@ -107,15 +108,19 @@
          ! 
          ! When gridType = 1, f is assumed to be located at the cell center.
          ! 
+         ! Add internal checking of shape of f and g and grid
+         ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          real(cp),dimension(:,:,:),intent(in) :: g
          type(grid),intent(in) :: gd
-         integer,intent(in) :: dir,gridType
-         integer :: i,j,k,t,x,y,z
+         integer,intent(in) :: dir
+         integer :: i,j,k,t,x,y,z,gridType
          real(cp) :: alpha
          integer,dimension(3) :: sg,sf
          sg = shape(g); sf = shape(f)
+
+         gridType = getGridType(sf,sg,gd%c(dir)%sc,gd%c(dir)%sn,dir)
 
          select case (dir)
          case (1); x=1;y=0;z=0
@@ -162,7 +167,6 @@
          case default
            stop 'gridType must be 1 or 2. Terminating.'
          end select
-
        end subroutine
 
        subroutine extrapO2(f,g,gd,dir) ! Seems to be working.
@@ -224,6 +228,21 @@
          end select
        end subroutine
 
+       function getGridType(sf,sg,sc,sn,dir) result(gt)
+         implicit none
+         integer,dimension(3),intent(in) :: sf,sg
+         integer,intent(in) :: sc,sn
+         integer,intent(in) :: dir
+         integer :: gt
+         if ((sf(dir).eq.sc).and.(sg(dir).eq.sn)) then
+           gt = 1
+         elseif ((sf(dir).eq.sn).and.(sg(dir).eq.sc)) then
+           gt = 2
+         else
+           stop 'Error: Gridtype does not match field and grid in getGridType.'
+         endif
+       end function
+
 
        ! ****************************************************************************************
        ! ****************************************************************************************
@@ -245,7 +264,7 @@
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          cellCenter = real(0.0,cp) ! This is expensive, consider changing
-         call interp(cellCenter,face,gd,faceDir,1)
+         call interp(cellCenter,face,gd,faceDir)
          call extrap(cellCenter,face,gd,faceDir)
        end subroutine
 
@@ -274,7 +293,7 @@
          integer :: orthDir
          if (edgeDir.ne.faceDir) then ! requires 1 interpolation (no allocations)
            orthDir = orthogonalDirection(edgeDir,faceDir)
-           call interp(edge,face,gd,orthDir,2)
+           call interp(edge,face,gd,orthDir)
          else ! Requires 3 interpolations ()
           call myFace2CellCenter(tempCC,face,gd,faceDir)
           call myCellCenter2Edge(edge,tempCC,gd,edgeDir)
@@ -341,7 +360,7 @@
          real(cp),dimension(:,:,:),intent(inout) :: face
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
-         call interp(face,cellCenter,gd,faceDir,2)
+         call interp(face,cellCenter,gd,faceDir)
        end subroutine
 
        subroutine myCellCenter2Node(nodeAverage,cellCenter,gd) ! Finished, needs improvement
@@ -416,7 +435,7 @@
          real(cp),dimension(:,:,:),intent(inout) :: edge    ! size = Nn+2,Nt+1
          type(grid),intent(in) :: gd
          integer,intent(in) :: edgeDir
-         call interp(edge,node,gd,edgeDir,1)
+         call interp(edge,node,gd,edgeDir)
          call extrap(edge,node,gd,edgeDir)
        end subroutine
 
@@ -464,10 +483,9 @@
          integer,intent(in) :: faceDir,edgeDir
          integer :: orthDir
          orthDir = orthogonalDirection(edgeDir,faceDir)
-         call interp(face,edge,gd,orthDir,1)
+         call interp(face,edge,gd,orthDir)
          call extrap(face,edge,gd,orthDir)
        end subroutine
-
 
        ! ****************************************************************************************
        ! ****************************************************************************************

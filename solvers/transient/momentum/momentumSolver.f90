@@ -1,6 +1,5 @@
        module momentumSolver_mod
        use simParams_mod
-       use rundata_mod
        
        use scalarField_mod
        use vectorField_mod
@@ -14,7 +13,7 @@
        use myError_mod
        use interpOps_mod
        use del_mod
-       use vectorOps_mod
+       use delOps_mod
 
        use BCs_mod
        use applyBCs_mod
@@ -33,6 +32,7 @@
        private
        
        public :: momentum,init,delete,solve
+       public :: setDTime,setNmaxPPE,setRe
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeDivergence
@@ -82,12 +82,12 @@
          type(myError) :: err_PPE,err_DivU,err_ADI
 
          ! Time step, Reynolds number, grid
-         integer :: nstep
-         real(cp) :: dt,Re
+         integer :: nstep,NmaxPPE
+         real(cp) :: dTime,Re,t
          type(grid) :: g
 
          ! Transient probes
-         type(aveProbe) :: u_center
+         type(aveProbe) :: u_center,v_center,w_center
          type(errorProbe) :: transient_ppe,transient_divU
          type(avePlaneErrorProbe) :: u_symmetry
        end type
@@ -101,6 +101,8 @@
        interface printExportBCs;      module procedure printExportMomentumBCs;     end interface
        interface computeDivergence;   module procedure computeDivergenceMomentum;  end interface
 
+       interface setDTime;            module procedure setDTimeMomentum;           end interface
+
        contains
 
        subroutine initMomentum(mom,g,dir)
@@ -112,6 +114,7 @@
          write(*,*) 'Initializing momentum:'
 
          mom%g = g
+
          ! Initialize temp fields
          call allocateX(mom%U,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
          call allocateY(mom%U,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
@@ -156,6 +159,12 @@
          call init(mom%u_center,dir//'Ufield/','transient_u',&
          .not.restartU,shape(mom%U%x),(shape(mom%U%x)+1)/2,g,1)
 
+         ! call init(mom%v_center,dir//'Ufield/','transient_v',&
+         ! .not.restartU,shape(mom%U%y),(shape(mom%U%y)+1)/2,g,2)
+
+         ! call init(mom%w_center,dir//'Ufield/','transient_w',&
+         ! .not.restartU,shape(mom%U%z),(shape(mom%U%z)+1)/2,g,3)
+
          write(*,*) '     momentum probes initialized'
          call init(mom%transient_divU,dir//'Ufield/','transient_divU',.not.restartU)
          call init(mom%transient_ppe,dir//'Ufield/','transient_ppe',.not.restartU)
@@ -166,6 +175,8 @@
          write(*,*) '     momentum probes initialized'
 
          call export(mom%u_center)
+         ! call export(mom%v_center)
+         ! call export(mom%w_center)
          call export(mom%transient_ppe)
          call export(mom%transient_divU)
          call export(mom%u_symmetry)
@@ -174,17 +185,18 @@
          ! Initialize solver settings
          call init(mom%ss_ppe)
          call setName(mom%ss_ppe,'pressure poisson    ')
-         call setMaxIterations(mom%ss_ppe,5)
+         call setMaxIterations(mom%ss_ppe,mom%NmaxPPE)
          call setSubtractMean(mom%ss_ppe)
 
          ! Init ADI ss
          call init(mom%ss_ADI)
          call setName(mom%ss_ADI,'momentum ADI        ')
-         call setMaxIterations(mom%ss_ADI,1)
+         ! call setMaxIterations(mom%ss_ADI,1) ! Not needed since apply() is used.
 
          ! call setMinTolerance(mom%ss_ppe,real(1.0**(-6.0),cp))
          ! call setMixedConditions(mom%ss_ppe)
          mom%nstep = 0
+         mom%t = real(0.0,cp)
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
        end subroutine
@@ -204,34 +216,54 @@
          write(*,*) 'Momentum object deleted'
        end subroutine
 
-       subroutine solveMomentumEquation(mom,g,rd,ss_MHD)
+       subroutine setDTimeMomentum(mom,dTime)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         real(cp),intent(in) :: dTime
+         mom%dTime = dTime
+       end subroutine
+
+       subroutine setNmaxPPE(mom,NmaxPPE)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         integer,intent(in) :: NmaxPPE
+         mom%NmaxPPE = NmaxPPE
+       end subroutine
+
+       subroutine setRe(mom,Re)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         real(cp),intent(in) :: Re
+         mom%Re = Re
+       end subroutine
+
+       subroutine solveMomentumEquation(mom,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
-         type(rundata),intent(in) :: rd
          type(solverSettings),intent(in) :: ss_MHD
          select case(solveUMethod)
-         case (1); call explicitEuler(mom,g,rd,ss_MHD)
-         case (2); call semi_implicit_ADI(mom,g,rd,ss_MHD)
+         case (1); call explicitEuler(mom,g,ss_MHD)
+         case (2); call semi_implicit_ADI(mom,g,ss_MHD)
          case default
          write(*,*) 'Error: solveUMethod must = 1,2 in solveMomentumEquation.';stop
          end select
+         mom%t = mom%t + mom%dTime
          ! This seems to be the best place for increasing the time step
          ! mom%nstep = mom%nstep + 1
        end subroutine
 
-       subroutine explicitEuler(mom,g,rd,ss_MHD)
+       subroutine explicitEuler(mom,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
-         type(rundata),intent(in) :: rd
          type(solverSettings),intent(in) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
-         dt = getDtime(rd)
-         Re = getRe(rd)
+         dt = mom%dTime
+         Re = mom%Re
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
@@ -305,18 +337,17 @@
          mom%nstep = mom%nstep + 1
        end subroutine
 
-       subroutine semi_implicit_ADI(mom,g,rd,ss_MHD)
+       subroutine semi_implicit_ADI(mom,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
-         type(rundata),intent(in) :: rd
          type(solverSettings),intent(in) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
 
-         dt = getDtime(rd)
-         Re = getRe(rd)
+         dt = mom%dTime
+         Re = mom%Re
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
@@ -413,6 +444,8 @@
 
          if ((getExportTransient(ss_MHD))) then
            call apply(mom%u_center,getIteration(ss_MHD),mom%U%x)
+           ! call apply(mom%v_center,getIteration(ss_MHD),mom%U%y)
+           ! call apply(mom%w_center,getIteration(ss_MHD),mom%U%z)
          endif
 
          if (getExportErrors(ss_MHD)) then

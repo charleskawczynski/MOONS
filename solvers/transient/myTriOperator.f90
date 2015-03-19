@@ -200,11 +200,13 @@
           uOut(1) = diag(1)*uIn(1); return
         endif
         uOut(1) = diag(1)*uIn(1) + upDiag(1)*uIn(2)
+        ! uOut(1) = 0.0
         do j = 2,n-1
           uOut(j) = loDiag(j-1)*uIn(j-1) + diag(j)*uIn(j) + upDiag(j)*uIn(j+1)
         enddo
         j = n
         uOut(j) = loDiag(j-1)*uIn(j-1) + diag(j)*uIn(j)
+        ! uOut(j) = 0.0
       end subroutine
 
       end module

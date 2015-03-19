@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Affect of div U on B}
+The conservative form of the induction equation is
+
+\begin{equation}
+\partial B_i + \partial_j (u_j B_i - u_i B_j) + Re_m^{-1} \partial_j \left[ 
+\sigma^{-1} \left( \partial_i B_j - \partial_j B_i \right)
+\right] = 0
+\end{equation}
+
+Consider a magnetic field $B^0 = 1$. We may then write our equation for the induced field and source terms from the applied magnetic field as
+
+\begin{equation}
+\partial B_i + \partial_j (u_j B_i - u_i B_j) + Re_m^{-1} \partial_j \left[ 
+\sigma^{-1} \left( \partial_i B_j - \partial_j B_i \right)
+\right] = 
+\partial_j (u_j - u_i) = \nabla \bullet u - \partial_j u_i
+\end{equation}
+It is clear that if the veloicity is not divergence free, in the induction equation, that there will be an extra source term in the magnetic field for all components.
+
+
+
+
+\end{document}
+
+

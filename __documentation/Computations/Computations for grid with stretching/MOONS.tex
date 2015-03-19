@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Stretching function for non-uniform grids}
+MOONS implements several stretching functions. These stretching factors were adopted from \cite{pletcher2012computational}.
+
+\subsection{Roberts Transformation 1}
+\begin{equation}
+y = h \frac{(\beta + 2 \alpha) \left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}{(2\alpha+1)(1+\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right])}
+\end{equation}
+
+Where $h$ is the length of the domain. Note that
+
+\begin{equation}
+	\alpha = 0 \qquad \rightarrow \text{mesh will be refined near $y=h$ only}
+\end{equation}
+\begin{equation}
+	\alpha = 1/2 \qquad \rightarrow \text{mesh will be refined near $y=h$ and $y=0$}
+\end{equation}
+\begin{equation}
+	\bar{y} = \text{uniformly spaced grid}
+\end{equation}
+
+If there exists a boundary layer of thickness $\delta$, then an adequate stretching parameter, $\beta$, may be chosen as
+
+\begin{equation}
+	\beta = \left( 1 - \frac{\delta}{h} \right)^{-1/2}
+\end{equation}
+
+
+\subsection{Roberts Transformation 2}
+
+\subsection{Roberts Transformation 3}
+
+
+\bibliography{MOONS}
+\bibliographystyle{plain}
+
+
+\end{document}
+
+

@@ -1,0 +1,230 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\height}{0.4}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{12}
+\newcommand{\Deltah}{1.6666}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+
+\section{Stencils for 2nd derivatives}
+MOONS computes
+\begin{equation}
+\frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)
+\end{equation}
+on a staggered grid for both cell corner and cell centered data. Let subscript $p$ and $d$ represent the primary and dual grid of the staggered grid respectively. If the data lives on the primary grid, then the result also lives on the primary grid, and the coefficient, $k$, lives on the primary grid (which must be interpolated to the dual grid). This derivative is computed as follows.
+
+\begin{equation}
+\frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)
+ = \frac{\frac{u_{i+1}-u_{i}}{h_{p,i+1}-h_{p,i}} k_{p,i+1/2} - \frac{u_{i}-u_{i-1}}{h_{p,i}-h_{p,i-1}} k_{p,i-1/2}}{h_{p,i+1/2} - h_{p,i-1/2}}
+\end{equation}
+This form of the derivative is explicitely clear and consistent (since all references are to the primary grid). Beforehand, we must be clear about the indexes. Note that $\frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)$ lives on integers of $i$, whether it is computed on CC or node data. We seek to remove the half indexes because we cannot program with them.
+
+Since
+\begin{equation}
+  \Delta h_{c,1} = h_{c,2} - h_{c,1}
+\end{equation}
+\begin{equation}
+  \Delta h_{n,1} = h_{n,2} - h_{n,1}
+\end{equation}
+Let $\Delta h_i = h_{i+1} - h_i$ for both grids
+
+\subsection{Cell Centered (CC) data}
+
+\begin{figure}
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (4.5,0);
+      \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black] (5.5,0) to (10,0);
+
+      % Nodes
+      \draw [purple] (0*\Deltah+\Deltah/2,-\height) to (0+0*\Deltah+\Deltah/2,\height);
+      \draw [purple] (1*\Deltah+\Deltah/2,-\height) to (0+1*\Deltah+\Deltah/2,\height);
+      \draw [black] (2*\Deltah+\Deltah/2,-\height) to (0+2*\Deltah+\Deltah/2,\height);
+      \draw [black] (3*\Deltah+\Deltah/2,-\height) to (0+3*\Deltah+\Deltah/2,\height);
+      \draw [black] (4*\Deltah+\Deltah/2,-\height) to (0+4*\Deltah+\Deltah/2,\height);
+      \draw [black] (5*\Deltah+\Deltah/2,-\height) to (0+5*\Deltah+\Deltah/2,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah,0) circle [radius=\radius];
+      \draw [green] (1*\Deltah,0) circle [radius=\radius];
+      \draw [black] (2*\Deltah,0) circle [radius=\radius];
+      % \draw [black] (3*\Deltah,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah,0) circle [radius=\radius];
+      \draw [black] (6*\Deltah,0) circle [radius=\radius];
+
+      \draw (0*\Deltah,0) node [black,below=\offSet] {$f_{1}$};
+      \draw (1*\Deltah,0) node [black,below=\offSet] {$f_{2}$};
+      \draw (5*\Deltah,0) node [black,below=\offSet] {$f_{sc-1}$};
+      \draw (6*\Deltah,0) node [black,below=\offSet] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for cell center / edge data}
+  \end{center}
+\end{figure}
+
+
+Let $i+1/2$ of the primary grid be $i$ of the dual grid (this can easily be seen by replacing $i$ with 1). Note the presence of the ghost cell (the laplacian should have zero values on ghost cells). 
+
+This means that if $\textcolor{green}{i=2}$ then $i-1=2-1=1$ refers to the first index of $\textcolor{purple}{\Delta h_{d,i-1}}$ which is $\Delta h_{d,1}$ (which is what we want). This verifies the index for the CC data case.
+
+\subsection{Cell Corner (N) data}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (4.5,0);
+      \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black] (5.5,0) to (10,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah+\Deltah/2,-\height) to (0+0*\Deltah+\Deltah/2,\height);
+      \draw [green] (1*\Deltah+\Deltah/2,-\height) to (0+1*\Deltah+\Deltah/2,\height);
+      \draw [black] (2*\Deltah+\Deltah/2,-\height) to (0+2*\Deltah+\Deltah/2,\height);
+      \draw [black] (3*\Deltah+\Deltah/2,-\height) to (0+3*\Deltah+\Deltah/2,\height);
+      \draw [black] (4*\Deltah+\Deltah/2,-\height) to (0+4*\Deltah+\Deltah/2,\height);
+      \draw [black] (5*\Deltah+\Deltah/2,-\height) to (0+5*\Deltah+\Deltah/2,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah,0) circle [radius=\radius];
+      \draw [purple] (1*\Deltah,0) circle [radius=\radius];
+      \draw [purple] (2*\Deltah,0) circle [radius=\radius];
+      % \draw [black] (3*\Deltah,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah,0) circle [radius=\radius];
+      \draw [black] (6*\Deltah,0) circle [radius=\radius];
+
+      \draw (0*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{1}$};
+      \draw (1*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{2}$};
+      \draw (4*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{sc-1}$};
+      \draw (5*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+Let $i+1/2$ of the primary grid be $i+1$ of the dual grid (this can easily be seen by replacing $i$ with 1). 
+
+This means that if $\textcolor{green}{i=2}$ then $i-1+1=2-1+1=2$ refers to the \textit{second} index of $\Delta h_{d,i-1+1}$ which is $\textcolor{purple}{\Delta h_{d,2}}$ (which, again is what we want). This verifies the index for the N data case.
+
+\section{General form without half indexes}
+Now, we are equipped to write a more general equation
+\begin{equation}
+\frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)
+ = \frac{\frac{u_{i+1}-u_{i}}{h_{p,i+1}-h_{p,i}} k_{d,i+gt} - \frac{u_{i}-u_{i-1}}{h_{p,i}-h_{p,i-1}} k_{d,i-1+gt}}{h_{d,i+gt} - h_{d,i-1+gt}}
+\end{equation}
+Where
+
+ \begin{equation}
+   gt = gridType = 
+  \begin{cases} 
+      0 & \text{if $u \in $ cell center} \\
+      1 & \text{if $u \in $ cell corner} \\
+   \end{cases}
+\end{equation} 
+
+Now we have successfully removed the half indexes, and this form is more easily programmable. Note that $k$ has also adopted the index convention. Furthermore note that, from the second equation, it is clear that (for uniform grids) $k_{d,i} = \frac{k_{p,i+1}+k_{p,i}}{2}$. Now we have
+
+\begin{equation}
+\frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)
+ = \frac{\frac{u_{i+1}-u_{i}}{\Delta h_{p,i}} k_{d,i+gt} - \frac{u_{i}-u_{i-1}}{\Delta h_{p,i-1}} k_{d,i-1+gt}}{\Delta h_{d,i-1+gt}}
+\end{equation}
+
+\begin{equation}
+ = \frac{u_{i+1}-u_{i}}{ \Delta h_{p,i} \Delta h_{d,i-1+gt}} k_{d,i+gt} - \frac{u_{i}-u_{i-1}}{ \Delta h_{p,i-1}\Delta h_{d,i-1+gt}} k_{d,i-1+gt}
+\end{equation}
+
+\begin{equation}
+\boxed{
+\frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)
+ = \left( \frac{k_{d,i-1+gt}}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} \right) u_{i - 1} - 
+   \left( \frac{k_{d,i-1+gt}}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} + \frac{k_{d,i+gt}}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i} + 
+   \left( \frac{k_{d,i+gt}}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i+1}
+ }
+\end{equation}
+
+In the case of uniform properties
+
+\begin{equation}
+\boxed{
+\frac{\partial}{\partial h} \left( \frac{\partial u}{\partial h} \right)
+ = \left( \frac{1}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} \right) u_{i - 1} - 
+   \left( \frac{1}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} + \frac{1}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i} + 
+   \left( \frac{1}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i+1}
+ }
+\end{equation}
+
+
+\section{Computing k}
+The coefficient must be linearly interpolated when $u \in N$, otherwise and ordinary average suffices. The formulation of $k_{d,i}$ may be determined from
+
+\begin{equation}
+  \frac{k_{p,i+1} - k_{p,i}}{h_{p,i+1} - h_{p,i}}
+   = 
+  \frac{k_{p,i+1/2} - k_{p,i}}{h_{p,i+1/2} - h_{p,i}}
+   = 
+  \frac{k_{d,i+gt} - k_{p,i}}{h_{d,i+gt} - h_{p,i}}
+\end{equation}
+Therefore we may compute $k_{p,i+1/2} = k_{d,i+gt}$ to be
+
+\begin{equation}
+  k_{p,i+1/2} = k_{d,i+gt} = k_{p,i} - \frac{h_{d,i+gt} - h_{p,i}}{\Delta h_{p,i}} (k_{p,i+1} - k_{p,i})
+\end{equation}
+
+Note that if $u \in N$, then we have $gt=1$ and $\Delta h_{p,i}= 2(h_{d,i+1} - h_{p,i})$ and so
+
+\begin{equation}
+  k_{p,i+1/2} = k_{d,i} = k_{p,i} + \frac{\Delta h_{p,i} / 2}{\Delta h_{p,i}} (k_{p,i+1} - k_{p,i}) = \frac{1}{2} (k_{p,i+1} + k_{p,i})
+\end{equation}
+
+Which verifies the case when the linearly interpolation becomes a simple average.
+
+
+\end{document}
+
+

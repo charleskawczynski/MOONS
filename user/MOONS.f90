@@ -9,7 +9,7 @@
        use griddata_mod
        use rundata_mod
        use myError_mod
-       use vectorOps_mod
+       use delOps_mod
        use scalarField_mod
        use vectorField_mod
 
@@ -61,6 +61,7 @@
 
          integer :: NmaxPPE    = 5 ! Number of PPE steps
          integer :: NmaxB      = 5 ! Number of Steps for Low Rem approx to solve B
+         integer :: NmaxCleanB = 5 ! Number of Steps to clean B
 
          ! *********************** LOCAL VARIABLES **********************
          type(griddata) :: gd
@@ -107,6 +108,14 @@
 
          case (300); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (301); Re = 2000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+
+         ! case (1001); Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 6.0d-6; dTime = 3.0d-4 ! Ha = 10
+         ! case (1001); Re = 100d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 5.0d-7; dTime = 4.0d-5 ! Ha = 100
+         case (1001); Re = 100d0;   Ha = 1000.0d0  ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 9.0d-7 ! Ha = 1000
+
+         case (1002); Re = 100d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (1003); Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
@@ -125,9 +134,9 @@
          case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
 
          case (105); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6000
-         case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
-         case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 60000 ! ds = 1.0d-7, NmaxB = 50
-         case (108); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000 ! ds = 1.0d-6, NmaxB = 50
+         case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000
+         case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 60000
+         case (108); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
 
@@ -136,13 +145,22 @@
          case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
 
          ! case (250); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10
-         case (250); NmaxPPE = 15; NmaxB = 5; NmaxMHD = 10**6
+         case (250); NmaxPPE = 15; NmaxB = 5; NmaxMHD = 10**7 ! Case B2
 
          case (300); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100000
          case (301); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100000
+
+         ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**5 ! A
+         ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! B
+         case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! C
+         case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 40000
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 100000
+
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
+
+         ! call getParams(benchmarkCase,Re,Ha,ds,dTime,NmaxB,NmaxPPE,NmaxB,NmaxMHD)
 
          write(*,*) 'MOONS output directory = ',dir
 
@@ -161,9 +179,22 @@
          call exportVersion(dir)
 
          ! **************************************************************
+         ! Initialize all grids
          call init(gd,grid_mom,grid_ind,Re,Ha)
+
+         ! Initialize Momentum grid/fields/parameters
+         call setDTime(mom,dTime)
+         call setRe(mom,Re)
+         call setNMaxPPE(mom,NmaxPPE)
          call init(mom,grid_mom,dir)
+
+         ! Initialize Induction grid/fields/parameters
+         call setDTime(ind,ds)
+         call setNmaxB(ind,NmaxB)
+         call setRem(ind,Rem)
+         call setNmaxCleanB(ind,NmaxCleanB)
          call init(ind,grid_ind,dir)
+
          ! call init(vecOps,gd)
 
          ! ****************** INITIALIZE RUNDATA ************************
@@ -186,20 +217,26 @@
          call computeDivergence(mom,mom%g)
          call computeDivergence(ind,ind%g)
 
-         ! call computeCurrent(jx,jy,jz,Bx,By,Bz,Bx0,By0,Bz0,mu,Re,Ha,gd)
-
-         if ((.not.(restartU.and.restartB)).and.(.not.quickStart)) then
+         if (exportGrids) then
+          call export(grid_ind,dir//'Bfield/','grid_ind')
+          call export(grid_mom,dir//'Ufield/','grid_mom')
+         endif
+         if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
            call exportRaw(ind,ind%g,dir)
+         endif
+         if (exportICs) then
            call export(mom,mom%g,dir)
            call export(ind,ind%g,dir)
          endif
+
+         ! call computeCurrent(jx,jy,jz,Bx,By,Bz,Bx0,By0,Bz0,mu,Re,Ha,gd)
+
          call checkGrid(gd)
 
          write(*,*) ''
          write(*,*) 'Press enter if these parameters are okay.'
          write(*,*) ''
-         if (checkICs) call myPause()
 
          ! ********************** PREP LOOP ******************************
          ! This is done in both MOONS and MHDSolver, need to fix this..

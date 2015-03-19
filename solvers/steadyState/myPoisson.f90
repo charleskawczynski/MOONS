@@ -1,15 +1,16 @@
       module myPoisson_mod
-      ! call myPoisson(u,f,u_bcs,gd,ss,displayTF) 
+      ! call myPoisson(method,u,f,u_bcs,g,ss,err,gridType,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
-      ! for a given f, boundary conditions for u (u_bcs), griddata (gd)
-      ! and solver settings (ss) using the uncommented method below.
+      ! for a given f, boundary conditions for u (u_bcs), grid (g)
+      ! and solver settings (ss) using the method defined by the first object.
       !
       ! Input:
+      !     method       = Method used to solve poisson equation (SOR,ADI,MG)
       !     u            = initial guess for u
       !     f            = RHS of above equation
       !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
-      !     gd           = contains grid information
+      !     g            = contains grid information
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
       ! 
@@ -40,7 +41,7 @@
       use mySOR_mod
       use myADI_mod
       use myMG_mod
-      
+
       implicit none
 
       private

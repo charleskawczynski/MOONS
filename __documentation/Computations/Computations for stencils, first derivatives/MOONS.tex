@@ -1,0 +1,122 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Stencils for first derivatives}
+This document uses results from the non-uniform grid stencil results.
+
+\subsection{Staggered}
+By staggered derivative, what is meant is
+
+if the field $f\in CC$ then $\frac{\partial f}{\partial h}\in N$.  
+
+Likewise
+
+if the field $f\in N$ then $\frac{\partial f}{\partial h}\in CC$.  
+
+Where $CC$ and $N$ mean cell center and cell corner data. To put in words, if data lives on the primary grid, then its derivative lives on the dual grid. That is what a staggered derivative means in MOONS.
+
+\begin{equation}
+	f_{p,i+1/2}' = \frac{f_{p,i+1}-f_{p,i}}{h_{p,i+1}-h_{p,i}} \qquad i=1,sf-1
+\end{equation}
+
+Where the subscript $p$ means primary grid, and $sf$ means the size of $f$. Note that the half index is used. To remove the half index, we may write this as
+
+\begin{equation}
+	f_{d,i+gt}' = \frac{f_{p,i+1}-f_{p,i}}{h_{p,i+1}-h_{p,i}} \qquad i=1,sf-1
+\end{equation}
+
+Where
+ \begin{equation}
+   gt = gridType = 
+  \begin{cases} 
+      0 & \text{if $f \in $ cell center} \\
+      1 & \text{if $f \in $ cell corner} \\
+   \end{cases}
+\end{equation}
+Note that the result, $f'$, lives on the dual grid (hence the subscript $d$). Also note that $f'$ is not defined for the ghost cell ($f_1'$). MOONS sets ghost cells to be zero when computing derivatives, the applyBCs module sets these cells to enforce BCs.
+
+
+\subsection{Collocated}
+For the collocated case (when both $f$ and $\frac{\partial f}{\partial h}$ live on the primary grid), MOONS uses the results from the non-uniform grid-stencils. 
+
+THESE FORMULAS NEED TO BE CHECKED FOR CC VS NODE DATA SINCE THERE EXISTS A GHOST CELL. THIS VERY WELL MAY CHANGE THE NECESSARY INDEX FOR CC VS N DATA. THIS SHOULD BE SIMPLE TO FIX, SIMPLY ADD A gt TO THE INDEXING FOR $\alpha_k$ and $\beta_j$.
+
+\subsubsection{Central differencing}
+
+Use the non-uniform grid stencil results with
+
+\begin{equation}
+	\alpha_k = -(x_{i} - x_{i-1}) = \Delta x_{i} \qquad k = -1
+\end{equation}
+\begin{equation}
+	\beta_j = (x_{i+1} - x_{i}) = \Delta x_{i+1} \qquad j = 1
+\end{equation}
+
+
+\subsubsection{Forward differencing (soon to be obsolete)}
+
+Use the non-uniform grid stencil results with
+
+\begin{equation}
+	\alpha_k = -(x_{i+1} - x_{i}) = \Delta x_{i+1} \qquad k = 1
+\end{equation}
+\begin{equation}
+	\beta_j = x_{i+2} - x_{i} = (x_{i+2} - x_{i+1}) + (x_{i+1} - x_{i}) = \Delta x_{i+1} + \Delta x_{i+2} \qquad j = 2
+\end{equation}
+
+\subsubsection{Backward differencing (soon to be obsolete)}
+
+Use the non-uniform grid stencil results with
+
+\begin{equation}
+	\alpha_k = -(x_{i} - x_{i-1}) = -\Delta x_{i} \qquad k = -1
+\end{equation}
+\begin{equation}
+	\beta_j = -(x_{i} - x_{i-2}) = -(\Delta x_{i} + \Delta x_{i-1}) \qquad j = -2
+\end{equation}
+
+\end{document}
+
+

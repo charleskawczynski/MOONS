@@ -16,16 +16,31 @@
        real(cp),parameter :: one = real(1.0,cp)
        real(cp),parameter :: two = real(2.0,cp)
        real(cp),parameter :: zero = real(0.0,cp)
-
-       public :: uniformGrid1,uniformGrid2
-       public :: robertsGrid1,robertsGrid2,robertsGrid3
-       public :: trim1,trimEnd,reverseIndex
        
+       ! Uniform grids
+       public :: linspace1,uniformGrid1
+
+       ! Stretched grids
+       public :: robertsGrid1,robertsGrid2,robertsGrid3
+       public :: robertsGridBL
+
+       ! Other tools
+       public :: reverseIndex,trim1,trimEnd
+
+       ! interface robertsGridBL;   module procedure robertsGridBL1D;  end interface
+       ! interface robertsGridBL;   module procedure robertsGridBL3D;  end interface
+
        contains
 
-       function uniformGrid1(hmin,hmax,N) result(hn)
+       ! ***************************************************************
+       ! ***************************************************************
+       ! *********************** UNIFORM GRIDS *************************
+       ! ***************************************************************
+       ! ***************************************************************
+
+       subroutine linspace1(hn,hmin,hmax,N)
          ! This routine returns a uniform grid from
-         ! hmin to hmax using N+1 points (N segments).
+         ! hmin to hmax using N+1 points.
          ! 
          ! NOTE: hmin and hmax are included in the result.
          ! 
@@ -34,36 +49,47 @@
          !      hmax     = maximum value
          !      N        = N segments of dh
          implicit none
-         real(cp),dimension(N+1) :: hn
+         real(cp),dimension(:),intent(inout) :: hn
          real(cp),intent(in) :: hmin,hmax
          integer,intent(in) :: N
          integer :: i
          real(cp) :: dh
          dh = (hmax - hmin)/real(N,cp)
          hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
-       end function
+       end subroutine
 
-       function uniformGrid2(hstart,dh,N,dir) result(hn)
+       subroutine uniformGrid1(hn,hstart,dh,dir)
          ! This routine returns a uniform grid beginning
-         ! from hstart with N number of uniform segments dh.
-         ! dir is the positive or negative direction.
+         ! from hstart with uniform step size dh.
+         ! The size of the segment depends on the size
+         ! of hn. dir is the positive or negative direction.
          ! 
          ! NOTE: hstart is included in the result.
          ! 
          ! INPUT:
          !      hstart   = start value
          !      dh       = step size
-         !      N        = number of segments
+         !      N        = N points in segment
          !      dir      = (1,-1)
          implicit none
-         real(cp),dimension(N+1) :: hn
+         real(cp),dimension(:),intent(inout) :: hn
          real(cp),intent(in) :: hstart,dh
-         integer,intent(in) :: N,dir
-         integer :: i
-         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,N)/)
-       end function
+         integer,intent(in) :: dir
+         integer :: s,i
+         s = size(hn)
+         ! Total coordinates (uniform)
+         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,s)/)
+       end subroutine
+
+       ! ***************************************************************
+       ! ***************************************************************
+       ! ********************* STRETCHED GRIDS *************************
+       ! ***************************************************************
+       ! ***************************************************************
 
        function robertsGrid1(hmin,hmax,N,beta) result(hn)
+         ! NOT YET TESTED
+         ! 
          ! This function returns the coordinates and differences of a Robert's 
          ! stretching function as described in section 5.6 (page 333) of 
          ! Computational Fluid Mechanics and Heat Transfer, 
@@ -109,11 +135,11 @@
          deallocate(hnbar)
        end function
 
-       function robertsGrid2(hmin,hmax,N,alpha,beta) result(hn)
+       subroutine robertsGrid2(hn,hmin,hmax,N,alpha,beta)
          ! This function returns the coordinates and differences of a Robert's 
          ! stretching function as described in section 5.6 (page 333) of 
          ! Computational Fluid Mechanics and Heat Transfer, 
-         ! 2nd edition, J. Tannehill et al. (Transormation 2)
+         ! 2nd edition, J. Tannehill et al.
          ! 
          ! INPUT:
          !      hmin     = minimum value
@@ -131,36 +157,44 @@
          !     |----------|-------|---|--|-|
          !     |------> y
          ! 
+         ! Note that this must be used in reverse for the lid driven
+         ! cavity geometry for the 'front' and 'back' walls.
+         ! 
          ! NOTE: I have abused notation a bit to provide consistent notation
          ! with the reference as well as generalize the returned grid
          ! so that it need not start at y=0.
          ! 
          implicit none
-         integer,intent(in) :: N
-         real(cp),dimension(N+1) :: hn
+         real(cp),dimension(:),intent(inout) :: hn
          real(cp),intent(in) :: hmin,hmax,alpha,beta
+         integer,intent(in) :: N
          real(cp),dimension(:),allocatable :: hnbar
+         integer :: s
          real(cp) :: dh ! Uniform dh
          integer :: i
-         real(cp) :: a,b,c,d,g ! alpha,beta,gamma
-         allocate(hnbar(N+1))
-         a = alpha; b = beta; c = real(1.0,cp); d = real(2.0,cp)
-         g = (b+c)/(b-c)
-         ! Where N is the number of cells
+         real(cp) :: a,b,g ! alpha,beta,gamma
+         s = size(hn)
+         allocate(hnbar(s))
+         a = alpha; b = beta
+         g = (b+one)/(b-one)
+         ! Where N is the number of cells in the wall
          dh = (hmax - hmin)/real(N,cp)
          ! Total coordinates (uniform)
          hnbar = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
          ! Push coordinates to zero, and normalize for stretching
          hnbar = (hnbar - hmin)/(hmax-hmin)
          ! Total coordinates (non-uniform Roberts stretching function)
-         hn = (/( ((b+d*a)*(g)**((hnbar(i)-a)/(c-a))-b+d*a)/((d*a+c)*(c+&
-         g**((hnbar(i)-a)/(c-a)))),i=1,N+1)/)
+         hn = (/( ((b+two*a)*(g)**((hnbar(i)-a)/(one-a))-&
+         b+two*a)/((two*a+one)*(one+&
+         g**((hnbar(i)-a)/(one-a)))),i=1,N+1)/)
          ! Return coordinates to original scale:
          hn = hmin + (hmax - hmin)*hn
          deallocate(hnbar)
-       end function
+       end subroutine
 
        function robertsGrid3(hmin,hmax,N,yc,tau) result(hn)
+         ! NOT YET TESTED
+         ! 
          ! This function returns the coordinates and differences of a Robert's 
          ! stretching function as described in section 5.6 (page 333) of 
          ! Computational Fluid Mechanics and Heat Transfer, 
@@ -214,7 +248,27 @@
          deallocate(hnbar)
        end function
 
-       function robertsGridBL(delta,h) result (beta)
+       subroutine robertsGridBL(beta,delta,hmin,hmax)
+         ! robertsGridBL returns the beta for a given boundary laryer
+         ! as described in section 5.6 (page 333) of 
+         ! Computational Fluid Mechanics and Heat Transfer, 
+         ! 2nd edition, J. Tannehill et al.
+         ! 
+         ! INPUT:
+         !      hmin     = wall boundary (minimum value)
+         !      hmax     = wall boundary (maximum value)
+         !      delta    = thickness of boundary layer
+         implicit none
+         real(cp),dimension(3),intent(in) :: hmin,hmax
+         real(cp),intent(in) :: delta
+         real(cp),dimension(3),intent(inout) :: beta
+         integer :: i
+         do i=1,3
+           beta(i) = (one - delta/(hmax(i)-hmin(i)))**(-one/two)
+         enddo
+       end subroutine
+
+       function robertsGridBL1D(delta,h) result (beta)
          ! robertsGridBL returns the beta for a given boundary laryer
          ! as described in section 5.6 (page 333) of 
          ! Computational Fluid Mechanics and Heat Transfer, 
@@ -227,18 +281,44 @@
          implicit none
          real(cp),intent(in) :: h,delta
          real(cp) :: beta
-         beta = (real(1.0,cp) - delta/h)**(-real(0.5,cp))
+         ! This if statement protects against the case when 
+         ! Ha = 1, which leads to beta = infinity. HIMAG
+         ! doesn't seem to protect against this.
+         if (delta.lt.h*real(0.99,cp)) then
+           beta = (real(1.0,cp) - delta/h)**(-real(0.5,cp))
+         else; beta = real(1000.0,cp)
+         endif
        end function
 
-       function robertsGridHa(Ha,h) result (beta)
-         ! INPUT:
-         !      h        = length of domain
-         !      Ha       = Hartmann number
+       function robertsGridBL3D(delta,h) result (beta)
          implicit none
-         real(cp),intent(in) :: h,Ha
-         real(cp) :: beta
-         beta = robertsGridBL(real(1.0,cp)/Ha,h)
+         real(cp),dimension(3),intent(in) :: h
+         real(cp),intent(in) :: delta
+         real(cp),dimension(3) :: beta
+         integer :: i
+         do i = 1,3
+            beta(i) = robertsGridBL1D(delta,h(i))
+         enddo
        end function
+
+       ! ***************************************************************
+       ! ***************************************************************
+       ! *********************** OTHER TOOLS ***************************
+       ! ***************************************************************
+       ! ***************************************************************
+
+       subroutine reverseIndex(h)
+         real(cp),dimension(:),intent(inout) :: h
+         real(cp),dimension(:),allocatable :: temp
+         integer :: i,s
+         s = size(h)
+         allocate(temp(s))
+         do i=1,s
+          temp(s-i+1) = h(i)
+         enddo
+         h = temp
+         deallocate(temp)
+       end subroutine
 
        function trim1(h_in,s) result(h_out)
          implicit none
@@ -256,14 +336,5 @@
          h_out = h_in(1:s-1)
        end function
 
-       function reverseIndex(h_in,s) result(h_out)
-         real(cp),dimension(s),intent(in) :: h_in
-         real(cp),dimension(s) :: temp,h_out
-         integer :: i,s
-         do i=1,s
-          temp(s-i+1) = h_in(i)
-         enddo
-         h_out = temp
-       end function
 
        end module
