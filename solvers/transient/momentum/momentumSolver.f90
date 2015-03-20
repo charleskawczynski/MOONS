@@ -315,7 +315,7 @@
          call add(mom%Ustar,mom%U)
          
          ! Pressure Correction -------------------------------------
-         if (mom%nstep.gt.1) then
+         if (mom%nstep.gt.0) then
            call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
            ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
