@@ -125,8 +125,8 @@
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000

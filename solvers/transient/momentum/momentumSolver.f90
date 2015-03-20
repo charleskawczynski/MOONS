@@ -285,12 +285,20 @@
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
 
+         write(*,*) 'maxval(advectX) = ',maxval(mom%TempVF%x)
+         write(*,*) 'maxval(advectY) = ',maxval(mom%TempVF%y)
+         write(*,*) 'maxval(advectZ) = ',maxval(mom%TempVF%z)
+
          ! Laplacian Terms -----------------------------------------
          ! call myFaceLap(mom%TempVF,U,g)
 
          call myFaceLap(mom%TempVF%x,mom%U%x,g,1)
          call myFaceLap(mom%TempVF%y,mom%U%y,g,2)
          call myFaceLap(mom%TempVF%z,mom%U%z,g,3)
+
+         write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
+         write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
+         write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
 
          ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
@@ -307,11 +315,12 @@
          call add(mom%Ustar,mom%U)
          
          ! Pressure Correction -------------------------------------
-         if (mom%nstep.gt.1) then
+         if (mom%nstep.gt.0) then
            call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
            ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
+           write(*,*) 'maxval(sourceP) = ',maxval(mom%Temp%phi)
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
@@ -319,8 +328,12 @@
            ! call setAlpha(mom%ADI_p,real(1.0,cp))
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
+           write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
 
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
+           write(*,*) 'maxval(grad(p)_x) = ',maxval(mom%TempVF%x)
+           write(*,*) 'maxval(grad(p)_y) = ',maxval(mom%TempVF%y)
+           write(*,*) 'maxval(grad(p)_z) = ',maxval(mom%TempVF%z)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
@@ -335,6 +348,7 @@
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
 
          mom%nstep = mom%nstep + 1
+         write(*,*) 'mom%nstep = ',mom%nstep
        end subroutine
 
        subroutine semi_implicit_ADI(mom,g,ss_MHD)
