@@ -320,6 +320,7 @@
            ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
+           write(*,*) 'maxval(sourceP) = ',maxval(mom%Temp%phi)
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
@@ -328,7 +329,12 @@
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
 
+           write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
+
+         write(*,*) 'maxval(grad(p)_x) = ',maxval(mom%TempVF%x)
+         write(*,*) 'maxval(grad(p)_y) = ',maxval(mom%TempVF%y)
+         write(*,*) 'maxval(grad(p)_z) = ',maxval(mom%TempVF%z)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
@@ -341,6 +347,10 @@
          call applyAllBCs(mom%u_bcs,mom%U%x,g)
          call applyAllBCs(mom%v_bcs,mom%U%y,g)
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
+
+         write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
+         write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
+         write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
 
          mom%nstep = mom%nstep + 1
          write(*,*) 'nstep = ',mom%nstep
