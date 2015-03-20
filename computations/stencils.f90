@@ -69,6 +69,8 @@
       end function
 
       function collocatedDfDh(f,dhp,s) result(dfdh)
+        ! THIS NEEDS TO BE CHECKED SINCE GHOST CELLS EXIST
+        ! MAYBE gt IS NECESSARY HERE
         implicit none
         real(cp),dimension(s) :: dfdh
         real(cp),intent(in),dimension(:) :: f

@@ -79,12 +79,12 @@
        ! ---------------------- VALIDATION CASES ---------------------
 
        ! benchmarkCase = 100
-       integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
+       ! integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 101
        ! integer,dimension(3),parameter :: Ni = 64, Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 103
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104

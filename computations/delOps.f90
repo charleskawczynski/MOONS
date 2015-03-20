@@ -196,29 +196,59 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine myFaceDiv(divF,u,v,w,gd) ! Finished
+       subroutine myFaceDiv(divF,u,v,w,g) ! Finished
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: divF
          real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          type(del) :: d
-         call d%assign(divF,u,gd,1,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(divF,v,gd,1,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(divF,w,gd,1,3,1) ! Padding avoids calcs on fictive cells
+         integer,dimension(3) :: s
+
+         call d%assign(divF,u,g,1,1,1) ! Padding avoids calcs on fictive cells
+            call d%add(divF,v,g,1,2,1) ! Padding avoids calcs on fictive cells
+            call d%add(divF,w,g,1,3,1) ! Padding avoids calcs on fictive cells
+         s = shape(divF)
+         divF(1,:,:) = real(0.0,cp); divF(s(1),:,:) = real(0.0,cp)
+         divF(:,1,:) = real(0.0,cp); divF(:,s(2),:) = real(0.0,cp)
+         divF(:,:,1) = real(0.0,cp); divF(:,:,s(3)) = real(0.0,cp)
        end subroutine
 
-       subroutine myFaceLap(lapF,f,gd) ! Finished
+       subroutine myFaceLap(lapF,f,g) ! Finished
          ! Consider migrating to momentum solver
          ! try to zero boundaries instead of the whole 3D volume
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: lapF
          real(cp),dimension(:,:,:),intent(in) :: f
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          type(del) :: d
+         integer,dimension(3) :: s,sdf
          ! Padding is necessary here!!!
-         call d%assign(lapF,f,gd,2,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapF,f,gd,2,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapF,f,gd,2,3,1) ! Padding avoids calcs on fictive cells
+         call d%assign(lapF,f,g,2,1,1) ! Padding avoids calcs on fictive cells
+            call d%add(lapF,f,g,2,2,1) ! Padding avoids calcs on fictive cells
+            call d%add(lapF,f,g,2,3,1) ! Padding avoids calcs on fictive cells
+         s = shape(f); sdf = shape(lapF)
+
+         ! Remove the source term on the boundaries:
+         ! This seems to be necessary to enforce div(U) = 0
+         ! This term acts as a source in Poisson's equation to
+         ! solve for pressure. When the wall-normal boundary values
+         ! are non-zero, the velocity does not satisfy div(u) = 0
+         ! after the pressure correction.
+         ! 
+         ! Using this seems to produce the same result that 
+         ! MOONS was producing earlier. This has not been tested for
+         ! Neumann BCs yet.
+         ! 
+         ! Note that the non-linear term is zero on the boundary since the
+         ! derivative of a velocity in any tangential direction will always
+         ! be zero within machine accuracy (for dirichlet conditions).
+         if (s(1).eq.g%c(1)%sn) then
+           lapF(2,:,:) = real(0.0,cp); lapF(sdf(1)-1,:,:) = real(0.0,cp)
+         elseif (s(2).eq.g%c(2)%sn) then
+           lapF(:,2,:) = real(0.0,cp); lapF(:,sdf(2)-1,:) = real(0.0,cp)
+         elseif (s(3).eq.g%c(3)%sn) then
+           lapF(:,:,2) = real(0.0,cp); lapF(:,:,sdf(3)-1) = real(0.0,cp)
+         endif
        end subroutine
 
        subroutine myFaceAdvect(psi,u,v,w,phi,gd,dir) ! Finished

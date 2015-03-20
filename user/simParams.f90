@@ -47,7 +47,7 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
+       logical :: solveInduction = .true.
        logical :: restartB = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
@@ -75,7 +75,7 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .false.
+       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -93,7 +93,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 100
+       integer,parameter :: benchmarkCase = 102
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

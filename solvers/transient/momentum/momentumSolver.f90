@@ -281,9 +281,9 @@
            call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
          end select
 
-         write(*,*) 'maxval(advectX) = ',maxval(mom%TempVF%x)
-         write(*,*) 'maxval(advectY) = ',maxval(mom%TempVF%y)
-         write(*,*) 'maxval(advectZ) = ',maxval(mom%TempVF%z)
+         ! write(*,*) 'maxval(advectX) = ',maxval(mom%TempVF%x)
+         ! write(*,*) 'maxval(advectY) = ',maxval(mom%TempVF%y)
+         ! write(*,*) 'maxval(advectZ) = ',maxval(mom%TempVF%z)
 
          ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
@@ -296,9 +296,9 @@
          call myFaceLap(mom%TempVF%y,mom%U%y,g)
          call myFaceLap(mom%TempVF%z,mom%U%z,g)
 
-         write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
-         write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
-         write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
+         ! write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
+         ! write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
+         ! write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
 
          ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
@@ -320,7 +320,7 @@
            ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
-           write(*,*) 'maxval(sourceP) = ',maxval(mom%Temp%phi)
+           ! write(*,*) 'maxval(sourceP) = ',maxval(mom%Temp%phi)
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
@@ -329,12 +329,12 @@
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
 
-           write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
+           ! write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
 
-         write(*,*) 'maxval(grad(p)_x) = ',maxval(mom%TempVF%x)
-         write(*,*) 'maxval(grad(p)_y) = ',maxval(mom%TempVF%y)
-         write(*,*) 'maxval(grad(p)_z) = ',maxval(mom%TempVF%z)
+         ! write(*,*) 'maxval(grad(p)_x) = ',maxval(mom%TempVF%x)
+         ! write(*,*) 'maxval(grad(p)_y) = ',maxval(mom%TempVF%y)
+         ! write(*,*) 'maxval(grad(p)_z) = ',maxval(mom%TempVF%z)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
@@ -348,12 +348,12 @@
          call applyAllBCs(mom%v_bcs,mom%U%y,g)
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
 
-         write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
-         write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
-         write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
+         ! write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
+         ! write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
+         ! write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
 
          mom%nstep = mom%nstep + 1
-         write(*,*) 'nstep = ',mom%nstep
+         ! write(*,*) 'nstep = ',mom%nstep
        end subroutine
 
        subroutine semi_implicit_ADI(mom,g,ss_MHD)
@@ -537,17 +537,6 @@
          call myFace2CellCenter(tempccz,mom%U%z,g,3)
          call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,tempccy,tempccz,dir//'Ufield/','uci','vci','wci')
          deallocate(tempccx,tempccy,tempccz)
-
-         allocate(tempccx(Nx,Ny,Nz))
-         call d%assign(tempccx,mom%U%x,g,1,1,1) ! Padding avoids calcs on fictive cells
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,dir//'Ufield/','dudx')
-
-         call d%assign(tempccx,mom%U%y,g,1,2,1) ! Padding avoids calcs on fictive cells
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,dir//'Ufield/','dvdy')
-
-         call d%assign(tempccx,mom%U%z,g,1,3,1) ! Padding avoids calcs on fictive cells
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,dir//'Ufield/','dwdz')
-         deallocate(tempccx)
 
        end subroutine
 
