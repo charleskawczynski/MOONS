@@ -26,6 +26,7 @@
 
        ! Other tools
        public :: reverseIndex,trim1,trimEnd
+       public :: defineGhostPoints
 
        ! interface robertsGridBL;   module procedure robertsGridBL1D;  end interface
        ! interface robertsGridBL;   module procedure robertsGridBL3D;  end interface
@@ -318,6 +319,15 @@
          enddo
          h = temp
          deallocate(temp)
+       end subroutine
+
+       subroutine defineGhostPoints(h)
+        implicit none
+         real(cp),dimension(:),intent(inout) :: h
+         integer :: s
+         s = size(h)
+         h(1) = h(2) - (h(3) - h(2))
+         h(s) = h(s-1) + (h(s-1) - h(s-2))
        end subroutine
 
        function trim1(h_in,s) result(h_out)

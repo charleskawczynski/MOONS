@@ -85,6 +85,8 @@
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
          case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
          ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
          case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
          case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
@@ -125,8 +127,8 @@
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
@@ -186,14 +188,26 @@
          call setDTime(mom,dTime)
          call setRe(mom,Re)
          call setNMaxPPE(mom,NmaxPPE)
+         if (exportGrids) then
+          call export(grid_mom,dir//'Ufield/','grid_mom')
+         endif
          call init(mom,grid_mom,dir)
+         if (exportRawICs) then
+           call exportRaw(mom,mom%g,dir)
+         endif
 
          ! Initialize Induction grid/fields/parameters
          call setDTime(ind,ds)
          call setNmaxB(ind,NmaxB)
          call setRem(ind,Rem)
          call setNmaxCleanB(ind,NmaxCleanB)
+         if (exportGrids) then
+          call export(grid_ind,dir//'Bfield/','grid_ind')
+         endif
          call init(ind,grid_ind,dir)
+         if (exportRawICs) then
+           call exportRaw(ind,ind%g,dir)
+         endif
 
          ! call init(vecOps,gd)
 
@@ -217,10 +231,6 @@
          call computeDivergence(mom,mom%g)
          call computeDivergence(ind,ind%g)
 
-         if (exportGrids) then
-          call export(grid_ind,dir//'Bfield/','grid_ind')
-          call export(grid_mom,dir//'Ufield/','grid_mom')
-         endif
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
            call exportRaw(ind,ind%g,dir)

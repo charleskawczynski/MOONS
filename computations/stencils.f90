@@ -10,8 +10,8 @@
         !     hp           = h of primary  grid data
         !     hd           = h of dual     grid data
         !     s            = size(f)
-        !     gt           = 0 :  f {CC}
-        !                    1 :  f {N}
+        !     gt           = 1 :  f {CC}
+        !                    0 :  f {N}
         ! 
         ! INDEXING: The index range of the incoming scalar field is assumed to begin at one.
         !
@@ -52,12 +52,12 @@
         ! grid. The result lives on the dual grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}
-        !      1 :  f {N}  , dfdh {CC}
+        ! gt = 1 :  f {CC} , dfdh {N}   ,  NOTE: dfdh = d/dh (f) {interior}
+        !      0 :  f {N}  , dfdh {CC}  ,  NOTE: dfdh = d/dh (f) {everywhere}
         ! 
         ! NOTE:
-        !  f {CC} , dfdh {N}     dfdh = d/dh (f) {everywhere}
-        !  f {N}  , dfdh {CC}    dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
+        !  f {CC} , dfdh {N}     
+        !  f {N}  , dfdh {CC}   
         ! 
         implicit none
         real(cp),dimension(:),intent(in) :: f,dhp
@@ -84,18 +84,19 @@
                     f(i+k)*beta/alpha + &
                     f(i+j)*(-alpha/beta))/(beta-alpha)
         enddo
-        ! Forward difference
-        i = 1; k = 1; j = 2
-        alpha = dhp(1); beta = dhp(1) + dhp(2)
-        dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
-                  f(i+k)*beta/alpha + &
-                  f(i+j)*(-alpha/beta))/(beta-alpha)
-        ! Backward difference
-        i = s; k = -1; j = -2
-        alpha = -dhp(s-1); beta = -(dhp(s-1) + dhp(s-2))
-        dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
-                  f(i+k)*beta/alpha + &
-                  f(i+j)*(-alpha/beta))/(beta-alpha)
+        dfdh(1) = real(0.0,cp); dfdh(s) = real(0.0,cp)
+        ! ! Forward difference
+        ! i = 1; k = 1; j = 2
+        ! alpha = dhp(1); beta = dhp(1) + dhp(2)
+        ! dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+        !           f(i+k)*beta/alpha + &
+        !           f(i+j)*(-alpha/beta))/(beta-alpha)
+        ! ! Backward difference
+        ! i = s; k = -1; j = -2
+        ! alpha = -dhp(s-1); beta = -(dhp(s-1) + dhp(s-2))
+        ! dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+        !           f(i+k)*beta/alpha + &
+        !           f(i+j)*(-alpha/beta))/(beta-alpha)
       end function
 
       function collocatedD2fDh2(f,dhp,dhd,s,gt) result(dfdh)
@@ -103,8 +104,8 @@
         ! grid. The result lives on the primary grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      1 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
+        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
         ! 
         ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
         ! 
@@ -125,8 +126,8 @@
         ! grid. The result lives on the primary grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      1 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
+        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
         ! 
         ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
         ! 
@@ -155,8 +156,8 @@
         ! grid. The result lives on the primary grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
         ! 
-        ! gt = 0 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      1 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
+        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
         ! 
         ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
         ! 

@@ -61,51 +61,51 @@
 
       contains
 
-      subroutine diff(dfdh,f,dh1,dh2,n,diffType,s,genType)
+      subroutine diff(dfdh,f,dhc,dhn,n,diffType,s,genType)
         implicit none
         real(cp),dimension(:),intent(in) :: f
-        real(cp),dimension(:),intent(in) :: dh1,dh2
+        real(cp),dimension(:),intent(in) :: dhc,dhn
         integer,intent(in) :: n,diffType,s,genType
         real(cp),dimension(:),intent(inout) :: dfdh
 
         select case(genType)
         case (1) ! Assign
         select case (diffType)
-        case (1); call collocatedAssign(dfdh,f,dh1,dh2,n,s,0)    ! Collocated CellCenter derivative
-        case (2); call collocatedAssign(dfdh,f,dh2,dh1,n,s,1)    ! Collocated Node derivative
-        case (3); call staggeredAssign(dfdh,f,dh1,s,0)           ! Cell centered staggered derivative
-        case (4); call staggeredAssign(dfdh,f,dh2,s,1)           ! Node centered staggered derivative
+        case (1); call collocatedAssign(dfdh,f,dhc,dhn,n,s,1)    ! Collocated CellCenter derivative
+        case (2); call collocatedAssign(dfdh,f,dhn,dhc,n,s,0)    ! Collocated Node derivative
+        case (3); call staggeredAssign(dfdh,f,dhc,s,1)           ! Staggered derivative (CC->N)
+        case (4); call staggeredAssign(dfdh,f,dhn,s,0)           ! Staggered derivative (N->CC)
         end select
         case (2) ! add
         select case (diffType)
-        case (1); call collocatedAdd(dfdh,f,dh1,dh2,n,s,0)       ! Collocated CellCenter derivative
-        case (2); call collocatedAdd(dfdh,f,dh2,dh1,n,s,1)       ! Collocated Node derivative
-        case (3); call staggeredAdd(dfdh,f,dh1,s,0)              ! Cell centered staggered derivative
-        case (4); call staggeredAdd(dfdh,f,dh2,s,1)              ! Node centered staggered derivative
+        case (1); call collocatedAdd(dfdh,f,dhc,dhn,n,s,1)       ! Collocated CellCenter derivative
+        case (2); call collocatedAdd(dfdh,f,dhn,dhc,n,s,0)       ! Collocated Node derivative
+        case (3); call staggeredAdd(dfdh,f,dhc,s,1)              ! Staggered derivative (CC->N)
+        case (4); call staggeredAdd(dfdh,f,dhn,s,0)              ! Staggered derivative (N->CC)
         end select
         case (3) ! subtract
         select case (diffType)
-        case (1); call collocatedSubtract(dfdh,f,dh1,dh2,n,s,0)  ! Collocated CellCenter derivative
-        case (2); call collocatedSubtract(dfdh,f,dh2,dh1,n,s,1)  ! Collocated Node derivative
-        case (3); call staggeredSubtract(dfdh,f,dh1,s,0)         ! Cell centered staggered derivative
-        case (4); call staggeredSubtract(dfdh,f,dh2,s,1)         ! Node centered staggered derivative
+        case (1); call collocatedSubtract(dfdh,f,dhc,dhn,n,s,1)  ! Collocated CellCenter derivative
+        case (2); call collocatedSubtract(dfdh,f,dhn,dhc,n,s,0)  ! Collocated Node derivative
+        case (3); call staggeredSubtract(dfdh,f,dhc,s,1)         ! Staggered derivative (CC->N)
+        case (4); call staggeredSubtract(dfdh,f,dhn,s,0)         ! Staggered derivative (N->CC)
         end select
         case (4) ! multiply
         select case (diffType)
-        case (1); call collocatedMultiply(dfdh,f,dh1,dh2,n,s,0)  ! Collocated CellCenter derivative
-        case (2); call collocatedMultiply(dfdh,f,dh2,dh1,n,s,1)  ! Collocated Node derivative
-        case (3); call staggeredMultiply(dfdh,f,dh1,s,0)         ! Cell centered staggered derivative
-        case (4); call staggeredMultiply(dfdh,f,dh2,s,1)         ! Node centered staggered derivative
+        case (1); call collocatedMultiply(dfdh,f,dhc,dhn,n,s,1)  ! Collocated CellCenter derivative
+        case (2); call collocatedMultiply(dfdh,f,dhn,dhc,n,s,0)  ! Collocated Node derivative
+        case (3); call staggeredMultiply(dfdh,f,dhc,s,1)         ! Staggered derivative (CC->N)
+        case (4); call staggeredMultiply(dfdh,f,dhn,s,0)         ! Staggered derivative (N->CC)
         end select
         case (5) ! divide
         select case (diffType)
-        case (1); call collocatedDivide(dfdh,f,dh1,dh2,n,s,0)    ! Collocated CellCenter derivative
-        case (2); call collocatedDivide(dfdh,f,dh2,dh1,n,s,1)    ! Collocated Node derivative
-        case (3); call staggeredDivide(dfdh,f,dh1,s,0)           ! Cell centered staggered derivative
-        case (4); call staggeredDivide(dfdh,f,dh2,s,1)           ! Node centered staggered derivative
+        case (1); call collocatedDivide(dfdh,f,dhc,dhn,n,s,1)    ! Collocated CellCenter derivative
+        case (2); call collocatedDivide(dfdh,f,dhn,dhc,n,s,0)    ! Collocated Node derivative
+        case (3); call staggeredDivide(dfdh,f,dhc,s,1)           ! Staggered derivative (CC->N)
+        case (4); call staggeredDivide(dfdh,f,dhn,s,0)           ! Staggered derivative (N->CC)
         end select
         case default
-          stop 'Error: genType must = 1,2,3,4 in diff.'
+          stop 'Error: genType must = 1,2,3,4 in diff in del.f90'
         end select
       end subroutine
 
@@ -237,7 +237,7 @@
           enddo; enddo
           !$OMP END PARALLEL DO
         case default
-        stop 'Error: dir must = 1,2,3 in delGen.'
+        stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
         end select
       end subroutine
 
@@ -298,12 +298,12 @@
           diffType = 1 ! Collocated derivative (CC)
         elseif ((sf(dir).eq.sdfdh(dir)).and.(sf(dir).eq.sn)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif ((sf(dir).eq.(sdfdh(dir)+1))) then
-          diffType = 3 ! Staggered derivative (CC->N)
         elseif ((sf(dir).eq.(sdfdh(dir)-1))) then
+          diffType = 3 ! Staggered derivative (CC->N)
+        elseif ((sf(dir).eq.(sdfdh(dir)+1))) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
-          stop 'Error: diffType undetermined.'
+          stop 'Error: diffType undetermined in del.f90.'
         endif
       end function
 
@@ -323,12 +323,12 @@
         case (3); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 5 in del'
                   if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 6 in del'
         case default
-        stop 'Error: dir must = 1,2,3'
+        stop 'Error: dir must = 1,2,3 in del.f90'
         end select
         if (s1(dir).eq.s2(dir)) then         ! Ok (collocated)
         elseif (s1(dir).eq.(s2(dir)+1)) then ! Ok (N and CC)
         elseif ((s1(dir)+1).eq.s2(dir)) then ! Ok (CC and N)
-        else; stop 'Error: shape mismatch 7 in del'
+        else; stop 'Error: shape mismatch 7 in del.f90'
         endif
       end subroutine
 #endif

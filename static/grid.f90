@@ -15,7 +15,7 @@
 
        private
 
-       logical,parameter :: exportLight = .false. ! (T/F) => (cannot/can visualize)
+       logical,parameter :: exportLight = .true. ! (T/F) => (cannot/can visualize)
 
        public :: grid
        public :: init,delete
@@ -139,6 +139,7 @@
          if (exportLight) then
            newU = newAndOpen(dir,'gridXYZ_'//name)
            call addToFile(g,newU); close(newU)
+           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
          else
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
            ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,real(1.0,cp),dir,name//'_c')

@@ -164,6 +164,7 @@
          call myCellCenter2Edge(ind%sigmaInv_edge%y,ind%sigma%phi,g,2)
          call myCellCenter2Edge(ind%sigmaInv_edge%z,ind%sigma%phi,g,3)
          call initSigmaMu(ind%sigma%phi,ind%mu%phi,g)
+
          write(*,*) '     Materials initialized'
 
          call init(ind%probe_B,dir//'Bfield/','transient_Bx',&
@@ -832,7 +833,7 @@
          call myCollocatedCross(ind%tempVF%x,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,ind%Bstar%x,ind%Bstar%y,ind%Bstar%z,dir)
          call myCellCenter2Face(ind%F%x,ind%tempVF%x,g_ind,dir)
          jcrossB%x = zero ! expensive!
-         jcrossB%x(2:Nx-1,2:Ny-1,2:Nz-1) = &
+         jcrossB%x(3:Nx-2,2:Ny-1,2:Nz-1) = &
          ind%F%x( Nin1(1)+1: Nin2(1)-1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
          jcrossB%x = jcrossB%x*((Ha**two)/Re)
 
@@ -841,7 +842,7 @@
          call myCollocatedCross(ind%tempVF%y,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,ind%Bstar%x,ind%Bstar%y,ind%Bstar%z,dir)
          call myCellCenter2Face(ind%F%y,ind%tempVF%y,g_ind,dir)
          jcrossB%y = zero ! expensive!
-         jcrossB%y(2:Nx-1,2:Ny-1,2:Nz-1) = &
+         jcrossB%y(2:Nx-1,3:Ny-2,2:Nz-1) = &
          ind%F%y(Nice1(1):Nice2(1), Nin1(2)+1: Nin2(2)-1,Nice1(3):Nice2(3))
          jcrossB%y = jcrossB%y*((Ha**two)/Re)
 
@@ -850,7 +851,7 @@
          call myCollocatedCross(ind%tempVF%z,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,ind%Bstar%x,ind%Bstar%y,ind%Bstar%z,dir)
          call myCellCenter2Face(ind%F%z,ind%tempVF%z,g_ind,dir)
          jcrossB%z = zero ! expensive!
-         jcrossB%z(2:Nx-1,2:Ny-1,2:Nz-1) = &
+         jcrossB%z(2:Nx-1,2:Ny-1,3:Nz-2) = &
          ind%F%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)+1: Nin2(3)-1)
          jcrossB%z = jcrossB%z*((Ha**two)/Re)
        end subroutine

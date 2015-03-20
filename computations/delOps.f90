@@ -207,14 +207,13 @@
             call d%add(divF,w,gd,1,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine myFaceLap(lapF,f,gd,dir) ! Finished
+       subroutine myFaceLap(lapF,f,gd) ! Finished
          ! Consider migrating to momentum solver
          ! try to zero boundaries instead of the whole 3D volume
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: lapF
          real(cp),dimension(:,:,:),intent(in) :: f
          type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
          type(del) :: d
          ! Padding is necessary here!!!
          call d%assign(lapF,f,gd,2,1,1) ! Padding avoids calcs on fictive cells
@@ -306,7 +305,7 @@
          real(cp),dimension(:,:,:),intent(in) :: u,v,w,ui
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
-         real(cp),dimension(:,:,:),allocatable :: tempCC,tempAveCC
+         real(cp),dimension(:,:,:),allocatable :: tempAveCC
          real(cp),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
          integer,dimension(3) :: s
          integer :: x,y,z,orthDir
@@ -321,8 +320,7 @@
            write(*,*) 'Error: faceDir must =1,2,3 in myFaceAdvectDonor.'; stop
          end select
 
-         allocate(tempCC(   s(1)+x,s(2)+y,s(3)+z))
-         allocate(tempAveCC(s(1)+x,s(2)+y,s(3)+z))
+         allocate(tempAveCC(s(1)-x,s(2)-y,s(3)-z))
 
          psi = real(0.0,cp)
          ! -------------------------- d/dx (u u_i) --------------------------
@@ -331,8 +329,8 @@
            tempAveCC = tempAveCC*tempAveCC
            call d%add(psi,tempAveCC,gd,1,1,1)
          else
-           allocate(tempAveE1(s(1)-1,s(2),s(3)))
-           allocate(tempAveE2(s(1)-1,s(2),s(3)))
+           allocate(tempAveE1(s(1)+1,s(2),s(3)))
+           allocate(tempAveE2(s(1)+1,s(2),s(3)))
 
            orthDir = orthogonalDirection(faceDir,1)
            call myFace2Edge(tempAveE1,u,gd,1,orthDir)
@@ -349,8 +347,8 @@
            tempAveCC = tempAveCC*tempAveCC
            call d%add(psi,tempAveCC,gd,1,2,1)
          else
-           allocate(tempAveE1(s(1),s(2)-1,s(3)))
-           allocate(tempAveE2(s(1),s(2)-1,s(3)))
+           allocate(tempAveE1(s(1),s(2)+1,s(3)))
+           allocate(tempAveE2(s(1),s(2)+1,s(3)))
            orthDir = orthogonalDirection(faceDir,2)
            call myFace2Edge(tempAveE1,v,gd,2,orthDir)
            call myFace2Edge(tempAveE2,ui,gd,faceDir,orthDir)
@@ -366,8 +364,8 @@
            tempAveCC = tempAveCC*tempAveCC
            call d%add(psi,tempAveCC,gd,1,3,1)
          else
-           allocate(tempAveE1(s(1),s(2),s(3)-1))
-           allocate(tempAveE2(s(1),s(2),s(3)-1))
+           allocate(tempAveE1(s(1),s(2),s(3)+1))
+           allocate(tempAveE2(s(1),s(2),s(3)+1))
 
            orthDir = orthogonalDirection(faceDir,3)
            call myFace2Edge(tempAveE1,w,gd,3,orthDir)
@@ -378,7 +376,7 @@
            deallocate(tempAveE1,tempAveE2)
          endif
 
-         deallocate(tempAveCC,tempCC)
+         deallocate(tempAveCC)
        end subroutine
 
        subroutine myFaceAdvectHybrid(psi,u,v,w,ui,gd,faceDir) ! Finished, maybe improvements
@@ -399,7 +397,7 @@
          real(cp),dimension(:,:,:),intent(in) :: u,v,w,ui
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
-         real(cp),dimension(:,:,:),allocatable :: tempCC,tempAveCC
+         real(cp),dimension(:,:,:),allocatable :: tempAveCC
          real(cp),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
          integer,dimension(3) :: s
          integer :: x,y,z,orthDir
@@ -414,7 +412,7 @@
            write(*,*) 'Error: faceDir must = 1,2,3 in myFaceAdvectHybrid.'; stop
          end select
 
-         allocate(tempAveCC(s(1)+x,s(2)+y,s(3)+z))
+         allocate(tempAveCC(s(1)-x,s(2)-y,s(3)-z))
 
          psi = real(0.0,cp)
          ! -------------------------- d/dx (u u_i) --------------------------
@@ -423,8 +421,8 @@
            tempAveCC = tempAveCC*tempAveCC
            call d%add(psi,tempAveCC,gd,1,1,1)
          else
-           allocate(tempAveE1(s(1)-1,s(2),s(3)))
-           allocate(tempAveE2(s(1)-1,s(2),s(3)))
+           allocate(tempAveE1(s(1)+1,s(2),s(3)))
+           allocate(tempAveE2(s(1)+1,s(2),s(3)))
 
            orthDir = orthogonalDirection(faceDir,1)
            call myFace2Edge(tempAveE1,u,gd,1,orthDir)
@@ -441,8 +439,8 @@
            tempAveCC = tempAveCC*tempAveCC
            call d%add(psi,tempAveCC,gd,1,2,1)
          else
-           allocate(tempAveE1(s(1),s(2)-1,s(3)))
-           allocate(tempAveE2(s(1),s(2)-1,s(3)))
+           allocate(tempAveE1(s(1),s(2)+1,s(3)))
+           allocate(tempAveE2(s(1),s(2)+1,s(3)))
            orthDir = orthogonalDirection(faceDir,2)
            call myFace2Edge(tempAveE1,v,gd,2,orthDir)
            call myFace2Edge(tempAveE2,ui,gd,faceDir,orthDir)
@@ -458,8 +456,8 @@
            tempAveCC = tempAveCC*tempAveCC
            call d%add(psi,tempAveCC,gd,1,3,1)
          else
-           allocate(tempAveE1(s(1),s(2),s(3)-1))
-           allocate(tempAveE2(s(1),s(2),s(3)-1))
+           allocate(tempAveE1(s(1),s(2),s(3)+1))
+           allocate(tempAveE2(s(1),s(2),s(3)+1))
 
            orthDir = orthogonalDirection(faceDir,3)
            call myFace2Edge(tempAveE1,w,gd,3,orthDir)
@@ -554,8 +552,8 @@
            write(*,*) 'Error: dir must = 1,2,3 in myCCVaryDel.'; stop
          end select
 
-         allocate(temp1(s(1)-x,s(2)-y,s(3)-z))
-         allocate(temp2(s(1)-x,s(2)-y,s(3)-z))
+         allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
+         allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
          call d%assign(temp1,f,gd,1,dir,0)
          call myCellCenter2Face(temp2,k,gd,dir)
          temp1 = temp1*temp2
@@ -624,24 +622,24 @@
          s = shape(u)
          select case (dir)
          case (1)
-           allocate(tempfy(s(1),s(2)-1,s(3)))
-           allocate(tempfz(s(1),s(2),s(3)-1))
+           allocate(tempfy(s(1),s(2)+1,s(3)))
+           allocate(tempfz(s(1),s(2),s(3)+1))
            call myCellCenter2Face(tempfz,w,gd,3)
            call myCellCenter2Face(tempfy,v,gd,2)
            call d%assign(curl,tempfz,gd,1,2,0) ! dw/dy
            call d%subtract(curl,tempfy,gd,1,3,0) ! dv/dz
            deallocate(tempfy,tempfz)
          case (2)
-           allocate(tempfx(s(1)-1,s(2),s(3)))
-           allocate(tempfz(s(1),s(2),s(3)-1))
+           allocate(tempfx(s(1)+1,s(2),s(3)))
+           allocate(tempfz(s(1),s(2),s(3)+1))
            call myCellCenter2Face(tempfz,w,gd,3)
            call myCellCenter2Face(tempfx,u,gd,1)
            call d%assign(curl,tempfx,gd,1,3,0) ! du/dz
            call d%subtract(curl,tempfz,gd,1,1,0) ! dw/dx
            deallocate(tempfx,tempfz)
          case (3)
-           allocate(tempfx(s(1)-1,s(2),s(3)))
-           allocate(tempfy(s(1),s(2)-1,s(3)))
+           allocate(tempfx(s(1)+1,s(2),s(3)))
+           allocate(tempfy(s(1),s(2)+1,s(3)))
            call myCellCenter2Face(tempfy,v,gd,2)
            call myCellCenter2Face(tempfx,u,gd,1)
            call d%assign(curl,tempfy,gd,1,1,0) ! dv/dx
@@ -688,8 +686,8 @@
          end select
 
          if (dir1.eq.dir2) then
-           allocate(temp1(s(1)-x,s(2)-y,s(3)-z))
-           allocate(temp2(s(1)-x,s(2)-y,s(3)-z))
+           allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
+           allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
            call d%assign(temp1,f,gd,1,dir1,0)
            call myCellCenter2Face(temp2,k,gd,dir1)
            temp1 = temp1*temp2
@@ -766,7 +764,7 @@
            write(*,*) 'Error: dir must = 1,2,3 in myNode2NodeDelUpwind.'; stop
          end select
          s = shape(df)
-         allocate(tempe(s(1)+x,s(2)+y,s(3)+z))
+         allocate(tempe(s(1)-x,s(2)-y,s(3)-z))
          call myNode2edge(tempe,f,gd,dir)
          call d%assign(df,tempe,gd,1,dir,0)
          deallocate(tempe)
@@ -824,7 +822,6 @@
          real(cp),dimension(:,:,:),intent(inout) :: lapU
          real(cp),dimension(:,:,:),intent(in) :: u
          type(grid),intent(in) :: g
-         integer,dimension(3) :: s
          type(del) :: d
          call d%assign(lapU,u,g,2,1,1)
          call d%add(   lapU,u,g,2,2,1)

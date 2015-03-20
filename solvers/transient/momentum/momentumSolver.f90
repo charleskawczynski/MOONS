@@ -131,7 +131,6 @@
          call allocateY(mom%TempVF,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
          call allocateZ(mom%TempVF,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
          ! allocate P-Fields
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
          call allocateField(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          call allocateField(mom%divU,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          call allocateField(mom%temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
@@ -199,6 +198,7 @@
          mom%t = real(0.0,cp)
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
+         write(*,*) ''
        end subroutine
 
        subroutine deleteMomentum(mom)
@@ -281,6 +281,10 @@
            call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
          end select
 
+         write(*,*) 'maxval(advectX) = ',maxval(mom%TempVF%x)
+         write(*,*) 'maxval(advectY) = ',maxval(mom%TempVF%y)
+         write(*,*) 'maxval(advectZ) = ',maxval(mom%TempVF%z)
+
          ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
@@ -288,9 +292,13 @@
          ! Laplacian Terms -----------------------------------------
          ! call myFaceLap(mom%TempVF,U,g)
 
-         call myFaceLap(mom%TempVF%x,mom%U%x,g,1)
-         call myFaceLap(mom%TempVF%y,mom%U%y,g,2)
-         call myFaceLap(mom%TempVF%z,mom%U%z,g,3)
+         call myFaceLap(mom%TempVF%x,mom%U%x,g)
+         call myFaceLap(mom%TempVF%y,mom%U%y,g)
+         call myFaceLap(mom%TempVF%z,mom%U%z,g)
+
+         write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
+         write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
+         write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
 
          ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
@@ -335,6 +343,7 @@
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
 
          mom%nstep = mom%nstep + 1
+         write(*,*) 'nstep = ',mom%nstep
        end subroutine
 
        subroutine semi_implicit_ADI(mom,g,ss_MHD)
@@ -478,10 +487,11 @@
          character(len=*),intent(in) :: dir
          ! Locals
          integer :: Nx,Ny,Nz
+         type(del) :: d
          ! Interior
-         ! real(cp),dimension(:,:,:),allocatable :: tempx,tempy,tempz
          real(cp),dimension(:,:,:),allocatable :: tempccx,tempccy,tempccz
          real(cp),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz
+         real(cp),dimension(:,:,:),allocatable :: tempnix,tempniy,tempniz
 
          ! ************************ EXPORT IN OTHER FORMATS ***********************
 
@@ -490,12 +500,21 @@
          allocate(tempnx(Nx,Ny,Nz))
          allocate(tempny(Nx,Ny,Nz))
          allocate(tempnz(Nx,Ny,Nz))
+         allocate(tempnix(Nx-2,Ny-2,Nz-2))
+         allocate(tempniy(Nx-2,Ny-2,Nz-2))
+         allocate(tempniz(Nx-2,Ny-2,Nz-2))
          call myFace2Node(tempnx,mom%U%x,g,1)
          call myFace2Node(tempny,mom%U%y,g,2)
          call myFace2Node(tempnz,mom%U%z,g,3)
 
-         call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Ufield/','uni','vni','wni')
+         tempnix = tempnx(2:Nx-1,2:Ny-1,2:Nz-1)
+         tempniy = tempny(2:Nx-1,2:Ny-1,2:Nz-1)
+         tempniz = tempnz(2:Nx-1,2:Ny-1,2:Nz-1)
+
+         call writeToFile(g%c(1)%hn(2:Nx-1),g%c(2)%hn(2:Ny-1),g%c(3)%hn(2:Nz-1),&
+          tempnix,tempniy,tempniz,dir//'Ufield/','uni','vni','wni')
          deallocate(tempnx,tempny,tempnz)
+         deallocate(tempnix,tempniy,tempniz)
 
          ! ****************** EXPORT IN CELL CENTERS ************************
          ! Velocities at cell centers:
@@ -508,6 +527,18 @@
          call myFace2CellCenter(tempccz,mom%U%z,g,3)
          call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,tempccy,tempccz,dir//'Ufield/','uci','vci','wci')
          deallocate(tempccx,tempccy,tempccz)
+
+         allocate(tempccx(Nx,Ny,Nz))
+         call d%assign(tempccx,mom%U%x,g,1,1,1) ! Padding avoids calcs on fictive cells
+         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,dir//'Ufield/','dudx')
+
+         call d%assign(tempccx,mom%U%y,g,1,2,1) ! Padding avoids calcs on fictive cells
+         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,dir//'Ufield/','dvdy')
+
+         call d%assign(tempccx,mom%U%z,g,1,3,1) ! Padding avoids calcs on fictive cells
+         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,dir//'Ufield/','dwdz')
+         deallocate(tempccx)
+
        end subroutine
 
        subroutine computeDivergenceMomentum(mom,g)
@@ -515,6 +546,13 @@
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
          call myFaceDiv(mom%divU%phi,mom%U%x,mom%U%y,mom%U%z,g)
+         mom%divU%phi(1,:,:) = real(0.0,cp)
+         mom%divU%phi(:,1,:) = real(0.0,cp)
+         mom%divU%phi(:,:,1) = real(0.0,cp)
+
+         mom%divU%phi(g%c(1)%sc,:,:) = real(0.0,cp)
+         mom%divU%phi(:,g%c(2)%sc,:) = real(0.0,cp)
+         mom%divU%phi(:,:,g%c(3)%sc) = real(0.0,cp)
        end subroutine
 
        end module

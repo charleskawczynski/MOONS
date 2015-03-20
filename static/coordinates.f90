@@ -81,20 +81,18 @@
          c%dhn = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
 
          ! Cell center grid
-         c%sc = c%sn+1
+         c%sc = c%sn-1
          allocate(c%hc(c%sc))
          allocate(c%dhc(c%sc-1))
 
-         c%hc = (/hn(1)-c%dhn(1)/real(2.0,cp) , &
-                 ((hn(i+1)+hn(i))/real(2.0,cp),i=1,c%sn-1) , &
-                  hn(c%sn)+c%dhn(c%sn-1)/real(2.0,cp)/)
+         c%hc = (/ ((hn(i+1)+hn(i))/real(2.0,cp),i=1,c%sn-1) /)
          c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
 
          ! Additional information
          c%dhMin = minval(c%dhn)
          c%maxRange = maxval(c%hn)-minval(c%hn)
          c%hmin = minval(c%hn); c%hmax = maxval(c%hn)
-         c%N = size(c%hn)+1
+         c%N = size(c%hc)-2
        end subroutine
 
        subroutine initCopy(c,d)
@@ -132,6 +130,7 @@
          integer :: i
          call delete(c)
          ! Node grid
+         stop 'Coordinates are being init. via cell centers!'
 
          ! Cell center grid
          c%sc = size(hc)

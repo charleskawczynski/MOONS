@@ -79,12 +79,12 @@
        ! ---------------------- VALIDATION CASES ---------------------
 
        ! benchmarkCase = 100
-       ! integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 101
        ! integer,dimension(3),parameter :: Ni = 64, Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 103
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104
@@ -130,7 +130,7 @@
        ! ********************* INDEX OF CELLS ************************ (DO NOT CHANGE)
        integer,dimension(3),parameter :: N        = Ni+Nwtop+Nwbot    ! Total number of cells
 
-       integer,dimension(3),parameter :: Nin1     = Nwbot+1           ! Node of min wall
+       integer,dimension(3),parameter :: Nin1     = Nwbot+2           ! Node of min wall
        integer,dimension(3),parameter :: Nin2     = N-Nwtop+1         ! Node of max wall
        integer,dimension(3),parameter :: Nice1    = Nwbot+2           ! CC of min wall (excluding ghost)
        integer,dimension(3),parameter :: Nice2    = N-Nwtop+1         ! CC of max wall (excluding ghost)
@@ -383,33 +383,31 @@
          real(cp),dimension(3),intent(inout) :: betaw
          integer,intent(in) :: dir ! direction
 
-         real(cp),dimension(:),allocatable :: hn,hc
-         real(cp),dimension(:),allocatable :: dhn,dhc
-
-         real(cp),dimension(:),allocatable :: hni,hci
-         real(cp),dimension(:),allocatable :: dhni,dhci
+         real(cp),dimension(:),allocatable :: hni,hn
+         real(cp),dimension(:),allocatable :: hniTemp,hnTemp
 
          ! --------------------- ALLOCATE GRID -----------------------
          ! Interior
          allocate(hni(Ni(dir)+1))
-         allocate(hci(Ni(dir)+2))
-         allocate(dhni(Ni(dir)))
-         allocate(dhci(Ni(dir)+1))
+         allocate(hniTemp(Ni(dir)+1+2))
 
          ! Total
          allocate(hn(Ni(dir)+Nwtop(dir)+Nwbot(dir)+1))
-         allocate(hc(Ni(dir)+Nwtop(dir)+Nwbot(dir)+2))
-         allocate(dhn(Ni(dir)+Nwtop(dir)+Nwbot(dir)))
-         allocate(dhc(Ni(dir)+Nwtop(dir)+Nwbot(dir)+1))
-
+         allocate(hnTemp(Ni(dir)+Nwtop(dir)+Nwbot(dir)+1+2))
          ! --------------------- GERNATRE GRID -----------------------
          call gridGen(hn,hni,hmin(dir),hmax(dir),Ni(dir),&
           alphai(dir),betai(dir),twtop(dir),twbot(dir),&
           Nwtop(dir),Nwbot(dir),alphaw(dir),betaw(dir))
 
          ! -------------------- STORE COORDINATES --------------------
-         call init(this%hi,hni,dir,2)
-         call init(this%ht,hn,dir,2)
+         hniTemp(2:size(hniTemp)-1) = hni
+         hnTemp(2:size(hnTemp)-1) = hn
+
+         call defineGhostPoints(hniTemp)
+         call defineGhostPoints(hnTemp)
+
+         call init(this%hi,hniTemp,dir,2)
+         call init(this%ht,hnTemp,dir,2)
          ! ------------------ STORE DATA ------------------
          this%hmin(dir) = hmin(dir)
          this%hmax(dir) = hmax(dir)
@@ -424,10 +422,8 @@
          this%alphai(dir) = alphai(dir)
          this%alphaw(dir) = alphaw(dir)
 
-         deallocate(hn,hc)
-         deallocate(dhn,dhc)
-         deallocate(hni,hci)
-         deallocate(dhni,dhci)
+         deallocate(hni,hn)
+         deallocate(hniTemp,hnTemp)
        end subroutine
 
        subroutine gridGen(hn,hni,hmin,hmax,Ni,alpha,beta,&

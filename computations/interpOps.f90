@@ -47,20 +47,21 @@
 
        ! ------------------------------- INTERPOLATION ROUTINES ---------------------------------
        ! Base interpolation
-       ! public :: interp               ! call interp(f,g,gd,dir)
+       public :: interp               ! call interp(f,g,gd,dir)
 
        ! Derived interpolations
-       public :: myFaceAverage        ! call myFaceAverage(faceAve,f,gd,dir,aveLoc)
-       public :: myFace2Node          ! call myFace2Node(nodeAverage,face,gd,dir)
-       public :: myFace2CellCenter    ! call myFace2CellCenter(cellCenter,face,gd,faceDir)
-       public :: myFace2Edge          ! call myFace2Edge(edge,gd,face,edgeDir)
+       public :: myFaceAverage        ! call myFaceAverage(faceAve,f,g,dir,aveLoc)
+       public :: myFace2Node          ! call myFace2Node(nodeAverage,face,g,dir)
+       public :: myFace2CellCenter    ! call myFace2CellCenter(cellCenter,face,g,faceDir)
+       public :: myFace2Edge          ! call myFace2Edge(edge,g,face,edgeDir)
 
-       public :: myCellCenter2Face    ! call myCellCenter2Face(face,cellCenter,gd,faceDir)
-       public :: myCellCenter2Edge    ! call myCellCenter2Edge(edge,cellCenter,gd,edgeDir)
-       public :: myCellCenter2Node    ! call myCellCenter2Node(nodeAverage,cellCenter,dir,gd)
+       public :: myCellCenter2Face    ! call myCellCenter2Face(face,cellCenter,g,faceDir)
+       public :: myCellCenter2Edge    ! call myCellCenter2Edge(edge,cellCenter,g,edgeDir)
+       public :: myCellCenter2Node    ! call myCellCenter2Node(nodeAverage,cellCenter,g)
 
-       public :: myNode2Face          ! call myNode2Face(face,node,gd,faceDir)
-       public :: myNode2Edge          ! call myNode2Edge(edge,node,gd,edgeDir)
+       public :: myEdge2Node          ! call myEdge2Node(node,edge,g,edgeDir)
+       public :: myNode2Face          ! call myNode2Face(face,node,g,faceDir)
+       public :: myNode2Edge          ! call myNode2Edge(edge,node,g,edgeDir)
 
 
        interface interp;     module procedure interpO2;            end interface
@@ -82,31 +83,12 @@
          ! 
          ! Reminder: f = interp(g)
          ! 
-         ! gridType is now determined internally based on the shape of
-         ! the fields compared with the incoming grid.
-         ! 
-         ! gridType = 1   :   g(node/face grid) -->   f(cc grid)
-         !                extrapolation required
-         ! 
-         !            f  g  f  g  f  g  f
-         !            o--|--o--|--o--|--o   --> dir
-         !                  *     *
-         ! 
-         ! gridType = 2   :   g(cc grid)        -->   f(node/face grid)
-         !                no extrapolation required
-         ! 
-         !            g  f  g  f  g  f  g
-         !            o--|--o--|--o--|--o      --> dir
-         !               *     *     *
-         ! 
          ! * = assigned in this routine. This way, the entire
          ! array of f and g may be passed, without having to 
          ! index.
          ! 
          ! Therefore, shape(g) = shape(f) + 1 along dir
          ! Otherwise, shape(g) = shape(f)
-         ! 
-         ! When gridType = 1, f is assumed to be located at the cell center.
          ! 
          ! Add internal checking of shape of f and g and grid
          ! 
@@ -115,12 +97,10 @@
          real(cp),dimension(:,:,:),intent(in) :: g
          type(grid),intent(in) :: gd
          integer,intent(in) :: dir
-         integer :: i,j,k,t,x,y,z,gridType
+         integer :: i,j,k,t,x,y,z
          real(cp) :: alpha
          integer,dimension(3) :: sg,sf
-         sg = shape(g); sf = shape(f)
-
-         gridType = getGridType(sf,sg,gd%c(dir)%sc,gd%c(dir)%sn,dir)
+         sf = shape(f); sg = shape(g)
 
          select case (dir)
          case (1); x=1;y=0;z=0
@@ -130,46 +110,64 @@
            stop 'Error: dir must = 1,2,3 in interpO2.'
          end select
 
-         select case (gridType)
-         case (1) ! f(cc grid), g(node/face grid)
-         !            f  g  f  g  f  g  f
-         !            o--|--o--|--o--|--o   --> dir
-         !                  *     *
-         
-         !$OMP PARALLEL DO
-         do k=1,sg(3)-z
-           do j=1,sg(2)-y
-             do i=1,sg(1)-x
-               f(i+x,j+y,k+z) = (g(i,j,k)+g(i+x,j+y,k+z))/real(2.0,cp)
+         if ((sf(dir).eq.gd%c(dir)%sc).and.(sg(dir).eq.gd%c(dir)%sn)) then
+           ! write(*,*) 'Case 1 inside: '
+           ! write(*,*) 'sf = ',sf
+           ! write(*,*) 'sg = ',sg
+           ! write(*,*) 'dir = ',dir
+           ! write(*,*) 'sc = ',gd%c(dir)%sc
+           ! write(*,*) 'sn = ',gd%c(dir)%sn
+           ! if sf = sc and sg = sn
+           ! 
+           ! f(cc grid), g(node/face grid)
+           !         g  f  g  f  g  f  g  f  g
+           !         |--o--|--o--|--o--|--o--|   --> dir
+           !            *     *     *     *
+           
+           !$OMP PARALLEL DO
+           do k=1,sg(3)-z
+             do j=1,sg(2)-y
+               do i=1,sg(1)-x
+                 f(i,j,k) = (g(i,j,k)+g(i+x,j+y,k+z))/real(2.0,cp)
+               enddo
              enddo
            enddo
-         enddo
-         !$OMP END PARALLEL DO
-         case (2) ! f(node/face grid), g(cc grid)
-         !            g  f  g  f  g  f  g
-         !            o--|--o--|--o--|--o      --> dir
-         !               *     *     *
+           !$OMP END PARALLEL DO
+         elseif ((sf(dir).eq.gd%c(dir)%sn).and.(sg(dir).eq.gd%c(dir)%sc)) then
+           ! write(*,*) 'Case 2 inside: '
+           ! write(*,*) 'sf = ',sf
+           ! write(*,*) 'sg = ',sg
+           ! write(*,*) 'dir = ',dir
+           ! write(*,*) 'sc = ',gd%c(dir)%sc
+           ! write(*,*) 'sn = ',gd%c(dir)%sn
+           ! if sf = sn and sg = sc
+           ! 
+           ! f(node/face grid), g(cc grid)
+           !         f  g  f  g  f  g  f  g  f
+           !         |--o--|--o--|--o--|--o--|      --> dir
+           !               *     *     *
 
-         !$OMP PARALLEL PRIVATE(alpha,t)
-         !$OMP DO
-         do k=1,sg(3)-z
-           do j=1,sg(2)-y
-             do i=1,sg(1)-x
-               t = i*x + j*y + k*z
-               alpha = (gd%c(dir)%hn(t) - gd%c(dir)%hc(t+1))/(gd%c(dir)%hc(t) - gd%c(dir)%hc(t+1))
-               f(i,j,k) = g(i,j,k)*alpha +&
-                             g(i+x,j+y,k+z)*(real(1.0,cp)-alpha)
+           !$OMP PARALLEL PRIVATE(alpha,t)
+           !$OMP DO
+           do k=1,sg(3)-z
+             do j=1,sg(2)-y
+               do i=1,sg(1)-x
+                 t = i*x + j*y + k*z
+                 ! alpha = (gd%c(dir)%hn(t) - gd%c(dir)%hc(t+1))/(gd%c(dir)%hc(t) - gd%c(dir)%hc(t+1))
+                 alpha = real(0.5,cp)
+                 f(i+x,j+y,k+z) = g(i,j,k)*alpha +&
+                               g(i+x,j+y,k+z)*(real(1.0,cp)-alpha)
+               enddo
              enddo
            enddo
-         enddo
-         !$OMP END DO
-         !$OMP END PARALLEL
-         case default
+           !$OMP END DO
+           !$OMP END PARALLEL
+         else
            stop 'gridType must be 1 or 2. Terminating.'
-         end select
+         endif
        end subroutine
 
-       subroutine extrapO2(f,g,gd,dir) ! Seems to be working.
+       subroutine extrapO2(f,g,dir) ! Seems to be working.
          ! extrapO2 extrapolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for 
          ! non-uniform grids. f lives on the dual grid. 
@@ -177,72 +175,53 @@
          ! 
          ! Reminder: f = extrap(g)
          ! 
-         ! For interpO2, this corresponds to grid = 1
+         ! For interpO2, this corresponds to the case:
          ! f(cc grid), g(node/face grid)
          ! 
-         !            f  g  f  g  f  g  f
-         !            o--|--o--|--o--|--o   --> dir
-         !            *                 *
+         !         f  g  f  g  f  g  f  g  f
+         !         |--o--|--o--|--o--|--o--|    --> dir
+         !         *                       *
          ! 
          ! * = assigned in this routine. This way, the entire
          ! array of f and g may be passed, without having to 
          ! index.
          ! 
-         ! Therefore, size(g) = size(f) + 1 along dir
-         ! Otherwise, size(g) = size(f)
+         ! Therefore, size(f) = size(g) + 1 along dir
+         ! Otherwise, size(f) = size(g)
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: f
-         type(grid),intent(in) :: gd
          integer,intent(in) :: dir
-         real(cp) :: a1,a2 ! differences in Taylor expansion
-         real(cp) :: c1,c2 ! Coefficients of function values
          integer,dimension(3) :: sg,sf
          sg = shape(g); sf = shape(f)
+         ! Both cases are simple since the size of the 
+         ! first 2 cells are equal, we have
+         ! 
+         ! f_ghost + f_boundary
+         ! --------------------  = g    -->  f_ghost = 2g - f_boundary
+         !          2
+         ! 
          ! BACKWARD EXTRAPOLATION (* = assigned)
-         !            f  g  f  g  f  g  f
-         !            o--|--o--|--o--|--o   --> dir
-         !            *
-         a1 = gd%c(dir)%hc(1) - gd%c(dir)%hn(1)
-         a2 = gd%c(dir)%hn(1) - gd%c(dir)%hn(2)
-         c1 = real(1.0,cp) + a1/a2
-         c2 = -a1/a2
+         !         f  g  f  g  f  g  f  g  f
+         !         |--o--|--o--|--o--|--o--|    --> dir
+         !         *
+         ! 
          select case (dir)
-         case (1); f(1,:,:) = c1*g(1,:,:) + c2*g(2,:,:)
-         case (2); f(:,1,:) = c1*g(:,1,:) + c2*g(:,2,:)
-         case (3); f(:,:,1) = c1*g(:,:,1) + c2*g(:,:,2)
+         case (1); f(1,:,:) = real(2.0,cp)*g(1,:,:) - f(2,:,:)
+         case (2); f(:,1,:) = real(2.0,cp)*g(:,1,:) - f(:,2,:)
+         case (3); f(:,:,1) = real(2.0,cp)*g(:,:,1) - f(:,:,2)
          end select
          ! FORWARD EXTRAPOLATION (* = assigned)
-         !            f  g  f  g  f  g  f
-         !            o--|--o--|--o--|--o   --> dir
-         !                              *
-         a1 = gd%c(dir)%hc(sf(dir)) - gd%c(dir)%hn(sf(dir)-1)
-         a2 = gd%c(dir)%hn(sg(dir)) - gd%c(dir)%hn(sg(dir)-1)
-         c1 = real(1.0,cp) + a1/a2
-         c2 = -a1/a2
+         !         f  g  f  g  f  g  f  g  f
+         !         |--o--|--o--|--o--|--o--|    --> dir
+         !                                 *
          select case (dir)
-         case (1); f(sf(1),:,:)=c1*g(sg(1),:,:)+c2*g(sg(1)-1,:,:)
-         case (2); f(:,sf(2),:)=c1*g(:,sg(2),:)+c2*g(:,sg(2)-1,:)
-         case (3); f(:,:,sf(3))=c1*g(:,:,sg(3))+c2*g(:,:,sg(3)-1)
+         case (1); f(sf(1),:,:) = real(2.0,cp)*g(sg(1),:,:) - f(sf(1)-1,:,:)
+         case (2); f(:,sf(2),:) = real(2.0,cp)*g(:,sg(2),:) - f(:,sf(2)-1,:)
+         case (3); f(:,:,sf(3)) = real(2.0,cp)*g(:,:,sg(3)) - f(:,:,sf(3)-1)
          end select
        end subroutine
-
-       function getGridType(sf,sg,sc,sn,dir) result(gt)
-         implicit none
-         integer,dimension(3),intent(in) :: sf,sg
-         integer,intent(in) :: sc,sn
-         integer,intent(in) :: dir
-         integer :: gt
-         if ((sf(dir).eq.sc).and.(sg(dir).eq.sn)) then
-           gt = 1
-         elseif ((sf(dir).eq.sn).and.(sg(dir).eq.sc)) then
-           gt = 2
-         else
-           stop 'Error: Gridtype does not match field and grid in getGridType.'
-         endif
-       end function
-
 
        ! ****************************************************************************************
        ! ****************************************************************************************
@@ -263,9 +242,7 @@
          real(cp),dimension(:,:,:),intent(inout) :: cellCenter  ! size = (Nn+2,Nt+2)
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
-         cellCenter = real(0.0,cp) ! This is expensive, consider changing
          call interp(cellCenter,face,gd,faceDir)
-         call extrap(cellCenter,face,gd,faceDir)
        end subroutine
 
        subroutine myFace2Edge(edge,face,gd,faceDir,edgeDir) ! Seems to be working
@@ -294,9 +271,10 @@
          if (edgeDir.ne.faceDir) then ! requires 1 interpolation (no allocations)
            orthDir = orthogonalDirection(edgeDir,faceDir)
            call interp(edge,face,gd,orthDir)
+           call extrap(edge,face,orthDir)
          else ! Requires 3 interpolations ()
-          call myFace2CellCenter(tempCC,face,gd,faceDir)
-          call myCellCenter2Edge(edge,tempCC,gd,edgeDir)
+           call myFace2CellCenter(tempCC,face,gd,faceDir)
+           call myCellCenter2Edge(edge,tempCC,gd,edgeDir)
          endif
        end subroutine
 
@@ -317,35 +295,41 @@
          case default
            stop 'Error: faceDir must = 1,2,3 in myFaceAverage.'
          end select
-         allocate(cellCenter(s(1)+x,s(2)+y,s(3)+z))
+         allocate(cellCenter(s(1)-x,s(2)-y,s(3)-z))
          call myFace2CellCenter(cellCenter,face,gd,faceDir)
          call myCellCenter2Face(faceAve,cellCenter,gd,aveLoc)
          deallocate(cellCenter)
        end subroutine
 
-       subroutine myFace2Node(nodeAverage,face,gd,faceDir) ! Needs improvement, big time
-         ! This needs to be fixed becuase only 2 interpolations are required.
-         ! right now, there are 4, this may introduce significant errors.
+       subroutine myFace2Node(node,face,gd,faceDir) ! Finished?
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: face
-         real(cp),dimension(:,:,:),intent(inout) :: nodeAverage
-         real(cp),dimension(:,:,:),allocatable :: tempcc
+         real(cp),dimension(:,:,:),intent(inout) :: node
+         real(cp),dimension(:,:,:),allocatable :: edge
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
-         integer,dimension(3) :: s
-         integer :: x,y,z
-         s = shape(face)
+         integer,dimension(3) :: s,sn
+         integer :: x,y,z,edgeDir
+         s = shape(face); sn = shape(node)
          select case (faceDir)
+         case (1); edgeDir = 2
+         case (2); edgeDir = 1
+         case (3); edgeDir = 1
+         case default
+           stop 'Error: faceDir must = 1,2,3 in myFace2Node.'
+         end select
+         select case (edgeDir)
          case (1); x=1;y=0;z=0
          case (2); x=0;y=1;z=0
          case (3); x=0;y=0;z=1
          case default
            stop 'Error: faceDir must = 1,2,3 in myFace2Node.'
          end select
-         allocate(tempcc(s(1)+x,s(2)+y,s(3)+z))
-         call myFace2CellCenter(tempcc,face,gd,faceDir)
-         call myCellCenter2Node(nodeAverage,tempcc,gd)
-         deallocate(tempcc)
+
+         allocate(edge(sn(1)-x,sn(2)-y,sn(3)-z))
+         call myFace2Edge(edge,face,gd,faceDir,edgeDir)
+         call myEdge2Node(node,edge,gd,edgeDir)
+         deallocate(edge)
        end subroutine
 
        ! ****************************************************************************************
@@ -361,39 +345,26 @@
          type(grid),intent(in) :: gd
          integer,intent(in) :: faceDir
          call interp(face,cellCenter,gd,faceDir)
+         call extrap(face,cellCenter,faceDir)
        end subroutine
 
-       subroutine myCellCenter2Node(nodeAverage,cellCenter,gd) ! Finished, needs improvement
+       subroutine myCellCenter2Node(node,cellCenter,gd) ! Finished, needs improvement
          ! Try to allocate less
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
-         real(cp),dimension(:,:,:),intent(inout) :: nodeAverage
+         real(cp),dimension(:,:,:),intent(inout) :: node
          type(grid),intent(in) :: gd
-         real(cp),dimension(:,:,:),allocatable :: temp,tempcc
-         integer,dimension(3) :: sc
+         real(cp),dimension(:,:,:),allocatable :: face,edge
+         integer,dimension(3) :: sc,sn
          sc = shape(cellCenter)
-
-         nodeAverage = real(0.0,cp)
-         allocate(tempcc(sc(1),sc(2),sc(3)))
-         tempcc = cellCenter
-
-         allocate(temp(sc(1)-1,sc(2),sc(3)))
-         call myCellCenter2Face(temp,tempcc,gd,1)
-         tempcc(1:sc(1)-1,:,:) = temp; tempcc(sc(1),:,:) = real(0.0,cp)
-         deallocate(temp)
-
-         allocate(temp(sc(1),sc(2)-1,sc(3)))
-         call myCellCenter2Face(temp,tempcc,gd,2)
-         tempcc(:,1:sc(2)-1,:) = temp; tempcc(:,sc(2),:) = real(0.0,cp)
-         deallocate(temp)
-
-         allocate(temp(sc(1),sc(2),sc(3)-1))
-         call myCellCenter2Face(temp,tempcc,gd,3)
-         tempcc(:,:,1:sc(3)-1) = temp; tempcc(:,:,sc(3)) = real(0.0,cp)
-         deallocate(temp)
-         
-         nodeAverage = tempcc(1:sc(1)-1,1:sc(2)-1,1:sc(3)-1)
-         deallocate(tempcc)
+         sn = shape(node)
+         allocate(face(sn(1),sc(2),sc(3)))
+         call myCellCenter2Face(face,cellCenter,gd,1)
+         allocate(edge(sn(1),sn(2),sc(3)))
+         call myFace2Edge(edge,face,gd,1,3)
+         deallocate(face)
+         call myEdge2Node(node,edge,gd,3)
+         deallocate(edge)
        end subroutine
 
        subroutine myCellCenter2Edge(edge,cellCenter,gd,edgeDir) ! Needs checking
@@ -407,13 +378,13 @@
          s = shape(cellCenter)
 
          select case (edgeDir)
-         case(1); allocate(faceTemp(s(1),s(2)-1,s(3)))
+         case(1); allocate(faceTemp(s(1),s(2)+1,s(3)))
          call myCellCenter2Face(faceTemp,cellCenter,gd,2)
          call myFace2Edge(edge,faceTemp,gd,2,1)
-         case(2); allocate(faceTemp(s(1)-1,s(2),s(3)))
+         case(2); allocate(faceTemp(s(1)+1,s(2),s(3)))
          call myCellCenter2Face(faceTemp,cellCenter,gd,1)
          call myFace2Edge(edge,faceTemp,gd,1,2)
-         case(3); allocate(faceTemp(s(1)-1,s(2),s(3)))
+         case(3); allocate(faceTemp(s(1)+1,s(2),s(3)))
          call myCellCenter2Face(faceTemp,cellCenter,gd,1)
          call myFace2Edge(edge,faceTemp,gd,1,3)
          case default
@@ -429,40 +400,39 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine myNode2Edge(edge,node,gd,edgeDir) ! Needs checking
+       subroutine myNode2Edge(edge,node,g,edgeDir) ! Needs checking
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: node       ! size = Nn+1,Nt+1
          real(cp),dimension(:,:,:),intent(inout) :: edge    ! size = Nn+2,Nt+1
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          integer,intent(in) :: edgeDir
-         call interp(edge,node,gd,edgeDir)
-         call extrap(edge,node,gd,edgeDir)
+         call interp(edge,node,g,edgeDir)
        end subroutine
 
-       subroutine myNode2Face(face,node,gd,faceDir) ! Finished
+       subroutine myNode2Face(face,node,g,faceDir) ! Finished
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: face
          real(cp),dimension(:,:,:),intent(in) :: node
          real(cp),dimension(:,:,:),allocatable :: tempe
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          integer,intent(in) :: faceDir
          integer,dimension(3) :: s
          s = shape(node)
          select case (faceDir)
          case (1)
-           allocate(tempe(s(1),s(2)+1,s(3)))
-           call myNode2Edge(tempe,node,gd,2)
-           call myEdge2Face(face,tempe,gd,2,faceDir)
+           allocate(tempe(s(1),s(2)-1,s(3)))
+           call myNode2Edge(tempe,node,g,2)
+           call myEdge2Face(face,tempe,g,2,faceDir)
            deallocate(tempe)
          case (2)
-           allocate(tempe(s(1)+1,s(2),s(3)))
-           call myNode2Edge(tempe,node,gd,1)
-           call myEdge2Face(face,tempe,gd,1,faceDir)
+           allocate(tempe(s(1)-1,s(2),s(3)))
+           call myNode2Edge(tempe,node,g,1)
+           call myEdge2Face(face,tempe,g,1,faceDir)
            deallocate(tempe)
          case (3)
-           allocate(tempe(s(1)+1,s(2),s(3)))
-           call myNode2Edge(tempe,node,gd,1)
-           call myEdge2Face(face,tempe,gd,1,faceDir)
+           allocate(tempe(s(1)-1,s(2),s(3)))
+           call myNode2Edge(tempe,node,g,1)
+           call myEdge2Face(face,tempe,g,1,faceDir)
            deallocate(tempe)
          case default
            stop 'Error: faceDir must = 1,2,3 in myNode2Face.'
@@ -475,16 +445,25 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine myEdge2Face(face,edge,gd,edgeDir,faceDir) ! Needs checking
+       subroutine myEdge2Face(face,edge,g,edgeDir,faceDir) ! Needs checking
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: edge    ! size = Ne+2,N+1
          real(cp),dimension(:,:,:),intent(inout) :: face ! size = Nf+1,Nt+2
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          integer,intent(in) :: faceDir,edgeDir
          integer :: orthDir
          orthDir = orthogonalDirection(edgeDir,faceDir)
-         call interp(face,edge,gd,orthDir)
-         call extrap(face,edge,gd,orthDir)
+         call interp(face,edge,g,orthDir)
+       end subroutine
+
+       subroutine myEdge2Node(node,edge,g,edgeDir) ! Needs checking
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: node ! size = Nf+1,Nt+2
+         real(cp),dimension(:,:,:),intent(in) :: edge    ! size = Ne+2,N+1
+         type(grid),intent(in) :: g
+         integer,intent(in) :: edgeDir
+         call interp(node,edge,g,edgeDir)
+         call extrap(node,edge,edgeDir)
        end subroutine
 
        ! ****************************************************************************************
