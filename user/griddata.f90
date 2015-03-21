@@ -84,7 +84,7 @@
        ! integer,dimension(3),parameter :: Ni = 64, Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 103
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104
@@ -103,7 +103,7 @@
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,2,11/), Nwbot = (/11,2,11/)
 
        ! benchmarkCase = 200
-       ! integer,dimension(3),parameter :: Ni = (/100,32,32/), Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = (/100,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 201
        ! integer,dimension(3),parameter :: Ni = (/101,32,32/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
        ! benchmarkCase = 202

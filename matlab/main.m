@@ -85,8 +85,8 @@ includePlot.transientOnly = true;
 %% TRANSIENT U,B,J DATA
 PT = plotTransient();
 PT.U(myDir,myPlot,includePlot,name)
-PT.B(myDir,myPlot,includePlot,name)
-PT.J(myDir,myPlot,includePlot,name)
+% PT.B(myDir,myPlot,includePlot,name)
+% PT.J(myDir,myPlot,includePlot,name)
 
 PR = plotResults();
 

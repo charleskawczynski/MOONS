@@ -101,7 +101,7 @@
 
          case (109); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
 
-         case (200); Re = 100d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (200); Re = 500d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (201); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-4
          case (202); Re = 1000d0;   Ha = 500.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
 
@@ -142,7 +142,7 @@
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
 
-         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 2000
+         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (201); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 15000
          case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
 
