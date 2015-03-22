@@ -1,0 +1,159 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Computations for matching grid stretching parameter}
+
+This document may be obsolete with the addition of the newly added roberts stretching function (transformation 3).
+
+\subsection{Robert's stretching function}
+The Robert's stretching function is
+
+\begin{equation}
+	\frac{y_{Roberts}}{h} = \frac{(\beta+2\alpha)\gamma - \beta + 2\alpha}{(2\alpha+1)(1+\gamma)}
+\end{equation}
+Where
+\begin{equation}
+	\gamma = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{(\bar{h}-\alpha)/(1-\alpha)}
+\end{equation}
+
+\begin{equation}
+	\alpha = 
+	\begin{cases}
+	0 \qquad \text{stretching at $h=h_{max}$ only}
+	\\
+	\frac{1}{2} \qquad \text{stretching at $h=h_{max}$ and $h=0$}
+	\end{cases}
+\end{equation}
+\begin{equation}
+	0 \le \bar{h} \le 1
+\end{equation}
+
+
+\subsection{Scaled Robert's stretching function}
+In a slightly different notation, for a scaled grid, not starting at zero, we may write
+
+\begin{equation}
+	h = h_{min} + (h_{max}-h_{min}) \frac{y_{Roberts}}{h}
+\end{equation}
+
+\subsection{Matching the stretching parameter}
+Note that this section is for node data, and does not apply to cell center data, hence the notation for node indexes ($sn$ and $sn-1$).
+
+We would like to ensure that the ghost cell is the same size as the first interior cell in order to able to linearly extrapolate from the interior cells to the ghost celss.
+
+To do this, we must choose $\beta$ such that
+
+\begin{equation}
+	h_{sn} - h_{sn-1} = \Delta h
+\end{equation}
+Where
+\begin{equation}
+	\Delta h = h_{interior}(2) - h_{interior}(1)
+\end{equation}
+
+Note that this $\Delta h$ is dimensional. Plugging this in, we have
+
+\begin{equation}
+	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	-
+	\left[
+	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	\right]
+	=
+	\Delta h
+\end{equation}
+Eliminating the scaled sizes results in the equation that must be solved to match the stretching parameters
+\begin{equation}
+	\boxed{
+	\frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	-
+	\left[
+	\frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	\right]
+	=
+	\frac{\Delta h}{h_{max}-h_{min}}
+	}
+\end{equation}
+
+This is a nonlinear algebraic equation who's solution must be determined by an iterative method (I think).
+
+\subsubsection{Additional notes}
+Now, here comes the tricky part.
+Note that $\bar{h}_{sn}$ is normalized
+
+\begin{equation}
+	\gamma_{sn} = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{(\bar{h}_{sn}-\alpha)/(1-\alpha)} = 
+	\left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]
+\end{equation}
+
+
+And the $\bar{h}_{sn-1}$ is also normalized
+\begin{equation}
+	\gamma_{sn-1} = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{(\bar{h}_{sn-1}-\alpha)/(1-\alpha)}
+\end{equation}
+
+We may write this term as
+
+\begin{equation}
+	\bar{h}_{sn-1} = 1 - \Delta h^* = 1 - \left( \frac{1-0}{N_w} \right)
+\end{equation}
+Where $N_w$ is the number of cells in the wall.
+
+
+
+
+
+
+\end{document}
+
+

@@ -149,12 +149,20 @@
            end select
          case (4) ! Neumann - direct - wall coincident ~O(dh)
            select case (face)
-           case (1); u(1,:,:) = u(2,:,:) - (hn(2)-hn(1))*bvals
-           case (2); u(:,1,:) = u(:,2,:) - (hn(2)-hn(1))*bvals
-           case (3); u(:,:,1) = u(:,:,2) - (hn(2)-hn(1))*bvals
-           case (4); u(s,:,:) = u(s-1,:,:) + (hn(s-1)-hn(s-2))*bvals
-           case (5); u(:,s,:) = u(:,s-1,:) + (hn(s-1)-hn(s-2))*bvals
-           case (6); u(:,:,s) = u(:,:,s-1) + (hn(s-1)-hn(s-2))*bvals
+           case (1); u(2,:,:) = u(3,:,:) - (hn(3)-hn(2))*bvals
+           case (2); u(:,2,:) = u(:,3,:) - (hn(3)-hn(2))*bvals
+           case (3); u(:,:,2) = u(:,:,3) - (hn(3)-hn(2))*bvals
+           case (4); u(s-1,:,:) = u(s-2,:,:) + (hn(s-1)-hn(s-2))*bvals
+           case (5); u(:,s-1,:) = u(:,s-2,:) + (hn(s-1)-hn(s-2))*bvals
+           case (6); u(:,:,s-1) = u(:,:,s-2) + (hn(s-1)-hn(s-2))*bvals
+           end select
+           select case (face) ! Linearly extrapolate to ghost node
+           case (1); u(1,:,:) = real(2.0,cp)*u(2,:,:) - u(3,:,:)
+           case (2); u(:,1,:) = real(2.0,cp)*u(:,2,:) - u(:,3,:)
+           case (3); u(:,:,1) = real(2.0,cp)*u(:,:,2) - u(:,:,3)
+           case (4); u(s,:,:) = real(2.0,cp)*u(s-1,:,:) - u(s-2,:,:)
+           case (5); u(:,s,:) = real(2.0,cp)*u(:,s-1,:) - u(:,s-2,:)
+           case (6); u(:,:,s) = real(2.0,cp)*u(:,:,s-1) - u(:,:,s-2)
            end select
          case (5) ! Neumann - interpolated - wall incoincident ~O(dh)
            select case (face)

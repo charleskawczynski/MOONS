@@ -48,6 +48,7 @@ University of California Los Angeles, USA\\
 This document describes how the applyBCs module works. Succinctly, when called, it defines the ghost values of a field such that the boundary conditions are enforced.
 
 \section{Dirichlet}
+For wall coincident Dirichlet BCs, the boundary values themselves are prescribed in addition to the ghost values.
 
 \subsection{Direct (wall coincident)}
 Trivial assignment
@@ -56,26 +57,54 @@ u = u_{bc}
 \end{equation}
 
 \subsection{Interpolated (Wall incoincident)}
-\subsubsection{Forward}
+Ghost values mirror about the boundary value. In order to do this, slopes are matched from the ghost cell to the first interior cell using the prescribed boundary value.
+
+\subsubsection{General}
 \begin{equation}
-\frac{u_{c,1}-u_{c,2}}{h_{c,1}-h_{c,2}} = \frac{u_{wall}-u_{c,2}}{h_{n,1}-h_{c,2}}
+	\frac{u_{ghost}-u_{interior}}{h_{ghost}-h_{interior}}
+	=
+	\frac{u_{wall}-u_{interior}}{h_{wall}-h_{interior}}
 \end{equation}
-Solving for $u_1$ yields
+Solving for the ghost values we have
 \begin{equation}
-	u_{c,1} = u_{c,2} + \frac{h_{c,1}-h_{c,2}}{h_{n,1}-h_{c,2}}(u_{wall}-u_{c,2})
+	u_{ghost}
+	=
+	u_{interior} + \alpha (u_{wall}-u_{interior})
+\end{equation}
+\begin{equation}
+	=
+	u_{wall}\alpha + u_{interior}(1-\alpha)
+\end{equation}
+Where
+\begin{equation}
+	\alpha = \frac{h_{ghost}-h_{interior}}{h_{wall}-h_{interior}}
 \end{equation}
 
-\subsubsection{Backward}
-\begin{equation}
-\frac{u_{c,sc}-u_{c,sc-1}}{h_{c,sc}-h_{c,sc-1}} = \frac{u_{n,sn}-u_{c,sc-1}}{h_{n,sn}-h_{c,sc-1}}
-\end{equation}
-Solving for $u_{sc}$ yields
-\begin{equation}
-	u_{c,sc} = u_{c,sc-1} + \frac{h_{c,sc}-h_{c,sc-1}}{h_{n,sn}-h_{c,sc-1}}(u_{n,sn}-u_{c,sc-1})
-\end{equation}
+% \subsubsection{Forward}
+% \begin{equation}
+% \frac{u_{c,1}-u_{c,2}}{h_{c,1}-h_{c,2}} = \frac{u_{wall}-u_{c,2}}{h_{n,1}-h_{c,2}}
+% \end{equation}
+% Solving for $u_1$ yields
+% \begin{equation}
+% 	u_{c,1} = u_{c,2} + \frac{h_{c,1}-h_{c,2}}{h_{n,1}-h_{c,2}}(u_{wall}-u_{c,2})
+% \end{equation}
+
+% \subsubsection{Backward}
+% \begin{equation}
+% \frac{u_{c,sc}-u_{c,sc-1}}{h_{c,sc}-h_{c,sc-1}} = \frac{u_{n,sn}-u_{c,sc-1}}{h_{n,sn}-h_{c,sc-1}}
+% \end{equation}
+% Solving for $u_{sc}$ yields
+% \begin{equation}
+% 	u_{c,sc} = u_{c,sc-1} + \frac{h_{c,sc}-h_{c,sc-1}}{h_{n,sn}-h_{c,sc-1}}(u_{n,sn}-u_{c,sc-1})
+% \end{equation}
 
 \section{Neumann}
+% \subsection{Direct (wall coincident) $~O(dh^2)$}
 \subsection{Direct (wall coincident) ~O(dh2)}
+A 2nd order accurate, one sided difference equation is used to approximate the derivative. The boundary value is then solved for.
+
+\subsection[alternative title goes here]{The values of $\beta$ for which $\omega_i$ is defined at the origin}
+
 \subsubsection{Forward differencing}
 Let
 \begin{equation}
@@ -84,16 +113,19 @@ Let
 \begin{equation}
 	\beta_j = h_{n,3} - h_{n,1} \qquad j = 2
 \end{equation}
+And use the one sided difference equation
 \begin{equation}
 	f_i = \frac{f_i' (\beta_j - \alpha_k) - \frac{\beta_j}{\alpha_k} f_{i+k} + \frac{\alpha_k}{\beta_j} f_{i+j}}{\frac{\alpha_k}{\beta_j} - \frac{\beta_j}{\alpha_k}}
 \end{equation}
 \subsubsection{Backward differencing}
+Let
 \begin{equation}
 	\alpha_k = -(h_{n,sn} - h_{n,sn-1})  \qquad k = -1
 \end{equation}
 \begin{equation}
 	\beta_j = -(h_{n,sn} - h_{n,sn-2})  \qquad j = -2
 \end{equation}
+And use the one sided difference equation
 \begin{equation}
 	f_i = \frac{f_i' (\beta_j - \alpha_k) - \frac{\beta_j}{\alpha_k} f_{i+k} + \frac{\alpha_k}{\beta_j} f_{i+j}}{\frac{\alpha_k}{\beta_j} - \frac{\beta_j}{\alpha_k}}
 \end{equation}

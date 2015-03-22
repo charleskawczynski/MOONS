@@ -103,7 +103,7 @@
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,2,11/), Nwbot = (/11,2,11/)
 
        ! benchmarkCase = 200
-       integer,dimension(3),parameter :: Ni = (/100,32,32/), Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = (/150,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 201
        ! integer,dimension(3),parameter :: Ni = (/101,32,32/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
        ! benchmarkCase = 202
@@ -238,7 +238,7 @@
          case (109); hmin = -one; hmax = one ! for xyz
 
          case (200); hmin = -one; hmax = one
-         hmin(1) = zero; hmax(1) = 20.0d0
+         hmin(1) = zero; hmax(1) = 40.0d0
          case (201); hmin = -one; hmax = one
          hmin(1) = zero; hmax(1) = 20.0d0
          case (202); hmin = -one; hmax = one

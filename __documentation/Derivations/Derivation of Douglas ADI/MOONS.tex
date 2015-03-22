@@ -1,0 +1,220 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{empheq}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand*\widefbox[1]{\fbox{\hspace{2em}#1\hspace{2em}}}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of 3D Douglas ADI}
+Consider the equation
+\begin{equation}
+	\frac{\partial u}{\partial t}
+	=
+	\alpha_x \frac{\partial^2 u}{\partial x^2} +
+	\alpha_y \frac{\partial^2 u}{\partial y^2} +
+	\alpha_z \frac{\partial^2 u}{\partial z^2}
+	-
+	f
+\end{equation}
+Splitting this operator into several steps, we have
+\begin{equation}
+	\frac{1}{2} \alpha_x \Delta_x (u_{n+1}^{*} + u_{n}) +
+	\alpha_y \Delta_y u +
+	\alpha_z \Delta_z u	-
+	f =
+	\frac{u_{n+1}^{*} - u_{n}}{\Delta t}
+\end{equation}
+
+\begin{equation}
+	\frac{1}{2} \alpha_x \Delta_x (u_{n+1}^{*} + u_{n}) +
+	\frac{1}{2} \alpha_y \Delta_y (u_{n+1}^{**} + u_{n}) +
+	\alpha_z \Delta_z u	-
+	f =
+	\frac{u_{n+1}^{**} - u_{n}}{\Delta t}
+\end{equation}
+
+\begin{equation}
+	\frac{1}{2} \alpha_x \Delta_x (u_{n+1}^{*} + u_{n}) +
+	\frac{1}{2} \alpha_y \Delta_y (u_{n+1}^{**} + u_{n}) +
+	\frac{1}{2} \alpha_z \Delta_z (u_{n+1} + u_{n}) -
+	f =
+	\frac{u_{n+1} - u_{n}}{\Delta t}
+\end{equation}
+
+After rearranging, we have
+
+\begin{subequations}
+\begin{empheq}[box=\widefbox]{align}
+	\left(
+	I - \frac{\Delta t}{2} \alpha_x \Delta_x
+	\right) 
+	u_{n+1}^{*}
+	=
+	\left(
+	I + \frac{\Delta t}{2} \alpha_x \Delta_x +
+	\Delta t \alpha_y \Delta_y +
+	\Delta t \alpha_z \Delta_z
+	\right)
+	u_n - \Delta t f \\
+	\left(
+	I - \frac{\Delta t}{2} \alpha_y \Delta_y
+	\right) 
+	u_{n+1}^{**}
+	=
+	u_{n+1}^{*}
+	- \frac{\Delta t}{2} \alpha_y \Delta_y u_n \\
+	\left(
+	I - \frac{\Delta t}{2} \alpha_z \Delta_z
+	\right) 
+	u_{n+1}
+	=
+	u_{n+1}^{**}
+	- \frac{\Delta t}{2} \alpha_z \Delta_z u_n
+\end{empheq}
+\end{subequations}
+
+\section{Amplification factor}
+
+For simplicity, let
+
+\begin{equation}
+	D_{\theta} = \frac{\Delta t}{2} \alpha_{\theta} \Delta_{\theta}, \qquad \theta = x,y,z
+\end{equation}
+
+Now, note that the error to the discrete equation satisfies the same governing equation without the source term, namely
+
+\begin{equation}
+	(I-D_x)e_{n+1}^* = (I+D_x+2D_y+2D_z)e_n
+\end{equation}
+\begin{equation}
+	(I-D_y)e_{n+1}^{**} = e_{n+1}^* - D_ye_n
+\end{equation}
+\begin{equation}
+	(I-D_z)e_{n+1} = e_{n+1}^{**} - D_z e_n
+\end{equation}
+
+Therefore
+\begin{equation}
+	e_{n+1}^{*} = 
+	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)}e_n
+\end{equation}
+
+\begin{equation}
+	e_{n+1}^{**} = 
+	\frac{
+	\left[
+	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)}-D_y
+	\right]
+	}{(I-D_y)}e_n
+\end{equation}
+
+\begin{equation}
+	e_{n+1} = 
+	\frac{
+	\left[
+	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)(I-D_y)}
+	-
+	\frac{D_y}{(I-D_y)}
+	-
+	D_z
+	\right]
+	}{(I-D_z)}e_n
+\end{equation}
+
+\begin{equation}
+	e_{n+1} = 
+	\left[
+	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)(I-D_y)(I-D_z)}
+	-
+	\frac{D_y}{(I-D_y)(I-D_z)}
+	-
+	\frac{D_z}{(I-D_z)}
+	\right]
+	e_n
+\end{equation}
+
+The amplification factor is defined as
+
+\begin{equation}
+	G = \frac{e_{n+1}}{e_{n}}
+\end{equation}
+Finding the least common denominator, we have
+\begin{equation}
+	G = 
+	\frac{I+D_x+2D_y+2D_z - (I-D_x)D_y - (I-D_x)(I-D_y)D_z}{(I-D_x)(I-D_y)(I-D_z)}
+\end{equation}
+Only looking at the numerator, we have
+\begin{equation}
+	G_{num} = I+D_x+2D_y+2D_z-D_y+D_x D_y - (I-D_y-D_x+D_xD_y)D_z
+\end{equation}
+\begin{equation}
+	= I+D_x+2D_y+2D_z-D_y+D_x D_y - D_z +D_yD_z +D_xD_z - D_xD_yD_z
+\end{equation}
+\begin{equation}
+	= I+(D_x+D_y+D_z)+(D_xD_y+D_yD_z+D_xD_z)-(D_xD_yD_z)
+\end{equation}
+
+\begin{equation}
+	\boxed{
+	G = 
+	\frac{I+(D_x+D_y+D_z)+(D_xD_y+D_yD_z+D_xD_z)-(D_xD_yD_z)}{(I-D_x)(I-D_y)(I-D_z)}
+	}
+\end{equation}
+
+Note that this is a 3rd order perturbation of 
+
+\begin{equation}
+	G = 
+	\frac{I+(D_x+D_y+D_z)+(D_xD_y+D_yD_z+D_xD_z)+(D_xD_yD_z)}{(I-D_x)(I-D_y)(I-D_z)}
+\end{equation}
+Which may be rewritten as
+\begin{equation}
+	G = 
+	\frac{(I+D_x)}{(I-D_x)}
+	\frac{(I+D_y)}{(I-D_y)}
+	\frac{(I+D_z)}{(I-D_z)}
+\end{equation}
+Which is the product of the three 1D amplification factors. This justifies using a timestep derived from analysis for a 1D aplification factor.
+
+
+\end{document}

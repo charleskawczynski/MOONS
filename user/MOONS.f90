@@ -101,7 +101,7 @@
 
          case (109); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
 
-         case (200); Re = 500d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+         case (200); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (201); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-4
          case (202); Re = 1000d0;   Ha = 500.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
 
@@ -142,7 +142,7 @@
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
 
-         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
+         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 5*10**4
          case (201); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 15000
          case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
 
@@ -269,9 +269,6 @@
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
-         ! call unitTestRelax(ind%B%x,ind%g,dir)
-         ! call unitTestADI(ind%B%x,ind%g,dir)
-         ! call unitTestMG(ind%B%x,ind%g,dir)
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 
          ! if (calculateOmegaPsi) call calcOmegaPsi(u,v,w,gd,dir)
@@ -284,92 +281,6 @@
          call delete(gd)
 
          call computationComplete(time)
-       end subroutine
-
-       subroutine unitTestMG(B,gd,dir)
-        implicit none
-        type(grid),intent(in) :: gd
-        real(dpn),dimension(:,:,:),intent(in) :: B
-        character(len=*),intent(in) :: dir
-        integer,parameter :: Nlevels = 8
-        integer :: i
-        type(grid),dimension(Nlevels) :: g
-
-        do i = 1,Nlevels
-          call init(g(i),gd)
-        enddo
-
-        call export(g(1),dir,'grid_1')
-        do i = 1,Nlevels-1
-          call restrict(g(i+1),g(i))
-          call export(g(i+1),dir,'grid_'//int2str(i+1))
-          write(*,*) 'Finished level',i
-          ! call delete(g(i))
-        enddo
-        do i = 1,Nlevels
-          call delete(g(i))
-        enddo
-       end subroutine
-
-       subroutine unitTestADI(B,gd,dir)
-        implicit none
-        type(grid),intent(in) :: gd
-        real(dpn),dimension(:,:,:),intent(in) :: B
-        character(len=*),intent(in) :: dir
-        real(dpn),dimension(:,:,:),allocatable :: u,u_exact,f
-        type(myADI) :: ADI
-        type(mySOR) :: SOR
-        type(BCs) :: u_bcs
-        type(myError) :: e
-        type(solverSettings) :: ss
-        integer :: i,j,k
-        real(dpn) :: p,q,r
-        real(dpn),dimension(:,:),allocatable :: bvals
-        integer,dimension(3) :: s
-        s = shape(B)
-        s = s-1
-        call setAllZero(u_bcs,s(1),s(2),s(3),1) ! Dirichlet
-        ! call setAllZero(u_bcs,s(1),s(2),s(3),4) ! Neumann
-        allocate(bvals(s(2),s(3)))
-
-        call setGrid(u_bcs,gd)
-        call checkBCs(u_bcs)
-
-        allocate(u(s(1),s(2),s(3)))
-        allocate(u_exact(s(1),s(2),s(3)))
-        allocate(f(s(1),s(2),s(3)))
-        p = 21.0; q = 3.0; r = 3.0
-        do k = 1,s(3)
-        do j = 1,s(2)
-        do i = 1,s(1)
-          ! u_exact(i,j,k) = sin(p*PI*gd%xni(i))*sin(q*PI*gd%yni(j))*sin(r*PI*gd%zni(k)) ! Dirichlet
-          u_exact(i,j,k) = sin(p/2.0*PI*gd%c(1)%hn(i))*sin(q*PI*gd%c(2)%hn(j))*sin(r*PI*gd%c(3)%hn(k)) ! Neumann
-          ! f(i,j,k) = -PI**2.0*((p/2.0)**2.0+q**2.0+r**2.0)*u_exact(i,j,k)
-          bvals(j,k) = 1.0
-          f(i,j,k) = 0.0
-        enddo
-        enddo
-        enddo
-        call setXmaxVals(u_bcs,bvals)
-        deallocate(bvals)
-
-
-        call init(ss)
-        call setName(ss,'u                   ')
-        call setMaxIterations(ss,10)
-        call setSubtractMean(ss)
-        call setAlpha(ADI,one)
-        call myPoisson(ADI,u,f,u_bcs,gd,ss,e,2,.true.)
-        ! call myPoisson(SOR,u,f,u_bcs,gd,ss,e,2,.true.)
-
-        call compute(e,u_exact,u)
-        call print(e,'u')
-
-        call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,u,dir,'u')
-        call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,u_exact,dir,'u_exact')
-        call writeToFile(gd%c(1)%hn,gd%c(2)%hn,gd%c(3)%hn,f,dir,'f')
-
-        deallocate(u,u_exact,f)
        end subroutine
 
        end module
