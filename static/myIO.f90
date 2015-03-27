@@ -22,7 +22,7 @@
       public :: getUnit
       public :: newAndOpen
       public :: closeAndMessage
-      public :: int2Str,num2Str
+      public :: int2Str,num2Str,strcompress
 
       character(len=4),parameter :: fileType = '.dat'
        ! This website is a good reference for formatting:
@@ -104,6 +104,14 @@
       end subroutine
 
       function newAndOpen(dir,name) result(NU)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: NU,n
+        NU = newUnit()
+        open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,pad='YES')
+      end function
+
+      function newAndOpenBinary(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: NU,n
@@ -658,7 +666,7 @@
         integer :: sn
         sn = len(name)
         write(u,'(A'//int2Str(sn+19)//')') 'TITLE = "0D Field ' // trim(adjustl(name)) // '"'
-        write(u,'(A'//int2Str(sn+18)//')') 'VARIABLES = '//'"'//trim(adjustl(name)) //'"'
+        write(u,'(A'//int2Str(sn+18)//')') 'VARIABLES = "n",'//'"'//trim(adjustl(name)) //'"'
         write(u,'(A24)') 'ZONE DATAPACKING = POINT'
       end subroutine
 

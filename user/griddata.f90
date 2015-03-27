@@ -2,6 +2,7 @@
        use simParams_mod
        use myIO_mod
        use grid_mod
+       use gridGen_mod
        use gridGenTools_mod
        use coordinates_mod
        implicit none
@@ -81,7 +82,9 @@
        ! benchmarkCase = 100
        ! integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 101
+       ! integer,dimension(3),parameter :: Ni = 52, Nwtop = 0, Nwbot = 0
        ! integer,dimension(3),parameter :: Ni = 64, Nwtop = 0, Nwbot = 0
+       ! integer,dimension(3),parameter :: Ni = (/101,101,41/), Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
@@ -103,7 +106,7 @@
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,2,11/), Nwbot = (/11,2,11/)
 
        ! benchmarkCase = 200
-       integer,dimension(3),parameter :: Ni = (/150,32,32/), Nwtop = 0, Nwbot = 0
+       ! integer,dimension(3),parameter :: Ni = (/150,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 201
        ! integer,dimension(3),parameter :: Ni = (/101,32,32/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
        ! benchmarkCase = 202
@@ -121,17 +124,22 @@
        ! benchmarkCase = 1001
        ! integer,dimension(3),parameter :: Ni = 52, Nwtop = (/8,0,8/), Nwbot = 8 ! Ha = 10,100,1000
        ! benchmarkCase = 1002
-       ! integer,dimension(3),parameter :: Ni = (/150,64,64/), Nwtop = 0, Nwbot = 0                 ! Insulating
+       ! integer,dimension(3),parameter :: Ni = (/45,45,45/), Nwtop = 0, Nwbot = 0                 ! Insulating
        ! integer,dimension(3),parameter :: Ni = (/150,64,64/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/) ! Conducting
        ! benchmarkCase = 1003
-       ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
+       integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
 
 
        ! ********************* INDEX OF CELLS ************************ (DO NOT CHANGE)
-       integer,dimension(3),parameter :: N        = Ni+Nwtop+Nwbot    ! Total number of cells
+       integer,dimension(3),parameter :: N        = Ni+Nwtop+Nwbot    ! Total number of cells (excluding ghost)
 
-       integer,dimension(3),parameter :: Nin1     = Nwbot+2           ! Node of min wall
-       integer,dimension(3),parameter :: Nin2     = N-Nwtop+1         ! Node of max wall
+       ! These indexes are used in three places:
+       !       initSigmaMu.f90 (to init sigma/mu)
+       !       inductionSolver.f90 (in embedVelocity
+       !       inductionSolver.f90 (in computeJCrossB)
+       integer,dimension(3),parameter :: Nin1     = Nwbot+2           ! Node of min wall (excluding ghost)
+       integer,dimension(3),parameter :: Nin2     = N-Nwtop+2         ! Node of max wall (excluding ghost)
+
        integer,dimension(3),parameter :: Nice1    = Nwbot+2           ! CC of min wall (excluding ghost)
        integer,dimension(3),parameter :: Nice2    = N-Nwtop+1         ! CC of max wall (excluding ghost)
        integer,dimension(3),parameter :: Nici1    = Nwbot+1           ! CC of min wall (including ghost)
@@ -184,6 +192,9 @@
          real(cp),dimension(3) :: hmin,hmax
          real(cp),dimension(3) :: alphai,betai
          real(cp),dimension(3) :: alphaw,betaw
+         real(cp) :: tau,y_c
+         integer :: i
+         type(gridGenerator) :: gg
 
          ! **************** USER DEFINED GRIDDATA ********************
 
@@ -251,8 +262,10 @@
          case (301); hmin = -one; hmax = one ! for xyz
 
          case (1001); hmin = -one; hmax = one ! for xyz
+
          case (1002); hmin = -one; hmax = one ! for xyz
-         hmin(1) = real(-0.01,cp); hmax(1) = real(0.01,cp)
+         hmin(1) = real(0.0,cp); hmax(1) = real(10.0,cp)
+
          case (1003); hmin = -one; hmax = one ! for xyz
          hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
          case default
@@ -293,7 +306,9 @@
          ! case (1001); betai = 1.005d0 ! Ha = 100
          case (1001); betai = 1.0005d0 ! Ha = 1000
 
-         case (1002); betai = 1.01d0; betai(1) = 10000.0d0
+         case (1002); betai = 1.01d0
+         call robertsGridBL(betai,real(2.0)/Ha,hmin,hmax)
+         betai(1) = 10000.0d0
 
          case (1003); betai = 1.04d0
                       betai(1) = 1.004d0
@@ -342,8 +357,9 @@
          case (1001); twtop = 0.1d0;   twbot = 0.1d0
                      twtop(2) = 0.0d0
 
-         case (1002); twtop = 0.01d0;   twbot = 0.01d0
-                     twtop(1) = 0.0d0;  twtop(1) = 0.0d0
+         ! case (1002); twtop = 0.01d0;   twbot = 0.01d0
+         !              twtop(1) = 0.0d0;  twbot(1) = 0.0d0
+         case (1002); twtop = 0.0d0;   twbot = 0.0d0
 
          case (1003); twtop = 0.1d0;   twbot = 0.1d0
 
@@ -364,12 +380,63 @@
            call reComputeTw(this)
          endif
 
-         call init(g_ind,this%ht%c(1)%hn,1,2)
-         call init(g_ind,this%ht%c(2)%hn,2,2)
-         call init(g_ind,this%ht%c(3)%hn,3,2)
-         call init(g_mom,this%hi%c(1)%hn,1,2)
-         call init(g_mom,this%hi%c(2)%hn,2,2)
-         call init(g_mom,this%hi%c(3)%hn,3,2)
+         ! *****************************************************************
+         ! *****************************************************************
+         ! *************************** DUCT ********************************
+         ! *****************************************************************
+         ! *****************************************************************
+         ! Duct flow for Sergey's fringe
+         tau = real(5.0,cp); y_c = real(1.5,cp) ! y_c should match Bshift in sergey's fringe
+         ! call init(gg,(/cluster(hmin(1),(hmax(1)-hmin(1))/2.0,Ni(1)/2,y_c,tau)/),1)
+         ! call pop(gg,1)
+         ! call app(gg,(/cluster((hmax(1)-hmin(1))/2.0,hmax(1),Ni(1)/2,hmax(1)-y_c-(hmax(1)-hmin(1))/2.0,tau)/),1)
+         ! call applyGhost(gg,1)
+
+
+         ! *****************************************************************
+         ! *****************************************************************
+         ! ************************** 3D CAVITY ****************************
+         ! *****************************************************************
+         ! *****************************************************************
+
+         ! 3D Cavity (interior)
+         do i=1,3
+           call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
+           call applyGhost(gg,i)
+           call init(g_mom,gg%g%c(i)%hn,i,2)
+         enddo
+
+         ! 3D Cavity (add walls)
+         do i=1,3
+           call snip(gg,i); call pop(gg,i) ! Remove ghost nodes
+           call snip(gg,i)
+           call prep(gg,(/robertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),betaw(i))/),i)
+           call pop(gg,i)
+           call app(gg,(/robertsLeft(hmax(i),hmax(i)+twtop(i),Nwtop(i),betaw(i))/),i)
+           call applyGhost(gg,i) ! re-apply ghosts
+           call init(g_ind,gg%g%c(i)%hn,i,2)
+         enddo
+         call delete(gg)
+
+
+
+         ! call init(g_ind,gg%g%c(1)%hn,1,2)
+         ! call init(g_ind,this%ht%c(2)%hn,2,2)
+         ! call init(g_ind,this%ht%c(3)%hn,3,2)
+         ! call init(g_mom,gg%g%c(1)%hn,1,2)
+         ! call init(g_mom,this%hi%c(2)%hn,2,2)
+         ! call init(g_mom,this%hi%c(3)%hn,3,2)
+
+
+
+         ! call init(g_ind,this%ht%c(1)%hn,1,2)
+         ! call init(g_ind,this%ht%c(2)%hn,2,2)
+         ! call init(g_ind,this%ht%c(3)%hn,3,2)
+
+         ! call init(g_mom,this%hi%c(1)%hn,1,2)
+         ! call init(g_mom,this%hi%c(2)%hn,2,2)
+         ! call init(g_mom,this%hi%c(3)%hn,3,2)
+
        end subroutine
 
        subroutine setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,dir)
@@ -653,8 +720,10 @@
          type(griddata),intent(in) :: gd
          integer,intent(in) :: dir
          real(cp),dimension(:),allocatable :: hn
-         real(cp) :: temp,frac
-         integer :: Ndir,i
+         real(cp) :: frac
+         integer :: Ndir
+         ! integer :: i
+         ! real(cp) :: temp
 
          Ndir = gd%N(dir)
          allocate(hn(Ndir+1))

@@ -19,6 +19,16 @@
        use inductionSolver_mod
        implicit none
        
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
        private
        public :: MHDSolver
 
@@ -46,7 +56,7 @@
          type(myTime),intent(inout) :: time
          character(len=*),intent(in) :: dir ! Output directory
          ! *********************** LOCAL VARIABLES **********************
-         real(dpn) :: Ha
+         real(cp) :: Ha,energy
          integer :: n_ind,n_mhd
          ! **************************************************************
          logical :: continueLoop
@@ -85,6 +95,14 @@
            if (solveInduction) then
              call embedVelocity(mom%U,ind%U_cct,mom%temp,mom%g)
              call solve(ind,ind%U_cct,ind%g,ss_MHD)
+             if (computeKU.and.getExportTransient(ss_MHD).or.n_mhd.eq.0) then
+              call totalEnergy(energy,&
+                ind%U_cct%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+                ind%U_cct%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+                ind%U_cct%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+                mom%g)
+              call writeTransientToFile(n_mhd,energy,dir//'Ufield\','KU',n_mhd.eq.0)
+             endif
            endif
 
            ! ************************** COMPUTE DIVERGENCES *******************************
@@ -98,10 +116,15 @@
              call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
                call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
+             ind%B0%x = exp(-ind%omega*ind%t)
+             ind%B0%y = exp(-ind%omega*ind%t)
+             ind%B0%z = real(1.0,cp)
+             else; call assign(mom%F,zero)
              endif
-             ! ind%B0%x = exp(-ind%t)
-             ! ind%B0%y = exp(-ind%t)
-             ! ind%B0%z = real(1.0)
+             if (computeKB.and.getExportTransient(ss_MHD).or.n_mhd.eq.0) then
+              call totalEnergy(energy,ind%B%x,ind%B%y,ind%B%z,ind%g)
+              call writeTransientToFile(n_mhd,energy,dir//'Bfield\','KB',n_mhd.eq.0)
+             endif
            else
              ! mom%F = zero
              call assign(mom%F,zero)
@@ -130,8 +153,8 @@
                ! write(*,'(A17,'//xyzfmt//')') ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
                write(*,*) ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
                write(*,*) ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
-               ! write(*,*) ' maxval(B0x,B0y,B0z)',maxval(ind%B0%x),maxval(ind%B0%y),maxval(ind%B0%z)
-               ! write(*,*) ' minval(B0x,B0y,B0z)',minval(ind%B0%x),minval(ind%B0%y),minval(ind%B0%z)
+               write(*,*) ' maxval(B0x,B0y,B0z)',maxval(ind%B0%x),maxval(ind%B0%y),maxval(ind%B0%z)
+               write(*,*) ' minval(B0x,B0y,B0z)',minval(ind%B0%x),minval(ind%B0%y),minval(ind%B0%z)
              endif
              write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)

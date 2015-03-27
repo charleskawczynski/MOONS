@@ -89,10 +89,7 @@
          c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
 
          ! Additional information
-         c%dhMin = minval(c%dhn)
-         c%maxRange = maxval(c%hn)-minval(c%hn)
-         c%hmin = minval(c%hn); c%hmax = maxval(c%hn)
-         c%N = size(c%hc)-2
+         call initProps(c)
        end subroutine
 
        subroutine initCopy(c,d)
@@ -115,11 +112,7 @@
          c%dhc = d%dhc
 
          ! Additional information
-         c%dhMin = d%dhMin
-         c%maxRange = d%maxRange
-         c%hmin = d%hmin
-         c%hmax = d%hmax
-         c%N = d%N
+         call initProps(c)
        end subroutine
 
        subroutine initCellCenter(c,hc)
@@ -152,10 +145,17 @@
          c%dhn = (/(c%hn(i+1)-c%hn(i),i=1,c%sn-1)/)
 
          ! Additional information
+         call initProps(c)
+       end subroutine
+
+       subroutine initProps(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+         ! Additional information
          c%dhMin = minval(c%dhn)
-         c%maxRange = maxval(c%hn)-minval(c%hn)
-         c%hmin = minval(c%hn); c%hmax = maxval(c%hn)
-         c%N = size(c%hn)+1
+         c%hmin = c%hn(2); c%hmax = c%hn(c%sn-1) ! To account for ghost node
+         c%maxRange = c%hmax-c%hmin
+         c%N = size(c%hc)-2
        end subroutine
 
        subroutine restrictCoordinates(r,c)
@@ -169,11 +169,23 @@
          type(coordinates),intent(inout) :: r
          integer :: i
          if (c%sc.gt.3) then
-           if (mod(c%sc,2).eq.0) call init(r,(/(c%hn(2*i-1),i=1,c%sc/2)/),2) ! good case
+           ! if (mod(c%sc,2).eq.0) call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),2) ! good case
+           if (mod(c%sc,2).eq.0) then
+             call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),2)
+             call addGhostNodes(r)
+           endif
+
            if (mod(c%sc,2).ne.0) call init(r,(/c%hc(1),(/(c%hc(2*i),i=1,(c%sc-1)/2)/),c%hc(c%sc)/),1) ! bad case
          else; call init(r,c) ! return c
          endif
        end subroutine
+
+       subroutine addGhostNodes(c)
+         implicit none
+         type(coordinates),intent(inout) :: c
+         call init(c,(/c%hn(1)-c%dhn(1),c%hn,c%hn(c%sn)+(c%dhn(c%sn-1))/),2)
+       end subroutine
+
 
 #ifdef _CHECK_GRID_
        subroutine checkCoordinates(c)

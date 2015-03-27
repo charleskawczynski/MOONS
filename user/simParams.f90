@@ -3,14 +3,14 @@
        implicit none
 
        ! ************************* GRID *************************
-       logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
+       logical :: exportGrids               = .true.   ! Export all Grids before starting simulation
        logical :: exportRawICs              = .false.   ! Export all Grids before starting simulation
        logical :: exportICs                 = .false.   ! Export all Grids before starting simulation
 
-       logical :: autoMatchBetas            = .false.    ! Auto match stretching at wall
+       logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .false.    ! (T/F)
-       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .true.    ! (T/F)
+       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -32,6 +32,7 @@
        ! ************************ U-FIELD ***********************
        logical :: solveMomentum = .true.
        logical :: restartU = .false.
+       logical :: computeKU = .true.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
        !                                   1 : Explicit Euler
        !                                   2 : Semi-Implicit 3D ADI (Douglas)
@@ -47,12 +48,13 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
+       logical :: solveInduction = .true.
        logical :: restartB = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
+       logical :: computeKB = .true.    ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 4
+       integer,parameter :: solveBMethod = 5
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
@@ -75,7 +77,7 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .false.
+       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -93,7 +95,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 200
+       integer,parameter :: benchmarkCase = 1003
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

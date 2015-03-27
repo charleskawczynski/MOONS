@@ -72,6 +72,7 @@
 
        public :: checkBCs
        public :: BCsReady
+       public :: setAllBVals
 
        public :: setAllZero
        public :: getAllDirichlet,getAnyDirichlet
@@ -159,6 +160,20 @@
 
          this%TFb = .true.
          this%BCsDefined = .true.
+       end subroutine
+
+       subroutine setAllBVals(this,u)
+         implicit none
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:,:),intent(in) :: u
+         integer,dimension(3) :: s
+         s = this%s
+         call setXminVals(this,u(1,:,:))
+         call setYminVals(this,u(:,1,:))
+         call setZminVals(this,u(:,:,1))
+         call setXmaxVals(this,u(s(1),:,:))
+         call setYmaxVals(this,u(:,s(2),:))
+         call setZmaxVals(this,u(:,:,s(3)))
        end subroutine
 
        subroutine deleteBCs(this)

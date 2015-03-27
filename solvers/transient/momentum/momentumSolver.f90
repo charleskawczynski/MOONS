@@ -110,7 +110,6 @@
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
-         integer :: Nx,Ny,Nz
          write(*,*) 'Initializing momentum:'
 
          mom%g = g
@@ -185,7 +184,7 @@
          call init(mom%ss_ppe)
          call setName(mom%ss_ppe,'pressure poisson    ')
          call setMaxIterations(mom%ss_ppe,mom%NmaxPPE)
-         call setSubtractMean(mom%ss_ppe)
+         ! call setSubtractMean(mom%ss_ppe)
 
          ! Init ADI ss
          call init(mom%ss_ADI)
@@ -324,10 +323,10 @@
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
-           ! call setDt(mom%ADI_p,dt)
+           ! call setDt(mom%ADI_p,dt/10.0)
            ! call setAlpha(mom%ADI_p,real(1.0,cp))
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
-            mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
+            mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
            ! write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
@@ -404,11 +403,11 @@
          call multiply(mom%F,real(-1.0,cp))
 
          call apply(mom%ADI_u,mom%U%x,mom%F%x,mom%u_bcs,g,&
-            mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+            mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
          call apply(mom%ADI_u,mom%U%y,mom%F%y,mom%v_bcs,g,&
-            mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+            mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
          call apply(mom%ADI_u,mom%U%z,mom%F%z,mom%w_bcs,g,&
-            mom%ss_ADI,mom%err_ADI,1,getExportErrors(ss_MHD))
+            mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
 
          call assign(mom%Ustar,mom%U)
          
@@ -422,7 +421,7 @@
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
-            mom%ss_ppe,mom%err_PPE,1,getExportErrors(ss_MHD))
+            mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
 
@@ -497,7 +496,6 @@
          character(len=*),intent(in) :: dir
          ! Locals
          integer :: Nx,Ny,Nz
-         type(del) :: d
          ! Interior
          real(cp),dimension(:,:,:),allocatable :: tempccx,tempccy,tempccz
          real(cp),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz
@@ -521,8 +519,10 @@
          tempniy = tempny(2:Nx-1,2:Ny-1,2:Nz-1)
          tempniz = tempnz(2:Nx-1,2:Ny-1,2:Nz-1)
 
-         call writeToFile(g%c(1)%hn(2:Nx-1),g%c(2)%hn(2:Ny-1),g%c(3)%hn(2:Nz-1),&
-          tempnix,tempniy,tempniz,dir//'Ufield/','uni','vni','wni')
+         call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Ufield/','uni','vni','wni')
+
+         ! call writeToFile(g%c(1)%hn(2:Nx-1),g%c(2)%hn(2:Ny-1),g%c(3)%hn(2:Nz-1),&
+          ! tempnix,tempniy,tempniz,dir//'Ufield/','uni','vni','wni')
          deallocate(tempnx,tempny,tempnz)
          deallocate(tempnix,tempniy,tempniz)
 

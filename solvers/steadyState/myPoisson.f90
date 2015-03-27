@@ -53,7 +53,7 @@
 
       contains
 
-      subroutine myPoisson_SOR(SOR,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      subroutine myPoisson_SOR(SOR,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(mySOR),intent(inout) :: SOR
         real(dpn),dimension(:,:,:),intent(inout) :: u
@@ -62,12 +62,11 @@
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
-        integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(SOR,u,f,u_bcs,g,ss,err,gridType,displayTF)
+        call solve(SOR,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
-      subroutine myPoisson_ADI(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      subroutine myPoisson_ADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(dpn),dimension(:,:,:),intent(inout) :: u
@@ -76,12 +75,11 @@
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
-        integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
+        call solve(ADI,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
-      subroutine myPoisson_MG(MG,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      subroutine myPoisson_MG(MG,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: MG
         real(dpn),dimension(:,:,:),intent(inout) :: u
@@ -90,9 +88,8 @@
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: err
-        integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
-        call solve(MG,u,f,u_bcs,g,ss,err,gridType,displayTF)
+        call solve(MG,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
       end module

@@ -91,7 +91,8 @@
          case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
          case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
-         case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 3.0d-4
+         ! case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 3.0d-4
+         case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 4.0d-7; dTime = 3.0d-4
          case (104); Re = 1000d0;   Ha = 1000.0d0 ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.9d-6
 
          case (105); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
@@ -115,8 +116,9 @@
          ! case (1001); Re = 100d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 5.0d-7; dTime = 4.0d-5 ! Ha = 100
          case (1001); Re = 100d0;   Ha = 1000.0d0  ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 9.0d-7 ! Ha = 1000
 
-         case (1002); Re = 100d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
-         case (1003); Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 5.0d-7
+         ! case (1002); Re = 100d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-5
+         case (1003); Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 6.0d-6; dTime = ds
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -129,7 +131,7 @@
          
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 250000
+         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
@@ -155,8 +157,8 @@
          ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**5 ! A
          ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! B
          case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! C
-         case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 40000
-         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 100000
+         case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Insulating
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'

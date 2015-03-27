@@ -22,12 +22,12 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 3
+       integer,parameter :: applied_B_dir = 4
        !                                    0 : No applied field:      B0 = (0,0,0)
-       !                                    1 : Uniform applied field: B0 = (1,0,0)
-       !                                    2 : Uniform applied field: B0 = (0,1,0)
-       !                                    3 : Uniform applied field: B0 = (0,0,1)
-       !                                    4 : Uniform applied field: B0 = (1,1,1)
+       !                                    1 : Applied field: B0 = (B0x,0,0)
+       !                                    2 : Applied field: B0 = (0,B0y,0)
+       !                                    3 : Applied field: B0 = (0,0,B0z)
+       !                                    4 : Applied field: B0 = (B0x,B0y,B0z)
 
 
 #ifdef _SINGLE_PRECISION_
@@ -142,17 +142,17 @@
          Bx = real(0.0,cp); By = real(0.0,cp); Bz = real(0.0,cp)
        end subroutine
 
-       subroutine initFringingField_Sergey(Bx,By,Bz,g,dir,fringeDir)
+       subroutine initFringingField_Sergey(Bx,By,Bz,g,applied_dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
-         integer,intent(in) :: dir,fringeDir
-         select case (dir)
+         integer,intent(in) :: applied_dir,fringeDir
+         select case (applied_dir)
          case (1); call initFringe_Sergey(Bx,g,fringeDir)
          case (2); call initFringe_Sergey(By,g,fringeDir)
          case (3); call initFringe_Sergey(Bz,g,fringeDir)
          case default
-         stop 'Error: dir must = 1,2,3 in initFringingField_Sergey.'
+         stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
        end subroutine
 
@@ -169,8 +169,8 @@
          s = shape(B)
          allocate(Btemp(s(dir)))
          ! Sergey's fringe:
-         Bstretch = real(1.0,cp)   ! stretching parameter
-         Bshift = real(10.0,cp)    ! shift parameter
+         Bstretch = real(0.2,cp)   ! stretching parameter
+         Bshift = real(1.5,cp)     ! shift parameter
 
          do i=1,s(dir)
            Btemp(i) = (real(1.0,cp)+dtanh((g%c(dir)%hc(i)-Bshift)/Bstretch))/real(2.0,cp)

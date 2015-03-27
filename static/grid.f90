@@ -23,7 +23,7 @@
        public :: restrict
 
        type grid
-         real(cp) :: dhMin,maxRange
+         real(cp) :: dhMin,maxRange,volume
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
        end type
 
@@ -102,6 +102,7 @@
          type(grid),intent(inout) :: g
          g%dhMin = minval((/g%c(1)%dhMin,g%c(2)%dhMin,g%c(3)%dhMin/))
          g%maxRange = maxval((/g%c(1)%maxRange,g%c(2)%maxRange,g%c(3)%maxRange/))
+         g%volume = g%c(1)%maxRange*g%c(2)%maxRange*g%c(3)%maxRange
        end subroutine
         
        ! ------------------- restrict (for multigrid) --------------
@@ -138,8 +139,11 @@
          integer :: newU
          if (exportLight) then
            newU = newAndOpen(dir,'gridXYZ_'//name)
+           write(newU,*) 'dhMin = ',g%dhMin
+           write(newU,*) 'maxRange = ',g%maxRange
+           write(newU,*) 'volume = ',g%volume
            call addToFile(g,newU); close(newU)
-           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
+           ! call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
          else
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
            ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,real(1.0,cp),dir,name//'_c')

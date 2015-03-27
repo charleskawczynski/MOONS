@@ -12,7 +12,6 @@
        use initializeSigmaMu_mod
 
        use grid_mod
-       ! use griddata_mod
        use myError_mod
        use interpOps_mod
        use delOps_mod
@@ -438,15 +437,15 @@
 
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
          call myPoisson(ind%SOR_B,ind%B%x,ind%temp%phi,ind%Bx_bcs,g,ind%ss_ind,&
-         ind%err_residual,1,getExportErrors(ss_MHD))
+         ind%err_residual,getExportErrors(ss_MHD))
 
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
          call myPoisson(ind%SOR_B,ind%B%y,ind%temp%phi,ind%By_bcs,g,ind%ss_ind,&
-         ind%err_residual,1,getExportErrors(ss_MHD))
+         ind%err_residual,getExportErrors(ss_MHD))
 
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
          call myPoisson(ind%SOR_B,ind%B%z,ind%temp%phi,ind%Bz_bcs,g,ind%ss_ind,&
-         ind%err_residual,1,getExportErrors(ss_MHD))
+         ind%err_residual,getExportErrors(ss_MHD))
        end subroutine
 
        subroutine lowRemPseudoTimeStepUniform(ind,U,g)
@@ -600,6 +599,7 @@
            call applyAllBCs(ind%By_bcs,ind%B%y,g)
            call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
          enddo
+           ! stop 'printed B'
        end subroutine
 
        subroutine CTmethod(ind,U,g)
@@ -619,6 +619,7 @@
          ! ********************** LOCAL VARIABLES ***********************
 
          ! Compute current from appropriate fluxes:
+         ! Curl of B0 = 0 (so B is not added to this)
          call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
          call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
          call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
@@ -791,11 +792,11 @@
          call setName(ind%ss_ADI,'ADI for B-field     ')
 
          call apply(ind%ADI_B,ind%B%x,ind%tempVF%x,ind%Bx_bcs,g,&
-            ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
+            ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
          call apply(ind%ADI_B,ind%B%y,ind%tempVF%y,ind%By_bcs,g,&
-            ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
+            ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
          call apply(ind%ADI_B,ind%B%z,ind%tempVF%z,ind%Bz_bcs,g,&
-            ind%ss_ADI,ind%err_ADI,1,getExportErrors(ss_MHD))
+            ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -815,7 +816,7 @@
 
          call myCC2CCDiv(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
          call myPoisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
-          ind%err_CleanB,1,getExportErrors(ss_MHD))
+          ind%err_CleanB,getExportErrors(ss_MHD))
 
          call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,1)
          ind%B%x = ind%B%x - ind%temp%phi
@@ -857,30 +858,27 @@
          call myCollocatedCross(ind%tempVF%x,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,ind%Bstar%x,ind%Bstar%y,ind%Bstar%z,dir)
          call myCellCenter2Face(ind%F%x,ind%tempVF%x,g_ind,dir)
          jcrossB%x = zero ! expensive!
-         ! write(*,*) '(Nx-2)-(3)+1 = ',(Nx-2)-(3)+1
-         ! write(*,*) 'shape(jcrossB%x) = ',shape(jcrossB%x)
-         ! write(*,*) 'Nin1(1)+1: Nin2(1)-1 = ',(Nin2(1)-1)-(Nin1(1)+1)+1
-         jcrossB%x(3:Nx-3,2:Ny-1,2:Nz-1) = &
+         jcrossB%x(3:Nx-2,2:Ny-1,2:Nz-1) = &
          ind%F%x( Nin1(1)+1: Nin2(1)-1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-         jcrossB%x = jcrossB%x*((Ha**two)/Re)
+         jcrossB%x = jcrossB%x*((Ha**real(2.0,cp))/Re)
 
          dir = 2
          Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sn; Nz = g_mom%c(3)%sc
          call myCollocatedCross(ind%tempVF%y,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,ind%Bstar%x,ind%Bstar%y,ind%Bstar%z,dir)
          call myCellCenter2Face(ind%F%y,ind%tempVF%y,g_ind,dir)
          jcrossB%y = zero ! expensive!
-         jcrossB%y(2:Nx-1,3:Ny-3,2:Nz-1) = &
+         jcrossB%y(2:Nx-1,3:Ny-2,2:Nz-1) = &
          ind%F%y(Nice1(1):Nice2(1), Nin1(2)+1: Nin2(2)-1,Nice1(3):Nice2(3))
-         jcrossB%y = jcrossB%y*((Ha**two)/Re)
+         jcrossB%y = jcrossB%y*((Ha**real(2.0,cp))/Re)
 
          dir = 3
          Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sn
          call myCollocatedCross(ind%tempVF%z,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,ind%Bstar%x,ind%Bstar%y,ind%Bstar%z,dir)
          call myCellCenter2Face(ind%F%z,ind%tempVF%z,g_ind,dir)
          jcrossB%z = zero ! expensive!
-         jcrossB%z(2:Nx-1,2:Ny-1,3:Nz-3) = &
+         jcrossB%z(2:Nx-1,2:Ny-1,3:Nz-2) = &
          ind%F%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)+1: Nin2(3)-1)
-         jcrossB%z = jcrossB%z*((Ha**two)/Re)
+         jcrossB%z = jcrossB%z*((Ha**real(2.0,cp))/Re)
        end subroutine
 
        subroutine computeDivergenceInduction(ind,g)
@@ -902,42 +900,43 @@
          endif
        end subroutine
 
-       subroutine computeCurrent(J,B,B0,mu,gd)
+       subroutine computeCurrent(J,B,B0,mu,g)
          implicit none
          type(vectorField),intent(inout) :: B,J
          type(vectorField),intent(in) :: B0
          type(scalarField),intent(in) :: mu
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g
          ! B = (B + B0)/mu
          call add(B,B0)
          call divide(B,mu)
-         call myCCCurl(J%x,B%x,B%y,B%z,gd,1)
-         call myCCCurl(J%y,B%x,B%y,B%z,gd,2)
-         call myCCCurl(J%z,B%x,B%y,B%z,gd,3)
+         call myCCCurl(J%x,B%x,B%y,B%z,g,1)
+         call myCCCurl(J%y,B%x,B%y,B%z,g,2)
+         call myCCCurl(J%z,B%x,B%y,B%z,g,3)
          call multiply(B,mu)
          call subtract(B,B0)
          ! B = B*mu - B0
        end subroutine
 
-       subroutine embedVelocity(U_fi,U_cct,U_cci,gd)
+       subroutine embedVelocity(U_fi,U_cct,U_cci,g_mom)
          implicit none
          type(vectorField),intent(in) :: U_fi
          type(vectorField),intent(inout) :: U_cct
          type(scalarField),intent(inout) :: U_cci
-         type(grid),intent(in) :: gd
+         type(grid),intent(in) :: g_mom
          integer,dimension(3) :: Ni
 
-         Ni = (/gd%c(1)%sc-2,gd%c(2)%sc-2,gd%c(3)%sc-2/) ! minus fictitious cells
+         Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
          ! (exclude fictitious cells)
-         call myFace2CellCenter(U_cci%phi,U_fi%x,gd,1)
+         call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
+
           U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
          U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
 
-         call myFace2CellCenter(U_cci%phi,U_fi%y,gd,2)
+         call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
           U_cct%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
          U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
 
-         call myFace2CellCenter(U_cci%phi,U_fi%z,gd,3)
+         call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
           U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
          U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
        end subroutine

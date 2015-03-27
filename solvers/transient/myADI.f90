@@ -16,14 +16,17 @@
       ! call setDt(ADI,dt)           ! Required for apply
       ! call setAlpha(ADI,alpha)     ! Required for both
       ! 
+      ! Flags: (_EXPORT_ADI_CONVERGENCE_)
+      ! 
       use BCs_mod
       use applyBCs_mod
       use grid_mod
       use del_mod
+      use scalarField_mod
       use solverSettings_mod
       use delOps_mod
       use myTriSolver_mod
-      use myTriOperator_mod
+      use myIO_mod
       use myError_mod
       implicit none
 
@@ -50,13 +53,13 @@
 
       type myADI
         type(myTrisolver),dimension(3) :: triSolver
-        type(myTriOperator),dimension(3) :: triOperator
         real(cp),dimension(:,:,:),allocatable :: lapu
         real(cp),dimension(:),allocatable :: dtj
         integer,dimension(3) :: s
         integer :: nTimeLevels,gridType
         real(cp) :: alpha,dt
         real(cp),dimension(:,:,:),allocatable :: alpha_var
+        type(scalarField),dimension(3) :: temp
         logical :: var_coeff = .false.
       end type
 
@@ -65,16 +68,9 @@
       interface solve;       module procedure solveADI;                     end interface
       interface apply;       module procedure applyADI;                     end interface
 
-      interface setUpSystem; module procedure setUpSystemAll;         end interface
+      interface addIdentity; module procedure addIdentityInterior;          end interface
 
-      ! interface setUpSystem; module procedure setUpSystemInterior;    end interface
-
-      interface addIdentity; module procedure addIdentityAll;               end interface
-
-      ! interface addIdentity; module procedure addIdentityInterior;          end interface
-
-      ! interface relax3D;     module procedure relax3D_InteriorSolve;        end interface
-      interface relax3D;     module procedure relax3D_Anderson_not_working; end interface
+      interface addInterior; module procedure addInteriorPad;               end interface
 
       interface setAlpha;    module procedure setAlphaUniform;              end interface
       interface setAlpha;    module procedure setAlphaVariable;             end interface
@@ -96,19 +92,17 @@
         allocate(loDiag(s(dir)-1))
 
         if (ADI%gridType.eq.1) then
-          gt = 0
+          gt = 1
           call setUpSystem(loDiag,diag,upDiag,real(0.5,cp)*ADI%dt*ADI%alpha,&
            g%c(dir)%dhc,g%c(dir)%dhn,s(dir),gt)
-          call init(ADI%triOperator(dir),loDiag,diag,upDiag)
 
           call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
            g%c(dir)%dhc,g%c(dir)%dhn,s(dir),gt)
         endif
         if (ADI%gridType.eq.2) then
-          gt = 1
+          gt = 0
           call setUpSystem(loDiag,diag,upDiag,real(0.5,cp)*ADI%dt*ADI%alpha,&
            g%c(dir)%dhn,g%c(dir)%dhc,s(dir),gt)
-          call init(ADI%triOperator(dir),loDiag,diag,upDiag)
 
           call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
            g%c(dir)%dhn,g%c(dir)%dhc,s(dir),gt)
@@ -120,16 +114,19 @@
         deallocate(upDiag,diag,loDiag)
       end subroutine
 
-      subroutine initADI(ADI,s,g,gridType)
+      subroutine initADI(ADI,s,g)
         implicit none
         type(myADI),intent(inout) :: ADI
         integer,dimension(3),intent(in) :: s
         type(grid),intent(in) :: g
-        integer,intent(in) :: gridType
         integer :: j,smean
         real(cp) :: hj,h0
         ! Set preliminary parameters
-        ADI%gridType = gridType; ADI%s = s
+        ADI%s = s
+            if (ADI%s(1).eq.g%c(1)%sc) then; ADI%gridType = 1
+        elseif (ADI%s(1).eq.g%c(1)%sn) then; ADI%gridType = 2
+        else; stop 'Error: gridType was not determined in myADI.f90'
+        endif
 
         ! Set multi-scale time steps:
         smean = (s(1)+s(2)+s(3))/3
@@ -155,171 +152,12 @@
        call delete(ADI%triSolver(1))
        call delete(ADI%triSolver(2))
        call delete(ADI%triSolver(3))
-       call delete(ADI%triOperator(1))
-       call delete(ADI%triOperator(2))
-       call delete(ADI%triOperator(3))
        if (allocated(ADI%lapu)) deallocate(ADI%lapu)
        if (allocated(ADI%dtj)) deallocate(ADI%dtj)
        if (allocated(ADI%alpha_var)) deallocate(ADI%alpha_var)
       end subroutine
 
-      subroutine relax3DOldButWorking(ADI,u,f,u_bcs,g)
-        implicit none
-        type(myADI),intent(inout) :: ADI
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        ! Locals
-        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar
-
-        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp);
-
-        ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
-        call apply(ADI%triOperator(1),temp1,u,1,0)
-        call apply(ADI%triOperator(2),temp2,u,2,0)
-        call apply(ADI%triOperator(3),temp3,u,3,0)
-
-        ! ---------- Step in x ----------------
-        ! Compute RHS:
-        ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
-        call addInterior(fstar,u,1)
-        call addInterior(fstar,temp1,1)
-        call addInterior(fstar,real(2.0,cp)*temp2,1)
-        call addInterior(fstar,real(2.0,cp)*temp3,1)
-        call addInterior(fstar,-ADI%dt*f,1)
-
-        ! Apply BCs along x
-        call applyBCFace(u_bcs,fstar,g,1)
-        call applyBCFace(u_bcs,fstar,g,4)
-
-        ! Solve (I - 0.5 dt d_xx) u^* = fstar
-        call apply(ADI%triSolver(1),temp1,fstar,1,1)
-
-        ! ---------- Step in y ----------------
-        ! Compute RHS:
-        ! fstar = un* - .5 dt d_yy
-        fstar = temp1 - temp2
-        ! fstar = temp1
-        ! call addInterior(fstar,-temp2,2)
-
-
-        ! Apply BCs along y
-        call applyBCFace(u_bcs,fstar,g,2)
-        call applyBCFace(u_bcs,fstar,g,5)
-
-        ! Solve (I - 0.5 dt d_yy) u^* = fstar
-        call apply(ADI%triSolver(2),temp1,fstar,2,1)
-
-        ! ---------- Step in z ----------------
-        ! Compute RHS:
-        ! fstar = un** - .5 dt d_zz
-        fstar = temp1 - temp3
-        ! fstar = temp1
-        ! call addInterior(fstar,-temp3,3)
-
-        ! Apply BCs along z
-        call applyBCFace(u_bcs,fstar,g,3)
-        call applyBCFace(u_bcs,fstar,g,6)
-
-        ! Solve (I - 0.5 dt d_zz) u^* = fstar
-        call apply(ADI%triSolver(3),u,fstar,3,1)
-
-        ! Re-apply BCs for u along x and y
-        call applyAllBCs(u_bcs,u,g)
-        ! call applyBCFace(u_bcs,u,g,1)
-        ! call applyBCFace(u_bcs,u,g,2)
-        ! call applyBCFace(u_bcs,u,g,3)
-        ! call applyBCFace(u_bcs,u,g,4)
-        ! call applyBCFace(u_bcs,u,g,6)
-        ! call applyBCFace(u_bcs,u,g,5)
-
-        deallocate(temp1,temp2,temp3,fstar)
-      end subroutine
-
-      subroutine relax3DOldButWorking2(ADI,u,f,u_bcs,g)
-        implicit none
-        type(myADI),intent(inout) :: ADI
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        ! Locals
-        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar
-
-        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
-
-        ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
-        call apply(ADI%triOperator(1),temp1,u,1,1)
-        call apply(ADI%triOperator(2),temp2,u,2,1)
-        call apply(ADI%triOperator(3),temp3,u,3,1)
-
-        ! ---------- Step in x ----------------
-        ! Compute RHS:
-        ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
-        call addInterior(fstar,u,1)
-        call addInterior(fstar,temp1,1)
-        call addInterior(fstar,real(2.0,cp)*temp2,1)
-        call addInterior(fstar,real(2.0,cp)*temp3,1)
-
-        call addInterior(fstar,-ADI%dt*f,1)
-
-        ! Apply BCs along x
-        ! call applyBCFace(u_bcs,fstar,g,1)
-        ! call applyBCFace(u_bcs,fstar,g,4)
-
-        ! Solve (I - 0.5 dt d_xx) u^* = fstar
-        call apply(ADI%triSolver(1),temp1,fstar,1,1)
-
-        ! ---------- Step in y ----------------
-        ! Compute RHS:
-        ! fstar = un* - .5 dt d_yy
-        ! fstar = temp1 - temp2
-        fstar = temp1
-        call addInterior(fstar,-temp2,2)
-
-        ! Apply BCs along y
-        ! call applyBCFace(u_bcs,fstar,g,2)
-        ! call applyBCFace(u_bcs,fstar,g,5)
-
-        ! Solve (I - 0.5 dt d_yy) u^* = fstar
-        call apply(ADI%triSolver(2),temp1,fstar,2,1)
-
-        ! ---------- Step in z ----------------
-        ! Compute RHS:
-        ! fstar = un** - .5 dt d_zz
-        ! fstar = temp1 - temp3
-        fstar = temp1
-        call addInterior(fstar,-temp3,3)
-
-        ! Apply BCs along z
-        ! call applyBCFace(u_bcs,fstar,g,3)
-        ! call applyBCFace(u_bcs,fstar,g,6)
-
-        ! Solve (I - 0.5 dt d_zz) u^* = fstar
-        call apply(ADI%triSolver(3),u,fstar,3,1)
-
-        ! Re-apply BCs for u along x and y
-        call applyAllBCs(u_bcs,u,g)
-        ! call applyBCFace(u_bcs,u,g,1)
-        ! call applyBCFace(u_bcs,u,g,2)
-        ! call applyBCFace(u_bcs,u,g,3)
-        ! call applyBCFace(u_bcs,u,g,4)
-        ! call applyBCFace(u_bcs,u,g,6)
-        ! call applyBCFace(u_bcs,u,g,5)
-
-        deallocate(temp1,temp2,temp3,fstar)
-      end subroutine
-
-      subroutine relax3D_Anderson_not_working(ADI,u,f,u_bcs,g)
+      subroutine relax3D_working(ADI,u,f,u_bcs,g)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -329,285 +167,380 @@
         integer,dimension(3) :: s
         type(del) :: d
         ! Locals
-        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar,utemp,lapUbc,ftemp
+        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar,lapUbc,ftemp,u_bc
         s = ADI%s
         allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(utemp(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
         fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
-        call applyAllBCs(u_bcs,u,g)
 
-        u = u - sum(u)/(max(1,size(u)))
-        ! ftemp = f - sum(f)/(max(1,size(f)))
-        utemp = u
-        utemp(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
-        call d%assign(lapUbc,utemp,g,2,1,1)
-        !    call d%add(lapUbc,utemp,g,2,2,1,1)
-        !    call d%add(lapUbc,utemp,g,2,3,1,1)
+        ! Apply BCs along x
+        call applyAllBCs(u_bcs,u,g)
+        u_bc = u
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
 
         ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
-        ! call d%assign(temp1,u,g,2,1,1,0)
-        ! call d%assign(temp2,u,g,2,2,1,0)
-        ! call d%assign(temp3,u,g,2,3,1,0)
-        ! temp1 = temp1*real(0.5,cp)*ADI%dt*ADI%alpha
-        ! temp2 = temp2*real(0.5,cp)*ADI%dt*ADI%alpha
-        ! temp3 = temp3*real(0.5,cp)*ADI%dt*ADI%alpha
-        call apply(ADI%triOperator(1),temp1,u,1,0)
-        call apply(ADI%triOperator(2),temp2,u,2,0)
-        call apply(ADI%triOperator(3),temp3,u,3,0)
+        call d%assign(temp1,u,g,2,1,1) ! Must use ghost points on RHS operator
+        call d%assign(temp2,u,g,2,2,1) ! Must use ghost points on RHS operator
+        call d%assign(temp3,u,g,2,3,1) ! Must use ghost points on RHS operator
+        temp1 = temp1*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp2 = temp2*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp3 = temp3*real(0.5,cp)*ADI%dt*ADI%alpha
 
         ! ---------- Step in x ----------------
         ! Compute RHS:
         ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
-        ! call addInterior(fstar,u,1)
-        ! call addInterior(fstar,temp1,1)
-        ! call addInterior(fstar,real(2.0,cp)*temp2,1)
-        ! call addInterior(fstar,real(2.0,cp)*temp3,1)
-        ! call addInterior(fstar,-ADI%dt*f,1)
 
-        fstar = u
+        fstar = u ! fstar includes ghost points on RHS
         fstar = fstar + temp1
         fstar = fstar + real(2.0,cp)*temp2
         fstar = fstar + real(2.0,cp)*temp3
 
-        ftemp = f
-        ftemp(1,:,:) = ftemp(1,:,:) - lapUbc(2,:,:)
-        ftemp(:,1,:) = ftemp(:,1,:) - lapUbc(:,2,:)
-        ftemp(:,:,1) = ftemp(:,:,1) - lapUbc(:,:,2)
-        ftemp(s(1),:,:) = ftemp(s(1),:,:) - lapUbc(s(1)-1,:,:)
-        ftemp(:,s(2),:) = ftemp(:,s(2),:) - lapUbc(:,s(2)-1,:)
-        ftemp(:,:,s(3)) = ftemp(:,:,s(3)) - lapUbc(:,:,s(3)-1)
-        ! fstar = fstar - ADI%dt*(f - lapUbc)
-        fstar = fstar - ADI%dt*(ftemp)
+        ftemp = f ! let f be only interior and boundary values:
+        ftemp(1,:,:) = real(0.0,cp)
+        ftemp(:,1,:) = real(0.0,cp)
+        ftemp(:,:,1) = real(0.0,cp)
+        ftemp(s(1),:,:) = real(0.0,cp)
+        ftemp(:,s(2),:) = real(0.0,cp)
+        ftemp(:,:,s(3)) = real(0.0,cp)
 
+        fstar = fstar - ADI%dt*ftemp
 
-        ! Apply BCs along x
-        ! fstar(:,1,1) = 0.0;
-        ! fstar(:,s(2),s(3)) = 0.0;
-        ! call applyBCFace(u_bcs,fstar,g,1)
-        ! call applyBCFace(u_bcs,fstar,g,4)
+        ! Add Au_bc to RHS (neglecting I, since it only affects ghost points)
+        call d%assign(lapUbc,u_bc,g,2,1,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_xx) u^* = fstar
-        call apply(ADI%triSolver(1),temp1,fstar,1,0)
+        call apply(ADI%triSolver(1),temp1,fstar,1,1)
 
         ! ---------- Step in y ----------------
         ! Compute RHS:
         ! fstar = un* - .5 dt d_yy
-        call d%assign(lapUbc,utemp,g,2,2,0)
-        fstar = temp1
-        ! fstar = temp1 - temp2 - 0.5*ADI%dt*lapUbc
+        ! Apply BCs along x
+        call applyAllGhost(u_bcs,temp1,g)
+        ! call applyAllBCs(u_bcs,temp1,g)
         fstar = temp1 - temp2
-
-        ! ftemp = fstar
-        ! ftemp(1,:,:) = ftemp(1,:,:) - lapUbc(2,:,:)
-        ! ftemp(:,1,:) = ftemp(:,1,:) - lapUbc(:,2,:)
-        ! ftemp(:,:,1) = ftemp(:,:,1) - lapUbc(:,:,2)
-        ! ftemp(s(1),:,:) = ftemp(s(1),:,:) - lapUbc(s(1)-1,:,:)
-        ! ftemp(:,s(2),:) = ftemp(:,s(2),:) - lapUbc(:,s(2)-1,:)
-        ! ftemp(:,:,s(3)) = ftemp(:,:,s(3)) - lapUbc(:,:,s(3)-1)
-
-        ! call addInterior(fstar,-temp2,2)
-        ! fstar(1,:,1) = 0.0;      
-        ! fstar(s(1),:,s(3)) = 0.0;
-        ! Apply BCs along y
-        call applyBCFace(u_bcs,fstar,g,2)
-        call applyBCFace(u_bcs,fstar,g,5)
+        call d%assign(lapUbc,u_bc,g,2,2,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_yy) u^* = fstar
-        call apply(ADI%triSolver(2),temp1,fstar,2,0)
+        call apply(ADI%triSolver(2),temp1,fstar,2,1)
 
         ! ---------- Step in z ----------------
         ! Compute RHS:
         ! fstar = un** - .5 dt d_zz
-        call d%assign(lapUbc,utemp,g,2,3,0)
-        fstar = temp1
-        ! fstar = temp1 - temp3 - 0.5*ADI%dt*lapUbc
+        ! Apply BCs along y
+        call applyAllGhost(u_bcs,temp1,g)
+        ! call applyAllBCs(u_bcs,temp1,g)
         fstar = temp1 - temp3
-        ! call addInterior(fstar,-temp3,3)
+        call d%assign(lapUbc,u_bc,g,2,3,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
 
         ! Apply BCs along z
-        call applyBCFace(u_bcs,fstar,g,3)
-        call applyBCFace(u_bcs,fstar,g,6)
-        ! fstar(1,1,:) = 0.0
-        ! fstar(s(1),s(2),:) = 0.0
-        ! Solve (I - 0.5 dt d_zz) u^* = fstar
-        call apply(ADI%triSolver(3),u,fstar,3,0)
 
-        ! Re-apply BCs for u along x and y
+        ! Solve (I - 0.5 dt d_zz) u^* = fstar
+        call apply(ADI%triSolver(3),u,fstar,3,1)
+
+        ! Apply BCs along z
         call applyAllBCs(u_bcs,u,g)
-        ! call applyBCFace(u_bcs,u,g,1)
-        ! call applyBCFace(u_bcs,u,g,2)
-        ! call applyBCFace(u_bcs,u,g,3)
-        ! call applyBCFace(u_bcs,u,g,4)
-        ! call applyBCFace(u_bcs,u,g,6)
-        ! call applyBCFace(u_bcs,u,g,5)
 
         deallocate(temp1,temp2,temp3,fstar)
-        deallocate(lapUbc,utemp,ftemp)
+        deallocate(lapUbc,ftemp,u_bc)
       end subroutine
 
-      subroutine relax3D_InteriorSolve(ADI,u,f,u_bcs,g)
+      subroutine relax3D_general(ADI,u,f,u_bcs,g,d1,d2,d3)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(cp),dimension(:,:,:),intent(inout) :: u
         real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
+        integer,intent(in) :: d1,d2,d3
         integer,dimension(3) :: s
         type(del) :: d
         ! Locals
-        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar,utemp,lapUbc,ftemp
+        real(cp),dimension(:,:,:),allocatable :: fstar,lapUbc,ftemp,u_bc
         s = ADI%s
-        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(utemp(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
-        call applyAllBCs(u_bcs,u,g)
-
-        utemp = u
-        utemp(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
-        call d%assign(lapUbc,utemp,g,2,1,1)
-           ! call d%add(lapUbc,utemp,g,2,2,1,1)
-           ! call d%add(lapUbc,utemp,g,2,3,1,1)
-
-        ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
-        call apply(ADI%triOperator(1),temp1,u,1,1)
-        call apply(ADI%triOperator(2),temp2,u,2,1)
-        call apply(ADI%triOperator(3),temp3,u,3,1)
-
-        ! ---------- Step in x ----------------
-        ! Compute RHS:
-        ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
-        ! call addInterior(fstar,u,1)
-        ! call addInterior(fstar,temp1,1)
-        ! call addInterior(fstar,real(2.0,cp)*temp2,1)
-        ! call addInterior(fstar,real(2.0,cp)*temp3,1)
-        ! call addInterior(fstar,-ADI%dt*f,1)
-
-        fstar = u
-        fstar = fstar + temp1
-        fstar = fstar + real(2.0,cp)*temp2
-        fstar = fstar + real(2.0,cp)*temp3
-
-        ftemp = f
-        ftemp(1,:,:) = ftemp(1,:,:) - lapUbc(2,:,:)
-        ftemp(:,1,:) = ftemp(:,1,:) - lapUbc(:,2,:)
-        ftemp(:,:,1) = ftemp(:,:,1) - lapUbc(:,:,2)
-        ftemp(s(1),:,:) = ftemp(s(1),:,:) - lapUbc(s(1)-1,:,:)
-        ftemp(:,s(2),:) = ftemp(:,s(2),:) - lapUbc(:,s(2)-1,:)
-        ftemp(:,:,s(3)) = ftemp(:,:,s(3)) - lapUbc(:,:,s(3)-1)
-        ! fstar = fstar - ADI%dt*(f - lapUbc)
-        fstar = fstar - ADI%dt*(ftemp)
-
-
-        ! Apply BCs along x
-        ! fstar(:,1,1) = 0.0;
-        ! fstar(:,s(2),s(3)) = 0.0;
-        ! call applyBCFace(u_bcs,fstar,g,1)
-        ! call applyBCFace(u_bcs,fstar,g,4)
-
-        ! Solve (I - 0.5 dt d_xx) u^* = fstar
-        call apply(ADI%triSolver(1),temp1,fstar,1,0)
-
-        ! ---------- Step in y ----------------
-        ! Compute RHS:
-        ! fstar = un* - .5 dt d_yy
-        call d%assign(lapUbc,utemp,g,2,2,0)
-        fstar = temp1
-        ! fstar = temp1 - temp2 - 0.5*ADI%dt*lapUbc
-        fstar = temp1 - temp2
-
-        ! ftemp = fstar
-        ! ftemp(1,:,:) = ftemp(1,:,:) - lapUbc(2,:,:)
-        ! ftemp(:,1,:) = ftemp(:,1,:) - lapUbc(:,2,:)
-        ! ftemp(:,:,1) = ftemp(:,:,1) - lapUbc(:,:,2)
-        ! ftemp(s(1),:,:) = ftemp(s(1),:,:) - lapUbc(s(1)-1,:,:)
-        ! ftemp(:,s(2),:) = ftemp(:,s(2),:) - lapUbc(:,s(2)-1,:)
-        ! ftemp(:,:,s(3)) = ftemp(:,:,s(3)) - lapUbc(:,:,s(3)-1)
-
-        ! call addInterior(fstar,-temp2,2)
-        ! fstar(1,:,1) = 0.0;      
-        ! fstar(s(1),:,s(3)) = 0.0;
-        ! Apply BCs along y
-        call applyBCFace(u_bcs,fstar,g,2)
-        call applyBCFace(u_bcs,fstar,g,5)
-
-        ! Solve (I - 0.5 dt d_yy) u^* = fstar
-        call apply(ADI%triSolver(2),temp1,fstar,2,0)
-
-        ! ---------- Step in z ----------------
-        ! Compute RHS:
-        ! fstar = un** - .5 dt d_zz
-        call d%assign(lapUbc,utemp,g,2,3,0)
-        fstar = temp1
-        ! fstar = temp1 - temp3 - 0.5*ADI%dt*lapUbc
-        fstar = temp1 - temp3
-        ! call addInterior(fstar,-temp3,3)
-
-        ! Apply BCs along z
-        call applyBCFace(u_bcs,fstar,g,3)
-        call applyBCFace(u_bcs,fstar,g,6)
-        ! fstar(1,1,:) = 0.0
-        ! fstar(s(1),s(2),:) = 0.0
-        ! Solve (I - 0.5 dt d_zz) u^* = fstar
-        call apply(ADI%triSolver(3),u,fstar,3,0)
-
-        ! Re-apply BCs for u along x and y
-        call applyAllBCs(u_bcs,u,g)
-        ! call applyBCFace(u_bcs,u,g,1)
-        ! call applyBCFace(u_bcs,u,g,2)
-        ! call applyBCFace(u_bcs,u,g,3)
-        ! call applyBCFace(u_bcs,u,g,4)
-        ! call applyBCFace(u_bcs,u,g,6)
-        ! call applyBCFace(u_bcs,u,g,5)
-
-        deallocate(temp1,temp2,temp3,fstar)
-        deallocate(lapUbc,utemp,ftemp)
-      end subroutine
-
-      subroutine relax1D(ADI,u,f,u_bcs,g)
-        implicit none
-        type(myADI),intent(inout) :: ADI
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        ! Locals
-        real(cp),dimension(:,:,:),allocatable :: temp1,fstar
-
-        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
-        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
         fstar = real(0.0,cp)
 
+        call allocateField(ADI%temp(1),ADI%s(1),ADI%s(2),ADI%s(3))
+        call allocateField(ADI%temp(2),ADI%s(1),ADI%s(2),ADI%s(3))
+        call allocateField(ADI%temp(3),ADI%s(1),ADI%s(2),ADI%s(3))
+
+        ADI%temp(1)%phi = real(0.0,cp)
+        ADI%temp(2)%phi = real(0.0,cp)
+        ADI%temp(3)%phi = real(0.0,cp)
+
+        ! Apply BCs along x
+        call applyAllBCs(u_bcs,u,g)
+        u_bc = u
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+
         ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
-        call apply(ADI%triOperator(1),temp1,u,1,0)
+        call d%assign(ADI%temp(1)%phi,u,g,2,1,1) ! Must use ghost points on RHS operator
+        call d%assign(ADI%temp(2)%phi,u,g,2,2,1) ! Must use ghost points on RHS operator
+        call d%assign(ADI%temp(3)%phi,u,g,2,3,1) ! Must use ghost points on RHS operator
+        ADI%temp(1)%phi = ADI%temp(1)%phi*real(0.5,cp)*ADI%dt*ADI%alpha
+        ADI%temp(2)%phi = ADI%temp(2)%phi*real(0.5,cp)*ADI%dt*ADI%alpha
+        ADI%temp(3)%phi = ADI%temp(3)%phi*real(0.5,cp)*ADI%dt*ADI%alpha
 
         ! ---------- Step in x ----------------
         ! Compute RHS:
-        ! fstar = (I + .5 dt d_xx)u - dt*f
-        call addInterior(fstar,u,1)
-        call addInterior(fstar,temp1,1)
-        call addInterior(fstar,-ADI%dt*f,1)
+        ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
+
+        fstar = u ! fstar includes ghost points on RHS
+        fstar = fstar + ADI%temp(d1)%phi
+        fstar = fstar + real(2.0,cp)*ADI%temp(d2)%phi
+        fstar = fstar + real(2.0,cp)*ADI%temp(d3)%phi
+
+
+        ftemp = f ! let f be only interior and boundary values:
+        ftemp(1,:,:) = real(0.0,cp)
+        ftemp(:,1,:) = real(0.0,cp)
+        ftemp(:,:,1) = real(0.0,cp)
+        ftemp(s(1),:,:) = real(0.0,cp)
+        ftemp(:,s(2),:) = real(0.0,cp)
+        ftemp(:,:,s(3)) = real(0.0,cp)
+
+        fstar = fstar - ADI%dt*ftemp
+
+        ! Add Au_bc to RHS (neglecting I, since it only affects ghost points)
+        call d%assign(lapUbc,u_bc,g,2,d1,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_xx) u^* = fstar
+        call apply(ADI%triSolver(d1),ADI%temp(d1)%phi,fstar,d1,1)
+        call applyAllBCs(u_bcs,ADI%temp(d1)%phi,g)
+
+        ! ---------- Step in y ----------------
+        ! Compute RHS:
+        ! fstar = un* - .5 dt d_yy
+        fstar = ADI%temp(d1)%phi - ADI%temp(d2)%phi
+        call d%assign(lapUbc,u_bc,g,2,d2,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_yy) u^* = fstar
+        call apply(ADI%triSolver(d2),ADI%temp(d2)%phi,fstar,d2,1)
+        call applyAllBCs(u_bcs,u,g)
+
+        ! ---------- Step in z ----------------
+        ! Compute RHS:
+        ! fstar = un** - .5 dt d_zz
+        fstar = ADI%temp(d2)%phi - ADI%temp(d3)%phi
+        call d%assign(lapUbc,u_bc,g,2,d3,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_zz) u^* = fstar
+        call apply(ADI%triSolver(d3),ADI%temp(d3)%phi,fstar,d3,1)
+        call applyAllBCs(u_bcs,u,g)
+
+        call delete(ADI%temp(1))
+        call delete(ADI%temp(2))
+        call delete(ADI%temp(3))
+
+        deallocate(fstar)
+        deallocate(lapUbc,ftemp,u_bc)
+      end subroutine
+
+      subroutine relax3D_anderson(ADI,u,f,u_bcs,g)
+        implicit none
+        type(myADI),intent(inout) :: ADI
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(grid),intent(in) :: g
+        integer,dimension(3) :: s
+        type(del) :: d
+        ! Locals
+        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar,lapUbc,ftemp,u_bc,u_in
+        s = ADI%s
+        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(u_in(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
+        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
+
+        u_in = u
+        u_in(1,:,:) = real(0.0,cp); u_in(s(1),:,:) = real(0.0,cp)
+        u_in(:,1,:) = real(0.0,cp); u_in(:,s(2),:) = real(0.0,cp)
+        u_in(:,:,1) = real(0.0,cp); u_in(:,:,s(3)) = real(0.0,cp)
 
         ! Apply BCs along x
-        call applyBCFace(u_bcs,fstar,g,1)
-        call applyBCFace(u_bcs,fstar,g,4)
+        call applyAllGhost(u_bcs,u,g)
+        u_bc = u
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+
+        ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
+        call d%assign(temp1,u,g,2,1,1) ! Must use ghost points on RHS operator
+        call d%assign(temp2,u,g,2,2,1) ! Must use ghost points on RHS operator
+        call d%assign(temp3,u,g,2,3,1) ! Must use ghost points on RHS operator
+        temp1 = temp1*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp2 = temp2*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp3 = temp3*real(0.5,cp)*ADI%dt*ADI%alpha
+
+        ! ---------- Step in x ----------------
+        ! Compute RHS:
+        ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
+
+        fstar = u_in ! fstar includes ghost points on RHS
+        fstar = fstar + temp1
+        fstar = fstar + real(2.0,cp)*temp2
+        fstar = fstar + real(2.0,cp)*temp3
+
+        ftemp = f ! let f be only interior and boundary values:
+        ftemp(1,:,:) = real(0.0,cp)
+        ftemp(:,1,:) = real(0.0,cp)
+        ftemp(:,:,1) = real(0.0,cp)
+        ftemp(s(1),:,:) = real(0.0,cp)
+        ftemp(:,s(2),:) = real(0.0,cp)
+        ftemp(:,:,s(3)) = real(0.0,cp)
+
+        fstar = fstar - ADI%dt*ftemp
+
+        call d%assign(lapUbc,u_bc,g,2,1,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_xx) u^* = fstar
         call apply(ADI%triSolver(1),temp1,fstar,1,1)
+        call applyAllGhost(u_bcs,temp1,g)
 
-        deallocate(temp1,fstar)
+        ! ---------- Step in y ----------------
+        ! Compute RHS:
+        ! fstar = un* - .5 dt d_yy
+        ! Apply BCs along x
+
+        fstar = temp1 - temp2
+        call d%assign(lapUbc,u_bc,g,2,2,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_yy) u^* = fstar
+        call apply(ADI%triSolver(2),temp1,fstar,2,1)
+        call applyAllGhost(u_bcs,temp1,g)
+
+        ! ---------- Step in z ----------------
+        ! Compute RHS:
+        ! fstar = un** - .5 dt d_zz
+        ! Apply BCs along y
+        fstar = temp1 - temp3
+        call d%assign(lapUbc,u_bc,g,2,3,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_zz) u^* = fstar
+        call apply(ADI%triSolver(3),u,fstar,3,1)
+        call applyAllBCs(u_bcs,u,g)
+
+        deallocate(temp1,temp2,temp3,fstar)
+        deallocate(lapUbc,ftemp,u_bc,u_in)
       end subroutine
 
-      subroutine applyADI(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      subroutine relax3D(ADI,u,f,u_bcs,g)
+        implicit none
+        type(myADI),intent(inout) :: ADI
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(grid),intent(in) :: g
+        integer,dimension(3) :: s
+        type(del) :: d
+        ! Locals
+        real(cp),dimension(:,:,:),allocatable :: temp1,temp2,temp3,fstar,lapUbc,ftemp,u_bc,u_in
+        s = ADI%s
+        allocate(temp1(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(temp2(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(temp3(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(u_in(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
+        allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
+        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
+
+        u_in = u
+        u_in(1,:,:) = real(0.0,cp); u_in(s(1),:,:) = real(0.0,cp)
+        u_in(:,1,:) = real(0.0,cp); u_in(:,s(2),:) = real(0.0,cp)
+        u_in(:,:,1) = real(0.0,cp); u_in(:,:,s(3)) = real(0.0,cp)
+
+        ! Apply BCs along x
+        call applyAllGhost(u_bcs,u,g)
+        u_bc = u
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+
+        ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
+        call d%assign(temp1,u,g,2,1,1) ! Must use ghost points on RHS operator
+        call d%assign(temp2,u,g,2,2,1) ! Must use ghost points on RHS operator
+        call d%assign(temp3,u,g,2,3,1) ! Must use ghost points on RHS operator
+        temp1 = temp1*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp2 = temp2*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp3 = temp3*real(0.5,cp)*ADI%dt*ADI%alpha
+
+        ! ---------- Step in x ----------------
+        ! Compute RHS:
+        ! fstar = (I + .5 dt d_xx + dt d_yy + dt d_zz)u - dt*f
+
+        fstar = u_in ! fstar includes ghost points on RHS
+        fstar = fstar + temp1
+        fstar = fstar + real(2.0,cp)*temp2
+        fstar = fstar + real(2.0,cp)*temp3
+
+        ftemp = f ! let f be only interior and boundary values:
+        ftemp(1,:,:) = real(0.0,cp)
+        ftemp(:,1,:) = real(0.0,cp)
+        ftemp(:,:,1) = real(0.0,cp)
+        ftemp(s(1),:,:) = real(0.0,cp)
+        ftemp(:,s(2),:) = real(0.0,cp)
+        ftemp(:,:,s(3)) = real(0.0,cp)
+
+        fstar = fstar - ADI%dt*ftemp
+
+        call d%assign(lapUbc,u_bc,g,2,1,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_xx) u^* = fstar
+        call apply(ADI%triSolver(1),temp1,fstar,1,1)
+        call applyAllGhost(u_bcs,temp1,g)
+
+        ! ---------- Step in y ----------------
+        ! Compute RHS:
+        ! fstar = un* - .5 dt d_yy
+        ! Apply BCs along x
+
+        fstar = temp1 - temp2
+        call d%assign(lapUbc,u_bc,g,2,2,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_yy) u^* = fstar
+        call apply(ADI%triSolver(2),temp1,fstar,2,1)
+        call applyAllGhost(u_bcs,temp1,g)
+
+        ! ---------- Step in z ----------------
+        ! Compute RHS:
+        ! fstar = un** - .5 dt d_zz
+        ! Apply BCs along y
+        fstar = temp1 - temp3
+        call d%assign(lapUbc,u_bc,g,2,3,1)
+        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+
+        ! Solve (I - 0.5 dt d_zz) u^* = fstar
+        call apply(ADI%triSolver(3),u,fstar,3,1)
+        call applyAllBCs(u_bcs,u,g)
+
+        deallocate(temp1,temp2,temp3,fstar)
+        deallocate(lapUbc,ftemp,u_bc,u_in)
+      end subroutine
+
+      subroutine applyADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -616,12 +549,11 @@
         type(grid),intent(in) :: g
         type(solverSettings),intent(in) :: ss
         type(myError),intent(inout) :: err
-        integer,intent(in) :: gridType
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
 
         s = shape(f); ADI%s = s
-        call initADI(ADI,s,g,gridType)
+        call initADI(ADI,s,g)
 
         call initSystem(ADI,s,g,1)
         call initSystem(ADI,s,g,2)
@@ -644,7 +576,7 @@
         call delete(ADI)
       end subroutine
 
-      subroutine solveADI(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      subroutine solveADI(ADI,u,f,u_bcs,g,ss,norms,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -652,120 +584,123 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(in) :: ss
-        type(myError),intent(inout) :: err
-        integer,intent(in) :: gridType
+        type(myError),intent(inout) :: norms
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
-        integer :: i,j,Nt
+        real(cp),dimension(:,:,:),allocatable :: ftemp
+        integer :: i,j,Nt,maxIt
+#ifdef _EXPORT_ADI_CONVERGENCE_
+        integer :: NU,n
+#endif
 
         s = shape(f); ADI%s = s
-        call initADI(ADI,s,g,gridType)
+        call initADI(ADI,s,g)
+
 
         ! Nt = maxval((/getMaxIterations(ss)/ADI%nTimeLevels/2, 1/))
         Nt = getMaxIterations(ss)
         ! Nt = 1
+        allocate(ftemp(s(1),s(2),s(3)))
 
+        ! 
+        ! NOTES FOR MODEL PROBLEMS:
+        ! 
+        ! MP = 1
+        ! ftemp = f - sum(f)/max(1,size(f))
+        ! 
+        ! MP = 2
+        !      a) Do not subtract the mean of f
+        !      b) Do not zero boundaries of f
+        ftemp = f ! Works for MP = 2
+
+        ! 
+        ! MP = 3
+        ! 
+        ! MP = 4
+        ! DO NOT assign ftemp = 0 on boundaries. This should be done
+        ! prior to routine call. modelProblem = 1 makes this very clear
+        ! 
+        ! MP = 1
+        ! ftemp(1,:,:) = real(0.0,cp); ftemp(s(1),:,:) = real(0.0,cp)
+        ! ftemp(:,1,:) = real(0.0,cp); ftemp(:,s(2),:) = real(0.0,cp)
+        ! ftemp(:,:,1) = real(0.0,cp); ftemp(:,:,s(3)) = real(0.0,cp)
+
+        maxIt = 0
+
+#ifdef _EXPORT_ADI_CONVERGENCE_
+        open(NU,file=trim(strcompress('out\',n)) // trim(strcompress('norms_ADI',n)) // '.dat',pad='YES')
+#endif
         do i=1,Nt
 
           ! Begin V-cycle of multi-scale
           do j = 1,ADI%nTimeLevels
             call setDt(ADI,ADI%dtj(j))
-            ! call setDt(ADI,real(100.0,cp))
+            ! call setDt(ADI,real(0.01,cp))
             call initSystem(ADI,s,g,1)
             call initSystem(ADI,s,g,2)
             call initSystem(ADI,s,g,3)
             call relax3D(ADI,u,f,u_bcs,g)
+            if (getSubtractMean(ss)) then
+              u = u - sum(u)/(max(1,size(u)))
+            endif
+#ifdef _EXPORT_ADI_CONVERGENCE_
+            select case (ADI%gridType)
+            case (1); call CC2CCLap(ADI%lapu,u,g)
+            case (2); call myNodeLap(ADI%lapu,u,g)
+            end select
+            call compute(norms,ftemp,ADI%lapu)
+            write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
+#endif
+            maxIt = maxIt + 1
           enddo
+          if (maxIt.ge.Nt) exit
           do j = ADI%nTimeLevels, 1, -1
             call setDt(ADI,ADI%dtj(j))
-            ! call setDt(ADI,real(100.0,cp))
+            ! call setDt(ADI,real(0.01,cp))
             call initSystem(ADI,s,g,1)
             call initSystem(ADI,s,g,2)
             call initSystem(ADI,s,g,3)
             call relax3D(ADI,u,f,u_bcs,g)
+            if (getSubtractMean(ss)) then
+              u = u - sum(u)/(max(1,size(u)))
+            endif
+#ifdef _EXPORT_ADI_CONVERGENCE_
+            select case (ADI%gridType)
+            case (1); call CC2CCLap(ADI%lapu,u,g)
+            case (2); call myNodeLap(ADI%lapu,u,g)
+            end select
+            call compute(norms,ftemp,ADI%lapu)
+            write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
+#endif
+            maxIt = maxIt + 1
           enddo
-
+          if (maxIt.ge.Nt) exit
         enddo
+
+#ifdef _EXPORT_ADI_CONVERGENCE_
+        close(NU)
+#endif
 
         if (displayTF) then
           write(*,*) 'ADI Multi-scale Time Steps = ',ADI%dtj
           write(*,*) 'Number of multi-scale sweeps = ',Nt
           write(*,*) 'Number of multi-scale time levels = ',ADI%nTimeLevels
-          write(*,*) 'Number of ADI iterations = ',2*Nt*ADI%nTimeLevels
-
+          write(*,*) 'Number of ADI iterations = ',maxIt
           select case (ADI%gridType)
           case (1); call CC2CCLap(ADI%lapu,u,g)
           case (2); call myNodeLap(ADI%lapu,u,g)
           end select
-          call compute(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),ADI%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
-          call print(err,'ADI Residuals for '//trim(adjustl(getName(ss))))
+          call compute(norms,ftemp,ADI%lapu)
+          call print(norms,'ADI Residuals for '//trim(adjustl(getName(ss))))
+          ! write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
         endif
+
+        deallocate(ftemp)
 
         call delete(ADI)
       end subroutine
 
-      subroutine setUpSystemDirichlet(loDiag,diag,upDiag,alpha,dhn,dhc,s,gt)
-        implicit none
-        real(cp),dimension(:),intent(inout) :: loDiag,diag,upDiag
-        real(cp),intent(in) :: alpha
-        real(cp),dimension(:),intent(in) :: dhn,dhc
-        integer,intent(in) :: s,gt
-        integer :: j
-
-        diag(1) = real(1.0,cp)
-        upDiag(1) = real(0.0,cp)
-        do j=2,s-1
-          loDiag(j-1) = alpha/(dhn(j-1)*dhc(j-1))
-          diag(j) = -real(2.0,cp)*alpha/(dhn(j-1)*dhc(j-1))
-          upDiag(j) = alpha/(dhn(j-1)*dhc(j-1))
-        enddo
-        diag(s) = real(1.0,cp)
-        loDiag(s-1) = real(0.0,cp)
-      end subroutine
-
-      subroutine setUpSystemInterior(loDiag,diag,upDiag,alpha,dhn,dhc,s,gt)
-        implicit none
-        real(cp),dimension(:),intent(inout) :: loDiag,diag,upDiag
-        real(cp),intent(in) :: alpha
-        real(cp),dimension(:),intent(in) :: dhn,dhc
-        integer,intent(in) :: s,gt
-        integer :: j
-
-        diag(1) = real(0.0,cp)
-        upDiag(1) = real(0.0,cp)
-        do j=2,s-1
-          loDiag(j-1) = alpha/(dhn(j-1)*dhc(j-1))
-          diag(j) = -real(2.0,cp)*alpha/(dhn(j-1)*dhc(j-1))
-          upDiag(j) = alpha/(dhn(j-1)*dhc(j-1))
-        enddo
-        diag(s) = real(0.0,cp)
-        loDiag(s-1) = real(0.0,cp)
-      end subroutine
-
-      subroutine setUpSystemAll(loDiag,diag,upDiag,alpha,dhp,dhd,s,gt)
-        ! dhp = primary grid (data lives on primary grid)
-        ! dhd = dual    grid (data lives on primary grid)
-        ! diag = size(f)
-        ! size(dhp) = size(f)-1
-        implicit none
-        real(cp),dimension(:),intent(inout) :: loDiag,diag,upDiag
-        real(cp),intent(in) :: alpha
-        real(cp),dimension(:),intent(in) :: dhp,dhd
-        integer,intent(in) :: s,gt
-        integer :: j
-
-        diag(1) = -real(2.0,cp)*alpha/(dhp(2)*dhd(2))
-        upDiag(1) = alpha/(dhp(2)*dhd(2))
-        do j=2,s-1
-          loDiag(j-1) = alpha/(dhp(j-1)*dhd(j-1))
-          diag(j) = -real(2.0,cp)*alpha/(dhp(j-1)*dhd(j-1))
-          upDiag(j) = alpha/(dhp(j-1)*dhd(j-1))
-        enddo
-        diag(s) = -real(2.0,cp)*alpha/(dhp(2)*dhd(2))
-        loDiag(s-1) = alpha/(dhp(2)*dhd(2))
-      end subroutine
-
-      subroutine setUpSystemNewStretchedMesh(loDiag,diag,upDiag,alpha,dhp,dhd,s,gt)
+      subroutine setUpSystem(loDiag,diag,upDiag,alpha,dhp,dhd,s,gt)
         ! dhp = primary grid (data lives on primary grid)
         ! dhd = dual    grid (data lives on primary grid)
         ! diag = size(f)
@@ -777,8 +712,6 @@
         integer,intent(in) :: s,gt
         integer :: i
 
-        ! diag(1) = -(alpha/(dhp(2)*dhd(1+gt)))
-        ! upDiag(1) = alpha/(dhp(2)*dhd(1+gt))
         diag(1) = real(0.0,cp)
         upDiag(1) = real(0.0,cp)
         do i=2,s-1
@@ -788,8 +721,6 @@
         enddo
         diag(s) = real(0.0,cp)
         loDiag(s-1) = real(0.0,cp)
-        ! diag(s) = -(alpha/(dhp(s-1)*dhd(s-1+gt)))
-        ! loDiag(s-1) = alpha/(dhp(s-1)*dhd(s-1+gt))
       end subroutine
 
       subroutine setDt(ADI,dt)
@@ -818,7 +749,7 @@
        ADI%var_coeff = .true.
       end subroutine
 
-      subroutine addInterior(a,b,dir)
+      subroutine addInteriorDirectional(a,b,dir)
        implicit none
        real(cp),dimension(:,:,:),intent(inout) :: a
        real(cp),dimension(:,:,:),intent(in) :: b
@@ -845,7 +776,7 @@
        !$OMP END PARALLEL DO
       end subroutine
 
-      subroutine addInteriorNew(a,b,dir)
+      subroutine addInteriorPad(a,b,dir)
        implicit none
        real(cp),dimension(:,:,:),intent(inout) :: a
        real(cp),dimension(:,:,:),intent(in) :: b
@@ -865,49 +796,12 @@
        !$OMP END PARALLEL DO
       end subroutine
 
-      subroutine subtractInterior(a,b,dir)
-       implicit none
-       real(cp),dimension(:,:,:),intent(inout) :: a
-       real(cp),dimension(:,:,:),intent(in) :: b
-       integer,intent(in) :: dir
-       integer,dimension(3) :: s
-       integer :: i,j,k,x,y,z
-       select case (dir)
-       case (1); x=1;y=0;z=0
-       case (2); x=0;y=1;z=0
-       case (3); x=0;y=0;z=1
-       case default
-       write(*,*) 'Error: dir must = 1,2,3 in addInterior.'; stop
-       end select
-       s = shape(a)
-
-       !$OMP PARALLEL DO
-       do i=1+x,s(1)-x
-        do j=1+y,s(2)-y
-         do k=1+z,s(3)-z
-          a(i,j,k) = a(i,j,k) - b(i,j,k)
-         enddo
-        enddo
-       enddo
-       !$OMP END PARALLEL DO
-      end subroutine
-
       subroutine addIdentityInterior(diag)
         implicit none
         real(cp),dimension(:),intent(inout) :: diag
         integer :: j,s
         s = size(diag)
         do j = 2,s-1
-          diag(j) = real(1.0,cp) + diag(j)
-        enddo
-      end subroutine
-
-      subroutine addIdentityAll(diag)
-        implicit none
-        real(cp),dimension(:),intent(inout) :: diag
-        integer :: j,s
-        s = size(diag)
-        do j = 1,s
           diag(j) = real(1.0,cp) + diag(j)
         enddo
       end subroutine

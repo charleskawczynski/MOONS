@@ -13,6 +13,11 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
+\newcommand{\height}{0.4}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{12}
+\newcommand{\Deltah}{3}
+
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -56,34 +61,66 @@ This interpolation becase node (N) to cell center (CC) or (c) data requires an o
 \subsection{Interpolation CC to N data}
 Since node data does not necessarily live between two cell centers (for stretched grids), we may match the slopes:
 
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      % \draw [black] (0,0) to (4.5,0);
+      \draw [black] (\Deltah/2,0) to (12-\Deltah/2,0);
+      % \draw [black,dashed] (4.5,0) to (5.5,0);
+      \draw [black,dashed] (0,0) to (\Deltah/2,0);
+      \draw [black,dashed] (12-\Deltah/2,0) to (12,0);
+
+      % Nodes
+      \draw [black] (1*\Deltah,-\height) to (0+1*\Deltah,\height);
+      \draw [black] (2*\Deltah,-\height) to (0+2*\Deltah,\height);
+      \draw [black] (3*\Deltah,-\height) to (0+3*\Deltah,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (2*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (3*\Deltah+\Deltah/2,0) circle [radius=\radius];
+
+      \draw (1*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$u_{c,i}$};
+      \draw (2*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$u_{c,i+1}$};
+
+      \draw (2*\Deltah,0) node [black,below=\offSet] {$u_{n,i+1}$};
+
+    \end{tikzpicture}
+    \caption{Locations for interpolation}
+  \end{center}
+\end{figure}
+
+
 \begin{equation}
-	\frac{u_{n,i+1}-u_{n,i}}{h_{n,i+1}-h_{n,i}} =
-	\frac{u_{c,i}-u_{n,i}}{h_{c,i}-h_{n,i}}
+	\frac{u_{c,i+1}-u_{c,i}}{h_{c,i+1}-h_{c,i}} =
+	\frac{u_{n,i+1}-u_{c,i}}{h_{n,i+1}-h_{c,i}}
 \end{equation}
 
-Solving for $u_{c,i}$ we have
+Solving for $u_{n,i+1}$ we have
 
 \begin{equation}
-	u_{c,i} = u_{n,i} + \alpha (u_{n,i+1}-u_{n,i})
+	u_{n,i+1} = u_{c,i} + \alpha (u_{c,i+1}-u_{c,i})
 \end{equation}
 \begin{equation}
-	= u_{n,i+1}\alpha + u_{n,i}(1-\alpha)
+	= u_{c,i+1}\alpha + u_{c,i}(1-\alpha)
 \end{equation}
 Where
 \begin{equation}
-	\alpha = \frac{h_{c,i}-h_{n,i}}{h_{n,i+1}-h_{n,i}}
+	\alpha = \frac{h_{n,i+1}-h_{c,i}}{h_{c,i+1}-h_{c,i}}
 \end{equation}
 
 \subsection{Extrapolation CC to N data}
 Extrapolation is now very straightforward since there is one ghost cell center and one ghost node outside of the physical domain. In addition, the ghost cell is the same size as the first interior cell.
 
 \begin{equation}
-	u_{wall} = \frac{u_{ghost} + u_{interior}}{2}
+	u_{cc,ghost} = \frac{u_{n,ghost} + u_{n,wall}}{2}
 \end{equation}
+
 Solving for the ghost cell which we are extrapolating to, we have
 
 \begin{equation}
-	u_{ghost} = 2u_{wall} - u_{interior}
+	u_{n,ghost} = 2u_{cc,ghost} - u_{n,wall}
 \end{equation}
 
 

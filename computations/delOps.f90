@@ -60,7 +60,8 @@
 #endif
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
-       public :: myNodeMagnitude      ! call myNodeMagnitude(mag,u,v,w)
+       public :: totalEnergy          ! call totalEnergy(e,u,v,w)
+       public :: collocatedMagnitude  ! call collocatedMagnitude(mag,u,v,w)
        public :: myCollocatedCross    ! call myCollocatedCross(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
 
        ! --------------------------------- DERIVATIVE ROUTINES ---------------------------------
@@ -103,21 +104,44 @@
 
        ! ******************************* OTHER ROUTINES *********************************
 
-       subroutine myNodeMagnitude(mag,u,v,w) ! Finished
+       subroutine collocatedMagnitude(mag,x,y,z) ! Finished
          ! This routine was made in order to compare norm(B) with
          ! results from Salah
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
+         real(cp),dimension(:,:,:),intent(in) :: x,y,z
          real(cp),dimension(:,:,:),intent(inout) :: mag
          integer :: i,j,k
          integer,dimension(3) :: s
-         s = shape(u)
+         s = shape(x)
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
-           mag(i,j,k) = sqrt(u(i,j,k)**real(2.0,cp) +&
-           v(i,j,k)**real(2.0,cp) + w(i,j,k)**real(2.0,cp))
+           mag(i,j,k) = sqrt(x(i,j,k)**real(2.0,cp) +&
+                             y(i,j,k)**real(2.0,cp) +&
+                             z(i,j,k)**real(2.0,cp))
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
+       end subroutine
+
+       subroutine totalEnergy(e,x,y,z,g) ! Finished
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: x,y,z
+         real(cp),intent(inout) :: e
+         type(grid),intent(in) :: g
+         real(cp) :: eTemp
+         integer :: i,j,k
+         integer,dimension(3) :: s
+         s = shape(x)
+         eTemp = real(0.0,cp) ! temp is necessary for reduction
+         !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
+         do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
+           eTemp = eTemp + (x(i,j,k)**real(2.0,cp) +&
+                            y(i,j,k)**real(2.0,cp) +&
+                            z(i,j,k)**real(2.0,cp))*g%c(1)%dhn(i)*&
+                                                    g%c(2)%dhn(j)*&
+                                                    g%c(3)%dhn(k)
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         e = etemp/g%volume
        end subroutine
 
        subroutine myCollocatedCross(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir) ! Finished
@@ -856,6 +880,13 @@
          call d%assign(lapU,u,g,2,1,1)
          call d%add(   lapU,u,g,2,2,1)
          call d%add(   lapU,u,g,2,3,1)
+         ! if (s(1).eq.g%c(1)%sn) then
+         !   lapU(2,:,:) = real(0.0,cp); lapU(sdf(1)-1,:,:) = real(0.0,cp)
+         ! elseif (s(2).eq.g%c(2)%sn) then
+         !   lapU(:,2,:) = real(0.0,cp); lapU(:,sdf(2)-1,:) = real(0.0,cp)
+         ! elseif (s(3).eq.g%c(3)%sn) then
+         !   lapU(:,:,2) = real(0.0,cp); lapU(:,:,sdf(3)-1) = real(0.0,cp)
+         ! endif
        end subroutine
 
        ! ****************************************************************************************

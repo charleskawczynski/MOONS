@@ -33,8 +33,8 @@
 
       interface init;         module procedure initTriOperator;           end interface
       interface delete;       module procedure deleteTriOperator;         end interface
-      interface apply;        module procedure applyTriOperator;          end interface
-      ! interface apply;        module procedure applyTriOperatorInterior;  end interface
+      ! interface apply;        module procedure applyTriOperator;          end interface
+      interface apply;        module procedure applyTriOperatorInterior;  end interface
       interface triOperate;   module procedure triOperateAnderson;        end interface
 
       contains

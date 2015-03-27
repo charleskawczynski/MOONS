@@ -4,6 +4,8 @@
        implicit none
 
        ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
+       ! 
+       ! NOTE: Indexes have not been ordered for speed yet
 
        private
 
@@ -84,33 +86,46 @@
           ! Ghost values are linearly extrapolated:
         stop 'Error: not yet supported'
         case (2) ! u {N},  mod(sc/2,2)=0
-          ! Every odd becomes the average of the value itself
+          ! Every even becomes the average of the value itself
           ! and its linearly interpolated neighbors:
 
           ! write(*,*) 'su,sr = ',s(1),sr(1)
 
-          do i=1+2*x,s(1)-2*x,1+x
-           do j=1+2*y,s(2)-2*y,1+y
-            do k=1+2*z,s(3)-2*z,1+z
+          do i=1+1*x,s(1)-1*x,1+x
+           do j=1+1*y,s(2)-1*y,1+y
+            do k=1+1*z,s(3)-1*z,1+z
               t = i*x + j*y + k*z
               ! This idea might work BUT
               ! Indexing needs to be checked (since t might need to
               ! be 2*t or 2*t-1 or something)
               ! alpha = (c%hn(t+1)-c%hn(t))/(c%hn(t)-c%hn(t-1))
-              alpha = c%dhn(t)/c%dhn(t-1)
-              ! alpha = 0.5
-              r(i*(1-x)+x*(i+1)/2,j*(1-y)+y*(j+1)/2,k*(1-z)+z*(k+1)/2) = real(0.5,cp)*(u(i,j,k) + &
+              ! alpha = c%dhn(t)/c%dhn(t-1)
+              alpha = real(0.5,cp)
+              r(i*(1-x)+x*i/2+x,j*(1-y)+y*j/2+y,k*(1-z)+z*k/2+z) = real(0.5,cp)*(u(i,j,k) + &
               u(i-x,j-y,k-z)*alpha + &
               u(i+x,j+y,k+z)*(real(1.0,cp)-alpha))
             enddo
            enddo
-           ! write(*,*) 'ri,ui-x,ui+x = ',i*(1-x)+x*(i+1)/2,i-x,i,i+x
+           ! write(*,*) 'ri,ui-x,ui+x = ',i*(1-x)+x*i/2+x,i-x,i,i+x
           enddo
+          ! stop 'Finished restricting'
+
           ! Boundary values, normal to dir, remain the same:
           select case (dir)
-          case (1); r(1,:,:) = u(1,:,:); r(sr(1),:,:) = u(s(1),:,:)
-          case (2); r(:,1,:) = u(:,1,:); r(:,sr(2),:) = u(:,s(2),:)
-          case (3); r(:,:,1) = u(:,:,1); r(:,:,sr(3)) = u(:,:,s(3))
+          case (1); r(2,:,:) = u(2,:,:); r(sr(1)-1,:,:) = u(s(1)-1,:,:)
+          case (2); r(:,2,:) = u(:,2,:); r(:,sr(2)-1,:) = u(:,s(2)-1,:)
+          case (3); r(:,:,2) = u(:,:,2); r(:,:,sr(3)-1) = u(:,:,s(3)-1)
+          end select
+          ! Linearly extrapolate to ghost points
+          select case (dir)
+          case (1); r(1,:,:) = real(2.0,cp)*r(2,:,:)-r(3,:,:)
+          case (2); r(:,1,:) = real(2.0,cp)*r(:,2,:)-r(:,3,:)
+          case (3); r(:,:,1) = real(2.0,cp)*r(:,:,2)-r(:,:,3)
+          end select
+          select case (dir)
+          case (1); r(sr(1),:,:) = real(2.0,cp)*r(sr(1)-1,:,:)-r(sr(1)-2,:,:)
+          case (2); r(:,sr(2),:) = real(2.0,cp)*r(:,sr(2)-1,:)-r(:,sr(2)-2,:)
+          case (3); r(:,:,sr(3)) = real(2.0,cp)*r(:,:,sr(3)-1)-r(:,:,sr(3)-2)
           end select
           ! write(*,*) 'r(s) = ',(s(1)-1)/2+1
           ! stop 'Restricted indexes printed'
@@ -200,32 +215,34 @@
         case (1) ! u {CC}, mod(sc/2,2)=0
         stop 'Error: not yet supported'
         case (2) ! u {N},  mod(sc/2,2)=0
-          ! Odd locations have coincident values:
-          ! Index for p must be odd: 2n-1
+          ! Starting from the physical boundaries,
+          ! odd locations have coincident values:
+          ! Index for p must be even: 2n-2
           ! write(*,*) 'su,sp = ',s(1),sp(1)
-          do i=1,s(1)
-           do j=1,s(2)
-            do k=1,s(3)
-              p((1+x)*i-x,(1+y)*j-y,(1+z)*k-z) = u(i,j,k)
+          do i=1+x,s(1)-2*x
+           do j=1+y,s(2)-2*y
+            do k=1+z,s(3)-2*z
+              p((1+x)*i-2*x,(1+y)*j-2*y,(1+z)*k-2*z) = u(i,j,k)
             enddo
            enddo
-          ! write(*,*) 'pi,ui = ',(1+x)*i-x,i
+          ! write(*,*) 'pi,ui = ',(1+x)*i-2*x,i
           enddo
 
-          ! Even locations are interpolated:
-          ! Index for p must be even: 2n
-          do i=1+x,s(1)
-           do j=1+y,s(2)
-            do k=1+z,s(3)
+          ! Starting from the physical boundaries,
+          ! even locations are interpolated:
+          ! Index for p must be even: 2n-1
+          do i=1,s(1)-x
+           do j=1,s(2)-y
+            do k=1,s(3)-z
               t = i*x + j*y + k*z
               ! Alpha needs to be fixed
               ! alpha = (c%hn(t)-c%hn(t+1))/(c%hn(t-1)-c%hn(t+1))
               alpha = 0.5
-              p((1+x)*i-2*x,(1+y)*j-2*y,(1+z)*k-2*z) = u(i-x,j-y,k-z)*alpha + &
-                                           u(i,j,k)*(real(1.0,cp)-alpha)
+              p((1+x)*i-x,(1+y)*j-y,(1+z)*k-z) = u(i,j,k)*alpha + &
+                                   u(i+x,j+y,k+z)*(real(1.0,cp)-alpha)
             enddo
            enddo
-          ! write(*,*) 'pi,ui-x,ui = ',(1+x)*i-2*x,i-x,i
+          ! write(*,*) 'pi,ui-x,ui = ',(1+x)*i-1*x,i,i+x
           enddo
           ! stop 'Finished prolongating'
 

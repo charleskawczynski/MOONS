@@ -1,0 +1,430 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+
+\section{Construction of Source Terms: interior and boundary values}
+To construct the vector
+\begin{equation}
+Au=f
+\end{equation}
+We may separate the interior and boundary (or ghost) values into two arrays
+\begin{equation}
+A(u_{in} + u_{bc}) = f
+\end{equation}
+Where
+\begin{equation}
+u_{in} = u \in \Omega \qquad u_{in} = 0 \in \partial \Omega
+\end{equation}
+\begin{equation}
+u_{bc} = 0 \in \Omega \qquad u_{bc} = u \in \partial \Omega
+\end{equation}
+
+Now, we may solve
+
+\begin{equation}
+Au_{in} = f - Au_{bc}
+\end{equation}
+
+From here on, we must be specific about whether we are talking about CC or node data.
+
+\section{CC Data}
+For CC data, $f = 0$ on ghost cells (since $f$ doesn't have any physical meaning outside of the domain), and may be non-zero for interior cells. The same statement is true for $u_{in}$. $u_{bc}$ however, may be non-zero for ghost cells (to enforce BCs) and are zero for interior cells. This means that the first interior cell of $f$ is affected by $Au_{bc}$ since the stencil for $A$ reaches to the ghost cells of $u_{bc}$.
+
+This seems to be pretty clear for CC data with ghost cells.
+To be more specific, let's explicitly write the above equation as
+
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  -2 &  1 &  0 \\
+   1 & -2 &  1 \\
+   0 &  1 & -2 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_1 \\  u_2 \\  u_3 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  f_1 \\  f_2 \\  f_3 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+   1 &  0 &  0 \\
+   0 &  0 &  0 \\
+   0 &  0 &  1 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_0 \\
+  0 \\
+  u_4 \\
+ \end{pmatrix}
+\end{equation}
+Where $u_0$ and $u_4$ are ghost cells. This is equivalent to
+
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_0 \\  0 \\  0 \\  0 \\  u_4 \\
+ \end{pmatrix}
+\end{equation}
+Or
+\begin{equation}
+Au_{in} = f - Au_{bc}
+\end{equation}
+
+Where
+\begin{equation}
+A = 
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \qquad or \qquad
+A = 
+ \begin{pmatrix}
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+ \end{pmatrix}
+\end{equation}
+
+\subsection{Notes on the PPE}
+This makes solving the PPE very clear in its current implementation. With an initial guess of $p^n$, and after applyAllBCs are used on $p^n$, we note that $p_0=p_1$ and $p_4=p_3$, which means we have
+
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  0 \\  p_1 \\  p_2 \\  p_3 \\  0 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  p_0 \\  0 \\  0 \\  0 \\  p_4 \\
+ \end{pmatrix}
+\end{equation}
+
+Note that the first non-zero equation is 
+
+\begin{equation}
+\frac{-p_1+p_2}{h^2} = f_1 - \frac{p_0}{h^2}
+\rightarrow
+\frac{\frac{p_2-p_1}{h} - \frac{p_1-p_0}{h}}{h} = f_1
+\end{equation}
+
+Note that when $\frac{p_1-p_0}{h} = g = 0$ across the boundary, the stencil is symmetric, which makes it 2nd order accurate, and this gives us
+
+\begin{equation}
+\frac{\frac{p_2-p_1}{h} - 0}{h} = f_1
+\end{equation}
+Which is the result of applying the BCs (defining ghost cells) before the SOR loop.
+
+\section{Node Data}
+For node data, $f$ may be non-zero on the boundary values, which means $Au$ must be non-zero on boundary values. Let $u_1$ and $f_3$ live on the boundaries. We may write the above equation explicitly as 
+
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  -2 &  1 &  0 \\
+   1 & -2 &  1 \\
+   0 &  1 & -2 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_1 \\  u_2 \\  u_3 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  f_1 \\  f_2 \\  f_3 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+   1 &  0 &  0 \\
+   0 &  0 &  0 \\
+   0 &  0 &  1 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_0 \\
+  0 \\
+  u_4 \\
+ \end{pmatrix}
+\end{equation}
+
+Where $u_0$ and $u_4$ are ghost cells, and depend on the BCs. This equation is equivalent to
+
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_0 \\  0 \\  0 \\  0 \\  u_4 \\
+ \end{pmatrix}
+\end{equation}
+
+Note that increasing the system by 2 ghost points beyond the boundary allows for the same generalization as from the CC data. Adding two ghost points allows us to write the system as
+\begin{equation}
+Au_{in} = f - Au_{bc}
+\end{equation}
+Where $u_{in}$ and $f$ include the boundary values, and $u_{bc}$ contains values from ghost cells ONLY.
+
+\section{Absence of Ghost cells}
+When ghost cells are absent, then the ghost values must be substituted a-priori, since there are no indexes for the ghost cells to exist. Since the ghost cells are absent, we may restrict our focus to wall-coincident BCs. We must be able to enforce Dirichlet and Neumann BCs for this case. Let's write how ghost values would be chosen if they did exist and then substitute them into the equations.
+
+\subsection{Dirichlet BCs}
+Note that this should simplify to the case of dirichlet BCs where $Au=I$ on $\partial \Omega$ and $f = u$ on $\partial \Omega$. So we have
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_0 \\  0 \\  0 \\  0 \\  u_4 \\
+ \end{pmatrix}
+\end{equation}
+
+Looking at the first non-zero equation, we have
+
+\begin{equation}
+	\frac{-2u_1+u_2}{h^2} = f_1 - \frac{u_0}{h^2}
+\end{equation}
+We need $f_1 = u_1$ which implies
+
+\begin{equation}
+	\frac{-2u_1+u_2}{h^2} = u_1 - \frac{u_0}{h^2}
+\end{equation}
+And solving for $u_0$ yields
+
+\begin{equation}
+	u_0 = 2u_1 - u_2 + u_1h^2
+\end{equation}
+
+\subsection{Neumann BCs}
+We may start with the same matrix setup
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_0 \\  0 \\  0 \\  0 \\  u_4 \\
+ \end{pmatrix}
+\end{equation}
+
+Looking at the first non-zero equation, we have
+
+\begin{equation}
+\frac{-2u_1+u_2}{h^2} = f_1 - \frac{u_0}{h^2}
+\end{equation}
+And now we need
+\begin{equation}
+	u_1' = \frac{u_2 - u_0}{2h} = g_0
+	\longrightarrow
+	u_0 = u_2 - 2hg_0
+\end{equation}
+
+So, what we must subtract from the boundary values of $f$ are
+\begin{equation}
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
+ \end{pmatrix}
+  = 
+ \begin{pmatrix}
+  0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
+ \end{pmatrix}
+   -
+\frac{1}{h^2}
+ \begin{pmatrix}
+  0 &  0 &  0 &  0 &  0 \\
+  1 & -2 &  1 &  0 &  0 \\
+  0 &  1 & -2 &  1 &  0 \\
+  0 &  0 &  1 & -2 &  1 \\
+  0 &  0 &  0 &  0 &  0 \\
+ \end{pmatrix}
+ \begin{pmatrix}
+  u_2-2hg_0 \\  0 \\  0 \\  0 \\  u_2-2hg_0 \\
+ \end{pmatrix}
+\end{equation}
+This matches the implementation from the c++ code in math 269A. The correctness was not rigorously checked, but I believe it is true. Note that $u_2$ was used for both $u_0$ and $u_4$, this was a coincidence because of the size of the matrix.
+
+\section{Final Notes}
+This process may be generalized by the equation
+\begin{equation}
+	Au = f
+\end{equation}
+
+Where we may separate the interior and boundary values (in the case of node data) from the ghost values
+\begin{equation}
+	A(u_{in} + u_{bc}) = f
+\end{equation}
+With
+\begin{equation}
+u_{in} = u \in \Omega \qquad u_{in} = 0 \in \partial \Omega
+\end{equation}
+\begin{equation}
+u_{bc} = 0 \in \Omega \qquad u_{bc} = u \in \partial \Omega
+\end{equation}
+And solve
+\begin{equation}
+	Au_{in} = f - Au_{bc}
+\end{equation}
+And if this equation is solved iteratively, let $k$ be the iteration number and we may solve
+\begin{equation}
+	Au_{in}^{k+1} = f - Au_{bc}^k
+\end{equation}
+
+\end{document}
+
+

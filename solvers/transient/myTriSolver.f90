@@ -33,9 +33,9 @@
 
       interface init;    module procedure initTriSolver;            end interface
       interface delete;  module procedure deleteTriSolver;          end interface
-      interface apply;   module procedure applyTriSolver;           end interface
+      ! interface apply;   module procedure applyTriSolver;           end interface
 
-!       interface apply;   module procedure applyTriSolverInterior;   end interface
+      interface apply;   module procedure applyTriSolverInterior;   end interface
 
       contains
 
@@ -163,7 +163,7 @@
            do k=1+pad,s(3)-pad
              do j=1+pad,s(2)-pad
                call triSolve(uOut(2:s(1)-1,j,k),uIn(2:s(1)-1,j,k),&
-                T%loDiag(2:s(1)-2),T%diag(2:s(1)-1),T%upDiag(2:s(1)-2),s(1)-2)
+                T%loDiag(1:s(1)-1),T%diag(2:s(1)-1),T%upDiag(2:s(1)-1),s(1)-2)
              enddo
            enddo
           !$OMP END PARALLEL DO
@@ -172,7 +172,7 @@
           do k=1+pad,s(3)-pad
             do i=1+pad,s(1)-pad
               call triSolve(uOut(i,2:s(2)-1,k),uIn(i,2:s(2)-1,k),&
-                T%loDiag(2:s(2)-2),T%diag(2:s(2)-1),T%upDiag(2:s(2)-2),s(2)-2)
+                T%loDiag(1:s(2)-1),T%diag(2:s(2)-1),T%upDiag(2:s(2)-1),s(2)-2)
             enddo
           enddo
          !$OMP END PARALLEL DO
@@ -181,7 +181,7 @@
           do j=1+pad,s(2)-pad
             do i=1+pad,s(1)-pad
               call triSolve(uOut(i,j,2:s(3)-1),uIn(i,j,2:s(3)-1),&
-                T%loDiag(2:s(3)-2),T%diag(2:s(3)-1),T%upDiag(2:s(3)-2),s(3)-2)
+                T%loDiag(1:s(3)-1),T%diag(2:s(3)-1),T%upDiag(2:s(3)-1),s(3)-2)
             enddo
           enddo
          !$OMP END PARALLEL DO

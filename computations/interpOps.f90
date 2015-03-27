@@ -33,6 +33,14 @@
 
        ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
 
+       ! integer,parameter :: ghost = 1
+
+       ! ghost describes the relationship between CC and N data.
+       ! 
+       !  ghost = -1       |--o--|--o--|--o--|--o--|
+       !  ghost =  1    o--|--o--|--o--|--o--|--o--|--o
+       ! 
+
        private
 
 #ifdef _SINGLE_PRECISION_
@@ -111,14 +119,6 @@
          end select
 
          if ((sf(dir).eq.gd%c(dir)%sc).and.(sg(dir).eq.gd%c(dir)%sn)) then
-           ! write(*,*) 'Case 1 inside: '
-           ! write(*,*) 'sf = ',sf
-           ! write(*,*) 'sg = ',sg
-           ! write(*,*) 'dir = ',dir
-           ! write(*,*) 'sc = ',gd%c(dir)%sc
-           ! write(*,*) 'sn = ',gd%c(dir)%sn
-           ! if sf = sc and sg = sn
-           ! 
            ! f(cc grid), g(node/face grid)
            !         g  f  g  f  g  f  g  f  g
            !         |--o--|--o--|--o--|--o--|   --> dir
@@ -134,14 +134,6 @@
            enddo
            !$OMP END PARALLEL DO
          elseif ((sf(dir).eq.gd%c(dir)%sn).and.(sg(dir).eq.gd%c(dir)%sc)) then
-           ! write(*,*) 'Case 2 inside: '
-           ! write(*,*) 'sf = ',sf
-           ! write(*,*) 'sg = ',sg
-           ! write(*,*) 'dir = ',dir
-           ! write(*,*) 'sc = ',gd%c(dir)%sc
-           ! write(*,*) 'sn = ',gd%c(dir)%sn
-           ! if sf = sn and sg = sc
-           ! 
            ! f(node/face grid), g(cc grid)
            !         f  g  f  g  f  g  f  g  f
            !         |--o--|--o--|--o--|--o--|      --> dir
@@ -153,10 +145,9 @@
              do j=1,sg(2)-y
                do i=1,sg(1)-x
                  t = i*x + j*y + k*z
-                 ! alpha = (gd%c(dir)%hn(t) - gd%c(dir)%hc(t+1))/(gd%c(dir)%hc(t) - gd%c(dir)%hc(t+1))
-                 alpha = real(0.5,cp)
-                 f(i+x,j+y,k+z) = g(i,j,k)*alpha +&
-                               g(i+x,j+y,k+z)*(real(1.0,cp)-alpha)
+                 alpha = (gd%c(dir)%hn(t+1) - gd%c(dir)%hc(t))/(gd%c(dir)%hc(t+1) - gd%c(dir)%hc(t))
+                 f(i+x,j+y,k+z) = g(i+x,j+y,k+z)*alpha + &
+                                  g(i,j,k)*(real(1.0,cp)-alpha)
                enddo
              enddo
            enddo

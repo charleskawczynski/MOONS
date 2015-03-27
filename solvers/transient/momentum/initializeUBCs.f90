@@ -12,7 +12,7 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 3
+       integer,parameter :: preDefinedU_BCs = 2
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity
        !                                      2 : No Slip Cavity
@@ -101,13 +101,30 @@
          case (4) ! Cylinder Driven Cavity Flow (tornado)
            call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
 
-         case (5) ! Fully Developed Duct Flow
+         case (5) ! Fully Developed Duct Flow (Profile)
            call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
            call fullyDevelopedDuctFlowBCs(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
 
-         case (6) ! Fully Developed Duct Flow
+         case (6) ! Fully Developed Duct Flow (Neumann)
            call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
            call fullyDevelopedBCs(u_bcs,v_bcs,w_bcs,ductDirection)
+           select case (ductSign)
+           case (1)
+             select case (ductDirection)
+             case (1); call setXmaxType(p_bcs,2)
+             case (2); call setYmaxType(p_bcs,2)
+             case (3); call setZmaxType(p_bcs,2)
+             case default; stop 'Error: ductDirection must = 1,2,3 in initPredefinedUBCs'
+             end select
+           case (-1)
+             select case (ductDirection)
+             case (1); call setXminType(p_bcs,2)
+             case (2); call setYminType(p_bcs,2)
+             case (3); call setZminType(p_bcs,2)
+             case default; stop 'Error: ductDirection must = 1,2,3 in initPredefinedUBCs'
+             end select
+           case default; stop 'Error: ductSign must = -1,1 in initPredefinedUBCs'
+           end select
 
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'

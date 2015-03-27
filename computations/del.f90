@@ -239,6 +239,32 @@
         case default
         stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
         end select
+
+        ! if (pad.gt.0) then
+        !   select case (dir)
+        ! case (1)
+        !   !$OMP PARALLEL DO
+        !   do k=1,pad,s(3)-pad; do j=1+pad,s(2)-pad
+        !       dfdh(:,j,k) = real(0.0,cp)
+        !   enddo; enddo
+        !   !$OMP END PARALLEL DO
+        ! case (2)
+        !   !$OMP PARALLEL DO
+        !   do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+        !       call diff(dfdh(i,:,k),f(i,:,k),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(2),genType)
+        !   enddo; enddo
+        !   !$OMP END PARALLEL DO
+        ! case (3)
+        !   !$OMP PARALLEL DO
+        !   do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+        !       call diff(dfdh(i,j,:),f(i,j,:),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(3),genType)
+        !   enddo; enddo
+        !   !$OMP END PARALLEL DO
+        ! case default
+        !   stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
+        !   end select
+        ! endif
+
       end subroutine
 
 
@@ -298,9 +324,9 @@
           diffType = 1 ! Collocated derivative (CC)
         elseif ((sf(dir).eq.sdfdh(dir)).and.(sf(dir).eq.sn)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif ((sf(dir).eq.(sdfdh(dir)-1))) then
+        elseif ((sdfdh(dir).eq.(sf(dir)+1))) then
           diffType = 3 ! Staggered derivative (CC->N)
-        elseif ((sf(dir).eq.(sdfdh(dir)+1))) then
+        elseif ((sdfdh(dir).eq.(sf(dir)-1))) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
           stop 'Error: diffType undetermined in del.f90.'

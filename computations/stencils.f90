@@ -69,8 +69,6 @@
       end function
 
       function collocatedDfDh(f,dhp,s) result(dfdh)
-        ! THIS NEEDS TO BE CHECKED SINCE GHOST CELLS EXIST
-        ! MAYBE gt IS NECESSARY HERE
         implicit none
         real(cp),dimension(s) :: dfdh
         real(cp),intent(in),dimension(:) :: f
@@ -87,18 +85,18 @@
                     f(i+j)*(-alpha/beta))/(beta-alpha)
         enddo
         dfdh(1) = real(0.0,cp); dfdh(s) = real(0.0,cp)
-        ! ! Forward difference
-        ! i = 1; k = 1; j = 2
-        ! alpha = dhp(1); beta = dhp(1) + dhp(2)
-        ! dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
-        !           f(i+k)*beta/alpha + &
-        !           f(i+j)*(-alpha/beta))/(beta-alpha)
-        ! ! Backward difference
-        ! i = s; k = -1; j = -2
-        ! alpha = -dhp(s-1); beta = -(dhp(s-1) + dhp(s-2))
-        ! dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
-        !           f(i+k)*beta/alpha + &
-        !           f(i+j)*(-alpha/beta))/(beta-alpha)
+        ! Forward difference
+        i = 1; k = 1; j = 2
+        alpha = dhp(1); beta = dhp(1) + dhp(2)
+        dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+                  f(i+k)*beta/alpha + &
+                  f(i+j)*(-alpha/beta))/(beta-alpha)
+        ! Backward difference
+        i = s; k = -1; j = -2
+        alpha = -dhp(s-1); beta = -(dhp(s-1) + dhp(s-2))
+        dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+                  f(i+k)*beta/alpha + &
+                  f(i+j)*(-alpha/beta))/(beta-alpha)
       end function
 
       function collocatedD2fDh2(f,dhp,dhd,s,gt) result(dfdh)
