@@ -60,6 +60,7 @@
 #endif
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
+       public :: zeroGhostPoints      ! call zeroGhostPoints(f)
        public :: totalEnergy          ! call totalEnergy(e,u,v,w)
        public :: collocatedMagnitude  ! call collocatedMagnitude(mag,u,v,w)
        public :: myCollocatedCross    ! call myCollocatedCross(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
@@ -213,6 +214,16 @@
          endif
 #endif
        end function
+
+       subroutine zeroGhostPoints(f)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3) :: s
+         s = shape(f)
+         f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
+         f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
+         f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
+       end subroutine
 
        ! ****************************************************************************************
        ! ****************************************************************************************

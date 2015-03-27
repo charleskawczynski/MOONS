@@ -137,8 +137,6 @@
          real(cp),dimension(:,:),intent(in) :: bvals
          integer,intent(in) :: bctype,face
          integer,intent(in) :: s
-         integer :: i,j,k
-         real(cp) :: a,b ! (alpha,beta)
          select case (bctype)
          ! *************************** DIRICHLET *****************************
          case (1) ! Dirichlet - direct - wall coincident
@@ -160,12 +158,12 @@
            end select
          case (2) ! Dirichlet - interpolated - wall incoincident
            select case (face)
-           case (1);u(1,:,:) = real(2.0,cp)*bvals - u(2,:,:)
-           case (2);u(:,1,:) = real(2.0,cp)*bvals - u(:,2,:)
-           case (3);u(:,:,1) = real(2.0,cp)*bvals - u(:,:,2)
-           case (4);u(s,:,:) = real(2.0,cp)*bvals - u(s-1,:,:)
-           case (5);u(:,s,:) = real(2.0,cp)*bvals - u(:,s-1,:)
-           case (6);u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-1)
+           case (1); u(1,:,:) = real(2.0,cp)*bvals - u(2,:,:)
+           case (2); u(:,1,:) = real(2.0,cp)*bvals - u(:,2,:)
+           case (3); u(:,:,1) = real(2.0,cp)*bvals - u(:,:,2)
+           case (4); u(s,:,:) = real(2.0,cp)*bvals - u(s-1,:,:)
+           case (5); u(:,s,:) = real(2.0,cp)*bvals - u(:,s-1,:)
+           case (6); u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-1)
            end select
          ! *************************** NEUMANN *****************************
          case (3) ! Neumann - direct - wall coincident ~O(dh^2)
@@ -177,15 +175,7 @@
            case (5); u(:,s,:) = u(:,s-1,:) + (hn(s)-hn(s-1))*bvals
            case (6); u(:,:,s) = u(:,:,s-1) + (hn(s)-hn(s-1))*bvals
            end select
-         case (4) ! Neumann - direct - wall coincident ~O(dh)
-           ! select case (face) ! Linearly extrapolate to ghost node
-           ! case (1); u(1,:,:) = real(2.0,cp)*u(2,:,:) - u(3,:,:)
-           ! case (2); u(:,1,:) = real(2.0,cp)*u(:,2,:) - u(:,3,:)
-           ! case (3); u(:,:,1) = real(2.0,cp)*u(:,:,2) - u(:,:,3)
-           ! case (4); u(s,:,:) = real(2.0,cp)*u(s-1,:,:) - u(s-2,:,:)
-           ! case (5); u(:,s,:) = real(2.0,cp)*u(:,s-1,:) - u(:,s-2,:)
-           ! case (6); u(:,:,s) = real(2.0,cp)*u(:,:,s-1) - u(:,:,s-2)
-           ! end select
+         case (4) ! Neumann - direct - wall coincident ~O(dh^2)
            select case (face)
            case (1); u(1,:,:) = u(3,:,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
            case (2); u(:,1,:) = u(:,3,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
@@ -244,100 +234,5 @@
          integer,intent(in) :: s
          call applyBCs3D(u,bctype,face,bvals,hn,hc,s)
        end subroutine
-
-       ! subroutine applyGhostPoints3D(u,bctype,face,bvals,hn,hc,s)
-       !   implicit none
-       !   real(cp),intent(inout),dimension(:,:,:) :: u
-       !   real(cp),intent(in),dimension(:) :: hn,hc
-       !   real(cp),dimension(:,:),intent(in) :: bvals
-       !   integer,intent(in) :: bctype,face
-       !   integer,intent(in) :: s
-       !   select case (bctype)
-       !   ! *************************** DIRICHLET *****************************
-       !   case (1) ! Dirichlet - direct - wall coincident
-       !     select case (face) ! Linearly extrapolate to ghost node
-       !     case (1); u(1,:,:) = real(2.0,cp)*bvals - u(3,:,:)
-       !     case (2); u(:,1,:) = real(2.0,cp)*bvals - u(:,3,:)
-       !     case (3); u(:,:,1) = real(2.0,cp)*bvals - u(:,:,3)
-       !     case (4); u(s,:,:) = real(2.0,cp)*bvals - u(s-2,:,:)
-       !     case (5); u(:,s,:) = real(2.0,cp)*bvals - u(:,s-2,:)
-       !     case (6); u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-2)
-       !     end select
-       !   case (2) ! Dirichlet - interpolated - wall incoincident
-       !     select case (face)
-       !     case (1);u(1,:,:) = real(2.0,cp)*bvals - u(2,:,:)
-       !     case (2);u(:,1,:) = real(2.0,cp)*bvals - u(:,2,:)
-       !     case (3);u(:,:,1) = real(2.0,cp)*bvals - u(:,:,2)
-       !     case (4);u(s,:,:) = real(2.0,cp)*bvals - u(s-1,:,:)
-       !     case (5);u(:,s,:) = real(2.0,cp)*bvals - u(:,s-1,:)
-       !     case (6);u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-1)
-       !     end select
-       !   ! *************************** NEUMANN *****************************
-       !   case (3) ! Neumann - direct - wall coincident ~O(dh^2)
-       !     select case (face) ! Linearly extrapolate to ghost node
-       !     case (1); u(1,:,:) = real(2.0,cp)*u(2,:,:) - u(3,:,:)
-       !     case (2); u(:,1,:) = real(2.0,cp)*u(:,2,:) - u(:,3,:)
-       !     case (3); u(:,:,1) = real(2.0,cp)*u(:,:,2) - u(:,:,3)
-       !     case (4); u(s,:,:) = real(2.0,cp)*u(s-1,:,:) - u(s-2,:,:)
-       !     case (5); u(:,s,:) = real(2.0,cp)*u(:,s-1,:) - u(:,s-2,:)
-       !     case (6); u(:,:,s) = real(2.0,cp)*u(:,:,s-1) - u(:,:,s-2)
-       !     end select
-       !   case (4) ! Neumann - direct - wall coincident ~O(dh)
-       !     select case (face)
-       !     case (1); u(1,:,:) = u(3,:,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
-       !     case (2); u(:,1,:) = u(:,3,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
-       !     case (3); u(:,:,1) = u(:,:,3) - real(2.0,cp)*bvals*(hn(1)-hn(2))
-       !     case (4); u(s,:,:) = u(s-2,:,:) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
-       !     case (5); u(:,s,:) = u(:,s-2,:) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
-       !     case (6); u(:,:,s) = u(:,:,s-2) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
-       !     end select
-       !   case (5) ! Neumann - interpolated - wall incoincident ~O(dh)
-       !     ! select case (face)
-       !     ! case (1); u(1,:,:) = u(3,:,:) + (hn(1)-hn(2))*bvals
-       !     ! case (2); u(:,1,:) = u(:,3,:) + (hn(1)-hn(2))*bvals
-       !     ! case (3); u(:,:,1) = u(:,:,3) + (hn(1)-hn(2))*bvals
-       !     ! case (4); u(s,:,:) = u(s-2,:,:) + (hn(s)-hn(s-1))*bvals
-       !     ! case (5); u(:,s,:) = u(:,s-2,:) + (hn(s)-hn(s-1))*bvals
-       !     ! case (6); u(:,:,s) = u(:,:,s-2) + (hn(s)-hn(s-1))*bvals
-       !     ! end select
-       !     select case (face)
-       !     case (1); u(1,:,:) = u(2,:,:) + (hc(1)-hc(2))*bvals
-       !     case (2); u(:,1,:) = u(:,2,:) + (hc(1)-hc(2))*bvals
-       !     case (3); u(:,:,1) = u(:,:,2) + (hc(1)-hc(2))*bvals
-       !     case (4); u(s,:,:) = u(s-1,:,:) + (hc(s)-hc(s-1))*bvals
-       !     case (5); u(:,s,:) = u(:,s-1,:) + (hc(s)-hc(s-1))*bvals
-       !     case (6); u(:,:,s) = u(:,:,s-1) + (hc(s)-hc(s-1))*bvals
-       !     end select
-       !   ! *************************** PERIODIC *****************************
-       !   ! These have not yet been prepared for non-uniform grids:
-       !   case (6) ! Periodic - direct - wall coincident ~O(dh)
-       !     select case (face)
-       !     case (1); u(1,:,:) = real(0.5,cp)*(u(2,:,:) + u(s-1,:,:))
-       !     case (2); u(:,1,:) = real(0.5,cp)*(u(:,2,:) + u(:,s-1,:))
-       !     case (3); u(:,:,1) = real(0.5,cp)*(u(:,:,2) + u(:,:,s-1))
-       !     case (4); u(s,:,:) = real(0.5,cp)*(u(s-1,:,:) + u(2,:,:))
-       !     case (5); u(:,s,:) = real(0.5,cp)*(u(:,s-1,:) + u(:,2,:))
-       !     case (6); u(:,:,s) = real(0.5,cp)*(u(:,:,s-1) + u(:,:,2))
-       !     end select
-       !   case (7) ! Periodic - interpolated - wall incoincident ~O(dh)
-       !     select case (face)
-       !     case (1); u(1,:,:) = real(0.5,cp)*(u(2,:,:) + u(s-1,:,:))
-       !     case (2); u(:,1,:) = real(0.5,cp)*(u(:,2,:) + u(:,s-1,:))
-       !     case (3); u(:,:,1) = real(0.5,cp)*(u(:,:,2) + u(:,:,s-1))
-       !     case (4); u(s,:,:) = real(0.5,cp)*(u(s-1,:,:) + u(2,:,:))
-       !     case (5); u(:,s,:) = real(0.5,cp)*(u(:,s-1,:) + u(:,2,:))
-       !     case (6); u(:,:,s) = real(0.5,cp)*(u(:,:,s-1) + u(:,:,2))
-       !     end select
-       !   case (8) ! Periodic - interpolated - wall incoincident ~O(dh^2)
-       !     select case (face)
-       !     case (1); u(1,:,:) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(2,:,:) + u(s-1,:,:) - u(3,:,:))
-       !     case (2); u(:,1,:) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(:,2,:) + u(:,s-1,:) - u(:,3,:))
-       !     case (3); u(:,:,1) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(:,:,2) + u(:,:,s-1) - u(:,:,3))
-       !     case (4); u(s,:,:) = real(-1.0,cp)/real(3.0,cp)*(u(s-2,:,:) - real(3.0,cp)*u(s-1,:,:) - u(2,:,:))
-       !     case (5); u(:,s,:) = real(-1.0,cp)/real(3.0,cp)*(u(:,s-2,:) - real(3.0,cp)*u(:,s-1,:) - u(:,2,:))
-       !     case (6); u(:,:,s) = real(-1.0,cp)/real(3.0,cp)*(u(:,:,s-2) - real(3.0,cp)*u(:,:,s-1) - u(:,:,2))
-       !     end select
-       !   end select
-       ! end subroutine
 
        end module

@@ -53,7 +53,7 @@
 
       type myADI
         type(myTrisolver),dimension(3) :: triSolver
-        real(cp),dimension(:,:,:),allocatable :: lapu
+        real(cp),dimension(:,:,:),allocatable :: lapu,r
         real(cp),dimension(:),allocatable :: dtj
         integer,dimension(3) :: s
         integer :: nTimeLevels,gridType
@@ -144,6 +144,7 @@
 
         ! Set up tridiagonal systems:
         allocate(ADI%lapu(s(1),s(2),s(3)))
+        allocate(ADI%r(s(1),s(2),s(3)))
       end subroutine
 
       subroutine deleteADI(ADI)
@@ -153,6 +154,7 @@
        call delete(ADI%triSolver(2))
        call delete(ADI%triSolver(3))
        if (allocated(ADI%lapu)) deallocate(ADI%lapu)
+       if (allocated(ADI%r)) deallocate(ADI%r)
        if (allocated(ADI%dtj)) deallocate(ADI%dtj)
        if (allocated(ADI%alpha_var)) deallocate(ADI%alpha_var)
       end subroutine
@@ -587,7 +589,6 @@
         type(myError),intent(inout) :: norms
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
-        real(cp),dimension(:,:,:),allocatable :: ftemp
         integer :: i,j,Nt,maxIt
 #ifdef _EXPORT_ADI_CONVERGENCE_
         integer :: NU,n
@@ -596,34 +597,9 @@
         s = shape(f); ADI%s = s
         call initADI(ADI,s,g)
 
-
         ! Nt = maxval((/getMaxIterations(ss)/ADI%nTimeLevels/2, 1/))
         Nt = getMaxIterations(ss)
         ! Nt = 1
-        allocate(ftemp(s(1),s(2),s(3)))
-
-        ! 
-        ! NOTES FOR MODEL PROBLEMS:
-        ! 
-        ! MP = 1
-        ! ftemp = f - sum(f)/max(1,size(f))
-        ! 
-        ! MP = 2
-        !      a) Do not subtract the mean of f
-        !      b) Do not zero boundaries of f
-        ftemp = f ! Works for MP = 2
-
-        ! 
-        ! MP = 3
-        ! 
-        ! MP = 4
-        ! DO NOT assign ftemp = 0 on boundaries. This should be done
-        ! prior to routine call. modelProblem = 1 makes this very clear
-        ! 
-        ! MP = 1
-        ! ftemp(1,:,:) = real(0.0,cp); ftemp(s(1),:,:) = real(0.0,cp)
-        ! ftemp(:,1,:) = real(0.0,cp); ftemp(:,s(2),:) = real(0.0,cp)
-        ! ftemp(:,:,1) = real(0.0,cp); ftemp(:,:,s(3)) = real(0.0,cp)
 
         maxIt = 0
 
@@ -640,15 +616,15 @@
             call initSystem(ADI,s,g,2)
             call initSystem(ADI,s,g,3)
             call relax3D(ADI,u,f,u_bcs,g)
-            if (getSubtractMean(ss)) then
-              u = u - sum(u)/(max(1,size(u)))
-            endif
+
 #ifdef _EXPORT_ADI_CONVERGENCE_
             select case (ADI%gridType)
             case (1); call CC2CCLap(ADI%lapu,u,g)
             case (2); call myNodeLap(ADI%lapu,u,g)
             end select
-            call compute(norms,ftemp,ADI%lapu)
+            ADI%r = ADI%lapu - f
+            call zeroGhostPoints(ADI%r)
+            call compute(norms,real(0.0,cp),ADI%r)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
 #endif
             maxIt = maxIt + 1
@@ -661,15 +637,15 @@
             call initSystem(ADI,s,g,2)
             call initSystem(ADI,s,g,3)
             call relax3D(ADI,u,f,u_bcs,g)
-            if (getSubtractMean(ss)) then
-              u = u - sum(u)/(max(1,size(u)))
-            endif
+
 #ifdef _EXPORT_ADI_CONVERGENCE_
             select case (ADI%gridType)
             case (1); call CC2CCLap(ADI%lapu,u,g)
             case (2); call myNodeLap(ADI%lapu,u,g)
             end select
-            call compute(norms,ftemp,ADI%lapu)
+            ADI%r = ADI%lapu - f
+            call zeroGhostPoints(ADI%r)
+            call compute(norms,real(0.0,cp),ADI%r)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
 #endif
             maxIt = maxIt + 1
@@ -681,6 +657,16 @@
         close(NU)
 #endif
 
+        ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
+        if (allNeumann(u_bcs)) then
+          u = u - sum(u)/(max(1,size(u)))
+        endif
+
+        ! Okay for SOR alone when comparing with u_exact, but not okay for MG
+        ! if (.not.allNeumann(u_bcs)) then
+        !   u = u - sum(u)/(max(1,size(u)))
+        ! endif
+
         if (displayTF) then
           write(*,*) 'ADI Multi-scale Time Steps = ',ADI%dtj
           write(*,*) 'Number of multi-scale sweeps = ',Nt
@@ -690,12 +676,11 @@
           case (1); call CC2CCLap(ADI%lapu,u,g)
           case (2); call myNodeLap(ADI%lapu,u,g)
           end select
-          call compute(norms,ftemp,ADI%lapu)
+          ADI%r = ADI%lapu - f
+          call zeroGhostPoints(ADI%r)
+          call compute(norms,real(0.0,cp),ADI%r)
           call print(norms,'ADI Residuals for '//trim(adjustl(getName(ss))))
-          ! write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
         endif
-
-        deallocate(ftemp)
 
         call delete(ADI)
       end subroutine

@@ -56,8 +56,8 @@
         !      0 :  f {N}  , dfdh {CC}  ,  NOTE: dfdh = d/dh (f) {everywhere}
         ! 
         ! NOTE:
-        !  f {CC} , dfdh {N}     
-        !  f {N}  , dfdh {CC}   
+        !  f {CC} , dfdh {N}
+        !  f {N}  , dfdh {CC}
         ! 
         implicit none
         real(cp),dimension(:),intent(in) :: f,dhp

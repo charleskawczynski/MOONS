@@ -109,18 +109,18 @@
           if (allocated(mg(j)%f))    deallocate(mg(j)%f)
           if (allocated(mg(j)%lapU)) deallocate(mg(j)%lapU)
           if (allocated(mg(j)%res))  deallocate(mg(j)%res)
-          if (allocated(mg(j)%e)) deallocate(mg(j)%e)
+          if (allocated(mg(j)%e))    deallocate(mg(j)%e)
           allocate(mg(j)%u(N(1),N(2),N(3)))
           allocate(mg(j)%f(N(1),N(2),N(3)))
           allocate(mg(j)%lapU(N(1),N(2),N(3)))
           allocate(mg(j)%res(N(1),N(2),N(3)))
           allocate(mg(j)%e(N(1),N(2),N(3)))
 
-          mg(j)%u = 0.0
-          mg(j)%f = 0.0
-          mg(j)%lapU = 0.0
-          mg(j)%res = 0.0
-          mg(j)%e = 0.0
+          mg(j)%u    = real(0.0,cp)
+          mg(j)%f    = real(0.0,cp)
+          mg(j)%lapU = real(0.0,cp)
+          mg(j)%res  = real(0.0,cp)
+          mg(j)%e    = real(0.0,cp)
         enddo
 
         ! ******************** Initialize norms/ss ********************
@@ -146,7 +146,7 @@
         mg(1)%f = f
         mg(1)%u = u
 
-        call testRP(mg,'out\')
+        ! call testRP(mg,'out\')
 
         write(*,*) 'Initialized MG'
       end subroutine
@@ -220,155 +220,6 @@
         write(*,*) '         Finished prolongating'
       end subroutine
 
-      subroutine solveMultiGridWorkingFor2Grid(mg,u,f,u_bcs,g,ss,norms,displayTF)
-        implicit none
-        type(multiGrid),dimension(:),intent(inout) :: mg
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: norms
-        type(mySOR) :: SOR
-        logical,intent(in) :: displayTF
-        integer,dimension(3) :: s
-        logical :: continueLoop,TF
-        integer :: i_MG,maxIterations,nLevels
-
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
-        nLevels = size(mg)
-        call init(mg,u,f,u_bcs,g,ss,displayTF)
-
-        if (getMaxIterationsTF(ss)) then
-          maxIterations = getMaxIterations(ss)
-          TF = (maxIterations.ge.1)
-        else; TF = .true.
-        endif; continueLoop = .true.
-
-        ! write(*,*) 'maxval(mg(1)%u) = ',maxval(mg(1)%u)
-
-        i_MG = 0
-        do while (continueLoop.and.TF)
-
-          call setIteration(ss,i_MG)
-
-          ! 1) Smooth on finest level
-          ! Improvement on efficiency: Pass back residual from SOR:
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
-
-          ! 2) Get residual on finest level
-          call myNodeLap(mg(1)%lapU,mg(1)%u,mg(1)%g)
-          mg(1)%res = mg(1)%f - mg(1)%lapU
-
-          s = shape(mg(1)%res)
-          ! Zero boundary values
-          mg(1)%res(1,:,:) = 0.0; mg(1)%res(s(1),:,:) = 0.0
-          mg(1)%res(:,1,:) = 0.0; mg(1)%res(:,s(2),:) = 0.0
-          mg(1)%res(:,:,1) = 0.0; mg(1)%res(:,:,s(3)) = 0.0
-
-          ! 3) Begin decending into coarser grids, starting at level 2
-          ! V-Cycle: Given whatever is needed, compute, "exactly" the error
-          ! on level 2.
-          call VcycleWorkingFor2Grid(mg(2:nLevels),mg(1)%res,mg(1)%g)
-
-          ! 4) Prolong correction back to grid level 1
-          call prolongate(mg(1)%e,mg(2)%e,mg(1)%g)
-          mg(1)%u = mg(1)%u + mg(1)%e
-
-          ! 5) Final smoothing sweeps
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
-
-          ! write(*,*) 'maxval(mg(1)%u) after smoothing = ',maxval(mg(1)%u)
-          ! ********************************* CHECK TO EXIT ************************************
-          call checkCondition(ss,continueLoop)
-          continueLoop = .false.
-          if (.not.continueLoop) exit
-          ! ************************************************************************************
-          i_MG = i_MG + 1
-        enddo
-        u = mg(1)%u
-        norms = mg(1)%norms
-
-       call delete(mg)
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-      end subroutine
-
-      recursive subroutine VcycleWorkingFor2Grid(mg,res,g)
-        implicit none
-        type(multigrid),dimension(:),intent(inout) :: mg
-        real(cp),dimension(:,:,:),intent(in) :: res
-        type(grid),intent(in) :: g
-        type(mySOR) :: SOR
-        ! Locals
-        integer :: levelsLeft
-        integer,dimension(3) :: s
-
-        levelsLeft = size(mg)
-        write(*,*) 'V-Cycle WAS CALLED!!!! ---------------------------------------------$$'
-
-        ! 1) Restrict the residual onto the coarse grid
-        !    and use it as the source term of the error
-        call restrict(mg(1)%res,res,g)
-        mg(1)%f = mg(1)%res
-
-        if (levelsLeft .gt. 1) then
-          ! stop 'Levels are not greater than 1!'
-
-          ! Have not reached coarsest level, prepare to
-          ! solve for error, and restrict residual to coarse
-          ! grid
-
-          ! 2) Smooth
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
-
-          ! 3) Get residual
-          call myNodeLap(mg(1)%lapU,mg(1)%u,mg(1)%g)
-          mg(1)%res = mg(1)%f - mg(1)%lapU
-          ! Zero boundary values
-          s = shape(mg(1)%res)
-          mg(1)%res(1,:,:) = 0.0; mg(1)%res(s(1),:,:) = 0.0
-          mg(1)%res(:,1,:) = 0.0; mg(1)%res(:,s(2),:) = 0.0
-          mg(1)%res(:,:,1) = 0.0; mg(1)%res(:,:,s(3)) = 0.0
-
-          ! 4) Decend to coarser level
-          call VcycleWorkingFor2Grid(mg(2:levelsLeft),mg(1)%res,mg(1)%g)
-
-          ! Finished Vcycle decent. Prepare to ascend back to level 1
-          ! 5) Prolongate the error
-
-          call prolongate(mg(1)%e,mg(2)%e,mg(1)%g)
-          mg(1)%u = mg(1)%u + mg(1)%e
-
-          ! 6) Final smoothing sweeps
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
-          ! The solution on any grid above the 
-          ! base grid is the error!
-          mg(1)%e = mg(1)%u
-
-        else ! At coarsest level. Solve exactly.
-
-          call setMaxIterations(mg(1)%ss,100)
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
-
-          ! The solution on any grid above the 
-          ! base grid is the error!
-          mg(1)%e = mg(1)%u
-        endif
-      end subroutine
-
       subroutine solveMultiGrid(mg,u,f,u_bcs,g,ss,norms,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
@@ -387,10 +238,6 @@
         integer :: NU,n
 #endif
 
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
-        write(*,*) '************** MG IS STARTING **************'
         write(*,*) '************** MG IS STARTING **************'
         nLevels = size(mg)
         call init(mg,u,f,u_bcs,g,ss,displayTF)
@@ -423,9 +270,7 @@
 
           s = shape(mg(1)%res)
           ! Zero boundary values
-          ! mg(1)%res(1,:,:) = 0.0; mg(1)%res(s(1),:,:) = 0.0
-          ! mg(1)%res(:,1,:) = 0.0; mg(1)%res(:,s(2),:) = 0.0
-          ! mg(1)%res(:,:,1) = 0.0; mg(1)%res(:,:,s(3)) = 0.0
+          call zeroGhostPoints(mg(1)%res)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, compute, "exactly" the error
@@ -445,7 +290,9 @@
             case (1); call CC2CCLap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             case (2); call myNodeLap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             end select
-            call compute(norms,mg(1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),mg(1)%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+            mg(1)%res = mg(1)%lapu - mg(1)%f
+            call zeroGhostPoints(mg(1)%res)
+            call compute(norms,real(0.0,cp),mg(1)%res)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
 #endif
 
@@ -466,10 +313,6 @@
 
        call delete(mg)
         write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
-        write(*,*) '************** MG IS ENDING **************'
       end subroutine
 
       recursive subroutine Vcycle(mg,j)
@@ -482,7 +325,6 @@
         integer,dimension(3) :: s
 
         nLevels = size(mg)
-        write(*,*) 'V-Cycle WAS CALLED!!!! ---------------------------------------------$$'
 
         ! 1) Restrict the residual onto the coarse grid
         !    and use it as the source term of the error
@@ -506,9 +348,7 @@
           mg(j+1)%res = mg(j+1)%f - mg(j+1)%lapU
           ! Zero boundary values
           s = shape(mg(j+1)%res)
-          ! mg(1)%res(1,:,:) = 0.0; mg(1)%res(s(1),:,:) = 0.0
-          ! mg(1)%res(:,1,:) = 0.0; mg(1)%res(:,s(2),:) = 0.0
-          ! mg(1)%res(:,:,1) = 0.0; mg(1)%res(:,:,s(3)) = 0.0
+          call zeroGhostPoints(mg(j+1)%res)
 
           ! 4) Decend to coarser level
           call Vcycle(mg,j+1)

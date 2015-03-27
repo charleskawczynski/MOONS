@@ -75,7 +75,7 @@
        public :: setAllBVals
 
        public :: setAllZero
-       public :: getAllDirichlet,getAnyDirichlet
+       public :: getAllDirichlet,allNeumann
 
        public :: printAllBoundaries
        public :: writeAllBoundaries
@@ -539,20 +539,20 @@
          if (TF.and.this%TFb(6)) TF = (getZmaxType(this).eq.1)
        end function
 
-       function getAnyDirichlet(this) result(TF)
+       function allNeumann(this) result(TF)
          implicit none
          type(BCs),intent(in) :: this
          logical,dimension(6) :: TFAll
          logical :: TF
          TFAll = .false.
 
-         if (this%TFb(1)) TFAll(1) = (getXminType(this).eq.1)
-         if (this%TFb(2)) TFAll(2) = (getXmaxType(this).eq.1)
-         if (this%TFb(3)) TFAll(3) = (getYminType(this).eq.1)
-         if (this%TFb(4)) TFAll(4) = (getYmaxType(this).eq.1)
-         if (this%TFb(5)) TFAll(5) = (getZminType(this).eq.1)
-         if (this%TFb(6)) TFAll(6) = (getZmaxType(this).eq.1)
-         TF = any(TFAll)
+         if (this%TFb(1)) TFAll(1) = (getXminType(this).eq.3).or.((getXminType(this).eq.4).or.(getXminType(this).eq.5))
+         if (this%TFb(2)) TFAll(2) = (getXmaxType(this).eq.3).or.((getXmaxType(this).eq.4).or.(getXmaxType(this).eq.5))
+         if (this%TFb(3)) TFAll(3) = (getYminType(this).eq.3).or.((getYminType(this).eq.4).or.(getYminType(this).eq.5))
+         if (this%TFb(4)) TFAll(4) = (getYmaxType(this).eq.3).or.((getYmaxType(this).eq.4).or.(getYmaxType(this).eq.5))
+         if (this%TFb(5)) TFAll(5) = (getZminType(this).eq.3).or.((getZminType(this).eq.4).or.(getZminType(this).eq.5))
+         if (this%TFb(6)) TFAll(6) = (getZmaxType(this).eq.3).or.((getZmaxType(this).eq.4).or.(getZmaxType(this).eq.5))
+         TF = all(TFAll)
        end function
 
        end module

@@ -4,6 +4,7 @@
         ! a = a - b => call subtract(a,b)
         ! a = a * b => call multiply(a,b)
         ! a = a / b => call divide(a,b)
+        ! a = b / a => call divide(b,a)
 
         ! Available pre-processor directives:
         !         _DEBUG_FIELD_ ! not yet implemented

@@ -60,7 +60,7 @@
         integer :: gridType
         real(cp),dimension(:),allocatable :: dxp,dyp,dzp
         real(cp),dimension(:),allocatable :: dxd,dyd,dzd
-        real(cp),dimension(:,:,:),allocatable :: lapu,f ! f zeros mean
+        real(cp),dimension(:,:,:),allocatable :: lapu,f,r ! f zeros mean
         real(cp) :: omega
         integer,dimension(3) :: s
         integer :: gt
@@ -99,7 +99,7 @@
           SOR%dxd = g%c(1)%dhn
           SOR%dyd = g%c(2)%dhn
           SOR%dzd = g%c(3)%dhn
-          SOR%gt = 0
+          SOR%gt = 1
         case (2) ! Node based (for magnetic field)
           Nx = g%c(1)%sn-1; Ny = g%c(2)%sn-1; Nz = g%c(3)%sn-1   ! number of cells (excluding ghost)
           allocate(SOR%dxp(Nx),SOR%dyp(Ny),SOR%dzp(Nz))          ! Primary grid
@@ -111,12 +111,13 @@
           SOR%dxp = g%c(1)%dhn
           SOR%dyp = g%c(2)%dhn
           SOR%dzp = g%c(3)%dhn
-          SOR%gt = 1
+          SOR%gt = 0
         case default
           write(*,*) 'gridType in SOR must be 1 or 2. Terminating';stop
         end select
         allocate(SOR%lapu(SOR%s(1),SOR%s(2),SOR%s(3)))
         allocate(SOR%f(SOR%s(1),SOR%s(2),SOR%s(3)))
+        allocate(SOR%r(SOR%s(1),SOR%s(2),SOR%s(3)))
 
         if (useGaussSeidel) then
           SOR%omega = real(1.0,cp)
@@ -140,6 +141,7 @@
         deallocate(SOR%dzd)
         deallocate(SOR%lapu)
         deallocate(SOR%f)
+        deallocate(SOR%r)
 
         ! write(*,*) 'SOR object deleted'
       end subroutine
@@ -174,7 +176,6 @@
         ijk = 0
 
         ! Boundaries
-        ! call applyAllGhost(u_bcs,u,g) ! Necessary with ghost nodes
         call applyAllBCs(u_bcs,u,g) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
@@ -184,11 +185,7 @@
         endif
         continueLoop = .true.
 
-        if (getSubtractMean(ss)) then
-          SOR%f = f - sum(f)/(max(1,size(f)))
-        else
-          SOR%f = f
-        endif
+        SOR%f = f ! CANNOT REMOVE MEAN FOR NEUMANN, RESULTS IN BAD RESIDUALS FOR SOR
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
         open(NU,file=trim(strcompress('out\',n)) // trim(strcompress('norms_SOR',n)) // '.dat',pad='YES')
@@ -247,10 +244,6 @@
           !$OMP END PARALLEL
 #endif
 
-          ! if (.not.TF_allDirichlet) then
-          !   call applyAllBCs(u_bcs,u,g)
-          ! endif
-          ! call applyAllGhost(u_bcs,u,g) ! Necessary with ghost nodes
           call applyAllBCs(u_bcs,u,g) ! Necessary with ghost nodes
 
           if (getMinToleranceTF(ss)) then
@@ -258,7 +251,9 @@
             case (1); call CC2CCLap(SOR%lapu,u,g)
             case (2); call myNodeLap(SOR%lapu,u,g)
             end select
-            call compute(norms,SOR%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+            SOR%r = SOR%lapu - SOR%f
+            call zeroGhostPoints(SOR%r)
+            call compute(norms,real(0.0,cp),SOR%r)
             call setTolerance(ss,getL2Rel(norms))
           endif
 
@@ -267,7 +262,9 @@
             case (1); call CC2CCLap(SOR%lapu,u,g)
             case (2); call myNodeLap(SOR%lapu,u,g)
             end select
-            call compute(norms,SOR%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+            SOR%r = SOR%lapu - SOR%f
+            call zeroGhostPoints(SOR%r)
+            call compute(norms,real(0.0,cp),SOR%r)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
 #endif
 
@@ -284,10 +281,14 @@
 #endif
         
         ! Subtract mean (for Pressure Poisson)
-        if (getSubtractMean(ss)) u = u - sum(u)/(max(1,size(u)))
+        ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
+        if (allNeumann(u_bcs)) then
+          u = u - sum(u)/(max(1,size(u)))
+        endif
 
-        ! if (getAnyDirichlet(u_bcs)) then ! Obsolete with ghost nodes
-        !   call applyAllBCs(u_bcs,u,g)
+        ! Okay for SOR alone when comparing with u_exact, but not okay for MG
+        ! if (.not.allNeumann(u_bcs)) then
+        !   u = u - sum(u)/(max(1,size(u)))
         ! endif
 
         if (displayTF) then
@@ -298,7 +299,9 @@
           case (1); call CC2CCLap(SOR%lapu,u,g)
           case (2); call myNodeLap(SOR%lapu,u,g)
           end select
-          call compute(norms,SOR%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),SOR%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+          SOR%r = SOR%lapu - SOR%f
+          call zeroGhostPoints(SOR%r)
+          call compute(norms,real(0.0,cp),SOR%r)
           call print(norms,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 

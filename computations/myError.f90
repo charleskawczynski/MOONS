@@ -54,6 +54,17 @@
        use myIO_mod
        implicit none
 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
+
        private
 
        public :: myError
@@ -68,14 +79,14 @@
        public :: getLinf, getLinfRel
        public :: copyMyError
 
-       real(dpn),parameter :: tol = 10.0**(-6.0) ! Minimum number to divide by when computing error.
+       real(cp),parameter :: tol = 10.0**(-6.0) ! Minimum number to divide by when computing error.
 
        type myError
          private
          ! Absolute errors:
-         real(dpn) :: L1,L2,Linf
+         real(cp) :: L1,L2,Linf
          ! Relative errors:
-         real(dpn) :: L1rel,L2rel,Linfrel
+         real(cp) :: L1rel,L2rel,Linfrel
        end type
 
        interface init;            module procedure initError;              end interface
@@ -145,42 +156,42 @@
        function getL1(this) result(L1)
          implicit none
          type(myError),intent(in) :: this
-         real(dpn) :: L1
+         real(cp) :: L1
          L1 = this%L1
        end function
        
        function getL1Rel(this) result(L1rel)
          implicit none
          type(myError),intent(in) :: this
-         real(dpn) :: L1rel
+         real(cp) :: L1rel
          L1rel = this%L1rel
        end function
 
        function getL2(this) result(L2)
          implicit none
          type(myError),intent(in) :: this
-         real(dpn) :: L2
+         real(cp) :: L2
          L2 = this%L2
        end function
        
        function getL2Rel(this) result(L2rel)
          implicit none
          type(myError),intent(in) :: this
-         real(dpn) :: L2rel
+         real(cp) :: L2rel
          L2rel = this%L2rel
        end function
 
        function getLinf(this) result(Linf)
          implicit none
          type(myError),intent(in) :: this
-         real(dpn) :: Linf
+         real(cp) :: Linf
          Linf = this%Linf
        end function
        
        function getLinfRel(this) result(Linfrel)
          implicit none
          type(myError),intent(in) :: this
-         real(dpn) :: Linfrel
+         real(cp) :: Linfrel
          Linfrel = this%Linfrel
        end function
 
@@ -200,11 +211,11 @@
 
        subroutine LnError1D(exact,approx,n,e,er,denom)
          implicit none
-         real(dpn),intent(in),dimension(:) :: exact,approx
-         real(dpn),intent(in) :: n
-         real(dpn),intent(inout) :: e,er,denom
+         real(cp),intent(in),dimension(:) :: exact,approx
+         real(cp),intent(in) :: n
+         real(cp),intent(inout) :: e,er,denom
          integer,dimension(2) :: s
-         real(dpn) :: eTemp,denomTemp
+         real(cp) :: eTemp,denomTemp
          integer :: i
          s = size(exact); e = 0.0; denom = 0.0
          eTemp = 0.0; denomTemp = 0.0
@@ -229,12 +240,12 @@
 
        subroutine LnError1DUniform(exact,approx,n,e,er,denom)
          implicit none
-         real(dpn),intent(in),dimension(:) :: approx
-         real(dpn),intent(in) :: exact
-         real(dpn),intent(in) :: n
-         real(dpn),intent(inout) :: e,er,denom
+         real(cp),intent(in),dimension(:) :: approx
+         real(cp),intent(in) :: exact
+         real(cp),intent(in) :: n
+         real(cp),intent(inout) :: e,er,denom
          integer,dimension(2) :: s
-         real(dpn) :: eTemp,denomTemp
+         real(cp) :: eTemp,denomTemp
          integer :: i,j
          s = size(approx); e = 0.0; denom = 0.0
          eTemp = 0.0; denomTemp = 0.0
@@ -261,11 +272,11 @@
 
        subroutine LnError2D(exact,approx,n,e,er,denom)
          implicit none
-         real(dpn),intent(in),dimension(:,:) :: exact,approx
-         real(dpn),intent(in) :: n
-         real(dpn),intent(inout) :: e,er,denom
+         real(cp),intent(in),dimension(:,:) :: exact,approx
+         real(cp),intent(in) :: n
+         real(cp),intent(inout) :: e,er,denom
          integer,dimension(2) :: s
-         real(dpn) :: eTemp,denomTemp
+         real(cp) :: eTemp,denomTemp
          integer :: i,j
          s = shape(exact); e = 0.0; denom = 0.0
          eTemp = 0.0; denomTemp = 0.0
@@ -292,12 +303,12 @@
 
        subroutine LnError2DUniform(exact,approx,n,e,er,denom)
          implicit none
-         real(dpn),intent(in),dimension(:,:) :: approx
-         real(dpn),intent(in) :: exact
-         real(dpn),intent(in) :: n
-         real(dpn),intent(inout) :: e,er,denom
+         real(cp),intent(in),dimension(:,:) :: approx
+         real(cp),intent(in) :: exact
+         real(cp),intent(in) :: n
+         real(cp),intent(inout) :: e,er,denom
          integer,dimension(2) :: s
-         real(dpn) :: eTemp,denomTemp
+         real(cp) :: eTemp,denomTemp
          integer :: i,j
          s = shape(approx); e = 0.0; denom = 0.0
          eTemp = 0.0; denomTemp = 0.0
@@ -324,11 +335,11 @@
 
        subroutine LnError3D(exact,approx,n,e,er,denom)
          implicit none
-         real(dpn),intent(in),dimension(:,:,:) :: exact,approx
-         real(dpn),intent(in) :: n
-         real(dpn),intent(inout) :: e,er,denom
+         real(cp),intent(in),dimension(:,:,:) :: exact,approx
+         real(cp),intent(in) :: n
+         real(cp),intent(inout) :: e,er,denom
          integer,dimension(3) :: s
-         real(dpn) :: eTemp,denomTemp
+         real(cp) :: eTemp,denomTemp
          integer :: i,j,k
          s = shape(exact); e = 0.0; denom = 0.0
          eTemp = 0.0; denomTemp = 0.0
@@ -357,12 +368,12 @@
 
        subroutine LnError3DUniform(exact,approx,n,e,er,denom)
          implicit none
-         real(dpn),intent(in),dimension(:,:,:) :: approx
-         real(dpn),intent(in) :: exact
-         real(dpn),intent(in) :: n
-         real(dpn),intent(inout) :: e,er,denom
+         real(cp),intent(in),dimension(:,:,:) :: approx
+         real(cp),intent(in) :: exact
+         real(cp),intent(in) :: n
+         real(cp),intent(inout) :: e,er,denom
          integer,dimension(3) :: s
-         real(dpn) :: eTemp,denomTemp
+         real(cp) :: eTemp,denomTemp
          integer :: i,j,k
          s = shape(approx); e = 0.0; denom = 0.0
          eTemp = 0.0; denomTemp = 0.0
@@ -407,8 +418,8 @@
        subroutine computeError1(e,exact,approx)
          implicit none
          type(myError),intent(inout) :: e
-         real(dpn),intent(in),dimension(:) :: exact,approx
-         real(dpn) :: n,denom
+         real(cp),intent(in),dimension(:) :: exact,approx
+         real(cp) :: n,denom
 
          call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
@@ -422,9 +433,9 @@
        subroutine computeError1Uniform(e,exact,approx)
          implicit none
          type(myError),intent(inout) :: e
-         real(dpn),intent(in),dimension(:) :: approx
-         real(dpn),intent(in) :: exact
-         real(dpn) :: n,denom
+         real(cp),intent(in),dimension(:) :: approx
+         real(cp),intent(in) :: exact
+         real(cp) :: n,denom
 
          call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
@@ -438,8 +449,8 @@
        subroutine computeError2(e,exact,approx)
          implicit none
          type(myError),intent(inout) :: e
-         real(dpn),intent(in),dimension(:,:) :: exact,approx
-         real(dpn) :: n,denom
+         real(cp),intent(in),dimension(:,:) :: exact,approx
+         real(cp) :: n,denom
 
          call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
@@ -453,9 +464,9 @@
        subroutine computeError2Uniform(e,exact,approx)
          implicit none
          type(myError),intent(inout) :: e
-         real(dpn),intent(in),dimension(:,:) :: approx
-         real(dpn),intent(in) :: exact
-         real(dpn) :: n,denom
+         real(cp),intent(in),dimension(:,:) :: approx
+         real(cp),intent(in) :: exact
+         real(cp) :: n,denom
 
          call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
@@ -469,8 +480,8 @@
        subroutine computeError3(e,exact,approx)
          implicit none
          type(myError),intent(inout) :: e
-         real(dpn),intent(in),dimension(:,:,:) :: exact,approx
-         real(dpn) :: n,denom
+         real(cp),intent(in),dimension(:,:,:) :: exact,approx
+         real(cp) :: n,denom
 
          call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
@@ -484,9 +495,9 @@
        subroutine computeError3Uniform(e,exact,approx)
          implicit none
          type(myError),intent(inout) :: e
-         real(dpn),intent(in),dimension(:,:,:) :: approx
-         real(dpn),intent(in) :: exact
-         real(dpn) :: n,denom
+         real(cp),intent(in),dimension(:,:,:) :: approx
+         real(cp),intent(in) :: exact
+         real(cp) :: n,denom
 
          call initError(e)
          n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
