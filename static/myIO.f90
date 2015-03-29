@@ -111,14 +111,6 @@
         open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,pad='YES')
       end function
 
-      function newAndOpenBinary(dir,name) result(NU)
-        implicit none
-        character(len=*),intent(in) :: dir,name
-        integer :: NU,n
-        NU = newUnit()
-        open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,pad='YES')
-      end function
-
       function getUnit(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name

@@ -17,9 +17,9 @@
         public :: allocateField
 
         ! Optimized for readability:
-        public :: assignment(=)
-        public :: operator(+),operator(-)
-        public :: operator(*),operator(/)
+        public :: assignment(=)               ! Causes segfault on hoffman
+        public :: operator(+),operator(-)     ! Causes segfault on hoffman
+        public :: operator(*),operator(/)     ! Causes segfault on hoffman
 
         ! Optimized for speed:
         public :: assign,delete

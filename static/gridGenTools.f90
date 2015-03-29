@@ -24,14 +24,11 @@
        ! Stretched grids
 
        public :: robertsLeft,robertsRight,robertsBoth,cluster
-       public :: robertsGridBL
+       public :: robertsGridBL,robertsBL
 
        ! Other tools
        public :: robertsGrid2                   ! Soon to be private
        public :: reverseIndex,defineGhostPoints ! Soon to be private
-
-       ! interface robertsGridBL;   module procedure robertsGridBL1D;  end interface
-       ! interface robertsGridBL;   module procedure robertsGridBL3D;  end interface
 
        contains
 
@@ -330,7 +327,7 @@
          enddo
        end subroutine
 
-       function robertsGridBL1D(delta,h) result (beta)
+       function robertsBL1D(delta,h) result (beta)
          ! robertsGridBL returns the beta for a given boundary laryer
          ! as described in section 5.6 (page 333) of 
          ! Computational Fluid Mechanics and Heat Transfer, 
@@ -344,22 +341,22 @@
          real(cp),intent(in) :: h,delta
          real(cp) :: beta
          ! This if statement protects against the case when 
-         ! Ha = 1, which leads to beta = infinity. HIMAG
-         ! doesn't seem to protect against this.
+         ! Ha = 1 (delta=h), which leads to beta = infinity. 
+         ! HIMAG doesn't seem to protect against this.
          if (delta.lt.h*real(0.99,cp)) then
            beta = (real(1.0,cp) - delta/h)**(-real(0.5,cp))
          else; beta = real(1000.0,cp)
          endif
        end function
 
-       function robertsGridBL3D(delta,h) result (beta)
+       function robertsBL(delta,h) result (beta)
          implicit none
          real(cp),dimension(3),intent(in) :: h
          real(cp),intent(in) :: delta
          real(cp),dimension(3) :: beta
          integer :: i
          do i = 1,3
-            beta(i) = robertsGridBL1D(delta,h(i))
+            beta(i) = robertsBL1D(delta,h(i))
          enddo
        end function
 

@@ -84,6 +84,23 @@
           !    Linearly interpolate the average of two cells to the cell center:
           ! or Linearly interpolate the two adjecent cells and average:
           ! Ghost values are linearly extrapolated:
+          do i=1+1*x,s(1)-1*x,1+x
+           do j=1+1*y,s(2)-1*y,1+y
+            do k=1+1*z,s(3)-1*z,1+z
+              t = i*x + j*y + k*z
+              ! This idea might work BUT
+              ! Indexing needs to be checked (since t might need to
+              ! be 2*t or 2*t-1 or something)
+              ! alpha = (c%hn(t+1)-c%hn(t))/(c%hn(t)-c%hn(t-1))
+              ! alpha = c%dhn(t)/c%dhn(t-1)
+              alpha = real(0.5,cp)
+              r(i*(1-x)+x*i/2+x,j*(1-y)+y*j/2+y,k*(1-z)+z*k/2+z) = real(0.5,cp)*(u(i,j,k) + &
+              u(i-x,j-y,k-z)*alpha + &
+              u(i+x,j+y,k+z)*(real(1.0,cp)-alpha))
+            enddo
+           enddo
+           ! write(*,*) 'ri,ui-x,ui+x = ',i*(1-x)+x*i/2+x,i-x,i,i+x
+          enddo
         stop 'Error: not yet supported'
         case (2) ! u {N},  mod(sc/2,2)=0
           ! Every even becomes the average of the value itself

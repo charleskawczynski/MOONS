@@ -76,8 +76,6 @@
          call writeKillSwitchToFile(.true.,dir//'parameters/','killSwitch')
 
          ! ********** SET MOMENTUM SOURCE TERMS TO ZERO ******************
-         ! call debug(1)
-         ! mom%F = zero
          call assign(mom%F,zero)
 
          ! ********** SOLVE MHD EQUATIONS ********************************
@@ -116,9 +114,9 @@
              call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
                call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
-             ind%B0%x = exp(-ind%omega*ind%t)
-             ind%B0%y = exp(-ind%omega*ind%t)
-             ind%B0%z = real(1.0,cp)
+             ! ind%B0%x = exp(-ind%omega*ind%t)
+             ! ind%B0%y = exp(-ind%omega*ind%t)
+             ! ind%B0%z = real(1.0,cp)
              else; call assign(mom%F,zero)
              endif
              if (computeKB.and.getExportTransient(ss_MHD).or.n_mhd.eq.0) then
@@ -153,8 +151,8 @@
                ! write(*,'(A17,'//xyzfmt//')') ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
                write(*,*) ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
                write(*,*) ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
-               write(*,*) ' maxval(B0x,B0y,B0z)',maxval(ind%B0%x),maxval(ind%B0%y),maxval(ind%B0%z)
-               write(*,*) ' minval(B0x,B0y,B0z)',minval(ind%B0%x),minval(ind%B0%y),minval(ind%B0%z)
+               ! write(*,*) ' maxval(B0x,B0y,B0z)',maxval(ind%B0%x),maxval(ind%B0%y),maxval(ind%B0%z)
+               ! write(*,*) ' minval(B0x,B0y,B0z)',minval(ind%B0%x),minval(ind%B0%y),minval(ind%B0%z)
              endif
              write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)
@@ -195,9 +193,7 @@
          ! ********************* RECORD TIME ****************************
          call writeTime(time,dir,'MHD solver')
 
-         ! **************** CALCULATE TOTAL MAGNETIC FIELD ************************
-         ! ind%B = ind%B + ind%B0
-         call add(ind%B,ind%B0)
+         ! **************** EXPORT ONE FINAL TIME ***********************
 
          call exportRaw(mom,mom%g,dir)
          call exportRaw(ind,ind%g,dir)

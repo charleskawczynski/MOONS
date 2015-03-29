@@ -164,7 +164,7 @@
         logical :: TF,continueLoop,TF_allDirichlet
         integer :: maxIterations
 #ifdef _EXPORT_SOR_CONVERGENCE_
-        integer :: NU,n
+        integer :: NU
 #endif
 
         call init(SOR,f,g)
@@ -188,7 +188,7 @@
         SOR%f = f ! CANNOT REMOVE MEAN FOR NEUMANN, RESULTS IN BAD RESIDUALS FOR SOR
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
-        open(NU,file=trim(strcompress('out\',n)) // trim(strcompress('norms_SOR',n)) // '.dat',pad='YES')
+        NU = newAndOpen('out\','norms_SOR')
 #endif
 
         do while (continueLoop.and.TF)

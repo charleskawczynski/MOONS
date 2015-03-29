@@ -319,6 +319,7 @@
            ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
+           call zeroGhostPoints(mom%Temp%phi)
            ! write(*,*) 'maxval(sourceP) = ',maxval(mom%Temp%phi)
 
            ! IMPORTANT: Must include entire pressure since BCs are 

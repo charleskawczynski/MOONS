@@ -44,7 +44,6 @@
 
        private
        public :: applyAllBCs,applyBCFace
-       public :: applyGhostFace,applyAllGhost
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -94,41 +93,6 @@
          write(*,*) 'Error: face must = 1,2,3,4,5,6 in applyBCs.';stop
          end select
        end subroutine
-
-       subroutine applyGhostFace(b,u,g,face)
-         implicit none
-         type(BCs),intent(in) :: b
-         real(cp),dimension(:,:,:),intent(inout) :: u
-         type(grid),intent(in) :: g
-         integer,intent(in) :: face
-         select case (face)
-         case (1); call applyGhostPoints3D(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         case (2); call applyGhostPoints3D(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         case (3); call applyGhostPoints3D(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         case (4); call applyGhostPoints3D(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         case (6); call applyGhostPoints3D(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         case (5); call applyGhostPoints3D(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         case default
-         write(*,*) 'Error: face must = 1,2,3,4,5,6 in applyBCs.';stop
-         end select
-       end subroutine
-
-       subroutine applyAllGhost(b,u,g)
-        ! Note that these boundary conditions are applied in a NON- arbitrary
-        ! order and changing them WILL change the outcome of the results.
-        ! Consider changing BCs to only affect interior data.
-         implicit none
-         type(BCs),intent(in) :: b
-         real(cp),dimension(:,:,:),intent(inout) :: u
-         type(grid),intent(in) :: g
-         call applyGhostPoints3D(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyGhostPoints3D(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         call applyGhostPoints3D(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         call applyGhostPoints3D(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyGhostPoints3D(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         call applyGhostPoints3D(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-       end subroutine
-
 
        subroutine applyBCs3D(u,bctype,face,bvals,hn,hc,s)
          implicit none
@@ -223,16 +187,6 @@
            case (6); u(:,:,s) = real(-1.0,cp)/real(3.0,cp)*(u(:,:,s-2) - real(3.0,cp)*u(:,:,s-1) - u(:,:,2))
            end select
          end select
-       end subroutine
-
-       subroutine applyGhostPoints3D(u,bctype,face,bvals,hn,hc,s)
-         implicit none
-         real(cp),intent(inout),dimension(:,:,:) :: u
-         real(cp),intent(in),dimension(:) :: hn,hc
-         real(cp),dimension(:,:),intent(in) :: bvals
-         integer,intent(in) :: bctype,face
-         integer,intent(in) :: s
-         call applyBCs3D(u,bctype,face,bvals,hn,hc,s)
        end subroutine
 
        end module

@@ -22,7 +22,7 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 4
+       integer,parameter :: applied_B_dir = 3
        !                                    0 : No applied field:      B0 = (0,0,0)
        !                                    1 : Applied field: B0 = (B0x,0,0)
        !                                    2 : Applied field: B0 = (0,B0y,0)
@@ -42,19 +42,20 @@
 
        contains
 
-       subroutine initBfield(Bx,By,Bz,Bx0,By0,Bz0,g,dir)
+       subroutine initBfield(Bx,By,Bz,B0x,B0y,B0z,g,dir)
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz,Bx0,By0,Bz0
+         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz,B0x,B0y,B0z
          if (restartB) then
            call initRestartB(Bx,By,Bz,g,dir)
-           call initPreDefinedB0(Bx0,By0,Bz0,g)
+           call initRestartB0(B0x,B0y,B0z,g,dir)
+           ! call initPreDefinedB0(B0x,B0y,B0z,g)
          elseif (preDefinedB_ICs.ne.0) then
            call initZeroField(Bx,By,Bz)
-           call initPreDefinedB0(Bx0,By0,Bz0,g)
+           call initPreDefinedB0(B0x,B0y,B0z,g)
          else
-           call initUserBfield(Bx,By,Bz,Bx0,By0,Bz0,g)
+           call initUserBfield(Bx,By,Bz,B0x,B0y,B0z,g)
          endif
        end subroutine
 
@@ -74,36 +75,18 @@
          deallocate(xc,yc,zc)
        end subroutine
 
-       subroutine initRestartBfield(Bx,By,Bz,Bx0,By0,Bz0,g,dir)
+       subroutine initRestartB0(Bx,By,Bz,g,dir)
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz,Bx0,By0,Bz0
+         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
          real(cp),dimension(:),allocatable :: xc,yc,zc
          real(cp),dimension(:),allocatable :: xn,yn,zn
-
          allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
          allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
          xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
          xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
-
-         ! Need to write B0 to file then change this to a read statement!
-         ! 
-         ! This set of routines need to be organized to be more clear.
-         ! Right now, the total B-field is exported, which means
-         ! when it is imported for restart, the applied must be subtracted,
-         ! which is confusion and dangerous due to roundoff errors.
-
-         call initZeroField(Bx,By,Bz)
-         ! call uniformBfield(Bx0,By0,Bz0,applied_B_dir)
-         call initPreDefinedB0(Bx0,By0,Bz0,g)
-
-         call readFromFile(xc,yc,zc,Bx,By,Bz,dir//'Bfield/','Bxct','Byct','Bzct')
-         ! call readFromFile(xc,yc,zc,Bx0,By0,Bz0,dir//'Bfield/','B0xct','B0yct','B0zct')
-
-         ! Compute the induced magnetic field (B_total is exprted)
-         Bx = Bx - Bx0; By = By - By0; Bz = Bz - Bz0
-
+         call readFromFile(xc,yc,zc,Bx,By,Bz,dir//'Bfield/','B0xct','B0yct','B0zct')
          deallocate(xn,yn,zn)
          deallocate(xc,yc,zc)
        end subroutine
@@ -235,17 +218,17 @@
          deallocate(Btemp)
        end subroutine
 
-       subroutine initUserBfield(Bx,By,Bz,Bx0,By0,Bz0,g)
+       subroutine initUserBfield(Bx,By,Bz,B0x,B0y,B0z,g)
          implicit none
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz,Bx0,By0,Bz0
+         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz,B0x,B0y,B0z
          real(cp),dimension(:),allocatable :: xc,yc,zc
 
          allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
          xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
 
          call initZeroField(Bx,By,Bz)
-         call uniformBfield(Bx0,By0,Bz0,3)
+         call uniformBfield(B0x,B0y,B0z,3)
 
          deallocate(xc,yc,zc)
        end subroutine

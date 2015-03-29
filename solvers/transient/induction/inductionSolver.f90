@@ -158,7 +158,7 @@
          write(*,*) '     BCs applied'
 
          call initSigmaMu(ind%sigma%phi,ind%mu%phi,g)
-         ind%sigma = one/ind%sigma
+         call divide(one,ind%sigma)
          call myCellCenter2Edge(ind%sigmaInv_edge%x,ind%sigma%phi,g,1)
          call myCellCenter2Edge(ind%sigmaInv_edge%y,ind%sigma%phi,g,2)
          call myCellCenter2Edge(ind%sigmaInv_edge%z,ind%sigma%phi,g,3)
@@ -464,7 +464,7 @@
          ! *********************** ALLOCATE DATA ************************
          
          do i=1,ind%NmaxB
-           ind%Bstar = zero
+           call assign(ind%Bstar,zero)
            ! ------------- diffusion term -------------
            call CC2CCLap(ind%temp%phi,ind%B%x,g)
            ind%Bstar%x = ind%Bstar%x + ind%dTime*ind%temp%phi
@@ -482,7 +482,8 @@
            ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
            ! Add induced field of previous time step (B^n)
-           ind%B = ind%B*ind%mu + ind%Bstar
+           call multiply(ind%B,ind%mu)
+           call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
            call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -502,8 +503,8 @@
          integer :: i
 
          do i=1,ind%NmaxB
-           ind%Bstar = zero
-           ind%B = ind%B/ind%mu
+          call assign(ind%Bstar,zero)
+          call divide(ind%B,ind%mu)
            ! ------------- diffusion term -------------
            call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,1)
            ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
@@ -511,12 +512,6 @@
            ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
            call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,3)
            ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
-
-           ! Try converting to:
-           ! call myCCBfieldDiffuse(ind%tempVF%x,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,1)
-           ! call myCCBfieldDiffuse(ind%tempVF%y,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,2)
-           ! call myCCBfieldDiffuse(ind%tempVF%z,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,3)
-           ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
            
            ! ------------- source term -------------
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
@@ -526,14 +521,9 @@
            call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
            ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
-           ! Try converting to:
-           ! call myCCBfieldAdvect(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-           ! call myCCBfieldAdvect(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-           ! call myCCBfieldAdvect(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-           ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
-
            ! Add induced field of previous time step (B^n)
-           ind%B = ind%B*ind%mu + ind%Bstar
+           call multiply(ind%B,ind%mu)
+           call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
            call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -675,7 +665,7 @@
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
 
-         ind%Bstar = zero
+         call assign(ind%Bstar,zero)
 
          ! ------------- advection term -------------
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,1)
@@ -685,29 +675,15 @@
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,3)
          ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
-         ! Try converting to:
-         ! call myCCBfieldAdvect(ind%tempVF%x,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,1)
-         ! call myCCBfieldAdvect(ind%tempVF%y,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,2)
-         ! call myCCBfieldAdvect(ind%tempVF%z,U%x,U%y,U%z,ind%B%x,ind%B%y,ind%B%z,g,3)
-         ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
-
          ! ------------- diffusion term -------------
-         ind%B = ind%B/ind%mu
+         call divide(ind%B,ind%mu)
          call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,1)
          ind%Bstar%x = ind%Bstar%x - ind%dTime/ind%Rem*ind%temp%phi
          call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,2)
          ind%Bstar%y = ind%Bstar%y - ind%dTime/ind%Rem*ind%temp%phi
          call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,3)
          ind%Bstar%z = ind%Bstar%z - ind%dTime/ind%Rem*ind%temp%phi
-         ind%B = ind%B*ind%mu
-
-         ! Try converting to:
-         ! ind%B = ind%B/ind%mu
-         ! call myCCBfieldDiffuse(ind%tempVF%x,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,1)
-         ! call myCCBfieldDiffuse(ind%tempVF%y,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,2)
-         ! call myCCBfieldDiffuse(ind%tempVF%z,ind%B%x,ind%B%y,ind%B%z,ind%sigma%phi,g,3)
-         ! ind%Bstar = ind%Bstar - ind%dTime/ind%Rem*ind%tempVF
-         ! ind%B = ind%B*ind%mu
+         call multiply(ind%B,ind%mu)
 
          ! ------------- source term -------------
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
@@ -717,14 +693,8 @@
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
          ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
 
-         ! Try converting to:
-         ! call myCCBfieldAdvect(ind%tempVF%x,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-         ! call myCCBfieldAdvect(ind%tempVF%y,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-         ! call myCCBfieldAdvect(ind%tempVF%z,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-         ! ind%Bstar = ind%Bstar - ind%dTime*ind%tempVF
-
          ! Add induced field of previous time step (B^n)
-         ind%B = ind%B + ind%Bstar
+         call add(ind%B,ind%Bstar)
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -848,7 +818,8 @@
          integer :: Nx,Ny,Nz,dir
          ! **************************************************************
 
-         ind%Bstar = ind%B + ind%B0
+         call assign(ind%Bstar,ind%B)
+         call add(ind%Bstar,ind%B0)
 
          ! Index fluid face source terms:
          ! Excluding wall normal values

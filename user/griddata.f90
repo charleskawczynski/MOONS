@@ -88,6 +88,7 @@
 
        ! benchmarkCase = 102
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
        ! benchmarkCase = 103
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104
@@ -127,7 +128,7 @@
        ! integer,dimension(3),parameter :: Ni = (/45,45,45/), Nwtop = 0, Nwbot = 0                 ! Insulating
        ! integer,dimension(3),parameter :: Ni = (/150,64,64/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/) ! Conducting
        ! benchmarkCase = 1003
-       integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
 
 
        ! ********************* INDEX OF CELLS ************************ (DO NOT CHANGE)
@@ -307,7 +308,9 @@
          case (1001); betai = 1.0005d0 ! Ha = 1000
 
          case (1002); betai = 1.01d0
-         call robertsGridBL(betai,real(2.0)/Ha,hmin,hmax)
+         ! call robertsGridBL(betai,real(2.0,cp)/Ha,hmin,hmax)
+
+         betai = robertsBL(real(2.0,cp)/Ha,hmax-hmin)
          betai(1) = 10000.0d0
 
          case (1003); betai = 1.04d0

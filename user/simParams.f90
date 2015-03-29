@@ -9,8 +9,9 @@
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .true.    ! (T/F)
-       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
+       logical :: minimizePrintedOutput     = .true.    ! (T/F)
+       logical :: nonUniformGridFluid       = .false.    ! (T/F)
+       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -54,7 +55,7 @@
        logical :: multiMaterials = .false.
        logical :: computeKB = .true.    ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 5
+       integer,parameter :: solveBMethod = 4
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
@@ -95,7 +96,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 1003
+       integer,parameter :: benchmarkCase = 102
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

@@ -17,12 +17,15 @@
       use myDebug_mod
       use grid_mod
       use BCs_mod
-      use myIO_mod
+      use myIO_mod ! remove once vetted
       use solverSettings_mod
       use applyBCs_mod
       use myError_mod
       use MG_tools_mod
       use delOps_mod
+#ifdef _EXPORT_MG_CONVERGENCE_
+      use myIO_mod
+#endif
       use mySOR_mod
       implicit none
 
@@ -235,7 +238,7 @@
         logical :: continueLoop,TF
         integer :: i_MG,maxIterations,nLevels
 #ifdef _EXPORT_MG_CONVERGENCE_
-        integer :: NU,n
+        integer :: NU
 #endif
 
         write(*,*) '************** MG IS STARTING **************'
@@ -251,7 +254,7 @@
         ! write(*,*) 'maxval(mg(1)%u) = ',maxval(mg(1)%u)
 
 #ifdef _EXPORT_MG_CONVERGENCE_
-        open(NU,file=trim(strcompress('out\',n)) // trim(strcompress('norms_MG',n)) // '.dat',pad='YES')
+        NU = newAndOpen('out\','norms_MG')
 #endif
 
         i_MG = 0

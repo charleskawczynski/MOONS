@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Computations for Restriction and Prolongation in Multigrid Method}
+Since \textit{both} a ghost cell and ghost node exist both restriction and prolongation are tricky since the ghost cell (and ghost node) grow (during restriction) and contract (during prolongation). This must be taken into account during computations. Typically, this somewhat confusing aspect can be avoided with cell vertex multigrid, but since a ghost node has been implemented in MOONS, it must be handled with care. The advantage of the ghost node greatly outweighs its disadvantages however.
+
+\section{Node data}
+
+\subsection{Restriction}
+\subsection{Prolongation}
+
+\section{Cell centered data}
+\subsection{Restriction}
+The restriction operator is defined by taking the average of two cells, and interpolating the result to the new cell center. Let $i$ by the location of CC data. The average is computed with
+
+\begin{equation}
+	f_{ave,i} = \frac{f_{c,i}+f_{c,i+1}}{2}
+\end{equation}
+And the location of this data (before interpolating) is
+\begin{equation}
+	h_{ave,i} = \frac{h_{n,i+1} + h_{n,i-1}}{2}
+\end{equation}
+
+And linearly interpolating this, we have
+\begin{equation}
+	\frac{f_{ave,i}-f_{c,i}}{h_{ave,i}-h_{c,i}} = \frac{f_{c,i+1}-f_{c,i}}{h_{c,i+1}-h_{c,i}}
+\end{equation}
+
+Solving for the new (restricted) value, we have
+
+
+
+
+\subsection{Prolongation}
+
+
+
+
+
+
+
+\end{document}
