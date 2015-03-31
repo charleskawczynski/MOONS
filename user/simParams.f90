@@ -10,8 +10,8 @@
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
        logical :: minimizePrintedOutput     = .true.    ! (T/F)
-       logical :: nonUniformGridFluid       = .false.    ! (T/F)
-       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .true.    ! (T/F)
+       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -96,7 +96,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 102
+       integer,parameter :: benchmarkCase = 103
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

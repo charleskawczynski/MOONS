@@ -18,7 +18,7 @@
        real(cp),parameter :: zero = real(0.0,cp)
        
        ! Uniform grids
-       public :: uniform
+       public :: uniform,uniformLeft,uniformRight
        public :: linspace1,uniformGrid1
 
        ! Stretched grids
@@ -58,27 +58,7 @@
          hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
        end function
 
-       subroutine linspace1(hn,hmin,hmax,N)
-         ! This routine returns a uniform grid from
-         ! hmin to hmax using N+1 points.
-         ! 
-         ! NOTE: hmin and hmax are included in the result.
-         ! 
-         ! INPUT:
-         !      hmin     = minimum value
-         !      hmax     = maximum value
-         !      N        = N segments of dh
-         implicit none
-         real(cp),dimension(:),intent(inout) :: hn
-         real(cp),intent(in) :: hmin,hmax
-         integer,intent(in) :: N
-         integer :: i
-         real(cp) :: dh
-         dh = (hmax - hmin)/real(N,cp)
-         hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
-       end subroutine
-
-       subroutine uniformGrid1(hn,hstart,dh,dir)
+       function uniformDirection(hstart,dh,N,dir) result(hn)
          ! This routine returns a uniform grid beginning
          ! from hstart with uniform step size dh.
          ! The size of the segment depends on the size
@@ -89,17 +69,45 @@
          ! INPUT:
          !      hstart   = start value
          !      dh       = step size
-         !      N        = N points in segment
+         !      N        = N segments
          !      dir      = (1,-1)
          implicit none
-         real(cp),dimension(:),intent(inout) :: hn
          real(cp),intent(in) :: hstart,dh
-         integer,intent(in) :: dir
-         integer :: s,i
-         s = size(hn)
+         integer,intent(in) :: N,dir
+         real(cp),dimension(N+1) :: hn
+         integer :: i
          ! Total coordinates (uniform)
-         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,s)/)
-       end subroutine
+         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,N+1)/)
+         if (dir.eq.-1) call reverseIndex(hn)
+       end function
+
+       function uniformLeft(hstart,dh,N) result(hn)
+         ! Uses uniformDirection. Output:
+         ! 
+         !                     |
+         !    --|--|--|--|--|--|
+         !                     |
+         !                   hstart
+         implicit none
+         real(cp),intent(in) :: hstart,dh
+         integer,intent(in) :: N
+         real(cp),dimension(N+1) :: hn
+         hn = uniformDirection(hstart,dh,N,-1)
+       end function
+
+       function uniformRight(hstart,dh,N) result(hn)
+         ! Uses uniformDirection. Output:
+         ! 
+         !                     |
+         !                     |--|--|--|--|--|--
+         !                     |
+         !                   hstart
+         implicit none
+         real(cp),intent(in) :: hstart,dh
+         integer,intent(in) :: N
+         real(cp),dimension(N+1) :: hn
+         hn = uniformDirection(hstart,dh,N,1)
+       end function
 
        ! ***************************************************************
        ! ***************************************************************
@@ -306,7 +314,6 @@
        ! ***************************************************************
        ! ***************************************************************
 
-
        subroutine robertsGridBL(beta,delta,hmin,hmax)
          ! robertsGridBL returns the beta for a given boundary laryer
          ! as described in section 5.6 (page 333) of 
@@ -359,6 +366,29 @@
             beta(i) = robertsBL1D(delta,h(i))
          enddo
        end function
+
+       function hartmannBL(Ha,h) result (beta)
+         implicit none
+         real(cp),dimension(3),intent(in) :: h
+         real(cp),intent(in) :: Ha
+         real(cp),dimension(3) :: beta
+         integer :: i
+         do i = 1,3
+            beta(i) = robertsBL1D(real(1.0)/Ha,h(i))
+         enddo
+       end function
+
+       function reynoldsBL(Re,h) result (beta)
+         implicit none
+         real(cp),dimension(3),intent(in) :: h
+         real(cp),intent(in) :: Re
+         real(cp),dimension(3) :: beta
+         integer :: i
+         do i = 1,3
+            beta(i) = robertsBL1D(real(1.0)/sqrt(Re),h(i))
+         enddo
+       end function
+
 
        ! ***************************************************************
        ! ***************************************************************
@@ -422,6 +452,49 @@
          ! Return coordinates to original scale:
          hn = hmin + (hmax - hmin)*hn
          deallocate(hnbar)
+       end subroutine
+
+       subroutine linspace1(hn,hmin,hmax,N)
+         ! This routine returns a uniform grid from
+         ! hmin to hmax using N+1 points.
+         ! 
+         ! NOTE: hmin and hmax are included in the result.
+         ! 
+         ! INPUT:
+         !      hmin     = minimum value
+         !      hmax     = maximum value
+         !      N        = N segments of dh
+         implicit none
+         real(cp),dimension(:),intent(inout) :: hn
+         real(cp),intent(in) :: hmin,hmax
+         integer,intent(in) :: N
+         integer :: i
+         real(cp) :: dh
+         dh = (hmax - hmin)/real(N,cp)
+         hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
+       end subroutine
+
+       subroutine uniformGrid1(hn,hstart,dh,dir)
+         ! This routine returns a uniform grid beginning
+         ! from hstart with uniform step size dh.
+         ! The size of the segment depends on the size
+         ! of hn. dir is the positive or negative direction.
+         ! 
+         ! NOTE: hstart is included in the result.
+         ! 
+         ! INPUT:
+         !      hstart   = start value
+         !      dh       = step size
+         !      N        = N points in segment
+         !      dir      = (1,-1)
+         implicit none
+         real(cp),dimension(:),intent(inout) :: hn
+         real(cp),intent(in) :: hstart,dh
+         integer,intent(in) :: dir
+         integer :: s,i
+         s = size(hn)
+         ! Total coordinates (uniform)
+         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,s)/)
        end subroutine
 
        subroutine reverseIndex(h)

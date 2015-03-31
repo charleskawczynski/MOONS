@@ -143,7 +143,7 @@
            write(newU,*) 'maxRange = ',g%maxRange
            write(newU,*) 'volume = ',g%volume
            call addToFile(g,newU); close(newU)
-           ! call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
+           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
          else
            call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,real(1.0,cp),dir,name//'_n')
            ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,real(1.0,cp),dir,name//'_c')

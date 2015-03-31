@@ -55,7 +55,7 @@
 
       type myADI
         type(myTrisolver),dimension(3) :: triSolver
-        real(cp),dimension(:,:,:),allocatable :: lapu,r
+        real(cp),dimension(:,:,:),allocatable :: lapu,r,ftemp
         real(cp),dimension(:),allocatable :: dtj
         integer,dimension(3) :: s
         integer :: nTimeLevels,gridType
@@ -91,21 +91,16 @@
         allocate(upDiag(s(dir)-1))
         allocate(loDiag(s(dir)-1))
 
-        if (ADI%gridType.eq.1) then
+        if (s(dir).eq.g%c(dir)%sc) then
           gt = 1
-          call setUpSystem(loDiag,diag,upDiag,real(0.5,cp)*ADI%dt*ADI%alpha,&
-           g%c(dir)%dhc,g%c(dir)%dhn,s(dir),gt)
-
           call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
            g%c(dir)%dhc,g%c(dir)%dhn,s(dir),gt)
-        endif
-        if (ADI%gridType.eq.2) then
+        elseif (s(dir).eq.g%c(dir)%sn) then
           gt = 0
-          call setUpSystem(loDiag,diag,upDiag,real(0.5,cp)*ADI%dt*ADI%alpha,&
-           g%c(dir)%dhn,g%c(dir)%dhc,s(dir),gt)
-
           call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
            g%c(dir)%dhn,g%c(dir)%dhc,s(dir),gt)
+        else
+          stop 'Error: shape mismatch in initSystem in myADI.f90'
         endif
 
         call addIdentity(diag)
@@ -145,6 +140,7 @@
         ! Set up tridiagonal systems:
         allocate(ADI%lapu(s(1),s(2),s(3)))
         allocate(ADI%r(s(1),s(2),s(3)))
+        allocate(ADI%ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
       end subroutine
 
       subroutine deleteADI(ADI)
@@ -155,6 +151,7 @@
        call delete(ADI%triSolver(3))
        if (allocated(ADI%lapu)) deallocate(ADI%lapu)
        if (allocated(ADI%r)) deallocate(ADI%r)
+       if (allocated(ADI%ftemp)) deallocate(ADI%ftemp)
        if (allocated(ADI%dtj)) deallocate(ADI%dtj)
        if (allocated(ADI%alpha_var)) deallocate(ADI%alpha_var)
       end subroutine
@@ -306,6 +303,12 @@
         Nt = getMaxIterations(ss)
         ! Nt = 1
 
+        ! The following was not used when testing the three poisson
+        ! methods, and good results were obtained.
+        ! This is being temporarily introduced because non-uniform grids
+        ! are being tested
+        ADI%ftemp = f
+
         maxIt = 0
 
 #ifdef _EXPORT_ADI_CONVERGENCE_
@@ -315,19 +318,19 @@
 
           ! Begin V-cycle of multi-scale
           do j = 1,ADI%nTimeLevels
-            call setDt(ADI,ADI%dtj(j))
+            ! call setDt(ADI,ADI%dtj(j))
             ! call setDt(ADI,real(0.01,cp))
             call initSystem(ADI,s,g,1)
             call initSystem(ADI,s,g,2)
             call initSystem(ADI,s,g,3)
-            call relax3D(ADI,u,f,u_bcs,g)
+            call relax3D(ADI,u,ADI%ftemp,u_bcs,g)
 
 #ifdef _EXPORT_ADI_CONVERGENCE_
             select case (ADI%gridType)
             case (1); call CC2CCLap(ADI%lapu,u,g)
             case (2); call myNodeLap(ADI%lapu,u,g)
             end select
-            ADI%r = ADI%lapu - f
+            ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
             call compute(norms,real(0.0,cp),ADI%r)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
@@ -336,19 +339,19 @@
           enddo
           if (maxIt.ge.Nt) exit
           do j = ADI%nTimeLevels, 1, -1
-            call setDt(ADI,ADI%dtj(j))
+            ! call setDt(ADI,ADI%dtj(j))
             ! call setDt(ADI,real(0.01,cp))
             call initSystem(ADI,s,g,1)
             call initSystem(ADI,s,g,2)
             call initSystem(ADI,s,g,3)
-            call relax3D(ADI,u,f,u_bcs,g)
+            call relax3D(ADI,u,ADI%ftemp,u_bcs,g)
 
 #ifdef _EXPORT_ADI_CONVERGENCE_
             select case (ADI%gridType)
             case (1); call CC2CCLap(ADI%lapu,u,g)
             case (2); call myNodeLap(ADI%lapu,u,g)
             end select
-            ADI%r = ADI%lapu - f
+            ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
             call compute(norms,real(0.0,cp),ADI%r)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
@@ -381,7 +384,7 @@
           case (1); call CC2CCLap(ADI%lapu,u,g)
           case (2); call myNodeLap(ADI%lapu,u,g)
           end select
-          ADI%r = ADI%lapu - f
+          ADI%r = ADI%lapu - ADI%ftemp
           call zeroGhostPoints(ADI%r)
           call compute(norms,real(0.0,cp),ADI%r)
           call print(norms,'ADI Residuals for '//trim(adjustl(getName(ss))))
@@ -401,6 +404,14 @@
         real(cp),dimension(:),intent(in) :: dhp,dhd
         integer,intent(in) :: s,gt
         integer :: i
+        ! write(*,*) 's(diag) = ',size(diag)
+        ! write(*,*) 's(loDiag) = ',size(loDiag)
+        ! write(*,*) 's(upDiag) = ',size(upDiag)
+        ! write(*,*) 's(dhp) = ',size(dhp)
+        ! write(*,*) 's(dhd) = ',size(dhd)
+        ! write(*,*) 's = ',s
+        ! write(*,*) 'gt = ',gt
+        ! stop 'printed'
 
         diag(1) = real(0.0,cp)
         upDiag(1) = real(0.0,cp)

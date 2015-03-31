@@ -88,9 +88,9 @@
 
        ! benchmarkCase = 102
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
-       integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
+       ! integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
        ! benchmarkCase = 103
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104
        ! integer,dimension(3),parameter :: Ni = 51, Nwtop = 5, Nwbot = 5
 
@@ -193,7 +193,8 @@
          real(cp),dimension(3) :: hmin,hmax
          real(cp),dimension(3) :: alphai,betai
          real(cp),dimension(3) :: alphaw,betaw
-         real(cp) :: tau,y_c
+         real(cp),dimension(3) :: betawBot,betawTop
+         real(cp) :: tau,y_c,dh
          integer :: i
          type(gridGenerator) :: gg
 
@@ -404,32 +405,49 @@
 
          ! 3D Cavity (interior)
          do i=1,3
-           call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
+           if (nonUniformGridFluid) then
+                 call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
+           else; call init(gg,(/uniform(hmin(i),hmax(i),Ni(i))/),i)
+           endif
            call applyGhost(gg,i)
            call init(g_mom,gg%g%c(i)%hn,i,2)
          enddo
 
-         ! 3D Cavity (add walls)
+         ! if (autoMatchBetas) then
+         !   do i=1,3
+         !     dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
+         !     call estimateBetaWRecursive(betawBot(i),betai(i),alphaw(i),Nwbot(i),hmin(i)-twbot(i),hmin(i),dh)
+         !     dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
+         !     call estimateBetaWRecursive(betawTop(i),betai(i),alphaw(i),Nwtop(i),hmax(i),hmax(i)+twtop(i),dh)
+         !   enddo
+         ! else
+         !   betawTop = betaw; betawBot = betaw
+         ! endif
+
+
+         ! 3D Cavity (add walls in all directions)
          do i=1,3
            call snip(gg,i); call pop(gg,i) ! Remove ghost nodes
-           call snip(gg,i)
-           call prep(gg,(/robertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),betaw(i))/),i)
-           call pop(gg,i)
-           call app(gg,(/robertsLeft(hmax(i),hmax(i)+twtop(i),Nwtop(i),betaw(i))/),i)
+           if (nonUniformGridWall) then
+             call snip(gg,i)
+             call prep(gg,(/robertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),betaw(i))/),i)
+           else
+             dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
+             call snip(gg,i)
+             call prep(gg,(/uniformLeft(hmin(i),dh,Nwbot(i))/),i)
+           endif
+           if (nonUniformGridWall) then
+             call pop(gg,i)
+             call app(gg,(/robertsLeft(hmax(i),hmax(i)+twtop(i),Nwtop(i),betaw(i))/),i)
+           else
+             dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
+             call pop(gg,i)
+             call app(gg,(/uniformRight(hmax(i),dh,Nwtop(i))/),i)
+           endif
            call applyGhost(gg,i) ! re-apply ghosts
            call init(g_ind,gg%g%c(i)%hn,i,2)
          enddo
          call delete(gg)
-
-
-
-         ! call init(g_ind,gg%g%c(1)%hn,1,2)
-         ! call init(g_ind,this%ht%c(2)%hn,2,2)
-         ! call init(g_ind,this%ht%c(3)%hn,3,2)
-         ! call init(g_mom,gg%g%c(1)%hn,1,2)
-         ! call init(g_mom,this%hi%c(2)%hn,2,2)
-         ! call init(g_mom,this%hi%c(3)%hn,3,2)
-
 
 
          ! call init(g_ind,this%ht%c(1)%hn,1,2)

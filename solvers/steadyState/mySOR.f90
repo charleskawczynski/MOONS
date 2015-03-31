@@ -200,18 +200,18 @@
           do k=2,s(3)-1,2
             do j=2,s(2)-1
               do i=2,s(1)-1
-                r = real(1.0,cp)/SOR%dxd(i-1)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
-                    real(1.0,cp)/SOR%dyd(j-1)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
-                    real(1.0,cp)/SOR%dzd(k-1)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
+                r = real(1.0,cp)/SOR%dxd(i-1+gt)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
+                    real(1.0,cp)/SOR%dyd(j-1+gt)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
+                    real(1.0,cp)/SOR%dzd(k-1+gt)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
 
                 u(i,j,k) = u(i,j,k)*(real(1.0,cp)-SOR%omega) + &
 
-               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1)) + &
-                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1)) + &
-                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1)) + &
-                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1)) + &
-                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1)) + &
-                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1)) &
+               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1+gt)) + &
+                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1+gt)) + &
+                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1+gt)) + &
+                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1+gt)) + &
+                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1+gt)) + &
+                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1+gt)) &
                          - SOR%f(i,j,k) )/r
               enddo
             enddo

@@ -84,40 +84,31 @@
           !    Linearly interpolate the average of two cells to the cell center:
           ! or Linearly interpolate the two adjecent cells and average:
           ! Ghost values are linearly extrapolated:
-          do i=1+1*x,s(1)-1*x,1+x
+          do k=1+1*z,s(3)-1*z,1+z
            do j=1+1*y,s(2)-1*y,1+y
-            do k=1+1*z,s(3)-1*z,1+z
+            do i=1+1*x,s(1)-1*x,1+x
               t = i*x + j*y + k*z
-              ! This idea might work BUT
-              ! Indexing needs to be checked (since t might need to
-              ! be 2*t or 2*t-1 or something)
-              ! alpha = (c%hn(t+1)-c%hn(t))/(c%hn(t)-c%hn(t-1))
-              ! alpha = c%dhn(t)/c%dhn(t-1)
-              alpha = real(0.5,cp)
-              r(i*(1-x)+x*i/2+x,j*(1-y)+y*j/2+y,k*(1-z)+z*k/2+z) = real(0.5,cp)*(u(i,j,k) + &
-              u(i-x,j-y,k-z)*alpha + &
-              u(i+x,j+y,k+z)*(real(1.0,cp)-alpha))
+              alpha = c%dhn(t)/(c%dhn(t)+c%dhn(t+1))
+              r(i*(1-x)+x*i/2+x,j*(1-y)+y*j/2+y,k*(1-z)+z*k/2+z) = &
+              u(i,j,k)*alpha + &
+              u(i+x,j+y,k+z)*(real(1.0,cp)-alpha)
             enddo
            enddo
            ! write(*,*) 'ri,ui-x,ui+x = ',i*(1-x)+x*i/2+x,i-x,i,i+x
           enddo
         stop 'Error: not yet supported'
         case (2) ! u {N},  mod(sc/2,2)=0
-          ! Every even becomes the average of the value itself
+          ! Starting from the physical boundary,
+          ! Every odd becomes the average of the value itself
           ! and its linearly interpolated neighbors:
 
           ! write(*,*) 'su,sr = ',s(1),sr(1)
 
-          do i=1+1*x,s(1)-1*x,1+x
+          do k=1+1*z,s(3)-1*z,1+z
            do j=1+1*y,s(2)-1*y,1+y
-            do k=1+1*z,s(3)-1*z,1+z
+            do i=1+1*x,s(1)-1*x,1+x
               t = i*x + j*y + k*z
-              ! This idea might work BUT
-              ! Indexing needs to be checked (since t might need to
-              ! be 2*t or 2*t-1 or something)
-              ! alpha = (c%hn(t+1)-c%hn(t))/(c%hn(t)-c%hn(t-1))
-              ! alpha = c%dhn(t)/c%dhn(t-1)
-              alpha = real(0.5,cp)
+              alpha = c%dhn(t-1)/c%dhn(t)
               r(i*(1-x)+x*i/2+x,j*(1-y)+y*j/2+y,k*(1-z)+z*k/2+z) = real(0.5,cp)*(u(i,j,k) + &
               u(i-x,j-y,k-z)*alpha + &
               u(i+x,j+y,k+z)*(real(1.0,cp)-alpha))
@@ -236,9 +227,9 @@
           ! odd locations have coincident values:
           ! Index for p must be even: 2n-2
           ! write(*,*) 'su,sp = ',s(1),sp(1)
-          do i=1+x,s(1)-2*x
+          do k=1+z,s(3)-2*z
            do j=1+y,s(2)-2*y
-            do k=1+z,s(3)-2*z
+            do i=1+x,s(1)-2*x
               p((1+x)*i-2*x,(1+y)*j-2*y,(1+z)*k-2*z) = u(i,j,k)
             enddo
            enddo
@@ -248,9 +239,9 @@
           ! Starting from the physical boundaries,
           ! even locations are interpolated:
           ! Index for p must be even: 2n-1
-          do i=1,s(1)-x
+          do k=1,s(3)-z
            do j=1,s(2)-y
-            do k=1,s(3)-z
+            do i=1,s(1)-x
               t = i*x + j*y + k*z
               ! Alpha needs to be fixed
               ! alpha = (c%hn(t)-c%hn(t+1))/(c%hn(t-1)-c%hn(t+1))
