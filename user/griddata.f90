@@ -88,9 +88,10 @@
 
        ! benchmarkCase = 102
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 48, Nwtop = 8, Nwbot = 8 ! For multigrid
        ! integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
        ! benchmarkCase = 103
-       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! benchmarkCase = 104
        ! integer,dimension(3),parameter :: Ni = 51, Nwtop = 5, Nwbot = 5
 
@@ -107,7 +108,7 @@
        ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,2,11/), Nwbot = (/11,2,11/)
 
        ! benchmarkCase = 200
-       ! integer,dimension(3),parameter :: Ni = (/150,32,32/), Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = (/2**6,2**5,2**5/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 201
        ! integer,dimension(3),parameter :: Ni = (/101,32,32/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
        ! benchmarkCase = 202
@@ -125,7 +126,8 @@
        ! benchmarkCase = 1001
        ! integer,dimension(3),parameter :: Ni = 52, Nwtop = (/8,0,8/), Nwbot = 8 ! Ha = 10,100,1000
        ! benchmarkCase = 1002
-       ! integer,dimension(3),parameter :: Ni = (/45,45,45/), Nwtop = 0, Nwbot = 0                 ! Insulating
+       ! integer,dimension(3),parameter :: Ni = (/45,45,45/), Nwtop = 0, Nwbot = 0     ! Insulating
+       ! integer,dimension(3),parameter :: Ni = (/65,45,45/), Nwtop = 0, Nwbot = 0     ! Insulating
        ! integer,dimension(3),parameter :: Ni = (/150,64,64/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/) ! Conducting
        ! benchmarkCase = 1003
        ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
@@ -293,7 +295,7 @@
 
          case (109); betai = 1.04d0
 
-         case (200); betai = 100.0d0
+         case (200); betai = 1.05d0; betai(1) = 1000.0d0
          case (201); betai = 1.01d0; betai(1) = 1000.0d0
          case (202); betai = 1.001d0; betai(1) = 1000.0d0
 
@@ -390,11 +392,24 @@
          ! *****************************************************************
          ! *****************************************************************
          ! Duct flow for Sergey's fringe
-         tau = real(5.0,cp); y_c = real(1.5,cp) ! y_c should match Bshift in sergey's fringe
+         tau = real(2.0,cp); y_c = real(1.5,cp) ! y_c should match Bshift in sergey's fringe
          ! call init(gg,(/cluster(hmin(1),(hmax(1)-hmin(1))/2.0,Ni(1)/2,y_c,tau)/),1)
          ! call pop(gg,1)
          ! call app(gg,(/cluster((hmax(1)-hmin(1))/2.0,hmax(1),Ni(1)/2,hmax(1)-y_c-(hmax(1)-hmin(1))/2.0,tau)/),1)
          ! call applyGhost(gg,1)
+         ! call init(g_mom,gg%g%c(1)%hn,1,2)
+         ! call init(g_ind,gg%g%c(1)%hn,1,2)
+         ! ! yz grid
+         ! do i=2,3
+         !   if (nonUniformGridFluid) then
+         !         call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
+         !   else; call init(gg,(/uniform(hmin(i),hmax(i),Ni(i))/),i)
+         !   endif
+         !   call applyGhost(gg,i)
+         !   call init(g_mom,gg%g%c(i)%hn,i,2)
+         !   call init(g_ind,gg%g%c(i)%hn,i,2)
+         ! enddo
+         ! call delete(gg)
 
 
          ! *****************************************************************
@@ -404,14 +419,14 @@
          ! *****************************************************************
 
          ! 3D Cavity (interior)
-         do i=1,3
-           if (nonUniformGridFluid) then
-                 call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
-           else; call init(gg,(/uniform(hmin(i),hmax(i),Ni(i))/),i)
-           endif
-           call applyGhost(gg,i)
-           call init(g_mom,gg%g%c(i)%hn,i,2)
-         enddo
+         ! do i=1,3
+         !   if (nonUniformGridFluid) then
+         !         call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
+         !   else; call init(gg,(/uniform(hmin(i),hmax(i),Ni(i))/),i)
+         !   endif
+         !   call applyGhost(gg,i)
+         !   call init(g_mom,gg%g%c(i)%hn,i,2)
+         ! enddo
 
          ! if (autoMatchBetas) then
          !   do i=1,3
@@ -424,39 +439,38 @@
          !   betawTop = betaw; betawBot = betaw
          ! endif
 
-
          ! 3D Cavity (add walls in all directions)
-         do i=1,3
-           call snip(gg,i); call pop(gg,i) ! Remove ghost nodes
-           if (nonUniformGridWall) then
-             call snip(gg,i)
-             call prep(gg,(/robertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),betaw(i))/),i)
-           else
-             dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
-             call snip(gg,i)
-             call prep(gg,(/uniformLeft(hmin(i),dh,Nwbot(i))/),i)
-           endif
-           if (nonUniformGridWall) then
-             call pop(gg,i)
-             call app(gg,(/robertsLeft(hmax(i),hmax(i)+twtop(i),Nwtop(i),betaw(i))/),i)
-           else
-             dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
-             call pop(gg,i)
-             call app(gg,(/uniformRight(hmax(i),dh,Nwtop(i))/),i)
-           endif
-           call applyGhost(gg,i) ! re-apply ghosts
-           call init(g_ind,gg%g%c(i)%hn,i,2)
-         enddo
-         call delete(gg)
+         ! do i=1,3
+         !   call snip(gg,i); call pop(gg,i) ! Remove ghost nodes
+         !   if (nonUniformGridWall) then
+         !     call snip(gg,i)
+         !     call prep(gg,(/robertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),betaw(i))/),i)
+         !   else
+         !     dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
+         !     call snip(gg,i)
+         !     call prep(gg,(/uniformLeft(hmin(i),dh,Nwbot(i))/),i)
+         !   endif
+         !   if (nonUniformGridWall) then
+         !     call pop(gg,i)
+         !     call app(gg,(/robertsLeft(hmax(i),hmax(i)+twtop(i),Nwtop(i),betaw(i))/),i)
+         !   else
+         !     dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
+         !     call pop(gg,i)
+         !     call app(gg,(/uniformRight(hmax(i),dh,Nwtop(i))/),i)
+         !   endif
+         !   call applyGhost(gg,i) ! re-apply ghosts
+         !   call init(g_ind,gg%g%c(i)%hn,i,2)
+         ! enddo
+         ! call delete(gg)
 
 
-         ! call init(g_ind,this%ht%c(1)%hn,1,2)
-         ! call init(g_ind,this%ht%c(2)%hn,2,2)
-         ! call init(g_ind,this%ht%c(3)%hn,3,2)
+         call init(g_ind,this%ht%c(1)%hn,1,2)
+         call init(g_ind,this%ht%c(2)%hn,2,2)
+         call init(g_ind,this%ht%c(3)%hn,3,2)
 
-         ! call init(g_mom,this%hi%c(1)%hn,1,2)
-         ! call init(g_mom,this%hi%c(2)%hn,2,2)
-         ! call init(g_mom,this%hi%c(3)%hn,3,2)
+         call init(g_mom,this%hi%c(1)%hn,1,2)
+         call init(g_mom,this%hi%c(2)%hn,2,2)
+         call init(g_mom,this%hi%c(3)%hn,3,2)
 
        end subroutine
 

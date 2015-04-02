@@ -995,7 +995,7 @@
           f%z = g2%phi - f%z
 #endif
 #ifdef _DEBUG_VECTOR_
-          call compare(f,)
+          call compare(f,g2)
 #endif
         end subroutine
 

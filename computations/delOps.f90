@@ -43,11 +43,21 @@
        ! 
        use del_mod
        use grid_mod
+       use myError_mod
        use interpOps_mod
 
        implicit none
 
+       ! Compiler Flags (_PARALLELIZE_DELOPS_,
+       !                 _DEBUG_DELOPS_,
+       !                 _CHECK_SYMMETRY_DELOPS_)
+
        private
+
+#ifdef _CHECK_SYMMETRY_DELOPS_
+       integer,parameter :: symmetryPlane = 2
+       public :: symmetryPlane
+#endif
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -64,6 +74,8 @@
        public :: totalEnergy          ! call totalEnergy(e,u,v,w)
        public :: collocatedMagnitude  ! call collocatedMagnitude(mag,u,v,w)
        public :: myCollocatedCross    ! call myCollocatedCross(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
+       public :: printPhysicalMinMax  ! call printPhysicalMinMax(u,s,name)
+       public :: checkSymmetry        ! call checkSymmetry(u,plane,name)
 
        ! --------------------------------- DERIVATIVE ROUTINES ---------------------------------
        ! Face based derivatives
@@ -208,7 +220,7 @@
            case default
              stop 'Error: bad input to orthogonalDirection'
          end select
-#ifdef _DEBUG_VECTOROPS_
+#ifdef _DEBUG_DELOPS_
          if (dir1.eq.dir2) then
            stop 'There are no orthogonal directions'
          endif
@@ -224,6 +236,93 @@
          f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
          f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
        end subroutine
+
+       subroutine printPhysicalMinMax(u,s,name)
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: u
+         integer,dimension(3),intent(in) :: s
+         character(len=*),intent(in) :: name
+         write(*,*) 'Min/Max ('//name//') = ',minval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1)),&
+                                              maxval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1))
+       end subroutine
+
+       subroutine checkSymmetry(u,plane,name,g)
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: u
+         character(len=*),intent(in) :: name
+         integer,intent(in) :: plane
+         type(grid),intent(in) :: g
+         type(myError) :: e
+         real(cp),dimension(:,:,:),allocatable :: u_left,u_right,u_symm
+         integer,dimension(3) :: s,N
+         real(cp) :: tol
+         integer :: p,x,y,z,k
+         tol = real(10.0**(-5.0),cp)
+         s = shape(u); p = plane
+
+         select case (p)
+         case (1); x=1;y=0;z=0
+         case (2); x=0;y=1;z=0
+         case (3); x=0;y=0;z=1
+         case default; stop 'Error: plane must = 1,2,3 in checkSymmetry in delOps.f90'
+         end select
+         k = mod(s(p),2)
+         N = s
+         N(p) = (N(p)-k)/2
+         allocate(u_left(N(1),N(2),N(3)))
+         allocate(u_right(N(1),N(2),N(3)))
+         allocate(u_symm(N(1),N(2),N(3)))
+
+          select case (p)
+          case (1); u_left = u(1:N(p),:,:); u_right = u(s(p):N(p)+1+k:-1,:,:)
+          case (2); u_left = u(:,1:N(p),:); u_right = u(:,s(p):N(p)+1+k:-1,:)
+          case (3); u_left = u(:,:,1:N(p)); u_right = u(:,:,s(p):N(p)+1+k:-1)
+          end select
+
+         u_symm = abs(abs(u_left) - abs(u_right))
+         call compute(e,real(0.0,cp),u_symm)
+
+         if (getLinf(e).gt.tol) then
+           call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u,'out/','test')
+           select case (p)
+           case (1); call writeToFile(g%c(1)%hc(1:N(p)),g%c(2)%hc,g%c(3)%hc,u_left,'out/','u_left')
+           case (2); call writeToFile(g%c(1)%hc,g%c(2)%hc(1:N(p)),g%c(3)%hc,u_left,'out/','u_left')
+           case (3); call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc(1:N(p)),u_left,'out/','u_left')
+           end select
+           select case (p)
+           case (1); call writeToFile(g%c(1)%hc(s(p):N(p)+1+k:-1),g%c(2)%hc,g%c(3)%hc,u_right,'out/','u_right')
+           case (2); call writeToFile(g%c(1)%hc,g%c(2)%hc(s(p):N(p)+1+k:-1),g%c(3)%hc,u_right,'out/','u_right')
+           case (3); call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc(s(p):N(p)+1+k:-1),u_right,'out/','u_right')
+           end select
+           select case (p)
+           case (1); call writeToFile(g%c(1)%hc(1:N(p)),g%c(2)%hc,g%c(3)%hc,u_symm,'out/','u_symm')
+           case (2); call writeToFile(g%c(1)%hc,g%c(2)%hc(1:N(p)),g%c(3)%hc,u_symm,'out/','u_symm')
+           case (3); call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc(1:N(p)),u_symm,'out/','u_symm')
+           end select
+
+           write(*,*) 'Case = ',mod(s(p),2)
+#ifdef _CHECK_SYMMETRY_DELOPS_
+           write(*,*) 'symmetryPlane = ',symmetryPlane
+#endif
+           write(*,*) 'shape(u) = ',shape(u)
+           write(*,*) 'shape(u_symm) = ',shape(u_symm)
+           write(*,*) 'shape(u_symm) = ',shape(u_symm)
+
+           write(*,*) 'maxval(u_symm) = ',maxval(abs(u_symm))
+           write(*,*) 'maxloc(u_symm) = ',maxloc(abs(u_symm))
+
+           write(*,*) 'L1 = ',getL1(e)
+           write(*,*) 'L2 = ',getL2(e)
+           write(*,*) 'Linf = ',getLinf(e)
+           write(*,*) 'Symmetry is broken from above field = ',name
+           stop 'Done'
+         else
+           ! write(*,*) 'Good symmetry in ',name
+           ! write(*,*) 'maxval(u_left) = ',maxval(abs(u_left))
+         endif
+         deallocate(u_right,u_left,u_symm)
+       end subroutine
+        
 
        ! ****************************************************************************************
        ! ****************************************************************************************
@@ -246,6 +345,9 @@
          divF(1,:,:) = real(0.0,cp); divF(s(1),:,:) = real(0.0,cp)
          divF(:,1,:) = real(0.0,cp); divF(:,s(2),:) = real(0.0,cp)
          divF(:,:,1) = real(0.0,cp); divF(:,:,s(3)) = real(0.0,cp)
+#ifdef _CHECK_SYMMETRY_DELOPS_
+         call checkSymmetry(divF,symmetryPlane,'div',g)
+#endif
        end subroutine
 
        subroutine myFaceLap(lapF,f,g) ! Finished
@@ -277,13 +379,28 @@
          ! Note that the non-linear term is zero on the boundary since the
          ! derivative of a velocity in any tangential direction will always
          ! be zero within machine accuracy (for dirichlet conditions).
-         if (s(1).eq.g%c(1)%sn) then
+         ! 
+         ! It seems that these viscous effects CANNOT be set to zero for 
+         ! duct flows with Neumann BCs at the exit without resulting in
+         ! severe numerical instibilities.
+         ! 
+             if (s(1).eq.g%c(1)%sn) then
            lapF(2,:,:) = real(0.0,cp); lapF(sdf(1)-1,:,:) = real(0.0,cp)
          elseif (s(2).eq.g%c(2)%sn) then
            lapF(:,2,:) = real(0.0,cp); lapF(:,sdf(2)-1,:) = real(0.0,cp)
          elseif (s(3).eq.g%c(3)%sn) then
            lapF(:,:,2) = real(0.0,cp); lapF(:,:,sdf(3)-1) = real(0.0,cp)
          endif
+
+#ifdef _CHECK_SYMMETRY_DELOPS_
+             if (s(1).eq.g%c(1)%sn) then
+           call checkSymmetry(lapF,symmetryPlane,'faceLap_1',g)
+         elseif (s(2).eq.g%c(2)%sn) then
+           call checkSymmetry(lapF,symmetryPlane,'faceLap_2',g)
+         elseif (s(3).eq.g%c(3)%sn) then
+           call checkSymmetry(lapF,symmetryPlane,'faceLap_3',g)
+         endif
+#endif
        end subroutine
 
        subroutine myFaceAdvect(psi,u,v,w,phi,gd,dir) ! Finished
@@ -440,6 +557,14 @@
            call d%add(psi,tempAveE1,gd,1,3,1)
            deallocate(tempAveE1,tempAveE2)
          endif
+
+#ifdef _CHECK_SYMMETRY_DELOPS_
+         select case (faceDir)
+         case (1); call checkSymmetry(psi,symmetryPlane,'myFaceAdvectDonor_1',gd)
+         case (2); call checkSymmetry(psi,symmetryPlane,'myFaceAdvectDonor_2',gd)
+         case (3); call checkSymmetry(psi,symmetryPlane,'myFaceAdvectDonor_3',gd)
+         end select
+#endif
 
          deallocate(tempAveCC)
        end subroutine
@@ -640,6 +765,12 @@
          call d%assign(gradx,p,gd,1,1,1) ! Padding avoids calcs on fictive cells
          call d%assign(grady,p,gd,1,2,1) ! Padding avoids calcs on fictive cells
          call d%assign(gradz,p,gd,1,3,1) ! Padding avoids calcs on fictive cells
+
+#ifdef _CHECK_SYMMETRY_DELOPS_
+         call checkSymmetry(gradx,symmetryPlane,'myCC2FaceGrad_1',gd)
+         call checkSymmetry(grady,symmetryPlane,'myCC2FaceGrad_2',gd)
+         call checkSymmetry(gradz,symmetryPlane,'myCC2FaceGrad_3',gd)
+#endif
        end subroutine
 
        subroutine myCC2CCDel(gradp,p,gd,dir) ! Finished

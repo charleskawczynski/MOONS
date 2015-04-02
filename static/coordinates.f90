@@ -204,7 +204,7 @@
          ! Check if cell centeres are in cell center
          tol = c%dhMin*real(1.0**(-6.0),cp)
          do i=1,c%sn-1
-           if (abs((c%hc(i+1)-c%hn(i))-(c%hn(i+1)-c%hc(i+1))).gt.tol) then
+           if (abs((c%hc(i)-c%hn(i))-(c%hn(i+1)-c%hc(i))).gt.tol) then
               write(*,*) 'Cell centers are not centered'
               write(*,*) 'i = ',i
               write(*,*) 'hn = ',c%hn

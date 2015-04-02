@@ -102,7 +102,7 @@
 
          case (109); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
 
-         case (200); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+         case (200); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
          case (201); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-4
          case (202); Re = 1000d0;   Ha = 500.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
 
@@ -132,7 +132,8 @@
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
-         case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         case (102); NmaxPPE = 5; NmaxB = 3; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
          case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
@@ -144,7 +145,8 @@
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
 
-         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 5*10**4
+         ! case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**6
+         case (200); NmaxPPE = 10; NmaxB = 0; NmaxMHD = 10**6
          case (201); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 15000
          case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
 
@@ -230,8 +232,11 @@
          call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
+         call debug(1)
          call computeDivergence(mom,mom%g)
+         call debug(2)
          call computeDivergence(ind,ind%g)
+         call debug(3)
 
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)

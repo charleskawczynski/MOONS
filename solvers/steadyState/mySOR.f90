@@ -72,15 +72,14 @@
 
       contains
 
-      subroutine initSOR(SOR,f,g)
+      subroutine initSOR(SOR,s,g)
         implicit none
         type(mySOR),intent(inout) :: SOR
-        real(cp),dimension(:,:,:),intent(in) :: f
+        integer,dimension(3),intent(in) :: s
         type(grid),intent(in) :: g
         integer :: Nx,Ny,Nz
-
         
-        SOR%s = shape(f)
+        SOR%s = s
 
             if (SOR%s(1).eq.g%c(1)%sc) then; SOR%gridType = 1
         elseif (SOR%s(1).eq.g%c(1)%sn) then; SOR%gridType = 2
@@ -166,10 +165,10 @@
 #ifdef _EXPORT_SOR_CONVERGENCE_
         integer :: NU
 #endif
-
-        call init(SOR,f,g)
-
-        s = shape(f); gt = SOR%gt
+        
+        s = shape(f)
+        call init(SOR,s,g)
+        gt = SOR%gt
 
         TF_allDirichlet = getAllDirichlet(u_bcs)
         call solverSettingsSet(ss)

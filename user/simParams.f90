@@ -3,7 +3,7 @@
        implicit none
 
        ! ************************* GRID *************************
-       logical :: exportGrids               = .true.   ! Export all Grids before starting simulation
+       logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
        logical :: exportRawICs              = .false.   ! Export all Grids before starting simulation
        logical :: exportICs                 = .false.   ! Export all Grids before starting simulation
 
@@ -49,7 +49,7 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .true.
+       logical :: solveInduction = .false.
        logical :: restartB = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
@@ -64,7 +64,7 @@
        !                                   6 : Full Induction Equation, Not sure how this is supposed 
        !                                       to be different from CT method if it is conservative..
        !                                   7 : Low Rem Semi-Implicit 3D ADI (Douglas) (good for highly insulating walls)
-       
+       !                                   8 : Multigrid (Poisson, assumes uniform properties)
 
        ! More difficult parameters to have pre-defined cases for:
        integer,parameter :: preDefinedGeometry = 0
@@ -78,7 +78,7 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .true.
+       logical :: solveCoupled = .false.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -96,7 +96,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 103
+       integer,parameter :: benchmarkCase = 200
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -185,7 +185,7 @@
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
        integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
-       integer :: nskip_print                = 10     ! Printed data (cheap)
+       integer :: nskip_print                = 20     ! Printed data (cheap)
        integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
 
        end module

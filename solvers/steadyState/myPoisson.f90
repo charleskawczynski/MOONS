@@ -38,6 +38,7 @@
       use BCs_mod
       use myError_mod
 
+      use myJacobi_mod
       use mySOR_mod
       use myADI_mod
       use myMG_mod
@@ -47,11 +48,25 @@
       private
       public :: myPoisson
 
-      interface myPoisson;    module procedure myPoisson_SOR;   end interface
-      interface myPoisson;    module procedure myPoisson_ADI;   end interface
-      interface myPoisson;    module procedure myPoisson_MG;    end interface
+      interface myPoisson;    module procedure myPoisson_Jacobi;  end interface
+      interface myPoisson;    module procedure myPoisson_SOR;     end interface
+      interface myPoisson;    module procedure myPoisson_ADI;     end interface
+      interface myPoisson;    module procedure myPoisson_MG;      end interface
 
       contains
+
+      subroutine myPoisson_Jacobi(Jacobi,u,f,u_bcs,g,ss,err,displayTF)
+        implicit none
+        type(myJacobi),intent(inout) :: Jacobi
+        real(dpn),dimension(:,:,:),intent(inout) :: u
+        real(dpn),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(grid),intent(in) :: g
+        type(solverSettings),intent(inout) :: ss
+        type(myError),intent(inout) :: err
+        logical,intent(in) :: displayTF
+        call solve(Jacobi,u,f,u_bcs,g,ss,err,displayTF)
+      end subroutine
 
       subroutine myPoisson_SOR(SOR,u,f,u_bcs,g,ss,err,displayTF)
         implicit none

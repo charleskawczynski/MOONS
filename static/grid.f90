@@ -48,7 +48,7 @@
          type(grid),intent(inout) :: g
          integer :: i
          do i = 1,3; call delete(g%c(i)) ;enddo
-         write(*,*) 'Grid deleted'
+         ! write(*,*) 'Grid deleted'
        end subroutine
 
        subroutine initGridCopy(g,f)

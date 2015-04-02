@@ -158,8 +158,11 @@
          do i=1,s(dir)
            Btemp(i) = (real(1.0,cp)+dtanh((g%c(dir)%hc(i)-Bshift)/Bstretch))/real(2.0,cp)
          enddo; i2 = 0
+         ! write(*,*) 's(dir) = ',s(dir)
          do i=1+(s(dir)-1)/2,s(dir)
-           Btemp(i) = Btemp(1+(s(dir)-1)/2-i2); i2 = i2+1
+           ! write(*,*) 'i = ',i
+           ! write(*,*) 'iBtemp = ',1+(s(dir)-1)/2-i2
+           Btemp(i) = Btemp(1+(s(dir)+1)/2-i2); i2 = i2+1
          enddo
 
          select case (dir)

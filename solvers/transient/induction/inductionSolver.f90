@@ -18,8 +18,9 @@
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
-       use myADI_mod
        use mySOR_mod
+       use myADI_mod
+       use myMG_mod
        use myPoisson_mod
        use baseProbes_mod
 
@@ -68,6 +69,7 @@
 
          type(mySOR) :: SOR_B, SOR_cleanB
          type(myADI) :: ADI_B
+         type(multiGrid),dimension(2) :: MG ! For cleaning procedure
 
          type(indexProbe) :: probe_B,probe_J
          type(errorProbe) :: probe_divB,probe_divJ
@@ -191,11 +193,15 @@
          call setName(ind%ss_ind,'SS B equation       ')
          call setMaxIterations(ind%ss_ind,ind%NmaxB)
          write(*,*) '     Solver settings for B initialized'
+
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
          call init(ind%ss_cleanB)
          call setName(ind%ss_cleanB,'cleaning B          ')
          call setMaxIterations(ind%ss_cleanB,ind%NmaxCleanB)
          write(*,*) '     Solver settings for cleaning initialized'
+
+         ! Initialize multigrid
+         if (cleanB) call init(ind%MG,ind%phi%s,ind%phi_bcs,ind%g,ind%ss_cleanB,.false.)
 
          ind%t = real(0.0,cp)
          ind%omega = real(1.0,cp)
@@ -239,6 +245,9 @@
          call delete(ind%probe_divB)
          call delete(ind%probe_divJ)
          call delete(ind%g)
+
+         ! call delete(ind%SOR_B)
+         if (cleanB) call delete(ind%MG)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -421,7 +430,8 @@
          case (7); call LowRem_semi_implicit_ADI(ind,U,g,ss_MHD)
          end select
          if (cleanB) then
-           call cleanBSolution(ind,g,ss_MHD)
+           ! call cleanBSolution(ind,g,ss_MHD)
+           call cleanBMultigrid(ind,g,ss_MHD)
          endif
          ind%nstep = ind%nstep + 1
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
@@ -446,6 +456,28 @@
          call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
          call myPoisson(ind%SOR_B,ind%B%z,ind%temp%phi,ind%Bz_bcs,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
+       end subroutine
+
+       subroutine lowRemMultigrid(ind,U,g,ss_MHD)
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U
+         type(grid),intent(in) :: g
+         type(solverSettings),intent(inout) :: ss_MHD
+         type(multiGrid),dimension(2) :: MG
+
+         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
+         call myPoisson(MG,ind%B%x,ind%temp%phi,ind%Bx_bcs,g,ind%ss_ind,&
+         ind%err_residual,.false.)
+
+         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
+         call myPoisson(MG,ind%B%y,ind%temp%phi,ind%By_bcs,g,ind%ss_ind,&
+         ind%err_residual,.false.)
+
+         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
+         call myPoisson(MG,ind%B%z,ind%temp%phi,ind%Bz_bcs,g,ind%ss_ind,&
+         ind%err_residual,.false.)
        end subroutine
 
        subroutine lowRemPseudoTimeStepUniform(ind,U,g)
@@ -778,14 +810,36 @@
 
        subroutine cleanBSolution(ind,g,ss_MHD)
          implicit none
-         ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
-         ! ********************** LOCAL VARIABLES ***********************
 
          call myCC2CCDiv(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
          call myPoisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
+          ind%err_CleanB,getExportErrors(ss_MHD))
+
+         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,1)
+         ind%B%x = ind%B%x - ind%temp%phi
+         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,2)
+         ind%B%y = ind%B%y - ind%temp%phi
+         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,3)
+         ind%B%z = ind%B%z - ind%temp%phi
+
+         ! Impose BCs:
+         call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
+         call applyAllBCs(ind%By_bcs,ind%B%y,g)
+         call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
+         call stopTime(ind%time_CP,ind%ss_cleanB)
+       end subroutine
+
+       subroutine cleanBMultigrid(ind,g,ss_MHD)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g
+         type(solverSettings),intent(in) :: ss_MHD
+
+         call myCC2CCDiv(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
+         call myPoisson(ind%MG,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
           ind%err_CleanB,getExportErrors(ss_MHD))
 
          call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,1)

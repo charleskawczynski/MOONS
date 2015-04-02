@@ -67,38 +67,37 @@
 
       contains
 
-      subroutine initMultiGrid(mg,u,f,u_bcs,g_base,ss,displayTF)
+      subroutine initMultiGrid(mg,s,u_bcs,g_base,ss,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
-        real(cp),dimension(:,:,:),intent(in) :: u,f
+        integer,dimension(3),intent(in) :: s
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g_base
         type(solverSettings),intent(in) :: ss
         logical,intent(in) :: displayTF
         ! character(len=*),intent(in) :: dir
-        integer,dimension(3) :: N,s
+        integer,dimension(3) :: N
         integer :: i,j,nLevels
 
         nLevels = size(mg)
         mg(:)%nLevels = size(mg)
-        mg(:)%displayTF = displayTF
-        s = shape(u)
+        ! mg(:)%displayTF = displayTF
+        mg(:)%displayTF = .false.
 
             if (s(1).eq.g_base%c(1)%sc) then; mg(:)%gt = 1
         elseif (s(1).eq.g_base%c(1)%sn) then; mg(:)%gt = 2
-        else; stop 'Error: gridType was not determined in SOR.f90'
+        else; stop 'Error: gridType was not determined in myMG.f90'
         endif
-
 
         ! ******************** Initialize grids ********************
         call init(mg(1)%g,g_base)
         do i = 1,mg(1)%nLevels-1
           call restrict(mg(i+1)%g,mg(i)%g)
         enddo
-        write(*,*) 'Multigrid levels:'
-        do j = 1,mg(1)%nLevels
-          write(*,*) 'N_cells of level ',j,' = ',(/(mg(j)%g%c(i)%sc,i=1,3)/)-2
-        enddo
+        ! write(*,*) 'Multigrid levels:'
+        ! do j = 1,mg(1)%nLevels
+        !   write(*,*) 'N_cells of level ',j,' = ',(/(mg(j)%g%c(i)%sc,i=1,3)/)-2
+        ! enddo
 
         ! ******************** Initialize fields ********************
         do j = 1,mg(1)%nLevels
@@ -130,8 +129,9 @@
         do j = 1,mg(1)%nLevels
           call init(mg(j)%norms)
           call init(mg(j)%ss)
-          ! call setMaxIterations(mg(j)%ss,getMaxIterations(ss))
-          call setMaxIterations(mg(j)%ss,3)
+          call setMaxIterations(mg(j)%ss,getMaxIterations(ss)) ! Prescribed
+          ! call setMaxIterations(mg(j)%ss,100) ! Fixed
+          call setMaxIterations(mg(j)%ss,5) ! Dynamic
           call setName(mg(j)%ss,'MG level('//int2str(j)//')         ')
         enddo
 
@@ -143,15 +143,24 @@
           elseif(mg(j)%gt.eq.2) then
             N = (/(mg(j)%g%c(i)%sn,i=1,3)/)
           endif
-          call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),1) ! Dirichlet wall coincident
+          ! RIGHT NOW ONLY HANDLES ZERO DIRICHLET AND ZERO NEUAMNN
+          if (allNeumann(mg(1)%u_bcs)) then
+            if (s(1).eq.g_base%c(1)%sc) then
+                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),5) ! Dirichlet wall coincident
+            else
+                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),4) ! Dirichlet wall coincident
+            endif
+          else
+            if (s(1).eq.g_base%c(1)%sc) then
+                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),2) ! Dirichlet wall coincident
+              else
+                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),1) ! Dirichlet wall coincident
+            endif
+          endif
         enddo
 
-        mg(1)%f = f
-        mg(1)%u = u
-
         ! call testRP(mg,'out\')
-
-        write(*,*) 'Initialized MG'
+        ! write(*,*) 'Initialized MG'
       end subroutine
 
       subroutine deleteAllMG(mg)
@@ -183,41 +192,73 @@
         integer,dimension(3) :: s
         nLevels = mg(1)%nLevels
         s = shape(mg(1)%f)
-        call writeToFile(mg(1)%g%c(1)%hn(2:s(1)-1),&
-                         mg(1)%g%c(2)%hn(2:s(2)-1),&
-                         mg(1)%g%c(3)%hn(2:s(3)-1),&
-                         mg(1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                         dir,'f_Grid1')
+        if (mg(1)%gt.eq.2) then
+          call writeToFile(mg(1)%g%c(1)%hn(2:s(1)-1),&
+                           mg(1)%g%c(2)%hn(2:s(2)-1),&
+                           mg(1)%g%c(3)%hn(2:s(3)-1),&
+                           mg(1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
+                           dir,'f_Grid1')
+        else
+          call writeToFile(mg(1)%g%c(1)%hc,&
+                           mg(1)%g%c(2)%hc,&
+                           mg(1)%g%c(3)%hc,&
+                           mg(1)%f,&
+                           dir,'f_Grid1')
+        endif
         do i = 1,mg(1)%nLevels-1
           ! write(*,*) 'From ',shape(mg(i)%f), ' to ',shape(mg(i+1)%f)
           call restrict(mg(i+1)%f,mg(i)%f,mg(i)%g)
           s = shape(mg(i+1)%f)
-          call writeToFile(mg(i+1)%g%c(1)%hn(2:s(1)-1),&
-                           mg(i+1)%g%c(2)%hn(2:s(2)-1),&
-                           mg(i+1)%g%c(3)%hn(2:s(3)-1),&
-                           mg(i+1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                           dir,'f_Grid'//int2str(i+1))
+          if (mg(1)%gt.eq.2) then
+            call writeToFile(mg(i+1)%g%c(1)%hn(2:s(1)-1),&
+                             mg(i+1)%g%c(2)%hn(2:s(2)-1),&
+                             mg(i+1)%g%c(3)%hn(2:s(3)-1),&
+                             mg(i+1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
+                             dir,'f_Grid'//int2str(i+1))
+          else
+            call writeToFile(mg(i+1)%g%c(1)%hc,&
+                             mg(i+1)%g%c(2)%hc,&
+                             mg(i+1)%g%c(3)%hc,&
+                             mg(i+1)%f,&
+                             dir,'f_Grid'//int2str(i+1))
+          endif
           write(*,*) 'Finished restricting multigrid level ',i
         enddo
         write(*,*) '         Finished restricting'
 
         mg(nLevels)%u = mg(nLevels)%f
         write(*,*) '         Assigned coarsest level'
-        call writeToFile(mg(nLevels)%g%c(1)%hn(2:s(1)-1),&
-                         mg(nLevels)%g%c(2)%hn(2:s(2)-1),&
-                         mg(nLevels)%g%c(3)%hn(2:s(3)-1),&
-                         mg(nLevels)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                         dir,'u_Grid'//int2str(nLevels))
+        if (mg(1)%gt.eq.2) then
+          call writeToFile(mg(nLevels)%g%c(1)%hn(2:s(1)-1),&
+                           mg(nLevels)%g%c(2)%hn(2:s(2)-1),&
+                           mg(nLevels)%g%c(3)%hn(2:s(3)-1),&
+                           mg(nLevels)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
+                           dir,'u_Grid'//int2str(nLevels))
+        else
+          call writeToFile(mg(nLevels)%g%c(1)%hc,&
+                           mg(nLevels)%g%c(2)%hc,&
+                           mg(nLevels)%g%c(3)%hc,&
+                           mg(nLevels)%f,&
+                           dir,'u_Grid'//int2str(nLevels))
+        endif
 
         do i = mg(1)%nLevels, 2,-1
           ! write(*,*) 'From ',shape(mg(i)%u), ' to ',shape(mg(i-1)%u)
           call prolongate(mg(i-1)%u,mg(i)%u,mg(i-1)%g)
           s = shape(mg(i-1)%u)
-          call writeToFile(mg(i-1)%g%c(1)%hn(2:s(1)-1),&
-                           mg(i-1)%g%c(2)%hn(2:s(2)-1),&
-                           mg(i-1)%g%c(3)%hn(2:s(3)-1),&
-                           mg(i-1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                           dir,'u_Grid'//int2str(i-1))
+          if (mg(1)%gt.eq.2) then
+            call writeToFile(mg(i-1)%g%c(1)%hn(2:s(1)-1),&
+                             mg(i-1)%g%c(2)%hn(2:s(2)-1),&
+                             mg(i-1)%g%c(3)%hn(2:s(3)-1),&
+                             mg(i-1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
+                             dir,'u_Grid'//int2str(i-1))
+          else
+            call writeToFile(mg(i-1)%g%c(1)%hc,&
+                             mg(i-1)%g%c(2)%hc,&
+                             mg(i-1)%g%c(3)%hc,&
+                             mg(i-1)%f,&
+                             dir,'u_Grid'//int2str(i-1))
+          endif
           write(*,*) 'Finished prolongating multigrid level ',i
         enddo
         write(*,*) '         Finished prolongating'
@@ -241,9 +282,12 @@
         integer :: NU
 #endif
 
-        write(*,*) '************** MG IS STARTING **************'
+        ! write(*,*) '************** MG IS STARTING **************'
         nLevels = size(mg)
-        call init(mg,u,f,u_bcs,g,ss,displayTF)
+        ! call init(mg,shape(u),u_bcs,g,ss,displayTF)
+
+        mg(1)%f = f
+        mg(1)%u = u
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -314,8 +358,21 @@
         close(NU)
 #endif
 
-       call delete(mg)
-        write(*,*) '************** MG IS ENDING **************'
+        if (displayTF) then
+          write(*,*) 'Number of V-Cycles = ',i_MG
+
+          select case (mg(1)%gt)
+          case (1); call CC2CCLap(mg(1)%lapu,u,g)
+          case (2); call myNodeLap(mg(1)%lapu,u,g)
+          end select
+          mg(1)%res = mg(1)%lapu - mg(1)%f
+          call zeroGhostPoints(mg(1)%res)
+          call compute(norms,real(0.0,cp),mg(1)%res)
+          call print(norms,'MG Residuals for '//trim(adjustl(getName(ss))))
+        endif
+
+        ! call delete(mg)
+        ! write(*,*) '************** MG IS ENDING **************'
       end subroutine
 
       recursive subroutine Vcycle(mg,j)
@@ -371,7 +428,8 @@
 
         else ! At coarsest level. Solve exactly.
 
-          call setMaxIterations(mg(j+1)%ss,100)
+          call setMaxIterations(mg(j+1)%ss,100) ! Fixed
+          ! call setMaxIterations(mg(j+1)%ss,floor(exp(real(mg(j+1)%nlevels,cp)))) ! Dynamic
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norms,mg(j+1)%displayTF)
 

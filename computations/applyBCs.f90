@@ -43,7 +43,8 @@
        implicit none
 
        private
-       public :: applyAllBCs,applyBCFace
+       public :: applyAllBCs
+       ! public :: applyBCFace
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -69,29 +70,11 @@
          real(cp),dimension(:,:,:),intent(inout) :: u
          type(grid),intent(in) :: g
          call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
          call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
          call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
          call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-       end subroutine
-
-       subroutine applyBCFace(b,u,g,face)
-         implicit none
-         type(BCs),intent(in) :: b
-         real(cp),dimension(:,:,:),intent(inout) :: u
-         type(grid),intent(in) :: g
-         integer,intent(in) :: face
-         select case (face)
-         case (1); call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         case (2); call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         case (3); call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         case (4); call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         case (6); call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         case (5); call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         case default
-         write(*,*) 'Error: face must = 1,2,3,4,5,6 in applyBCs.';stop
-         end select
        end subroutine
 
        subroutine applyBCs3D(u,bctype,face,bvals,hn,hc,s)
@@ -139,6 +122,7 @@
            case (5); u(:,s,:) = u(:,s-1,:) + (hn(s)-hn(s-1))*bvals
            case (6); u(:,:,s) = u(:,:,s-1) + (hn(s)-hn(s-1))*bvals
            end select
+           stop 'BAD BCs called!'
          case (4) ! Neumann - direct - wall coincident ~O(dh^2)
            select case (face)
            case (1); u(1,:,:) = u(3,:,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))

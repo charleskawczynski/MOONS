@@ -15,6 +15,7 @@ addpath([myDir.MOONSdir 'matlab\plotResults'])
 
 %% Active directory
 myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\';
+
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS2\out\LDC\';
 % myDir.source = 'C:\Users\Charlie\Desktop\benchmark\MOONS\BMC_102_12.17.14\';
 % myDir.source = [myDir.MOONSdir '..\MHD\LDC\out\LDC\'];
@@ -85,8 +86,8 @@ includePlot.transientOnly = true;
 %% TRANSIENT U,B,J DATA
 PT = plotTransient();
 PT.U(myDir,myPlot,includePlot,name)
-PT.B(myDir,myPlot,includePlot,name)
-PT.J(myDir,myPlot,includePlot,name)
+% PT.B(myDir,myPlot,includePlot,name)
+% PT.J(myDir,myPlot,includePlot,name)
 
 PR = plotResults();
 

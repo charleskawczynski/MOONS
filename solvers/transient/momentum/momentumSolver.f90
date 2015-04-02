@@ -21,8 +21,10 @@
        use solverSettings_mod
        use myTime_mod
 
+       use myJacobi_mod
        use mySOR_mod
        use myADI_mod
+       use myMG_mod
        use myPoisson_mod
 
        use baseProbes_mod
@@ -75,6 +77,8 @@
          type(BCs) :: u_bcs,v_bcs,w_bcs,p_bcs
 
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
+         type(multiGrid),dimension(3) :: MG
+         type(myJacobi) :: Jacobi_p
          type(mySOR) :: SOR_p
          type(myADI) :: ADI_p,ADI_u
 
@@ -189,6 +193,9 @@
          ! Init ADI ss
          call init(mom%ss_ADI)
          call setName(mom%ss_ADI,'momentum ADI        ')
+
+         ! Init Multigrid solver
+         call init(mom%MG,mom%p%s,mom%p_bcs,mom%g,mom%ss_ppe,.false.)
          ! call setMaxIterations(mom%ss_ADI,1) ! Not needed since apply() is used.
 
          ! call setMinTolerance(mom%ss_ppe,real(1.0**(-6.0),cp))
@@ -212,6 +219,7 @@
          call delete(mom%u_center);        call delete(mom%transient_ppe)
          call delete(mom%transient_divU);  call delete(mom%u_symmetry)
          call delete(mom%g)
+         call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
 
@@ -312,7 +320,15 @@
          ! mom%Ustar = mom%U + dt*mom%Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
-         
+
+         ! call zeroWallCoincidentBoundaries(mom%Ustar%x,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
+         call zeroWallCoincidentBoundaries(mom%Ustar%y,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
+         call zeroWallCoincidentBoundaries(mom%Ustar%z,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
+
+         ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%x,mom%u_bcs,mom%g)
+         ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%y,mom%v_bcs,mom%g)
+         ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%z,mom%w_bcs,mom%g)
+
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
            call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
@@ -326,8 +342,12 @@
            ! based on last elements (located on boundary)
            ! call setDt(mom%ADI_p,dt/10.0)
            ! call setAlpha(mom%ADI_p,real(1.0,cp))
-           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
+           call myPoisson(mom%Jacobi_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+
+#ifdef _CHECK_SYMMETRY_DELOPS_
+         call checkSymmetry(mom%p%phi,symmetryPlane,'Jacobi_p',g)
+#endif
 
            ! write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
@@ -522,8 +542,8 @@
 
          call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Ufield/','uni','vni','wni')
 
-         ! call writeToFile(g%c(1)%hn(2:Nx-1),g%c(2)%hn(2:Ny-1),g%c(3)%hn(2:Nz-1),&
-          ! tempnix,tempniy,tempniz,dir//'Ufield/','uni','vni','wni')
+         call writeToFile(g%c(1)%hn(2:Nx-1),g%c(2)%hn(2:Ny-1),g%c(3)%hn(2:Nz-1),&
+          tempnix,tempniy,tempniz,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
          deallocate(tempnx,tempny,tempnz)
          deallocate(tempnix,tempniy,tempniz)
 
@@ -538,7 +558,6 @@
          call myFace2CellCenter(tempccz,mom%U%z,g,3)
          call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,tempccy,tempccz,dir//'Ufield/','uci','vci','wci')
          deallocate(tempccx,tempccy,tempccz)
-
        end subroutine
 
        subroutine computeDivergenceMomentum(mom,g)
@@ -546,13 +565,62 @@
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
          call myFaceDiv(mom%divU%phi,mom%U%x,mom%U%y,mom%U%z,g)
-         mom%divU%phi(1,:,:) = real(0.0,cp)
-         mom%divU%phi(:,1,:) = real(0.0,cp)
-         mom%divU%phi(:,:,1) = real(0.0,cp)
-
-         mom%divU%phi(g%c(1)%sc,:,:) = real(0.0,cp)
-         mom%divU%phi(:,g%c(2)%sc,:) = real(0.0,cp)
-         mom%divU%phi(:,:,g%c(3)%sc) = real(0.0,cp)
+         call zeroGhostPoints(mom%divU%phi)
        end subroutine
+
+       subroutine zeroWallCoincidentBoundaries(f,g)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         type(grid),intent(in) :: g
+         integer,dimension(3) :: s
+         s = shape(f)
+         ! if (s(1).eq.g%c(1)%sn) then
+         !   f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+         ! elseif (s(2).eq.g%c(2)%sn) then
+         !   f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+         ! elseif (s(3).eq.g%c(3)%sn) then
+         !   f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+         ! else
+         !  stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
+         ! endif
+         
+         ! Interior Only
+         if (s(1).eq.g%c(1)%sn) then
+           f(2,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+           f(s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+         elseif (s(2).eq.g%c(2)%sn) then
+           f(2:s(1)-1,2,2:s(3)-1) = real(0.0,cp)
+           f(2:s(1)-1,s(2)-1,2:s(3)-1) = real(0.0,cp)
+         elseif (s(3).eq.g%c(3)%sn) then
+           f(2:s(1)-1,2:s(2)-1,2) = real(0.0,cp)
+           f(2:s(1)-1,2:s(2)-1,s(3)-1) = real(0.0,cp)
+         else
+          stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
+         endif
+       end subroutine
+
+       subroutine zeroForcingOnNoFlowThroughBoundaries(u,u_bcs,g)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u
+         type(BCs),intent(in) :: u_bcs
+         type(grid),intent(in) :: g
+         integer,dimension(3) :: s
+         s = shape(u)
+         
+         ! Interior Only
+         if (s(1).eq.g%c(1)%sn) then
+           if (getXminType(u_bcs).eq.1) u(2,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+           if (getXmaxType(u_bcs).eq.1) u(s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+         elseif (s(2).eq.g%c(2)%sn) then
+           if (getYminType(u_bcs).eq.1) u(2:s(1)-1,2,2:s(3)-1) = real(0.0,cp)
+           if (getYmaxType(u_bcs).eq.1) u(2:s(1)-1,s(2)-1,2:s(3)-1) = real(0.0,cp)
+         elseif (s(3).eq.g%c(3)%sn) then
+           if (getZminType(u_bcs).eq.1) u(2:s(1)-1,2:s(2)-1,2) = real(0.0,cp)
+           if (getZmaxType(u_bcs).eq.1) u(2:s(1)-1,2:s(2)-1,s(3)-1) = real(0.0,cp)
+         else
+          stop 'Error: no correct shape in momentumSolver.f90 in zeroForcingOnNoFlowThroughBoundaries'
+         endif
+       end subroutine
+
 
        end module

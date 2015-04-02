@@ -141,18 +141,16 @@
            ! ********************************** DISPLAY OUTPUT ****************************
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
-             ! call debug(9)
-             ! write(*,'(A14,'//xyzfmt//')') ' maxval(u,v,w)',maxval(mom%U%x),maxval(mom%U%y),maxval(mom%U%z)
-             ! write(*,'(A14,'//xyzfmt//')') ' minval(u,v,w)',minval(mom%U%x),minval(mom%U%y),minval(mom%U%z)
-             write(*,*) ' maxval(u,v,w)',maxval(mom%U%x),maxval(mom%U%y),maxval(mom%U%z)
-             write(*,*) ' minval(u,v,w)',minval(mom%U%x),minval(mom%U%y),minval(mom%U%z)
+             call printPhysicalMinMax(mom%U%x,mom%U%sx,'u')
+             call printPhysicalMinMax(mom%U%y,mom%U%sy,'v')
+             call printPhysicalMinMax(mom%U%z,mom%U%sz,'w')
              if (solveInduction) then
-               ! write(*,'(A17,'//xyzfmt//')') ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
-               ! write(*,'(A17,'//xyzfmt//')') ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
-               write(*,*) ' maxval(Bx,By,Bz)',maxval(ind%B%x),maxval(ind%B%y),maxval(ind%B%z)
-               write(*,*) ' minval(Bx,By,Bz)',minval(ind%B%x),minval(ind%B%y),minval(ind%B%z)
-               ! write(*,*) ' maxval(B0x,B0y,B0z)',maxval(ind%B0%x),maxval(ind%B0%y),maxval(ind%B0%z)
-               ! write(*,*) ' minval(B0x,B0y,B0z)',minval(ind%B0%x),minval(ind%B0%y),minval(ind%B0%z)
+             call printPhysicalMinMax(ind%B%x,ind%B%sx,'Bx')
+             call printPhysicalMinMax(ind%B%y,ind%B%sy,'By')
+             call printPhysicalMinMax(ind%B%z,ind%B%sz,'Bz')
+             ! call printPhysicalMinMax(ind%B0%x,ind%B0%sx,'B0x')
+             ! call printPhysicalMinMax(ind%B0%y,ind%B0%sy,'B0y')
+             ! call printPhysicalMinMax(ind%B0%z,ind%B0%sz,'B0z')
              endif
              write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)

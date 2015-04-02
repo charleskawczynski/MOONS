@@ -329,6 +329,11 @@
         elseif ((sdfdh(dir).eq.(sf(dir)-1))) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
+          write(*,*) 'sf = ',sf
+          write(*,*) 'sdfdh = ',sdfdh
+          write(*,*) 'sn = ',sn
+          write(*,*) 'sc = ',sc
+          write(*,*) 'dir = ',dir
           stop 'Error: diffType undetermined in del.f90.'
         endif
       end function

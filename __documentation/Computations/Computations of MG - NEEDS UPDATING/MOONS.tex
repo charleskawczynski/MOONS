@@ -46,7 +46,7 @@ University of California Los Angeles, USA\\
 \section{Computations for Restriction and Prolongation in Multigrid Method}
 Since \textit{both} a ghost cell and ghost node exist both restriction and prolongation are tricky since the ghost cell (and ghost node) grow (during restriction) and contract (during prolongation). This must be taken into account during computations. Typically, this somewhat confusing aspect can be avoided with cell vertex multigrid, but since a ghost node has been implemented in MOONS, it must be handled with care. The advantage of the ghost node greatly outweighs its disadvantages however.
 
-These equations are not written ver-batim, because details demand care. These equations are just to give an idea as to what is happening. Refer to MG_tools.f90 for more details.
+These equations are not written ver-batim, because details demand care. These equations are just to give an idea as to what is happening. Refer to MG\_tools.f90 for more details.
 
 \section{Node data}
 
@@ -57,7 +57,7 @@ Starting from the physical boundary, every odd node becomes the average between 
 \end{equation}
 Where
 \begin{equation}
-	\alpha = 
+	\alpha = \frac{\Delta h_{n,i+1}}{\Delta h_{n,i} + \Delta h_{n,i+1}}
 \end{equation}
 
 \subsection{Prolongation}
@@ -67,23 +67,24 @@ Starting from the physical boundary, odd locations have coincident values
 \end{equation}
 Starting from the physical boundary, even locations are interpolated
 \begin{equation}
-	p_{2i} = u_{i}\alpha + u_{i+1}(1 - \alpha)
+	p_{2i+1} = u_{i}\alpha + u_{i+1}(1 - \alpha)
 \end{equation}
 Where
 \begin{equation}
-	\alpha = 
+	\alpha = \frac{\Delta h_{n,i+1}}{\Delta h_{n,i} + \Delta h_{n,i+1}}
 \end{equation}
 
 \section{Cell centered data}
 
 \subsection{Restriction}
-The restriction operator is defined by conserving the cell centered quantity. We know that
+The restriction operator is defined by a conservation law (in this case conserving mass e.g.). We know that
 
 \begin{equation}
 	r_{final} V_{final} = u_1 V_1 + u_2 V_2
 \end{equation}
 
-Which means, in 1D, we may define our restriction as
+Where $r$ is the variable on the restricted grid and $u$ is the variable on the coarse grid.
+In 1D, we may define our restriction as
 
 \begin{equation}
 	r_{cc,new} = \frac{u_{cc,i} \Delta h_{n,i} +u_{cc,i+1} \Delta h_{n,i+1} }{\Delta h_{final}}
@@ -94,31 +95,45 @@ Where
 	\Delta h_{final} = \Delta h_{n,i} + \Delta h_{n,i+1}
 \end{equation}
 
-Similarly, we may write this as 
+Writing this with indexes, we may write this (rougly) as
 \begin{equation}
-	r_{cc,new} = u_{cc,i} \alpha + (1-\alpha)u_{cc,i+1}
+	r_{cc,i/2} = u_{cc,i} \alpha + (1-\alpha)u_{cc,i+1}
 \end{equation}
 Where
 \begin{equation}
 	\alpha = \frac{\Delta h_{n,i}}{\Delta h_{n,i}+\Delta h_{n,i+1}}
 \end{equation}
-Since
-\begin{equation}
-	1 - \alpha 
-	= 
-	\frac{\Delta h_{n,i}+\Delta h_{n,i+1}}{\Delta h_{n,i}+\Delta h_{n,i+1}}
-	-
-	\frac{\Delta h_{n,i}}{\Delta h_{n,i}+\Delta h_{n,i+1}}
-	=
-	\frac{\Delta h_{n,i+1}}{\Delta h_{n,i}+\Delta h_{n,i+1}}
-\end{equation}
-
-Clearly, this simplifies the way we wish when the grid is strongly stretched.
 
 \subsection{Prolongation}
 
+For prolongation, the same conservation law applies. The ratio of the smaller volume to the whole volume must be equal to the ratio of the prolongated value and the original value, namely
 
+\begin{equation}
+	\frac{V_{2i}^{p}}{V_{i}^{u}} = \frac{p_{2i}}{u_{i}} \qquad 
+	\frac{V_{2i-1}^{p}}{V_{i}^{u}} = \frac{p_{2i-1}}{u_{i}}
+\end{equation}
 
+In 1D, we may write this as
+
+\begin{equation}
+	p_{2i} = \frac{\Delta h_{n,i}}{\Delta h_{n,i} + \Delta h_{n,i+1}} u_i
+\end{equation}
+
+\begin{equation}
+	p_{2i+1} = \frac{\Delta h_{n,i+1}}{\Delta h_{n,i} + \Delta h_{n,i+1}} u_i
+\end{equation}
+Or
+\begin{equation}
+	p_{2i} = \alpha u_i
+\end{equation}
+
+\begin{equation}
+	p_{2i+1} = (1-\alpha) u_i
+\end{equation}
+Where
+\begin{equation}
+	\alpha = \frac{\Delta h_{n,i+1}}{\Delta h_{n,i} + \Delta h_{n,i+1}}
+\end{equation}
 
 
 
