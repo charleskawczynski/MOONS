@@ -7,7 +7,10 @@
        use initializeUBCs_mod
        use initializeUField_mod
 
-       use myIO_mod
+       use IO_tools_mod
+       use IO_auxiliary_mod
+       use IO_scalarFields_mod
+       use IO_vectorFields_mod
        use grid_mod
 
        use myError_mod
@@ -18,6 +21,7 @@
        use BCs_mod
        use applyBCs_mod
 
+       use transientProbe_mod
        use solverSettings_mod
        use myTime_mod
 
@@ -70,7 +74,7 @@
 
        type momentum
          ! Field Quantities
-         type(vectorField) :: U,Ustar,F,TempVF
+         type(vectorField) :: U,Ustar,F,TempVF,res
          type(scalarField) :: p,Temp,divU
 
          ! Boundary conditions
@@ -83,7 +87,7 @@
          type(myADI) :: ADI_p,ADI_u
 
          ! Residuals
-         type(myError) :: err_PPE,err_DivU,err_ADI
+         type(myError) :: err_PPE,err_DivU,err_ADI,norm_res
 
          ! Time step, Reynolds number, grid
          integer :: nstep,NmaxPPE
@@ -91,6 +95,7 @@
          type(grid) :: g
 
          ! Transient probes
+         type(probe),dimension(3) :: res_mom
          type(aveProbe) :: u_center,v_center,w_center
          type(errorProbe) :: transient_ppe,transient_divU
          type(avePlaneErrorProbe) :: u_symmetry
@@ -123,20 +128,15 @@
          call allocateY(mom%U,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
          call allocateZ(mom%U,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateX(mom%Ustar,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(mom%Ustar,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(mom%Ustar,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
-         call allocateX(mom%F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(mom%F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(mom%F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
+         call allocateVectorField(mom%Ustar,mom%U)
+         call allocateVectorField(mom%F,mom%U)
+         call allocateVectorField(mom%TempVF,mom%U)
+         call allocateVectorField(mom%res,mom%U)
 
-         call allocateX(mom%TempVF,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(mom%TempVF,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(mom%TempVF,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
          ! allocate P-Fields
          call allocateField(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
-         call allocateField(mom%divU,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
-         call allocateField(mom%temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+         call allocateField(mom%divU,mom%p)
+         call allocateField(mom%temp,mom%p)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -149,9 +149,9 @@
 
          write(*,*) '     BCs sizes set'
 
-         call applyAllBCs(mom%u_bcs,mom%U%x,g)
-         call applyAllBCs(mom%v_bcs,mom%U%y,g)
-         call applyAllBCs(mom%w_bcs,mom%U%z,g)
+         ! call applyAllBCs(mom%u_bcs,mom%U%x,g)
+         ! call applyAllBCs(mom%v_bcs,mom%U%y,g)
+         ! call applyAllBCs(mom%w_bcs,mom%U%z,g)
          call applyAllBCs(mom%p_bcs,mom%p%phi,g)
          write(*,*) '     BCs applied'
 
@@ -182,6 +182,11 @@
          call export(mom%transient_ppe)
          call export(mom%transient_divU)
          call export(mom%u_symmetry)
+
+         call init(mom%res_mom(1),dir//'Ufield/','res_mom_x',.not.restartU)
+         call init(mom%res_mom(2),dir//'Ufield/','res_mom_y',.not.restartU)
+         call init(mom%res_mom(3),dir//'Ufield/','res_mom_z',.not.restartU)
+
          write(*,*) '     momentum probes initialized'
 
          ! Initialize solver settings
@@ -195,12 +200,16 @@
          call setName(mom%ss_ADI,'momentum ADI        ')
 
          ! Init Multigrid solver
-         call init(mom%MG,mom%p%s,mom%p_bcs,mom%g,mom%ss_ppe,.false.)
+         ! call init(mom%MG,mom%p%s,mom%p_bcs,mom%g,mom%ss_ppe,.false.)
          ! call setMaxIterations(mom%ss_ADI,1) ! Not needed since apply() is used.
 
          ! call setMinTolerance(mom%ss_ppe,real(1.0**(-6.0),cp))
          ! call setMixedConditions(mom%ss_ppe)
-         mom%nstep = 0
+         if (restartU) then
+         call readLastStepFromFile(mom%nstep,dir//'parameters/','n_mom')
+         else; mom%nstep = 0
+         endif
+
          mom%t = real(0.0,cp)
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
@@ -212,6 +221,7 @@
          type(momentum),intent(inout) :: mom
          call delete(mom%U);               call delete(mom%Ustar);   call delete(mom%F)
          call delete(mom%TempVF);          call delete(mom%p);       call delete(mom%Temp)
+         call delete(mom%res)
 
          call delete(mom%u_bcs);           call delete(mom%v_bcs);   call delete(mom%w_bcs);
          call delete(mom%p_bcs);           call delete(mom%divU)
@@ -219,7 +229,7 @@
          call delete(mom%u_center);        call delete(mom%transient_ppe)
          call delete(mom%transient_divU);  call delete(mom%u_symmetry)
          call delete(mom%g)
-         call delete(mom%MG)
+         ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
 
@@ -257,8 +267,7 @@
          write(*,*) 'Error: solveUMethod must = 1,2 in solveMomentumEquation.';stop
          end select
          mom%t = mom%t + mom%dTime
-         ! This seems to be the best place for increasing the time step
-         ! mom%nstep = mom%nstep + 1
+         mom%nstep = mom%nstep + 1
        end subroutine
 
        subroutine explicitEuler(mom,g,ss_MHD)
@@ -288,10 +297,6 @@
            call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
          end select
 
-         ! write(*,*) 'maxval(advectX) = ',maxval(mom%TempVF%x)
-         ! write(*,*) 'maxval(advectY) = ',maxval(mom%TempVF%y)
-         ! write(*,*) 'maxval(advectZ) = ',maxval(mom%TempVF%z)
-
          ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
@@ -303,10 +308,6 @@
          call myFaceLap(mom%TempVF%y,mom%U%y,g)
          call myFaceLap(mom%TempVF%z,mom%U%z,g)
 
-         ! write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
-         ! write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
-         ! write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
-
          ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
          call add(mom%Ustar,mom%TempVF)
@@ -316,12 +317,15 @@
          call multiply(mom%F,real(1.0,cp))
          call add(mom%Ustar,mom%F)
 
+         ! For Residual computation
+         if (getExportTransient(ss_MHD)) call assign(mom%res,mom%Ustar)
+
          ! Solve with explicit Euler --------------------
          ! mom%Ustar = mom%U + dt*mom%Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
 
-         ! call zeroWallCoincidentBoundaries(mom%Ustar%x,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
+         call zeroWallCoincidentBoundaries(mom%Ustar%x,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
          call zeroWallCoincidentBoundaries(mom%Ustar%y,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
          call zeroWallCoincidentBoundaries(mom%Ustar%z,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
 
@@ -332,33 +336,49 @@
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
            call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
-           ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
            call zeroGhostPoints(mom%Temp%phi)
-           ! write(*,*) 'maxval(sourceP) = ',maxval(mom%Temp%phi)
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
            ! call setDt(mom%ADI_p,dt/10.0)
            ! call setAlpha(mom%ADI_p,real(1.0,cp))
-           call myPoisson(mom%Jacobi_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
+           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
-#ifdef _CHECK_SYMMETRY_DELOPS_
-         call checkSymmetry(mom%p%phi,symmetryPlane,'Jacobi_p',g)
-#endif
-
-           ! write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
            call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
-
-         ! write(*,*) 'maxval(grad(p)_x) = ',maxval(mom%TempVF%x)
-         ! write(*,*) 'maxval(grad(p)_y) = ',maxval(mom%TempVF%y)
-         ! write(*,*) 'maxval(grad(p)_z) = ',maxval(mom%TempVF%z)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
            call subtract(mom%Ustar,mom%TempVF)
+         endif
+
+         if (getExportTransient(ss_MHD)) then
+
+           call divide(mom%TempVF,dt)
+           call subtract(mom%res,mom%TempVF) ! res = RHS
+
+           ! Compute (u^n+1-u^n)/dt
+           call assign(mom%TempVF,mom%Ustar)
+           call subtract(mom%TempVF,mom%U)
+           call divide(mom%TempVF,dt)
+
+           call subtract(mom%res,mom%TempVF)
+
+           call zeroGhostPoints(mom%res%x)
+           call zeroGhostPoints(mom%res%y)
+           call zeroGhostPoints(mom%res%z)
+
+           call compute(mom%norm_res,real(0.0,cp),mom%res%x)
+           call set(mom%res_mom(1),mom%nstep,getL2(mom%norm_res))
+           call apply(mom%res_mom(1))
+           call compute(mom%norm_res,real(0.0,cp),mom%res%y)
+           call set(mom%res_mom(2),mom%nstep,getL2(mom%norm_res))
+           call apply(mom%res_mom(2))
+           call compute(mom%norm_res,real(0.0,cp),mom%res%z)
+           call set(mom%res_mom(3),mom%nstep,getL2(mom%norm_res))
+           call apply(mom%res_mom(3))
          endif
 
          ! mom%U = mom%Ustar
@@ -367,13 +387,6 @@
          call applyAllBCs(mom%u_bcs,mom%U%x,g)
          call applyAllBCs(mom%v_bcs,mom%U%y,g)
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
-
-         ! write(*,*) 'maxval(LapX) = ',maxval(mom%TempVF%x)
-         ! write(*,*) 'maxval(LapY) = ',maxval(mom%TempVF%y)
-         ! write(*,*) 'maxval(LapZ) = ',maxval(mom%TempVF%z)
-
-         mom%nstep = mom%nstep + 1
-         ! write(*,*) 'nstep = ',mom%nstep
        end subroutine
 
        subroutine semi_implicit_ADI(mom,g,ss_MHD)
@@ -433,7 +446,7 @@
          call assign(mom%Ustar,mom%U)
          
          ! Pressure Correction -------------------------------------
-         if (mom%nstep.gt.1) then
+         if (mom%nstep.gt.0) then
            call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
            ! call myFaceDiv(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
@@ -458,8 +471,6 @@
          call applyAllBCs(mom%u_bcs,mom%U%x,g)
          call applyAllBCs(mom%v_bcs,mom%U%y,g)
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
-
-         mom%nstep = mom%nstep + 1
        end subroutine
 
        subroutine printExportMomentumBCs(mom,dir)
@@ -481,18 +492,18 @@
          type(momentum),intent(inout) :: mom
          type(solverSettings),intent(in) :: ss_MHD
 
-         if ((getExportTransient(ss_MHD))) then
-           call apply(mom%u_center,getIteration(ss_MHD),mom%U%x)
-           ! call apply(mom%v_center,getIteration(ss_MHD),mom%U%y)
-           ! call apply(mom%w_center,getIteration(ss_MHD),mom%U%z)
+         if (solveMomentum.and.(getExportTransient(ss_MHD))) then
+           call apply(mom%u_center,mom%nstep,mom%U%x)
+           ! call apply(mom%v_center,mom%nstep,mom%U%y)
+           ! call apply(mom%w_center,mom%nstep,mom%U%z)
          endif
 
-         if (getExportErrors(ss_MHD)) then
-           call set(mom%transient_ppe,getIteration(ss_MHD),getL2(mom%err_PPE))
+         if (solveMomentum.and.getExportErrors(ss_MHD)) then
+           call set(mom%transient_ppe,mom%nstep,getL2(mom%err_PPE))
            call apply(mom%transient_ppe)
 
-           call apply(mom%transient_divU,getIteration(ss_MHD),mom%divU%phi)
-           call apply(mom%u_symmetry,getIteration(ss_MHD),mom%U%z)
+           call apply(mom%transient_divU,mom%nstep,mom%divU%phi)
+           call apply(mom%u_symmetry,mom%nstep,mom%U%z)
          endif
        end subroutine
 
@@ -501,13 +512,21 @@
          type(momentum),intent(in) :: mom
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
-         ! ************************* EXPORT IN RAW FORMAT *************************
-         call writeToFile(g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,mom%U%x,dir//'Ufield/','ufi')
-         call writeToFile(g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,mom%U%y,dir//'Ufield/','vfi')
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,mom%U%z,dir//'Ufield/','wfi')
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,mom%p%phi,dir//'Ufield/','pci')
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,mom%divU%phi,dir//'Ufield/','divUci')
-         write(*,*) 'Exported Raw Solutions for U'
+         if (restartU.and.(.not.solveMomentum)) then
+           ! This preserves the initial data
+         else
+           write(*,*) 'Exporting RAW Solutions for U'
+           call writeToFile(g,mom%U%x,dir//'Ufield/','ufi')
+           call writeToFile(g,mom%U%y,dir//'Ufield/','vfi')
+           call writeToFile(g,mom%U%z,dir//'Ufield/','wfi')
+           call writeToFile(g,mom%p%phi,dir//'Ufield/','pci')
+           if (solveMomentum) then
+             call writeToFile(g,mom%res%x,dir//'Ufield/','res_u')
+             call writeToFile(g,mom%res%y,dir//'Ufield/','res_v')
+             call writeToFile(g,mom%res%z,dir//'Ufield/','res_w')
+           endif
+           write(*,*) '     finished'
+         endif
        end subroutine
 
        subroutine momentumExport(mom,g,dir)
@@ -515,49 +534,33 @@
          type(momentum),intent(in) :: mom
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
-         ! Locals
          integer :: Nx,Ny,Nz
-         ! Interior
-         real(cp),dimension(:,:,:),allocatable :: tempccx,tempccy,tempccz
-         real(cp),dimension(:,:,:),allocatable :: tempnx,tempny,tempnz
-         real(cp),dimension(:,:,:),allocatable :: tempnix,tempniy,tempniz
+         type(vectorField) :: tempCCVF,tempNVF
 
-         ! ************************ EXPORT IN OTHER FORMATS ***********************
+         ! if (solveMomentum) then ! What about when velocity is prescribed?
+         write(*,*) 'Exporting PROCESSED Solutions for U'
 
-         ! --------------------------- UFIELD AT NODES ----------------------------
+         ! ********************** EXPORT IN NODES ***************************
          Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-         allocate(tempnx(Nx,Ny,Nz))
-         allocate(tempny(Nx,Ny,Nz))
-         allocate(tempnz(Nx,Ny,Nz))
-         allocate(tempnix(Nx-2,Ny-2,Nz-2))
-         allocate(tempniy(Nx-2,Ny-2,Nz-2))
-         allocate(tempniz(Nx-2,Ny-2,Nz-2))
-         call myFace2Node(tempnx,mom%U%x,g,1)
-         call myFace2Node(tempny,mom%U%y,g,2)
-         call myFace2Node(tempnz,mom%U%z,g,3)
+         call allocateVectorField(tempNVF,Nx,Ny,Nz)
+         call myFace2Node(tempNVF,mom%u,g)
+         call writeToFile(g,tempNVF,dir//'Ufield/','uni','vni','wni')
+         if (abs(abs(mom%t)-abs(1.0)).lt.(2.0*mom%dTime)) then
+           call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys_1','vni_phys_1','wni_phys_1')
+         else
+           call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
+         endif
 
-         tempnix = tempnx(2:Nx-1,2:Ny-1,2:Nz-1)
-         tempniy = tempny(2:Nx-1,2:Ny-1,2:Nz-1)
-         tempniz = tempnz(2:Nx-1,2:Ny-1,2:Nz-1)
-
-         call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,tempnx,tempny,tempnz,dir//'Ufield/','uni','vni','wni')
-
-         call writeToFile(g%c(1)%hn(2:Nx-1),g%c(2)%hn(2:Ny-1),g%c(3)%hn(2:Nz-1),&
-          tempnix,tempniy,tempniz,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
-         deallocate(tempnx,tempny,tempnz)
-         deallocate(tempnix,tempniy,tempniz)
-
-         ! ****************** EXPORT IN CELL CENTERS ************************
-         ! Velocities at cell centers:
+         ! ******************** EXPORT IN CELL CENTERS **********************
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         allocate(tempccx(Nx,Ny,Nz))
-         allocate(tempccy(Nx,Ny,Nz))
-         allocate(tempccz(Nx,Ny,Nz))
-         call myFace2CellCenter(tempccx,mom%U%x,g,1)
-         call myFace2CellCenter(tempccy,mom%U%y,g,2)
-         call myFace2CellCenter(tempccz,mom%U%z,g,3)
-         call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,tempccx,tempccy,tempccz,dir//'Ufield/','uci','vci','wci')
-         deallocate(tempccx,tempccy,tempccz)
+         call allocateVectorField(tempCCVF,Nx,Ny,Nz)
+         call myFace2CellCenter(tempCCVF,mom%U,g)
+         call writeToFile(g,tempCCVF,dir//'Ufield/','uci','vci','wci')
+
+         call delete(tempNVF)
+         call delete(tempCCVF)
+         write(*,*) '     finished'
+         ! endif
        end subroutine
 
        subroutine computeDivergenceMomentum(mom,g)

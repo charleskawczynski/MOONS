@@ -1,0 +1,165 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{1D Diffusion for code verification}
+The governing equation is
+
+\begin{equation}
+	\frac{\partial T}{\partial t} = \alpha \frac{\partial^2 T}{\partial x^2} + \Phi(x,t)
+\end{equation}
+
+With the general solution
+
+\begin{equation}
+	T(x,t) = \int_0^t \int_0^L G(x,\xi,t-\tau) \Phi(\xi,\tau) d\xi d\tau
+	+
+	\int_0^L G(x,\xi,t) f(\xi) d\xi
+\end{equation}
+
+Where $f(\xi)$ is the initial condition and 
+
+\begin{equation}
+	G(x,\xi,t) = \frac{2}{L} \sum_{n=1}^{\infty}
+	\sin(n\pi x/L)
+	\sin(n\pi \xi/L)
+	e^{-\lambda_n t}
+\end{equation}
+
+\begin{equation}
+	\lambda_n = \frac{\alpha n^2\pi^2}{L^2}
+\end{equation}
+
+For the particular problem of interest, we have
+
+\begin{equation}
+	\Phi(x,t) = \Phi(t) = e^{-t} \qquad \qquad \qquad f(\xi) = 0
+\end{equation}
+
+Which yields
+
+\begin{equation}
+	T(x,t) = \int_0^t \int_0^L G(x,\xi,t-\tau) e^{-\tau} d\xi d\tau
+\end{equation}
+
+Combining the equations, and then the exponential terms, we have
+
+\begin{equation}
+	T(x,t) = \int_0^t \int_0^L 
+	\frac{2}{L} \sum_{n=1}^{\infty}
+	\sin(n\pi x/L)
+	\sin(n\pi \xi/L)
+	e^{-\lambda_n (t-\tau)}
+	e^{-\tau}
+	d\xi d\tau
+\end{equation}
+
+We may exchange the order of the summation and the integral to get
+
+\begin{equation}
+	T(x,t) 
+	= 
+	\sum_{n=1}^{\infty}
+	\frac{2}{L} 
+	\int_0^t \int_0^L 
+	\sin(n\pi x/L)
+	\sin(n\pi \xi/L)
+	e^{-\lambda_n (t-\tau)}
+	e^{-\tau}
+	d\xi d\tau
+\end{equation}
+
+\begin{equation}
+	= 
+	\sum_{n=1}^{\infty}
+	\sin(n\pi x/L)
+	\frac{2}{L} 
+	\int_0^t \int_0^L 
+	\sin(n\pi \xi/L)
+	e^{-\lambda_n (t-\tau)}
+	e^{-\tau}
+	d\xi d\tau
+\end{equation}
+
+Using Wolfram Alpha
+
+\begin{equation}
+	\frac{2}{L}
+	\int_0^t \int_0^L 
+	\sin(n\pi \xi/L)
+	e^{-\lambda_n (t-\tau)}
+	e^{-\tau}
+	d\xi d\tau
+	=
+	- \frac{2 (\cos(\pi n) - 1) e^{-\lambda_n t} (e^{(\lambda_n-1)t}-1)}{\pi (\lambda_n-1)n}
+\end{equation}
+
+\begin{equation}
+	=
+	- \frac{2 ((-1)^n - 1) (e^{(\lambda_n-1)t-\lambda_n t}-e^{-\lambda_n t})}{\pi (\lambda_n-1)n}
+	=
+	\frac{2 (1 - (-1)^n) (e^{-t}-e^{-\lambda_n t})}{\pi (\lambda_n-1)n}
+\end{equation}
+
+Therefore
+
+\begin{equation}
+	\boxed{
+	T(x,t) 
+	=
+	\sum_{n=1}^{\infty}
+	\sin \left( \frac{n\pi x}{L} \right)
+	\frac{2 (1 - (-1)^n) (e^{-t}-e^{-\lambda_n t})}{\pi (\lambda_n-1)n}
+	}
+\end{equation}
+
+
+\begin{equation}
+	\boxed{
+	\lambda_n = \frac{\alpha n^2\pi^2}{L^2}
+	}
+\end{equation}
+
+
+\end{document}

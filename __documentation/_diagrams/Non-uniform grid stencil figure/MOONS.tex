@@ -1,0 +1,94 @@
+\documentclass[landscape, 12pt]{report}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\height}{0.5}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{20}
+\newcommand{\dx}{1.6666}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Non-Uniform Grid Stencil Results Figure}
+
+Note that $k$ and or $j$ may be positive or negative. Similarly, $\alpha_k$ and or $\beta_j$ may be positive or negative.
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}[scale=3]
+      \draw [->] (0,0) -- ++(3*\dx,0);
+
+      \draw [->] (0,-\height/2) -- ++(1*\dx,0) node[midway,anchor=north]  {$\alpha_k$};
+      \draw [->] (0,-\height*1.5) -- ++(2*\dx,0) node[midway,anchor=north]  {$\beta_j$};
+
+      % Nodes
+      \draw [black] (0*\dx,-2*\height)   node [black,anchor=south east] {$x_{i}$} -- ++(0,3*\height) node [black,anchor=west] {$f_{i}$};
+      \draw [black] (1*\dx,-\height)   node [black,anchor=south west] {$x_{i+k}$} -- ++(0,2*\height)   node [black,anchor=west] {$f_{i+k}$};
+      \draw [black] (2*\dx,-\height)   node [black,anchor=south west] {$x_{i+j}$} -- ++(0,2*\height)   node [black,anchor=west] {$f_{i+j}$};
+
+    \end{tikzpicture}
+    \caption{Stencil possibility 1}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}[scale=3]
+      \draw [<->] (-\dx/2,0) -- ++(3*\dx,0);
+
+      \draw [<-] (0,-\height/2) -- ++(1*\dx,0) node[midway,anchor=north]  {$\alpha_k$};
+      \draw [->] (\dx,-\height*1.5) -- ++(\dx,0) node[midway,anchor=north]  {$\beta_j$};
+
+      % Nodes
+      \draw [black] (1*\dx,-2*\height)   node [black,anchor=south east] {$x_{i}$} -- ++(0,3*\height) node [black,anchor=west] {$f_{i}$};
+      \draw [black] (0*\dx,-\height)   node [black,anchor=south east] {$x_{i+k}$} -- ++(0,2*\height)   node [black,anchor=west] {$f_{i+k}$};
+      \draw [black] (2*\dx,-\height)   node [black,anchor=south west] {$x_{i+j}$} -- ++(0,2*\height)   node [black,anchor=west] {$f_{i+j}$};
+
+    \end{tikzpicture}
+    \caption{Stencil possibility 2}
+  \end{center}
+\end{figure}
+
+
+\end{document}
+
+

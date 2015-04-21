@@ -240,30 +240,20 @@
         stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
         end select
 
-        ! if (pad.gt.0) then
-        !   select case (dir)
-        ! case (1)
-        !   !$OMP PARALLEL DO
-        !   do k=1,pad,s(3)-pad; do j=1+pad,s(2)-pad
-        !       dfdh(:,j,k) = real(0.0,cp)
-        !   enddo; enddo
-        !   !$OMP END PARALLEL DO
-        ! case (2)
-        !   !$OMP PARALLEL DO
-        !   do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        !       call diff(dfdh(i,:,k),f(i,:,k),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(2),genType)
-        !   enddo; enddo
-        !   !$OMP END PARALLEL DO
-        ! case (3)
-        !   !$OMP PARALLEL DO
-        !   do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        !       call diff(dfdh(i,j,:),f(i,j,:),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(3),genType)
-        !   enddo; enddo
-        !   !$OMP END PARALLEL DO
-        ! case default
-        !   stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
-        !   end select
-        ! endif
+        if (genType.eq.1) then
+          if (pad.gt.0) then
+            select case (dir)
+          case (1); dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
+                    dfdh(:,1,:) = real(0.0,cp); dfdh(:,s(2),:) = real(0.0,cp)
+          case (2); dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
+                    dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
+          case (3); dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
+                    dfdh(:,1,:) = real(0.0,cp); dfdh(:,s(2),:) = real(0.0,cp)
+          case default
+            stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
+            end select
+          endif
+        endif
 
       end subroutine
 

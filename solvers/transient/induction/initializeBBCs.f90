@@ -1,5 +1,4 @@
        module initializeBBCs_mod
-       use myIO_mod
        use grid_mod
        use BCs_mod
        implicit none
@@ -58,10 +57,10 @@
          type(BCs),intent(inout) :: phi_bcs
          type(BCs),intent(inout) :: Bx_bcs,By_bcs,Bz_bcs
          logical,intent(in) :: cleanB
-         integer :: Nx,Ny,Nz,neumann,dirichlet
+         integer :: Nx,Ny,Nz,neumann
 
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         dirichlet = 2; neumann = 5
+         neumann = 5
          
          select case (preDefinedB_BCs)
          case (1) ! Pseudo Vaccuum

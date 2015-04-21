@@ -23,11 +23,14 @@
        public :: gridGenerator,init,delete
        public :: app,prep,applyGhost
        public :: pop,snip
+       ! public :: preMirror,appMirror
 
-       interface init;     module procedure initGridGen;      end interface
-       interface delete;   module procedure deleteGridGen;    end interface
-       interface app;      module procedure appGrid;          end interface
-       interface prep;     module procedure prepGrid;         end interface
+       interface init;        module procedure initGridGen;        end interface
+       interface delete;      module procedure deleteGridGen;      end interface
+       interface app;         module procedure appGrid;            end interface
+       interface prep;        module procedure prepGrid;           end interface
+       ! interface preMirror;   module procedure prepMirrorGrid;     end interface ! Allow to mirror grid
+       ! interface appMirror;   module procedure appMirrorGrid;      end interface ! Allow to mirror grid
 
        contains
 

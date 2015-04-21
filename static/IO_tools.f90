@@ -5,14 +5,38 @@
      ! Make a buildDirectory routine:
      ! http://homepages.wmich.edu/~korista/README-fortran.html
 
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
+
       private
 
       public :: makeDir,rmDir
       public :: newUnit
-      public :: getUnit
-      public :: newAndOpen
+      public :: getUnit,closeExisting
+      public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
       public :: int2Str,num2Str
+      public :: arrfmt,rarrfmt,logfmt,intfmt
+
+       ! This website is a good reference for formatting:
+       ! http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap05/format.html
+       ! leading digit + . + precision + E + exponent + signs + spaces between
+       !       1         1      12       1      3         2          3
+       ! rarrfmt is for reading (possible old formats)
+       !  arrfmt is for writing (current format)
+      character(len=8),parameter :: rarrfmt = 'E23.12E3'  ! Make sure length is correct when adjusting
+      character(len=8),parameter ::  arrfmt = 'E23.12E3'  ! Make sure length is correct when adjusting
+      character(len=3),parameter ::  intfmt = 'I10'       ! Make sure length is correct when adjusting
+      character(len=3),parameter ::  logfmt = 'L1'        ! Make sure length is correct when adjusting
 
       character(len=4),parameter :: fileType = '.dat'
 
@@ -54,6 +78,15 @@
         open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,pad='YES')
       end function
 
+      function newAndOpenBinary(dir,name) result(NU)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: NU,n
+        NU = newUnit()
+        open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,&
+          form='unformatted')
+      end function
+
       function getUnit(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name
@@ -79,11 +112,11 @@
           status = 'old', action = 'readwrite',iostat=ok,position='append')
         else
           write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' does not exist. Terminating execution.';call myPause()
+          // fileType // ' does not exist. Terminating execution.'
         endif
         if (ok.ne.0) then
           write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' was not opened successfully.';call myPause()
+          // fileType // ' was not opened successfully.'
         endif
       end function
 
@@ -105,11 +138,11 @@
           status = 'old', action = 'read',iostat=ok)
         else
           write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' does not exist. Terminating execution.';call myPause()
+          // fileType // ' does not exist. Terminating execution.'
         endif
         if (ok.ne.0) then
           write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' was not opened successfully.';call myPause()
+          // fileType // ' was not opened successfully.'
         endif
       end function
 
@@ -157,7 +190,7 @@
 
       function num2Str(i) result(s)
         implicit none
-        real(dpn),intent(in) :: i
+        real(cp),intent(in) :: i
         character(len=8) :: s
         write(s,'(F3.5)') i
         s = trim(adjustl(s))

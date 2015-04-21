@@ -1,0 +1,280 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Today}
+
+- Make vectorOps.f90
+
+- Merge ghostNode with master
+
+- Test Poisson cases for face data
+
+- Test inductionSolver: Gauss-Seidel / cleaning procedure
+
+- Finish documentation: non-uniform grid stencils/outline of results
+
+\section{To Do / Fixes / Improvements}
+This file contains all of the things that must be fixed / adjusted and improved in MOONS. It is organized into pre-processing, Solution procedure, and post-processing sections to help manage organization of basically a glorified list.
+
+\section{Goals and Requirements}
+
+- Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
+
+- Compare methods for enforcing divB and trade-offs
+
+- Mimicking plasma disruption
+
+- Benchmarking (convergence rates / Hydro flows / Hunt and Shercliff flow)
+
+\section{To Do and Notes}
+- Right now there are two instances of restartU and restartB, this inconsistency must to be resolved.
+
+- Re-run Hunt/Shercliff flows with uniform grid in BL and with p = 0 at outlet
+
+- Consider making a new module called vectorOps.f90 that uses vectorField, whereas delOps.f90 just uses real(cp)
+
+- Consider using ADI for uniform grids, this may be the best way to look at validity of pseudo vacuum BCs
+
+- Maybe ADI is not correct (even though it seems to be) since it DOES NOT work (diverges) for large $\Delta t$.
+
+- Maybe look at older versions of ADI
+
+- Update documentation for stencils (include ghost node)
+
+- Maybe include documentation on Nin,Nice,Nici?
+
+- Look into paper by Pattsson? Morely co-authored ~2008/2009
+
+- Try comparing 1/Ha with cw for HIMAG vs MOONS and compare continuity of tangent(j)/sigma across interface
+
+- IMPORTANT: del.f90 has no safe way to assign the output when pad is present. This is VERY dangerous and needs to be addressed immediately!
+
+- For Poisson solver, check if mean(f) or mean(f\_interior) must = 0
+
+- Member of committee for Naveen was in Geo-physics, Jonathon "Arnaud"? Look online about him and maybe we can collaborate.
+
+- Continue digitizing books
+
+- Read thesis sent by Naveen
+
+- Clean office - get paper towels
+
+- Start writing thesis
+
+- Get armorall wipes for car
+
+\section{Analysis}
+
+- Derive new induction equation with Rem scaling
+
+\section{Issues}
+
+- The residuals for the PPE are large, but don't seem to be reflected in the solution. Compute and export the residuals and check where the residuals are large for both D and N BCs.
+
+- For some reason, this first L2 error of the PPE is
+15 E-324 or something. Maybe this is a compiler problem
+since compaq doesn't do this... Try to fix this...
+write(*,*) 'L2PPE',getL2(errPPE)
+
+
+\section{Version Control (git)}
+- Put the makefile into the git project and change output path appropriately
+
+- Merge ghostNode with master
+
+\section{Code verification}
+
+- Try refinement studies to make sure order of accuracy is correct
+
+- Compute residuals for momentum/induction equations allow for transient exporting using pre-processor directives
+
+\section{Makefile}
+- Improve the make info function
+
+\section{Pre-processor Directives}
+- Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
+
+\section{Restart capability}
+Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
+
+- Fix Time module: export and import time so that the average can be appropriately
+printed to the screen.
+
+
+
+\section{Mesh Generation}
+
+- Compare new and old grid generation (quantitatively)
+
+- Make a uniform grid option for boundary layers (maybe make a function for this)
+
+- Implement Newtons method for estimating betaw. Check if betai/betaw
+are above 1000, if so just use uniform grid.
+
+
+\section{BMCs}
+
+- Re-run BMC against Guj and Stella with hmin = -1, hmax = 1 and adjusted Re like Sergey
+  did. This will reduce the number of geometries.
+
+\section{Performance}
+- Profile to find latest bottle necks
+
+- Parallelize SOR on larger level
+
+- Look into a zeroGhost and zeroGhostAndBoundary or something to avoid using assignments like f = 0 (which operates on the whole domain)
+
+- Look into how expensive shape() is.
+
+
+\section{Stencils.f90}
+- Try out, and compare, non-uniform Coefficient operator with current approach (which is likely slow)
+
+- Consider re-formulating using conservative higher order finite difference methods by Moin
+
+\section{Del Ops}
+- Remove unnecessary routines from DelOps.f90
+
+
+\section{Boundary Conditions}
+- Highly consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
+
+\section{Momentum Solver}
+
+- Implement an upwind scheme for the non-uniform grid.
+
+- Make pressure term 2nd order accurate in time (trap)
+
+- Make advection term 2nd order accurate in time (AB2)
+
+- Test ADI for LDC case
+
+
+\section{Induction Solver}
+
+- Also try the 'consistent' fringing field and run caseB2
+
+- Calculate cw in induction solver!
+
+\section{CT Method}
+
+- Check if maxval(jxe),maxval(jye),maxval(jze) are zero with CT method (should be
+  close to zero (numerically) if equivalent to when mixed term is ignored)
+
+
+\subsection{Cleaning procedure}
+- Introduce staggered B so it can be cleaned
+
+- Test cleaning procedure and compare with CT method
+
+\section{Poisson Solvers}
+- Make Poisson solvers (all) initialized outside of the call routine.
+
+- Look into benchmarking these solvers by looking at convergence rates
+
+
+\subsection{Jacobi}
+- Make capable of operating on face-data
+
+\subsection{SOR / Gauss-Seidel}
+- Make capable of operating on face-data
+
+\subsection{3D Douglas ADI}
+- Get working for fixed time step
+
+- Get working for non-uniform grids
+
+- Get working for variable $\alpha$
+
+\subsection{Multi-grid}
+- Try changing smoother to Jacobi and check convergence rate (including when coarsest level is \textit{very} coarse)
+
+- Check Non-uniform N/CC data grids for D/N BCs
+
+\section{Exporting data}
+- Make a prepare directory routine in MOONS
+
+- HDF5 - get working
+
+- Make interfaces for binary file output
+
+- Update export: make a switch to control what to export:
+      U-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+      B-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+      J-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+
+- Make a dynamic 'exportSolutionNow' parameter that is read
+with the same frequency as the killSwitch
+
+
+
+\section{Experimental / fun / Low priority}
+- Look into Kolmogorov scale for LDC and try DNS
+
+- Make a BMC for a purely hydrodynamic turbulent flow (Re=2,000 and 3,200 compare with literature)
+
+- Consider making an obstacle module that allows for more complex flows
+e.g. flow over a sphere
+
+- Consider making an obstacle module that is passed into the solver.
+This could assign the velocity to satisfy any desired BCs and internal
+velocity (likely u=0 inside). More tests could be done this way.
+
+- implement: 1) chimney flow 2) impinging jet flow
+
+- test the cylinder driven flow case =)
+
+- Finish developing solverSettings estimateRemaining() subroutine
+
+- Solve energy equation!
+
+- Allow for compressibility!
+
+- Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
+
+- Use hgiher order time marching methods! (RK4 maybe?)
+
+
+\end{document}

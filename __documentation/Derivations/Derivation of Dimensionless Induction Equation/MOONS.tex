@@ -43,131 +43,250 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
-\section{Derivation of the Dimensionless Induction Equation in Divergence form}
-\subsection{Maxwells equations}
-Maxwell's equations are
+\section{Maxwell's equations to Induction Equation}
 \begin{equation}
-\pmb{j} = \nabla \times \frac{\pmb{B}}{\mu}
-\qquad
-\frac{\partial \pmb{B}}{\partial t} = 
-- \nabla \times \pmb{E}
-\qquad
-\pmb{j} = \sigma (\pmb{E} + \pmb{u}\times \pmb{E})
+	\pmb{j} = \nabla \times \frac{\pmb{B}}{\mu}
+	\qquad
+	\frac{\partial \pmb{B}}{\partial t} = 
+	- \nabla \times \pmb{E}
+	\qquad
+	\pmb{j} = \sigma (\pmb{E} + \pmb{u}\times \pmb{E})
 \end{equation}
 \begin{equation}
-\nabla \bullet \pmb{j} = \pmb{0}
-\qquad
-\nabla \bullet \pmb{B} = \pmb{0}
-\qquad
-\pmb{H} = \frac{\pmb{B}}{\mu}
+	\nabla \bullet \pmb{j} = \pmb{0}
+	\qquad
+	\nabla \bullet \pmb{B} = \pmb{0}
+	\qquad
+	\pmb{H} = \frac{\pmb{B}}{\mu}
 \end{equation}
 Solving for the electric field of the current in Ohm's law yields
 \begin{equation}
-\pmb{E} = \frac{\pmb{j}}{\sigma} - \pmb{u} \times \pmb{B}
+	\pmb{E} = \frac{\pmb{j}}{\sigma} - \pmb{u} \times \pmb{B}
 \end{equation}
 Plugging this into Faraday's law yields
 \begin{equation}
-\frac{\partial \pmb{B}}{\partial t} = 
-- \nabla \times \left[ \frac{\pmb{j}}{\sigma}
-- \pmb{u} \times \pmb{B} \right]
+	\frac{\partial \pmb{B}}{\partial t} = 
+	- \nabla \times \left[ \frac{\pmb{j}}{\sigma}
+	- \pmb{u} \times \pmb{B} \right]
 \end{equation}
 Distributing we have the induction equation
 
-\subsection{Dimensionless induction equation}
+\section{Non-dimensionalizing by \texorpdfstring{$B_c$}{LG}}
 
 \begin{equation}
-\frac{\partial \pmb{B}}{\partial t} = 
-\nabla \times (\pmb{u} \times \pmb{B})
-- \nabla \times 
-\left[ \frac{1}{\sigma}
-\nabla \times \frac{\pmb{B}}{\mu} \right]
+	\frac{\partial \pmb{B}}{\partial t} = 
+	\nabla \times (\pmb{u} \times \pmb{B})
+	- \nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{\pmb{B}}{\mu} \right]
 \end{equation}
+
 Non-dimensionalizing this by
+
 \begin{equation*}
-\nabla^* = L_c \nabla ,\qquad
-t^* = t/(L_c/U_c) ,\qquad
-B_i^* = B_i/B_c  ,\qquad
-\sigma^* = \sigma/\sigma_c
+	x_k^* = x_k/L_c \qquad
+	\nabla^* = L_c \nabla \qquad
+	t^* = t/(L_c/U_c) \qquad
+	u_k^* = u_k/U_c \qquad
+	\end{equation*}
+	\begin{equation*}
+	B_i^* = B_i/B_c  \qquad
+	\sigma^* = \sigma/\sigma_c \qquad
+	\mu^* = \mu/\mu_c \qquad
 \end{equation*}
-\begin{equation*}
-\mu^* = \mu/\mu_c ,\qquad
-E_i^* = E_i/(U_c B_c) ,\qquad
-j_i^* = \frac{j}{B_i/(\mu_c L_c)}
-\end{equation*}
+
 Yields
+
 \begin{equation}
-\boxed{
-\frac{\partial \pmb{B}}{\partial t} = 
-\nabla \times (\pmb{u} \times \pmb{B})
-- 
-\frac{1}{Re_m}
-\nabla \times 
-\left[ \frac{1}{\sigma}
-\nabla \times \frac{\pmb{B}}{\mu} \right]
-}
+	\frac{B_c}{t_c} 
+	\frac{\partial B_i}{\partial t} 
+	= 
+	\frac{U_c B_c}{L_c}
+	(\nabla \times u \times B)_i
+	- 
+	\frac{B_c}{\sigma_c \mu_c L_c^2}
+	\left\{
+	\nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{B}{\mu} \right]
+	\right\}_i
 \end{equation}
 
-\subsection{Converting to Divergence form}
+Dividing by $\frac{B_c}{t_c}$ yields
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	= 
+	(\nabla \times u \times B)_i
+	- 
+	\frac{1}{\sigma_c \mu_c L_c U_c}
+	\left\{
+	\nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{B}{\mu} \right]
+	\right\}_i
+\end{equation}
+
+And finally
+
+\begin{equation}
+	\boxed{
+	\frac{\partial \pmb{B}}{\partial t} = 
+	\nabla \times (\pmb{u} \times \pmb{B})
+	- 
+	\frac{1}{Re_m}
+	\nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{\pmb{B}}{\mu} \right]
+	}
+\end{equation}
+
+Where
+
+\begin{equation}
+	Re_m = \sigma_c \mu_c L_c U_c
+\end{equation}
+
+
+\section{Non-dimensionalizing by \texorpdfstring{$Re_m$}{LG}}
+
+\begin{equation}
+	\frac{\partial \pmb{B}}{\partial t} = 
+	\nabla \times (\pmb{u} \times \pmb{B})
+	- \nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{\pmb{B}}{\mu} \right]
+\end{equation}
+
+Non-dimensionalizing by the same parameters as above, except for the magnetic field. We can use
+
+
+\begin{equation}
+	Re_m = \frac{B^{ind}}{B^{0}}
+\end{equation}
+
+To non-dimensionalize by
+
+\begin{equation*}
+	{B_k^{ind}}^* = \frac{B_k^{ind}}{Re_m B^{0}}
+\end{equation*}
+
+Which yields
+
+\begin{equation}
+	\frac{Re_m B^0}{t_c} 
+	\frac{\partial B_i}{\partial t} 
+	= 
+	\frac{U_c Re_m B^0}{L_c}
+	(\nabla \times u \times B)_i
+	- 
+	\frac{Re_m B^0}{\sigma_c \mu_c L_c^2}
+	\left\{
+	\nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{B}{\mu} \right]
+	\right\}_i
+\end{equation}
+
+Again, dividing by $B^0/t_c$ we have
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	= 
+	(\nabla \times u \times B)_i
+	- 
+	\frac{Re_m}{\sigma_c \mu_c L_c U_c}
+	\left\{
+	\nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{B}{\mu} \right]
+	\right\}_i
+\end{equation}
+
+And finally, we have the equation for the induced magnetic field, which has been non-dimensionalized by the applied field and magnetic Reynolds number
+
+\begin{equation}
+	\boxed{
+	\frac{\partial \pmb{B}}{\partial t} 
+	= 
+	\nabla \times (\pmb{u} \times \pmb{B})
+	- \nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{\pmb{B}}{\mu} \right]
+	}
+\end{equation}
+
+
+\section{Converting to Divergence form}
 
 Using the vector identity
 \begin{equation}
-\nabla \times (A\times B) = 
-A(\nabla \bullet B) 
-- B(\nabla \bullet A)
-+(B \bullet \nabla)A - (A \bullet \nabla)B
+	\nabla \times (A\times B) = 
+	A(\nabla \bullet B) 
+	- B(\nabla \bullet A)
+	+(B \bullet \nabla)A - (A \bullet \nabla)B
 \end{equation}
 And noting that (index notation helps here)
 \begin{equation}
-\partial_j (u_i B_j) = 
-u_i \underbrace{\partial_j B_j}_\text{= 0} + B_j \partial_j u_i
-= B_j \partial_j u_i
+	\partial_j (u_i B_j) = 
+	u_i \underbrace{\partial_j B_j}_\text{= 0} + B_j \partial_j u_i
+	= B_j \partial_j u_i
 \end{equation}
 \begin{equation}
-\partial_j (u_j B_i) = 
-u_j \partial_j B_i + B_i \underbrace{\partial_j u_j}_\text{=0}
-= u_j \partial_j B_i
+	\partial_j (u_j B_i) = 
+	u_j \partial_j B_i + B_i \underbrace{\partial_j u_j}_\text{=0}
+	= u_j \partial_j B_i
 \end{equation}
 We can write our advective term as
 \begin{equation}
-\nabla \times (u \times B) 
-= u(\nabla \bullet B) 
-- B(\nabla \bullet u)
-+ (B \bullet \nabla)u
-- (u \bullet \nabla)B
-=
-\partial_j (u_i B_j) - \partial_j (u_j B_i)
-=
--\partial_j (u_j B_i - u_i B_j)
+	\nabla \times (u \times B) 
+	= u(\nabla \bullet B) 
+	- B(\nabla \bullet u)
+	+ (B \bullet \nabla)u
+	- (u \bullet \nabla)B
+	=
+	\partial_j (u_i B_j) - \partial_j (u_j B_i)
+	=
+	-\partial_j (u_j B_i - u_i B_j)
 \end{equation}
 
 Using the kronecker delta identity, the diffusion term may be written as
 \begin{equation}
-\nabla \times \left( \frac{1}{\sigma} \nabla \times \frac{B}{\mu} \right)
- = \varepsilon_{ijk} \partial_j \left( \frac{1}{\sigma} \varepsilon_{kmn} \partial_m \frac{B_n}{\mu} \right)
-  = \varepsilon_{ijk} \varepsilon_{kmn} \partial_j \left( \frac{1}{\sigma} \partial_m \frac{B_n}{\mu} \right)
-  = (\delta_{im}\delta_{jn} - \delta_{in}\delta_{jm}) \partial_j \left( \frac{1}{\sigma} \partial_m \frac{B_n}{\mu} \right)
+	\nabla \times \left( \frac{1}{\sigma} \nabla \times \frac{B}{\mu} \right)
+	 = \varepsilon_{ijk} \partial_j \left( \frac{1}{\sigma} \varepsilon_{kmn} \partial_m \frac{B_n}{\mu} \right)
+	  = \varepsilon_{ijk} \varepsilon_{kmn} \partial_j \left( \frac{1}{\sigma} \partial_m \frac{B_n}{\mu} \right)
+	  = (\delta_{im}\delta_{jn} - \delta_{in}\delta_{jm}) \partial_j \left( \frac{1}{\sigma} \partial_m \frac{B_n}{\mu} \right)
 \end{equation}
 
 \begin{equation}
-  = \partial_j \left( \frac{1}{\sigma} \partial_i \frac{B_j}{\mu} \right) 
-  - \partial_j \left( \frac{1}{\sigma} \partial_j \frac{B_i}{\mu} \right)
-  = \partial_j \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_j}{\mu} - \partial_j \frac{B_i}{\mu} \right) \right]
+	  = \partial_j \left( \frac{1}{\sigma} \partial_i \frac{B_j}{\mu} \right) 
+	  - \partial_j \left( \frac{1}{\sigma} \partial_j \frac{B_i}{\mu} \right)
+	  = \partial_j \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_j}{\mu} - \partial_j \frac{B_i}{\mu} \right) \right]
 \end{equation}
 
 Finally, we may write our full induction equation as
 \begin{equation}
-\boxed{
-\frac{\partial B_i}{\partial t} + \partial_j (u_j B_i - u_i B_j) + 
-\frac{1}{Re_m}
-\partial_j \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_j}{\mu} - \partial_j \frac{B_i}{\mu} \right) \right]
-}
+	\boxed{
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+	}
 \end{equation}
 
 Where
 \begin{equation}
-\boxed{
-Re_m = \frac{U_c L_c}{(\mu_c \sigma_c)^{-1}} = \mu_c \sigma_c U_c L_c
-}
+	\boxed{
+	Re_m = \frac{U_c L_c}{(\mu_c \sigma_c)^{-1}} = \mu_c \sigma_c U_c L_c
+	}
 \end{equation}
 
 This is the dimensionless induction equation written in divergence form. This is the form that is implemented in MOONS.
@@ -176,17 +295,200 @@ This is the dimensionless induction equation written in divergence form. This is
 Sometimes it is helpful to look at the induction equation in a semi-expanded form. Expanding the dummy index $j$ yields the following equation for the $i$th component:
 
 \begin{multline}
-\frac{\partial B_i}{\partial t} + 
-\partial_x (u_x B_i - u_i B_x) + 
-\partial_y (u_y B_i - u_i B_y) + 
-\partial_z (u_z B_i - u_i B_z) + \\
-\frac{1}{Re_m}
-\partial_x \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_x}{\mu} - \partial_x \frac{B_i}{\mu} \right) \right] + 
-\frac{1}{Re_m}
-\partial_y \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_y}{\mu} - \partial_y \frac{B_i}{\mu} \right) \right] + 
-\frac{1}{Re_m}
-\partial_z \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_z}{\mu} - \partial_z \frac{B_i}{\mu} \right) \right]  = \text{source terms}
+	\frac{\partial B_i}{\partial t} + 
+	\partial_x (u_x B_i - u_i B_x) + 
+	\partial_y (u_y B_i - u_i B_y) + 
+	\partial_z (u_z B_i - u_i B_z) + \\
+	\frac{1}{Re_m}
+	\partial_x \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_x}{\mu} - \partial_x \frac{B_i}{\mu} \right) \right] + 
+	\frac{1}{Re_m}
+	\partial_y \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_y}{\mu} - \partial_y \frac{B_i}{\mu} \right) \right] + 
+	\frac{1}{Re_m}
+	\partial_z \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_z}{\mu} - \partial_z \frac{B_i}{\mu} \right) \right]  = \text{source terms}
 \end{multline}
 
+
+\section{Combining Applied and Induced magnetic field equations for finite \texorpdfstring{$Re_m$}{LG}}
+
+The applied magnetic field is non-dimensionalized by $B^0$, which means the equation for the applied magnetic field is
+
+\begin{equation}
+	\frac{\partial B_i^0}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	+ \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j^0}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i^0}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+The induced magnetic field is non-dimensionalized by $Re_m B^0$, which means the equation for hte induced magnetic field is
+
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+Since $B^{induced}$ scales with $Re_m B^0$, we may combine these equations by writing $induction^{induced}=Re_m \times induction^{applied}$
+
+\begin{multline}
+	\frac{\partial B_i^0}{\partial t} +
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	+ \\
+	\frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j^0}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i^0}{\mu} \right)
+	\right]
+	\right\} 
+	+
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\}
+	= 0
+\end{multline}
+
+It is apparent that one of the equations may be multiplied by a scalar factor before adding to the other equation. But since combining the equations essentially creates source terms when evolving one field, the scalar must be chosen correctly.
+
+\section{Sergey's Equations}
+
+\subsection{Appendix A - Dimensional/Full}
+
+\begin{equation*}
+	\frac{\partial B_i^0}{\partial t}
+	+
+	\frac{\partial B_i}{\partial t} 
+	+ 
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	+
+	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ 
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) 
+	- 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\}
+	= 
+	0
+\end{equation*}
+
+
+\subsection{Appendix B - Dimensionless/ \texorpdfstring{$Re_m<1$}{LG}}
+
+\begin{equation*}
+	\frac{\partial B_i^0}{\partial t}
+	+
+ 	Re_m
+	\frac{\partial B_i}{\partial t} 
+	+ 
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	+
+ 	Re_m
+	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ 
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) 
+	- 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\}
+	= 
+	0
+\end{equation*}
+
+
+\subsection{Appendix C - Dimensionless/Quasi-static approximation for \texorpdfstring{$Re_m<<1$}{LG}}
+
+\begin{equation*}
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	+ 
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) 
+	- 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\}
+	= 
+	0
+\end{equation*}
+
+\subsection{Appendix D - Dimensionless/Quasi-static approximation in with uniform \texorpdfstring{$\sigma$}{LG} for \texorpdfstring{$Re_m<<1$}{LG}}
+
+\begin{equation*}
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	- 
+	\frac{\partial^2}{\partial x_j^2} 
+	\left( \frac{B_j}{\mu} \right) 
+	= 
+	0
+\end{equation*}
+
+
+\subsection{Appendix E - Dimensionless/ \texorpdfstring{$Re_m \approx 1$ or $Re_m>1$}{LG}}
+
+\begin{equation*}
+	\frac{\partial B_i^0}{\partial t}
+	+
+	\frac{\partial B_i}{\partial t} 
+	+ 
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	+
+	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ 
+	\frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) 
+	- 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\}
+	= 
+	0
+\end{equation*}
 
 \end{document}

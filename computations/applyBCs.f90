@@ -38,6 +38,7 @@
        !           .
        !           .
 
+       ! use vectorField_mod
        use BCs_mod
        use grid_mod
        implicit none
@@ -56,10 +57,21 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+       ! interface applyAllBCs;    module procedure applyAllBCs3DVF;   end interface
        interface applyAllBCs;    module procedure applyAllBCs3D;     end interface
        interface applyBCs;       module procedure applyBCs3D;        end interface
 
        contains
+
+       ! subroutine applyAllBCs3DVF(U,b,g)
+       !   implicit none
+       !   type(vectorField),intent(inout) :: U
+       !   type(BCs),intent(in) :: b
+       !   type(grid),intent(in) :: g
+       !   call applyAllBCs(b%x,U%x,g)
+       !   call applyAllBCs(b%y,U%y,g)
+       !   call applyAllBCs(b%z,U%z,g)
+       ! end subroutine
 
        subroutine applyAllBCs3D(b,u,g)
         ! Note that these boundary conditions are applied in a NON- arbitrary
@@ -69,12 +81,12 @@
          type(BCs),intent(in) :: b
          real(cp),dimension(:,:,:),intent(inout) :: u
          type(grid),intent(in) :: g
-         call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
          call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
          call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
          call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
          call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
+         call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
        end subroutine
 
        subroutine applyBCs3D(u,bctype,face,bvals,hn,hc,s)
@@ -87,6 +99,8 @@
          select case (bctype)
          ! *************************** DIRICHLET *****************************
          case (1) ! Dirichlet - direct - wall coincident
+
+           ! The order of these two operations may affect the result
            select case (face)
            case (1); u(2,:,:) = bvals
            case (2); u(:,2,:) = bvals
@@ -115,14 +129,21 @@
          ! *************************** NEUMANN *****************************
          case (3) ! Neumann - direct - wall coincident ~O(dh^2)
            select case (face)
-           case (1); u(1,:,:) = u(2,:,:) + (hn(1)-hn(2))*bvals
-           case (2); u(:,1,:) = u(:,2,:) + (hn(1)-hn(2))*bvals
-           case (3); u(:,:,1) = u(:,:,2) + (hn(1)-hn(2))*bvals
-           case (4); u(s,:,:) = u(s-1,:,:) + (hn(s)-hn(s-1))*bvals
-           case (5); u(:,s,:) = u(:,s-1,:) + (hn(s)-hn(s-1))*bvals
-           case (6); u(:,:,s) = u(:,:,s-1) + (hn(s)-hn(s-1))*bvals
+           case (1); u(2,:,:) = u(3,:,:)
+           case (2); u(:,2,:) = u(:,3,:)
+           case (3); u(:,:,2) = u(:,:,3)
+           case (4); u(s-1,:,:) = u(s-2,:,:)
+           case (5); u(:,s-1,:) = u(:,s-2,:)
+           case (6); u(:,:,s-1) = u(:,:,s-2)
            end select
-           stop 'BAD BCs called!'
+           select case (face)
+           case (1); u(1,:,:) = u(3,:,:)
+           case (2); u(:,1,:) = u(:,3,:)
+           case (3); u(:,:,1) = u(:,:,3)
+           case (4); u(s,:,:) = u(s-2,:,:)
+           case (5); u(:,s,:) = u(:,s-2,:)
+           case (6); u(:,:,s) = u(:,:,s-2)
+           end select
          case (4) ! Neumann - direct - wall coincident ~O(dh^2)
            select case (face)
            case (1); u(1,:,:) = u(3,:,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
@@ -172,5 +193,6 @@
            end select
          end select
        end subroutine
+
 
        end module

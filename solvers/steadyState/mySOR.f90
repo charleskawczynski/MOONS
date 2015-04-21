@@ -18,23 +18,18 @@
       !     gridType     = (1,2) = (cell-based,node-based)
       !     displayTF    = print residuals to screen (T,F)
       ! 
-      ! Fixes/improvements:
-      ! - 'If ANY conditions are Dirichlet, then the Neumann conditions
-      !   can be taken outside of the iteration loop becuase the matrix 
-      !   is no longer singular.' --Gautam
-      ! 
-      ! - Clean up a bit, it seems some code is written twice
-
-      ! Flags: (_PARALLELIZE_SOR_,_EXPORT_SOR_CONVERGENCE_)
+      ! Flags: (_PARALLELIZE_SOR_,
+      !         _EXPORT_SOR_CONVERGENCE_)
 
       use grid_mod
       use BCs_mod
       use applyBCs_mod
       use myError_mod
       use delOps_mod
+
       use solverSettings_mod
 #ifdef _EXPORT_SOR_CONVERGENCE_
-      use myIO_mod
+      use IO_tools_mod
 #endif
       implicit none
 
@@ -56,14 +51,12 @@
       logical, parameter :: useGaussSeidel = .true.
 
       type mySOR
-        character(len=3) :: name
-        integer :: gridType
-        real(cp),dimension(:),allocatable :: dxp,dyp,dzp
-        real(cp),dimension(:),allocatable :: dxd,dyd,dzd
-        real(cp),dimension(:,:,:),allocatable :: lapu,f,r ! f zeros mean
+        character(len=5) :: name
+        type(grid) :: p,d ! Primary / Dual grids
+        real(cp),dimension(:,:,:),allocatable :: lapu,f,res ! f zeros mean
         real(cp) :: omega
-        integer,dimension(3) :: s
-        integer :: gt
+        integer,dimension(3) :: gt,s
+        integer :: gridType ! (1,2,3) = (CC,N,Face)
       end type
       
       interface init;        module procedure initSOR;       end interface
@@ -77,51 +70,65 @@
         type(mySOR),intent(inout) :: SOR
         integer,dimension(3),intent(in) :: s
         type(grid),intent(in) :: g
-        integer :: Nx,Ny,Nz
+        integer :: Nx,Ny,Nz,i
         
         SOR%s = s
 
-            if (SOR%s(1).eq.g%c(1)%sc) then; SOR%gridType = 1
-        elseif (SOR%s(1).eq.g%c(1)%sn) then; SOR%gridType = 2
-        else; stop 'Error: gridType was not determined in SOR.f90'
+        do i=1,3
+          if (SOR%s(i).eq.g%c(i)%sc) then
+            call init(SOR%p,g%c(i)%hc,i,2) ! grid made from cc --> p%dhn is dhc
+            call init(SOR%d,g%c(i)%hn,i,2) ! grid made from n --> d%dhn is dhn
+            SOR%gt(i) = 1
+          elseif(SOR%s(i).eq.g%c(i)%sn) then
+            call init(SOR%p,g%c(i)%hn,i,2) ! grid made from n --> p%dhn is dhn
+            call init(SOR%d,g%c(i)%hc,i,2) ! grid made from cc --> d%dhn is dhc
+            SOR%gt(i) = 0
+          else
+            write(*,*) 's = ',SOR%s
+            write(*,*) 'sc = ',(/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+            write(*,*) 'sn = ',(/g%c(1)%sn,g%c(2)%sn,g%c(3)%sn/)
+            stop 'Error: grid type was not determined in SOR.f90'
+          endif
+        enddo
+
+        if (all((/(s(i).eq.g%c(i)%sc, i=1,3)/))) then ! Node data
+        SOR%gridType = 1
+
+        elseif (all((/(s(i).eq.g%c(i)%sn, i=1,3)/))) then ! CC data
+        SOR%gridType = 2
+
+        ! Face data
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sc/))) then
+        SOR%gridType = 3
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
+        SOR%gridType = 3
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
+        SOR%gridType = 3
+
+        ! Edge Data
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sn/))) then
+          stop 'Error: edge data not yet supported in SOR.f90'
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
+          stop 'Error: edge data not yet supported in SOR.f90'
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
+          stop 'Error: edge data not yet supported in SOR.f90'
+        else
+          write(*,*) 's = ',s
+          write(*,*) 'g%sn = ',(/(g%c(i)%sn, i=1,3)/)
+          write(*,*) 'g%sc = ',(/(g%c(i)%sc, i=1,3)/)
+          stop 'Error: in grid size compared to input field in SOR.f90.'
         endif
 
-        select case (SOR%gridType)
-        case (1) ! Cell based (for pressure)
-          Nx = g%c(1)%sc-1; Ny = g%c(2)%sc-1; Nz = g%c(3)%sc-1   ! number of cells (excluding ghost)
-          allocate(SOR%dxp(Nx),SOR%dyp(Ny),SOR%dzp(Nz))          ! Primary grid
-          Nx = g%c(1)%sn-1; Ny = g%c(2)%sn-1; Nz = g%c(3)%sn-1   ! number of cells (excluding ghost)
-          allocate(SOR%dxd(Nx),SOR%dyd(Ny),SOR%dzd(Nz))          ! Dual grid
-          SOR%dxp = g%c(1)%dhc
-          SOR%dyp = g%c(2)%dhc
-          SOR%dzp = g%c(3)%dhc
-          SOR%dxd = g%c(1)%dhn
-          SOR%dyd = g%c(2)%dhn
-          SOR%dzd = g%c(3)%dhn
-          SOR%gt = 1
-        case (2) ! Node based (for magnetic field)
-          Nx = g%c(1)%sn-1; Ny = g%c(2)%sn-1; Nz = g%c(3)%sn-1   ! number of cells (excluding ghost)
-          allocate(SOR%dxp(Nx),SOR%dyp(Ny),SOR%dzp(Nz))          ! Primary grid
-          Nx = g%c(1)%sc-1; Ny = g%c(2)%sc-1; Nz = g%c(3)%sc-1   ! number of cells (excluding ghost)
-          allocate(SOR%dxd(Nx),SOR%dyd(Ny),SOR%dzd(Nz))          ! Dual grid
-          SOR%dxd = g%c(1)%dhc
-          SOR%dyd = g%c(2)%dhc
-          SOR%dzd = g%c(3)%dhc
-          SOR%dxp = g%c(1)%dhn
-          SOR%dyp = g%c(2)%dhn
-          SOR%dzp = g%c(3)%dhn
-          SOR%gt = 0
-        case default
-          write(*,*) 'gridType in SOR must be 1 or 2. Terminating';stop
-        end select
+
         allocate(SOR%lapu(SOR%s(1),SOR%s(2),SOR%s(3)))
         allocate(SOR%f(SOR%s(1),SOR%s(2),SOR%s(3)))
-        allocate(SOR%r(SOR%s(1),SOR%s(2),SOR%s(3)))
+        allocate(SOR%res(SOR%s(1),SOR%s(2),SOR%s(3)))
 
         if (useGaussSeidel) then
           SOR%omega = real(1.0,cp)
-          SOR%name = 'GS '
+          SOR%name = 'SOR'
         else
+          Nx = s(1); Ny = s(2); Nz = s(3)
           SOR%omega = real(2.0,cp)/(real(1.0,cp) + sqrt(real(1.0,cp) - & 
            ((cos(PI/real(Nx+1,cp)) + cos(PI/real(Ny+1,cp)) + &
              cos(PI/real(Nz+1,cp)))/real(3.0,cp))**real(2.0,cp)))
@@ -132,15 +139,11 @@
       subroutine deleteSOR(SOR)
         implicit none
         type(mySOR),intent(inout) :: SOR
-        deallocate(SOR%dxp)
-        deallocate(SOR%dyp)
-        deallocate(SOR%dzp)
-        deallocate(SOR%dxd)
-        deallocate(SOR%dyd)
-        deallocate(SOR%dzd)
+        call delete(SOR%p)
+        call delete(SOR%d)
         deallocate(SOR%lapu)
         deallocate(SOR%f)
-        deallocate(SOR%r)
+        deallocate(SOR%res)
 
         ! write(*,*) 'SOR object deleted'
       end subroutine
@@ -157,20 +160,15 @@
         type(myError),intent(inout) :: norms
         logical,intent(in) :: displayTF
         ! Locals
-        integer,dimension(3) :: s
-        integer :: i,j,k,ijk,gt
-        real(cp) :: r
-        logical :: TF,continueLoop,TF_allDirichlet
+        integer :: ijk
+        logical :: TF,continueLoop
         integer :: maxIterations
 #ifdef _EXPORT_SOR_CONVERGENCE_
         integer :: NU
 #endif
         
-        s = shape(f)
-        call init(SOR,s,g)
-        gt = SOR%gt
+        call init(SOR,shape(f),g)
 
-        TF_allDirichlet = getAllDirichlet(u_bcs)
         call solverSettingsSet(ss)
         ijk = 0
 
@@ -192,67 +190,55 @@
 
         do while (continueLoop.and.TF)
           ijk = ijk + 1
+
+          ! THE ORDER OF THESE ROUTINE CALLS IS IMPORTANT. DO NOT CHANGE.
+
 #ifdef _PARALLELIZE_SOR_
-          !$OMP PARALLEL PRIVATE(r)
-          !$OMP DO
+          !$OMP PARALLEL
+
 #endif
-          do k=2,s(3)-1,2
-            do j=2,s(2)-1
-              do i=2,s(1)-1
-                r = real(1.0,cp)/SOR%dxd(i-1+gt)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
-                    real(1.0,cp)/SOR%dyd(j-1+gt)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
-                    real(1.0,cp)/SOR%dzd(k-1+gt)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,0,0/)) ! Even in odd plane
 
-                u(i,j,k) = u(i,j,k)*(real(1.0,cp)-SOR%omega) + &
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,0,0/)) ! Even in even plane
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,1,0/)) ! Even in even plane
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,0,1/)) ! Even in even plane
 
-               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1+gt)) + &
-                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1+gt)) + &
-                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1+gt)) + &
-                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1+gt)) + &
-                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1+gt)) + &
-                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1+gt)) &
-                         - SOR%f(i,j,k) )/r
-              enddo
-            enddo
-          enddo
+
 #ifdef _PARALLELIZE_SOR_
-          !$OMP END DO
-          !$OMP DO
-#endif
-          do k=3,s(3)-1,2 ! 3 is correct (odd numbers)
-            do j=2,s(2)-1
-              do i=2,s(1)-1
-                r = real(1.0,cp)/SOR%dxd(i-1+gt)*(real(1.0,cp)/SOR%dxp(i) + real(1.0,cp)/SOR%dxp(i-1)) + & 
-                    real(1.0,cp)/SOR%dyd(j-1+gt)*(real(1.0,cp)/SOR%dyp(j) + real(1.0,cp)/SOR%dyp(j-1)) + & 
-                    real(1.0,cp)/SOR%dzd(k-1+gt)*(real(1.0,cp)/SOR%dzp(k) + real(1.0,cp)/SOR%dzp(k-1))
-
-                u(i,j,k) = u(i,j,k)*(real(1.0,cp)-SOR%omega) + &
-
-               SOR%omega*( u(i-1,j,k)/(SOR%dxp(i-1) * SOR%dxd(i-1+gt)) + &
-                           u(i+1,j,k)/(SOR%dxp( i ) * SOR%dxd(i-1+gt)) + &
-                           u(i,j-1,k)/(SOR%dyp(j-1) * SOR%dyd(j-1+gt)) + &
-                           u(i,j+1,k)/(SOR%dyp( j ) * SOR%dyd(j-1+gt)) + &
-                           u(i,j,k-1)/(SOR%dzp(k-1) * SOR%dzd(k-1+gt)) + &
-                           u(i,j,k+1)/(SOR%dzp( k ) * SOR%dzd(k-1+gt)) &
-                         - SOR%f(i,j,k) )/r
-              enddo
-            enddo
-          enddo
-#ifdef _PARALLELIZE_SOR_
-          !$OMP END DO
           !$OMP END PARALLEL
+          !$OMP PARALLEL
+
+#endif
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,1,1/)) ! Odd in odd plane
+
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,1,1/)) ! Odd in even plane
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,0,1/)) ! Odd in even plane
+          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,1,0/)) ! Odd in even plane
+
+#ifdef _PARALLELIZE_SOR_
+          !$OMP END PARALLEL
+
 #endif
 
-          call applyAllBCs(u_bcs,u,g) ! Necessary with ghost nodes
+          call applyAllBCs(u_bcs,u,g)
 
           if (getMinToleranceTF(ss)) then
             select case (SOR%gridType)
             case (1); call CC2CCLap(SOR%lapu,u,g)
             case (2); call myNodeLap(SOR%lapu,u,g)
+            case (3); call myFaceLap(SOR%lapu,u,g)
             end select
-            SOR%r = SOR%lapu - SOR%f
-            call zeroGhostPoints(SOR%r)
-            call compute(norms,real(0.0,cp),SOR%r)
+            SOR%res = SOR%lapu - SOR%f
+            call zeroGhostPoints(SOR%res)
+            call compute(norms,real(0.0,cp),SOR%res)
             call setTolerance(ss,getL2Rel(norms))
           endif
 
@@ -260,10 +246,11 @@
             select case (SOR%gridType)
             case (1); call CC2CCLap(SOR%lapu,u,g)
             case (2); call myNodeLap(SOR%lapu,u,g)
+            case (3); call myFaceLap(SOR%lapu,u,g)
             end select
-            SOR%r = SOR%lapu - SOR%f
-            call zeroGhostPoints(SOR%r)
-            call compute(norms,real(0.0,cp),SOR%r)
+            SOR%res = SOR%lapu - SOR%f
+            call zeroGhostPoints(SOR%res)
+            call compute(norms,real(0.0,cp),SOR%res)
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
 #endif
 
@@ -297,13 +284,58 @@
           select case (SOR%gridType)
           case (1); call CC2CCLap(SOR%lapu,u,g)
           case (2); call myNodeLap(SOR%lapu,u,g)
+          case (3); call myFaceLap(SOR%lapu,u,g)
           end select
-          SOR%r = SOR%lapu - SOR%f
-          call zeroGhostPoints(SOR%r)
-          call compute(norms,real(0.0,cp),SOR%r)
+          SOR%res = SOR%lapu - SOR%f
+          call zeroGhostPoints(SOR%res)
+          call compute(norms,real(0.0,cp),SOR%res)
           call print(norms,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
         call delete(SOR)
       end subroutine
+
+      subroutine redBlack(u,f,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
+        implicit none
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
+        integer,dimension(3) :: s,odd
+        real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
+        real(cp),intent(in) :: omega
+        integer,dimension(3),intent(in) :: gt
+        integer :: i,j,k
+        real(cp) :: r
+
+#ifdef _PARALLELIZE_SOR_
+        !$OMP DO PRIVATE(r)
+
+#endif
+
+        do k=2+odd(3),s(3)-1,2
+          do j=2+odd(2),s(2)-1,2
+            do i=2+odd(1),s(1)-1,2
+
+              r = real(1.0,cp)/dxd(i-1+gt(1))*(real(1.0,cp)/dxp(i) + real(1.0,cp)/dxp(i-1)) + & 
+                  real(1.0,cp)/dyd(j-1+gt(2))*(real(1.0,cp)/dyp(j) + real(1.0,cp)/dyp(j-1)) + & 
+                  real(1.0,cp)/dzd(k-1+gt(3))*(real(1.0,cp)/dzp(k) + real(1.0,cp)/dzp(k-1))
+
+              u(i,j,k) = u(i,j,k)*(real(1.0,cp)-omega) + &
+                 omega*( u(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1))) + &
+                         u(i+1,j,k)/(dxp( i ) * dxd(i-1+gt(1))) + &
+                         u(i,j-1,k)/(dyp(j-1) * dyd(j-1+gt(2))) + &
+                         u(i,j+1,k)/(dyp( j ) * dyd(j-1+gt(2))) + &
+                         u(i,j,k-1)/(dzp(k-1) * dzd(k-1+gt(3))) + &
+                         u(i,j,k+1)/(dzp( k ) * dzd(k-1+gt(3))) &
+                       - f(i,j,k) )/r
+
+            enddo
+          enddo
+        enddo
+
+#ifdef _PARALLELIZE_SOR_
+        !$OMP END DO
+
+#endif
+      end subroutine
+
       end module

@@ -1,5 +1,6 @@
        module initializeUfield_mod
-       use myIO_mod
+       use IO_scalarFields_mod
+       use IO_scalarBase_mod
        use grid_mod
        use BCs_mod
        implicit none
@@ -8,7 +9,7 @@
        public :: initUfield
 
        logical,parameter :: restartU      = .false.
-       integer,parameter :: preDefinedU_ICs = 1
+       integer,parameter :: preDefinedU_ICs = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
        !                                      2 : Parabolic Duct Flow (in x)
@@ -36,7 +37,6 @@
 
        subroutine initUfield(u,v,w,p,g,dir)
          implicit none
-         ! Auxiliary data types
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
@@ -45,7 +45,7 @@
          elseif (preDefinedU_ICs.ne.0) then
            call initPreDefinedUfield(u,v,w,p,g)
          else
-           call initUserUfield(u,v,w,p)
+           call initUserUfield(u,v,w,p,g)
          endif
        end subroutine
        
@@ -173,12 +173,19 @@
          deallocate(hx,hy)
        end subroutine
 
-       subroutine initUserUfield(u,v,w,p)
+       subroutine initUserUfield(u,v,w,p,g)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
-
-         u = 0.0d0; v = 0.0d0; w = 0.0d0
+         type(grid),intent(in) :: g
+         integer :: j,k
+         v = 0.0d0; w = 0.0d0
          p = 0.0d0
+         do j=1,g%c(2)%sc
+          do k=1,g%c(3)%sc
+            u(:,j,k) = (real(2.0,cp) - g%c(3)%hc(j)**real(2.0,cp) - &
+                                       g%c(3)%hc(k)**real(2.0,cp))/real(2.0,cp)
+          enddo
+        enddo
        end subroutine
        
        

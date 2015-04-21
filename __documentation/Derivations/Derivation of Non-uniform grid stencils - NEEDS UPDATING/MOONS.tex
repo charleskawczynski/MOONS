@@ -143,4 +143,112 @@ Solving this system (only the first two) for $f_i'$, we have
 	}
 \end{equation}
 
+\section{Verification by simplification to uniform grid stencils}
+In the momentum equation, the diffusive terms may be written as
+
+\begin{equation}
+  f'' = \frac{1}{\Delta x_{i+1/2}}
+  \left(
+  \frac{f_{i+1} - f_i}{\Delta x_{i+1}}
+  -
+  \frac{f_{i} - f_{i-1}}{\Delta x_{i}}
+  \right)
+\end{equation}
+
+Or
+
+\begin{equation}
+  f'' = 
+  \frac{2}{\Delta x_{i+1} + \Delta x_{i}}
+  \left(
+  \frac{f_{i+1} - f_i}{\Delta x_{i+1}}
+  -
+  \frac{f_{i} - f_{i-1}}{\Delta x_{i}}
+  \right)
+\end{equation}
+
+We may factor the terms:
+
+\begin{equation}
+  f'' = 
+  f_i
+  \left(
+  \frac{-2}{\Delta x_{i+1} + \Delta x_i}
+  \left(
+  \frac{1}{\Delta x_{i+1}}+\frac{1}{\Delta x_{i}}
+  \right)
+  \right)
+  +
+  f_{i-1}
+  \frac{2}{\Delta x_i (\Delta x_{i+1} + \Delta x_i)}
+  +
+  f_{i+1}
+  \frac{2}{\Delta x_{i+1} (\Delta x_{i+1} + \Delta x_i)}
+\end{equation}
+
+The $ith$ term may be written as
+
+\begin{equation}
+  \frac{-2}{\Delta x_{i+1} + \Delta x_i}
+  \left(
+  \frac{1}{\Delta x_{i+1}}+\frac{1}{\Delta x_{i}}
+  \right)
+  =
+  \frac{-2}{\Delta x_i \Delta x_{i+1} (\Delta x_i + \Delta x_{i+1})}
+  (\Delta x_i + \Delta x_{i+1})
+  =
+  \frac{-2}{\Delta x_i \Delta x_{i+1}}
+\end{equation}
+
+Therefore, we may write the derivative as
+
+\begin{equation}
+  f'' 
+  = 
+  2 f_i
+  \frac{1}{-\Delta x_i \Delta x_{i+1}}
+  +
+  2 f_{i-1}
+  \frac{1}{\Delta x_i (\Delta x_{i+1} + \Delta x_i)}
+  + 
+  2 f_{i+1}
+  \frac{1}{\Delta x_{i+1} (\Delta x_{i+1} + \Delta x_i)}
+\end{equation}
+
+Now, using the non-uniform grid stencil results, let
+
+\begin{equation}
+  \alpha_k = -\Delta x_i \qquad k = -1
+\end{equation}
+\begin{equation}
+  \beta_j = \Delta x_{i+1} \qquad j = 1
+\end{equation}
+
+We may write this as
+
+\begin{equation}
+  f''
+  =
+  2 f_i \frac{1}{\alpha_k \beta_j}
+  +
+  2 f_{i-1}
+  \frac{1}{-\alpha_k (\beta_j-\alpha_k)}
+  + 2 f_{i+1}
+  \frac{1}{\beta_j(\beta_j-\alpha_k)}
+\end{equation}
+
+Or
+
+\begin{equation}
+  f''
+  =
+  \frac{2 f_i}{\alpha_k \beta_j}
+  +
+  \frac{2 f_{i+k}}{\alpha_k^2 - \alpha_k \beta_j}
+  +
+  \frac{2 f_{i+j}}{\beta_j^2 - \beta_j \alpha_k}
+\end{equation}
+
+This is the same form of the equation derived.
+
 \end{document}

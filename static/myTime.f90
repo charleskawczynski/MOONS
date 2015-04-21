@@ -8,7 +8,7 @@
        ! - efficiency = runtime*L2norm (think error vs run time ~ 1/t, we want closest to origin)
 
 
-       use myIO_mod
+       use IO_tools_mod
        use simParams_mod
        use solverSettings_mod
        implicit none
@@ -58,6 +58,7 @@
         integer :: countRate
         real(cp) :: runTimeAve
         integer :: iterPerSec
+        integer :: iterPerHour
         integer :: iterPerDay
         ! Estimated Quantities
         integer :: NMax
@@ -88,6 +89,7 @@
         this%estimatedRemaining = 0.0
         this%estimatedTotal = 0.0
         this%iterPerSec = 0
+        this%iterPerHour = 0
         this%iterPerDay = 0
         this%N = 0
         this%NRemaining = 0
@@ -137,6 +139,7 @@
           this%runTimeAve = this%runTimeCumulative/dble(this%N)
         endif
         this%iterPerSec = floor(1.0/this%runTimeAve)
+        this%iterPerHour = floor(1.0/this%runTimeAve*3600.0)
         this%iterPerDay = floor(1.0/this%runTimeAve*3600.0*24.0)
       end subroutine
 
@@ -239,8 +242,7 @@
         temp = this%runTimeAve; call getTimeWithUnits(temp,u)
         write(newU,*) 'Average wall clock time per iteration = ',temp,' (', u,')'
 
-        write(newU,*) 'Iterations per second = ',this%iterPerSec
-        write(newU,*) 'Iterations per day = ',this%iterPerDay
+        write(newU,*) 'Iterations per (s,h,d) = ',this%iterPerSec,this%iterPerHour,this%iterPerDay
 
         temp = this%runTimeCumulative; call getTimeWithUnits(temp,u)
         write(newU,*) 'Total wall clock time passed = ',temp,' (', u,')'
@@ -248,9 +250,7 @@
         write(newU,*) ''
         write(newU,*) '---------------- ESTIMATED QUANTITIES ---------------------'
 
-        write(newU,*) 'Maximum number of iterations = ',this%NMax
-
-        write(newU,*) 'Number of iterations remaining = ',this%NRemaining
+        write(newU,*) 'Iterations (remaining/max) = ',this%NRemaining,this%NMax
 
         temp = this%estimatedTotal; call getTimeWithUnits(temp,u)
         write(newU,*) 'Total wall clock time = ',temp,' (', u,')'

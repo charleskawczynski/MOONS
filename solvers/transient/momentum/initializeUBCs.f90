@@ -12,7 +12,7 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 3
+       integer,parameter :: preDefinedU_BCs = 2
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity
        !                                      2 : No Slip Cavity
@@ -224,7 +224,7 @@
              allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setXminVals(u_bcs,bvals); deallocate(bvals)
 
-             call setXmaxType(u_bcs,4) ! Neumann
+             call setXmaxType(u_bcs,3) ! Neumann
              ! call setXmaxType(v_bcs,5) ! Neumann
              ! call setXmaxType(w_bcs,5) ! Neumann
            case (-1)

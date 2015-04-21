@@ -17,15 +17,13 @@
       use myDebug_mod
       use grid_mod
       use BCs_mod
-      use myIO_mod ! remove once vetted
       use solverSettings_mod
       use applyBCs_mod
       use myError_mod
       use MG_tools_mod
       use delOps_mod
-#ifdef _EXPORT_MG_CONVERGENCE_
-      use myIO_mod
-#endif
+      use IO_tools_mod
+      use IO_scalarFields_mod
       use mySOR_mod
       implicit none
 
@@ -56,7 +54,7 @@
         type(myError) :: norms
         type(solverSettings) :: ss
         integer :: nLevels,gt
-        logical :: displayTF
+        logical :: displayTF,MG_init
       end type
 
       interface init;       module procedure initMultiGrid;    end interface
@@ -144,6 +142,7 @@
             N = (/(mg(j)%g%c(i)%sn,i=1,3)/)
           endif
           ! RIGHT NOW ONLY HANDLES ZERO DIRICHLET AND ZERO NEUAMNN
+          ! FACE-DATA IS NOT SUPPORTED
           if (allNeumann(mg(1)%u_bcs)) then
             if (s(1).eq.g_base%c(1)%sc) then
                 call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),5) ! Dirichlet wall coincident
@@ -158,6 +157,7 @@
             endif
           endif
         enddo
+        mg(1)%MG_init = .true.
 
         ! call testRP(mg,'out\')
         ! write(*,*) 'Initialized MG'
@@ -192,73 +192,25 @@
         integer,dimension(3) :: s
         nLevels = mg(1)%nLevels
         s = shape(mg(1)%f)
-        if (mg(1)%gt.eq.2) then
-          call writeToFile(mg(1)%g%c(1)%hn(2:s(1)-1),&
-                           mg(1)%g%c(2)%hn(2:s(2)-1),&
-                           mg(1)%g%c(3)%hn(2:s(3)-1),&
-                           mg(1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                           dir,'f_Grid1')
-        else
-          call writeToFile(mg(1)%g%c(1)%hc,&
-                           mg(1)%g%c(2)%hc,&
-                           mg(1)%g%c(3)%hc,&
-                           mg(1)%f,&
-                           dir,'f_Grid1')
-        endif
+        call writeScalarPhysical(mg(1)%g,mg(1)%f,dir,'f_Grid1')
         do i = 1,mg(1)%nLevels-1
           ! write(*,*) 'From ',shape(mg(i)%f), ' to ',shape(mg(i+1)%f)
           call restrict(mg(i+1)%f,mg(i)%f,mg(i)%g)
           s = shape(mg(i+1)%f)
-          if (mg(1)%gt.eq.2) then
-            call writeToFile(mg(i+1)%g%c(1)%hn(2:s(1)-1),&
-                             mg(i+1)%g%c(2)%hn(2:s(2)-1),&
-                             mg(i+1)%g%c(3)%hn(2:s(3)-1),&
-                             mg(i+1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                             dir,'f_Grid'//int2str(i+1))
-          else
-            call writeToFile(mg(i+1)%g%c(1)%hc,&
-                             mg(i+1)%g%c(2)%hc,&
-                             mg(i+1)%g%c(3)%hc,&
-                             mg(i+1)%f,&
-                             dir,'f_Grid'//int2str(i+1))
-          endif
+          call writeScalarPhysical(mg(i+1)%g,mg(i+1)%f,dir,'f_Grid'//int2str(i+1))
           write(*,*) 'Finished restricting multigrid level ',i
         enddo
         write(*,*) '         Finished restricting'
 
         mg(nLevels)%u = mg(nLevels)%f
         write(*,*) '         Assigned coarsest level'
-        if (mg(1)%gt.eq.2) then
-          call writeToFile(mg(nLevels)%g%c(1)%hn(2:s(1)-1),&
-                           mg(nLevels)%g%c(2)%hn(2:s(2)-1),&
-                           mg(nLevels)%g%c(3)%hn(2:s(3)-1),&
-                           mg(nLevels)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                           dir,'u_Grid'//int2str(nLevels))
-        else
-          call writeToFile(mg(nLevels)%g%c(1)%hc,&
-                           mg(nLevels)%g%c(2)%hc,&
-                           mg(nLevels)%g%c(3)%hc,&
-                           mg(nLevels)%f,&
-                           dir,'u_Grid'//int2str(nLevels))
-        endif
+        call writeScalarPhysical(mg(nLevels)%g,mg(nLevels)%f,dir,'u_Grid'//int2str(nLevels))
 
         do i = mg(1)%nLevels, 2,-1
           ! write(*,*) 'From ',shape(mg(i)%u), ' to ',shape(mg(i-1)%u)
           call prolongate(mg(i-1)%u,mg(i)%u,mg(i-1)%g)
           s = shape(mg(i-1)%u)
-          if (mg(1)%gt.eq.2) then
-            call writeToFile(mg(i-1)%g%c(1)%hn(2:s(1)-1),&
-                             mg(i-1)%g%c(2)%hn(2:s(2)-1),&
-                             mg(i-1)%g%c(3)%hn(2:s(3)-1),&
-                             mg(i-1)%f(2:s(1)-1,2:s(2)-1,2:s(3)-1),&
-                             dir,'u_Grid'//int2str(i-1))
-          else
-            call writeToFile(mg(i-1)%g%c(1)%hc,&
-                             mg(i-1)%g%c(2)%hc,&
-                             mg(i-1)%g%c(3)%hc,&
-                             mg(i-1)%f,&
-                             dir,'u_Grid'//int2str(i-1))
-          endif
+          call writeScalarPhysical(mg(i-1)%g,mg(i-1)%f,dir,'u_Grid'//int2str(i-1))
           write(*,*) 'Finished prolongating multigrid level ',i
         enddo
         write(*,*) '         Finished prolongating'
@@ -284,7 +236,6 @@
 
         ! write(*,*) '************** MG IS STARTING **************'
         nLevels = size(mg)
-        ! call init(mg,shape(u),u_bcs,g,ss,displayTF)
 
         mg(1)%f = f
         mg(1)%u = u

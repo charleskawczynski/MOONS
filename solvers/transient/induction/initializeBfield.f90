@@ -1,5 +1,6 @@
        module initializeBfield_mod
-       use myIO_mod
+       use IO_vectorFields_mod
+       use IO_vectorBase_mod
        use grid_mod
        implicit none
 
@@ -22,12 +23,12 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 3
-       !                                    0 : No applied field:      B0 = (0,0,0)
-       !                                    1 : Applied field: B0 = (B0x,0,0)
-       !                                    2 : Applied field: B0 = (0,B0y,0)
-       !                                    3 : Applied field: B0 = (0,0,B0z)
-       !                                    4 : Applied field: B0 = (B0x,B0y,B0z)
+       integer,parameter :: applied_B_dir = 4
+       !                                    0 : No applied field: B0 = (0,0,0)
+       !                                    1 :    Applied field: B0 = (B0x,0,0)
+       !                                    2 :    Applied field: B0 = (0,B0y,0)
+       !                                    3 :    Applied field: B0 = (0,0,B0z)
+       !                                    4 :    Applied field: B0 = (B0x,B0y,B0z)
 
 
 #ifdef _SINGLE_PRECISION_

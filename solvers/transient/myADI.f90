@@ -27,7 +27,7 @@
       use delOps_mod
       use myTriSolver_mod
 #ifdef _EXPORT_ADI_CONVERGENCE_
-      use myIO_mod
+      use IO_tools_mod
 #endif
       use myError_mod
       implicit none

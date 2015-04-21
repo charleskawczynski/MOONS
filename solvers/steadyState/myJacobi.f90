@@ -34,7 +34,7 @@
       use delOps_mod
       use solverSettings_mod
 #ifdef _EXPORT_Jacobi_CONVERGENCE_
-      use myIO_mod
+      use IO_tools_mod
 #endif
       implicit none
 
@@ -196,8 +196,7 @@
         do while (continueLoop.and.TF)
           ijk = ijk + 1
 #ifdef _PARALLELIZE_Jacobi_
-          !$OMP PARALLEL PRIVATE(r)
-          !$OMP DO
+          !$OMP DO PRIVATE(r)
 #endif
           do k=2,s(3)-1,2
             do j=2,s(2)-1
@@ -220,7 +219,10 @@
           enddo
 #ifdef _PARALLELIZE_Jacobi_
           !$OMP END DO
-          !$OMP DO
+#endif
+
+#ifdef _PARALLELIZE_Jacobi_
+          !$OMP DO PRIVATE(r)
 #endif
           do k=3,s(3)-1,2 ! 3 is correct (odd numbers)
             do j=2,s(2)-1
@@ -243,7 +245,6 @@
           enddo
 #ifdef _PARALLELIZE_Jacobi_
           !$OMP END DO
-          !$OMP END PARALLEL
 #endif
           u = Jacobi%uTemp
 

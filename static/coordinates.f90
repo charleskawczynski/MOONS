@@ -1,5 +1,5 @@
        module coordinates_mod
-       use myIO_mod
+       use IO_tools_mod
        implicit none
 
        private

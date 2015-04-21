@@ -30,10 +30,16 @@
        ! * = The poisson loop is the only routine affected by
        !     useOpenMP.
 
+       ! ************************ T-FIELD ***********************
+       logical :: solveEnergy = .false.
+       logical :: restartT = .false.
+       integer,parameter :: solveTMethod = 1
+       !                                   1 : Explicit Euler
+
        ! ************************ U-FIELD ***********************
-       logical :: solveMomentum = .true.
+       logical :: solveMomentum = .false.
        logical :: restartU = .false.
-       logical :: computeKU = .true.    ! Compute kinetic energy at each time step
+       logical :: computeKU = .false.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
        !                                   1 : Explicit Euler
        !                                   2 : Semi-Implicit 3D ADI (Douglas)
@@ -49,22 +55,22 @@
        !                                                      upwind       difference
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
+       logical :: solveInduction = .true.
        logical :: restartB = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
        logical :: computeKB = .true.    ! Compute magnetic energy at each time step
+       logical :: computeKB0 = .false.   ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 4
+       integer,parameter :: solveBMethod = 5
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
        !                                   4 : Low Rem Constrained Transport (CT) Method
-       !                                   5 : Constrained Transport (CT) Method
-       !                                   6 : Full Induction Equation, Not sure how this is supposed 
-       !                                       to be different from CT method if it is conservative..
+       !                                   5 : Finite Rem Constrained Transport (CT) Method
+       !                                   6 : Finite Rem (Pseudo time step for uniform properties)
        !                                   7 : Low Rem Semi-Implicit 3D ADI (Douglas) (good for highly insulating walls)
-       !                                   8 : Multigrid (Poisson, assumes uniform properties)
+       !                                   8 : Low Rem Multigrid (Poisson, assumes uniform properties)
 
        ! More difficult parameters to have pre-defined cases for:
        integer,parameter :: preDefinedGeometry = 0
@@ -96,7 +102,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 200
+       integer,parameter :: benchmarkCase = 1003
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -159,6 +165,8 @@
        !                B                                          Hartmann walls conducting, tw = 0.01, sig_l = sig_w, side walls insulating
        !    1003: Case 3, Plasma disruption, Refer to powerpoint
        ! 
+       !    1004: LDC by Salah - To produce Fig. 4, Fig. 5
+       ! 
        ! In order to make new benchmarkCases, prepare the following
        !    - MOONS.f90 (Number of steps, time step etc.)
        !    - griddata.f90 (geometry,stretching factors,N cells)
@@ -185,7 +193,8 @@
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
        integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
-       integer :: nskip_print                = 20     ! Printed data (cheap)
-       integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
+       integer :: nskip_print                = 10     ! Printed data (cheap)
+       ! integer :: nskip_print                = 200     ! Printed data (cheap)
+       ! integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
 
        end module

@@ -44,6 +44,11 @@
           real(cp),dimension(:,:,:),allocatable :: phi
         end type
 
+      interface allocateField
+        module procedure allocateField1
+        module procedure allocateField2
+      end interface
+
       interface delete
         module procedure deallocateField
       end interface
@@ -532,18 +537,30 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
-        subroutine allocateField(field,Nx,Ny,Nz)
+        subroutine allocateField1(field,Nx,Ny,Nz)
           implicit none
           type(scalarField),intent(inout) :: field
           integer,intent(in) :: Nx,Ny,Nz
+          if (allocated(field%phi)) deallocate(field%phi)
           allocate(field%phi(Nx,Ny,Nz))
           field%s = shape(field%phi)
+        end subroutine
+
+        subroutine allocateField2(field1,field2)
+          implicit none
+          type(scalarField),intent(inout) :: field1
+          type(scalarField),intent(in) :: field2
+          integer,dimension(3) :: s
+          s = shape(field2%phi)
+          if (allocated(field1%phi)) deallocate(field1%phi)
+          allocate(field1%phi(s(1),s(2),s(3)))
+          field1%s = shape(field1%phi)
         end subroutine
 
         subroutine deallocateField(field)
           implicit none
           type(scalarField),intent(inout) :: field
-          deallocate(field%phi)
+          if (allocated(field%phi)) deallocate(field%phi)
           field%s = 0
         end subroutine
 

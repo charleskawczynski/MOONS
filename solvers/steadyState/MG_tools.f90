@@ -117,7 +117,7 @@
           enddo
           ! stop 'Finished restricting'
 
-          ! Boundary values, normal to dir, remain the same:
+          ! Boundary values, along dir, remain the same:
           select case (dir)
           case (1); r(2,:,:) = u(2,:,:); r(sr(1)-1,:,:) = u(s(1)-1,:,:)
           case (2); r(:,2,:) = u(:,2,:); r(:,sr(2)-1,:) = u(:,s(2)-1,:)
@@ -126,7 +126,7 @@
 
           ! Linearly extrapolate to ghost points
           ! Is this necessary? Ghost nodes are ALWAYS defined in the smoother
-          ! so why define them here?
+          ! so why define them here? BUT this is a restriction operator.
           select case (dir)
           case (1); r(1,:,:) = real(2.0,cp)*r(2,:,:)-r(3,:,:)
           case (2); r(:,1,:) = real(2.0,cp)*r(:,2,:)-r(:,3,:)

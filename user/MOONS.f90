@@ -2,7 +2,10 @@
        use simParams_mod
        use constants_mod
        use myDebug_mod
-       use myIO_mod
+       use IO_tools_mod
+       use IO_scalarFields_mod
+       use IO_vectorFields_mod
+       use IO_auxiliary_mod
        use version_mod
        use myTime_mod
        use grid_mod
@@ -70,8 +73,8 @@
          ! **************************************************************
          type(momentum) :: mom
          type(induction) :: ind
+         ! type(energy) :: nrg
          type(grid) :: grid_mom,grid_ind
-         ! type(vectorOps) :: vecOps
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
 
@@ -102,7 +105,7 @@
 
          case (109); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
 
-         case (200); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
+         case (200); Re = 200d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
          case (201); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-4
          case (202); Re = 1000d0;   Ha = 500.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
 
@@ -116,9 +119,17 @@
          ! case (1001); Re = 100d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 5.0d-7; dTime = 4.0d-5 ! Ha = 100
          case (1001); Re = 100d0;   Ha = 1000.0d0  ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 9.0d-7 ! Ha = 1000
 
-         case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 5.0d-7
+         ! case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 5.0d-7
+         case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 8.0d-9; dTime = 2.0d-7
          ! case (1002); Re = 100d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-5
-         case (1003); Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 6.0d-6; dTime = ds
+         case (1003); Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-4; dTime = ds
+         case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-3; dTime = ds
+         ! Rem = 0.1d0; ds = 1.0d-5
+         Rem = 100.0d0; ds = 1.0d-4
+         ! Rem = 400.1d00; ds = 1.0d-3
+         ! Rem = 1000.0d0; ds = 1.0d-3
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -132,8 +143,7 @@
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
-         ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
-         case (102); NmaxPPE = 5; NmaxB = 3; NmaxMHD = 4000
+         case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
          case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
@@ -145,8 +155,8 @@
 
          case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
 
-         ! case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**6
-         case (200); NmaxPPE = 10; NmaxB = 0; NmaxMHD = 10**6
+         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4*10**5 ! Insul
+         ! case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 7500
          case (201); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 15000
          case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
 
@@ -158,15 +168,18 @@
 
          ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**5 ! A
          ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! B
-         case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! C
-         case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Insulating
-         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
+         case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Shercliff flow
+         case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Hunt flow
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**1 ! Mimicking PD
+
+         ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Salah
+         ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
+         case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
-
-         ! call getParams(benchmarkCase,Re,Ha,ds,dTime,NmaxB,NmaxPPE,NmaxB,NmaxMHD)
 
          write(*,*) 'MOONS output directory = ',dir
 
@@ -175,6 +188,7 @@
          call myPause()
          ! **************** BUILD NEW DIRECTORY *************************
          call makeDir(dir)
+         call makeDir(dir,'Tfield')
          call makeDir(dir,'Ufield')
          call makeDir(dir,'Bfield')
          call makeDir(dir,'Jfield')
@@ -213,8 +227,6 @@
            call exportRaw(ind,ind%g,dir)
          endif
 
-         ! call init(vecOps,gd)
-
          ! ****************** INITIALIZE RUNDATA ************************
          ! These all need to be re-evaluated because the Fo and Co now depend
          ! on the smallest spatial step (dhMin)
@@ -232,11 +244,8 @@
          call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
-         call debug(1)
          call computeDivergence(mom,mom%g)
-         call debug(2)
          call computeDivergence(ind,ind%g)
-         call debug(3)
 
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
@@ -247,8 +256,6 @@
            call export(ind,ind%g,dir)
          endif
 
-         ! call computeCurrent(jx,jy,jz,Bx,By,Bz,Bx0,By0,Bz0,mu,Re,Ha,gd)
-
          call checkGrid(gd)
 
          write(*,*) ''
@@ -257,34 +264,44 @@
 
          ! ********************** PREP LOOP ******************************
          ! This is done in both MOONS and MHDSolver, need to fix this..
-         if (restartU.or.restartB) then
-           call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
-         else; n_mhd = 0
-         endif
+         ! if (restartU.and.(.not.solveMomentum)) n_mhd = mom%nstep + ind%nstep
+         ! if (restartB.and.(.not.solveInduction)) n_mhd = mom%nstep + ind%nstep
+
+         ! n_mhd = maxval(/mom%nstep,ind%nstep/) ! What if U = fixed, and B is being solved?
+
+         n_mhd = 0 ! Only counts MHD loop, no data is plotted vs MHD step, only n_mom,n_ind,n_nrg
+
+         ! n_mhd = maxval(/mom%nstep,ind%nstep,nrg%nstep/)
+         ! if (restartU.or.restartB) then
+         !   call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
+         !   n_mhd = n_mhd + 1
+         ! else; n_mhd = 0
+         ! endif
+         ! n_mhd = 0
 
          call writeKillSwitchToFile(.true.,dir//'parameters/','killSwitch')
 
          ! ******************* SET MHD SOLVER SETTINGS *******************
          call init(ss_MHD)
 
-         call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
-         call setIteration(ss_MHD,n_mhd)
+         ! call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
+         ! call setIteration(ss_MHD,n_mhd)
 
-         if ((solveInduction).and.(.not.solveCoupled).and.(solveBMethod.eq.1).and.restartU) then
-           call setMaxIterations(ss_MHD,1)
-         endif
+         call setMaxIterations(ss_MHD,NmaxMHD)
+         call setIteration(ss_MHD,0)
+
+         ! if ((solveInduction).and.(.not.solveCoupled).and.(solveBMethod.eq.1).and.restartU) then
+         !   call setMaxIterations(ss_MHD,1)
+         ! endif
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 
-         ! if (calculateOmegaPsi) call calcOmegaPsi(u,v,w,gd,dir)
-
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
          call delete(ind)
          call delete(mom)
-         ! call delete(vecOps)
          call delete(gd)
 
          call computationComplete(time)

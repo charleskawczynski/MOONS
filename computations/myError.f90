@@ -51,7 +51,7 @@
        use constants_mod
        use myTime_mod
        use simParams_mod
-       use myIO_mod
+       use IO_tools_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_

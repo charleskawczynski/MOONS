@@ -56,6 +56,7 @@
       interface allocateVectorField
         module procedure allocateVectorField1
         module procedure allocateVectorField2
+        module procedure allocateVectorField3
       end interface
 
       interface delete
@@ -1515,6 +1516,17 @@
           call allocateX(field,Nx,Ny,Nz)
           call allocateY(field,Nx,Ny,Nz)
           call allocateZ(field,Nx,Ny,Nz)
+        end subroutine
+
+        subroutine allocateVectorField3(field1,field2)
+          implicit none
+          type(vectorField),intent(inout) :: field1
+          type(vectorField),intent(in) :: field2
+          integer,dimension(3) :: sx,sy,sz
+          sx = shape(field2%x); sy = shape(field2%y); sz = shape(field2%z)
+          call allocateX(field1,sx(1),sx(2),sx(3))
+          call allocateY(field1,sy(1),sy(2),sy(3))
+          call allocateZ(field1,sz(1),sz(2),sz(3))
         end subroutine
 
         subroutine allocateX(field,Nx,Ny,Nz)

@@ -4,6 +4,8 @@
 *.pdf
 *.out
 *.aux
+*.blg
+*.asv
 *.png
 *.eps
 *.gz

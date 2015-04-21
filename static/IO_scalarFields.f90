@@ -1,190 +1,130 @@
       module IO_scalarFields_mod
-      use constants_mod
+      use grid_mod
+      use IO_scalarBase_mod
       implicit none
 
-     ! Fixes / Improvements:
-     ! Make a buildDirectory routine:
-     ! http://homepages.wmich.edu/~korista/README-fortran.html
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
 
       private
+      public :: writeToFile,writeScalarPhysical
 
-      public :: writeToFile
-      public :: readFromFile
-      public :: writeTransientToFile
+      interface writeToFile;   module procedure write3DMeshToFileGrid;  end interface
+      interface writeToFile;   module procedure write3DFieldToFileGrid; end interface
 
-       ! This website is a good reference for formatting:
-       ! http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap05/format.html
-       ! leading digit + . + precision + E + exponent + signs + spaces between
-       !       1         1      12       1      3         2          3
-       ! rarrfmt is for reading (possible old formats)
-       !  arrfmt is for writing (current format)
-      character(len=8),parameter :: rarrfmt = 'E23.12E3'  ! Make sure length is correct when adjusting
-      character(len=8),parameter ::  arrfmt = 'E23.12E3'  ! Make sure length is correct when adjusting
-      character(len=3),parameter ::  intfmt = 'I10'       ! Make sure length is correct when adjusting
-      character(len=3),parameter ::  logfmt = 'L1'        ! Make sure length is correct when adjusting
-
-      logical,parameter :: headerTecplot = .true.
-
-      interface readFromFile;  module procedure read3DFieldFromFile;   end interface
-
-      interface writeToFile;   module procedure write0DFieldToFile;    end interface
-      interface writeToFile;   module procedure write1DFieldToFile;    end interface
-      interface writeToFile;   module procedure write2DFieldToFile;    end interface
-      interface writeToFile;   module procedure write3DFieldToFile;    end interface
-
-      interface writeToFile;   module procedure write3DMeshToFile;     end interface
-        
       contains
 
-      subroutine read3DFieldFromFile(x,y,z,arr,dir,name,headerTecplotTemp)
+      subroutine write3DFieldToFileGrid(g,f,dir,name)
+        implicit none
         character(len=*),intent(in) :: dir,name
-        logical,intent(in),optional :: headerTecplotTemp
-        real(dpn),dimension(:) :: x,y,z
-        real(dpn),dimension(:,:,:),intent(inout) :: arr
-        integer un,i,j,k,sx,sy,sz
-
-        sx = size(x); sy = size(y); sz = size(z)
-        un = openToRead(dir,name)
-
-        if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) then
-            read(un,*);read(un,*);read(un,*)
-          endif
-        else
-          if (headerTecplot) then
-            read(un,*);read(un,*);read(un,*)
-          endif
-        endif
-
-        do k = 1,sz
-          do j = 1,sy
-            do i = 1,sx
-              read(un,'(4'//rarrfmt//')') x(i),y(j),z(k),arr(i,j,k)
-            enddo
-          enddo
-        enddo
-        call closeExisting(un,name,dir)
-      end subroutine
-
-      subroutine write0DFieldToFile(arr,dir,name,headerTecplotTemp)
-        character(len=*),intent(in) :: dir,name
-        real(dpn),dimension(:),intent(in) :: arr
-        logical,intent(in),optional :: headerTecplotTemp
-        integer u,i,s
-        s = size(arr)
-        u = newAndOpen(dir,name)
-
-        if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name)
-        endif
-
-        do i = 1,s
-          write(u,'('//arrfmt//')') arr(i)
-        enddo
-        call closeAndMessage(u,name,dir)
-      end subroutine
-
-      subroutine write1DFieldToFile(x,arr,dir,name,headerTecplotTemp)
-        character(len=*),intent(in) :: dir,name
-        real(dpn),dimension(:),intent(in) :: x,arr
-        logical,intent(in),optional :: headerTecplotTemp
-        integer :: u,i,sx
-        sx = size(x)
-        u = newAndOpen(dir,name)
-
-        if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx)
-        endif
-
-        do i = 1,sx
-          write(u,'(2'//arrfmt//')') x(i),arr(i)
-        enddo
-        call closeAndMessage(u,name,dir)
-      end subroutine
-
-      subroutine write2DFieldToFile(x,y,arr,dir,name,headerTecplotTemp)
-        character(len=*),intent(in) :: dir,name
-        real(dpn),dimension(:),intent(in) :: x,y
-        real(dpn),dimension(:,:),intent(in) :: arr
-        logical,intent(in),optional :: headerTecplotTemp
-        integer u,i,j,sx,sy
-        sx = size(x); sy = size(y)
-        u = newAndOpen(dir,name)
-
-        if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy)
-        endif
-
-        do j = 1,sy
-          do i = 1,sx
-            write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
-          enddo
-        enddo
-        call closeAndMessage(u,name,dir)
-      end subroutine
-
-      subroutine write3DFieldToFile(x,y,z,arr,dir,name,headerTecplotTemp)
-        character(len=*),intent(in) :: dir,name
-        real(dpn),dimension(:),intent(in) :: x,y,z
-        real(dpn),dimension(:,:,:),intent(in) :: arr
-        logical,intent(in),optional :: headerTecplotTemp
-        integer u,i,j,k,sx,sy,sz
+        type(grid),intent(in) :: g
+        real(cp),dimension(:,:,:),intent(in) :: f
         integer,dimension(3) :: s
-        s = shape(arr)
-        sx = size(x); sy = size(y); sz = size(z)
-        u = newAndOpen(dir,name)
-        
-        if (s(1).ne.sx.or.s(2).ne.sy.or.s(3).ne.sz) then
-          write(*,*) 'Mismatch of sizes in ' // trim(adjustl(name)); stop
-        endif
+        integer :: i
+        s = shape(f)
+        if (all((/(s(i).eq.g%c(i)%sn, i=1,3)/))) then
 
-        if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
+        ! Node data
+        call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,f,dir,name)
+
+        elseif (all((/(s(i).eq.g%c(i)%sc, i=1,3)/))) then
+
+        ! CC data
+        call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,f,dir,name)
+
+        ! Face data
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sc/))) then
+        call writeToFile(g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,f,dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
+        call writeToFile(g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,f,dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
+        call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,f,dir,name)
+
+        ! Edge Data
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sn/))) then
+        call writeToFile(g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,f,dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
+        call writeToFile(g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,f,dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
+        call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,f,dir,name)
         else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+          stop 'Error: bad grid size compared to input field in IO_scalarFields.f90.'
         endif
-
-        do k = 1,sz
-          do j = 1,sy
-            do i = 1,sx
-              write(u,'(4'//arrfmt//')') x(i),y(j),z(k),arr(i,j,k)
-            enddo
-          enddo
-        enddo
-        call closeAndMessage(u,name,dir)
       end subroutine
 
-      subroutine write3DMeshToFile(x,y,z,val,dir,name,headerTecplotTemp)
+      subroutine writeScalarPhysical(g,f,dir,name)
+        implicit none
         character(len=*),intent(in) :: dir,name
-        real(dpn),dimension(:),intent(in) :: x,y,z
-        real(dpn),intent(in) :: val
-        logical,intent(in),optional :: headerTecplotTemp
-        integer u,i,j,k,sx,sy,sz
-        sx = size(x); sy = size(y); sz = size(z)
-        u = newAndOpen(dir,name)
+        type(grid),intent(in) :: g
+        real(cp),dimension(:,:,:),intent(in) :: f
+        integer,dimension(3) :: s
+        integer :: i
+        s = shape(f)
+        if (all((/(s(i).eq.g%c(1)%sn, i=1,3)/))) then
 
-        if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
+        ! Node data
+        call writeToFile(g%c(1)%hn(2:s(1)-1),&
+                         g%c(2)%hn(2:s(2)-1),&
+                         g%c(3)%hn(2:s(3)-1),&
+                         f(2:s(1)-1,2:s(2)-1,2:s(3)-1),dir,name)
+
+        elseif (all((/(s(i).eq.g%c(1)%sc, i=1,3)/))) then
+
+        ! CC data
+        call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,f,dir,name)
+
+        ! Face data
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sc/))) then
+        call writeToFile(g%c(1)%hn(2:s(1)-1),&
+                         g%c(2)%hc,&
+                         g%c(3)%hc,&
+                         f(2:s(1)-1,:,:),dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
+        call writeToFile(g%c(1)%hc,&
+                         g%c(2)%hn(2:s(2)-1),&
+                         g%c(3)%hc,&
+                         f(:,2:s(2)-1,:),dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
+        call writeToFile(g%c(1)%hc,&
+                         g%c(2)%hc,&
+                         g%c(3)%hn(2:s(3)-1),&
+                         f(:,:,2:s(3)-1),dir,name)
+
+        ! Edge Data
+        elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sn/))) then
+        call writeToFile(g%c(1)%hc,&
+                         g%c(2)%hn(2:s(2)-1),&
+                         g%c(3)%hn(2:s(3)-1),&
+                         f(:,2:s(2)-1,2:s(3)-1),dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
+        call writeToFile(g%c(1)%hn(2:s(1)-1),&
+                         g%c(2)%hc,&
+                         g%c(3)%hn(2:s(3)-1),&
+                         f(2:s(1)-1,:,2:s(3)-1),dir,name)
+        elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
+        call writeToFile(g%c(1)%hn(2:s(1)-1),&
+                         g%c(2)%hn(2:s(2)-1),&
+                         g%c(3)%hc,&
+                         f(2:s(1)-1,2:s(2)-1,:),dir,name)
         else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+          stop 'Error: bad grid size compared to input field in IO_scalarFields.f90.'
         endif
-
-        do k = 1,sz
-          do j = 1,sy
-            do i = 1,sx
-              write(u,'(4'//arrfmt//')') x(i),y(j),z(k),val
-            enddo
-          enddo
-        enddo
-        call closeAndMessage(u,name,dir)
       end subroutine
 
-
+      subroutine write3DMeshToFileGrid(g,val,dir,name)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        type(grid),intent(in) :: g
+        real(cp),intent(in) :: val
+        call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,val,dir,name)
+      end subroutine
 
       end module

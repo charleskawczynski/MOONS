@@ -1,0 +1,139 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{HDF5 - Setting up from scratch on Windows 7 with MinGW}
+Note that all paths in this document is written with a forward slash "/" instead of a backward slash "\textbackslash" because a backward slash has a special meaning in LaTeX. The paths may be taken from the .tex document exactly, which is contained in comments (not shown in the PDF).
+
+\section{Outline}
+Here is an outline of what needs to be done, in a short list form
+
+\section{Installing CMake}
+CMake must be installed from
+
+http://www.cmake.org/download/
+
+In the table titled "Platform". Download and run the executable. Currently, cmake-3.2.1-win32-x86.exe is the latest version.
+
+NOTE: The path may be too long to add, so chose "Do not add CMake to the system PATH"
+
+Now, the CMake GUI should be available from the start menu.
+
+\section{Installing HDF5}
+
+HDF5 must be installed from
+
+http://www.hdfgroup.org/HDF5/release/obtain5.html
+
+In the table titled "Platform". Download both the hdf5 installer and Utilities.
+
+Unzip the installer folder (hdf5-1.8.14) and run the executable inside.
+
+\section{Setting environment variables (if path was too long)}
+Navigate to 
+
+computer $\rightarrow$ properties $\rightarrow$ advanced system settings $\rightarrow$ Environment Variables
+
+And append to the PATH under "User variables for USERNAME"
+
+C:/Program Files/HDF\_Group/HDF5/1.8.14/cmake/hdf5
+
+And
+
+C:/Program Files (x86)/CMake/bin
+
+Also, set
+
+HDF5\_DIR = C:/Users/Charlie/Desktop/MOONS - hdf5
+
+\section{Building with CMake}
+
+Now that HDF5 is installed, navigate to the folder "C:/Program Files/HDF\_Group " and copy the files
+
+HDF5Examples-0.1.1-Source.zip
+
+and 
+
+HDF518\_Examples.CMAKE
+
+To a new project directory. Do not unzip the zipped file. Open a command prompt in this directory and type
+
+ctest -S HDF518\_Examples.cmake,HDF5Examples-0.1.1-Source -C Release -V -O test.log
+
+\section{Get CMake through HDF5 website}
+
+For some reason, using the command above doesn't seem to work well. Download the 
+
+hdf5-CMakeWindows.zip from the top of the table in the "Build Instructions" section of 
+
+http://www.hdfgroup.org/HDF5/release/cmakebuild.html
+
+Unzip this file to find a folder named CMake.
+
+Navigate to the CMake GUI
+
+- Where is the source code: CMake/hdf5-1.8.14 folder
+
+- Where to build the binaries: project folder containing HDF5Examples-0.1.1-Source.zip and HDF518\_Examples.CMAKE
+
+Also, often the directory for CMAKE\_INSTALL\_PREFIX is incorrect, and must be adjusted for windows 64-bit
+
+Press Configure. This should run smoothly through with only a couple warnings.
+
+Check: BUILD\_SHARED\_LIBS and HDF5\_BUILD\_FORTRAN
+
+Configure
+
+Configure
+
+Generate
+
+Open the project/fortran directory and run gmake. This will take a few minutes. Once complete, .mod files and .lib files will appear in the bin project/directory.
+
+
+\section{Additional notes}
+
+
+
+\end{document}

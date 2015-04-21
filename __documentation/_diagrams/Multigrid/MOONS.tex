@@ -1,0 +1,203 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{caption}
+\usetikzlibrary{graphs}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usetikzlibrary{plotmarks}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{graphs,graphs.standard,quotes}
+\usepackage{ifthen}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\tikzset{snake it/.style={decorate, decoration=snake}}
+
+\newcommand{\height}{0.4}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{12}
+\newcommand{\Deltah}{2}
+\newcommand{\dx}{1}
+\newcommand{\dxc}{\dx*2}
+\newcommand{\w}{1}
+
+\newcommand{\qq}{$\qquad \qquad \qquad \qquad \qquad$}
+\newcommand{\qe}{$\qquad$}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Restriction / Prolongation stencil}
+Restriction (R) and prolongation (P) of node (N) and cell center (CC) data are clear from how the grid undergoes R/P. Below is a figure showing how R/P are performed, pictorally. Note that the squares and squiggly lines represent the ghost cells and nodes respectively.\\
+
+\subsection{Number of cells are divisible by 2 (good case)}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+
+    % Horizontal line
+    \draw [black] (-\dx,0) to (10+\dx,0);
+
+    % Ghost data & boundary
+    \draw [snake it] (-\dx,-\height) -- ++(0,2*\height);
+    \draw plot [only marks, mark=square*] coordinates {(-\dx/2,0)};
+    \draw[line width=\w] (0,-\height)    -- ++(0,2*\height);
+
+    % interior data
+    \foreach \x in {0,1,...,8}{
+    \begin{scope}[xshift=\dx]
+          \draw (\x+\dx,-\height) -- ++(0,2*\height);
+          \draw (\x+\dx/2,0) circle [radius=\radius];
+    \end{scope}
+    }
+    \draw (9+\dx/2,0) circle [radius=\radius];
+
+    % Ghost data & boundary
+    \draw plot [only marks, mark=square*] coordinates {(10+\dx/2,0)};
+    \draw [snake it] (10+\dx,-\height) -- ++(0,2*\height);
+    \draw[line width=\w] (10,-\height) -- ++(0,2*\height);
+
+    \end{tikzpicture}
+    \caption*{Restriction \qq $\uparrow$ \qe \\ \qe $\downarrow$ \qq Prolongation}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+
+    % Horizontal line
+    \draw [black] (-\dxc,0) to (10+\dxc,0);
+
+    % Ghost data & boundary
+    \draw [snake it] (-\dxc,-\height) -- ++(0,2*\height);
+    \draw plot [only marks, mark=square*] coordinates {(-\dxc/2,0)};
+    \draw[line width=\w] (0,-\height)    -- ++(0,2*\height);
+
+    % interior data
+    \foreach \x in {0,2,...,7}{
+    \begin{scope}[xshift=\dxc]
+          \draw (\x+\dxc,-\height) -- ++(0,2*\height);
+          \draw (\x+\dxc/2,0) circle [radius=\radius];
+    \end{scope}
+    }
+    \draw (8+\dxc/2,0) circle [radius=\radius];
+
+    % Ghost data & boundary
+    \draw plot [only marks, mark=square*] coordinates {(10+\dxc/2,0)};
+    \draw [snake it] (10+\dxc,-\height) -- ++(0,2*\height);
+    \draw[line width=\w] (10,-\height) -- ++(0,2*\height);
+
+    \end{tikzpicture}
+    \caption*{}
+  \end{center}
+\end{figure}
+
+\subsection{Number of cells are NOT divisible by 2 (bad case)}
+These types of cases when the number of cells are not divisible by two is well documented in the literature. Several approaches to allow for restriction and prolongation include restricting the grid differently (or not at all) near the boundary, or finding a small prime number that the number of cells IS divisible by (e.g. 3, which could handle $3n$ cells where $n>1$ is an odd integer). 
+
+One example of R/P with an odd number of cells is discussed in this thesis
+
+https://www10.informatik.uni-erlangen.de/Publications/Theses/2007/Bergler\_DA\_07.pdf
+
+These operators have not yet been implemented in MOONS, but here is a figure stencil for when it may be.
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+
+    % Horizontal line
+    \draw [black] (-\dx,0) to (10+\dx,0);
+
+    % Ghost data & boundary
+    \draw [snake it] (-\dx,-\height) -- ++(0,2*\height);
+    \draw plot [only marks, mark=square*] coordinates {(-\dx/2,0)};
+    \draw[line width=\w] (0,-\height)    -- ++(0,2*\height);
+
+    % interior data
+    \foreach \x in {0,1,...,8}{
+    \begin{scope}[xshift=\dx]
+          \draw (\x+\dx,-\height) -- ++(0,2*\height);
+          \draw (\x+\dx/2,0) circle [radius=\radius];
+    \end{scope}
+    }
+    \draw (9+\dx/2,0) circle [radius=\radius];
+
+    % Ghost data & boundary
+    \draw plot [only marks, mark=square*] coordinates {(10+\dx/2,0)};
+    \draw [snake it] (10+\dx,-\height) -- ++(0,2*\height);
+    \draw[line width=\w] (10,-\height) -- ++(0,2*\height);
+
+    \end{tikzpicture}
+    \caption*{Restriction \qq $\uparrow$ \qe \\ \qe $\downarrow$ \qq Prolongation}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+
+    % Horizontal line
+    \draw [black] (-\dxc,0) to (10+\dxc,0);
+
+    % Ghost data & boundary
+    \draw [snake it] (-\dxc,-\height) -- ++(0,2*\height);
+    \draw plot [only marks, mark=square*] coordinates {(-\dxc/2,0)};
+    \draw[line width=\w] (0,-\height)    -- ++(0,2*\height);
+
+    % interior data
+    \foreach \x in {0,2,...,7}{
+    \begin{scope}[xshift=\dxc]
+          \draw (\x+\dxc,-\height) -- ++(0,2*\height);
+          \draw (\x+\dxc/2,0) circle [radius=\radius];
+    \end{scope}
+    }
+    \draw (8+\dxc/2,0) circle [radius=\radius];
+
+    % Ghost data & boundary
+    \draw plot [only marks, mark=square*] coordinates {(10+\dxc/2,0)};
+    \draw [snake it] (10+\dxc,-\height) -- ++(0,2*\height);
+    \draw[line width=\w] (10,-\height) -- ++(0,2*\height);
+
+    \end{tikzpicture}
+    \caption*{}
+  \end{center}
+\end{figure}
+
+
+\end{document}
