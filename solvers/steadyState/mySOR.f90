@@ -25,7 +25,8 @@
       use BCs_mod
       use applyBCs_mod
       use myError_mod
-      use delOps_mod
+      use ops_discrete_mod
+      use ops_aux_mod
 
       use solverSettings_mod
 #ifdef _EXPORT_SOR_CONVERGENCE_

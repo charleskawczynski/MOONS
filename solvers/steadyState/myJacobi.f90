@@ -31,7 +31,8 @@
       use BCs_mod
       use applyBCs_mod
       use myError_mod
-      use delOps_mod
+      use ops_discrete_mod
+      use ops_aux_mod
       use solverSettings_mod
 #ifdef _EXPORT_Jacobi_CONVERGENCE_
       use IO_tools_mod

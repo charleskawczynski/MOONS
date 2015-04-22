@@ -10,7 +10,6 @@
        use griddata_mod
        use rundata_mod
        use myError_mod
-       use delOps_mod
        use scalarField_mod
        use vectorField_mod
 

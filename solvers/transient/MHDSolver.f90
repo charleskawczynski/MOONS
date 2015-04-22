@@ -9,8 +9,9 @@
        use rundata_mod
        use myError_mod
        use probe_transient_mod
-       use delOps_mod
-       use vectorOps_mod
+       use ops_discrete_mod
+       use ops_physics_mod
+       use ops_aux_mod
 
        use solverSettings_mod
        use BCs_mod
@@ -96,6 +97,7 @@
              call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
              call solve(ind,ind%U_cct,ind%g,ss_MHD)
              if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
+              ! call totalEnergy(K_energy,ind%U_cct,ind%g) ! Sergey uses interior...
               call totalEnergy(K_energy,&
                 ind%U_cct%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
                 ind%U_cct%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
@@ -120,7 +122,7 @@
              else; call assign(mom%F,zero)
              endif
              if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-              ! call totalEnergy(K_energy,ind%B%x,ind%B%y,ind%B%z,ind%g) ! Sergey uses interior
+              ! call totalEnergy(K_energy,ind%B,ind%g) ! Sergey uses interior...
               call totalEnergy(K_energy,&
                 ind%B%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
                 ind%B%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
@@ -130,7 +132,7 @@
               call apply(KB_energy)
              endif
              if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-              ! call totalEnergy(K_energy,ind%B0%x,ind%B0%y,ind%B0%z,ind%g) ! Sergey uses interior
+              ! call totalEnergy(K_energy,ind%B0,ind%g) ! Sergey uses interior...
               call totalEnergy(K_energy,&
                 ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
                 ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
@@ -155,16 +157,10 @@
            ! ********************************** DISPLAY OUTPUT ****************************
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
-             call printPhysicalMinMax(mom%U%x,mom%U%sx,'u')
-             call printPhysicalMinMax(mom%U%y,mom%U%sy,'v')
-             call printPhysicalMinMax(mom%U%z,mom%U%sz,'w')
+             call printPhysicalMinMax(mom%U,'u','v','w')
              if (solveInduction) then
-               call printPhysicalMinMax(ind%B%x,ind%B%sx,'Bx')
-               call printPhysicalMinMax(ind%B%y,ind%B%sy,'By')
-               call printPhysicalMinMax(ind%B%z,ind%B%sz,'Bz')
-               call printPhysicalMinMax(ind%B0%x,ind%B0%sx,'B0x')
-               call printPhysicalMinMax(ind%B0%y,ind%B0%sy,'B0y')
-               call printPhysicalMinMax(ind%B0%z,ind%B0%sz,'B0z')
+               call printPhysicalMinMax(ind%B,'Bx','By','Bz')
+               call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
              endif
              write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)

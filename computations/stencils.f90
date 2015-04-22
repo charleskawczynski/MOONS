@@ -151,42 +151,41 @@
         enddo
       end function
 
-      function collocatedD2fDh2_conservative2(f,k,dhp,dhd,hp,hd,s,gt) result(dfdh)
-        ! This routine computes the 2nd derivative of f on the primary
-        ! grid. The result lives on the primary grid. gt indicates 
-        ! whether f lives on the cell center or node of the grid.
-        ! 
-        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
-        ! 
-        ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
-        ! 
-        ! NOTE: This routine assumes that shape(k) = shape(f)
-        ! 
-        implicit none
-        real(cp),dimension(s) :: dfdh
-        real(cp),intent(in),dimension(:) :: f,k
-        real(cp),intent(in),dimension(:) :: dhp,dhd,hp,hd
-        integer,intent(in) :: s,gt
-        real(cp),dimension(s-1+2*gt) :: temp
-        temp = staggered(f,dhp,s,gt)
-        temp(1+gt:s-1+2*gt) = temp(1+gt:s-1+2*gt)*interp(k,hp,hd,gt,s-1+2*gt)
-        if (gt.eq.0) dfdh = staggered(temp,dhd,size(temp),1)
-        if (gt.eq.1) dfdh = staggered(temp,dhd,size(temp),0)
-      end function
-
-      function interp(kp,hp,hd,gt,s) result(kd)
-        implicit none
-        real(cp),dimension(:),intent(in) :: kp,hp,hd
-        integer,intent(in) :: s,gt
-        real(cp),dimension(s-1+2*gt) :: kd
-        integer :: i
-        real(cp) :: alpha
-        do i=1,size(kp)-1
-          alpha = (hp(i+1) - hd(i+gt))/(hp(i+1) - hp(i))
-          kd(i+gt) = kp(i)*alpha + kp(i+1)*(real(1.0,cp)-alpha)
-        enddo
-      end function
+      ! function collocatedD2fDh2_conservative2(f,k,dhp,dhd,hp,hd,s,gt) result(dfdh)
+      !   ! This routine computes the 2nd derivative of f on the primary
+      !   ! grid. The result lives on the primary grid. gt indicates 
+      !   ! whether f lives on the cell center or node of the grid.
+      !   ! 
+      !   ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+      !   !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
+      !   ! 
+      !   ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
+      !   ! 
+      !   ! NOTE: This routine assumes that shape(k) = shape(f)
+      !   ! 
+      !   implicit none
+      !   real(cp),dimension(s) :: dfdh
+      !   real(cp),intent(in),dimension(:) :: f,k
+      !   real(cp),intent(in),dimension(:) :: dhp,dhd,hp,hd
+      !   integer,intent(in) :: s,gt
+      !   real(cp),dimension(s-1+2*gt) :: temp
+      !   temp = staggered(f,dhp,s,gt)
+      !   temp(1+gt:s-1+2*gt) = temp(1+gt:s-1+2*gt)*interp(k,hp,hd,gt,s-1+2*gt)
+      !   if (gt.eq.0) dfdh = staggered(temp,dhd,size(temp),1)
+      !   if (gt.eq.1) dfdh = staggered(temp,dhd,size(temp),0)
+      ! end function
+      ! function interp(kp,hp,hd,gt,s) result(kd)
+      !   implicit none
+      !   real(cp),dimension(:),intent(in) :: kp,hp,hd
+      !   integer,intent(in) :: s,gt
+      !   real(cp),dimension(s-1+2*gt) :: kd
+      !   integer :: i
+      !   real(cp) :: alpha
+      !   do i=1,size(kp)-1
+      !     alpha = (hp(i+1) - hd(i+gt))/(hp(i+1) - hp(i))
+      !     kd(i+gt) = kp(i)*alpha + kp(i+1)*(real(1.0,cp)-alpha)
+      !   enddo
+      ! end function
 
 
       end module

@@ -32,15 +32,7 @@
        use vectorField_mod
        implicit none
 
-       ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
-
-       ! integer,parameter :: ghost = 1
-
-       ! ghost describes the relationship between CC and N data.
-       ! 
-       !  ghost = -1       |--o--|--o--|--o--|--o--|
-       !  ghost =  1    o--|--o--|--o--|--o--|--o--|--o
-       ! 
+       ! Compiler flags: ( fopenmp )
 
        private
 
@@ -107,7 +99,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2(f,g,gd,dir) ! Seems to be working.
+       subroutine interpO2(f,g,gd,dir)
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
@@ -182,7 +174,7 @@
          endif
        end subroutine
 
-       subroutine extrapO2(f,g,dir) ! Seems to be working.
+       subroutine extrapO2(f,g,dir)
          ! extrapO2 extrapolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for 
          ! non-uniform grids. f lives on the dual grid. 
@@ -248,7 +240,7 @@
        ! ********************************* FACE INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine myFace2CellCenterSF(cellCenter,face,g,faceDir) ! Needs checking
+       subroutine myFace2CellCenterSF(cellCenter,face,g,faceDir)
          ! 1 interpolation routine (no allocation required)
          implicit none
          real(cp),dimension(:,:,:),intent(in)    :: face        ! size = (Nn+1,Nt+2)
@@ -258,7 +250,7 @@
          call interp(cellCenter,face,g,faceDir)
        end subroutine
 
-       subroutine myFace2Edge(edge,face,g,faceDir,edgeDir) ! Seems to be working
+       subroutine myFace2Edge(edge,face,g,faceDir,edgeDir)
          ! Case dependent multiple-interpolation routine (requires 1 or 3 interpolations)
          ! 
          ! This routine moves 
@@ -292,7 +284,7 @@
          endif
        end subroutine
 
-       subroutine myFaceAverage(faceAve,face,g,faceDir,aveLoc) ! Finished
+       subroutine myFaceAverage(faceAve,face,g,faceDir,aveLoc)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: face
          real(cp),dimension(:,:,:),intent(inout) :: faceAve
@@ -315,7 +307,7 @@
          deallocate(cellCenter)
        end subroutine
 
-       subroutine myFace2NodeSF(node,face,g,faceDir) ! Finished?
+       subroutine myFace2NodeSF(node,face,g,faceDir)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: face
          real(cp),dimension(:,:,:),intent(inout) :: node
@@ -350,7 +342,7 @@
        ! *********************************** CC INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine myCellCenter2FaceSF(face,cellCenter,g,faceDir) ! Needs checking
+       subroutine myCellCenter2FaceSF(face,cellCenter,g,faceDir)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
          real(cp),dimension(:,:,:),intent(inout) :: face
@@ -360,7 +352,7 @@
          call extrap(face,cellCenter,faceDir)
        end subroutine
 
-       subroutine myCellCenter2NodeSF(node,cellCenter,g) ! Finished
+       subroutine myCellCenter2NodeSF(node,cellCenter,g)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
          real(cp),dimension(:,:,:),intent(inout) :: node
@@ -378,7 +370,7 @@
          deallocate(edge)
        end subroutine
 
-       subroutine myCellCenter2EdgeSF(edge,cellCenter,g,edgeDir) ! Needs checking
+       subroutine myCellCenter2EdgeSF(edge,cellCenter,g,edgeDir)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
          real(cp),dimension(:,:,:),intent(inout) :: edge
@@ -404,21 +396,20 @@
          deallocate(faceTemp)
        end subroutine
 
-
        ! ****************************************************************************************
        ! ********************************* NODE INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine myNode2EdgeSF(edge,node,g,edgeDir) ! Needs checking
+       subroutine myNode2EdgeSF(edge,node,g,edgeDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: node       ! size = Nn+1,Nt+1
-         real(cp),dimension(:,:,:),intent(inout) :: edge    ! size = Nn+2,Nt+1
+         real(cp),dimension(:,:,:),intent(in) :: node
+         real(cp),dimension(:,:,:),intent(inout) :: edge
          type(grid),intent(in) :: g
          integer,intent(in) :: edgeDir
          call interp(edge,node,g,edgeDir)
        end subroutine
 
-       subroutine myNode2FaceSF(face,node,g,faceDir) ! Finished
+       subroutine myNode2FaceSF(face,node,g,faceDir)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: face
          real(cp),dimension(:,:,:),intent(in) :: node
@@ -452,10 +443,10 @@
        ! ********************************* EDGE INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine myEdge2Face(face,edge,g,edgeDir,faceDir) ! Needs checking
+       subroutine myEdge2Face(face,edge,g,edgeDir,faceDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: edge    ! size = Ne+2,N+1
-         real(cp),dimension(:,:,:),intent(inout) :: face ! size = Nf+1,Nt+2
+         real(cp),dimension(:,:,:),intent(in) :: edge
+         real(cp),dimension(:,:,:),intent(inout) :: face
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir,edgeDir
          integer :: orthDir
@@ -463,16 +454,15 @@
          call interp(face,edge,g,orthDir)
        end subroutine
 
-       subroutine myEdge2NodeSF(node,edge,g,edgeDir) ! Needs checking
+       subroutine myEdge2NodeSF(node,edge,g,edgeDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: node ! size = Nf+1,Nt+2
-         real(cp),dimension(:,:,:),intent(in) :: edge    ! size = Ne+2,N+1
+         real(cp),dimension(:,:,:),intent(inout) :: node
+         real(cp),dimension(:,:,:),intent(in) :: edge
          type(grid),intent(in) :: g
          integer,intent(in) :: edgeDir
          call interp(node,edge,g,edgeDir)
          call extrap(node,edge,edgeDir)
        end subroutine
-
 
        ! ****************************************************************************************
        ! ****************************************************************************************
@@ -505,7 +495,6 @@
          call myFace2Node(node%z,face%z,g,3)
        end subroutine
 
-
        ! ****************************************************************************************
        ! *********************************** CC INTERPOLATIONS **********************************
        ! ****************************************************************************************
@@ -520,7 +509,7 @@
          call myCellCenter2Face(face%z,cellCenter%z,g,3)
        end subroutine
 
-       subroutine myCellCenter2NodeVF(node,cellCenter,g) ! Finished
+       subroutine myCellCenter2NodeVF(node,cellCenter,g)
          implicit none
          type(vectorField),intent(inout) :: node
          type(vectorField),intent(in) :: cellCenter
@@ -530,7 +519,7 @@
          call myCellCenter2Node(node%z,cellCenter%z,g)
        end subroutine
 
-       subroutine myCellCenter2EdgeVF(edge,cellCenter,g) ! Needs checking
+       subroutine myCellCenter2EdgeVF(edge,cellCenter,g)
          implicit none
          type(vectorField),intent(inout) :: edge
          type(vectorField),intent(in) :: cellCenter
@@ -554,7 +543,7 @@
          call myNode2Edge(edge%z,node%z,g,3)
        end subroutine
 
-       subroutine myNode2FaceVF(face,node,g) ! Finished
+       subroutine myNode2FaceVF(face,node,g)
          implicit none
          type(vectorField),intent(inout) :: face
          type(vectorField),intent(in) :: node
@@ -564,22 +553,19 @@
          call myNode2Face(face%z,node%z,g,3)
        end subroutine
 
-
        ! ****************************************************************************************
        ! ********************************* EDGE INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine myEdge2NodeVF(node,edge,g) ! Needs checking
+       subroutine myEdge2NodeVF(node,edge,g)
          implicit none
-         type(vectorField),intent(inout) :: node ! size = Nf+1,Nt+2
-         type(vectorField),intent(in) :: edge    ! size = Ne+2,N+1
+         type(vectorField),intent(inout) :: node
+         type(vectorField),intent(in) :: edge
          type(grid),intent(in) :: g
          call myEdge2Node(node%x,edge%x,g,1)
          call myEdge2Node(node%y,edge%y,g,2)
          call myEdge2Node(node%z,edge%z,g,3)
        end subroutine
-
-
 
        ! ****************************************************************************************
        ! ****************************************************************************************
@@ -616,11 +602,6 @@
            case default
              stop 'Error: bad input to orthogonalDirection'
          end select
-#ifdef _DEBUG_INTERP_
-         if (dir1.eq.dir2) then
-           stop 'Error: There are no orthogonal directions';
-         endif
-#endif
        end function
 
        end module

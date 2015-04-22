@@ -16,8 +16,9 @@
        use myError_mod
        use interpOps_mod
        use del_mod
-       use delOps_mod
-       use vectorOps_mod
+       use ops_discrete_mod
+       use ops_physics_mod
+       use ops_aux_mod
 
        use BCs_mod
        use applyBCs_mod
@@ -284,18 +285,9 @@
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
-         case (1)
-           call myFaceAdvectDonor(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,g,1)
-           call myFaceAdvectDonor(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,g,2)
-           call myFaceAdvectDonor(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
-         case (2)
-           call myFaceAdvect(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,g,1)
-           call myFaceAdvect(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,g,2)
-           call myFaceAdvect(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
-         case (3)
-           call myFaceAdvectHybrid(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,g,1)
-           call myFaceAdvectHybrid(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,g,2)
-           call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
+         case (1); call  faceAdvectDonor(mom%TempVF,mom%U,mom%U,g)
+         case (2); call       faceAdvect(mom%TempVF,mom%U,mom%U,g)
+         case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
          end select
 
          ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
@@ -303,12 +295,6 @@
          call assign(mom%Ustar,mom%TempVF)
 
          ! Laplacian Terms -----------------------------------------
-         ! call myFaceLap(mom%TempVF,U,g)
-
-         ! call myFaceLap(mom%TempVF%x,mom%U%x,g)
-         ! call myFaceLap(mom%TempVF%y,mom%U%y,g)
-         ! call myFaceLap(mom%TempVF%z,mom%U%z,g)
-
          call lap(mom%TempVF,mom%U,g)
          call zeroWallCoincidentBoundariesVF(mom%TempVF,g)
 
@@ -317,8 +303,6 @@
          call add(mom%Ustar,mom%TempVF)
 
          ! Source Terms (e.g. N j x B) -----------------------------
-         ! mom%Ustar = mom%Ustar + real(1.0,cp)*mom%F
-         call multiply(mom%F,real(1.0,cp))
          call add(mom%Ustar,mom%F)
 
          ! For Residual computation
@@ -337,7 +321,7 @@
 
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
-           call div(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
+           call div(mom%Temp%phi,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
            call zeroGhostPoints(mom%Temp%phi)
@@ -349,7 +333,7 @@
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
-           call grad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
+           call grad(mom%TempVF,mom%p%phi,g)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
@@ -405,18 +389,9 @@
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
-         case (1)
-           call myFaceAdvectDonor(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,g,1)
-           call myFaceAdvectDonor(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,g,2)
-           call myFaceAdvectDonor(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
-         case (2)
-           call myFaceAdvect(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,g,1)
-           call myFaceAdvect(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,g,2)
-           call myFaceAdvect(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
-         case (3)
-           call myFaceAdvectHybrid(mom%TempVF%x,mom%U%x,mom%U%y,mom%U%z,mom%U%x,g,1)
-           call myFaceAdvectHybrid(mom%TempVF%y,mom%U%x,mom%U%y,mom%U%z,mom%U%y,g,2)
-           call myFaceAdvectHybrid(mom%TempVF%z,mom%U%x,mom%U%y,mom%U%z,mom%U%z,g,3)
+         case (1); call  faceAdvectDonor(mom%TempVF,mom%U,mom%U,g)
+         case (2); call       faceAdvect(mom%TempVF,mom%U,mom%U,g)
+         case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
          end select
 
          ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
@@ -635,6 +610,5 @@
           stop 'Error: no correct shape in momentumSolver.f90 in zeroForcingOnNoFlowThroughBoundaries'
          endif
        end subroutine
-
 
        end module

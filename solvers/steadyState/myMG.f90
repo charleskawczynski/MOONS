@@ -20,7 +20,8 @@
       use applyBCs_mod
       use myError_mod
       use MG_tools_mod
-      use delOps_mod
+      use ops_discrete_mod
+      use ops_aux_mod
       use IO_tools_mod
       use IO_scalarFields_mod
       use mySOR_mod

@@ -24,7 +24,8 @@
       use del_mod
       use scalarField_mod
       use solverSettings_mod
-      use delOps_mod
+      use ops_discrete_mod
+      use ops_aux_mod
       use myTriSolver_mod
 #ifdef _EXPORT_ADI_CONVERGENCE_
       use IO_tools_mod

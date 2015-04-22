@@ -16,8 +16,8 @@
        use myError_mod
        use interpOps_mod
        use del_mod
-       use delOps_mod
-       use vectorOps_mod
+       use ops_discrete_mod
+       use ops_physics_mod
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
@@ -441,16 +441,15 @@
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
 
-         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-         call myPoisson(ind%SOR_B,ind%B%x,ind%temp%phi,ind%Bx_bcs,g,ind%ss_ind,&
+         call CCBfieldAdvect(ind%tempVF,U,ind%B0,g)
+
+         call myPoisson(ind%SOR_B,ind%B%x,ind%tempVF%x,ind%Bx_bcs,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-         call myPoisson(ind%SOR_B,ind%B%y,ind%temp%phi,ind%By_bcs,g,ind%ss_ind,&
+         call myPoisson(ind%SOR_B,ind%B%y,ind%tempVF%y,ind%By_bcs,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-         call myPoisson(ind%SOR_B,ind%B%z,ind%temp%phi,ind%Bz_bcs,g,ind%ss_ind,&
+         call myPoisson(ind%SOR_B,ind%B%z,ind%tempVF%z,ind%Bz_bcs,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
        end subroutine
 
@@ -472,20 +471,14 @@
          do i=1,ind%NmaxB
            call assign(ind%Bstar,zero)
            ! ------------- diffusion term -------------
-           call lap(ind%temp%phi,ind%B%x,g)
-           ind%Bstar%x = ind%Bstar%x + ind%dTime*ind%temp%phi
-           call lap(ind%temp%phi,ind%B%y,g)
-           ind%Bstar%y = ind%Bstar%y + ind%dTime*ind%temp%phi
-           call lap(ind%temp%phi,ind%B%z,g)
-           ind%Bstar%z = ind%Bstar%z + ind%dTime*ind%temp%phi
+           call lap(ind%tempVF,ind%B,g)
+           call multiply(ind%tempVF,ind%dTime)
+           call add(ind%Bstar,ind%tempVF)
            
            ! ------------- source term -------------
-           call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-           ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
-           call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-           ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
-           call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-           ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
+           call CCBfieldAdvect(ind%tempVF,U,ind%B0,g)
+           call multiply(ind%tempVF,ind%dTime)
+           call subtract(ind%Bstar,ind%tempVF)
 
            ! Add induced field of previous time step (B^n)
            call multiply(ind%B,ind%mu)
@@ -499,36 +492,30 @@
        end subroutine
 
        subroutine lowRemPseudoTimeStep(ind,U,g)
-         ! Needs to be fixed (j is not computed correctly)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         ! ********************** LOCAL VARIABLES ***********************
          integer :: i
 
          do i=1,ind%NmaxB
-          call assign(ind%Bstar,zero)
-          call divide(ind%B,ind%mu)
+           call assign(ind%Bstar,zero)
+
            ! ------------- diffusion term -------------
-           call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,1)
-           ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
-           call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,2)
-           ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
-           call myCCBfieldDiffuse(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,ind%sigmaInv%phi,g,3)
-           ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
+           call divide(ind%B,ind%mu)
+           call CCBfieldDiffuse(ind%tempVF,ind%B,ind%sigmaInv%phi,g)
+           call multiply(ind%B,ind%mu)
+
+           call multiply(ind%tempVF,ind%dTime)
+           call subtract(ind%Bstar,ind%tempVF)
            
            ! ------------- source term -------------
-           call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-           ind%Bstar%x = ind%Bstar%x - ind%dTime*ind%temp%phi
-           call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-           ind%Bstar%y = ind%Bstar%y - ind%dTime*ind%temp%phi
-           call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-           ind%Bstar%z = ind%Bstar%z - ind%dTime*ind%temp%phi
+           call CCBfieldAdvect(ind%tempVF,U,ind%B0,g)
+           call multiply(ind%tempVF,ind%dTime)
+           call subtract(ind%Bstar,ind%tempVF)
 
            ! Add induced field of previous time step (B^n)
-           call multiply(ind%B,ind%mu)
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
@@ -558,9 +545,10 @@
          do i=1,ind%NmaxB
 
            ! Compute current from appropriate fluxes:
-           call CC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
-           call CC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
-           call CC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
+
+           ! J = curl(B_face)_edge
+           call myCellCenter2Face(ind%F,ind%B,g)
+           call curl(ind%J,ind%F,g)
 
            ! Compute fluxes of u cross B0
            call cross(ind%tempVF,U,ind%B0)
@@ -572,12 +560,10 @@
            call subtract(zero,ind%E)
            call add(ind%E,ind%J)
 
-           ! F = Curl(E)
-           call curl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
-           call curl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
-           call curl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
-           ! tempVF = interp(F)_face->cc
+           ! F = curl(E_edge)_face
+           call curl(ind%F,ind%E,g)
 
+           ! tempVF = interp(F)_face->cc
            call myFace2CellCenter(ind%tempVF,ind%F,g)
 
            ! Add induced field of previous time step (B^n)
@@ -590,7 +576,6 @@
            call applyAllBCs(ind%By_bcs,ind%B%y,g)
            call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
          enddo
-           ! stop 'printed B'
        end subroutine
 
        subroutine finiteRemCTmethod(ind,U,g)
@@ -609,10 +594,10 @@
          type(grid),intent(in) :: g
 
          ! Compute current from appropriate fluxes:
-         ! Curl(B0) = 0 (so B is not added to this)
-         call CC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
-         call CC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
-         call CC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
+         ! Assumes curl(B0) = 0 (so B is not added to this)
+         ! J = curl(B_face)_edge
+         call myCellCenter2Face(ind%F,ind%B,g)
+         call curl(ind%J,ind%F,g)
 
          ! Compute fluxes of u cross (B-B0)
          call add(ind%B,ind%B0)
@@ -628,10 +613,8 @@
          call subtract(zero,ind%E)
          call add(ind%E,ind%J)
 
-         ! F = Curl(E)
-         call curl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
-         call curl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
-         call curl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
+         ! F = Curl(E_edge)_face
+         call curl(ind%F,ind%E,g)
 
          ! tempVF = interp(F)_face->cc
          call myFace2CellCenter(ind%tempVF,ind%F,g)
@@ -669,10 +652,9 @@
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
 
-         ! Compute current from appropriate fluxes:
-         call CC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
-         call CC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
-         call CC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
+         ! J = curl(B_face)_edge
+         call myCellCenter2Face(ind%F,ind%B,g)
+         call curl(ind%J,ind%F,g)
 
          ! Compute fluxes of u cross B0
          call cross(ind%tempVF,U,ind%B0)
@@ -685,16 +667,14 @@
          call add(ind%E,ind%J)
 
          ! F = Curl(E)
-         call curl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
-         call curl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
-         call curl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
+         call curl(ind%F,ind%E,g)
+
          ! tempVF = interp(F)_face->cc
          call myFace2CellCenter(ind%tempVF,ind%F,g)
 
          ! Subtract laplacian from B^n
-         call lap(ind%Bstar%x,ind%B%x,ind%sigmaInv%phi,g)
-         call lap(ind%Bstar%y,ind%B%y,ind%sigmaInv%phi,g)
-         call lap(ind%Bstar%z,ind%B%z,ind%sigmaInv%phi,g)
+         call lap(ind%Bstar,ind%B,ind%sigmaInv%phi,g)
+
          ! ind%tempVF = ind%tempVF - ind%Bstar
          call subtract(ind%tempVF,ind%Bstar)
 
@@ -728,16 +708,15 @@
          type(solverSettings),intent(inout) :: ss_MHD
          type(multiGrid),dimension(2) :: MG
 
-         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,1)
-         call myPoisson(MG,ind%B%x,ind%temp%phi,ind%Bx_bcs,g,ind%ss_ind,&
+         call CCBfieldAdvect(ind%tempVF,U,ind%B0,g)
+
+         call myPoisson(MG,ind%B%x,ind%tempVF%x,ind%Bx_bcs,g,ind%ss_ind,&
          ind%err_residual,.false.)
 
-         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,2)
-         call myPoisson(MG,ind%B%y,ind%temp%phi,ind%By_bcs,g,ind%ss_ind,&
+         call myPoisson(MG,ind%B%y,ind%tempVF%y,ind%By_bcs,g,ind%ss_ind,&
          ind%err_residual,.false.)
 
-         call myCCBfieldAdvect(ind%temp%phi,U%x,U%y,U%z,ind%B0%x,ind%B0%y,ind%B0%z,g,3)
-         call myPoisson(MG,ind%B%z,ind%temp%phi,ind%Bz_bcs,g,ind%ss_ind,&
+         call myPoisson(MG,ind%B%z,ind%tempVF%z,ind%Bz_bcs,g,ind%ss_ind,&
          ind%err_residual,.false.)
        end subroutine
 
@@ -748,21 +727,18 @@
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
-         type(del) :: d
-         call div(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
+         call div(ind%temp%phi,ind%B,g)
+
          call myPoisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
           ind%err_CleanB,getExportErrors(ss_MHD))
 
-         call d%assign(ind%Bstar%x,ind%phi%phi,g,1,1,0)
-         call d%assign(ind%Bstar%y,ind%phi%phi,g,1,2,0)
-         call d%assign(ind%Bstar%z,ind%phi%phi,g,1,3,0)
+         call grad(ind%Bstar,ind%phi%phi,g)
          call subtract(ind%B,ind%Bstar)
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
          call applyAllBCs(ind%By_bcs,ind%B%y,g)
          call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
-         call stopTime(ind%time_CP,ind%ss_cleanB)
        end subroutine
 
        subroutine cleanBMultigrid(ind,g,ss_MHD)
@@ -770,22 +746,18 @@
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
-         type(del) :: d
 
-         call div(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
+         call div(ind%temp%phi,ind%B,g)
          call myPoisson(ind%MG,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
           ind%err_CleanB,getExportErrors(ss_MHD))
 
-         call d%assign(ind%Bstar%x,ind%phi%phi,g,1,1,0)
-         call d%assign(ind%Bstar%y,ind%phi%phi,g,1,2,0)
-         call d%assign(ind%Bstar%z,ind%phi%phi,g,1,3,0)
+         call grad(ind%Bstar,ind%phi%phi,g)
          call subtract(ind%B,ind%Bstar)
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
          call applyAllBCs(ind%By_bcs,ind%B%y,g)
          call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
-         call stopTime(ind%time_CP,ind%ss_cleanB)
        end subroutine
 
        ! ********************* AUX *****************************
@@ -846,12 +818,12 @@
            case (4:5)
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
-             call div(ind%divB%phi,ind%F%x,ind%F%y,ind%F%z,g)
+             call div(ind%divB%phi,ind%F,g)
            case default
-             call div(ind%divB%phi,ind%B%x,ind%B%y,ind%B%z,g)
+             call div(ind%divB%phi,ind%B,g)
            end select
          endif
-         call div(ind%divJ%phi,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,g)
+         call div(ind%divJ%phi,ind%J_cc,g)
        end subroutine
 
        subroutine computeCurrent(J,B,B0,mu,g)
@@ -863,14 +835,13 @@
          ! B = (B + B0)/mu
          call add(B,B0)
          call divide(B,mu)
-         call curl(J%x,B%x,B%y,B%z,g,1)
-         call curl(J%y,B%x,B%y,B%z,g,2)
-         call curl(J%z,B%x,B%y,B%z,g,3)
 
-         ! call curl(J,B,g,3)
+         ! J_cc = curl(B_cc)
+         call curl(J,B,g)
+
+         ! B = B*mu - B0
          call multiply(B,mu)
          call subtract(B,B0)
-         ! B = B*mu - B0
        end subroutine
 
        subroutine embedVelocity(U_cct,U_fi,U_cci,g_mom)

@@ -16,7 +16,8 @@
        use myError_mod
        use interpOps_mod
        use del_mod
-       use delOps_mod
+       use ops_discrete_mod
+       use ops_physics_mod
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
@@ -294,6 +295,8 @@
 
          call assign(nrg%Tstar,zero)
          call assign(nrg%T,zero)
+
+         call add(nrg%T,nrg%Tstar)
 
          ! Impose BCs:
          call applyAllBCs(nrg%T_bcs,nrg%T%phi,g)
