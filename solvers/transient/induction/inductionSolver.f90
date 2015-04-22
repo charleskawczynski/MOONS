@@ -1,11 +1,9 @@
        module inductionSolver_mod
        use simParams_mod
-       use constants_mod
        use IO_tools_mod
        use IO_auxiliary_mod
        use IO_scalarFields_mod
        use IO_vectorFields_mod
-       use myDebug_mod
        use myTime_mod
        use scalarField_mod
        use vectorField_mod
@@ -19,6 +17,7 @@
        use interpOps_mod
        use del_mod
        use delOps_mod
+       use vectorOps_mod
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
@@ -26,7 +25,7 @@
        use myADI_mod
        use myMG_mod
        use myPoisson_mod
-       use baseProbes_mod
+       use probe_base_mod
 
        implicit none
 
@@ -51,6 +50,9 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
+
+       real(cp),parameter :: zero = real(0.0,cp)
+       real(cp),parameter :: one = real(1.0,cp)
 
        type induction
          character(len=9) :: name = 'induction'
@@ -396,7 +398,7 @@
            call writeToFile(g,ind%U_cct,dir//'Ufield/','uct','vct','wct')
            Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
            allocate(tempcc(Nx,Ny,Nz))
-           call myCC2CCDiv(tempcc,ind%U_cct%x,ind%U_cct%y,ind%U_cct%z,g)
+           call div(tempcc,ind%U_cct%x,ind%U_cct%y,ind%U_cct%z,g)
            call writeToFile(g,tempcc,dir//'Ufield/','divUct')
            deallocate(tempcc)
            call delete(tempVFn)
@@ -470,11 +472,11 @@
          do i=1,ind%NmaxB
            call assign(ind%Bstar,zero)
            ! ------------- diffusion term -------------
-           call CC2CCLap(ind%temp%phi,ind%B%x,g)
+           call lap(ind%temp%phi,ind%B%x,g)
            ind%Bstar%x = ind%Bstar%x + ind%dTime*ind%temp%phi
-           call CC2CCLap(ind%temp%phi,ind%B%y,g)
+           call lap(ind%temp%phi,ind%B%y,g)
            ind%Bstar%y = ind%Bstar%y + ind%dTime*ind%temp%phi
-           call CC2CCLap(ind%temp%phi,ind%B%z,g)
+           call lap(ind%temp%phi,ind%B%z,g)
            ind%Bstar%z = ind%Bstar%z + ind%dTime*ind%temp%phi
            
            ! ------------- source term -------------
@@ -556,12 +558,12 @@
          do i=1,ind%NmaxB
 
            ! Compute current from appropriate fluxes:
-           call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
-           call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
-           call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
+           call CC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
+           call CC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
+           call CC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
 
            ! Compute fluxes of u cross B0
-           call myCollocatedCross(ind%tempVF,U,ind%B0)
+           call cross(ind%tempVF,U,ind%B0)
            call myCellCenter2Edge(ind%E,ind%tempVF,g)
 
            ! E = j/sig - uxB
@@ -571,9 +573,9 @@
            call add(ind%E,ind%J)
 
            ! F = Curl(E)
-           call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
-           call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
-           call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
+           call curl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
+           call curl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
+           call curl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
            ! tempVF = interp(F)_face->cc
 
            call myFace2CellCenter(ind%tempVF,ind%F,g)
@@ -608,13 +610,13 @@
 
          ! Compute current from appropriate fluxes:
          ! Curl(B0) = 0 (so B is not added to this)
-         call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
-         call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
-         call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
+         call CC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
+         call CC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
+         call CC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
 
          ! Compute fluxes of u cross (B-B0)
          call add(ind%B,ind%B0)
-         call myCollocatedCross(ind%tempVF,U,ind%B)
+         call cross(ind%tempVF,U,ind%B)
          call subtract(ind%B,ind%B0)
 
          call myCellCenter2Edge(ind%E,ind%tempVF,g)
@@ -627,9 +629,9 @@
          call add(ind%E,ind%J)
 
          ! F = Curl(E)
-         call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
-         call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
-         call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
+         call curl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
+         call curl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
+         call curl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
 
          ! tempVF = interp(F)_face->cc
          call myFace2CellCenter(ind%tempVF,ind%F,g)
@@ -668,12 +670,12 @@
          type(solverSettings),intent(inout) :: ss_MHD
 
          ! Compute current from appropriate fluxes:
-         call myCC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
-         call myCC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
-         call myCC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
+         call CC2EdgeCurl(ind%J%x,ind%B%x,ind%B%y,ind%B%z,g,1)
+         call CC2EdgeCurl(ind%J%y,ind%B%x,ind%B%y,ind%B%z,g,2)
+         call CC2EdgeCurl(ind%J%z,ind%B%x,ind%B%y,ind%B%z,g,3)
 
          ! Compute fluxes of u cross B0
-         call myCollocatedCross(ind%tempVF,U,ind%B0)
+         call cross(ind%tempVF,U,ind%B0)
          call myCellCenter2Edge(ind%E,ind%tempVF,g)
 
          ! E = j/sig - uxB
@@ -683,16 +685,16 @@
          call add(ind%E,ind%J)
 
          ! F = Curl(E)
-         call myEdge2FaceCurl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
-         call myEdge2FaceCurl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
-         call myEdge2FaceCurl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
+         call curl(ind%F%x,ind%E%x,ind%E%y,ind%E%z,g,1)
+         call curl(ind%F%y,ind%E%x,ind%E%y,ind%E%z,g,2)
+         call curl(ind%F%z,ind%E%x,ind%E%y,ind%E%z,g,3)
          ! tempVF = interp(F)_face->cc
          call myFace2CellCenter(ind%tempVF,ind%F,g)
 
          ! Subtract laplacian from B^n
-         call CC2CCLap(ind%Bstar%x,ind%B%x,ind%sigmaInv%phi,g,1)
-         call CC2CCLap(ind%Bstar%y,ind%B%y,ind%sigmaInv%phi,g,2)
-         call CC2CCLap(ind%Bstar%z,ind%B%z,ind%sigmaInv%phi,g,3)
+         call lap(ind%Bstar%x,ind%B%x,ind%sigmaInv%phi,g)
+         call lap(ind%Bstar%y,ind%B%y,ind%sigmaInv%phi,g)
+         call lap(ind%Bstar%z,ind%B%z,ind%sigmaInv%phi,g)
          ! ind%tempVF = ind%tempVF - ind%Bstar
          call subtract(ind%tempVF,ind%Bstar)
 
@@ -746,17 +748,15 @@
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
-
-         call myCC2CCDiv(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
+         type(del) :: d
+         call div(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
          call myPoisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
           ind%err_CleanB,getExportErrors(ss_MHD))
 
-         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,1)
-         ind%B%x = ind%B%x - ind%temp%phi
-         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,2)
-         ind%B%y = ind%B%y - ind%temp%phi
-         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,3)
-         ind%B%z = ind%B%z - ind%temp%phi
+         call d%assign(ind%Bstar%x,ind%phi%phi,g,1,1,0)
+         call d%assign(ind%Bstar%y,ind%phi%phi,g,1,2,0)
+         call d%assign(ind%Bstar%z,ind%phi%phi,g,1,3,0)
+         call subtract(ind%B,ind%Bstar)
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -770,17 +770,16 @@
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
+         type(del) :: d
 
-         call myCC2CCDiv(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
+         call div(ind%temp%phi,ind%B%x,ind%B%y,ind%B%z,g)
          call myPoisson(ind%MG,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
           ind%err_CleanB,getExportErrors(ss_MHD))
 
-         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,1)
-         ind%B%x = ind%B%x - ind%temp%phi
-         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,2)
-         ind%B%y = ind%B%y - ind%temp%phi
-         call myCC2CCDel(ind%temp%phi,ind%phi%phi,g,3)
-         ind%B%z = ind%B%z - ind%temp%phi
+         call d%assign(ind%Bstar%x,ind%phi%phi,g,1,1,0)
+         call d%assign(ind%Bstar%y,ind%phi%phi,g,1,2,0)
+         call d%assign(ind%Bstar%z,ind%phi%phi,g,1,3,0)
+         call subtract(ind%B,ind%Bstar)
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -811,7 +810,7 @@
          case (5,6); call add(ind%Bstar,ind%B)
          end select
 
-         call myCollocatedCross(ind%tempVF,ind%J_cc,ind%Bstar)
+         call cross(ind%tempVF,ind%J_cc,ind%Bstar)
          call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
 
          ! Index fluid face source terms:
@@ -847,14 +846,12 @@
            case (4:5)
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
-             call myFaceDiv(ind%divB%phi,ind%F%x,ind%F%y,ind%F%z,g)
-             ! call myFaceDiv2(ind%divB%phi,ind%F%x,ind%F%y,ind%F%z,g)
-             call myCC2CCDiv(ind%divJ%phi,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,g)
+             call div(ind%divB%phi,ind%F%x,ind%F%y,ind%F%z,g)
            case default
-             call myCC2CCDiv(ind%divB%phi,ind%B%x,ind%B%y,ind%B%z,g)
-             call myCC2CCDiv(ind%divJ%phi,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,g)
+             call div(ind%divB%phi,ind%B%x,ind%B%y,ind%B%z,g)
            end select
          endif
+         call div(ind%divJ%phi,ind%J_cc%x,ind%J_cc%y,ind%J_cc%z,g)
        end subroutine
 
        subroutine computeCurrent(J,B,B0,mu,g)
@@ -866,9 +863,11 @@
          ! B = (B + B0)/mu
          call add(B,B0)
          call divide(B,mu)
-         call myCCCurl(J%x,B%x,B%y,B%z,g,1)
-         call myCCCurl(J%y,B%x,B%y,B%z,g,2)
-         call myCCCurl(J%z,B%x,B%y,B%z,g,3)
+         call curl(J%x,B%x,B%y,B%z,g,1)
+         call curl(J%y,B%x,B%y,B%z,g,2)
+         call curl(J%z,B%x,B%y,B%z,g,3)
+
+         ! call curl(J,B,g,3)
          call multiply(B,mu)
          call subtract(B,B0)
          ! B = B*mu - B0

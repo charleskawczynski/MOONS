@@ -1,11 +1,9 @@
        module energySolver_mod
        use simParams_mod
-       use constants_mod
        use IO_tools_mod
        use IO_auxiliary_mod
        use IO_scalarFields_mod
        use IO_vectorFields_mod
-       use myDebug_mod
        use myTime_mod
        use scalarField_mod
        use vectorField_mod
@@ -22,7 +20,7 @@
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
-       use baseProbes_mod
+       use probe_base_mod
 
        implicit none
 
@@ -45,6 +43,8 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
+
+       real(cp),parameter :: zero = real(0.0,cp)
 
        type energy
          character(len=6) :: name = 'energy'
@@ -342,7 +342,7 @@
          type(energy),intent(inout) :: nrg
          type(grid),intent(in) :: g
          if (solveEnergy) then
-           call myCC2CCDiv(nrg%divQ%phi,nrg%F%x,nrg%F%y,nrg%F%z,g)
+           call div(nrg%divQ%phi,nrg%F%x,nrg%F%y,nrg%F%z,g)
          endif
        end subroutine
 

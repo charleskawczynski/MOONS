@@ -17,11 +17,12 @@
        use interpOps_mod
        use del_mod
        use delOps_mod
+       use vectorOps_mod
 
        use BCs_mod
        use applyBCs_mod
 
-       use transientProbe_mod
+       use probe_transient_mod
        use solverSettings_mod
        use myTime_mod
 
@@ -31,8 +32,8 @@
        use myMG_mod
        use myPoisson_mod
 
-       use baseProbes_mod
-       use derivedProbes_mod
+       use probe_base_mod
+       use probe_derived_mod
        
        implicit none
        private
@@ -304,9 +305,12 @@
          ! Laplacian Terms -----------------------------------------
          ! call myFaceLap(mom%TempVF,U,g)
 
-         call myFaceLap(mom%TempVF%x,mom%U%x,g)
-         call myFaceLap(mom%TempVF%y,mom%U%y,g)
-         call myFaceLap(mom%TempVF%z,mom%U%z,g)
+         ! call myFaceLap(mom%TempVF%x,mom%U%x,g)
+         ! call myFaceLap(mom%TempVF%y,mom%U%y,g)
+         ! call myFaceLap(mom%TempVF%z,mom%U%z,g)
+
+         call lap(mom%TempVF,mom%U,g)
+         call zeroWallCoincidentBoundariesVF(mom%TempVF,g)
 
          ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
@@ -325,9 +329,7 @@
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
 
-         call zeroWallCoincidentBoundaries(mom%Ustar%x,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
-         call zeroWallCoincidentBoundaries(mom%Ustar%y,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
-         call zeroWallCoincidentBoundaries(mom%Ustar%z,mom%g) ! CANNOT BE USED FOR DUCT FLOWS
+         call zeroWallCoincidentBoundariesVF(mom%Ustar,g) ! CANNOT BE USED FOR DUCT FLOWS
 
          ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%x,mom%u_bcs,mom%g)
          ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%y,mom%v_bcs,mom%g)
@@ -335,7 +337,7 @@
 
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
-           call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
+           call div(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
            call zeroGhostPoints(mom%Temp%phi)
@@ -347,7 +349,7 @@
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
-           call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
+           call grad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
@@ -447,8 +449,8 @@
          
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
-           call myFaceDiv(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
-           ! call myFaceDiv(mom%Temp,mom%Ustar,g)
+           call div(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
+           ! call div(mom%Temp,mom%Ustar,g)
            ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
            call divide(mom%Temp,dt)
 
@@ -457,7 +459,7 @@
            call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
-           call myCC2FaceGrad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
+           call grad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
 
            ! mom%Ustar = mom%Ustar - dt*mom%TempVF
            call multiply(mom%TempVF,dt)
@@ -567,7 +569,7 @@
          implicit none
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
-         call myFaceDiv(mom%divU%phi,mom%U%x,mom%U%y,mom%U%z,g)
+         call div(mom%divU%phi,mom%U%x,mom%U%y,mom%U%z,g)
          call zeroGhostPoints(mom%divU%phi)
        end subroutine
 
@@ -577,29 +579,38 @@
          type(grid),intent(in) :: g
          integer,dimension(3) :: s
          s = shape(f)
-         ! if (s(1).eq.g%c(1)%sn) then
-         !   f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
-         ! elseif (s(2).eq.g%c(2)%sn) then
-         !   f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
-         ! elseif (s(3).eq.g%c(3)%sn) then
-         !   f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
-         ! else
-         !  stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
-         ! endif
-         
-         ! Interior Only
          if (s(1).eq.g%c(1)%sn) then
-           f(2,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
-           f(s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+           f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
          elseif (s(2).eq.g%c(2)%sn) then
-           f(2:s(1)-1,2,2:s(3)-1) = real(0.0,cp)
-           f(2:s(1)-1,s(2)-1,2:s(3)-1) = real(0.0,cp)
+           f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
          elseif (s(3).eq.g%c(3)%sn) then
-           f(2:s(1)-1,2:s(2)-1,2) = real(0.0,cp)
-           f(2:s(1)-1,2:s(2)-1,s(3)-1) = real(0.0,cp)
+           f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
          else
           stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
          endif
+         
+         ! Interior Only
+         ! if (s(1).eq.g%c(1)%sn) then
+         !   f(2,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+         !   f(s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+         ! elseif (s(2).eq.g%c(2)%sn) then
+         !   f(2:s(1)-1,2,2:s(3)-1) = real(0.0,cp)
+         !   f(2:s(1)-1,s(2)-1,2:s(3)-1) = real(0.0,cp)
+         ! elseif (s(3).eq.g%c(3)%sn) then
+         !   f(2:s(1)-1,2:s(2)-1,2) = real(0.0,cp)
+         !   f(2:s(1)-1,2:s(2)-1,s(3)-1) = real(0.0,cp)
+         ! else
+         !  stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
+         ! endif
+       end subroutine
+
+       subroutine zeroWallCoincidentBoundariesVF(f,g)
+         implicit none
+         type(vectorField),intent(inout) :: f
+         type(grid),intent(in) :: g
+         call zeroWallCoincidentBoundaries(f%x,g)
+         call zeroWallCoincidentBoundaries(f%y,g)
+         call zeroWallCoincidentBoundaries(f%z,g)
        end subroutine
 
        subroutine zeroForcingOnNoFlowThroughBoundaries(u,u_bcs,g)

@@ -1,6 +1,16 @@
        module simParams_mod
-       use constants_mod
        implicit none
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+       private :: cp
 
        ! ************************* GRID *************************
        logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
@@ -10,8 +20,8 @@
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
        logical :: minimizePrintedOutput     = .true.    ! (T/F)
-       logical :: nonUniformGridFluid       = .true.    ! (T/F)
-       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .false.    ! (T/F)
+       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -37,7 +47,7 @@
        !                                   1 : Explicit Euler
 
        ! ************************ U-FIELD ***********************
-       logical :: solveMomentum = .false.
+       logical :: solveMomentum = .true.
        logical :: restartU = .false.
        logical :: computeKU = .false.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
@@ -50,7 +60,7 @@
        !                                  3 : Upwind (not yet implemented)
        !                                  4 : Hybrid (not yet implemented)
 
-       real(dpn) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 )
+       real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 )
        !                                                       pure         central
        !                                                      upwind       difference
 
@@ -62,7 +72,7 @@
        logical :: computeKB = .true.    ! Compute magnetic energy at each time step
        logical :: computeKB0 = .false.   ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 5
+       integer,parameter :: solveBMethod = 4
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
@@ -84,7 +94,7 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .false.
+       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -102,7 +112,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 1003
+       integer,parameter :: benchmarkCase = 102
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

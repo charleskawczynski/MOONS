@@ -48,7 +48,6 @@
        ! Fixes/improvements:
        ! - make set/get functions to make components accessable to myEfficiency
 
-       use constants_mod
        use myTime_mod
        use simParams_mod
        use IO_tools_mod
@@ -64,6 +63,8 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+       real(cp),parameter :: zero = real(0.0,cp)
+       real(cp),parameter :: one = real(1.0,cp)
 
        private
 

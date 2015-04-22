@@ -1,4 +1,4 @@
-      module del_mod
+      module delVC_mod
       ! Returns an n-derivative of the scalar field, f, 
       ! along direction dir (1,2,3) which corresponds to (x,y,z).
       ! 
@@ -32,7 +32,7 @@
       implicit none
 
       private
-      public :: del 
+      public :: delVC
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -44,7 +44,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      type del
+      type delVC
         contains
         generic,public :: assign => assignDel
         generic,public :: add => addDel
@@ -60,151 +60,87 @@
 
       contains
 
-      subroutine diff(dfdh,f,dhc,dhn,n,diffType,s,genType)
+      subroutine diff(dfdh,f,k,dhc,dhn,hc,hn,diffType,s,genType)
         implicit none
-        real(cp),dimension(:),intent(in) :: f
-        real(cp),dimension(:),intent(in) :: dhc,dhn
-        integer,intent(in) :: n,diffType,s,genType
+        real(cp),dimension(:),intent(in) :: f,k
+        real(cp),dimension(:),intent(in) :: dhc,dhn,hc,hn
+        integer,intent(in) :: diffType,s,genType
         real(cp),dimension(:),intent(inout) :: dfdh
 
         select case(genType)
         case (1) ! Assign
         select case (diffType)
-        case (1); call collocatedAssign(dfdh,f,dhc,dhn,n,s,1)    ! Collocated CellCenter derivative
-        case (2); call collocatedAssign(dfdh,f,dhn,dhc,n,s,0)    ! Collocated Node derivative
-        case (3); call staggeredAssign(dfdh,f,dhc,s,1)           ! Staggered derivative (CC->N)
-        case (4); call staggeredAssign(dfdh,f,dhn,s,0)           ! Staggered derivative (N->CC)
+        case (1); call collocatedAssign(dfdh,f,k,dhc,dhn,hc,hn,s,1)    ! Collocated CellCenter derivative
+        case (2); call collocatedAssign(dfdh,f,k,dhn,dhc,hn,hc,s,0)    ! Collocated Node derivative
         end select
         case (2) ! add
         select case (diffType)
-        case (1); call collocatedAdd(dfdh,f,dhc,dhn,n,s,1)       ! Collocated CellCenter derivative
-        case (2); call collocatedAdd(dfdh,f,dhn,dhc,n,s,0)       ! Collocated Node derivative
-        case (3); call staggeredAdd(dfdh,f,dhc,s,1)              ! Staggered derivative (CC->N)
-        case (4); call staggeredAdd(dfdh,f,dhn,s,0)              ! Staggered derivative (N->CC)
+        case (1); call collocatedAdd(dfdh,f,k,dhc,dhn,hc,hn,s,1)       ! Collocated CellCenter derivative
+        case (2); call collocatedAdd(dfdh,f,k,dhn,dhc,hn,hc,s,0)       ! Collocated Node derivative
         end select
         case (3) ! subtract
         select case (diffType)
-        case (1); call collocatedSubtract(dfdh,f,dhc,dhn,n,s,1)  ! Collocated CellCenter derivative
-        case (2); call collocatedSubtract(dfdh,f,dhn,dhc,n,s,0)  ! Collocated Node derivative
-        case (3); call staggeredSubtract(dfdh,f,dhc,s,1)         ! Staggered derivative (CC->N)
-        case (4); call staggeredSubtract(dfdh,f,dhn,s,0)         ! Staggered derivative (N->CC)
+        case (1); call collocatedSubtract(dfdh,f,k,dhc,dhn,hc,hn,s,1)  ! Collocated CellCenter derivative
+        case (2); call collocatedSubtract(dfdh,f,k,dhn,dhc,hn,hc,s,0)  ! Collocated Node derivative
         end select
         case (4) ! multiply
         select case (diffType)
-        case (1); call collocatedMultiply(dfdh,f,dhc,dhn,n,s,1)  ! Collocated CellCenter derivative
-        case (2); call collocatedMultiply(dfdh,f,dhn,dhc,n,s,0)  ! Collocated Node derivative
-        case (3); call staggeredMultiply(dfdh,f,dhc,s,1)         ! Staggered derivative (CC->N)
-        case (4); call staggeredMultiply(dfdh,f,dhn,s,0)         ! Staggered derivative (N->CC)
+        case (1); call collocatedMultiply(dfdh,f,k,dhc,dhn,hc,hn,s,1)  ! Collocated CellCenter derivative
+        case (2); call collocatedMultiply(dfdh,f,k,dhn,dhc,hn,hc,s,0)  ! Collocated Node derivative
         end select
         case (5) ! divide
         select case (diffType)
-        case (1); call collocatedDivide(dfdh,f,dhc,dhn,n,s,1)    ! Collocated CellCenter derivative
-        case (2); call collocatedDivide(dfdh,f,dhn,dhc,n,s,0)    ! Collocated Node derivative
-        case (3); call staggeredDivide(dfdh,f,dhc,s,1)           ! Staggered derivative (CC->N)
-        case (4); call staggeredDivide(dfdh,f,dhn,s,0)           ! Staggered derivative (N->CC)
+        case (1); call collocatedDivide(dfdh,f,k,dhc,dhn,hc,hn,s,1)    ! Collocated CellCenter derivative
+        case (2); call collocatedDivide(dfdh,f,k,dhn,dhc,hn,hc,s,0)    ! Collocated Node derivative
         end select
         case default
-          stop 'Error: genType must = 1,2,3,4 in diff in del.f90'
+          stop 'Error: genType must = 1,2,3,4 in diff in delVC.f90'
         end select
-      end subroutine
-
-      ! ********************** STAGGERED DERIVATIVES *************************
-
-      subroutine staggeredAssign(dfdh,f,dh,s,gt); implicit none
-        real(cp),dimension(:),intent(in) :: f,dh
-        real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: s,gt
-        dfdh = staggered(f,dh,s,gt)
-      end subroutine
-
-      subroutine staggeredAdd(dfdh,f,dh,s,gt); implicit none
-        real(cp),dimension(:),intent(in) :: f,dh
-        real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: s,gt
-        dfdh = dfdh + staggered(f,dh,s,gt)
-      end subroutine
-
-      subroutine staggeredSubtract(dfdh,f,dh,s,gt); implicit none
-        real(cp),dimension(:),intent(in) :: f,dh
-        real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: s,gt
-        dfdh = dfdh - staggered(f,dh,s,gt)
-      end subroutine
-
-      subroutine staggeredMultiply(dfdh,f,dh,s,gt); implicit none
-        real(cp),dimension(:),intent(in) :: f,dh
-        real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: s,gt
-        dfdh = dfdh * staggered(f,dh,s,gt)
-      end subroutine
-
-      subroutine staggeredDivide(dfdh,f,dh,s,gt); implicit none
-        ! NOTE THAT THIS WILL RESULT IN DIVISION BY ZERO IF f
-        ! LIVES ON NODES
-        real(cp),dimension(:),intent(in) :: f,dh
-        real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: s,gt
-        dfdh = dfdh / staggered(f,dh,s,gt)
       end subroutine
 
       ! ********************** COLLOCATED DERIVATIVES *************************
 
-      subroutine collocatedAssign(dfdh,f,dhp,dhd,n,s,gt); implicit none
-        real(cp),intent(in),dimension(:) :: f,dhp,dhd
+      subroutine collocatedAssign(dfdh,f,k,dhp,dhd,hp,hd,s,gt); implicit none
+        real(cp),intent(in),dimension(:) :: f,k,dhp,dhd,hp,hd
         real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: n,s,gt
-        select case (n)
-        case (1); dfdh = collocated(f,dhp,s)
-        case (2); dfdh = collocated(f,dhp,dhd,s,gt)
-        end select
+        integer,intent(in) :: s,gt
+        dfdh = collocated(f,k,dhp,dhd,hp,hd,s,gt)
       end subroutine
 
-      subroutine collocatedAdd(dfdh,f,dhp,dhd,n,s,gt); implicit none
-        real(cp),intent(in),dimension(:) :: f,dhp,dhd
+      subroutine collocatedAdd(dfdh,f,k,dhp,dhd,hp,hd,s,gt); implicit none
+        real(cp),intent(in),dimension(:) :: f,k,dhp,dhd,hp,hd
         real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: n,s,gt
-        select case (n)
-        case (1); dfdh = dfdh + collocated(f,dhp,s)
-        case (2); dfdh = dfdh + collocated(f,dhp,dhd,s,gt)
-        end select
+        integer,intent(in) :: s,gt
+        dfdh = dfdh + collocated(f,k,dhp,dhd,hp,hd,s,gt)
       end subroutine
 
-      subroutine collocatedSubtract(dfdh,f,dhp,dhd,n,s,gt); implicit none
-        real(cp),intent(in),dimension(:) :: f,dhp,dhd
+      subroutine collocatedSubtract(dfdh,f,k,dhp,dhd,hp,hd,s,gt); implicit none
+        real(cp),intent(in),dimension(:) :: f,k,dhp,dhd,hp,hd
         real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: n,s,gt
-        select case (n)
-        case (1); dfdh = dfdh - collocated(f,dhp,s)
-        case (2); dfdh = dfdh - collocated(f,dhp,dhd,s,gt)
-        end select
+        integer,intent(in) :: s,gt
+        dfdh = dfdh - collocated(f,k,dhp,dhd,hp,hd,s,gt)
       end subroutine
 
-      subroutine collocatedMultiply(dfdh,f,dhp,dhd,n,s,gt); implicit none
-        real(cp),intent(in),dimension(:) :: f,dhp,dhd
+      subroutine collocatedMultiply(dfdh,f,k,dhp,dhd,hp,hd,s,gt); implicit none
+        real(cp),intent(in),dimension(:) :: f,k,dhp,dhd,hp,hd
         real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: n,s,gt
-        select case (n)
-        case (1); dfdh = dfdh * collocated(f,dhp,s)
-        case (2); dfdh = dfdh * collocated(f,dhp,dhd,s,gt)
-        end select
+        integer,intent(in) :: s,gt
+        dfdh = dfdh * collocated(f,k,dhp,dhd,hp,hd,s,gt)
       end subroutine
 
-      subroutine collocatedDivide(dfdh,f,dhp,dhd,n,s,gt); implicit none
-        real(cp),intent(in),dimension(:) :: f,dhp,dhd
+      subroutine collocatedDivide(dfdh,f,k,dhp,dhd,hp,hd,s,gt); implicit none
+        real(cp),intent(in),dimension(:) :: f,k,dhp,dhd,hp,hd
         real(cp),dimension(:),intent(inout) :: dfdh
-        integer,intent(in) :: n,s,gt
-        select case (n)
-        case (1); dfdh = dfdh / collocated(f,dhp,s)
-        case (2); dfdh = dfdh / collocated(f,dhp,dhd,s,gt)
-        end select
+        integer,intent(in) :: s,gt
+        dfdh = dfdh / collocated(f,k,dhp,dhd,hp,hd,s,gt)
       end subroutine
 
-      subroutine delGen(dfdh,f,g,n,dir,pad,genType)
+      subroutine delGen(dfdh,f,sig,g,dir,pad,genType)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f,sig
         type(grid),intent(in) :: g
-        integer,intent(in) :: n,dir,pad,genType
+        integer,intent(in) :: dir,pad,genType
         integer,dimension(3) :: s
         integer :: i,j,k,diffType
 
@@ -220,19 +156,25 @@
         case (1)
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-              call diff(dfdh(:,j,k),f(:,j,k),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(1),genType)
+              call diff(dfdh(:,j,k),f(:,j,k),sig(:,j,k),&
+                g%c(dir)%dhc,g%c(dir)%dhn,&
+                g%c(dir)%hc,g%c(dir)%hn,diffType,s(1),genType)
           enddo; enddo
           !$OMP END PARALLEL DO
         case (2)
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-              call diff(dfdh(i,:,k),f(i,:,k),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(2),genType)
+              call diff(dfdh(i,:,k),f(i,:,k),sig(i,:,k),&
+                g%c(dir)%dhc,g%c(dir)%dhn,&
+                g%c(dir)%hc,g%c(dir)%hn,diffType,s(2),genType)
           enddo; enddo
           !$OMP END PARALLEL DO
         case (3)
           !$OMP PARALLEL DO
           do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-              call diff(dfdh(i,j,:),f(i,j,:),g%c(dir)%dhc,g%c(dir)%dhn,n,diffType,s(3),genType)
+              call diff(dfdh(i,j,:),f(i,j,:),sig(i,j,:),&
+                g%c(dir)%dhc,g%c(dir)%dhn,&
+                g%c(dir)%hc,g%c(dir)%hn,diffType,s(3),genType)
           enddo; enddo
           !$OMP END PARALLEL DO
         case default
@@ -259,49 +201,49 @@
 
       ! ******************* OPERATOR TYPES ****************************
 
-      subroutine assignDel(dfdh,f,g,n,dir,pad)
+      subroutine assignDel(dfdh,f,k,g,dir,pad)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f,k
         type(grid),intent(in) :: g
-        integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,g,n,dir,pad,1)
+        integer,intent(in) :: dir,pad
+        call delGen(dfdh,f,k,g,dir,pad,1)
       end subroutine
 
-      subroutine addDel(dfdh,f,g,n,dir,pad)
+      subroutine addDel(dfdh,f,k,g,dir,pad)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f,k
         type(grid),intent(in) :: g
-        integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,g,n,dir,pad,2)
+        integer,intent(in) :: dir,pad
+        call delGen(dfdh,f,k,g,dir,pad,2)
       end subroutine
 
-      subroutine subtractDel(dfdh,f,g,n,dir,pad)
+      subroutine subtractDel(dfdh,f,k,g,dir,pad)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f,k
         type(grid),intent(in) :: g
-        integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,g,n,dir,pad,3)
+        integer,intent(in) :: dir,pad
+        call delGen(dfdh,f,k,g,dir,pad,3)
       end subroutine
 
-      subroutine multiplyDel(dfdh,f,g,n,dir,pad)
+      subroutine multiplyDel(dfdh,f,k,g,dir,pad)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f,k
         type(grid),intent(in) :: g
-        integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,g,n,dir,pad,4)
+        integer,intent(in) :: dir,pad
+        call delGen(dfdh,f,k,g,dir,pad,4)
       end subroutine
 
-      subroutine divideDel(dfdh,f,g,n,dir,pad)
+      subroutine divideDel(dfdh,f,k,g,dir,pad)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(in) :: f,k
         type(grid),intent(in) :: g
-        integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,g,n,dir,pad,5)
+        integer,intent(in) :: dir,pad
+        call delGen(dfdh,f,k,g,dir,pad,5)
       end subroutine
 
       function getDiffType(sf,sdfdh,sn,sc,dir) result(diffType)
@@ -313,10 +255,10 @@
           diffType = 1 ! Collocated derivative (CC)
         elseif ((sf(dir).eq.sdfdh(dir)).and.(sf(dir).eq.sn)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif ((sdfdh(dir).eq.(sf(dir)+1))) then
-          diffType = 3 ! Staggered derivative (CC->N)
-        elseif ((sdfdh(dir).eq.(sf(dir)-1))) then
-          diffType = 4 ! Staggered derivative (N->CC)
+        ! elseif ((sdfdh(dir).eq.(sf(dir)+1))) then
+        !   diffType = 3 ! Staggered derivative (CC->N)
+        ! elseif ((sdfdh(dir).eq.(sf(dir)-1))) then
+        !   diffType = 4 ! Staggered derivative (N->CC)
         else
           write(*,*) 'sf = ',sf
           write(*,*) 'sdfdh = ',sdfdh

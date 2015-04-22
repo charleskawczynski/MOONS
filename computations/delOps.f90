@@ -61,68 +61,55 @@
 #endif
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
-       public :: zeroGhostPoints      ! call zeroGhostPoints(f)
-       public :: totalEnergy          ! call totalEnergy(e,u,v,w)
-       public :: collocatedMagnitude  ! call collocatedMagnitude(mag,u,v,w)
-       public :: myCollocatedCross    ! call myCollocatedCross(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
-       public :: printPhysicalMinMax  ! call printPhysicalMinMax(u,s,name)
-       public :: checkSymmetry        ! call checkSymmetry(u,plane,name)
+
+       public :: zeroGhostPoints
+       interface zeroGhostPoints;         module procedure zeroGhostPointsSF;       end interface
+
+       public :: totalEnergy
+       interface totalEnergy;             module procedure totalEnergySF;           end interface
+
+       public :: collocatedMagnitude
+       interface collocatedMagnitude;     module procedure collocatedMagnitudeSF;   end interface
+
+       public :: printPhysicalMinMax
+       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxSF;   end interface
+
+       ! public :: checkSymmetry
 
        ! --------------------------------- DERIVATIVE ROUTINES ---------------------------------
-       ! General data derivatives
-       public :: lap                  ! call lap(lapU,u,v,w,g)
-       public :: div                  ! call div(divU,u,v,w,g)
+       public :: lap
+       interface lap;                     module procedure lapUniformCoeffSF;       end interface
+       interface lap;                     module procedure lapVariableCoeffSF;      end interface
 
-       ! public :: collocatedCurl       ! call curl(divU,u,v,w,g)
+       public :: div
+       interface div;                     module procedure divSF;                   end interface
 
-       ! Face based derivatives
-       public :: myFaceDiv            ! call myFaceDiv(divU,u,v,w,g)
-       public :: myFaceLap            ! call myFaceLap(lapF,f,g,dir)
-       public :: myFaceAdvect         ! call myFaceAdvect(psi,u,v,w,phi,g)
-       public :: myFaceAdvectDonor    ! call myFaceAdvectDonor(psi,u,v,w,phi,g)
-       public :: myFaceAdvectHybrid   ! call myFaceAdvectHybrid(psi,u,v,w,phi,g)
-       public :: myFaceCurl           ! call myFaceCurl(curlU,u,v,w,g,dir)
+       public :: grad
+       interface grad;                    module procedure gradSF;                  end interface
 
-       ! Cell-center based derivatives
-       public :: myCC2CCDiv           ! call myCC2CCDiv(divU,u,v,w,g)
-       public :: CC2CCLap             ! call CC2CCLap(lapU,u,g)
-       public :: myCC2FaceGrad        ! call myCC2FaceGrad(gradx,grady,gradz,p,g)
-       public :: myCC2EdgeCurl        ! call myCC2EdgeCurl(curl,u,v,w,g,dir)
-       public :: myCCVaryDel          ! call myCCVaryDel(ddf,u,v,w,k,g,dir1,dir2)
+       public :: curl
+       interface curl;                    module procedure curlSF;                  end interface
 
-       public :: myCCCurl             ! call myCCCurl(curl,u,v,w,g,dir) ! May be generalized
-       public :: myCC2CCDel           ! call myCC2CCDel(gradp,p,g,dir) ! Seems useless
+       public :: cross
+       interface cross;                   module procedure crossSF;                 end interface
 
-       ! Node-center based derivatives
-       ! public :: myNodeGrad           ! call myNodeGrad(gradx,grady,gradz,f,g)
-       ! public :: myNode2NodeDel       ! call myNode2NodeDel(df,f,g,dir)
-       ! public :: myNodeDiv            ! call myNodeDiv(divU,u,v,w,g)
-       public :: myNodeLap            ! call myNodeLap(lapU,u,g)
-       ! public :: myNodeCurl           ! call myNodeCurl(curlU,u,v,w,g[,n])
+       ! Special Cell-center based derivatives
+       public :: CC2EdgeCurl
+       public :: myCCVaryDel
 
-       ! Edge-centered derivatives
-       public :: myEdge2FaceCurl      ! call myEdge2FaceCurl(curl,u,v,w,g,curlDir)
-       
        ! ----------------------------- SPECIAL TERMS -------------------------------------------
-       public :: myCCBfieldAdvect            ! call myCCBfieldAdvect(div,u,v,w,Bx,By,Bz,g,dir)
-       public :: myCCBfieldDiffuse           ! call myCCBfieldDiffuse(div,Bx,By,Bz,sigma,mu,g,dir)
+       public :: myFaceAdvect
+       public :: myFaceAdvectDonor
+       public :: myFaceAdvectHybrid
 
-       interface CC2CCLap;   module procedure CC2CCLapVariCoeff;   end interface
-       interface CC2CCLap;   module procedure CC2CCLapUnifCoeff;   end interface
-
-       interface lap;        module procedure lapUniformCoeffSF;     end interface
-       interface lap;        module procedure lapVariableCoeffSF;    end interface
-       interface lap;        module procedure lapUniformCoeffVF;     end interface
-       interface lap;        module procedure lapVariableCoeffVF;    end interface
-
-       interface myCollocatedCross;   module procedure myCollocatedCrossSF;  end interface
-       interface myCollocatedCross;   module procedure myCollocatedCrossVF;  end interface
+       public :: myCCBfieldAdvect
+       public :: myCCBfieldDiffuse
 
        contains
 
        ! ******************************* OTHER ROUTINES *********************************
 
-       subroutine collocatedMagnitude(mag,x,y,z) ! Finished
+       subroutine collocatedMagnitudeSF(mag,x,y,z) ! Finished
          ! This routine was made in order to compare norm(B) with
          ! results from Salah
          implicit none
@@ -140,14 +127,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine collocatedMagnitudeVF(mag,V)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: mag
-         type(vectorfield),intent(in) :: V
-         call collocatedMagnitude(mag,V%x,V%y,V%z)
-       end subroutine
-
-       subroutine totalEnergy(e,x,y,z,g) ! Finished
+       subroutine totalEnergySF(e,x,y,z,g) ! Finished
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: x,y,z
          real(cp),intent(inout) :: e
@@ -182,13 +162,7 @@
          ! e = etemp/g%volume
        end subroutine
 
-       subroutine totalEnergyVF(e,VF,g)
-         implicit none
-         type(vectorField),intent(in) :: VF
-         real(cp),intent(inout) :: e
-         type(grid),intent(in) :: g
-         call totalEnergy(e,VF%x,VF%y,VF%z,g)
-       end subroutine
+       ! ******************************* HELPER ROUTINES ********************************
 
        function orthogonalDirection(dir1,dir2) result(orthDir)
          implicit none
@@ -219,14 +193,9 @@
            case default
              stop 'Error: bad input to orthogonalDirection'
          end select
-#ifdef _DEBUG_DELOPS_
-         if (dir1.eq.dir2) then
-           stop 'There are no orthogonal directions'
-         endif
-#endif
        end function
 
-       subroutine zeroGhostPoints(f)
+       subroutine zeroGhostPointsSF(f)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
@@ -236,7 +205,7 @@
          f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
        end subroutine
 
-       subroutine printPhysicalMinMax(u,s,name)
+       subroutine printPhysicalMinMaxSF(u,s,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
          integer,dimension(3),intent(in) :: s
@@ -244,6 +213,8 @@
          write(*,*) 'Min/Max ('//name//') = ',minval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1)),&
                                               maxval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1))
        end subroutine
+
+       ! ******************************* DEBUGGING ROUTINES ******************************
 
        subroutine checkSymmetry(u,plane,name,g)
          implicit none
@@ -301,9 +272,6 @@
            end select
 
            write(*,*) 'Case = ',mod(s(p),2)
-#ifdef _CHECK_SYMMETRY_DELOPS_
-           write(*,*) 'symmetryPlane = ',symmetryPlane
-#endif
            write(*,*) 'shape(u) = ',shape(u)
            write(*,*) 'shape(u_symm) = ',shape(u_symm)
            write(*,*) 'shape(u_symm) = ',shape(u_symm)
@@ -329,7 +297,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine myCollocatedCrossSF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir) ! Finished
+       subroutine crossSF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir) ! Finished
          ! This routine computes the ith component of A x B on a collocated mesh
          ! dir = (1,2,3)
          implicit none
@@ -359,17 +327,8 @@
           enddo; enddo; enddo
          !$OMP END PARALLEL DO
          case default
-           stop 'Error: dir must = 1,2,3 in myCollocatedCross.'
+           stop 'Error: dir must = 1,2,3 in collocatedCrossSF.'
          end select
-       end subroutine
-
-       subroutine myCollocatedCrossVF(AcrossB,A,B)
-         implicit none
-         type(vectorField),intent(inout) :: AcrossB
-         type(vectorField),intent(in) :: A,B
-         call myCollocatedCrossSF(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,1)
-         call myCollocatedCrossSF(AcrossB%y,A%x,A%y,A%z,B%x,B%y,B%z,2)
-         call myCollocatedCrossSF(AcrossB%z,A%x,A%y,A%z,B%x,B%y,B%z,3)
        end subroutine
 
        subroutine lapUniformCoeffSF(lapU,u,g)
@@ -378,75 +337,30 @@
          real(cp),dimension(:,:,:),intent(in) :: u
          type(grid),intent(in) :: g
          type(del) :: d
-         integer,dimension(3) :: s,sLapU
-
          call d%assign(lapU,u,g,2,1,1) ! Padding avoids calcs on fictive cells
             call d%add(lapU,u,g,2,2,1) ! Padding avoids calcs on fictive cells
             call d%add(lapU,u,g,2,3,1) ! Padding avoids calcs on fictive cells
-         s = shape(u); sLapU = shape(lapU)
-
-         ! Remove the source term on the boundaries:
-         ! This seems to be necessary to enforce div(U) = 0
-         ! This term acts as a source in Poisson's equation to
-         ! solve for pressure. When the wall-normal boundary values
-         ! are non-zero, the velocity does not satisfy div(u) = 0
-         ! after the pressure correction.
-         ! 
-         ! Note that the non-linear term is zero on the boundary since the
-         ! derivative of a velocity in any tangential direction will always
-         ! be zero within machine accuracy (for dirichlet conditions).
-         ! 
-         ! It seems that these viscous effects CANNOT be set to zero for 
-         ! duct flows with Neumann BCs at the exit without resulting in
-         ! severe numerical instibilities.
-         ! 
-             if (s(1).eq.g%c(1)%sn) then
-           lapU(2,:,:) = real(0.0,cp); lapU(sLapU(1)-1,:,:) = real(0.0,cp)
-         elseif (s(2).eq.g%c(2)%sn) then
-           lapU(:,2,:) = real(0.0,cp); lapU(:,sLapU(2)-1,:) = real(0.0,cp)
-         elseif (s(3).eq.g%c(3)%sn) then
-           lapU(:,:,2) = real(0.0,cp); lapU(:,:,sLapU(3)-1) = real(0.0,cp)
-         endif
        end subroutine
 
-       subroutine lapVariableCoeffSF(lapU,u,k,g) ! Finished, needs to be checked
-         ! lapVariableCoeff computes
-         ! 
-         !  lapU = ∇•(k∇f)
-         ! 
-         ! Where u and k are collocated.
-         ! Note that k may vary in space.
+       subroutine lapVariableCoeffSF(lapU,u,k,g)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: lapU
          real(cp),dimension(:,:,:),intent(in) :: u,k
          type(grid),intent(in) :: g
-         type(del) :: d
-         call d%assign(lapU,u,g,2,1,1)
-            call d%add(lapU,u,g,2,2,1)
-            call d%add(lapU,u,g,2,3,1)
+         real(cp),dimension(:,:,:),allocatable :: temp1
+         integer,dimension(3) :: s
+         s = shape(lapU)
+         allocate(temp1(s(1),s(2),s(3)))
+         call myCCVaryDel(temp1,u,k,g,1,1)
+         lapU = temp1
+         call myCCVaryDel(temp1,u,k,g,2,2)
+         lapU = lapU+temp1
+         call myCCVaryDel(temp1,u,k,g,3,3)
+         lapU = lapU+temp1
+         deallocate(temp1)
        end subroutine
 
-       subroutine lapUniformCoeffVF(lapU,u,g)
-         implicit none
-         type(vectorField),intent(inout) :: lapU
-         type(vectorField),intent(in) :: u
-         type(grid),intent(in) :: g
-         call lap(lapU%x,U%x,g)
-         call lap(lapU%y,U%y,g)
-         call lap(lapU%z,U%z,g)
-       end subroutine
-
-       subroutine lapVariableCoeffVF(lapU,u,k,g)
-         implicit none
-         type(vectorField),intent(inout) :: lapU
-         type(vectorField),intent(in) :: u,k
-         type(grid),intent(in) :: g
-         call lap(lapU%x,U%x,k%x,g)
-         call lap(lapU%y,U%y,k%y,g)
-         call lap(lapU%z,U%z,k%z,g)
-       end subroutine
-
-       subroutine div(divU,u,v,w,g) ! Finished
+       subroutine divSF(divU,u,v,w,g) ! Finished
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: divU
          real(cp),dimension(:,:,:),intent(in) :: u,v,w
@@ -459,67 +373,145 @@
          call zeroGhostPoints(divU)
        end subroutine
 
-
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-       ! ******************************* FACE BASED DERIVATIVES *********************************
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-
-       subroutine myFaceDiv(divU,u,v,w,g) ! Finished
+       subroutine gradSF(gradx,grady,gradz,u,g) ! Finsihed
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: divU
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
+         real(cp),dimension(:,:,:),intent(inout) :: gradx,grady,gradz
+         real(cp),dimension(:,:,:),intent(in) :: u
          type(grid),intent(in) :: g
          type(del) :: d
-         call d%assign(divU,u,g,1,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(divU,v,g,1,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(divU,w,g,1,3,1) ! Padding avoids calcs on fictive cells
-         call zeroGhostPoints(divU)
+         call d%assign(gradx,u,g,1,1,1) ! Padding avoids calcs on fictive cells
+         call d%assign(grady,u,g,1,2,1) ! Padding avoids calcs on fictive cells
+         call d%assign(gradz,u,g,1,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine myFaceLap(lapF,f,g) ! Finished
-         ! Consider migrating to momentum solver
-         ! try to zero boundaries instead of the whole 3D volume
+       subroutine curlSF(curlU,u,v,w,gd,dir) ! Finished, needs to be checked
+         ! collocatedCurl computes curlU (component dir) of
+         ! the collocated u,v,w field.
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: lapF
-         real(cp),dimension(:,:,:),intent(in) :: f
-         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: curlU
+         real(cp),dimension(:,:,:),intent(in) :: u,v,w
+         type(grid),intent(in) :: gd
+         integer,intent(in) :: dir
          type(del) :: d
-         integer,dimension(3) :: s,sdf
-         ! Padding is necessary here!!!
-         call d%assign(lapF,f,g,2,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapF,f,g,2,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapF,f,g,2,3,1) ! Padding avoids calcs on fictive cells
-         s = shape(f); sdf = shape(lapF)
+         select case (dir)
+         case (1); call d%assign(curlU,w,gd,1,2,0)
+                 call d%subtract(curlU,v,gd,1,3,0)
+         case (2); call d%assign(curlU,u,gd,1,3,0)
+                 call d%subtract(curlU,w,gd,1,1,0)
+         case (3); call d%assign(curlU,v,gd,1,1,0)
+                 call d%subtract(curlU,u,gd,1,2,0)
+         case default
+           stop 'Error: dir must = 1,2,3 in myCCCurl.'
+         end select
+       end subroutine
 
-         ! Remove the source term on the boundaries:
-         ! This seems to be necessary to enforce div(U) = 0
-         ! This term acts as a source in Poisson's equation to
-         ! solve for pressure. When the wall-normal boundary values
-         ! are non-zero, the velocity does not satisfy div(u) = 0
-         ! after the pressure correction.
+       ! ****************************************************************************************
+       ! ****************************************************************************************
+       ! ************************************ SPECIAL TERMS *************************************
+       ! ****************************************************************************************
+       ! ****************************************************************************************
+
+       subroutine CC2EdgeCurl(curl,u,v,w,gd,dir) ! Finished, needs to be checked
+         ! myCCCurl computes the component dir of the curl of (u,v,w). The
+         ! result lives on the edge. 
          ! 
-         ! Using this seems to produce the same result that 
-         ! MOONS was producing earlier. This has not been tested for
-         ! Neumann BCs yet.
+         ! This routine essentially interpolates the data from
+         ! the CC to F then performs a face2EdgeCurl.
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: curl
+         real(cp),dimension(:,:,:),intent(in) :: u,v,w
+         type(grid),intent(in) :: gd
+         integer,intent(in) :: dir
+         real(cp),dimension(:,:,:),allocatable :: tempfx,tempfy,tempfz
+         integer,dimension(3) :: s
+         type(del) :: d
+         s = shape(u)
+         select case (dir)
+         case (1)
+           allocate(tempfy(s(1),s(2)+1,s(3)))
+           allocate(tempfz(s(1),s(2),s(3)+1))
+           call myCellCenter2Face(tempfz,w,gd,3)
+           call myCellCenter2Face(tempfy,v,gd,2)
+           call d%assign(curl,tempfz,gd,1,2,0) ! dw/dy
+           call d%subtract(curl,tempfy,gd,1,3,0) ! dv/dz
+           deallocate(tempfy,tempfz)
+         case (2)
+           allocate(tempfx(s(1)+1,s(2),s(3)))
+           allocate(tempfz(s(1),s(2),s(3)+1))
+           call myCellCenter2Face(tempfz,w,gd,3)
+           call myCellCenter2Face(tempfx,u,gd,1)
+           call d%assign(curl,tempfx,gd,1,3,0) ! du/dz
+           call d%subtract(curl,tempfz,gd,1,1,0) ! dw/dx
+           deallocate(tempfx,tempfz)
+         case (3)
+           allocate(tempfx(s(1)+1,s(2),s(3)))
+           allocate(tempfy(s(1),s(2)+1,s(3)))
+           call myCellCenter2Face(tempfy,v,gd,2)
+           call myCellCenter2Face(tempfx,u,gd,1)
+           call d%assign(curl,tempfy,gd,1,1,0) ! dv/dx
+           call d%subtract(curl,tempfx,gd,1,2,0) ! du/dy
+           deallocate(tempfx,tempfy)
+         end select
+       end subroutine
+
+       subroutine myCCVaryDel(df,f,k,gd,dir1,dir2) ! Finished, needs to be checked
+         ! myCCVaryDel computes
          ! 
-         ! Note that the non-linear term is zero on the boundary since the
-         ! derivative of a velocity in any tangential direction will always
-         ! be zero within machine accuracy (for dirichlet conditions).
+         !     d/dxj (k df/dxi)
+         !        ^         ^
+         !        |         |
+         !       dir2      dir1
          ! 
-         ! It seems that these viscous effects CANNOT be set to zero for 
-         ! duct flows with Neumann BCs at the exit without resulting in
-         ! severe numerical instibilities.
+         ! f and df live at the cell center.
+         !
+         !     dir1 == dir2
+         !            upwind -> interpolate coefficient -> upwind
+         !     dir1 ≠ dir2
+         !            CD2 -> CD2
          ! 
-             if (s(1).eq.g%c(1)%sn) then
-           lapF(2,:,:) = real(0.0,cp); lapF(sdf(1)-1,:,:) = real(0.0,cp)
-         elseif (s(2).eq.g%c(2)%sn) then
-           lapF(:,2,:) = real(0.0,cp); lapF(:,sdf(2)-1,:) = real(0.0,cp)
-         elseif (s(3).eq.g%c(3)%sn) then
-           lapF(:,:,2) = real(0.0,cp); lapF(:,:,sdf(3)-1) = real(0.0,cp)
+         ! del should be capable of computing conservative derivatives.
+         ! This routine needs adjusting to use this capability since
+         ! it uses multiple cores more efficiently.
+         ! 
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: df
+         real(cp),dimension(:,:,:),intent(in) :: f,k
+         type(grid),intent(in) :: gd
+         integer,intent(in) :: dir1,dir2
+         real(cp),dimension(:,:,:),allocatable :: temp1,temp2
+         integer,dimension(3) :: s
+         integer :: x,y,z
+         type(del) :: d
+         s = shape(f)
+         select case (dir1)
+         case (1); x=1;y=0;z=0
+         case (2); x=0;y=1;z=0
+         case (3); x=0;y=0;z=1
+         case default
+           write(*,*) 'Error: dir1 must = 1,2,3 in myCCVaryDel.'; stop
+         end select
+
+         if (dir1.eq.dir2) then
+           allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
+           allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
+           call d%assign(temp1,f,gd,1,dir1,0)
+           call myCellCenter2Face(temp2,k,gd,dir1)
+           temp1 = temp1*temp2
+           call d%assign(temp2,temp1,gd,1,dir2,0)
+           df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)
+           deallocate(temp1,temp2)
+         else
+           allocate(temp1(s(1),s(2),s(3)))
+           allocate(temp2(s(1),s(2),s(3)))
+           call d%assign(temp1,f,gd,1,dir1,0)
+           temp1 = temp1*k
+           call d%assign(temp2,temp1,gd,1,dir2,0)
+           df = temp2
+           deallocate(temp1,temp2)
          endif
        end subroutine
+
+       ! ******************************* FACE BASED DERIVATIVES *********************************
 
        subroutine myFaceAdvect(psi,u,v,w,phi,g,dir) ! Finished
          ! Input shapes:
@@ -769,397 +761,6 @@
 
          deallocate(tempAveCC)
        end subroutine
-
-       subroutine myFaceCurl(curlU,u,v,w,g,dir) ! Finished?
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: curlU
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: g
-         integer,intent(in) :: dir
-         type(del) :: d
-
-         select case (dir)
-         case (1) ! x component
-           call d%assign(curlU,w,g,1,2,0)
-           call d%subtract(curlU,v,g,1,3,0)
-         case (2) ! y component
-           call d%assign(curlU,u,g,1,3,0)
-           call d%subtract(curlU,w,g,1,1,0)
-         case (3) ! z component
-           call d%assign(curlU,v,g,1,1,0)
-           call d%subtract(curlU,u,g,1,2,0)
-         case default
-           write(*,*) 'Error: dir must = 1,2,3 in myFaceCurl.'; stop
-         end select
-       end subroutine
-
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-       ! ******************************* CELL BASED DERIVATIVES *********************************
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-
-       subroutine myCC2CCDiv(divU,u,v,w,g) ! Finished
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: divU
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: g
-         type(del) :: d
-         call d%assign(divU,u,g,1,1,0)
-            call d%add(divU,v,g,1,2,0)
-            call d%add(divU,w,g,1,3,0)
-       end subroutine
-
-       subroutine CC2CCLapUnifCoeff(lapU,u,g) ! Finished
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: lapU
-         real(cp),dimension(:,:,:),intent(in) :: u
-         type(grid),intent(in) :: g
-         type(del) :: d
-         call d%assign(lapU,u,g,2,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapU,u,g,2,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapU,u,g,2,3,1) ! Padding avoids calcs on fictive cells
-       end subroutine
-
-       subroutine CC2CCLapVariCoeff(df,f,k,g,dir) ! Finished, needs to be checked
-         ! myCCVaryDel computes
-         ! 
-         !  df = ∇•(k∇f)
-         ! 
-         ! Where f and k live at the cell center.
-         ! Note that k may vary in space.
-         ! 
-         ! del should be capable of computing conservative derivatives.
-         ! This routine needs adjusting to use this capability since
-         ! it uses multiple cores more efficiently.
-         ! 
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: df
-         real(cp),dimension(:,:,:),intent(in) :: f,k
-         type(grid),intent(in) :: g
-         integer,intent(in) :: dir
-         real(cp),dimension(:,:,:),allocatable :: temp1,temp2
-         integer,dimension(3) :: s
-         integer :: x,y,z
-         type(del) :: d
-         s = shape(f)
-         select case (dir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: dir must = 1,2,3 in myCCVaryDel.'; stop
-         end select
-
-         allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
-         allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
-         call d%assign(temp1,f,g,1,dir,0)
-         call myCellCenter2Face(temp2,k,g,dir)
-         temp1 = temp1*temp2
-         call d%assign(temp2,temp1,g,1,dir,0)
-         df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)
-         deallocate(temp1,temp2)
-       end subroutine
-
-       subroutine myCC2FaceGrad(gradx,grady,gradz,p,g) ! Finsihed
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: gradx,grady,gradz
-         real(cp),dimension(:,:,:),intent(in) :: p
-         type(grid),intent(in) :: g
-         type(del) :: d
-         call d%assign(gradx,p,g,1,1,1) ! Padding avoids calcs on fictive cells
-         call d%assign(grady,p,g,1,2,1) ! Padding avoids calcs on fictive cells
-         call d%assign(gradz,p,g,1,3,1) ! Padding avoids calcs on fictive cells
-       end subroutine
-
-       subroutine myCC2CCDel(gradp,p,gd,dir) ! Finished
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: gradp
-         real(cp),dimension(:,:,:),intent(in) :: p
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
-         type(del) :: d
-         call d%assign(gradp,p,gd,1,dir,0)
-       end subroutine
-
-       subroutine myCCCurl(curl,u,v,w,gd,dir) ! Finished, needs to be checked
-         ! myCCCurl computes the component dir of the cell center-based
-         ! curl using a collocated derivative.
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: curl
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
-         type(del) :: d
-         select case (dir)
-         case (1); call d%assign(curl,w,gd,1,2,0)
-                 call d%subtract(curl,v,gd,1,3,0)
-         case (2); call d%assign(curl,u,gd,1,3,0)
-                 call d%subtract(curl,w,gd,1,1,0)
-         case (3); call d%assign(curl,v,gd,1,1,0)
-                 call d%subtract(curl,u,gd,1,2,0)
-         case default
-           stop 'Error: dir must = 1,2,3 in myCCCurl.'
-         end select
-       end subroutine
-
-       subroutine myCC2EdgeCurl(curl,u,v,w,gd,dir) ! Finished, needs to be checked
-         ! myCCCurl computes the component dir of the curl of (u,v,w). The
-         ! result lives on the edge. 
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: curl
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
-         real(cp),dimension(:,:,:),allocatable :: tempfx,tempfy,tempfz
-         integer,dimension(3) :: s
-         type(del) :: d
-         s = shape(u)
-         select case (dir)
-         case (1)
-           allocate(tempfy(s(1),s(2)+1,s(3)))
-           allocate(tempfz(s(1),s(2),s(3)+1))
-           call myCellCenter2Face(tempfz,w,gd,3)
-           call myCellCenter2Face(tempfy,v,gd,2)
-           call d%assign(curl,tempfz,gd,1,2,0) ! dw/dy
-           call d%subtract(curl,tempfy,gd,1,3,0) ! dv/dz
-           deallocate(tempfy,tempfz)
-         case (2)
-           allocate(tempfx(s(1)+1,s(2),s(3)))
-           allocate(tempfz(s(1),s(2),s(3)+1))
-           call myCellCenter2Face(tempfz,w,gd,3)
-           call myCellCenter2Face(tempfx,u,gd,1)
-           call d%assign(curl,tempfx,gd,1,3,0) ! du/dz
-           call d%subtract(curl,tempfz,gd,1,1,0) ! dw/dx
-           deallocate(tempfx,tempfz)
-         case (3)
-           allocate(tempfx(s(1)+1,s(2),s(3)))
-           allocate(tempfy(s(1),s(2)+1,s(3)))
-           call myCellCenter2Face(tempfy,v,gd,2)
-           call myCellCenter2Face(tempfx,u,gd,1)
-           call d%assign(curl,tempfy,gd,1,1,0) ! dv/dx
-           call d%subtract(curl,tempfx,gd,1,2,0) ! du/dy
-           deallocate(tempfx,tempfy)
-         end select
-       end subroutine
-
-       subroutine myCCVaryDel(df,f,k,gd,dir1,dir2) ! Finished, needs to be checked
-         ! myCCVaryDel computes
-         ! 
-         !     d/dxj (k df/dxi)
-         !        ^         ^
-         !        |         |
-         !       dir2      dir1
-         ! 
-         ! f and df live at the cell center.
-         !
-         !     dir1 == dir2
-         !            upwind -> interpolate coefficient -> upwind
-         !     dir1 ≠ dir2
-         !            CD2 -> CD2
-         ! 
-         ! del should be capable of computing conservative derivatives.
-         ! This routine needs adjusting to use this capability since
-         ! it uses multiple cores more efficiently.
-         ! 
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: df
-         real(cp),dimension(:,:,:),intent(in) :: f,k
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir1,dir2
-         real(cp),dimension(:,:,:),allocatable :: temp1,temp2
-         integer,dimension(3) :: s
-         integer :: x,y,z
-         type(del) :: d
-         s = shape(f)
-         select case (dir1)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: dir1 must = 1,2,3 in myCCVaryDel.'; stop
-         end select
-
-         if (dir1.eq.dir2) then
-           allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
-           allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
-           call d%assign(temp1,f,gd,1,dir1,0)
-           call myCellCenter2Face(temp2,k,gd,dir1)
-           temp1 = temp1*temp2
-           call d%assign(temp2,temp1,gd,1,dir2,0)
-           df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)
-           deallocate(temp1,temp2)
-         else
-           allocate(temp1(s(1),s(2),s(3)))
-           allocate(temp2(s(1),s(2),s(3)))
-           call d%assign(temp1,f,gd,1,dir1,0)
-           temp1 = temp1*k
-           call d%assign(temp2,temp1,gd,1,dir2,0)
-           df = temp2
-           deallocate(temp1,temp2)
-         endif
-       end subroutine
-
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-       ! ******************************* NODE BASED DERIVATIVES *********************************
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-
-       subroutine myNodeGrad(gradx,grady,gradz,f,gd) ! Not finished being developed...
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: gradx,grady,gradz
-         real(cp),dimension(:,:,:),intent(in) :: f
-         type(grid),intent(in) :: gd
-         type(del) :: d
-         ! call myNode2CellCenter(cellCenter,node,1,gd)
-         ! call myCellGrad(gradx,grady,gradz,f,gd)
-         call d%assign(gradx,f,gd,1,1,0)
-         call d%assign(grady,f,gd,1,2,0)
-         call d%assign(gradz,f,gd,1,3,0)
-       end subroutine
-
-       subroutine myNode2NodeDel(df,f,gd,dir) ! Finished but maybe not necessary?
-         ! This is the correct approach to taking the div(B).
-         ! it results in VERY low div(B) for the low Rem
-         ! approximation in both the source term AND
-         ! in the result.
-         ! node->del->node (collocated derivative)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: df
-         real(cp),dimension(:,:,:),intent(in) :: f
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
-         type(del) :: d
-         ! Padding is necessary for the divergence.
-         call d%assign(df,f,gd,1,dir,0)
-       end subroutine
-
-       subroutine myNode2NodeDelUpwind(df,f,gd,dir) ! Finished but maybe not necessary?
-         ! This is the correct approach to taking the div(B).
-         ! it results in VERY low div(B) for the low Rem
-         ! approximation in both the source term AND
-         ! in the result.
-         ! node->del->node (collocated derivative)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: df
-         real(cp),dimension(:,:,:),intent(in) :: f
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
-         integer,dimension(3) :: s
-         integer :: x,y,z
-         real(cp),dimension(:,:,:),allocatable :: tempe
-         type(del) :: d
-         ! Padding is necessary for the divergence.
-         select case (dir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: dir must = 1,2,3 in myNode2NodeDelUpwind.'; stop
-         end select
-         s = shape(df)
-         allocate(tempe(s(1)-x,s(2)-y,s(3)-z))
-         call myNode2edge(tempe,f,gd,dir)
-         call d%assign(df,tempe,gd,1,dir,0)
-         deallocate(tempe)
-       end subroutine
-
-       subroutine myNodeDiv(divU,u,v,w,gd) ! Finished, but needs improvement
-         ! Consider removing dependence on myNode2NodeDel, 
-         ! the derivative type is simple
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: divU
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         real(cp),dimension(:,:,:),allocatable :: temp
-         type(grid),intent(in) :: gd
-         integer,dimension(3) :: s
-         s = shape(u)
-         divU = real(0.0,cp)
-
-         allocate(temp(s(1),s(2),s(3)))
-         call myNode2NodeDelUpwind(temp,u,gd,1)
-         divU = temp
-         call myNode2NodeDelUpwind(temp,v,gd,2)
-         divU = divU + temp
-         call myNode2NodeDelUpwind(temp,w,gd,3)
-         divU = divU + temp
-         deallocate(temp)
-       end subroutine
-
-       subroutine myNodeCurl(curl,u,v,w,gd,dir) ! Finished
-         ! myNodeCurl computes the component dir of the node-based
-         ! curl using a collocated derivative. 
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: curl
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: gd
-         integer,intent(in) :: dir
-         type(del) :: d
-
-         select case (dir)
-         case (1)
-           call d%assign(curl,w,gd,1,2,0)
-           call d%subtract(curl,v,gd,1,3,0)
-         case (2)
-           call d%assign(curl,u,gd,1,3,0)
-           call d%subtract(curl,w,gd,1,1,0)
-         case (3)
-           call d%assign(curl,v,gd,1,1,0)
-           call d%subtract(curl,u,gd,1,2,0)
-         case default
-           write(*,*) 'Error: dir must = 1,2,3 in myNodeCurl.'; stop
-         end select
-       end subroutine
-
-       subroutine myNodeLap(lapU,u,g) ! Finished
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: lapU
-         real(cp),dimension(:,:,:),intent(in) :: u
-         type(grid),intent(in) :: g
-         type(del) :: d
-         call d%assign(lapU,u,g,2,1,1)
-         call d%add(   lapU,u,g,2,2,1)
-         call d%add(   lapU,u,g,2,3,1)
-         ! if (s(1).eq.g%c(1)%sn) then
-         !   lapU(2,:,:) = real(0.0,cp); lapU(sdf(1)-1,:,:) = real(0.0,cp)
-         ! elseif (s(2).eq.g%c(2)%sn) then
-         !   lapU(:,2,:) = real(0.0,cp); lapU(:,sdf(2)-1,:) = real(0.0,cp)
-         ! elseif (s(3).eq.g%c(3)%sn) then
-         !   lapU(:,:,2) = real(0.0,cp); lapU(:,:,sdf(3)-1) = real(0.0,cp)
-         ! endif
-       end subroutine
-
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-       ! ******************************* EDGE BASED DERIVATIVES *********************************
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-
-       subroutine myEdge2FaceCurl(curl,u,v,w,g,curlDir) ! Needs checking
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: curl
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
-         type(grid),intent(in) :: g
-         integer,intent(in) :: curlDir
-         type(del) :: d
-         select case (curlDir)
-         case (1);   call d%assign(curl,w,g,1,2,0)
-                   call d%subtract(curl,v,g,1,3,0)
-         case (2);   call d%assign(curl,u,g,1,3,0)
-                   call d%subtract(curl,w,g,1,1,0)
-         case (3);   call d%assign(curl,v,g,1,1,0)
-                   call d%subtract(curl,u,g,1,2,0)
-         case default
-           stop 'Error: curlDir must = 1,2,3 in myEdge2FaceCurl.'
-         end select
-       end subroutine
-
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-       ! ************************************ SPECIAL TERMS *************************************
-       ! ****************************************************************************************
-       ! ****************************************************************************************
 
        ! ************************************ CELL CENTER *************************************
 

@@ -1,4 +1,4 @@
-       module derivedProbes_mod
+       module probe_derived_mod
        ! Implementation:
        ! 
        ! iProbe:
@@ -59,8 +59,8 @@
        ! NOTE: init prints the index location if one exists.
        ! 
        ! use simParams_mod
-       use transientProbe_mod
-       use baseProbes_mod
+       use probe_transient_mod
+       use probe_base_mod
        use IO_tools_mod
 
        use grid_mod

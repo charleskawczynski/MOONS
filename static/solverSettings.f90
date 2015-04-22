@@ -1,10 +1,17 @@
       module solverSettings_mod
-
-      use constants_mod
       use simParams_mod
-      use myExceptions_mod
 
       implicit none
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
       private
 
@@ -57,20 +64,20 @@
         integer :: maxIterations
         logical :: maxIterationsTF
 
-        real(dpn) :: simulationTime
-        real(dpn) :: maxSimulationTime
+        real(cp) :: simulationTime
+        real(cp) :: maxSimulationTime
         logical :: maxSimulationTimeTF
 
-        real(dpn) :: CPUTime
-        real(dpn) :: maxCPUTime
+        real(cp) :: CPUTime
+        real(cp) :: maxCPUTime
         logical :: maxCPUTimeTF
 
-        real(dpn) :: tolerance
-        real(dpn) :: minTolerance
+        real(cp) :: tolerance
+        real(cp) :: minTolerance
         logical :: minToleranceTF
 
-        real(dpn) :: current
-        real(dpn) :: targetVal
+        real(cp) :: current
+        real(cp) :: targetVal
 
         logical :: minVal
         logical :: isset = .false.
@@ -165,7 +172,7 @@
       subroutine setSimulationTime(this,simulationTime)
         implicit none
         type(solverSettings),intent(inout) :: this
-        real(dpn),intent(in) :: simulationTime
+        real(cp),intent(in) :: simulationTime
         this%simulationTime = simulationTime
         if (this%maxSimulationTimeTF) then
           this%current = dble(simulationTime)
@@ -175,21 +182,21 @@
       function getSimulationTime(this) result(simulationTime)
         implicit none
         type(solverSettings),intent(in) :: this
-        real(dpn) :: simulationTime
+        real(cp) :: simulationTime
         simulationTime = this%simulationTime
       end function
 
       function getMaxSimulationTime(this) result(maxSimulationTime)
         implicit none
         type(solverSettings),intent(in) :: this
-        real(dpn) :: maxSimulationTime
+        real(cp) :: maxSimulationTime
         maxSimulationTime = this%maxSimulationTime
       end function
 
       subroutine setMaxSimulationTime(this,maxSimulationTime)
         implicit none
         type(solverSettings),intent(inout) :: this
-        real(dpn),intent(in) :: maxSimulationTime
+        real(cp),intent(in) :: maxSimulationTime
         this%maxSimulationTime = maxSimulationTime
         this%targetVal = dble(maxSimulationTime)
         this%maxSimulationTimeTF = .true.
@@ -209,7 +216,7 @@
       subroutine setCPUTime(this,CPUTime)
         implicit none
         type(solverSettings),intent(inout) :: this
-        real(dpn),intent(in) :: CPUTime
+        real(cp),intent(in) :: CPUTime
         this%CPUTime = CPUTime
         if (this%maxCPUTimeTF) then
           this%current = dble(CPUTime)
@@ -219,21 +226,21 @@
       function getCPUTime(this) result(CPUTime)
         implicit none
         type(solverSettings),intent(in) :: this
-        real(dpn) :: CPUTime
+        real(cp) :: CPUTime
         CPUTime = this%CPUTime
       end function
 
       function getMaxCPUTime(this) result(maxCPUTime)
         implicit none
         type(solverSettings),intent(in) :: this
-        real(dpn) :: maxCPUTime
+        real(cp) :: maxCPUTime
         maxCPUTime = this%maxCPUTime
       end function
 
       subroutine setMaxCPUTime(this,maxCPUTime)
         implicit none
         type(solverSettings),intent(inout) :: this
-        real(dpn),intent(in) :: maxCPUTime
+        real(cp),intent(in) :: maxCPUTime
         this%maxCPUTime = maxCPUTime
         this%targetVal = dble(maxCPUTime)
         this%maxCPUTimeTF = .true.
@@ -253,7 +260,7 @@
       subroutine setTolerance(this,tolerance)
         implicit none
         type(solverSettings),intent(inout) :: this
-        real(dpn),intent(in) :: tolerance
+        real(cp),intent(in) :: tolerance
         this%tolerance = tolerance
         if (this%minToleranceTF) then
           this%current = dble(tolerance)
@@ -263,21 +270,21 @@
       function getTolerance(this) result(tolerance)
         implicit none
         type(solverSettings),intent(in) :: this
-        real(dpn) :: tolerance
+        real(cp) :: tolerance
         tolerance = this%tolerance
       end function
 
       function getMinTolerance(this) result(minTolerance)
         implicit none
         type(solverSettings),intent(in) :: this
-        real(dpn) :: minTolerance
+        real(cp) :: minTolerance
         minTolerance = this%minTolerance
       end function
 
       subroutine setMinTolerance(this,minTolerance)
         implicit none
         type(solverSettings),intent(inout) :: this
-        real(dpn),intent(in) :: minTolerance
+        real(cp),intent(in) :: minTolerance
         this%minTolerance = minTolerance
         this%targetVal = dble(minTolerance)
         this%minToleranceTF = .true.

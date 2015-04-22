@@ -32,7 +32,6 @@
       ! http://www.serc.iisc.ernet.in/graduation-theses/Karthik_M.Tech._project_report.pdf
       ! http://people.sc.fsu.edu/~jburkardt/f_src/fftpack5.1/fftpack5.1.html
 
-      use constants_mod
       use solverSettings_mod
       use grid_mod
       use BCs_mod
@@ -44,6 +43,16 @@
       use myMG_mod
 
       implicit none
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
 
       private
       public :: myPoisson
@@ -58,8 +67,8 @@
       subroutine myPoisson_Jacobi(Jacobi,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(myJacobi),intent(inout) :: Jacobi
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
@@ -71,8 +80,8 @@
       subroutine myPoisson_SOR(SOR,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(mySOR),intent(inout) :: SOR
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
@@ -84,8 +93,8 @@
       subroutine myPoisson_ADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
@@ -97,8 +106,8 @@
       subroutine myPoisson_MG(MG,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: MG
-        real(dpn),dimension(:,:,:),intent(inout) :: u
-        real(dpn),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss

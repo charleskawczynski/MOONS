@@ -360,10 +360,7 @@
           ! This is not the correct way to compute the residuals
           ! since the time-dependent term is not included
           ! and has not reached SS in the one step
-          select case (ADI%gridType)
-          case (1); call CC2CCLap(ADI%lapu,u,g)
-          case (2); call myNodeLap(ADI%lapu,u,g)
-          end select
+          call lap(ADI%lapu,u,g)
           call compute(err,f(2:s(1)-1,2:s(2)-1,2:s(3)-1),ADI%lapu(2:s(1)-1,2:s(2)-1,2:s(3)-1))
           call print(err,'ADI Residuals for '//trim(adjustl(getName(ss))))
         endif
@@ -416,10 +413,7 @@
             call relax3D(ADI,u,ADI%ftemp,u_bcs,g)
 
 #ifdef _EXPORT_ADI_CONVERGENCE_
-            select case (ADI%gridType)
-            case (1); call CC2CCLap(ADI%lapu,u,g)
-            case (2); call myNodeLap(ADI%lapu,u,g)
-            end select
+            call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
             call compute(norms,real(0.0,cp),ADI%r)
@@ -436,10 +430,7 @@
             call relax3D(ADI,u,ADI%ftemp,u_bcs,g)
 
 #ifdef _EXPORT_ADI_CONVERGENCE_
-            select case (ADI%gridType)
-            case (1); call CC2CCLap(ADI%lapu,u,g)
-            case (2); call myNodeLap(ADI%lapu,u,g)
-            end select
+            call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
             call compute(norms,real(0.0,cp),ADI%r)
@@ -469,10 +460,7 @@
           write(*,*) 'Number of multi-scale sweeps = ',Nt
           write(*,*) 'Number of multi-scale time levels = ',ADI%nTimeLevels
           write(*,*) 'Number of ADI iterations = ',maxIt
-          select case (ADI%gridType)
-          case (1); call CC2CCLap(ADI%lapu,u,g)
-          case (2); call myNodeLap(ADI%lapu,u,g)
-          end select
+          call lap(ADI%lapu,u,g)
           ADI%r = ADI%lapu - ADI%ftemp
           call zeroGhostPoints(ADI%r)
           call compute(norms,real(0.0,cp),ADI%r)

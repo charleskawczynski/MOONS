@@ -14,7 +14,6 @@
       !     displayTF    = print residuals to screen (T,F)
 
       use coordinates_mod
-      use myDebug_mod
       use grid_mod
       use BCs_mod
       use solverSettings_mod
@@ -263,7 +262,7 @@
             mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
 
           ! 2) Get residual on finest level
-          call myNodeLap(mg(1)%lapU,mg(1)%u,mg(1)%g)
+          call lap(mg(1)%lapU,mg(1)%u,mg(1)%g)
           mg(1)%res = mg(1)%f - mg(1)%lapU
 
           s = shape(mg(1)%res)
@@ -284,10 +283,7 @@
             mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
 
 #ifdef _EXPORT_MG_CONVERGENCE_
-            select case (mg(1)%gt)
-            case (1); call CC2CCLap(mg(1)%lapu,mg(1)%u,mg(1)%g)
-            case (2); call myNodeLap(mg(1)%lapu,mg(1)%u,mg(1)%g)
-            end select
+            call lap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             mg(1)%res = mg(1)%lapu - mg(1)%f
             call zeroGhostPoints(mg(1)%res)
             call compute(norms,real(0.0,cp),mg(1)%res)
@@ -312,10 +308,7 @@
         if (displayTF) then
           write(*,*) 'Number of V-Cycles = ',i_MG
 
-          select case (mg(1)%gt)
-          case (1); call CC2CCLap(mg(1)%lapu,u,g)
-          case (2); call myNodeLap(mg(1)%lapu,u,g)
-          end select
+          call lap(mg(1)%lapu,u,g)
           mg(1)%res = mg(1)%lapu - mg(1)%f
           call zeroGhostPoints(mg(1)%res)
           call compute(norms,real(0.0,cp),mg(1)%res)
@@ -355,7 +348,7 @@
             mg(j+1)%ss,mg(j+1)%norms,mg(j+1)%displayTF)
 
           ! 3) Get residual
-          call myNodeLap(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%g)
+          call lap(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%g)
           mg(j+1)%res = mg(j+1)%f - mg(j+1)%lapU
           ! Zero boundary values
           s = shape(mg(j+1)%res)

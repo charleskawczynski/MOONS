@@ -1,7 +1,5 @@
        module MHDSolver_mod
        use simParams_mod
-       use constants_mod
-       use myDebug_mod
        use scalarField_mod
        use vectorField_mod
        use IO_transientFields_mod
@@ -10,8 +8,9 @@
        use griddata_mod
        use rundata_mod
        use myError_mod
-       use transientProbe_mod
+       use probe_transient_mod
        use delOps_mod
+       use vectorOps_mod
 
        use solverSettings_mod
        use BCs_mod
@@ -31,6 +30,8 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
+
+       real(cp),parameter :: zero = real(0.0,cp)
 
        private
        public :: MHDSolver
@@ -86,9 +87,9 @@
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
-             ind%B0%x = exp(-ind%omega*ind%t)
-             ind%B0%y = exp(-ind%omega*ind%t)
-             ind%B0%z = real(1.0,cp)
+             ! ind%B0%x = exp(-ind%omega*ind%t)
+             ! ind%B0%y = exp(-ind%omega*ind%t)
+             ! ind%B0%z = real(1.0,cp)
              ! ind%B0%x = real(0.0,cp)
              ! ind%B0%y = real(0.0,cp)
              ! ind%B0%z = exp(-ind%omega*ind%t)

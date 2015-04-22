@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Outline of Discrete Operators}
+
+There are several discrete operators in MOONS. This document discusses a general outline of data movement from its original location to its final location after an operator has been applied.
+
+In this document, N,CC,F,E represent Node (Cell Corner), Cell Center, Face, and Edge data respectively.
+
+\section{Divergence (D)}
+
+\begin{equation}
+	\text{N} \rightarrow \text{N} 
+	\qquad / \qquad 
+	\text{CC} \rightarrow \text{CC}
+	\qquad / \qquad 
+	\text{F} \rightarrow \text{CC}
+	\qquad / \qquad 
+	\text{E} \rightarrow \text{N}
+\end{equation}
+
+\section{Laplacian (L)}
+
+\begin{equation}
+	\text{N} \rightarrow \text{N} 
+	\qquad / \qquad 
+	\text{CC} \rightarrow \text{CC}
+	\qquad / \qquad 
+	\text{F} \rightarrow \text{F}
+	\qquad / \qquad 
+	\text{E} \rightarrow \text{E}
+\end{equation}
+
+\section{Gradient (G)}
+
+\begin{equation}
+	\text{N} \rightarrow \text{N} 
+	\qquad / \qquad 
+	\text{CC} \rightarrow \text{CC}
+\end{equation}
+
+\begin{equation}
+	\text{F} \rightarrow \text{CC}
+	\qquad / \qquad 
+	\text{CC} \rightarrow \text{F}
+	\qquad / \qquad 
+	\text{E} \rightarrow \text{N}
+	\qquad / \qquad 
+	\text{N} \rightarrow \text{E}
+\end{equation}
+
+\section{Curl (C)}
+
+\begin{equation}
+	\text{N} \rightarrow \text{N} 
+	\qquad / \qquad 
+	\text{CC} \rightarrow \text{CC}
+\end{equation}
+
+\begin{equation}
+	\text{F} \rightarrow \text{E}
+	\qquad / \qquad 
+	\text{E} \rightarrow \text{F}
+\end{equation}
+
+
+
+\section{Notes}
+
+Note that there is a symmetry between the primary grid and dual grid operators.
+
+Also, node that all of these operators should be capable of operating on collocated data with a result that lives on the original grid, which means that N$\rightarrow$N and CC$\rightarrow$CC are natural candidates for all operators.
+
+
+\end{document}

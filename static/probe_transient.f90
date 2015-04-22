@@ -1,4 +1,4 @@
-       module transientProbe_mod
+       module probe_transient_mod
        ! Implementation:
        ! 
        !       type(probe) :: p
@@ -11,8 +11,6 @@
        !         call apply(p)                                  ! exports transient data (n,d)
        !       enddo
        ! 
-       ! use simParams_mod
-       ! use constants_mod
        use IO_transientFields_mod
        use IO_tools_mod
 

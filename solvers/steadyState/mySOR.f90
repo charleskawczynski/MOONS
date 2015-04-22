@@ -231,11 +231,7 @@
           call applyAllBCs(u_bcs,u,g)
 
           if (getMinToleranceTF(ss)) then
-            select case (SOR%gridType)
-            case (1); call CC2CCLap(SOR%lapu,u,g)
-            case (2); call myNodeLap(SOR%lapu,u,g)
-            case (3); call myFaceLap(SOR%lapu,u,g)
-            end select
+            call lap(SOR%lapu,u,g)
             SOR%res = SOR%lapu - SOR%f
             call zeroGhostPoints(SOR%res)
             call compute(norms,real(0.0,cp),SOR%res)
@@ -243,11 +239,7 @@
           endif
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
-            select case (SOR%gridType)
-            case (1); call CC2CCLap(SOR%lapu,u,g)
-            case (2); call myNodeLap(SOR%lapu,u,g)
-            case (3); call myFaceLap(SOR%lapu,u,g)
-            end select
+            call lap(SOR%lapu,u,g)
             SOR%res = SOR%lapu - SOR%f
             call zeroGhostPoints(SOR%res)
             call compute(norms,real(0.0,cp),SOR%res)
@@ -281,11 +273,7 @@
           write(*,*) 'SOR parameter = ',SOR%omega
           write(*,*) '(Final,max) '//SOR%name//' iteration = ',ijk,maxIterations
 
-          select case (SOR%gridType)
-          case (1); call CC2CCLap(SOR%lapu,u,g)
-          case (2); call myNodeLap(SOR%lapu,u,g)
-          case (3); call myFaceLap(SOR%lapu,u,g)
-          end select
+          call lap(SOR%lapu,u,g)
           SOR%res = SOR%lapu - SOR%f
           call zeroGhostPoints(SOR%res)
           call compute(norms,real(0.0,cp),SOR%res)

@@ -1,5 +1,4 @@
        module rundata_mod
-       use constants_mod
        use simParams_mod
        use grid_mod
        use myError_mod
@@ -7,7 +6,19 @@
        use IO_tools_mod
        implicit none
 
-       ! Fixes / Improvements: 
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+       real(cp),parameter :: zero = real(0.0,cp)
+       real(cp),parameter :: one = real(1.0,cp)
+       real(cp),parameter :: two = real(2.0,cp)
+
        private
        
        character(len=5),parameter :: hfmt = 'F15.6'
@@ -23,32 +34,32 @@
        type rundata
          private
          ! Characteristic Scales
-         real(dpn) :: t_c          ! Characteristic time (advective)
-         real(dpn) :: U_c          ! Characteristic velocity
-         real(dpn) :: L_c          ! Characteristic length
-         real(dpn) :: t_nu         ! Characteristic time (momentum diffusion)
-         real(dpn) :: t_eta        ! Characteristic time (magnetic diffusion)
-         real(dpn) :: dtime        ! Time step (dimensionless)
-         real(dpn) :: ds           ! Pseudo time step for low Rem induction equation
-         real(dpn) :: time         ! Time (simulation)
+         real(cp) :: t_c          ! Characteristic time (advective)
+         real(cp) :: U_c          ! Characteristic velocity
+         real(cp) :: L_c          ! Characteristic length
+         real(cp) :: t_nu         ! Characteristic time (momentum diffusion)
+         real(cp) :: t_eta        ! Characteristic time (magnetic diffusion)
+         real(cp) :: dtime        ! Time step (dimensionless)
+         real(cp) :: ds           ! Pseudo time step for low Rem induction equation
+         real(cp) :: time         ! Time (simulation)
          ! Dimensionless Parameters
-         real(dpn) :: Re           ! Reynolds number
-         real(dpn) :: nu           ! Viscosity ( = 1/Re , dimensionless )
-         real(dpn) :: Ha           ! Hartmann number
-         real(dpn) :: N            ! Interaction number
-         real(dpn) :: Rem          ! Magnetic Reynolds number
-         real(dpn) :: eta          ! Resistivity ( = 1/Rem , dimensionless )
-         real(dpn) :: Pr_m         ! Magnetic Prandtl number
+         real(cp) :: Re           ! Reynolds number
+         real(cp) :: nu           ! Viscosity ( = 1/Re , dimensionless )
+         real(cp) :: Ha           ! Hartmann number
+         real(cp) :: N            ! Interaction number
+         real(cp) :: Rem          ! Magnetic Reynolds number
+         real(cp) :: eta          ! Resistivity ( = 1/Rem , dimensionless )
+         real(cp) :: Pr_m         ! Magnetic Prandtl number
          ! Stability
-         real(dpn) :: Fo           ! Fourier number
-         real(dpn) :: Co           ! Courant number
-         real(dpn) :: Fo_m         ! Magnetic Fourier number
-         real(dpn) :: u_grid       ! Grid velocity
-         real(dpn) :: nu_grid      ! Grid viscosity
-         real(dpn) :: Re_grid      ! Grid Reynolds number
-         real(dpn) :: Rem_grid     ! Magnetic Grid Reynolds number
-         real(dpn) :: dhMin,dhiMin ! Smallest spatial steps
-         real(dpn) :: umax         ! Maximum value of velocity component
+         real(cp) :: Fo           ! Fourier number
+         real(cp) :: Co           ! Courant number
+         real(cp) :: Fo_m         ! Magnetic Fourier number
+         real(cp) :: u_grid       ! Grid velocity
+         real(cp) :: nu_grid      ! Grid viscosity
+         real(cp) :: Re_grid      ! Grid Reynolds number
+         real(cp) :: Rem_grid     ! Magnetic Grid Reynolds number
+         real(cp) :: dhMin,dhiMin ! Smallest spatial steps
+         real(cp) :: umax         ! Maximum value of velocity component
          ! Solution Parameters
          logical :: solveCoupled   ! Coupled momentum / induction (T/F)
          integer :: solveBMethod   ! Method for solving for B-Field
@@ -62,12 +73,12 @@
          u,v,w,g_mom,g_ind,solveCoupled,solveBMethod)
          implicit none
          type(rundata),intent(inout) :: this
-         real(dpn), intent(in) :: dtime,ds,Re,Ha,Rem
-         real(dpn),dimension(:,:,:),intent(in) :: u,v,w
+         real(cp), intent(in) :: dtime,ds,Re,Ha,Rem
+         real(cp),dimension(:,:,:),intent(in) :: u,v,w
          type(grid), intent(in) :: g_mom,g_ind
          logical, intent(in) :: solveCoupled
          integer, intent(in) :: solveBMethod
-         real(dpn) :: tempMax1,tempMax2,tempMax3
+         real(cp) :: tempMax1,tempMax2,tempMax3
 
 
          ! *************** DIMENSIONLESS PARAMETERS **************
@@ -154,7 +165,7 @@
        subroutine updateTime(rd,time)
          implicit none
          type(rundata),intent(inout) :: rd
-         real(dpn), intent(in) :: time
+         real(cp), intent(in) :: time
          rd%time = time + rd%dTime
        end subroutine
 
@@ -163,56 +174,56 @@
          ! used in ALL equations.
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: dtime
+         real(cp) :: dtime
          dtime = this%dtime
        end function
 
        function getDPseudoTime(this) result(ds)
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: ds
+         real(cp) :: ds
          ds = this%ds
        end function
 
        function getFo(this) result(Fo)
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: Fo
+         real(cp) :: Fo
          Fo = this%Fo
        end function
 
        function getRe(this) result(Re)
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: Re
+         real(cp) :: Re
          Re = this%Re
        end function
 
        function getHa(this) result(Ha)
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: Ha
+         real(cp) :: Ha
          Ha = this%Ha
        end function
 
        subroutine setDtimeRundata(this,dtime)
          implicit none
          type(rundata),intent(inout) :: this
-         real(dpn),intent(in) :: dtime
+         real(cp),intent(in) :: dtime
          this%dtime = dtime
        end subroutine
 
        function getInteractionNumber(this) result(N)
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: N
+         real(cp) :: N
          N = this%N
        end function
 
        function getRem(this) result(Rem)
          implicit none
          type(rundata),intent(in) :: this
-         real(dpn) :: Rem
+         real(cp) :: Rem
          Rem = this%Rem
        end function
 

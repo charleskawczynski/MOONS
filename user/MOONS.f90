@@ -1,7 +1,5 @@
        module MOONS_mod
        use simParams_mod
-       use constants_mod
-       use myDebug_mod
        use IO_tools_mod
        use IO_scalarFields_mod
        use IO_vectorFields_mod
@@ -27,6 +25,7 @@
        use initializeBfield_mod
        use initializeSigmaMu_mod
 
+       ! use energySolver_mod
        use momentumSolver_mod
        use inductionSolver_mod
 
@@ -38,6 +37,17 @@
        use omp_lib
 
        implicit none
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+
        contains
 
        subroutine MOONS(dir)
@@ -46,13 +56,13 @@
          character(len=*),intent(in) :: dir ! Output directory
 
          ! ***************** USER DEFINED MHD VARIABLES *****************
-         real(dpn) :: Re = 1000.0d0
-         real(dpn) :: Ha = 100.0d0
-         real(dpn) :: Rem = 1.0d0
-         ! real(dpn) :: dTime = 0.025
-         ! real(dpn) :: dTime = 0.01d0   ! Case 3: LDC Re100Ha10
-         real(dpn) :: dTime = 0.00035d0  ! Case 4: LDC Re1000Ha100
-         real(dpn) :: ds = 1.0d-4     ! Case 4: LDC Re1000Ha100
+         real(cp) :: Re = 1000.0d0
+         real(cp) :: Ha = 100.0d0
+         real(cp) :: Rem = 1.0d0
+         ! real(cp) :: dTime = 0.025
+         ! real(cp) :: dTime = 0.01d0   ! Case 3: LDC Re100Ha10
+         real(cp) :: dTime = 0.00035d0  ! Case 4: LDC Re1000Ha100
+         real(cp) :: ds = 1.0d-4     ! Case 4: LDC Re1000Ha100
 
          ! integer :: NmaxMHD = 100    ! One hundred steps
          ! integer :: NmaxMHD = 5000    ! Five thousand steps
@@ -185,7 +195,7 @@
 
          ! ****************** CLEAN DIRECTORY ***************************
          call rmDir(dir) ! Does not work yet...
-         call myPause()
+         ! call myPause()
          ! **************** BUILD NEW DIRECTORY *************************
          call makeDir(dir)
          call makeDir(dir,'Tfield')

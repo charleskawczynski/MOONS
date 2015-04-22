@@ -251,10 +251,7 @@
           call applyAllBCs(u_bcs,u,g) ! Necessary with ghost nodes
 
           if (getMinToleranceTF(ss)) then
-            select case (Jacobi%gridType)
-            case (1); call CC2CCLap(Jacobi%lapu,u,g)
-            case (2); call myNodeLap(Jacobi%lapu,u,g)
-            end select
+            call lap(Jacobi%lapu,u,g)
             Jacobi%r = Jacobi%lapu - Jacobi%f
             call zeroGhostPoints(Jacobi%r)
             call compute(norms,real(0.0,cp),Jacobi%r)
@@ -262,10 +259,7 @@
           endif
 
 #ifdef _EXPORT_Jacobi_CONVERGENCE_
-            select case (Jacobi%gridType)
-            case (1); call CC2CCLap(Jacobi%lapu,u,g)
-            case (2); call myNodeLap(Jacobi%lapu,u,g)
-            end select
+            call lap(Jacobi%lapu,u,g)
             Jacobi%r = Jacobi%lapu - Jacobi%f
             call zeroGhostPoints(Jacobi%r)
             call compute(norms,real(0.0,cp),Jacobi%r)
@@ -299,10 +293,7 @@
           write(*,*) 'Jacobi parameter = ',Jacobi%omega
           write(*,*) '(Final,max) '//Jacobi%name//' iteration = ',ijk,maxIterations
 
-          select case (Jacobi%gridType)
-          case (1); call CC2CCLap(Jacobi%lapu,u,g)
-          case (2); call myNodeLap(Jacobi%lapu,u,g)
-          end select
+          call lap(Jacobi%lapu,u,g)
           Jacobi%r = Jacobi%lapu - Jacobi%f
           call zeroGhostPoints(Jacobi%r)
           call compute(norms,real(0.0,cp),Jacobi%r)
