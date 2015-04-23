@@ -28,7 +28,7 @@
        private
        public :: energy,init,delete,solve
 
-       public :: setDTime,setNmaxT,setPr
+       public :: setDTime,setNmaxT,setPe
 
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
@@ -50,9 +50,9 @@
        type energy
          character(len=6) :: name = 'energy'
          ! --- Vector fields ---
-         type(scalarField) :: T,Tstar               ! CC data
+         type(scalarField) :: T,Tstar,tempCC        ! CC data
          type(vectorField) :: q,F,k                 ! Face data
-         type(vectorField) :: U_cct                 ! Face data
+         type(vectorField) :: U_cct                 ! CC data
          real(cp) :: dT,beta
          ! --- Scalar fields ---
          type(scalarField) :: k_cc                  ! CC data
@@ -73,7 +73,7 @@
          real(cp) :: dTime            ! Time step
          real(cp) :: time             ! Time
 
-         real(cp) :: Re,Pr,Rem,Ec,Al  ! Reynolds, Prandtl, Magnetic Reynolds, Eckert, Alfen
+         real(cp) :: Pe,Re,Pr,Rem,Ec,Al  ! Reynolds, Prandtl, Magnetic Reynolds, Eckert, Alfen
        end type
 
        interface init;               module procedure initenergy;              end interface
@@ -198,11 +198,11 @@
          nrg%NmaxT = NmaxT
        end subroutine
 
-       subroutine setPr(nrg,Pr)
+       subroutine setPe(nrg,Pe)
          implicit none
          type(energy),intent(inout) :: nrg
-         real(cp),intent(in) :: Pr
-         nrg%Pr = Pr
+         real(cp),intent(in) :: Pe
+         nrg%Pe = Pe
        end subroutine
 
        ! ******************* EXPORT ****************************
@@ -294,8 +294,14 @@
          integer :: i
 
          call assign(nrg%Tstar,zero)
-         call assign(nrg%T,zero)
 
+         ! call CCadvect(nrg%Tstar,nrg%U_cct,nrg%T,g)
+         call subtract(zero,nrg%Tstar)
+
+         ! call CCdiffuse(nrg%tempCC,nrg%k,nrg%T,g)
+         call subtract(nrg%Tstar,nrg%tempCC)
+
+         call multiply(nrg%Tstar,nrg%dTime)
          call add(nrg%T,nrg%Tstar)
 
          ! Impose BCs:

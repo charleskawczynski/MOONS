@@ -31,6 +31,7 @@
        ! 
        ! 
        use del_mod
+       use delVC_mod
        use grid_mod
        use vectorField_mod
        use interpOps_mod
@@ -405,7 +406,7 @@
          deallocate(temp)
        end subroutine
 
-       subroutine CCBfieldDiffuseSF(div,Bx,By,Bz,sigmaInv,g,dir) ! Finished
+       subroutine CCBfieldDiffuseSF(div,B,sigmaInv,g,dir) ! Finished
          ! There are a lot of local allocatables
          ! 
          ! Returns the ith component of the diffusion term 
@@ -425,45 +426,48 @@
          ! For variable mu, Bx,By,Bz must be divided by mu
          ! before calling this routine.
          ! 
+         ! NOTE: sigmaInv lives on the cell face
+         ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: div
-         real(cp),dimension(:,:,:),intent(in) :: Bx,By,Bz,sigmaInv
+         type(vectorField),intent(in) :: B,sigmaInv
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
-         real(cp),dimension(:,:,:),allocatable :: temp1
+         real(cp),dimension(:,:,:),allocatable :: temp
          integer,dimension(3) :: s
+         type(delVC) :: d
          s = shape(div)
          div = real(0.0,cp)
-         allocate(temp1(s(1),s(2),s(3)))
+         allocate(temp(s(1),s(2),s(3)))
          ! -------------------------- d/dx [ sigmaInv ( d/dxi (Bx/mu) - d/dx (Bi/mu) ) ]
          select case (dir)
          case (2)
-         call CCVaryDel(temp1,Bx,sigmaInv,g,dir,1); div=div+temp1
-         call CCVaryDel(temp1,By,sigmaInv,g,1,1); div=div-temp1
+         call mixed(temp,B%x,sigmaInv%y,g,dir,1); div=div+temp
+         call d%subtract(div,B%y,sigmaInv%x,g,1,1)
          case (3)
-         call CCVaryDel(temp1,Bx,sigmaInv,g,dir,1); div=div+temp1
-         call CCVaryDel(temp1,Bz,sigmaInv,g,1,1); div=div-temp1
+         call mixed(temp,B%x,sigmaInv%z,g,dir,1); div=div+temp
+         call d%subtract(div,B%z,sigmaInv%x,g,1,1)
          end select
          ! -------------------------- d/dy [ sigmaInv ( d/dxi (By/mu) - d/dy (Bi/mu) ) ]
          select case (dir)
          case (1)
-         call CCVaryDel(temp1,By,sigmaInv,g,dir,2); div=div+temp1
-         call CCVaryDel(temp1,Bx,sigmaInv,g,2,2); div=div-temp1
+         call mixed(temp,B%y,sigmaInv%x,g,dir,2); div=div+temp
+         call d%subtract(div,B%x,sigmaInv%y,g,2,1)
          case (3)
-         call CCVaryDel(temp1,By,sigmaInv,g,dir,2); div=div+temp1
-         call CCVaryDel(temp1,Bz,sigmaInv,g,2,2); div=div-temp1
+         call mixed(temp,B%y,sigmaInv%z,g,dir,2); div=div+temp
+         call d%subtract(div,B%z,sigmaInv%y,g,2,1)
          end select
          ! -------------------------- d/dz [ sigmaInv ( d/dxi (Bz/mu) - d/dz (Bi/mu) ) ]
          select case (dir)
          case (1)
-         call CCVaryDel(temp1,Bz,sigmaInv,g,dir,3); div=div+temp1
-         call CCVaryDel(temp1,Bx,sigmaInv,g,3,3); div=div-temp1
+         call mixed(temp,B%z,sigmaInv%x,g,dir,3); div=div+temp
+         call d%subtract(div,B%x,sigmaInv%z,g,3,1)
          case (2)
-         call CCVaryDel(temp1,Bz,sigmaInv,g,dir,3); div=div+temp1
-         call CCVaryDel(temp1,By,sigmaInv,g,3,3); div=div-temp1
+         call mixed(temp,B%z,sigmaInv%y,g,dir,3); div=div+temp
+         call d%subtract(div,B%y,sigmaInv%z,g,3,1)
          end select
 
-         deallocate(temp1)
+         deallocate(temp)
        end subroutine
 
        ! ******************************* VECTOR-FIELD INTERFACE *******************************
@@ -508,15 +512,78 @@
          call CCBfieldAdvect(div%z,U%x,U%y,U%z,B%x,B%y,B%z,g,3)
        end subroutine
 
-       subroutine CCBfieldDiffuseVF(div,B,sigmaInv,g) ! Finished
+       subroutine CCBfieldDiffuseVF(div,B,sigmaInv,g)
          implicit none
          type(vectorField),intent(inout) :: div
-         type(vectorField),intent(in) :: B
-         real(cp),dimension(:,:,:) :: sigmaInv
+         type(vectorField),intent(in) :: B,sigmaInv
          type(grid),intent(in) :: g
-         call CCBfieldDiffuse(div%x,B%x,B%y,B%z,sigmaInv,g,1)
-         call CCBfieldDiffuse(div%y,B%x,B%y,B%z,sigmaInv,g,2)
-         call CCBfieldDiffuse(div%z,B%x,B%y,B%z,sigmaInv,g,3)
+         call CCBfieldDiffuse(div%x,B,sigmaInv,g,1)
+         call CCBfieldDiffuse(div%y,B,sigmaInv,g,2)
+         call CCBfieldDiffuse(div%z,B,sigmaInv,g,3)
        end subroutine
+
+
+       ! ******************************* OLD... *******************************
+
+       ! subroutine CCBfieldDiffuseSF(div,Bx,By,Bz,sigmaInv,g,dir) ! Finished
+       !   ! There are a lot of local allocatables
+       !   ! 
+       !   ! Returns the ith component of the diffusion term 
+       !   ! in the induction equation:
+       !   ! 
+       !   !   d/dxj [ sigmaInv ( d/dxi (Bj) - d/dxj (Bi) ) ]
+       !   ! 
+       !   ! or
+       !   ! 
+       !   !   d/dx [ sigmaInv ( d/dxi (Bx) - d/dx (Bi) ) ] + 
+       !   !   d/dy [ sigmaInv ( d/dxi (By) - d/dy (Bi) ) ] + 
+       !   !   d/dz [ sigmaInv ( d/dxi (Bz) - d/dz (Bi) ) ]
+       !   ! 
+       !   ! Where d/dxi is the derivative wrt the direction dir.
+       !   ! B is expected to be located at the cell center.
+       !   ! 
+       !   ! For variable mu, Bx,By,Bz must be divided by mu
+       !   ! before calling this routine.
+       !   ! 
+       !   implicit none
+       !   real(cp),dimension(:,:,:),intent(inout) :: div
+       !   real(cp),dimension(:,:,:),intent(in) :: Bx,By,Bz,sigmaInv
+       !   type(grid),intent(in) :: g
+       !   integer,intent(in) :: dir
+       !   real(cp),dimension(:,:,:),allocatable :: temp
+       !   integer,dimension(3) :: s
+       !   s = shape(div)
+       !   div = real(0.0,cp)
+       !   allocate(temp(s(1),s(2),s(3)))
+       !   ! -------------------------- d/dx [ sigmaInv ( d/dxi (Bx/mu) - d/dx (Bi/mu) ) ]
+       !   select case (dir)
+       !   case (2)
+       !   call CCVaryDel(temp,Bx,sigmaInv,g,dir,1); div=div+temp
+       !   call CCVaryDel(temp,By,sigmaInv,g,1,1); div=div-temp
+       !   case (3)
+       !   call CCVaryDel(temp,Bx,sigmaInv,g,dir,1); div=div+temp
+       !   call CCVaryDel(temp,Bz,sigmaInv,g,1,1); div=div-temp
+       !   end select
+       !   ! -------------------------- d/dy [ sigmaInv ( d/dxi (By/mu) - d/dy (Bi/mu) ) ]
+       !   select case (dir)
+       !   case (1)
+       !   call CCVaryDel(temp,By,sigmaInv,g,dir,2); div=div+temp
+       !   call CCVaryDel(temp,Bx,sigmaInv,g,2,2); div=div-temp
+       !   case (3)
+       !   call CCVaryDel(temp,By,sigmaInv,g,dir,2); div=div+temp
+       !   call CCVaryDel(temp,Bz,sigmaInv,g,2,2); div=div-temp
+       !   end select
+       !   ! -------------------------- d/dz [ sigmaInv ( d/dxi (Bz/mu) - d/dz (Bi/mu) ) ]
+       !   select case (dir)
+       !   case (1)
+       !   call CCVaryDel(temp,Bz,sigmaInv,g,dir,3); div=div+temp
+       !   call CCVaryDel(temp,Bx,sigmaInv,g,3,3); div=div-temp
+       !   case (2)
+       !   call CCVaryDel(temp,Bz,sigmaInv,g,dir,3); div=div+temp
+       !   call CCVaryDel(temp,By,sigmaInv,g,3,3); div=div-temp
+       !   end select
+       !   deallocate(temp)
+       ! end subroutine
+
 
        end module

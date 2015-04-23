@@ -37,8 +37,6 @@
 
        implicit none
 
-       ! Compiler Flags (_PARALLELIZE_DELOPS_)
-
        private
 
 #ifdef _SINGLE_PRECISION_

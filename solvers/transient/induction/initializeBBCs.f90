@@ -11,7 +11,7 @@
 
        private
 
-       integer,parameter :: preDefinedB_BCs = 1
+       integer,parameter :: preDefinedB_BCs = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0
@@ -117,7 +117,12 @@
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
          neumann = 5
          call initPseudoVacuumBCs(Bx_bcs,By_bcs,Bz_bcs,g)
-         if (cleanB) call setAllZero(phi_bcs,Nx,Ny,Nz,neumann)
+         
+         call setXminType(By_bcs,neumann)
+         call setXmaxType(By_bcs,neumann)
+         call setXminType(Bz_bcs,neumann)
+         call setXmaxType(Bz_bcs,neumann)
+
        end subroutine
 
        end module

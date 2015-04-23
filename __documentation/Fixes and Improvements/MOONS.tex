@@ -45,8 +45,6 @@ University of California Los Angeles, USA\\
 
 \section{Today}
 
-- Make vectorOps.f90
-
 - Test Poisson cases for face data
 
 - Test inductionSolver: Gauss-Seidel / cleaning procedure
@@ -70,8 +68,6 @@ This file contains all of the things that must be fixed / adjusted and improved 
 - Right now there are two instances of restartU and restartB, this inconsistency must to be resolved.
 
 - Re-run Hunt/Shercliff flows with uniform grid in BL and with p = 0 at outlet
-
-- Consider making a new module called vectorOps.f90 that uses vectorField, whereas delOps.f90 just uses real(cp)
 
 - Consider using ADI for uniform grids, this may be the best way to look at validity of pseudo vacuum BCs
 
@@ -103,31 +99,15 @@ This file contains all of the things that must be fixed / adjusted and improved 
 
 - Get armorall wipes for car
 
-\section{Analysis}
-
-- Derive new induction equation with Rem scaling
-
 \section{Issues}
 
 - The residuals for the PPE are large, but don't seem to be reflected in the solution. Compute and export the residuals and check where the residuals are large for both D and N BCs.
-
-- For some reason, this first L2 error of the PPE is
-15 E-324 or something. Maybe this is a compiler problem
-since compaq doesn't do this... Try to fix this...
-write(*,*) 'L2PPE',getL2(errPPE)
-
-
-\section{Version Control (git)}
-- Put the makefile into the git project and change output path appropriately
 
 \section{Code verification}
 
 - Try refinement studies to make sure order of accuracy is correct
 
 - Compute residuals for momentum/induction equations allow for transient exporting using pre-processor directives
-
-\section{Makefile}
-- Improve the make info function
 
 \section{Pre-processor Directives}
 - Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
@@ -166,13 +146,7 @@ are above 1000, if so just use uniform grid.
 
 
 \section{Stencils.f90}
-- Try out, and compare, non-uniform Coefficient operator with current approach (which is likely slow)
-
 - Consider re-formulating using conservative higher order finite difference methods by Moin
-
-\section{Del Ops}
-- Remove unnecessary routines from DelOps.f90
-
 
 \section{Boundary Conditions}
 - Highly consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
@@ -197,7 +171,7 @@ are above 1000, if so just use uniform grid.
 \section{CT Method}
 
 - Check if maxval(jxe),maxval(jye),maxval(jze) are zero with CT method (should be
-  close to zero (numerically) if equivalent to when mixed term is ignored)
+  close to zero (numerically) if equivalent to when mixed term is ignored) for non-uniform grids
 
 
 \subsection{Cleaning procedure}
@@ -209,13 +183,6 @@ are above 1000, if so just use uniform grid.
 - Make Poisson solvers (all) initialized outside of the call routine.
 
 - Look into benchmarking these solvers by looking at convergence rates
-
-
-\subsection{Jacobi}
-- Make capable of operating on face-data
-
-\subsection{SOR / Gauss-Seidel}
-- Make capable of operating on face-data
 
 \subsection{3D Douglas ADI}
 - Get working for fixed time step

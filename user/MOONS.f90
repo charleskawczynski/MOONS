@@ -258,10 +258,12 @@
 
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
+           call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
            call exportRaw(ind,ind%g,dir)
          endif
          if (exportICs) then
            call export(mom,mom%g,dir)
+           call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
            call export(ind,ind%g,dir)
          endif
 

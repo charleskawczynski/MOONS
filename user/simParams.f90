@@ -20,8 +20,8 @@
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
        logical :: minimizePrintedOutput     = .true.    ! (T/F)
-       logical :: nonUniformGridFluid       = .false.    ! (T/F)
-       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .true.    ! (T/F)
+       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -47,7 +47,7 @@
        !                                   1 : Explicit Euler
 
        ! ************************ U-FIELD ***********************
-       logical :: solveMomentum = .true.
+       logical :: solveMomentum = .false.
        logical :: restartU = .false.
        logical :: computeKU = .false.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
@@ -72,7 +72,7 @@
        logical :: computeKB = .true.    ! Compute magnetic energy at each time step
        logical :: computeKB0 = .false.   ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 4
+       integer,parameter :: solveBMethod = 5
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
@@ -94,7 +94,7 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .true.
+       logical :: solveCoupled = .false.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
@@ -112,7 +112,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 102
+       integer,parameter :: benchmarkCase = 1003
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 

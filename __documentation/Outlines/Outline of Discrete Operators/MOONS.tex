@@ -49,13 +49,20 @@ There are several discrete operators in MOONS. This document discusses a general
 
 In this document, N,CC,F,E represent Node (Cell Corner), Cell Center, Face, and Edge data respectively.
 
-\section{Divergence (D)}
+\section{Common to all}
+
+All of these operators should be capable of operating on collocated data with a result that lives on the original grid, which means that, in addition to the operators to follow, all operators include:
 
 \begin{equation}
 	\text{N} \rightarrow \text{N} 
 	\qquad / \qquad 
 	\text{CC} \rightarrow \text{CC}
-	\qquad / \qquad 
+\end{equation}
+
+
+\section{Divergence (D)}
+
+\begin{equation}
 	\text{F} \rightarrow \text{CC}
 	\qquad / \qquad 
 	\text{E} \rightarrow \text{N}
@@ -64,22 +71,12 @@ In this document, N,CC,F,E represent Node (Cell Corner), Cell Center, Face, and 
 \section{Laplacian (L)}
 
 \begin{equation}
-	\text{N} \rightarrow \text{N} 
-	\qquad / \qquad 
-	\text{CC} \rightarrow \text{CC}
-	\qquad / \qquad 
 	\text{F} \rightarrow \text{F}
 	\qquad / \qquad 
 	\text{E} \rightarrow \text{E}
 \end{equation}
 
 \section{Gradient (G)}
-
-\begin{equation}
-	\text{N} \rightarrow \text{N} 
-	\qquad / \qquad 
-	\text{CC} \rightarrow \text{CC}
-\end{equation}
 
 \begin{equation}
 	\text{F} \rightarrow \text{CC}
@@ -94,24 +91,92 @@ In this document, N,CC,F,E represent Node (Cell Corner), Cell Center, Face, and 
 \section{Curl (C)}
 
 \begin{equation}
-	\text{N} \rightarrow \text{N} 
-	\qquad / \qquad 
-	\text{CC} \rightarrow \text{CC}
-\end{equation}
-
-\begin{equation}
 	\text{F} \rightarrow \text{E}
 	\qquad / \qquad 
 	\text{E} \rightarrow \text{F}
 \end{equation}
 
+\section{Mixed (M)}
 
+This is for derivatives of the type
 
-\section{Notes}
+\begin{equation}
+	f''
+	=
+	\frac{\partial}{\partial x_j}
+	\left(
+	k
+	\frac{\partial f}{\partial x_i}
+	\right)
+\end{equation}
+
+Where $i$ may or may not equal $j$. Note that if $i=j$, then we just have the L operator. When $i\ne j$, we have several possibilities.
+
+\subsection{Rotated Control Volume}
+This case can easily be imagined by considering the mixed derivative as a divergence of some quantity within a rotated control volume
+
+\begin{equation}
+	\text{CC} \rightarrow \text{E} : 
+	\begin{cases}
+	f \in \text{CC} \\
+	k \in \text{F} \\
+	f'' \in \text{E}
+	\end{cases}
+	\qquad \qquad
+	\text{N} \rightarrow \text{F} : 
+	\begin{cases}
+	f \in \text{N} \\
+	k \in \text{E} \\
+	f'' \in \text{F}
+	\end{cases}
+\end{equation}
+
+\subsection{Shifted, and rotated control volumes}
+
+\begin{equation}
+	\text{F} \rightarrow \text{N}/\tilde{\text{F}} : 
+	\begin{cases}
+		f \in \text{F}
+		\begin{cases}
+		k \in \text{CC} 
+			\begin{cases}
+			f'' \in \tilde{\text{F}}
+			\end{cases}
+		\\
+		k \in \text{E}
+			\begin{cases}
+			f'' \in \text{N} \\
+			f'' \in \tilde{\text{F}}
+			\end{cases}
+		\end{cases}
+	\end{cases}
+	\qquad
+	\text{E} \rightarrow \text{CC}/\tilde{\text{E}} : 
+	\begin{cases}
+		f \in \text{E}
+		\begin{cases}
+		k \in \text{N} 
+			\begin{cases}
+			f'' \in \tilde{\text{E}}
+			\end{cases}
+		\\
+		k \in \text{F}
+			\begin{cases}
+			f'' \in \text{CC} \\
+			f'' \in \tilde{\text{E}}
+			\end{cases}
+		\end{cases}
+	\end{cases}
+\end{equation}
+
+First, note that $\tilde{\text{F}} \ne \text{F}$, i.e. the data starts on a face and the result lands on a neighboring face. 
+
+Second, note that there are multiple paths to reach a neighboring face, this set of multiple paths can be thought of as exchanging derivatives.
+
+The best explanation that I could think of to representing the last two cases are by imagining the control volume shifting so that the center is located about the cell face, or cell edge, and imagine a divergence of a rotated CV in that reference frame.
+
+\section{General notes}
 
 Note that there is a symmetry between the primary grid and dual grid operators.
-
-Also, node that all of these operators should be capable of operating on collocated data with a result that lives on the original grid, which means that N$\rightarrow$N and CC$\rightarrow$CC are natural candidates for all operators.
-
 
 \end{document}

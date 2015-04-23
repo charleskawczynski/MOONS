@@ -5,6 +5,8 @@ else
     PATHSEP2 = /
 endif
 PS = $(strip $(PATHSEP2))
+PS1 = $(strip \)
+extf90 = $(strip .f90)
 
 ifdef SystemRoot
 	RM = del
@@ -14,6 +16,7 @@ endif
 
 # ************* DIRECTORY SETTINGS ******************
 SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS
+SRC_DIR1 = C:$(PS1)Users$(PS1)Charlie$(PS1)Documents$(PS1)GitHub$(PS1)MOONS
 
 ROOT_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
 MOD_DIR = mod
@@ -27,6 +30,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)computations \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState \
 	$(SRC_DIR)$(PS)solvers$(PS)transient \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction
 
@@ -77,8 +81,7 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
 FCFLAGS += -D_PARALLELIZE_Jacobi_
-# FCFLAGS += -D_PARALLELIZE_SOR_
-FCFLAGS += -D_PARALLELIZE_SOR_OLD
+FCFLAGS += -D_PARALLELIZE_SOR_
 FCFLAGS += -D_PARALLELIZE_VECTOR_FIELD_
 FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 
@@ -107,13 +110,16 @@ TARGET = MOONS
 # **************** SOURCE FILES *********************
 
 SRCS_F =\
-	$(SRC_DIR)$(PS)user$(PS)constants.f90 \
-	$(SRC_DIR)$(PS)static$(PS)myExceptions.f90 \
-	$(SRC_DIR)$(PS)static$(PS)myDebug.f90 \
 	$(SRC_DIR)$(PS)static$(PS)scalarField.f90 \
 	$(SRC_DIR)$(PS)static$(PS)vectorField.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_tecplotHeaders.f90 \
+	$(SRC_DIR)$(PS)static$(PS)IO_scalarBase.f90 \
+	$(SRC_DIR)$(PS)static$(PS)IO_vectorBase.f90 \
+	$(SRC_DIR)$(PS)static$(PS)coordinates.f90 \
+	$(SRC_DIR)$(PS)static$(PS)gridGenTools.f90 \
+	$(SRC_DIR)$(PS)static$(PS)grid.f90 \
+	$(SRC_DIR)$(PS)static$(PS)gridGen.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_scalarFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_vectorFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_transientFields.f90 \
@@ -123,21 +129,20 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)solverSettings.f90 \
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)myError.f90 \
-	$(SRC_DIR)$(PS)static$(PS)coordinates.f90 \
-	$(SRC_DIR)$(PS)static$(PS)grid.f90 \
-	$(SRC_DIR)$(PS)static$(PS)gridGenTools.f90 \
-	$(SRC_DIR)$(PS)static$(PS)gridGen.f90 \
 	$(SRC_DIR)$(PS)user$(PS)griddata.f90 \
 	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)del.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)delVC.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)interpOps.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)delOps.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_aux.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_discrete.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)applyBCs.f90 \
-	$(SRC_DIR)$(PS)static$(PS)transientProbe.f90 \
-	$(SRC_DIR)$(PS)static$(PS)baseProbes.f90 \
-	$(SRC_DIR)$(PS)static$(PS)derivedProbes.f90 \
+	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
+	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
+	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myTriSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)myJacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)mySOR.f90 \
@@ -145,11 +150,15 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)myMG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)myPoisson.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeK.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)initializeBBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)initializeBfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)initializeSigmaMu.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)initializeUBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)initializeUfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)energySolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)inductionSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \

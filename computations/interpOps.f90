@@ -78,8 +78,10 @@
 
        interface myCellCenter2Face;   module procedure myCellCenter2FaceSF;  end interface
        interface myCellCenter2Face;   module procedure myCellCenter2FaceVF;  end interface
+       interface myCellCenter2Face;   module procedure myCellCenter2Face2VF; end interface
        interface myCellCenter2Edge;   module procedure myCellCenter2EdgeSF;  end interface
        interface myCellCenter2Edge;   module procedure myCellCenter2EdgeVF;  end interface
+       interface myCellCenter2Edge;   module procedure myCellCenter2Edge2VF; end interface
        interface myCellCenter2Node;   module procedure myCellCenter2NodeSF;  end interface
        interface myCellCenter2Node;   module procedure myCellCenter2NodeVF;  end interface
 
@@ -88,8 +90,10 @@
 
        interface myNode2Face;         module procedure myNode2FaceSF;        end interface
        interface myNode2Face;         module procedure myNode2FaceVF;        end interface
+       interface myNode2Face;         module procedure myNode2Face2VF;       end interface
        interface myNode2Edge;         module procedure myNode2EdgeSF;        end interface
        interface myNode2Edge;         module procedure myNode2EdgeVF;        end interface
+       interface myNode2Edge;         module procedure myNode2Edge2VF;       end interface
 
        contains
 
@@ -509,6 +513,16 @@
          call myCellCenter2Face(face%z,cellCenter%z,g,3)
        end subroutine
 
+       subroutine myCellCenter2Face2VF(face,cellCenter,g)
+         implicit none
+         type(vectorField),intent(inout) :: face
+         real(cp),dimension(:,:,:),intent(in) :: cellCenter
+         type(grid),intent(in) :: g
+         call myCellCenter2Face(face%x,cellCenter,g,1)
+         call myCellCenter2Face(face%y,cellCenter,g,2)
+         call myCellCenter2Face(face%z,cellCenter,g,3)
+       end subroutine
+
        subroutine myCellCenter2NodeVF(node,cellCenter,g)
          implicit none
          type(vectorField),intent(inout) :: node
@@ -529,6 +543,16 @@
          call myCellCenter2Edge(edge%z,cellCenter%z,g,3)
        end subroutine
 
+       subroutine myCellCenter2Edge2VF(edge,cellCenter,g)
+         implicit none
+         type(vectorField),intent(inout) :: edge
+         real(cp),dimension(:,:,:),intent(in) :: cellCenter
+         type(grid),intent(in) :: g
+         call myCellCenter2Edge(edge%x,cellCenter,g,1)
+         call myCellCenter2Edge(edge%y,cellCenter,g,2)
+         call myCellCenter2Edge(edge%z,cellCenter,g,3)
+       end subroutine
+
        ! ****************************************************************************************
        ! ********************************* NODE INTERPOLATIONS **********************************
        ! ****************************************************************************************
@@ -543,6 +567,16 @@
          call myNode2Edge(edge%z,node%z,g,3)
        end subroutine
 
+       subroutine myNode2Edge2VF(edge,node,g)
+         implicit none
+         type(vectorField),intent(inout) :: edge
+         real(cp),dimension(:,:,:),intent(in) :: node
+         type(grid),intent(in) :: g
+         call myNode2Edge(edge%x,node,g,1)
+         call myNode2Edge(edge%y,node,g,2)
+         call myNode2Edge(edge%z,node,g,3)
+       end subroutine
+
        subroutine myNode2FaceVF(face,node,g)
          implicit none
          type(vectorField),intent(inout) :: face
@@ -551,6 +585,16 @@
          call myNode2Face(face%x,node%x,g,1)
          call myNode2Face(face%y,node%y,g,2)
          call myNode2Face(face%z,node%z,g,3)
+       end subroutine
+
+       subroutine myNode2Face2VF(face,node,g)
+         implicit none
+         type(vectorField),intent(inout) :: face
+         real(cp),dimension(:,:,:),intent(in) :: node
+         type(grid),intent(in) :: g
+         call myNode2Face(face%x,node,g,1)
+         call myNode2Face(face%y,node,g,2)
+         call myNode2Face(face%z,node,g,3)
        end subroutine
 
        ! ****************************************************************************************

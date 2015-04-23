@@ -81,6 +81,7 @@
 
          ! Boundary conditions
          type(BCs) :: u_bcs,v_bcs,w_bcs,p_bcs
+         ! type(vectorBCs) :: u_bcs
 
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          type(multiGrid),dimension(3) :: MG
@@ -352,9 +353,7 @@
 
            call subtract(mom%res,mom%TempVF)
 
-           call zeroGhostPoints(mom%res%x)
-           call zeroGhostPoints(mom%res%y)
-           call zeroGhostPoints(mom%res%z)
+           call zeroGhostPoints(mom%res)
 
            call compute(mom%norm_res,real(0.0,cp),mom%res%x)
            call set(mom%res_mom(1),mom%nstep,getL2(mom%norm_res))

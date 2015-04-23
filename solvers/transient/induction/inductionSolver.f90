@@ -59,7 +59,7 @@
          ! --- Vector fields ---
          type(vectorField) :: B,Bstar,B0,J_cc,U_cct,tempVF     ! CC data
          type(vectorField) :: J,E,sigmaInv_edge                ! Edge data
-         type(vectorField) :: F                                ! Face data
+         type(vectorField) :: F,sigmaInv_face                  ! Face data
          ! --- Scalar fields ---
          type(scalarField) :: sigma,sigmaInv,mu,muInv          ! CC data
          type(scalarField) :: divB,divJ,phi,temp               ! CC data
@@ -140,6 +140,8 @@
          call allocateY(ind%F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
          call allocateZ(ind%F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
+         call allocateVectorField(ind%sigmaInv_face,ind%F)
+
          ! --- Scalar Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
@@ -172,9 +174,8 @@
 
          call initSigmaMu(ind%sigma%phi,ind%mu%phi,g)
          call divide(one,ind%sigma)
-         call myCellCenter2Edge(ind%sigmaInv_edge%x,ind%sigma%phi,g,1)
-         call myCellCenter2Edge(ind%sigmaInv_edge%y,ind%sigma%phi,g,2)
-         call myCellCenter2Edge(ind%sigmaInv_edge%z,ind%sigma%phi,g,3)
+         call myCellCenter2Edge(ind%sigmaInv_edge,ind%sigma%phi,g)
+         call myCellCenter2Face(ind%sigmaInv_face,ind%sigma%phi,g)
          call initSigmaMu(ind%sigma%phi,ind%mu%phi,g)
 
          write(*,*) '     Materials initialized'
@@ -244,6 +245,7 @@
          call delete(ind%J)
          call delete(ind%E)
          call delete(ind%sigmaInv_edge)
+         call delete(ind%sigmaInv_face)
 
          call delete(ind%F)
          
@@ -504,7 +506,7 @@
 
            ! ------------- diffusion term -------------
            call divide(ind%B,ind%mu)
-           call CCBfieldDiffuse(ind%tempVF,ind%B,ind%sigmaInv%phi,g)
+           call CCBfieldDiffuse(ind%tempVF,ind%B,ind%sigmaInv_face,g)
            call multiply(ind%B,ind%mu)
 
            call multiply(ind%tempVF,ind%dTime)
@@ -673,7 +675,7 @@
          call myFace2CellCenter(ind%tempVF,ind%F,g)
 
          ! Subtract laplacian from B^n
-         call lap(ind%Bstar,ind%B,ind%sigmaInv%phi,g)
+         call lap(ind%Bstar,ind%B,ind%sigmaInv_face,g)
 
          ! ind%tempVF = ind%tempVF - ind%Bstar
          call subtract(ind%tempVF,ind%Bstar)
@@ -866,6 +868,19 @@
          call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
           U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
          U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
+
+         call uniformify(U_cct)
+       end subroutine
+
+       subroutine uniformify(U)
+         implicit none
+         type(vectorField),intent(inout) :: U
+         integer,dimension(3) :: s
+         integer :: i
+         s = shape(U%x)
+         do i=1,s(1)
+           U%x(i,:,:) = U%x(Nici1(1)+2,:,:)
+         enddo
        end subroutine
 
        end module
