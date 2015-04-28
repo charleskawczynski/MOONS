@@ -77,9 +77,9 @@
        ! benchmarkCase 1 (LDC: Purely Hydrodynamic / Insulating)
        ! integer,dimension(3),parameter :: Ni = 48, Nwtop = 0, Nwbot = 0
        ! benchmarkCase 2 (LDC: Conducting)
-       integer,dimension(3),parameter :: Ni = 40, Nwtop = 8, Nwbot = 8
+       ! integer,dimension(3),parameter :: Ni = 40, Nwtop = 8, Nwbot = 8
        ! benchmarkCase 3 (Duct: Purely Hydrodynamic / Insulating)
-       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
+       integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase 4 (Duct: Conducting)
        ! integer,dimension(3),parameter :: Ni = (/64,40,40/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
 

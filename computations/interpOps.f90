@@ -247,8 +247,8 @@
        subroutine myFace2CellCenterSF(cellCenter,face,g,faceDir)
          ! 1 interpolation routine (no allocation required)
          implicit none
-         real(cp),dimension(:,:,:),intent(in)    :: face        ! size = (Nn+1,Nt+2)
-         real(cp),dimension(:,:,:),intent(inout) :: cellCenter  ! size = (Nn+2,Nt+2)
+         real(cp),dimension(:,:,:),intent(inout) :: cellCenter
+         real(cp),dimension(:,:,:),intent(in)    :: face
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir
          call interp(cellCenter,face,g,faceDir)
@@ -271,8 +271,8 @@
          !    edgeDir ≠ faceDir        (requires 1 interpolation)
          ! 
          implicit none
-         real(cp),dimension(:,:,:),intent(in)    :: face ! size = (Nn+1,Nt+2)
-         real(cp),dimension(:,:,:),intent(inout) :: edge ! size = (Nn+1,Nt+1,Nt+2)
+         real(cp),dimension(:,:,:),intent(inout) :: edge
+         real(cp),dimension(:,:,:),intent(in)    :: face
          type(grid),intent(in) :: g
          integer,intent(in) :: edgeDir,faceDir
 
@@ -290,8 +290,8 @@
 
        subroutine myFaceAverage(faceAve,face,g,faceDir,aveLoc)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: face
          real(cp),dimension(:,:,:),intent(inout) :: faceAve
+         real(cp),dimension(:,:,:),intent(in) :: face
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir,aveLoc
          real(cp),dimension(:,:,:),allocatable :: cellCenter
@@ -313,8 +313,8 @@
 
        subroutine myFace2NodeSF(node,face,g,faceDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: face
          real(cp),dimension(:,:,:),intent(inout) :: node
+         real(cp),dimension(:,:,:),intent(in) :: face
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir
          real(cp),dimension(:,:,:),allocatable :: edge
@@ -348,8 +348,8 @@
 
        subroutine myCellCenter2FaceSF(face,cellCenter,g,faceDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: cellCenter
          real(cp),dimension(:,:,:),intent(inout) :: face
+         real(cp),dimension(:,:,:),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir
          call interp(face,cellCenter,g,faceDir)
@@ -358,8 +358,8 @@
 
        subroutine myCellCenter2NodeSF(node,cellCenter,g)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: cellCenter
          real(cp),dimension(:,:,:),intent(inout) :: node
+         real(cp),dimension(:,:,:),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),allocatable :: face,edge
          integer,dimension(3) :: sc,sn
@@ -376,8 +376,8 @@
 
        subroutine myCellCenter2EdgeSF(edge,cellCenter,g,edgeDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: cellCenter
          real(cp),dimension(:,:,:),intent(inout) :: edge
+         real(cp),dimension(:,:,:),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          integer,intent(in) :: edgeDir
          real(cp),dimension(:,:,:),allocatable :: faceTemp
@@ -406,8 +406,8 @@
 
        subroutine myNode2EdgeSF(edge,node,g,edgeDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: node
          real(cp),dimension(:,:,:),intent(inout) :: edge
+         real(cp),dimension(:,:,:),intent(in) :: node
          type(grid),intent(in) :: g
          integer,intent(in) :: edgeDir
          call interp(edge,node,g,edgeDir)
@@ -449,8 +449,8 @@
 
        subroutine myEdge2Face(face,edge,g,edgeDir,faceDir)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: edge
          real(cp),dimension(:,:,:),intent(inout) :: face
+         real(cp),dimension(:,:,:),intent(in) :: edge
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir,edgeDir
          integer :: orthDir

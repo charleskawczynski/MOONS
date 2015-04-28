@@ -43,7 +43,17 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
+\section{Culprits of divU not zero for duct flows}
+
+- zeroWallCoincidentBoundariesVF for F (NOT U, which contains the BCs for U)
+
+- zeroGhostPoints after div(divU,Ustar,g)
+
+- Somehow grad?
+
 \section{Today}
+
+- Remove unecessary sigma fields
 
 - Test Poisson cases for face data
 
@@ -51,7 +61,22 @@ University of California Los Angeles, USA\\
 
 - Finish documentation: non-uniform grid stencils/outline of results: develop a python script to solve the system symbollically.
 
-\section{To Do / Fixes / Improvements}
+- Look into Paul Roberts (UCLA)
+
+- Consider re-writing advect donor using interpolation and div
+
+- Try to see if B\_face can be used to compute J at the start of the induction solver.
+
+- Fix the explicit Neumann BCs in apply BCs. It looks like only 1st or 2nd order accuracy is capable for du/dn = 0
+
+- Make a summary of test cases performed so far
+-- U-field / B-field configuration 
+-- analytic solutions (if they exist)
+-- comparison results / discussion
+
+- Organize folders
+
+\section{This File}
 This file contains all of the things that must be fixed / adjusted and improved in MOONS. It is organized into pre-processing, Solution procedure, and post-processing sections to help manage organization of basically a glorified list.
 
 \section{Goals and Requirements}
@@ -59,6 +84,7 @@ This file contains all of the things that must be fixed / adjusted and improved 
 - Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
 
 - Compare methods for enforcing divB and trade-offs
+--Plot(Rem vs Runtime vs div(B))
 
 - Mimicking plasma disruption
 
