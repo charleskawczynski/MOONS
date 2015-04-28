@@ -316,10 +316,6 @@
 
          call zeroWallCoincidentBoundariesVF(mom%Ustar,g) ! CANNOT BE USED FOR DUCT FLOWS
 
-         ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%x,mom%u_bcs,mom%g)
-         ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%y,mom%v_bcs,mom%g)
-         ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%z,mom%w_bcs,mom%g)
-
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
            call div(mom%Temp%phi,mom%Ustar,g)
@@ -585,29 +581,6 @@
          call zeroWallCoincidentBoundaries(f%x,g)
          call zeroWallCoincidentBoundaries(f%y,g)
          call zeroWallCoincidentBoundaries(f%z,g)
-       end subroutine
-
-       subroutine zeroForcingOnNoFlowThroughBoundaries(u,u_bcs,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: u
-         type(BCs),intent(in) :: u_bcs
-         type(grid),intent(in) :: g
-         integer,dimension(3) :: s
-         s = shape(u)
-         
-         ! Interior Only
-         if (s(1).eq.g%c(1)%sn) then
-           if (getXminType(u_bcs).eq.1) u(2,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
-           if (getXmaxType(u_bcs).eq.1) u(s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
-         elseif (s(2).eq.g%c(2)%sn) then
-           if (getYminType(u_bcs).eq.1) u(2:s(1)-1,2,2:s(3)-1) = real(0.0,cp)
-           if (getYmaxType(u_bcs).eq.1) u(2:s(1)-1,s(2)-1,2:s(3)-1) = real(0.0,cp)
-         elseif (s(3).eq.g%c(3)%sn) then
-           if (getZminType(u_bcs).eq.1) u(2:s(1)-1,2:s(2)-1,2) = real(0.0,cp)
-           if (getZmaxType(u_bcs).eq.1) u(2:s(1)-1,2:s(2)-1,s(3)-1) = real(0.0,cp)
-         else
-          stop 'Error: no correct shape in momentumSolver.f90 in zeroForcingOnNoFlowThroughBoundaries'
-         endif
        end subroutine
 
        end module

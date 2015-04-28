@@ -869,7 +869,7 @@
           U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
          U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
 
-         call uniformify(U_cct)
+         ! call uniformify(U_cct)
        end subroutine
 
        subroutine uniformify(U)

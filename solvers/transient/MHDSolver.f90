@@ -88,9 +88,9 @@
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
-             ind%B0%x = exp(-ind%omega*ind%t)
-             ind%B0%y = exp(-ind%omega*ind%t)
-             ind%B0%z = real(1.0,cp)
+             ! ind%B0%x = exp(-ind%omega*ind%t)
+             ! ind%B0%y = exp(-ind%omega*ind%t)
+             ! ind%B0%z = real(1.0,cp)
              ! ind%B0%x = real(0.0,cp)
              ! ind%B0%y = real(0.0,cp)
              ! ind%B0%z = exp(-ind%omega*ind%t)
@@ -158,9 +158,12 @@
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
              call printPhysicalMinMax(mom%U,'u','v','w')
+             call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
              if (solveInduction) then
                call printPhysicalMinMax(ind%B,'Bx','By','Bz')
-               call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
+               ! call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
+               call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
+               call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
              endif
              write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)

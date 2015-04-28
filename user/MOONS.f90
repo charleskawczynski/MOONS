@@ -92,7 +92,11 @@
 
          ! ********** PREPARE BENCHMARK CASE IF DEFINED *****************
          select case (benchmarkCase)
-         case (1);   Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (1);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (2);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (3);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (4);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+
          case (50);  Re = 1970d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
@@ -145,7 +149,11 @@
          end select
 
          select case (benchmarkCase)
-         case (1);   NmaxPPE = 5; NmaxB = 0; NmaxMHD = 60000
+         case (1);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         case (2);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         case (3);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
+         case (4);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
+
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
@@ -206,6 +214,12 @@
 
          call printVersion()
          call exportVersion(dir)
+
+         select case(solveBMethod)
+         case(1:4)
+           if (NmaxB.lt.1) stop 'Error: NmaxB must be larger than 1 for low Rem cases'
+         case default
+         end select
 
          ! **************************************************************
          ! Initialize all grids

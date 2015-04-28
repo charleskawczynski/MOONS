@@ -9,7 +9,7 @@
        public :: initUfield
 
        logical,parameter :: restartU      = .false.
-       integer,parameter :: preDefinedU_ICs = 0
+       integer,parameter :: preDefinedU_ICs = 1
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
        !                                      2 : Parabolic Duct Flow (in x)

@@ -63,6 +63,11 @@
          sigma = real(1.0,cp); mu = real(1.0,cp)
          sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          select case (benchmarkCase)
+         case (1); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (2); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (3); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (4); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+
          ! Hydrodynamic cases
          case (100); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case (101); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
