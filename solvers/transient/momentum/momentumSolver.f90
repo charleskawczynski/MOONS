@@ -297,9 +297,6 @@
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%TempVF,mom%U,g)
-         call zeroWallCoincidentBoundariesVF(mom%TempVF,g)
-
-         ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
          call add(mom%Ustar,mom%TempVF)
 
@@ -307,14 +304,15 @@
          call add(mom%Ustar,mom%F)
 
          ! For Residual computation
-         if (getExportTransient(ss_MHD)) call assign(mom%res,mom%Ustar)
+         ! if (getExportTransient(ss_MHD)) call assign(mom%res,mom%Ustar)
+
+         ! Zero wall coincident forcing
+         call zeroWallCoincidentBoundariesVF(mom%Ustar,g)
 
          ! Solve with explicit Euler --------------------
          ! mom%Ustar = mom%U + dt*mom%Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
-
-         call zeroWallCoincidentBoundariesVF(mom%Ustar,g) ! CANNOT BE USED FOR DUCT FLOWS
 
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
@@ -337,30 +335,25 @@
            call subtract(mom%Ustar,mom%TempVF)
          endif
 
-         if (getExportTransient(ss_MHD)) then
-
-           call divide(mom%TempVF,dt)
-           call subtract(mom%res,mom%TempVF) ! res = RHS
-
-           ! Compute (u^n+1-u^n)/dt
-           call assign(mom%TempVF,mom%Ustar)
-           call subtract(mom%TempVF,mom%U)
-           call divide(mom%TempVF,dt)
-
-           call subtract(mom%res,mom%TempVF)
-
-           call zeroGhostPoints(mom%res)
-
-           call compute(mom%norm_res,real(0.0,cp),mom%res%x)
-           call set(mom%res_mom(1),mom%nstep,getL2(mom%norm_res))
-           call apply(mom%res_mom(1))
-           call compute(mom%norm_res,real(0.0,cp),mom%res%y)
-           call set(mom%res_mom(2),mom%nstep,getL2(mom%norm_res))
-           call apply(mom%res_mom(2))
-           call compute(mom%norm_res,real(0.0,cp),mom%res%z)
-           call set(mom%res_mom(3),mom%nstep,getL2(mom%norm_res))
-           call apply(mom%res_mom(3))
-         endif
+         ! if (getExportTransient(ss_MHD)) then
+         !   call divide(mom%TempVF,dt)
+         !   call subtract(mom%res,mom%TempVF) ! res = RHS
+         !   ! Compute (u^n+1-u^n)/dt
+         !   call assign(mom%TempVF,mom%Ustar)
+         !   call subtract(mom%TempVF,mom%U)
+         !   call divide(mom%TempVF,dt)
+         !   call subtract(mom%res,mom%TempVF)
+         !   call zeroGhostPoints(mom%res)
+         !   call compute(mom%norm_res,real(0.0,cp),mom%res%x)
+         !   call set(mom%res_mom(1),mom%nstep,getL2(mom%norm_res))
+         !   call apply(mom%res_mom(1))
+         !   call compute(mom%norm_res,real(0.0,cp),mom%res%y)
+         !   call set(mom%res_mom(2),mom%nstep,getL2(mom%norm_res))
+         !   call apply(mom%res_mom(2))
+         !   call compute(mom%norm_res,real(0.0,cp),mom%res%z)
+         !   call set(mom%res_mom(3),mom%nstep,getL2(mom%norm_res))
+         !   call apply(mom%res_mom(3))
+         ! endif
 
          ! mom%U = mom%Ustar
          call assign(mom%U,mom%Ustar)
@@ -492,11 +485,12 @@
            call writeToFile(g,mom%U%y,dir//'Ufield/','vfi')
            call writeToFile(g,mom%U%z,dir//'Ufield/','wfi')
            call writeToFile(g,mom%p%phi,dir//'Ufield/','pci')
-           if (solveMomentum) then
-             call writeToFile(g,mom%res%x,dir//'Ufield/','res_u')
-             call writeToFile(g,mom%res%y,dir//'Ufield/','res_v')
-             call writeToFile(g,mom%res%z,dir//'Ufield/','res_w')
-           endif
+           call writeToFile(g,mom%divU%phi,dir//'Ufield/','divUci')
+           ! if (solveMomentum) then
+           !   call writeToFile(g,mom%res%x,dir//'Ufield/','res_u')
+           !   call writeToFile(g,mom%res%y,dir//'Ufield/','res_v')
+           !   call writeToFile(g,mom%res%z,dir//'Ufield/','res_w')
+           ! endif
            write(*,*) '     finished'
          endif
        end subroutine

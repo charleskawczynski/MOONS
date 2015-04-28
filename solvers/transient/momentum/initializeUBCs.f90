@@ -18,7 +18,8 @@
        !                                      2 : No Slip Cavity
        !                                      3 : Duct Flow (Uniform Inlet)
        !                                      4 : Duct Flow (Fully Developed Inlet)
-       !                                      5 : Cylinder Driven Cavity Flow (tornado)
+       !                                      5 : Duct Flow (Neumann Inlet/Outlet)
+       !                                      6 : Cylinder Driven Cavity Flow (tornado)
 
        ! Lid Driven Cavity parameters:
        integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
@@ -88,27 +89,17 @@
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
          call setAllZero(p_bcs,Nx,Ny,Nz,5)
 
+         call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
+
          select case (preDefinedU_BCs)
-         case (1) ! Lid Driven Cavity
-           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
-           call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,&
-            drivenFace,drivenDirection,drivenSign)
-
-         case (2) ! No Slip Cavity
-           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
-
-         case (3) ! Duct Flow (uniform inlet)
-           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
-           call ductFlow_Uniform_Inlet(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
+         case (1); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,drivenFace,drivenDirection,drivenSign)
+         case (2); ! Leave default
+         case (3); call ductFlow_Uniform_Inlet(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
+                   call ductFlow_neumannOutlet(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
            ! call p_bcs_duct_flow(p_bcs,g)
-
-         case (4) ! Duct Flow (Fully Developed Profile)
-           call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs,g)
-           call fullyDevelopedDuctFlowBCs(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
-
-         case (5) ! Cylinder Driven Cavity Flow (tornado)
-           call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
-
+         case (4); call ductFlow_fullyDevelopedProfile(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
+         case (5); call ductFlow_neumannIO(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
+         case (6); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
          end select
@@ -144,14 +135,14 @@
          case (2); Nx = g%c(1)%sc; Ny = g%c(2)%sn; Nz = g%c(3)%sc
          case (3); Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sn
          case default
-         write(*,*) 'Error: dir must = 1,2,3 in lidDrivenBCs.';stop
+         stop 'Error: dir must = 1,2,3 in lidDrivenBCs.'
          end select
 
          select case (face)
          case (1) ! xmin
            allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
-           case (1); write(*,*) 'Lid driven BCs is violating flow through.';stop
+           case (1); stop 'Lid driven BCs is violating flow through.'
            case (2); call setXminVals(v_bcs,bvals)
            case (3); call setXminVals(w_bcs,bvals)
            end select
@@ -159,7 +150,7 @@
          case (2) ! xmax
            allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
-           case (1); write(*,*) 'Lid driven BCs is violating flow through.';stop
+           case (1); stop 'Lid driven BCs is violating flow through.'
            case (3); call setXmaxVals(v_bcs,bvals)
            case (2); call setXmaxVals(w_bcs,bvals)
            end select
@@ -168,7 +159,7 @@
            allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); call setYminVals(u_bcs,bvals)
-           case (2); write(*,*) 'Lid driven BCs is violating flow through.';stop
+           case (2); stop 'Lid driven BCs is violating flow through.'
            case (3); call setYminVals(w_bcs,bvals)
            end select
 
@@ -176,7 +167,7 @@
            allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
            select case (dir)
            case (1); call setYmaxVals(u_bcs,bvals)
-           case (2); write(*,*) 'Lid driven BCs is violating flow through.';stop
+           case (2); stop 'Lid driven BCs is violating flow through.'
            case (3); call setYmaxVals(w_bcs,bvals)
            end select
 
@@ -185,7 +176,7 @@
            select case (dir)
            case (1); call setZminVals(u_bcs,bvals)
            case (2); call setZminVals(v_bcs,bvals)
-           case (3); write(*,*) 'Lid driven BCs is violating flow through.';stop
+           case (3); stop 'Lid driven BCs is violating flow through.'
            end select
 
          case (6) ! zmax
@@ -193,7 +184,7 @@
            select case (dir)
            case (1); call setZmaxVals(u_bcs,bvals)
            case (2); call setZmaxVals(v_bcs,bvals)
-           case (3); write(*,*) 'Lid driven BCs is violating flow through.';stop
+           case (3); stop 'Lid driven BCs is violating flow through.'
            end select
 
          end select
@@ -213,7 +204,7 @@
          case (2); Nx = g%c(1)%sc; Ny = g%c(2)%sn; Nz = g%c(3)%sc
          case (3); Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sn
          case default
-         write(*,*) 'Error: ductDir must = 1,2,3 in lidDrivenBCs.';stop
+         stop 'Error: ductDir must = 1,2,3 in ductFlow_Uniform_Inlet.'
          end select
 
          select case (ductDir)
@@ -223,18 +214,10 @@
              call setXminType(u_bcs,1) ! Dirichlet
              allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setXminVals(u_bcs,bvals); deallocate(bvals)
-
-             call setXmaxType(u_bcs,3) ! Neumann
-             ! call setXmaxType(v_bcs,5) ! Neumann
-             ! call setXmaxType(w_bcs,5) ! Neumann
            case (-1)
              call setXmaxType(u_bcs,1) ! Dirichlet
              allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setXmaxVals(u_bcs,bvals); deallocate(bvals)
-
-             call setXminType(u_bcs,4) ! Neumann
-             ! call setXminType(v_bcs,5) ! Neumann
-             ! call setXminType(w_bcs,5) ! Neumann
            case default; stop 'posNeg must = 1,-1 in ductFlow_Uniform_Inlet'
            end select
          case (2)
@@ -243,18 +226,10 @@
              call setYminType(v_bcs,1) ! Dirichlet
              allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setYminVals(v_bcs,bvals); deallocate(bvals)
-
-             ! call setYmaxType(u_bcs,5) ! Neumann
-             call setYmaxType(v_bcs,4) ! Neumann
-             ! call setYmaxType(w_bcs,5) ! Neumann
            case (-1)
              call setYmaxType(v_bcs,1) ! Dirichlet
              allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setYmaxVals(v_bcs,bvals); deallocate(bvals)
-
-             ! call setYminType(u_bcs,5) ! Neumann
-             call setYminType(v_bcs,4) ! Neumann
-             ! call setYminType(w_bcs,5) ! Neumann
            case default; stop 'posNeg must = 1,-1 in ductFlow_Uniform_Inlet'
            end select
          case (3)
@@ -263,24 +238,90 @@
              call setZminType(w_bcs,1) ! Dirichlet
              allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setZminVals(w_bcs,bvals); deallocate(bvals)
-
-             ! call setZmaxType(u_bcs,5) ! Neumann
-             ! call setZmaxType(v_bcs,5) ! Neumann
-             call setZmaxType(w_bcs,4) ! Neumann
            case (-1)
              call setZmaxType(w_bcs,1) ! Dirichlet
              allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp))
              call setZmaxVals(w_bcs,bvals); deallocate(bvals)
-
-             ! call setZminType(u_bcs,5) ! Neumann
-             ! call setZminType(v_bcs,5) ! Neumann
-             call setZminType(w_bcs,4) ! Neumann
            case default; stop 'posNeg must = 1,-1 in ductFlow_Uniform_Inlet'
            end select
          end select
        end subroutine
 
-       subroutine fullyDevelopedDuctFlowBCs(u_bcs,v_bcs,w_bcs,g,dir,posNeg)
+       subroutine ductFlow_neumannIO(u_bcs,v_bcs,w_bcs,g,ductDir,posNeg)
+         implicit none
+         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(grid),intent(in) :: g
+         integer,intent(in) :: ductDir,posNeg
+         integer :: neumann_n,neumann_t
+
+         neumann_n = 3
+         neumann_t = 5
+
+         select case (ductDir)
+         case (1)
+           select case (posNeg)
+           case (1)
+             call setXminType(u_bcs,neumann_n)
+             call setXminType(v_bcs,neumann_t)
+             call setXminType(w_bcs,neumann_t)
+
+             call setXmaxType(u_bcs,neumann_n)
+             call setXmaxType(v_bcs,neumann_t)
+             call setXmaxType(w_bcs,neumann_t)
+           case (-1)
+             call setXmaxType(u_bcs,neumann_n)
+             call setXmaxType(v_bcs,neumann_t)
+             call setXmaxType(w_bcs,neumann_t)
+
+             call setXminType(u_bcs,neumann_n)
+             call setXminType(v_bcs,neumann_t)
+             call setXminType(w_bcs,neumann_t)
+           case default; stop 'posNeg must = 1,-1 in ductFlow_neumannIO'
+           end select
+         case (2)
+           select case (posNeg)
+           case (1)
+             call setYminType(u_bcs,neumann_t)
+             call setYminType(v_bcs,neumann_n)
+             call setYminType(w_bcs,neumann_t)
+
+             call setYmaxType(u_bcs,neumann_t)
+             call setYmaxType(v_bcs,neumann_n)
+             call setYmaxType(w_bcs,neumann_t)
+           case (-1)
+             call setYmaxType(u_bcs,neumann_t)
+             call setYmaxType(v_bcs,neumann_n)
+             call setYmaxType(w_bcs,neumann_t)
+
+             call setYminType(u_bcs,neumann_t)
+             call setYminType(v_bcs,neumann_n)
+             call setYminType(w_bcs,neumann_t)
+           case default; stop 'posNeg must = 1,-1 in ductFlow_neumannIO'
+           end select
+         case (3)
+           select case (posNeg)
+           case (1)
+             call setZminType(u_bcs,neumann_t)
+             call setZminType(v_bcs,neumann_t)
+             call setZminType(w_bcs,neumann_n)
+
+             call setZmaxType(u_bcs,neumann_t)
+             call setZmaxType(v_bcs,neumann_t)
+             call setZmaxType(w_bcs,neumann_n)
+           case (-1)
+             call setZmaxType(u_bcs,neumann_t)
+             call setZmaxType(v_bcs,neumann_t)
+             call setZmaxType(w_bcs,neumann_n)
+
+             call setZminType(u_bcs,neumann_t)
+             call setZminType(v_bcs,neumann_t)
+             call setZminType(w_bcs,neumann_n)
+           case default; stop 'posNeg must = 1,-1 in ductFlow_neumannIO'
+           end select
+         end select
+       end subroutine
+
+       subroutine ductFlow_fullyDevelopedProfile(u_bcs,v_bcs,w_bcs,g,dir,posNeg)
          ! This routine initializes a fully developed duct flow
          ! profile along direction dir.
          ! 
@@ -336,7 +377,7 @@
            allocate(hy(jmax)); hy = g%c(2)%hc
            allocate(u_temp(s(1),s(2)))
          case default
-         stop 'Error: dir must = 1,2,3 in fullyDevelopedDuctFlowBCs.'
+         stop 'Error: dir must = 1,2,3 in ductFlow_fullyDevelopedProfile.'
          end select
          alpha = width/height
 
@@ -377,19 +418,52 @@
          deallocate(hx,hy)
        end subroutine
 
-       subroutine fullyDevelopedBCs(u_bcs,v_bcs,w_bcs,dir)
-         ! This routine initializes a fully developed 
-         ! profile along direction dir. This routine assumes that the bvals
-         ! along dir are zero.
+       subroutine ductFlow_neumannOutlet(u_bcs,v_bcs,w_bcs,g,ductDir,posNeg)
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer,intent(in) :: dir
-         select case (dir)
-         case (1); call setXminType(u_bcs,4); call setXminType(u_bcs,4)
-         case (2); call setYminType(v_bcs,4); call setYminType(v_bcs,4)
-         case (3); call setZminType(w_bcs,4); call setZminType(w_bcs,4)
-         case default
-         stop 'Error: dir must = 1,2,3 in fullyDevelopedBCs.'
+         type(grid),intent(in) :: g
+         integer,intent(in) :: ductDir,posNeg
+         integer :: neumann_n,neumann_t
+         neumann_n = 3
+         neumann_t = 5
+
+         select case (ductDir)
+         case (1)
+           select case (posNeg)
+           case (1)
+             call setXmaxType(u_bcs,neumann_n)
+             call setXmaxType(v_bcs,neumann_t)
+             call setXmaxType(w_bcs,neumann_t)
+           case (-1)
+             call setXminType(u_bcs,neumann_n)
+             call setXminType(v_bcs,neumann_t)
+             call setXminType(w_bcs,neumann_t)
+           case default; stop 'posNeg must = 1,-1 in ductFlow_neumannOutlet'
+           end select
+         case (2)
+           select case (posNeg)
+           case (1)
+             call setYmaxType(u_bcs,neumann_t)
+             call setYmaxType(v_bcs,neumann_n)
+             call setYmaxType(w_bcs,neumann_t)
+           case (-1)
+             call setYminType(u_bcs,neumann_t)
+             call setYminType(v_bcs,neumann_n)
+             call setYminType(w_bcs,neumann_t)
+           case default; stop 'posNeg must = 1,-1 in ductFlow_neumannOutlet'
+           end select
+         case (3)
+           select case (posNeg)
+           case (1)
+             call setZmaxType(u_bcs,neumann_t)
+             call setZmaxType(v_bcs,neumann_t)
+             call setZmaxType(w_bcs,neumann_n)
+           case (-1)
+             call setZminType(u_bcs,neumann_t)
+             call setZminType(v_bcs,neumann_t)
+             call setZminType(w_bcs,neumann_n)
+           case default; stop 'posNeg must = 1,-1 in ductFlow_neumannOutlet'
+           end select
          end select
        end subroutine
 
@@ -478,12 +552,6 @@
 
          select case (dir)
          case (1) ! u = 0
-           ! u_bcs
-           Nx = g%c(1)%sn; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-           call setAllZero(u_bcs,Nx,Ny,Nz,2)
-           call setXminType(u_bcs,1)
-           call setXmaxType(u_bcs,1)
-
            ! v_bcs
            Nx = g%c(1)%sc; Ny = g%c(2)%sn; Nz = g%c(3)%sc
            call setAllZero(v_bcs,Nx,Ny,Nz,2)
