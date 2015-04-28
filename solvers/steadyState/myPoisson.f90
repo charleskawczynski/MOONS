@@ -90,6 +90,19 @@
         call solve(SOR,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
+      ! subroutine myPoisson_pseudoTimeStep(PTS,u,f,u_bcs,g,ss,err,displayTF)
+      !   implicit none
+      !   type(myPTS),intent(inout) :: PTS
+      !   real(cp),dimension(:,:,:),intent(inout) :: u
+      !   real(cp),dimension(:,:,:),intent(in) :: f
+      !   type(BCs),intent(in) :: u_bcs
+      !   type(grid),intent(in) :: g
+      !   type(solverSettings),intent(inout) :: ss
+      !   type(myError),intent(inout) :: err
+      !   logical,intent(in) :: displayTF
+      !   call solve(PTS,u,f,u_bcs,g,ss,err,displayTF)
+      ! end subroutine
+
       subroutine myPoisson_ADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI

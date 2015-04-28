@@ -83,7 +83,7 @@
 
            ! ************** SOLVE MOMENTUM EQUATION **********************
            if (solveMomentum) then
-             call solve(mom,mom%g,ss_MHD)
+             call solve(mom,mom%F,mom%g,ss_MHD)
            endif
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
@@ -91,9 +91,6 @@
              ind%B0%x = exp(-ind%omega*ind%t)
              ind%B0%y = exp(-ind%omega*ind%t)
              ind%B0%z = real(1.0,cp)
-             ! ind%B0%x = real(0.0,cp)
-             ! ind%B0%y = real(0.0,cp)
-             ! ind%B0%z = exp(-ind%omega*ind%t)
              call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
              call solve(ind,ind%U_cct,ind%g,ss_MHD)
              if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
@@ -116,7 +113,7 @@
 
            ! ************************** COMPUTE J CROSS B *******************************
            if (solveInduction) then
-             call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
+             call computeCurrent(ind%J,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
                call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
              else; call assign(mom%F,zero)
@@ -158,9 +155,11 @@
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
              call printPhysicalMinMax(mom%U,'u','v','w')
+             call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
              if (solveInduction) then
                call printPhysicalMinMax(ind%B,'Bx','By','Bz')
                call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
+               call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
              endif
              write(*,*) ' Time = ',mom%t
              call estimateRemaining(time,ss_MHD)

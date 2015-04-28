@@ -33,6 +33,7 @@
        use del_mod
        use delVC_mod
        use grid_mod
+       use scalarField_mod
        use vectorField_mod
        use interpOps_mod
        use ops_discrete_mod
@@ -468,6 +469,20 @@
          end select
 
          deallocate(temp)
+       end subroutine
+
+       subroutine advectDonorSF(adv,U,ui,temp,g)
+         ! Computes
+         !    adv_i = d/dxj (uj ui)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: adv
+         type(vectorField),intent(in) :: U
+         type(scalarField),intent(in) :: ui
+         type(vectorField),intent(inout) :: temp
+         type(grid),intent(in) :: g
+         call assign(temp,U)
+         call multiply(temp,ui)
+         call div(adv,temp,g)
        end subroutine
 
        ! ******************************* VECTOR-FIELD INTERFACE *******************************

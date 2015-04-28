@@ -99,13 +99,12 @@
          real(cp),intent(inout) :: e
          type(grid),intent(in) :: g
          real(cp) :: eTemp
-         integer :: i,j,k,pad
+         integer :: i,j,k
          integer,dimension(3) :: s
          s = shape(x)
-         pad = 15
          eTemp = real(0.0,cp) ! temp is necessary for reduction
          !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
-         do k=2,s(3)-1; do j=2,s(2)-1; do i=2+pad,s(1)-1-pad
+         do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
            eTemp = eTemp + (x(i,j,k)**real(2.0,cp) +&
                             y(i,j,k)**real(2.0,cp) +&
                             z(i,j,k)**real(2.0,cp))*g%c(1)%dhn(i)*&
@@ -114,18 +113,6 @@
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = etemp/g%volume
-
-         ! eTemp = real(0.0,cp) ! temp is necessary for reduction
-         ! !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
-         ! do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-         !   eTemp = eTemp + (x(i,j,k)**real(2.0,cp) +&
-         !                    y(i,j,k)**real(2.0,cp) +&
-         !                    z(i,j,k)**real(2.0,cp))*g%c(1)%dhn(i)*&
-         !                                            g%c(2)%dhn(j)*&
-         !                                            g%c(3)%dhn(k)
-         ! enddo; enddo; enddo
-         ! !$OMP END PARALLEL DO
-         ! e = etemp/g%volume
        end subroutine
 
        subroutine zeroGhostPointsSF(f)

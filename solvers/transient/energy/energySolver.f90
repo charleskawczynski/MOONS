@@ -48,7 +48,6 @@
        real(cp),parameter :: zero = real(0.0,cp)
 
        type energy
-         character(len=6) :: name = 'energy'
          ! --- Vector fields ---
          type(scalarField) :: T,Tstar,tempCC        ! CC data
          type(vectorField) :: q,F,k                 ! Face data

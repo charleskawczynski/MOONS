@@ -237,15 +237,15 @@
         write(newU,*) '------------------- KNOWN QUANTITIES ---------------------'
         write(newU,*) ''
 
-        write(newU,*) 'Number of iterations complete = ',this%N
+        write(newU,*) 'Iterations (complete) = ',this%N
 
         temp = this%runTimeAve; call getTimeWithUnits(temp,u)
-        write(newU,*) 'Average wall clock time per iteration = ',temp,' (', u,')'
+        write(newU,*) 'Time (average/iteration) = ',temp,' (', u,')'
 
         write(newU,*) 'Iterations per (s,h,d) = ',this%iterPerSec,this%iterPerHour,this%iterPerDay
 
         temp = this%runTimeCumulative; call getTimeWithUnits(temp,u)
-        write(newU,*) 'Total wall clock time passed = ',temp,' (', u,')'
+        write(newU,*) 'Time (Total passed) = ',temp,' (', u,')'
 
         write(newU,*) ''
         write(newU,*) '---------------- ESTIMATED QUANTITIES ---------------------'
@@ -253,12 +253,12 @@
         write(newU,*) 'Iterations (remaining/max) = ',this%NRemaining,this%NMax
 
         temp = this%estimatedTotal; call getTimeWithUnits(temp,u)
-        write(newU,*) 'Total wall clock time = ',temp,' (', u,')'
+        write(newU,*) 'Time (total) = ',temp,' (', u,')'
 
         temp = this%estimatedRemaining; call getTimeWithUnits(temp,u)
-        write(newU,*) 'Estimated wall clock time remaining = ',temp,' (', u,')'
+        write(newU,*) 'Time (remaining) = ',temp,' (', u,')'
 
-        write(newU,*) 'Percentage of process complete = ',this%percentageComplete
+        write(newU,*) 'Percentage complete = ',this%percentageComplete
 
         write(newU,*) ''
         write(newU,*) '***********************************************************'

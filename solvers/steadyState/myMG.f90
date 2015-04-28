@@ -25,6 +25,7 @@
       use IO_tools_mod
       use IO_scalarFields_mod
       use mySOR_mod
+      use myJacobi_mod
       implicit none
 
       private

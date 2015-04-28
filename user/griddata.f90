@@ -133,7 +133,8 @@
        ! integer,dimension(3),parameter :: Ni = (/65,45,45/), Nwtop = 0, Nwbot = 0     ! Insulating
        ! integer,dimension(3),parameter :: Ni = (/65,45,45/), Nwtop = (/0,5,0/), Nwbot = (/0,5,0/)     ! Conducting
        ! benchmarkCase = 1003
-       integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11 ! No slip
+       integer,dimension(3),parameter :: Ni = (/97,45,45/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/) ! Duct
        ! benchmarkCase = 1004
        ! integer,dimension(3),parameter :: Ni = 35, Nwtop = 0, Nwbot = 0
 
@@ -276,7 +277,8 @@
          hmin(1) = real(0.0,cp); hmax(1) = real(10.0,cp)
 
          case (1003); hmin = -one; hmax = one ! for xyz
-         hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
+         ! hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
+         hmin(1) = real(-10.1,cp); hmax(1) = real(10.1,cp)
 
          case (1004); hmin = zero; hmax = one ! for xyz
          case default
@@ -324,7 +326,8 @@
          betai(1) = 10000.0d0
 
          case (1003); betai = 1.04d0
-                      betai(1) = 1.004d0
+                      ! betai(1) = 1.004d0 ! No slip cavity
+                      betai(1) = 1.008d0 ! Duct
 
          case (1004); betai = 100.0d0
 
@@ -378,6 +381,7 @@
 !                       twtop(2) = 0.01d0;  twbot(2) = 0.01d0
 
          case (1003); twtop = 0.1d0;   twbot = 0.1d0
+                      twtop(1) = 0.0d0;  twbot(1) = 0.0d0
 
          case (1004); twtop = 0.0d0;   twbot = 0.0d0
 

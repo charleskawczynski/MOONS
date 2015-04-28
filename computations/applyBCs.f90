@@ -37,6 +37,25 @@
        !           .
        !           .
        !           .
+       ! 
+       ! IMPORTANT NOTES:
+       ! 
+       ! There are two types of Neumann BCs.
+       ! 
+       ! 1) Explicit Neuamann
+       !       - Uses one sided difference stencil to compute 
+       !         boundary value, then extrapolates to ghost
+       ! 
+       ! 2) Implicit Neuamann
+       !       - Only computes ghost values
+       ! 
+       ! Which one to use?
+       !     - Use the Explicit Neumann when both
+       !              - Data is wall coincident
+       !              - Matrix inversion is not used
+       !     - Use Implicit Neumann when
+       !              - Data is wall incoincident
+       ! 
 
        ! use vectorField_mod
        use BCs_mod
@@ -127,7 +146,9 @@
            case (6); u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-1)
            end select
          ! *************************** NEUMANN *****************************
-         case (3) ! Neumann - direct - wall coincident ~O(dh^2)
+         ! The explicit Neumann BCs need to be double checked, I believe the
+         ! formulas are correct for only du/dn = 0.
+         case (3) ! Explicit Neumann - direct - wall coincident ~O(dh)?
            select case (face)
            case (1); u(2,:,:) = u(3,:,:)
            case (2); u(:,2,:) = u(:,3,:)
@@ -144,7 +165,7 @@
            case (5); u(:,s,:) = u(:,s-2,:)
            case (6); u(:,:,s) = u(:,:,s-2)
            end select
-         case (4) ! Neumann - direct - wall coincident ~O(dh^2)
+         case (4) ! Implicit Neumann - direct - wall coincident ~O(dh^2)
            select case (face)
            case (1); u(1,:,:) = u(3,:,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
            case (2); u(:,1,:) = u(:,3,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
@@ -153,7 +174,7 @@
            case (5); u(:,s,:) = u(:,s-2,:) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
            case (6); u(:,:,s) = u(:,:,s-2) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
            end select
-         case (5) ! Neumann - interpolated - wall incoincident ~O(dh)
+         case (5) ! Implicit Neumann - interpolated - wall incoincident ~O(dh)
            select case (face)
            case (1); u(1,:,:) = u(2,:,:) + (hc(1)-hc(2))*bvals
            case (2); u(:,1,:) = u(:,2,:) + (hc(1)-hc(2))*bvals

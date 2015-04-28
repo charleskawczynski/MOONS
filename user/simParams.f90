@@ -47,9 +47,9 @@
        !                                   1 : Explicit Euler
 
        ! ************************ U-FIELD ***********************
-       logical :: solveMomentum = .false.
+       logical :: solveMomentum = .true.
        logical :: restartU = .false.
-       logical :: computeKU = .false.    ! Compute kinetic energy at each time step
+       logical :: computeKU = .true.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
        !                                   1 : Explicit Euler
        !                                   2 : Semi-Implicit 3D ADI (Douglas)
@@ -60,7 +60,7 @@
        !                                  3 : Upwind (not yet implemented)
        !                                  4 : Hybrid (not yet implemented)
 
-       real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 )
+       real(cp) :: lambdu = 0.5 ! Upwind blending parameter   ( 0 <= lambdu <= 1 )
        !                                                       pure         central
        !                                                      upwind       difference
 
@@ -94,7 +94,7 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .false.
+       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************

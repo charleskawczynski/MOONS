@@ -75,6 +75,8 @@
 #endif
 
        type momentum
+         ! No subscript implies face data.
+
          ! Field Quantities
          type(vectorField) :: U,Ustar,F,TempVF,res
          type(scalarField) :: p,Temp,divU
@@ -257,15 +259,16 @@
          mom%Re = Re
        end subroutine
 
-       subroutine solveMomentumEquation(mom,g,ss_MHD)
+       subroutine solveMomentumEquation(mom,F,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
+         type(vectorField),intent(in) :: F
          select case(solveUMethod)
-         case (1); call explicitEuler(mom,g,ss_MHD)
-         case (2); call semi_implicit_ADI(mom,g,ss_MHD)
+         case (1); call explicitEuler(mom,F,g,ss_MHD)
+         case (2); call semi_implicit_ADI(mom,F,g,ss_MHD)
          case default
          write(*,*) 'Error: solveUMethod must = 1,2 in solveMomentumEquation.';stop
          end select
@@ -273,12 +276,13 @@
          mom%nstep = mom%nstep + 1
        end subroutine
 
-       subroutine explicitEuler(mom,g,ss_MHD)
+       subroutine explicitEuler(mom,F,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
+         type(vectorField),intent(in) :: F
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
          dt = mom%dTime
@@ -291,30 +295,32 @@
          case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
          end select
 
-         ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
+         ! Ustar = (-real(1.0,cp))*TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%TempVF,mom%U,g)
+         ! Zero forcing BEFORE velocity of previous step is 
+         ! added (it contains the BCs, which must be present for duct flows).
          call zeroWallCoincidentBoundariesVF(mom%TempVF,g)
 
-         ! mom%Ustar = mom%Ustar + (real(1.0,cp)/Re)*mom%TempVF
+         ! Ustar = Ustar + 1/Re*TempVF
          call multiply(mom%TempVF,(real(1.0,cp)/Re))
          call add(mom%Ustar,mom%TempVF)
 
          ! Source Terms (e.g. N j x B) -----------------------------
-         call add(mom%Ustar,mom%F)
+         call add(mom%Ustar,F)
 
          ! For Residual computation
-         if (getExportTransient(ss_MHD)) call assign(mom%res,mom%Ustar)
+         ! if (getExportTransient(ss_MHD)) call assign(mom%res,mom%Ustar)
 
          ! Solve with explicit Euler --------------------
-         ! mom%Ustar = mom%U + dt*mom%Ustar
+         ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
 
-         call zeroWallCoincidentBoundariesVF(mom%Ustar,g) ! CANNOT BE USED FOR DUCT FLOWS
+         ! call zeroWallCoincidentBoundariesVF(mom%Ustar,g) ! CANNOT BE USED FOR DUCT FLOWS
 
          ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%x,mom%u_bcs,mom%g)
          ! call zeroForcingOnNoFlowThroughBoundaries(mom%Ustar%y,mom%v_bcs,mom%g)
@@ -323,9 +329,9 @@
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
            call div(mom%Temp%phi,mom%Ustar,g)
-           ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
+           ! Temp = 1/dt*Temp
            call divide(mom%Temp,dt)
-           call zeroGhostPoints(mom%Temp%phi)
+           call zeroGhostPoints(mom%Temp%phi) ! Does not matter since SOR doesn't reach
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
@@ -336,37 +342,32 @@
 
            call grad(mom%TempVF,mom%p%phi,g)
 
-           ! mom%Ustar = mom%Ustar - dt*mom%TempVF
+           ! Ustar = Ustar - dt*TempVF
            call multiply(mom%TempVF,dt)
            call subtract(mom%Ustar,mom%TempVF)
          endif
 
-         if (getExportTransient(ss_MHD)) then
+         ! if (getExportTransient(ss_MHD)) then
+         !   call divide(mom%TempVF,dt)
+         !   call subtract(mom%res,mom%TempVF) ! res = RHS
+         !   ! Compute (u^n+1-u^n)/dt
+         !   call assign(mom%TempVF,mom%Ustar)
+         !   call subtract(mom%TempVF,mom%U)
+         !   call divide(mom%TempVF,dt)
+         !   call subtract(mom%res,mom%TempVF)
+         !   call zeroGhostPoints(mom%res)
+         !   call compute(mom%norm_res,real(0.0,cp),mom%res%x)
+         !   call set(mom%res_mom(1),mom%nstep,getL2(mom%norm_res))
+         !   call apply(mom%res_mom(1))
+         !   call compute(mom%norm_res,real(0.0,cp),mom%res%y)
+         !   call set(mom%res_mom(2),mom%nstep,getL2(mom%norm_res))
+         !   call apply(mom%res_mom(2))
+         !   call compute(mom%norm_res,real(0.0,cp),mom%res%z)
+         !   call set(mom%res_mom(3),mom%nstep,getL2(mom%norm_res))
+         !   call apply(mom%res_mom(3))
+         ! endif
 
-           call divide(mom%TempVF,dt)
-           call subtract(mom%res,mom%TempVF) ! res = RHS
-
-           ! Compute (u^n+1-u^n)/dt
-           call assign(mom%TempVF,mom%Ustar)
-           call subtract(mom%TempVF,mom%U)
-           call divide(mom%TempVF,dt)
-
-           call subtract(mom%res,mom%TempVF)
-
-           call zeroGhostPoints(mom%res)
-
-           call compute(mom%norm_res,real(0.0,cp),mom%res%x)
-           call set(mom%res_mom(1),mom%nstep,getL2(mom%norm_res))
-           call apply(mom%res_mom(1))
-           call compute(mom%norm_res,real(0.0,cp),mom%res%y)
-           call set(mom%res_mom(2),mom%nstep,getL2(mom%norm_res))
-           call apply(mom%res_mom(2))
-           call compute(mom%norm_res,real(0.0,cp),mom%res%z)
-           call set(mom%res_mom(3),mom%nstep,getL2(mom%norm_res))
-           call apply(mom%res_mom(3))
-         endif
-
-         ! mom%U = mom%Ustar
+         ! U = Ustar
          call assign(mom%U,mom%Ustar)
 
          call applyAllBCs(mom%u_bcs,mom%U%x,g)
@@ -374,12 +375,13 @@
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
        end subroutine
 
-       subroutine semi_implicit_ADI(mom,g,ss_MHD)
+       subroutine semi_implicit_ADI(mom,F,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
+         type(vectorField),intent(in) :: F
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
 
@@ -399,8 +401,7 @@
 
          ! Source Terms (e.g. N j x B) -----------------------------
          ! mom%Ustar = mom%Ustar + real(1.0,cp)*mom%F
-         call multiply(mom%F,real(1.0,cp))
-         call add(mom%Ustar,mom%F)
+         call add(mom%Ustar,F)
 
          ! Solve momentum with ADI --------------------
          ! u_t = 1/Re*(u_xx + u_yy + u_zz) - f
@@ -409,14 +410,14 @@
          call setDt(mom%ADI_u,dt)
          call setAlpha(mom%ADI_u,real(1.0,cp)/Re)
 
-         call assign(mom%F,mom%Ustar)
-         call multiply(mom%F,real(-1.0,cp))
+         call assign(mom%TempVF,mom%Ustar)
+         call multiply(mom%TempVF,real(-1.0,cp))
 
-         call apply(mom%ADI_u,mom%U%x,mom%F%x,mom%u_bcs,g,&
+         call apply(mom%ADI_u,mom%U%x,mom%TempVF%x,mom%u_bcs,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
-         call apply(mom%ADI_u,mom%U%y,mom%F%y,mom%v_bcs,g,&
+         call apply(mom%ADI_u,mom%U%y,mom%TempVF%y,mom%v_bcs,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
-         call apply(mom%ADI_u,mom%U%z,mom%F%z,mom%w_bcs,g,&
+         call apply(mom%ADI_u,mom%U%z,mom%TempVF%z,mom%w_bcs,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
 
          call assign(mom%Ustar,mom%U)
@@ -496,11 +497,12 @@
            call writeToFile(g,mom%U%y,dir//'Ufield/','vfi')
            call writeToFile(g,mom%U%z,dir//'Ufield/','wfi')
            call writeToFile(g,mom%p%phi,dir//'Ufield/','pci')
-           if (solveMomentum) then
-             call writeToFile(g,mom%res%x,dir//'Ufield/','res_u')
-             call writeToFile(g,mom%res%y,dir//'Ufield/','res_v')
-             call writeToFile(g,mom%res%z,dir//'Ufield/','res_w')
-           endif
+           call writeToFile(g,mom%divU%phi,dir//'Ufield/','divUci')
+           ! if (solveMomentum) then
+           !   call writeToFile(g,mom%res%x,dir//'Ufield/','res_u')
+           !   call writeToFile(g,mom%res%y,dir//'Ufield/','res_v')
+           !   call writeToFile(g,mom%res%z,dir//'Ufield/','res_w')
+           ! endif
            write(*,*) '     finished'
          endif
        end subroutine
@@ -521,11 +523,7 @@
          call allocateVectorField(tempNVF,Nx,Ny,Nz)
          call myFace2Node(tempNVF,mom%u,g)
          call writeToFile(g,tempNVF,dir//'Ufield/','uni','vni','wni')
-         if (abs(abs(mom%t)-abs(1.0)).lt.(2.0*mom%dTime)) then
-           call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys_1','vni_phys_1','wni_phys_1')
-         else
-           call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
-         endif
+         call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
 
          ! ******************** EXPORT IN CELL CENTERS **********************
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
@@ -554,10 +552,13 @@
          integer,dimension(3) :: s
          s = shape(f)
          if (s(1).eq.g%c(1)%sn) then
+           ! f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
            f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
          elseif (s(2).eq.g%c(2)%sn) then
+           ! f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
            f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
          elseif (s(3).eq.g%c(3)%sn) then
+           ! f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
            f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
          else
           stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'

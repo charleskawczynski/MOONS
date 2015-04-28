@@ -18,6 +18,8 @@
        use del_mod
        use ops_discrete_mod
        use ops_physics_mod
+       use ops_aux_mod
+
        use BCs_mod
        use applyBCs_mod
        use solverSettings_mod
@@ -55,13 +57,21 @@
        real(cp),parameter :: one = real(1.0,cp)
 
        type induction
-         character(len=9) :: name = 'induction'
+         ! No subscript implies cell center.
          ! --- Vector fields ---
-         type(vectorField) :: B,Bstar,B0,J_cc,U_cct,tempVF     ! CC data
-         type(vectorField) :: J,E,sigmaInv_edge                ! Edge data
-         type(vectorField) :: F,sigmaInv_face                  ! Face data
+         type(vectorField) :: sigmaInv_face                  ! Face data
+
+         type(vectorField) :: B_face,temp_face                 ! Face data
+         type(vectorField) :: J_edge,E_edge                    ! Edge data
+         type(vectorField) :: B,Bstar,B0,J,tempVF              ! Cell Center data
+         type(vectorField) :: Bnm1
+         type(vectorField) :: U_cct                            ! Cell Center data
+         type(vectorField) :: sigma_edge                       ! Face data
+         ! type(vectorField) :: sigma_face                       ! Face data
+         ! type(vectorField) :: mu_face                          ! Face data
+
          ! --- Scalar fields ---
-         type(scalarField) :: sigma,sigmaInv,mu,muInv          ! CC data
+         type(scalarField) :: sigma,mu                         ! CC data
          type(scalarField) :: divB,divJ,phi,temp               ! CC data
          ! BCs:
          type(BCs) :: Bx_bcs,By_bcs,Bz_bcs
@@ -123,32 +133,32 @@
          call allocateVectorField(ind%B,Nx,Ny,Nz)
          call allocateVectorField(ind%Bstar,ind%B)
          call allocateVectorField(ind%B0,ind%B)
-         call allocateVectorField(ind%J_cc,ind%B)
+         call allocateVectorField(ind%J,ind%B)
          call allocateVectorField(ind%U_cct,ind%B)
          call allocateVectorField(ind%tempVF,ind%B)
 
          ! Edge Data
-         call allocateX(ind%J,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
-         call allocateY(ind%J,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
-         call allocateZ(ind%J,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+         call allocateX(ind%J_edge,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
+         call allocateY(ind%J_edge,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+         call allocateZ(ind%J_edge,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
 
-         call allocateVectorField(ind%E,ind%J)
-         call allocateVectorField(ind%sigmaInv_edge,ind%J)
+         call allocateVectorField(ind%E_edge,ind%J_edge)
+         call allocateVectorField(ind%sigma_edge,ind%J_edge)
 
          ! Face Data
-         call allocateX(ind%F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(ind%F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(ind%F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
+         call allocateX(ind%B_face,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
+         call allocateY(ind%B_face,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
+         call allocateZ(ind%B_face,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateVectorField(ind%sigmaInv_face,ind%F)
+         call allocateVectorField(ind%sigmaInv_face,ind%B_face)
+         call allocateVectorField(ind%temp_face,ind%B_face)
+         call allocateVectorField(ind%Bnm1,ind%B_face)
 
          ! --- Scalar Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
          call allocateField(ind%sigma,Nx,Ny,Nz)
-         call allocateField(ind%sigmaInv,ind%sigma)
          call allocateField(ind%mu,ind%sigma)
-         call allocateField(ind%muInv,ind%sigma)
          call allocateField(ind%phi,ind%sigma)
          call allocateField(ind%temp,ind%sigma)
 
@@ -164,6 +174,7 @@
 
          call initBfield(ind%B%x,ind%B%y,ind%B%z,ind%B0%x,ind%B0%y,ind%B0%z,g,dir)
          write(*,*) '     B-field initialized'
+         call myCellCenter2Face(ind%B_face,ind%B,g)
 
          ! call applyAllBCs(ind%B,ind%B_bcs,g)
 
@@ -174,7 +185,7 @@
 
          call initSigmaMu(ind%sigma%phi,ind%mu%phi,g)
          call divide(one,ind%sigma)
-         call myCellCenter2Edge(ind%sigmaInv_edge,ind%sigma%phi,g)
+         call myCellCenter2Edge(ind%sigma_edge,ind%sigma%phi,g)
          call myCellCenter2Face(ind%sigmaInv_face,ind%sigma%phi,g)
          call initSigmaMu(ind%sigma%phi,ind%mu%phi,g)
 
@@ -190,7 +201,7 @@
          .not.restartB,shape(ind%B%z),(shape(ind%B%z)+1)/2,g)
 
          call init(ind%probe_J,dir//'Jfield/','transient_Jx',&
-         .not.restartB,shape(ind%J_cc%x),(shape(ind%J_cc%x)+1)*2/3,g)
+         .not.restartB,shape(ind%J%x),(shape(ind%J%x)+1)*2/3,g)
 
          call init(ind%probe_divB,dir//'Bfield/','transient_divB',.not.restartB)
          call init(ind%probe_divJ,dir//'Jfield/','transient_divJ',.not.restartB)
@@ -235,24 +246,29 @@
        subroutine deleteInduction(ind)
          implicit none
          type(induction),intent(inout) :: ind
+         ! --- Vector Fields ---
+         ! CC data
          call delete(ind%B)
          call delete(ind%Bstar)
          call delete(ind%B0)
-         call delete(ind%J_cc)
+         call delete(ind%J)
          call delete(ind%U_cct)
          call delete(ind%tempVF)
 
-         call delete(ind%J)
-         call delete(ind%E)
-         call delete(ind%sigmaInv_edge)
+         ! Edge data
+         call delete(ind%J_edge)
+         call delete(ind%E_edge)
+         call delete(ind%sigma_edge)
          call delete(ind%sigmaInv_face)
 
-         call delete(ind%F)
+         ! Face data
+         call delete(ind%B_face)
+         call delete(ind%Bnm1)
+         call delete(ind%temp_face)
          
+         ! --- Scalar Fields ---
          call delete(ind%sigma)
-         call delete(ind%sigmaInv)
          call delete(ind%mu)
-         call delete(ind%muInv)
 
          call delete(ind%divB)
          call delete(ind%divJ)
@@ -331,7 +347,7 @@
            call apply(ind%probe_Bx,ind%nstep,ind%B%x)
            call apply(ind%probe_By,ind%nstep,ind%B%y)
            call apply(ind%probe_Bz,ind%nstep,ind%B%z)
-           call apply(ind%probe_J,ind%nstep,ind%J_cc%x)
+           call apply(ind%probe_J,ind%nstep,ind%J%x)
          endif
 
          if (getExportErrors(ss_MHD)) then
@@ -351,7 +367,7 @@
            write(*,*) 'Exporting RAW Solutions for B'
            call writeToFile(g,ind%B0,dir//'Bfield/','B0xct','B0yct','B0zct')
            call writeToFile(g,ind%B,dir//'Bfield/','Bxct','Byct','Bzct')
-           call writeToFile(g,ind%J_cc,dir//'Jfield/','jxct','jyct','jzct')
+           call writeToFile(g,ind%J,dir//'Jfield/','jxct','jyct','jzct')
            call writeToFile(g,ind%sigma%phi,dir//'material/','sigmac')
            call writeToFile(g,ind%divB%phi,dir//'Bfield/','divBct')
            call writeToFile(g,ind%divJ%phi,dir//'Jfield/','divJct')
@@ -377,13 +393,13 @@
            call allocateVectorField(tempVFn,Nx,Ny,Nz)
            call myCellCenter2Node(tempVFn,ind%B,g)
 
-           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt','Bynt','Bznt')
+           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt_phys','Bynt_phys','Bznt_phys')
 
            call myCellCenter2Node(tempVFn,ind%B0,g)
            ! call writeToFile(g,tempVFn,dir//'Bfield/','B0xnt','B0ynt','B0znt')
            call writeVecPhysical(g,tempVFn,dir//'Bfield/','B0xnt_phys','B0ynt_phys','B0znt_phys')
 
-           call myCellCenter2Node(tempVFn,ind%J_cc,g)
+           call myCellCenter2Node(tempVFn,ind%J,g)
            ! call writeToFile(g,tempVFn,dir//'Jfield/','jxnt','jynt','jznt')
            call writeVecPhysical(g,tempVFn,dir//'Jfield/','jxnt_phys','jynt_phys','jznt_phys')
 
@@ -546,32 +562,31 @@
 
          do i=1,ind%NmaxB
 
-           ! Compute current from appropriate fluxes:
+           ! May be needed depending on BCs (applied for B)
+           call myCellCenter2Face(ind%B_face,ind%B,g)
 
            ! J = curl(B_face)_edge
-           call myCellCenter2Face(ind%F,ind%B,g)
-           call curl(ind%J,ind%F,g)
+           call curl(ind%J_edge,ind%B_face,g)
 
-           ! Compute fluxes of u cross B0
+           ! temp = u cross B0
            call cross(ind%tempVF,U,ind%B0)
-           call myCellCenter2Edge(ind%E,ind%tempVF,g)
+           call myCellCenter2Edge(ind%E_edge,ind%tempVF,g)
 
-           ! E = j/sig - uxB
-           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-           call multiply(ind%J,ind%sigmaInv_edge)
-           call subtract(zero,ind%E)
-           call add(ind%E,ind%J)
+           ! E_edge = j_edge/sig_edge - (uxB)_edge
+           call divide(ind%J_edge,ind%sigma_edge)
+           call subtract(zero,ind%E_edge)
+           call add(ind%E_edge,ind%J_edge)
 
-           ! F = curl(E_edge)_face
-           call curl(ind%F,ind%E,g)
-
-           ! tempVF = interp(F)_face->cc
-           call myFace2CellCenter(ind%tempVF,ind%F,g)
+           ! B_face = curl(E_edge)_face
+           call curl(ind%temp_face,ind%E_edge,g)
 
            ! Add induced field of previous time step (B^n)
-           ! ind%B = ind%B - ind%dTime*ind%tempVF
-           call multiply(ind%tempVF,ind%dTime)
-           call subtract(ind%B,ind%tempVF)
+           ! B_face = B_face - dt*curl(E_edge)_face
+           call multiply(ind%temp_face,ind%dTime)
+           call subtract(ind%B_face,ind%temp_face)
+
+           ! B = interp(B_face)_face->CC
+           call myFace2CellCenter(ind%B,ind%B_face,g)
 
            ! Impose BCs:
            call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -595,42 +610,99 @@
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
 
-         ! Compute current from appropriate fluxes:
          ! Assumes curl(B0) = 0 (so B is not added to this)
          ! J = curl(B_face)_edge
-         call myCellCenter2Face(ind%F,ind%B,g)
-         call curl(ind%J,ind%F,g)
+         call myCellCenter2Face(ind%B_face,ind%B,g)
+         call curl(ind%J_edge,ind%B_face,g)
 
-         ! Compute fluxes of u cross (B-B0)
+         ! temp = u cross (B0+B)
          call add(ind%B,ind%B0)
          call cross(ind%tempVF,U,ind%B)
          call subtract(ind%B,ind%B0)
 
-         call myCellCenter2Edge(ind%E,ind%tempVF,g)
+         call myCellCenter2Edge(ind%E_edge,ind%tempVF,g)
 
-         ! E = 1/Rem*j/sig - uxB
-         ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-         call multiply(ind%J,ind%sigmaInv_edge)
-         call divide(ind%J,ind%Rem)
-         call subtract(zero,ind%E)
-         call add(ind%E,ind%J)
+         ! E_edge = 1/Rem*j_edge/sig_edge - (uxB)_edge
+         call divide(ind%J_edge,ind%sigma_edge)
+         call divide(ind%J_edge,ind%Rem)
+         call subtract(zero,ind%E_edge)
+         call add(ind%E_edge,ind%J_edge)
 
-         ! F = Curl(E_edge)_face
-         call curl(ind%F,ind%E,g)
-
-         ! tempVF = interp(F)_face->cc
-         call myFace2CellCenter(ind%tempVF,ind%F,g)
+         ! temp_face = curl(E_edge)_face
+         call curl(ind%temp_face,ind%E_edge,g)
 
          ! Add induced field of previous time step (B^n)
-         ! ind%B = ind%B - ind%dTime*ind%tempVF
-         call multiply(ind%tempVF,ind%dTime)
-         call subtract(ind%B,ind%tempVF)
+         ! B_face = B_face - dt*curl(E_edge)_face
+         call multiply(ind%temp_face,ind%dTime)
+         call subtract(ind%B_face,ind%temp_face)
 
-         ! Add time changing applied magnetic field
-         ind%tempVF%x = -ind%dTime*ind%omega*exp(-ind%omega*ind%t)
-         ind%tempVF%y = -ind%dTime*ind%omega*exp(-ind%omega*ind%t)
-         ind%tempVF%z = real(0.0,cp)
-         call subtract(ind%B,ind%tempVF)
+         ! B_face = B_face - dt*dB0_face/dt
+         ind%temp_face%x = -ind%omega*exp(-ind%omega*ind%t)
+         ind%temp_face%y = -ind%omega*exp(-ind%omega*ind%t)
+         ind%temp_face%z = real(0.0,cp)
+
+         call multiply(ind%temp_face,ind%dTime)
+         call subtract(ind%B_face,ind%temp_face)
+
+         ! B = interp(B_face)_face->CC
+         call myFace2CellCenter(ind%B,ind%B_face,g)
+
+         ! Impose BCs:
+         call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
+         call applyAllBCs(ind%By_bcs,ind%B%y,g)
+         call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
+       end subroutine
+
+       subroutine finiteRemCTmethodNew(ind,U,g)
+         ! finiteRemCTmethod solves the induction equation using the
+         ! Constrained Transport (CT) Method. The magnetic field is
+         ! stored and collocated at the cell center. The magnetic
+         ! field is updated using Faraday's Law, where the electric
+         ! field is solved for using appropriate fluxes as described
+         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         ! The velocity field is assumed to be cell centered.
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U
+         type(grid),intent(in) :: g
+
+         ! Assumes curl(B0) = 0 (so B is not added to this)
+         ! J = curl(B_face)_edge
+         ! Could be moved to end AFTER applyBCs
+         call myCellCenter2Face(ind%B_face,ind%B,g)
+         call curl(ind%J_edge,ind%B_face,g)
+
+         ! temp = u cross (B0+B)
+         call add(ind%B,ind%B0)
+         call cross(ind%tempVF,U,ind%B)
+         call subtract(ind%B,ind%B0)
+
+         call myCellCenter2Edge(ind%E_edge,ind%tempVF,g)
+
+         ! E_edge = 1/Rem*j_edge/sig_edge - (uxB)_edge
+         call divide(ind%J_edge,ind%sigma_edge)
+         call divide(ind%J_edge,ind%Rem)
+         call subtract(zero,ind%E_edge)
+         call add(ind%E_edge,ind%J_edge)
+
+         ! temp_face = curl(E_edge)_face
+         call curl(ind%temp_face,ind%E_edge,g)
+
+         ! temp_face = -curl(E_edge)_face - dB0_face/dt
+         ind%temp_face%x = -ind%temp_face%x + ind%omega*exp(-ind%omega*ind%t)
+         ind%temp_face%y = -ind%temp_face%y + ind%omega*exp(-ind%omega*ind%t)
+         ind%temp_face%z = -ind%temp_face%z + real(0.0,cp)
+
+         ! Add induced field of previous time step (B^n)
+         ! B_face = B_face + dt*(-dB0/dt-curl(E_edge)_face)
+         call multiply(ind%temp_face,ind%dTime)
+         call add(ind%B_face,ind%temp_face)
+
+         ! call assign(ind%B_face,real(10.0,cp))
+         ! B = interp(B_face)_face->CC
+         call myFace2CellCenter(ind%B,ind%B_face,g)
 
          ! Impose BCs:
          call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
@@ -655,24 +727,23 @@
          type(solverSettings),intent(inout) :: ss_MHD
 
          ! J = curl(B_face)_edge
-         call myCellCenter2Face(ind%F,ind%B,g)
-         call curl(ind%J,ind%F,g)
+         call myCellCenter2Face(ind%B_face,ind%B,g)
+         call curl(ind%J_edge,ind%B_face,g)
 
          ! Compute fluxes of u cross B0
          call cross(ind%tempVF,U,ind%B0)
-         call myCellCenter2Edge(ind%E,ind%tempVF,g)
+         call myCellCenter2Edge(ind%E_edge,ind%tempVF,g)
 
          ! E = j/sig - uxB
-         ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-         call multiply(ind%J,ind%sigmaInv_edge)
-         call subtract(zero,ind%E)
-         call add(ind%E,ind%J)
+         call divide(ind%J_edge,ind%sigma_edge)
+         call subtract(zero,ind%E_edge)
+         call add(ind%E_edge,ind%J_edge)
 
          ! F = Curl(E)
-         call curl(ind%F,ind%E,g)
+         call curl(ind%B_face,ind%E_edge,g)
 
          ! tempVF = interp(F)_face->cc
-         call myFace2CellCenter(ind%tempVF,ind%F,g)
+         call myFace2CellCenter(ind%tempVF,ind%B_face,g)
 
          ! Subtract laplacian from B^n
          call lap(ind%Bstar,ind%B,ind%sigmaInv_face,g)
@@ -683,7 +754,6 @@
          ! Solve with semi-implicit ADI
          call setDt(ind%ADI_B,ind%dTime)
          call setAlpha(ind%ADI_B,real(1.0,cp))
-         ! call setAlpha(ind%ADI_B,ind%sigmaInv)
 
          call init(ind%ss_ADI)
          call setName(ind%ss_ADI,'ADI for B-field     ')
@@ -784,8 +854,8 @@
          case (5,6); call add(ind%Bstar,ind%B)
          end select
 
-         call cross(ind%tempVF,ind%J_cc,ind%Bstar)
-         call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
+         call cross(ind%tempVF,ind%J,ind%Bstar)
+         call myCellCenter2Face(ind%temp_face,ind%tempVF,g_ind)
 
          ! Index fluid face source terms:
          ! Excluding wall normal values
@@ -793,21 +863,21 @@
          Nx = g_mom%c(1)%sn; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sc
          jcrossB%x = zero ! expensive!
          jcrossB%x(3:Nx-2,2:Ny-1,2:Nz-1) = &
-         ind%F%x( Nin1(1)+1: Nin2(1)-1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
+         ind%temp_face%x( Nin1(1)+1: Nin2(1)-1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
          jcrossB%x = jcrossB%x*((Ha**real(2.0,cp))/Re)
 
          dir = 2
          Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sn; Nz = g_mom%c(3)%sc
          jcrossB%y = zero ! expensive!
          jcrossB%y(2:Nx-1,3:Ny-2,2:Nz-1) = &
-         ind%F%y(Nice1(1):Nice2(1), Nin1(2)+1: Nin2(2)-1,Nice1(3):Nice2(3))
+         ind%temp_face%y(Nice1(1):Nice2(1), Nin1(2)+1: Nin2(2)-1,Nice1(3):Nice2(3))
          jcrossB%y = jcrossB%y*((Ha**real(2.0,cp))/Re)
 
          dir = 3
          Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sn
          jcrossB%z = zero ! expensive!
          jcrossB%z(2:Nx-1,2:Ny-1,3:Nz-2) = &
-         ind%F%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)+1: Nin2(3)-1)
+         ind%temp_face%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)+1: Nin2(3)-1)
          jcrossB%z = jcrossB%z*((Ha**real(2.0,cp))/Re)
        end subroutine
 
@@ -820,12 +890,12 @@
            case (4:5)
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
-             call div(ind%divB%phi,ind%F,g)
+             call div(ind%divB%phi,ind%B_face,g)
            case default
              call div(ind%divB%phi,ind%B,g)
            end select
          endif
-         call div(ind%divJ%phi,ind%J_cc,g)
+         call div(ind%divJ%phi,ind%J,g)
        end subroutine
 
        subroutine computeCurrent(J,B,B0,mu,g)
@@ -868,8 +938,6 @@
          call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
           U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
          U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-         call uniformify(U_cct)
        end subroutine
 
        subroutine uniformify(U)
