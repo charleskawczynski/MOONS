@@ -11,7 +11,7 @@
 
        private
 
-       integer,parameter :: preDefinedB_BCs = 1
+       integer,parameter :: preDefinedB_BCs = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0
@@ -113,16 +113,19 @@
          type(BCs),intent(inout) :: phi_bcs
          type(BCs),intent(inout) :: Bx_bcs,By_bcs,Bz_bcs
          logical,intent(in) :: cleanB
-         integer :: Nx,Ny,Nz,neumann
+         integer :: Nx,Ny,Nz,neumann,periodic_i
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
          neumann = 5
+         periodic_i = 7 ! Wall incoincident
          call initPseudoVacuumBCs(Bx_bcs,By_bcs,Bz_bcs,g)
          
-         call setXminType(By_bcs,neumann)
-         call setXmaxType(By_bcs,neumann)
-         call setXminType(Bz_bcs,neumann)
-         call setXmaxType(Bz_bcs,neumann)
+         call setXminType(Bx_bcs,periodic_i)
+         call setXminType(By_bcs,periodic_i)
+         call setXminType(Bz_bcs,periodic_i)
 
+         call setXmaxType(Bx_bcs,periodic_i)
+         call setXmaxType(By_bcs,periodic_i)
+         call setXmaxType(Bz_bcs,periodic_i)
        end subroutine
 
        end module

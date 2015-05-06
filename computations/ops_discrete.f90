@@ -158,9 +158,9 @@
          real(cp),dimension(:,:,:),intent(in) :: u,v,w
          type(grid),intent(in) :: g
          type(del) :: d
-         call d%assign(divU,u,g,1,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(divU,v,g,1,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(divU,w,g,1,3,1) ! Padding avoids calcs on fictive cells
+         call d%assign(divU,u,g,1,1,0) ! Padding avoids calcs on fictive cells
+            call d%add(divU,v,g,1,2,0) ! Padding avoids calcs on fictive cells
+            call d%add(divU,w,g,1,3,0) ! Padding avoids calcs on fictive cells
 
          ! Note that padding above does not zero wall normal values
          ! from being calculated. Removing ghost nodes is still necessary:

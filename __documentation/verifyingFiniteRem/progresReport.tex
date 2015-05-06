@@ -1,0 +1,855 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\figS}{22.1em}
+\newcommand{\ffigS}{15.1em}
+\newcommand{\figH}{\figS}
+\newcommand{\figW}{\figS}
+\newcommand{\ffigH}{\ffigS}
+\newcommand{\ffigW}{\ffigS}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Progress towards verifying UCLA MHD codes for finite \texorpdfstring{$Re_m$}}
+\author{S. Smolentsev, C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Introduction}
+The purpose of the UCLA MHD codes was to compare a small research code with a commercial code, HIMAG, developed by HyperComp with help from UCLA. The B-formulation was implemented in HIMAG (HIMAG-B), and the UCLA codes were developed to validate HIMAG-B for problems with simple geometries.
+
+Our goal is to verify the UCLA MHD codes for finite magnetic Reynolds number ($Re_m$) flows via code-to-code comparisons and comparison with exact solutions (if they exist). This document provides a summary of the code-to-code numerical tests performed so far.
+
+
+\section{Geometry}
+The current codes use rectilinear coordinate systems and are limited to simple geometries. A list of capable geometric flow configurations are listed below.
+
+\begin{itemize}
+\item No slip cavity
+\item Lid driven cavity
+\item Rectangular duct flow
+\item Flow through a jet
+\item Cylinder driven flow
+\end{itemize}
+
+For the present code-to-code comparisons, we will restrict ourselves to a long rectangular cavity which may be used as a duct flow or a no slip cavity flow.
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\ffigW,height=\ffigH]{geometry.png}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+Where the domain range is
+\begin{equation}
+	-10.1 < x < 10.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1
+\end{equation}
+
+\section{Governing equations}
+
+\subsection{Energy}
+No forms of heat transfer were considered, so the entire domain is assumed to be isothermal.
+
+\subsection{Momentum}
+Non-dimensionalizing the momentum equation with
+
+\begin{equation}
+	\rho = \rho_c \qquad
+	\mu = \mu_c \qquad
+	t_c = L_c/U_c \qquad
+	u_j^* = \frac{u_j}{U_c} \qquad
+	t^* = \frac{t}{t_c} \qquad
+	x_j^* = \frac{x_j}{L_c} \qquad
+	p^* = \frac{p}{\rho_c U_c^2} \qquad
+\end{equation}
+
+Yields the non-dimensional momentum equation. In the most general case considered, the ith component of the non-dimensional momentum equation is
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial (u_i u_j)}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+Where
+
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c}
+	\qquad \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}}
+\end{equation}
+
+\subsection{Induction}
+Non-dimensionalizing the induction equation with the same parameters used to non-dimensionalize the momentum equation, plus
+
+\begin{equation}
+	B_k^* = \frac{B_k}{B_c}  \qquad
+	j_k^* = \frac{j_k}{\sigma_c U_c B_c} \qquad
+	E_k^* = \frac{E_k}{U_c B_c} \qquad
+	\sigma^* = \frac{\sigma}{\sigma_c} \qquad
+	\mu^* = \frac{\mu}{\mu_c} \qquad
+\end{equation}
+
+Yields the non-dimensional induction equation. In the most general case considered, the ith component of the non-dimensional induction equation is
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+Where
+
+\begin{equation}
+	Re_m = \mu_c \sigma_c U_c L_c \qquad
+\end{equation}
+
+If we were to non-dimensionalize $B$ with
+
+\begin{equation}
+	B_k^* = \frac{B_k}{Re_m B^0}
+\end{equation}
+
+Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+
+In these comparisons, $\mu$ was assumed to be uniform in space and constant in time.
+
+% \begin{equation}
+	% \frac{\partial B_i}{\partial t} 
+	% + \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	% + \frac{1}{Re_m}
+	% \frac{\partial}{\partial x_j} 
+	% \left\{ \frac{1}{\sigma} 
+	% \left[ 
+	% \frac{\partial B_j}{\partial x_i} 
+	% - 
+	% \frac{\partial B_i}{\partial x_j} 
+		% \right]
+	% \right\} = 0
+% \end{equation}
+
+
+\section{Boundary Conditions}
+
+\subsection{Velocity field}
+The boundary conditions for the velocity are 
+
+\subsubsection{Dirichlet}
+
+\begin{equation}
+	\pmb{u} = \pmb{u}_{wall}
+	\qquad \qquad
+	\pmb{u} = \pmb{u}_{inlet}
+	\qquad \qquad
+	\pmb{u} = \pmb{u}_{outlet}
+\end{equation}
+
+\subsubsection{Neumann}
+\begin{equation}
+	\frac{\partial \pmb{u}}{\partial \pmb{n}} = 0
+\end{equation}
+
+\subsection{Magnetic field}
+\subsubsection{Pseudo-vacuum}
+\begin{equation}
+	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
+	\qquad \qquad
+	\pmb{B}_{tangent} = 0
+\end{equation}
+
+\subsubsection{Periodic along x}
+\begin{equation}
+	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
+	\qquad
+	\pmb{B}_{tangent} = 0
+	\qquad
+	y_{min},y_{max}
+	z_{min},z_{max}
+\end{equation}
+
+\begin{equation}
+	\frac{\partial \pmb{B}}{\partial x} = 0
+	\qquad
+	x_{min},x_{max}
+\end{equation}
+
+\section{Mesh}
+Hartmann layers that scale with $\delta_{Ha}~L_{||}/Ha$ develop on walls normal to the applied magnetic field. To resolve these layers for large Hartmann numbers and fine grid resolution is needed. Since computational time scales with the inverse of the number of grid points, non-uniform grids are a good way to resolve the thin boundary layers while using moderate computational time.
+
+Both UCLA MHD codes use stretching functions by \cite{Roberts1971}. Although three transformations are implemented in the codes, the ones implemented here only include the following two:
+
+\subsection{Roberts Transformation 1}
+\begin{equation}
+y = h \frac{(\beta + 2 \alpha) \left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}{(2\alpha+1)(1+\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right])}
+\end{equation}
+
+Where $h$ is the length of the domain. Note that
+
+\begin{equation}
+	\alpha = 0 \qquad \rightarrow \text{mesh will be refined near $y=h$ only}
+\end{equation}
+\begin{equation}
+	\alpha = 1/2 \qquad \rightarrow \text{mesh will be refined near $y=h$ and $y=0$}
+\end{equation}
+\begin{equation}
+	\bar{y} = \text{uniformly spaced grid}
+\end{equation}
+
+If there exists a boundary layer of thickness $\delta$, then an adequate stretching parameter, $\beta$, may be chosen as
+
+\begin{equation}
+	\beta = \left( 1 - \frac{\delta}{h} \right)^{-1/2}
+\end{equation}
+
+\subsection{Roberts Transformation 2}
+I need to borrow the Tannehill book to put these equations in.
+\subsection{Roberts Transformation 3}
+I need to borrow the Tannehill book to put these equations in.
+
+
+\section{Spatial discretization}
+Both codes use 2nd order finite difference schemes for non-uniform staggered grids. Only 2nd order accurate boundary conditions were used even though 3rd order accurate BCs are necessary to maintain global 2nd order accuracy.
+
+\section{Time Marching}
+\subsection{Momentum}
+The momentum equation was solved using a 1st order accurate Explicit Euler time marching method. A projection based was implemented to enforce $\nabla \bullet \pmb{u} = 0$. Both codes closely followed \cite{griebel1997numerical} when developing this procedure.
+
+\subsection{Induction}
+The induction equation was solved using a 1st order accurate Explicit Euler time marching method. The Constrained Transport (CT) Method was used to ensure that the divergence of the magnetic field is within machine accuracy zero at every time step. The basic idea is that Explicit Euler is applied to Faraday's Law, where the magnetic field is located on the cell face and the electric field is located on the cell edge. The curl operator is analogous to a line integral about the face of the cell, which provides a perfect cancellation of the magnetic flux \cite{Toth2000}.
+
+\section{Comparison of Data}
+
+The numerical solutions between the two codes have been compared in several ways. They include 
+
+\begin{itemize}
+\item Comparing velocity and magnetic field components at an instance in time along a line in the domain
+\item Comparing velocity and magnetic field components at a point in space as a function of time
+\item Comparing kinetic field energy (KU) as a function of time
+\item Magnetic field energy (KB) as a function of time
+\end{itemize}
+
+The last two provide a good check that global results match well. The kinetic and magnetic field energies are computed as follows
+
+\begin{equation}
+	KU = \frac{1}{V} \iiint_{V} (u^2+v^2+w^2) dV
+	\qquad \qquad
+	KB = \frac{1}{V} \iiint_{V} (B_x^2+B_y^2+B_z^2) dV
+\end{equation}
+
+Where the integration is over the fluid domain.
+
+\section{Test Cases}
+To provide a sort of structure to the following test cases, I've put all assumptions in the form of bullets.
+
+\subsection{Case A: Eddy Currents in a stationary block, 1 magnetic field component}
+Here, we made the following assumptions:
+
+\begin{itemize}
+\item Velocity is zero everywhere for all time, momentum equation is not solved
+\item $Re_m = 1$, Uniform $\sigma$, uniform $\mu$
+\item A uniform applied magnetic field of the form $B^0 = (0,0,B_z^0) = (0,0,e^{-t})$
+\item We considered the domain enclosure of size $-10.1 < x < 10.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1$
+\item The number of cells in the fluid and walls were $N_{fluid} = (75,45,45)$ \qquad $N_{wall} = (11,11,11)$
+\end{itemize}
+
+Using the zero velocity and uniform $\sigma$ assumptions, the ith component of the induced magnetic field simplifies to
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	=
+	-
+	\frac{\partial B_i^0}{\partial t}
+	+
+	\frac{\partial^2 B_i}{\partial x_j^2} 
+\end{equation}
+
+With BCs
+
+\begin{equation}
+	\frac{\partial B_{n}}{\partial n} = 0
+	\qquad \qquad
+	B_{tangent} = 0
+\end{equation}
+
+The uniform applied magnetic field provides a source term only for the z-component, so the equations further simplify to
+
+\begin{equation}
+	\frac{\partial B_z}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_z}{\partial x_j^2} 
+	\qquad \qquad
+	B_x = 0
+	\qquad \qquad
+	B_y = 0
+\end{equation}
+
+Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\partial B_n}{\partial n}$ results in no variation of $B_z$ along $z$. So we have
+
+\begin{equation}
+	\frac{\partial B_z}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_z}{\partial y^2} 
+	\qquad \qquad
+	B_x = 0
+	\qquad \qquad
+	B_y = 0
+\end{equation}
+
+Where
+
+\begin{equation}
+	B_z = 0
+	\in (y_{min}, y_{max})
+\end{equation}
+
+\subsubsection{Exact solution}
+
+An exact solution exists of the form (Sergey's book)
+
+\begin{equation}
+	\boxed{
+	B_{z,exact}(y,t) 
+	=
+	\sum_{n=1}^{\infty}
+	\sin \left( \frac{n\pi y}{L} \right)
+	\frac{2 (1 - (-1)^n) (e^{-t}-e^{-\lambda_n t})}{\pi (\lambda_n-1)n}
+	}
+	\qquad
+	\boxed{
+	\lambda_n = \frac{\alpha n^2\pi^2}{L^2}
+	}
+\end{equation}
+Where this solution applies to a domain $0 \le y \le L$. So this result must be shifted in order to compare the domain from the numerical simulation.
+
+\subsubsection{Symmetry Considerations}
+
+After performing this test, we modified the applied magnetic field to $B^0=(0,e^{-t},0)$. Using the same assumptions as before, the equations simplify to
+\begin{equation}
+	\frac{\partial B_y}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_y}{\partial z^2} 
+	\qquad \qquad
+	B_x = 0
+	\qquad \qquad
+	B_z = 0
+\end{equation}
+
+Where
+
+\begin{equation}
+	B_y = 0
+	\in (z_{min}, z_{max})
+\end{equation}
+
+The same analytic solution is valid but with $B_{y,exact}(z,t)$.
+
+\subsubsection{Results}
+Both codes performed these computations using $\Delta t = 10^{-5}$. The solution, $B_z$ was probed at the center of the domain and compared as a function of time. In addition, KB was computed and compared as a function of time. 
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{Bz_u0.png}
+  }
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{KB_u0.png}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+\subsection{Case B: Eddy Currents in a stationary block, 3 magnetic field components}
+Here, we made the following assumptions:
+
+\begin{itemize}
+\item Velocity is zero everywhere for all time, momentum equation is not solved
+\item $Re_m = 1$, Uniform $\sigma$, uniform $\mu$
+\item A uniform applied magnetic field of the form $B^0 = (B_x^0,B_y^0,B_z^0) = (e^{-t},e^{-t},1)$
+\item We considered the domain enclosure of size $-10.1 < x < 10.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1$
+\item The number of cells in the fluid and walls were $N_{fluid} = (75,45,45)$ \qquad $N_{wall} = (11,11,11)$
+\end{itemize}
+
+Using the zero velocity and uniform $\sigma$ assumptions, the ith component of the induced magnetic field simplifies to
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	=
+	-
+	\frac{\partial B_i^0}{\partial t}
+	+
+	\frac{\partial^2 B_i}{\partial x_j^2} 
+\end{equation}
+
+With BCs
+
+\begin{equation}
+	\frac{\partial B_{n}}{\partial n} = 0
+	\qquad \qquad
+	B_{tangent} = 0
+\end{equation}
+
+The uniform applied magnetic field provides a source term only for the x and y-components, so the equations further simplify to
+
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_x}{\partial x_j^2} 
+	\qquad \qquad
+	\frac{\partial B_y}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_y}{\partial x_j^2} 
+	\qquad \qquad
+	B_z = 0
+\end{equation}
+
+Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\partial B_n}{\partial n}$ results in no variation of $B_x$ along $x$ and $B_y$ along $y$. So we have
+
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_x}{\partial y^2} 
+	+
+	\frac{\partial^2 B_x}{\partial z^2} 
+	\qquad \qquad
+	\frac{\partial B_y}{\partial t} 
+	=
+	e^{-t}
+	+
+	\frac{\partial^2 B_y}{\partial z^2} 
+	\qquad \qquad
+	B_z = 0
+\end{equation}
+
+The same analytic solution for $B_y$ exists from the previous section. For $B_x$ however, an analytic solution may exist, but only a code-to-code comparison was conducted and results matched perfectly. It is easily seen that $B_y$ follows the same trend as in the previous section, as expected.
+
+\subsubsection{Results}
+Both codes performed these computations using $\Delta t = 10^{-5}$. The solutions, $B_x$ and $B_y$ were probed at the center of the domain and compared as a function of time.
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{B2_u0.png}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+
+\subsection{Case C: One-Way Coupled 3 Component Magnetic field in a Parabolic Flow}
+
+Here, we made the following assumptions:
+
+\begin{itemize}
+\item $Re_m = 1$, Uniform $\sigma$, uniform $\mu$
+\item A uniform applied magnetic field of the form $B^0 = (B_x^0,B_y^0,B_z^0) = (e^{-t},e^{-t},1)$
+\item We considered the domain enclosure of size $-10.1 < x < 10.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1$
+\item The number of cells in the fluid and walls were $N_{fluid} = (75,45,45)$ \qquad $N_{wall} = (11,11,11)$
+\end{itemize}
+
+A prescribed velocity was assumed of the form
+
+\begin{equation}
+	u
+	=
+	u(y,z)
+	= \frac{2 - y^2 - z^2}{2}
+	\qquad \qquad
+	\forall x
+	,
+	-1 \le y \le 1
+	,
+	-1 \le z \le 1
+	\qquad \qquad
+	u = 0 
+	\qquad
+	\text{otherwise}
+\end{equation}
+
+\begin{equation}
+	v = 0
+	\qquad \qquad
+	w = 0
+	\qquad \qquad
+	\forall x,y,z
+\end{equation}
+
+
+Using the uniform $\sigma$ and uniform applied magnetic field assumptions, the ith component of the induced magnetic field simplifies to
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	=
+	-
+	\frac{\partial B_i^0}{\partial t}
+	-
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	-
+	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+
+	\frac{\partial^2 B_i}{\partial x_j^2} 
+\end{equation}
+
+Here, we used the BCs
+
+\begin{equation}
+	\frac{\partial B_{n}}{\partial n} = 0
+	\qquad \qquad
+	B_{tangent} = 0
+	\qquad
+	y_{min}, y_{max}
+	\qquad
+	z_{min}, z_{max}
+\end{equation}
+
+\begin{equation}
+	\frac{\partial \pmb{B}}{\partial x} = 0
+	\qquad
+	x_{min}, x_{max}
+\end{equation}
+
+Note that this means there are no variations in the x-direction. 
+
+Using $v=w=0$, no variations exist in the x direction, we (partially) simplify this to
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	=
+	-\frac{\partial B_x^0}{\partial t}
+	+\frac{\partial}{\partial y} (u B_y^0) 
+	+\frac{\partial}{\partial z} (u B_z^0) \\
+	+\frac{\partial}{\partial y} (u B_y) 
+	+\frac{\partial}{\partial z} (u B_z) 
+	+\frac{\partial^2 B_x}{\partial y^2} 
+	+\frac{\partial^2 B_x}{\partial z^2} 
+\end{equation}
+\begin{equation}
+	\frac{\partial B_y}{\partial t} 
+	=
+	-\frac{\partial B_y^0}{\partial t}
+	+\frac{\partial}{\partial y} (v B_y^0) 
+	+\frac{\partial}{\partial z} (v B_z^0) \\
+	+\frac{\partial}{\partial y} (v B_y) 
+	+\frac{\partial}{\partial z} (v B_z) 
+	+\frac{\partial^2 B_y}{\partial y^2} 
+	+\frac{\partial^2 B_y}{\partial z^2} 
+\end{equation}
+\begin{equation}
+	\frac{\partial B_z}{\partial t} 
+	=
+	-\frac{\partial B_z^0}{\partial t}
+	+\frac{\partial}{\partial y} (w B_y^0) 
+	+\frac{\partial}{\partial z} (w B_z^0) \\
+	+\frac{\partial}{\partial y} (w B_y) 
+	+\frac{\partial}{\partial z} (w B_z) 
+	+\frac{\partial^2 B_z}{\partial y^2} 
+	+\frac{\partial^2 B_z}{\partial z^2} 
+\end{equation}
+
+Taking out some more terms and using the applied magnetic field, we have
+
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	=
+	e^{-t}
+	+e^{-t}\frac{\partial u}{\partial y} 
+	+\frac{\partial u}{\partial z} \\
+	+\frac{\partial (u B_y)}{\partial y} 
+	+\frac{\partial (u B_z)}{\partial z} 
+	+\frac{\partial^2 B_x}{\partial y^2} 
+	+\frac{\partial^2 B_x}{\partial z^2} 
+\end{equation}
+\begin{equation}
+	\frac{\partial B_y}{\partial t} 
+	=
+	e^{-t}
+	+\frac{\partial^2 B_y}{\partial z^2} 
+\end{equation}
+\begin{equation}
+	B_z = 0
+\end{equation}
+
+
+Clearly, the time, and y-z spatial plane evolution for the x-component of the magnetic field is complex. Also, the y-component has the same solution from the previous section. The final value is readily compared with the final value from figure 3.
+
+
+\subsubsection{Results}
+Both codes performed these computations using $\Delta t = 10^{-5}$. The solutions, $B_x$, $B_y$ and $B_z$ were probed at the center of the domain and compared as a function of time.
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{B2x_u_parabolic.png}
+  }
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{B2y_u_parabolic.png}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{B2z_u_parabolic.png}
+  }
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{KB_u_parabolic.png}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+\subsection{Case D: One-Way Coupled 3 Component Magnetic field in a Periodic Duct}
+
+Here, we made the following assumptions:
+
+\begin{itemize}
+\item $Re_m = 1$, Uniform $\sigma$, uniform $\mu$
+\item A uniform applied magnetic field of the form $B^0 = (B_x^0,B_y^0,B_z^0) = (e^{-t},e^{-t},1)$
+\item We considered the domain enclosure of size $-10.1 < x < 10.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1$
+\item The number of cells in the fluid and walls were $N_{fluid} = (75,45,45)$ \qquad $N_{wall} = (11,11,11)$
+\end{itemize}
+
+
+For this problem, we solved the momentum and induction equations. For BCs we used
+
+\begin{equation}
+	\frac{\partial \pmb{u}}{\partial x} = 0
+	\qquad
+	x_{min},x_{max}
+	\qquad \qquad
+	\pmb{u} = \pmb{u}_{walls} = 0
+	\qquad
+	y_{min},y_{max},
+	z_{min},z_{max}
+	\qquad
+	\frac{\partial p}{\partial n} = 0
+	\in \partial \Omega
+\end{equation}
+
+\begin{equation}
+	\frac{\partial B_{n}}{\partial n} = 0
+	\qquad
+	B_{tangent} = 0
+	\qquad
+	y_{min}, y_{max}
+	\qquad
+	z_{min}, z_{max}
+\end{equation}
+
+\begin{equation}
+	\frac{\partial \pmb{B}}{\partial x} = 0
+	\qquad
+	x_{min}, x_{max}
+\end{equation}
+
+Using the $\frac{\partial ()}{\partial x} = 0$, the momentum equations become
+
+\begin{equation}
+	\frac{\partial u}{\partial t} 
+	+ \frac{\partial (u v)}{\partial y}
+	+ \frac{\partial (u w)}{\partial z}
+	= 
+	\frac{1}{Re}
+	\left(
+	\frac{\partial^2 u}{\partial y^2}
+	+\frac{\partial^2 u}{\partial z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(j \times B)_x
+\end{equation}
+\begin{equation}
+	\frac{\partial v}{\partial t} 
+	+ \frac{\partial (v v)}{\partial y}
+	+ \frac{\partial (v w)}{\partial z}
+	= 
+	- \frac{\partial p}{\partial y}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\partial^2 v}{\partial y^2}
+	+\frac{\partial^2 v}{\partial z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(j \times B)_y
+\end{equation}
+\begin{equation}
+	\frac{\partial w}{\partial t} 
+	+ \frac{\partial (w v)}{\partial y}
+	+ \frac{\partial (w w)}{\partial z}
+	= 
+	- \frac{\partial p}{\partial z}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\partial^2 w}{\partial y^2}
+	+\frac{\partial^2 w}{\partial z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(j \times B)_z
+\end{equation}
+
+Using the uniform $\sigma$, uniform $\mu$ the induction equations become
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	=
+	- \frac{\partial B_i^0}{\partial t} 
+	- \frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	- \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{\partial^2 B_i}{\partial x_j^2}
+\end{equation}
+
+Using the $\frac{\partial ()}{\partial x} = 0$, we have
+
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	=
+	- \frac{\partial B_x^0}{\partial t} 
+	- \frac{\partial}{\partial y} (v B_x - u B_y)
+	- \frac{\partial}{\partial z} (w B_x - u B_z)
+	- \frac{\partial}{\partial y} (v B_x^0 - u B_y^0)
+	- \frac{\partial}{\partial z} (w B_x^0 - u B_z^0)	
+	+ \frac{\partial^2 B_x}{\partial y^2}
+	+ \frac{\partial^2 B_x}{\partial z^2}
+\end{equation}
+\begin{equation}
+	\frac{\partial B_y}{\partial t} 
+	=
+	- \frac{\partial B_y^0}{\partial t} 
+	- \frac{\partial}{\partial z} (w B_y - v B_z)
+	- \frac{\partial}{\partial z} (w B_y^0 - v B_z^0)	
+	+ \frac{\partial^2 B_y}{\partial y^2}
+	+ \frac{\partial^2 B_y}{\partial z^2}
+\end{equation}
+\begin{equation}
+	\frac{\partial B_z}{\partial t} 
+	=
+	- \frac{\partial B_z^0}{\partial t} 
+	- \frac{\partial}{\partial y} (v B_z - w B_y)
+	- \frac{\partial}{\partial y} (v B_z^0 - w B_y^0)
+	+ \frac{\partial^2 B_z}{\partial y^2}
+	+ \frac{\partial^2 B_z}{\partial z^2}
+\end{equation}
+
+Using the applied magnetic field, we have
+
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	=
+	e^{-t}
+	- \frac{\partial}{\partial y} (v B_x - u B_y)
+	- \frac{\partial}{\partial z} (w B_x - u B_z)
+	+ e^{-t} \frac{\partial}{\partial y} (v - u)
+	- \frac{\partial}{\partial z} (-w e^{-t} - u)	
+	+ \frac{\partial^2 B_x}{\partial y^2}
+	+ \frac{\partial^2 B_x}{\partial z^2}
+\end{equation}
+\begin{equation}
+	\frac{\partial B_y}{\partial t} 
+	=
+	e^{-t}
+	- \frac{\partial}{\partial z} (w B_y - v B_z)
+	+ \frac{\partial}{\partial z} (w e^{-t} + v)	
+	+ \frac{\partial^2 B_y}{\partial y^2}
+	+ \frac{\partial^2 B_y}{\partial z^2}
+\end{equation}
+\begin{equation}
+	\frac{\partial B_z}{\partial t} 
+	=
+	- \frac{\partial}{\partial y} (v B_z - w B_y)
+	- \frac{\partial}{\partial y} (v + w e^{-t})
+	+ \frac{\partial^2 B_z}{\partial y^2}
+	+ \frac{\partial^2 B_z}{\partial z^2}
+\end{equation}
+
+We did not seek an analytic solution, and in fact, one may not exist.
+
+
+\subsubsection{Results}
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\figW,height=\figH]{u_periodic_duct.png}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+
+\bibliographystyle{unsrt}
+\bibliography{MHD,Math,Interface,fluids,CFD,handpicked}
+
+
+\end{document}

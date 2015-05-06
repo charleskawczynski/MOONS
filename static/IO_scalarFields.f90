@@ -56,7 +56,8 @@
         elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
         call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,f,dir,name)
         else
-          stop 'Error: bad grid size compared to input field in IO_scalarFields.f90.'
+          write(*,*) 'Error: bad grid size compared to input field '//name//' in IO_scalarFields.f90.'
+          stop 'Done'
         endif
       end subroutine
 
@@ -115,7 +116,8 @@
                          g%c(3)%hc,&
                          f(2:s(1)-1,2:s(2)-1,:),dir,name)
         else
-          stop 'Error: bad grid size compared to input field in IO_scalarFields.f90.'
+          write(*,*) 'Error: bad grid size compared to input field '//name//' in IO_scalarFields.f90.'
+          stop 'Done'
         endif
       end subroutine
 

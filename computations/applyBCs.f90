@@ -186,22 +186,30 @@
          ! *************************** PERIODIC *****************************
          ! These have not yet been prepared for non-uniform grids:
          case (6) ! Periodic - direct - wall coincident ~O(dh)
-           select case (face)
-           case (1); u(1,:,:) = real(0.5,cp)*(u(2,:,:) + u(s-1,:,:))
-           case (2); u(:,1,:) = real(0.5,cp)*(u(:,2,:) + u(:,s-1,:))
-           case (3); u(:,:,1) = real(0.5,cp)*(u(:,:,2) + u(:,:,s-1))
-           case (4); u(s,:,:) = real(0.5,cp)*(u(s-1,:,:) + u(2,:,:))
-           case (5); u(:,s,:) = real(0.5,cp)*(u(:,s-1,:) + u(:,2,:))
-           case (6); u(:,:,s) = real(0.5,cp)*(u(:,:,s-1) + u(:,:,2))
+           select case (face) ! Wall node
+           case (1); u(2,:,:) = u(s-1,:,:)
+           case (2); u(:,2,:) = u(:,s-1,:)
+           case (3); u(:,:,2) = u(:,:,s-1)
+           case (4); u(s-1,:,:) = u(2,:,:)
+           case (5); u(:,s-1,:) = u(:,2,:)
+           case (6); u(:,:,s-1) = u(:,:,2)
+           end select
+           select case (face) ! Ghost node
+           case (1); u(1,:,:) = u(s-2,:,:)
+           case (2); u(:,1,:) = u(:,s-2,:)
+           case (3); u(:,:,1) = u(:,:,s-2)
+           case (4); u(s,:,:) = u(3,:,:)
+           case (5); u(:,s,:) = u(:,3,:)
+           case (6); u(:,:,s) = u(:,:,3)
            end select
          case (7) ! Periodic - interpolated - wall incoincident ~O(dh)
-           select case (face)
-           case (1); u(1,:,:) = real(0.5,cp)*(u(2,:,:) + u(s-1,:,:))
-           case (2); u(:,1,:) = real(0.5,cp)*(u(:,2,:) + u(:,s-1,:))
-           case (3); u(:,:,1) = real(0.5,cp)*(u(:,:,2) + u(:,:,s-1))
-           case (4); u(s,:,:) = real(0.5,cp)*(u(s-1,:,:) + u(2,:,:))
-           case (5); u(:,s,:) = real(0.5,cp)*(u(:,s-1,:) + u(:,2,:))
-           case (6); u(:,:,s) = real(0.5,cp)*(u(:,:,s-1) + u(:,:,2))
+           select case (face) ! Ghost cell
+           case (1); u(1,:,:) = u(s-1,:,:)
+           case (2); u(:,1,:) = u(:,s-1,:)
+           case (3); u(:,:,1) = u(:,:,s-1)
+           case (4); u(s,:,:) = u(2,:,:)
+           case (5); u(:,s,:) = u(:,2,:)
+           case (6); u(:,:,s) = u(:,:,2)
            end select
          case (8) ! Periodic - interpolated - wall incoincident ~O(dh^2)
            select case (face)
@@ -212,6 +220,8 @@
            case (5); u(:,s,:) = real(-1.0,cp)/real(3.0,cp)*(u(:,s-2,:) - real(3.0,cp)*u(:,s-1,:) - u(:,2,:))
            case (6); u(:,:,s) = real(-1.0,cp)/real(3.0,cp)*(u(:,:,s-2) - real(3.0,cp)*u(:,:,s-1) - u(:,:,2))
            end select
+         case default
+         stop 'Error: Bad bctype! Caught in applyBCs.f90'
          end select
        end subroutine
 

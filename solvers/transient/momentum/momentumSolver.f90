@@ -76,8 +76,8 @@
 
        type momentum
          ! Field Quantities
-         type(vectorField) :: U,Ustar,F,TempVF,res
-         type(scalarField) :: p,Temp,divU
+         type(vectorField) :: U,Ustar,F,TempVF,res,dBydx_VF
+         type(scalarField) :: p,Temp,divU,dBydx_SF
 
          ! Boundary conditions
          type(BCs) :: u_bcs,v_bcs,w_bcs,p_bcs
@@ -136,10 +136,16 @@
          call allocateVectorField(mom%TempVF,mom%U)
          call allocateVectorField(mom%res,mom%U)
 
+         call allocateX(mom%dBydx_VF,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+         call allocateY(mom%dBydx_VF,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+         call allocateZ(mom%dBydx_VF,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+
          ! allocate P-Fields
          call allocateField(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          call allocateField(mom%divU,mom%p)
          call allocateField(mom%temp,mom%p)
+
+         call allocateField(mom%dBydx_SF,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -232,6 +238,10 @@
          call delete(mom%u_center);        call delete(mom%transient_ppe)
          call delete(mom%transient_divU);  call delete(mom%u_symmetry)
          call delete(mom%g)
+
+         call delete(mom%dBydx_VF)
+         call delete(mom%dBydx_SF)
+
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -281,6 +291,7 @@
          type(solverSettings),intent(in) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
+         type(del) :: d
          dt = mom%dTime
          Re = mom%Re
 
@@ -291,48 +302,78 @@
          case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
          end select
 
-         ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
+         ! Ustar = -TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
 
+         ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom_adv')
+         ! call div(mom%Temp%phi,mom%Ustar,g)
+         ! call checkGlobalMinMax(mom%temp%phi,mom%g,'div(adv)')
+
          ! Laplacian Terms -----------------------------------------
          call lap(mom%TempVF,mom%U,g)
-         call multiply(mom%TempVF,(real(1.0,cp)/Re))
+         call divide(mom%TempVF,Re)
          call add(mom%Ustar,mom%TempVF)
+
+         ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom_diff')
+         ! call div(mom%Temp%phi,mom%Ustar,g)
+         ! call checkGlobalMinMax(mom%temp%phi,mom%g,'div(diff)')
 
          ! Source Terms (e.g. N j x B) -----------------------------
          call add(mom%Ustar,mom%F)
 
+         ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom_JxB')
+         ! call div(mom%Temp%phi,mom%Ustar,g)
+         ! call checkGlobalMinMax(mom%temp%phi,mom%g,'div(JxB)')
+
          ! For Residual computation
          ! if (getExportTransient(ss_MHD)) call assign(mom%res,mom%Ustar)
 
-         ! Zero wall coincident forcing
-         call zeroWallCoincidentBoundariesVF(mom%Ustar,g)
+         ! Zero wall coincident forcing (may be bad for neumann BCs)
+         ! call zeroWallCoincidentBoundariesVF(mom%Ustar,g)
 
+         ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom:zeroWalls')
          ! Solve with explicit Euler --------------------
-         ! mom%Ustar = mom%U + dt*mom%Ustar
+         ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
+         ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom_Un')
+         ! call div(mom%Temp%phi,mom%Ustar,g)
+         ! call checkGlobalMinMax(mom%temp%phi,mom%g,'div(Un)')
+
+         ! call checkGlobalMinMax(mom%Ustar,g,'mom:beforePC')
+
+         ! call d%assign(mom%dBydx_VF%x,mom%Ustar%x,g,1,1,0)
+         ! call d%assign(mom%dBydx_VF%y,mom%Ustar%y,g,1,1,0)
+         ! call d%assign(mom%dBydx_VF%z,mom%Ustar%z,g,1,1,0)
+         ! call printGlobalMinMax(mom%dBydx_VF,'beforePC_x','beforePC_y','beforePC_z')
 
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
            call div(mom%Temp%phi,mom%Ustar,g)
-           ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
+           ! Temp = Temp/dt
            call divide(mom%Temp,dt)
            call zeroGhostPoints(mom%Temp%phi)
 
+           ! call checkGlobalMinMax(mom%Temp%phi,mom%g,'mom_ppe_src')
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
            ! call setDt(mom%ADI_p,dt/10.0)
            ! call setAlpha(mom%ADI_p,real(1.0,cp))
-           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
+           call myPoisson(mom%Jacobi_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+           ! call myPoisson(mom%Jacobi_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
+           !  mom%ss_ppe,mom%err_PPE,.true.)
 
            call grad(mom%TempVF,mom%p%phi,g)
 
-           ! mom%Ustar = mom%Ustar - dt*mom%TempVF
+           ! call checkGlobalMinMax(mom%TempVF,mom%g,'mom_PC')
+
+           ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom_U_BPC')
+           ! Ustar = Ustar - dt*TempVF
            call multiply(mom%TempVF,dt)
            call subtract(mom%Ustar,mom%TempVF)
+           ! call checkGlobalMinMax(mom%Ustar,mom%g,'mom_U_APC')
          endif
 
          ! if (getExportTransient(ss_MHD)) then
@@ -382,13 +423,12 @@
          case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
          end select
 
-         ! mom%Ustar = (-real(1.0,cp))*mom%TempVF
+         ! Ustar = -TempVF
          call multiply(mom%TempVF,(-real(1.0,cp)))
          call assign(mom%Ustar,mom%TempVF)
 
          ! Source Terms (e.g. N j x B) -----------------------------
-         ! mom%Ustar = mom%Ustar + real(1.0,cp)*mom%F
-         call multiply(mom%F,real(1.0,cp))
+         ! Ustar = Ustar + F
          call add(mom%Ustar,mom%F)
 
          ! Solve momentum with ADI --------------------
@@ -412,9 +452,8 @@
          
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
-           call div(mom%Temp%phi,mom%Ustar%x,mom%Ustar%y,mom%Ustar%z,g)
-           ! call div(mom%Temp,mom%Ustar,g)
-           ! mom%Temp = (real(1.0,cp)/dt)*mom%Temp
+           call div(mom%Temp%phi,mom%Ustar,g)
+           ! Temp = Temp/dt
            call divide(mom%Temp,dt)
 
            ! IMPORTANT: Must include entire pressure since BCs are 
@@ -424,15 +463,14 @@
 
            call grad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
 
-           ! mom%Ustar = mom%Ustar - dt*mom%TempVF
+           ! Ustar = Ustar - dt*TempVF
            call multiply(mom%TempVF,dt)
            call subtract(mom%Ustar,mom%TempVF)
          endif
 
-         ! mom%U = mom%Ustar
+         ! U = Ustar
          call assign(mom%U,mom%Ustar)
 
-         ! call applyVectorBCs(mom%u_bcs,U,g)
          call applyAllBCs(mom%u_bcs,mom%U%x,g)
          call applyAllBCs(mom%v_bcs,mom%U%y,g)
          call applyAllBCs(mom%w_bcs,mom%U%z,g)
@@ -544,14 +582,21 @@
          integer,dimension(3) :: s
          s = shape(f)
          if (s(1).eq.g%c(1)%sn) then
+           f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
            f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
          elseif (s(2).eq.g%c(2)%sn) then
+           f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
            f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
          elseif (s(3).eq.g%c(3)%sn) then
+           f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
            f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
          else
           stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
          endif
+         
+         ! f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
+         ! f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
+         ! f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
          
          ! Interior Only
          ! if (s(1).eq.g%c(1)%sn) then

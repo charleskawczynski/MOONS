@@ -83,19 +83,31 @@
 
            ! ************** SOLVE MOMENTUM EQUATION **********************
            if (solveMomentum) then
+             ! write(*,*) '----------- LOOP START -----------'
              call solve(mom,mom%g,ss_MHD)
+             ! write(*,*) 'mom = ',mom%nstep
+             ! call checkGlobalMinMax(mom%U,mom%g,'mom_U')
            endif
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
-             ! ind%B0%x = exp(-ind%omega*ind%t)
-             ! ind%B0%y = exp(-ind%omega*ind%t)
-             ! ind%B0%z = real(1.0,cp)
+             ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
+             ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
+             ! ind%B0%y = real(0.0,cp)
+             ind%B0%z = real(1.0,cp)
              ! ind%B0%x = real(0.0,cp)
              ! ind%B0%y = real(0.0,cp)
              ! ind%B0%z = exp(-ind%omega*ind%t)
              call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
+
+             ! call checkGlobalMinMax(ind%U_cct,ind%g,'ind_U_cct')
+
              call solve(ind,ind%U_cct,ind%g,ss_MHD)
+             ! write(*,*) 'ind = ',ind%nstep
+
+             ! call checkGlobalMinMax(ind%B,ind%g,'ind_B')
+             ! call checkGlobalMinMax(ind%J,ind%g,'ind_J')
+
              if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
               ! call totalEnergy(K_energy,ind%U_cct,ind%g) ! Sergey uses interior...
               call totalEnergy(K_energy,&
@@ -119,6 +131,8 @@
              call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
                call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
+               ! call checkGlobalMinMax(ind%F,ind%g,'ind_JxB')
+               ! call checkGlobalMinMax(mom%F,mom%g,'mom_JxB')
              else; call assign(mom%F,zero)
              endif
              if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
@@ -158,10 +172,12 @@
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
              call printPhysicalMinMax(mom%U,'u','v','w')
-             call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
              if (solveInduction) then
                call printPhysicalMinMax(ind%B,'Bx','By','Bz')
                ! call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
+             endif
+             call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
+             if (solveInduction) then
                call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
                call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
              endif

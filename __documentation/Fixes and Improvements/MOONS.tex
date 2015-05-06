@@ -43,15 +43,19 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
-\section{Culprits of divU not zero for duct flows}
+\section{Culprits of d/dx not zero for periodic duct flow}
 
-- zeroWallCoincidentBoundariesVF for F (NOT U, which contains the BCs for U)
+- Advection term
 
-- zeroGhostPoints after div(divU,Ustar,g)
+- Diffusion term
 
-- Somehow grad?
+- Pressure correction
+
+- JxB given a U that satisfies d/dx = 0
 
 \section{Today}
+
+- Try making properties of mom/ind/nrg private!
 
 - Remove unecessary sigma fields
 

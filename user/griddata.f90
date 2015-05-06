@@ -79,9 +79,9 @@
        ! benchmarkCase 2 (LDC: Conducting)
        ! integer,dimension(3),parameter :: Ni = 40, Nwtop = 8, Nwbot = 8
        ! benchmarkCase 3 (Duct: Purely Hydrodynamic / Insulating)
-       integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
+       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase 4 (Duct: Conducting)
-       ! integer,dimension(3),parameter :: Ni = (/64,40,40/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
+       integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
 
        ! benchmarkCase 50 (Re=2000)
        ! integer,dimension(3),parameter :: Ni = 105, Nwtop = 0, Nwbot = 0
@@ -141,6 +141,7 @@
        ! integer,dimension(3),parameter :: Ni = (/65,45,45/), Nwtop = (/0,5,0/), Nwbot = (/0,5,0/)     ! Conducting
        ! benchmarkCase = 1003
        ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = (/97,45,45/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
        ! benchmarkCase = 1004
        ! integer,dimension(3),parameter :: Ni = 35, Nwtop = 0, Nwbot = 0
 
@@ -253,7 +254,7 @@
          case (3); hmin = -one; hmax = one ! for xyz
          hmin(1) = zero; hmax(1) = real(30.0,cp)
          case (4); hmin = -one; hmax = one ! for xyz
-         hmin(1) = zero; hmax(1) = real(30.0,cp)
+         hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
 
          case (50); hmin = -oneHalf; hmax = oneHalf ! for xyz
          case (51); hmin = -oneHalf; hmax = oneHalf ! for xyz
@@ -298,12 +299,10 @@
 
          ! Grid stretching for benchmarks
          select case (benchmarkCase)
-         case (1); betai = 1000.0d0 ! Should be uniform
-         ! case (2); betai = robertsBL(real(2.0,cp)/Ha,hmax-hmin)
+         case (1); betai = 1000.0d0
          case (2); betai = 100.0d0
-         case (3); betai = 1000.0d0 ! Should be uniform
-         case (4); betai = robertsBL(real(2.0,cp)/Ha,hmax-hmin)
-         betai(1) = 1000.0d0
+         case (3); betai = 1000.0d0
+         case (4); betai = 1000.0d0
 
          case (50); betai = 1.05d0
          case (51); betai = 1.05d0
@@ -356,8 +355,9 @@
          case (1); twtop = 0.0d0;      twbot = 0.0d0
          case (2); twtop = 0.488888d0;      twbot = 0.488888d0
          case (3); twtop = 0.0d0;      twbot = 0.0d0
-         case (4); twtop = 0.1d0;      twbot = 0.1d0
-         twtop(1) = 0.0d0;      twbot(1) = 0.0d0
+         case (4); twtop = 0.488888d0;      twbot = 0.488888d0
+                   twtop(1) = 0.0d0;        twbot(1) = 0.0d0
+                   ! twtop = 0.0d0;        twbot = 0.0d0
 
          case (50); twtop = 0.0d0;      twbot = 0.0d0
          case (51); twtop = 0.0d0;      twbot = 0.0d0
@@ -402,6 +402,7 @@
 !                       twtop(2) = 0.01d0;  twbot(2) = 0.01d0
 
          case (1003); twtop = 0.1d0;   twbot = 0.1d0
+         ! twtop(1) = 0.0d0;  twbot(1) = 0.0d0
 
          case (1004); twtop = 0.0d0;   twbot = 0.0d0
 
@@ -1063,11 +1064,11 @@
          hni = gd%hi%c(dir)%hn
 
          if (Nwtop(dir).gt.0) then
-           gd%twtop = real(Nwtop(dir),cp)*(hni(Ndir+1)-hni(Ndir))
+           gd%twtop(dir) = real(Nwtop(dir),cp)*(hni(Ndir+1)-hni(Ndir))
          endif
 
          if (Nwbot(dir).gt.0) then
-           gd%twbot = real(Nwbot(dir),cp)*(hni(2)-hni(1))
+           gd%twbot(dir) = real(Nwbot(dir),cp)*(hni(2)-hni(1))
          endif
 
          deallocate(hni)

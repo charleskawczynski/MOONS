@@ -129,7 +129,7 @@
           call init(mg(j)%ss)
           call setMaxIterations(mg(j)%ss,getMaxIterations(ss)) ! Prescribed
           ! call setMaxIterations(mg(j)%ss,100) ! Fixed
-          call setMaxIterations(mg(j)%ss,5) ! Dynamic
+          ! call setMaxIterations(mg(j)%ss,5) ! Dynamic
           call setName(mg(j)%ss,'MG level('//int2str(j)//')         ')
         enddo
 

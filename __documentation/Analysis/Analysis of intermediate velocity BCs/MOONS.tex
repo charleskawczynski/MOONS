@@ -1,0 +1,244 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Intermediate velocity BCs}
+The ith component of the momentum equation is
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	= 
+	- \frac{\partial (u_i u_j)}{\partial x_j}
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{1}{Fr^2}
+	g_i
+	+ \frac{Gr}{Re^2}
+	T g_i
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+And applying explicit Euler, we have
+
+\begin{equation}
+	u_i^{n+1}
+	=
+	u_i^n
+	+
+	\Delta t
+	\left\{
+	- \frac{\partial (u_i u_j)}{\partial x_j}
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{1}{Fr^2}
+	g_i
+	+ \frac{Gr}{Re^2}
+	T g_i
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+	\right\}
+\end{equation}
+
+Using the projection method, and treating pressure implicitly, we have
+
+\begin{equation}
+	u_i^{n+1}
+	=
+	u_i^n
+	+
+	\Delta t
+	F_i^n
+	-
+	\Delta t
+	\frac{\partial p^{n+1}}{\partial x_i}
+\end{equation}
+
+Where
+
+\begin{equation}
+	F_i
+	=
+	- \frac{\partial (u_i u_j)}{\partial x_j}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{1}{Fr^2}
+	g_i
+	+ \frac{Gr}{Re^2}
+	T g_i
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+Taking the divergence of this, we have
+
+\begin{equation}
+	0
+	=
+	\frac{\partial }{\partial x_i}
+	\left(
+	u_i^n
+	+
+	\Delta t
+	F_i^n
+	\right)
+	-
+	\Delta t
+	\frac{\partial^2 p^{n+1}}{\partial x_i^2}
+\end{equation}
+
+Which yields Laplace's equation for pressure:
+
+\begin{equation}
+	\frac{\partial^2 p^{n+1}}{\partial x_i^2}
+	=
+	\frac{1}{\Delta t}
+	\frac{\partial }{\partial x_i}
+	\left(
+	u_i^n
+	+
+	\Delta t
+	F_i^n
+	\right)
+\end{equation}
+
+\section{Forms of \texorpdfstring{$j \times B$} \ \ force}
+
+The $j \times B$ force may be written as
+
+\begin{equation}
+	\epsilon_{imk} j_m B_k
+	=
+	\epsilon_{imk} (\epsilon_{mlp} \partial_l B_p) B_k
+	=
+	\epsilon_{imk} \epsilon_{mlp} B_k \frac{\partial B_p}{\partial x_l} 
+	=
+	\epsilon_{mki} \epsilon_{mlp} B_k \frac{\partial B_p}{\partial x_l} 
+	=
+	(\delta_{kl} \delta_{ip}
+	-
+	\delta_{kp} \delta_{il}) 
+	B_k \frac{\partial B_p}{\partial x_l} 
+\end{equation}
+
+Finally
+
+\begin{equation}
+	(j \times B )_i
+	=
+	B_k \frac{\partial B_i}{\partial x_k} 
+	-
+	B_k \frac{\partial B_k}{\partial x_i} 
+\end{equation}
+
+Expanded, this yields
+
+\begin{equation}
+	(j \times B )_i
+	=
+	B_x
+	\left(
+	\frac{\partial B_i}{\partial x} 
+	- 
+	\frac{\partial B_x}{\partial x_i} 
+	\right)
+	+
+	B_y
+	\left(
+	\frac{\partial B_i}{\partial y} 
+	- 
+	\frac{\partial B_y}{\partial x_i} 
+	\right)
+	+
+	B_z
+	\left(
+	\frac{\partial B_i}{\partial z} 
+	- 
+	\frac{\partial B_z}{\partial x_i} 
+	\right)
+\end{equation}
+
+
+
+\section{Divergence of \texorpdfstring{$j \times B$} \ \ force}
+
+The divergence of the $j \times B$ force is important, because this is what feeds into the pressure correction.
+
+\begin{equation}
+	\frac{\partial }{\partial x_i}
+	(j \times B )_i
+	=
+	\frac{\partial }{\partial x_i}
+	\left(
+	B_k 
+	\frac{\partial B_i}{\partial x_k} 
+	\right)
+	-
+	\frac{\partial }{\partial x_i}
+	\left(
+	B_k 
+	\frac{\partial B_k}{\partial x_i} 
+	\right)
+\end{equation}
+
+
+\begin{equation}
+	=
+	B_k 
+	\frac{\partial^2 B_i}{\partial x_i x_k} 
+	+
+	\frac{\partial B_i}{\partial x_k} 
+	\frac{\partial B_k}{\partial x_i}
+	-
+	B_k 
+	\frac{\partial^2 B_k}{\partial x_i^2} 
+	-
+	\frac{\partial B_k}{\partial x_i} 
+	\frac{\partial B_k}{\partial x_i}
+\end{equation}
+
+
+
+\end{document}

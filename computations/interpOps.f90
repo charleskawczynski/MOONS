@@ -62,6 +62,7 @@
 
        public :: myEdge2Face          ! call myEdge2Face(face,edge,g,edgeDir,faceDir)
        public :: myEdge2Node          ! call myEdge2Node(node,edge,g,edgeDir)              *
+       public :: myEdge2CellCenter    ! call myEdge2CellCenter(cellCenter,edge,g,edgeDir)
        
        public :: myNode2Face          ! call myNode2Face(face,node,g,faceDir)              *
        public :: myNode2Edge          ! call myNode2Edge(edge,node,g,edgeDir)              *
@@ -87,6 +88,8 @@
 
        interface myEdge2Node;         module procedure myEdge2NodeSF;        end interface
        interface myEdge2Node;         module procedure myEdge2NodeVF;        end interface
+       interface myEdge2CellCenter;   module procedure myEdge2CellCenterSF;  end interface
+       interface myEdge2CellCenter;   module procedure myEdge2CellCenterVF;  end interface
 
        interface myNode2Face;         module procedure myNode2FaceSF;        end interface
        interface myNode2Face;         module procedure myNode2FaceVF;        end interface
@@ -173,6 +176,7 @@
            enddo
            !$OMP END DO
            !$OMP END PARALLEL
+           ! call extrapO2(f,g,dir)
          else
            stop 'gridType must be 1 or 2 in interpO2. Terminating.'
          endif
@@ -385,13 +389,13 @@
          s = shape(cellCenter)
 
          select case (edgeDir)
-         case(1); allocate(faceTemp(s(1),s(2)+1,s(3)))
+         case(1); allocate(faceTemp(g%c(1)%sc,g%c(2)%sn,g%c(3)%sc))
          call myCellCenter2Face(faceTemp,cellCenter,g,2)
          call myFace2Edge(edge,faceTemp,g,2,1)
-         case(2); allocate(faceTemp(s(1)+1,s(2),s(3)))
+         case(2); allocate(faceTemp(g%c(1)%sn,g%c(2)%sc,g%c(3)%sc))
          call myCellCenter2Face(faceTemp,cellCenter,g,1)
          call myFace2Edge(edge,faceTemp,g,1,2)
-         case(3); allocate(faceTemp(s(1)+1,s(2),s(3)))
+         case(3); allocate(faceTemp(g%c(1)%sn,g%c(2)%sc,g%c(3)%sc))
          call myCellCenter2Face(faceTemp,cellCenter,g,1)
          call myFace2Edge(edge,faceTemp,g,1,3)
          case default
@@ -424,17 +428,17 @@
          s = shape(node)
          select case (faceDir)
          case (1)
-           allocate(tempe(s(1),s(2)-1,s(3)))
+           allocate(tempe(g%c(1)%sn,g%c(2)%sc,g%c(3)%sn))
            call myNode2Edge(tempe,node,g,2)
            call myEdge2Face(face,tempe,g,2,faceDir)
            deallocate(tempe)
          case (2)
-           allocate(tempe(s(1)-1,s(2),s(3)))
+           allocate(tempe(g%c(1)%sc,g%c(2)%sn,g%c(3)%sn))
            call myNode2Edge(tempe,node,g,1)
            call myEdge2Face(face,tempe,g,1,faceDir)
            deallocate(tempe)
          case (3)
-           allocate(tempe(s(1)-1,s(2),s(3)))
+           allocate(tempe(g%c(1)%sc,g%c(2)%sn,g%c(3)%sn))
            call myNode2Edge(tempe,node,g,1)
            call myEdge2Face(face,tempe,g,1,faceDir)
            deallocate(tempe)
@@ -466,6 +470,26 @@
          integer,intent(in) :: edgeDir
          call interp(node,edge,g,edgeDir)
          call extrap(node,edge,edgeDir)
+       end subroutine
+
+       subroutine myEdge2CellCenterSF(cellCenter,edge,g,edgeDir)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: cellCenter
+         real(cp),dimension(:,:,:),intent(in) :: edge
+         type(grid),intent(in) :: g
+         integer,intent(in) :: edgeDir
+         real(cp),dimension(:,:,:),allocatable :: tempF
+         integer :: faceDir
+         select case (edgeDir)
+         case (1); faceDir = 2; allocate(tempF(g%c(1)%sc,g%c(2)%sn,g%c(3)%sc))
+         case (2); faceDir = 3; allocate(tempF(g%c(1)%sc,g%c(2)%sc,g%c(3)%sn))
+         case (3); faceDir = 1; allocate(tempF(g%c(1)%sn,g%c(2)%sc,g%c(3)%sc))
+         case default
+         stop 'Error: edgeDir must = 1,2,3 in myEdge2CellCenterSF in interpOps.f90'
+         end select
+         call myEdge2Face(tempF,edge,g,edgeDir,faceDir)
+         call myFace2CellCenter(cellCenter,tempF,g,faceDir)
+         deallocate(tempF)
        end subroutine
 
        ! ****************************************************************************************
@@ -609,6 +633,16 @@
          call myEdge2Node(node%x,edge%x,g,1)
          call myEdge2Node(node%y,edge%y,g,2)
          call myEdge2Node(node%z,edge%z,g,3)
+       end subroutine
+
+       subroutine myEdge2CellCenterVF(cellCenter,edge,g)
+         implicit none
+         type(vectorField),intent(inout) :: cellCenter
+         type(vectorField),intent(in) :: edge
+         type(grid),intent(in) :: g
+         call myEdge2CellCenter(cellCenter%x,edge%x,g,1)
+         call myEdge2CellCenter(cellCenter%y,edge%y,g,2)
+         call myEdge2CellCenter(cellCenter%z,edge%z,g,3)
        end subroutine
 
        ! ****************************************************************************************

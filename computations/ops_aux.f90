@@ -33,7 +33,9 @@
        use del_mod
        use grid_mod
        use vectorField_mod
+       use scalarField_mod
        use interpOps_mod
+       use IO_scalarFields_mod
 
        implicit none
 
@@ -66,6 +68,15 @@
        public :: printPhysicalMinMax
        interface printPhysicalMinMax;     module procedure printPhysicalMinMaxSF;   end interface
        interface printPhysicalMinMax;     module procedure printPhysicalMinMaxVF;   end interface
+
+       public :: printGlobalMinMax
+       interface printGlobalMinMax;     module procedure printGlobalMinMaxSF;   end interface
+       interface printGlobalMinMax;     module procedure printGlobalMinMaxVF;   end interface
+
+       public :: checkGlobalMinMax
+       interface checkGlobalMinMax;     module procedure checkGlobalMinMaxSF;   end interface
+       interface checkGlobalMinMax;     module procedure checkGlobalMinMaxSF2;  end interface
+       interface checkGlobalMinMax;     module procedure checkGlobalMinMaxVF;   end interface
 
        contains
 
@@ -134,6 +145,27 @@
                                               maxval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1))
        end subroutine
 
+       subroutine printGlobalMinMaxSF(u,name)
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: u
+         character(len=*),intent(in) :: name
+         write(*,*) 'Min/Max ('//name//') = ',minval(u),maxval(u)
+       end subroutine
+
+       subroutine checkGlobalMinMaxSF(du,u,name,i)
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: du,u
+         integer,intent(inout) :: i
+         character(len=*),intent(in) :: name
+         real(cp) :: tol
+         tol = real(10.0**(-32.0),cp)
+         if (maxval(abs(du)).gt.tol) then
+           write(*,*) 'Min/Max ('//name//') = ',minval(du),maxval(du)
+           i = 1
+         else; i = 0
+         endif
+       end subroutine
+
        ! *********************************************************************************
        ! *********************************************************************************
        ! ******************************* VECTOR ROUTINES *********************************
@@ -170,6 +202,102 @@
          call printPhysicalMinMax(U%x,U%sx,namex)
          call printPhysicalMinMax(U%y,U%sy,namey)
          call printPhysicalMinMax(U%z,U%sz,namez)
+       end subroutine
+
+       subroutine printGlobalMinMaxVF(u,namex,namey,namez)
+         implicit none
+         type(vectorField),intent(in) :: u
+         character(len=*),intent(in) :: namex,namey,namez
+         call printGlobalMinMax(U%x,namex)
+         call printGlobalMinMax(U%y,namey)
+         call printGlobalMinMax(U%z,namez)
+       end subroutine
+
+       subroutine checkGlobalMinMaxVF(u,g,name)
+         implicit none
+         type(vectorField),intent(in) :: u
+         type(grid),intent(in) :: g
+         character(len=*),intent(in) :: name
+         type(vectorField) :: temp
+         type(del) :: d
+         real(cp),dimension(3) :: t
+         integer :: i
+
+         call allocateVectorField(temp,u)
+
+         ! Resize x-direction:
+         if (u%sx(1).eq.g%c(1)%sn) then
+           call allocateX(temp,g%c(1)%sc,u%sx(2),u%sx(3))
+         elseif (u%sx(1).eq.g%c(1)%sc) then
+           call allocateX(temp,g%c(1)%sn,u%sx(2),u%sx(3))
+         else
+          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
+         endif
+
+         if (u%sy(1).eq.g%c(1)%sn) then
+           call allocateY(temp,g%c(1)%sc,u%sy(2),u%sy(3))
+         elseif (u%sy(1).eq.g%c(1)%sc) then
+           call allocateY(temp,g%c(1)%sn,u%sy(2),u%sy(3))
+         else
+          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
+         endif
+
+         if (u%sz(1).eq.g%c(1)%sn) then
+           call allocateZ(temp,g%c(1)%sc,u%sz(2),u%sz(3))
+         elseif (u%sz(1).eq.g%c(1)%sc) then
+           call allocateZ(temp,g%c(1)%sn,u%sz(2),u%sz(3))
+         else
+          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
+         endif
+
+         call d%assign(temp%x,u%x,g,1,1,0)
+         call d%assign(temp%y,u%y,g,1,1,0)
+         call d%assign(temp%z,u%z,g,1,1,0)
+         call checkGlobalMinMax(temp%x,u%x,name//'_x',i)
+         call checkGlobalMinMax(temp%y,u%y,name//'_y',i)
+         call checkGlobalMinMax(temp%z,u%z,name//'_z',i)
+         if (i.eq.1) then
+          call writeToFile(g,temp%x,'',name//'_x')
+          call writeToFile(g,temp%y,'',name//'_y')
+          call writeToFile(g,temp%z,'',name//'_z')
+          stop 'Done'
+         endif
+         t(1) = maxval(abs(u%x)); t(2) = maxval(abs(u%y)); t(3) = maxval(abs(u%z))
+         write(*,*) 'Good Max ('//name//') = ',maxval(t)
+         ! t(1) = maxval(abs(temp%x)); t(2) = maxval(abs(temp%y)); t(3) = maxval(abs(temp%z))
+         ! write(*,*) 'Good Max (d '//name//') = ',maxval(t)
+         call delete(temp)
+       end subroutine
+
+       subroutine checkGlobalMinMaxSF2(u,g,name)
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: u
+         type(grid),intent(in) :: g
+         character(len=*),intent(in) :: name
+         type(scalarField) :: temp
+         type(del) :: d
+         real(cp) :: t
+         integer :: i
+         integer,dimension(3) :: s
+         s = shape(u)
+
+         ! Resize x-direction:
+         if (s(1).eq.g%c(1)%sn) then
+           call allocateField(temp,g%c(1)%sc,s(2),s(3))
+         elseif (s(1).eq.g%c(1)%sc) then
+           call allocateField(temp,g%c(1)%sn,s(2),s(3))
+         else
+          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
+         endif
+
+         call d%assign(temp%phi,u,g,1,1,0)
+         call checkGlobalMinMax(temp%phi,u,name//'_phi',i)
+         if (i.eq.1) then
+          call writeToFile(g,temp%phi,'',name//'_phi')
+          stop 'Done'
+         endif
+         write(*,*) 'Good Max ('//name//') = ',maxval(abs(u))
+         call delete(temp)
        end subroutine
 
        end module

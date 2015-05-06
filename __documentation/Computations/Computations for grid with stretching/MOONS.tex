@@ -47,8 +47,32 @@ University of California Los Angeles, USA\\
 MOONS implements several stretching functions. These stretching factors were adopted from \cite{pletcher2012computational}.
 
 \subsection{Roberts Transformation 1}
+
+This transformation clusters more points near $y=0$ as the stretching parameter $\beta \rightarrow 1$.
+
 \begin{equation}
-y = h \frac{(\beta + 2 \alpha) \left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}{(2\alpha+1)(1+\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right])}
+	y
+	=
+	h
+	\frac{(\beta+1)-(\beta-1) \left[ (\beta+1)/(\beta-1)^{1-\bar{y}} \right] }
+	{\left[ (\beta+1)/(\beta-1)^{1-\bar{y}} \right]+1}
+\end{equation}
+
+\subsection{Roberts Transformation 2}
+For this transformation, if $\alpha=0$, the mesh will be refined near $y=h$ only, whereas if $\alpha= \frac{1}{2}$, the mesh will be refined equally near $y=0$ and $y=h$.
+
+\begin{equation}
+	y 
+	= 
+	h 
+	\frac{
+	(\beta + 2 \alpha)
+	\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}
+	{
+	(2\alpha+1)
+	\left(1+\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right]
+	\right)
+	}
 \end{equation}
 
 Where $h$ is the length of the domain. Note that
@@ -67,12 +91,40 @@ If there exists a boundary layer of thickness $\delta$, then an adequate stretch
 
 \begin{equation}
 	\beta = \left( 1 - \frac{\delta}{h} \right)^{-1/2}
+	\qquad \qquad
+	\qquad \qquad
+	0 < \frac{\delta}{h} < 1
 \end{equation}
 
 
-\subsection{Roberts Transformation 2}
-
 \subsection{Roberts Transformation 3}
+In this transformation, $\tau$ is the stretching parameter, which varies from zero (no stretching) to large values that produce the most refinement near $y=y_c$.
+
+\begin{equation}
+	y
+	=
+	y_c
+	\left\{
+	1
+	+
+	\frac{\sinh[\tau (\bar{y}-B)]}
+	{\sinh(\tau B)}
+	\right\}
+\end{equation}
+
+Where
+
+\begin{equation}
+	B
+	=
+	\frac{1}{2\tau}
+	\ln 
+	\left[
+	\frac{1+(e^\tau-1) (y_c/h)}{1+(e^{-\tau}-1) (y_c/h)}
+	\right]
+	\qquad \qquad \qquad \qquad
+	0 <\tau < \infty
+\end{equation}
 
 
 \bibliography{MOONS}

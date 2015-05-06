@@ -23,7 +23,7 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 3
+       integer,parameter :: applied_B_dir = 4
        !                                    0 : No applied field: B0 = (0,0,0)
        !                                    1 :    Applied field: B0 = (B0x,0,0)
        !                                    2 :    Applied field: B0 = (0,B0y,0)
@@ -148,6 +148,7 @@
          real(cp),dimension(:),allocatable :: Btemp
          integer,dimension(3) :: s
          integer :: i2,i
+         real(cp) :: d
          real(cp) :: Bstretch,Bshift
 
          s = shape(B)
@@ -157,7 +158,8 @@
          Bshift = real(1.5,cp)     ! shift parameter
 
          do i=1,s(dir)
-           Btemp(i) = (real(1.0,cp)+dtanh((g%c(dir)%hc(i)-Bshift)/Bstretch))/real(2.0,cp)
+           d = dble((g%c(dir)%hc(i)-Bshift)/Bstretch)
+           Btemp(i) = (real(1.0,cp)+tanh(d))/real(2.0,cp)
          enddo; i2 = 0
          ! write(*,*) 's(dir) = ',s(dir)
          do i=1+(s(dir)-1)/2,s(dir)
@@ -198,6 +200,7 @@
          integer,intent(in) :: dir
          real(cp),dimension(:),allocatable :: Btemp
          integer,dimension(3) :: s
+         real(cp) :: d
          integer :: i
          real(cp) :: Bstretch,Bshift
 
@@ -208,7 +211,8 @@
          Bshift = real(12.5,cp)     ! shift parameter
 
          do i=1,s(dir)
-           Btemp(i) = real(0.5,cp)*(real(1.0,cp)-dtanh((g%c(dir)%hc(i)-Bshift)*Bstretch))
+           d = dble(g%c(dir)%hc(i)-Bshift*Bstretch)
+           Btemp(i) = real(0.5,cp)*(real(1.0,cp)-tanh(d))
          enddo
 
          select case (dir)

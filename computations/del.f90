@@ -244,8 +244,8 @@
             select case (dir)
           case (1); dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
                     dfdh(:,1,:) = real(0.0,cp); dfdh(:,s(2),:) = real(0.0,cp)
-          case (2); dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
-                    dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
+          case (2); dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
+                    dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
           case (3); dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
                     dfdh(:,1,:) = real(0.0,cp); dfdh(:,s(2),:) = real(0.0,cp)
           case default
@@ -309,13 +309,13 @@
         integer,dimension(3),intent(in) :: sf,sdfdh
         integer,intent(in) :: sn,sc,dir
         integer :: diffType
-            if ((sf(dir).eq.sdfdh(dir)).and.(sf(dir).eq.sc)) then
+            if ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sc)) then
           diffType = 1 ! Collocated derivative (CC)
-        elseif ((sf(dir).eq.sdfdh(dir)).and.(sf(dir).eq.sn)) then
+        elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sn)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif ((sdfdh(dir).eq.(sf(dir)+1))) then
+        elseif ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sn)) then
           diffType = 3 ! Staggered derivative (CC->N)
-        elseif ((sdfdh(dir).eq.(sf(dir)-1))) then
+        elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sc)) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
           write(*,*) 'sf = ',sf

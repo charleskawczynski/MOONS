@@ -105,18 +105,18 @@
         implicit none
         type(myTime),intent(inout) :: this
         call system_clock(this%i_start,this%countRate)
-        this%t_start = dble(this%i_start)
+        this%t_start = real(this%i_start,cp)
       end subroutine
 
       subroutine stopTimeNoSS(this)
         implicit none
         type(myTime),intent(inout) :: this
         call system_clock(this%i_finish,this%countRate)
-        this%t_finish = dble(this%i_finish)
+        this%t_finish = real(this%i_finish,cp)
         this%N = this%N + 1
-        this%runTime = (this%t_finish - this%t_start)/dble(this%countRate)
+        this%runTime = (this%t_finish - this%t_start)/real(this%countRate,cp)
         this%runTimeCumulative = this%runTimeCumulative + this%runTime
-        this%runTimeAve = (this%t_finish - this%t_start)/dble(this%countRate)
+        this%runTimeAve = (this%t_finish - this%t_start)/real(this%countRate,cp)
       end subroutine
 
       subroutine stopTimeSS(this,ss)
@@ -124,19 +124,19 @@
         type(myTime),intent(inout) :: this
         type(solverSettings),intent(in) :: ss
         call system_clock(this%i_finish,this%countRate)
-        this%t_finish = dble(this%i_finish)
+        this%t_finish = real(this%i_finish,cp)
         ! this%N = this%N + 1
         this%N = getIteration(ss)
-        this%runTime = (this%t_finish - this%t_start)/dble(this%countRate)
+        this%runTime = (this%t_finish - this%t_start)/real(this%countRate,cp)
         this%runTimeCumulative = this%runTimeCumulative + this%runTime
         
         ! This is not technically correct, but instead of writing this data
         ! to a file and recording it again, just take the average as the 
         ! local time to finish one MHD loop:
         if (restartU.and.restartB) then
-          this%runTimeAve = (this%t_finish - this%t_start)/dble(this%countRate)
+          this%runTimeAve = (this%t_finish - this%t_start)/real(this%countRate,cp)
         else
-          this%runTimeAve = this%runTimeCumulative/dble(this%N)
+          this%runTimeAve = this%runTimeCumulative/real(this%N,cp)
         endif
         this%iterPerSec = floor(1.0/this%runTimeAve)
         this%iterPerHour = floor(1.0/this%runTimeAve*3600.0)
@@ -148,10 +148,10 @@
         type(myTime),intent(inout) :: this
         integer,intent(in) :: Nmax
         this%NMax = Nmax
-        this%estimatedRemaining = LIPx(dble(0.0),dble(this%N-1),&
-        this%runTimeAve,dble(this%N),dble(this%NMax))
+        this%estimatedRemaining = LIPx(real(0.0,cp),real(this%N-1,cp),&
+        this%runTimeAve,real(this%N,cp),real(this%NMax,cp))
         this%estimatedTotal = this%runTimeAve*this%NMax
-        this%percentageComplete = dble(this%N)/dble(this%NMax)*100.0
+        this%percentageComplete = real(this%N,cp)/real(this%NMax,cp)*100.0
         this%NRemaining = this%NMax - this%N
       end subroutine
 
@@ -161,22 +161,22 @@
         type(solverSettings),intent(in) :: ss
         if (getMaxIterationsTF(ss)) then
           this%NMax = getMaxIterations(ss)
-          this%estimatedRemaining = LIPx(dble(0.0),dble(this%N-1),&
-          this%runTimeAve,dble(this%N),dble(this%NMax))
+          this%estimatedRemaining = LIPx(real(0.0,cp),real(this%N-1,cp),&
+          this%runTimeAve,real(this%N,cp),real(this%NMax,cp))
           this%estimatedTotal = this%runTimeAve*this%NMax
-          this%percentageComplete = dble(this%N)/dble(this%NMax)*100.0
+          this%percentageComplete = real(this%N,cp)/real(this%NMax,cp)*100.0
         elseif (getMaxSimulationTimeTF(ss)) then
           ! Not yet tested
-          this%estimatedRemaining = LIPx(dble(0.0),dble(getSimulationTime(ss)),&
-          this%runTimeAve,dble(this%N),dble(getMaxSimulationTime(ss)))
+          this%estimatedRemaining = LIPx(real(0.0,cp),real(getSimulationTime(ss),cp),&
+          this%runTimeAve,real(this%N,cp),real(getMaxSimulationTime(ss),cp))
         elseif (getMinToleranceTF(ss)) then
           ! Not yet tested
-          this%estimatedRemaining = LIPx(dble(0.0),dble(getTolerance(ss)),&
-          this%runTimeAve,dble(this%N),dble(getMinTolerance(ss)))
+          this%estimatedRemaining = LIPx(real(0.0,cp),real(getTolerance(ss),cp),&
+          this%runTimeAve,real(this%N,cp),real(getMinTolerance(ss),cp))
         elseif (getMaxCPUTimeTF(ss)) then
           ! Not yet tested
-          this%estimatedRemaining = LIPx(dble(0.0),dble(getCPUTime(ss)),&
-          this%runTimeAve,dble(this%N),dble(getMaxCPUTime(ss)))
+          this%estimatedRemaining = LIPx(real(0.0,cp),real(getCPUTime(ss),cp),&
+          this%runTimeAve,real(this%N,cp),real(getMaxCPUTime(ss),cp))
         endif
         this%NRemaining = this%NMax - this%N
         if (.not.getMaxIterationsTF(ss)) then
@@ -273,7 +273,7 @@
                    '*******************'
         endif
         call system_clock(this%i_start_sim,this%countRate)
-        this%t_start_sim = dble(this%i_start_sim)
+        this%t_start_sim = real(this%i_start_sim,cp)
       end subroutine
 
       subroutine computationComplete(this,TF)
@@ -284,7 +284,7 @@
         real(cp) :: temp
         call system_clock(this%i_finish_sim,this%countRate)
         this%t_finish_sim = this%i_finish_sim
-        this%runTime_sim = (this%t_finish_sim - this%t_start_sim)/dble(this%countRate)
+        this%runTime_sim = (this%t_finish_sim - this%t_start_sim)/real(this%countRate,cp)
         temp = this%runTime_sim
         call getTimeWithUnits(temp,u)
         if (.not.present(TF)) then
