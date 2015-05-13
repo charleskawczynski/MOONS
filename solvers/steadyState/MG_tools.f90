@@ -67,7 +67,7 @@
         stop 'Error: dir must = 1,2,3'
         end select
 
-            if ((mod(c%sc,2).eq.0).and.(s(dir).eq.c%sc)) then; rCase = 1 ! pending
+            if ((mod(c%sc,2).eq.0).and.(s(dir).eq.c%sc)) then; rCase = 1 ! supported
         elseif ((mod(c%sc,2).eq.0).and.(s(dir).eq.c%sn)) then; rCase = 2 ! supported
         elseif ((mod(c%sc,2).ne.0).and.(s(dir).eq.c%sc)) then; rCase = 3 ! not supported
         elseif ((mod(c%sc,2).ne.0).and.(s(dir).eq.c%sn)) then; rCase = 4 ! not supported
@@ -82,9 +82,9 @@
 
           ! write(*,*) 'su,sr = ',s(1),sr(1)
 
-            do i=1+1*x,s(1)-1*x,1+x
-           do j=1+1*y,s(2)-1*y,1+y
           do k=1+1*z,s(3)-1*z,1+z
+           do j=1+1*y,s(2)-1*y,1+y
+            do i=1+1*x,s(1)-1*x,1+x
               t = i*x + j*y + k*z
               alpha = c%dhn(t)/(c%dhn(t)+c%dhn(t+1))
               r(i*(1-x)+x*i/2+x,j*(1-y)+y*j/2+y,k*(1-z)+z*k/2+z) = &
@@ -95,6 +95,20 @@
            ! write(*,*) 'ri,ui,ui+x = ',i*(1-x)+x*i/2+x,i,i+x
           enddo
           ! stop 'printed CC restriction'
+          
+          ! ! Linearly extrapolate to ghost points
+          ! ! Is this necessary? Ghost nodes are ALWAYS defined in the smoother
+          ! ! so why define them here? BUT this is a restriction operator.
+          ! select case (dir)
+          ! case (1); r(1,:,:) = real(2.0,cp)*r(2,:,:)-r(3,:,:)
+          ! case (2); r(:,1,:) = real(2.0,cp)*r(:,2,:)-r(:,3,:)
+          ! case (3); r(:,:,1) = real(2.0,cp)*r(:,:,2)-r(:,:,3)
+          ! end select
+          ! select case (dir)
+          ! case (1); r(sr(1),:,:) = real(2.0,cp)*r(sr(1)-1,:,:)-r(sr(1)-2,:,:)
+          ! case (2); r(:,sr(2),:) = real(2.0,cp)*r(:,sr(2)-1,:)-r(:,sr(2)-2,:)
+          ! case (3); r(:,:,sr(3)) = real(2.0,cp)*r(:,:,sr(3)-1)-r(:,:,sr(3)-2)
+          ! end select
 
         case (2) ! u {N},  mod(sc/2,2)=0
           ! Starting from the physical boundary,
@@ -213,7 +227,7 @@
         stop 'Error: dir must = 1,2,3'
         end select
 
-            if ((mod(c%sc,2).eq.0).and.(sp(dir).eq.c%sc)) then; pCase = 1 ! pending
+            if ((mod(c%sc,2).eq.0).and.(sp(dir).eq.c%sc)) then; pCase = 1 ! supported
         elseif ((mod(c%sc,2).eq.0).and.(sp(dir).eq.c%sn)) then; pCase = 2 ! supported
         elseif ((mod(c%sc,2).ne.0).and.(sp(dir).eq.c%sc)) then; pCase = 3 ! not supported
         elseif ((mod(c%sc,2).ne.0).and.(sp(dir).eq.c%sn)) then; pCase = 4 ! not supported
@@ -227,9 +241,9 @@
           ! Starting from the physical boundaries,
           ! odd locations have weighting factors according
           ! to their cell size:
-            do i=1+x,s(1)-x
-           do j=1+y,s(2)-y
           do k=1+z,s(3)-z
+           do j=1+y,s(2)-y
+            do i=1+x,s(1)-x
               t = i*x + j*y + k*z
               alpha = c%dhn(t)/(c%dhn(t)+c%dhn(t+1))
               p((1+x)*i-2*x,(1+y)*j-2*y,(1+z)*k-2*z) = u(i,j,k)*alpha
@@ -242,9 +256,9 @@
           ! Starting from the physical boundaries,
           ! even locations have weighting factors according
           ! to their cell size:
-            do i=1+x,s(1)-x
-           do j=1+y,s(2)-y
           do k=1+z,s(3)-z
+           do j=1+y,s(2)-y
+            do i=1+x,s(1)-x
               t = i*x + j*y + k*z
               alpha = c%dhn(t+1)/(c%dhn(t)+c%dhn(t+1))
               p((1+x)*i-x,(1+y)*j-y,(1+z)*k-z) = u(i,j,k)*alpha

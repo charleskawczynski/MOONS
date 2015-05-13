@@ -99,6 +99,7 @@
          case (1002); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case (1003); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case (1004); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
+         case (1005); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
          case default
            write(*,*) 'Incorrect benchmarkCase in initBenchmarkSigmaMu'
            stop

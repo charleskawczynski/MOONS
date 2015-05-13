@@ -81,7 +81,7 @@
        ! benchmarkCase 3 (Duct: Purely Hydrodynamic / Insulating)
        ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase 4 (Duct: Conducting)
-       integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
+       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
 
        ! benchmarkCase 50 (Re=2000)
        ! integer,dimension(3),parameter :: Ni = 105, Nwtop = 0, Nwbot = 0
@@ -142,8 +142,12 @@
        ! benchmarkCase = 1003
        ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
        ! integer,dimension(3),parameter :: Ni = (/97,45,45/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
+       ! When 
+       integer,dimension(3),parameter :: Ni = (/105,60,60/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
        ! benchmarkCase = 1004
        ! integer,dimension(3),parameter :: Ni = 35, Nwtop = 0, Nwbot = 0
+       ! benchmarkCase = 1005 (Jack's Experiment)
+       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
 
 
        ! ********************* INDEX OF CELLS ************************ (DO NOT CHANGE)
@@ -291,8 +295,12 @@
 
          case (1003); hmin = -one; hmax = one ! for xyz
          hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
+         ! hmin(1) = real(-5.0,cp); hmax(1) = real(5.0,cp)
 
          case (1004); hmin = zero; hmax = one ! for xyz
+
+         case (1005); hmin = -one; hmax = one ! for xyz
+         hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
          case default
            write(*,*) 'Incorrect benchmarkCase in initGriddata';stop
          end select
@@ -341,10 +349,15 @@
          betai = robertsBL(real(2.0,cp)/Ha,hmax-hmin)
          betai(1) = 10000.0d0
 
-         case (1003); betai = 1.04d0
-                      betai(1) = 1.004d0
+         case (1003); ! betai = 1.04d0
+                      ! betai(1) = 1.004d0
+                      betai = 1.1d0
+                      betai(1) = 100000.0d0
 
          case (1004); betai = 100.0d0
+
+         case (1005); betai = 1.04d0
+                      betai(1) = 1.004d0
 
          case default
            write(*,*) 'Incorrect benchmarkCase in setGriddata';stop
@@ -402,9 +415,11 @@
 !                       twtop(2) = 0.01d0;  twbot(2) = 0.01d0
 
          case (1003); twtop = 0.1d0;   twbot = 0.1d0
-         ! twtop(1) = 0.0d0;  twbot(1) = 0.0d0
+         twtop(1) = 0.0d0;  twbot(1) = 0.0d0
 
          case (1004); twtop = 0.0d0;   twbot = 0.0d0
+
+         case (1005); twtop = 0.0d0;   twbot = 0.0d0
 
          case default
            stop 'Error: Incorrect benchmarkCase in setGriddata'

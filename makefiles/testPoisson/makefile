@@ -26,6 +26,7 @@ LIB_DIR = $(SRC_DIR)$(PS)lib
 # **************** INCLUDE PATHS ********************
 VPATH =\
 	$(TARGET_DIR) \
+	$(SRC_DIR)$(PS)unit_testing \
 	$(SRC_DIR)$(PS)lib \
 	$(SRC_DIR)$(PS)user \
 	$(SRC_DIR)$(PS)static \
@@ -88,10 +89,10 @@ FCFLAGS += -D_PARALLELIZE_VECTOR_FIELD_
 FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 
 # Code verification
-# FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
+FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
+FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
+FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
+FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
 # check grid is performed every time a grid is initialized
 # FCFLAGS += -D_CHECK_GRID_
@@ -165,6 +166,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
+	$(SRC_DIR)$(PS)unit_testing$(PS)poisson.f90 \
 	$(TARGET_DIR)$(PS)parametricStudy.f90
 
 # **************** DO NOT EDIT BELOW HERE *********************

@@ -376,16 +376,14 @@
            write(*,*) 'Exporting PROCESSED solutions for B'
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            call allocateVectorField(tempVFn,Nx,Ny,Nz)
-           call myCellCenter2Node(tempVFn,ind%B,g)
 
-           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt','Bynt','Bznt')
+           call myCellCenter2Node(tempVFn,ind%B,g)
+           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt_phys','Bynt_phys','Bznt_phys')
 
            call myCellCenter2Node(tempVFn,ind%B0,g)
-           ! call writeToFile(g,tempVFn,dir//'Bfield/','B0xnt','B0ynt','B0znt')
            call writeVecPhysical(g,tempVFn,dir//'Bfield/','B0xnt_phys','B0ynt_phys','B0znt_phys')
 
            call myCellCenter2Node(tempVFn,ind%J_cc,g)
-           ! call writeToFile(g,tempVFn,dir//'Jfield/','jxnt','jynt','jznt')
            call writeVecPhysical(g,tempVFn,dir//'Jfield/','jxnt_phys','jynt_phys','jznt_phys')
 
          ! ----------------------- SIGMA/MU FIELD AT NODES ------------------------
@@ -427,6 +425,7 @@
          case (5); call finiteRemCTmethod(ind,U,g)
          case (6); call LowRem_semi_implicit_ADI(ind,U,g,ss_MHD)
          case (7); call lowRemMultigrid(ind,U,g,ss_MHD)
+         case (8); call lowRem_JacksExperiment(ind,U,g)
          end select
          if (cleanB) then
            ! call cleanBSolution(ind,g,ss_MHD)
@@ -552,6 +551,57 @@
            ! J = curl(B_face)_edge
            call myCellCenter2Face(ind%F,ind%B,g)
            call curl(ind%J,ind%F,g)
+
+           ! Compute fluxes of u cross B0
+           call cross(ind%tempVF,U,ind%B0)
+           call myCellCenter2Edge(ind%E,ind%tempVF,g)
+
+           ! E = j/sig - uxB
+           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
+           call multiply(ind%J,ind%sigmaInv_edge)
+           call subtract(zero,ind%E)
+           call add(ind%E,ind%J)
+
+           ! F = curl(E_edge)_face
+           call curl(ind%F,ind%E,g)
+
+           ! tempVF = interp(F)_face->cc
+           call myFace2CellCenter(ind%tempVF,ind%F,g)
+
+           ! Add induced field of previous time step (B^n)
+           ! ind%B = ind%B - ind%dTime*ind%tempVF
+           call multiply(ind%tempVF,ind%dTime)
+           call subtract(ind%B,ind%tempVF)
+
+           ! Impose BCs:
+           call applyAllBCs(ind%Bx_bcs,ind%B%x,g)
+           call applyAllBCs(ind%By_bcs,ind%B%y,g)
+           call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
+         enddo
+       end subroutine
+
+       subroutine lowRem_JacksExperiment(ind,U,g)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U
+         type(grid),intent(in) :: g
+         integer :: i,t,b
+         b = 10
+         t = 21
+
+         do i=1,ind%NmaxB
+
+           ! Compute current from appropriate fluxes:
+
+           ! J = curl(B_face)_edge
+           call myCellCenter2Face(ind%F,ind%B,g)
+           call curl(ind%J,ind%F,g)
+
+           ind%J%y(:,1:2,b) = real(1.0,cp)
+           ind%J%y(:,1:2,t) = real(-1.0,cp)
+
+           ind%J%y(:,ind%J%sy(2)-1:ind%J%sy(2),b) = real(1.0,cp)
+           ind%J%y(:,ind%J%sy(2)-1:ind%J%sy(2),t) = real(-1.0,cp)
 
            ! Compute fluxes of u cross B0
            call cross(ind%tempVF,U,ind%B0)
@@ -764,7 +814,178 @@
          call applyAllBCs(ind%Bz_bcs,ind%B%z,g)
        end subroutine
 
+       ! ********************* COMPUTE *****************************
+
+       subroutine computeJCrossB(jcrossB,ind,g_mom,g_ind,Re,Ha)
+         ! computeJCrossB computes the ith component of Ha^2/Re j x B
+         ! where j is the total current and B is the applied or total mangetic
+         ! field, depending on the solveBMethod.
+         implicit none
+         type(vectorField),intent(inout) :: jcrossB
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g_mom,g_ind
+         real(cp),intent(in) :: Re,Ha
+
+         call assign(ind%Bstar,ind%B0)
+
+         ! For Finite Rem, B_induced should be added
+         select case (solveBMethod)
+         case (5,6); call add(ind%Bstar,ind%B)
+         end select
+
+         call curl(ind%J_cc,ind%Bstar,g_ind)
+         call cross(ind%tempVF,ind%J_cc,ind%Bstar)
+         call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
+
+         call extractFace(jcrossB,ind%F,g_mom,Nin1,Nin2,Nici1,Nici2,Nice1,Nice2,3)
+
+         call multiply(jcrossB,Ha**real(2.0,cp)/Re)
+       end subroutine
+
+       subroutine computeDivergenceInduction(ind,g)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g
+         if (solveInduction) then
+           select case (solveBMethod)
+           case (4:5)
+             ! CT method enforces div(b) = 0, (result is in CC), 
+             ! when computed from FACE-centered data:
+             call div(ind%divB%phi,ind%F,g)
+           case default
+             call div(ind%divB%phi,ind%B,g)
+           end select
+         endif
+         call div(ind%divJ%phi,ind%J_cc,g)
+       end subroutine
+
+       subroutine computeCurrent(J,B,B0,mu,g)
+         implicit none
+         type(vectorField),intent(inout) :: B,J
+         type(vectorField),intent(in) :: B0
+         type(scalarField),intent(in) :: mu
+         type(grid),intent(in) :: g
+         ! B = (B + B0)/mu
+         call add(B,B0)
+         ! call divide(B,mu)
+
+         ! J_cc = curl(B_cc)
+         call curl(J,B,g)
+
+         ! B = B*mu - B0
+         ! call multiply(B,mu)
+         call subtract(B,B0)
+       end subroutine
+
        ! ********************* AUX *****************************
+
+       subroutine extractFace(face_i,face_t,g,Nn1,Nn2,Ni1,Ni2,Ne1,Ne2,extractType)
+         implicit none
+         type(vectorField),intent(inout) :: face_i
+         type(vectorField),intent(in) :: face_t
+         type(grid),intent(in) :: g
+         integer,dimension(3),intent(in) :: Nn1,Nn2,Ni1,Ni2,Ne1,Ne2
+         integer,intent(in) :: extractType
+         integer :: Nx,Ny,Nz
+
+         select case (extractType)
+         case (1) ! Including ghost nodes
+                  ! Including ghost cells
+                  ! Including boundary values
+           face_i%x = face_t%x(Nn1(1)-1:Nn2(1)+1,Ni1(2)  :Ni2(2)  ,Ni1(3)  :Ni2(3)  )
+           face_i%y = face_t%y(Ni1(1)  :Ni2(1)  ,Nn1(2)-1:Nn2(2)+1,Ni1(3)  :Ni2(3)  )
+           face_i%z = face_t%z(Ni1(1)  :Ni2(1)  ,Ni1(2)  :Ni2(2)  ,Nn1(3)-1:Nn2(3)+1)
+         case (2) ! Excluding ghost nodes
+                  ! Excluding ghost cells
+                  ! Including boundary values
+           call zeroGhostPoints(face_i)
+           face_i%x(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
+           face_t%x( Nn1(1)-1: Nn2(1)+1,Ne1(2):Ne2(2),Ne1(3):Ne2(3))
+
+           face_i%y(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1) = &
+           face_t%y(Ne1(1):Ne2(1), Nn1(2)-1: Nn2(2)+1,Ne1(3):Ne2(3))
+
+           face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:) = &
+           face_t%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2), Nn1(3)-1: Nn2(3)+1)
+         case (3) ! Excluding ghost nodes
+                  ! Excluding ghost cells
+                  ! Excluding boundary values
+           call zeroGhostPoints(face_i)
+           face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
+           face_t%x( Nn1(1): Nn2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3))
+
+           face_i%y(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1) = &
+           face_t%y(Ne1(1):Ne2(1), Nn1(2): Nn2(2),Ne1(3):Ne2(3))
+
+           face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1) = &
+           face_t%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2), Nn1(3): Nn2(3))
+         case default
+         stop 'Error: extractType must = 1,2 in extractFace'
+         end select
+       end subroutine
+
+       subroutine embedVelocity(U_cct,U_fi,U_cci,g_mom)
+         ! Whether or not the fictitious cells are included must be determined
+         ! based on the BCs for the velocity. If no slip / no flow through is
+         ! used, then only interior cell velocities should be used. Otherwise,
+         ! fictitious cells will affect the solution of B, which will in-tern
+         ! affect the solution of U, etc.
+         implicit none
+         type(vectorField),intent(inout) :: U_cct
+         type(vectorField),intent(in) :: U_fi
+         type(scalarField),intent(inout) :: U_cci
+         type(grid),intent(in) :: g_mom
+         integer,dimension(3) :: Ni
+         integer :: dir,embedType
+
+         Ni = (/g_mom%c(1)%sc-1,g_mom%c(2)%sc-1,g_mom%c(3)%sc-1/) ! minus fictitious cells
+         embedType = 3
+         dir = 1
+         call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
+         call embedCC(U_cct%x,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
+         call embedCC(U_cct%y,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
+         call embedCC(U_cct%z,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+       end subroutine
+
+       subroutine embedCC(U_cct,U_cci,g,Ni,Ni1,Ni2,Ne1,Ne2,embedType,dir)
+         ! Whether or not the fictitious cells are included must be determined
+         ! based on the BCs for the velocity. If no slip / no flow through is
+         ! used, then only interior cell velocities should be used. Otherwise,
+         ! fictitious cells will affect the solution of B, which will in-tern
+         ! affect the solution of U, etc.
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: U_cct
+         real(cp),dimension(:,:,:),intent(in) :: U_cci
+         type(grid),intent(in) :: g
+         integer,dimension(3),intent(in) :: Ni,Ni1,Ni2,Ne1,Ne2
+         integer,intent(in) :: embedType,dir
+
+         select case(embedType)
+
+         case (1) ! (including all fictitious cells)
+           U_cct(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci
+
+         case (2) ! (exclude all fictitious cells)
+           U_cct(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = U_cci(2:Ni(1),2:Ni(2),2:Ni(3))
+
+         case (3) ! Include along dir (Duct flow - exclude except inlet / outlet)
+
+           select case (dir)
+           case (1); U_cct(Ni1(1):Ni2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = U_cci(:,2:Ni(2),2:Ni(3))
+           case (2); U_cct(Ne1(1):Ne2(1),Ni1(2):Ni2(2),Ne1(3):Ne2(3)) = U_cci(2:Ni(1),:,2:Ni(3))
+           case (3); U_cct(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ni1(3):Ni2(3)) = U_cci(2:Ni(1),2:Ni(2),:)
+           case default
+           stop 'Error: dir must = 1,2,3'
+           end select
+
+         case default
+         stop 'Error: embedType must = 1,2,3'
+         end select
+       end subroutine
+
+       ! ********************* OLD *****************************
 
        subroutine computeJCrossBOldGood(jcrossB,ind,g_mom,g_ind,Re,Ha)
          ! computeJCrossB computes the ith component of Ha^2/Re j x B
@@ -790,7 +1011,8 @@
          case (5,6); call add(ind%Bstar,ind%B)
          end select
 
-         call myEdge2CellCenter(ind%J_cc,ind%J,g_ind)
+         call myEdge2CellCenter(ind%J_cc,ind%J,g_ind) ! This doesn't seem to enforce div(J) = 0 as well
+
          call cross(ind%tempVF,ind%J_cc,ind%Bstar)
 
          call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
@@ -816,7 +1038,7 @@
          call zeroGhostPoints(jcrossB)
        end subroutine
 
-       subroutine computeJCrossB(jcrossB,ind,g_mom,g_ind,Re,Ha)
+       subroutine computeJCrossBOld(jcrossB,ind,g_mom,g_ind,Re,Ha)
          ! computeJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
@@ -872,49 +1094,9 @@
 
          call multiply(jcrossB,Ha**real(2.0,cp)/Re)
          ! call uniformifyX(jcrossB)
-         ! call checkGlobalMinMax(ind%Bstar,g_ind,'ind_Bstar')
-         ! call checkGlobalMinMax(ind%J_cc,g_ind,'ind_J_cc')
-         ! call checkGlobalMinMax(ind%tempVF,g_ind,'ind_JxB_cc')
-         ! call checkGlobalMinMax(jcrossB,g_ind,'ind_JxB')
-         ! call checkGlobalMinMax(ind%F,g_ind,'ind_F')
        end subroutine
 
-       subroutine computeDivergenceInduction(ind,g)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
-         if (solveInduction) then
-           select case (solveBMethod)
-           case (4:5)
-             ! CT method enforces div(b) = 0, (result is in CC), 
-             ! when computed from FACE-centered data:
-             call div(ind%divB%phi,ind%F,g)
-           case default
-             call div(ind%divB%phi,ind%B,g)
-           end select
-         endif
-         call div(ind%divJ%phi,ind%J_cc,g)
-       end subroutine
-
-       subroutine computeCurrent(J,B,B0,mu,g)
-         implicit none
-         type(vectorField),intent(inout) :: B,J
-         type(vectorField),intent(in) :: B0
-         type(scalarField),intent(in) :: mu
-         type(grid),intent(in) :: g
-         ! B = (B + B0)/mu
-         call add(B,B0)
-         ! call divide(B,mu)
-
-         ! J_cc = curl(B_cc)
-         call curl(J,B,g)
-
-         ! B = B*mu - B0
-         ! call multiply(B,mu)
-         call subtract(B,B0)
-       end subroutine
-
-       subroutine embedVelocityOld(U_cct,U_fi,U_cci,g_mom)
+       subroutine embedVelocityOldOld(U_cct,U_fi,U_cci,g_mom)
          ! Whether or not the fictitious cells are included must be determined
          ! based on the BCs for the velocity. If no slip / no flow through is
          ! used, then only interior cell velocities should be used. Otherwise,
@@ -945,7 +1127,7 @@
          ! call uniformify(U_cct)
        end subroutine
 
-       subroutine embedVelocity(U_cct,U_fi,U_cci,g_mom)
+       subroutine embedVelocityOld(U_cct,U_fi,U_cci,g_mom)
          ! Whether or not the fictitious cells are included must be determined
          ! based on the BCs for the velocity. If no slip / no flow through is
          ! used, then only interior cell velocities should be used. Otherwise,

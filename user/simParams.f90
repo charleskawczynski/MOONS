@@ -20,8 +20,8 @@
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
        logical :: minimizePrintedOutput     = .true.    ! (T/F)
-       logical :: nonUniformGridFluid       = .false.    ! (T/F)
-       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .true.    ! (T/F)
+       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -78,9 +78,9 @@
        !                                   3 : Low Rem (Pseudo time step)
        !                                   4 : Low Rem Constrained Transport (CT) Method
        !                                   5 : Finite Rem Constrained Transport (CT) Method
-       !                                   6 : Finite Rem (Pseudo time step for uniform properties)
-       !                                   7 : Low Rem Semi-Implicit 3D ADI (Douglas) (good for highly insulating walls)
-       !                                   8 : Low Rem Multigrid (Poisson, assumes uniform properties)
+       !                                   6 : Low Rem Semi-Implicit 3D ADI (Douglas) (good for highly insulating walls)
+       !                                   7 : Low Rem Multigrid (Poisson, assumes uniform properties)
+       !                                   8 : Low Rem For Jack's Experiment (Current injection)
 
        ! More difficult parameters to have pre-defined cases for:
        integer,parameter :: preDefinedGeometry = 0
@@ -112,7 +112,7 @@
        ! meant to do (not yet implemented).
        ! 
 
-       integer,parameter :: benchmarkCase = 4
+       integer,parameter :: benchmarkCase = 1003
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -176,6 +176,7 @@
        !    1003: Case 3, Plasma disruption, Refer to powerpoint
        ! 
        !    1004: LDC by Salah - To produce Fig. 4, Fig. 5
+       !    1005: No slip cavity - Jack's experiment
        ! 
        ! In order to make new benchmarkCases, prepare the following
        !    - MOONS.f90 (Number of steps, time step etc.)

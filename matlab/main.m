@@ -14,7 +14,8 @@ addpath([myDir.MOONSdir 'matlab\tools'])
 addpath([myDir.MOONSdir 'matlab\plotResults'])
 
 %% Active directory
-myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\';
+% myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\';
+myDir.source = 'C:\Users\Charlie\Desktop\MOONS - BMCs\BMC_1003 Ha100,Rem100,Re100\';
 
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS2\out\LDC\';
 % myDir.source = 'C:\Users\Charlie\Desktop\benchmark\MOONS\BMC_102_12.17.14\';

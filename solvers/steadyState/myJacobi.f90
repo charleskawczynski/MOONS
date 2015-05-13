@@ -187,7 +187,6 @@
         continueLoop = .true.
 
         jac%f = f ! CANNOT REMOVE MEAN FOR NEUMANN, RESULTS IN BAD RESIDUALS FOR Jacobi
-        jac%uTemp = u
 
 #ifdef _EXPORT_Jacobi_CONVERGENCE_
         NU = newAndOpen('out\','norms_Jacobi')
@@ -196,20 +195,21 @@
         do while (continueLoop.and.TF)
           ijk = ijk + 1
 
+          jac%uTemp = u
           ! THE ORDER OF THESE ROUTINE CALLS IS IMPORTANT. DO NOT CHANGE.
 
 #ifdef _PARALLELIZE_Jacobi_
           !$OMP PARALLEL
 
 #endif
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/0,0,0/)) ! Even in odd plane
 
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/1,0,0/)) ! Even in even plane
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/0,1,0/)) ! Even in even plane
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/0,0,1/)) ! Even in even plane
 
 
@@ -218,26 +218,25 @@
           !$OMP PARALLEL
 
 #endif
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/1,1,1/)) ! Odd in odd plane
 
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/0,1,1/)) ! Odd in even plane
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/1,0,1/)) ! Odd in even plane
-          call redBlack(jac%uTemp,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
+          call redBlack(jac%uTemp,u,jac%f,jac%s,jac%p%c(1)%dhn,jac%p%c(2)%dhn,jac%p%c(3)%dhn,&
           jac%d%c(1)%dhn,jac%d%c(2)%dhn,jac%d%c(3)%dhn,jac%omega,jac%gt,(/1,1,0/)) ! Odd in even plane
 
 #ifdef _PARALLELIZE_Jacobi_
           !$OMP END PARALLEL
 
 #endif
-          u = jac%uTemp
 
-          call applyAllBCs(u_bcs,u,g)
+          call applyAllBCs(u_bcs,jac%uTemp,g)
 
           if (getMinToleranceTF(ss)) then
-            call lap(jac%lapu,u,g)
+            call lap(jac%lapu,jac%uTemp,g)
             jac%res = jac%lapu - jac%f
             call zeroGhostPoints(jac%res)
             call compute(norms,real(0.0,cp),jac%res)
@@ -245,7 +244,7 @@
           endif
 
 #ifdef _EXPORT_Jacobi_CONVERGENCE_
-            call lap(jac%lapu,u,g)
+            call lap(jac%lapu,jac%uTemp,g)
             jac%res = jac%lapu - jac%f
             call zeroGhostPoints(jac%res)
             call compute(norms,real(0.0,cp),jac%res)
@@ -253,6 +252,7 @@
 #endif
 
           call setIteration(ss,ijk)
+          u = jac%uTemp
 
           ! ********************************* CHECK TO EXIT ************************************
           call checkCondition(ss,continueLoop)
@@ -289,10 +289,10 @@
         call delete(jac)
       end subroutine
 
-      subroutine redBlack(u,f,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
+      subroutine redBlack(u_out,u,f,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
+        real(cp),dimension(:,:,:),intent(inout) :: u_out
+        real(cp),dimension(:,:,:),intent(in) :: f,u
         integer,dimension(3) :: s,odd
         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
         real(cp),intent(in) :: omega
@@ -313,7 +313,7 @@
                   real(1.0,cp)/dyd(j-1+gt(2))*(real(1.0,cp)/dyp(j) + real(1.0,cp)/dyp(j-1)) + & 
                   real(1.0,cp)/dzd(k-1+gt(3))*(real(1.0,cp)/dzp(k) + real(1.0,cp)/dzp(k-1))
 
-              u(i,j,k) = u(i,j,k)*(real(1.0,cp)-omega) + &
+          u_out(i,j,k) = u(i,j,k)*(real(1.0,cp)-omega) + &
                  omega*( u(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1))) + &
                          u(i+1,j,k)/(dxp( i ) * dxd(i-1+gt(1))) + &
                          u(i,j-1,k)/(dyp(j-1) * dyd(j-1+gt(2))) + &

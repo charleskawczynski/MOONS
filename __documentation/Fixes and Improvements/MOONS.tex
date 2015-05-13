@@ -43,17 +43,25 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
-\section{Culprits of d/dx not zero for periodic duct flow}
-
-- Advection term
-
-- Diffusion term
-
-- Pressure correction
-
-- JxB given a U that satisfies d/dx = 0
-
 \section{Today}
+
+- Merge with master, commit current version
+
+- The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
+
+- Make sure diffusion term is being computed correctly (should be equivalent to one-sided difference formula). 
+
+- E = j/sig - uxB, u must be interpolated before multiplication.
+
+- Change induction equation to be located on the cell face. This allows a natural CT method implementation, as well as allowing for cleaning of B for Gauss-Seidel Solver.
+
+- Re-run several benchmark tests. The uxB interpolation being done before multiplication might fix this issue of jxB not balancing pressure well (since div(U) now seems to be a problem for these plasma disruption flows)
+
+- Send Sergey results so far with caveat about 1) boundary source terms 2) uxB interp 3) induction-> face instead (BCs will be applied on the cell face instead of cell center), this means a second interpolation to compute J will no longer be necessary which means the result may be more accurate.
+
+- Try Jack's Experiment
+
+- div(B) cleaning for face data
 
 - Try making properties of mom/ind/nrg private!
 

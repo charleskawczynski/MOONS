@@ -95,7 +95,7 @@
          case (1);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
          case (2);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
          case (3);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
-         case (4);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = ds
+         case (4);   Re = 100d0;   Ha = 100.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = ds
 
          case (50);  Re = 1970d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
@@ -135,7 +135,59 @@
          ! case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 5.0d-7
          case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 8.0d-9; dTime = 2.0d-7
          ! case (1002); Re = 100d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-5
-         case (1003); Re = 100d0;    Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         case (1003); 
+         ds = 1.0d-5; dTime = ds
+
+         ! Ha = 10
+
+         ! Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Ha = 100
+
+         ! Re = 100d0;    Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds ! streamlines sideways?
+         ! Re = 500d0;    Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         Re = 100d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds ! Next
+         ! Re = 500d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Ha = 1000
+
+         ! Re = 100d0;    Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
 
          ! case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-4; dTime = ds
          case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-3; dTime = ds
@@ -143,6 +195,7 @@
          Rem = 100.0d0; ds = 1.0d-4
          ! Rem = 400.1d00; ds = 1.0d-3
          ! Rem = 1000.0d0; ds = 1.0d-3
+         case (1005); Re = 400d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -194,6 +247,7 @@
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Salah
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
          case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6
+         case (1005); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'

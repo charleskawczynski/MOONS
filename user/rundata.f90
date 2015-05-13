@@ -48,7 +48,10 @@
          real(cp) :: Ha           ! Hartmann number
          real(cp) :: N            ! Interaction number
          real(cp) :: Rem          ! Magnetic Reynolds number
-         real(cp) :: eta          ! Resistivity ( = 1/Rem , dimensionless )
+         real(cp) :: eta          ! Magnetic Resistivity (Rem = 1/eta)
+         real(cp) :: eta_K          ! Kolmogorov Length Scale
+         real(cp) :: u_eta_K        ! Kolmogorov Velocity Scale
+         real(cp) :: t_eta_K        ! Kolmogorov Time Scale
          real(cp) :: Pr_m         ! Magnetic Prandtl number
          ! Stability
          real(cp) :: Fo           ! Fourier number
@@ -92,6 +95,10 @@
          endif
          this%nu = one/this%Re
          this%eta = one/this%Rem
+
+         this%eta_K = this%Re**real(-3.0/4.0,cp)
+         this%u_eta_K = this%Re**real(-1.0/4.0,cp)
+         this%t_eta_K = this%Re**real(-1.0/2.0,cp)
 
          ! *************** CHARACTERISTIC SCALES *****************
          ! Right now, the characteristic length and velocity
@@ -281,6 +288,7 @@
          write(newU,'(A18,3'//hfmt//')') ' t_c,t_nu,t_eta = ',this%t_c,this%t_nu,this%t_eta
          write(newU,*) ' ---------- DIMENSIONLESS PARAMETERS ----------- '
          write(newU,'(A9,2'//hfmt//')') ' Re,nu = ',this%Re,this%nu
+         write(newU,'(A29,3'//hfmt//')') ' Kolmogorov scales (l,u,t) = ',this%eta_K,this%u_eta_K,this%t_eta_K
          write(newU,'(A8,2'//hfmt//')') ' Ha,N = ',this%Ha,this%N
          if (solveBMethod.eq.1) then
            write(newU,'(A21,2'//hfmt//')') ' Rem,eta (low Rem) = ',this%Rem,this%eta

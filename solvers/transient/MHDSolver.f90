@@ -83,30 +83,25 @@
 
            ! ************** SOLVE MOMENTUM EQUATION **********************
            if (solveMomentum) then
-             ! write(*,*) '----------- LOOP START -----------'
              call solve(mom,mom%g,ss_MHD)
-             ! write(*,*) 'mom = ',mom%nstep
-             ! call checkGlobalMinMax(mom%U,mom%g,'mom_U')
            endif
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
              ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
              ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
-             ! ind%B0%y = real(0.0,cp)
              ind%B0%z = real(1.0,cp)
+
+             ! ind%B0%x = real(0.0,cp)
+             ! ind%B0%y = real(0.0,cp)
+             ! ind%B0%z = real(0.0,cp)
              ! ind%B0%x = real(0.0,cp)
              ! ind%B0%y = real(0.0,cp)
              ! ind%B0%z = exp(-ind%omega*ind%t)
              call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
 
-             ! call checkGlobalMinMax(ind%U_cct,ind%g,'ind_U_cct')
 
              call solve(ind,ind%U_cct,ind%g,ss_MHD)
-             ! write(*,*) 'ind = ',ind%nstep
-
-             ! call checkGlobalMinMax(ind%B,ind%g,'ind_B')
-             ! call checkGlobalMinMax(ind%J,ind%g,'ind_J')
 
              if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
               ! call totalEnergy(K_energy,ind%U_cct,ind%g) ! Sergey uses interior...
@@ -131,8 +126,6 @@
              call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              if (solveCoupled) then
                call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
-               ! call checkGlobalMinMax(ind%F,ind%g,'ind_JxB')
-               ! call checkGlobalMinMax(mom%F,mom%g,'mom_JxB')
              else; call assign(mom%F,zero)
              endif
              if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then

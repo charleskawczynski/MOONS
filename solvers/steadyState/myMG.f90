@@ -12,6 +12,12 @@
       !     g            = contains grid information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
+      ! 
+      ! 
+      ! There are 3 iteration numbers that must be set:
+      !      1) Number of V-Cycles - defined by maxIterations in ss
+      !      2) Iterations per cycle - call setIterationsPerLevel()
+      !      3) Iterations at the coarsest level - call setIterationsAtMaxLevel()
 
       use coordinates_mod
       use grid_mod
@@ -25,16 +31,16 @@
       use IO_tools_mod
       use IO_scalarFields_mod
       use mySOR_mod
+      use myJacobi_mod
       implicit none
 
       private
 
       public :: multiGrid,init,delete,solve
+      public :: setIterationsPerLevel,setIterationsAtMaxLevel
       public :: testRP
 
       logical,parameter :: exportMGGrids = .true.
-
-      ! integer,parameter :: nLevels = 10
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -53,7 +59,7 @@
         type(grid) :: g
         type(myError) :: norms
         type(solverSettings) :: ss
-        integer :: nLevels,gt
+        integer :: nLevels
         logical :: displayTF,MG_init
       end type
 
@@ -75,16 +81,17 @@
         logical,intent(in) :: displayTF
         ! character(len=*),intent(in) :: dir
         integer,dimension(3) :: N
-        integer :: i,j,nLevels
+        integer :: i,j,nLevels,bctype
 
         nLevels = size(mg)
         mg(:)%nLevels = size(mg)
         ! mg(:)%displayTF = displayTF
         mg(:)%displayTF = .false.
 
-            if (s(1).eq.g_base%c(1)%sc) then; mg(:)%gt = 1
-        elseif (s(1).eq.g_base%c(1)%sn) then; mg(:)%gt = 2
-        else; stop 'Error: gridType was not determined in myMG.f90'
+        ! ******************** Check size of data ********************
+        if (all((/(s(i).eq.g_base%c(i)%sn,i=1,3)/))) then
+        elseif (all((/(s(i).eq.g_base%c(i)%sc,i=1,3)/))) then
+        else; stop 'Error: MG only supports N or CC data in myMG.f90'
         endif
 
         ! ******************** Initialize grids ********************
@@ -99,10 +106,10 @@
 
         ! ******************** Initialize fields ********************
         do j = 1,mg(1)%nLevels
-          if (mg(j)%gt.eq.1) then
-            N = (/(mg(j)%g%c(i)%sc,i=1,3)/)
-          elseif(mg(j)%gt.eq.2) then
+          if (s(1).eq.g_base%c(1)%sn) then
             N = (/(mg(j)%g%c(i)%sn,i=1,3)/)
+          elseif (s(1).eq.g_base%c(1)%sc) then
+            N = (/(mg(j)%g%c(i)%sc,i=1,3)/)
           endif
 
           if (allocated(mg(j)%u))    deallocate(mg(j)%u)
@@ -127,40 +134,56 @@
         do j = 1,mg(1)%nLevels
           call init(mg(j)%norms)
           call init(mg(j)%ss)
-          call setMaxIterations(mg(j)%ss,getMaxIterations(ss)) ! Prescribed
-          ! call setMaxIterations(mg(j)%ss,100) ! Fixed
-          ! call setMaxIterations(mg(j)%ss,5) ! Dynamic
-          call setName(mg(j)%ss,'MG level('//int2str(j)//')         ')
         enddo
 
         ! ******************** Initialize BCs *************************
         call init(mg(1)%u_bcs,u_bcs)
         do j = 2,mg(1)%nLevels
-          if (mg(j)%gt.eq.1) then
-            N = (/(mg(j)%g%c(i)%sc,i=1,3)/)
-          elseif(mg(j)%gt.eq.2) then
+
+          if (s(1).eq.g_base%c(1)%sn) then
             N = (/(mg(j)%g%c(i)%sn,i=1,3)/)
+          elseif (s(1).eq.g_base%c(1)%sc) then
+            N = (/(mg(j)%g%c(i)%sc,i=1,3)/)
           endif
+
           ! RIGHT NOW ONLY HANDLES ZERO DIRICHLET AND ZERO NEUAMNN
-          ! FACE-DATA IS NOT SUPPORTED
-          if (allNeumann(mg(1)%u_bcs)) then
-            if (s(1).eq.g_base%c(1)%sc) then
-                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),5) ! Dirichlet wall coincident
-            else
-                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),4) ! Dirichlet wall coincident
-            endif
-          else
-            if (s(1).eq.g_base%c(1)%sc) then
-                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),2) ! Dirichlet wall coincident
-              else
-                call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),1) ! Dirichlet wall coincident
-            endif
-          endif
+          ! FACE/EDGE-DATA IS NOT SUPPORTED AND CANNOT BE SIMPLY 
+          ! SINCE THE NUMBER OF DATA POINTS DIFFERS BY 1 BETWEEN
+          ! EACH DIRECTION FOR STAGGERED DATA.
+          if ((s(1).eq.g_base%c(1)%sn).and.(allNeumann(mg(1)%u_bcs))) bctype = 4       ! Neumann wall coincident
+          if ((s(1).eq.g_base%c(1)%sc).and.(allNeumann(mg(1)%u_bcs))) bctype = 5       ! Neumann wall incoincident
+          if ((s(1).eq.g_base%c(1)%sn).and.(.not.allNeumann(mg(1)%u_bcs))) bctype = 1  ! Dirichlet wall coincident
+          if ((s(1).eq.g_base%c(1)%sc).and.(.not.allNeumann(mg(1)%u_bcs))) bctype = 2  ! Dirichlet wall incoincident
+          call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),bctype)
+
         enddo
         mg(1)%MG_init = .true.
 
+        call setIterationsPerLevel(mg,5)
+        ! call setIterationsAtMaxLevel(mg,100)
+        ! call setIterationsAtMaxLevel(mg,getMaxIterations(ss))
+
         ! call testRP(mg,'out\')
         ! write(*,*) 'Initialized MG'
+      end subroutine
+
+      subroutine setIterationsPerLevel(mg,n)
+        implicit none
+        type(multiGrid),dimension(:),intent(inout) :: mg
+        integer,intent(in) :: n
+        integer :: j
+        do j = 1,mg(1)%nLevels
+          call setMaxIterations(mg(j)%ss,n)
+          call setName(mg(j)%ss,'MG level('//int2str(j)//')         ')
+        enddo
+      end subroutine
+
+      subroutine setIterationsAtMaxLevel(mg,n)
+        implicit none
+        type(multiGrid),dimension(:),intent(inout) :: mg
+        integer,intent(in) :: n
+        call setMaxIterations(mg(size(mg))%ss,n)
+        call setName(mg(size(mg))%ss,'MG level('//int2str(size(mg))//')         ')
       end subroutine
 
       subroutine deleteAllMG(mg)
@@ -184,13 +207,15 @@
         call delete(mg%u_bcs)
       end subroutine
 
-      subroutine testRP(mg,dir)
+      subroutine testRP(mg,f,dir)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
+        real(cp),dimension(:,:,:),intent(in) :: f
         character(len=*),intent(in) :: dir
         integer :: i,nLevels
         integer,dimension(3) :: s
         nLevels = mg(1)%nLevels
+        mg(1)%f = f
         s = shape(mg(1)%f)
         call writeScalarPhysical(mg(1)%g,mg(1)%f,dir,'f_Grid1')
         do i = 1,mg(1)%nLevels-1
@@ -225,7 +250,7 @@
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(myError),intent(inout) :: norms
-        type(mySOR) :: SOR
+        type(myJacobi) :: SOR
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
         logical :: continueLoop,TF
@@ -234,7 +259,6 @@
         integer :: NU
 #endif
 
-        ! write(*,*) '************** MG IS STARTING **************'
         nLevels = size(mg)
 
         mg(1)%f = f
@@ -246,8 +270,6 @@
         else; TF = .true.
         endif; continueLoop = .true.
 
-        ! write(*,*) 'maxval(mg(1)%u) = ',maxval(mg(1)%u)
-
 #ifdef _EXPORT_MG_CONVERGENCE_
         NU = newAndOpen('out\','norms_MG')
 #endif
@@ -258,7 +280,7 @@
           call setIteration(ss,i_MG)
 
           ! 1) Smooth on finest level
-          ! Improvement on efficiency: Pass back residual from SOR:
+          ! Improvement on efficiency: Pass back residual from smoother:
           call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
             mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
 
@@ -291,7 +313,6 @@
             write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
 #endif
 
-          ! write(*,*) 'maxval(mg(1)%u) after smoothing = ',maxval(mg(1)%u)
           ! ********************************* CHECK TO EXIT ************************************
           call checkCondition(ss,continueLoop)
           ! continueLoop = .false.
@@ -315,16 +336,13 @@
           call compute(norms,real(0.0,cp),mg(1)%res)
           call print(norms,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
-
-        ! call delete(mg)
-        ! write(*,*) '************** MG IS ENDING **************'
       end subroutine
 
       recursive subroutine Vcycle(mg,j)
         implicit none
         type(multigrid),dimension(:),intent(inout) :: mg
         integer,intent(in) :: j
-        type(mySOR) :: SOR
+        type(myJacobi) :: SOR
         ! Locals
         integer :: nLevels
         integer,dimension(3) :: s
@@ -373,7 +391,7 @@
 
         else ! At coarsest level. Solve exactly.
 
-          call setMaxIterations(mg(j+1)%ss,100) ! Fixed
+          ! call setMaxIterations(mg(j+1)%ss,5) ! Fixed
           ! call setMaxIterations(mg(j+1)%ss,floor(exp(real(mg(j+1)%nlevels,cp)))) ! Dynamic
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norms,mg(j+1)%displayTF)
