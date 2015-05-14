@@ -98,7 +98,7 @@
        ! integer,dimension(3),parameter :: Ni = (/101,101,41/), Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! integer,dimension(3),parameter :: Ni = 48, Nwtop = 8, Nwbot = 8 ! For multigrid
        ! integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
        ! benchmarkCase = 103
@@ -143,7 +143,7 @@
        ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
        ! integer,dimension(3),parameter :: Ni = (/97,45,45/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
        ! When 
-       integer,dimension(3),parameter :: Ni = (/105,60,60/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
+       ! integer,dimension(3),parameter :: Ni = (/105,60,60/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
        ! benchmarkCase = 1004
        ! integer,dimension(3),parameter :: Ni = 35, Nwtop = 0, Nwbot = 0
        ! benchmarkCase = 1005 (Jack's Experiment)

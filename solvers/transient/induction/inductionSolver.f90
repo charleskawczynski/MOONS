@@ -62,7 +62,7 @@
          type(vectorField) :: J,E,sigmaInv_edge                ! Edge data
          type(vectorField) :: F,sigmaInv_face                  ! Face data
          ! --- Scalar fields ---
-         type(scalarField) :: sigma,sigmaInv,mu,muInv          ! CC data
+         type(scalarField) :: sigma,mu          ! CC data
          type(scalarField) :: divB,divJ,phi,temp               ! CC data
          ! BCs:
          type(BCs) :: Bx_bcs,By_bcs,Bz_bcs
@@ -147,9 +147,7 @@
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
          call allocateField(ind%sigma,Nx,Ny,Nz)
-         call allocateField(ind%sigmaInv,ind%sigma)
          call allocateField(ind%mu,ind%sigma)
-         call allocateField(ind%muInv,ind%sigma)
          call allocateField(ind%phi,ind%sigma)
          call allocateField(ind%temp,ind%sigma)
 
@@ -251,9 +249,7 @@
          call delete(ind%F)
          
          call delete(ind%sigma)
-         call delete(ind%sigmaInv)
          call delete(ind%mu)
-         call delete(ind%muInv)
 
          call delete(ind%divB)
          call delete(ind%divJ)
@@ -735,7 +731,6 @@
          ! Solve with semi-implicit ADI
          call setDt(ind%ADI_B,ind%dTime)
          call setAlpha(ind%ADI_B,real(1.0,cp))
-         ! call setAlpha(ind%ADI_B,ind%sigmaInv)
 
          call init(ind%ss_ADI)
          call setName(ind%ss_ADI,'ADI for B-field     ')
@@ -826,18 +821,26 @@
          type(grid),intent(in) :: g_mom,g_ind
          real(cp),intent(in) :: Re,Ha
 
+
+         select case (solveBMethod)
+         case (5,6) ! Finite Rem
+
+         call assign(ind%Bstar,ind%B0)
+         call add(ind%Bstar,ind%B)
+         call curl(ind%J_cc,ind%Bstar,g_ind)
+
+         case default ! Low Rem
+
+         call assign(ind%Bstar,ind%B)
+         call curl(ind%J_cc,ind%Bstar,g_ind)
          call assign(ind%Bstar,ind%B0)
 
-         ! For Finite Rem, B_induced should be added
-         select case (solveBMethod)
-         case (5,6); call add(ind%Bstar,ind%B)
          end select
 
-         call curl(ind%J_cc,ind%Bstar,g_ind)
          call cross(ind%tempVF,ind%J_cc,ind%Bstar)
          call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
 
-         call extractFace(jcrossB,ind%F,g_mom,Nin1,Nin2,Nici1,Nici2,Nice1,Nice2,3)
+         call extractFace(jcrossB,ind%F,g_mom,Nin1,Nin2,Nici1,Nici2,Nice1,Nice2,2)
 
          call multiply(jcrossB,Ha**real(2.0,cp)/Re)
        end subroutine
@@ -889,15 +892,18 @@
          integer :: Nx,Ny,Nz
 
          select case (extractType)
-         case (1) ! Including ghost nodes
-                  ! Including ghost cells
-                  ! Including boundary values
+         case (1) ! For duct flows (when U is not zero at boundary)
+           ! Including ghost nodes
+           ! Including ghost cells
+           ! Including boundary values
            face_i%x = face_t%x(Nn1(1)-1:Nn2(1)+1,Ni1(2)  :Ni2(2)  ,Ni1(3)  :Ni2(3)  )
            face_i%y = face_t%y(Ni1(1)  :Ni2(1)  ,Nn1(2)-1:Nn2(2)+1,Ni1(3)  :Ni2(3)  )
            face_i%z = face_t%z(Ni1(1)  :Ni2(1)  ,Ni1(2)  :Ni2(2)  ,Nn1(3)-1:Nn2(3)+1)
-         case (2) ! Excluding ghost nodes
-                  ! Excluding ghost cells
-                  ! Including boundary values
+         case (2) ! ** Probably the most physically correct one **
+           ! For duct flows (when U is not zero at boundary)
+           ! Excluding ghost nodes
+           ! Excluding ghost cells
+           ! Including boundary values
            call zeroGhostPoints(face_i)
            face_i%x(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
            face_t%x( Nn1(1)-1: Nn2(1)+1,Ne1(2):Ne2(2),Ne1(3):Ne2(3))
@@ -907,9 +913,10 @@
 
            face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:) = &
            face_t%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2), Nn1(3)-1: Nn2(3)+1)
-         case (3) ! Excluding ghost nodes
-                  ! Excluding ghost cells
-                  ! Excluding boundary values
+         case (3) ! For Lid Driven Cavity, e.g.
+           ! Excluding ghost nodes
+           ! Excluding ghost cells
+           ! Excluding boundary values
            call zeroGhostPoints(face_i)
            face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
            face_t%x( Nn1(1): Nn2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3))
@@ -939,7 +946,7 @@
          integer :: dir,embedType
 
          Ni = (/g_mom%c(1)%sc-1,g_mom%c(2)%sc-1,g_mom%c(3)%sc-1/) ! minus fictitious cells
-         embedType = 3
+         embedType = 1
          dir = 1
          call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
          call embedCC(U_cct%x,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
@@ -962,15 +969,14 @@
          integer,dimension(3),intent(in) :: Ni,Ni1,Ni2,Ne1,Ne2
          integer,intent(in) :: embedType,dir
 
-         select case(embedType)
+         select case(embedType) ! Depends on method used to solve B and BCs for U
 
-         case (1) ! (including all fictitious cells)
-           U_cct(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci
-
-         case (2) ! (exclude all fictitious cells)
+         case (1) ! Good for LDC or when U is zero outside domain
+           ! (exclude all fictitious cells)
            U_cct(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = U_cci(2:Ni(1),2:Ni(2),2:Ni(3))
 
-         case (3) ! Include along dir (Duct flow - exclude except inlet / outlet)
+         case (2) ! Good for duct flows
+           ! Include along dir (Duct flow - exclude except inlet / outlet)
 
            select case (dir)
            case (1); U_cct(Ni1(1):Ni2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = U_cci(:,2:Ni(2),2:Ni(3))
@@ -980,253 +986,12 @@
            stop 'Error: dir must = 1,2,3'
            end select
 
+         case (3) ! Good for when U is NOT zero outside domain (neumann BCs for U)
+           ! (including all fictitious cells)
+           U_cct(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci
+
          case default
          stop 'Error: embedType must = 1,2,3'
-         end select
-       end subroutine
-
-       ! ********************* OLD *****************************
-
-       subroutine computeJCrossBOldGood(jcrossB,ind,g_mom,g_ind,Re,Ha)
-         ! computeJCrossB computes the ith component of Ha^2/Re j x B
-         ! where j is the total current and B is the applied or total mangetic
-         ! field, depending on the solveBMethod.
-         implicit none
-         ! ********************** INPUT / OUTPUT ************************
-         type(vectorField),intent(inout) :: jcrossB
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom,g_ind
-         real(cp),intent(in) :: Re,Ha
-         ! *********************** LOCAL VARIABLES **********************
-         integer :: Nx,Ny,Nz,dir
-         type(vectorField) :: temp
-         type(del) :: d
-         integer :: lastStep
-         lastStep = 10**4
-
-         call assign(ind%Bstar,ind%B0)
-
-         ! For Finite Rem, B_induced should be added
-         select case (solveBMethod)
-         case (5,6); call add(ind%Bstar,ind%B)
-         end select
-
-         call myEdge2CellCenter(ind%J_cc,ind%J,g_ind) ! This doesn't seem to enforce div(J) = 0 as well
-
-         call cross(ind%tempVF,ind%J_cc,ind%Bstar)
-
-         call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
-
-         ! Index fluid face source terms:
-         ! Excluding wall normal values
-         dir = 1
-         Nx = g_mom%c(1)%sn; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sc
-         jcrossB%x(2:Nx-1,2:Ny-1,2:Nz-1) = &
-         ind%F%x( Nin1(1): Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-
-         dir = 2
-         Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sn; Nz = g_mom%c(3)%sc
-         jcrossB%y(2:Nx-1,2:Ny-1,2:Nz-1) = &
-         ind%F%y(Nice1(1):Nice2(1), Nin1(2): Nin2(2),Nice1(3):Nice2(3))
-
-         dir = 3
-         Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sn
-         jcrossB%z(2:Nx-1,2:Ny-1,2:Nz-1) = &
-         ind%F%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3): Nin2(3))
-
-         call multiply(jcrossB,Ha**real(2.0,cp)/Re)
-         call zeroGhostPoints(jcrossB)
-       end subroutine
-
-       subroutine computeJCrossBOld(jcrossB,ind,g_mom,g_ind,Re,Ha)
-         ! computeJCrossB computes the ith component of Ha^2/Re j x B
-         ! where j is the total current and B is the applied or total mangetic
-         ! field, depending on the solveBMethod.
-         implicit none
-         ! ********************** INPUT / OUTPUT ************************
-         type(vectorField),intent(inout) :: jcrossB
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom,g_ind
-         real(cp),intent(in) :: Re,Ha
-         ! *********************** LOCAL VARIABLES **********************
-         integer :: Nx,Ny,Nz,dir
-         type(vectorField) :: temp
-         type(del) :: d
-
-         call assign(ind%Bstar,ind%B0)
-
-         ! For Finite Rem, B_induced should be added
-         select case (solveBMethod)
-         case (5,6); call add(ind%Bstar,ind%B)
-         end select
-
-         call myEdge2CellCenter(ind%J_cc,ind%J,g_ind)
-         ! call curl(ind%J_cc,ind%Bstar,g_ind)
-
-         call cross(ind%tempVF,ind%J_cc,ind%Bstar)
-
-         call myCellCenter2Face(ind%F,ind%tempVF,g_ind)
-
-         ! Index fluid face source terms:
-         ! Excluding wall normal values
-         ! call zeroGhostPoints(jcrossB)
-         
-         jcrossB%x = ind%F%x( Nin1(1)-1: Nin2(1)+1,Nici1(2)  :Nici2(2)  ,Nici1(3)  :Nici2(3)  )
-         jcrossB%y = ind%F%y(Nici1(1)  :Nici2(1)  , Nin1(2)-1: Nin2(2)+1,Nici1(3)  :Nici2(3)  )
-         jcrossB%z = ind%F%z(Nici1(1)  :Nici2(1)  ,Nici1(2)  :Nici2(2)  , Nin1(3)-1: Nin2(3)+1)
-
-         ! call assign(jcrossB,real(0.0,cp))
-
-         ! Index fluid face source terms:
-         ! Excluding wall normal values
-         ! dir = 1
-         ! Nx = g_mom%c(1)%sn; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sc
-         ! jcrossB%x(2:Nx-1,2:Ny-1,2:Nz-1) = &
-         ! ind%F%x( Nin1(1): Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-         ! dir = 2
-         ! Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sn; Nz = g_mom%c(3)%sc
-         ! jcrossB%y(2:Nx-1,2:Ny-1,2:Nz-1) = &
-         ! ind%F%y(Nice1(1):Nice2(1), Nin1(2): Nin2(2),Nice1(3):Nice2(3))
-         ! dir = 3
-         ! Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sn
-         ! jcrossB%z(2:Nx-1,2:Ny-1,2:Nz-1) = &
-         ! ind%F%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3): Nin2(3))
-
-         call multiply(jcrossB,Ha**real(2.0,cp)/Re)
-         ! call uniformifyX(jcrossB)
-       end subroutine
-
-       subroutine embedVelocityOldOld(U_cct,U_fi,U_cci,g_mom)
-         ! Whether or not the fictitious cells are included must be determined
-         ! based on the BCs for the velocity. If no slip / no flow through is
-         ! used, then only interior cell velocities should be used. Otherwise,
-         ! fictitious cells will affect the solution of B, which will in-tern
-         ! affect the solution of U, etc.
-         implicit none
-         type(vectorField),intent(inout) :: U_cct
-         type(vectorField),intent(in) :: U_fi
-         type(scalarField),intent(inout) :: U_cci
-         type(grid),intent(in) :: g_mom
-         integer,dimension(3) :: Ni
-
-         Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
-         ! (exclude fictitious cells)
-         call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-
-          U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-         call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-          U_cct%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-         call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-          U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-         ! call uniformify(U_cct)
-       end subroutine
-
-       subroutine embedVelocityOld(U_cct,U_fi,U_cci,g_mom)
-         ! Whether or not the fictitious cells are included must be determined
-         ! based on the BCs for the velocity. If no slip / no flow through is
-         ! used, then only interior cell velocities should be used. Otherwise,
-         ! fictitious cells will affect the solution of B, which will in-tern
-         ! affect the solution of U, etc.
-         implicit none
-         type(vectorField),intent(inout) :: U_cct
-         type(vectorField),intent(in) :: U_fi
-         type(scalarField),intent(inout) :: U_cci
-         type(grid),intent(in) :: g_mom
-         integer,dimension(3) :: Ni
-         integer :: flowConfig,ductDir
-
-         flowConfig = 3
-
-         select case(flowConfig)
-
-         case (1) ! (including all fictitious cells)
-           call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-           U_cct%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = U_cci%phi
-
-           call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-           U_cct%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = U_cci%phi
-
-           call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-           U_cct%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = U_cci%phi
-
-         case (2) ! (exclude all fictitious cells)
-           Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
-           
-           call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-            U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-           U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-           call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-            U_cct%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-           U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-           call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-            U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-           U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-         case (3) ! Duct flow (exclude except inlet / outlet)
-
-           ductDir = 1
-           select case (ductDir)
-           case (1)
-
-             Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
-             
-             call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-              U_cct%x(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-             U_cci%phi(:,2:Ni(2)+1,2:Ni(3)+1)
-
-             call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-              U_cct%y(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-             U_cci%phi(:,2:Ni(2)+1,2:Ni(3)+1)
-
-             call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-              U_cct%z(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-             U_cci%phi(:,2:Ni(2)+1,2:Ni(3)+1)
-
-           case (2)
-
-             Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
-             
-             call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-              U_cct%x(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-             U_cci%phi(2:Ni(1)+1,:,2:Ni(3)+1)
-
-             call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-              U_cct%y(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-             U_cci%phi(2:Ni(1)+1,:,2:Ni(3)+1)
-
-             call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-              U_cct%z(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-             U_cci%phi(2:Ni(1)+1,:,2:Ni(3)+1)
-
-           case (3)
-
-             Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
-             
-             call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-              U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-             U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,:)
-
-             call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-              U_cct%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-             U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,:)
-
-             call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-              U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-             U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,:)
-
-           case default
-           stop 'Error: ductDir must = 1,2,3'
-           end select
-
-         case default
-         stop 'Error: flowConfig must = 1,2,3'
          end select
        end subroutine
 

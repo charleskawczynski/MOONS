@@ -88,9 +88,9 @@
 
            ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
            if (solveInduction) then
-             ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
-             ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
-             ind%B0%z = real(1.0,cp)
+             ! ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
+             ! ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
+             ! ind%B0%z = real(1.0,cp)
 
              ! ind%B0%x = real(0.0,cp)
              ! ind%B0%y = real(0.0,cp)

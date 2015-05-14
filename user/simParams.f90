@@ -12,33 +12,26 @@
 #endif
        private :: cp
 
-       ! ************************* GRID *************************
+       ! ************************* GRID/ICs *************************
        logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
-       logical :: exportRawICs              = .false.   ! Export all Grids before starting simulation
-       logical :: exportICs                 = .false.   ! Export all Grids before starting simulation
+       logical :: exportRawICs              = .false.   ! Export Raw ICs before starting simulation
+       logical :: exportICs                 = .false.   ! Export Post-Processed ICs before starting simulation
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: minimizePrintedOutput     = .true.    ! (T/F)
-       logical :: nonUniformGridFluid       = .true.    ! (T/F)
-       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .false.    ! (T/F)
+       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
        ! Use the -fopenMP flag to parallelize the following:
        !     - myError.f90 (LnError3D,LnError3DUniform)
        !     - myDel.f90 (myDel) done
-       !     - mySOR.f90 (Poisson loop)
-       !     - vectorOps.f90 (interpO2,myCollocatedCross,myNodeAdvect,myNodeMagnitude)
-       !     - myTriOperator.f90 (applyTriOperator)
+       !     - mySOR.f90 / myJacobi.f90 (Poisson loop)
+       !     - ops_discrete.f90 (collocatedCross)
+       !     - interpOps.f90 (interpO2)
+       !     - ops_aux.f90 (collocatedMagnitude)
        !     - myTriSolver.f90 (applyTriSolver)
-       ! 
-       !     - myExport.f90 (exporting results), needs improvements
-       ! 
-       !     - myIO.f90 not yet (even possible?)
-       ! 
-       ! * = The poisson loop is the only routine affected by
-       !     useOpenMP.
 
        ! ************************ T-FIELD ***********************
        logical :: solveEnergy = .false.
@@ -60,9 +53,12 @@
        !                                  3 : Upwind (not yet implemented)
        !                                  4 : Hybrid (not yet implemented)
 
-       real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 )
+       ! real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 ) Not yet implemented
        !                                                       pure         central
        !                                                      upwind       difference
+       logical :: solveCoupled = .true. ! Change to addJCrossB
+       ! logical :: addBuoyancy = .true. ! Not yet implemented
+       ! logical :: addGravity = .true. ! Not yet implemented
 
        ! ************************ B-FIELD ***********************
        logical :: solveInduction = .true.
@@ -72,7 +68,7 @@
        logical :: computeKB = .true.    ! Compute magnetic energy at each time step
        logical :: computeKB0 = .false.   ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 5
+       integer,parameter :: solveBMethod = 4
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
@@ -94,25 +90,20 @@
        !                                         7 : Duct, L=25, a=1/2, tw = 0.1
        !                                         8 : Duct, L=25, a=1, tw = 0.1
        ! ************************** MHD *************************
-       logical :: solveCoupled = .true.
 
        ! ****************** BENCHMARK CASES  ********************
        ! ********** (OVERRIDES USER DEFINED SETUP) **************
        ! Setting benchmarkCase will define all parameters for the 
        ! simulation EXCEPT
+       !      All other parameters in this file
        !      Number of cells in fluid domain (in griddata.f90)
        !      Number of cells in wall domain  (in griddata.f90)
-       !      All other parameters in this file
        !      preDefined cases (this must be set along side benchmarkCase)
        ! Setting benchmarkCase will define
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
-       ! If both benchmarkCase and preDefinedCase are defined as
-       ! non-zero, then the simulation will stop and ask what you
-       ! meant to do (not yet implemented).
-       ! 
 
-       integer,parameter :: benchmarkCase = 1003
+       integer,parameter :: benchmarkCase = 102
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -182,30 +173,17 @@
        !    - MOONS.f90 (Number of steps, time step etc.)
        !    - griddata.f90 (geometry,stretching factors,N cells)
        !    - initializeSigmaMu.f90 (ICs)
-       ! 
-       ! ****************** PRE-DEFINED CASES  ********************
-       ! ********** (OVERRIDES USER DEFINED SETUP) **************
-       ! Setting preDefinedCase will define
-       !         Ufield ICs
-       !         Ufield BCs
-       !         Bfield ICs
-       !         Bfield BCs
-       ! 
-       ! If both benchmarkCase and pre-defined cases are defined as
-       ! non-zero, then the simulation will stop and ask what you
-       ! meant to do.
-
        ! ----------------------------------------
 
 
 
        ! ************************ EXPORT ************************
+       logical :: minimizePrintedOutput     = .true.    ! (T/F) Not yet implemented
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
        integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
        integer :: nskip_print                = 10     ! Printed data (cheap)
-       ! integer :: nskip_print                = 200     ! Printed data (cheap)
        ! integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
 
        end module
