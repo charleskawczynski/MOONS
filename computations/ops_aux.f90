@@ -195,18 +195,18 @@
          call zeroGhostPoints(VF%z)
        end subroutine
 
-       subroutine printPhysicalMinMaxVF(u,namex,namey,namez)
+       subroutine printPhysicalMinMaxVF(U,namex,namey,namez)
          implicit none
-         type(vectorField),intent(in) :: u
+         type(vectorField),intent(in) :: U
          character(len=*),intent(in) :: namex,namey,namez
          call printPhysicalMinMax(U%x,U%sx,namex)
          call printPhysicalMinMax(U%y,U%sy,namey)
          call printPhysicalMinMax(U%z,U%sz,namez)
        end subroutine
 
-       subroutine printGlobalMinMaxVF(u,namex,namey,namez)
+       subroutine printGlobalMinMaxVF(U,namex,namey,namez)
          implicit none
-         type(vectorField),intent(in) :: u
+         type(vectorField),intent(in) :: U
          character(len=*),intent(in) :: namex,namey,namez
          call printGlobalMinMax(U%x,namex)
          call printGlobalMinMax(U%y,namey)
@@ -276,7 +276,6 @@
          character(len=*),intent(in) :: name
          type(scalarField) :: temp
          type(del) :: d
-         real(cp) :: t
          integer :: i
          integer,dimension(3) :: s
          s = shape(u)

@@ -106,6 +106,44 @@
          end select
        end function
 
+       subroutine square(A,s)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: A
+         integer,dimension(3),intent(in) :: s
+         integer :: i,j,k
+         !$OMP PARALLEL DO
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           A(i,j,k) = A(i,j,k)*A(i,j,k)
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
+       subroutine mult(A,B,s)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: A
+         real(cp),dimension(:,:,:),intent(inout) :: B
+         integer,dimension(3),intent(in) :: s
+         integer :: i,j,k
+         !$OMP PARALLEL DO
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           A(i,j,k) = A(i,j,k)*B(i,j,k)
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
+       subroutine addMult(C,A,B,s)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: C
+         real(cp),dimension(:,:,:),intent(in) :: A,B
+         integer,dimension(3),intent(in) :: s
+         integer :: i,j,k
+         !$OMP PARALLEL DO
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           C(i,j,k) = C(i,j,k) + A(i,j,k)*B(i,j,k)
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+       
        ! ******************************* FACE BASED DERIVATIVES *********************************
 
        subroutine faceAdvectSF(psi,u,v,w,phi,g,dir) ! Finished
@@ -194,7 +232,7 @@
          integer,intent(in) :: faceDir
          real(cp),dimension(:,:,:),allocatable :: tempAveCC
          real(cp),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
-         integer,dimension(3) :: s
+         integer,dimension(3) :: s,sc,se
          integer :: x,y,z,orthDir
          type(del) ::d
 
@@ -207,23 +245,26 @@
            write(*,*) 'Error: faceDir must =1,2,3 in FaceAdvectDonor.'; stop
          end select
 
-         allocate(tempAveCC(s(1)-x,s(2)-y,s(3)-z))
+         sc = (/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+
+         allocate(tempAveCC(sc(1),sc(2),sc(3)))
 
          psi = real(0.0,cp)
          ! -------------------------- d/dx (u u_i) --------------------------
          if (faceDir.eq.1) then
            call myFace2CellCenter(tempAveCC,u,g,1)
-           tempAveCC = tempAveCC*tempAveCC
+           call square(tempAveCC,sc)
            call d%add(psi,tempAveCC,g,1,1,1)
          else
-           allocate(tempAveE1(s(1)+1,s(2),s(3)))
-           allocate(tempAveE2(s(1)+1,s(2),s(3)))
+           se = (/s(1)+1,s(2),s(3)/)
+           allocate(tempAveE1(se(1),se(2),se(3)))
+           allocate(tempAveE2(se(1),se(2),se(3)))
 
            orthDir = orthogonalDirection(faceDir,1)
            call myFace2Edge(tempAveE1,u,g,1,orthDir)
            call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
 
-           tempAveE1 = tempAveE1*tempAveE2
+           call mult(tempAveE1,tempAveE2,se)
            call d%add(psi,tempAveE1,g,1,1,1)
            deallocate(tempAveE1,tempAveE2)
          endif
@@ -231,16 +272,17 @@
          ! -------------------------- d/dy (v u_i) --------------------------
          if (faceDir.eq.2) then
            call myFace2CellCenter(tempAveCC,v,g,2)
-           tempAveCC = tempAveCC*tempAveCC
+           call square(tempAveCC,sc)
            call d%add(psi,tempAveCC,g,1,2,1)
          else
-           allocate(tempAveE1(s(1),s(2)+1,s(3)))
-           allocate(tempAveE2(s(1),s(2)+1,s(3)))
+           se = (/s(1),s(2)+1,s(3)/)
+           allocate(tempAveE1(se(1),se(2),se(3)))
+           allocate(tempAveE2(se(1),se(2),se(3)))
            orthDir = orthogonalDirection(faceDir,2)
            call myFace2Edge(tempAveE1,v,g,2,orthDir)
            call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
 
-           tempAveE1 = tempAveE1*tempAveE2
+           call mult(tempAveE1,tempAveE2,se)
            call d%add(psi,tempAveE1,g,1,2,1) ! upwind from edge to cc
            deallocate(tempAveE1,tempAveE2)
          endif
@@ -248,17 +290,18 @@
          ! -------------------------- d/dz (w u_i) --------------------------
          if (faceDir.eq.3) then
            call myFace2CellCenter(tempAveCC,w,g,3)
-           tempAveCC = tempAveCC*tempAveCC
+           call square(tempAveCC,sc)
            call d%add(psi,tempAveCC,g,1,3,1)
          else
-           allocate(tempAveE1(s(1),s(2),s(3)+1))
-           allocate(tempAveE2(s(1),s(2),s(3)+1))
+           se = (/s(1),s(2),s(3)+1/)
+           allocate(tempAveE1(se(1),se(2),se(3)))
+           allocate(tempAveE2(se(1),se(2),se(3)))
 
            orthDir = orthogonalDirection(faceDir,3)
            call myFace2Edge(tempAveE1,w,g,3,orthDir)
            call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
 
-           tempAveE1 = tempAveE1*tempAveE2
+           call mult(tempAveE1,tempAveE2,se)
            call d%add(psi,tempAveE1,g,1,3,1)
            deallocate(tempAveE1,tempAveE2)
          endif
@@ -356,6 +399,7 @@
 
          deallocate(tempAveCC)
        end subroutine
+
 
        ! ************************************ CELL CENTER *************************************
 

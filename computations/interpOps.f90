@@ -141,6 +141,20 @@
            stop 'Error: dir must = 1,2,3 in interpO2.'
          end select
 
+         ! select case (dir)
+         ! case (1)
+         ! if (sf(2).ne.sg(2)) stop 'Erorr: shape mismatch in interpOps.f90'
+         ! if (sf(3).ne.sg(3)) stop 'Erorr: shape mismatch in interpOps.f90'
+         ! case (2)
+         ! if (sf(1).ne.sg(1)) stop 'Erorr: shape mismatch in interpOps.f90'
+         ! if (sf(3).ne.sg(3)) stop 'Erorr: shape mismatch in interpOps.f90'
+         ! case (3)
+         ! if (sf(1).ne.sg(1)) stop 'Erorr: shape mismatch in interpOps.f90'
+         ! if (sf(2).ne.sg(2)) stop 'Erorr: shape mismatch in interpOps.f90'
+         ! case default
+         !   stop 'Error: dir must = 1,2,3 in interpO2.'
+         ! end select
+
          if ((sf(dir).eq.gd%c(dir)%sc).and.(sg(dir).eq.gd%c(dir)%sn)) then
            ! f(cc grid), g(node/face grid)
            !         g  f  g  f  g  f  g  f  g

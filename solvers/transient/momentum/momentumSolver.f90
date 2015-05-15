@@ -500,41 +500,51 @@
          call zeroGhostPoints(mom%divU%phi)
        end subroutine
 
-       subroutine zeroWallCoincidentBoundaries(f,g)
+       subroutine zeroWallCoincidentBoundaries(f,s,g,dir)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3),intent(in) :: s
          type(grid),intent(in) :: g
-         integer,dimension(3) :: s
-         s = shape(f)
-         if (s(2).eq.g%c(2)%sn) then
-           f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-           f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
-         elseif (s(3).eq.g%c(3)%sn) then
-           f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
-           f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
-         endif
-
-         ! if (s(1).eq.g%c(1)%sn) then
-         !   f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
-         !   f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
-         ! elseif (s(2).eq.g%c(2)%sn) then
-         !   f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-         !   f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
-         ! elseif (s(3).eq.g%c(3)%sn) then
-         !   f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
-         !   f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
-         ! else
-         !  stop 'Error: no correct shape in momentumSolver.f90 in zeroWallCoincidentBoundaries'
-         ! endif
+         integer,intent(in) :: dir
+         select case (dir)
+         case (0)
+           if (s(1).eq.g%c(1)%sn) then
+             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
+             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+           elseif (s(2).eq.g%c(2)%sn) then
+             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
+             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+           elseif (s(3).eq.g%c(3)%sn) then
+             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
+             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+           endif
+         case (1)
+           if (s(1).eq.g%c(1)%sn) then
+             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
+             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+           endif
+         case (2)
+           if (s(2).eq.g%c(2)%sn) then
+             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
+             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+           endif
+         case (3)
+           if (s(3).eq.g%c(3)%sn) then
+             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
+             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+           endif
+         case default
+           stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
+         end select
        end subroutine
 
        subroutine zeroWallCoincidentBoundariesVF(f,g)
          implicit none
          type(vectorField),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,g)
-         call zeroWallCoincidentBoundaries(f%y,g)
-         call zeroWallCoincidentBoundaries(f%z,g)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,0)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,0)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,0)
        end subroutine
 
        end module
