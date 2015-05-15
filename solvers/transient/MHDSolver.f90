@@ -52,10 +52,9 @@
          type(myTime),intent(inout) :: time
          character(len=*),intent(in) :: dir ! Output directory
          ! *********************** LOCAL VARIABLES **********************
-         real(cp) :: Ha,K_energy
+         real(cp) :: Ha
          integer :: n_mhd
          logical :: continueLoop
-         type(probe) :: KB_energy,KB0_energy,KU_energy
          ! **************************************************************
 
          call computationInProgress(time)
@@ -66,10 +65,6 @@
          n_mhd = getIteration(ss_MHD)
 
          call writeKillSwitchToFile(.true.,dir//'parameters/','killSwitch')
-
-         call init(KU_energy,dir//'Ufield\','KU',.not.restartU)
-         call init(KB_energy,dir//'Bfield\','KB',.not.restartB)
-         call init(KB0_energy,dir//'Bfield\','KB0',.not.restartB)
 
          ! ********** SET MOMENTUM SOURCE TERMS TO ZERO ******************
          call assign(mom%F,zero)
@@ -94,25 +89,12 @@
 
              ! ind%B0%x = real(0.0,cp)
              ! ind%B0%y = real(0.0,cp)
-             ! ind%B0%z = real(0.0,cp)
-             ! ind%B0%x = real(0.0,cp)
-             ! ind%B0%y = real(0.0,cp)
              ! ind%B0%z = exp(-ind%omega*ind%t)
              call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
-
-
              call solve(ind,ind%U_cct,ind%g,ss_MHD)
-
-             if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
-              ! call totalEnergy(K_energy,ind%U_cct,ind%g) ! Sergey uses interior...
-              call totalEnergy(K_energy,&
-                ind%U_cct%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                ind%U_cct%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                ind%U_cct%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                mom%g)
-              call set(KU_energy,mom%nstep,K_energy)
-              call apply(KU_energy)
-             endif
+             call computeKineticEnergy(mom,ind%U_cct,Nici1,Nici2,ss_MHD)
+             call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
+             call computeMagneticEnergy(ind,ind%B,ind%B0,Nici1,Nici2,mom%g,ss_MHD)
            endif
 
            ! ************************** COMPUTE DIVERGENCES *******************************
@@ -122,45 +104,15 @@
            endif
 
            ! ************************** COMPUTE J CROSS B *******************************
-           if (solveInduction) then
-             call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
-             if (solveCoupled) then
-               call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
-             else; call assign(mom%F,zero)
-             endif
-             if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-              ! call totalEnergy(K_energy,ind%B,ind%g) ! Sergey uses interior...
-              call totalEnergy(K_energy,&
-                ind%B%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                ind%B%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                ind%B%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                mom%g)
-              call set(KB_energy,ind%nstep,K_energy)
-              call apply(KB_energy)
-             endif
-             if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-              ! call totalEnergy(K_energy,ind%B0,ind%g) ! Sergey uses interior...
-              call totalEnergy(K_energy,&
-                ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                ind%B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-                mom%g)
-              call set(KB0_energy,ind%nstep,K_energy)
-              call apply(KB0_energy)
-             endif
+           if (solveCoupled) then
+             call computeJCrossB(mom%F,ind,mom%g,ind%g,mom%Re,Ha)
            else
              call assign(mom%F,zero)
            endif
 
            ! ****************************** CHECK TO EXIT *********************************
            call checkCondition(ss_MHD,continueLoop)
-           if (.not.continueLoop) then
-             call stopTime(time,ss_MHD)
-             call printGridData(gd)
-             call printRunData(rd)
-             call print(time,'MHD solver')
-             exit
-           endif
+           if (.not.continueLoop) exit
            ! ********************************** DISPLAY OUTPUT ****************************
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
@@ -200,6 +152,11 @@
            endif
 
          enddo
+
+         call stopTime(time,ss_MHD)
+         call printGridData(gd)
+         call printRunData(rd)
+         call print(time,'MHD solver')
 
          ! ************************ WRITE LAST STEP TO FILE *******************************
          call writeLastStepToFile(n_mhd,dir//'parameters/','n_mhd')

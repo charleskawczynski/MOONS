@@ -1,6 +1,7 @@
        module initializeUBCs_mod
        use grid_mod
        use BCs_mod
+       use vectorBCs_mod
        implicit none
        ! From applyBCs.f90:
        ! bctype = 1 ! Dirichlet - direct - wall coincident
@@ -58,12 +59,13 @@
        
        contains
 
-       subroutine initUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)
+       subroutine initUBCs(U_bcs_vec,p_bcs,g)
          implicit none
          ! Auxiliary data types
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(vectorBCs),intent(inout) :: U_bcs_vec
          type(BCs),intent(inout) :: p_bcs
          type(grid),intent(in) :: g
+         type(BCs) :: u_bcs,v_bcs,w_bcs
          if (preDefinedU_BCs.ne.0) then
            call initPredefinedUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)
          else
@@ -77,6 +79,7 @@
          call checkBCs(v_bcs)
          call checkBCs(w_bcs)
          call checkBCs(p_bcs)
+         call init(U_bcs_vec,u_bcs,v_bcs,w_bcs)
        end subroutine
 
        subroutine initPredefinedUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)

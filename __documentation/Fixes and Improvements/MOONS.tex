@@ -47,6 +47,9 @@ University of California Los Angeles, USA\\
 
 - Merge with master, commit current version
 
+- There is a need to compute $(u_{face}\times B_{face})_{edge}$ for the CT method and
+$\frac{\partial}{\partial x_j} (u_j B_i-u_iB_j)_{face}$ for Gauss Seidel on the face. Note that j is a dummy index, so interpolating to the center and taking the dervative to the face will not work.
+
 - The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
 
 - Make sure diffusion term is being computed correctly (should be equivalent to one-sided difference formula). 

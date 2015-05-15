@@ -80,12 +80,6 @@
        public :: printAllBoundaries
        public :: writeAllBoundaries
 
-       ! public :: vectorBCs
-
-       ! type vectorBCs
-       !   type(BCs) :: x,y,z
-       ! end type
-
        type BCs
          integer :: xminType,xmaxType
          integer :: yminType,ymaxType
@@ -202,14 +196,6 @@
          this%BCsDefined = .false.
          this%TFgrid = .false.
        end subroutine
-
-       ! subroutine deleteVectorBCs(this)
-       !   implicit none
-       !   type(vectorBCs),intent(inout) :: this
-       !   call delete(this%x)
-       !   call delete(this%y)
-       !   call delete(this%z)
-       ! end subroutine
 
        subroutine setGridBCs(this,g)
          implicit none

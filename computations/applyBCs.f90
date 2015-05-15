@@ -57,14 +57,14 @@
        !              - Data is wall incoincident
        ! 
 
-       ! use vectorField_mod
+       use vectorField_mod
+       use vectorBCs_mod
        use BCs_mod
        use grid_mod
        implicit none
 
        private
        public :: applyAllBCs
-       ! public :: applyBCFace
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -76,23 +76,23 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       ! interface applyAllBCs;    module procedure applyAllBCs3DVF;   end interface
-       interface applyAllBCs;    module procedure applyAllBCs3D;     end interface
-       interface applyBCs;       module procedure applyBCs3D;        end interface
+       interface applyAllBCs;    module procedure applyAllBCs;        end interface
+       interface applyAllBCs;    module procedure applyAllVectorBCs;  end interface
+       interface applyBCs;       module procedure applyBCs;           end interface
 
        contains
 
-       ! subroutine applyAllBCs3DVF(U,b,g)
-       !   implicit none
-       !   type(vectorField),intent(inout) :: U
-       !   type(BCs),intent(in) :: b
-       !   type(grid),intent(in) :: g
-       !   call applyAllBCs(b%x,U%x,g)
-       !   call applyAllBCs(b%y,U%y,g)
-       !   call applyAllBCs(b%z,U%z,g)
-       ! end subroutine
+       subroutine applyAllVectorBCs(U,b,g)
+         implicit none
+         type(vectorField),intent(inout) :: U
+         type(vectorBCs),intent(in) :: b
+         type(grid),intent(in) :: g
+         call applyAllBCs(b%x,U%x,g)
+         call applyAllBCs(b%y,U%y,g)
+         call applyAllBCs(b%z,U%z,g)
+       end subroutine
 
-       subroutine applyAllBCs3D(b,u,g)
+       subroutine applyAllBCs(b,u,g)
         ! Note that these boundary conditions are applied in a NON- arbitrary
         ! order and changing them WILL change the outcome of the results.
         ! Consider changing BCs to only affect interior data.
@@ -108,7 +108,7 @@
          call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
        end subroutine
 
-       subroutine applyBCs3D(u,bctype,face,bvals,hn,hc,s)
+       subroutine applyBCs(u,bctype,face,bvals,hn,hc,s)
          implicit none
          real(cp),intent(inout),dimension(:,:,:) :: u
          real(cp),intent(in),dimension(:) :: hn,hc

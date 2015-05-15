@@ -21,9 +21,9 @@
        use ops_aux_mod
 
        use BCs_mod
+       use vectorBCs_mod
        use applyBCs_mod
 
-       use probe_transient_mod
        use solverSettings_mod
        use myTime_mod
 
@@ -34,6 +34,7 @@
        use myPoisson_mod
 
        use probe_base_mod
+       use probe_transient_mod
        use probe_derived_mod
        
        implicit none
@@ -44,6 +45,7 @@
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeDivergence
+       public :: computeKineticEnergy
 
 
 !        logical,parameter :: solveMomentum = .true.
@@ -80,14 +82,15 @@
          type(scalarField) :: p,Temp,divU
 
          ! Boundary conditions
-         type(BCs) :: u_bcs,v_bcs,w_bcs,p_bcs
-         ! type(vectorBCs) :: u_bcs
+         type(BCs) :: p_bcs
+         type(vectorBCs) :: U_bcs
 
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          type(multiGrid),dimension(3) :: MG
          type(myJacobi) :: Jacobi_p
          type(mySOR) :: SOR_p
          type(myADI) :: ADI_p,ADI_u
+         type(probe) :: KU_energy
 
          ! Residuals
          type(myError) :: err_PPE,err_DivU,err_ADI
@@ -143,7 +146,7 @@
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
-         call initUBCs(mom%u_bcs,mom%v_bcs,mom%w_bcs,mom%p_bcs,g)
+         call initUBCs(mom%U_bcs,mom%p_bcs,g)
          write(*,*) '     BCs initialized'
 
          ! Use mom%g later, for no just g
@@ -152,9 +155,7 @@
 
          write(*,*) '     BCs sizes set'
 
-         ! call applyAllBCs(mom%u_bcs,mom%U%x,g)
-         ! call applyAllBCs(mom%v_bcs,mom%U%y,g)
-         ! call applyAllBCs(mom%w_bcs,mom%U%z,g)
+         ! call applyAllBCs(mom%U,mom%U_bcs,g)
          call applyAllBCs(mom%p_bcs,mom%p%phi,g)
          write(*,*) '     BCs applied'
 
@@ -208,6 +209,7 @@
          call readLastStepFromFile(mom%nstep,dir//'parameters/','n_mom')
          else; mom%nstep = 0
          endif
+         call init(mom%KU_energy,dir//'Ufield\','KU',.not.restartU)
 
          mom%t = real(0.0,cp)
          write(*,*) '     Solver settings initialized'
@@ -221,8 +223,8 @@
          call delete(mom%U);               call delete(mom%Ustar);   call delete(mom%F)
          call delete(mom%TempVF);          call delete(mom%p);       call delete(mom%Temp)
 
-         call delete(mom%u_bcs);           call delete(mom%v_bcs);   call delete(mom%w_bcs);
          call delete(mom%p_bcs);           call delete(mom%divU)
+         call delete(mom%U_bcs)
 
          call delete(mom%u_center);        call delete(mom%transient_ppe)
          call delete(mom%transient_divU);  call delete(mom%u_symmetry)
@@ -259,13 +261,9 @@
          implicit none
          type(momentum),intent(in) :: mom
          character(len=*),intent(in) :: dir
-         call printAllBoundaries(mom%u_bcs,'u')
-         call printAllBoundaries(mom%v_bcs,'v')
-         call printAllBoundaries(mom%w_bcs,'w')
-         call printAllBoundaries(mom%p_bcs,'w')
-         call writeAllBoundaries(mom%u_bcs,dir//'parameters/','u')
-         call writeAllBoundaries(mom%v_bcs,dir//'parameters/','v')
-         call writeAllBoundaries(mom%w_bcs,dir//'parameters/','w')
+         call printVectorBCs(mom%U_bcs,'u','v','w')
+         call printAllBoundaries(mom%p_bcs,'p')
+         call writeVectorBCs(mom%U_bcs,dir//'parameters/','u','v','w')
          call writeAllBoundaries(mom%p_bcs,dir//'parameters/','p')
        end subroutine
 
@@ -412,10 +410,7 @@
 
          ! U = Ustar
          call assign(mom%U,mom%Ustar)
-
-         call applyAllBCs(mom%u_bcs,mom%U%x,g)
-         call applyAllBCs(mom%v_bcs,mom%U%y,g)
-         call applyAllBCs(mom%w_bcs,mom%U%z,g)
+         call applyAllBCs(mom%U,mom%U_bcs,g)
        end subroutine
 
        subroutine semi_implicit_ADI(mom,g,ss_MHD)
@@ -455,11 +450,11 @@
          call assign(mom%F,mom%Ustar)
          call multiply(mom%F,real(-1.0,cp))
 
-         call apply(mom%ADI_u,mom%U%x,mom%F%x,mom%u_bcs,g,&
+         call apply(mom%ADI_u,mom%U%x,mom%F%x,mom%U_bcs%x,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
-         call apply(mom%ADI_u,mom%U%y,mom%F%y,mom%v_bcs,g,&
+         call apply(mom%ADI_u,mom%U%y,mom%F%y,mom%U_bcs%y,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
-         call apply(mom%ADI_u,mom%U%z,mom%F%z,mom%w_bcs,g,&
+         call apply(mom%ADI_u,mom%U%z,mom%F%z,mom%U_bcs%z,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
 
          call assign(mom%Ustar,mom%U)
@@ -484,13 +479,29 @@
 
          ! U = Ustar
          call assign(mom%U,mom%Ustar)
-
-         call applyAllBCs(mom%u_bcs,mom%U%x,g)
-         call applyAllBCs(mom%v_bcs,mom%U%y,g)
-         call applyAllBCs(mom%w_bcs,mom%U%z,g)
+         call applyAllBCs(mom%U,mom%U_bcs,g)
        end subroutine
 
        ! ********************* AUX *****************************
+
+       subroutine computeKineticEnergy(mom,U_cct,Nici1,Nici2,ss_MHD)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(vectorField),intent(in) :: U_cct
+         integer,dimension(3),intent(in) :: Nici1,Nici2
+         type(solverSettings),intent(in) :: ss_MHD
+         real(cp) :: K_energy
+          if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
+           ! call totalEnergy(K_energy,ind%U_cct,ind%g) ! Sergey uses interior...
+           call totalEnergy(K_energy,&
+             U_cct%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             U_cct%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             U_cct%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             mom%g)
+           call set(mom%KU_energy,mom%nstep,K_energy)
+           call apply(mom%KU_energy)
+          endif
+       end subroutine
 
        subroutine computeDivergenceMomentum(mom,g)
          implicit none

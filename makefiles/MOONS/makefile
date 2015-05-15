@@ -133,6 +133,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)computations$(PS)myError.f90 \
 	$(SRC_DIR)$(PS)user$(PS)griddata.f90 \
 	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
+	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)del.f90 \
