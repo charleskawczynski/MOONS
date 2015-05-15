@@ -47,8 +47,22 @@ University of California Los Angeles, USA\\
 
 - Merge with master, commit current version
 
-- There is a need to compute $(u_{face}\times B_{face})_{edge}$ for the CT method and
-$\frac{\partial}{\partial x_j} (u_j B_i-u_iB_j)_{face}$ for Gauss Seidel on the face. Note that j is a dummy index, so interpolating to the center and taking the dervative to the face will not work.
+- In order to fully stagger B, there is a need to compute $(u_{face}\times B_{face})_{edge}$ for the CT method and
+$\frac{\partial}{\partial x_j} (u_j B_i-u_iB_j)_{face}$ for Gauss Seidel on the face. This is not easy, but certainly not impossible. Note that j is a dummy index, so interpolating to the center and taking the dervative to the face will not work.
+
+- Rigorously test gridGen and get rid of old one.
+
+- Rename myError to norms.
+
+- remove 'my' in interpolations.
+
+- rename interpOps.f90 to ops_interp.f90.
+
+- rename scalarField and vectorField to field_scalar and field_vector
+
+- Convert real(cp),dimension(:,:,:) to scalar field for parallelization
+
+- Plot 1D results for plasma disruption cases for inflection points
 
 - The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
 

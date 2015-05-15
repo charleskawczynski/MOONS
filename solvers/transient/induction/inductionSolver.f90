@@ -61,9 +61,9 @@
        type induction
          character(len=9) :: name = 'induction'
          ! --- Vector fields ---
-         type(vectorField) :: B,Bstar,B0,J_cc,U_cct,temp_CC     ! CC data
+         type(vectorField) :: B,Bstar,B0,J_cc,U_cct,temp_CC    ! CC data
          type(vectorField) :: J,E,sigmaInv_edge                ! Edge data
-         type(vectorField) :: F,sigmaInv_face                  ! Face data
+         type(vectorField) :: temp_F,sigmaInv_face             ! Face data
          ! --- Scalar fields ---
          type(scalarField) :: sigma,mu          ! CC data
          type(scalarField) :: divB,divJ,phi,temp               ! CC data
@@ -140,11 +140,11 @@
          call allocateVectorField(ind%sigmaInv_edge,ind%J)
 
          ! Face Data
-         call allocateX(ind%F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(ind%F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(ind%F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
+         call allocateX(ind%temp_F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
+         call allocateY(ind%temp_F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
+         call allocateZ(ind%temp_F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateVectorField(ind%sigmaInv_face,ind%F)
+         call allocateVectorField(ind%sigmaInv_face,ind%temp_F)
 
          ! --- Scalar Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
@@ -247,7 +247,7 @@
          call delete(ind%sigmaInv_edge)
          call delete(ind%sigmaInv_face)
 
-         call delete(ind%F)
+         call delete(ind%temp_F)
          
          call delete(ind%sigma)
          call delete(ind%mu)
@@ -536,8 +536,8 @@
            ! Compute current from appropriate fluxes:
 
            ! J = curl(B_face)_edge
-           call myCellCenter2Face(ind%F,ind%B,g)
-           call curl(ind%J,ind%F,g)
+           call myCellCenter2Face(ind%temp_F,ind%B,g)
+           call curl(ind%J,ind%temp_F,g)
 
            ! Compute fluxes of u cross B0
            call cross(ind%temp_CC,U,ind%B0)
@@ -550,10 +550,10 @@
            call add(ind%E,ind%J)
 
            ! F = curl(E_edge)_face
-           call curl(ind%F,ind%E,g)
+           call curl(ind%temp_F,ind%E,g)
 
            ! tempVF = interp(F)_face->cc
-           call myFace2CellCenter(ind%temp_CC,ind%F,g)
+           call myFace2CellCenter(ind%temp_CC,ind%temp_F,g)
 
            ! Add induced field of previous time step (B^n)
            ! ind%B = ind%B - ind%dTime*ind%temp_CC
@@ -579,8 +579,8 @@
            ! Compute current from appropriate fluxes:
 
            ! J = curl(B_face)_edge
-           call myCellCenter2Face(ind%F,ind%B,g)
-           call curl(ind%J,ind%F,g)
+           call myCellCenter2Face(ind%temp_F,ind%B,g)
+           call curl(ind%J,ind%temp_F,g)
 
            ind%J%y(:,1:2,b) = real(1.0,cp)
            ind%J%y(:,1:2,t) = real(-1.0,cp)
@@ -599,10 +599,10 @@
            call add(ind%E,ind%J)
 
            ! F = curl(E_edge)_face
-           call curl(ind%F,ind%E,g)
+           call curl(ind%temp_F,ind%E,g)
 
            ! tempVF = interp(F)_face->cc
-           call myFace2CellCenter(ind%temp_CC,ind%F,g)
+           call myFace2CellCenter(ind%temp_CC,ind%temp_F,g)
 
            ! Add induced field of previous time step (B^n)
            ! ind%B = ind%B - ind%dTime*ind%temp_CC
@@ -632,8 +632,8 @@
          ! Compute current from appropriate fluxes:
          ! Assumes curl(B0) = 0 (so B is not added to this)
          ! J = curl(B_face)_edge
-         call myCellCenter2Face(ind%F,ind%B,g)
-         call curl(ind%J,ind%F,g)
+         call myCellCenter2Face(ind%temp_F,ind%B,g)
+         call curl(ind%J,ind%temp_F,g)
 
          ! Compute fluxes of u cross (B-B0)
          call add(ind%B,ind%B0)
@@ -650,10 +650,10 @@
          call add(ind%E,ind%J)
 
          ! F = Curl(E_edge)_face
-         call curl(ind%F,ind%E,g)
+         call curl(ind%temp_F,ind%E,g)
 
          ! tempVF = interp(F)_face->cc
-         call myFace2CellCenter(ind%temp_CC,ind%F,g)
+         call myFace2CellCenter(ind%temp_CC,ind%temp_F,g)
 
          ! Add induced field of previous time step (B^n)
          ! ind%B = ind%B - ind%dTime*ind%temp_CC
@@ -688,8 +688,8 @@
          type(solverSettings),intent(inout) :: ss_MHD
 
          ! J = curl(B_face)_edge
-         call myCellCenter2Face(ind%F,ind%B,g)
-         call curl(ind%J,ind%F,g)
+         call myCellCenter2Face(ind%temp_F,ind%B,g)
+         call curl(ind%J,ind%temp_F,g)
 
          ! Compute fluxes of u cross B0
          call cross(ind%temp_CC,U,ind%B0)
@@ -702,10 +702,10 @@
          call add(ind%E,ind%J)
 
          ! F = Curl(E)
-         call curl(ind%F,ind%E,g)
+         call curl(ind%temp_F,ind%E,g)
 
          ! tempVF = interp(F)_face->cc
-         call myFace2CellCenter(ind%temp_CC,ind%F,g)
+         call myFace2CellCenter(ind%temp_CC,ind%temp_F,g)
 
          ! Subtract laplacian from B^n
          call lap(ind%Bstar,ind%B,ind%sigmaInv_face,g)
@@ -817,9 +817,9 @@
          end select
 
          call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-         call myCellCenter2Face(ind%F,ind%temp_CC,g_ind)
+         call myCellCenter2Face(ind%temp_F,ind%temp_CC,g_ind)
 
-         call extractFace(jcrossB,ind%F,g_mom,Nin1,Nin2,Nici1,Nici2,Nice1,Nice2,2)
+         call extractFace(jcrossB,ind%temp_F,g_mom,Nin1,Nin2,Nici1,Nici2,Nice1,Nice2,2)
 
          call multiply(jcrossB,Ha**real(2.0,cp)/Re)
        end subroutine
@@ -833,7 +833,7 @@
            case (4:5)
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
-             call div(ind%divB%phi,ind%F,g)
+             call div(ind%divB%phi,ind%temp_F,g)
            case default
              call div(ind%divB%phi,ind%B,g)
            end select
