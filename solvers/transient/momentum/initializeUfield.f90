@@ -2,6 +2,7 @@
        use IO_scalarFields_mod
        use IO_scalarBase_mod
        use grid_mod
+       use vectorField_mod
        use BCs_mod
        implicit none
 
@@ -35,17 +36,18 @@
 
        contains
 
-       subroutine initUfield(u,v,w,p,g,dir)
+       subroutine initUfield(U,p,g,dir)
          implicit none
+         type(vectorField),intent(inout) :: U
+         real(cp),dimension(:,:,:),intent(inout) :: p
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
          if (restartU) then
-           call initRestartUfield(u,v,w,p,g,dir)
+           call initRestartUfield(U%x,U%y,U%z,p,g,dir)
          elseif (preDefinedU_ICs.ne.0) then
-           call initPreDefinedUfield(u,v,w,p,g)
+           call initPreDefinedUfield(U%x,U%y,U%z,p,g)
          else
-           call initUserUfield(u,v,w,p,g)
+           call initUserUfield(U%x,U%y,U%z,p,g)
          endif
        end subroutine
        

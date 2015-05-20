@@ -270,11 +270,13 @@
          call printVersion()
          call exportVersion(dir)
 
-         select case(solveBMethod)
-         case(1:4)
-           if (NmaxB.lt.1) stop 'Error: NmaxB must be larger than 1 for low Rem cases'
-         case default
-         end select
+         if (solveInduction) then
+           select case(solveBMethod)
+           case(1:4)
+             if (NmaxB.lt.1) stop 'Error: NmaxB must be larger than 1 for low Rem cases'
+           case default
+           end select
+         endif
 
          ! **************************************************************
          ! Initialize all grids
@@ -327,12 +329,12 @@
 
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
-           call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
+           call embedVelocity(ind,mom%U,mom%g)
            call exportRaw(ind,ind%g,dir)
          endif
          if (exportICs) then
            call export(mom,mom%g,dir)
-           call embedVelocity(ind%U_cct,mom%U,mom%temp,mom%g)
+           call embedVelocity(ind,mom%U,mom%g)
            call export(ind,ind%g,dir)
          endif
 

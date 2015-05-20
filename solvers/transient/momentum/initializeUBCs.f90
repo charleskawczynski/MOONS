@@ -59,27 +59,21 @@
        
        contains
 
-       subroutine initUBCs(U_bcs_vec,p_bcs,g)
+       subroutine initUBCs(U_bcs,p_bcs,g)
          implicit none
          ! Auxiliary data types
-         type(vectorBCs),intent(inout) :: U_bcs_vec
+         type(vectorBCs),intent(inout) :: U_bcs
          type(BCs),intent(inout) :: p_bcs
          type(grid),intent(in) :: g
-         type(BCs) :: u_bcs,v_bcs,w_bcs
          if (preDefinedU_BCs.ne.0) then
-           call initPredefinedUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)
+           call initPredefinedUBCs(U_bcs%x,U_bcs%y,U_bcs%z,p_bcs,g)
          else
-           call initUserUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)
+           call initUserUBCs(U_bcs%x,U_bcs%y,U_bcs%z,p_bcs,g)
          endif
-         call setGrid(u_bcs,g)
-         call setGrid(v_bcs,g)
-         call setGrid(w_bcs,g)
+         call setGrid(U_bcs,g)
          call setGrid(p_bcs,g)
-         call checkBCs(u_bcs)
-         call checkBCs(v_bcs)
-         call checkBCs(w_bcs)
+         call checkVectorBCs(U_bcs)
          call checkBCs(p_bcs)
-         call init(U_bcs_vec,u_bcs,v_bcs,w_bcs)
        end subroutine
 
        subroutine initPredefinedUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)
@@ -394,7 +388,7 @@
          type(grid),intent(in) :: g
          type(BCs),intent(inout) :: p_bcs
          integer,intent(in) :: ductDir,IO
-         integer :: Nx,Ny,Nz,dirichlet
+         integer :: dirichlet
          dirichlet = 2
 
          select case (IO)
@@ -421,7 +415,7 @@
          type(grid),intent(in) :: g
          type(BCs),intent(inout) :: p_bcs
          integer,intent(in) :: ductDir,IO
-         integer :: Nx,Ny,Nz,periodic_i
+         integer :: periodic_i
          periodic_i = 7 ! Wall incoincident
 
          select case (IO)

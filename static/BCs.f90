@@ -91,16 +91,21 @@
          real(cp),dimension(:),allocatable :: xc,yc,zc
          integer,dimension(3) :: s
          logical,dimension(6) :: TFb
+         logical :: TFs
          logical :: TFgrid
          logical,dimension(6) :: TFvals
          logical :: BCsDefined = .false.
          type(grid) :: g
        end type
 
-       interface init;       module procedure initBCs;           end interface
-       interface init;       module procedure initBCsCopy;       end interface
-       interface delete;     module procedure deleteBCs;         end interface
-       interface setGrid;    module procedure setGridBCs;        end interface
+       interface init;       module procedure initBCs;             end interface
+       interface init;       module procedure initBCsCopy;         end interface
+       interface init;       module procedure initBCsSize;         end interface
+       interface delete;     module procedure deleteBCs;           end interface
+       interface setGrid;    module procedure setGridBCs;          end interface
+
+       interface setAllZero; module procedure setAllZeroGivenSize; end interface
+       interface setAllZero; module procedure setAllZeroNoSize;    end interface
 
        contains
 
@@ -111,7 +116,16 @@
          this%yminType = 0; this%ymaxType = 0
          this%zminType = 0; this%zmaxType = 0
          this%TFb = .false.
+         this%TFs = .false.
          this%BCsDefined = .false.
+       end subroutine
+
+       subroutine initBCsSize(this,Nx,Ny,Nz)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: Nx,Ny,Nz
+         call initBCs(this)
+         this%s = (/Nx,Ny,Nz/)
        end subroutine
 
        subroutine initBCsCopy(this,u_bcs)
@@ -334,7 +348,7 @@
          zmaxVals = this%zmaxVals
        end subroutine
 
-       subroutine setAllZero(this,Nx,Ny,Nz,bctype)
+       subroutine setAllZeroGivenSize(this,Nx,Ny,Nz,bctype)
          implicit none
          type(BCs),intent(inout) :: this
          integer,intent(in) :: Nx,Ny,Nz
@@ -361,7 +375,13 @@
 
          allocate(bvals(Nx,Ny)); call setZmaxType(this,bctype)
          bvals = real(0.0,cp); call setZmaxVals(this,bvals); deallocate(bvals)
+       end subroutine
 
+       subroutine setAllZeroNoSize(this,bctype)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: bctype
+         call setAllZero(this,this%s(1),this%s(2),this%s(3),bctype)
        end subroutine
 
        subroutine setXminType(this,xminType)

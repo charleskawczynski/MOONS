@@ -43,7 +43,18 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
+\section{Now}
+
+- Prep document for $B^0 = (e^{-t},0,0)$ sim
+
+- Try to develop routines for staggering B
+
+- Start simulations for $B^0 = (e^{-t},0,0)$ sim
+
+
 \section{Today}
+
+- Consider making setXMinType(1,2) for dirichlet / neumann and determine wall coincident / incoincident internally.
 
 - Merge with master, commit current version
 
@@ -54,11 +65,11 @@ $\frac{\partial}{\partial x_j} (u_j B_i-u_iB_j)_{face}$ for Gauss Seidel on the 
 
 - Rename myError to norms.
 
-- remove 'my' in interpolations.
+- remove my in interpolations.
 
-- rename interpOps.f90 to ops_interp.f90.
+- rename interpOps.f90 to ops\_interp.f90.
 
-- rename scalarField and vectorField to field_scalar and field_vector
+- rename scalarField and vectorField to field\_scalar and field\_vector
 
 - Convert real(cp),dimension(:,:,:) to scalar field for parallelization
 

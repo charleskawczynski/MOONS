@@ -32,7 +32,7 @@
        use vectorField_mod
        implicit none
 
-       ! Compiler flags: ( fopenmp )
+       ! Compiler flags: ( fopenmp, _DEBUG_INTERP_ )
 
        private
 
@@ -141,19 +141,21 @@
            stop 'Error: dir must = 1,2,3 in interpO2.'
          end select
 
-         ! select case (dir)
-         ! case (1)
-         ! if (sf(2).ne.sg(2)) stop 'Erorr: shape mismatch in interpOps.f90'
-         ! if (sf(3).ne.sg(3)) stop 'Erorr: shape mismatch in interpOps.f90'
-         ! case (2)
-         ! if (sf(1).ne.sg(1)) stop 'Erorr: shape mismatch in interpOps.f90'
-         ! if (sf(3).ne.sg(3)) stop 'Erorr: shape mismatch in interpOps.f90'
-         ! case (3)
-         ! if (sf(1).ne.sg(1)) stop 'Erorr: shape mismatch in interpOps.f90'
-         ! if (sf(2).ne.sg(2)) stop 'Erorr: shape mismatch in interpOps.f90'
-         ! case default
-         !   stop 'Error: dir must = 1,2,3 in interpO2.'
-         ! end select
+#ifdef _DEBUG_INTERP_
+         select case (dir)
+         case (1)
+         if (sf(2).ne.sg(2)) stop 'Erorr: shape mismatch in interpOps.f90'
+         if (sf(3).ne.sg(3)) stop 'Erorr: shape mismatch in interpOps.f90'
+         case (2)
+         if (sf(1).ne.sg(1)) stop 'Erorr: shape mismatch in interpOps.f90'
+         if (sf(3).ne.sg(3)) stop 'Erorr: shape mismatch in interpOps.f90'
+         case (3)
+         if (sf(1).ne.sg(1)) stop 'Erorr: shape mismatch in interpOps.f90'
+         if (sf(2).ne.sg(2)) stop 'Erorr: shape mismatch in interpOps.f90'
+         case default
+           stop 'Error: dir must = 1,2,3 in interpO2.'
+         end select
+#endif
 
          if ((sf(dir).eq.gd%c(dir)%sc).and.(sg(dir).eq.gd%c(dir)%sn)) then
            ! f(cc grid), g(node/face grid)
@@ -190,7 +192,7 @@
            enddo
            !$OMP END DO
            !$OMP END PARALLEL
-           ! call extrapO2(f,g,dir)
+           call extrapO2(f,g,dir)
          else
            stop 'gridType must be 1 or 2 in interpO2. Terminating.'
          endif
@@ -301,8 +303,10 @@
            call interp(edge,face,g,orthDir)
            call extrap(edge,face,orthDir)
          else ! Requires 3 interpolations ()
+           allocate(tempCC(g%c(1)%sc,g%c(2)%sc,g%c(3)%sc))
            call myFace2CellCenter(tempCC,face,g,faceDir)
            call myCellCenter2Edge(edge,tempCC,g,edgeDir)
+           deallocate(tempCC)
          endif
        end subroutine
 

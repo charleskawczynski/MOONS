@@ -99,7 +99,8 @@ FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 # Internal debugging
 # FCFLAGS += -D_DEBUG_DELOPS_
 # FCFLAGS += -D_DEBUG_VECTOROPS_
-# FCFLAGS += -D_DEBUG_DEL_
+FCFLAGS += -D_DEBUG_DEL_
+FCFLAGS += -D_DEBUG_INTERP_
 # FCFLAGS += -D_DEBUG_VECTOR_
 # FCFLAGS += -D_DEBUG_SCALAR_ not yet implemented
 # FCFLAGS += -D_CHECK_SYMMETRY_
@@ -142,6 +143,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)computations$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)ops_physics.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_discrete_complex.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)applyBCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \

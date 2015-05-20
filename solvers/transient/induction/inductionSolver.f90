@@ -18,6 +18,7 @@
        use del_mod
        use ops_aux_mod
        use ops_discrete_mod
+       use ops_discrete_complex_mod
        use ops_physics_mod
        use BCs_mod
        use vectorBCs_mod
@@ -61,9 +62,21 @@
        type induction
          character(len=9) :: name = 'induction'
          ! --- Vector fields ---
-         type(vectorField) :: B,Bstar,B0,J_cc,U_cct,temp_CC    ! CC data
-         type(vectorField) :: J,E,sigmaInv_edge                ! Edge data
-         type(vectorField) :: temp_F,sigmaInv_face             ! Face data
+         type(vectorField) :: B,Bstar,B0,B_face                ! CC data
+
+         type(vectorField) :: J,J_cc,E                         ! Edge data
+
+         type(vectorField) :: U_Ft                             ! Face data
+         type(vectorField) :: U_cct                            ! Cell Center data
+         type(vectorField) :: U_E,V_E,W_E                      ! Edge data
+
+         type(vectorField) :: temp_E1,temp_E2                  ! Edge data
+         type(vectorField) :: temp_F,temp_F2
+         type(vectorField) :: temp_F3,temp_F4                  ! Edge data
+         type(vectorField) :: temp_CC                          ! CC data
+
+         type(vectorField) :: sigmaInv_edge,sigmaInv_face
+
          ! --- Scalar fields ---
          type(scalarField) :: sigma,mu          ! CC data
          type(scalarField) :: divB,divJ,phi,temp               ! CC data
@@ -137,14 +150,24 @@
          call allocateZ(ind%J,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
 
          call allocateVectorField(ind%E,ind%J)
+         call allocateVectorField(ind%U_E,ind%J)
+         call allocateVectorField(ind%V_E,ind%J)
+         call allocateVectorField(ind%W_E,ind%J)
+         call allocateVectorField(ind%temp_E1,ind%J)
+         call allocateVectorField(ind%temp_E2,ind%J)
          call allocateVectorField(ind%sigmaInv_edge,ind%J)
 
          ! Face Data
-         call allocateX(ind%temp_F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(ind%temp_F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(ind%temp_F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
+         call allocateX(ind%U_Ft,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
+         call allocateY(ind%U_Ft,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
+         call allocateZ(ind%U_Ft,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateVectorField(ind%sigmaInv_face,ind%temp_F)
+         call allocateVectorField(ind%temp_F,ind%U_Ft)
+         call allocateVectorField(ind%sigmaInv_face,ind%U_Ft)
+         call allocateVectorField(ind%temp_F2,ind%U_Ft)
+         call allocateVectorField(ind%temp_F3,ind%U_Ft)
+         call allocateVectorField(ind%temp_F4,ind%U_Ft)
+         call allocateVectorField(ind%B_face,ind%U_Ft)
 
          ! --- Scalar Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
@@ -160,11 +183,10 @@
 
 
          ! --- Initialize Fields ---
-         call initBBCs(ind%B_bcs,ind%phi_bcs,g,cleanB)
-         ! call initBBCs(ind%B_bcs,ind%phi_bcs,g,cleanB)
+         call initBBCs(ind%B_bcs,ind%phi_bcs,ind%B,g,cleanB)
          write(*,*) '     BCs initialized'
 
-         call initBfield(ind%B%x,ind%B%y,ind%B%z,ind%B0%x,ind%B0%y,ind%B0%z,g,dir)
+         call initBfield(ind%B,ind%B0,g,dir)
          write(*,*) '     B-field initialized'
 
          call applyAllBCs(ind%B,ind%B_bcs,g)
@@ -221,7 +243,7 @@
          write(*,*) '     Solver settings for cleaning initialized'
 
          ! Initialize multigrid
-         if (cleanB) call init(ind%MG,ind%phi%s,ind%phi_bcs,ind%g,ind%ss_cleanB,.false.)
+         ! if (cleanB) call init(ind%MG,ind%phi%s,ind%phi_bcs,ind%g,ind%ss_cleanB,.false.)
 
          if (restartB) then
          call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
@@ -238,16 +260,28 @@
          call delete(ind%B)
          call delete(ind%Bstar)
          call delete(ind%B0)
-         call delete(ind%J_cc)
+
          call delete(ind%U_cct)
-         call delete(ind%temp_CC)
+         call delete(ind%U_Ft)
+         call delete(ind%U_E)
+         call delete(ind%V_E)
+         call delete(ind%W_E)
 
          call delete(ind%J)
+         call delete(ind%J_cc)
          call delete(ind%E)
+
+         call delete(ind%temp_CC)
+         call delete(ind%temp_E1)
+         call delete(ind%temp_E2)
+         call delete(ind%temp_F)
+         call delete(ind%temp_F2)
+         call delete(ind%temp_F3)
+         call delete(ind%B_face)
+         call delete(ind%temp)
+
          call delete(ind%sigmaInv_edge)
          call delete(ind%sigmaInv_face)
-
-         call delete(ind%temp_F)
          
          call delete(ind%sigma)
          call delete(ind%mu)
@@ -255,7 +289,6 @@
          call delete(ind%divB)
          call delete(ind%divJ)
 
-         call delete(ind%temp)
          call delete(ind%phi)
 
          call delete(ind%B_bcs)
@@ -347,6 +380,7 @@
            call writeToFile(g,ind%sigma%phi,dir//'material/','sigmac')
            call writeToFile(g,ind%divB%phi,dir//'Bfield/','divBct')
            call writeToFile(g,ind%divJ%phi,dir//'Jfield/','divJct')
+           if (cleanB) call writeToFile(g,ind%phi%phi,dir//'Bfield/','phi')
            write(*,*) '     finished'
          endif
        end subroutine
@@ -400,40 +434,40 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine inductionSolver(ind,U,g,ss_MHD)
+       subroutine inductionSolver(ind,U,g_mom,g,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
-         type(grid),intent(in) :: g
+         type(grid),intent(in) :: g,g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
+         call embedVelocity(ind,U,g_mom)
+
          select case (solveBMethod)
-         case (1); call lowRemPoisson(ind,U,g,ss_MHD)
-         case (2); call lowRemPseudoTimeStepUniform(ind,U,g)
-         case (3); call lowRemPseudoTimeStep(ind,U,g)
-         case (4); call lowRemCTmethod(ind,U,g)
-         case (5); call finiteRemCTmethod(ind,U,g)
-         case (6); call LowRem_semi_implicit_ADI(ind,U,g,ss_MHD)
-         case (7); call lowRemMultigrid(ind,U,g,ss_MHD)
-         case (8); call lowRem_JacksExperiment(ind,U,g)
+         case (1); call lowRemPoisson(ind,ind%U_cct,g,ss_MHD)
+         case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,g)
+         case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,g)
+         case (4); call lowRemCTmethod(ind,g)
+         case (5); call finiteRemCTmethod(ind,ind%U_cct,g)
+         case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,g,ss_MHD)
+         case (7); call lowRemMultigrid(ind,ind%U_cct,g,ss_MHD)
+         case (8); call lowRem_JacksExperiment(ind,ind%U_cct,g)
          end select
          if (cleanB) then
-           ! call cleanBSolution(ind,g,ss_MHD)
-           call cleanBMultigrid(ind,g,ss_MHD)
+           call cleanBSolution(ind,g,ss_MHD)
+           ! call cleanBMultigrid(ind,g,ss_MHD)
          endif
          ind%nstep = ind%nstep + 1
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
        end subroutine
 
-       subroutine lowRemPoisson(ind,U,g,ss_MHD)
+       subroutine lowRemPoissonOld(ind,U,g,ss_MHD)
          implicit none
-         ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
-
          call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
 
          call myPoisson(ind%SOR_B,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,ind%ss_ind,&
@@ -446,6 +480,30 @@
          ind%err_residual,getExportErrors(ss_MHD))
        end subroutine
 
+       subroutine lowRemPoisson(ind,U,g,ss_MHD)
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U
+         type(grid),intent(in) :: g
+         type(solverSettings),intent(inout) :: ss_MHD
+
+         call myCellCenter2Face(ind%temp_F2,ind%B0,g)
+
+         call faceCurlCross_F(ind%temp_F,ind%U_Ft,ind%temp_F2,ind%temp_E1,ind%temp_E2,ind%temp,g)
+
+         call myPoisson(ind%SOR_B,ind%B_face%x,ind%temp_F%x,ind%B_bcs%x,g,ind%ss_ind,&
+         ind%err_residual,getExportErrors(ss_MHD))
+
+         call myPoisson(ind%SOR_B,ind%B_face%y,ind%temp_F%y,ind%B_bcs%y,g,ind%ss_ind,&
+         ind%err_residual,getExportErrors(ss_MHD))
+
+         call myPoisson(ind%SOR_B,ind%B_face%z,ind%temp_F%z,ind%B_bcs%z,g,ind%ss_ind,&
+         ind%err_residual,getExportErrors(ss_MHD))
+
+         call myFace2CellCenter(ind%B,ind%B_face,g)
+       end subroutine
+
        subroutine lowRemPseudoTimeStepUniform(ind,U,g)
          ! This routine assumed div(B)=0 (which requires uniform properties), 
          ! which is how it differs from lowRemPseudoTimeStep(). This was an 
@@ -453,13 +511,10 @@
          ! terms are essentially the same, but a different iterative method 
          ! is applied.
          implicit none
-         ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         ! ********************** LOCAL VARIABLES ***********************
          integer :: i
-         ! *********************** ALLOCATE DATA ************************
          
          do i=1,ind%NmaxB
            call assign(ind%Bstar,zero)
@@ -484,7 +539,6 @@
 
        subroutine lowRemPseudoTimeStep(ind,U,g)
          implicit none
-         ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
@@ -514,7 +568,7 @@
          enddo
        end subroutine
 
-       subroutine lowRemCTmethod(ind,U,g)
+       subroutine lowRemCTmethodOld(ind,U,g)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
@@ -524,11 +578,9 @@
          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
          ! The velocity field is assumed to be cell centered.
          implicit none
-         ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         ! ********************** LOCAL VARIABLES ***********************
          integer :: i
 
          do i=1,ind%NmaxB
@@ -542,6 +594,55 @@
            ! Compute fluxes of u cross B0
            call cross(ind%temp_CC,U,ind%B0)
            call myCellCenter2Edge(ind%E,ind%temp_CC,g)
+
+           ! E = j/sig - uxB
+           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
+           call multiply(ind%J,ind%sigmaInv_edge)
+           call subtract(zero,ind%E)
+           call add(ind%E,ind%J)
+
+           ! F = curl(E_edge)_face
+           call curl(ind%temp_F,ind%E,g)
+
+           ! tempVF = interp(F)_face->cc
+           call myFace2CellCenter(ind%temp_CC,ind%temp_F,g)
+
+           ! Add induced field of previous time step (B^n)
+           ! ind%B = ind%B - ind%dTime*ind%temp_CC
+           call multiply(ind%temp_CC,ind%dTime)
+           call subtract(ind%B,ind%temp_CC)
+
+           ! Impose BCs:
+           call applyAllBCs(ind%B,ind%B_bcs,g)
+         enddo
+       end subroutine
+
+       subroutine lowRemCTmethod(ind,g)
+         ! inductionSolverCT solves the induction equation using the
+         ! Constrained Transport (CT) Method. The magnetic field is
+         ! stored and collocated at the cell center. The magnetic
+         ! field is updated using Faraday's Law, where the electric
+         ! field is solved for using appropriate fluxes as described
+         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         ! The velocity field is assumed to be cell centered.
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g
+         integer :: i
+
+         do i=1,ind%NmaxB
+
+           ! Compute current from appropriate fluxes:
+
+           ! J = curl(B_face)_edge
+           call myCellCenter2Face(ind%temp_F,ind%B,g)
+           call curl(ind%J,ind%temp_F,g)
+
+           ! Compute fluxes of u cross B0
+           call cross(ind%temp_CC,ind%U_cct,ind%B0)
+           call myCellCenter2Edge(ind%E,ind%temp_CC,g)
+           ! call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g)
 
            ! E = j/sig - uxB
            ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
@@ -754,21 +855,39 @@
 
        ! ******************* CLEANING **************************
 
-       subroutine cleanBSolution(ind,g,ss_MHD)
+       subroutine cleanBSolutionOld(ind,g,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
-         call div(ind%temp%phi,ind%B,g)
+         call div(ind%temp%phi,ind%B_face,g)
 
          call myPoisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
-          ind%err_CleanB,getExportErrors(ss_MHD))
+          ind%err_cleanB,getExportErrors(ss_MHD))
 
          call grad(ind%Bstar,ind%phi%phi,g)
          call subtract(ind%B,ind%Bstar)
 
          ! Impose BCs:
          call applyAllBCs(ind%B,ind%B_bcs,g)
+       end subroutine
+
+       subroutine cleanBSolution(ind,g,ss_MHD)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g
+         type(solverSettings),intent(in) :: ss_MHD
+         call div(ind%temp%phi,ind%B_face,g)
+
+         call myPoisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
+          ind%err_cleanB,getExportErrors(ss_MHD))
+
+         call grad(ind%temp_F2,ind%phi%phi,g)
+         call subtract(ind%B_face,ind%temp_F2)
+
+         call myFace2CellCenter(ind%B,ind%B_face,g)
+         ! Impose BCs:
+         ! call applyAllBCs(ind%B,ind%B_bcs,g)
        end subroutine
 
        subroutine cleanBMultigrid(ind,g,ss_MHD)
@@ -940,7 +1059,159 @@
          end select
        end subroutine
 
-       subroutine embedVelocity(U_cct,U_fi,U_cci,g_mom)
+       subroutine embedVelocity(ind,U_fi,g)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: U_fi ! Raw momentum velocity
+         type(grid),intent(in) :: g ! Momentum grid
+         type(vectorField) :: temp
+         integer :: usedVelocity
+
+         usedVelocity = 2
+
+         select case(usedVelocity)
+         case (1) ! Edge - 2 interpolations
+           call allocateX(temp,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
+           call allocateY(temp,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+           call allocateZ(temp,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+           call myFace2Edge(temp%x,U_fi%x,g,1,1)
+           call myFace2Edge(temp%y,U_fi%x,g,1,2)
+           call myFace2Edge(temp%z,U_fi%x,g,1,3)
+           call embedEdge(ind%U_E,temp,Nin1,Nin2,Nice1,Nice2,g)
+           call myFace2Edge(temp%x,U_fi%y,g,2,1)
+           call myFace2Edge(temp%y,U_fi%y,g,2,2)
+           call myFace2Edge(temp%z,U_fi%y,g,2,3)
+           call embedEdge(ind%V_E,temp,Nin1,Nin2,Nice1,Nice2,g)
+           call myFace2Edge(temp%x,U_fi%z,g,3,1)
+           call myFace2Edge(temp%y,U_fi%z,g,3,2)
+           call myFace2Edge(temp%z,U_fi%z,g,3,3)
+           call embedEdge(ind%W_E,temp,Nin1,Nin2,Nice1,Nice2,g)
+           call delete(temp)
+
+         case (2) ! CC - 1 interpolation
+           call allocateX(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+           call allocateY(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+           call allocateZ(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+           call myFace2CellCenter(temp%x,U_fi%x,g,1)
+           call myFace2CellCenter(temp%y,U_fi%y,g,2)
+           call myFace2CellCenter(temp%z,U_fi%z,g,3)
+           call embedCC(ind%U_cct,temp,Nice1,Nice2,g)
+           call delete(temp)
+
+         case (3) ! Face - no interpolations
+           call embedFace(ind%U_Ft,U_Fi,Nin1,Nin2,Nice1,Nice2,g)
+         case (4)
+           ! ! Node - 3 interpolations (not needed for any solvers)
+           ! call allocateX(temp,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
+           ! call allocateY(temp,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+           ! call allocateZ(temp,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+           ! call myFace2Node(temp%x,U_fi%x,g,1)
+           ! call myFace2Node(temp%y,U_fi%x,g,1)
+           ! call myFace2Node(temp%z,U_fi%x,g,1)
+           ! call embedNode(ind%U_N,temp,Nin1,Nin2,g)
+           ! call myFace2Node(temp%x,U_fi%y,g,2)
+           ! call myFace2Node(temp%y,U_fi%y,g,2)
+           ! call myFace2Node(temp%z,U_fi%y,g,2)
+           ! call embedNode(ind%V_N,temp,Nin1,Nin2,g)
+           ! call myFace2Node(temp%x,U_fi%z,g,3)
+           ! call myFace2Node(temp%y,U_fi%z,g,3)
+           ! call myFace2Node(temp%z,U_fi%z,g,3)
+           ! call embedNode(ind%W_N,temp,Nin1,Nin2,g)
+           ! call delete(temp)
+         case default
+         stop 'Error: usedVelocity must = 1,2,3,4 in embedVelocity in inductionSolver.f90'
+         end select
+       end subroutine
+
+       subroutine embedFace(U_Ft,U_Fi,Nn1,Nn2,Ne1,Ne2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_Ft
+         type(vectorField),intent(in) :: U_Fi
+         integer,dimension(3),intent(in) :: Nn1,Nn2,Ne1,Ne2
+         type(grid),intent(in) :: g
+         U_Ft%x(Nn1(1):Nn2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_Fi%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         U_Ft%y(Ne1(1):Ne2(1),Nn1(2):Nn2(2),Ne1(3):Ne2(3)) = &
+         U_Fi%y(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+         U_Ft%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Nn1(3):Nn2(3)) = &
+         U_Fi%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+       end subroutine
+
+       subroutine embedEdge(U_Et,U_Ei,Nn1,Nn2,Ne1,Ne2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_Et
+         type(vectorField),intent(in) :: U_Ei
+         integer,dimension(3),intent(in) :: Nn1,Nn2,Ne1,Ne2
+         type(grid),intent(in) :: g
+         U_Et%x(Ne1(1):Ne2(1),Nn1(2):Nn2(2),Nn1(3):Nn2(3)) = &
+         U_Ei%x(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         U_Et%y(Nn1(1):Nn2(1),Ne1(2):Ne2(2),Nn1(3):Nn2(3)) = &
+         U_Ei%y(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+         U_Et%z(Nn1(1):Nn2(1),Nn1(2):Nn2(2),Ne1(3):Ne2(3)) = &
+         U_Ei%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+       end subroutine
+
+       subroutine embedCC(U_cct,U_cci,Ne1,Ne2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_cct
+         type(vectorField),intent(in) :: U_cci
+         integer,dimension(3),intent(in) :: Ne1,Ne2
+         type(grid),intent(in) :: g
+         U_cct%x(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_cci%x(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         U_cct%y(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_cci%y(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         U_cct%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_cci%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+       end subroutine
+
+       subroutine embedN(U_nt,U_ni,Nn1,Nn2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_nt
+         type(vectorField),intent(in) :: U_ni
+         integer,dimension(3),intent(in) :: Nn1,Nn2
+         type(grid),intent(in) :: g
+         U_nt%x(Nn1(1):Nn2(1),Nn1(2):Nn2(2),Nn1(3):Nn2(3)) = &
+         U_ni%x(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         U_nt%y(Nn1(1):Nn2(1),Nn1(2):Nn2(2),Nn1(3):Nn2(3)) = &
+         U_ni%y(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         U_nt%z(Nn1(1):Nn2(1),Nn1(2):Nn2(2),Nn1(3):Nn2(3)) = &
+         U_ni%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+       end subroutine
+
+       subroutine uniformify(U)
+         implicit none
+         type(vectorField),intent(inout) :: U
+         integer,dimension(3) :: s
+         integer :: i
+         s = shape(U%x)
+         do i=1,s(1)
+           U%x(i,:,:) = U%x(Nici1(1)+2,:,:)
+         enddo
+       end subroutine
+
+       subroutine uniformifyX(U)
+         implicit none
+         type(vectorField),intent(inout) :: U
+         integer,dimension(3) :: s
+         integer :: i
+         s = shape(U%x)
+         do i=1,s(1)
+           U%x(i,:,:) = U%x((Nici1(1)+Nici2(1))/2,:,:)
+         enddo
+         s = shape(U%y)
+         do i=1,s(1)
+           U%y(i,:,:) = U%y((Nici1(1)+Nici2(1))/2,:,:)
+         enddo
+         s = shape(U%z)
+         do i=1,s(1)
+           U%z(i,:,:) = U%z((Nici1(1)+Nici2(1))/2,:,:)
+         enddo
+       end subroutine
+
+       ! ********************* OLD *****************************
+
+       subroutine embedVelocityOld(U_cct,U_fi,U_cci,g_mom)
          ! Whether or not the fictitious cells are included must be determined
          ! based on the BCs for the velocity. If no slip / no flow through is
          ! used, then only interior cell velocities should be used. Otherwise,
@@ -958,14 +1229,14 @@
          embedType = 1
          dir = 1
          call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-         call embedCC(U_cct%x,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call embedCCOld(U_cct%x,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
          call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-         call embedCC(U_cct%y,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call embedCCOld(U_cct%y,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
          call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-         call embedCC(U_cct%z,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call embedCCOld(U_cct%z,U_cci%phi,g_mom,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
        end subroutine
 
-       subroutine embedCC(U_cct,U_cci,g,Ni,Ni1,Ni2,Ne1,Ne2,embedType,dir)
+       subroutine embedCCOld(U_cct,U_cci,g,Ni,Ni1,Ni2,Ne1,Ne2,embedType,dir)
          ! Whether or not the fictitious cells are included must be determined
          ! based on the BCs for the velocity. If no slip / no flow through is
          ! used, then only interior cell velocities should be used. Otherwise,
@@ -1002,36 +1273,6 @@
          case default
          stop 'Error: embedType must = 1,2,3'
          end select
-       end subroutine
-
-       subroutine uniformify(U)
-         implicit none
-         type(vectorField),intent(inout) :: U
-         integer,dimension(3) :: s
-         integer :: i
-         s = shape(U%x)
-         do i=1,s(1)
-           U%x(i,:,:) = U%x(Nici1(1)+2,:,:)
-         enddo
-       end subroutine
-
-       subroutine uniformifyX(U)
-         implicit none
-         type(vectorField),intent(inout) :: U
-         integer,dimension(3) :: s
-         integer :: i
-         s = shape(U%x)
-         do i=1,s(1)
-           U%x(i,:,:) = U%x((Nici1(1)+Nici2(1))/2,:,:)
-         enddo
-         s = shape(U%y)
-         do i=1,s(1)
-           U%y(i,:,:) = U%y((Nici1(1)+Nici2(1))/2,:,:)
-         enddo
-         s = shape(U%z)
-         do i=1,s(1)
-           U%z(i,:,:) = U%z((Nici1(1)+Nici2(1))/2,:,:)
-         enddo
        end subroutine
 
        end module

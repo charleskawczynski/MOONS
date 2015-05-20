@@ -78,8 +78,9 @@
 
        type momentum
          ! Field Quantities
-         type(vectorField) :: U,Ustar,F,TempVF
-         type(scalarField) :: p,Temp,divU
+         type(vectorField) :: U,Ustar,F,temp_F
+         type(vectorField) :: temp_E1,temp_E2
+         type(scalarField) :: p,temp_CC,divU
 
          ! Boundary conditions
          type(BCs) :: p_bcs
@@ -137,12 +138,18 @@
 
          call allocateVectorField(mom%Ustar,mom%U)
          call allocateVectorField(mom%F,mom%U)
-         call allocateVectorField(mom%TempVF,mom%U)
+         call allocateVectorField(mom%temp_F,mom%U)
+
+         call allocateX(mom%temp_E1,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
+         call allocateY(mom%temp_E1,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+         call allocateZ(mom%temp_E1,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+
+         call allocateVectorField(mom%temp_E2,mom%temp_E1)
 
          ! allocate P-Fields
          call allocateField(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          call allocateField(mom%divU,mom%p)
-         call allocateField(mom%temp,mom%p)
+         call allocateField(mom%temp_CC,mom%p)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -150,7 +157,7 @@
          write(*,*) '     BCs initialized'
 
          ! Use mom%g later, for no just g
-         call initUfield(mom%U%x,mom%U%y,mom%U%z,mom%p%phi,g,dir)
+         call initUfield(mom%U,mom%p%phi,g,dir)
          write(*,*) '     Field initialized'
 
          write(*,*) '     BCs sizes set'
@@ -221,7 +228,7 @@
          implicit none
          type(momentum),intent(inout) :: mom
          call delete(mom%U);               call delete(mom%Ustar);   call delete(mom%F)
-         call delete(mom%TempVF);          call delete(mom%p);       call delete(mom%Temp)
+         call delete(mom%temp_F);          call delete(mom%p);       call delete(mom%temp_CC)
 
          call delete(mom%p_bcs);           call delete(mom%divU)
          call delete(mom%U_bcs)
@@ -229,6 +236,8 @@
          call delete(mom%u_center);        call delete(mom%transient_ppe)
          call delete(mom%transient_divU);  call delete(mom%u_symmetry)
          call delete(mom%g)
+         call delete(mom%temp_E1)
+         call delete(mom%temp_E2)
 
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
@@ -365,19 +374,22 @@
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
-         case (1); call  faceAdvectDonor(mom%TempVF,mom%U,mom%U,g)
-         case (2); call       faceAdvect(mom%TempVF,mom%U,mom%U,g)
-         case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
+         case (1)
+         call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%temp_CC,g)
+         case (2)
+         call faceAdvect(mom%temp_F,mom%U,mom%U,g)
+         case (3)
+         call faceAdvectHybrid(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%temp_CC,g)
          end select
 
          ! Ustar = -TempVF
-         call multiply(mom%TempVF,(-real(1.0,cp)))
-         call assign(mom%Ustar,mom%TempVF)
+         call multiply(mom%temp_F,(-real(1.0,cp)))
+         call assign(mom%Ustar,mom%temp_F)
 
          ! Laplacian Terms -----------------------------------------
-         call lap(mom%TempVF,mom%U,g)
-         call divide(mom%TempVF,Re)
-         call add(mom%Ustar,mom%TempVF)
+         call lap(mom%temp_F,mom%U,g)
+         call divide(mom%temp_F,Re)
+         call add(mom%Ustar,mom%temp_F)
 
          ! Source Terms (e.g. N j x B) -----------------------------
          call add(mom%Ustar,mom%F)
@@ -392,20 +404,20 @@
 
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
-           call div(mom%Temp%phi,mom%Ustar,g)
+           call div(mom%temp_CC%phi,mom%Ustar,g)
            ! Temp = Temp/dt
-           call divide(mom%Temp,dt)
-           call zeroGhostPoints(mom%Temp%phi)
+           call divide(mom%temp_CC,dt)
+           call zeroGhostPoints(mom%temp_CC%phi)
 
            ! Solve lap(p) = div(U)/dt
-           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
+           call myPoisson(mom%SOR_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
-           call grad(mom%TempVF,mom%p%phi,g)
+           call grad(mom%temp_F,mom%p%phi,g)
 
            ! Ustar = Ustar - dt*dp/dx
-           call multiply(mom%TempVF,dt)
-           call subtract(mom%Ustar,mom%TempVF)
+           call multiply(mom%temp_F,dt)
+           call subtract(mom%Ustar,mom%temp_F)
          endif
 
          ! U = Ustar
@@ -427,14 +439,17 @@
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation)
-         case (1); call  faceAdvectDonor(mom%TempVF,mom%U,mom%U,g)
-         case (2); call       faceAdvect(mom%TempVF,mom%U,mom%U,g)
-         case (3); call faceAdvectHybrid(mom%TempVF,mom%U,mom%U,g)
+         case (1)
+         call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%temp_CC,g)
+         case (2)
+         call faceAdvect(mom%temp_F,mom%U,mom%U,g)
+         case (3)
+         call faceAdvectHybrid(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%temp_CC,g)
          end select
 
          ! Ustar = -TempVF
-         call multiply(mom%TempVF,(-real(1.0,cp)))
-         call assign(mom%Ustar,mom%TempVF)
+         call multiply(mom%temp_F,(-real(1.0,cp)))
+         call assign(mom%Ustar,mom%temp_F)
 
          ! Source Terms (e.g. N j x B) -----------------------------
          ! Ustar = Ustar + F
@@ -461,20 +476,20 @@
          
          ! Pressure Correction -------------------------------------
          if (mom%nstep.gt.0) then
-           call div(mom%Temp%phi,mom%Ustar,g)
+           call div(mom%temp_CC%phi,mom%Ustar,g)
            ! Temp = Temp/dt
-           call divide(mom%Temp,dt)
+           call divide(mom%temp_CC,dt)
 
            ! IMPORTANT: Must include entire pressure since BCs are 
            ! based on last elements (located on boundary)
-           call myPoisson(mom%SOR_p,mom%p%phi,mom%Temp%phi,mom%p_bcs,g,&
+           call myPoisson(mom%SOR_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
-           call grad(mom%TempVF%x,mom%TempVF%y,mom%TempVF%z,mom%p%phi,g)
+           call grad(mom%temp_F%x,mom%temp_F%y,mom%temp_F%z,mom%p%phi,g)
 
            ! Ustar = Ustar - dt*TempVF
-           call multiply(mom%TempVF,dt)
-           call subtract(mom%Ustar,mom%TempVF)
+           call multiply(mom%temp_F,dt)
+           call subtract(mom%Ustar,mom%temp_F)
          endif
 
          ! U = Ustar

@@ -152,9 +152,9 @@
          write(*,*) 'Min/Max ('//name//') = ',minval(u),maxval(u)
        end subroutine
 
-       subroutine checkGlobalMinMaxSF(du,u,name,i)
+       subroutine checkGlobalMinMaxSF(du,name,i)
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: du,u
+         real(cp),dimension(:,:,:),intent(in) :: du
          integer,intent(inout) :: i
          character(len=*),intent(in) :: name
          real(cp) :: tol
@@ -253,9 +253,9 @@
          call d%assign(temp%x,u%x,g,1,1,0)
          call d%assign(temp%y,u%y,g,1,1,0)
          call d%assign(temp%z,u%z,g,1,1,0)
-         call checkGlobalMinMax(temp%x,u%x,name//'_x',i)
-         call checkGlobalMinMax(temp%y,u%y,name//'_y',i)
-         call checkGlobalMinMax(temp%z,u%z,name//'_z',i)
+         call checkGlobalMinMax(temp%x,name//'_x',i)
+         call checkGlobalMinMax(temp%y,name//'_y',i)
+         call checkGlobalMinMax(temp%z,name//'_z',i)
          if (i.eq.1) then
           call writeToFile(g,temp%x,'',name//'_x')
           call writeToFile(g,temp%y,'',name//'_y')
@@ -290,7 +290,7 @@
          endif
 
          call d%assign(temp%phi,u,g,1,1,0)
-         call checkGlobalMinMax(temp%phi,u,name//'_phi',i)
+         call checkGlobalMinMax(temp%phi,name//'_phi',i)
          if (i.eq.1) then
           call writeToFile(g,temp%phi,'',name//'_phi')
           stop 'Done'

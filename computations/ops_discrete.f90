@@ -33,6 +33,7 @@
        use del_mod
        use delVC_mod
        use grid_mod
+       use scalarField_mod
        use vectorField_mod
        use interpOps_mod
        use ops_aux_mod
@@ -52,15 +53,16 @@
 #endif
 
        public :: cross
-       interface cross; module procedure crossSF;                 end interface
+       interface cross; module procedure collocatedCrossSF;       end interface
        interface cross; module procedure collocatedCrossVF;       end interface
 
        public :: lap
        interface lap;   module procedure lapUniformCoeffSF;       end interface
-       interface lap;   module procedure lapVariableCoeffSF;      end interface
+       interface lap;   module procedure lapVariableCoeff1SF;     end interface
+       interface lap;   module procedure lapVariableCoeff2SF;     end interface
        interface lap;   module procedure lapUniformCoeffVF;       end interface
-       interface lap;   module procedure lapVariableCoeffVF;      end interface
-       interface lap;   module procedure lapVariableCoeff_CCN_SF; end interface
+       interface lap;   module procedure lapVariableCoeff1VF;     end interface
+       interface lap;   module procedure lapVariableCoeff2VF;     end interface
 
        public :: div
        interface div;   module procedure divSF;                   end interface
@@ -74,8 +76,7 @@
        interface curl;  module procedure curlSF;                  end interface
        interface curl;  module procedure curlVF;                  end interface
 
-       public :: CCVaryDel
-       ! interface gradGrad; module procedure gradGradVary;    end interface
+       public :: CCVaryDel ! Needs to be removed eventually
 
        public :: mixed
        interface mixed;  module procedure mixed_uniformCoeffSF;   end interface
@@ -85,7 +86,7 @@
 
        contains
 
-       subroutine crossSF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
+       subroutine collocatedCrossSF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
          ! This routine computes the ith component of A x B on a collocated mesh
          ! dir = (1,2,3)
          implicit none
@@ -130,7 +131,7 @@
             call d%add(lapU,u,g,2,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine lapVariableCoeffSF(lapU,u,kx,ky,kz,g)
+       subroutine lapVariableCoeff1SF(lapU,u,kx,ky,kz,g)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: lapU
          real(cp),dimension(:,:,:),intent(in) :: u,kx,ky,kz
@@ -141,7 +142,7 @@
             call d%add(lapU,u,kz,g,3,1)
        end subroutine
 
-       subroutine lapVariableCoeff_CCN_SF(lapU,u,k,g)
+       subroutine lapVariableCoeff2SF(lapU,u,k,g)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: lapU
          real(cp),dimension(:,:,:),intent(in) :: u,k
@@ -271,10 +272,10 @@
        subroutine mixed_uniformCoeffSF(mix,f,g,dir1,dir2)
          ! mixed_uniformCoeffSF computes
          ! 
-         ! mix =  d/dxj (k df/dxi)
-         !           ^         ^
-         !           |         |
-         !          dir2      dir1
+         ! mix =  d/dxj (df/dxi)
+         !           ^       ^
+         !           |       |
+         !          dir2    dir1
          !
          !     if dir1 == dir2  --> Error (call laplacian instead)
          !     if dir1 ≠ dir2   --> see below
@@ -285,7 +286,7 @@
          type(grid),intent(in) :: g
          integer,intent(in) :: dir1,dir2
          real(cp),dimension(:,:,:),allocatable :: temp
-         integer,dimension(3) :: s,sk
+         integer,dimension(3) :: s
          type(del) :: d
 
          if (dir1.eq.dir2) then
@@ -293,11 +294,8 @@
            stop 'Call laplacian operator instead.'
          endif
 
-         s = shape(f); sk = s
-         if (s(dir1).eq.g%c(dir1)%sn) sk(dir1) = g%c(dir1)%sc
-         if (s(dir1).eq.g%c(dir1)%sc) sk(dir1) = g%c(dir1)%sn
-
-         allocate(temp(sk(1),sk(2),sk(3)))
+         s = shape(f)
+         allocate(temp(s(1),s(2),s(3)))
          call d%assign(temp,f,g,1,dir1,1)
          call d%assign(mix,temp,g,1,dir2,1)
          deallocate(temp)
@@ -366,7 +364,7 @@
          call lap(lapU%z,U%z,g)
        end subroutine
 
-       subroutine lapVariableCoeffVF(lapU,U,k,g)
+       subroutine lapVariableCoeff1VF(lapU,U,k,g)
          implicit none
          type(vectorField),intent(inout) :: lapU
          type(vectorField),intent(in) :: U,k
@@ -374,6 +372,17 @@
          call lap(lapU%x,U%x,k%x,k%y,k%z,g)
          call lap(lapU%y,U%y,k%x,k%y,k%z,g)
          call lap(lapU%z,U%z,k%x,k%y,k%z,g)
+       end subroutine
+
+       subroutine lapVariableCoeff2VF(lapU,U,k,g)
+         implicit none
+         type(vectorField),intent(inout) :: lapU
+         type(vectorField),intent(in) :: U
+         type(scalarField),intent(in) :: k
+         type(grid),intent(in) :: g
+         call lap(lapU%x,U%x,k%phi,g)
+         call lap(lapU%y,U%y,k%phi,g)
+         call lap(lapU%z,U%z,k%phi,g)
        end subroutine
 
        subroutine divVF(divU,U,g)

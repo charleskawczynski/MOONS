@@ -34,8 +34,10 @@
        use delVC_mod
        use grid_mod
        use vectorField_mod
+       use scalarField_mod
        use interpOps_mod
        use ops_discrete_mod
+       use ops_aux_mod
 
        implicit none
 
@@ -51,17 +53,13 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+       public :: orthogonalDirection
+
        public :: faceAdvect
        interface faceAdvect;    module procedure faceAdvectSF;   end interface
        interface faceAdvect;    module procedure faceAdvectVF;   end interface
 
-       public :: faceAdvectDonor
-       interface faceAdvectDonor;    module procedure faceAdvectDonorSF;   end interface
-       interface faceAdvectDonor;    module procedure faceAdvectDonorVF;   end interface
-
-       public :: faceAdvectHybrid
-       interface faceAdvectHybrid;    module procedure faceAdvectHybridSF;   end interface
-       interface faceAdvectHybrid;    module procedure faceAdvectHybridVF;   end interface
+       public :: faceAdvectDonor,faceAdvectHybrid
 
        public :: CCBfieldAdvect
        interface CCBfieldAdvect;    module procedure CCBfieldAdvectSF;   end interface
@@ -143,7 +141,7 @@
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
-       
+
        ! ******************************* FACE BASED DERIVATIVES *********************************
 
        subroutine faceAdvectSF(psi,u,v,w,phi,g,dir) ! Finished
@@ -212,194 +210,143 @@
          deallocate(temp)
        end subroutine
 
-       subroutine faceAdvectDonorSF(psi,u,v,w,ui,g,faceDir) ! Finished, maybe improvements
+       subroutine faceAdvectDonor(div,U,Ui,temp_E1,temp_E2,temp_CC,g)
+         ! Computes
          ! 
-         ! This routine returns the ith component of
+         !           d
+         !  div_i = --- (u_j u_i)
+         !          dx_j
          ! 
-         !                 d/dxj (uj ui)
-         ! or
-         !       d/dx (u ui) + d/dy (v ui) + d/dz (w ui)
+         ! While minimizing interpolations.
+         !           div_i, U, Ui          --> cell face.
+         !           tempE1 and temp_E2    --> cell edge.
+         !           temp_CC               --> cell center.
          ! 
-         ! Where faceDir is defined by ui.
-         ! 
-         ! It would be nice to reduce the number of allocated temps
-         ! This routine does not seem to work when using the total velocity
-         ! (including the walls)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: psi
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w,ui
+         type(vectorField),intent(inout) :: div
+         type(vectorField),intent(in) :: U,ui
+         type(vectorField),intent(inout) :: temp_E1,temp_E2
+         type(scalarField),intent(inout) :: temp_CC
          type(grid),intent(in) :: g
-         integer,intent(in) :: faceDir
-         real(cp),dimension(:,:,:),allocatable :: tempAveCC
-         real(cp),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
-         integer,dimension(3) :: s,sc,se
-         integer :: x,y,z,orthDir
          type(del) ::d
+         integer :: pad
+         pad = 1 ! Currently running for pad = 1, try pad = 0 next
 
-         s = shape(ui)
-         select case (faceDir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: faceDir must =1,2,3 in FaceAdvectDonor.'; stop
-         end select
+         call zeroGhostPoints(div)
+         
+         ! d/dxj (uj ui) for i=j
+         call myFace2CellCenter(temp_CC%phi,U%x,g,1)
+         call square(temp_CC%phi,temp_CC%s)
+         call d%assign(div%x,temp_CC%phi,g,1,1,pad)
 
-         sc = (/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+         call myFace2CellCenter(temp_CC%phi,U%y,g,2)
+         call square(temp_CC%phi,temp_CC%s)
+         call d%assign(div%y,temp_CC%phi,g,1,2,pad)
 
-         allocate(tempAveCC(sc(1),sc(2),sc(3)))
+         call myFace2CellCenter(temp_CC%phi,U%z,g,3)
+         call square(temp_CC%phi,temp_CC%s)
+         call d%assign(div%z,temp_CC%phi,g,1,3,pad)
 
-         psi = real(0.0,cp)
-         ! -------------------------- d/dx (u u_i) --------------------------
-         if (faceDir.eq.1) then
-           call myFace2CellCenter(tempAveCC,u,g,1)
-           call square(tempAveCC,sc)
-           call d%add(psi,tempAveCC,g,1,1,1)
-         else
-           se = (/s(1)+1,s(2),s(3)/)
-           allocate(tempAveE1(se(1),se(2),se(3)))
-           allocate(tempAveE2(se(1),se(2),se(3)))
+         ! d/dxj (uj ui) for i≠j,  note that Ui must be included
+         ! x (y,z edges)
+         call myFace2Edge(temp_E1%y,Ui%x,g,1,2)
+         call myFace2Edge(temp_E2%y, U%z,g,3,2)
+         call myFace2Edge(temp_E1%z,Ui%x,g,1,3)
+         call myFace2Edge(temp_E2%z, U%y,g,2,3)
+         call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
+         call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
+         call d%add(div%x,temp_E1%y,g,1,3,pad)
+         call d%add(div%x,temp_E1%z,g,1,2,pad)
 
-           orthDir = orthogonalDirection(faceDir,1)
-           call myFace2Edge(tempAveE1,u,g,1,orthDir)
-           call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
+         ! y (x,z edges)
+         call myFace2Edge(temp_E1%z,Ui%y,g,2,3)
+         call myFace2Edge(temp_E2%z, U%x,g,1,3)
+         call myFace2Edge(temp_E1%x,Ui%y,g,2,1)
+         call myFace2Edge(temp_E2%x, U%z,g,3,1)
+         call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
+         call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
+         call d%add(div%y,temp_E1%x,g,1,3,pad)
+         call d%add(div%y,temp_E1%z,g,1,1,pad)
 
-           call mult(tempAveE1,tempAveE2,se)
-           call d%add(psi,tempAveE1,g,1,1,1)
-           deallocate(tempAveE1,tempAveE2)
-         endif
-
-         ! -------------------------- d/dy (v u_i) --------------------------
-         if (faceDir.eq.2) then
-           call myFace2CellCenter(tempAveCC,v,g,2)
-           call square(tempAveCC,sc)
-           call d%add(psi,tempAveCC,g,1,2,1)
-         else
-           se = (/s(1),s(2)+1,s(3)/)
-           allocate(tempAveE1(se(1),se(2),se(3)))
-           allocate(tempAveE2(se(1),se(2),se(3)))
-           orthDir = orthogonalDirection(faceDir,2)
-           call myFace2Edge(tempAveE1,v,g,2,orthDir)
-           call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
-
-           call mult(tempAveE1,tempAveE2,se)
-           call d%add(psi,tempAveE1,g,1,2,1) ! upwind from edge to cc
-           deallocate(tempAveE1,tempAveE2)
-         endif
-
-         ! -------------------------- d/dz (w u_i) --------------------------
-         if (faceDir.eq.3) then
-           call myFace2CellCenter(tempAveCC,w,g,3)
-           call square(tempAveCC,sc)
-           call d%add(psi,tempAveCC,g,1,3,1)
-         else
-           se = (/s(1),s(2),s(3)+1/)
-           allocate(tempAveE1(se(1),se(2),se(3)))
-           allocate(tempAveE2(se(1),se(2),se(3)))
-
-           orthDir = orthogonalDirection(faceDir,3)
-           call myFace2Edge(tempAveE1,w,g,3,orthDir)
-           call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
-
-           call mult(tempAveE1,tempAveE2,se)
-           call d%add(psi,tempAveE1,g,1,3,1)
-           deallocate(tempAveE1,tempAveE2)
-         endif
-         deallocate(tempAveCC)
+         ! z (x,y edges)
+         call myFace2Edge(temp_E1%y,Ui%z,g,3,2)
+         call myFace2Edge(temp_E2%y, U%x,g,1,2)
+         call myFace2Edge(temp_E1%x,Ui%z,g,3,1)
+         call myFace2Edge(temp_E2%x, U%y,g,2,1)
+         call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
+         call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
+         call d%add(div%z,temp_E1%x,g,1,2,pad)
+         call d%add(div%z,temp_E1%y,g,1,1,pad)
        end subroutine
 
-       subroutine faceAdvectHybridSF(psi,u,v,w,ui,g,faceDir) ! Finished, maybe improvements
+       subroutine faceAdvectHybrid(div,U,Ui,temp_E1,temp_E2,temp_CC,g)
+         ! Computes
          ! 
-         ! This routine returns the ith component of
+         !           d
+         !  div_i = --- (u_j u_i)
+         !          dx_j
          ! 
-         !                 d/dxj (uj ui)
-         ! or
-         !       d/dx (u ui) + d/dy (v ui) + d/dz (w ui)
+         ! While minimizing interpolations.
+         !           div_i, U, Ui          --> cell face.
+         !           tempE1 and temp_E2    --> cell edge.
+         !           temp_CC               --> cell center.
          ! 
-         ! Where faceDir is defined by ui.
-         ! 
-         ! It would be nice to reduce the number of allocated temps
-         ! This routine does not seem to work when using the total velocity
-         ! (including the walls)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: psi
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w,ui
+         type(vectorField),intent(inout) :: div
+         type(vectorField),intent(in) :: U,ui
+         type(vectorField),intent(inout) :: temp_E1,temp_E2
+         type(scalarField),intent(inout) :: temp_CC
          type(grid),intent(in) :: g
-         integer,intent(in) :: faceDir
-         real(cp),dimension(:,:,:),allocatable :: tempAveCC
-         real(cp),dimension(:,:,:),allocatable :: tempAveE1,tempAveE2
-         integer,dimension(3) :: s
-         integer :: x,y,z,orthDir
-         type(del) :: d
+         type(del) ::d
+         integer :: pad
+         pad = 1 ! Currently running for pad = 1, try pad = 0 next
 
-         s = shape(ui)
-         select case (faceDir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: faceDir must = 1,2,3 in FaceAdvectHybrid.'; stop
-         end select
+         call zeroGhostPoints(div)
+         
+         ! d/dxj (uj ui) for i=j
+         call myFace2CellCenter(temp_CC%phi,U%x,g,1)
+         call square(temp_CC%phi,temp_CC%s)
+         call d%assign(div%x,temp_CC%phi,g,1,1,pad)
 
-         allocate(tempAveCC(s(1)-x,s(2)-y,s(3)-z))
+         call myFace2CellCenter(temp_CC%phi,U%y,g,2)
+         call square(temp_CC%phi,temp_CC%s)
+         call d%assign(div%y,temp_CC%phi,g,1,2,pad)
 
-         psi = real(0.0,cp)
-         ! -------------------------- d/dx (u u_i) --------------------------
-         if (faceDir.eq.1) then
-           call myFace2CellCenter(tempAveCC,u,g,1)
-           tempAveCC = tempAveCC*tempAveCC
-           call d%add(psi,tempAveCC,g,1,1,1)
-         else
-           allocate(tempAveE1(s(1)+1,s(2),s(3)))
-           allocate(tempAveE2(s(1)+1,s(2),s(3)))
+         call myFace2CellCenter(temp_CC%phi,U%z,g,3)
+         call square(temp_CC%phi,temp_CC%s)
+         call d%assign(div%z,temp_CC%phi,g,1,3,pad)
 
-           orthDir = orthogonalDirection(faceDir,1)
-           call myFace2Edge(tempAveE1,u,g,1,orthDir)
-           call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
+         ! d/dxj (uj ui) for i≠j,  note that Ui must be included
+         ! x (y,z edges)
+         call myFace2Edge(temp_E1%y,Ui%x,g,1,2)
+         call myFace2Edge(temp_E2%y, U%z,g,3,2)
+         call myFace2Edge(temp_E1%z,Ui%x,g,1,3)
+         call myFace2Edge(temp_E2%z, U%y,g,2,3)
+         call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
+         call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
+         call d%add(div%x,temp_E1%y,g,1,3,pad)
+         call d%add(div%x,temp_E1%z,g,1,2,pad)
 
-           tempAveE1 = tempAveE1*tempAveE2
-           call d%add(psi,tempAveE1,g,1,1,1)
-           deallocate(tempAveE1,tempAveE2)
-         endif
+         ! y (x,z edges)
+         call myFace2Edge(temp_E1%z,Ui%y,g,2,3)
+         call myFace2Edge(temp_E2%z, U%x,g,1,3)
+         call myFace2Edge(temp_E1%x,Ui%y,g,2,1)
+         call myFace2Edge(temp_E2%x, U%z,g,3,1)
+         call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
+         call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
+         call d%add(div%y,temp_E1%x,g,1,3,pad)
+         call d%add(div%y,temp_E1%z,g,1,1,pad)
 
-         ! -------------------------- d/dy (v u_i) --------------------------
-         if (faceDir.eq.2) then
-           call myFace2CellCenter(tempAveCC,v,g,2)
-           tempAveCC = tempAveCC*tempAveCC
-           call d%add(psi,tempAveCC,g,1,2,1)
-         else
-           allocate(tempAveE1(s(1),s(2)+1,s(3)))
-           allocate(tempAveE2(s(1),s(2)+1,s(3)))
-           orthDir = orthogonalDirection(faceDir,2)
-           call myFace2Edge(tempAveE1,v,g,2,orthDir)
-           call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
-
-           tempAveE1 = tempAveE1*tempAveE2
-           call d%add(psi,tempAveE1,g,1,2,1) ! upwind from edge to cc
-           deallocate(tempAveE1,tempAveE2)
-         endif
-
-         ! -------------------------- d/dz (w u_i) --------------------------
-         if (faceDir.eq.3) then
-           call myFace2CellCenter(tempAveCC,w,g,3)
-           tempAveCC = tempAveCC*tempAveCC
-           call d%add(psi,tempAveCC,g,1,3,1)
-         else
-           allocate(tempAveE1(s(1),s(2),s(3)+1))
-           allocate(tempAveE2(s(1),s(2),s(3)+1))
-
-           orthDir = orthogonalDirection(faceDir,3)
-           call myFace2Edge(tempAveE1,w,g,3,orthDir)
-           call myFace2Edge(tempAveE2,ui,g,faceDir,orthDir)
-
-           tempAveE1 = tempAveE1*tempAveE2
-           call d%add(psi,tempAveE1,g,1,3,1)
-           deallocate(tempAveE1,tempAveE2)
-         endif
-
-         deallocate(tempAveCC)
+         ! z (x,y edges)
+         call myFace2Edge(temp_E1%y,Ui%z,g,3,2)
+         call myFace2Edge(temp_E2%y, U%x,g,1,2)
+         call myFace2Edge(temp_E1%x,Ui%z,g,3,1)
+         call myFace2Edge(temp_E2%x, U%y,g,2,1)
+         call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
+         call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
+         call d%add(div%z,temp_E1%x,g,1,2,pad)
+         call d%add(div%z,temp_E1%y,g,1,1,pad)
        end subroutine
-
 
        ! ************************************ CELL CENTER *************************************
 
@@ -526,26 +473,6 @@
          call faceAdvect(psi%z,U%x,U%y,U%z,Ui%z,g,3)
        end subroutine
 
-       subroutine faceAdvectDonorVF(psi,U,Ui,g)
-         implicit none
-         type(vectorField),intent(inout) :: psi
-         type(vectorField),intent(in) :: U,Ui
-         type(grid),intent(in) :: g
-         call faceAdvectDonor(psi%x,U%x,U%y,U%z,Ui%x,g,1)
-         call faceAdvectDonor(psi%y,U%x,U%y,U%z,Ui%y,g,2)
-         call faceAdvectDonor(psi%z,U%x,U%y,U%z,Ui%z,g,3)
-       end subroutine
-
-       subroutine faceAdvectHybridVF(psi,U,Ui,g)
-         implicit none
-         type(vectorField),intent(inout) :: psi
-         type(vectorField),intent(in) :: U,Ui
-         type(grid),intent(in) :: g
-         call faceAdvectHybrid(psi%x,U%x,U%y,U%z,Ui%x,g,1)
-         call faceAdvectHybrid(psi%y,U%x,U%y,U%z,Ui%y,g,2)
-         call faceAdvectHybrid(psi%z,U%x,U%y,U%z,Ui%z,g,3)
-       end subroutine
-
        subroutine CCBfieldAdvectVF(div,U,B,g)
          implicit none
          type(vectorField),intent(inout) :: div
@@ -565,69 +492,5 @@
          call CCBfieldDiffuse(div%y,B,sigmaInv,g,2)
          call CCBfieldDiffuse(div%z,B,sigmaInv,g,3)
        end subroutine
-
-
-       ! ******************************* OLD... *******************************
-
-       ! subroutine CCBfieldDiffuseSF(div,Bx,By,Bz,sigmaInv,g,dir) ! Finished
-       !   ! There are a lot of local allocatables
-       !   ! 
-       !   ! Returns the ith component of the diffusion term 
-       !   ! in the induction equation:
-       !   ! 
-       !   !   d/dxj [ sigmaInv ( d/dxi (Bj) - d/dxj (Bi) ) ]
-       !   ! 
-       !   ! or
-       !   ! 
-       !   !   d/dx [ sigmaInv ( d/dxi (Bx) - d/dx (Bi) ) ] + 
-       !   !   d/dy [ sigmaInv ( d/dxi (By) - d/dy (Bi) ) ] + 
-       !   !   d/dz [ sigmaInv ( d/dxi (Bz) - d/dz (Bi) ) ]
-       !   ! 
-       !   ! Where d/dxi is the derivative wrt the direction dir.
-       !   ! B is expected to be located at the cell center.
-       !   ! 
-       !   ! For variable mu, Bx,By,Bz must be divided by mu
-       !   ! before calling this routine.
-       !   ! 
-       !   implicit none
-       !   real(cp),dimension(:,:,:),intent(inout) :: div
-       !   real(cp),dimension(:,:,:),intent(in) :: Bx,By,Bz,sigmaInv
-       !   type(grid),intent(in) :: g
-       !   integer,intent(in) :: dir
-       !   real(cp),dimension(:,:,:),allocatable :: temp
-       !   integer,dimension(3) :: s
-       !   s = shape(div)
-       !   div = real(0.0,cp)
-       !   allocate(temp(s(1),s(2),s(3)))
-       !   ! -------------------------- d/dx [ sigmaInv ( d/dxi (Bx/mu) - d/dx (Bi/mu) ) ]
-       !   select case (dir)
-       !   case (2)
-       !   call CCVaryDel(temp,Bx,sigmaInv,g,dir,1); div=div+temp
-       !   call CCVaryDel(temp,By,sigmaInv,g,1,1); div=div-temp
-       !   case (3)
-       !   call CCVaryDel(temp,Bx,sigmaInv,g,dir,1); div=div+temp
-       !   call CCVaryDel(temp,Bz,sigmaInv,g,1,1); div=div-temp
-       !   end select
-       !   ! -------------------------- d/dy [ sigmaInv ( d/dxi (By/mu) - d/dy (Bi/mu) ) ]
-       !   select case (dir)
-       !   case (1)
-       !   call CCVaryDel(temp,By,sigmaInv,g,dir,2); div=div+temp
-       !   call CCVaryDel(temp,Bx,sigmaInv,g,2,2); div=div-temp
-       !   case (3)
-       !   call CCVaryDel(temp,By,sigmaInv,g,dir,2); div=div+temp
-       !   call CCVaryDel(temp,Bz,sigmaInv,g,2,2); div=div-temp
-       !   end select
-       !   ! -------------------------- d/dz [ sigmaInv ( d/dxi (Bz/mu) - d/dz (Bi/mu) ) ]
-       !   select case (dir)
-       !   case (1)
-       !   call CCVaryDel(temp,Bz,sigmaInv,g,dir,3); div=div+temp
-       !   call CCVaryDel(temp,Bx,sigmaInv,g,3,3); div=div-temp
-       !   case (2)
-       !   call CCVaryDel(temp,Bz,sigmaInv,g,dir,3); div=div+temp
-       !   call CCVaryDel(temp,By,sigmaInv,g,3,3); div=div-temp
-       !   end select
-       !   deallocate(temp)
-       ! end subroutine
-
 
        end module

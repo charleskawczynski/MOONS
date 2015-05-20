@@ -7,8 +7,6 @@
 
        private
 
-       public :: BCs
-       public :: init,delete,setGrid
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -24,13 +22,16 @@
        public :: init,delete
        public :: printVectorBCs
        public :: writeVectorBCs
+       public :: setGrid
+       public :: checkVectorBCs
 
        type vectorBCs
          type(BCs) :: x,y,z
        end type
 
-       interface init;       module procedure initVectorBCsCopy;       end interface
-       interface delete;     module procedure deleteVectorBCs;         end interface
+       interface init;      module procedure initVectorBCsCopy;       end interface
+       interface delete;    module procedure deleteVectorBCs;         end interface
+       interface setGrid;   module procedure setVectorBCsGrid;        end interface
 
        contains
 
@@ -49,6 +50,23 @@
          call delete(this%x)
          call delete(this%y)
          call delete(this%z)
+       end subroutine
+
+       subroutine setVectorBCsGrid(this,g)
+         implicit none
+         type(vectorBCs),intent(inout) :: this
+         type(grid),intent(in) :: g
+         call setgrid(this%x,g)
+         call setgrid(this%y,g)
+         call setgrid(this%z,g)
+       end subroutine
+
+       subroutine checkVectorBCs(this)
+         implicit none
+         type(vectorBCs),intent(inout) :: this
+         call checkBCs(this%x)
+         call checkBCs(this%y)
+         call checkBCs(this%z)
        end subroutine
 
        subroutine printVectorBCs(this,namex,namey,namez)

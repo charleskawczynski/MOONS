@@ -2,6 +2,7 @@
        use IO_vectorFields_mod
        use IO_vectorBase_mod
        use grid_mod
+       use vectorField_mod
        implicit none
 
        private
@@ -43,20 +44,20 @@
 
        contains
 
-       subroutine initBfield(Bx,By,Bz,B0x,B0y,B0z,g,dir)
+       subroutine initBfield(B,B0,g,dir)
          implicit none
+         type(vectorField),intent(inout) :: B,B0
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz,B0x,B0y,B0z
          if (restartB) then
-           call initRestartB(Bx,By,Bz,g,dir)
-           call initRestartB0(B0x,B0y,B0z,g,dir)
-           ! call initPreDefinedB0(B0x,B0y,B0z,g)
+           call initRestartB(B%x,B%y,B%z,g,dir)
+           call initRestartB0(B0%x,B0%y,B0%z,g,dir)
+           ! call initPreDefinedB0(B0%x,B0%y,B0%z,g)
          elseif (preDefinedB_ICs.ne.0) then
-           call initZeroField(Bx,By,Bz)
-           call initPreDefinedB0(B0x,B0y,B0z,g)
+           call initZeroField(B%x,B%y,B%z)
+           call initPreDefinedB0(B0%x,B0%y,B0%z,g)
          else
-           call initUserBfield(Bx,By,Bz,B0x,B0y,B0z,g)
+           call initUserBfield(B%x,B%y,B%z,B0%x,B0%y,B0%z,g)
          endif
        end subroutine
 
