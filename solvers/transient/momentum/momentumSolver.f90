@@ -559,6 +559,33 @@
              f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
              f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
            endif
+         case (-1)
+           if (s(2).eq.g%c(2)%sn) then
+             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
+             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+           endif
+           if (s(3).eq.g%c(3)%sn) then
+             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
+             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+           endif
+         case (-2)
+           if (s(1).eq.g%c(1)%sn) then
+             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
+             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+           endif
+           if (s(3).eq.g%c(3)%sn) then
+             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
+             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+           endif
+         case (-3)
+           if (s(1).eq.g%c(1)%sn) then
+             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
+             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+           endif
+           if (s(2).eq.g%c(2)%sn) then
+             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
+             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+           endif
          case default
            stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
          end select
@@ -568,9 +595,9 @@
          implicit none
          type(vectorField),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,0)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,0)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,0)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,-1)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,-1)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,-1)
        end subroutine
 
        end module

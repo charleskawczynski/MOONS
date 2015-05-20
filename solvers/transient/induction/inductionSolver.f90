@@ -449,7 +449,7 @@
          case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,g)
          case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,g)
          case (4); call lowRemCTmethod(ind,g)
-         case (5); call finiteRemCTmethod(ind,ind%U_cct,g)
+         case (5); call finiteRemCTmethod(ind,g)
          case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,g,ss_MHD)
          case (7); call lowRemMultigrid(ind,ind%U_cct,g,ss_MHD)
          case (8); call lowRem_JacksExperiment(ind,ind%U_cct,g)
@@ -640,9 +640,7 @@
            call curl(ind%J,ind%temp_F,g)
 
            ! Compute fluxes of u cross B0
-           call cross(ind%temp_CC,ind%U_cct,ind%B0)
-           call myCellCenter2Edge(ind%E,ind%temp_CC,g)
-           ! call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g)
+           call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g)
 
            ! E = j/sig - uxB
            ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
@@ -715,7 +713,7 @@
          enddo
        end subroutine
 
-       subroutine finiteRemCTmethod(ind,U,g)
+       subroutine finiteRemCTmethod(ind,g)
          ! finiteRemCTmethod solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
@@ -727,7 +725,6 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
 
          ! Compute current from appropriate fluxes:
@@ -738,10 +735,10 @@
 
          ! Compute fluxes of u cross (B-B0)
          call add(ind%B,ind%B0)
-         call cross(ind%temp_CC,U,ind%B)
+         ! call cross(ind%Bstar,ind%U_cct,ind%B)
+         ! call myCellCenter2Edge(ind%E,ind%Bstar,g)
+         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B,g)
          call subtract(ind%B,ind%B0)
-
-         call myCellCenter2Edge(ind%E,ind%temp_CC,g)
 
          ! E = 1/Rem*j/sig - uxB
          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
@@ -762,9 +759,12 @@
          call subtract(ind%B,ind%temp_CC)
 
          ! Add time changing applied magnetic field
+         ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
+         ! ind%temp_CC%y = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
+         ! ind%temp_CC%z = real(0.0,cp)
+
          ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ind%temp_CC%y = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ! ind%temp_CC%y = real(0.0,cp)
+         ind%temp_CC%y = real(0.0,cp)
          ind%temp_CC%z = real(0.0,cp)
          call subtract(ind%B,ind%temp_CC)
 
@@ -1065,43 +1065,46 @@
          type(vectorField),intent(in) :: U_fi ! Raw momentum velocity
          type(grid),intent(in) :: g ! Momentum grid
          type(vectorField) :: temp
-         integer :: usedVelocity
+         integer,dimension(3) :: Ni
+         integer :: embedType,dir
+         logical,dimension(4) :: usedVelocity
 
-         usedVelocity = 2
+         usedVelocity = (/.true.,.true.,.false.,.false./)
 
-         select case(usedVelocity)
-         case (1) ! Edge - 2 interpolations
+         if (usedVelocity(1)) then ! Edge - 2 interpolations
            call allocateX(temp,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
            call allocateY(temp,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
            call allocateZ(temp,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
            call myFace2Edge(temp%x,U_fi%x,g,1,1)
            call myFace2Edge(temp%y,U_fi%x,g,1,2)
            call myFace2Edge(temp%z,U_fi%x,g,1,3)
-           call embedEdge(ind%U_E,temp,Nin1,Nin2,Nice1,Nice2,g)
+           call embedEdge(ind%U_E,temp,Nin1,Nin2,Nice1,Nice2,Nici1,Nici2,g)
            call myFace2Edge(temp%x,U_fi%y,g,2,1)
            call myFace2Edge(temp%y,U_fi%y,g,2,2)
            call myFace2Edge(temp%z,U_fi%y,g,2,3)
-           call embedEdge(ind%V_E,temp,Nin1,Nin2,Nice1,Nice2,g)
+           call embedEdge(ind%V_E,temp,Nin1,Nin2,Nice1,Nice2,Nici1,Nici2,g)
            call myFace2Edge(temp%x,U_fi%z,g,3,1)
            call myFace2Edge(temp%y,U_fi%z,g,3,2)
            call myFace2Edge(temp%z,U_fi%z,g,3,3)
-           call embedEdge(ind%W_E,temp,Nin1,Nin2,Nice1,Nice2,g)
+           call embedEdge(ind%W_E,temp,Nin1,Nin2,Nice1,Nice2,Nici1,Nici2,g)
            call delete(temp)
+         endif
 
-         case (2) ! CC - 1 interpolation
+         if (usedVelocity(2)) then ! CC - 1 interpolation
            call allocateX(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
            call allocateY(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
            call allocateZ(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
            call myFace2CellCenter(temp%x,U_fi%x,g,1)
            call myFace2CellCenter(temp%y,U_fi%y,g,2)
            call myFace2CellCenter(temp%z,U_fi%z,g,3)
-           call embedCC(ind%U_cct,temp,Nice1,Nice2,g)
+           call embedCC(ind%U_cct,temp,Nice1,Nice2,Nici1,Nici2,g)
            call delete(temp)
+         endif
 
-         case (3) ! Face - no interpolations
+         if (usedVelocity(3)) then ! Face - no interpolations
            call embedFace(ind%U_Ft,U_Fi,Nin1,Nin2,Nice1,Nice2,g)
-         case (4)
-           ! ! Node - 3 interpolations (not needed for any solvers)
+         endif
+         ! if (usedVelocity(4)) then ! Node - 3 interpolations (not needed for any solvers)
            ! call allocateX(temp,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
            ! call allocateY(temp,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
            ! call allocateZ(temp,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
@@ -1118,9 +1121,7 @@
            ! call myFace2Node(temp%z,U_fi%z,g,3)
            ! call embedNode(ind%W_N,temp,Nin1,Nin2,g)
            ! call delete(temp)
-         case default
-         stop 'Error: usedVelocity must = 1,2,3,4 in embedVelocity in inductionSolver.f90'
-         end select
+         ! endif
        end subroutine
 
        subroutine embedFace(U_Ft,U_Fi,Nn1,Nn2,Ne1,Ne2,g)
@@ -1137,7 +1138,16 @@
          U_Fi%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
        end subroutine
 
-       subroutine embedEdge(U_Et,U_Ei,Nn1,Nn2,Ne1,Ne2,g)
+       subroutine embedEdge(U_Et,U_Ei,Nn1,Nn2,Ne1,Ne2,Ni1,Ni2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_Et
+         type(vectorField),intent(in) :: U_Ei
+         integer,dimension(3),intent(in) :: Nn1,Nn2,Ne1,Ne2,Ni1,Ni2
+         type(grid),intent(in) :: g
+         call embedEdgeDir(U_Et,U_Ei,Nn1,Nn2,Ne1,Ne2,Ni1,Ni2,g,1)
+       end subroutine
+
+       subroutine embedEdgeExclude(U_Et,U_Ei,Nn1,Nn2,Ne1,Ne2,g)
          implicit none
          type(vectorField),intent(inout) :: U_Et
          type(vectorField),intent(in) :: U_Ei
@@ -1151,18 +1161,129 @@
          U_Ei%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
        end subroutine
 
-       subroutine embedCC(U_cct,U_cci,Ne1,Ne2,g)
+       subroutine embedEdgeInclude(U_Et,U_Ei,Nn1,Nn2,Ni1,Ni2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_Et
+         type(vectorField),intent(in) :: U_Ei
+         integer,dimension(3),intent(in) :: Nn1,Nn2,Ni1,Ni2
+         type(grid),intent(in) :: g
+         U_Et%x(Ni1(1):Ni2(1),Nn1(2):Nn2(2),Nn1(3):Nn2(3)) = U_Ei%x(:,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         U_Et%y(Nn1(1):Nn2(1),Ni1(2):Ni2(2),Nn1(3):Nn2(3)) = U_Ei%y(2:g%c(1)%sn-1,:,2:g%c(3)%sn-1)
+         U_Et%z(Nn1(1):Nn2(1),Nn1(2):Nn2(2),Ni1(3):Ni2(3)) = U_Ei%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,:)
+       end subroutine
+
+       subroutine embedEdgeDir(U_Et,U_Ei,Nn1,Nn2,Ne1,Ne2,Ni1,Ni2,g,dir)
+         implicit none
+         type(vectorField),intent(inout) :: U_Et
+         type(vectorField),intent(in) :: U_Ei
+         integer,dimension(3),intent(in) :: Nn1,Nn2,Ne1,Ne2,Ni1,Ni2
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir
+         select case(dir)
+         case (1);U_Et%x(Ni1(1):Ni2(1),Nn1(2):Nn2(2),Nn1(3):Nn2(3)) = &
+                  U_Ei%x(:,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+                  U_Et%y(Nn1(1)-1:Nn2(1)+1,Ne1(2):Ne2(2),Nn1(3):Nn2(3)) = &
+                  U_Ei%y(:,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+                  U_Et%z(Nn1(1)-1:Nn2(1)+1,Nn1(2):Nn2(2),Ne1(3):Ne2(3)) = &
+                  U_Ei%z(:,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+         case (2);U_Et%x(Ne1(1):Ne2(1),Nn1(2)-1:Nn2(2)+1,Nn1(3):Nn2(3)) = &
+                  U_Ei%x(2:g%c(1)%sc-1,:,2:g%c(3)%sn-1)
+                  U_Et%y(Nn1(1):Nn2(1),Ni1(2):Ni2(2),Nn1(3):Nn2(3)) = &
+                  U_Ei%y(2:g%c(1)%sn-1,:,2:g%c(3)%sn-1)
+                  U_Et%z(Nn1(1):Nn2(1),Nn1(2)-1:Nn2(2)+1,Ne1(3):Ne2(3)) = &
+                  U_Ei%z(2:g%c(1)%sn-1,:,2:g%c(3)%sc-1)
+         case (3);U_Et%x(Ne1(1):Ne2(1),Nn1(2):Nn2(2),Nn1(3)-1:Nn2(3)+1) = &
+                  U_Ei%x(2:g%c(1)%sc-1,2:g%c(2)%sn-1,:)
+                  U_Et%y(Nn1(1):Nn2(1),Ne1(2):Ne2(2),Nn1(3)-1:Nn2(3)+1) = &
+                  U_Ei%y(2:g%c(1)%sn-1,2:g%c(2)%sc-1,:)
+                  U_Et%z(Nn1(1):Nn2(1),Nn1(2):Nn2(2),Ni1(3):Ni2(3)) = &
+                  U_Ei%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,:)
+         case default
+         stop 'Error: dir must = 1,2,3 in embedEdgeDir in inductionSolver.f90'
+         end select
+       end subroutine
+
+       subroutine embedCC(U_cct,U_cci,Ne1,Ne2,Ni1,Ni2,g)
          implicit none
          type(vectorField),intent(inout) :: U_cct
          type(vectorField),intent(in) :: U_cci
-         integer,dimension(3),intent(in) :: Ne1,Ne2
+         integer,dimension(3),intent(in) :: Ne1,Ne2,Ni1,Ni2
          type(grid),intent(in) :: g
+         integer,dimension(3) :: Ni
+         integer :: dir,embedType
+         Ni = (/g%c(1)%sc-1,g%c(2)%sc-1,g%c(3)%sc-1/) ! minus fictitious cells
+         embedType = 1
+         dir = 1
+         call embedCCDir(U_cct%x,U_cci%x,g,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call embedCCDir(U_cct%y,U_cci%y,g,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
+         call embedCCDir(U_cct%z,U_cci%z,g,Ni,Nici1,Nici2,Nice1,Nice2,embedType,dir)
          U_cct%x(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
          U_cci%x(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
          U_cct%y(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
          U_cci%y(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
          U_cct%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
          U_cci%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+       end subroutine
+
+       subroutine embedCCExclude(U_cct,U_cci,Ne1,Ne2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_cct
+         type(vectorField),intent(in) :: U_cci
+         integer,dimension(3),intent(in) :: Ne1,Ne2
+         type(grid),intent(in) :: g
+         integer,dimension(3) :: Ni
+         Ni = (/g%c(1)%sc-1,g%c(2)%sc-1,g%c(3)%sc-1/) ! minus fictitious cells
+         U_cct%x(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_cci%x(2:Ni(1),2:Ni(2),2:Ni(3))
+         U_cct%y(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_cci%y(2:Ni(1),2:Ni(2),2:Ni(3))
+         U_cct%z(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = &
+         U_cci%z(2:Ni(1),2:Ni(2),2:Ni(3))
+       end subroutine
+
+       subroutine embedCCInclude(U_cct,U_cci,Ni1,Ni2,g)
+         implicit none
+         type(vectorField),intent(inout) :: U_cct
+         type(vectorField),intent(in) :: U_cci
+         integer,dimension(3),intent(in) :: Ni1,Ni2
+         type(grid),intent(in) :: g
+         U_cct%x(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci%x
+         U_cct%y(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci%y
+         U_cct%z(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci%z
+       end subroutine
+
+       subroutine embedCCDir(U_cct,U_cci,g,Ni,Ni1,Ni2,Ne1,Ne2,embedType,dir)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: U_cct
+         real(cp),dimension(:,:,:),intent(in) :: U_cci
+         type(grid),intent(in) :: g
+         integer,dimension(3),intent(in) :: Ni,Ni1,Ni2,Ne1,Ne2
+         integer,intent(in) :: embedType,dir
+
+         select case(embedType) ! Depends on method used to solve B and BCs for U
+
+         case (1) ! Good for LDC or when U is zero outside domain
+           ! (exclude all fictitious cells)
+           U_cct(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = U_cci(2:Ni(1),2:Ni(2),2:Ni(3))
+
+         case (2) ! Good for duct flows
+           ! Include along dir (Duct flow - exclude except inlet / outlet)
+
+           select case (dir)
+           case (1); U_cct(Ni1(1):Ni2(1),Ne1(2):Ne2(2),Ne1(3):Ne2(3)) = U_cci(:,2:Ni(2),2:Ni(3))
+           case (2); U_cct(Ne1(1):Ne2(1),Ni1(2):Ni2(2),Ne1(3):Ne2(3)) = U_cci(2:Ni(1),:,2:Ni(3))
+           case (3); U_cct(Ne1(1):Ne2(1),Ne1(2):Ne2(2),Ni1(3):Ni2(3)) = U_cci(2:Ni(1),2:Ni(2),:)
+           case default
+           stop 'Error: dir must = 1,2,3'
+           end select
+
+         case (3) ! Good for when U is NOT zero outside domain (neumann BCs for U)
+           ! (including all fictitious cells)
+           U_cct(Ni1(1):Ni2(1),Ni1(2):Ni2(2),Ni1(3):Ni2(3)) = U_cci
+
+         case default
+         stop 'Error: embedType must = 1,2,3'
+         end select
        end subroutine
 
        subroutine embedN(U_nt,U_ni,Nn1,Nn2,g)

@@ -81,7 +81,7 @@
        ! benchmarkCase 3 (Duct: Purely Hydrodynamic / Insulating)
        ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
        ! benchmarkCase 4 (Duct: Conducting)
-       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
+       integer,dimension(3),parameter :: Ni = (/2,64,64/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
 
        ! benchmarkCase 50 (Re=2000)
        ! integer,dimension(3),parameter :: Ni = 105, Nwtop = 0, Nwbot = 0
@@ -98,7 +98,7 @@
        ! integer,dimension(3),parameter :: Ni = (/101,101,41/), Nwtop = 0, Nwbot = 0
 
        ! benchmarkCase = 102
-       integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
+       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
        ! integer,dimension(3),parameter :: Ni = 48, Nwtop = 8, Nwbot = 8 ! For multigrid
        ! integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
        ! benchmarkCase = 103
@@ -258,7 +258,7 @@
          case (3); hmin = -one; hmax = one ! for xyz
          hmin(1) = zero; hmax(1) = real(30.0,cp)
          case (4); hmin = -one; hmax = one ! for xyz
-         hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
+         hmin(1) = real(-0.5,cp); hmax(1) = real(0.5,cp)
 
          case (50); hmin = -oneHalf; hmax = oneHalf ! for xyz
          case (51); hmin = -oneHalf; hmax = oneHalf ! for xyz
@@ -294,7 +294,8 @@
          hmin(1) = real(0.0,cp); hmax(1) = real(10.0,cp)
 
          case (1003); hmin = -one; hmax = one ! for xyz
-         hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
+         hmin(1) = real(-0.5,cp); hmax(1) = real(0.5,cp)
+         ! hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
          ! hmin(1) = real(-5.0,cp); hmax(1) = real(5.0,cp)
 
          case (1004); hmin = zero; hmax = one ! for xyz

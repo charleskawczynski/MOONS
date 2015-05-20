@@ -13,7 +13,7 @@
 
        private
 
-       integer,parameter :: preDefinedB_BCs = 1
+       integer,parameter :: preDefinedB_BCs = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0

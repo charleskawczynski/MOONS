@@ -13,7 +13,7 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 1
+       integer,parameter :: preDefinedU_BCs = 6
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity
        !                                      2 : No Slip Cavity
