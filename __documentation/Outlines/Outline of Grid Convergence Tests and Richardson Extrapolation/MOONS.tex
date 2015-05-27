@@ -45,11 +45,85 @@ University of California Los Angeles, USA\\
 
 \section{Outline of Grid Convergence Tests and Richardson Extrapolation}
 
+Let the error to a lid driven cavity problem for a grid size $\Delta x$ be
 
+\begin{equation}
+	\varepsilon_{\Delta x} = |u^{\Delta x} - u^{exact}|
+\end{equation}
 
+This error is equal to some constant times the grid spacing to some power plus higher order terms. This constant is the same for any discretization for the given solution method.
 
+\begin{equation}
+	\varepsilon_{\Delta x} = |u^{\Delta x} - u^{exact}| = C \Delta x^p
+\end{equation}
 
+Now, suppose we use a refined grid sizes $\Delta x/r_1$ and $\Delta x/r_2$, we have
 
+\begin{equation}
+	\varepsilon_{\Delta x/r_1} = |u^{\Delta x/r_1} - u^{exact}| = C (\Delta x/r_1)^p
+\end{equation}
+\begin{equation}
+	\varepsilon_{\Delta x/r_2} = |u^{\Delta x/r_2} - u^{exact}| = C (\Delta x/r_2)^p
+\end{equation}
 
+Here we have 6 equations, and 6 unknowns:
+
+\begin{equation}
+	u^{exact}, 
+	\varepsilon_{\Delta x} , 
+	\varepsilon_{\Delta x/r_1} , 
+	\varepsilon_{\Delta x/r_2} , 
+	p , 
+	C
+\end{equation}
+
+Dividing the two errors, we have
+
+\begin{equation}
+	\frac{\varepsilon_{\Delta x}}{\varepsilon_{\Delta x/2}}
+	=
+	\frac{C \Delta x^p}{C (\Delta x/2)^p}
+	=
+	2^p
+\end{equation}
+
+In general, we may divide by the error with grid spacing $\Delta x/r$ where $r$ is some positive integer. Which results in
+
+\begin{equation}
+	\frac{\varepsilon_{\Delta x}}{\varepsilon_{\Delta x/r}}
+	=
+	\frac{C \Delta x^p}{C (\Delta x/r)^p}
+	=
+	r^p
+\end{equation}
+
+Therefore, we may estimate the order of accuracy as
+
+\begin{equation}
+	p
+	=
+	\frac
+	{
+	\ln{\varepsilon_{\Delta x}}
+	-
+	\ln{\varepsilon_{\Delta x/r}}
+	}
+	{
+	\ln{\Delta x}
+	-
+	\ln{\Delta x/r}
+	}
+	=
+	\frac{\ln{\frac{\varepsilon_{\Delta x}}{\varepsilon_{\Delta x/r}}}}
+	{\ln r}
+\end{equation}
+
+Since we may not know the exact solution, we may write the errors as
+
+\begin{equation}
+	\varepsilon_{\Delta x}
+	=
+	|u^{\Delta x} - u^{exact}|
+\end{equation}
 
 \end{document}

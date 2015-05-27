@@ -5,6 +5,7 @@
       private
       
       public :: writeTecPlotHeader
+      public :: writeTecPlotHeaderTransient
 
       interface writeTecPlotHeader
         module procedure writeTecPlotHeader0DField
@@ -15,6 +16,11 @@
 
         module procedure writeTecPlotHeader2DVectorField
         module procedure writeTecPlotHeader3DVectorField
+      end interface
+
+      interface writeTecPlotHeaderTransient
+        module procedure writeTecPlotHeader2DVectorFieldTransient
+        module procedure writeTecPlotHeader2DScalarFieldTransient
       end interface
 
       contains
@@ -54,6 +60,25 @@
         write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(sx))))) // & 
                 ',A6,A'    // int2str(len(trim(adjustl(int2str(sy))))) // & 
                 ',A20)') 'ZONE ', &
+                ', I = ',  trim(adjustl(int2str(sx))), &
+                ', J = ',trim(adjustl(int2str(sy))), &
+                ' DATAPACKING = POINT'
+      end subroutine
+
+      subroutine writeTecPlotHeader2DScalarFieldTransient(u,name,sx,sy,t)
+        implicit none
+        character(len=*),intent(in) :: name
+        integer,intent(in) :: sx,sy,u,t
+        integer :: sn
+        sn = len(name)
+
+        write(u,'(A'//int2Str(sn+26)//')') 'TITLE = "2D Scalar Field ' // trim(adjustl(name)) // '"'
+        write(u,'(A'//int2Str(sn+22)//')') 'VARIABLES = "X","Y",'//'"'//trim(adjustl(name))//'"'
+        write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(t))))) // & 
+                ',A,A6,A'    // int2str(len(trim(adjustl(int2str(sx))))) // & 
+                ',A6,A'    // int2str(len(trim(adjustl(int2str(sy))))) // & 
+                ',A20)') 'ZONE ', &
+                ', T ="',  trim(adjustl(int2str(t))),'"', &
                 ', I = ',  trim(adjustl(int2str(sx))), &
                 ', J = ',trim(adjustl(int2str(sy))), &
                 ' DATAPACKING = POINT'
@@ -100,6 +125,28 @@
         write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(sx))))) // & 
                 ',A6,A'    // int2str(len(trim(adjustl(int2str(sy))))) // & 
                 ',A20)') 'ZONE ', &
+                ', I = ',  trim(adjustl(int2str(sx))), &
+                ', J = ',trim(adjustl(int2str(sy))), &
+                ' DATAPACKING = POINT'
+      end subroutine
+
+      subroutine writeTecPlotHeader2DVectorFieldTransient(u,namex,namey,sx,sy,t)
+        implicit none
+        character(len=*),intent(in) :: namex,namey
+        integer,intent(in) :: sx,sy,u,t
+        integer :: snx,sny
+        snx = len(namex); sny = len(namey);
+
+        write(u,'(A'//int2Str(snx+sny+27)//')') 'TITLE = "2D Vector Field '  & 
+        // trim(adjustl(namex)) //','// trim(adjustl(namey)) // '"'
+        write(u,'(A'//int2Str(snx+sny+25)//')') 'VARIABLES = "X","Y",' & 
+        //'"'//trim(adjustl(namex))//'",'//'"'//trim(adjustl(namey))//'"'
+
+        write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(t))))) // & 
+                ',A,A6,A'    // int2str(len(trim(adjustl(int2str(sx))))) // & 
+                ',A6,A'    // int2str(len(trim(adjustl(int2str(sy))))) // & 
+                ',A20)') 'ZONE ', &
+                ', T ="',  trim(adjustl(int2str(t))),'"', &
                 ', I = ',  trim(adjustl(int2str(sx))), &
                 ', J = ',trim(adjustl(int2str(sy))), &
                 ' DATAPACKING = POINT'

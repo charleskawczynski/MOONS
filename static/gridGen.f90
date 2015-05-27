@@ -58,6 +58,7 @@
          real(cp),dimension(:),allocatable :: temp
          integer :: s
          s = gg%g%c(dir)%sn
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to append'
          allocate(temp(s))
          temp = gg%g%c(dir)%hn
          call init(gg%g,(/temp,h/),dir,2)
@@ -73,6 +74,7 @@
          real(cp),dimension(:),allocatable :: temp
          integer :: s
          s = gg%g%c(dir)%sn
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend'
          allocate(temp(s))
          temp = gg%g%c(dir)%hn
          call init(gg%g,(/h,temp/),dir,2)

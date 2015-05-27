@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of the Magnetic Energy Equation}
+The dimensionless induction equation is
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+Multiplying by $B_i$, we have
+
+\begin{equation}
+	B_i
+	\frac{\partial B_i}{\partial t} 
+	+ B_i\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ B_i \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+
+
+
+
+
+\end{document}

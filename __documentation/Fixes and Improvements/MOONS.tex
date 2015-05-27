@@ -45,7 +45,42 @@ University of California Los Angeles, USA\\
 
 \section{Now}
 
+- Start / Develop document for periodicDuct1BfieldComponent
+
+- Look at KE equation and Bfield energy equation / read literature
+
+- Read more about benchmarking
+
+- Develop routine for Richardson Extrapolation
+
+- Look in literature for interface conditions for current and BCs for bfield
+
+- Figure out how to view time in tecplot as simulation runs
+
+\section{Next}
+
+- Big concerns include 
+	- diff/adv terms on wall coincident boundaries
+	- benchmarking unsteady flow problems
+	- Asymmetry from BMC\_1003 with movie
+
+- Attempts to fix asymmetry
+	- look into (interp.f90 / stencils.f90 / applyBCs.f90 / embedExtract.f90)
+	- Try again using fine grid / uniform grid
+
+- Consider different time marching method (RK4 maybe)
+
+- Consider trying to assume separable with space and time, B induced = Bstar exp(-omega t). Exponents may cancel. Velocity will not be trivial though. But perhaps at early times motion is due to diffusion only.
+
+- Paper by Priede - Linear stability on Hunt flow ("not easy")
+
+- First step is descriptive - phases (linear, non-linear, decay)
+
+- Plot movie / Identify regimes / sweep through Rem / Compute KE and KB equations and plot norms of terms vs time
+
 - Look at diffusion term on boundaries
+
+- Update matlab script to plot KU and KB
 
 - Work on analysis for simple PD
 

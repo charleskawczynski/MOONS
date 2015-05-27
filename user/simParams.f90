@@ -19,8 +19,8 @@
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .true.    ! (T/F)
-       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridFluid       = .false.    ! (T/F)
+       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
@@ -182,8 +182,9 @@
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
-       integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
-       integer :: nskip_print                = 10     ! Printed data (cheap)
+       integer :: nskip_exportTransientFull  = 50     ! Very Expensive
+       integer :: nskip_exportErrors         = 5000    ! Divergences / Residuals (expensive)
+       integer :: nskip_print                = 50     ! Printed data (cheap)
        ! integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
 
        end module

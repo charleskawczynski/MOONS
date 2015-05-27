@@ -211,9 +211,18 @@
           p%i = i(direction)
           p%dir = direction
 
+          ! select case (direction)
+          ! case (1)
+          ! case (2)
+          ! case (3)
+          ! case default
+          ! stop 'Error: direction must = 1,2,3 in initAvePlaneErrorProbe in probe_derived.f90'
+          ! end select
           ! DANGER: this passes nonsense to directions orthogonal to 'direction':
-          call defineH((/i(direction),i(direction),i(direction)/),g,s,h1)
-          call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),g,s,h2)
+          call defineH(i,g,s,h1)
+          call defineH(i+1,g,s,h2)
+          ! call defineH((/i(direction),i(direction),i(direction)/),g,s,h1)
+          ! call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),g,s,h2)
 
           ! Define location based on average:
           p%h = real(0.5,cp)*(h1(direction) + h2(direction))

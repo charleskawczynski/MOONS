@@ -19,7 +19,10 @@
 
       private
       
-      public :: writeKillSwitchToFile,readKillSwitchFromFile,readLastStepFromFile,writeLastStepToFile
+      public :: writeSwitchToFile
+      public :: readSwitchFromFile
+      public :: readLastStepFromFile
+      public :: writeLastStepToFile
 
       logical,parameter :: headerTecplot = .true.
 
@@ -43,7 +46,7 @@
         call closeAndMessage(un,name,dir)
       end subroutine
 
-      subroutine writeKillSwitchToFile(ks,dir,name)
+      subroutine writeSwitchToFile(ks,dir,name)
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: ks
         integer :: un
@@ -52,7 +55,7 @@
         call closeAndMessage(un,name,dir)
       end subroutine
 
-      subroutine readKillSwitchFromFile(ks,dir,name)
+      subroutine readSwitchFromFile(ks,dir,name)
         character(len=*),intent(in) :: dir,name
         logical,intent(inout) :: ks
         integer :: un

@@ -183,8 +183,8 @@
       function int2Str(i) result(s)
         implicit none
         integer,intent(in) :: i
-        character(len=5) :: s
-        write(s,'(I5)') i
+        character(len=10) :: s
+        write(s,'(I10.10)') i
         s = trim(adjustl(s))
       end function
 

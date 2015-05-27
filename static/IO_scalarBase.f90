@@ -81,7 +81,7 @@
         u = newAndOpen(dir,name)
         
         if (s(1).ne.sx.or.s(2).ne.sy.or.s(3).ne.sz) then
-          write(*,*) 'Mismatch of sizes in ' // trim(adjustl(name)); stop
+          write(*,*) 'Error: IO Mismatch of sizes in ' // trim(adjustl(name)); stop
         endif
 
         if (present(headerTecplotTemp)) then
@@ -173,9 +173,14 @@
         character(len=*),intent(in) :: dir,name
         real(cp),dimension(:),intent(in) :: x,arr
         logical,intent(in),optional :: headerTecplotTemp
-        integer :: u,i,sx
+        integer :: u,i,sx,s
         sx = size(x)
         u = newAndOpen(dir,name)
+        s = size(arr)
+
+        if (s.ne.sx) then
+          write(*,*) 'Error: IO Mismatch of sizes in ' // trim(adjustl(name)); stop
+        endif
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx)
@@ -189,20 +194,21 @@
         call closeAndMessage(u,name,dir)
       end subroutine
 
-      subroutine write2DFieldToFile(x,y,arr,dir,name,headerTecplotTemp)
+      subroutine write2DFieldToFile(x,y,arr,dir,name,ext,n,headerTecplotTemp)
         implicit none
-        character(len=*),intent(in) :: dir,name
+        character(len=*),intent(in) :: dir,name,ext
         real(cp),dimension(:),intent(in) :: x,y
         real(cp),dimension(:,:),intent(in) :: arr
+        integer,intent(in) :: n
         logical,intent(in),optional :: headerTecplotTemp
         integer u,i,j,sx,sy
         sx = size(x); sy = size(y)
-        u = newAndOpen(dir,name)
+        u = newAndOpen(dir,trim(adjustl(name))//trim(adjustl(ext)))
 
         if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy)
+          if (headerTecplotTemp) call writeTecPlotHeaderTransient(u,name,sx,sy,n)
         else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy)
+          if (headerTecplot) call writeTecPlotHeaderTransient(u,name,sx,sy,n)
         endif
 
         do j = 1,sy
@@ -210,7 +216,7 @@
             write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
           enddo
         enddo
-        call closeAndMessage(u,name,dir)
+        call closeAndMessage(u,trim(adjustl(name))//trim(adjustl(ext)),dir)
       end subroutine
 
       end module

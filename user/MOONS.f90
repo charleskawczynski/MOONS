@@ -243,7 +243,8 @@
          case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Hunt flow
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Mimicking PD
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**1 ! Mimicking PD
-         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Mimicking PD
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**6 ! Mimicking PD
 
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Salah
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
@@ -263,8 +264,11 @@
          call makeDir(dir)
          call makeDir(dir,'Tfield')
          call makeDir(dir,'Ufield')
+         call makeDir(dir,'Ufield','\transient')
          call makeDir(dir,'Bfield')
+         call makeDir(dir,'Bfield','\transient')
          call makeDir(dir,'Jfield')
+         call makeDir(dir,'Jfield','\transient')
          call makeDir(dir,'material')
          call makeDir(dir,'parameters')
 
@@ -362,7 +366,8 @@
          ! endif
          ! n_mhd = 0
 
-         call writeKillSwitchToFile(.true.,dir//'parameters/','killSwitch')
+         call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
+         call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
 
          ! ******************* SET MHD SOLVER SETTINGS *******************
          call init(ss_MHD)
@@ -378,6 +383,14 @@
          ! endif
 
          ! ********************* SET B SOLVER SETTINGS *******************
+
+         ! do n_mhd=1,5*10**6
+         !     call exportTransientFull(mom,mom%g,dir)
+         !     call exportTransientFull(ind,ind%g,dir)
+         !     ind%nstep = ind%nstep + 1000
+         !     mom%nstep = mom%nstep + 1000
+         ! enddo
+
 
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
 

@@ -54,7 +54,7 @@
          ! *********************** LOCAL VARIABLES **********************
          real(cp) :: Ha
          integer :: n_mhd
-         logical :: continueLoop
+         logical :: continueLoop,exportNow
          ! **************************************************************
 
          call computationInProgress(time)
@@ -62,9 +62,11 @@
 
          ! ********************** PREP LOOP ******************************
          continueLoop = .true.
+         exportNow = .false.
          n_mhd = getIteration(ss_MHD)
 
-         call writeKillSwitchToFile(.true.,dir//'parameters/','killSwitch')
+         call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
+         call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
 
          ! ********** SET MOMENTUM SOURCE TERMS TO ZERO ******************
          call assign(mom%F,zero)
@@ -98,6 +100,7 @@
              ! call embedVelocity(ind,mom%U,mom%g)
              call solve(ind,mom%U,mom%g,ind%g,ss_MHD)
              call computeKineticEnergy(mom,ind%U_cct,Nici1,Nici2,ss_MHD)
+             call compute_stabilityParams(mom,ss_MHD)
              call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
              call computeMagneticEnergy(ind,ind%B,ind%B0,Nici1,Nici2,mom%g,ss_MHD)
            endif
@@ -106,6 +109,8 @@
            if (getExportErrors(ss_MHD)) then
              call computeDivergence(mom,mom%g)
              call computeDivergence(ind,ind%g)
+             call exportTransientFull(mom,mom%g,dir)
+             call exportTransientFull(ind,ind%g,dir)
            endif
 
            ! ************************** COMPUTE J CROSS B *******************************
@@ -127,6 +132,7 @@
                ! call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
              endif
              call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
+             call printPhysicalMinMax(mom%Re_grid%phi,mom%Re_grid%s,'Re_grid')
              if (solveInduction) then
                call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
                call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
@@ -141,19 +147,21 @@
            call exportTransient(mom,ss_MHD)
            call exportTransient(ind,ss_MHD)
            n_mhd = n_mhd + 1
-           ! ************************ READ KILL SWITCH FROM FILE ****************************
+           ! ************************ READ SWITCHES FROM FILE *******************************
 
            if (getPrintParams(ss_MHD)) then
-             call readKillSwitchFromFile(continueLoop,dir//'parameters/','killSwitch')
+             call readSwitchFromFile(continueLoop,dir//'parameters/','killSwitch')
+             call readSwitchFromFile(exportNow,dir//'parameters/','exportNow')
            endif
 
-           if (getExportRawSolution(ss_MHD)) then
+           if (getExportRawSolution(ss_MHD).or.exportNow) then
              call exportRaw(mom,mom%g,dir)
              call exportRaw(ind,ind%g,dir)
            endif
-           if (getExportSolution(ss_MHD)) then
+           if (getExportSolution(ss_MHD).or.exportNow) then
              call export(mom,mom%g,dir)
              call export(ind,ind%g,dir)
+             call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
            endif
 
          enddo
@@ -170,6 +178,7 @@
          ! call writeLastStepToFile(nrg%nstep,dir//'parameters/','n_nrg')
 
          ! **************************** EXPORT TRANSIENT DATA *****************************
+         call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
          call exportTransient(mom,ss_MHD)
          call exportTransient(ind,ss_MHD)
 

@@ -1,0 +1,287 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of the Kinetic Energy Equation}
+The dimensionless momentum equation is
+
+% \begin{equation}
+% 	\frac{\partial u_i}{\partial t} + 
+% 	\frac{\partial (u_i u_j)}{\partial x_j}
+% 	= 
+% 	- \frac{\partial p}{\partial x_i}
+% 	+ \frac{1}{Re}
+% 	\frac{\partial^2 u_i}{\partial x_j^2}
+% 	+ \frac{1}{Fr^2}
+% 	g_i
+% 	+ \frac{Gr}{Re^2}
+% 	T g_i
+% 	+ \frac{Ha^2}{Re}
+% 	(j \times B)_i
+% \end{equation}
+
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial (u_i u_j)}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+Or
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	u_j\frac{\partial u_i}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+
+We must dot this with the velocity field $u_i$, which yields
+
+\begin{equation}
+	\boxed{
+	u_i
+	\frac{\partial u_i}{\partial t} + 
+	u_i
+	u_j\frac{\partial u_i}{\partial x_j}
+	= 
+	- u_i
+	\frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	u_i
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+	}
+\end{equation}
+
+This equation works perfectly fine to compute each of the terms of the kinetic energy. In Professor Kim's class on turbulence, we went a step further.
+
+Let $K = \frac{1}{2} u_i u_i$
+
+\subsection{Unsteady term}
+\begin{equation}
+	\frac{\partial u_i u_i}{\partial t}
+	=
+	2 u_i \frac{\partial u_i}{\partial t}
+\end{equation}
+
+Therefore
+
+\begin{equation}
+	u_i \frac{\partial u_i}{\partial t}
+	=
+	\frac{1}{2} \frac{\partial u_i u_i}{\partial t}
+	=
+	\frac{\partial K}{\partial t}
+\end{equation}
+
+\subsection{Advection term}
+\begin{equation}
+	\frac{\partial u_i u_i}{\partial x_j}
+	=
+	2 u_i \frac{\partial u_i}{\partial x_j}
+\end{equation}
+
+Therefore
+\begin{equation}
+	u_j u_i \frac{\partial u_i}{\partial x_j}
+	=
+	\frac{1}{2} u_j \frac{\partial u_i u_i}{\partial x_j}
+	=
+	u_j \frac{\partial K}{\partial x_j}
+\end{equation}
+
+
+\subsection{Diffusion and Pressure Terms}
+Let
+\begin{equation}
+	S_{ij} 
+	=
+	\frac{1}{2}
+	\left(
+	\frac{\partial u_i}{\partial x_j}
+	+
+	\frac{\partial u_j}{\partial x_i}
+	\right)
+	\qquad \qquad
+	\Omega_{ij} 
+	=
+	\frac{1}{2}
+	\left(
+	\frac{\partial u_i}{\partial x_j}
+	-
+	\frac{\partial u_j}{\partial x_i}
+	\right)
+\end{equation}
+And
+\begin{equation}
+	T_{ij}
+	=
+	-p \delta_{ij}
+	+
+	2 Re^{-1}
+	S_{ij}
+\end{equation}
+
+Note that the total stress tensor, $T_{ij}$, and the mean strain-rate tensor, $S_{ij}$ are symmetric
+
+\begin{equation}
+	\frac{\partial u_i}{\partial x_j}
+	= S_{ij} + \Omega_{ij}
+\end{equation}
+
+We may then write the diffusion and pressure terms as
+
+\begin{equation}
+	-\frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	=
+	\frac{\partial}{\partial x_j} T_{ij}
+\end{equation}
+
+Now, multiplying this by $u_i$, we have
+
+\begin{equation}
+	u_i \frac{\partial}{\partial x_j} T_{ij}
+	=
+	\frac{\partial}{\partial x_j} (T_{ij} u_i)
+	-
+	T_{ij} \frac{\partial u_i}{\partial x_j}
+	=
+	\frac{\partial}{\partial x_j} (T_{ij} u_i)
+	- T_{ij} S_{ij}
+\end{equation}
+
+The last equality is due to the fact that $T_{ij} \Omega_{ij} = 0$.
+
+Also note that
+
+\begin{equation}
+	T_{ij} S_{ij}
+	=
+	-p \delta_{ij} S_{ij}
+	+ 2 Re^{-1} S_{ij} S_{ij}
+	=
+	-p S_{ii}
+	+ 2 Re^{-1} S_{ij} S_{ij}
+	=
+	2 Re^{-1} S_{ij} S_{ij}
+\end{equation}
+
+Finally, we have
+
+\begin{equation}
+	-u_i \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}u_i
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	=
+	u_i \frac{\partial}{\partial x_j} T_{ij}
+	=
+	\frac{\partial}{\partial x_j} (T_{ij} u_i)
+	-
+	T_{ij} \frac{\partial u_i}{\partial x_j}
+	=
+	\frac{\partial}{\partial x_j} (T_{ij} u_i)
+	- T_{ij} S_{ij}
+	=
+	\frac{\partial}{\partial x_j} (T_{ij} u_i)
+	-
+	2 Re^{-1} S_{ij} S_{ij}
+\end{equation}
+
+
+\subsection{Lorentz Force term}
+
+\section{Putting this all together}
+We have
+
+\begin{equation}
+	\frac{\partial K}{\partial t}
+	+
+	u_j \frac{\partial K}{\partial x_j}
+	= 
+	\frac{\partial}{\partial x_j} (T_{ij} u_i)
+	-
+	2 Re^{-1} S_{ij} S_{ij}
+	+
+	\frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+\end{equation}
+\begin{equation}
+	\boxed{
+	\frac{\partial K}{\partial t}
+	+
+	u_j \frac{\partial K}{\partial x_j}
+	= 
+	\frac{\partial}{\partial x_j} 
+	(
+	-p \delta_{ij}
+	u_i
+	+
+	2 Re^{-1}
+	S_{ij}
+	u_i
+	)
+	-
+	2 Re^{-1} S_{ij} S_{ij}
+	+
+	\frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+	}
+\end{equation}
+
+\end{document}

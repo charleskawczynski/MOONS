@@ -61,6 +61,10 @@
        interface totalEnergy;             module procedure totalEnergySF;           end interface
        interface totalEnergy;             module procedure totalEnergyVF;           end interface
 
+       public :: stabilityTerms
+       interface stabilityTerms;          module procedure stabilityTermsSF;        end interface
+       interface stabilityTerms;          module procedure stabilityTermsVF;        end interface
+
        public :: zeroGhostPoints
        interface zeroGhostPoints;         module procedure zeroGhostPointsSF;       end interface
        interface zeroGhostPoints;         module procedure zeroGhostPointsVF;       end interface
@@ -100,6 +104,36 @@
            mag(i,j,k) = sqrt(x(i,j,k)**real(2.0,cp) +&
                              y(i,j,k)**real(2.0,cp) +&
                              z(i,j,k)**real(2.0,cp))
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
+       subroutine stabilityTermsSF(fo,fi,g,n,dir) ! Finished
+         ! Computes
+         !                     |  fi  |
+         !    fo =  max( fo  , | ---- | )
+         !                     | dh^n |
+         ! 
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: fo
+         real(cp),dimension(:,:,:),intent(in) :: fi
+         type(grid),intent(in) :: g
+         integer,intent(in) :: n,dir
+         integer :: i,j,k,t,x,y,z
+         integer,dimension(3) :: s
+         s = shape(fi)
+         select case (dir)
+         case (1); x=1;y=0;z=0
+         case (2); x=0;y=1;z=0
+         case (3); x=0;y=0;z=1
+         case default
+           stop 'Error: dir must = 1,2,3 in stabilityTermsSF in ops_aux.f90'
+         end select
+         !$OMP PARALLEL DO
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           t = i*x + j*y + k*z
+           fo(i,j,k) = maxval((/fo(i,j,k),&
+                                          abs(fi(i,j,k)/g%c(dir)%dhn(t)**real(n,cp))/))
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
@@ -177,6 +211,19 @@
          real(cp),dimension(:,:,:),intent(inout) :: mag
          type(vectorfield),intent(in) :: V
          call collocatedMagnitude(mag,V%x,V%y,V%z)
+       end subroutine
+
+       subroutine stabilityTermsVF(fo,fi,g,n)
+         implicit none
+         type(scalarField),intent(inout) :: fo
+         type(vectorField),intent(in) :: fi
+         type(grid),intent(in) :: g
+         integer,intent(in) :: n
+         call assign(fo,real(0.0,cp))
+         call stabilityTerms(fo%phi,fi%x,g,n,1)
+         call stabilityTerms(fo%phi,fi%y,g,n,2)
+         call stabilityTerms(fo%phi,fi%z,g,n,3)
+         call zeroGhostPoints(fo%phi)
        end subroutine
 
        subroutine totalEnergyVF(e,VF,g)

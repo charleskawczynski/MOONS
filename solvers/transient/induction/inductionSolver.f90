@@ -45,6 +45,7 @@
        public :: computeCurrent
        public :: embedVelocity
        public :: computeMagneticEnergy
+       public :: exportTransientFull
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -109,16 +110,17 @@
          real(cp) :: omega            ! Intensity of time changing magnetic field
        end type
 
-       interface init;               module procedure initInduction;              end interface
-       interface delete;             module procedure deleteInduction;            end interface
-       interface solve;              module procedure inductionSolver;            end interface
-       interface printExportBCs;     module procedure printExportInductionBCs;    end interface
-       interface export;             module procedure inductionExport;            end interface
-       interface exportRaw;          module procedure inductionExportRaw;         end interface
-       interface exportTransient;    module procedure inductionExportTransient;   end interface
-       interface computeDivergence;  module procedure computeDivergenceInduction; end interface
+       interface init;                 module procedure initInduction;                 end interface
+       interface delete;               module procedure deleteInduction;               end interface
+       interface solve;                module procedure inductionSolver;               end interface
+       interface printExportBCs;       module procedure printExportInductionBCs;       end interface
+       interface export;               module procedure inductionExport;               end interface
+       interface exportRaw;            module procedure inductionExportRaw;            end interface
+       interface exportTransient;      module procedure inductionExportTransient;      end interface
+       interface exportTransientFull;  module procedure inductionExportTransientFull;  end interface
+       interface computeDivergence;    module procedure computeDivergenceInduction;    end interface
 
-       interface setDTime;           module procedure setDTimeInduction;          end interface
+       interface setDTime;             module procedure setDTimeInduction;             end interface
 
        contains
 
@@ -429,6 +431,38 @@
            deallocate(tempcc)
            call delete(tempVFn)
            write(*,*) '     finished'
+         endif
+       end subroutine
+
+       subroutine inductionExportTransientFull(ind,g,dir)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g
+         character(len=*),intent(in) :: dir
+         integer :: Nx,Ny,Nz
+         type(vectorField) :: tempVFn
+
+         ! -------------------------- B/J FIELD AT NODES --------------------------
+         if (solveInduction) then
+           Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
+           call allocateVectorField(tempVFn,Nx,Ny,Nz)
+
+           call myCellCenter2Node(tempVFn,ind%B,g)
+           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
+           ! 'Bxnt_phys',&
+           ! 'Bynt_phys',&
+           ! 'Bznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+
+           call writeScalarPhysicalPlane(g,tempVFn%x,dir//'Bfield/transient/',&
+           'Bxnt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+
+           call myCellCenter2Node(tempVFn,ind%J_cc,g)
+           call writeVecPhysicalPlane(g,tempVFn,dir//'Jfield/transient/',&
+            'jxnt_phys',&
+            'jynt_phys',&
+            'jznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+
+           call delete(tempVFn)
          endif
        end subroutine
 

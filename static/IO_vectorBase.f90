@@ -25,10 +25,12 @@
 
       logical,parameter :: headerTecplot = .true.
 
-      interface readFromFile;    module procedure readVec;           end interface
-      interface writeToFile;     module procedure writeVec;          end interface
+      interface readFromFile;    module procedure readVec;                   end interface
+      interface writeToFile;     module procedure writeVec3D;                end interface
+      interface writeToFile;     module procedure writeVec2D;                end interface
+      interface writeToFile;     module procedure write2CompVec2DTransient;  end interface
+      ! interface writeToFile;     module procedure write1CompVec2DTransient;  end interface
 
-        
       contains
 
       subroutine readVec(x,y,z,u,v,w,dir,namex,namey,namez,headerTecplotTemp)
@@ -70,7 +72,7 @@
         //trim(adjustl(namey))//','//trim(adjustl(namez)),dir)
       end subroutine
 
-      subroutine writeVec(x,y,z,u,v,w,dir,namex,namey,namez,headerTecplotTemp)
+      subroutine writeVec3D(x,y,z,u,v,w,dir,namex,namey,namez,headerTecplotTemp)
         implicit none
         character(len=*),intent(in) :: dir,namex,namey,namez
         real(cp),dimension(:),intent(in) :: x,y,z
@@ -95,5 +97,79 @@
          enddo
         call closeAndMessage(un,trim(adjustl(namex))//','//trim(adjustl(namey))//','//trim(adjustl(namez)),dir)
       end subroutine
+
+      subroutine writeVec2D(x,y,u,v,dir,namex,namey,headerTecplotTemp)
+        implicit none
+        character(len=*),intent(in) :: dir,namex,namey
+        real(cp),dimension(:),intent(in) :: x,y
+        real(cp),dimension(:,:),intent(in) :: u,v
+        logical,intent(in),optional :: headerTecplotTemp
+        integer un,i,j,sx,sy
+        sx = size(x); sy = size(y)
+        un = newAndOpen(dir,trim(adjustl(namex))//','//trim(adjustl(namey)))
+
+        if (present(headerTecplotTemp)) then
+          if (headerTecplotTemp) call writeTecPlotHeader(un,namex,namey,sx,sy)
+        else
+          if (headerTecplot) call writeTecPlotHeader(un,namex,namey,sx,sy)
+        endif
+
+        do j = 1,sy
+          do i = 1,sx
+            write(un,'(4'//arrfmt//')') x(i),y(j),u(i,j),v(i,j)
+          enddo
+        enddo
+        call closeAndMessage(un,trim(adjustl(namex))//','//trim(adjustl(namey)),dir)
+      end subroutine
+
+      subroutine write2CompVec2DTransient(x,y,u,v,dir,namex,namey,ext,n,headerTecplotTemp)
+        implicit none
+        character(len=*),intent(in) :: dir,namex,namey,ext
+        real(cp),dimension(:),intent(in) :: x,y
+        real(cp),dimension(:,:),intent(in) :: u,v
+        integer,intent(in) :: n
+        logical,intent(in),optional :: headerTecplotTemp
+        integer un,i,j,sx,sy
+        sx = size(x); sy = size(y)
+        un = newAndOpen(dir,trim(adjustl(namex))//trim(adjustl(ext))//&
+                       ','//trim(adjustl(namey))//trim(adjustl(ext)))
+
+        if (present(headerTecplotTemp)) then
+          if (headerTecplotTemp) call writeTecPlotHeaderTransient(un,namex,namey,sx,sy,n)
+        else
+          if (headerTecplot) call writeTecPlotHeaderTransient(un,namex,namey,sx,sy,n)
+        endif
+
+        do j = 1,sy
+          do i = 1,sx
+            write(un,'(4'//arrfmt//')') x(i),y(j),u(i,j),v(i,j)
+          enddo
+        enddo
+        call closeAndMessage(un,trim(adjustl(namex))//trim(adjustl(ext))//&
+                           ','//trim(adjustl(namey))//trim(adjustl(ext)),dir)
+      end subroutine
+
+      ! subroutine write1CompVec2DTransient(x,y,u,dir,namex,ext,n,headerTecplotTemp)
+      !   implicit none
+      !   character(len=*),intent(in) :: dir,namex,ext
+      !   real(cp),dimension(:),intent(in) :: x,y
+      !   real(cp),dimension(:,:),intent(in) :: u
+      !   integer,intent(in) :: n
+      !   logical,intent(in),optional :: headerTecplotTemp
+      !   integer un,i,j,sx,sy
+      !   sx = size(x); sy = size(y)
+      !   un = newAndOpen(dir,trim(adjustl(namex))//trim(adjustl(ext)))
+      !   if (present(headerTecplotTemp)) then
+      !     if (headerTecplotTemp) call writeTecPlotHeaderTransient(un,namex,sx,sy,n)
+      !   else
+      !     if (headerTecplot) call writeTecPlotHeaderTransient(un,namex,sx,sy,n)
+      !   endif
+      !   do j = 1,sy
+      !     do i = 1,sx
+      !       write(un,'(3'//arrfmt//')') x(i),y(j),u(i,j)
+      !     enddo
+      !   enddo
+      !   call closeAndMessage(un,trim(adjustl(namex))//trim(adjustl(ext)),dir)
+      ! end subroutine
 
       end module
