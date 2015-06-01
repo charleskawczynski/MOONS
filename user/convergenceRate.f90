@@ -8,6 +8,7 @@
 
        use grid_mod
        use norms_mod
+       use scalarField_mod
        use vectorField_mod
 
        use MOONS_mod
@@ -24,13 +25,20 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       type norms_vec
-         type(norms) :: x,y,z,e
+       type parametricResults
+         type(norms) :: e,p
        end type
       
        contains
 
-       subroutine convergenceRateTest(dir)
+       subroutine convergenceRateTest(directory)
+         ! Convergence rate tests begin at the finest grid
+         ! and progress towards coarser grids. This way,
+         ! the longest simulation time is known shortly after
+         ! the simulation starts.
+         ! 
+         ! 
+         ! 
          ! For convenience
          !                            2^2  = 4
          !                            2^3  = 8
@@ -42,13 +50,13 @@
          !                            2^9  = 512
          !                            2^10 = 1024
          implicit none
-         character(len=*),intent(in) :: dir
+         character(len=*),intent(in) :: directory
          integer,parameter :: Nstart = 5
-         integer,parameter :: Nsims = 4
+         integer,parameter :: Nsims = 3
          integer,parameter :: r = 2 ! Refinement factor
-         integer :: i
+         integer :: i,dir
          integer,dimension(Nsims) :: N = (/(r**i,i=Nstart,Nstart+Nsims-1)/)
-         type(norms_vec),dimension(Nsims-2) :: p_U,p_B
+         type(parametricResults),dimension(Nsims-1) :: PR
          type(vectorField),dimension(Nsims) :: U,B
          type(grid),dimension(Nsims) :: g
          write(*,*) '***************************************************'
@@ -57,124 +65,140 @@
          write(*,*) 'N = ',N
          if (Nsims.lt.3) stop 'Error: size(f) must > 3 for convergence rate test.'
 
-         do i=1,Nsims
+         do i=Nsims,1,-1 ! Start with finest grid
            call allocateVectorField(U(i),N(i),N(i),N(i))
            call allocateVectorField(B(i),N(i),N(i),N(i))
-           call MOONS_Parametric(U(i),B(i),g(i),N(i),dir//'N_'//trim(adjustl(int2str2(N(i))))//'\')
+           call MOONS_Parametric(U(i),B(i),g(i),N(i),directory//'N_'//trim(adjustl(int2str2(N(i))))//'\')
          enddo
-         p_U = estimateConvergenceRate(U,g,Nsims,r,dir)
-         ! p_B = estimateConvergenceRate(B,g,Nsims,r,dir)
-         do i=1,Nsims
-           call delete(U(i))
-           ! call delete(B(i))
-         enddo
+
          write(*,*) '***************************************************'
          write(*,*) '**************** CONVERGENCE RATES ****************'
          write(*,*) '***************************************************'
          write(*,*) 'N = ',N
-         do i=1,Nsims-2
-           call print(p_U(i)%x,'p(Ux('//int2str2(i)//')')
-           call print(p_U(i)%y,'p(Uy('//int2str2(i)//')')
-           call print(p_U(i)%z,'p(Uz('//int2str2(i)//')')
-           ! call print(p_B(i),'p(B('//int2str2(i)//')')
-         enddo
-         ! do i=1,Nsims-2
-         !   call export(p_U(i),'p(U('//int2str2(i)//')')
-         !   call export(p_B(i),'p(B('//int2str2(i)//')')
-         ! enddo
+
+         PR = estimateConvergenceRate(U,g,Nsims,r,1)
+         call reportResults(PR,'U',directory,Nsims)
+         PR = estimateConvergenceRate(U,g,Nsims,r,2)
+         call reportResults(PR,'V',directory,Nsims)
+         PR = estimateConvergenceRate(U,g,Nsims,r,3)
+         call reportResults(PR,'W',directory,Nsims)
+         do i=1,Nsims; call delete(U(i)); enddo
+          
+         if (solveInduction) then
+           PR = estimateConvergenceRate(B,g,Nsims,r,1)
+           call reportResults(PR,'Bx',directory,Nsims)
+           PR = estimateConvergenceRate(B,g,Nsims,r,2)
+           call reportResults(PR,'By',directory,Nsims)
+           PR = estimateConvergenceRate(B,g,Nsims,r,3)
+           call reportResults(PR,'Bz',directory,Nsims)
+           do i=1,Nsims; call delete(B(i)); enddo
+         endif
+          
          write(*,*) '***************************************************'
          write(*,*) '********** CONVERGENCE TEST COMPLETE **************'
          write(*,*) '***************************************************'
        end subroutine
 
-       function estimateConvergenceRate(f,g,n,r,dir) result (p)
+       subroutine reportResults(PR,name,directory,Nsims)
+        implicit none
+        integer,intent(in) :: Nsims
+        type(parametricResults),dimension(Nsims-1),intent(in) :: PR
+        character(len=*),intent(in) :: name,directory
+        integer :: i,dir
+        type(norms),dimension(Nsims-1) :: etemp
+        type(norms),dimension(Nsims-2) :: ptemp
+
+        do i=1,Nsims-1
+           call print(PR(i)%e,'e('//name//'('//int2str2(i)//'))')
+        enddo
+        do i=1,Nsims-1; call init(etemp(i),PR(i)%e); enddo
+        call exportList(etemp,directory,'e('//name//'('//int2str2(1)//'_to_'//int2str2(Nsims-1)//'))')
+
+        do i=1,Nsims-2
+           call print(PR(i)%p,'p('//name//'('//int2str2(i)//'))')
+        enddo
+        do i=1,Nsims-2; call init(ptemp(i),PR(i)%p); enddo
+        call exportList(ptemp,directory,'p('//name//'('//int2str2(1)//'_to_'//int2str2(Nsims-2)//'))')
+       end subroutine
+
+       function estimateConvergenceRate(f,g,n,r,dir) result (PR)
          implicit none
          type(vectorField),dimension(n),intent(in) :: f ! Cell corner data, (1->size(f)) = (coarse->fine)
          type(grid),dimension(n),intent(in) :: g
-         integer,intent(in) :: n,r ! Number of simulations / refinement factor
-         type(norms_vec),dimension(n-2) :: p ! order of accuracy
-         character(len=*),intent(in) :: dir
-         type(vectorField),dimension(n-2) :: num,denom
-         integer :: i,t
-         integer,dimension(3) :: Ni
+         integer,intent(in) :: n,r,dir ! Number of simulations / refinement factor / direction
+         type(parametricResults),dimension(n-1) :: PR ! parametric results
+         integer :: i
+         integer,dimension(3) :: s
          type(norms) :: e_num,e_denom
 
-         do t=1,n-2
-           call allocateVectorField(num(t),f(t))
-           call allocateVectorField(denom(t),f(t))
-
-           call computeNumDenom(num(t)%x,denom(t)%x,f(t)%x,f(t+1)%x,f(t+2)%x,r)
-           call computeNumDenom(num(t)%y,denom(t)%y,f(t)%y,f(t+1)%y,f(t+2)%y,r)
-           call computeNumDenom(num(t)%z,denom(t)%z,f(t)%z,f(t+1)%z,f(t+2)%z,r)
-
-           call zeroGhostPoints(num(t))
-           call zeroGhostPoints(denom(t))
-
-           Ni = (/(num(t)%sx(i),i=1,3)/)-1
-           call compute( e_num , num(t)%x(2:Ni(1),2:Ni(2),2:Ni(3)) )
-           Ni = (/(denom(t)%sx(i),i=1,3)/)-1
-           call compute( e_denom , denom(t)%x(2:Ni(1),2:Ni(2),2:Ni(3)) )
-           call richardsonExtrapolation(p(t)%x,e_num,e_denom,r)
-
-           Ni = (/(num(t)%sy(i),i=1,3)/)-1
-           call compute( e_num , num(t)%y(2:Ni(1),2:Ni(2),2:Ni(3)) )
-           Ni = (/(denom(t)%sy(i),i=1,3)/)-1
-           call compute( e_denom , denom(t)%y(2:Ni(1),2:Ni(2),2:Ni(3)) )
-           call richardsonExtrapolation(p(t)%y,e_num,e_denom,r)
-
-           Ni = (/(num(t)%sz(i),i=1,3)/)-1
-           call compute( e_num , num(t)%z(2:Ni(1),2:Ni(2),2:Ni(3)) )
-           Ni = (/(denom(t)%sz(i),i=1,3)/)-1
-           call compute( e_denom , denom(t)%z(2:Ni(1),2:Ni(2),2:Ni(3)) )
-           call richardsonExtrapolation(p(t)%z,e_num,e_denom,r)
-
-           call delete(num(t))
-           call delete(denom(t))
-         enddo
+         select case (dir)
+         case (1)
+           do i=1,n-2
+             s = shape(f(i)%x)
+             e_num   = computeMultigridError(f(i+1)%x,f(i+2)%x,r,r*r,s)
+             e_denom = computeMultigridError(f(i)%x,f(i+1)%x,1,r,s)
+             PR(i)%p = richardsonExtrapolation(e_num,e_denom,r)
+             PR(i)%e = e_denom
+           enddo
+         case (2)
+           do i=1,n-2
+             s = shape(f(i)%y)
+             e_num   = computeMultigridError(f(i+1)%y,f(i+2)%y,r,r*r,s)
+             e_denom = computeMultigridError(f(i)%y,f(i+1)%y,1,r,s)
+             PR(i)%p = richardsonExtrapolation(e_num,e_denom,r)
+             PR(i)%e = e_denom
+           enddo
+         case (3)
+           do i=1,n-2
+             s = shape(f(i)%z)
+             e_num   = computeMultigridError(f(i+1)%z,f(i+2)%z,r,r*r,s)
+             e_denom = computeMultigridError(f(i)%z,f(i+1)%z,1,r,s)
+             PR(i)%p = richardsonExtrapolation(e_num,e_denom,r)
+             PR(i)%e = e_denom
+           enddo
+         case default
+         stop 'Error: dir must = 1,2,3 in estimateConvergenceRate in convergenceRate.f90'
+         end select
+         PR(n-1)%e   = e_num
+         call init(PR(n-1)%p) ! undefined here
        end function
 
-       subroutine richardsonExtrapolation(p,num,denom,r)
+       function computeMultigridError(f1,f2,r1,r2,s) result(n)
          implicit none
-         type(norms),intent(inout) :: p
+         real(cp),dimension(:,:,:),intent(in) :: f2,f1
+         integer,intent(in) :: r1,r2
+         integer,dimension(3),intent(in) :: s
+         type(scalarField) :: e
+         type(norms) :: n
+         integer :: i,j,k,i1,j1,k1,i2,j2,k2
+
+         call allocateField(e,s(1),s(2),s(3))
+         !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
+         do k=2,s(3)-1
+           k1 = 2 + (k-2)*r1; k2 = 2 + (k-2)*r2
+           do j=2,s(2)-1
+            j1 = 2 + (j-2)*r1; j2 = 2 + (j-2)*r2
+             do i=2,s(1)-1
+             i1 = 2 + (i-2)*r1; i2 = 2 + (i-2)*r2
+           e%phi(i,j,k) = f2(i2,j2,k2) - f1(i1,j1,k1)
+         enddo;enddo;enddo
+         !$OMP END PARALLEL DO
+         call zeroGhostPoints(e%phi)
+         call compute( n , e%phi(2:s(1)-1,2:s(2)-1,2:s(3)-1) )
+         call delete(e)
+       end function
+
+       function richardsonExtrapolation(num,denom,r) result(p)
+         implicit none
          type(norms),intent(in) :: num,denom
          integer,intent(in) :: r
+         type(norms) :: p
          p%L1   = abs( log( getL1(   num) / getL1(   denom)) )/log(real(r,cp))
          p%L2   = abs( log( getL2(   num) / getL2(   denom)) )/log(real(r,cp))
          p%Linf = abs( log( getLinf( num) / getLinf( denom)) )/log(real(r,cp))
          p%R1   = abs( log( getR1(   num) / getR1(   denom)) )/log(real(r,cp))
          p%R2   = abs( log( getR2(   num) / getR2(   denom)) )/log(real(r,cp))
          p%Rinf = abs( log( getRinf( num) / getRinf( denom)) )/log(real(r,cp))
-       end subroutine
-
-       subroutine computeNumDenom(num,denom,f1,f2,f3,r)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: num,denom
-         real(cp),dimension(:,:,:),intent(in) :: f1,f2,f3
-         integer,intent(in) :: r
-         integer :: i,j,k,i2,j2,k2,i3,j3,k3
-         integer,dimension(3) :: s
-         s = shape(num)
-         !$OMP PARALLEL DO PRIVATE(i2,j2,k2,i3,j3,k3)
-         do k=2,s(3)-1
-           k2 = 2 + (k-2)*r; k3 = 2 + (k-2)*r*r
-           do j=2,s(2)-1
-            j2 = 2 + (j-2)*r; j3 = 2 + (j-2)*r*r
-             do i=2,s(1)-1
-             i2 = 2 + (i-2)*r; i3 = 2 + (i-2)*r*r
-           num(i,j,k) = f3(i3,j3,k3) - f2(i2,j2,k2)
-         enddo;enddo;enddo
-         !$OMP END PARALLEL DO
-         s = shape(denom)
-         !$OMP PARALLEL DO PRIVATE(i2,j2,k2,i3,j3,k3)
-         do k=2,s(3)-1
-           k2 = 2 + (k-2)*r; k3 = 2 + (k-2)*r*r
-           do j=2,s(2)-1
-             j2 = 2 + (j-2)*r; j3 = 2 + (j-2)*r*r
-             do i=2,s(1)-1
-               i2 = 2 + (i-2)*r; i3 = 2 + (i-2)*r*r
-           denom(i,j,k) = f2(i2,j2,k2) - f1(i,j,k)
-         enddo;enddo;enddo
-         !$OMP END PARALLEL DO
-       end subroutine
+       end function
 
        end module

@@ -68,7 +68,7 @@
        public :: init
        public :: compute
        public :: print
-       public :: export
+       public :: export,exportList
 
        public :: getL1, getR1
        public :: getL2, getR2
@@ -87,6 +87,8 @@
 
        interface export;          module procedure exportNorms;            end interface
        interface export;          module procedure exportNorms2;           end interface
+       interface exportList;      module procedure exportNormsList;        end interface
+       interface exportList;      module procedure exportNormsList2;       end interface
        interface print;           module procedure printNorms;             end interface
 
        interface compute;         module procedure computeError1;          end interface
@@ -119,12 +121,12 @@
          e%R1 = 0.0; e%R2 = 0.0; e%Rinf = 0.0
        end subroutine
 
-       subroutine initCopy(e1,e2)
+       subroutine initCopy(eCopy,e)
          implicit none
-         type(norms),intent(in) :: e1
-         type(norms),intent(inout) :: e2
-         e2%L1 = e1%L1; e2%L2 = e1%L2; e2%Linf = e1%Linf
-         e2%R1 = e1%R1; e2%R2 = e1%R2; e2%Rinf = e1%Rinf
+         type(norms),intent(inout) :: eCopy
+         type(norms),intent(in) :: e
+         eCopy%L1 = e%L1; eCopy%L2 = e%L2; eCopy%Linf = e%Linf
+         eCopy%R1 = e%R1; eCopy%R2 = e%R2; eCopy%Rinf = e%Rinf
        end subroutine
 
        ! **************************************************************
@@ -152,7 +154,7 @@
 
        subroutine exportNorms2(e,dir,name,num,u)
          implicit none
-         type(norms),dimension(:) :: e
+         type(norms),dimension(:),intent(in) :: e
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: num
          integer,optional,intent(in) :: u
@@ -172,12 +174,28 @@
          case default
          stop 'Error: num must = 1:6 in exportNorms2 in norms.f90'
          end select
-         stop 'Done'
+       end subroutine
+
+       subroutine exportNormsList2(e,dir,name,u)
+         implicit none
+         type(norms),dimension(:),intent(in) :: e
+         character(len=*),intent(in) :: dir,name
+         integer,optional,intent(in) :: u
+         integer :: temp,s,i
+         s = size(e)
+         if (present(u)) then
+               temp = u
+         else; temp = newAndOpen(dir,name)
+         endif
+         write(temp,'(6(A10))') 'L1','L2','Linf','R1','R2','Rinf'
+         do i=1,s
+           call exportList(e(i),dir,name,temp)
+         enddo
        end subroutine
 
        subroutine exportNormsList(e,dir,name,u)
          implicit none
-         type(norms) :: e
+         type(norms),intent(in) :: e
          character(len=*),intent(in) :: dir,name
          integer,optional,intent(in) :: u
          integer :: temp
