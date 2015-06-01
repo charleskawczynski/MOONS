@@ -1,18 +1,11 @@
        module initializeK_mod
-       use grid_mod
-       use griddata_mod
        use simParams_mod
+       use grid_mod
+       use ops_embedExtract_mod
        implicit none
 
        private
        public :: initK
-
-       public :: Nin1
-       public :: Nin2
-       public :: Nice1
-       public :: Nice2
-       public :: Nici1
-       public :: Nici2
 
        ! This gets overridden by benchmarkCase
        integer,parameter :: preDefined_K = 0

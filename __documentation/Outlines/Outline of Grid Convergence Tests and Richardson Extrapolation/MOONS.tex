@@ -43,87 +43,116 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
+
+
 \section{Outline of Grid Convergence Tests and Richardson Extrapolation}
 
-Let the error to a lid driven cavity problem for a grid size $\Delta x$ be
+Let the error to a lid driven cavity problem for a grid size $h$ be
 
 \begin{equation}
-	\varepsilon_{\Delta x} = |u^{\Delta x} - u^{exact}|
+	\varepsilon_{h} = |u^{h} - u^{exact}|
 \end{equation}
 
 This error is equal to some constant times the grid spacing to some power plus higher order terms. This constant is the same for any discretization for the given solution method.
 
 \begin{equation}
-	\varepsilon_{\Delta x} = |u^{\Delta x} - u^{exact}| = C \Delta x^p
+	\varepsilon_{h} 
+	=
+	|u^{h} - u^{exact}|
+	=
+	C h^p + H.O.T.
 \end{equation}
 
-Now, suppose we use a refined grid sizes $\Delta x/r_1$ and $\Delta x/r_2$, we have
+Suppose three grid sizes $h_1,h_2$ and $h_3$ are used. We have
 
 \begin{equation}
-	\varepsilon_{\Delta x/r_1} = |u^{\Delta x/r_1} - u^{exact}| = C (\Delta x/r_1)^p
+	\varepsilon_{h_1} = |u^{h_1} - u^{exact}| = C (h_1)^p
 \end{equation}
 \begin{equation}
-	\varepsilon_{\Delta x/r_2} = |u^{\Delta x/r_2} - u^{exact}| = C (\Delta x/r_2)^p
+	\varepsilon_{h_2} = |u^{h_2} - u^{exact}| = C (h_2)^p
+\end{equation}
+\begin{equation}
+	\varepsilon_{h_3} = |u^{h_3} - u^{exact}| = C (h_3)^p
 \end{equation}
 
 Here we have 6 equations, and 6 unknowns:
 
 \begin{equation}
 	u^{exact}, 
-	\varepsilon_{\Delta x} , 
-	\varepsilon_{\Delta x/r_1} , 
-	\varepsilon_{\Delta x/r_2} , 
+	\varepsilon_{h_1} , 
+	\varepsilon_{h_2} , 
+	\varepsilon_{h_3} , 
 	p , 
 	C
 \end{equation}
 
-Dividing the two errors, we have
+Subtracting the equations, we eliminate $u^{exact}$ and get
 
 \begin{equation}
-	\frac{\varepsilon_{\Delta x}}{\varepsilon_{\Delta x/2}}
-	=
-	\frac{C \Delta x^p}{C (\Delta x/2)^p}
-	=
-	2^p
-\end{equation}
-
-In general, we may divide by the error with grid spacing $\Delta x/r$ where $r$ is some positive integer. Which results in
-
-\begin{equation}
-	\frac{\varepsilon_{\Delta x}}{\varepsilon_{\Delta x/r}}
-	=
-	\frac{C \Delta x^p}{C (\Delta x/r)^p}
-	=
-	r^p
-\end{equation}
-
-Therefore, we may estimate the order of accuracy as
-
-\begin{equation}
-	p
-	=
-	\frac
-	{
-	\ln{\varepsilon_{\Delta x}}
+	\varepsilon_{h_3}
 	-
-	\ln{\varepsilon_{\Delta x/r}}
-	}
-	{
-	\ln{\Delta x}
-	-
-	\ln{\Delta x/r}
-	}
+	\varepsilon_{h_2}
 	=
-	\frac{\ln{\frac{\varepsilon_{\Delta x}}{\varepsilon_{\Delta x/r}}}}
-	{\ln r}
+	|u^{h_3} - u^{h_2}|
+	=
+	C (h_3^p - h_2^p)
+\end{equation}
+\begin{equation}
+	\varepsilon_{h_2}
+	-
+	\varepsilon_{h_1}
+	=
+	|u^{h_2} - u^{h_1}|
+	=
+	C (h_2^p - h_1^p)
 \end{equation}
 
-Since we may not know the exact solution, we may write the errors as
+Dividing theses equations eliminates the constant $C$ and we get
 
 \begin{equation}
-	\varepsilon_{\Delta x}
+	\boxed{
+	\frac{|u^{h_3} - u^{h_2}|}
+	     {|u^{h_2} - u^{h_1}|}
 	=
-	|u^{\Delta x} - u^{exact}|
+	\frac{h_3^p - h_2^p}{h_2^p - h_1^p}
+	}
 \end{equation}
+
+\pmb{This can be solved numerically to determine $p$}. A simpler route though is if we assume a constant mesh refinement $h_3/h_2 = h_2/h_1 = \lambda$, we have
+
+\begin{equation}
+	\frac{h_3^p - h_2^p}{h_2^p - h_1^p}
+	=
+	\frac{(h_3/h_2)^p - 1}{1 - (h_1/h_2)^p}
+	=
+	\frac{\lambda^p - 1}{1 - (1/\lambda)^p}
+	=
+	\lambda^p
+	\frac{\lambda^p - 1}{\lambda^p - 1}
+	=
+	\lambda^p
+\end{equation}
+
+Finally, solving for the estimated order of accuracy, we have
+
+\begin{equation}
+	\boxed{
+	p =
+	\frac{\ln{\frac{|u^{h_3} - u^{h_2}|}
+	     {|u^{h_2} - u^{h_1}|}}}{\ln(\lambda)}
+	     }
+\end{equation}
+
+Where
+\begin{equation}
+	\boxed{
+	\lambda
+	=
+	\frac{h_3}{h_2}
+	=
+	\frac{h_2}{h_1}
+	}
+\end{equation}
+
 
 \end{document}

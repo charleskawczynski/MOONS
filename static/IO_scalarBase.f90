@@ -31,6 +31,7 @@
 
       interface writeToFile;   module procedure write3DMeshToFile;      end interface
 
+      interface writeToFile;   module procedure write0DFieldsToFile;    end interface
       interface writeToFile;   module procedure write0DFieldToFile;     end interface
       interface writeToFile;   module procedure write1DFieldToFile;     end interface
       interface writeToFile;   module procedure write2DFieldToFile;     end interface

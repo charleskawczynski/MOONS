@@ -32,11 +32,6 @@
        public :: exportGriddata
        public :: checkGrid
 
-
-       public :: Nin1,Nin2
-       public :: Nici1,Nici2
-       public :: Nice1,Nice2
-
        public :: xyzfmt,hfmt
 
        ! Export/print format. May need to adjust # in 3F_#_ if betaw is large
@@ -45,15 +40,6 @@
        character(len=3),parameter :: xyzifmt = '3I5'
 
        ! ********************* NUMBER OF CELLS ***********************
-       ! In this section, the number of cells in the (x,y,z)=(1,2,3) directions
-       ! are specified in the fluid domain (Ni) and in the walls (Nwtop,Nwbot).
-       ! The INDEX OF CELLS section should not be modified.
-       ! 
-       ! NOTES:
-       !           Making the number of interior cells even results 
-       !           in a odd number of nodes along each direction. So, 
-       !           if u(0,0,0) is desired, then choose Ni to be even.
-       !           Wall (interface is included in interior)
        ! 
        ! CAUTION:
        !           Careful, if too many cells are in the wall, 
@@ -64,111 +50,8 @@
        !           execution if it happens.
        ! 
        ! *********************** USER DEFINED ************************
-       ! integer,dimension(3),parameter :: Ni = 1, Nwtop = 0, Nwbot = 0
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 0, Nwbot = 0
-
-       ! integer,dimension(3),parameter :: Ni = (/46,46,46/) ! Number of cells in fluid
-       ! integer,dimension(3),parameter :: Nwtop = (/11,11,11/) ! Number of cells in wall
-       ! integer,dimension(3),parameter :: Nwbot = (/11,11,11/) ! Number of cells in wall
-
        ! ********************* BENCHMARK CASES ***********************
-
        ! --------------------- VERIFICATION CASES --------------------
-       ! benchmarkCase 1 (LDC: Purely Hydrodynamic / Insulating)
-       ! integer,dimension(3),parameter :: Ni = 48, Nwtop = 0, Nwbot = 0
-       ! benchmarkCase 2 (LDC: Conducting)
-       ! integer,dimension(3),parameter :: Ni = 40, Nwtop = 8, Nwbot = 8
-       ! benchmarkCase 3 (Duct: Purely Hydrodynamic / Insulating)
-       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
-       ! benchmarkCase 4 (Duct: Conducting)
-       ! integer,dimension(3),parameter :: Ni = (/2,64,64/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/) ! Original
-       ! integer,dimension(3),parameter :: Ni = (/1,200,200/), Nwtop = (/0,10,10/), Nwbot = (/0,10,10/)
-       ! integer,dimension(3),parameter :: Ni = (/1,64,64/), Nwtop = (/0,8,8/), Nwbot = (/0,8,8/)
-       ! integer,dimension(3),parameter :: Ni = (/1,60,60/), Nwtop = (/0,3,3/), Nwbot = (/0,3,3/)
-       integer,dimension(3),parameter :: Ni = (/1,40,40/), Nwtop = (/0,2,2/), Nwbot = (/0,2,2/)
-       ! integer,dimension(3),parameter :: Ni = (/1,100,100/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
-
-       ! benchmarkCase 50 (Re=2000)
-       ! integer,dimension(3),parameter :: Ni = 105, Nwtop = 0, Nwbot = 0
-       ! benchmarkCase 51 (Re=3200)
-       ! integer,dimension(3),parameter :: Ni = 105, Nwtop = 0, Nwbot = 0
-       ! 
-       ! ---------------------- VALIDATION CASES ---------------------
-
-       ! benchmarkCase = 100
-       ! integer,dimension(3),parameter :: Ni = (/67,67,27/), Nwtop = 0, Nwbot = 0
-       ! benchmarkCase = 101
-       ! integer,dimension(3),parameter :: Ni = 52, Nwtop = 0, Nwbot = 0
-       ! integer,dimension(3),parameter :: Ni = 64, Nwtop = 0, Nwbot = 0
-       ! integer,dimension(3),parameter :: Ni = (/101,101,41/), Nwtop = 0, Nwbot = 0
-
-       ! benchmarkCase = 102
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
-       ! integer,dimension(3),parameter :: Ni = 48, Nwtop = 8, Nwbot = 8 ! For multigrid
-       ! integer,dimension(3),parameter :: Ni = 84, Nwtop = 20, Nwbot = 20
-       ! benchmarkCase = 103
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = 11, Nwbot = 11
-       ! benchmarkCase = 104
-       ! integer,dimension(3),parameter :: Ni = 51, Nwtop = 5, Nwbot = 5
-
-       ! benchmarkCase = 105
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,0,11/), Nwbot = 11
-       ! benchmarkCase = 106
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,0,11/), Nwbot = 11
-       ! benchmarkCase = 107
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,0,11/), Nwbot = 11
-       ! benchmarkCase = 108
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,0,11/), Nwbot = 11
-
-       ! benchmarkCase = 109
-       ! integer,dimension(3),parameter :: Ni = 45, Nwtop = (/11,2,11/), Nwbot = (/11,2,11/)
-
-       ! benchmarkCase = 200
-       ! integer,dimension(3),parameter :: Ni = (/2**7,2**5,2**5/)+1, Nwtop = 0, Nwbot = 0
-       ! benchmarkCase = 201
-       ! integer,dimension(3),parameter :: Ni = (/101,32,32/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
-       ! benchmarkCase = 202
-       ! integer,dimension(3),parameter :: Ni = (/181,47,47/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
-
-       ! benchmarkCase = 250
-       ! integer,dimension(3),parameter :: Ni = (/200,51,56/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
-       ! integer,dimension(3),parameter :: Ni = (/30,10,10/), Nwtop = (/0,5,5/), Nwbot = (/0,5,5/)
-
-       ! benchmarkCase = 300
-       ! integer,dimension(3),parameter :: Ni = 51, Nwtop = 0, Nwbot = 0
-       ! benchmarkCase = 301
-       ! integer,dimension(3),parameter :: Ni = 101, Nwtop = 0, Nwbot = 0
-
-       ! benchmarkCase = 1001
-       ! integer,dimension(3),parameter :: Ni = 52, Nwtop = (/8,0,8/), Nwbot = 8 ! Ha = 10,100,1000
-       ! benchmarkCase = 1002
-       ! integer,dimension(3),parameter :: Ni = (/65,45,45/), Nwtop = 0, Nwbot = 0     ! Insulating
-       ! integer,dimension(3),parameter :: Ni = (/65,45,45/), Nwtop = (/0,5,0/), Nwbot = (/0,5,0/)     ! Conducting
-       ! benchmarkCase = 1003
-       ! integer,dimension(3),parameter :: Ni = (/75,45,45/), Nwtop = 11, Nwbot = 11
-       ! integer,dimension(3),parameter :: Ni = (/97,45,45/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
-       ! When 
-       ! integer,dimension(3),parameter :: Ni = (/105,60,60/), Nwtop = (/0,11,11/), Nwbot = (/0,11,11/)
-       ! benchmarkCase = 1004
-       ! integer,dimension(3),parameter :: Ni = 35, Nwtop = 0, Nwbot = 0
-       ! benchmarkCase = 1005 (Jack's Experiment)
-       ! integer,dimension(3),parameter :: Ni = (/64,32,32/), Nwtop = 0, Nwbot = 0
-
-
-       ! ********************* INDEX OF CELLS ************************ (DO NOT CHANGE)
-       integer,dimension(3),parameter :: N        = Ni+Nwtop+Nwbot    ! Total number of cells (excluding ghost)
-
-       ! These indexes are used in three places:
-       !       initSigmaMu.f90 (to init sigma/mu)
-       !       inductionSolver.f90 (in embedVelocity
-       !       inductionSolver.f90 (in computeJCrossB)
-       integer,dimension(3),parameter :: Nin1     = Nwbot+2           ! Node of min wall (excluding ghost)
-       integer,dimension(3),parameter :: Nin2     = N-Nwtop+2         ! Node of max wall (excluding ghost)
-
-       integer,dimension(3),parameter :: Nice1    = Nwbot+2           ! CC of min wall (excluding ghost)
-       integer,dimension(3),parameter :: Nice2    = N-Nwtop+1         ! CC of max wall (excluding ghost)
-       integer,dimension(3),parameter :: Nici1    = Nwbot+1           ! CC of min wall (including ghost)
-       integer,dimension(3),parameter :: Nici2    = N-Nwtop+2         ! CC of max wall (including ghost)
 
        type griddata
          private ! figure out a way to still do this
@@ -208,11 +91,13 @@
          write(*,*) 'Griddata object deleted'
        end subroutine
 
-       subroutine initGriddata(this,g_mom,g_ind,Re,Ha)
+       subroutine initGriddata(this,g_mom,g_ind,N,Ni,Nwtop,Nwbot,Re,Ha)
          implicit none
          type(griddata),intent(out) :: this
          type(grid),intent(inout) :: g_mom,g_ind
+         integer,dimension(3),intent(in) :: N,Ni,Nwtop,Nwbot
          real(cp),intent(in) :: Re,Ha
+
          real(cp),dimension(3) :: twtop,twbot
          real(cp),dimension(3) :: hmin,hmax
          real(cp),dimension(3) :: alphai,betai
@@ -240,11 +125,10 @@
          !       beta ~ (1.0 - 1.0/Ha)**(-0.5)
          !       beta ~ (1.0 - Re**(-0.5))**(-0.5) ! (flat plate)
 
-         call robertsGridBL(betai,one/Re,hmin,hmax)
-         call robertsGridBL(betai,real(2.0)/Ha,hmin,hmax)
+         betai = reynoldsBL(Re,hmin,hmax)
+         betai = hartmannBL(Ha,hmin,hmax)
 
          ! write(*,*) 'betai = ',betai
-         ! stop
 
          ! Interior
          alphai = oneHalf ! for xyz
@@ -350,9 +234,9 @@
          case (1001); betai = 1.0005d0 ! Ha = 1000
 
          case (1002); betai = 1.01d0
-         ! call robertsGridBL(betai,real(2.0,cp)/Ha,hmin,hmax)
+         ! betai = hartmannBL(Ha,hmin,hmax)
 
-         betai = robertsBL(real(2.0,cp)/Ha,hmax-hmin)
+         betai = hartmannBL(Ha,hmin,hmax)
          betai(1) = 10000.0d0
 
          case (1003); ! betai = 1.04d0
@@ -417,8 +301,8 @@
                      twtop(2) = 0.0d0
 
          case (1002); twtop = 0.0d0;   twbot = 0.0d0
-!          case (1002); twtop = 0.0d0;  twbot = 0.0d0
-!                       twtop(2) = 0.01d0;  twbot(2) = 0.01d0
+         ! case (1002); twtop = 0.0d0;  twbot = 0.0d0
+         !              twtop(2) = 0.01d0;  twbot(2) = 0.01d0
 
          case (1003); twtop = 0.1d0;   twbot = 0.1d0
          twtop(1) = 0.0d0;  twbot(1) = 0.0d0
@@ -436,9 +320,9 @@
          endif
 
          ! --------------------- GERNATRE GRID -----------------------
-         call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,1) ! x
-         call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,2) ! y
-         call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,3) ! z
+         call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,1) ! x
+         call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,2) ! y
+         call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,3) ! z
 
          if (.not.nonUniformGridWall) then
            call reComputeTw(this)
@@ -613,7 +497,7 @@
 
        end subroutine
 
-       subroutine setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,dir)
+       subroutine setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,dir)
          implicit none
          type(griddata),intent(inout) :: this
          real(cp),dimension(3),intent(in) :: hmin,hmax
@@ -621,6 +505,7 @@
          real(cp),dimension(3),intent(in) :: twtop
          real(cp),dimension(3),intent(in) :: twbot
          real(cp),dimension(3),intent(in) :: alphaw
+         integer,dimension(3),intent(in) :: N,Ni,Nwtop,Nwbot
          real(cp),dimension(3),intent(inout) :: betaw
          integer,intent(in) :: dir ! direction
 
@@ -1034,14 +919,14 @@
          tol = gd%ht%dhMin*10.0d0**(-6.0d0)
          ! ---------------- zero tw
          ! Check Bottom
-         if ((gd%twbot(dir).lt.tol).and.(Nwbot(dir).ne.0)) then
+         if ((gd%twbot(dir).lt.tol).and.(gd%Nwbot(dir).ne.0)) then
            write(*,*) 'The BOTTOM wall thickness is specified as zero'
            write(*,*) 'but Nw is not zero along direction',dir
            stop
          endif
 
          ! Check Top
-         if ((gd%twtop(dir).lt.tol).and.(Nwtop(dir).ne.0)) then
+         if ((gd%twtop(dir).lt.tol).and.(gd%Nwtop(dir).ne.0)) then
            write(*,*) 'The TOP wall thickness is specified as zero'
            write(*,*) 'but Nw is not zero along direction',dir
            stop
@@ -1049,16 +934,16 @@
          
          ! ---------------- finite tw
          ! Check Bottom
-         if ((gd%twbot(dir).gt.tol).and.(Nwbot(dir).lt.2)) then
+         if ((gd%twbot(dir).gt.tol).and.(gd%Nwbot(dir).lt.2)) then
            write(*,*) 'The BOTTOM wall thickness is larger than zero'
            write(*,*) 'but Nw is less than 2 along direction',dir
            write(*,*) 'twbot = ',gd%twbot(dir)
-           write(*,*) 'Nwbot = ',Nwbot(dir)
+           write(*,*) 'Nwbot = ',gd%Nwbot(dir)
            stop
          endif
 
          ! Check Top
-         if ((gd%twtop(dir).lt.tol).and.(Nwtop(dir).ne.0)) then
+         if ((gd%twtop(dir).lt.tol).and.(gd%Nwtop(dir).ne.0)) then
            write(*,*) 'The TOP wall thickness is larger than zero'
            write(*,*) 'but Nw is less than 2 along direction',dir
            stop
@@ -1084,12 +969,12 @@
 
          hni = gd%hi%c(dir)%hn
 
-         if (Nwtop(dir).gt.0) then
-           gd%twtop(dir) = real(Nwtop(dir),cp)*(hni(Ndir+1)-hni(Ndir))
+         if (gd%Nwtop(dir).gt.0) then
+           gd%twtop(dir) = real(gd%Nwtop(dir),cp)*(hni(Ndir+1)-hni(Ndir))
          endif
 
-         if (Nwbot(dir).gt.0) then
-           gd%twbot(dir) = real(Nwbot(dir),cp)*(hni(2)-hni(1))
+         if (gd%Nwbot(dir).gt.0) then
+           gd%twbot(dir) = real(gd%Nwbot(dir),cp)*(hni(2)-hni(1))
          endif
 
          deallocate(hni)

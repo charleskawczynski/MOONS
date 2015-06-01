@@ -1,18 +1,11 @@
        module initializeSigmaMu_mod
-       use grid_mod
-       use griddata_mod
        use simParams_mod
+       use grid_mod
+       use ops_embedExtract_mod
        implicit none
 
        private
        public :: initSigmaMu
-
-       public :: Nin1
-       public :: Nin2
-       public :: Nice1
-       public :: Nice2
-       public :: Nici1
-       public :: Nici2
 
        ! This gets overridden by benchmarkCase
        integer,parameter :: preDefined_Sigma = 0 ! sigma* = sigma_wall/sigma_l
@@ -41,24 +34,29 @@
 
        contains
 
-       subroutine initSigmaMu(sigma,mu,g)
+       subroutine initSigmaMu(sigma,mu,SD,g)
          implicit none
          type(grid),intent(in) :: g
+         type(subdomain),intent(in) :: SD
          real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
          if (benchmarkCase.ne.0) then
-           call initBenchmarkSigmaMu(sigma,mu)
+           call initBenchmarkSigmaMu(sigma,mu,SD)
          elseif (preDefined_SigmaMu.ne.0) then
-           call initPredefinedSigmaMu(sigma,mu,g)
+           call initPredefinedSigmaMu(sigma,mu,g,SD)
          else
-           call initUserSigmaMu(sigma,mu)
+           call initUserSigmaMu(sigma,mu,SD)
          endif
        end subroutine
 
-       subroutine initBenchmarkSigmaMu(sigma,mu)
+       subroutine initBenchmarkSigmaMu(sigma,mu,SD)
          implicit none
          ! Auxiliary data types
          real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
+         type(subdomain),intent(in) :: SD
          real(cp) :: sigma_w,sigma_l,cw,tw,sigma_star
+         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
+         Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1
+         Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
          
          sigma = real(1.0,cp); mu = real(1.0,cp)
          sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
@@ -120,11 +118,15 @@
 
        end subroutine
 
-       subroutine initUserSigmaMu(sigma,mu)
+       subroutine initUserSigmaMu(sigma,mu,SD)
          implicit none
          ! Auxiliary data types
          real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
+         type(subdomain),intent(in) :: SD
          real(cp) :: sigma_w,sigma_l
+         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
+         Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1
+         Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
 
          sigma = real(1.0,cp)
          mu = real(1.0,cp)

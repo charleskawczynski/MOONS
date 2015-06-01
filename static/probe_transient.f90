@@ -32,10 +32,10 @@
 #endif
 
        type probe
-         real(cp) :: d                       ! transient data
+         real(cp) :: d                        ! transient data
          integer :: n                         ! n associated with data
-         character(len=16) :: dir             ! probe directory
-         character(len=16) :: name            ! probe name
+         character(len=25) :: dir             ! probe directory
+         character(len=25) :: name            ! probe name
          logical :: TF_freshStart             ! simulation starts from t=0
        end type
 

@@ -32,7 +32,7 @@
        use probe_transient_mod
        use IO_tools_mod
        use grid_mod
-       use myError_mod
+       use norms_mod
 
        implicit none
 
@@ -55,13 +55,13 @@
 
        type indexProbe
          type(probe) :: p                             ! probe
-         real(cp),dimension(3) :: h                  ! probe location
+         real(cp),dimension(3) :: h                   ! probe location
          integer,dimension(3) :: i                    ! index of location
        end type
 
        type errorProbe
          type(probe) :: p                             ! probe
-         type(myError) :: e                           ! for computing data
+         type(norms) :: e                             ! for computing data
        end type
 
        interface init;          module procedure initIndexProbe;            end interface

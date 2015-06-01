@@ -8,8 +8,10 @@
        use myTime_mod
        use grid_mod
        use griddata_mod
+       use ops_embedExtract_mod
+       use ops_interp_mod
        use rundata_mod
-       use myError_mod
+       use norms_mod
        use scalarField_mod
        use vectorField_mod
 
@@ -17,25 +19,18 @@
        use BCs_mod
        use applyBCs_mod
 
-       use initializeUBCs_mod
-       use initializeUfield_mod
-
-       use initializeBBCs_mod
-       use initializeBfield_mod
-       use initializeSigmaMu_mod
-
        ! use energySolver_mod
        use momentumSolver_mod
        use inductionSolver_mod
-
-       use mySOR_mod
-       use myADI_mod
-       use myPoisson_mod
 
        use MHDSolver_mod
        use omp_lib
 
        implicit none
+
+       private
+
+       public :: MOONS_Parametric,MOONS
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -49,9 +44,11 @@
 
        contains
 
-       subroutine MOONS(dir)
+       subroutine MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
          implicit none
-         ! ********************** INPUT / OUTPUT ************************
+         integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
+         type(vectorField),intent(inout) :: U,B
+         type(grid),intent(inout) :: g
          character(len=*),intent(in) :: dir ! Output directory
 
          ! ***************** USER DEFINED MHD VARIABLES *****************
@@ -86,6 +83,7 @@
          type(grid) :: grid_mom,grid_ind
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
+         type(subdomain) :: SD
 
          ! **************************************************************
          call computationInProgress(time)
@@ -100,7 +98,9 @@
          case (50);  Re = 1970d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
-         case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3 ! For mesh refinement
+
          ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
          ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
@@ -212,7 +212,8 @@
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
+
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
@@ -265,10 +266,13 @@
          call makeDir(dir,'Tfield')
          call makeDir(dir,'Ufield')
          call makeDir(dir,'Ufield','\transient')
+         call makeDir(dir,'Ufield','\energy')
          call makeDir(dir,'Bfield')
          call makeDir(dir,'Bfield','\transient')
+         call makeDir(dir,'Bfield','\energy')
          call makeDir(dir,'Jfield')
          call makeDir(dir,'Jfield','\transient')
+         call makeDir(dir,'Jfield','\energy')
          call makeDir(dir,'material')
          call makeDir(dir,'parameters')
 
@@ -285,7 +289,10 @@
 
          ! **************************************************************
          ! Initialize all grids
-         call init(gd,grid_mom,grid_ind,Re,Ha)
+         call init(SD,Ni,Nwtop,Nwbot)
+         ! call init(gd,grid_mom,grid_ind,Re,Ha)
+         !            (this,g_mom,g_ind,N,Ni,Nwtop,Nwbot,Re,Ha)
+         call init(gd,grid_mom,grid_ind,SD%N,Ni,Nwtop,Nwbot,Re,Ha)
 
          ! Initialize Momentum grid/fields/parameters
          call setDTime(mom,dTime)
@@ -303,11 +310,12 @@
          call setDTime(ind,ds)
          call setNmaxB(ind,NmaxB)
          call setRem(ind,Rem)
+         call setHa(ind,Ha)
          call setNmaxCleanB(ind,NmaxCleanB)
          if (exportGrids) then
           call export(grid_ind,dir//'Bfield/','grid_ind')
          endif
-         call init(ind,grid_ind,dir)
+         if (solveInduction) call init(ind,grid_ind,SD,dir)
          if (exportRawICs) then
            call exportRaw(ind,ind%g,dir)
          endif
@@ -330,7 +338,7 @@
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
          call computeDivergence(mom,mom%g)
-         call computeDivergence(ind,ind%g)
+         if (solveInduction) call computeDivergence(ind,ind%g)
 
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
@@ -384,15 +392,13 @@
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
-         ! do n_mhd=1,5*10**6
-         !     call exportTransientFull(mom,mom%g,dir)
-         !     call exportTransientFull(ind,ind%g,dir)
-         !     ind%nstep = ind%nstep + 1000
-         !     mom%nstep = mom%nstep + 1000
-         ! enddo
-
-
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+
+         call allocateVectorField(U,mom%g%c(1)%sn,mom%g%c(2)%sn,mom%g%c(3)%sn)
+         call face2Node(U,mom%U,mom%g)
+         if (solveInduction) call allocateVectorField(B,ind%g%c(1)%sn,ind%g%c(2)%sn,ind%g%c(3)%sn)
+         if (solveInduction) call cellCenter2Node(B,ind%B,ind%g)
+         if (solveInduction) call init(g,grid_mom)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
@@ -401,6 +407,98 @@
          call delete(gd)
 
          call computationComplete(time)
+       end subroutine
+
+       ! ***************************************************************
+       ! ***************************************************************
+       ! ******************** For Single Simulation ********************
+       ! ***************************************************************
+       ! ***************************************************************
+
+       subroutine MOONS_Single_Grid(Ni,Nwtop,Nwbot)
+         implicit none
+         integer,dimension(3),intent(inout) :: Ni,Nwtop,Nwbot
+         ! ***************************************************************
+         ! ***************************************************************
+         ! *************************** For BMCs **************************
+         ! ***************************************************************
+         ! ***************************************************************
+         select case (benchmarkCase)
+         case (1);    Ni = 48;            Nwtop = 0;           Nwbot = 0         ! (LDC: Purely Hydrodynamic / Insulating)
+         case (2);    Ni = 40;            Nwtop = 8;           Nwbot = 8         ! (LDC: Conducting)
+         case (3);    Ni = (/64,32,32/);  Nwtop = 0;           Nwbot = 0         ! (Duct: Purely Hydrodynamic / Insulating)
+         case (4);    Ni = (/1,100,100/); Nwtop = (/0,5,5/);   Nwbot = (/0,5,5/) ! (Duct: Conducting)
+         case (50);   Ni = 105;           Nwtop = 0;           Nwbot = 0
+         case (51);   Ni = 105;           Nwtop = 0;           Nwbot = 0
+         case (100);  Ni = (/67,67,27/);  Nwtop = 0;           Nwbot = 0
+         case (101);  Ni = 52;            Nwtop = 0;           Nwbot = 0
+         case (102);  Ni = 45;            Nwtop = 11;          Nwbot = 11
+         case (103);  Ni = 45;            Nwtop = 11;          Nwbot = 11
+         case (104);  Ni = 51;            Nwtop = 5;           Nwbot = 5
+         case (105);  Ni = 45;            Nwtop = (/11,0,11/); Nwbot = 11
+         case (106);  Ni = 45;            Nwtop = (/11,0,11/); Nwbot = 11
+         case (107);  Ni = 45;            Nwtop = (/11,0,11/); Nwbot = 11
+         case (108);  Ni = 45;            Nwtop = (/11,0,11/); Nwbot = 11
+         case (109);  Ni = 45;            Nwtop = (/11,2,11/); Nwbot = (/11,2,11/)
+         case (200);  Ni = (/129,33,33/); Nwtop = 0;           Nwbot = 0
+         case (201);  Ni = (/101,32,32/); Nwtop = (/0,5,5/);   Nwbot = (/0,5,5/)
+         case (202);  Ni = (/181,47,47/); Nwtop = (/0,5,5/);   Nwbot = (/0,5,5/)
+         case (250);  Ni = (/200,51,56/); Nwtop = (/0,5,5/);   Nwbot = (/0,5,5/)
+         case (300);  Ni = 51;            Nwtop = 0;           Nwbot = 0
+         case (301);  Ni = 101;           Nwtop = 0;           Nwbot = 0
+         case (1001); Ni = 52;            Nwtop = (/8,0,8/);   Nwbot = 8 ! Ha = 10,100,1000
+         case (1002); Ni = (/65,45,45/);  Nwtop = 0;           Nwbot = 0     ! Insulating
+         case (1003); Ni = (/75,45,45/);  Nwtop = 11;          Nwbot = 11
+         case (1004); Ni = 35;            Nwtop = 0;           Nwbot = 0
+         case (1005); Ni = (/64,32,32/);  Nwtop = 0;           Nwbot = 0 ! (Jack's Experiment)
+         case default
+           Ni = (/64,32,32/)
+           Nwtop = 0
+           Nwbot = 0
+         end select
+       end subroutine
+
+       subroutine MOONS(dir)
+         implicit none
+         character(len=*),intent(in) :: dir ! Output directory
+         type(vectorField) :: U,B
+         integer,dimension(3) :: Ni,Nwtop,Nwbot
+         type(grid) :: g
+         call MOONS_Single_Grid(Ni,Nwtop,Nwbot)
+         call MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
+         call delete(U)
+         call delete(B)
+         call delete(g)
+       end subroutine
+
+       ! ***************************************************************
+       ! ***************************************************************
+       ! ********************* For Grid Refinement *********************
+       ! ***************************************************************
+       ! ***************************************************************
+
+       subroutine MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,N)
+         implicit none
+         integer,dimension(3),intent(inout) :: Ni,Nwtop,Nwbot
+         integer,dimension(3),intent(in) :: N
+         ! Ni = N*(1/2); Nwtop = N/2**2
+         ! Ni = N*(1/2 + 1/2**2); Nwtop = N/2**3
+         ! Ni = N*(1/2 + 1/2**2 + 1/2**3); Nwtop = N/2**4
+         ! Ni = N*(1/2 + 1/2**2 + 1/2**3 + 1/2**4); Nwtop = N/2**5
+         Ni = N; Nwtop = 0
+
+         Nwbot = Nwtop
+       end subroutine
+
+       subroutine MOONS_Parametric(U,B,g,N,dir)
+         implicit none
+         character(len=*),intent(in) :: dir ! Output directory
+         type(vectorField),intent(inout) :: U,B
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: N
+         integer,dimension(3) :: Ni,Nwtop,Nwbot
+         call MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,(/N,N,N/))
+         call MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
        end subroutine
 
        end module

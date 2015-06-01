@@ -1,5 +1,5 @@
-      module myMG_mod
-      ! call myMG(u,f,u_bcs,g,ss,displayTF)
+      module MG_mod
+      ! call MGSolver(u,f,u_bcs,g,ss,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), griddata (g)
@@ -24,14 +24,14 @@
       use BCs_mod
       use solverSettings_mod
       use applyBCs_mod
-      use myError_mod
+      use norms_mod
       use MG_tools_mod
       use ops_discrete_mod
       use ops_aux_mod
       use IO_tools_mod
       use IO_scalarFields_mod
-      use mySOR_mod
-      use myJacobi_mod
+      use SOR_mod
+      use jacobi_mod
       implicit none
 
       private
@@ -57,7 +57,7 @@
         real(cp),dimension(:,:,:),allocatable :: u,f,lapU,res,e
         type(BCs) :: u_bcs
         type(grid) :: g
-        type(myError) :: norms
+        type(norms) :: norm
         type(solverSettings) :: ss
         integer :: nLevels
         logical :: displayTF,MG_init
@@ -91,7 +91,7 @@
         ! ******************** Check size of data ********************
         if (all((/(s(i).eq.g_base%c(i)%sn,i=1,3)/))) then
         elseif (all((/(s(i).eq.g_base%c(i)%sc,i=1,3)/))) then
-        else; stop 'Error: MG only supports N or CC data in myMG.f90'
+        else; stop 'Error: MG only supports N or CC data in MGSolver.f90'
         endif
 
         ! ******************** Initialize grids ********************
@@ -130,9 +130,9 @@
           mg(j)%e    = real(0.0,cp)
         enddo
 
-        ! ******************** Initialize norms/ss ********************
+        ! ******************** Initialize norm/ss ********************
         do j = 1,mg(1)%nLevels
-          call init(mg(j)%norms)
+          call init(mg(j)%norm)
           call init(mg(j)%ss)
         enddo
 
@@ -241,7 +241,7 @@
         write(*,*) '         Finished prolongating'
       end subroutine
 
-      subroutine solveMultiGrid(mg,u,f,u_bcs,g,ss,norms,displayTF)
+      subroutine solveMultiGrid(mg,u,f,u_bcs,g,ss,norm,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -249,8 +249,8 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: norms
-        type(myJacobi) :: SOR
+        type(norms),intent(inout) :: norm
+        type(jacobi) :: SOR
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
         logical :: continueLoop,TF
@@ -271,7 +271,7 @@
         endif; continueLoop = .true.
 
 #ifdef _EXPORT_MG_CONVERGENCE_
-        NU = newAndOpen('out\','norms_MG')
+        NU = newAndOpen('out\','norm_MG')
 #endif
 
         i_MG = 0
@@ -282,7 +282,7 @@
           ! 1) Smooth on finest level
           ! Improvement on efficiency: Pass back residual from smoother:
           call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
+            mg(1)%ss,mg(1)%norm,mg(1)%displayTF)
 
           ! 2) Get residual on finest level
           call lap(mg(1)%lapU,mg(1)%u,mg(1)%g)
@@ -303,14 +303,14 @@
 
           ! 5) Final smoothing sweeps
           call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%u_bcs,mg(1)%g,&
-            mg(1)%ss,mg(1)%norms,mg(1)%displayTF)
+            mg(1)%ss,mg(1)%norm,mg(1)%displayTF)
 
 #ifdef _EXPORT_MG_CONVERGENCE_
             call lap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             mg(1)%res = mg(1)%lapu - mg(1)%f
             call zeroGhostPoints(mg(1)%res)
-            call compute(norms,real(0.0,cp),mg(1)%res)
-            write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
+            call compute(norm,real(0.0,cp),mg(1)%res)
+            write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
 
           ! ********************************* CHECK TO EXIT ************************************
@@ -321,7 +321,7 @@
           i_MG = i_MG + 1
         enddo
         u = mg(1)%u
-        norms = mg(1)%norms
+        norm = mg(1)%norm
 
 #ifdef _EXPORT_MG_CONVERGENCE_
         close(NU)
@@ -333,8 +333,8 @@
           call lap(mg(1)%lapu,u,g)
           mg(1)%res = mg(1)%lapu - mg(1)%f
           call zeroGhostPoints(mg(1)%res)
-          call compute(norms,real(0.0,cp),mg(1)%res)
-          call print(norms,'MG Residuals for '//trim(adjustl(getName(ss))))
+          call compute(norm,real(0.0,cp),mg(1)%res)
+          call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
       end subroutine
 
@@ -342,7 +342,7 @@
         implicit none
         type(multigrid),dimension(:),intent(inout) :: mg
         integer,intent(in) :: j
-        type(myJacobi) :: SOR
+        type(jacobi) :: SOR
         ! Locals
         integer :: nLevels
         integer,dimension(3) :: s
@@ -364,7 +364,7 @@
 
           ! 2) Smooth
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
-            mg(j+1)%ss,mg(j+1)%norms,mg(j+1)%displayTF)
+            mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
           ! 3) Get residual
           call lap(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%g)
@@ -384,7 +384,7 @@
 
           ! 6) Final smoothing sweeps
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
-            mg(j+1)%ss,mg(j+1)%norms,mg(j+1)%displayTF)
+            mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
           ! The solution on any grid above the 
           ! base grid is the error!
           mg(j+1)%e = mg(j+1)%u
@@ -394,7 +394,7 @@
           ! call setMaxIterations(mg(j+1)%ss,5) ! Fixed
           ! call setMaxIterations(mg(j+1)%ss,floor(exp(real(mg(j+1)%nlevels,cp)))) ! Dynamic
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
-            mg(j+1)%ss,mg(j+1)%norms,mg(j+1)%displayTF)
+            mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
           ! The solution on any grid above the 
           ! base grid is the correction on the 

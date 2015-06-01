@@ -27,6 +27,7 @@
         public :: assign,delete
         public :: add,subtract
         public :: multiply,divide
+        public :: sum,square
 
         public :: checkVectorField
         public :: printVectorField
@@ -143,6 +144,14 @@
         module procedure fieldVectorDivide
         module procedure vectorScalarDivide
         module procedure scalarVectorDivide
+      end interface
+
+      interface square
+        module procedure vectorVectorSquare
+      end interface
+
+      interface sum
+        module procedure vectorSum
       end interface
 
       contains
@@ -1496,6 +1505,65 @@
           f%x = g2 / f%x
           f%y = g2 / f%y
           f%z = g2 / f%z
+#endif
+        end subroutine
+
+        subroutine vectorVectorSquare(f)
+          implicit none
+          type(vectorField),intent(inout) :: f
+#ifdef _PARALLELIZE_VECTOR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sx(3)
+            do j=1,f%sx(2)
+              do i=1,f%sx(1)
+                f%x(i,j,k) = f%x(i,j,k)*f%x(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+          !$OMP PARALLEL DO
+          do k=1,f%sy(3)
+            do j=1,f%sy(2)
+              do i=1,f%sy(1)
+                f%y(i,j,k) = f%y(i,j,k)*f%y(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+          !$OMP PARALLEL DO
+          do k=1,f%sz(3)
+            do j=1,f%sz(2)
+              do i=1,f%sz(1)
+                f%z(i,j,k) = f%z(i,j,k)*f%z(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%x = f%x*f%x
+          f%y = f%y*f%y
+          f%z = f%z*f%z
+#endif
+        end subroutine
+
+        subroutine vectorSum(f,g)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = g%x(i,j,k) + g%y(i,j,k) + g%z(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = g%x + g%y + g%z
 #endif
         end subroutine
 

@@ -58,6 +58,7 @@
       interface assignment (=)
         module procedure scalarAssignOp
         module procedure fieldFieldAssignOp
+        module procedure fieldRealAssignOp
       end interface
 
       interface operator (+)
@@ -89,6 +90,7 @@
       interface assign
         module procedure scalarAssign
         module procedure fieldFieldAssign
+        module procedure fieldRealAssign
       end interface
 
       interface add
@@ -134,6 +136,14 @@
           type(scalarField),intent(in) :: g
           f%phi = g%phi
           f%s = g%s
+        end subroutine
+
+        subroutine fieldRealAssignOp(f,g)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          real(cp),dimension(:,:,:),intent(in) :: g
+          f%phi = g
+          f%s = shape(g)
         end subroutine
 
       ! ------------------- ADD ------------------------
@@ -250,7 +260,6 @@
 
         ! ***************** OPERATORS OPTIMIZED FOR SPEED ************
 
-
         subroutine fieldFieldAssign(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
@@ -268,6 +277,26 @@
           !$OMP END PARALLEL DO
 #else
           f%phi = g%phi
+#endif
+        end subroutine
+
+        subroutine fieldRealAssign(f,g)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          real(cp),dimension(:,:,:),intent(in) :: g
+#ifdef _PARALLELIZE_SCALAR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = g(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = g
 #endif
         end subroutine
 

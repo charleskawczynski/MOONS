@@ -24,7 +24,7 @@
       public :: getUnit,closeExisting
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
-      public :: int2Str,num2Str
+      public :: int2Str,int2Str2,num2Str
       public :: arrfmt,rarrfmt,logfmt,intfmt
 
        ! This website is a good reference for formatting:
@@ -185,6 +185,14 @@
         integer,intent(in) :: i
         character(len=10) :: s
         write(s,'(I10.10)') i
+        s = trim(adjustl(s))
+      end function
+
+      function int2Str2(i) result(s)
+        implicit none
+        integer,intent(in) :: i
+        character(len=9) :: s
+        write(s,'(I9)') i
         s = trim(adjustl(s))
       end function
 

@@ -35,7 +35,7 @@
        use grid_mod
        use vectorField_mod
        use scalarField_mod
-       use interpOps_mod
+       use ops_interp_mod
        use ops_discrete_mod
        use ops_aux_mod
 
@@ -104,7 +104,7 @@
          end select
        end function
 
-       subroutine square(A,s)
+       subroutine squareReal(A,s)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: A
          integer,dimension(3),intent(in) :: s
@@ -125,19 +125,6 @@
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
            A(i,j,k) = A(i,j,k)*B(i,j,k)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-       end subroutine
-
-       subroutine addMult(C,A,B,s)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: C
-         real(cp),dimension(:,:,:),intent(in) :: A,B
-         integer,dimension(3),intent(in) :: s
-         integer :: i,j,k
-         !$OMP PARALLEL DO
-         do k=1,s(3); do j=1,s(2); do i=1,s(1)
-           C(i,j,k) = C(i,j,k) + A(i,j,k)*B(i,j,k)
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
@@ -182,7 +169,7 @@
 
          psi = real(0.0,cp)
          ! -------------------------- u d/dx --------------------------
-         call myFaceAverage(tempAve,u,g,1,dir)
+         call face2Face(tempAve,u,g,1,dir)
          if (dir.eq.1) then
                call d%assign(temp,phi,g,1,1,1) ! Padding avoids calcs on fictive cells
          else; call d%assign(temp,phi,g,1,1,1)
@@ -190,7 +177,7 @@
          psi = tempAve*temp
 
          ! -------------------------- v d/dy --------------------------
-         call myFaceAverage(tempAve,v,g,2,dir)
+         call face2Face(tempAve,v,g,2,dir)
 
          if (dir.eq.2) then
                call d%assign(temp,phi,g,1,2,1) ! Padding avoids calcs on fictive cells
@@ -199,7 +186,7 @@
          psi = psi + tempAve*temp
 
          ! -------------------------- w d/dz --------------------------
-         call myFaceAverage(tempAve,w,g,3,dir)
+         call face2Face(tempAve,w,g,3,dir)
          if (dir.eq.3) then
                call d%assign(temp,phi,g,1,3,1) ! Padding avoids calcs on fictive cells
          else; call d%assign(temp,phi,g,1,3,1)
@@ -226,7 +213,7 @@
          type(vectorField),intent(inout) :: div
          type(vectorField),intent(in) :: U,ui
          type(vectorField),intent(inout) :: temp_E1,temp_E2
-         type(scalarField),intent(inout) :: temp_CC
+         type(vectorField),intent(inout) :: temp_CC
          type(grid),intent(in) :: g
          type(del) ::d
          integer :: pad
@@ -235,44 +222,43 @@
          call zeroGhostPoints(div)
          
          ! d/dxj (uj ui) for i=j
-         call myFace2CellCenter(temp_CC%phi,U%x,g,1)
-         call square(temp_CC%phi,temp_CC%s)
-         call d%assign(div%x,temp_CC%phi,g,1,1,pad)
+         call face2CellCenter(temp_CC,U,g)
 
-         call myFace2CellCenter(temp_CC%phi,U%y,g,2)
-         call square(temp_CC%phi,temp_CC%s)
-         call d%assign(div%y,temp_CC%phi,g,1,2,pad)
+         call squareReal(temp_CC%x,temp_CC%sx)
+         call d%assign(div%x,temp_CC%x,g,1,1,pad)
 
-         call myFace2CellCenter(temp_CC%phi,U%z,g,3)
-         call square(temp_CC%phi,temp_CC%s)
-         call d%assign(div%z,temp_CC%phi,g,1,3,pad)
+         call squareReal(temp_CC%y,temp_CC%sy)
+         call d%assign(div%y,temp_CC%y,g,1,2,pad)
+
+         call squareReal(temp_CC%z,temp_CC%sz)
+         call d%assign(div%z,temp_CC%z,g,1,3,pad)
 
          ! d/dxj (uj ui) for i≠j,  note that Ui must be included
          ! x (y,z edges)
-         call myFace2Edge(temp_E1%y,Ui%x,g,1,2)
-         call myFace2Edge(temp_E2%y, U%z,g,3,2)
-         call myFace2Edge(temp_E1%z,Ui%x,g,1,3)
-         call myFace2Edge(temp_E2%z, U%y,g,2,3)
+         call face2Edge(temp_E1%y,Ui%x,g,1,2)
+         call face2Edge(temp_E2%y, U%z,g,3,2)
+         call face2Edge(temp_E1%z,Ui%x,g,1,3)
+         call face2Edge(temp_E2%z, U%y,g,2,3)
          call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
          call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
          call d%add(div%x,temp_E1%y,g,1,3,pad)
          call d%add(div%x,temp_E1%z,g,1,2,pad)
 
          ! y (x,z edges)
-         call myFace2Edge(temp_E1%z,Ui%y,g,2,3)
-         call myFace2Edge(temp_E2%z, U%x,g,1,3)
-         call myFace2Edge(temp_E1%x,Ui%y,g,2,1)
-         call myFace2Edge(temp_E2%x, U%z,g,3,1)
+         call face2Edge(temp_E1%z,Ui%y,g,2,3)
+         call face2Edge(temp_E2%z, U%x,g,1,3)
+         call face2Edge(temp_E1%x,Ui%y,g,2,1)
+         call face2Edge(temp_E2%x, U%z,g,3,1)
          call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
          call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
          call d%add(div%y,temp_E1%x,g,1,3,pad)
          call d%add(div%y,temp_E1%z,g,1,1,pad)
 
          ! z (x,y edges)
-         call myFace2Edge(temp_E1%y,Ui%z,g,3,2)
-         call myFace2Edge(temp_E2%y, U%x,g,1,2)
-         call myFace2Edge(temp_E1%x,Ui%z,g,3,1)
-         call myFace2Edge(temp_E2%x, U%y,g,2,1)
+         call face2Edge(temp_E1%y,Ui%z,g,3,2)
+         call face2Edge(temp_E2%y, U%x,g,1,2)
+         call face2Edge(temp_E1%x,Ui%z,g,3,1)
+         call face2Edge(temp_E2%x, U%y,g,2,1)
          call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
          call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
          call d%add(div%z,temp_E1%x,g,1,2,pad)
@@ -295,7 +281,7 @@
          type(vectorField),intent(inout) :: div
          type(vectorField),intent(in) :: U,ui
          type(vectorField),intent(inout) :: temp_E1,temp_E2
-         type(scalarField),intent(inout) :: temp_CC
+         type(vectorField),intent(inout) :: temp_CC
          type(grid),intent(in) :: g
          type(del) ::d
          integer :: pad
@@ -304,44 +290,43 @@
          call zeroGhostPoints(div)
          
          ! d/dxj (uj ui) for i=j
-         call myFace2CellCenter(temp_CC%phi,U%x,g,1)
-         call square(temp_CC%phi,temp_CC%s)
-         call d%assign(div%x,temp_CC%phi,g,1,1,pad)
+         call face2CellCenter(temp_CC,U,g)
 
-         call myFace2CellCenter(temp_CC%phi,U%y,g,2)
-         call square(temp_CC%phi,temp_CC%s)
-         call d%assign(div%y,temp_CC%phi,g,1,2,pad)
+         call squareReal(temp_CC%x,temp_CC%sx)
+         call d%assign(div%x,temp_CC%x,g,1,1,pad)
 
-         call myFace2CellCenter(temp_CC%phi,U%z,g,3)
-         call square(temp_CC%phi,temp_CC%s)
-         call d%assign(div%z,temp_CC%phi,g,1,3,pad)
+         call squareReal(temp_CC%y,temp_CC%sy)
+         call d%assign(div%y,temp_CC%y,g,1,2,pad)
+
+         call squareReal(temp_CC%z,temp_CC%sz)
+         call d%assign(div%z,temp_CC%z,g,1,3,pad)
 
          ! d/dxj (uj ui) for i≠j,  note that Ui must be included
          ! x (y,z edges)
-         call myFace2Edge(temp_E1%y,Ui%x,g,1,2)
-         call myFace2Edge(temp_E2%y, U%z,g,3,2)
-         call myFace2Edge(temp_E1%z,Ui%x,g,1,3)
-         call myFace2Edge(temp_E2%z, U%y,g,2,3)
+         call face2Edge(temp_E1%y,Ui%x,g,1,2)
+         call face2Edge(temp_E2%y, U%z,g,3,2)
+         call face2Edge(temp_E1%z,Ui%x,g,1,3)
+         call face2Edge(temp_E2%z, U%y,g,2,3)
          call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
          call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
          call d%add(div%x,temp_E1%y,g,1,3,pad)
          call d%add(div%x,temp_E1%z,g,1,2,pad)
 
          ! y (x,z edges)
-         call myFace2Edge(temp_E1%z,Ui%y,g,2,3)
-         call myFace2Edge(temp_E2%z, U%x,g,1,3)
-         call myFace2Edge(temp_E1%x,Ui%y,g,2,1)
-         call myFace2Edge(temp_E2%x, U%z,g,3,1)
+         call face2Edge(temp_E1%z,Ui%y,g,2,3)
+         call face2Edge(temp_E2%z, U%x,g,1,3)
+         call face2Edge(temp_E1%x,Ui%y,g,2,1)
+         call face2Edge(temp_E2%x, U%z,g,3,1)
          call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
          call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
          call d%add(div%y,temp_E1%x,g,1,3,pad)
          call d%add(div%y,temp_E1%z,g,1,1,pad)
 
          ! z (x,y edges)
-         call myFace2Edge(temp_E1%y,Ui%z,g,3,2)
-         call myFace2Edge(temp_E2%y, U%x,g,1,2)
-         call myFace2Edge(temp_E1%x,Ui%z,g,3,1)
-         call myFace2Edge(temp_E2%x, U%y,g,2,1)
+         call face2Edge(temp_E1%y,Ui%z,g,3,2)
+         call face2Edge(temp_E2%y, U%x,g,1,2)
+         call face2Edge(temp_E1%x,Ui%z,g,3,1)
+         call face2Edge(temp_E2%x, U%y,g,2,1)
          call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
          call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
          call d%add(div%z,temp_E1%x,g,1,2,pad)

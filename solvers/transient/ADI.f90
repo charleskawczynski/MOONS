@@ -1,4 +1,4 @@
-      module myADI_mod
+      module ADI_mod
       ! call solve(ADI,u,f,u_bcs,g,ss,err,gridType,displayTF) ! To steady state, multi-scale time step
       !     u_t = alpha*(u_xx + u_yy + u_zz) - f = 0
       !           alpha*(u_xx + u_yy + u_zz) = f
@@ -30,7 +30,7 @@
 #ifdef _EXPORT_ADI_CONVERGENCE_
       use IO_tools_mod
 #endif
-      use myError_mod
+      use norms_mod
       implicit none
 
       private
@@ -344,7 +344,7 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(in) :: ss
-        type(myError),intent(inout) :: err
+        type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
 
@@ -369,7 +369,7 @@
         call delete(ADI)
       end subroutine
 
-      subroutine solveADI(ADI,u,f,u_bcs,g,ss,norms,displayTF)
+      subroutine solveADI(ADI,u,f,u_bcs,g,ss,norm,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -377,7 +377,7 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(in) :: ss
-        type(myError),intent(inout) :: norms
+        type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
         integer :: i,j,Nt,maxIt
@@ -401,7 +401,7 @@
         maxIt = 0
 
 #ifdef _EXPORT_ADI_CONVERGENCE_
-        NU = newAndOpen('out\','norms_ADI')
+        NU = newAndOpen('out\','norm_ADI')
 #endif
         do i=1,Nt
 
@@ -417,8 +417,8 @@
             call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
-            call compute(norms,real(0.0,cp),ADI%r)
-            write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
+            call compute(norm,real(0.0,cp),ADI%r)
+            write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
             maxIt = maxIt + 1
           enddo
@@ -434,8 +434,8 @@
             call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
-            call compute(norms,real(0.0,cp),ADI%r)
-            write(NU,*) getL1(norms),getL2(norms),getLinf(norms)
+            call compute(norm,real(0.0,cp),ADI%r)
+            write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
             maxIt = maxIt + 1
           enddo
@@ -464,8 +464,8 @@
           call lap(ADI%lapu,u,g)
           ADI%r = ADI%lapu - ADI%ftemp
           call zeroGhostPoints(ADI%r)
-          call compute(norms,real(0.0,cp),ADI%r)
-          call print(norms,'ADI Residuals for '//trim(adjustl(getName(ss))))
+          call compute(norm,real(0.0,cp),ADI%r)
+          call print(norm,'ADI Residuals for '//trim(adjustl(getName(ss))))
         endif
 
         call delete(ADI)

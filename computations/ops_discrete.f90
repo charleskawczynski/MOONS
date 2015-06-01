@@ -35,7 +35,7 @@
        use grid_mod
        use scalarField_mod
        use vectorField_mod
-       use interpOps_mod
+       use ops_interp_mod
        use ops_aux_mod
 
        implicit none
@@ -253,7 +253,7 @@
            allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
            allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
            call d%assign(temp1,f,g,1,dir1,0)
-           call myCellCenter2Face(temp2,k,g,dir1)
+           call cellCenter2Face(temp2,k,g,dir1)
            temp1 = temp1*temp2
            call d%assign(temp2,temp1,g,1,dir2,0)
            df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)

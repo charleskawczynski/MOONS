@@ -22,9 +22,11 @@
        public :: linspace1,uniformGrid1
 
        ! Stretched grids
-
        public :: robertsLeft,robertsRight,robertsBoth,cluster
-       public :: robertsGridBL,robertsBL
+       ! Stretching parameters
+       public :: robertsBL
+       ! Physical stretching arameters
+       public :: hartmannBL,reynoldsBL
 
        ! Other tools
        public :: robertsGrid2                   ! Soon to be private
@@ -314,28 +316,8 @@
        ! ***************************************************************
        ! ***************************************************************
 
-       subroutine robertsGridBL(beta,delta,hmin,hmax)
-         ! robertsGridBL returns the beta for a given boundary laryer
-         ! as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
-         ! 2nd edition, J. Tannehill et al.
-         ! 
-         ! INPUT:
-         !      hmin     = wall boundary (minimum value)
-         !      hmax     = wall boundary (maximum value)
-         !      delta    = thickness of boundary layer
-         implicit none
-         real(cp),dimension(3),intent(in) :: hmin,hmax
-         real(cp),intent(in) :: delta
-         real(cp),dimension(3),intent(inout) :: beta
-         integer :: i
-         do i=1,3
-           beta(i) = (one - delta/(hmax(i)-hmin(i)))**(-one/two)
-         enddo
-       end subroutine
-
        function robertsBL1D(delta,h) result (beta)
-         ! robertsGridBL returns the beta for a given boundary laryer
+         ! robertsBL1D returns the beta for a given boundary laryer
          ! as described in section 5.6 (page 333) of 
          ! Computational Fluid Mechanics and Heat Transfer, 
          ! 2nd edition, J. Tannehill et al.
@@ -347,7 +329,7 @@
          implicit none
          real(cp),intent(in) :: h,delta
          real(cp) :: beta
-         ! This if statement protects against the case when 
+         ! The 'if' statement protects against the case when 
          ! Ha = 1 (delta=h), which leads to beta = infinity. 
          ! HIMAG doesn't seem to protect against this.
          if (delta.lt.h*real(0.99,cp)) then
@@ -356,39 +338,44 @@
          endif
        end function
 
-       function robertsBL(delta,h) result (beta)
+       function robertsBL(delta,hmin,hmax) result(beta)
+         ! robertsGridBL returns the beta for a given boundary laryer
+         ! as described in section 5.6 (page 333) of 
+         ! Computational Fluid Mechanics and Heat Transfer, 
+         ! 2nd edition, J. Tannehill et al.
+         ! 
+         ! INPUT:
+         !      hmin     = wall boundary (minimum value)
+         !      hmax     = wall boundary (maximum value)
+         !      delta    = thickness of boundary layer
          implicit none
-         real(cp),dimension(3),intent(in) :: h
+         real(cp),intent(in) :: hmin,hmax
          real(cp),intent(in) :: delta
-         real(cp),dimension(3) :: beta
-         integer :: i
-         do i = 1,3
-            beta(i) = robertsBL1D(delta,h(i))
-         enddo
+         real(cp) :: beta
+         beta = robertsBL1D(delta,hmax-hmin)
        end function
 
-       function hartmannBL(Ha,h) result (beta)
+       function hartmannBL(Ha,hmin,hmax) result (beta)
          implicit none
-         real(cp),dimension(3),intent(in) :: h
+         real(cp),dimension(3),intent(in) :: hmin,hmax
          real(cp),intent(in) :: Ha
          real(cp),dimension(3) :: beta
          integer :: i
          do i = 1,3
-            beta(i) = robertsBL1D(real(1.0)/Ha,h(i))
+            beta(i) = robertsBL((hmax(i)-hmin(i))/Ha,hmin(i),hmax(i))
          enddo
        end function
 
-       function reynoldsBL(Re,h) result (beta)
+       function reynoldsBL(Re,hmin,hmax) result (beta)
          implicit none
-         real(cp),dimension(3),intent(in) :: h
+         real(cp),dimension(3),intent(in) :: hmin,hmax
          real(cp),intent(in) :: Re
          real(cp),dimension(3) :: beta
          integer :: i
          do i = 1,3
-            beta(i) = robertsBL1D(real(1.0)/sqrt(Re),h(i))
+            beta(i) = robertsBL((hmax(i)-hmin(i))/sqrt(Re),hmin(i),hmax(i))
          enddo
        end function
-
 
        ! ***************************************************************
        ! ***************************************************************

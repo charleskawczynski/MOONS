@@ -1,5 +1,5 @@
-      module myPoisson_mod
-      ! call myPoisson(method,u,f,u_bcs,g,ss,err,gridType,displayTF)
+      module poisson_mod
+      ! call poisson(method,u,f,u_bcs,g,ss,err,gridType,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), grid (g)
@@ -35,12 +35,12 @@
       use solverSettings_mod
       use grid_mod
       use BCs_mod
-      use myError_mod
+      use norms_mod
 
-      use myJacobi_mod
-      use mySOR_mod
-      use myADI_mod
-      use myMG_mod
+      use jacobi_mod
+      use SOR_mod
+      use ADI_mod
+      use MG_mod
 
       implicit none
 
@@ -55,42 +55,42 @@
 #endif
 
       private
-      public :: myPoisson
+      public :: poisson
 
-      interface myPoisson;    module procedure myPoisson_Jacobi;  end interface
-      interface myPoisson;    module procedure myPoisson_SOR;     end interface
-      interface myPoisson;    module procedure myPoisson_ADI;     end interface
-      interface myPoisson;    module procedure myPoisson_MG;      end interface
+      interface poisson;    module procedure poisson_Jacobi;  end interface
+      interface poisson;    module procedure poisson_SOR;     end interface
+      interface poisson;    module procedure poisson_ADI;     end interface
+      interface poisson;    module procedure poisson_MG;      end interface
 
       contains
 
-      subroutine myPoisson_Jacobi(Jacobi,u,f,u_bcs,g,ss,err,displayTF)
+      subroutine poisson_Jacobi(JAC,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
-        type(myJacobi),intent(inout) :: Jacobi
+        type(jacobi),intent(inout) :: JAC
         real(cp),dimension(:,:,:),intent(inout) :: u
         real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: err
+        type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
-        call solve(Jacobi,u,f,u_bcs,g,ss,err,displayTF)
+        call solve(JAC,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
-      subroutine myPoisson_SOR(SOR,u,f,u_bcs,g,ss,err,displayTF)
+      subroutine poisson_SOR(SOR,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
-        type(mySOR),intent(inout) :: SOR
+        type(SORSolver),intent(inout) :: SOR
         real(cp),dimension(:,:,:),intent(inout) :: u
         real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: err
+        type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
         call solve(SOR,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
-      subroutine myPoisson_ADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
+      subroutine poisson_ADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(myADI),intent(inout) :: ADI
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -98,12 +98,12 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: err
+        type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
         call solve(ADI,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine
 
-      subroutine myPoisson_MG(MG,u,f,u_bcs,g,ss,err,displayTF)
+      subroutine poisson_MG(MG,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: MG
         real(cp),dimension(:,:,:),intent(inout) :: u
@@ -111,7 +111,7 @@
         type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
-        type(myError),intent(inout) :: err
+        type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
         call solve(MG,u,f,u_bcs,g,ss,err,displayTF)
       end subroutine

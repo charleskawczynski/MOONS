@@ -186,7 +186,6 @@
          call init(c,(/c%hn(1)-c%dhn(1),c%hn,c%hn(c%sn)+(c%dhn(c%sn-1))/),2)
        end subroutine
 
-
 #ifdef _CHECK_GRID_
        subroutine checkCoordinates(c)
          implicit none

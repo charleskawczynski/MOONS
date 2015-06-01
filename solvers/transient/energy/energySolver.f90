@@ -12,10 +12,11 @@
        use initializeTfield_mod
        use initializeK_mod
 
+       use ops_embedExtract_mod
        use grid_mod
-       use myError_mod
-       use interpOps_mod
+       use norms_mod
        use del_mod
+       use ops_interp_mod
        use ops_discrete_mod
        use ops_physics_mod
        use BCs_mod
@@ -62,11 +63,12 @@
          ! Solver settings
          type(solverSettings) :: ss_energy
          ! Errors
-         type(myError) :: err_divQ,err_residual
+         type(norms) :: err_divQ,err_residual
 
          type(indexProbe) :: probe_T
          type(errorProbe) :: probe_divQ
          type(grid) :: g
+         type(subdomain) :: SD
 
          integer :: nstep             ! Nth time step
          integer :: NmaxT             ! Maximum number iterations in solving T (if iterative)
@@ -91,15 +93,17 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initenergy(nrg,g,dir)
+       subroutine initenergy(nrg,g,SD,dir)
          implicit none
          type(energy),intent(inout) :: nrg
          type(grid),intent(in) :: g
+         type(subdomain),intent(in) :: SD
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
          write(*,*) 'Initializing energy:'
 
          nrg%g = g
+         nrg%SD = SD
          ! --- Vector Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
@@ -130,9 +134,9 @@
          write(*,*) '     BCs applied'
 
          call initK(nrg%k_cc%phi,g)
-         call myCellCenter2Face(nrg%k%x,nrg%k_cc%phi,g,1)
-         call myCellCenter2Face(nrg%k%y,nrg%k_cc%phi,g,2)
-         call myCellCenter2Face(nrg%k%z,nrg%k_cc%phi,g,3)
+         call cellCenter2Face(nrg%k%x,nrg%k_cc%phi,g,1)
+         call cellCenter2Face(nrg%k%y,nrg%k_cc%phi,g,2)
+         call cellCenter2Face(nrg%k%z,nrg%k_cc%phi,g,3)
          write(*,*) '     Materials initialized'
 
          call init(nrg%probe_T,dir//'Tfield/','transient_T',&
@@ -254,7 +258,7 @@
            write(*,*) 'Exporting PROCESSED Solutions for T'
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            allocate(tempn(Nx,Ny,Nz))
-           call myCellCenter2Node(tempn,nrg%T%phi,g)
+           call cellCenter2Node(tempn,nrg%T%phi,g)
            call writeToFile(g,tempn,dir//'Tfield/','Tnt')
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            allocate(tempni(Nx-2,Ny-2,Nz-2))
@@ -264,7 +268,7 @@
          ! ----------------------- MATERIAL PROPERTIES AT NODES ------------------------
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            allocate(tempn(Nx,Ny,Nz))
-           call myCellCenter2Node(tempn,nrg%k_cc%phi,g)
+           call cellCenter2Node(tempn,nrg%k_cc%phi,g)
            call writeToFile(g,tempn,dir//'material/','k_n')
            deallocate(tempn)
            write(*,*) '     finished'
@@ -310,40 +314,21 @@
 
        ! ********************* AUX *****************************
 
-       subroutine computeBuoyancy(buyancy,nrg,g_mom,g_nrg,Re,Ha)
+       subroutine addBuoyancy(buyancy,nrg,g_mom,g_nrg,Gr,Re,Fr)
+         ! Computes
+         ! 
+         !            1        Gr
+         !           --- g +  ---  T g
+         !           Fr^2     Re^2
          implicit none
          type(vectorField),intent(inout) :: buyancy
          type(energy),intent(inout) :: nrg
+         real(cp),intent(in) :: Gr,Re,Fr
          type(grid),intent(in) :: g_mom,g_nrg
-         real(cp),intent(in) :: Re,Ha
-         integer :: Nx,Ny,Nz,dir
 
-         ! nrgex fluid face source terms:
-         ! Excluding wall normal values
+          call assign(buyancy,nrg%T)
 
-         dir = 1
-         Nx = g_mom%c(1)%sn; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sc
-         call myCellCenter2Face(nrg%F%x,nrg%Tstar%phi,g_nrg,dir)
-         buyancy%x = zero ! expensive!
-         buyancy%x(3:Nx-2,2:Ny-1,2:Nz-1) = &
-         nrg%F%x( Nin1(1)+1: Nin2(1)-1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-         buyancy%x = buyancy%x*((Ha**real(2.0,cp))/Re)
-
-         dir = 2
-         Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sn; Nz = g_mom%c(3)%sc
-         call myCellCenter2Face(nrg%F%y,nrg%Tstar%phi,g_nrg,dir)
-         buyancy%y = zero ! expensive!
-         buyancy%y(2:Nx-1,3:Ny-2,2:Nz-1) = &
-         nrg%F%y(Nice1(1):Nice2(1), Nin1(2)+1: Nin2(2)-1,Nice1(3):Nice2(3))
-         buyancy%y = buyancy%y*((Ha**real(2.0,cp))/Re)
-
-         dir = 3
-         Nx = g_mom%c(1)%sc; Ny = g_mom%c(2)%sc; Nz = g_mom%c(3)%sn
-         call myCellCenter2Face(nrg%F%z,nrg%Tstar%phi,g_nrg,dir)
-         buyancy%z = zero ! expensive!
-         buyancy%z(2:Nx-1,2:Ny-1,3:Nz-2) = &
-         nrg%F%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)+1: Nin2(3)-1)
-         buyancy%z = buyancy%z*((Ha**real(2.0,cp))/Re)
+         call multiply(buyancy,Gr/(Re**real(2.0,cp)))
        end subroutine
 
        subroutine computeDivergenceEnergy(nrg,g)
@@ -355,28 +340,21 @@
          endif
        end subroutine
 
-       subroutine embedVelocityEnergy(U_fi,U_cct,U_cci,g_mom)
+       subroutine embedVelocityEnergy(nrg,U_fi,g)
          implicit none
-         type(vectorField),intent(in) :: U_fi
-         type(vectorField),intent(inout) :: U_cct
-         type(scalarField),intent(inout) :: U_cci
-         type(grid),intent(in) :: g_mom
-         integer,dimension(3) :: Ni
+         type(energy),intent(inout) :: nrg
+         type(vectorField),intent(in) :: U_fi ! Raw momentum velocity
+         type(grid),intent(in) :: g ! Momentum grid
+         type(vectorField) :: temp
 
-         Ni = (/g_mom%c(1)%sc-2,g_mom%c(2)%sc-2,g_mom%c(3)%sc-2/) ! minus fictitious cells
-         ! (exclude fictitious cells)
-         call myFace2CellCenter(U_cci%phi,U_fi%x,g_mom,1)
-
-          U_cct%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-         call myFace2CellCenter(U_cci%phi,U_fi%y,g_mom,2)
-          U_cct%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
-
-         call myFace2CellCenter(U_cci%phi,U_fi%z,g_mom,3)
-          U_cct%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         U_cci%phi(2:Ni(1)+1,2:Ni(2)+1,2:Ni(3)+1)
+         call allocateX(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+         call allocateY(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+         call allocateZ(temp,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+         call face2CellCenter(temp%x,U_fi%x,g,1)
+         call face2CellCenter(temp%y,U_fi%y,g,2)
+         call face2CellCenter(temp%z,U_fi%z,g,3)
+         call embedCC(nrg%U_cct,temp,nrg%SD,g)
+         call delete(temp)
        end subroutine
 
        end module

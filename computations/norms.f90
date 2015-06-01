@@ -1,4 +1,4 @@
-       module myError_mod
+       module norms_mod
        ! This module calculates the L1,L2 and Linfinity norm of a given
        ! 3D exact and approximate matrices.
        !
@@ -11,9 +11,9 @@
        !        e%L2 = L2 norm
        !        e%Linf = Linf norm (maximum of abs(exact - approx) )
        !
-       !        e%L1rel = L1 norm
-       !        e%L2rel = L2 norm
-       !        e%Linfrel = Linf norm (maximum of abs(exact - approx) )
+       !        e%R1 = L1 norm
+       !        e%R2 = L2 norm
+       !        e%Rinf = Linf norm (maximum of abs(exact - approx) )
        ! 
        ! The L-n norm is computed as:
        ! 
@@ -45,11 +45,7 @@
        !       are computed as ((exact-approx)+1)/(exact+1) as to avoid division
        !       by zero.
        !
-       ! Fixes/improvements:
-       ! - make set/get functions to make components accessable to myEfficiency
 
-       use myTime_mod
-       use simParams_mod
        use IO_tools_mod
        implicit none
 
@@ -68,30 +64,30 @@
 
        private
 
-       public :: myError
-       public :: compute ! compute(exact,approx) result(e)
-       public :: print   ! print(err,name)
-       public :: writeMyError ! writeMyError(err,name,dir)
-       public :: writeToFile  ! writeErrorsToFile(e,dir[,u])
+       public :: norms
        public :: init
+       public :: compute
+       public :: print
+       public :: export
 
-       public :: getL1, getL1Rel
-       public :: getL2, getL2Rel
-       public :: getLinf, getLinfRel
-       public :: copyMyError
+       public :: getL1, getR1
+       public :: getL2, getR2
+       public :: getLinf, getRinf
 
        real(cp),parameter :: tol = 10.0**(-6.0) ! Minimum number to divide by when computing error.
 
-       type myError
-         private
-         ! Absolute errors:
-         real(cp) :: L1,L2,Linf
-         ! Relative errors:
-         real(cp) :: L1rel,L2rel,Linfrel
+       type norms
+         ! private
+         real(cp) :: L1,L2,Linf ! Absolute errors:
+         real(cp) :: R1,R2,Rinf ! Relative errors:
        end type
 
        interface init;            module procedure initError;              end interface
-       interface writeToFile;     module procedure writeErrorsToFile;      end interface
+       interface init;            module procedure initCopy;               end interface
+
+       interface export;          module procedure exportNorms;            end interface
+       interface export;          module procedure exportNorms2;           end interface
+       interface print;           module procedure printNorms;             end interface
 
        interface compute;         module procedure computeError1;          end interface
        interface compute;         module procedure computeError1Uniform;   end interface
@@ -99,6 +95,7 @@
        interface compute;         module procedure computeError2Uniform;   end interface
        interface compute;         module procedure computeError3;          end interface
        interface compute;         module procedure computeError3Uniform;   end interface
+       interface compute;         module procedure computeError3Uniform2;  end interface
 
        interface LnError;         module procedure LnError1D;              end interface
        interface LnError;         module procedure LnError1DUniform;       end interface
@@ -107,108 +104,162 @@
        interface LnError;         module procedure LnError3D;              end interface
        interface LnError;         module procedure LnError3DUniform;       end interface
 
-       interface print;           module procedure printMyError;           end interface
-
-
        contains
 
-       subroutine printMyError(err,name)
+       ! **************************************************************
+       ! **************************************************************
+       ! **************************** INIT ****************************
+       ! **************************************************************
+       ! **************************************************************
+
+       subroutine initError(e)
          implicit none
-         type(myError),intent(in) :: err
-         character(len=*),intent(in) :: name
-         call writeMyErrorToFileOrScreen(err,name,6)
+         type(norms),intent(inout) :: e
+         e%L1 = 0.0; e%L2 = 0.0; e%Linf = 0.0
+         e%R1 = 0.0; e%R2 = 0.0; e%Rinf = 0.0
        end subroutine
 
-       subroutine writeMyError(err,dir,name)
+       subroutine initCopy(e1,e2)
          implicit none
-         type(myError),intent(in) :: err
-         character(len=*),intent(in) :: dir
+         type(norms),intent(in) :: e1
+         type(norms),intent(inout) :: e2
+         e2%L1 = e1%L1; e2%L2 = e1%L2; e2%Linf = e1%Linf
+         e2%R1 = e1%R1; e2%R2 = e1%R2; e2%Rinf = e1%Rinf
+       end subroutine
+
+       ! **************************************************************
+       ! **************************************************************
+       ! *********************** PRINT / EXPORT ***********************
+       ! **************************************************************
+       ! **************************************************************
+
+       subroutine printNorms(err,name)
+         implicit none
+         type(norms),intent(in) :: err
          character(len=*),intent(in) :: name
+         call writeNormsToFileOrScreen(err,name,6)
+       end subroutine
+
+       subroutine exportNorms(err,dir,name)
+         implicit none
+         type(norms),intent(in) :: err
+         character(len=*),intent(in) :: dir,name
          integer :: newU
          newU = newAndOpen(dir,'Errors_'//trim(adjustl(name)))
-         call writeMyErrorToFileOrScreen(err,name,newU)
+         call writeNormsToFileOrScreen(err,name,newU)
          call closeAndMessage(newU,trim(adjustl(name)),dir)
        end subroutine
 
-       subroutine writeMyErrorToFileOrScreen(err,name,newU)
+       subroutine exportNorms2(e,dir,name,num,u)
          implicit none
-         type(myError),intent(in) :: err
+         type(norms),dimension(:) :: e
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: num
+         integer,optional,intent(in) :: u
+         integer :: temp,s,i
+         s = size(e)
+         if (present(u)) then
+               temp = u
+         else; temp = newAndOpen(dir,name)
+         endif
+         select case (num)
+         case (1); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%L1,i=1,s)/)
+         case (2); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%L2,i=1,s)/)
+         case (3); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%Linf,i=1,s)/)
+         case (4); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%R1,i=1,s)/)
+         case (5); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%R2,i=1,s)/)
+         case (6); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%Rinf,i=1,s)/)
+         case default
+         stop 'Error: num must = 1:6 in exportNorms2 in norms.f90'
+         end select
+         stop 'Done'
+       end subroutine
+
+       subroutine exportNormsList(e,dir,name,u)
+         implicit none
+         type(norms) :: e
+         character(len=*),intent(in) :: dir,name
+         integer,optional,intent(in) :: u
+         integer :: temp
+         if (present(u)) then
+               temp = u
+         else; temp = newAndOpen(dir,name)
+         endif
+           write(temp,'(6'//arrfmt//')') e%L1, e%L2, e%Linf, e%R1, e%R2, e%Rinf
+       end subroutine
+
+       subroutine writeNormsToFileOrScreen(err,name,newU)
+         implicit none
+         type(norms),intent(in) :: err
          integer,intent(in) :: newU
          character(len=*),intent(in) :: name
          write(newU,*) ''
          write(newU,*) '++++++++++++++ '//trim(adjustl(name))//&
                    ' +++++++++++++++'
-         write(newU,*) ''
-         write(newU,*) '------------- Absolute Value -------------'
          write(newU,*) 'L1 = ',err%L1
          write(newU,*) 'L2 = ',err%L2
-         write(newU,*) 'Linf = ',err%Linf, ' (largest difference in set)'
-         write(newU,*) ''
-         write(newU,*) '---------- Normalized by Exact -----------'
-         write(newU,*) 'L1_normalized = ',err%L1rel
-         write(newU,*) 'L2_normalized = ',err%L2rel
-         write(newU,*) 'Linf_normalized = ',err%Linfrel
-         write(newU,*) ''
+         write(newU,*) 'Linf = ',err%Linf
+         write(newU,*) 'R1 = ',err%R1
+         write(newU,*) 'R2 = ',err%R2
+         write(newU,*) 'Rinf = ',err%Rinf
          write(newU,*) '++++++++++++++++++++++++++++',&
                     '++++++++++++++++++++++++++++'
          write(newU,*) ''
        end subroutine
 
+       ! **************************************************************
+       ! **************************************************************
+       ! ************************ GET ROUTINES ************************
+       ! **************************************************************
+       ! **************************************************************
+
        function getL1(this) result(L1)
          implicit none
-         type(myError),intent(in) :: this
+         type(norms),intent(in) :: this
          real(cp) :: L1
          L1 = this%L1
        end function
        
-       function getL1Rel(this) result(L1rel)
+       function getR1(this) result(R1)
          implicit none
-         type(myError),intent(in) :: this
-         real(cp) :: L1rel
-         L1rel = this%L1rel
+         type(norms),intent(in) :: this
+         real(cp) :: R1
+         R1 = this%R1
        end function
 
        function getL2(this) result(L2)
          implicit none
-         type(myError),intent(in) :: this
+         type(norms),intent(in) :: this
          real(cp) :: L2
          L2 = this%L2
        end function
        
-       function getL2Rel(this) result(L2rel)
+       function getR2(this) result(R2)
          implicit none
-         type(myError),intent(in) :: this
-         real(cp) :: L2rel
-         L2rel = this%L2rel
+         type(norms),intent(in) :: this
+         real(cp) :: R2
+         R2 = this%R2
        end function
 
        function getLinf(this) result(Linf)
          implicit none
-         type(myError),intent(in) :: this
+         type(norms),intent(in) :: this
          real(cp) :: Linf
          Linf = this%Linf
        end function
        
-       function getLinfRel(this) result(Linfrel)
+       function getRinf(this) result(Rinf)
          implicit none
-         type(myError),intent(in) :: this
-         real(cp) :: Linfrel
-         Linfrel = this%Linfrel
+         type(norms),intent(in) :: this
+         real(cp) :: Rinf
+         Rinf = this%Rinf
        end function
 
-       subroutine writeErrorsToFile(e,dir,u)
-         implicit none
-         type(myError) :: e
-         character(len=*),intent(in) :: dir
-         integer,optional,intent(in) :: u
-         integer :: temp
-         if (present(u)) then
-           write(u,'(6'//arrfmt//')') e%L1, e%L2, e%Linf, e%L1rel, e%L2rel, e%Linfrel
-         else
-           temp = newAndOpen(dir,'errors')
-           write(temp,'(6'//arrfmt//')') e%L1, e%L2, e%Linf, e%L1rel, e%L2rel, e%Linfrel
-         endif
-       end subroutine
+       ! **************************************************************
+       ! **************************************************************
+       ! ************************ COMPUTATIONS ************************
+       ! **************************************************************
+       ! **************************************************************
 
        subroutine LnError1D(exact,approx,n,e,er,denom)
          implicit none
@@ -401,112 +452,113 @@
          else; er = e/(denom+1.0); endif
        end subroutine
 
-       subroutine initError(e)
-         implicit none
-         type(myError),intent(inout) :: e
-         e%L1 = 0.0; e%L2 = 0.0; e%Linf = 0.0
-         e%L1rel = 0.0; e%L2rel = 0.0; e%Linfrel = 0.0
-       end subroutine
-
-       subroutine copyMyError(e1,e2)
-         implicit none
-         type(myError),intent(in) :: e1
-         type(myError),intent(inout) :: e2
-         e2%L1 = e1%L1; e2%L2 = e1%L2; e2%Linf = e1%Linf
-         e2%L1rel = e1%L1rel; e2%L2rel = e1%L2rel; e2%Linfrel = e1%Linfrel
-       end subroutine
-
        subroutine computeError1(e,exact,approx)
          implicit none
-         type(myError),intent(inout) :: e
+         type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:) :: exact,approx
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Linfrel = e%Linf/maxval(abs(exact))
-         else; e%Linfrel = (e%Linf)/maxval(abs(exact)+1.0); endif
+         if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
+         else; e%Rinf = (e%Linf)/maxval(abs(exact)+1.0); endif
        end subroutine
 
        subroutine computeError1Uniform(e,exact,approx)
          implicit none
-         type(myError),intent(inout) :: e
+         type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:) :: approx
          real(cp),intent(in) :: exact
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Linfrel = e%Linf/(abs(exact))
-         else; e%Linfrel = (e%Linf)/(abs(exact)+1.0); endif
+         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
+         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
        end subroutine
 
        subroutine computeError2(e,exact,approx)
          implicit none
-         type(myError),intent(inout) :: e
+         type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:,:) :: exact,approx
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Linfrel = e%Linf/maxval(abs(exact))
-         else; e%Linfrel = (e%Linf)/maxval(abs(exact)+1.0); endif
+         if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
+         else; e%Rinf = (e%Linf)/maxval(abs(exact)+1.0); endif
        end subroutine
 
        subroutine computeError2Uniform(e,exact,approx)
          implicit none
-         type(myError),intent(inout) :: e
+         type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:,:) :: approx
          real(cp),intent(in) :: exact
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Linfrel = e%Linf/(abs(exact))
-         else; e%Linfrel = (e%Linf)/(abs(exact)+1.0); endif
+         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
+         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
        end subroutine
 
        subroutine computeError3(e,exact,approx)
          implicit none
-         type(myError),intent(inout) :: e
+         type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:,:,:) :: exact,approx
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Linfrel = e%Linf/maxval(abs(exact))
-         else; e%Linfrel = (e%Linf)/maxval(abs(exact)+1.0); endif
+         if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
+         else; e%Rinf = (e%Linf)/maxval(abs(exact)+1.0); endif
        end subroutine
 
        subroutine computeError3Uniform(e,exact,approx)
          implicit none
-         type(myError),intent(inout) :: e
+         type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:,:,:) :: approx
          real(cp),intent(in) :: exact
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%L1rel,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%L2rel,denom)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Linfrel = e%Linf/(abs(exact))
-         else; e%Linfrel = (e%Linf)/(abs(exact)+1.0); endif
+         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
+         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
+       end subroutine
+
+       subroutine computeError3Uniform2(e,approx)
+         implicit none
+         type(norms),intent(inout) :: e
+         real(cp),intent(in),dimension(:,:,:) :: approx
+         real(cp) :: n,denom,exact
+         exact = real(0.0,cp)
+
+         call initError(e)
+         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         !n = infinity
+         e%Linf = maxval(abs(exact-approx))
+         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
+         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
        end subroutine
 
 

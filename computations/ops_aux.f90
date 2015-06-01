@@ -34,7 +34,6 @@
        use grid_mod
        use vectorField_mod
        use scalarField_mod
-       use interpOps_mod
        use IO_scalarFields_mod
 
        implicit none
@@ -74,13 +73,13 @@
        interface printPhysicalMinMax;     module procedure printPhysicalMinMaxVF;   end interface
 
        public :: printGlobalMinMax
-       interface printGlobalMinMax;     module procedure printGlobalMinMaxSF;   end interface
-       interface printGlobalMinMax;     module procedure printGlobalMinMaxVF;   end interface
+       interface printGlobalMinMax;       module procedure printGlobalMinMaxSF;     end interface
+       interface printGlobalMinMax;       module procedure printGlobalMinMaxVF;     end interface
 
        public :: checkGlobalMinMax
-       interface checkGlobalMinMax;     module procedure checkGlobalMinMaxSF;   end interface
-       interface checkGlobalMinMax;     module procedure checkGlobalMinMaxSF2;  end interface
-       interface checkGlobalMinMax;     module procedure checkGlobalMinMaxVF;   end interface
+       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxSF;     end interface
+       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxSF2;    end interface
+       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxVF;     end interface
 
        contains
 
@@ -139,6 +138,11 @@
        end subroutine
 
        subroutine totalEnergySF(e,x,y,z,g) ! Finished
+         ! Computes
+         !              2   2   2
+         !   e = ∫∫∫ ( x + y + z ) dx dy dz
+         ! 
+         ! Where x,y,z lives in the cell center.
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: x,y,z
          real(cp),intent(inout) :: e

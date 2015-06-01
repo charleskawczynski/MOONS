@@ -64,7 +64,7 @@
        use IO_tools_mod
 
        use grid_mod
-       use myError_mod
+       use norms_mod
 
        implicit none
 
@@ -97,13 +97,13 @@
        type planeErrorProbe
          type(errorProbe) :: ep                       ! probe
          integer :: i,dir                             ! index for plane, direction of plane
-         real(cp) :: h                               ! location of plane
+         real(cp) :: h                                ! location of plane
        end type
 
        type avePlaneErrorProbe
          type(errorProbe) :: ep                       ! probe
          integer :: i,dir                             ! index for plane, direction of plane
-         real(cp) :: h                               ! location of plane
+         real(cp) :: h                                ! location of plane
        end type
 
        interface init;          module procedure initCenterProbe;               end interface

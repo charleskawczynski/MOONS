@@ -43,9 +43,31 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
-\section{Now}
+\section{Document Rules}
+In order to keep this document organized
+\begin{itemize}
+\item Refer to this document for 1 hour each morning to asses priorities
+\item Keep fewer than 5 items in Goals and Requirements / Today / Tomorrow
+\item Keep fewer than 10 sections total in this document
+\end{itemize}
 
-- Start / Develop document for periodicDuct1BfieldComponent
+\section{Goals / Requirements}
+
+- Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
+
+- Compare methods for enforcing divB and trade-offs
+--Plot(Rem vs Runtime vs div(B))
+
+- Mimicking plasma disruption
+
+- Benchmarking (convergence rates / Hydro flows / Hunt and Shercliff flow)
+
+
+\section{Today}
+
+- Sweep through Re/Ha/Rem while testing convergence / Compute KE and KB equations and plot norms of terms vs time
+
+- First step is descriptive - phases (linear, non-linear, decay)
 
 - Look at KE equation and Bfield energy equation / read literature
 
@@ -57,214 +79,56 @@ University of California Los Angeles, USA\\
 
 - Figure out how to view time in tecplot as simulation runs
 
-\section{Next}
 
-- Big concerns include 
-	- diff/adv terms on wall coincident boundaries
-	- benchmarking unsteady flow problems
-	- Asymmetry from BMC\_1003 with movie
-
-- Attempts to fix asymmetry
-	- look into (interp.f90 / stencils.f90 / applyBCs.f90 / embedExtract.f90)
-	- Try again using fine grid / uniform grid
-
-- Consider different time marching method (RK4 maybe)
-
-- Consider trying to assume separable with space and time, B induced = Bstar exp(-omega t). Exponents may cancel. Velocity will not be trivial though. But perhaps at early times motion is due to diffusion only.
-
-- Paper by Priede - Linear stability on Hunt flow ("not easy")
-
-- First step is descriptive - phases (linear, non-linear, decay)
-
-- Plot movie / Identify regimes / sweep through Rem / Compute KE and KB equations and plot norms of terms vs time
-
-- Look at diffusion term on boundaries
-
-- Update matlab script to plot KU and KB
-
-- Work on analysis for simple PD
-
-- Make a module for embed extract
+\section{Tomorrow}
+- diff/adv terms on wall coincident boundaries
 
 - Develop routine for Richardson Extrapolation to estimate rate of convergence
 
-- Run some simple PD sims
-
-- Prep document for $B^0 = (e^{-t},0,0)$ sim
-
-- Try to develop routines for staggering B
-
-- Start simulations for $B^0 = (e^{-t},0,0)$ sim
-
-- Compare interp(u\_CCxB\_CC)\_E with (interp(u\_F)\_E x interp(B\_CC)\_E)\_E for BMC\_102. Note that the source term in gauss-seidel may need to be carefully defined.
-
-
-\section{Today}
-
-- Consider making setXMinType(1,2) for dirichlet / neumann and determine wall coincident / incoincident internally.
-
-- Merge with master, commit current version
-
-- In order to fully stagger B, there is a need to compute $(u_{face}\times B_{face})_{edge}$ for the CT method and
-$\frac{\partial}{\partial x_j} (u_j B_i-u_iB_j)_{face}$ for Gauss Seidel on the face. This is not easy, but certainly not impossible. Note that j is a dummy index, so interpolating to the center and taking the dervative to the face will not work.
-
 - Rigorously test gridGen and get rid of old one.
 
-- Rename myError to norms.
 
-- remove my in interpolations.
+\section{Future Plans}
 
-- rename interpOps.f90 to ops\_interp.f90.
-
-- rename scalarField and vectorField to field\_scalar and field\_vector
-
-- Convert real(cp),dimension(:,:,:) to scalar field for parallelization
-
-- Plot 1D results for plasma disruption cases for inflection points
-
-- The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
-
-- Make sure diffusion term is being computed correctly (should be equivalent to one-sided difference formula). 
-
-- E = j/sig - uxB, u must be interpolated before multiplication.
-
-- Change induction equation to be located on the cell face. This allows a natural CT method implementation, as well as allowing for cleaning of B for Gauss-Seidel Solver.
-
-- Re-run several benchmark tests. The uxB interpolation being done before multiplication might fix this issue of jxB not balancing pressure well (since div(U) now seems to be a problem for these plasma disruption flows)
-
-- Send Sergey results so far with caveat about 1) boundary source terms 2) uxB interp 3) induction-> face instead (BCs will be applied on the cell face instead of cell center), this means a second interpolation to compute J will no longer be necessary which means the result may be more accurate.
-
-- Try Jack's Experiment
-
-- div(B) cleaning for face data
-
-- Try making properties of mom/ind/nrg private!
-
-- Remove unecessary sigma fields
-
-- Test Poisson cases for face data
-
-- Test inductionSolver: Gauss-Seidel / cleaning procedure
-
-- Finish documentation: non-uniform grid stencils/outline of results: develop a python script to solve the system symbollically.
-
-- Look into Paul Roberts (UCLA)
-
-- Consider re-writing advect donor using interpolation and div
-
-- Try to see if B\_face can be used to compute J at the start of the induction solver.
-
-- Fix the explicit Neumann BCs in apply BCs. It looks like only 1st or 2nd order accuracy is capable for du/dn = 0
-
-- Make a summary of test cases performed so far
--- U-field / B-field configuration 
--- analytic solutions (if they exist)
--- comparison results / discussion
-
-- Organize folders
-
-\section{This File}
-This file contains all of the things that must be fixed / adjusted and improved in MOONS. It is organized into pre-processing, Solution procedure, and post-processing sections to help manage organization of basically a glorified list.
-
-\section{Goals and Requirements}
-
-- Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
-
-- Compare methods for enforcing divB and trade-offs
---Plot(Rem vs Runtime vs div(B))
-
-- Mimicking plasma disruption
-
-- Benchmarking (convergence rates / Hydro flows / Hunt and Shercliff flow)
-
-\section{To Do and Notes}
-- Right now there are two instances of restartU and restartB, this inconsistency must to be resolved.
-
-- Re-run Hunt/Shercliff flows with uniform grid in BL and with p = 0 at outlet
-
-- Consider using ADI for uniform grids, this may be the best way to look at validity of pseudo vacuum BCs
-
-- Maybe ADI is not correct (even though it seems to be) since it DOES NOT work (diverges) for large $\Delta t$.
-
-- Maybe look at older versions of ADI
-
-- Update documentation for stencils (include ghost node)
-
-- Maybe include documentation on Nin,Nice,Nici?
-
-- Look into paper by Pattsson? Morely co-authored ~2008/2009
-
-- Try comparing 1/Ha with cw for HIMAG vs MOONS and compare continuity of tangent(j)/sigma across interface
-
-- IMPORTANT: del.f90 has no safe way to assign the output when pad is present. This is VERY dangerous and needs to be addressed immediately!
-
-- For Poisson solver, check if mean(f) or mean(f\_interior) must = 0
-
-- Member of committee for Naveen was in Geo-physics, Jonathon "Arnaud"? Look online about him and maybe we can collaborate.
-
-- Continue digitizing books
-
-- Read thesis sent by Naveen
-
-- Clean office - get paper towels
-
-- Start writing thesis
-
-- Get armorall wipes for car
-
-\section{Issues}
-
-- The residuals for the PPE are large, but don't seem to be reflected in the solution. Compute and export the residuals and check where the residuals are large for both D and N BCs.
-
-\section{Code verification}
+- Make a prepare directory routine in MOONS
 
 - Try refinement studies to make sure order of accuracy is correct
 
 - Compute residuals for momentum/induction equations allow for transient exporting using pre-processor directives
 
-\section{Pre-processor Directives}
-- Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
+- Make Poisson solvers (all) initialized outside of the call routine.
 
-\section{Restart capability}
-Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
+- Look into benchmarking these solvers by looking at convergence rates
 
-- Fix Time module: export and import time so that the average can be appropriately
-printed to the screen.
+- Introduce staggered B so it can be cleaned
 
+- Test cleaning procedure and compare with CT method
 
-
-\section{Mesh Generation}
-
-- Compare new and old grid generation (quantitatively)
+- Consider making setXMinType(1,2) for dirichlet / neumann and determine wall coincident / incoincident internally.
 
 - Make a uniform grid option for boundary layers (maybe make a function for this)
 
 - Implement Newtons method for estimating betaw. Check if betai/betaw
 are above 1000, if so just use uniform grid.
 
-
-\section{BMCs}
-
-- Re-run BMC against Guj and Stella with hmin = -1, hmax = 1 and adjusted Re like Sergey
-  did. This will reduce the number of geometries.
-
-\section{Performance}
 - Profile to find latest bottle necks
-
-- Parallelize SOR on larger level
-
-- Look into a zeroGhost and zeroGhostAndBoundary or something to avoid using assignments like f = 0 (which operates on the whole domain)
 
 - Look into how expensive shape() is.
 
+- Calculate cw in induction solver!
 
-\section{Stencils.f90}
-- Consider re-formulating using conservative higher order finite difference methods by Moin
+\section{Futuristic Plans}
 
-\section{Boundary Conditions}
-- Highly consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
+- Try changing smoother to Jacobi and check convergence rate (including when coarsest level is \textit{very} coarse)
 
-\section{Momentum Solver}
+- Check Non-uniform N/CC data grids for D/N BCs
+
+- Try Jack's Experiment
+
+- Fix Time module: export and import time so that the average can be appropriately
+printed to the screen.
+
+- Consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
 
 - Implement an upwind scheme for the non-uniform grid.
 
@@ -274,59 +138,20 @@ are above 1000, if so just use uniform grid.
 
 - Test ADI for LDC case
 
+- Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
 
-\section{Induction Solver}
+- Consider different time marching method (RK4 - eldredge)
 
-- Also try the 'consistent' fringing field and run caseB2
+- Consider re-formulating using conservative higher order finite difference methods by Moin
 
-- Calculate cw in induction solver!
+- Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
 
-\section{CT Method}
+- Get 3D douglas ADI working for fixed time step
 
-- Check if maxval(jxe),maxval(jye),maxval(jze) are zero with CT method (should be
-  close to zero (numerically) if equivalent to when mixed term is ignored) for non-uniform grids
+- Get 3D douglas ADI working for non-uniform grids
 
+- Get 3D douglas ADI working for variable $\alpha$
 
-\subsection{Cleaning procedure}
-- Introduce staggered B so it can be cleaned
-
-- Test cleaning procedure and compare with CT method
-
-\section{Poisson Solvers}
-- Make Poisson solvers (all) initialized outside of the call routine.
-
-- Look into benchmarking these solvers by looking at convergence rates
-
-\subsection{3D Douglas ADI}
-- Get working for fixed time step
-
-- Get working for non-uniform grids
-
-- Get working for variable $\alpha$
-
-\subsection{Multi-grid}
-- Try changing smoother to Jacobi and check convergence rate (including when coarsest level is \textit{very} coarse)
-
-- Check Non-uniform N/CC data grids for D/N BCs
-
-\section{Exporting data}
-- Make a prepare directory routine in MOONS
-
-- HDF5 - get working
-
-- Make interfaces for binary file output
-
-- Update export: make a switch to control what to export:
-      U-field: (face, cc, node)\_interior (face, cc, node)\_total domain
-      B-field: (face, cc, node)\_interior (face, cc, node)\_total domain
-      J-field: (face, cc, node)\_interior (face, cc, node)\_total domain
-
-- Make a dynamic 'exportSolutionNow' parameter that is read
-with the same frequency as the killSwitch
-
-
-
-\section{Experimental / fun / Low priority}
 - Look into Kolmogorov scale for LDC and try DNS
 
 - Make a BMC for a purely hydrodynamic turbulent flow (Re=2,000 and 3,200 compare with literature)
@@ -352,5 +177,78 @@ velocity (likely u=0 inside). More tests could be done this way.
 
 - Use hgiher order time marching methods! (RK4 maybe?)
 
+- Update export: make a switch to control what to export:
+      U-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+      B-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+      J-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+
+\section{10 minute tasks}
+- remove 'my' in all of MOONS.
+
+- Convert real(cp),dimension(:,:,:) to scalar field for parallelization
+
+- rename interpOps.f90 to ops\_interp.f90.
+
+- rename scalarField and vectorField to field\_scalar and field\_vector
+
+- Update matlab script to plot KU and KB
+
+
+\section{Analysis and Literature}
+- Consider trying to assume separable with space and time, B induced = Bstar exp(-omega t). Exponents may cancel. Velocity will not be trivial though. But perhaps at early times motion is due to diffusion only.
+
+- Paper by Priede - Linear stability on Hunt flow ("not easy")
+
+- Work on analysis for simple PD
+
+- Read thesis sent by Naveen
+
+\section{Unsorted}
+
+- The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
+
+- Change induction equation to be located on the cell face. This allows a natural CT method implementation, as well as allowing for cleaning of B for Gauss-Seidel Solver.
+
+- Re-run several benchmark tests.
+
+- div(B) cleaning for face data
+
+- Try making properties of mom/ind/nrg private!
+
+- Remove unecessary sigma fields
+
+- Test Poisson cases for face data
+
+- Test inductionSolver: Gauss-Seidel / cleaning procedure
+
+- Finish documentation: non-uniform grid stencils/outline of results: develop a python script to solve the system symbollically.
+
+- Look into Paul Roberts (UCLA)
+
+- Fix the explicit Neumann BCs in apply BCs. It looks like only 1st or 2nd order accuracy is capable for du/dn = 0
+
+- Right now there are two instances of restartU and restartB, this inconsistency must to be resolved.
+
+- Re-run Hunt/Shercliff flows with uniform grid in BL and with p = 0 at outlet
+
+- Consider using ADI for uniform grids, this may be the best way to look at validity of pseudo vacuum BCs
+
+- Maybe ADI is not correct (even though it seems to be) since it DOES NOT work (diverges) for large $\Delta t$.
+
+- Maybe look at older versions of ADI
+
+- Update documentation for stencils (include ghost node)
+
+- Maybe include documentation on Nin,Nice,Nici?
+
+- Look into paper by Pattsson? Morely co-authored ~2008/2009
+
+- Try comparing 1/Ha with cw for HIMAG vs MOONS and compare continuity of tangent(j)/sigma across interface
+
+- IMPORTANT: del.f90 has no safe way to assign the output when pad is present. This is VERY dangerous and needs to be addressed immediately!
+
+- For Poisson solver, check if mean(f) or mean(f\_interior) must = 0
+
+- Member of committee for Naveen was in Geo-physics, Jonathon "Arnaud"? Look online about him and maybe we can collaborate.
 
 \end{document}
