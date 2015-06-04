@@ -100,9 +100,10 @@
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
+          integer :: k
           call init(ip%p,dir,name,TF_freshStart)
           call defineH(i,g,s,ip%h)
-          ip%i = i
+          ip%i = (/(maxval((/i(k),1/)),k=1,3)/)
         end subroutine
 
         subroutine initErrorProbe(ep,dir,name,TF_freshStart)
@@ -134,7 +135,11 @@
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
           real(cp),dimension(:,:,:),intent(in) :: u
-          call set(ip%p,n,u(ip%i(1),ip%i(2),ip%i(3)))
+          integer,dimension(3) :: temp
+          temp(1) = maxval((/ip%i(1),1/))
+          temp(2) = maxval((/ip%i(2),1/))
+          temp(3) = maxval((/ip%i(3),1/))
+          call set(ip%p,n,u(temp(1),temp(2),temp(3)))
         end subroutine
 
         subroutine setErrorData(ep,n,d)

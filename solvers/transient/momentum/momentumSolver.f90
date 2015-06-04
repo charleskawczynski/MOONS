@@ -49,6 +49,7 @@
        public :: computeTotalKineticEnergy
        public :: exportTransientFull
        public :: computeMomentumstability
+       public :: setDimensionlessNumbers
 
 
 !        logical,parameter :: solveMomentum = .true.
@@ -111,8 +112,10 @@
 
          ! Time step, Reynolds number, grid
          integer :: nstep,NmaxPPE
-         real(cp) :: dTime,Re,t
+         real(cp) :: dTime,t
+         real(cp) :: Re,Ha,Gr,Fr
          type(grid) :: g
+         real(cp) :: L_eta,U_eta,t_eta ! Kolmogorov Scales
 
          ! Transient probes
          type(aveProbe) :: u_center,v_center,w_center
@@ -301,6 +304,22 @@
          type(momentum),intent(inout) :: mom
          real(cp),intent(in) :: Re
          mom%Re = Re
+         mom%L_eta = Re**real(-3.0/4.0,cp)
+         mom%U_eta = Re**real(-1.0/4.0,cp)
+         mom%t_eta = Re**real(-1.0/2.0,cp)
+       end subroutine
+
+       subroutine setDimensionlessNumbers(mom,Re,Ha,Gr,Fr)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         real(cp),intent(in) :: Re,Ha,Gr,Fr
+         mom%Re = Re
+         mom%Ha = Ha
+         mom%Gr = Gr
+         mom%Fr = Fr
+         mom%L_eta = Re**real(-3.0/4.0,cp)
+         mom%U_eta = Re**real(-1.0/4.0,cp)
+         mom%t_eta = Re**real(-1.0/2.0,cp)
        end subroutine
 
        ! ******************* EXPORT ****************************
@@ -421,24 +440,56 @@
          end select
          mom%t = mom%t + mom%dTime
          mom%nstep = mom%nstep + 1
-         ! -----Post solution -----
+
+         ! ********************* POST SOLUTION COMPUTATIONS *********************
          call face2CellCenter(mom%U_CC,mom%U,g)
-         ! call computeKineticEnergy(mom,mom%g,F)
+
+         ! ********************* POST SOLUTION PRINT/EXPORT *********************
+         call computeKineticEnergy(mom,mom%g,F)
          call computeTotalKineticEnergy(mom,ss_MHD)
-         ! call computeMomentumStability(mom,ss_MHD)
+         call computeMomentumStability(mom,ss_MHD)
+
          if (getExportErrors(ss_MHD)) then
            call computeDivergence(mom,g)
-           ! call exportTransientFull(mom,mom%g,dir)
+           call exportTransientFull(mom,mom%g,dir)
          endif
          if (getExportTransient(ss_MHD)) then
            call momentumExportTransient(mom,ss_MHD,dir)
            call exportTransient(mom,ss_MHD,dir)
          endif
+
          if (getPrintParams(ss_MHD)) then
-           write(*,*) 'Time = ',mom%t
+           write(*,*) '**************************************************************'
+           write(*,*) '************************** MOMENTUM **************************'
+           write(*,*) '**************************************************************'
+           write(*,*) '(Re,Ha) = ',mom%Re,mom%Ha
+           write(*,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
+           write(*,*) '(t,dt) = ',mom%t,mom%dTime
+           write(*,*) 'Kolmogorov Length = ',mom%L_eta
+           write(*,*) 'Kolmogorov Velocity = ',mom%U_eta
+           write(*,*) 'Kolmogorov Time = ',mom%t_eta
+           ! write(*,'(A29,3E15.6)') ' Kolmogorov scales (L,U,t) = ',mom%L_eta,mom%U_eta,mom%t_eta
+           ! write(*,*) '------------------------- GRID INFO --------------------------'
+           write(*,*) ''
+           write(*,*) 'N_cells = ',(/mom%g%c(1)%N,mom%g%c(2)%N,mom%g%c(3)%N/)
+           write(*,*) 'volume = ',mom%g%volume
+           write(*,*) 'min/max(h)_x = ',(/mom%g%c(1)%hmin,mom%g%c(1)%hmax/)
+           write(*,*) 'min/max(h)_y = ',(/mom%g%c(2)%hmin,mom%g%c(2)%hmax/)
+           write(*,*) 'min/max(h)_z = ',(/mom%g%c(3)%hmin,mom%g%c(3)%hmax/)
+           write(*,*) 'min/max(dh)_x = ',(/mom%g%c(1)%dhMin,mom%g%c(1)%dhMax/)
+           write(*,*) 'min/max(dh)_y = ',(/mom%g%c(2)%dhMin,mom%g%c(2)%dhMax/)
+           write(*,*) 'min/max(dh)_z = ',(/mom%g%c(3)%dhMin,mom%g%c(3)%dhMax/)
+           write(*,*) 'stretching_x = ',mom%g%c(1)%dhMax-mom%g%c(1)%dhMin
+           write(*,*) 'stretching_y = ',mom%g%c(2)%dhMax-mom%g%c(2)%dhMin
+           write(*,*) 'stretching_z = ',mom%g%c(3)%dhMax-mom%g%c(3)%dhMin
+           ! write(*,*) '------------------------ FIELD INFO --------------------------'
+           write(*,*) ''
            call printPhysicalMinMax(mom%U,'u','v','w')
            call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
-           ! call printPhysicalMinMax(mom%Re_grid%phi,mom%Re_grid%s,'Re_grid')
+           call printPhysicalMinMax(mom%Fo_grid%phi,mom%Fo_grid%s,'Fo_grid')
+           call printPhysicalMinMax(mom%Co_grid%phi,mom%Co_grid%s,'Co_grid')
+           call printPhysicalMinMax(mom%Re_grid%phi,mom%Re_grid%s,'Re_grid')
+           write(*,*) ''
          endif
        end subroutine
 
@@ -766,9 +817,9 @@
          implicit none
          type(vectorField),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,0)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,0)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,0)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,-1)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,-1)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,-1)
        end subroutine
 
        subroutine computeTotalKineticEnergyOld(mom,U_cct,Nici1,Nici2,ss_MHD)

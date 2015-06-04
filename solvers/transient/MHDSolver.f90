@@ -8,7 +8,6 @@
        use griddata_mod
        use rundata_mod
        use norms_mod
-       use probe_transient_mod
        use ops_discrete_mod
        use ops_physics_mod
        use ops_aux_mod
@@ -101,8 +100,8 @@
            call stopTime(time,ss_MHD)
            if (getPrintParams(ss_MHD)) then
              call estimateRemaining(time,ss_MHD)
-             call printGridData(gd)
-             call printRunData(rd)
+             ! call printGridData(gd)
+             ! call printRunData(rd)
              call print(time,'MHD solver')
            endif
            ! **************************** EXPORT TRANSIENT DATA *****************************
@@ -125,10 +124,9 @@
            endif
 
          enddo
-
          call stopTime(time,ss_MHD)
-         call printGridData(gd)
-         call printRunData(rd)
+         ! call printGridData(gd)
+         ! call printRunData(rd)
          call print(time,'MHD solver')
 
          ! ************************ WRITE LAST STEP TO FILE *******************************
@@ -147,10 +145,10 @@
 
          ! **************** EXPORT ONE FINAL TIME ***********************
 
-         ! call exportRaw(mom,mom%g,dir)
-         ! call exportRaw(ind,ind%g,dir)
-         ! call export(mom,mom%g,dir)
-         ! call export(ind,ind%g,dir)
+         call exportRaw(mom,mom%g,dir)
+         call exportRaw(ind,ind%g,dir)
+         call export(mom,mom%g,dir)
+         call export(ind,ind%g,dir)
 
          call delete(U)
          call delete(F)

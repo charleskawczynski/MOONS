@@ -53,43 +53,44 @@
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
 
        public :: collocatedMagnitude
-       interface collocatedMagnitude;     module procedure collocatedMagnitudeSF;   end interface
-       interface collocatedMagnitude;     module procedure collocatedMagnitudeVF;   end interface
+       interface collocatedMagnitude;     module procedure collocatedMagnitudeReal;   end interface
+       interface collocatedMagnitude;     module procedure collocatedMagnitudeVF;     end interface
 
        public :: totalEnergy
-       interface totalEnergy;             module procedure totalEnergySF;           end interface
-       interface totalEnergy;             module procedure totalEnergyVF;           end interface
+       interface totalEnergy;             module procedure totalEnergyReal;           end interface
+       interface totalEnergy;             module procedure totalEnergyVF;             end interface
 
        public :: stabilityTerms
-       interface stabilityTerms;          module procedure stabilityTermsSF;        end interface
-       interface stabilityTerms;          module procedure stabilityTermsVF;        end interface
+       interface stabilityTerms;          module procedure stabilityTermsReal;        end interface
+       interface stabilityTerms;          module procedure stabilityTermsVF;          end interface
 
        public :: zeroGhostPoints
-       interface zeroGhostPoints;         module procedure zeroGhostPointsSF;       end interface
-       interface zeroGhostPoints;         module procedure zeroGhostPointsVF;       end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPointsReal;       end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPointsVF;         end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPointsSF;         end interface
 
        public :: printPhysicalMinMax
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxSF;   end interface
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxVF;   end interface
+       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxReal;   end interface
+       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxVF;     end interface
 
        public :: printGlobalMinMax
-       interface printGlobalMinMax;       module procedure printGlobalMinMaxSF;     end interface
-       interface printGlobalMinMax;       module procedure printGlobalMinMaxVF;     end interface
+       interface printGlobalMinMax;       module procedure printGlobalMinMaxReal;     end interface
+       interface printGlobalMinMax;       module procedure printGlobalMinMaxVF;       end interface
 
        public :: checkGlobalMinMax
-       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxSF;     end interface
-       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxSF2;    end interface
-       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxVF;     end interface
+       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxReal;     end interface
+       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxReal2;    end interface
+       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxVF;       end interface
 
        contains
 
        ! *********************************************************************************
        ! *********************************************************************************
-       ! ******************************* SCALAR ROUTINES *********************************
+       ! ********************************* REAL ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedMagnitudeSF(mag,x,y,z) ! Finished
+       subroutine collocatedMagnitudeReal(mag,x,y,z) ! Finished
          ! This routine was made in order to compare norm(B) with
          ! results from Salah
          implicit none
@@ -107,7 +108,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine stabilityTermsSF(fo,fi,g,n,dir) ! Finished
+       subroutine stabilityTermsReal(fo,fi,g,n,dir) ! Finished
          ! Computes
          !                     |  fi  |
          !    fo =  max( fo  , | ---- | )
@@ -126,7 +127,7 @@
          case (2); x=0;y=1;z=0
          case (3); x=0;y=0;z=1
          case default
-           stop 'Error: dir must = 1,2,3 in stabilityTermsSF in ops_aux.f90'
+           stop 'Error: dir must = 1,2,3 in stabilityTermsReal in ops_aux.f90'
          end select
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
@@ -137,10 +138,10 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine totalEnergySF(e,x,y,z,g) ! Finished
+       subroutine totalEnergyReal(e,x,y,z,g) ! Finished
          ! Computes
-         !              2   2   2
-         !   e = ∫∫∫ ( x + y + z ) dx dy dz
+         ! 
+         !   e = ∫∫∫ ( x² + y² + z² ) dx dy dz
          ! 
          ! Where x,y,z lives in the cell center.
          implicit none
@@ -164,7 +165,7 @@
          e = etemp/g%volume
        end subroutine
 
-       subroutine zeroGhostPointsSF(f)
+       subroutine zeroGhostPointsReal(f)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
@@ -174,7 +175,7 @@
          f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
        end subroutine
 
-       subroutine printPhysicalMinMaxSF(u,s,name)
+       subroutine printPhysicalMinMaxReal(u,s,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
          integer,dimension(3),intent(in) :: s
@@ -183,14 +184,14 @@
                                               maxval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1))
        end subroutine
 
-       subroutine printGlobalMinMaxSF(u,name)
+       subroutine printGlobalMinMaxReal(u,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
          character(len=*),intent(in) :: name
          write(*,*) 'Min/Max ('//name//') = ',minval(u),maxval(u)
        end subroutine
 
-       subroutine checkGlobalMinMaxSF(du,name,i)
+       subroutine checkGlobalMinMaxReal(du,name,i)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: du
          integer,intent(inout) :: i
@@ -203,6 +204,19 @@
          else; i = 0
          endif
        end subroutine
+
+       ! *********************************************************************************
+       ! *********************************************************************************
+       ! ******************************* SCALAR ROUTINES *********************************
+       ! *********************************************************************************
+       ! *********************************************************************************
+
+       subroutine zeroGhostPointsSF(SF)
+         implicit none
+         type(scalarField),intent(inout) :: SF
+         call zeroGhostPoints(SF%phi)
+       end subroutine
+
 
        ! *********************************************************************************
        ! *********************************************************************************
@@ -320,7 +334,7 @@
          call delete(temp)
        end subroutine
 
-       subroutine checkGlobalMinMaxSF2(u,g,name)
+       subroutine checkGlobalMinMaxReal2(u,g,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
          type(grid),intent(in) :: g

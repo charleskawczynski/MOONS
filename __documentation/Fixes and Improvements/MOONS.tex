@@ -65,6 +65,13 @@ In order to keep this document organized
 
 \section{Today}
 
+- Try performing refinement on 2D flow
+
+- Run high Re/Ha/Rem case to see if instabilities occur, monitor $Re_{grid}$.
+
+- Read Roache's error bars paper, develop equations for generalized richardson's method for more efficient mesh refinement.
+
+
 - Sweep through Re/Ha/Rem while testing convergence / Compute KE and KB equations and plot norms of terms vs time
 
 - First step is descriptive - phases (linear, non-linear, decay)
@@ -73,7 +80,7 @@ In order to keep this document organized
 
 - Read more about benchmarking
 
-- Develop routine for Richardson Extrapolation
+- Test Richardson Extrapolation routine
 
 - Look in literature for interface conditions for current and BCs for bfield
 
@@ -89,6 +96,12 @@ In order to keep this document organized
 
 
 \section{Future Plans}
+
+- Naming convention for all ops should be (Real,SF,VF) = (real(cp),scalarField,vectorField)
+
+- Convert matlab to python.
+
+- Make a python routine to compute the number of lines in MOONS
 
 - Make a prepare directory routine in MOONS
 
@@ -118,6 +131,25 @@ are above 1000, if so just use uniform grid.
 - Calculate cw in induction solver!
 
 \section{Futuristic Plans}
+
+- Documentation to add
+
+Dimensionless parameters to add:
+
+Elsasser number = ration of lorentz to coriolis forces = A = sigma B\^2 / (2 rho Omega)
+
+Ra = t\_k t\_nu / t\_f\^2
+
+Where t\_f is the free fall time = sqrt(H/(alpha g dT))
+
+Q = Chandrasekhar number = ratio of magneto-viscous diffusion time scales and the square of the alfven speed crossing time
+ = t\_eta t\_nu / t\_A\^2
+
+Eckmann number = ratio of rotation time to diffusion time
+ = t\_Omega / t\_nu = nu / (2 Omega H\^2)
+
+
+Convective Reynolds number = Re\_c = t\_nu / t\_f
 
 - Try changing smoother to Jacobi and check convergence rate (including when coarsest level is \textit{very} coarse)
 
@@ -187,8 +219,6 @@ velocity (likely u=0 inside). More tests could be done this way.
 
 - Convert real(cp),dimension(:,:,:) to scalar field for parallelization
 
-- rename interpOps.f90 to ops\_interp.f90.
-
 - rename scalarField and vectorField to field\_scalar and field\_vector
 
 - Update matlab script to plot KU and KB
@@ -204,6 +234,14 @@ velocity (likely u=0 inside). More tests could be done this way.
 - Read thesis sent by Naveen
 
 \section{Unsorted}
+
+- CG
+
+- Stencils
+
+- KE/ME equation terms
+
+- Error bars / non-doubling grid refinement
 
 - The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
 

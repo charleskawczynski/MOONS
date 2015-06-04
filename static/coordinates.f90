@@ -27,7 +27,7 @@
        type coordinates
          integer :: N                              ! Number of cells
          real(cp) :: hmin,hmax                     ! Min/Max value of domain
-         real(cp) :: dhMin,maxRange                ! Smallest spatial step/Maximum range
+         real(cp) :: dhMin,dhMax,maxRange                ! Smallest spatial step/Maximum range
          integer :: sn,sc                          ! size of hn/hc
          real(cp),dimension(:),allocatable :: hn   ! Cell corner coordinates
          real(cp),dimension(:),allocatable :: hc   ! Cell center coordinates
@@ -153,6 +153,7 @@
         type(coordinates),intent(inout) :: c
          ! Additional information
          c%dhMin = minval(c%dhn)
+         c%dhMax = maxval(c%dhn)
          c%hmin = c%hn(2); c%hmax = c%hn(c%sn-1) ! To account for ghost node
          c%maxRange = c%hmax-c%hmin
          c%N = size(c%hc)-2

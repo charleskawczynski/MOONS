@@ -117,7 +117,7 @@
        interface init;                 module procedure initInduction;                 end interface
        interface delete;               module procedure deleteInduction;               end interface
        interface solve;                module procedure inductionSolver;               end interface
-       interface printExportBCs;       module procedure printExportInductionBCs;       end interface
+       interface printExportBCs;       module procedure inductionPrintExportBCs;       end interface
        interface export;               module procedure inductionExport;               end interface
        interface exportRaw;            module procedure inductionExportRaw;            end interface
        interface exportTransient;      module procedure inductionExportTransient;      end interface
@@ -353,7 +353,7 @@
 
        ! ******************* EXPORT ****************************
 
-       subroutine printExportInductionBCs(ind,dir)
+       subroutine inductionPrintExportBCs(ind,dir)
          implicit none
          type(induction),intent(in) :: ind
          character(len=*),intent(in) :: dir
@@ -496,10 +496,10 @@
          ! ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
          ! ind%B0%z = real(1.0,cp)
 
-         ! ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
+         ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
          ! call perturb(ind%B0%x,g)
-         ! ind%B0%y = real(0.0,cp)
-         ! ind%B0%z = real(0.0,cp)
+         ind%B0%y = real(0.0,cp)
+         ind%B0%z = real(0.0,cp)
 
          ! ind%B0%x = real(0.0,cp)
          ! ind%B0%y = real(0.0,cp)
@@ -524,19 +524,45 @@
          ind%nstep = ind%nstep + 1
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
 
+         ! ********************* POST SOLUTION COMPUTATIONS *********************
+         call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
+
+         ! ********************* POST SOLUTION PRINT/EXPORT *********************
+
+         call exportTransient(ind,ss_MHD)
+         if (getExportErrors(ss_MHD)) then
+           call computeDivergence(ind,ind%g)
+           call exportTransientFull(ind,ind%g,dir)
+         endif
+         call computeMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
+
+
          if (getPrintParams(ss_MHD)) then
+           write(*,*) '**************************************************************'
+           write(*,*) '************************** MAGNETIC **************************'
+           write(*,*) '**************************************************************'
+           write(*,*) '(Rem) = ',ind%Rem
+           write(*,*) '(t,dt) = ',ind%t,ind%dTime
+           ! write(*,*) '------------------------- GRID INFO --------------------------'
+           write(*,*) ''
+           write(*,*) 'N_cells = ',(/ind%g%c(1)%N,ind%g%c(2)%N,ind%g%c(3)%N/)
+           write(*,*) 'volume = ',ind%g%volume
+           write(*,*) 'min/max(h)_x = ',(/ind%g%c(1)%hmin,ind%g%c(1)%hmax/)
+           write(*,*) 'min/max(h)_y = ',(/ind%g%c(2)%hmin,ind%g%c(2)%hmax/)
+           write(*,*) 'min/max(h)_z = ',(/ind%g%c(3)%hmin,ind%g%c(3)%hmax/)
+           write(*,*) 'min/max(dh)_x = ',(/ind%g%c(1)%dhMin,ind%g%c(1)%dhMax/)
+           write(*,*) 'min/max(dh)_y = ',(/ind%g%c(2)%dhMin,ind%g%c(2)%dhMax/)
+           write(*,*) 'min/max(dh)_z = ',(/ind%g%c(3)%dhMin,ind%g%c(3)%dhMax/)
+           write(*,*) 'stretching_x = ',ind%g%c(1)%dhMax-ind%g%c(1)%dhMin
+           write(*,*) 'stretching_y = ',ind%g%c(2)%dhMax-ind%g%c(2)%dhMin
+           write(*,*) 'stretching_z = ',ind%g%c(3)%dhMax-ind%g%c(3)%dhMin
+           ! write(*,*) '------------------------ FIELD INFO --------------------------'
+           write(*,*) ''
            call printPhysicalMinMax(ind%B,'Bx','By','Bz')
            call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
            call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
            call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
          endif
-         call exportTransient(ind,ss_MHD)
-         if (getExportErrors(ss_MHD)) then
-           call computeDivergence(ind,ind%g)
-           ! call exportTransientFull(ind,ind%g,dir)
-         endif
-         call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
-         call computeMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
        end subroutine
 
        subroutine lowRemPoissonOld(ind,U,g,ss_MHD)
@@ -843,7 +869,7 @@
 
          ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
          ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         call perturb(ind%temp_CC%x,ind%g)
+         ! call perturb(ind%temp_CC%x,ind%g)
 
          ! k = real(0.1,cp); eps = real(0.001,cp)
          ! ind%temp_CC%x = ind%temp_CC%x*(real(1.0,cp) + eps*sin(k*ind%t))
@@ -1024,7 +1050,7 @@
          call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
          call cellCenter2Face(ind%temp_F,ind%temp_CC,g_ind)
 
-         call extractFace(temp,ind%temp_F,ind%SD,g_mom,2)
+         call extractFace(temp,ind%temp_F,ind%SD,g_mom)
 
          call multiply(temp,Ha**real(2.0,cp)/Re)
          call add(jcrossB,temp)
@@ -1059,7 +1085,7 @@
          call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
          call cellCenter2Face(ind%temp_F,ind%temp_CC,g_ind)
 
-         call extractFace(jcrossB,ind%temp_F,ind%SD,g_mom,2)
+         call extractFace(jcrossB,ind%temp_F,ind%SD,g_mom)
 
          call multiply(jcrossB,Ha**real(2.0,cp)/Re)
        end subroutine

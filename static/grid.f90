@@ -24,7 +24,7 @@
        public :: restrict
 
        type grid
-         real(cp) :: dhMin,maxRange,volume
+         real(cp) :: dhMin,dhMax,maxRange,volume
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
        end type
 
@@ -102,6 +102,7 @@
          implicit none
          type(grid),intent(inout) :: g
          g%dhMin = minval((/g%c(1)%dhMin,g%c(2)%dhMin,g%c(3)%dhMin/))
+         g%dhMax = maxval((/g%c(1)%dhMax,g%c(2)%dhMax,g%c(3)%dhMax/))
          g%maxRange = maxval((/g%c(1)%maxRange,g%c(2)%maxRange,g%c(3)%maxRange/))
          g%volume = g%c(1)%maxRange*g%c(2)%maxRange*g%c(3)%maxRange
        end subroutine
@@ -141,6 +142,7 @@
          if (exportLight) then
            newU = newAndOpen(dir,'gridXYZ_'//name)
            write(newU,*) 'dhMin = ',g%dhMin
+           write(newU,*) 'dhMin = ',g%dhMax
            write(newU,*) 'maxRange = ',g%maxRange
            write(newU,*) 'volume = ',g%volume
            call addToFile(g,newU); close(newU)

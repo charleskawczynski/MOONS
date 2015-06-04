@@ -5,11 +5,11 @@ y = Symbol('y')
 z = Symbol('z')
 
 
-
-#z = solve(x+y+2,x)
-#print z
+#for i in range(1,10):
+#    EQ(i) = Eq(x + 5*y, 2)
 
 a = Eq(x + 5*y, 2)
+print type(a)
 b = Eq(-3*x + 6*y, 15)
 z = solve([a, b], [x, y])
 

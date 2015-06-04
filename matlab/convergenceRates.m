@@ -1,22 +1,19 @@
-function convergenceRates(L1,L2,Linf,R)
 % Clear workspace and prescribe path
 clear;clc;close all;
 p = mfilename('fullpath');
 [thisDir,name,ext] = fileparts(p);
 chdir(thisDir); myDir.this = thisDir;
 
-% R = log(R);
-p = -1; y1 = exp(p*log(R) + log(mean(R)));
-p = -2; y2 = exp(p*log(R) + log(mean(R)));
-figure
-fs = 14;
-loglog(R,Linf,'b-+'); hold on
-loglog(R,y2,'r-',R,y1,'g-');
-title('Error vs Grid size (loglog)','fontsize',fs)
-xlabel('Grid size','fontsize',fs)
-ylabel('Error','fontsize',fs)
-AX=legend('Result','slope=-2','slope=-1');
-LEG = findobj(AX,'type','text');
-set(LEG,'FontSize',fs)
-end
+%% Active directory
+% myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\';
+myDir.source = 'C:\Users\Charlie\Desktop\MOONS - BMCs\BMC_100 - 3rd grid refinement test, includes error\';
+
+f = [myDir.source 'e(U(1_to_2)).dat'];
+d = importdata(f,' ',1);
+e.L1 = d.data(:,1); e.L2 = d.data(:,2); e.Linf = d.data(:,3);
+e.R1 = d.data(:,4); e.R2 = d.data(:,5); e.Rinf = d.data(:,6);
+N = 2.^(5:6);
+plotConvergenceRate(myDir,N,e)
+
+
 

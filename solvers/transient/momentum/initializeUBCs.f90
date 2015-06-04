@@ -13,15 +13,16 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 1
+       integer,parameter :: preDefinedU_BCs = 6
        !                                      0 : User-defined case in initUserUBCs() (no override)
-       !                                      1 : Lid Driven Cavity
+       !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
        !                                      3 : Duct Flow (Uniform Inlet)
        !                                      4 : Duct Flow (Fully Developed Inlet)
        !                                      5 : Duct Flow (Neumann Inlet/Outlet)
        !                                      6 : Duct Flow (Neumann Inlet / Periodic Outlet)
        !                                      7 : Cylinder Driven Cavity Flow (tornado)
+       !                                      8 : Lid Driven Cavity (2D)
 
        ! Lid Driven Cavity parameters:
        integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
@@ -116,6 +117,8 @@
          ! call ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
 
          case (7); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
+         case (8); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,drivenFace,drivenDirection,drivenSign)
+                   call make2D(u_bcs,v_bcs,w_bcs,g,3)
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
          end select
@@ -205,6 +208,44 @@
 
          end select
          deallocate(bvals)
+       end subroutine
+
+       subroutine make2D(u_bcs,v_bcs,w_bcs,g,dir)
+         implicit none
+         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir
+         integer :: Nx,Ny,Nz
+         integer :: periodic_c,periodic_i
+         periodic_c = 6 ! Wall coincident
+         periodic_i = 7 ! Wall incoincident
+
+         select case (dir)
+         case (1)
+         call setXminType(u_bcs,periodic_c)
+         call setXminType(v_bcs,periodic_i)
+         call setXminType(w_bcs,periodic_i)
+         call setXmaxType(u_bcs,periodic_c)
+         call setXmaxType(v_bcs,periodic_i)
+         call setXmaxType(w_bcs,periodic_i)
+         case (2)
+         call setYminType(u_bcs,periodic_i)
+         call setYminType(v_bcs,periodic_c)
+         call setYminType(w_bcs,periodic_i)
+         call setYmaxType(u_bcs,periodic_i)
+         call setYmaxType(v_bcs,periodic_c)
+         call setYmaxType(w_bcs,periodic_i)
+         case (3)
+         call setZminType(u_bcs,periodic_i)
+         call setZminType(v_bcs,periodic_i)
+         call setZminType(w_bcs,periodic_c)
+         call setZmaxType(u_bcs,periodic_i)
+         call setZmaxType(v_bcs,periodic_i)
+         call setZmaxType(w_bcs,periodic_c)
+         case default
+         stop 'Error: dir must = 1,2,3 in lidDrivenBCs.'
+         end select
+
        end subroutine
 
        subroutine ductFlow_Uniform_IO(u_bcs,v_bcs,w_bcs,g,ductDir,IO)

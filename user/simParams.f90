@@ -56,19 +56,19 @@
        ! real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 ) Not yet implemented
        !                                                       pure         central
        !                                                      upwind       difference
-       logical :: solveCoupled = .false. ! Change to addJCrossB
+       logical :: solveCoupled = .true. ! Change to addJCrossB
        ! logical :: addBuoyancy = .true. ! Not yet implemented
        ! logical :: addGravity = .true. ! Not yet implemented
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
+       logical :: solveInduction = .true.
        logical :: restartB = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
        logical :: computeKB = .true.    ! Compute magnetic energy at each time step
        logical :: computeKB0 = .false.   ! Compute magnetic energy at each time step
 
-       integer,parameter :: solveBMethod = 4
+       integer,parameter :: solveBMethod = 5
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
        !                                   2 : Low Rem (Pseudo time step for uniform properties)
        !                                   3 : Low Rem (Pseudo time step)
@@ -103,7 +103,7 @@
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
 
-       integer,parameter :: benchmarkCase = 100
+       integer,parameter :: benchmarkCase = 1003
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -183,8 +183,8 @@
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
        integer :: nskip_exportTransientFull  = 50     ! Very Expensive
-       ! integer :: nskip_exportErrors         = 5000    ! Divergences / Residuals (expensive)
-       integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
+       integer :: nskip_exportErrors         = 5000    ! Divergences / Residuals (expensive)
+       ! integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
        integer :: nskip_print                = 50     ! Printed data (cheap)
        ! integer :: nskip_print                = 10     ! Printed data (cheap)
        ! integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)

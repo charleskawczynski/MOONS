@@ -46,6 +46,198 @@ University of California Los Angeles, USA\\
 \section{Derivation of the Kinetic Energy Equation}
 The dimensionless momentum equation is
 
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial (u_i u_j)}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+Or
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	u_j\frac{\partial u_i}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+
+We must dot this with the velocity field $u_i$, which yields
+
+\begin{equation}
+	\boxed{
+	u_i
+	\frac{\partial u_i}{\partial t} + 
+	u_i
+	u_j\frac{\partial u_i}{\partial x_j}
+	= 
+	- u_i
+	\frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	u_i
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+	}
+\end{equation}
+
+This equation works perfectly fine to compute each of the terms of the kinetic energy. In Professor Kim's class on turbulence, we went a step further.
+
+Let $K = \frac{1}{2} u_i u_i$
+
+\subsection{Unsteady term}
+\begin{equation}
+	\frac{\partial u_i u_i}{\partial t}
+	=
+	2 u_i \frac{\partial u_i}{\partial t}
+\end{equation}
+
+Therefore
+
+\begin{equation}
+	u_i \frac{\partial u_i}{\partial t}
+	=
+	\frac{1}{2} \frac{\partial u_i u_i}{\partial t}
+	=
+	\frac{\partial K}{\partial t}
+\end{equation}
+
+\subsection{Advection term}
+\begin{equation}
+	\frac{\partial u_i u_i}{\partial x_j}
+	=
+	2 u_i \frac{\partial u_i}{\partial x_j}
+\end{equation}
+
+Therefore
+\begin{equation}
+	u_j u_i \frac{\partial u_i}{\partial x_j}
+	=
+	\frac{1}{2} u_j \frac{\partial u_i u_i}{\partial x_j}
+	=
+	u_j \frac{\partial K}{\partial x_j}
+\end{equation}
+
+
+\subsection{Diffusion Term}
+
+\begin{equation}
+	\frac{\partial^2 K}{\partial x_j^2}
+	=
+	\frac{\partial}{\partial x_j}
+	\frac{\partial K}{\partial x_j}
+	=
+	\frac{\partial}{\partial x_j}
+	u_i
+	\frac{\partial u_i}{\partial x_j}
+	=
+	\left( \frac{\partial u_i}{\partial x_j} \right)^2
+	+
+	u_i
+	\frac{\partial^2 u_i}{\partial x_j^2}
+\end{equation}
+
+Therefore
+
+\begin{equation}
+	\frac{1}{Re}
+	\left\{
+	u_i
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	\right\}
+	=
+	\frac{1}{Re}
+	\left\{
+	\frac{\partial^2 K}{\partial x_j^2}
+	-
+	\left( \frac{\partial u_i}{\partial x_j} \right)^2
+	\right\}
+\end{equation}
+
+
+\subsection{Pressure term}
+\begin{equation}
+	\frac{\partial p u_i}{\partial x_i}
+	=
+	u_i \frac{\partial p}{\partial x_i}
+	+
+	p \frac{\partial u_i}{\partial x_i}
+	=
+	u_i \frac{\partial p}{\partial x_i}
+\end{equation}
+
+Therefore
+
+\begin{equation}
+	u_i
+	\frac{\partial p}{\partial x_i}
+	=
+	\frac{\partial (u_i p)}{\partial x_i}
+\end{equation}
+
+\subsection{Lorentz Force term}
+
+\subsection{Putting this all together}
+We have
+
+\begin{equation}
+	\frac{\partial K}{\partial t}
+	+
+	u_j \frac{\partial K}{\partial x_j}
+	= 
+	-
+	\frac{\partial (u_i p)}{\partial x_i}
+	+
+	\frac{1}{Re}
+	\left\{
+	\frac{\partial^2 K}{\partial x_j^2}
+	-
+	\left( \frac{\partial u_i}{\partial x_j} \right)^2
+	\right\}
+	+
+	\frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+\end{equation}
+
+or
+
+\begin{equation}
+	\boxed{
+	\frac{\partial K}{\partial t}
+	+
+	\frac{\partial (u_j K)}{\partial x_j}
+	= 
+	-
+	\frac{\partial (u_i p)}{\partial x_i}
+	+
+	\frac{1}{Re}
+	\left\{
+	\frac{\partial^2 K}{\partial x_j^2}
+	-
+	\left( \frac{\partial u_i}{\partial x_j} \right)^2
+	\right\}
+	+
+	\frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+	}
+\end{equation}
+
+Note that sometimes the pressure term is written as $\frac{\partial (u_i p \delta_{ij})}{\partial x_j}$ and is grouped with the viscous terms.
+
+\section{Derivation of the Kinetic Energy Equation - using Prof Kim's notes}
+The dimensionless momentum equation is
+
 % \begin{equation}
 % 	\frac{\partial u_i}{\partial t} + 
 % 	\frac{\partial (u_i u_j)}{\partial x_j}
@@ -244,7 +436,7 @@ Finally, we have
 
 \subsection{Lorentz Force term}
 
-\section{Putting this all together}
+\subsection{Putting this all together}
 We have
 
 \begin{equation}
@@ -283,5 +475,32 @@ We have
 	(j \times B)_i
 	}
 \end{equation}
+
+or
+
+\begin{equation}
+	\boxed{
+	\frac{\partial K}{\partial t}
+	+
+	\frac{\partial u_j K}{\partial x_j}
+	= 
+	\frac{\partial}{\partial x_j} 
+	(
+	-p \delta_{ij}
+	u_i
+	+
+	2 Re^{-1}
+	S_{ij}
+	u_i
+	)
+	-
+	2 Re^{-1} S_{ij} S_{ij}
+	+
+	\frac{Ha^2}{Re}
+	u_i
+	(j \times B)_i
+	}
+\end{equation}
+
 
 \end{document}

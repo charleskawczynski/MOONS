@@ -5,6 +5,12 @@
         ! a = a * b => call multiply(a,b)
         ! a = a / b => call divide(a,b)
         ! a = b / a => call divide(b,a)
+        ! OR
+        ! c = a + b => call add(c,a,b)
+        ! c = a - b => call subtract(c,a,b)
+        ! c = a * b => call multiply(c,a,b)
+        ! c = a / b => call divide(c,a,b)
+        ! c = b / a => call divide(c,b,a)
 
         ! Available pre-processor directives:
         !         _DEBUG_FIELD_ ! not yet implemented
@@ -25,6 +31,7 @@
         public :: assign,delete
         public :: add,subtract
         public :: multiply,divide
+        public :: square
 
         public :: printScalarField
         public :: checkScalarField
@@ -47,6 +54,7 @@
       interface allocateField
         module procedure allocateField1
         module procedure allocateField2
+        module procedure allocateField3
       end interface
 
       interface delete
@@ -101,20 +109,27 @@
 
       interface subtract
         module procedure fieldFieldSubtract
+        module procedure fieldFieldSubtract2
         module procedure fieldScalarSubtract
         module procedure scalarFieldSubtract
       end interface
 
       interface multiply
         module procedure fieldFieldMultiply
+        module procedure fieldFieldMultiply2
         module procedure fieldScalarMultiply
         module procedure scalarFieldMultiply
       end interface
 
       interface divide
         module procedure fieldFieldDivide
+        module procedure fieldFieldDivide2
         module procedure fieldScalarDivide
         module procedure scalarFieldDivide
+      end interface
+
+      interface square
+        module procedure squareScalarField
       end interface
 
 
@@ -403,6 +418,26 @@
 #endif
         end subroutine
 
+        subroutine fieldFieldSubtract2(f,g,q)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          type(scalarField),intent(in) :: g,q
+#ifdef _PARALLELIZE_SCALAR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = g%phi(i,j,k) - q%phi(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = g%phi - q%phi
+#endif
+        end subroutine
+
         subroutine fieldScalarSubtract(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
@@ -461,6 +496,26 @@
           !$OMP END PARALLEL DO
 #else
           f%phi = f%phi * g%phi
+#endif
+        end subroutine
+
+        subroutine fieldFieldMultiply2(f,g,q)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          type(scalarField),intent(in) :: g,q
+#ifdef _PARALLELIZE_SCALAR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = g%phi(i,j,k) * q%phi(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = g%phi * q%phi
 #endif
         end subroutine
 
@@ -525,6 +580,26 @@
 #endif
         end subroutine
 
+        subroutine fieldFieldDivide2(f,g,q)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          type(scalarField),intent(in) :: g,q
+#ifdef _PARALLELIZE_SCALAR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = g%phi(i,j,k) / q%phi(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = g%phi / q%phi
+#endif
+        end subroutine
+
         subroutine fieldScalarDivide(f,g)
           implicit none
           type(scalarField),intent(inout) :: f
@@ -564,6 +639,25 @@
 #endif
         end subroutine
 
+        subroutine squareScalarField(f)
+          implicit none
+          type(scalarField),intent(inout) :: f
+#ifdef _PARALLELIZE_SCALAR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = f%phi(i,j,k) * f%phi(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = f%phi*f%phi
+#endif
+        end subroutine
+
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
         subroutine allocateField1(field,Nx,Ny,Nz)
@@ -584,6 +678,15 @@
           if (allocated(field1%phi)) deallocate(field1%phi)
           allocate(field1%phi(s(1),s(2),s(3)))
           field1%s = shape(field1%phi)
+        end subroutine
+
+        subroutine allocateField3(field,s)
+          implicit none
+          type(scalarField),intent(inout) :: field
+          integer,dimension(3),intent(in) :: s
+          if (allocated(field%phi)) deallocate(field%phi)
+          allocate(field%phi(s(1),s(2),s(3)))
+          field%s = shape(field%phi)
         end subroutine
 
         subroutine deallocateField(field)

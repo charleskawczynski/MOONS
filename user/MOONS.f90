@@ -54,6 +54,8 @@
          ! ***************** USER DEFINED MHD VARIABLES *****************
          real(cp) :: Re = 1000.0d0
          real(cp) :: Ha = 100.0d0
+         real(cp) :: Gr = 0.0d0
+         real(cp) :: Fr = 0.0d0
          real(cp) :: Rem = 1.0d0
          ! real(cp) :: dTime = 0.025
          ! real(cp) :: dTime = 0.01d0   ! Case 3: LDC Re100Ha10
@@ -99,7 +101,9 @@
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
-         case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3 ! For mesh refinement
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.67d-2
+         case (100); Re = 10000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 8.0d-4
 
          ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
@@ -189,6 +193,23 @@
          ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
          ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
 
+         ! Ha = 10000
+
+         ! Re = 100d0;    Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
          ! case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-4; dTime = ds
          case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-3; dTime = ds
          ! Rem = 0.1d0; ds = 1.0d-5
@@ -212,7 +233,8 @@
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 80000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
 
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
@@ -245,7 +267,8 @@
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Mimicking PD
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**1 ! Mimicking PD
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Mimicking PD
-         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**6 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! Mimicking PD
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 400000 ! Mimicking PD
 
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Salah
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
@@ -297,6 +320,7 @@
          ! Initialize Momentum grid/fields/parameters
          call setDTime(mom,dTime)
          call setRe(mom,Re)
+         call setDimensionlessNumbers(mom,Re,Ha,Gr,Fr)
          call setNMaxPPE(mom,NmaxPPE)
          if (exportGrids) then
           call export(grid_mom,dir//'Ufield/','grid_mom')
@@ -393,6 +417,8 @@
          ! ********************* SET B SOLVER SETTINGS *******************
 
          call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+         ! call export(mom,mom%g,dir)
+         ! call export(ind,ind%g,dir)
 
          call allocateVectorField(U,mom%g%c(1)%sn,mom%g%c(2)%sn,mom%g%c(3)%sn)
          call face2Node(U,mom%U,mom%g)
@@ -430,7 +456,9 @@
          case (4);    Ni = (/1,100,100/); Nwtop = (/0,5,5/);   Nwbot = (/0,5,5/) ! (Duct: Conducting)
          case (50);   Ni = 105;           Nwtop = 0;           Nwbot = 0
          case (51);   Ni = 105;           Nwtop = 0;           Nwbot = 0
-         case (100);  Ni = (/67,67,27/);  Nwtop = 0;           Nwbot = 0
+         ! case (100);  Ni = (/67,67,27/);  Nwtop = 0;           Nwbot = 0
+         ! case (100);  Ni = (/128,128,1/);  Nwtop = 0;           Nwbot = 0
+         case (100);  Ni = (/256,256,1/);  Nwtop = 0;           Nwbot = 0
          case (101);  Ni = 52;            Nwtop = 0;           Nwbot = 0
          case (102);  Ni = 45;            Nwtop = 11;          Nwbot = 11
          case (103);  Ni = 45;            Nwtop = 11;          Nwbot = 11
@@ -448,7 +476,11 @@
          case (301);  Ni = 101;           Nwtop = 0;           Nwbot = 0
          case (1001); Ni = 52;            Nwtop = (/8,0,8/);   Nwbot = 8 ! Ha = 10,100,1000
          case (1002); Ni = (/65,45,45/);  Nwtop = 0;           Nwbot = 0     ! Insulating
-         case (1003); Ni = (/75,45,45/);  Nwtop = 11;          Nwbot = 11
+         ! case (1003); Ni = (/75,45,45/);  Nwtop = 11;          Nwbot = 11
+         ! case (1003); Ni = (/1,64,64/); Nwtop = (/0,11,11/); Nwbot = Nwtop
+         ! case (1003); Ni = (/1,100,100/); Nwtop = (/0,5,5/); Nwbot = Nwtop
+         ! case (1003); Ni = (/1,160,160/); Nwtop = (/0,8,8/); Nwbot = Nwtop
+         case (1003); Ni = (/1,260,260/); Nwtop = (/0,13,13/); Nwbot = Nwtop
          case (1004); Ni = 35;            Nwtop = 0;           Nwbot = 0
          case (1005); Ni = (/64,32,32/);  Nwtop = 0;           Nwbot = 0 ! (Jack's Experiment)
          case default
@@ -456,6 +488,9 @@
            Nwtop = 0
            Nwbot = 0
          end select
+         write(*,*) 'Ni = ',Ni
+         write(*,*) 'Nwtop = ',Nwtop
+         write(*,*) 'Nwbot = ',Nwbot
        end subroutine
 
        subroutine MOONS(dir)
@@ -477,27 +512,47 @@
        ! ***************************************************************
        ! ***************************************************************
 
-       subroutine MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,N)
+       subroutine MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,Nall)
          implicit none
-         integer,dimension(3),intent(inout) :: Ni,Nwtop,Nwbot
-         integer,dimension(3),intent(in) :: N
-         ! Ni = N*(1/2); Nwtop = N/2**2
-         ! Ni = N*(1/2 + 1/2**2); Nwtop = N/2**3
-         ! Ni = N*(1/2 + 1/2**2 + 1/2**3); Nwtop = N/2**4
-         ! Ni = N*(1/2 + 1/2**2 + 1/2**3 + 1/2**4); Nwtop = N/2**5
-         Ni = N; Nwtop = 0
+         integer,dimension(3),intent(inout) :: Nwtop,Nwbot,Ni
+         integer,dimension(3),intent(in) :: Nall
+         ! 
+         ! N = 2**{5,6,7}
+         ! 
+         ! For non-zero walls, N must > k for Nwtop = N/2**k
+         ! 
+         !                                                                   ! Thinner walls
+         ! Ni = (N/2); Nwtop = N/2**2                                      !    |
+         ! Ni = (N/2 + N/2**2); Nwtop = N/2**3                             !    |
+         ! Ni = (N/2 + N/2**2 + N/2**3); Nwtop = N/2**4                    !    |
+         ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4); Nwtop = N/2**5           !    V
+         ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4 + N/2**5); Nwtop = N/2**6  !
 
+         ! Ni = N; Nwtop = 0
+
+         ! Ni = (N/2); Nwtop = N/2**2                                      ! Good for N = 2**{3,4,5}
+         ! Ni = (N/2 + N/2**2); Nwtop = N/2**3                             ! Good for N = 2**{4,5,6}
+         ! Ni = (N/2 + N/2**2 + N/2**3); Nwtop = N/2**4                    ! Good for N = 2**{5,6,7}
+         ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4); Nwtop = N/2**5           ! Good for N = 2**{6,7,8}
+         ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4 + N/2**5); Nwtop = N/2**6  ! Good for N = 2**{7,8,9}
+
+         Ni = Nall
+         Nwtop = Ni*5/100
          Nwbot = Nwtop
+
+         Ni(1) = 1
+         Nwbot(1) = 0
+         Nwtop(1) = 0
        end subroutine
 
-       subroutine MOONS_Parametric(U,B,g,N,dir)
+       subroutine MOONS_Parametric(U,B,g,Nall,dir)
          implicit none
          character(len=*),intent(in) :: dir ! Output directory
          type(vectorField),intent(inout) :: U,B
          type(grid),intent(inout) :: g
-         integer,intent(in) :: N
-         integer,dimension(3) :: Ni,Nwtop,Nwbot
-         call MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,(/N,N,N/))
+         integer,intent(in) :: Nall
+         integer,dimension(3) :: Nwtop,Nwbot,Ni
+         call MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,(/Nall,Nall,Nall/))
          call MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
        end subroutine
 

@@ -1,6 +1,5 @@
 \documentclass[11pt]{article}
 \usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{xspace}
@@ -13,6 +12,8 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 \usepackage{etoolbox}
+\usepackage{epstopdf}
+% \usepackage[outdir=./]{epstopdf}
 
 \newcommand{\figS}{22.1em}
 \newcommand{\BfigS}{50em}
@@ -23,7 +24,7 @@
 \newcommand{\BfigW}{\BfigS}
 \newcommand{\ffigH}{\ffigS}
 \newcommand{\ffigW}{\ffigS}
-
+\graphicspath{{figs}}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -235,6 +236,151 @@ Looking back at the momentum equation, the $j\times B$ force does not act in x, 
 \begin{equation}
 	B_y = B_z = 0
 \end{equation}
+
+\section{Primary Induced Flow Field}
+Since we are assuming the fluid starts from rest, let's see how early flow development begins.
+
+\subsection{B evolution at early time}
+At early time, there is no fluid motion, so the $x$-component of the magnetic field evolves with
+\begin{equation}
+	\frac{\partial B_x}{\partial t} 
+	- \frac{1}{Re_m}
+	\left(
+	\frac{\partial^2 B_x}{\partial y^2}
+	+
+	\frac{\partial^2 B_x}{\partial z^2}
+	\right)
+	=
+	- \frac{\partial B_x^0}{\partial t}
+\end{equation}
+
+Since the source term, $- \frac{\partial B_x^0}{\partial t}$, is uniform and $B_x=0$ on the boundaries, we can expect that the contours of $B_x$ will be that of concentric rounded squares (since we are working with a square duct). Also, $B_x$ will be positive everywhere.
+
+\subsection{Currents at early time}
+For this B-field configuration, the currents simplify to
+\begin{equation}
+	\pmb{j}
+	=
+	\hat{y} \frac{\partial B_x}{\partial z}
+	- \hat{z} \frac{\partial B_x}{\partial y}
+\end{equation}
+
+Breaking up the domain into 4 quadrants, starting from the north east quadrant, and proceding counter-clockwise, let's number them 1,2,3,4 respectively.
+
+Given the distribution of $B_x$ at early time, the currents will have the following signs in the following quadrants
+\subsubsection{Quadrant 1}
+\begin{equation}
+	j_y	= \frac{\partial B_x}{\partial z} = (-)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\partial B_x}{\partial y} = (+)
+\end{equation}
+
+\subsubsection{Quadrant 2}
+\begin{equation}
+	j_y	= \frac{\partial B_x}{\partial z} = (-)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\partial B_x}{\partial y} = (-)
+\end{equation}
+\subsubsection{Quadrant 3}
+\begin{equation}
+	j_y	= \frac{\partial B_x}{\partial z} = (+)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\partial B_x}{\partial y} = (-)
+\end{equation}
+\subsubsection{Quadrant 4}
+\begin{equation}
+	j_y	= \frac{\partial B_x}{\partial z} = (+)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\partial B_x}{\partial y} = (+)
+\end{equation}
+
+\subsection{Lorentz Force at early time}
+The signs of the B-field and J-field allow us to see what the signs, and roughly distribution, of the Lorentz force at early time.
+
+The Lorentz force is
+
+\begin{equation}
+	\pmb{j} \times \pmb{B}
+	=
+	\{
+	0 ,
+	j_z B_x ,
+	-j_y B_x
+	\}
+	=
+	\left\{
+	0 ,
+	- B_x \frac{\partial B_x}{\partial y} ,
+	- B_x \frac{\partial B_x}{\partial z}
+	\right\}
+\end{equation}
+
+Again, breaking up the domain into 4 quadrants as before, the Lorentz force will have the following signs in the following quadrants
+\subsubsection{Quadrant 1}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (+)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (+)
+\end{equation}
+
+\subsubsection{Quadrant 2}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (-)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (+)
+\end{equation}
+\subsubsection{Quadrant 3}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (-)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (-)
+\end{equation}
+\subsubsection{Quadrant 4}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (+)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (-)
+\end{equation}
+
+In addition, the north, south, east and west sides of the square geometry have the following signs
+\subsubsection{North}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (0)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (+)
+\end{equation}
+
+\subsubsection{South}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (0)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (+)
+\end{equation}
+\subsubsection{East}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (-)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (0)
+\end{equation}
+\subsubsection{West}
+\begin{equation}
+	(\pmb{j} \times \pmb{B})_y = - B_x \frac{\partial B_x}{\partial y} = (+)
+	\qquad \qquad
+	(\pmb{j} \times \pmb{B})_z = - B_x \frac{\partial B_x}{\partial z} = (0)
+\end{equation}
+
+\subsection{Implications}
+
+Drawing a rough vector field of $j\times B$ with the above information, it is clear that the fluid in the entire domain experiences a force toward the boundaries. Due to the \textit{square} geometry, and boundary conditions on the magnetic field, $B_x=0 \in \partial \Omega$, this force is larger in the corners as compared with the sides (since the sides only have one component), which means that the force along the diagonal (towards the corners) is large enough to overcome the force along the cross section (towards the sides). This means that there is a net torque on the fluid within each corner to create a counter rotating vortex pair (CVP). As we'll see, this is in fact was is happening.
+
+Note that if the geometry were square, the Lorentz forces would be radially outward, the pressure force would balance the Lorentz force, and no torque would result.
+
+\begin{figure}[H]
+ \centering
+  \includegraphics[width=\BfigH,height=\BfigW]{figs/CVP.png}
+   \caption[Optional ]{4 Conter-rotating Vortex Pair (in each corner)}
+\end{figure}
+
 
 \section{Energy}
 

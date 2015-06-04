@@ -5,6 +5,13 @@
         ! a = a - b => call subtract(a,b)
         ! a = a * b => call multiply(a,b)
         ! a = a / b => call divide(a,b)
+        ! a = b / a => call divide(b,a)
+        ! OR
+        ! c = a + b => call add(c,a,b)
+        ! c = a - b => call subtract(c,a,b)
+        ! c = a * b => call multiply(c,a,b)
+        ! c = a / b => call divide(c,a,b)
+        ! c = b / a => call divide(c,b,a)
 
         ! Available pre-processor directives:
         !         _DEBUG_VECTOR_
