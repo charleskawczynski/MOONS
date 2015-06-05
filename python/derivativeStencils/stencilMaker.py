@@ -1,130 +1,244 @@
-# This program calculates the coefficients of the 1st and 2nd
-# derivative stencils made from the file "Non-uniform grid 
-# stencil" in the documentation folder.
+from sympy.solvers import solve
+from sympy import Symbol
+from sympy import *
+from itertools import *
+from math import factorial
 
-from __future__ import division
-import sympy as sp
-import math as myMath
 
-def stencilMaker(alpha,beta,i,j,k,dx,s,checkForErrors):
+def stencilMaker(nLeft,nRight,nonUniformGrid,substituteDH,expandSolution):
     
-    f_i = sp.symbols('f_{'+str(i).replace(' ','')+'}')
-    f_k = sp.symbols('f_{'+str(k).replace(' ','')+'}')
-    f_j = sp.symbols('f_{'+str(j).replace(' ','')+'}')
-    
-    itemp = i
-    jtemp = j
-    ktemp = k
-    
-    g_0 = sp.symbols('g_{0}')
-    
-    #f_i = symbols('f_{i}')
-    #f_k = symbols('f_{k}')
-    #f_j = symbols('f_{j}')
-    
-    # Check for input errors
+    RHS = [];LHS = [];EQ = [];Sak = [];
+    Sdhk = [];Sfk = [];Sfp = []; temp = [];
     err = 0
-    if checkForErrors:
-        if alpha == beta:
-            err = 1
-            print 'ERROR: alpha_k cannot equal beta_j'
-        if i == j:
-            err = 1
-            print 'ERROR: i cannot equal j'
-        if j == k:
-            err = 1
-            print 'ERROR: j cannot equal k'
-        if i == k:
-            err = 1
-            print 'ERROR: i cannot equal k'
+    if nLeft>0:
+        print 'Error: nLeft must be < 0'
+        err = 1
+    if nRight<0:
+        print 'Error: nRight must be > 0'
+        err = 1
+    if nRight==0 and nLeft == 0:
+        print 'Error: nRight AND nLeft cannot = 0'
+        err = 1
         
-        try: 
-            if not myMath.copysign(1,(k-i).subs(s,1)) == myMath.copysign(1,alpha.subs(dx,1)):
-                err = 1
-                print 'ERROR: The sign of k and alpha_k must match'
+    if err==0:
+        # *************************************************************************
+        # ************************* CONSTRUCT VARIABLES ***************************
+        # *************************************************************************
+        j = 0
+        n = nRight-nLeft+1
+        for k in range(nLeft,nRight+1):
+            if k>0:
+                ak = '\\alpha_{i+'+str(k)+'}'
+                fk = 'f_{i+'+str(k)+'}'
+                Sak.append(Symbol(ak))
+                Sfk.append(Symbol(fk))
+            elif k<0:
+                ak = '\\alpha_{i'+str(k)+'}'
+                fk = 'f_{i'+str(k)+'}'
+                Sak.append(Symbol(ak))
+                Sfk.append(Symbol(fk))
+        for k in range(nLeft,nRight):
+            if k>0:
+                dhk = '\\Delta h_{i+'+str(k)+'}'
+            elif k<0:
+                dhk = '\\Delta h_{i'+str(k)+'}'
+            elif k==0:
+                dhk = '\\Delta h_{i}'
+            Sdhk.append(Symbol(dhk))
             
-            if not myMath.copysign(1,(j-i).subs(s,1)) == myMath.copysign(1,beta.subs(dx,1)):
-                err = 1
-                print 'ERROR: The sign of j and beta_j must match'
-            sgiven = 1
-        except:
-            if not myMath.copysign(1,(k-i)) == myMath.copysign(1,alpha.subs(dx,1)):
-                err = 1
-                print 'ERROR: The sign of k and alpha_k must match'
+            dhUniform = Symbol('{\\Delta h}')
+        
+        nUnknowns = n+2 # To include truncation error
+        for k in range(0,nUnknowns):
+            if (k==0):
+                fp = 'f_i'
+            elif k>=n:
+                fp = 'f_{\\xi}^{('+str(k)+')}'
+            else:
+                fp = 'f_i^{('+str(k)+')}'
+            Sfp.append(Symbol(fp))
             
-            if not myMath.copysign(1,(j-i)) == myMath.copysign(1,beta.subs(dx,1)):
-                err = 1
-                print 'ERROR: The sign of j and beta_j must match'
-            sgiven = 0
+        print ' --------------------- USER INPUT ---------------------- '
+        print 'nLeft = '+str(nLeft)
+        print 'nRight = '+str(nRight)
+        print 'n = '+str(n)
+    
+        # *************************************************************************
+        # ************************* CONVERT ALPHA TO DH ***************************
+        # *************************************************************************
+    
+        if substituteDH:
+            for j in range(0,len(Sak)+nLeft):
+                temp = []
+                i = j - nLeft
+                for k in range(0,len(Sdhk)+nLeft):
+                    l = k - nLeft
+                    if l<=i:
+                        if nonUniformGrid:
+                            temp.append(Sdhk[l])
+                        else:
+                            temp.append(dhUniform)
+                Sak[i] = Sak[i].replace(Sak[i],sum(temp))
+    
+            for j in range(nLeft,0):
+                temp = []
+                i = j - nLeft
+                for k in range(nLeft,0):
+                    l = k - nLeft
+                    if l>=i:
+                        if nonUniformGrid:
+                            temp.append(-Sdhk[l])
+                        else:
+                            temp.append(-dhUniform)
+                Sak[i] = Sak[i].replace(Sak[i],sum(temp))
     
     
+        # *************************************************************************
+        # **************************** CONSTRUCT LHS ******************************
+        # *************************************************************************
+        
+        for k in range(0,len(Sfk)):
+            LHS.append(Sfk[k])
     
-        if not myMath.copysign(1,j-k) == myMath.copysign(1,(beta-alpha).subs(dx,1)):
-            err = 1
-            print 'ERROR: Alpha and beta are not consistent with their indecies'
-        
-        if max(i,j,k) - min(i,j,k) > 2:
-            err = 1
-            print 'The index range is too large.'
+        # *************************************************************************
+        # **************************** CONSTRUCT RHS ******************************
+        # *************************************************************************
+        for k in range(0,len(Sak)):
+            temp = [];
+            for j in range(0,len(Sfp)):
+                temp.append(Sak[k]**j*Sfp[j]/factorial(j))
+            RHS.append(sum(temp))
+            
+        # *************************************************************************
+        # **************************** CONSTRUCT EQS ******************************
+        # *************************************************************************
+        for j in range(0,len(RHS)):
+            EQ.append(Eq(LHS[j],RHS[j]))
     
-    if err == 0:
-        # Initialize arrays
-        f = [0, 0, 0]
-        df = [0, 0, 0]
-        ddf = [0, 0, 0]
+        # *************************************************************************
+        # **************************** SOLVE EQUATIONS ****************************
+        # *************************************************************************
+        print ' ------------------ SOLVING SYSTEM... ------------------'
+    
+        S = solve(EQ,Sfp[1:],dict=True)
+        print ' -------------- FINISHED SOLVING SYSTEM ----------------'
+    
+        # *************************************************************************
+        # ************************ CONVERT SOLUTION TO LIST ***********************
+        # *************************************************************************
+        Sd = S[0]
+        SL = list()
+        for key, value in Sd.iteritems():
+            if expandSolution:
+                temp = [expand(key),expand(value)]
+            else:
+                temp = [key,value]
+            SL.append(temp)
         
-        print ''
-        print '----------------- Input Parameters -------------------'
-        print 'i,k,j = ' + str(itemp).replace(' ','') + ', ' + str(ktemp).replace(' ','') + ', ' + str(jtemp).replace(' ','')
-        print 'alpha_k = ' + str(alpha)
-        print 'beta_j = ' + str(beta)
-        
-        # Shift indicies for accessing array
-        mi = min(i,j,k)
-        ma = max(i,j,k)
-        i = i-mi
-        j = j-mi
-        k = k-mi
-        mi = min(i,j,k)
-        ma = max(i,j,k)
-        
-        # Print output
-        print '------------------- 1st derivative -------------------'
-        df[i] = 1/(beta-alpha)*(alpha/beta - beta/alpha)*f_i
-        df[k] = 1/(beta-alpha)*(beta/alpha)*f_k
-        df[j] = 1/(beta-alpha)*(-alpha/beta)*f_j
-        print 'df[' + str(itemp).replace(' ','') + '] = '
-#        if sgiven == 1:
-#            print df[::-1]
-#        else:
-#            print df
-        print df[::-1]
-        print df
-        
-        print '------------------- 2nd derivative -------------------'
-        ddf[i] = 2/(alpha*beta)*f_i
-        ddf[k] = 2/(alpha**2-alpha*beta)*f_k
-        ddf[j] = 2/(beta**2 - beta*alpha)*f_j
-        print 'ddf[' + str(itemp).replace(' ','') + '] = '
-#        if sgiven == 1:
-#            print ddf[::-1]
-#        else:
-#            print ddf
-        print ddf[::-1]
-        print ddf
+        # *************************************************************************
+        # *********************** CONVERT SOLUTION TO STRING **********************
+        # *************************************************************************
 
-        if mi == i or ma == i:
-            print '------------------- Boundary Values -------------------'
-            f[i] = (beta - alpha)/(alpha/beta - beta/alpha)*g_0
-            f[k] = -beta/alpha/(alpha/beta - beta/alpha)*f_k
-            f[j] = alpha/beta/(alpha/beta - beta/alpha)*f_j
-            print 'f_boundary[' + str(itemp).replace(' ','') + '] = '
-#            if sgiven == 1:
-#                print f[::-1]
-#            else:
-#                print f
-            print f[::-1]
-            print f
-    
-        print ''
-    
+        SS = [];
+        for k in range(0,len(SL)):
+            SS.append(str(SL[k][0]) + ' = ' + str(SL[k][1]))
+        
+        print ' ------------------- EXPORTING LATEX ------------------- '
+
+        # *************************** VARIABLES ***************************
+        f = open('latex/knowns.tex','w')
+
+        f.write('\\begin{equation} \n')
+        for k in range(0,len(Sak)):
+            f.write(latex(Sak[k]))
+            if k<len(Sak)-1:
+                f.write(' , ')
+        f.write('\n \\end{equation}')
+        
+        f.write('\\begin{equation} \n')
+        f.write(latex(Sfp[0]))
+        f.write(' , ')
+        for k in range(0,len(Sfk)):
+            f.write(latex(Sfk[k]))
+            if k<len(Sfk)-1:
+                f.write(' , ')
+        f.write('\n \\end{equation}')
+        f.close()
+
+        f = open('latex/unknowns.tex','w')
+        f.write('\\begin{equation} \n')
+        for k in range(1,len(Sfp)):
+            f.write(latex(Sfp[k]))
+            if k<len(Sfp)-1:
+                f.write(' , ')
+        f.write('\n \\end{equation}')
+
+        f.close()
+
+        # *********************** EQUATIONS SOLVED ************************ 
+        f = open('latex/eqs.tex','w')
+        for k in range(0,len(EQ)):
+            f.write('\\begin{equation} \n')
+            f.write(latex(expand(EQ[k])))
+            f.write('\n \\end{equation}')
+        f.close()
+
+        # ************************ 1ST DERIVATIVE ************************* 
+        f = open('latex/dfdx.tex','w')
+        f.write('\\begin{equation} \n')
+        for k in range(0,len(SL)):
+            if str(SL[k][0])=='f_i^{(1)}':
+                temp = SL[k][1].subs(Sfp[nUnknowns-1],0) # Remove truncation error
+                temp = temp.subs(Sfp[nUnknowns-2],0)     # Remove truncation error
+                L = latex(SL[k][0])
+                R = latex(simplify(temp))
+        p = L+' = '+R
+        f.write(p)
+        f.write('\n \\end{equation}')
+        # **************** 1ST DERIVATIVE TRUNCATION **********************
+        f.write('\\begin{equation} \n')
+        f.write('\\text{Truncation} = ')
+        for k in range(0,len(SL)):
+            if str(SL[k][0])=='f_i^{(1)}':
+                temp = SL[k][1]
+                for t in range(0,len(Sfk)):
+                    temp = temp.subs(Sfk[t],0) # Remove all BUT truncation error
+                    temp = temp.subs(Sfp[0],0) # Remove all BUT truncation error
+                p = latex(simplify(temp))
+        f.write(p)
+        f.write('\n \\end{equation}')
+
+        f.close()
+         # *********************** 2ND DERIVATIVE ************************* 
+        f = open('latex/d2fdx2.tex','w')
+        f.write('\\begin{equation} \n')
+        for k in range(0,len(SL)):
+            if str(SL[k][0])=='f_i^{(2)}':
+                temp = SL[k][1].subs(Sfp[nUnknowns-1],0) # Remove truncation error
+                temp = temp.subs(Sfp[nUnknowns-2],0)     # Remove truncation error
+                L = latex(SL[k][0])
+                R = latex(simplify(temp))
+        p = L+' = '+R
+        f.write(p)
+        f.write('\n \\end{equation}')
+        # **************** 2ND DERIVATIVE TRUNCATION **********************
+        f.write('\\begin{equation} \n')
+        f.write('\\text{Truncation} = ')
+        for k in range(0,len(SL)):
+            if str(SL[k][0])=='f_i^{(1)}':
+                temp = SL[k][1]
+                for t in range(0,len(Sfk)):
+                    temp = temp.subs(Sfk[t],0) # Remove all BUT truncation error
+                    temp = temp.subs(Sfp[0],0) # Remove all BUT truncation error
+                p = latex(simplify(temp))
+        f.write(p)
+        f.write('\n \\end{equation}')
+
+        f.close()
+
+        print ' ---------------------- FINISHED ----------------------- '
+
+
+
+
+

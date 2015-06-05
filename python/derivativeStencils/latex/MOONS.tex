@@ -1,0 +1,127 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\}
+\maketitle
+\section{LaTeX Derivative Equations, using prettyPy}
+
+In this document, the results from stencils.py are presented which solves the linear (Vandermonde) system of equations
+
+\begin{equation}
+	f_{i+k}
+	=
+	\sum_{j=0}^n
+	\frac{\alpha_{i+k} f_{i}^{(j)}}{(j)!}
+	\qquad \qquad
+	k = n_{left} \dots n_{right}
+\end{equation}
+
+For the derivatives $f_i^{(j)}$, where $n_{left}$ and $n_{right}$, the input arguments, are the number of points to the left and right of $i$ respectively. The derivatives are assumed to be the unknowns and everything else is assumed known.
+
+By definition
+\begin{equation}
+	\alpha_{i+k} 
+	=
+	h_{i+k} - h_{i}
+\end{equation}
+
+Since, in MOONS, $\Delta h_1 = h_2 - h_1$, let
+
+\begin{equation}
+	\Delta h_{i}
+	=
+	h_{i+1} - h_{i}
+	=
+	\alpha_{i+1}
+	\qquad
+	\rightarrow
+	\alpha_{i+k} = \Delta h_{i+k-1}
+\end{equation}
+
+Also note that, for $k>1$,
+
+\begin{equation}
+	\Delta h_{i+k-1}
+	=
+	\Delta h_{i+1}
+	+
+	\dots
+	+
+	\Delta h_{i+k-1}
+\end{equation}
+
+And for $k<1$,
+
+\begin{equation}
+	\Delta h_{i+k-1}
+	=
+	\Delta h_{i-1}
+	+
+	\dots
+	+
+	\Delta h_{i+k-1}
+\end{equation}
+
+Again, to note how indexing is defined
+
+\begin{equation}
+	\boxed{
+	\Delta h_{i}
+	=
+	h_{i+1} - h_{i}
+	}
+\end{equation}
+
+\section{Source of Generation}
+The results below are generated from stencils.py in the above directory. The type of stencils (central difference / forward difference / number of points to include in stencil) here can be changed by modifying the stencils.py file. The truncation error of the finite difference scheme is included. Sometimes a higher term is present, other times it may be absent (depending if there is perfect cancellation due to symmetry).
+
+\subsection{Equations Solved}
+\input{eqs}
+\subsection{Knowns}
+\input{knowns}
+\subsection{Unknowns}
+\input{unknowns}
+\subsection{First Derivative}
+\input{dfdx}
+\subsection{Second Derivative}
+\input{d2fdx2}
+
+\end{document}
