@@ -381,6 +381,83 @@ Note that if the geometry were square, the Lorentz forces would be radially outw
    \caption[Optional ]{4 Conter-rotating Vortex Pair (in each corner)}
 \end{figure}
 
+\subsection{Quantitative Analysis}
+To be sure that there will be movement, we must make sure that there is a non-zero circulation of the $j \times B$ force. We can compute the circulation of $j \times B$ as 
+
+\begin{equation}
+	\Gamma = \int_A ( \nabla \times [\pmb{j} \times \pmb{B}] )_x dA
+\end{equation}
+From above,
+\begin{equation}
+	\pmb{j} \times \pmb{B}
+	=
+	\{
+	0 ,
+	j_z B_x ,
+	-j_y B_x
+	\}
+	=
+	\left\{
+	0 ,
+	- B_x \frac{\partial B_x}{\partial y} ,
+	- B_x \frac{\partial B_x}{\partial z}
+	\right\}
+\end{equation}
+
+
+Since there is no variation in $x$, and the $x$ component of $j \times B=0$, taking the curl of this yields
+
+\begin{equation}
+	\nabla \times [\pmb{j} \times \pmb{B}]
+	=
+	(\nabla \times [\pmb{j} \times \pmb{B}]) _x
+	=
+	-
+	\frac{\partial}{\partial y} \left( B_x \frac{\partial B_x}{\partial z} \right)
+	+
+	\frac{\partial}{\partial z} \left( B_x \frac{\partial B_x}{\partial y} \right)
+\end{equation}
+
+\begin{equation}
+	=
+	-
+	\left\{
+	B_x \frac{\partial B_x}{\partial z y} + \frac{\partial B_x}{\partial z} \frac{\partial B_x}{\partial y}
+	\right\}
+	+
+	\left\{
+	B_x \frac{\partial B_x}{\partial y z} + \frac{\partial B_x}{\partial y} \frac{\partial B_x}{\partial z}
+	\right\}
+	=
+	-
+	\frac{\partial B_x}{\partial z} \frac{\partial B_x}{\partial y}
+	+
+	\frac{\partial B_x}{\partial y} \frac{\partial B_x}{\partial z}
+	= 0
+\end{equation}
+
+Therefore 
+
+\begin{equation}
+	\Gamma = \int_A ( \nabla \times [\pmb{j} \times \pmb{B}] )_x dA = 0
+\end{equation}
+
+
+This means that, at early time, the vorticity equation is 
+
+\begin{equation}
+	\frac{\partial \nabla \times u}{\partial t} = \nabla \times \nabla p
+	+
+	\frac{Ha^2}{Re}
+	\nabla \times 
+	\pmb{j}\times \pmb{B}
+	=
+	0
+\end{equation}
+
+Due to the vector identity $\nabla \times \nabla \phi=0$ and the analysis above. Therefore, until there is a spatial variation in $u$, $\nabla \times u=0$.
+
+It seems that $j \times B$ is only providing tensile forces to the fluid, and not imparting any rotational force. The motion seen above must be due to the fact that the PPE is being estimated by Gauss-Seidel. If a direct method were used, the fluid should remain stationary, since the pressure would perfectly balance the $j \times B$ force.
 
 \section{Energy}
 

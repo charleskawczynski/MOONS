@@ -61,6 +61,7 @@
 
        real(cp),parameter :: zero = real(0.0,cp)
        real(cp),parameter :: one = real(1.0,cp)
+       real(cp),parameter :: tol = 10.0**(-6.0) ! Minimum number to divide by when computing error.
 
        private
 
@@ -74,7 +75,6 @@
        public :: getL2, getR2
        public :: getLinf, getRinf
 
-       real(cp),parameter :: tol = 10.0**(-6.0) ! Minimum number to divide by when computing error.
 
        type norms
          ! private
@@ -117,8 +117,8 @@
        subroutine initError(e)
          implicit none
          type(norms),intent(inout) :: e
-         e%L1 = 0.0; e%L2 = 0.0; e%Linf = 0.0
-         e%R1 = 0.0; e%R2 = 0.0; e%Rinf = 0.0
+         e%L1 = zero; e%L2 = zero; e%Linf = zero
+         e%R1 = zero; e%R2 = zero; e%Rinf = zero
        end subroutine
 
        subroutine initCopy(eCopy,e)
@@ -284,28 +284,25 @@
          real(cp),intent(in),dimension(:) :: exact,approx
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
-         integer,dimension(2) :: s
+         integer,dimension(1) :: s
+         real(cp),dimension(1) :: scp
          real(cp) :: eTemp,denomTemp
          integer :: i
-         s = size(exact); e = 0.0; denom = 0.0
-         eTemp = 0.0; denomTemp = 0.0
-         !$OMP PARALLEL
-         !$OMP DO
+         s = shape(approx); e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; scp = real(s,cp)
+         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
          do i=1,s(1)
            eTemp = eTemp + abs(exact(i) - approx(i))**n
            denomTemp = denomTemp + abs(exact(i))**n
          enddo
-         !$OMP END DO
+         !$OMP END PARALLEL DO
+         e = etemp
+         denom = denomTemp
 
-         !$OMP ATOMIC
-         e = e + etemp
-         denom = denom + denomTemp
-         !$OMP END PARALLEL
-
-         e = e**(1.0/n)/(dble(s(1)))
-         denom = denom/(dble(s(1)))
+         e = e**(one/n)/(scp(1))
+         denom = denom/(scp(1))
          if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+1.0); endif
+         else; er = e/(denom+one); endif
        end subroutine
 
        subroutine LnError1DUniform(exact,approx,n,e,er,denom)
@@ -314,30 +311,25 @@
          real(cp),intent(in) :: exact
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
-         integer,dimension(2) :: s
+         integer,dimension(1) :: s
+         real(cp),dimension(1) :: scp
          real(cp) :: eTemp,denomTemp
-         integer :: i,j
-         s = size(approx); e = 0.0; denom = 0.0
-         eTemp = 0.0; denomTemp = 0.0
-         !$OMP PARALLEL
-         !$OMP DO
-         do j=1,s(2)
-           do i=1,s(1)
-             e = e + abs(exact - approx(i))**n
-             denom = denom + abs(exact)**n
-           enddo
+         integer :: i
+         s = shape(approx); e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; scp = real(s,cp)
+         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
+         do i=1,s(1)
+           eTemp = eTemp + abs(exact - approx(i))**n
+           denomTemp = denomTemp + abs(exact)**n
          enddo
-         !$OMP END DO
-         
-         !$OMP ATOMIC
-         e = e + etemp
-         denom = denom + denomTemp
-         !$OMP END PARALLEL
+         !$OMP END PARALLEL DO
+         e = etemp
+         denom = denomTemp
 
-         e = e**(1.0/n)/(dble(s(1)))
-         denom = denom/(dble(s(1)))
+         e = e**(one/n)/(scp(1))
+         denom = denom/(scp(1))
          if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+1.0); endif
+         else; er = e/(denom+one); endif
        end subroutine
 
        subroutine LnError2D(exact,approx,n,e,er,denom)
@@ -346,29 +338,26 @@
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
          integer,dimension(2) :: s
+         real(cp),dimension(2) :: scp
          real(cp) :: eTemp,denomTemp
          integer :: i,j
-         s = shape(exact); e = 0.0; denom = 0.0
-         eTemp = 0.0; denomTemp = 0.0
-         !$OMP PARALLEL
-         !$OMP DO
+         s = shape(approx); e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; scp = real(s,cp)
+         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
          do j=1,s(2)
            do i=1,s(1)
              eTemp = eTemp + abs(exact(i,j) - approx(i,j))**n
              denomTemp = denomTemp + abs(exact(i,j))**n
            enddo
          enddo
-         !$OMP END DO
+         !$OMP END PARALLEL DO
+         e = etemp
+         denom = denomTemp
 
-         !$OMP ATOMIC
-         e = e + etemp
-         denom = denom + denomTemp
-         !$OMP END PARALLEL
-
-         e = e**(1.0/n)/(dble(s(1)*s(2)))
-         denom = denom/(dble(s(1)*s(2)))
+         e = e**(one/n)/(scp(1)*scp(2))
+         denom = denom/(scp(1)*scp(2))
          if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+1.0); endif
+         else; er = e/(denom+one); endif
        end subroutine
 
        subroutine LnError2DUniform(exact,approx,n,e,er,denom)
@@ -378,29 +367,26 @@
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
          integer,dimension(2) :: s
+         real(cp),dimension(2) :: scp
          real(cp) :: eTemp,denomTemp
          integer :: i,j
-         s = shape(approx); e = 0.0; denom = 0.0
-         eTemp = 0.0; denomTemp = 0.0
-         !$OMP PARALLEL
-         !$OMP DO
+         s = shape(approx); e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; scp = real(s,cp)
+         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
          do j=1,s(2)
            do i=1,s(1)
-             e = e + abs(exact - approx(i,j))**n
-             denom = denom + abs(exact)**n
+             eTemp = eTemp + abs(exact - approx(i,j))**n
+             denomTemp = denomTemp + abs(exact)**n
            enddo
          enddo
-         !$OMP END DO
-         
-         !$OMP ATOMIC
-         e = e + etemp
-         denom = denom + denomTemp
-         !$OMP END PARALLEL
+         !$OMP END PARALLEL DO
+         e = etemp
+         denom = denomTemp
 
-         e = e**(1.0/n)/(dble(s(1)*s(2)))
-         denom = denom/(dble(s(1)*s(2)))
+         e = e**(one/n)/(scp(1)*scp(2))
+         denom = denom/(scp(1)*scp(2))
          if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+1.0); endif
+         else; er = e/(denom+one); endif
        end subroutine
 
        subroutine LnError3D(exact,approx,n,e,er,denom)
@@ -409,12 +395,12 @@
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
          integer,dimension(3) :: s
+         real(cp),dimension(3) :: scp
          real(cp) :: eTemp,denomTemp
          integer :: i,j,k
-         s = shape(exact); e = 0.0; denom = 0.0
-         eTemp = 0.0; denomTemp = 0.0
-         !$OMP PARALLEL
-         !$OMP DO
+         s = shape(approx); e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; scp = real(s,cp)
+         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
          do k=1,s(3)
            do j=1,s(2)
              do i=1,s(1)
@@ -423,17 +409,14 @@
              enddo
            enddo
          enddo
-         !$OMP END DO
+         !$OMP END PARALLEL DO
+         e = etemp
+         denom = denomTemp
 
-         !$OMP ATOMIC
-         e = e + etemp
-         denom = denom + denomTemp
-         !$OMP END PARALLEL
-
-         e = e**(1.0/n)/(dble(s(1)*s(2)*s(3)))
-         denom = denom/(dble(s(1)*s(2)*s(3)))
+         e = e**(one/n)/(scp(1)*scp(2)*scp(3))
+         denom = denom/(scp(1)*scp(2)*scp(3))
          if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+1.0); endif
+         else; er = e/(denom+one); endif
        end subroutine
 
        subroutine LnError3DUniform(exact,approx,n,e,er,denom)
@@ -443,31 +426,28 @@
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
          integer,dimension(3) :: s
+         real(cp),dimension(3) :: scp
          real(cp) :: eTemp,denomTemp
          integer :: i,j,k
-         s = shape(approx); e = 0.0; denom = 0.0
-         eTemp = 0.0; denomTemp = 0.0
-         !$OMP PARALLEL
-         !$OMP DO
+         s = shape(approx); e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; scp = real(s,cp)
+         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
          do k=1,s(3)
            do j=1,s(2)
              do i=1,s(1)
-               e = e + abs(exact - approx(i,j,k))**n
-               denom = denom + abs(exact)**n
+               eTemp = eTemp + abs(exact - approx(i,j,k))**n
+               denomTemp = denomTemp + abs(exact)**n
              enddo
            enddo
          enddo
-         !$OMP END DO
-         
-         !$OMP ATOMIC
-         e = e + etemp
-         denom = denom + denomTemp
-         !$OMP END PARALLEL
+         !$OMP END PARALLEL DO
+         e = etemp
+         denom = denomTemp
 
-         e = e**(1.0/n)/(dble(s(1)*s(2)*s(3)))
-         denom = denom/(dble(s(1)*s(2)*s(3)))
+         e = e**(one/n)/(scp(1)*scp(2)*scp(3))
+         denom = denom/(scp(1)*scp(2)*scp(3))
          if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+1.0); endif
+         else; er = e/(denom+one); endif
        end subroutine
 
        subroutine computeError1(e,exact,approx)
@@ -477,12 +457,12 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
-         else; e%Rinf = (e%Linf)/maxval(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/maxval(abs(exact)+one); endif
        end subroutine
 
        subroutine computeError1Uniform(e,exact,approx)
@@ -493,12 +473,12 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
        end subroutine
 
        subroutine computeError2(e,exact,approx)
@@ -508,12 +488,12 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
-         else; e%Rinf = (e%Linf)/maxval(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/maxval(abs(exact)+one); endif
        end subroutine
 
        subroutine computeError2Uniform(e,exact,approx)
@@ -524,12 +504,12 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
        end subroutine
 
        subroutine computeError3(e,exact,approx)
@@ -539,12 +519,12 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
-         else; e%Rinf = (e%Linf)/maxval(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/maxval(abs(exact)+one); endif
        end subroutine
 
        subroutine computeError3Uniform(e,exact,approx)
@@ -555,12 +535,12 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
        end subroutine
 
        subroutine computeError3Uniform2(e,approx)
@@ -571,12 +551,12 @@
          exact = real(0.0,cp)
 
          call initError(e)
-         n = 1.0; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+1.0); endif
+         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
        end subroutine
 
 

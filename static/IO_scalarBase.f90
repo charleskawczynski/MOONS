@@ -42,7 +42,7 @@
         implicit none
         character(len=*),intent(in) :: dir,name
         logical,intent(in),optional :: headerTecplotTemp
-        real(cp),dimension(:) :: x,y,z
+        real(cp),dimension(:),intent(inout) :: x,y,z
         real(cp),dimension(:,:,:),intent(inout) :: arr
         integer un,i,j,k,sx,sy,sz
 

@@ -1,4 +1,6 @@
        module convergenceRate_mod
+       ! Very good tutorial for convergence rates:
+       ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
        use simParams_mod
        use IO_tools_mod
        use IO_scalarFields_mod
@@ -10,10 +12,14 @@
        use norms_mod
        use scalarField_mod
        use vectorField_mod
+       use richardsonExtrapolation_mod
 
        use MOONS_mod
 
        implicit none
+       private
+       public :: convergenceRateTest
+       public :: computeCRFromExisting
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -24,10 +30,6 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-
-       type parametricResults
-         type(norms) :: e,p
-       end type
       
        contains
 
@@ -37,7 +39,16 @@
          ! the longest simulation time is known shortly after
          ! the simulation starts.
          ! 
+         ! The following analysis closely followed work by
          ! 
+         !      Roache, P. J. Quantification of Uncertainty in Computational 
+         !      Fluid Dynamics. Annu. Rev. Fluid Mech. 29, 123–160 (1997).
+         ! and
+         !      De Vahl Davis, G. Natural convection of air in a square cavity: a 
+         !      benchmark solution. Int. J. Num. Methods Fluids 3, 249–264 (1983).
+         ! 
+         ! Index 1 indicates finest grid.
+         ! Index Nsims indicates coarsest grid.
          ! 
          ! For convenience
          !                            2^2  = 4
@@ -49,25 +60,33 @@
          !                            2^8  = 256
          !                            2^9  = 512
          !                            2^10 = 1024
+         ! 
+         ! For 2D and 3D simulations, the refinement factor must be changed accordingly.
+         ! 
          implicit none
          character(len=*),intent(in) :: directory
-         integer,parameter :: Nstart = 6
+         integer,parameter :: Nstart = 4
          integer,parameter :: Nsims = 4
-         integer,parameter :: r0 = 2 ! Refinement factor
-         integer,dimension(3),parameter :: r = (/r0,r0,1/) ! Refinement factor
+         integer,parameter :: r0 = 2 ! Magnetiude of refinement factor
+         integer,dimension(3),parameter :: r = (/r0,r0,r0/) ! Refinement factor
          integer :: i,dir
          integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
-         type(parametricResults),dimension(Nsims-1) :: PR
+         ! integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart+Nsims-1)/)
+         type(richardsonExtrapolation),dimension(Nsims-2) :: RE
          type(vectorField),dimension(Nsims) :: U,B
-         type(grid),dimension(Nsims) :: g
+         type(grid),dimension(Nsims) :: grid_mom,grid_ind
          write(*,*) '***************************************************'
          write(*,*) '**************** CONVERGENCE RATES ****************'
          write(*,*) '***************************************************'
          write(*,*) 'parametric Ni = ',Ni
+         Ni = Ni(Nsims:1:-1)
+         write(*,*) 'parametric Ni = ',Ni
+
          if (Nsims.lt.3) stop 'Error: size(f) must > 3 for convergence rate test.'
 
-         do i=Nsims,1,-1 ! Start with finest grid
-           call MOONS_Parametric(U(i),B(i),g(i),Ni(i),directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\')
+         do i=1,Nsims ! Start with finest grid
+           call MOONS_Parametric(U(i),B(i),grid_mom(i),grid_ind(i),Ni(i),&
+           directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\')
          enddo
 
          write(*,*) '***************************************************'
@@ -75,21 +94,21 @@
          write(*,*) '***************************************************'
          write(*,*) 'parametric Ni = ',Ni
 
-         PR = estimateConvergenceRate(U,g,Nsims,r,r0,1)
-         call reportResults(PR,'U',directory,Nsims)
-         PR = estimateConvergenceRate(U,g,Nsims,r,r0,2)
-         call reportResults(PR,'V',directory,Nsims)
-         PR = estimateConvergenceRate(U,g,Nsims,r,r0,3)
-         call reportResults(PR,'W',directory,Nsims)
+         RE = computeRe(U,grid_mom,Nsims,r,1,directory,'U')
+         call reportResults(RE,'U',directory,Nsims,Ni)
+         RE = computeRe(U,grid_mom,Nsims,r,2,directory,'V')
+         call reportResults(RE,'V',directory,Nsims,Ni)
+         RE = computeRe(U,grid_mom,Nsims,r,3,directory,'W')
+         call reportResults(RE,'W',directory,Nsims,Ni)
          do i=1,Nsims; call delete(U(i)); enddo
           
          if (solveInduction) then
-           PR = estimateConvergenceRate(B,g,Nsims,r,r0,1)
-           call reportResults(PR,'Bx',directory,Nsims)
-           PR = estimateConvergenceRate(B,g,Nsims,r,r0,2)
-           call reportResults(PR,'By',directory,Nsims)
-           PR = estimateConvergenceRate(B,g,Nsims,r,r0,3)
-           call reportResults(PR,'Bz',directory,Nsims)
+           RE = computeRe(B,grid_ind,Nsims,r,1,directory,'Bx')
+           call reportResults(RE,'Bx',directory,Nsims,Ni)
+           RE = computeRe(B,grid_ind,Nsims,r,2,directory,'By')
+           call reportResults(RE,'By',directory,Nsims,Ni)
+           RE = computeRe(B,grid_ind,Nsims,r,3,directory,'Bz')
+           call reportResults(RE,'Bz',directory,Nsims,Ni)
            do i=1,Nsims; call delete(B(i)); enddo
          endif
           
@@ -98,107 +117,48 @@
          write(*,*) '***************************************************'
        end subroutine
 
-       subroutine reportResults(PR,name,directory,Nsims)
-        implicit none
-        integer,intent(in) :: Nsims
-        type(parametricResults),dimension(Nsims-1),intent(in) :: PR
-        character(len=*),intent(in) :: name,directory
-        integer :: i,dir
-        type(norms),dimension(Nsims-1) :: etemp
-        type(norms),dimension(Nsims-2) :: ptemp
+       subroutine computeCRFromExisting(directory)
+         implicit none
+         character(len=*),intent(in) :: directory
+         integer,parameter :: Nstart = 4
+         integer,parameter :: Nsims = 4
+         integer,parameter :: r0 = 2 ! Magnetiude of refinement factor
+         integer,dimension(3),parameter :: r = (/r0,r0,r0/) ! Refinement factor
+         integer :: i,dir
+         integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
+         type(richardsonExtrapolation),dimension(Nsims-2) :: RE
+         type(vectorField),dimension(Nsims) :: U,B
+         type(grid),dimension(Nsims) :: grid_mom,grid_ind
+         write(*,*) '***************************************************'
+         write(*,*) '**************** CONVERGENCE RATES ****************'
+         write(*,*) '***************************************************'
+         write(*,*) 'parametric Ni = ',Ni
+         Ni = Ni(Nsims:1:-1)
+         write(*,*) 'parametric Ni = ',Ni
 
-        do i=1,Nsims-1
-           call print(PR(i)%e,'e('//name//'('//int2str2(i)//'))')
-        enddo
-        do i=1,Nsims-1; call init(etemp(i),PR(i)%e); enddo
-        call exportList(etemp,directory,'e('//name//'('//int2str2(1)//'_to_'//int2str2(Nsims-1)//'))')
+         do i=1,Nsims ! Start with finest grid
+           call MOONS_Parametric(U(i),B(i),grid_mom(i),grid_ind(i),Ni(i),&
+           directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\')
+         enddo
 
-        do i=1,Nsims-2
-           call print(PR(i)%p,'p('//name//'('//int2str2(i)//'))')
-        enddo
-        do i=1,Nsims-2; call init(ptemp(i),PR(i)%p); enddo
-        call exportList(ptemp,directory,'p('//name//'('//int2str2(1)//'_to_'//int2str2(Nsims-2)//'))')
+         do i=1,Nsims ! Start with finest grid
+           call loadData(U(i),grid_mom(i),&
+            directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\Ufield\',&
+            'uni','vni','wni')
+         enddo
+
+         RE = computeRe(U,grid_mom,Nsims,r,1,directory,'U')
+         call reportResults(RE,'U',directory,Nsims,Ni)
+         RE = computeRe(U,grid_mom,Nsims,r,2,directory,'V')
+         call reportResults(RE,'V',directory,Nsims,Ni)
+         RE = computeRe(U,grid_mom,Nsims,r,3,directory,'W')
+         call reportResults(RE,'W',directory,Nsims,Ni)
+
+         ! Clean up
+         do i=1,Nsims
+           call delete(U(i))
+           call delete(grid_mom(i))
+         enddo
        end subroutine
-
-       function estimateConvergenceRate(f,g,n,r,r0,dir) result (PR)
-         implicit none
-         type(vectorField),dimension(n),intent(in) :: f ! Cell corner data, (1->size(f)) = (coarse->fine)
-         type(grid),dimension(n),intent(in) :: g
-         integer,dimension(3),intent(in) :: r ! refinement factor (for MG error)
-         integer,intent(in) :: n,dir,r0 ! N sims / direction / refinement factor (for extrapolation)
-         type(parametricResults),dimension(n-1) :: PR ! parametric results
-         integer :: i
-         integer,dimension(3) :: s
-         type(norms) :: e_num,e_denom
-
-         select case (dir)
-         case (1)
-           do i=1,n-2
-             s = shape(f(i)%x)
-             e_num   = computeMultigridError(f(i+1)%x,f(i+2)%x,r,r*r,s)
-             e_denom = computeMultigridError(f(i)%x,f(i+1)%x,(/1,1,1/),r,s)
-             PR(i)%p = richardsonExtrapolation(e_num,e_denom,r0)
-             PR(i)%e = e_denom
-           enddo
-         case (2)
-           do i=1,n-2
-             s = shape(f(i)%y)
-             e_num   = computeMultigridError(f(i+1)%y,f(i+2)%y,r,r*r,s)
-             e_denom = computeMultigridError(f(i)%y,f(i+1)%y,(/1,1,1/),r,s)
-             PR(i)%p = richardsonExtrapolation(e_num,e_denom,r0)
-             PR(i)%e = e_denom
-           enddo
-         case (3)
-           do i=1,n-2
-             s = shape(f(i)%z)
-             e_num   = computeMultigridError(f(i+1)%z,f(i+2)%z,r,r*r,s)
-             e_denom = computeMultigridError(f(i)%z,f(i+1)%z,(/1,1,1/),r,s)
-             PR(i)%p = richardsonExtrapolation(e_num,e_denom,r0)
-             PR(i)%e = e_denom
-           enddo
-         case default
-         stop 'Error: dir must = 1,2,3 in estimateConvergenceRate in convergenceRate.f90'
-         end select
-         PR(n-1)%e   = e_num
-         call init(PR(n-1)%p) ! undefined here
-       end function
-
-       function computeMultigridError(f1,f2,r1,r2,s) result(n)
-         implicit none
-         real(cp),dimension(:,:,:),intent(in) :: f2,f1
-         integer,dimension(3),intent(in) :: r1,r2
-         integer,dimension(3),intent(in) :: s
-         type(scalarField) :: e
-         type(norms) :: n
-         integer :: i,j,k,i1,j1,k1,i2,j2,k2
-
-         call allocateField(e,s)
-         !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
-         do k=2,s(3)-1
-           k1 = 2 + (k-2)*r1(3); k2 = 2 + (k-2)*r2(3)
-           do j=2,s(2)-1
-            j1 = 2 + (j-2)*r1(2); j2 = 2 + (j-2)*r2(2)
-             do i=2,s(1)-1
-             i1 = 2 + (i-2)*r1(1); i2 = 2 + (i-2)*r2(1)
-           e%phi(i,j,k) = f2(i2,j2,k2) - f1(i1,j1,k1)
-         enddo;enddo;enddo
-         !$OMP END PARALLEL DO
-         call zeroGhostPoints(e%phi)
-         call compute( n , e%phi(2:s(1)-1,2:s(2)-1,2:s(3)-1) )
-         call delete(e)
-       end function
-
-       function richardsonExtrapolation(num,denom,r) result(p)
-         implicit none
-         type(norms),intent(in) :: num,denom
-         integer,intent(in) :: r
-         type(norms) :: p
-         p%L1   = abs( log( getL1(   num) / getL1(   denom)) )/log(real(r,cp))
-         p%L2   = abs( log( getL2(   num) / getL2(   denom)) )/log(real(r,cp))
-         p%Linf = abs( log( getLinf( num) / getLinf( denom)) )/log(real(r,cp))
-         p%R1   = abs( log( getR1(   num) / getR1(   denom)) )/log(real(r,cp))
-         p%R2   = abs( log( getR2(   num) / getR2(   denom)) )/log(real(r,cp))
-         p%Rinf = abs( log( getRinf( num) / getRinf( denom)) )/log(real(r,cp))
-       end function
 
        end module

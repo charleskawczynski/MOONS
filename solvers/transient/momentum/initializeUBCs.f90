@@ -13,7 +13,7 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 6
+       integer,parameter :: preDefinedU_BCs = 1
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -645,15 +645,15 @@
          select case (posNeg)
          case (1)
            select case (dir)
-           case (1); call setXminType(u_bcs,1); call setXminType(u_bcs,4); call setXminVals(u_bcs,u_temp)
-           case (2); call setYminType(v_bcs,1); call setYminType(v_bcs,4); call setXminVals(v_bcs,u_temp)
-           case (3); call setZminType(w_bcs,1); call setZminType(w_bcs,4); call setXminVals(w_bcs,u_temp)
+           case (1); call setXminType(u_bcs,1); call setXminVals(u_bcs,u_temp)
+           case (2); call setYminType(v_bcs,1); call setXminVals(v_bcs,u_temp)
+           case (3); call setZminType(w_bcs,1); call setXminVals(w_bcs,u_temp)
            end select
          case (-1)
            select case (dir)
-           case (1); call setXmaxType(u_bcs,1); call setXmaxType(u_bcs,4); call setXmaxVals(u_bcs,-u_temp)
-           case (2); call setYmaxType(v_bcs,1); call setYmaxType(v_bcs,4); call setXmaxVals(v_bcs,-u_temp)
-           case (3); call setZmaxType(w_bcs,1); call setZmaxType(w_bcs,4); call setXmaxVals(w_bcs,-u_temp)
+           case (1); call setXmaxType(u_bcs,1); call setXmaxVals(u_bcs,-u_temp)
+           case (2); call setYmaxType(v_bcs,1); call setXmaxVals(v_bcs,-u_temp)
+           case (3); call setZmaxType(w_bcs,1); call setXmaxVals(w_bcs,-u_temp)
            end select
          case default
          stop 'Error: posNeg must = 1,-1 in initFullyDevelopedDuctFlow.'

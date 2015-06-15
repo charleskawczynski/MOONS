@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[landscape]{article}
 \usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
 \usepackage{epstopdf}
 \usepackage{amsmath}
@@ -14,36 +14,38 @@
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
 
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
+% \setlength{\oddsidemargin}{0.1in}
+% \setlength{\textwidth}{7.25in}
 
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+% \setlength{\headsep}{0in}        
+\setlength{\textheight}{525pt}   %\textheight: height of main text
+\setlength{\textwidth}{10in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
 \setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
 \setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
 \setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
+% \setlength{\voffset}{0.5in}
 
 % Useful commands:
 
+\pagenumbering{gobble}
 % \hfill		aligns-right everything right of \hfill
 
 \begin{document}
+
 \doublespacing
 \title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
 \author{C. Kawczynski \\
 Department of Mechanical and Aerospace Engineering \\
 University of California Los Angeles, USA\\}
 \maketitle
-\section{LaTeX Derivative Equations, using prettyPy}
 
-In this document, the results from stencils.py are presented which solves the linear (Vandermonde) system of equations
+\section{Finite Difference Schemes}
+
+The results in this document are generated from a linear system solver, using Python, in stencilMaker.py. The file is run from stencils.py. The linear system is a set of Taylor expansions about a point in space and is of the form of a Vandermonde matrix
 
 \begin{equation}
 	f_{i+k}
@@ -54,9 +56,7 @@ In this document, the results from stencils.py are presented which solves the li
 	k = n_{left} \dots n_{right}
 \end{equation}
 
-For the derivatives $f_i^{(j)}$, where $n_{left}$ and $n_{right}$, the input arguments, are the number of points to the left and right of $i$ respectively. The derivatives are assumed to be the unknowns and everything else is assumed known.
-
-By definition
+Where the unknowns are the derivatives $f_i^{(j)}$. The input arguments, $n_{left}$ and $n_{right}$, are the number of points to the left and right of $i$ respectively. $f_{i+k}\forall k$ is assumed to be known. Also, by definition
 \begin{equation}
 	\alpha_{i+k} 
 	=
@@ -110,10 +110,14 @@ Again, to note how indexing is defined
 	}
 \end{equation}
 
-\section{Source of Generation}
+\section{Generated Finite Difference Schemes}
 The results below are generated from stencils.py in the above directory. The type of stencils (central difference / forward difference / number of points to include in stencil) here can be changed by modifying the stencils.py file. The truncation error of the finite difference scheme is included. Sometimes a higher term is present, other times it may be absent (depending if there is perfect cancellation due to symmetry).
 
-\subsection{Equations Solved}
+Try including equations solved with and without truncation. The equation without truncation terms may be easier to read.
+
+\subsection{Equations Solved (Without Truncation Error)}
+\input{eqsNoTrunc}
+\subsection{Equations Solved (With Truncation Error)}
 \input{eqs}
 \subsection{Knowns}
 \input{knowns}

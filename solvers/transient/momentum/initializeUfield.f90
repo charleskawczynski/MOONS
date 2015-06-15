@@ -56,10 +56,13 @@
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
-         call readFromFile(g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u,dir//'Ufield/','ufi')
-         call readFromFile(g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,v,dir//'Ufield/','vfi')
-         call readFromFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,w,dir//'Ufield/','wfi')
-         call readFromFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,p,dir//'Ufield/','pci')
+         type(grid) :: gtemp
+         call init(gtemp,g)
+         call readFromFile(gtemp,u,dir//'Ufield/','ufi')
+         call readFromFile(gtemp,v,dir//'Ufield/','vfi')
+         call readFromFile(gtemp,w,dir//'Ufield/','wfi')
+         call readFromFile(gtemp,p,dir//'Ufield/','pci')
+         call delete(gtemp)
        end subroutine
        
        subroutine initPreDefinedUfield(u,v,w,p,g)

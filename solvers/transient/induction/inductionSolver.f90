@@ -41,7 +41,8 @@
 
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
-       public :: addJCrossB
+       public :: addJCrossB,computeJCrossB
+
        public :: computeDivergence
        public :: computeCurrent
        public :: embedVelocity
@@ -1018,7 +1019,7 @@
 
        ! ********************* COMPUTE *****************************
 
-       subroutine addJCrossBOld(jcrossB,ind,g_mom,g_ind,Re,Ha)
+       subroutine addJCrossB(jcrossB,ind,g_mom,g_ind,Ha,Re,Rem)
          ! addJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
@@ -1026,38 +1027,16 @@
          type(vectorField),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g_mom,g_ind
-         real(cp),intent(in) :: Re,Ha
+         real(cp),intent(in) :: Ha,Re,Rem
          type(vectorField) :: temp
-
          call allocateVectorField(temp,jcrossB)
-         call assign(temp,jcrossB)
-
-         select case (solveBMethod)
-         case (5,6) ! Finite Rem
-
-         call assign(ind%Bstar,ind%B0)
-         call add(ind%Bstar,ind%B)
-         call curl(ind%J_cc,ind%Bstar,g_ind)
-
-         case default ! Low Rem
-
-         call assign(ind%Bstar,ind%B)
-         call curl(ind%J_cc,ind%Bstar,g_ind)
-         call assign(ind%Bstar,ind%B0)
-
-         end select
-
-         call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-         call cellCenter2Face(ind%temp_F,ind%temp_CC,g_ind)
-
-         call extractFace(temp,ind%temp_F,ind%SD,g_mom)
-
-         call multiply(temp,Ha**real(2.0,cp)/Re)
+         call assign(temp,real(0.0,cp))
+         call computeJCrossB(temp,ind,g_mom,g_ind,Ha,Re,Rem)
          call add(jcrossB,temp)
          call delete(temp)
        end subroutine
 
-       subroutine addJCrossB(jcrossB,ind,g_mom,g_ind,Re,Ha)
+       subroutine computeJCrossB(jcrossB,ind,g_mom,g_ind,Ha,Re,Rem)
          ! addJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
@@ -1065,7 +1044,7 @@
          type(vectorField),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g_mom,g_ind
-         real(cp),intent(in) :: Re,Ha
+         real(cp),intent(in) :: Ha,Re,Rem
 
          select case (solveBMethod)
          case (5,6) ! Finite Rem
@@ -1087,7 +1066,7 @@
 
          call extractFace(jcrossB,ind%temp_F,ind%SD,g_mom)
 
-         call multiply(jcrossB,Ha**real(2.0,cp)/Re)
+         call multiply(jcrossB,Ha**real(2.0,cp)/(Re*Rem))
        end subroutine
 
        subroutine computeDivergenceInduction(ind,g)

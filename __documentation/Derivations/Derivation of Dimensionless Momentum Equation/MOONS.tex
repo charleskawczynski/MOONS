@@ -76,6 +76,26 @@ Dividing by $\frac{\rho_c U_c^2}{L_c}$ yields
 	\frac{\nu_c}{U_c L_c} {\nabla^*}^2 \pmb{u^*} + \frac{L_c}{\rho_c U_c^2} \pmb{f} + 
 	\frac{L_c B_c^2 \sigma_c}{\rho_c U_c} \pmb{j^*} \times \pmb{B^*}
 \end{equation}
+Note that
+\begin{equation}
+	\pmb{j}^*
+	=
+	\frac{\pmb{j}}{\sigma_c U_c B_c}
+	=
+	\frac{\nabla \times \left( \frac{\pmb{B}}{\mu} \right)}{\sigma_c U_c B_c}
+	=
+	\frac{ \frac{B_c}{\mu_c L_c} \nabla^* \times \left( \frac{\pmb{B}^*}{\mu^*} \right)}{\sigma_c U_c B_c}
+	=
+	\frac{1}{Re_m} \nabla \times \left( \frac{\pmb{B}^*}{\mu^*} \right)
+\end{equation}
+\begin{equation}
+	\boxed{
+	\pmb{j}^*
+	=
+	\frac{1}{Re_m} \nabla \times \left( \frac{\pmb{B}^*}{\mu^*} \right)
+	}
+\end{equation}
+
 Re-ordering, and removing the asterisk, we have
 \begin{equation}
 	\frac{\partial \pmb{u}}{\partial t} + \frac{U_c^2}{L_c} \pmb{u} \bullet \nabla \pmb{u} = 
@@ -87,15 +107,28 @@ Re-ordering, and removing the asterisk, we have
 \end{equation}
 Finally, we have
 \begin{equation}
+	\boxed{
 	\frac{\partial \pmb{u}}{\partial t} + \pmb{u} \bullet \nabla \pmb{u} = 
 	-\nabla  p + 
 	\frac{1}{Re} {\nabla}^2 \pmb{u} + \frac{L_c}{\rho_c U_c^2} \pmb{f} + 
 	\frac{Ha^2}{Re} \pmb{j} \times \pmb{B}
+	}
+\end{equation}
+OR
+\begin{equation}
+	\boxed{
+	\frac{\partial \pmb{u}}{\partial t} + \pmb{u} \bullet \nabla \pmb{u} = 
+	-\nabla  p + 
+	\frac{1}{Re} {\nabla}^2 \pmb{u} + \frac{L_c}{\rho_c U_c^2} \pmb{f} + 
+	\frac{Ha^2}{Re Re_m} (\nabla \times \pmb{B}) \times \pmb{B}
+	}
 \end{equation}
 Where
 \begin{equation}
 	Re = \frac{U_c L_c}{\nu_c} \qquad
-	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \end{equation}
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Re_m = \mu_c \sigma_c U_c L_c
+\end{equation}
 	Using the kronecker delta relation, we may write this as
 \begin{equation}
 	\frac{\partial u_i }{\partial t} + u_j \partial_j u_i = 
@@ -173,7 +206,7 @@ Note that $T_c$ may be $\Delta T_c$. With this yields
 	- \rho_c \frac{U_c^2}{L_c} 
 	\frac{\partial p_i^*}{\partial x_i^*}
 	+ \mu \frac{U_c}{L_c^2} 
-	\frac{\partial^2 u_i^*}{\partial x_j^*^2}
+	\frac{\partial^2 u_i^*}{\partial {x_j^*}^2}
 	+ \rho_c g_c g_i^* 
 	+ \rho_c g_c \beta \Delta T_c T^*g_i^*
 	+ U_c B_c^2 \sigma_c 
@@ -188,7 +221,7 @@ Dividing by $\frac{\rho_c U_c^2}{L_c}$ yields
 	= 
 	- \frac{\partial p_i^*}{\partial x_i^*}
 	+ \frac{\mu_c/\rho_c}{U_c L_c} 
-	\frac{\partial^2 u_i^*}{\partial x_j^*^2}
+	\frac{\partial^2 u_i^*}{\partial {x_j^*}^2}
 	+ \frac{g_c L_c}{U_c^2}
 	g_i^*
 	+ \frac{g_c \beta_c \Delta T_c L_c^3}{\nu^2} \frac{\nu_c^2}{U_c^2 L_c^2} T^*g_i^*
@@ -213,7 +246,7 @@ So we have
 	= 
 	- \frac{\partial p_i^*}{\partial x_i^*}
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i^*}{\partial x_j^*^2}
+	\frac{\partial^2 u_i^*}{\partial {x_j^*}^2}
 	+ \frac{1}{Fr^2}
 	g_i^*
 	+ \frac{Gr}{Re^2}

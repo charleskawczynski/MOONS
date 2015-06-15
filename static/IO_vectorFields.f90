@@ -18,17 +18,31 @@
 
       private
 
-      public :: writeToFile
+      public :: writeToFile,readFromFile
       public :: writeVecPhysical
       public :: writeVecPhysicalPlane
 
       logical,parameter :: headerTecplot = .true.
 
+      interface readFromFile;    module procedure readVecGrid;       end interface
       interface writeToFile;     module procedure writeVecGrid;      end interface
       interface writeToFile;     module procedure writeVecFieldGrid; end interface
       ! interface writeToFile;     module procedure writeVecPhysical;  end interface
         
       contains
+
+      subroutine readVecGrid(g,U,dir,namex,namey,namez,headerTecplotTemp)
+        implicit none
+        character(len=*),intent(in) :: dir,namex,namey,namez
+        type(grid),intent(in) :: g
+        type(vectorField),intent(inout) :: U
+        logical,intent(in),optional :: headerTecplotTemp
+        type(grid) :: gtemp
+        call init(gtemp,g)
+        call readFromFile(gtemp%c(1)%hn,gtemp%c(2)%hn,gtemp%c(3)%hn,U%x,U%y,U%z,&
+        dir,namex,namey,namez,headerTecplotTemp)
+        call delete(gtemp)
+      end subroutine
 
       subroutine writeVecGrid(g,u,v,w,dir,namex,namey,namez)
         implicit none

@@ -91,7 +91,7 @@
            endif
 
            ! ************************** COMPUTE J CROSS B *******************************
-           if (solveCoupled) call addJCrossB(F,ind,mom%g,ind%g,mom%Re,ind%Ha)
+           if (solveCoupled) call computeJCrossB(F,ind,mom%g,ind%g,ind%Ha,mom%Re,ind%Rem)
 
            ! ****************************** CHECK TO EXIT *********************************
            call checkCondition(ss_MHD,continueLoop)

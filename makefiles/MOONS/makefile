@@ -49,19 +49,19 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
 # ****************** DEBUGGING **********************
 # CPU time ~ Debugging level
-FCFLAGS += -g
+# FCFLAGS += -g
 # FCFLAGS += -g -Wall
 # FCFLAGS += -g -Wall -Wextra
 # FCFLAGS += -g -Wall -Wextra -fbacktrace
-# FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
-# FCFLAGS += -O0
+FCFLAGS += -O0
 # FCFLAGS += -O1
 # FCFLAGS += -O2
-FCFLAGS += -O3
+# FCFLAGS += -O3
 # FCFLAGS += -O4
 # FCFLAGS += -O5
 # **************** PARALLELIZATION ******************
@@ -169,6 +169,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
+	$(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
 	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90 \
 	$(TARGET_DIR)$(PS)parametricStudy.f90
 

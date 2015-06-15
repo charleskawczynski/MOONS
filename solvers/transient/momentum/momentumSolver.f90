@@ -189,7 +189,7 @@
 
          write(*,*) '     BCs sizes set'
 
-         ! call applyAllBCs(mom%U,mom%U_bcs,g)
+         call applyAllBCs(mom%U,mom%U_bcs,g)
          call applyAllBCs(mom%p_bcs,mom%p%phi,g)
          write(*,*) '     BCs applied'
 
@@ -445,13 +445,13 @@
          call face2CellCenter(mom%U_CC,mom%U,g)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
-         call computeKineticEnergy(mom,mom%g,F)
-         call computeTotalKineticEnergy(mom,ss_MHD)
-         call computeMomentumStability(mom,ss_MHD)
+         ! call computeKineticEnergy(mom,mom%g,F)
+         ! call computeTotalKineticEnergy(mom,ss_MHD)
+         ! call computeMomentumStability(mom,ss_MHD)
 
          if (getExportErrors(ss_MHD)) then
            call computeDivergence(mom,g)
-           call exportTransientFull(mom,mom%g,dir)
+           ! call exportTransientFull(mom,mom%g,dir)
          endif
          if (getExportTransient(ss_MHD)) then
            call momentumExportTransient(mom,ss_MHD,dir)

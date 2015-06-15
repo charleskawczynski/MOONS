@@ -15,14 +15,40 @@
 
 
       private
-      public :: writeToFile
+      public :: writeToFile,readFromFile
       public :: writeScalarPhysical
       public :: writeScalarPhysicalPlane
 
+      interface readFromFile;  module procedure read3DFieldFromFile;    end interface
       interface writeToFile;   module procedure write3DMeshToFileGrid;  end interface
       interface writeToFile;   module procedure write3DFieldToFileGrid; end interface
 
       contains
+
+      subroutine read3DFieldFromFile(g,arr,dir,name,headerTecplotTemp)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        type(grid),intent(inout) :: g
+        logical,intent(in),optional :: headerTecplotTemp
+        real(cp),dimension(:,:,:),intent(inout) :: arr
+        real(cp),dimension(:),allocatable :: x,y,z
+        integer,dimension(3) :: s
+        integer :: i
+        s = shape(arr)
+
+        allocate(x(s(1)))
+        allocate(y(s(2)))
+        allocate(z(s(3)))
+        if (present(headerTecplotTemp)) then
+          call readFromFile(x,y,z,arr,dir,name,headerTecplotTemp)
+        else
+          call readFromFile(x,y,z,arr,dir,name)
+        endif
+        call init(g,x,1,2)
+        call init(g,y,2,2)
+        call init(g,z,3,2)
+        deallocate(x,y,z)
+      end subroutine
 
       subroutine write3DFieldToFileGrid(g,f,dir,name)
         implicit none

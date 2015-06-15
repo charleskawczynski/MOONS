@@ -1,5 +1,6 @@
 \begin{equation} 
-f^{{(2)}}_{i} = - \frac{2 \Delta h_{{i-1}} \left(f_{i} - f_{{i+1}}\right) + 2 \Delta h_{{i}} \left(f_{i} - f_{{i-1}}\right)}{\Delta h_{{i-1}} \Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}
- \end{equation}\begin{equation} 
-\text{Truncation} = \frac{\Delta h_{{i-1}}}{24} \Delta h_{{i}} \left(\Delta h_{{i-1}} f^{{(4)}}_{{\xi}} - \Delta h_{{i}} f^{{(4)}}_{{\xi}} - 4 f^{{(3)}}_{{\xi}}\right)
+f^{{(2)}}_{i} = \frac{1}{{\Delta h}^{2}} \left(- 2 f_{i} + f_{{i+1}} + f_{{i-1}}\right)
+ \end{equation} 
+\begin{equation} 
+\text{Truncation} = - \frac{f^{{(3)}}_{{\xi}}}{6} {\Delta h}^{2}
  \end{equation}

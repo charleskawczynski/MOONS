@@ -44,11 +44,11 @@
 
        contains
 
-       subroutine MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
+       subroutine MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
          implicit none
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
          type(vectorField),intent(inout) :: U,B
-         type(grid),intent(inout) :: g
+         type(grid),intent(inout) :: grid_mom,grid_ind
          character(len=*),intent(in) :: dir ! Output directory
 
          ! ***************** USER DEFINED MHD VARIABLES *****************
@@ -82,7 +82,6 @@
          type(momentum) :: mom
          type(induction) :: ind
          ! type(energy) :: nrg
-         type(grid) :: grid_mom,grid_ind
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
          type(subdomain) :: SD
@@ -101,9 +100,9 @@
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
-         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
+         case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.67d-2
-         case (100); Re = 10000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 8.0d-4
+         ! case (100); Re = 10000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 8.0d-4
 
          ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
@@ -233,7 +232,8 @@
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 80000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 80000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10000
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
 
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
@@ -366,13 +366,17 @@
 
          if (exportRawICs) then
            call exportRaw(mom,mom%g,dir)
-           call embedVelocity(ind,mom%U,mom%g)
-           call exportRaw(ind,ind%g,dir)
+           if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
+           if (solveInduction) call exportRaw(ind,ind%g,dir)
          endif
          if (exportICs) then
            call export(mom,mom%g,dir)
-           call embedVelocity(ind,mom%U,mom%g)
-           call export(ind,ind%g,dir)
+           if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
+           if (solveInduction) call export(ind,ind%g,dir)
+         endif
+
+         if (stopAfterExportICs) then
+           stop 'Finished exporting ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          endif
 
          call checkGrid(gd)
@@ -416,7 +420,7 @@
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
-         call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+         ! call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
          ! call export(mom,mom%g,dir)
          ! call export(ind,ind%g,dir)
 
@@ -424,7 +428,6 @@
          call face2Node(U,mom%U,mom%g)
          if (solveInduction) call allocateVectorField(B,ind%g%c(1)%sn,ind%g%c(2)%sn,ind%g%c(3)%sn)
          if (solveInduction) call cellCenter2Node(B,ind%B,ind%g)
-         if (solveInduction) call init(g,grid_mom)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
@@ -498,12 +501,13 @@
          character(len=*),intent(in) :: dir ! Output directory
          type(vectorField) :: U,B
          integer,dimension(3) :: Ni,Nwtop,Nwbot
-         type(grid) :: g
+         type(grid) :: grid_mom,grid_ind
          call MOONS_Single_Grid(Ni,Nwtop,Nwbot)
-         call MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
+         call MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
          call delete(U)
          call delete(B)
-         call delete(g)
+         call delete(grid_mom)
+         call delete(grid_ind)
        end subroutine
 
        ! ***************************************************************
@@ -528,7 +532,7 @@
          ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4); Nwtop = N/2**5           !    V
          ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4 + N/2**5); Nwtop = N/2**6  !
 
-         ! Ni = N; Nwtop = 0
+         Ni = Nall; Nwtop = 0; Nwbot = Nwtop
 
          ! Ni = (N/2); Nwtop = N/2**2                                      ! Good for N = 2**{3,4,5}
          ! Ni = (N/2 + N/2**2); Nwtop = N/2**3                             ! Good for N = 2**{4,5,6}
@@ -536,24 +540,23 @@
          ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4); Nwtop = N/2**5           ! Good for N = 2**{6,7,8}
          ! Ni = (N/2 + N/2**2 + N/2**3 + N/2**4 + N/2**5); Nwtop = N/2**6  ! Good for N = 2**{7,8,9}
 
-         Ni = Nall
-         Nwtop = Ni*5/100
-         Nwbot = Nwtop
-
-         Ni(1) = 1
-         Nwbot(1) = 0
-         Nwtop(1) = 0
+         ! Ni = Nall
+         ! Nwtop = Ni*5/100
+         ! Nwbot = Nwtop
+         ! Ni(1) = 1
+         ! Nwbot(1) = 0
+         ! Nwtop(1) = 0
        end subroutine
 
-       subroutine MOONS_Parametric(U,B,g,Nall,dir)
+       subroutine MOONS_Parametric(U,B,grid_mom,grid_ind,Nall,dir)
          implicit none
          character(len=*),intent(in) :: dir ! Output directory
          type(vectorField),intent(inout) :: U,B
-         type(grid),intent(inout) :: g
+         type(grid),intent(inout) :: grid_mom,grid_ind
          integer,intent(in) :: Nall
          integer,dimension(3) :: Nwtop,Nwbot,Ni
          call MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,(/Nall,Nall,Nall/))
-         call MOONS_solve(U,B,g,Ni,Nwtop,Nwbot,dir)
+         call MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
        end subroutine
 
        end module

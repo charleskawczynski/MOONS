@@ -20,7 +20,7 @@
 
        public :: grid
        public :: init,delete
-       public :: print,export
+       public :: print,export ! import
        public :: restrict
 
        type grid

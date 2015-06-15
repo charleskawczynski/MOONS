@@ -39,7 +39,7 @@
         real(cp),dimension(:),intent(inout) :: x,y,z
         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
         logical,intent(in),optional :: headerTecplotTemp
-        integer un,i,j,k,sx,sy,sz
+        integer un,i,j,k,sx,sy,sz,IOstatus
         integer,dimension(3) :: s
         s = shape(u)
         sx = size(x); sy = size(y); sz = size(z)
@@ -59,14 +59,13 @@
             read(un,*);read(un,*);read(un,*)
           endif
         endif
-
-         do k = 1,sz
-           do j = 1,sy
-             do i = 1,sx
-               read(un,'(6'//rarrfmt//')') x(i),y(j),z(k),u(i,j,k),v(i,j,k),w(i,j,k)
-             enddo
-           enddo
-         enddo
+        do k = 1,sz
+          do j = 1,sy
+            do i = 1,sx
+              read(un,'(6'//rarrfmt//')',IOSTAT=IOstatus) x(i),y(j),z(k),u(i,j,k),v(i,j,k),w(i,j,k)
+            enddo
+          enddo
+        enddo
 
         call closeExisting(un,trim(adjustl(namex))//','&
         //trim(adjustl(namey))//','//trim(adjustl(namez)),dir)

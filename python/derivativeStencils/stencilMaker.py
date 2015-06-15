@@ -153,7 +153,7 @@ def stencilMaker(nLeft,nRight,nonUniformGrid,substituteDH,expandSolution):
             f.write(latex(Sak[k]))
             if k<len(Sak)-1:
                 f.write(' , ')
-        f.write('\n \\end{equation}')
+        f.write('\n \\end{equation} \n')
         
         f.write('\\begin{equation} \n')
         f.write(latex(Sfp[0]))
@@ -175,12 +175,22 @@ def stencilMaker(nLeft,nRight,nonUniformGrid,substituteDH,expandSolution):
 
         f.close()
 
-        # *********************** EQUATIONS SOLVED ************************ 
+        # *********** EQUATIONS SOLVED WITHOUT TRUNCATION *****************
+        f = open('latex/eqsNoTrunc.tex','w')
+        for k in range(0,len(EQ)):
+            temp = EQ[k].subs(Sfp[nUnknowns-1],0) # Remove truncation error
+            temp = temp.subs(Sfp[nUnknowns-2],0)  # Remove truncation error
+            f.write('\\begin{equation} \n')
+            f.write(latex(expand(temp)))
+            f.write('\n \\end{equation} \n')
+        f.close()
+
+        # ************* EQUATIONS SOLVED WITH TRUNCATION ******************
         f = open('latex/eqs.tex','w')
         for k in range(0,len(EQ)):
             f.write('\\begin{equation} \n')
             f.write(latex(expand(EQ[k])))
-            f.write('\n \\end{equation}')
+            f.write('\n \\end{equation} \n')
         f.close()
 
         # ************************ 1ST DERIVATIVE ************************* 
@@ -194,7 +204,7 @@ def stencilMaker(nLeft,nRight,nonUniformGrid,substituteDH,expandSolution):
                 R = latex(simplify(temp))
         p = L+' = '+R
         f.write(p)
-        f.write('\n \\end{equation}')
+        f.write('\n \\end{equation} \n')
         # **************** 1ST DERIVATIVE TRUNCATION **********************
         f.write('\\begin{equation} \n')
         f.write('\\text{Truncation} = ')
@@ -220,7 +230,7 @@ def stencilMaker(nLeft,nRight,nonUniformGrid,substituteDH,expandSolution):
                 R = latex(simplify(temp))
         p = L+' = '+R
         f.write(p)
-        f.write('\n \\end{equation}')
+        f.write('\n \\end{equation} \n')
         # **************** 2ND DERIVATIVE TRUNCATION **********************
         f.write('\\begin{equation} \n')
         f.write('\\text{Truncation} = ')

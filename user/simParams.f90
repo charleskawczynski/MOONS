@@ -16,6 +16,7 @@
        logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
        logical :: exportRawICs              = .false.   ! Export Raw ICs before starting simulation
        logical :: exportICs                 = .false.   ! Export Post-Processed ICs before starting simulation
+       logical :: stopAfterExportICs        = .false.   ! Just export ICs, do not run simulation
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
@@ -56,12 +57,12 @@
        ! real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 ) Not yet implemented
        !                                                       pure         central
        !                                                      upwind       difference
-       logical :: solveCoupled = .true. ! Change to addJCrossB
+       logical :: solveCoupled = .false. ! Change to addJCrossB
        ! logical :: addBuoyancy = .true. ! Not yet implemented
        ! logical :: addGravity = .true. ! Not yet implemented
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .true.
+       logical :: solveInduction = .false.
        logical :: restartB = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
@@ -103,7 +104,7 @@
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
 
-       integer,parameter :: benchmarkCase = 1003
+       integer,parameter :: benchmarkCase = 100
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
