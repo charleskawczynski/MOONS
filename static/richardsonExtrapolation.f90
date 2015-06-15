@@ -14,6 +14,17 @@
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
        ! 
+       ! 
+       ! NOTE:
+       !        It appears that computeGCI_Coarse is supposed to be computed using
+       !            GCI = (Fs * abs(eps) * r**p ) / (r**p - real(1.0,cp))
+       !        but the example on NASA's site,
+       !        http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
+       !        shows that this is not the case, and there seem to be
+       !        inconsistencies with GCI_23 vs GCI_coarse. So I've adopted the
+       !        approach from this example, and doing so seems to yield very good
+       !        and sensible results.
+
        use IO_tools_mod
        use IO_scalarFields_mod
        use IO_vectorFields_mod
@@ -337,10 +348,18 @@
        end function
 
        function computeGCI_Coarse(Fs,eps,p,r) result(GCI)
+         ! It appears that this is supposed to be computed using
+         !     GCI = (Fs * abs(eps) * r**p ) / (r**p - real(1.0,cp))
+         ! but the example on NASA's site,
+         ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
+         ! shows that this is not the case, and there seem to be
+         ! inconsistencies with GCI_23 vs GCI_coarse. So I've adopted the
+         ! approach from this example, and doing so seems to yield very good
+         ! and sensible results.
          implicit none
          real(cp),intent(in) :: Fs,eps,p,r
          real(cp) :: GCI
-         GCI = (Fs * abs(eps) ) / (r**p - real(1.0,cp))
+         GCI = (Fs * abs(eps)) / (r**p - real(1.0,cp))
        end function
 
        function computeGCI_Fine(Fs,eps,p,r) result(GCI)
