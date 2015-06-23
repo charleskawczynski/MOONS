@@ -13,7 +13,7 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 1
+       integer,parameter :: preDefinedU_BCs = 8
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -119,6 +119,7 @@
          case (7); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
          case (8); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,drivenFace,drivenDirection,drivenSign)
                    call make2D(u_bcs,v_bcs,w_bcs,g,3)
+         case (9); call make2D(u_bcs,v_bcs,w_bcs,g,3)
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
          end select
@@ -215,7 +216,6 @@
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
-         integer :: Nx,Ny,Nz
          integer :: periodic_c,periodic_i
          periodic_c = 6 ! Wall coincident
          periodic_i = 7 ! Wall incoincident

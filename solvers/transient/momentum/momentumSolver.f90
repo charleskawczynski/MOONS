@@ -41,7 +41,8 @@
        private
        
        public :: momentum,init,delete,solve
-       public :: setDTime,setNmaxPPE,setRe
+       public :: setDTime,setNmaxPPE
+       public :: setPiGroups
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeDivergence
@@ -49,7 +50,6 @@
        public :: computeTotalKineticEnergy
        public :: exportTransientFull
        public :: computeMomentumstability
-       public :: setDimensionlessNumbers
 
 
 !        logical,parameter :: solveMomentum = .true.
@@ -124,6 +124,7 @@
        end type
 
        interface init;                module procedure initMomentum;               end interface
+       interface setPiGroups;         module procedure setPiGroupsMomentum;        end interface
        interface delete;              module procedure deleteMomentum;             end interface
        interface solve;               module procedure solveMomentumEquation;      end interface
        interface export;              module procedure momentumExport;             end interface
@@ -189,8 +190,8 @@
 
          write(*,*) '     BCs sizes set'
 
-         call applyAllBCs(mom%U,mom%U_bcs,g)
-         call applyAllBCs(mom%p_bcs,mom%p%phi,g)
+         if (solveMomentum) call applyAllBCs(mom%U,mom%U_bcs,g)
+         if (solveMomentum) call applyAllBCs(mom%p_bcs,mom%p%phi,g)
          write(*,*) '     BCs applied'
 
          call init(mom%err_DivU)
@@ -299,17 +300,7 @@
          mom%NmaxPPE = NmaxPPE
        end subroutine
 
-       subroutine setRe(mom,Re)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         real(cp),intent(in) :: Re
-         mom%Re = Re
-         mom%L_eta = Re**real(-3.0/4.0,cp)
-         mom%U_eta = Re**real(-1.0/4.0,cp)
-         mom%t_eta = Re**real(-1.0/2.0,cp)
-       end subroutine
-
-       subroutine setDimensionlessNumbers(mom,Re,Ha,Gr,Fr)
+       subroutine setPiGroupsMomentum(mom,Re,Ha,Gr,Fr)
          implicit none
          type(momentum),intent(inout) :: mom
          real(cp),intent(in) :: Re,Ha,Gr,Fr
@@ -423,18 +414,17 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solveMomentumEquation(mom,F,g,ss_MHD,dir)
+       subroutine solveMomentumEquation(mom,F,ss_MHD,dir)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
          type(vectorField),intent(in) :: F
-         type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
 
          select case(solveUMethod)
-         case (1); call explicitEuler(mom,F,g,ss_MHD)
-         case (2); call semi_implicit_ADI(mom,F,g,ss_MHD)
+         case (1); call explicitEuler(mom,F,mom%g,ss_MHD)
+         case (2); call semi_implicit_ADI(mom,F,mom%g,ss_MHD)
          case default
          write(*,*) 'Error: solveUMethod must = 1,2 in solveMomentumEquation.';stop
          end select
@@ -442,7 +432,7 @@
          mom%nstep = mom%nstep + 1
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
-         call face2CellCenter(mom%U_CC,mom%U,g)
+         call face2CellCenter(mom%U_CC,mom%U,mom%g)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
          ! call computeKineticEnergy(mom,mom%g,F)
@@ -450,7 +440,7 @@
          ! call computeMomentumStability(mom,ss_MHD)
 
          if (getExportErrors(ss_MHD)) then
-           call computeDivergence(mom,g)
+           call computeDivergence(mom,mom%g)
            ! call exportTransientFull(mom,mom%g,dir)
          endif
          if (getExportTransient(ss_MHD)) then
@@ -817,9 +807,9 @@
          implicit none
          type(vectorField),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,-1)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,-1)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,-1)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,-3)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,-3)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,-3)
        end subroutine
 
        subroutine computeTotalKineticEnergyOld(mom,U_cct,Nici1,Nici2,ss_MHD)

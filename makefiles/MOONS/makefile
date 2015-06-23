@@ -49,19 +49,19 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
 # ****************** DEBUGGING **********************
 # CPU time ~ Debugging level
-# FCFLAGS += -g
+FCFLAGS += -g
 # FCFLAGS += -g -Wall
 # FCFLAGS += -g -Wall -Wextra
 # FCFLAGS += -g -Wall -Wextra -fbacktrace
-FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+# FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
-FCFLAGS += -O0
+# FCFLAGS += -O0
 # FCFLAGS += -O1
 # FCFLAGS += -O2
-# FCFLAGS += -O3
+FCFLAGS += -O3
 # FCFLAGS += -O4
 # FCFLAGS += -O5
 # **************** PARALLELIZATION ******************

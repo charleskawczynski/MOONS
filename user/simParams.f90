@@ -36,13 +36,11 @@
 
        ! ************************ T-FIELD ***********************
        logical :: solveEnergy = .false.
-       logical :: restartT = .false.
        integer,parameter :: solveTMethod = 1
        !                                   1 : Explicit Euler
 
        ! ************************ U-FIELD ***********************
-       logical :: solveMomentum = .true.
-       logical :: restartU = .false.
+       logical :: solveMomentum = .false.
        logical :: computeKU = .true.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
        !                                   1 : Explicit Euler
@@ -57,17 +55,17 @@
        ! real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 ) Not yet implemented
        !                                                       pure         central
        !                                                      upwind       difference
-       logical :: solveCoupled = .false. ! Change to addJCrossB
-       ! logical :: addBuoyancy = .true. ! Not yet implemented
+       logical :: addJCrossB = .false.
+       logical :: addBuoyancy = .false.
        ! logical :: addGravity = .true. ! Not yet implemented
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .false.
-       logical :: restartB = .false.
+       logical :: solveInduction = .true.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
-       logical :: computeKB = .true.    ! Compute magnetic energy at each time step
-       logical :: computeKB0 = .false.   ! Compute magnetic energy at each time step
+       logical :: computeKB  = .true.    ! Compute Total   magnetic energy at each time step
+       logical :: computeKBi = .true.    ! Compute Induced magnetic energy at each time step
+       logical :: computeKB0 = .false.   ! Compute Applied magnetic energy at each time step
 
        integer,parameter :: solveBMethod = 5
        !                                   1 : Low Rem (Poisson, assumes uniform properties)
@@ -104,7 +102,7 @@
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
 
-       integer,parameter :: benchmarkCase = 100
+       integer,parameter :: benchmarkCase = 1006
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -169,6 +167,7 @@
        ! 
        !    1004: LDC by Salah - To produce Fig. 4, Fig. 5
        !    1005: No slip cavity - Jack's experiment
+       !    1006: Weiss Benchmark
        ! 
        ! In order to make new benchmarkCases, prepare the following
        !    - MOONS.f90 (Number of steps, time step etc.)
@@ -184,7 +183,7 @@
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
        integer :: nskip_exportTransientFull  = 50     ! Very Expensive
-       integer :: nskip_exportErrors         = 5000    ! Divergences / Residuals (expensive)
+       integer :: nskip_exportErrors         = 1000    ! Divergences / Residuals (expensive)
        ! integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
        integer :: nskip_print                = 50     ! Printed data (cheap)
        ! integer :: nskip_print                = 10     ! Printed data (cheap)

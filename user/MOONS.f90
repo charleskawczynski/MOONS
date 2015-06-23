@@ -19,7 +19,7 @@
        use BCs_mod
        use applyBCs_mod
 
-       ! use energySolver_mod
+       use energySolver_mod
        use momentumSolver_mod
        use inductionSolver_mod
 
@@ -54,8 +54,11 @@
          ! ***************** USER DEFINED MHD VARIABLES *****************
          real(cp) :: Re = 1000.0d0
          real(cp) :: Ha = 100.0d0
-         real(cp) :: Gr = 0.0d0
+         real(cp) :: Gr = real(10**6,cp)
          real(cp) :: Fr = 0.0d0
+         real(cp) :: Pr = 0.71d0
+         real(cp) :: Ec = 0.0d0
+         real(cp) :: Al = 0.0d0
          real(cp) :: Rem = 1.0d0
          ! real(cp) :: dTime = 0.025
          ! real(cp) :: dTime = 0.01d0   ! Case 3: LDC Re100Ha10
@@ -81,7 +84,7 @@
          ! **************************************************************
          type(momentum) :: mom
          type(induction) :: ind
-         ! type(energy) :: nrg
+         type(energy) :: nrg
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
          type(subdomain) :: SD
@@ -100,9 +103,10 @@
          case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
 
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
-         case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.67d-2
          ! case (100); Re = 10000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 8.0d-4
+         case (100); Re = 1000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
 
          ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
@@ -216,6 +220,7 @@
          ! Rem = 400.1d00; ds = 1.0d-3
          ! Rem = 1000.0d0; ds = 1.0d-3
          case (1005); Re = 400d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         case (1006); Rem = 1000.0d0 ; ds = 8.0d-5; dTime = ds
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -233,7 +238,8 @@
          
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 80000
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**5
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
 
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
@@ -274,7 +280,7 @@
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
          case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6
          case (1005); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
-
+         case (1006); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 50*10**3
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
@@ -312,16 +318,26 @@
 
          ! **************************************************************
          ! Initialize all grids
-         call init(SD,Ni,Nwtop,Nwbot)
          ! call init(gd,grid_mom,grid_ind,Re,Ha)
          !            (this,g_mom,g_ind,N,Ni,Nwtop,Nwbot,Re,Ha)
-         call init(gd,grid_mom,grid_ind,SD%N,Ni,Nwtop,Nwbot,Re,Ha)
+         call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
+         call init(SD,Ni,Nwtop,Nwbot,grid_mom)
+
+         ! Initialize Energy grid/fields/parameters
+         call setDTime(nrg,dTime)
+         call setPiGroups(nrg,Re,Pr,Ec,Al,Rem)
+         if (exportGrids) then
+          call export(grid_ind,dir//'Ufield/','grid_nrg')
+         endif
+         call init(nrg,grid_ind,SD,dir)
+         if (exportRawICs) then
+           call exportRaw(nrg,nrg%g,dir)
+         endif
 
          ! Initialize Momentum grid/fields/parameters
          call setDTime(mom,dTime)
-         call setRe(mom,Re)
-         call setDimensionlessNumbers(mom,Re,Ha,Gr,Fr)
          call setNMaxPPE(mom,NmaxPPE)
+         call setPiGroups(mom,Re,Ha,Gr,Fr)
          if (exportGrids) then
           call export(grid_mom,dir//'Ufield/','grid_mom')
          endif
@@ -333,9 +349,8 @@
          ! Initialize Induction grid/fields/parameters
          call setDTime(ind,ds)
          call setNmaxB(ind,NmaxB)
-         call setRem(ind,Rem)
-         call setHa(ind,Ha)
          call setNmaxCleanB(ind,NmaxCleanB)
+         call setPiGroups(ind,Ha,Rem)
          if (exportGrids) then
           call export(grid_ind,dir//'Bfield/','grid_ind')
          endif
@@ -349,7 +364,7 @@
          ! on the smallest spatial step (dhMin)
 
          call setRunData(rd,dTime,ds,Re,Ha,Rem,&
-          mom%U%x,mom%U%y,mom%U%z,grid_mom,grid_ind,solveCoupled,solveBMethod)
+          mom%U%x,mom%U%y,mom%U%z,grid_mom,grid_ind,addJCrossB,solveBMethod)
 
          ! ****************** INITIALIZE TIME ***************************
          call init(time)
@@ -361,16 +376,19 @@
          call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
-         call computeDivergence(mom,mom%g)
+
+         if (solveMomentum) call computeDivergence(mom,mom%g)
          if (solveInduction) call computeDivergence(ind,ind%g)
 
          if (exportRawICs) then
-           call exportRaw(mom,mom%g,dir)
+           if (solveMomentum) call exportRaw(mom,mom%g,dir)
+           if (solveEnergy)   call exportRaw(nrg,nrg%g,dir)
            if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
            if (solveInduction) call exportRaw(ind,ind%g,dir)
          endif
          if (exportICs) then
-           call export(mom,mom%g,dir)
+           if (solveMomentum) call export(mom,mom%g,dir)
+           if (solveEnergy)   call export(nrg,nrg%g,dir)
            if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
            if (solveInduction) call export(ind,ind%g,dir)
          endif
@@ -414,13 +432,9 @@
          call setMaxIterations(ss_MHD,NmaxMHD)
          call setIteration(ss_MHD,0)
 
-         ! if ((solveInduction).and.(.not.solveCoupled).and.(solveBMethod.eq.1).and.restartU) then
-         !   call setMaxIterations(ss_MHD,1)
-         ! endif
-
          ! ********************* SET B SOLVER SETTINGS *******************
 
-         ! call MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+         call MHDSolver(nrg,mom,ind,gd,rd,ss_MHD,time,dir)
          ! call export(mom,mom%g,dir)
          ! call export(ind,ind%g,dir)
 
@@ -436,6 +450,230 @@
          call delete(gd)
 
          call computationComplete(time)
+       end subroutine
+
+       subroutine MOONS_setParams(Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
+         dTime,ds,NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB)
+         implicit none
+         real(cp),intent(inout) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
+         real(cp),intent(inout) :: dTime,ds
+         integer,intent(inout) :: NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB
+
+         ! ***************** USER DEFINED MHD VARIABLES *****************
+         Re = 1000.0d0
+         Ha = 100.0d0
+         Gr = real(10**6,cp)
+         Fr = 0.0d0
+         Pr = 0.71d0
+         Ec = 0.0d0
+         Al = 0.0d0
+         Rem = 1.0d0
+         dTime = 1.0d-4
+         ds = 1.0d-4
+
+         ! NmaxMHD = 100    ! One hundred steps
+         ! NmaxMHD = 5000    ! Five thousand steps
+         ! NmaxMHD = 10000   ! Ten thousand steps
+         ! NmaxMHD = 50000   ! Fifty thousand steps
+         ! NmaxMHD = 100000  ! One hundred thousand steps
+         ! NmaxMHD = 500000  ! Five hundred thousand steps
+         NmaxMHD = 1000000 ! One million steps
+         NmaxPPE    = 5 ! Number of PPE steps
+         NmaxB      = 5 ! Number of Steps for Low Rem approx to solve B
+         NmaxCleanB = 5 ! Number of Steps to clean B
+
+         ! ********** PREPARE BENCHMARK CASE IF DEFINED *****************
+         select case (benchmarkCase)
+         case (1);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (2);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (3);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (4);   Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = ds
+
+         case (50);  Re = 1970d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+         case (51);  Re = 3200d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.67d-2
+         ! case (100); Re = 10000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 8.0d-4
+         case (100); Re = 1000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
+
+         ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
+         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
+         case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
+         case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
+         ! case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 3.0d-4
+         case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 4.0d-7; dTime = 3.0d-4
+         case (104); Re = 1000d0;   Ha = 1000.0d0 ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.9d-6
+
+         case (105); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (106); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-2
+         case (107); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-7; dTime = 3.0d-2
+         case (108); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-7; dTime = 1.0d-2 ! Has not worked yet
+
+         case (109); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-2
+
+         case (200); Re = 200d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
+         case (201); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-4
+         case (202); Re = 1000d0;   Ha = 500.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
+
+         case (250); Re = 15574.07d0;   Ha = 2900.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-6
+         ! case (250); Re = 1000.07d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-5
+
+         case (300); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+         case (301); Re = 2000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.0d-3
+
+         ! case (1001); Re = 100d0;   Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 6.0d-6; dTime = 3.0d-4 ! Ha = 10
+         ! case (1001); Re = 100d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 5.0d-7; dTime = 4.0d-5 ! Ha = 100
+         case (1001); Re = 100d0;   Ha = 1000.0d0  ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 9.0d-7 ! Ha = 1000
+
+         ! case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-8; dTime = 5.0d-7
+         case (1002); Re = 10d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 8.0d-9; dTime = 2.0d-7
+         ! case (1002); Re = 100d0;    Ha = 500.0d0 ; Rem = 1.0d0 ; ds = 1.0d-6; dTime = 1.0d-5
+         case (1003); 
+         ds = 1.0d-5; dTime = ds
+
+         ! Ha = 10
+
+         ! Re = 100d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Ha = 100
+
+         ! Re = 100d0;    Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds ! streamlines sideways?
+         ! Re = 500d0;    Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         Re = 100d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds ! Next
+         ! Re = 500d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Ha = 1000
+
+         ! Re = 100d0;    Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 1000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Ha = 10000
+
+         ! Re = 100d0;    Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10000.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10000.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! Re = 100d0;    Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 500d0;    Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 1000d0;   Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+         ! Re = 10000d0;  Ha = 10000.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
+
+         ! case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-4; dTime = ds
+         case (1004); Re = 400d0;    Ha = 0.0d0 ; Rem = 1.0d0  ; ds = 1.0d-3; dTime = ds
+         ! Rem = 0.1d0; ds = 1.0d-5
+         Rem = 100.0d0; ds = 1.0d-4
+         ! Rem = 400.1d00; ds = 1.0d-3
+         ! Rem = 1000.0d0; ds = 1.0d-3
+         case (1005); Re = 400d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
+         case (1006); Rem = 1000.0d0 ; ds = 8.0d-5; dTime = ds
+
+         case default
+           stop 'Incorrect benchmarkCase in MOONS'
+         end select
+
+         select case (benchmarkCase)
+         case (1);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         case (2);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         case (3);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
+         ! case (4);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
+         case (4);   NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
+
+         case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
+         case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
+         
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 80000
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**5
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
+
+         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
+         case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
+         ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
+         case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
+         case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
+
+         case (105); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6000
+         case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000
+         case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 60000
+         case (108); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000
+
+         case (109); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 60000
+
+         case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4*10**5 ! Insul
+         ! case (200); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 7500
+         case (201); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 15000
+         case (202); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1000000
+
+         ! case (250); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10
+         case (250); NmaxPPE = 15; NmaxB = 5; NmaxMHD = 10**7 ! Case B2
+
+         case (300); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100000
+         case (301); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 100000
+
+         ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**5 ! A
+         ! case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! B
+         case (1001); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Shercliff flow
+         case (1002); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Hunt flow
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**1 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! Mimicking PD
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 400000 ! Mimicking PD
+
+         ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Salah
+         ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
+         case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6
+         case (1005); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
+         case (1006); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 50*10**3
+         case default
+           stop 'Incorrect benchmarkCase in MOONS'
+         end select
        end subroutine
 
        ! ***************************************************************
@@ -460,8 +698,8 @@
          case (50);   Ni = 105;           Nwtop = 0;           Nwbot = 0
          case (51);   Ni = 105;           Nwtop = 0;           Nwbot = 0
          ! case (100);  Ni = (/67,67,27/);  Nwtop = 0;           Nwbot = 0
-         ! case (100);  Ni = (/128,128,1/);  Nwtop = 0;           Nwbot = 0
-         case (100);  Ni = (/256,256,1/);  Nwtop = 0;           Nwbot = 0
+         case (100);  Ni = (/128,128,1/);  Nwtop = 0;           Nwbot = 0
+         ! case (100);  Ni = (/256,256,1/);  Nwtop = 0;           Nwbot = 0
          case (101);  Ni = 52;            Nwtop = 0;           Nwbot = 0
          case (102);  Ni = 45;            Nwtop = 11;          Nwbot = 11
          case (103);  Ni = 45;            Nwtop = 11;          Nwbot = 11
@@ -485,7 +723,13 @@
          ! case (1003); Ni = (/1,160,160/); Nwtop = (/0,8,8/); Nwbot = Nwtop
          case (1003); Ni = (/1,260,260/); Nwtop = (/0,13,13/); Nwbot = Nwtop
          case (1004); Ni = 35;            Nwtop = 0;           Nwbot = 0
-         case (1005); Ni = (/64,32,32/);  Nwtop = 0;           Nwbot = 0 ! (Jack's Experiment)
+         case (1005); Ni = (/64,32,32/);  Nwtop = 0;           Nwbot = 0  ! (Jack's Experiment)
+         ! case (1006); Ni = (/64,64,1/);   Nwtop = 32;          Nwbot = 32 ! (Weiss, Isolated Eddy)
+         ! Nwtop(3) = 0;        Nwbot(3) = 0                                ! (Weiss, Isolated Eddy)
+
+         case (1006); Ni = (/200,200,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
+         Nwtop(2) = 0;           Nwbot(2) = 0                             ! (Weiss, Single Eddy)
+
          case default
            Ni = (/64,32,32/)
            Nwtop = 0
@@ -525,7 +769,7 @@
          ! 
          ! For non-zero walls, N must > k for Nwtop = N/2**k
          ! 
-         !                                                                   ! Thinner walls
+         !                                                                 ! Thinner walls
          ! Ni = (N/2); Nwtop = N/2**2                                      !    |
          ! Ni = (N/2 + N/2**2); Nwtop = N/2**3                             !    |
          ! Ni = (N/2 + N/2**2 + N/2**3); Nwtop = N/2**4                    !    |

@@ -1,0 +1,213 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\figS}{22.1em}
+\newcommand{\ffigS}{15.1em}
+\newcommand{\figH}{\figS}
+\newcommand{\figW}{\figS}
+\newcommand{\ffigH}{\ffigS}
+\newcommand{\ffigW}{\ffigS}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Demonstration cases for ISFNT Paper}
+\author{S. Smolentsev, C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Geometry}
+
+Domain range
+\begin{equation}
+	-1.1 < x < 1.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1
+\end{equation}
+
+\begin{figure}[H]
+ \centering
+ \subfigure[]{
+  \includegraphics[width=\ffigW,height=\ffigH]{geometry.eps}
+  }
+   \caption[Optional ]{}
+\end{figure}
+
+\section{Governing Equations And Scaling}
+
+\subsection{Momentum}
+Non-dimensionalizing the momentum equation with
+
+\begin{equation}
+	\rho = \rho_c \qquad
+	\mu = \mu_c \qquad
+	t_c = L_c/U_c \qquad
+	u_j^* = \frac{u_j}{U_c} \qquad
+	t^* = \frac{t}{t_c} \qquad
+	x_j^* = \frac{x_j}{L_c} \qquad
+	p^* = \frac{p}{\rho_c U_c^2} \qquad
+\end{equation}
+
+Yields the non-dimensional momentum equation. In the most general case considered, the ith component of the non-dimensional momentum equation is
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial (u_i u_j)}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+\end{equation}
+
+Where
+
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c}
+	\qquad \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}}
+\end{equation}
+
+\subsection{Induction}
+Non-dimensionalizing the induction equation with the same parameters used to non-dimensionalize the momentum equation, plus
+
+\begin{equation}
+	B_k^* = \frac{B_k}{B_c}  \qquad
+	j_k^* = \frac{j_k}{\sigma_c U_c B_c} \qquad
+	E_k^* = \frac{E_k}{U_c B_c} \qquad
+	\sigma^* = \frac{\sigma}{\sigma_c} \qquad
+	\mu^* = \frac{\mu}{\mu_c} \qquad
+\end{equation}
+
+Yields the non-dimensional induction equation. In the most general case considered, the ith component of the non-dimensional induction equation is
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+Where
+
+\begin{equation}
+	Re_m = \mu_c \sigma_c U_c L_c \qquad
+\end{equation}
+
+If we were to non-dimensionalize $B$ with
+
+\begin{equation}
+	B_k^* = \frac{B_k}{Re_m B^0}
+\end{equation}
+
+Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
+
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+
+In these comparisons, $\mu$ was assumed to be uniform in space and constant in time.
+
+
+\section{Boundary Conditions}
+
+\subsection{Velocity field}
+The boundary conditions for the velocity are 
+
+\subsubsection{Dirichlet}
+
+\begin{equation}
+	\pmb{u} = \pmb{u}_{wall}
+	\qquad \qquad
+	\pmb{u} = \pmb{u}_{inlet}
+	\qquad \qquad
+	\pmb{u} = \pmb{u}_{outlet}
+\end{equation}
+
+\subsubsection{Neumann}
+\begin{equation}
+	\frac{\partial \pmb{u}}{\partial \pmb{n}} = 0
+\end{equation}
+
+\subsection{Magnetic field}
+\subsubsection{Pseudo-vacuum}
+\begin{equation}
+	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
+	\qquad \qquad
+	\pmb{B}_{tangent} = 0
+\end{equation}
+
+\subsubsection{Periodic along x}
+\begin{equation}
+	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
+	\qquad
+	\pmb{B}_{tangent} = 0
+	\qquad
+	y_{min},y_{max}
+	z_{min},z_{max}
+\end{equation}
+
+\begin{equation}
+	\frac{\partial \pmb{B}}{\partial x} = 0
+	\qquad
+	x_{min},x_{max}
+\end{equation}
+
+
+\bibliographystyle{unsrt}
+\bibliography{MHD,Math,Interface,fluids,CFD,handpicked}
+
+
+\end{document}

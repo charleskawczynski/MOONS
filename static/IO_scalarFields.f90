@@ -33,7 +33,6 @@
         real(cp),dimension(:,:,:),intent(inout) :: arr
         real(cp),dimension(:),allocatable :: x,y,z
         integer,dimension(3) :: s
-        integer :: i
         s = shape(arr)
 
         allocate(x(s(1)))

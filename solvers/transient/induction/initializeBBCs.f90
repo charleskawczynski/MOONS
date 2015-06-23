@@ -65,6 +65,8 @@
          
          select case (preDefinedB_BCs)
          case (1); call initPseudoVacuumBCs(B_bcs,g) ! Pseudo Vaccuum
+                   call make2D(B_bcs,g,3)
+                   call make2D(B_bcs,g,1)
          case (2); call initBeqZeroBCs(B_bcs,g)      ! B = 0
          case default
            write(*,*) 'Incorrect preDefinedB_BCs in initPreDefinedBfield';stop
@@ -133,6 +135,38 @@
          call setXmaxType(B_bcs%x,periodic_i)
          call setXmaxType(B_bcs%y,periodic_i)
          call setXmaxType(B_bcs%z,periodic_i)
+       end subroutine
+
+       subroutine make2D(B_bcs,g,dir)
+         implicit none
+         type(grid),intent(in) :: g
+         type(vectorBCs),intent(inout) :: B_bcs
+         integer,intent(in) :: dir
+         integer :: neumann,periodic_i
+         neumann = 5
+         periodic_i = 7 ! Wall incoincident
+         select case (dir)
+         case (1);call setXminType(B_bcs%x,periodic_i)
+                  call setXminType(B_bcs%y,periodic_i)
+                  call setXminType(B_bcs%z,periodic_i)
+                  call setXmaxType(B_bcs%x,periodic_i)
+                  call setXmaxType(B_bcs%y,periodic_i)
+                  call setXmaxType(B_bcs%z,periodic_i)
+         case (2);call setYminType(B_bcs%x,periodic_i)
+                  call setYminType(B_bcs%y,periodic_i)
+                  call setYminType(B_bcs%z,periodic_i)
+                  call setYmaxType(B_bcs%x,periodic_i)
+                  call setYmaxType(B_bcs%y,periodic_i)
+                  call setYmaxType(B_bcs%z,periodic_i)
+         case (3);call setZminType(B_bcs%x,periodic_i)
+                  call setZminType(B_bcs%y,periodic_i)
+                  call setZminType(B_bcs%z,periodic_i)
+                  call setZmaxType(B_bcs%x,periodic_i)
+                  call setZmaxType(B_bcs%y,periodic_i)
+                  call setZmaxType(B_bcs%z,periodic_i)
+         case default
+         stop 'Error: dir must = 1,2,3 in make2D in initializeBBCs.f90'
+         end select
        end subroutine
 
        end module

@@ -37,11 +37,12 @@
        private
        public :: induction,init,delete,solve
 
-       public :: setDTime,setNmaxB,setRem,setHa,setNmaxCleanB
+       public :: setDTime,setNmaxB,setNmaxCleanB
+       public :: setPiGroups
 
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
-       public :: addJCrossB,computeJCrossB
+       public :: computeAddJCrossB,computeJCrossB
 
        public :: computeDivergence
        public :: computeCurrent
@@ -101,7 +102,7 @@
          type(indexProbe) :: probe_Bx,probe_By,probe_Bz
          type(indexProbe) :: probe_J
          type(errorProbe) :: probe_divB,probe_divJ
-         type(probe) :: KB_energy,KB0_energy
+         type(probe) :: KB_energy,KB0_energy,KBi_energy
          type(grid) :: g
          type(subdomain) :: SD
 
@@ -116,6 +117,7 @@
        end type
 
        interface init;                 module procedure initInduction;                 end interface
+       interface setPiGroups;          module procedure setPiGroupsInduction;          end interface
        interface delete;               module procedure deleteInduction;               end interface
        interface solve;                module procedure inductionSolver;               end interface
        interface printExportBCs;       module procedure inductionPrintExportBCs;       end interface
@@ -201,11 +203,11 @@
          call applyAllBCs(ind%B,ind%B_bcs,g)
          write(*,*) '     BCs applied'
 
-         call initSigmaMu(ind%sigma%phi,ind%mu%phi,ind%SD,g)
+         call initSigmaMu(ind%sigma,ind%mu,ind%SD,g)
          call divide(one,ind%sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma%phi,g)
          call cellCenter2Face(ind%sigmaInv_face,ind%sigma%phi,g)
-         call initSigmaMu(ind%sigma%phi,ind%mu%phi,ind%SD,g)
+         call initSigmaMu(ind%sigma,ind%mu,ind%SD,g)
 
          write(*,*) '     Materials initialized'
 
@@ -231,6 +233,7 @@
          call export(ind%probe_divB)
          call export(ind%probe_divJ)
          call init(ind%KB_energy,dir//'Bfield\','KB',.not.restartB)
+         call init(ind%KBi_energy,dir//'Bfield\','KBi',.not.restartB)
          call init(ind%KB0_energy,dir//'Bfield\','KB0',.not.restartB)
          write(*,*) '     B/J probes initialized'
 
@@ -331,25 +334,19 @@
          ind%NmaxB = NmaxB
        end subroutine
 
-       subroutine setRem(ind,Rem)
-         implicit none
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Rem
-         ind%Rem = Rem
-       end subroutine
-
-       subroutine setHa(ind,Ha)
-         implicit none
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Ha
-         ind%Ha = Ha
-       end subroutine
-
        subroutine setNmaxCleanB(ind,NmaxCleanB)
          implicit none
          type(induction),intent(inout) :: ind
          integer,intent(in) :: NmaxCleanB
          ind%NmaxCleanB = NmaxCleanB
+       end subroutine
+
+       subroutine setPiGroupsInduction(ind,Ha,Rem)
+         implicit none
+         type(induction),intent(inout) :: ind
+         real(cp),intent(in) :: Ha,Rem
+         ind%Ha = Ha
+         ind%Rem = Rem
        end subroutine
 
        ! ******************* EXPORT ****************************
@@ -464,19 +461,19 @@
            call allocateVectorField(tempVFn,Nx,Ny,Nz)
 
            call cellCenter2Node(tempVFn,ind%B,g)
-           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
-           ! 'Bxnt_phys',&
-           ! 'Bynt_phys',&
-           ! 'Bznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+           call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
+           'Bxnt_phys',&
+           'Bynt_phys',&
+           'Bznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
-           call writeScalarPhysicalPlane(g,tempVFn%x,dir//'Bfield/transient/',&
-           'Bxnt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+           !call writeScalarPhysicalPlane(g,tempVFn%x,dir//'Bfield/transient/',&
+           !'Bxnt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
 
-           call cellCenter2Node(tempVFn,ind%J_cc,g)
-           call writeVecPhysicalPlane(g,tempVFn,dir//'Jfield/transient/',&
-            'jxnt_phys',&
-            'jynt_phys',&
-            'jznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+           ! call cellCenter2Node(tempVFn,ind%J_cc,g)
+           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Jfield/transient/',&
+           !  'jxnt_phys',&
+           !  'jynt_phys',&
+           !  'jznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
 
            call delete(tempVFn)
          endif
@@ -484,12 +481,12 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine inductionSolver(ind,U,g_mom,g,ss_MHD,dir)
+       subroutine inductionSolver(ind,U,g_mom,ss_MHD,dir)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
-         type(grid),intent(in) :: g,g_mom
+         type(grid),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
          ! ********************** LOCAL VARIABLES ***********************
@@ -497,10 +494,9 @@
          ! ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
          ! ind%B0%z = real(1.0,cp)
 
-         ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
-         ! call perturb(ind%B0%x,g)
-         ind%B0%y = real(0.0,cp)
-         ind%B0%z = real(0.0,cp)
+         ! ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
+         ! ind%B0%y = real(0.0,cp)
+         ! ind%B0%z = real(0.0,cp)
 
          ! ind%B0%x = real(0.0,cp)
          ! ind%B0%y = real(0.0,cp)
@@ -509,17 +505,17 @@
          call embedVelocity(ind,U,g_mom)
 
          select case (solveBMethod)
-         case (1); call lowRemPoisson(ind,ind%U_cct,g,ss_MHD)
-         case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,g)
-         case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,g)
-         case (4); call lowRemCTmethod(ind,g)
-         case (5); call finiteRemCTmethod(ind,g)
-         case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,g,ss_MHD)
-         case (7); call lowRemMultigrid(ind,ind%U_cct,g,ss_MHD)
-         case (8); call lowRem_JacksExperiment(ind,ind%U_cct,g)
+         case (1); call lowRemPoisson(ind,ind%U_cct,ind%g,ss_MHD)
+         case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,ind%g)
+         case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%g)
+         case (4); call lowRemCTmethod(ind,ind%g)
+         case (5); call finiteRemCTmethod(ind,ind%g)
+         case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,ind%g,ss_MHD)
+         case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g,ss_MHD)
+         case (8); call lowRem_JacksExperiment(ind,ind%U_cct,ind%g)
          end select
          if (cleanB) then
-           call cleanBSolution(ind,g,ss_MHD)
+           call cleanBSolution(ind,ind%g,ss_MHD)
            ! call cleanBMultigrid(ind,g,ss_MHD)
          endif
          ind%nstep = ind%nstep + 1
@@ -536,7 +532,6 @@
            call exportTransientFull(ind,ind%g,dir)
          endif
          call computeMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
-
 
          if (getPrintParams(ss_MHD)) then
            write(*,*) '**************************************************************'
@@ -869,14 +864,13 @@
          ! ind%temp_CC%z = real(0.0,cp)
 
          ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ! call perturb(ind%temp_CC%x,ind%g)
+         ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
 
          ! k = real(0.1,cp); eps = real(0.001,cp)
          ! ind%temp_CC%x = ind%temp_CC%x*(real(1.0,cp) + eps*sin(k*ind%t))
-         ind%temp_CC%y = real(0.0,cp)
-         ind%temp_CC%z = real(0.0,cp)
-         call subtract(ind%B,ind%temp_CC)
+         ! ind%temp_CC%y = real(0.0,cp)
+         ! ind%temp_CC%z = real(0.0,cp)
+         ! call subtract(ind%B,ind%temp_CC)
 
          ! Impose BCs:
          call applyAllBCs(ind%B,ind%B_bcs,g)
@@ -1019,31 +1013,31 @@
 
        ! ********************* COMPUTE *****************************
 
-       subroutine addJCrossB(jcrossB,ind,g_mom,g_ind,Ha,Re,Rem)
+       subroutine computeAddJCrossB(jcrossB,ind,g_mom,Ha,Re,Rem)
          ! addJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
          implicit none
          type(vectorField),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom,g_ind
+         type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
          type(vectorField) :: temp
          call allocateVectorField(temp,jcrossB)
          call assign(temp,real(0.0,cp))
-         call computeJCrossB(temp,ind,g_mom,g_ind,Ha,Re,Rem)
+         call computeJCrossB(temp,ind,g_mom,Ha,Re,Rem)
          call add(jcrossB,temp)
          call delete(temp)
        end subroutine
 
-       subroutine computeJCrossB(jcrossB,ind,g_mom,g_ind,Ha,Re,Rem)
+       subroutine computeJCrossB(jcrossB,ind,g_mom,Ha,Re,Rem)
          ! addJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
          implicit none
          type(vectorField),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom,g_ind
+         type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
 
          select case (solveBMethod)
@@ -1051,22 +1045,26 @@
 
          call assign(ind%Bstar,ind%B0)
          call add(ind%Bstar,ind%B)
-         call curl(ind%J_cc,ind%Bstar,g_ind)
+         call curl(ind%J_cc,ind%Bstar,ind%g)
 
          case default ! Low Rem
 
          call assign(ind%Bstar,ind%B)
-         call curl(ind%J_cc,ind%Bstar,g_ind)
+         call curl(ind%J_cc,ind%Bstar,ind%g)
          call assign(ind%Bstar,ind%B0)
 
          end select
 
          call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-         call cellCenter2Face(ind%temp_F,ind%temp_CC,g_ind)
+         call cellCenter2Face(ind%temp_F,ind%temp_CC,ind%g)
 
          call extractFace(jcrossB,ind%temp_F,ind%SD,g_mom)
 
-         call multiply(jcrossB,Ha**real(2.0,cp)/(Re*Rem))
+         select case (solveBMethod)
+         case (5,6);   call multiply(jcrossB,Ha**real(2.0,cp)/(Re*Rem)) ! Finite Rem
+         case default; call multiply(jcrossB,Ha**real(2.0,cp)/(Re))     ! Low Rem
+
+         end select
        end subroutine
 
        subroutine computeDivergenceInduction(ind,g)
@@ -1114,15 +1112,27 @@
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
          Nin1  = ind%SD%Nin1; Nin2  = ind%SD%Nin2; Nice1 = ind%SD%Nice1
          Nice2 = ind%SD%Nice2; Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
+          call assign(ind%Bstar,ind%B0)
+          call add(ind%Bstar,ind%B)
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           ! call totalEnergy(K_energy,ind%B,ind%g) ! Sergey uses interior...
+           call totalEnergy(K_energy,&
+             ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             g)
+           call set(ind%KB_energy,ind%nstep,K_energy)
+           call apply(ind%KB_energy)
+          endif
+          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            ! call totalEnergy(K_energy,ind%B,ind%g) ! Sergey uses interior...
            call totalEnergy(K_energy,&
              B%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              B%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              B%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              g)
-           call set(ind%KB_energy,ind%nstep,K_energy)
-           call apply(ind%KB_energy)
+           call set(ind%KBi_energy,ind%nstep,K_energy)
+           call apply(ind%KBi_energy)
           endif
           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            ! call totalEnergy(K_energy,B0,ind%g) ! Sergey uses interior...

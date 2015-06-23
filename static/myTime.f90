@@ -9,8 +9,10 @@
 
 
        use IO_tools_mod
-       use simParams_mod
+       ! use simParams_mod
        use solverSettings_mod
+       ! use initializeUfield_mod
+       ! use initializeBfield_mod
        implicit none
 
        private
@@ -133,11 +135,11 @@
         ! This is not technically correct, but instead of writing this data
         ! to a file and recording it again, just take the average as the 
         ! local time to finish one MHD loop:
-        if (restartU.and.restartB) then
-          this%runTimeAve = (this%t_finish - this%t_start)/real(this%countRate,cp)
-        else
+        ! if (restartU.and.restartB) then
+        !   this%runTimeAve = (this%t_finish - this%t_start)/real(this%countRate,cp)
+        ! else
           this%runTimeAve = this%runTimeCumulative/real(this%N,cp)
-        endif
+        ! endif
         this%iterPerSec = floor(1.0/this%runTimeAve)
         this%iterPerHour = floor(1.0/this%runTimeAve*3600.0)
         this%iterPerDay = floor(1.0/this%runTimeAve*3600.0*24.0)

@@ -1,26 +1,13 @@
        module initializeSigmaMu_mod
-       use simParams_mod
+       ! use simParams_mod
        use grid_mod
        use ops_embedExtract_mod
+       use scalarField_mod
        implicit none
 
        private
        public :: initSigmaMu
 
-       ! This gets overridden by benchmarkCase
-       integer,parameter :: preDefined_Sigma = 0 ! sigma* = sigma_wall/sigma_l
-       !                                       0 : User-defined case (no override)
-       !                                       1 : sigma* = 1 (uniform, conducting)
-       !                                       2 : sigma* = 10^-2 (insulating, need small dt for B)
-       !                                       3 : sigma* = 10^-3 (insulating, need small dt for B)
-       !                                       4 : sigma* = 10^-6 (insulating, need small dt for B)
-       !                                       5 : sigma* = 10^2 (conducting)
-       !                                       6 : sigma* = 10^3 (conducting)
-       !                                       7 : sigma* = 10^6 (conducting)
-
-       integer,parameter :: preDefined_SigmaMu = 0
-       !                                         0 : User-defined case (no override)
-       !                                         1 : sigma = mu = 1
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -32,111 +19,80 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+
+       ! This gets overridden by benchmarkCase
+       integer,parameter :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
+       !                                       0 : User-defined case (no override)
+       !                                       1 : sigma* = sigmaStar
+       real(cp) :: sigmaStarWall = real(1000.0,cp) ! sigma* = sigma_wall/sigma_l
+
        contains
 
        subroutine initSigmaMu(sigma,mu,SD,g)
          implicit none
          type(grid),intent(in) :: g
          type(subdomain),intent(in) :: SD
-         real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
-         if (benchmarkCase.ne.0) then
-           call initBenchmarkSigmaMu(sigma,mu,SD)
-         elseif (preDefined_SigmaMu.ne.0) then
-           call initPredefinedSigmaMu(sigma,mu,g,SD)
+         type(scalarField),intent(inout) :: sigma,mu
+         call initSigma(sigma,SD,g)
+         call initMu(mu)
+       end subroutine
+
+       ! *************************************************************
+       ! *************************************************************
+       ! *************************** SIGMA ***************************
+       ! *************************************************************
+       ! *************************************************************
+
+       subroutine initSigma(sigma,SD,g)
+         implicit none
+         type(grid),intent(in) :: g
+         type(subdomain),intent(in) :: SD
+         type(scalarField),intent(inout) :: sigma
+         if (preDefined_Sigma.ne.0) then
+           call initPredefinedSigma(sigma,SD,g)
          else
-           call initUserSigmaMu(sigma,mu,SD)
+           call initUserSigma(sigma,SD,g)
          endif
        end subroutine
 
-       subroutine initBenchmarkSigmaMu(sigma,mu,SD)
+       subroutine initPredefinedSigma(sigma,SD,g)
          implicit none
-         ! Auxiliary data types
-         real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
+         type(scalarField),intent(inout) :: sigma
          type(subdomain),intent(in) :: SD
-         real(cp) :: sigma_w,sigma_l,cw,tw,sigma_star
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
-         Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1
-         Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
-         
-         sigma = real(1.0,cp); mu = real(1.0,cp)
-         sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         select case (benchmarkCase)
-         case (1); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (2); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (3); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (4); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-
-         ! Hydrodynamic cases
-         case (100); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (101); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-
-         case (102); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (103); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (104); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-
-         ! Multi-material tests
-         case (105); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (106); sigma_l = real(1.0d2,cp); sigma_w = real(1.0,cp)
-         case (107); sigma_l = real(1.0d3,cp); sigma_w = real(1.0,cp)
-         case (108); sigma_l = real(1.0d6,cp); sigma_w = real(1.0,cp)
-
-         case (109); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-
-         case (200); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (201); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (202); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (250); 
-         ! cw = sigma_star*tw/L_parallel
-         ! sigma_star = cw/tw for L = 1
-         cw = real(0.07,cp)
-         tw = real(0.142394,cp)
-         sigma_star = cw/tw
-         sigma_l = real(1.0,cp); sigma_w = sigma_star
-
-         case (1001); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (1002); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (1003); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (1004); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case (1005); sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         case default
-           write(*,*) 'Incorrect benchmarkCase in initBenchmarkSigmaMu'
-           stop
-         end select
-
-         ! Total domain
-         sigma = sigma_w/sigma_l
-
-         ! Interior domain
-
-         ! sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
-         
-         ! For duct flow:
-         sigma(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
-
-         ! Make lid have fluid conductivity (what HIMAG does)
-         ! sigma(Nice1(1):Nice2(1),Nice1(2):Nici2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
-
+         type(grid),intent(in) :: g
+         type(scalarField) :: sigma_l
+         call allocateField(sigma_l,SD%s)
+         call assign(sigma_l,real(1.0,cp))
+         call assign(sigma,sigmaStarWall)
+         call embedCC(sigma,sigma_l,SD,g)
+         call delete(sigma_l)
        end subroutine
 
-       subroutine initUserSigmaMu(sigma,mu,SD)
+       subroutine initUserSigma(sigma,SD,g)
          implicit none
-         ! Auxiliary data types
-         real(cp),dimension(:,:,:),intent(inout) :: sigma,mu
+         type(scalarField),intent(inout) :: sigma
          type(subdomain),intent(in) :: SD
-         real(cp) :: sigma_w,sigma_l
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
-         Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1
-         Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
-
-         sigma = real(1.0,cp)
-         mu = real(1.0,cp)
-         sigma_l = real(1.0,cp); sigma_w = real(1.0,cp)
-         sigma = sigma_w/sigma_l
-
-         sigma(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = real(1.0,cp)
-
-         sigma = real(1.0,cp)
-
+         type(grid),intent(in) :: g
+         type(scalarField) :: sigma_l
+         call allocateField(sigma_l,SD%s)
+         call assign(sigma_l,real(1.0,cp))
+         call assign(sigma,sigmaStarWall)
+         call embedCC(sigma,sigma_l,SD,g)
+         call delete(sigma_l)
        end subroutine
+
+
+       ! *************************************************************
+       ! *************************************************************
+       ! ***************************** MU ****************************
+       ! *************************************************************
+       ! *************************************************************
+
+       subroutine initMu(mu)
+         implicit none
+         type(scalarField),intent(inout) :: mu
+         call assign(mu,real(1.0,cp))
+       end subroutine
+
 
        end module

@@ -1,0 +1,260 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of the Dimensionless Lorentz force using different scaling}
+Non-dimensionalizing the NS equation with the ratio of the characteristic velocity and the ratio of the length scale to advective time yields the following coefficient in front of each term in the momentum equation
+
+\begin{equation}
+	\frac{L_c}{\rho_c U_c^2}
+\end{equation}
+
+This term, in front of the $j\times B$ force can result in several different forms starting from
+
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} j \times \frac{B}{\mu}
+\end{equation}
+
+\section{Ampere's Law \texorpdfstring{$\rightarrow$}{} Al}
+Non-dimensionalizing by
+\begin{equation}
+	\nabla^* = L_c \nabla \qquad
+	\mu^* = \mu / \mu_c \qquad
+	B^* = B/B_c
+\end{equation}
+Yields
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	 \frac{L_c}{\rho_c U_c^2} \left( \nabla \times \frac{B}{\mu} \right) \times B
+	 =
+	\frac{B_c^2}{\mu_c \rho_c U_c^2} \left( \nabla^* \times \frac{B^*}{\mu^*} \right) \times B^*
+	 =
+	Al \left( \nabla^* \times \frac{B^*}{\mu^*} \right) \times B^*
+\end{equation}
+Therefore we have
+\begin{equation}
+	\boxed{
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	Al \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
+	}
+\end{equation}
+
+\section{Ohm's Law \texorpdfstring{$\rightarrow$}{} Ha, Re, Rem}
+Non-dimensionalizing by
+\begin{equation}
+	\nabla^* = L_c \nabla \qquad
+	j^* = j/ \sigma_c U_c B_c \qquad
+	B^* = B/B_c
+\end{equation}
+Yields
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	\frac{L_c B_c^2 \sigma_c}{\rho_c U_c} j^* \times B^*
+	=
+	\frac{\mu_c}{\rho_c U_c L_c} 
+	L_c^2 B_c^2 \frac{\sigma_c}{\rho_c \mu_c} j^* \times B^*
+	=
+	\frac{Ha^2}{Re} j^* \times B^*
+\end{equation}
+Note that
+\begin{equation}
+	j^*
+	=
+	\frac{j}{\sigma_c U_c B_c}
+	=
+	\frac{\nabla \times \left( \frac{B}{\mu} \right)}{\sigma_c U_c B_c}
+	=
+	\frac{ \frac{B_c}{\mu_c L_c} \nabla^* \times \left( \frac{B^*}{\mu^*} \right)}{\sigma_c U_c B_c}
+	=
+	\frac{1}{Re_m} \nabla \times \left( \frac{B^*}{\mu^*} \right)
+\end{equation}
+Therefore we have
+\begin{equation}
+	\boxed{
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	\frac{Ha^2}{Re Re_m} \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
+	}
+\end{equation}
+
+\section{Ampere's Law AND Rem \texorpdfstring{$\rightarrow$}{} Al and orders of Rem}
+Non-dimensionalizing by
+\begin{equation}
+	\nabla^* = L_c \nabla \qquad
+	\mu^* = \mu / \mu_c \qquad
+	{B^{i}}^* = B^{i}/(Re_m B_c^0) \qquad
+	{B^0}^* = B^0/B_c^0
+\end{equation}
+Yields
+
+Looking at the $j \times B$ isolated from the coefficients, we have
+
+\begin{equation}
+	j \times B
+	=
+	\left( \nabla \times \frac{B^{i}+B^0}{\mu} \right) \times (B^{i}+B^0)
+\end{equation}
+\begin{equation}
+	=
+	\underbrace{\left( \nabla \times \frac{B^{i}}{\mu} \right) \times B^0}_{\text{Low}\ Re_m}
+	+
+	\underbrace{\left( \nabla \times \frac{B^{i}}{\mu} \right) \times B^{i}}_{\text{Finite}\ Re_m}
+	+
+	\underbrace{\left( \nabla \times \frac{B^0}{\mu} \right)}_{j\ \text{from non-uniform}\ B^0 (\text{low}\ Re_m)} \times B^0
+	+
+	\underbrace{\left( \nabla \times \frac{B^0}{\mu} \right)}_{j\ \text{from non-uniform}\ B^0 (\text{finite}\ Re_m)} \times B^{i}
+\end{equation}
+
+\begin{equation}
+	=
+	\frac{{B_c^0}^2}{L_c \mu_c}
+	\left\{
+	Re_m \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	Re_m^2 \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
+	+
+	\left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	Re_m \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^{i}}^*
+	\right\}
+\end{equation}
+
+Therefore we have
+\begin{multline}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 = \\
+	 Al
+	\left\{
+	Re_m \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	Re_m^2 \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
+	+
+	\left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	Re_m \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^{i}}^*
+	\right\}
+\end{multline}
+
+Noting that
+\begin{equation}
+	Al Re_m = \frac{Ha^2}{Re} \qquad
+	Al Re_m^2 = \frac{Ha^2 Re_m}{Re} \qquad
+\end{equation}
+
+The above equation may be written as
+\begin{multline}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 = \\
+	\left\{
+	\frac{Ha^2}{Re} \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	\frac{Ha^2 Re_m}{Re} \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
+	+
+	Al \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	\frac{Ha^2}{Re} \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^{i}}^*
+	\right\}
+\end{multline}
+
+Or
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	\left\{
+	\frac{Ha^2}{Re} \left( \nabla^* \times \frac{{B^{t}}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	\frac{Ha^2 Re_m}{Re} \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
+	+
+	Al \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
+	\right\}
+\end{equation}
+
+
+For this scaling, the induction equation is
+
+\begin{equation}
+	\frac{\partial \pmb{B}}{\partial t} = 
+	\nabla \times (\pmb{u} \times \pmb{B})
+	- \nabla \times 
+	\left[ \frac{1}{\sigma}
+	\nabla \times \frac{\pmb{B}}{\mu} \right]
+\end{equation}
+
+
+\section{Ohm's Law AND Magnetic Rem \texorpdfstring{$\rightarrow$}{} ...}
+Non-dimensionalizing by
+\begin{equation}
+	\nabla^* = L_c \nabla \qquad
+	\mu^* = \mu / \mu_c \qquad
+	j^* = j/ \sigma_c U_c B_c \qquad
+	{B^{ind}}^* = B^{ind}/(Re_m B_c^0) \qquad
+	{B^0}^* = B^0/B_c^0
+\end{equation}
+Yields
+
+Looking at the $j \times B$ isolated from the 
+
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	 \frac{L_c}{\rho_c U_c^2} \left( \nabla \times \frac{B^{ind}+B^0}{\mu} \right) \times B
+	 =
+	\frac{B_c^2}{\mu_c \rho_c U_c^2} \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
+	 =
+	Al \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
+\end{equation}
+Therefore we have
+\begin{equation}
+	\boxed{
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 =
+	Al \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
+	}
+\end{equation}
+
+
+\end{document}

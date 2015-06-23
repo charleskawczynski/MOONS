@@ -3,6 +3,7 @@
        ! the CT method only uses embedEdge, and not embedCC or embedFace.
 
        use grid_mod
+       use scalarField_mod
        use vectorField_mod
        use ops_aux_mod
 
@@ -28,12 +29,27 @@
        public :: embedCC
        public :: embedN
 
-       ! public :: embedEdgeExclude,embedEdgeInclude,embedEdgeIncludeDir
-       ! public :: embedCCExclude,embedCCInclude,embedCCDir
+       logical,parameter :: includeTF = .true.
+       integer,parameter :: includeDir = 0 ! (does nothing if includeTF = .false.)
+                                       ! 0 (include all directions)
+                                       ! 1 (include x direction)
+                                       ! 2 (include y direction)
+                                       ! 3 (include z direction)
 
        interface init;   module procedure initSubdomain;   end interface
 
+       interface embedCC;   module procedure embedCC_VF;   end interface
+       interface embedCC;   module procedure embedCC_SF;   end interface
+
+       interface embedCCInclude;     module procedure embedCCInclude_VF;     end interface
+       interface embedCCInclude;     module procedure embedCCInclude_SF;     end interface
+       interface embedCCExclude;     module procedure embedCCExclude_VF;     end interface
+       interface embedCCExclude;     module procedure embedCCExclude_SF;     end interface
+       interface embedCCIncludeDir;  module procedure embedCCIncludeDir_VF;  end interface
+       interface embedCCIncludeDir;  module procedure embedCCIncludeDir_SF;  end interface
+
        type subdomain
+         integer,dimension(3) :: s
          integer,dimension(3) :: N
          integer,dimension(3) :: Nin1
          integer,dimension(3) :: Nin2
@@ -45,12 +61,15 @@
 
        contains
 
-       subroutine initSubdomain(SD,Ni,Nwtop,Nwbot)
+       subroutine initSubdomain(SD,Ni,Nwtop,Nwbot,g)
          implicit none
          type(subdomain),intent(inout) :: SD
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
+         type(grid),intent(in) :: g ! Internal grid
+         integer :: i
          ! The INDEX OF CELLS section should not be modified.
          SD%N     = Ni+Nwtop+Nwbot
+         SD%s     = (/(g%c(i)%sc,i=1,3)/)
          SD%Nin1  = Nwbot+2
          SD%Nin2  = SD%N-Nwtop+2
          SD%Nice1 = Nwbot+2
@@ -79,9 +98,16 @@
          type(vectorField),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         ! call extractFaceInclude(face_i,face_t,SD,g)
-         call extractFaceExclude(face_i,face_t,SD,g)
-         ! call extractFaceIncludeDir(face_i,face_t,SD,g)
+         if (includeTF) then
+           select case (includeDir)
+           case (0); call extractFaceInclude(face_i,face_t,SD)
+           case (1:3); call extractFaceIncludeDir(face_i,face_t,SD,g)
+           case default
+           stop 'Error: includeDir must = 1,2,3 in extractFace in ops_embedExtract.f90'
+           end select
+         else
+           call extractFaceExclude(face_i,face_t,SD,g)
+         endif
        end subroutine
 
        ! *********************************************************************************
@@ -94,10 +120,16 @@
          type(vectorField),intent(in) :: edge_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         ! call embedEdgeInclude(edge_t,edge_i,SD,g)
-         ! call embedEdgeExclude(edge_t,edge_i,SD,g)
-
-         call embedEdgeIncludeDir(edge_t,edge_i,SD,g,1)
+         if (includeTF) then
+           select case (includeDir)
+           case (0); call embedEdgeInclude(edge_t,edge_i,SD,g)
+           case (1:3); call embedEdgeIncludeDir(edge_t,edge_i,SD,g,includeDir)
+           case default
+           stop 'Error: includeDir must = 1,2,3 in embedEdge in ops_embedExtract.f90'
+           end select
+         else
+           call embedEdgeExclude(edge_t,edge_i,SD,g)
+         endif
        end subroutine
 
        subroutine embedFace(face_t,face_i,SD,g)
@@ -106,22 +138,52 @@
          type(vectorField),intent(in) :: face_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         ! call embedFaceInclude(face_t,face_i,SD,g)
-         ! call embedFaceExclude(edge_t,face_i,SD,g)
-         call embedFaceIncludeDir(face_t,face_i,SD,g,1)
+         if (includeTF) then
+           select case (includeDir)
+           case (0); call embedFaceInclude(face_t,face_i,SD,g)
+           case (1:3); call embedFaceIncludeDir(face_t,face_i,SD,g,includeDir)
+           case default
+           stop 'Error: includeDir must = 1,2,3 in embedFace in ops_embedExtract.f90'
+           end select
+         else
+           call embedFaceExclude(face_t,face_i,SD,g)
+         endif
        end subroutine
 
-       subroutine embedCC(CC_t,CC_i,SD,g)
+       subroutine embedCC_VF(CC_t,CC_i,SD,g)
          implicit none
          type(vectorField),intent(inout) :: CC_t
          type(vectorField),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         integer :: dir
-         dir = 1
-         call embedCCInclude(CC_t,CC_i,SD)
-         call embedCCExclude(CC_t,CC_i,SD,g)
-         call embedCCIncludeDir(CC_t,CC_i,SD,g,dir)
+         if (includeTF) then
+           select case (includeDir)
+           case (0); call embedCCInclude(CC_t,CC_i,SD)
+           case (1:3); call embedCCIncludeDir(CC_t,CC_i,SD,g,includeDir)
+           case default
+           stop 'Error: includeDir must = 1,2,3 in embedCC in ops_embedExtract.f90'
+           end select
+         else
+           call embedCCExclude(CC_t,CC_i,SD,g)
+         endif
+       end subroutine
+
+       subroutine embedCC_SF(CC_t,CC_i,SD,g)
+         implicit none
+         type(scalarField),intent(inout) :: CC_t
+         type(scalarField),intent(in) :: CC_i
+         type(subdomain),intent(in) :: SD
+         type(grid),intent(in) :: g
+         if (includeTF) then
+           select case (includeDir)
+           case (0); call embedCCInclude(CC_t,CC_i,SD)
+           case (1:3); call embedCCIncludeDir(CC_t,CC_i,SD,g,includeDir)
+           case default
+           stop 'Error: includeDir must = 1,2,3 in embedCC in ops_embedExtract.f90'
+           end select
+         else
+           call embedCCExclude(CC_t,CC_i,SD,g)
+         endif
        end subroutine
 
        subroutine embedN(N_t,N_i,SD,g)
@@ -150,13 +212,12 @@
        ! ****************************** EXTRACT ROUTINES *********************************
        ! *********************************************************************************
 
-       subroutine extractFaceInclude(face_i,face_t,SD,g)
+       subroutine extractFaceInclude(face_i,face_t,SD)
          ! Including ghost nodes / ghost cells / boundary values
          implicit none
          type(vectorField),intent(inout) :: face_i
          type(vectorField),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
-         type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
          face_i%x = face_t%x(Nin1(1)-1:Nin2(1)+1,Nici1(2)  :Nici2(2)  ,Nici1(3)  :Nici2(3)  )
@@ -171,7 +232,7 @@
          type(vectorField),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
+         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
          call zeroGhostPoints(face_i)
          face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
@@ -214,7 +275,7 @@
          type(vectorField),intent(in) :: face_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
+         integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
          face_t%x( Nin1(1): Nin2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = face_i%x(2:g%c(1)%sn-1,:,:)
          face_t%y(Nici1(1):Nici2(1), Nin1(2): Nin2(2),Nici1(3):Nici2(3)) = face_i%y(:,2:g%c(2)%sn-1,:)
@@ -339,7 +400,7 @@
          end select
        end subroutine
 
-       subroutine embedCCInclude(CC_t,CC_i,SD)
+       subroutine embedCCInclude_VF(CC_t,CC_i,SD)
          implicit none
          type(vectorField),intent(inout) :: CC_t
          type(vectorField),intent(in) :: CC_i
@@ -351,7 +412,7 @@
          CC_t%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%z
        end subroutine
 
-       subroutine embedCCExclude(CC_t,CC_i,SD,g)
+       subroutine embedCCExclude_VF(CC_t,CC_i,SD,g)
          implicit none
          type(vectorField),intent(inout) :: CC_t
          type(vectorField),intent(in) :: CC_i
@@ -367,7 +428,7 @@
          CC_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
        end subroutine
 
-       subroutine embedCCIncludeDir(CC_t,CC_i,SD,g,dir)
+       subroutine embedCCIncludeDir_VF(CC_t,CC_i,SD,g,dir)
          implicit none
          type(vectorField),intent(inout) :: CC_t
          type(vectorField),intent(in) :: CC_i
@@ -396,14 +457,59 @@
                    CC_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
                    CC_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
          case default
-         stop 'Error: dir must = 1,2,3 in embedCCIncludeDir in ops_embedExtract.f90'
+         stop 'Error: dir must = 1,2,3 in embedCCIncludeDir_VF in ops_embedExtract.f90'
          end select
        end subroutine
 
        ! *********************************************************************************
        ! *********************************************************************************
-       ! ******************************* VECTOR ROUTINES *********************************
+       ! *************************** SCALAR FIELD ROUTINES *******************************
        ! *********************************************************************************
        ! *********************************************************************************
+
+       subroutine embedCCInclude_SF(CC_t,CC_i,SD)
+         implicit none
+         type(scalarField),intent(inout) :: CC_t
+         type(scalarField),intent(in) :: CC_i
+         type(subdomain),intent(in) :: SD
+         integer,dimension(3) :: Nici1,Nici2
+         Nici1 = SD%Nici1; Nici2 = SD%Nici2
+         CC_t%phi(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%phi
+       end subroutine
+
+       subroutine embedCCExclude_SF(CC_t,CC_i,SD,g)
+         implicit none
+         type(scalarField),intent(inout) :: CC_t
+         type(scalarField),intent(in) :: CC_i
+         type(subdomain),intent(in) :: SD
+         type(grid),intent(in) :: g
+         integer,dimension(3) :: Nice1,Nice2
+         Nice1 = SD%Nice1; Nice2 = SD%Nice2
+         CC_t%phi(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         CC_i%phi(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+       end subroutine
+
+       subroutine embedCCIncludeDir_SF(CC_t,CC_i,SD,g,dir)
+         implicit none
+         type(scalarField),intent(inout) :: CC_t
+         type(scalarField),intent(in) :: CC_i
+         type(subdomain),intent(in) :: SD
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir
+         integer,dimension(3) :: Nice1,Nice2,Nici1,Nici2
+         Nice1 = SD%Nice1; Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
+         select case (dir)
+         case (1); CC_t%phi(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%phi(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         case (2); CC_t%phi(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%phi(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
+         case (3); CC_t%phi(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
+                   CC_i%phi(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
+         case default
+         stop 'Error: dir must = 1,2,3 in embedCCIncludeDir_SF in ops_embedExtract.f90'
+         end select
+       end subroutine
+
+
 
        end module

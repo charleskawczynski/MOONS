@@ -41,6 +41,93 @@
 Department of Mechanical and Aerospace Engineering \\
 University of California Los Angeles, USA\\}
 % \maketitle
+
+\section{Energy}
+\Large
+\begin{equation}
+	\frac{\partial T}{\partial t} +
+	\frac{\partial (u_j T)}{\partial x_j}
+	= 
+	\frac{1}{Re Pr}
+	\frac{\partial}{\partial x_j}
+	\left( 
+	k \frac{\partial T}{\partial x_j}
+	\right)
+\end{equation}
+\section{Momentum}
+\begin{equation}
+	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial (u_i u_j)}{\partial x_j}
+	= 
+	- \frac{\partial p}{\partial x_i}
+	+ \frac{1}{Re}
+	\frac{\partial^2 u_i}{\partial x_j^2}
+	+ \frac{Gr}{Re^2}
+	T g_i
+	+ \frac{Ha^2}{Re Re_m}
+	[(\nabla \times B) \times B]_i
+\end{equation}
+\section{Magnetic Field}
+\begin{equation}
+	\frac{\partial B_i}{\partial t} 
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	+ \frac{1}{Re_m}
+	\frac{\partial}{\partial x_j} 
+	\left\{ \frac{1}{\sigma} 
+	\left[ 
+	\frac{\partial}{\partial x_i} 
+	\left( \frac{B_j}{\mu} \right) - 
+	\frac{\partial}{\partial x_j} 
+	\left( \frac{B_i}{\mu} \right)
+	\right]
+	\right\} = 0
+\end{equation}
+
+\section{Dimensionless groups}
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c} \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Re_m = \mu_c \sigma_c U_c L_c \qquad
+	Pr = \frac{\nu_c}{\alpha_c} \qquad
+\end{equation}
+\begin{equation}
+	Al = \frac{B_c^2}{\mu_c \rho_c U_c^2} \qquad
+	Gr = \frac{g_c \beta_c \Delta T_c L_c^3}{\nu_c^2} \qquad
+	Ec = \frac{U_c^2}{C_{p,c} \Delta T_c} \qquad
+	Fr = \frac{U_c}{\sqrt{g_c L_c}} \qquad
+\end{equation}
+\section{Non-dimensionalization}
+\begin{equation}
+	\rho = \rho_c \qquad
+	\mu = \mu_c \qquad
+	C_p = C_{p,c} \qquad
+	k = k_c \qquad
+	t_c = L_c/U_c \qquad
+\end{equation}
+\begin{equation}
+	u_j^* = \frac{u_j}{U_c} \qquad
+	t^* = \frac{t}{t_c} \qquad
+	x_j^* = \frac{x_j}{L_c} \qquad
+	p^* = \frac{p}{\rho_c U_c^2} \qquad
+	T^* = \frac{T - T_c}{\Delta T_c}
+\end{equation}
+\begin{equation}
+	B_i^* = \frac{B_i}{B_c}  \qquad
+	j_k^* = \frac{j_k}{\sigma_c U_c B_c} \qquad
+	E_i^* = \frac{E_i}{U_c B_c} \qquad
+\end{equation}
+
+\begin{equation}
+	\sigma^* = \frac{\sigma}{\sigma_c} \qquad
+	\mu^* = \frac{\mu}{\mu_c} \qquad
+	\dot{Q}^* = \frac{\dot{Q}}{\rho_c C_{p,c} \Delta T_c / t_c}
+\end{equation}
+
+
+
+
+
+
 \section{Energy}
 \Large
 \begin{equation}
@@ -133,5 +220,7 @@ University of California Los Angeles, USA\\}
 	\mu^* = \frac{\mu}{\mu_c} \qquad
 	\dot{Q}^* = \frac{\dot{Q}}{\rho_c C_{p,c} \Delta T_c / t_c}
 \end{equation}
+
+
 
 \end{document}

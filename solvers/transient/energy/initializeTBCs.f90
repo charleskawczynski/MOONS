@@ -11,17 +11,33 @@
 
        private
 
-       integer,parameter :: preDefinedT_BCs = 1
+       integer,parameter :: preDefinedT_BCs = 3
        !                                      0 : User-defined case (no override)
        !                                      1 : Insulated (dT/dn = 0)
        !                                      2 : Fixed (T = T_wall)
        !                                      3 : Cold Top, Hot Bottom (y), insulating walls
 
-       integer,parameter :: unstableDir = 1
+       integer,parameter :: hotFace         = 4
+       !                                      1 {x_min}
+       !                                      2 {x_max}
+       !                                      3 {y_min}
+       !                                      4 {y_max}
+       !                                      5 {z_min}
+       !                                      6 {z_max}
+
+       integer,parameter :: coldFace         = 3
+       !                                      1 {x_min}
+       !                                      2 {x_max}
+       !                                      3 {y_min}
+       !                                      4 {y_max}
+       !                                      5 {z_min}
+       !                                      6 {z_max}
+
+       integer,parameter :: unstableDir = 1 ! not yet working..
        !                                  1 : x
        !                                  2 : y
        !                                  3 : z
-       integer,parameter :: unstableSign = 1 ! : (1,-1)
+       integer,parameter :: unstableSign = 1 ! : (1,-1)  ! not yet working..
 
 
 #ifdef _SINGLE_PRECISION_
@@ -64,9 +80,10 @@
          select case (preDefinedT_BCs)
          case (1); call initInsulatingBCs(T_bcs,g)
          case (2); call initFixedBCs(T_bcs,g)
-         case (3); 
-         call initInsulatingBCs(T_bcs,g)
-         ! call coldTopHotBottom(T_bcs,unstableDir,unstableSign)
+                   call hotFaceBC(T_bcs,g,hotFace)
+         case (3); call initInsulatingBCs(T_bcs,g)
+                   call hotFaceBC(T_bcs,g,hotFace)
+                   call coldFaceBC(T_bcs,g,coldFace)
 
          case default
            write(*,*) 'Incorrect preDefinedT_BCs in initPreDefinedTfield';stop
@@ -83,23 +100,71 @@
          call setAllZero(T_bcs,Nx,Ny,Nz,neumann)
        end subroutine
 
-       subroutine coldTopHotBottom(T_bcs,g,tempDir,tempSign)
+       subroutine hotFaceBC(T_bcs,g,face)
          implicit none
          type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
-         integer,intent(in) :: tempDir,tempSign
+         integer,intent(in) :: face
          real(cp),dimension(:,:),allocatable :: bvals
          integer :: Nx,Ny,Nz,dirichlet
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
          dirichlet = 2
-         ! Right now only works in y
-         allocate(bvals(Nx,Ny))
-         call setYMinType(T_bcs,dirichlet)
-         call setYMaxType(T_bcs,dirichlet)
+
+         select case (face)
+         case(1); allocate(bvals(Ny,Nz)); call setXMinType(T_bcs,dirichlet)
+         case(2); allocate(bvals(Ny,Nz)); call setXMaxType(T_bcs,dirichlet)
+         case(3); allocate(bvals(Nx,Nz)); call setYMinType(T_bcs,dirichlet)
+         case(4); allocate(bvals(Nx,Nz)); call setYMaxType(T_bcs,dirichlet)
+         case(5); allocate(bvals(Nx,Ny)); call setZMinType(T_bcs,dirichlet)
+         case(6); allocate(bvals(Nx,Ny)); call setZMaxType(T_bcs,dirichlet)
+         case default
+         stop 'Error: face must = 1:6 in hotFaceBC in initializeTBCs.f90'
+         end select
          bvals = real(1.0,cp)
-         call setYMinVals(T_bcs,bvals)
-         bvals = real(10.0,cp)
-         call setYMaxVals(T_bcs,bvals)
+         select case (face)
+         case(1); call setXMinVals(T_bcs,bvals)
+         case(2); call setXMaxVals(T_bcs,bvals)
+         case(3); call setYMinVals(T_bcs,bvals)
+         case(4); call setYMaxVals(T_bcs,bvals)
+         case(5); call setZMinVals(T_bcs,bvals)
+         case(6); call setZMaxVals(T_bcs,bvals)
+         case default
+         stop 'Error: face must = 1:6 in hotFaceBC in initializeTBCs.f90'
+         end select
+         deallocate(bvals)
+       end subroutine
+
+       subroutine coldFaceBC(T_bcs,g,face)
+         implicit none
+         type(grid),intent(in) :: g
+         type(BCs),intent(inout) :: T_bcs
+         integer,intent(in) :: face
+         real(cp),dimension(:,:),allocatable :: bvals
+         integer :: Nx,Ny,Nz,dirichlet
+         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+         dirichlet = 2
+
+         select case (face)
+         case(1); allocate(bvals(Ny,Nz)); call setXMinType(T_bcs,dirichlet)
+         case(2); allocate(bvals(Ny,Nz)); call setXMaxType(T_bcs,dirichlet)
+         case(3); allocate(bvals(Nx,Nz)); call setYMinType(T_bcs,dirichlet)
+         case(4); allocate(bvals(Nx,Nz)); call setYMaxType(T_bcs,dirichlet)
+         case(5); allocate(bvals(Nx,Ny)); call setZMinType(T_bcs,dirichlet)
+         case(6); allocate(bvals(Nx,Ny)); call setZMaxType(T_bcs,dirichlet)
+         case default
+         stop 'Error: face must = 1:6 in coldFaceBC in initializeTBCs.f90'
+         end select
+         bvals = real(0.0,cp)
+         select case (face)
+         case(1); call setXMinVals(T_bcs,bvals)
+         case(2); call setXMaxVals(T_bcs,bvals)
+         case(3); call setYMinVals(T_bcs,bvals)
+         case(4); call setYMaxVals(T_bcs,bvals)
+         case(5); call setZMinVals(T_bcs,bvals)
+         case(6); call setZMaxVals(T_bcs,bvals)
+         case default
+         stop 'Error: face must = 1:6 in coldFaceBC in initializeTBCs.f90'
+         end select
          deallocate(bvals)
        end subroutine
 

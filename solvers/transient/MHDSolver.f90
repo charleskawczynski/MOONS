@@ -37,11 +37,12 @@
 
        contains
 
-       subroutine MHDSolver(mom,ind,gd,rd,ss_MHD,time,dir)
+       subroutine MHDSolver(nrg,mom,ind,gd,rd,ss_MHD,time,dir)
          ! MHDSolver solves for the primary variables in the momentum
          ! and induction equation with the prescribed inputs.
          implicit none
          ! ********************** INPUT / OUTPUT ************************
+         type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
          type(griddata),intent(in) :: gd
@@ -50,18 +51,14 @@
          type(myTime),intent(inout) :: time
          character(len=*),intent(in) :: dir ! Output directory
          ! *********************** LOCAL VARIABLES **********************
-         real(cp) :: Ha
-         type(vectorField) :: U,F
+         type(vectorField) :: F ! Forces added to momentum equation
          integer :: n_mhd
          logical :: continueLoop,exportNow
          ! **************************************************************
 
          call computationInProgress(time)
-         Ha = getHa(rd)
 
-         call allocateVectorField(U,mom%U)
          call allocateVectorField(F,mom%U)
-         call assign(U,real(0.0,cp))
          call assign(F,real(0.0,cp))
 
          ! ********************** PREP LOOP ******************************
@@ -80,18 +77,13 @@
            call startTime(time)
            call setIteration(ss_MHD,n_mhd)
 
-           ! ************** SOLVE MOMENTUM EQUATION **********************
-           if (solveMomentum) call solve(mom,F,mom%g,ss_MHD,dir)
+           if (solveEnergy)    call solve(nrg,mom%U,mom%g,ss_MHD,dir)
+           if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
+           if (solveInduction) call solve(ind,mom%U,mom%g,ss_MHD,dir)
+
            call assign(F,real(0.0,cp))
-
-           ! ********* EMBED VELOCITY / SOLVE INDUCTION EQUATION *********
-           if (solveInduction) then
-             call embedVelocity(ind,mom%U,mom%g)
-             call solve(ind,mom%U,mom%g,ind%g,ss_MHD,dir)
-           endif
-
-           ! ************************** COMPUTE J CROSS B *******************************
-           if (solveCoupled) call computeJCrossB(F,ind,mom%g,ind%g,ind%Ha,mom%Re,ind%Rem)
+           if (addJCrossB) call computeAddJCrossB(F,ind,mom%g,ind%Ha,mom%Re,ind%Rem)
+           if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%g,mom%Gr,mom%Re,mom%Fr)
 
            ! ****************************** CHECK TO EXIT *********************************
            call checkCondition(ss_MHD,continueLoop)
@@ -128,29 +120,29 @@
          ! call printGridData(gd)
          ! call printRunData(rd)
          call print(time,'MHD solver')
-
          ! ************************ WRITE LAST STEP TO FILE *******************************
          call writeLastStepToFile(n_mhd,dir//'parameters/','n_mhd')
+         call writeLastStepToFile(nrg%nstep,dir//'parameters/','n_nrg')
          call writeLastStepToFile(mom%nstep,dir//'parameters/','n_mom')
          call writeLastStepToFile(ind%nstep,dir//'parameters/','n_ind')
-         ! call writeLastStepToFile(nrg%nstep,dir//'parameters/','n_nrg')
 
          ! **************************** EXPORT TRANSIENT DATA *****************************
          call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
-         call exportTransient(mom,ss_MHD,dir)
-         call exportTransient(ind,ss_MHD)
+         if (solveMomentum) call exportTransient(mom,ss_MHD,dir)
+         if (solveInduction) call exportTransient(ind,ss_MHD)
 
          ! ********************* RECORD TIME ****************************
          call writeTime(time,dir,'MHD solver')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
 
-         call exportRaw(mom,mom%g,dir)
-         call exportRaw(ind,ind%g,dir)
-         call export(mom,mom%g,dir)
-         call export(ind,ind%g,dir)
+         if (solveMomentum) call exportRaw(mom,mom%g,dir)
+         if (solveInduction) call exportRaw(ind,ind%g,dir)
+         if (solveEnergy) call exportRaw(nrg,nrg%g,dir)
+         if (solveMomentum) call export(mom,mom%g,dir)
+         if (solveInduction) call export(ind,ind%g,dir)
+         if (solveEnergy) call export(nrg,nrg%g,dir)
 
-         call delete(U)
          call delete(F)
 
          ! ****************** DEALLOCATE LOCALS *************************

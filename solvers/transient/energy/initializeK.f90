@@ -2,15 +2,12 @@
        use simParams_mod
        use grid_mod
        use ops_embedExtract_mod
+       use scalarField_mod
        implicit none
 
        private
        public :: initK
 
-       ! This gets overridden by benchmarkCase
-       integer,parameter :: preDefined_K = 0
-       !                                   0 : User-defined case (no override)
-       !                                   1 : k = 1 (uniform)
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -22,37 +19,53 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+
+       ! This gets overridden by benchmarkCase
+       integer,parameter :: preDefined_K = 1 ! k* = k_wall/k_l
+       !                                       0 : User-defined case (no override)
+       !                                       1 : k* = kStar
+       real(cp) :: kStarWall = real(1000.0,cp) ! k* = k_wall/k_l
+
+
        contains
 
-       subroutine initK(k,g)
+       subroutine initK(k,SD,g)
          implicit none
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: k
-         if (benchmarkCase.ne.0) then
-           call initBenchmarkK(k)
-         elseif (preDefined_K.ne.0) then
-           call initPredefinedK(k)
+         type(subdomain),intent(in) :: SD
+         type(scalarField),intent(inout) :: k
+         if (preDefined_K.ne.0) then
+           call initPredefinedK(k,SD,g)
          else
-           call initUserK(k)
+           call initUserK(k,SD,g)
          endif
        end subroutine
 
-       subroutine initBenchmarkK(k)
+       subroutine initPredefinedK(k,SD,g)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: k
-         k = real(1.0,cp)
+         type(scalarField),intent(inout) :: k
+         type(subdomain),intent(in) :: SD
+         type(grid),intent(in) :: g
+         type(scalarField) :: k_l
+         call allocateField(k_l,SD%s)
+         call assign(k_l,real(1.0,cp))
+         call assign(k,kStarWall)
+         call embedCC(k,k_l,SD,g)
+         call delete(k_l)
        end subroutine
 
-       subroutine initPredefinedK(k)
+       subroutine initUserK(k,SD,g)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: k
-         k = real(1.0,cp)
+         type(scalarField),intent(inout) :: k
+         type(subdomain),intent(in) :: SD
+         type(grid),intent(in) :: g
+         type(scalarField) :: k_l
+         call allocateField(k_l,SD%s)
+         call assign(k_l,real(1.0,cp))
+         call assign(k,kStarWall)
+         call embedCC(k,k_l,SD,g)
+         call delete(k_l)
        end subroutine
 
-       subroutine initUserK(k)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: k
-         k = real(1.0,cp)
-       end subroutine
 
        end module

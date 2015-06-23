@@ -5,6 +5,7 @@
 
        private
        public :: initTfield
+       public :: restartT
 
        logical,parameter :: restartT = .false. ! (induced field)
 
@@ -65,7 +66,7 @@
        subroutine uniformTfield(T)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: T
-         T = real(1.0,cp)
+         T = real(0.0,cp)
        end subroutine
 
        subroutine initUserTfield(T,g)

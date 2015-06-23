@@ -91,11 +91,11 @@
          write(*,*) 'Griddata object deleted'
        end subroutine
 
-       subroutine initGriddata(this,g_mom,g_ind,N,Ni,Nwtop,Nwbot,Re,Ha)
+       subroutine initGriddata(this,g_mom,g_ind,Ni,Nwtop,Nwbot,Re,Ha)
          implicit none
          type(griddata),intent(out) :: this
          type(grid),intent(inout) :: g_mom,g_ind
-         integer,dimension(3),intent(in) :: N,Ni,Nwtop,Nwbot
+         integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
          real(cp),intent(in) :: Re,Ha
 
          real(cp),dimension(3) :: twtop,twbot
@@ -103,11 +103,13 @@
          real(cp),dimension(3) :: alphai,betai
          real(cp),dimension(3) :: alphaw,betaw
          real(cp),dimension(3) :: betawBot,betawTop
+         integer,dimension(3) :: N
          real(cp) :: tau,y_c,dh,dh1,dh2
          integer :: i,j,N_cells_uniform
          type(gridGenerator) :: gg
 
          ! **************** USER DEFINED GRIDDATA ********************
+         N = Ni + Nwbot + Nwtop
 
          ! Geometry:
          hmin(1) = -one; hmax(1) = one ! for x
@@ -191,6 +193,12 @@
 
          case (1005); hmin = -one; hmax = one ! for xyz
          hmin(1) = real(-10.0,cp); hmax(1) = real(10.0,cp)
+
+         ! case (1006); hmin = -real(0.25,cp); hmax = real(0.25,cp) ! Isolated Eddy
+         ! hmin(3) = real(-0.5,cp); hmax(3) = real(0.5,cp)          ! Isolated Eddy
+
+         case (1006); hmin = real(-0.5,cp); hmax = real(0.5,cp) ! Single Eddy
+
          case default
            write(*,*) 'Incorrect benchmarkCase in initGriddata';stop
          end select
@@ -248,7 +256,7 @@
 
          case (1005); betai = 1.04d0
                       betai(1) = 1.004d0
-
+         case (1006); betai = 100000d0
          case default
            write(*,*) 'Incorrect benchmarkCase in setGriddata';stop
          end select
@@ -296,7 +304,6 @@
          case (301); twtop = 0.0d0;      twbot = 0.0d0
 
 
-
          case (1001); twtop = 0.1d0;   twbot = 0.1d0
                      twtop(2) = 0.0d0
 
@@ -311,6 +318,11 @@
 
          case (1005); twtop = 0.0d0;   twbot = 0.0d0
 
+         ! case (1006); twtop = 0.25d0;   twbot = 0.25d0 ! Isolated Eddy
+         ! twtop(3) = 0.0d0;   twbot(3) = 0.0d0          ! Isolated Eddy
+
+         case (1006); twtop = 0.0d0;   twbot = 0.0d0     ! Single Eddy
+         ! twtop(2) = 0.1d0;   twbot(2) = 0.1d0     ! Single Eddy
          case default
            stop 'Error: Incorrect benchmarkCase in setGriddata'
          end select

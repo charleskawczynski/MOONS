@@ -103,6 +103,7 @@
 
       interface add
         module procedure fieldFieldAdd
+        module procedure fieldRealAdd
         module procedure fieldScalarAdd
         module procedure scalarFieldAdd
       end interface
@@ -354,6 +355,26 @@
           !$OMP END PARALLEL DO
 #else
           f%phi = f%phi + g%phi
+#endif
+        end subroutine
+
+        subroutine fieldRealAdd(f,g)
+          implicit none
+          type(scalarField),intent(inout) :: f
+          real(cp),dimension(:,:,:),intent(in) :: g
+#ifdef _PARALLELIZE_SCALAR_FIELD_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = f%phi(i,j,k) + g(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = f%phi + g
 #endif
         end subroutine
 

@@ -8,13 +8,16 @@
 
        private
        public :: initUfield
+       public :: restartU
 
        logical,parameter :: restartU      = .false.
-       integer,parameter :: preDefinedU_ICs = 1
+       integer,parameter :: preDefinedU_ICs = 5
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
        !                                      2 : Parabolic Duct Flow (in x)
        !                                      3 : Vortex
+       !                                      4 : Isolated Eddy (Weiss)
+       !                                      5 : Single Eddy (Weiss)
        ! 
        integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
        integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
@@ -71,17 +74,16 @@
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
 
+         call initRest(u,v,w,p)
          select case (preDefinedU_ICs)
          case (1) ! Rest
-           call initRest(u,v,w,p)
          case (2) ! Fully Developed Duct Flow
-           call initRest(u,v,w,p)
            call initFullyDevelopedDuctFlow(u,v,w,p,g,ductDirection,ductSign)
          case (3) ! Vortex
-           call initRest(u,v,w,p)
-           ! This routine requires too many other modules
-           ! think of a better way
-           ! call initVortex(u,v,w,g,vortexDirection,vortexSign,dir)
+         case (4) ! Isolated Eddy (Weiss)
+           call isolatedEddy2D(u,v,w,g,3,1)
+         case (5) ! Single Eddy (Weiss)
+           call singleEddy2D(u,v,w,g,3,1)
          end select
        end subroutine
 
@@ -190,10 +192,221 @@
             u(:,j,k) = (real(2.0,cp) - g%c(3)%hc(j)**real(2.0,cp) - &
                                        g%c(3)%hc(k)**real(2.0,cp))/real(2.0,cp)
           enddo
-        enddo
+         enddo
        end subroutine
        
+       subroutine isolatedEddy2D(u,v,w,g,dir,vsign)
+         ! From
+         !      Weiss, N. O. The Expulsion of Magnetic Flux 
+         !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
+         !      Sci. 293, 310–328 (1966).
+         ! 
+         ! Computes
+         !           U = curl(psi)
+         ! Where
+         !           psi = (-1/(2 pi)) cos(2 pi x) cos(2 pi y)
+         !           u = dpsi/dy
+         !           v =-dpsi/dx
+         !           w = 0
+         ! Computes
+         ! dir==1
+         !       u = 0
+         !       v = dpsi/dz =   cos(2 pi y) sin(2 pi z)
+         !       w =-dpsi/dy = - sin(2 pi y) cos(2 pi z)
+         ! dir==2
+         !       u =-dpsi/dz = - cos(2 pi x) sin(2 pi z)
+         !       v = 0
+         !       w = dpsi/dx =   sin(2 pi x) cos(2 pi z)
+         ! dir==3
+         !       u = dpsi/dy =   cos(2 pi x) sin(2 pi y)
+         !       v =-dpsi/dx = - sin(2 pi x) cos(2 pi y)
+         !       w = 0
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir,vsign
+         integer :: i,j,k
+         integer,dimension(3) :: sx,sy,sz
+         real(cp) :: two
+         two = real(2.0,cp)
+
+         sx = shape(u); sy = shape(v); sz = shape(w)
+         select case (dir)
+         case (1)
+           u = real(0.0,cp)
+           do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
+                v(i,j,k) =   cos(two*PI*g%c(2)%hn(j)) * &
+                             sin(two*PI*g%c(3)%hc(k))
+           enddo;enddo;enddo
+           do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
+                w(i,j,k) = - sin(two*PI*g%c(2)%hc(j)) * &
+                             cos(two*PI*g%c(3)%hn(k))
+           enddo;enddo;enddo
+         case (2)
+           do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
+                u(i,j,k) = - cos(two*PI*g%c(1)%hn(i)) * &
+                             sin(two*PI*g%c(3)%hc(k))
+           enddo;enddo;enddo
+           v = real(0.0,cp)
+           do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
+                w(i,j,k) =   sin(two*PI*g%c(1)%hc(i)) * &
+                             cos(two*PI*g%c(3)%hn(k))
+           enddo;enddo;enddo
+         case (3)
+           do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
+                u(i,j,k) =   cos(two*PI*g%c(1)%hn(i)) * &
+                             sin(two*PI*g%c(2)%hc(j))
+           enddo;enddo;enddo
+           do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
+                v(i,j,k) = - sin(two*PI*g%c(1)%hc(i)) * &
+                             cos(two*PI*g%c(2)%hn(j))
+           enddo;enddo;enddo
+           w = real(0.0,cp)
+         case default
+         stop 'Error: dir must = 1,2,3 in isolatedEddy2D in initializeUfield.f90'
+         end select
+         select case (vsign)
+         case (-1,1); u = u*real(vsign,cp)
+                      v = v*real(vsign,cp)
+                      w = w*real(vsign,cp)
+         case default
+         stop 'Error: vsign must = -1,1 in isolatedEddy2D in initializeUfield.f90'
+         end select
+       end subroutine
+
+       subroutine singleEddy2D(u,v,w,g,dir,vsign)
+         ! From
+         !      Weiss, N. O. The Expulsion of Magnetic Flux 
+         !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
+         !      Sci. 293, 310–328 (1966).
+         ! 
+         ! Computes
+         !           U = curl(psi)
+         ! Where
+         !           psi = (-1/pi) (1-4 y^2)^4 cos(pi x)
+         !           u = dpsi/dy = (-1/pi) cos(pi x) 4 (1-4 y^2)^3(-8y)
+         !                       = (32y/pi) cos(pi x) (1-4 y^2)^3
+         !           v =-dpsi/dx = (1-4 y^2)^4 sin(pi x)
+         !           w = 0
+         ! Computes
+         ! dir==1
+         !       u = 0
+         !       v = dpsi/dz =   (32z/pi) cos(pi y) (1-4 z^2)^3
+         !       w =-dpsi/dy = - (1-4 z^2)^4 sin(pi y)
+         ! dir==2
+         !       u =-dpsi/dz = - (1-4 x^2)^4 sin(pi z)
+         !       v = 0
+         !       w = dpsi/dx =   (32x/pi) cos(pi z) (1-4 x^2)^3
+         ! dir==3
+         !       u = dpsi/dy =   (32y/pi) cos(pi x) (1-4 y^2)^3
+         !       v =-dpsi/dx = - (1-4 y^2)^4 sin(pi x)
+         !       w = 0
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir,vsign
+         integer :: i,j,k
+         integer,dimension(3) :: sx,sy,sz
+         real(cp) :: one,two,three,four
+         one = real(1.0,cp); two = real(2.0,cp)
+         three = real(3.0,cp); four = real(4.0,cp)
+
+         sx = shape(u); sy = shape(v); sz = shape(w)
+         select case (dir)
+         case (1)
+           u = real(0.0,cp)
+           do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
+                v(i,j,k) =   (real(32,cp)*g%c(3)%hc(k)/PI)*((one-four*g%c(3)%hc(k)**two)**three) * &
+                cos(PI*g%c(2)%hn(j))
+           enddo;enddo;enddo
+           do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
+                w(i,j,k) = - ((one-four*g%c(3)%hn(k)**two)**four)*sin(PI*g%c(2)%hc(j))
+           enddo;enddo;enddo
+         case (2)
+           do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
+                u(i,j,k) = - ((one-four*g%c(1)%hn(i)**two)**four)*sin(PI*g%c(3)%hc(k))
+           enddo;enddo;enddo
+           v = real(0.0,cp)
+           do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
+                w(i,j,k) =   (real(32,cp)*g%c(1)%hc(i)/PI)*((one-four*g%c(1)%hc(i)**two)**three) * &
+                cos(PI*g%c(3)%hn(k))
+           enddo;enddo;enddo
+         case (3)
+           do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
+                u(i,j,k) =   (real(32,cp)*g%c(2)%hc(j)/PI)*((one-four*g%c(2)%hc(j)**two)**three) * &
+                cos(PI*g%c(1)%hn(i))
+           enddo;enddo;enddo
+           do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
+                v(i,j,k) = - ((one-four*g%c(2)%hn(j)**two)**four)*sin(PI*g%c(1)%hc(i))
+           enddo;enddo;enddo
+           w = real(0.0,cp)
+         case default
+         stop 'Error: dir must = 1,2,3 in singleEddy2D in initializeUfield.f90'
+         end select
+         select case (vsign)
+         case (-1,1); u = u*real(vsign,cp)
+                      v = v*real(vsign,cp)
+                      w = w*real(vsign,cp)
+         case default
+         stop 'Error: vsign must = -1,1 in singleEddy2D in initializeUfield.f90'
+         end select
+       end subroutine
+
+
+       ! subroutine vortex2D(U,g,s,dir,vsign,directory)
+       !   implicit none
+       !   type(vectorField),intent(inout) :: U
+       !   type(grid),intent(in) :: g
+       !   integer,dimension(3),intent(in) :: s
+       !   integer,intent(in) :: dir,vsign
+       !   character(len=*),intent(in) :: directory
+       !   integer :: Nx,Ny,Nz
+       !   integer :: i,j,k
+       !   ! Vortex variables
+       !   real(cp) :: omega0,r,alpha,r0
+       !   type(scalarField) :: omega,psi
+       !   type(BCs) :: psi_bcs
+       !   type(solverSettings) :: ss_psi
+       !   type(vectorField) :: tempVF,temp
+       !   type(norms) :: norm
+       !   type(mySOR) :: SOR
+       !   real(cp) :: two,one
+       !   integer,dimension(2) :: d
+       !   two = real(2.0,cp); one = real(1.0,cp)
+       !   d = orthogonalDirections(dir)
+       !   call setAllZero(psi_bcs,s,5)
+       !   call checkBCs(psi_bcs)
+       !   call writeAllBoundaries(psi_bcs,directory//'parameters/','psi')
+       !   omega0 = 1000.0
+       !   alpha = 10000.0
+       !   call allocateField(omega,s)
+       !   do k = 1,s(3)
+       !     do j = 1,s(2)
+       !       do i = 1,s(1)
+       !         r0 = sqrt( (g%c(d(1))%hmax-g%c(d(1))%hmin)**two + &
+       !                    (g%c(d(2))%hmax-g%c(d(2))%hmin)**two )
+       !         r = sqrt( g%c(d(1))%hc(i)**two + & 
+       !                   g%c(d(2))%hc(j)**two )/r0
+       !         omega(i,j,k) = omega0*(one - r**two)*exp(-alpha*r**two)
+       !       enddo
+       !     enddo
+       !   enddo
+       !   call allocateField(psi,s)
+       !   call init(ss_psi)
+       !   call setMaxIterations(ss_psi,100)
+       !   call poisson(SOR,psi%phi,omega%phi,psi_bcs,g,ss_psi,norm,.true.)
+       !   call writeToFile(g,omega,directory//'Ufield/','omega')
+       !   call writeToFile(g,psi,directory//'Ufield/','psi')
+       !   call delete(omega)
+       !   call allocateX(tempVF,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
+       !   call allocateY(tempVF,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+       !   call allocateZ(tempVF,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+       !   call curl(U,tempVF,g)
+       !   call delete(psi)
+       !   call delete(tempVF)
+       ! end subroutine
        
+
        ! subroutine initVortex(u,v,w,g,vdir,vsign,dir)
        !   implicit none
        !   real(cp),dimension(:,:,:),intent(inout) :: u,v,w
