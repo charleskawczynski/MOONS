@@ -56,8 +56,8 @@ This term, in front of the $j\times B$ force can result in several different for
 	 \frac{L_c}{\rho_c U_c^2} j \times \frac{B}{\mu}
 \end{equation}
 
-\section{Ampere's Law \texorpdfstring{$\rightarrow$}{} Al}
-Non-dimensionalizing by
+\section{Equal Treatment Non-Dimensionalization}
+Non-dimensionalizing the induced and applied magnetic fields by
 \begin{equation}
 	\nabla^* = L_c \nabla \qquad
 	\mu^* = \mu / \mu_c \qquad
@@ -82,37 +82,12 @@ Therefore we have
 	}
 \end{equation}
 
-\section{Ohm's Law \texorpdfstring{$\rightarrow$}{} Ha, Re, Rem}
-Non-dimensionalizing by
+Noting that
 \begin{equation}
-	\nabla^* = L_c \nabla \qquad
-	j^* = j/ \sigma_c U_c B_c \qquad
-	B^* = B/B_c
+	Al Re_m = \frac{Ha^2}{Re} \qquad
+	Al Re_m^2 = \frac{Ha^2 Re_m}{Re} \qquad
 \end{equation}
-Yields
-\begin{equation}
-	 \frac{L_c}{\rho_c U_c^2} j \times B
-	 =
-	\frac{L_c B_c^2 \sigma_c}{\rho_c U_c} j^* \times B^*
-	=
-	\frac{\mu_c}{\rho_c U_c L_c} 
-	L_c^2 B_c^2 \frac{\sigma_c}{\rho_c \mu_c} j^* \times B^*
-	=
-	\frac{Ha^2}{Re} j^* \times B^*
-\end{equation}
-Note that
-\begin{equation}
-	j^*
-	=
-	\frac{j}{\sigma_c U_c B_c}
-	=
-	\frac{\nabla \times \left( \frac{B}{\mu} \right)}{\sigma_c U_c B_c}
-	=
-	\frac{ \frac{B_c}{\mu_c L_c} \nabla^* \times \left( \frac{B^*}{\mu^*} \right)}{\sigma_c U_c B_c}
-	=
-	\frac{1}{Re_m} \nabla \times \left( \frac{B^*}{\mu^*} \right)
-\end{equation}
-Therefore we have
+
 \begin{equation}
 	\boxed{
 	 \frac{L_c}{\rho_c U_c^2} j \times B
@@ -121,7 +96,7 @@ Therefore we have
 	}
 \end{equation}
 
-\section{Ampere's Law AND Rem \texorpdfstring{$\rightarrow$}{} Al and orders of Rem}
+\section{Non-Dimensionalization by Orders of Rem}
 Non-dimensionalizing by
 \begin{equation}
 	\nabla^* = L_c \nabla \qquad
@@ -179,82 +154,38 @@ Therefore we have
 	\right\}
 \end{multline}
 
-Noting that
-\begin{equation}
-	Al Re_m = \frac{Ha^2}{Re} \qquad
-	Al Re_m^2 = \frac{Ha^2 Re_m}{Re} \qquad
-\end{equation}
-
-The above equation may be written as
+Converting the Alfven to Hartmann,Reynolds and Magnetic Reynolds we have
 \begin{multline}
 	 \frac{L_c}{\rho_c U_c^2} j \times B
 	 = \\
+	 \frac{Ha^2}{Re}
 	\left\{
-	\frac{Ha^2}{Re} \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^0}^*
+	\left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^0}^*
 	+
-	\frac{Ha^2 Re_m}{Re} \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
+	Re_m \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
 	+
-	Al \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
+	\frac{1}{Re_m} \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
 	+
-	\frac{Ha^2}{Re} \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^{i}}^*
+	\left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^{i}}^*
 	\right\}
 \end{multline}
-
+Note that in the case of $curl(B^0) = 0$, the last two terms do not exist and we simply have
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} j \times B
+	 = \\
+	 \frac{Ha^2}{Re}
+	\left\{
+	\left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^0}^*
+	+
+	Re_m \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
+	\right\}
+\end{equation}
 Or
 \begin{equation}
 	 \frac{L_c}{\rho_c U_c^2} j \times B
-	 =
-	\left\{
-	\frac{Ha^2}{Re} \left( \nabla^* \times \frac{{B^{t}}^*}{\mu^*} \right) \times {B^0}^*
-	+
-	\frac{Ha^2 Re_m}{Re} \left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times {B^{i}}^*
-	+
-	Al \left( \nabla^* \times \frac{{B^0}^*}{\mu^*} \right) \times {B^0}^*
-	\right\}
+	 = \\
+	 \frac{Ha^2}{Re}
+	\left( \nabla^* \times \frac{{B^{i}}^*}{\mu^*} \right) \times ({B^0}^*+Re_m {B^{i}}^*)
 \end{equation}
-
-
-For this scaling, the induction equation is
-
-\begin{equation}
-	\frac{\partial \pmb{B}}{\partial t} = 
-	\nabla \times (\pmb{u} \times \pmb{B})
-	- \nabla \times 
-	\left[ \frac{1}{\sigma}
-	\nabla \times \frac{\pmb{B}}{\mu} \right]
-\end{equation}
-
-
-\section{Ohm's Law AND Magnetic Rem \texorpdfstring{$\rightarrow$}{} ...}
-Non-dimensionalizing by
-\begin{equation}
-	\nabla^* = L_c \nabla \qquad
-	\mu^* = \mu / \mu_c \qquad
-	j^* = j/ \sigma_c U_c B_c \qquad
-	{B^{ind}}^* = B^{ind}/(Re_m B_c^0) \qquad
-	{B^0}^* = B^0/B_c^0
-\end{equation}
-Yields
-
-Looking at the $j \times B$ isolated from the 
-
-\begin{equation}
-	 \frac{L_c}{\rho_c U_c^2} j \times B
-	 =
-	 \frac{L_c}{\rho_c U_c^2} \left( \nabla \times \frac{B^{ind}+B^0}{\mu} \right) \times B
-	 =
-	\frac{B_c^2}{\mu_c \rho_c U_c^2} \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
-	 =
-	Al \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
-\end{equation}
-Therefore we have
-\begin{equation}
-	\boxed{
-	 \frac{L_c}{\rho_c U_c^2} j \times B
-	 =
-	Al \left( \nabla \times \frac{B^*}{\mu^*} \right) \times B^*
-	}
-\end{equation}
-
 
 \end{document}

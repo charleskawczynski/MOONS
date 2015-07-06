@@ -308,6 +308,7 @@
          type(grid),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
+         logical :: exportNow
 
          nrg%gravity%y = real(1.0,cp)
 
@@ -329,6 +330,21 @@
            ! call exportTransientFull(nrg,nrg%g,dir)
          endif
          ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,g_mom,ss_MHD) ! Maybe thermal energy?
+
+         if (getPrintParams(ss_MHD)) then
+           call readSwitchFromFile(exportNow,dir//'parameters/','exportNowT')
+         else; exportNow = .false.
+         endif
+
+         if (getExportRawSolution(ss_MHD).or.exportNow) then
+           call exportRaw(nrg,nrg%g,dir)
+           call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
+         endif
+         if (getExportSolution(ss_MHD).or.exportNow) then
+           call export(nrg,nrg%g,dir)
+           call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
+         endif
+
 
          if (getPrintParams(ss_MHD)) then
            write(*,*) '**************************************************************'

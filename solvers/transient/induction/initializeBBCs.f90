@@ -2,8 +2,13 @@
        use grid_mod
        use BCs_mod
        use vectorBCs_mod
+       use scalarField_mod
        use vectorField_mod
        implicit none
+       ! Make some of these integers, neumann_i, neumann_c, etc. 
+       ! global within this file.
+       ! 
+       ! 
        ! From applyBCs.f90:
        ! bctype = 1 ! Dirichlet - direct - wall coincident
        ! bctype = 2 ! Dirichlet - interpolated - wall incoincident
@@ -13,10 +18,13 @@
 
        private
 
-       integer,parameter :: preDefinedB_BCs = 1
+       integer,dimension(3),parameter :: periodic_dir = (/1,1,0/) ! 1 = true, else false
+       integer,parameter :: preDefinedB_BCs = 3
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0
+       !                                      3 : Bandaru
+
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -47,7 +55,7 @@
          if (preDefinedB_BCs.ne.0) then
            call initPreDefinedBCs(B_bcs,phi_bcs,g,cleanB)
          else
-           call initUserBBCs(B_bcs,phi_bcs,g,cleanB)
+           call initUserBBCs(B_bcs,phi_bcs,cleanB)
          endif
          call setGrid(B_bcs,g)
          if (cleanB) call setGrid(phi_bcs,g)
@@ -61,30 +69,39 @@
          type(BCs),intent(inout) :: phi_bcs
          type(grid),intent(in) :: g
          logical,intent(in) :: cleanB
-         integer :: neumann
+         integer :: neumann,i
          
+         call initPseudoVacuumBCs(B_bcs) ! Pseudo Vaccuum
          select case (preDefinedB_BCs)
-         case (1); call initPseudoVacuumBCs(B_bcs,g) ! Pseudo Vaccuum
-                   call make2D(B_bcs,g,3)
-                   call make2D(B_bcs,g,1)
-         case (2); call initBeqZeroBCs(B_bcs,g)      ! B = 0
+         case (1) ! Default
+         case (2); call initBeqZeroBCs(B_bcs)      ! B = 0
+         case (3); call initBeqZeroBCs(B_bcs)
+                   call initBandaru(B_bcs)
          case default
            write(*,*) 'Incorrect preDefinedB_BCs in initPreDefinedBfield';stop
          end select
+
+         do i=1,3
+           select case (periodic_dir(i))
+           case (0)
+           case (1); call makePeriodic(B_bcs,i)
+           case default
+           stop 'Error: periodic_dir must = 1,0 in initPreDefinedBCs in initializeBBCs.f90'
+           end select
+         enddo
 
          neumann = 5
          call init(phi_bcs,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
          if (cleanB) call setAllZero(phi_bcs,neumann)
        end subroutine
 
-       subroutine initPseudoVacuumBCs(B_bcs,g)
+       subroutine initPseudoVacuumBCs(B_bcs)
          implicit none
          type(vectorBCs),intent(inout) :: B_bcs
-         type(grid),intent(in) :: g
          integer :: dirichlet,dirichlet_c,dirichlet_i
          integer :: neumann,neumann_c,neumann_i
          dirichlet_c = 1; dirichlet_i = 2
-         neumann_c = 3; neumann_i = 5;
+         neumann_c = 3; neumann_i = 5
          neumann = neumann_i
          dirichlet = dirichlet_i
 
@@ -101,10 +118,19 @@
          call setZmaxType(B_bcs%z,neumann)
        end subroutine
 
-       subroutine initBeqZeroBCs(B_bcs,g)
+       subroutine initBandaru(B_bcs)
          implicit none
          type(vectorBCs),intent(inout) :: B_bcs
-         type(grid),intent(in) :: g
+         integer :: neumann,neumann_c,neumann_i
+         neumann_c = 3; neumann_i = 5
+         neumann = neumann_i
+         call setZminType(B_bcs%x,neumann)
+         call setZmaxType(B_bcs%x,neumann)
+       end subroutine
+
+       subroutine initBeqZeroBCs(B_bcs)
+         implicit none
+         type(vectorBCs),intent(inout) :: B_bcs
          integer :: dirichlet,dirichlet_c,dirichlet_i
          integer :: neumann,neumann_c,neumann_i
          dirichlet_c = 1; dirichlet_i = 2
@@ -117,16 +143,15 @@
          call setAllZero(B_bcs%z,dirichlet)
        end subroutine
 
-       subroutine initUserBBCs(B_bcs,phi_bcs,g,cleanB)
+       subroutine initUserBBCs(B_bcs,phi_bcs,cleanB)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: phi_bcs
          type(vectorBCs),intent(inout) :: B_bcs
          logical,intent(in) :: cleanB
          integer :: neumann,periodic_i
          neumann = 5
          periodic_i = 7 ! Wall incoincident
-         call initPseudoVacuumBCs(B_bcs,g)
+         call initPseudoVacuumBCs(B_bcs)
          
          call setXminType(B_bcs%x,periodic_i)
          call setXminType(B_bcs%y,periodic_i)
@@ -137,13 +162,11 @@
          call setXmaxType(B_bcs%z,periodic_i)
        end subroutine
 
-       subroutine make2D(B_bcs,g,dir)
+       subroutine makePeriodic(B_bcs,dir)
          implicit none
-         type(grid),intent(in) :: g
          type(vectorBCs),intent(inout) :: B_bcs
          integer,intent(in) :: dir
-         integer :: neumann,periodic_i
-         neumann = 5
+         integer :: periodic_i
          periodic_i = 7 ! Wall incoincident
          select case (dir)
          case (1);call setXminType(B_bcs%x,periodic_i)
@@ -165,8 +188,72 @@
                   call setZmaxType(B_bcs%y,periodic_i)
                   call setZmaxType(B_bcs%z,periodic_i)
          case default
-         stop 'Error: dir must = 1,2,3 in make2D in initializeBBCs.f90'
+         stop 'Error: dir must = 1,2,3 in makePeriodic in initializeBBCs.f90'
          end select
+       end subroutine
+
+       subroutine initBandaruOld(B_bcs,g,component,wallDir,varyDir)
+         implicit none
+         type(vectorBCs),intent(inout) :: B_bcs
+         type(grid),intent(in) :: g
+         integer,intent(in) :: component,wallDir,varyDir
+         select case (component)
+         case (1); call initBandaruProfileOld(B_bcs%x,g,wallDir,varyDir)
+         case (2); call initBandaruProfileOld(B_bcs%y,g,wallDir,varyDir)
+         case (3); call initBandaruProfileOld(B_bcs%z,g,wallDir,varyDir)
+         case default
+         stop 'Error: component must = 1,2,3 in initBandaru in initializeBBCs.f90'
+         end select
+       end subroutine
+
+       subroutine initBandaruProfileOld(B_bcs,g,dirWalls,varyDir)
+         implicit none
+         type(BCs),intent(inout) :: B_bcs
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dirWalls,varyDir
+         type(scalarField) :: temp
+         integer,dimension(3) :: s
+         integer :: i,j,k
+         real(cp) :: ka
+         integer :: dirichlet,dirichlet_i
+         dirichlet_i = 2; dirichlet = dirichlet_i
+         s = B_bcs%s
+         ka = real(1.0,cp)
+         call allocateField(temp,s)
+         select case (varyDir)
+         case (1); 
+           do k=1,s(3);do j=1,s(2);do i=1,s(1)
+             temp%phi(i,j,k) = cos(ka*g%c(1)%hc(i))
+           enddo;enddo;enddo
+         case (2); 
+           do k=1,s(3);do j=1,s(2);do i=1,s(1)
+             temp%phi(i,j,k) = cos(ka*g%c(2)%hc(j))
+           enddo;enddo;enddo
+         case (3); 
+           do k=1,s(3);do j=1,s(2);do i=1,s(1)
+             temp%phi(i,j,k) = cos(ka*g%c(3)%hc(k))
+           enddo;enddo;enddo
+         case default
+         stop 'Error: component must = 1,2,3 in initBandaruProfile in initializeBBCs.f90'
+         end select
+
+         select case (dirWalls)
+         case (1); call setXminType(B_bcs,dirichlet)
+                   call setXminVals(B_bcs,reshape(temp%phi,(/s(2),s(3)/)))
+                   call setXmaxType(B_bcs,dirichlet)
+                   call setXmaxVals(B_bcs,reshape(temp%phi,(/s(2),s(3)/)))
+         case (2); call setYminType(B_bcs,dirichlet)
+                   call setYminVals(B_bcs,reshape(temp%phi,(/s(1),s(3)/)))
+                   call setYmaxType(B_bcs,dirichlet)
+                   call setYmaxVals(B_bcs,reshape(temp%phi,(/s(1),s(3)/)))
+         case (3); call setZminType(B_bcs,dirichlet)
+                   call setZminVals(B_bcs,reshape(temp%phi,(/s(1),s(2)/)))
+                   call setZmaxType(B_bcs,dirichlet)
+                   call setZmaxVals(B_bcs,reshape(temp%phi,(/s(1),s(2)/)))
+         case default
+         stop 'Error: component must = 1,2,3 in initBandaruProfile in initializeBBCs.f90'
+         end select
+         call delete(temp)
        end subroutine
 
        end module

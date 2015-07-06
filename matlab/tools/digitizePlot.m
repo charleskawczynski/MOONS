@@ -4,12 +4,14 @@ p = mfilename('fullpath');
 [thisDir,name,ext] = fileparts(p);
 chdir(thisDir); myDir.this = thisDir;
 
-dir.working = 'C:\Users\Charlie\Desktop\comparison\Guj and Stella\data\';
-name.file = 'Re1000_uvsy';
+dir.working = 'C:\Users\Charlie\Desktop\comparison\bandaru\processed\';
+name.file = 'uvsz_at_half_pi_Hartmann_Q0.3';
+% name.file = 'uvsz_at_pi_Hartmann_Q0.3';
+
 name.ext = '.png';
-griddata.xmin = -0.4;
-griddata.xmax = 1;
-griddata.ymin = 0;
+griddata.xmin = 0;
+griddata.xmax = 3;
+griddata.ymin = -1;
 griddata.ymax = 1;
 smoothness = 15;
 direction = 2;

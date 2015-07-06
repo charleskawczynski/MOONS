@@ -13,7 +13,9 @@
        private
        public :: initUBCs
 
-       integer,parameter :: preDefinedU_BCs = 8
+       integer,dimension(3),parameter :: periodic_dir = (/1,1,0/) ! 1 = true, else false
+
+       integer,parameter :: preDefinedU_BCs = 10
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -23,6 +25,8 @@
        !                                      6 : Duct Flow (Neumann Inlet / Periodic Outlet)
        !                                      7 : Cylinder Driven Cavity Flow (tornado)
        !                                      8 : Lid Driven Cavity (2D)
+       !                                      9 : ??..
+       !                                      10 : Periodic Duct (Bandaru)
 
        ! Lid Driven Cavity parameters:
        integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
@@ -56,7 +60,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979
+       real(cp),parameter :: PI = real(3.14159265358979,cp)
        
        contains
 
@@ -83,7 +87,7 @@
          type(grid),intent(in) :: g
          type(BCs),intent(inout) :: p_bcs
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer :: Nx,Ny,Nz
+         integer :: Nx,Ny,Nz,i
 
          ! Default P-Field BCs = neumann (zero slope)
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
@@ -118,11 +122,24 @@
 
          case (7); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
          case (8); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,drivenFace,drivenDirection,drivenSign)
-                   call make2D(u_bcs,v_bcs,w_bcs,g,3)
-         case (9); call make2D(u_bcs,v_bcs,w_bcs,g,3)
+         case (9); 
+         case (10)
+                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
+                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
+                   ! call ductFlow_periodicP_IO(p_bcs,g,ductDirection,-1)
+                   ! call ductFlow_periodicP_IO(p_bcs,g,ductDirection,1)
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
          end select
+
+         do i=1,3
+           select case (periodic_dir(i))
+           case (0)
+           case (1); call makePeriodic(u_bcs,v_bcs,w_bcs,p_bcs,g,i)
+           case default
+           stop 'Error: periodic_dir must = 1,0 in initPredefinedUBCs in initializeUBCs.f90'
+           end select
+         enddo
        end subroutine
 
        subroutine initUserUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)
@@ -211,9 +228,9 @@
          deallocate(bvals)
        end subroutine
 
-       subroutine make2D(u_bcs,v_bcs,w_bcs,g,dir)
+       subroutine makePeriodic(u_bcs,v_bcs,w_bcs,p_bcs,g,dir)
          implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs,p_bcs
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          integer :: periodic_c,periodic_i
@@ -225,27 +242,32 @@
          call setXminType(u_bcs,periodic_c)
          call setXminType(v_bcs,periodic_i)
          call setXminType(w_bcs,periodic_i)
+         call setXminType(p_bcs,periodic_i)
          call setXmaxType(u_bcs,periodic_c)
          call setXmaxType(v_bcs,periodic_i)
          call setXmaxType(w_bcs,periodic_i)
+         call setXmaxType(p_bcs,periodic_i)
          case (2)
          call setYminType(u_bcs,periodic_i)
          call setYminType(v_bcs,periodic_c)
          call setYminType(w_bcs,periodic_i)
+         call setYminType(p_bcs,periodic_i)
          call setYmaxType(u_bcs,periodic_i)
          call setYmaxType(v_bcs,periodic_c)
          call setYmaxType(w_bcs,periodic_i)
+         call setYmaxType(p_bcs,periodic_i)
          case (3)
          call setZminType(u_bcs,periodic_i)
          call setZminType(v_bcs,periodic_i)
          call setZminType(w_bcs,periodic_c)
+         call setZminType(p_bcs,periodic_i)
          call setZmaxType(u_bcs,periodic_i)
          call setZmaxType(v_bcs,periodic_i)
          call setZmaxType(w_bcs,periodic_c)
+         call setZmaxType(p_bcs,periodic_i)
          case default
-         stop 'Error: dir must = 1,2,3 in lidDrivenBCs.'
+         stop 'Error: dir must = 1,2,3 in makePeriodic in initializeUBCs.f90'
          end select
-
        end subroutine
 
        subroutine ductFlow_Uniform_IO(u_bcs,v_bcs,w_bcs,g,ductDir,IO)

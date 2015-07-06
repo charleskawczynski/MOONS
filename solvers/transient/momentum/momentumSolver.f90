@@ -382,6 +382,7 @@
          call writeToFile(g,tempNVF,dir//'Ufield/','uni','vni','wni')
          call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
          call delete(tempNVF)
+         call momentumExportTransientFull(mom,g,dir)
 
          ! ******************** EXPORT IN CELL CENTERS **********************
          ! Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
@@ -395,7 +396,7 @@
 
        subroutine momentumExportTransientFull(mom,g,dir)
          implicit none
-         type(momentum),intent(inout) :: mom
+         type(momentum),intent(in) :: mom
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
@@ -406,9 +407,9 @@
          call writeVecPhysicalPlane(g,tempNVF,dir//'Ufield/transient/',&
           'uni_phys',&
           'vni_phys',&
-          'wni_phys','_'//int2str(mom%nstep),1,2,mom%nstep)
-         call writeScalarPhysicalPlane(g,mom%Re_grid%phi,dir//'Ufield/transient/',&
-          'Re_grid','_'//int2str(mom%nstep),1,2,mom%nstep)
+          'wni_phys','_'//int2str(mom%nstep),2,2,mom%nstep)
+         ! call writeScalarPhysicalPlane(g,mom%Re_grid%phi,dir//'Ufield/transient/',&
+         !  'Re_grid','_'//int2str(mom%nstep),1,2,mom%nstep)
          call delete(tempNVF)
        end subroutine
 
@@ -421,6 +422,7 @@
          type(vectorField),intent(in) :: F
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
+         logical :: exportNow
 
          select case(solveUMethod)
          case (1); call explicitEuler(mom,F,mom%g,ss_MHD)
@@ -446,6 +448,20 @@
          if (getExportTransient(ss_MHD)) then
            call momentumExportTransient(mom,ss_MHD,dir)
            call exportTransient(mom,ss_MHD,dir)
+         endif
+
+         if (getPrintParams(ss_MHD)) then
+           call readSwitchFromFile(exportNow,dir//'parameters/','exportNowU')
+         else; exportNow = .false.
+         endif
+
+         if (getExportRawSolution(ss_MHD).or.exportNow) then
+           call exportRaw(mom,mom%g,dir)
+           call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
+         endif
+         if (getExportSolution(ss_MHD).or.exportNow) then
+           call export(mom,mom%g,dir)
+           call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
 
          if (getPrintParams(ss_MHD)) then
@@ -551,6 +567,7 @@
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
            call grad(mom%temp_F,mom%p%phi,g)
+           call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1)
            ! call divide(mom%temp_F,real(2.0,cp)) ! O(dt^2) pressure treatment
 
            ! Ustar = Ustar - dt*dp/dx
@@ -738,6 +755,20 @@
 
        ! ********************* AUX *****************************
 
+       subroutine addMeanPressureGrad(f,mpg,dir)
+         implicit none
+         type(vectorField),intent(inout) :: f
+         real(cp),intent(in) :: mpg
+         integer,intent(in) :: dir
+         select case (dir)
+         case (1); f%x = f%x - mpg
+         case (2); f%y = f%y - mpg
+         case (3); f%z = f%z - mpg
+         case default
+         stop 'Error: dir must = 1,2,3 in addMeanPressureGrad in momentumSolver.f90'
+         end select
+       end subroutine
+
        subroutine zeroWallCoincidentBoundaries(f,s,g,dir)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -807,9 +838,9 @@
          implicit none
          type(vectorField),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,-3)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,-3)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,-3)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,3)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,3)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,3)
        end subroutine
 
        subroutine computeTotalKineticEnergyOld(mom,U_cct,Nici1,Nici2,ss_MHD)

@@ -1,4 +1,7 @@
 module fft_mod
+  ! References:
+  ! http://www.maths.cam.ac.uk/undergrad/course/na/ii/poisson_equation/poisson_equation.php
+  ! 
   implicit none
 
 #ifdef _SINGLE_PRECISION_

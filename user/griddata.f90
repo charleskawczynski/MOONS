@@ -22,6 +22,7 @@
        real(cp),parameter :: one = real(1.0,cp)
        real(cp),parameter :: two = real(2.0,cp)
        real(cp),parameter :: oneHalf = real(0.5,cp)
+       real(cp),parameter :: PI = real(3.14159265358979,cp)
 
        public :: griddata
        public :: delete
@@ -197,7 +198,18 @@
          ! case (1006); hmin = -real(0.25,cp); hmax = real(0.25,cp) ! Isolated Eddy
          ! hmin(3) = real(-0.5,cp); hmax(3) = real(0.5,cp)          ! Isolated Eddy
 
-         case (1006); hmin = real(-0.5,cp); hmax = real(0.5,cp) ! Single Eddy
+         ! case (1006); hmin = real(-0.5,cp); hmax = real(0.5,cp) ! Single Eddy
+         ! hmin(1) = real(-1.0,cp); hmax(1) = real(1.0,cp)
+
+         case (1007); hmin = real(-2.0,cp); hmax = real(2.0,cp) ! Parker - Cylinder
+         hmin(3) = real(-0.5,cp); hmax(3) = real(0.5,cp)
+
+         case (1008) ! Bandaru
+         hmin(1) = real(0.0,cp); hmax(1) = real(2.0,cp)*PI
+         hmin(2) = real(-0.5,cp); hmax(2) = real(0.5,cp)
+         hmin(3) = real(-1.0,cp); hmax(3) = real(1.0,cp)
+         case (1009) ! Kawczynski
+         hmin = -one; hmax = one
 
          case default
            write(*,*) 'Incorrect benchmarkCase in initGriddata';stop
@@ -257,6 +269,12 @@
          case (1005); betai = 1.04d0
                       betai(1) = 1.004d0
          case (1006); betai = 100000d0
+         case (1007); betai = 100000d0
+         case (1008); betai = 100000d0
+         betai(3) = real(1.1,cp)
+
+         case (1009); betai = 100000d0
+
          case default
            write(*,*) 'Incorrect benchmarkCase in setGriddata';stop
          end select
@@ -320,9 +338,15 @@
 
          ! case (1006); twtop = 0.25d0;   twbot = 0.25d0 ! Isolated Eddy
          ! twtop(3) = 0.0d0;   twbot(3) = 0.0d0          ! Isolated Eddy
-
          case (1006); twtop = 0.0d0;   twbot = 0.0d0     ! Single Eddy
-         ! twtop(2) = 0.1d0;   twbot(2) = 0.1d0     ! Single Eddy
+         ! twtop(2) = 0.1d0;   twbot(2) = 0.1d0          ! Single Eddy
+
+         case (1007); twtop = 0.0d0;   twbot = 0.0d0     ! Parker - Cylinder
+
+         case (1008); twtop = 0.0d0;   twbot = 0.0d0     ! Bandaru
+
+         case (1009); twtop = 0.0d0;   twbot = 0.0d0     ! Kawczynski
+
          case default
            stop 'Error: Incorrect benchmarkCase in setGriddata'
          end select

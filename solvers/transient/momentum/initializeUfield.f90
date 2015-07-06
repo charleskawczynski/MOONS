@@ -11,13 +11,15 @@
        public :: restartU
 
        logical,parameter :: restartU      = .false.
-       integer,parameter :: preDefinedU_ICs = 5
+       integer,parameter :: preDefinedU_ICs = 1
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
        !                                      2 : Parabolic Duct Flow (in x)
        !                                      3 : Vortex
        !                                      4 : Isolated Eddy (Weiss)
        !                                      5 : Single Eddy (Weiss)
+       !                                      6 : Cylinder (Parker)
+       !                                      7 : Parabolic (1D) (Bandaru)
        ! 
        integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
        integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
@@ -35,7 +37,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979
+       real(cp),parameter :: PI = real(3.14159265358979,cp)
 
        contains
 
@@ -76,14 +78,13 @@
 
          call initRest(u,v,w,p)
          select case (preDefinedU_ICs)
-         case (1) ! Rest
-         case (2) ! Fully Developed Duct Flow
-           call initFullyDevelopedDuctFlow(u,v,w,p,g,ductDirection,ductSign)
-         case (3) ! Vortex
-         case (4) ! Isolated Eddy (Weiss)
-           call isolatedEddy2D(u,v,w,g,3,1)
-         case (5) ! Single Eddy (Weiss)
-           call singleEddy2D(u,v,w,g,3,1)
+         case (1) ! Default
+         case (2); call initFullyDevelopedDuctFlow(u,v,w,p,g,ductDirection,ductSign)
+         case (3); ! call vortex2D(u,v,w,g,3,1)     ! Vortex
+         case (4); call isolatedEddy2D(u,v,w,g,3,1) ! Isolated Eddy (Weiss)
+         case (5); call singleEddy2D(u,v,w,g,3,1)   ! Single Eddy (Weiss)
+         case (6); call cylinder2D(u,v,w,g,3,1)     ! Cylinder
+         case (7); call parabolic1D(u,v,w,p,g)        ! Bandaru (SS of Ha=0)
          end select
        end subroutine
 
@@ -189,9 +190,23 @@
          p = 0.0d0
          do j=1,g%c(2)%sc
           do k=1,g%c(3)%sc
-            u(:,j,k) = (real(2.0,cp) - g%c(3)%hc(j)**real(2.0,cp) - &
+            u(:,j,k) = (real(2.0,cp) - g%c(2)%hc(j)**real(2.0,cp) - &
                                        g%c(3)%hc(k)**real(2.0,cp))/real(2.0,cp)
           enddo
+         enddo
+       end subroutine
+
+       subroutine parabolic1D(u,v,w,p,g)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
+         type(grid),intent(in) :: g
+         integer :: k
+         real(cp) :: Re
+         Re = real(200.0,cp)
+         v = 0.0d0; w = 0.0d0; p = 0.0d0
+
+         do k=1,g%c(3)%sc
+           u(:,:,k) = real(0.5,cp)*Re*(real(1.0,cp) - g%c(3)%hc(k)**real(2.0,cp))
          enddo
        end subroutine
        
@@ -338,6 +353,78 @@
            enddo;enddo;enddo
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
                 v(i,j,k) = - ((one-four*g%c(2)%hn(j)**two)**four)*sin(PI*g%c(1)%hc(i))
+           enddo;enddo;enddo
+           w = real(0.0,cp)
+         case default
+         stop 'Error: dir must = 1,2,3 in singleEddy2D in initializeUfield.f90'
+         end select
+         select case (vsign)
+         case (-1,1); u = u*real(vsign,cp)
+                      v = v*real(vsign,cp)
+                      w = w*real(vsign,cp)
+         case default
+         stop 'Error: vsign must = -1,1 in singleEddy2D in initializeUfield.f90'
+         end select
+       end subroutine
+
+       subroutine cylinder2D(u,v,w,g,dir,vsign)
+         ! From
+         !      Moffatt
+         ! 
+         ! Computes
+         !           U(r) = omega0*r
+         ! for
+         !           0 < r < r0
+         ! 
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
+         type(grid),intent(in) :: g
+         integer,intent(in) :: dir,vsign
+         integer :: i,j,k
+         integer,dimension(3) :: sx,sy,sz
+         real(cp),dimension(3) :: hc
+         real(cp) :: omega0,r0,two,r,theta
+         two = real(2.0,cp)
+
+         omega0 = real(1.0,cp)
+         r0 = real(1.0,cp)
+         u = real(0.0,cp); v = real(0.0,cp); w = real(0.0,cp)
+
+         sx = shape(u); sy = shape(v); sz = shape(w)
+         select case (dir)
+         case (1)
+           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/real(2.0,cp),i=1,3)/)
+           u = real(0.0,cp)
+           do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
+                r = sqrt((g%c(2)%hn(j)-hc(2))**two + (g%c(3)%hc(k)-hc(3))**two)
+                if (r.lt.r0) v(i,j,k) =-omega0*r
+           enddo;enddo;enddo
+           do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
+                r = sqrt((g%c(2)%hc(j)-hc(2))**two + (g%c(3)%hn(k)-hc(3))**two)
+                if (r.lt.r0) w(i,j,k) = omega0*r
+           enddo;enddo;enddo
+         case (2)
+           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/real(2.0,cp),i=1,3)/)
+           do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
+                r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(3)%hn(k)-hc(3))**two)
+                if (r.lt.r0) u(i,j,k) = omega0*r
+           enddo;enddo;enddo
+           v = real(0.0,cp)
+           do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
+                r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(3)%hn(k)-hc(3))**two)
+                if (r.lt.r0) w(i,j,k) =-omega0*r
+           enddo;enddo;enddo
+         case (3)
+           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/real(2.0,cp),i=1,3)/)
+           do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
+                r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(2)%hc(j)-hc(2))**two)
+                theta = atan2(g%c(2)%hc(j),g%c(1)%hn(i))
+                if (r.lt.r0) u(i,j,k) =-omega0*r*sin(theta)
+           enddo;enddo;enddo
+           do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
+                r = sqrt((g%c(1)%hc(i)-hc(1))**two + (g%c(2)%hn(j)-hc(2))**two)
+                theta = atan2(g%c(2)%hn(j),g%c(1)%hc(i))
+                if (r.lt.r0) v(i,j,k) = omega0*r*cos(theta)
            enddo;enddo;enddo
            w = real(0.0,cp)
          case default

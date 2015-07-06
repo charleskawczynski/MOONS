@@ -45,10 +45,7 @@
        public :: computeAddJCrossB,computeJCrossB
 
        public :: computeDivergence
-       public :: computeCurrent
        public :: embedVelocity
-       public :: computeMagneticEnergy
-       public :: exportTransientFull
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -68,8 +65,7 @@
          character(len=9) :: name = 'induction'
          ! --- Vector fields ---
          type(vectorField) :: B,Bstar,B0,B_face                ! CC data
-
-         type(vectorField) :: J,J_cc,E                         ! Edge data
+         type(vectorField) :: J,J_cc,E,temp_E                  ! Edge data
 
          type(vectorField) :: U_Ft                             ! Face data
          type(vectorField) :: U_cct                            ! Cell Center data
@@ -77,7 +73,7 @@
 
          type(vectorField) :: temp_E1,temp_E2                  ! Edge data
          type(vectorField) :: temp_F,temp_F2
-         type(vectorField) :: temp_F3,temp_F4                  ! Edge data
+         type(vectorField) :: jCrossB_F                        ! Face data
          type(vectorField) :: temp_CC                          ! CC data
 
          type(vectorField) :: sigmaInv_edge,sigmaInv_face
@@ -164,6 +160,7 @@
          call allocateVectorField(ind%U_E,ind%J)
          call allocateVectorField(ind%V_E,ind%J)
          call allocateVectorField(ind%W_E,ind%J)
+         call allocateVectorField(ind%temp_E,ind%J)
          call allocateVectorField(ind%temp_E1,ind%J)
          call allocateVectorField(ind%temp_E2,ind%J)
          call allocateVectorField(ind%sigmaInv_edge,ind%J)
@@ -176,8 +173,7 @@
          call allocateVectorField(ind%temp_F,ind%U_Ft)
          call allocateVectorField(ind%sigmaInv_face,ind%U_Ft)
          call allocateVectorField(ind%temp_F2,ind%U_Ft)
-         call allocateVectorField(ind%temp_F3,ind%U_Ft)
-         call allocateVectorField(ind%temp_F4,ind%U_Ft)
+         call allocateVectorField(ind%jCrossB_F,ind%U_Ft)
          call allocateVectorField(ind%B_face,ind%U_Ft)
 
          ! --- Scalar Fields ---
@@ -212,13 +208,13 @@
          write(*,*) '     Materials initialized'
 
          call init(ind%probe_Bx,dir//'Bfield/','transient_Bx',&
-         .not.restartB,shape(ind%B%x),(shape(ind%B%x)+1)/2,g)
+         .not.restartB,shape(ind%B%x),(shape(ind%B%x)+1)/2*2/3,g)
 
          call init(ind%probe_By,dir//'Bfield/','transient_By',&
-         .not.restartB,shape(ind%B%y),(shape(ind%B%y)+1)/2,g)
+         .not.restartB,shape(ind%B%y),(shape(ind%B%y)+1)/2*2/3,g)
 
          call init(ind%probe_Bz,dir//'Bfield/','transient_Bz',&
-         .not.restartB,shape(ind%B%z),(shape(ind%B%z)+1)/2,g)
+         .not.restartB,shape(ind%B%z),(shape(ind%B%z)+1)/2*2/3,g)
 
          call init(ind%probe_J,dir//'Jfield/','transient_Jx',&
          .not.restartB,shape(ind%J_cc%x),(shape(ind%J_cc%x)+1)*2/3,g)
@@ -284,11 +280,12 @@
          call delete(ind%E)
 
          call delete(ind%temp_CC)
+         call delete(ind%temp_E)
          call delete(ind%temp_E1)
          call delete(ind%temp_E2)
          call delete(ind%temp_F)
          call delete(ind%temp_F2)
-         call delete(ind%temp_F3)
+         call delete(ind%jCrossB_F)
          call delete(ind%B_face)
          call delete(ind%temp)
 
@@ -409,19 +406,31 @@
          integer :: Nx,Ny,Nz
          ! Interior
          real(cp),dimension(:,:,:),allocatable :: tempn,tempcc
-         type(vectorField) :: tempVFn
+         type(vectorField) :: tempVFn,tempVFn2
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
            write(*,*) 'Exporting PROCESSED solutions for B'
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            call allocateVectorField(tempVFn,Nx,Ny,Nz)
+           call allocateVectorField(tempVFn2,Nx,Ny,Nz)
 
            call cellCenter2Node(tempVFn,ind%B,g)
            call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt_phys','Bynt_phys','Bznt_phys')
+           call writeToFile(g,tempVFn,dir//'Bfield/','Bxnt','Bynt','Bznt')
+
+           ! call face2Node(tempVFn,ind%jCrossB_F,g)
+           ! call writeVecPhysical(g,tempVFn,dir//'Ufield/','jCrossBx_phys','jCrossBy_phys','jCrossBz_phys')
+           ! call writeToFile(g,tempVFn,dir//'Ufield/','jCrossBxnt','jCrossBynt','jCrossBznt')
 
            call cellCenter2Node(tempVFn,ind%B0,g)
            call writeVecPhysical(g,tempVFn,dir//'Bfield/','B0xnt_phys','B0ynt_phys','B0znt_phys')
+
+           ! Total Magnetic field (for when B0 varies in space)
+           call cellCenter2Node(tempVFn,ind%B,g)
+           call cellCenter2Node(tempVFn2,ind%B0,g)
+           call add(tempVFn,tempVFn2)
+           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Btotxnt_phys','Btotynt_phys','Btotznt_phys')
 
            call cellCenter2Node(tempVFn,ind%J_cc,g)
            call writeVecPhysical(g,tempVFn,dir//'Jfield/','jxnt_phys','jynt_phys','jznt_phys')
@@ -443,31 +452,46 @@
            call writeToFile(g,tempcc,dir//'Ufield/','divUct')
            deallocate(tempcc)
            call delete(tempVFn)
+           call delete(tempVFn2)
            write(*,*) '     finished'
+           call inductionExportTransientFull(ind,g,dir)
          endif
        end subroutine
 
        subroutine inductionExportTransientFull(ind,g,dir)
          implicit none
-         type(induction),intent(inout) :: ind
+         type(induction),intent(in) :: ind
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
-         type(vectorField) :: tempVFn
+         type(vectorField) :: tempVFn,tempVFn2
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
            call allocateVectorField(tempVFn,Nx,Ny,Nz)
+           call allocateVectorField(tempVFn2,tempVFn)
+
+           ! call cellCenter2Node(tempVFn,ind%B,g)
+           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
+           ! 'Bxnt_phys',&
+           ! 'Bynt_phys',&
+           ! 'Bznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
            call cellCenter2Node(tempVFn,ind%B,g)
+           call cellCenter2Node(tempVFn2,ind%B0,g)
+           call add(tempVFn,tempVFn2)
            call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
-           'Bxnt_phys',&
-           'Bynt_phys',&
-           'Bznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
+           'Btotxnt_phys',&
+           'Btotynt_phys',&
+           'Btotznt_phys','_'//int2str(ind%nstep),2,2,ind%nstep)
 
            !call writeScalarPhysicalPlane(g,tempVFn%x,dir//'Bfield/transient/',&
            !'Bxnt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+
+           ! call cellCenter2Node(tempVFn,ind%J_cc,g)
+           ! call writeScalarPhysicalPlane(g,tempVFn%z,dir//'Jfield/transient/',&
+           ! 'Jznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
            ! call cellCenter2Node(tempVFn,ind%J_cc,g)
            ! call writeVecPhysicalPlane(g,tempVFn,dir//'Jfield/transient/',&
@@ -476,6 +500,7 @@
            !  'jznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
 
            call delete(tempVFn)
+           call delete(tempVFn2)
          endif
        end subroutine
 
@@ -489,6 +514,7 @@
          type(grid),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
+         logical :: exportNow
          ! ********************** LOCAL VARIABLES ***********************
          ! ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
          ! ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
@@ -501,6 +527,7 @@
          ! ind%B0%x = real(0.0,cp)
          ! ind%B0%y = real(0.0,cp)
          ! ind%B0%z = exp(-ind%omega*ind%t)
+         call assign(ind%temp_CC,real(0.0,cp))
 
          call embedVelocity(ind,U,g_mom)
 
@@ -509,7 +536,7 @@
          case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,ind%g)
          case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%g)
          case (4); call lowRemCTmethod(ind,ind%g)
-         case (5); call finiteRemCTmethod(ind,ind%g)
+         case (5); call finiteRemCTmethod(ind,ind%temp_CC,ind%g)
          case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,ind%g,ss_MHD)
          case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g,ss_MHD)
          case (8); call lowRem_JacksExperiment(ind,ind%U_cct,ind%g)
@@ -529,9 +556,24 @@
          call exportTransient(ind,ss_MHD)
          if (getExportErrors(ss_MHD)) then
            call computeDivergence(ind,ind%g)
-           call exportTransientFull(ind,ind%g,dir)
+           ! call exportTransientFull(ind,ind%g,dir)
          endif
-         call computeMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
+
+         if (getPrintParams(ss_MHD)) then
+           call readSwitchFromFile(exportNow,dir//'parameters/','exportNowB')
+         else; exportNow = .false.
+         endif
+
+         if (getExportRawSolution(ss_MHD).or.exportNow) then
+           call exportRaw(ind,ind%g,dir)
+           call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
+         endif
+         if (getExportSolution(ss_MHD).or.exportNow) then
+           call export(ind,ind%g,dir)
+           call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
+         endif
+
+         call computeTotalMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
 
          if (getPrintParams(ss_MHD)) then
            write(*,*) '**************************************************************'
@@ -667,55 +709,6 @@
          enddo
        end subroutine
 
-       subroutine lowRemCTmethodOld(ind,U,g)
-         ! inductionSolverCT solves the induction equation using the
-         ! Constrained Transport (CT) Method. The magnetic field is
-         ! stored and collocated at the cell center. The magnetic
-         ! field is updated using Faraday's Law, where the electric
-         ! field is solved for using appropriate fluxes as described
-         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
-         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
-         ! The velocity field is assumed to be cell centered.
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
-         type(grid),intent(in) :: g
-         integer :: i
-
-         do i=1,ind%NmaxB
-
-           ! Compute current from appropriate fluxes:
-
-           ! J = curl(B_face)_edge
-           call cellCenter2Face(ind%temp_F,ind%B,g)
-           call curl(ind%J,ind%temp_F,g)
-
-           ! Compute fluxes of u cross B0
-           call cross(ind%temp_CC,U,ind%B0)
-           call cellCenter2Edge(ind%E,ind%temp_CC,g)
-
-           ! E = j/sig - uxB
-           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-           call multiply(ind%J,ind%sigmaInv_edge)
-           call subtract(zero,ind%E)
-           call add(ind%E,ind%J)
-
-           ! F = curl(E_edge)_face
-           call curl(ind%temp_F,ind%E,g)
-
-           ! tempVF = interp(F)_face->cc
-           call face2CellCenter(ind%temp_CC,ind%temp_F,g)
-
-           ! Add induced field of previous time step (B^n)
-           ! ind%B = ind%B - ind%dTime*ind%temp_CC
-           call multiply(ind%temp_CC,ind%dTime)
-           call subtract(ind%B,ind%temp_CC)
-
-           ! Impose BCs:
-           call applyAllBCs(ind%B,ind%B_bcs,g)
-         enddo
-       end subroutine
-
        subroutine lowRemCTmethod(ind,g)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
@@ -812,7 +805,7 @@
          enddo
        end subroutine
 
-       subroutine finiteRemCTmethod(ind,g)
+       subroutine finiteRemCTmethod_oldbutGood(ind,g)
          ! finiteRemCTmethod solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
@@ -844,7 +837,7 @@
          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
          call multiply(ind%J,ind%sigmaInv_edge)
          call divide(ind%J,ind%Rem)
-         call subtract(zero,ind%E)
+         call subtract(zero,ind%E) ! Try call multiply(ind%E,real(-1.0,cp))
          call add(ind%E,ind%J)
 
          ! F = Curl(E_edge)_face
@@ -871,6 +864,101 @@
          ! ind%temp_CC%y = real(0.0,cp)
          ! ind%temp_CC%z = real(0.0,cp)
          ! call subtract(ind%B,ind%temp_CC)
+
+         ! Impose BCs:
+         call applyAllBCs(ind%B,ind%B_bcs,g)
+       end subroutine
+
+       subroutine finiteRemCTmethod_newbutstillwrong(ind,F_CC,g)
+         ! Computes
+         !    E = j/(Rem*sig) - uxB
+         !    dBdt = -curl(E) + F
+         !    B^n+1 = B^n + {-curl(E) + F}
+         ! 
+         ! using the using the Constrained Transport (CT) Method. 
+         ! 
+         ! Reference:
+         ! "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: F_CC
+         type(grid),intent(in) :: g
+
+         ! E = uxB
+         call add(ind%B,ind%B0)
+         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B,g)
+         call subtract(ind%B,ind%B0)
+
+         ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
+         call cellCenter2Face(ind%temp_F,ind%B,g)
+         call curl(ind%J,ind%temp_F,g)
+         call divide(ind%J,ind%Rem)
+
+         ! -E = ( uxB - j/sig )_edge
+         call multiply(ind%J,ind%sigmaInv_edge)
+         call subtract(ind%E,ind%J)
+
+         ! dBdt = -Curl(E_edge)_face
+         call curl(ind%temp_F,ind%E,g)
+
+         ! dBdt_cc = interp(dBdt)_face->cc
+         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+
+         ! dBdt = dBdt + F
+         call add(ind%temp_CC,F_CC)
+
+         ! B^n+1 = B^n + {-curl(E) + F}
+         call multiply(ind%temp_CC,ind%dTime)
+         call add(ind%B,ind%temp_CC)
+
+         ! Impose BCs:
+         call applyAllBCs(ind%B,ind%B_bcs,g)
+       end subroutine
+
+       subroutine finiteRemCTmethod(ind,F_CC,g)
+         ! Computes
+         !    E = j/(Rem*sig) - uxB
+         !    dBdt = -curl(E) + F
+         !    B^n+1 = B^n + {-curl(E) + F}
+         ! 
+         ! using the using the Constrained Transport (CT) Method. 
+         ! 
+         ! Reference:
+         ! "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(vectorField),intent(in) :: F_CC
+         type(grid),intent(in) :: g
+
+         ! E = uxB
+         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B,g)
+         call edgeCrossCC_E(ind%temp_E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g)
+         call divide(ind%temp_E,ind%Rem)
+         call add(ind%E,ind%temp_E)
+
+         ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
+         call cellCenter2Face(ind%temp_F,ind%B,g)
+         call curl(ind%J,ind%temp_F,g)
+         call divide(ind%J,ind%Rem)
+
+         ! -E = ( uxB - j/sig )_edge
+         call multiply(ind%J,ind%sigmaInv_edge)
+         call subtract(ind%E,ind%J)
+
+         ! dBdt = -Curl(E_edge)_face
+         call curl(ind%temp_F,ind%E,g)
+
+         ! dBdt_cc = interp(dBdt)_face->cc
+         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+
+         ! dBdt = dBdt + F
+         call add(ind%temp_CC,F_CC)
+
+         ! B^n+1 = B^n + {-curl(E) + F}
+         call multiply(ind%temp_CC,ind%dTime)
+         call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
          call applyAllBCs(ind%B,ind%B_bcs,g)
@@ -1031,9 +1119,11 @@
        end subroutine
 
        subroutine computeJCrossB(jcrossB,ind,g_mom,Ha,Re,Rem)
-         ! addJCrossB computes the ith component of Ha^2/Re j x B
-         ! where j is the total current and B is the applied or total mangetic
-         ! field, depending on the solveBMethod.
+         ! computes
+         ! 
+         !     finite Rem:  Ha^2/Re curl(B_induced) x (B0 + Rem*B_induced)
+         !     low Rem:     Ha^2/Re curl(B_induced) x (B0)
+         ! 
          implicit none
          type(vectorField),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
@@ -1043,28 +1133,23 @@
          select case (solveBMethod)
          case (5,6) ! Finite Rem
 
-         call assign(ind%Bstar,ind%B0)
-         call add(ind%Bstar,ind%B)
-         call curl(ind%J_cc,ind%Bstar,ind%g)
+           call assign(ind%Bstar,ind%B)
+           call multiply(ind%Bstar,Rem)
+           call add(ind%Bstar,ind%B0)
+
+           call curl(ind%J_cc,ind%B,ind%g)
+           call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
 
          case default ! Low Rem
 
-         call assign(ind%Bstar,ind%B)
-         call curl(ind%J_cc,ind%Bstar,ind%g)
-         call assign(ind%Bstar,ind%B0)
+           call curl(ind%J_cc,ind%B,ind%g)
+           call cross(ind%temp_CC,ind%J_cc,ind%B0)
 
          end select
 
-         call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-         call cellCenter2Face(ind%temp_F,ind%temp_CC,ind%g)
-
-         call extractFace(jcrossB,ind%temp_F,ind%SD,g_mom)
-
-         select case (solveBMethod)
-         case (5,6);   call multiply(jcrossB,Ha**real(2.0,cp)/(Re*Rem)) ! Finite Rem
-         case default; call multiply(jcrossB,Ha**real(2.0,cp)/(Re))     ! Low Rem
-
-         end select
+         call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+         call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+         call multiply(jcrossB,Ha**real(2.0,cp)/Re)
        end subroutine
 
        subroutine computeDivergenceInduction(ind,g)
@@ -1102,7 +1187,7 @@
          call subtract(B,B0)
        end subroutine
 
-       subroutine computeMagneticEnergy(ind,B,B0,g,ss_MHD)
+       subroutine computeTotalMagneticEnergy(ind,B,B0,g,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: B,B0

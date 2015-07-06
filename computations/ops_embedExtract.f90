@@ -32,14 +32,19 @@
        logical,parameter :: includeTF = .true.
        integer,parameter :: includeDir = 0 ! (does nothing if includeTF = .false.)
                                        ! 0 (include all directions)
+                                       ! 
                                        ! 1 (include x direction)
                                        ! 2 (include y direction)
                                        ! 3 (include z direction)
+                                       ! 
+                                       ! -1 (include all but x direction), not yet implemented
+                                       ! -2 (include all but y direction), not yet implemented
+                                       ! -3 (include all but z direction), not yet implemented
 
-       interface init;   module procedure initSubdomain;   end interface
+       interface init;               module procedure initSubdomain;         end interface
 
-       interface embedCC;   module procedure embedCC_VF;   end interface
-       interface embedCC;   module procedure embedCC_SF;   end interface
+       interface embedCC;            module procedure embedCC_VF;            end interface
+       interface embedCC;            module procedure embedCC_SF;            end interface
 
        interface embedCCInclude;     module procedure embedCCInclude_VF;     end interface
        interface embedCCInclude;     module procedure embedCCInclude_SF;     end interface
@@ -49,7 +54,7 @@
        interface embedCCIncludeDir;  module procedure embedCCIncludeDir_SF;  end interface
 
        type subdomain
-         integer,dimension(3) :: s
+         integer,dimension(3) :: s ! shape of interior grid cc-field
          integer,dimension(3) :: N
          integer,dimension(3) :: Nin1
          integer,dimension(3) :: Nin2
@@ -182,7 +187,7 @@
            stop 'Error: includeDir must = 1,2,3 in embedCC in ops_embedExtract.f90'
            end select
          else
-           call embedCCExclude(CC_t,CC_i,SD,g)
+           call embedCCExclude(CC_t,CC_i,SD)
          endif
        end subroutine
 
@@ -477,16 +482,15 @@
          CC_t%phi(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%phi
        end subroutine
 
-       subroutine embedCCExclude_SF(CC_t,CC_i,SD,g)
+       subroutine embedCCExclude_SF(CC_t,CC_i,SD)
          implicit none
          type(scalarField),intent(inout) :: CC_t
          type(scalarField),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
-         type(grid),intent(in) :: g
          integer,dimension(3) :: Nice1,Nice2
          Nice1 = SD%Nice1; Nice2 = SD%Nice2
          CC_t%phi(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         CC_i%phi(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         CC_i%phi(2:SD%s(1)-1,2:SD%s(2)-1,2:SD%s(3)-1)
        end subroutine
 
        subroutine embedCCIncludeDir_SF(CC_t,CC_i,SD,g,dir)

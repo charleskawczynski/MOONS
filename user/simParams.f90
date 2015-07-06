@@ -1,4 +1,7 @@
        module simParams_mod
+       ! NASA Benchmarks:
+       ! http://www.grc.nasa.gov/WWW/wind/valid/archive.html
+       ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -20,18 +23,18 @@
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .false.    ! (T/F)
+       logical :: nonUniformGridFluid       = .true.    ! (T/F)
        logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        ! ******************** PARALLELIZATION *******************
        ! Use the -fopenMP flag to parallelize the following:
-       !     - myError.f90 (LnError3D,LnError3DUniform)
-       !     - myDel.f90 (myDel) done
-       !     - mySOR.f90 / myJacobi.f90 (Poisson loop)
+       !     - norms.f90 (LnError3D,LnError3DUniform)
+       !     - del.f90 (myDel) done
+       !     - SOR.f90 / myJacobi.f90 (Poisson loop)
        !     - ops_discrete.f90 (collocatedCross)
-       !     - interpOps.f90 (interpO2)
        !     - ops_aux.f90 (collocatedMagnitude)
+       !     - ops_interp.f90 (interpO2)
        !     - myTriSolver.f90 (applyTriSolver)
 
        ! ************************ T-FIELD ***********************
@@ -40,7 +43,7 @@
        !                                   1 : Explicit Euler
 
        ! ************************ U-FIELD ***********************
-       logical :: solveMomentum = .false.
+       logical :: solveMomentum = .true.
        logical :: computeKU = .true.    ! Compute kinetic energy at each time step
        integer,parameter :: solveUMethod = 1
        !                                   1 : Explicit Euler
@@ -55,7 +58,7 @@
        ! real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 ) Not yet implemented
        !                                                       pure         central
        !                                                      upwind       difference
-       logical :: addJCrossB = .false.
+       logical :: addJCrossB = .true.
        logical :: addBuoyancy = .false.
        ! logical :: addGravity = .true. ! Not yet implemented
 
@@ -102,7 +105,7 @@
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
 
-       integer,parameter :: benchmarkCase = 1006
+       integer,parameter :: benchmarkCase = 1009
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -167,7 +170,22 @@
        ! 
        !    1004: LDC by Salah - To produce Fig. 4, Fig. 5
        !    1005: No slip cavity - Jack's experiment
-       !    1006: Weiss Benchmark
+       !    1006: Weiss Benchmark (Isolated Eddy / Single Eddy)
+       !    1007: Parker (Cylinder)
+       !    1008: Bandaru (Channel Flow)
+       !    1009: Kawczynski (LDC demo cases)
+       ! 
+       ! 10,000-series (Published work ONLY)
+       ! 
+       !    10001: Guj & Stella (LDC)
+       !    10002: Kawczynski (MHD LDC)
+       !    10003: Hunt (Duct Flow)
+       !    10004: Shercliff (Duct Flow)
+       !    10005: Weiss Flux Expulsion (Single Eddy / Isolated Eddy)
+       !    10006: Parker (Cylinder)
+       !    10007: Bandaru (Channel Flow)
+       ! 
+       !    10008-13: Smolentsev (Suggested benchmark cases)
        ! 
        ! In order to make new benchmarkCases, prepare the following
        !    - MOONS.f90 (Number of steps, time step etc.)
