@@ -23,7 +23,7 @@
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .true.    ! (T/F)
+       logical :: nonUniformGridFluid       = .false.    ! (T/F)
        logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
@@ -60,7 +60,7 @@
        !                                                      upwind       difference
        logical :: addJCrossB = .true.
        logical :: addBuoyancy = .false.
-       ! logical :: addGravity = .true. ! Not yet implemented
+       logical :: addGravity = .true.
 
        ! ************************ B-FIELD ***********************
        logical :: solveInduction = .true.

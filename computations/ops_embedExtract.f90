@@ -29,7 +29,7 @@
        public :: embedCC
        public :: embedN
 
-       logical,parameter :: includeTF = .true.
+       logical,parameter :: includeTF = .false.
        integer,parameter :: includeDir = 0 ! (does nothing if includeTF = .false.)
                                        ! 0 (include all directions)
                                        ! 

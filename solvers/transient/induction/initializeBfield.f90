@@ -13,7 +13,7 @@
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB_ICs is used to define the applied field
 
-       integer,parameter :: preDefinedB_ICs = 4 ! NOTE: All cases use B_induced = 0
+       integer,parameter :: preDefinedB_ICs = 1 ! NOTE: All cases use B_induced = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Uniform applied (set applied_B_dir)
        !                                      2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
@@ -63,7 +63,7 @@
            call initZeroField(B)
            call initPreDefinedB0(B0,g)
          else
-           call initUserBfield(B,B0,g)
+           call initUserBfield(B,B0)
          endif
        end subroutine
 
@@ -276,9 +276,8 @@
          deallocate(Btemp)
        end subroutine
 
-       subroutine initUserBfield(B,B0,g)
+       subroutine initUserBfield(B,B0)
          implicit none
-         type(grid),intent(in) :: g
          type(vectorField),intent(inout) :: B,B0
          call initZeroField(B)
          call uniformBfield(B0,3)

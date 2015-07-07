@@ -52,9 +52,9 @@ University of California Los Angeles, USA\\
 
 \section{Geometry}
 
-Domain range
+Domain range (both fluid and magnetic)
 \begin{equation}
-	-1.1 < x < 1.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1
+	-1 < x < 1 \qquad -1 < y < 1 \qquad -1 < z < 1
 \end{equation}
 
 \begin{figure}[H]
@@ -68,146 +68,119 @@ Domain range
 \section{Governing Equations And Scaling}
 
 \subsection{Momentum}
-Non-dimensionalizing the momentum equation with
+The momentum equation is solved with Explicit Euler
 
 \begin{equation}
-	\rho = \rho_c \qquad
-	\mu = \mu_c \qquad
-	t_c = L_c/U_c \qquad
-	u_j^* = \frac{u_j}{U_c} \qquad
-	t^* = \frac{t}{t_c} \qquad
-	x_j^* = \frac{x_j}{L_c} \qquad
-	p^* = \frac{p}{\rho_c U_c^2} \qquad
-\end{equation}
-
-Yields the non-dimensional momentum equation. In the most general case considered, the ith component of the non-dimensional momentum equation is
-\begin{equation}
-	\frac{\partial u_i}{\partial t} + 
-	\frac{\partial (u_i u_j)}{\partial x_j}
+	\label{eq:mom}
+	\frac{\partial \pmb{u}}{\partial t} + 
+	\nabla \bullet (\pmb{u} \pmb{u})
 	= 
-	- \frac{\partial p}{\partial x_i}
+	- \nabla p
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
+	\nabla^2 \pmb{u}
+	\\
 	+ \frac{Ha^2}{Re}
-	(j \times B)_i
+	(\nabla \times \pmb{B}^{ind}) \times (\pmb{B}^0+Re_m\pmb{B}^{ind})
+\end{equation}
+\begin{equation}
+	\nabla \bullet \pmb{u} = 0
 \end{equation}
 
 Where
 
-\begin{equation}
-	Re = \frac{U_c L_c}{\nu_c}
-	\qquad \qquad
-	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}}
-\end{equation}
+\noindent
+\begin{subequations}
+\begin{align}
+  Re = \frac{U_c L_c}{\nu_c} \label{eq:Re}
+  \\
+  Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \label{eq:Ha}
+  \\
+  Re_m = \mu_c \sigma_c U_c L_c \label{eq:Rem}
+\end{align}
+\end{subequations}
 
 \subsection{Induction}
-Non-dimensionalizing the induction equation with the same parameters used to non-dimensionalize the momentum equation, plus
-
+Let
 \begin{equation}
-	B_k^* = \frac{B_k}{B_c}  \qquad
-	j_k^* = \frac{j_k}{\sigma_c U_c B_c} \qquad
-	E_k^* = \frac{E_k}{U_c B_c} \qquad
-	\sigma^* = \frac{\sigma}{\sigma_c} \qquad
-	\mu^* = \frac{\mu}{\mu_c} \qquad
+  \label{eq:ind}
+  G(\pmb{B})
+  =
+  \frac{\partial \pmb{B}}{\partial t} 
+  -
+  \nabla \times (\pmb{u} \times \pmb{B})
+  + \\
+  \frac{1}{Re_m}
+  \nabla \times
+  \left(
+  \frac{1}{\sigma}
+  \nabla \times
+  \frac{\pmb{B}}{\mu}
+  \right)
+  =
+  0
 \end{equation}
-
-Yields the non-dimensional induction equation. In the most general case considered, the ith component of the non-dimensional induction equation is
-
+The transient induced magnetic field term is solved for and updated using explicit Euler.
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
-	+ \frac{1}{Re_m}
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
-	\left[ 
-	\frac{\partial}{\partial x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
-	\left( \frac{B_i}{\mu} \right)
-	\right]
-	\right\} = 0
+  G(\pmb{B}^0) + G(\pmb{B}^{ind}) Re_m = 0
 \end{equation}
-
-Where
-
-\begin{equation}
-	Re_m = \mu_c \sigma_c U_c L_c \qquad
-\end{equation}
-
-If we were to non-dimensionalize $B$ with
-
-\begin{equation}
-	B_k^* = \frac{B_k}{Re_m B^0}
-\end{equation}
-
-Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
-
-\begin{equation}
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
-	+
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
-	\left[ 
-	\frac{\partial}{\partial x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
-	\left( \frac{B_i}{\mu} \right)
-	\right]
-	\right\} = 0
-\end{equation}
-
-
-In these comparisons, $\mu$ was assumed to be uniform in space and constant in time.
-
 
 \section{Boundary Conditions}
 
 \subsection{Velocity field}
-The boundary conditions for the velocity are 
-
-\subsubsection{Dirichlet}
+Lid driven cavity BCs
 
 \begin{equation}
-	\pmb{u} = \pmb{u}_{wall}
-	\qquad \qquad
-	\pmb{u} = \pmb{u}_{inlet}
-	\qquad \qquad
-	\pmb{u} = \pmb{u}_{outlet}
+	\pmb{u} = 
+	\begin{cases}
+      \hat{i}, & \text{if}\ y=y_{max} \\
+      \pmb{0}, & \text{otherwise}
+    \end{cases}
+    \qquad \qquad
+    \frac{\partial p}{\partial n} = 0
 \end{equation}
 
-\subsubsection{Neumann}
-\begin{equation}
-	\frac{\partial \pmb{u}}{\partial \pmb{n}} = 0
-\end{equation}
+% \begin{equation}
+% 	\pmb{u} = \pmb{u}_{wall}
+% 	\qquad \qquad
+% 	\frac{\partial p}{\partial n} = 0
+% \end{equation}
 
 \subsection{Magnetic field}
-\subsubsection{Pseudo-vacuum}
+Pseudo vacuum BCs
 \begin{equation}
 	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
 	\qquad \qquad
 	\pmb{B}_{tangent} = 0
 \end{equation}
 
-\subsubsection{Periodic along x}
-\begin{equation}
-	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
-	\qquad
-	\pmb{B}_{tangent} = 0
-	\qquad
-	y_{min},y_{max}
-	z_{min},z_{max}
-\end{equation}
+\section{Material properties if walls are present}
+If the walls are present, what should the material properties of lid be?
 
-\begin{equation}
-	\frac{\partial \pmb{B}}{\partial x} = 0
-	\qquad
-	x_{min},x_{max}
-\end{equation}
+\begin{itemize}
+\item $\sigma_{lid} = \sigma_{fluid}$
+\item $\sigma_{lid} = \sigma_{wall}$
+\end{itemize}
 
+\section{Simulation Parameters}
 
-\bibliographystyle{unsrt}
-\bibliography{MHD,Math,Interface,fluids,CFD,handpicked}
+\begin{itemize}
+\item $N_{fluid} = (67^3)$ (number of cells in fluid domain)
+\item $N_{PPE} = 5$ (number of iterations in Gauss Seidel for pressure poisson equation)
+\item $dt = 10^{-3}$ (momentum time step)
+\item $ds = dt$ (induction time step)
+\item $\beta = 1.1$ (grid stretching parameter)
+\end{itemize}
+
+\section{Parametric Sweep Parameters}
+
+Parameters for all cases will be the same as that for Guj and Stella as well as
+\begin{itemize}
+\item $Re = 1000$ (Reynolds number)
+\item $Ha = 20$ (Hartmann number)
+\item $N = 0.4$ (Interaction number)
+\item $Re_m = (0,1,10,100,1000) = \text{Case} (1,2,3,4)$ (Magnetic Reynolds number)
+\item $B^0 = (B^0_x,B^0_y,B^0_z) = \text{Case} (A,B,C)$ (Applied magnetic field)
+\end{itemize}
 
 
 \end{document}

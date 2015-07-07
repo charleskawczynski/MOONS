@@ -75,10 +75,9 @@
          call checkBCs(u_bcs)
        end subroutine
 
-       subroutine defineFunction(u,u_bcs,x,y,z,bctype)
+       subroutine defineFunction(u,x,y,z,bctype)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: u
-         type(BCs),intent(in) :: u_bcs
          real(cp),dimension(:),intent(in) :: x,y,z
          integer,intent(in) :: bctype
          integer :: i,j,k
@@ -115,10 +114,9 @@
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: u_exact,f
          type(BCs),intent(inout) :: u_bcs
-         integer :: i,j,k
-         real(cp),dimension(3) :: p
+         integer :: i
          integer,dimension(3) :: s
-         integer :: modelProblem,MP,bctype
+         integer :: bctype
          s = shape(f)
 
          bctype = 1 ! Dirichlet
@@ -127,27 +125,27 @@
 
          ! Node data
          if (all((/(g%c(i)%sn.eq.s(i),i=1,3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,bctype)
+           call defineFunction(u_exact,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,bctype)
 
            ! CC data
          elseif (all((/(g%c(i)%sc.eq.s(i),i=1,3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,bctype)
+           call defineFunction(u_exact,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,bctype)
 
            ! Face data
          elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,bctype)
+           call defineFunction(u_exact,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,bctype)
          elseif (all((/g%c(1)%sc.eq.s(1),g%c(2)%sn.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,bctype)
+           call defineFunction(u_exact,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,bctype)
          elseif (all((/g%c(1)%sc.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sn.eq.s(3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,bctype)
+           call defineFunction(u_exact,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,bctype)
 
            ! Edge data
          elseif (all((/g%c(1)%sc.eq.s(1),g%c(2)%sn.eq.s(2),g%c(3)%sn.eq.s(3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,bctype)
+           call defineFunction(u_exact,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,bctype)
          elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sn.eq.s(3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,bctype)
+           call defineFunction(u_exact,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,bctype)
          elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sn.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
-           call defineFunction(u_exact,u_bcs,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,bctype)
+           call defineFunction(u_exact,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,bctype)
          else
           stop 'Error: Bad sizes in defineBCs in poisson.f90'
          endif
@@ -182,18 +180,19 @@
        use IO_scalarFields_mod
        use myTime_mod
        use grid_mod
-       use myError_mod
+       use norms_mod
        use ops_discrete_mod
        use BCs_mod
        use applyBCs_mod
-       use myJacobi_mod
-       use mySOR_mod
-       use myADI_mod
-       use myMG_mod
+       use PSE_mod
+       use jacobi_mod
+       use SOR_mod
+       use ADI_mod
+       use MG_mod
        use gridGen_mod
        use gridGenTools_mod
        use solverSettings_mod
-       use myPoisson_mod
+       use poisson_mod
        use ops_aux_mod
 
        use modelProblem_mod
@@ -219,23 +218,26 @@
          integer,dimension(3),parameter :: N = 2**5 ! Number of cells
          real(cp),dimension(3) :: hmin,hmax
          integer,dimension(3) :: s
-         integer :: i,Nt,dataType
+         integer :: i,dataType
          real(cp),dimension(3) :: dh
+         type(PseudoTimeSolver) :: PSE
+         type(SORSolver) :: SOR
          type(myADI) :: ADI
-         type(mySOR) :: SOR
-         type(myJacobi) :: JAC
+         type(Jacobi) :: JAC
          type(multiGrid),dimension(4) :: MG
          type(BCs) :: u_bcs
+         logical,dimension(5) :: TF ! PseudoTime,jacobi,SOR,ADI,MG
          character(len=3) :: name
-         type(myError) :: norm_res,norm_e
+         type(norms) :: norm_res,norm_e
          type(solverSettings) :: ss
-         type(myTime) :: time
          type(gridGenerator) :: gg
          ! Field quantities
          real(cp),dimension(:,:,:),allocatable :: u,u_exact,f,lapU,e,R
 
          write(*,*) 'Number of cells = ',N
-
+         TF = .false.
+         TF(4) = .true.
+         TF(3) = .true.
          hmin = real(0.0,cp); hmax = real(1.0,cp)
          dh = (hmax-hmin)/real(N,cp)
          call init(gg,(/uniform(hmin(1),hmax(1),N(1))/),1)
@@ -272,7 +274,6 @@
          ! *************************************************************
          ! *************************************************************
 
-
          allocate(e(s(1),s(2),s(3)))
          allocate(u(s(1),s(2),s(3)))
          allocate(R(s(1),s(2),s(3)))
@@ -294,154 +295,195 @@
          ! *************************************************************
          ! *************************************************************
 
-         call setAlpha(ADI,real(1.0,cp))
-         call setDt(ADI,real(0.0001,cp))
+         if (TF(4)) then ! ADI
+           call setAlpha(ADI,real(1.0,cp))
+           if (allNeumann(u_bcs)) then; call setDt(ADI,real(0.01,cp)) ! Neumann
+           else;                        call setDt(ADI,real(0.001,cp))  ! Dirichlet
+           endif
+           name = 'ADI'
+           if (allNeumann(u_bcs)) then
+             select case (dataType)
+             case (1); call setMaxIterations(ss,5000) ! Cell centered data
+             case (2); call setMaxIterations(ss,4500) ! Node data
+             case (3); call setMaxIterations(ss,5000) ! Face data
+             case (4); call setMaxIterations(ss,5000) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           else
+             select case (dataType)
+             case (1); call setMaxIterations(ss,1500) ! Cell centered data
+             case (2); call setMaxIterations(ss,1500) ! Node data
+             case (3); call setMaxIterations(ss,1500) ! Face data
+             case (4); call setMaxIterations(ss,1500) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           endif
+           u = real(0.0,cp) ! Initial guess
+           call poisson(ADI,u,f,u_bcs,g,ss,norm_res,.true.)
+           call lap(lapU,u,g)
+           write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
+           write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
+           e = u - u_exact
+           R = lapU - f
+           call zeroGhostPoints(R)
+           call compute(norm_e,u_exact,u)
+           call print(norm_e,'u_'//name//' vs u_exact')
+           call writeToFile(g,R,dir,'R_'//name)
+           call writeToFile(g,u,dir,'u_'//name)
+           call writeToFile(g,e,dir,'e_'//name)
 
-         if (allNeumann(u_bcs)) then; call setDt(ADI,real(0.0001,cp)) ! Neumann
-         else;                        call setDt(ADI,real(0.001,cp))   ! Dirichlet
+           call init(mg,s,u_bcs,g,ss,.true.)
+           call setIterationsPerLevel(mg,5)
+           call setIterationsAtMaxLevel(mg,100)
+           ! call testRP(mg,f,dir)
          endif
 
-         name = 'ADI'
-         if (allNeumann(u_bcs)) then
-           select case (dataType)
-           case (1); call setMaxIterations(ss,5000) ! Cell centered data
-           case (2); call setMaxIterations(ss,4500) ! Node data
-           case (3); call setMaxIterations(ss,5000) ! Face data
-           case (4); call setMaxIterations(ss,5000) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
-         else
-           select case (dataType)
-           case (1); call setMaxIterations(ss,1500) ! Cell centered data
-           case (2); call setMaxIterations(ss,1500) ! Node data
-           case (3); call setMaxIterations(ss,1500) ! Face data
-           case (4); call setMaxIterations(ss,1500) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
-         endif
-         u = real(0.0,cp) ! Initial guess
-         call myPoisson(ADI,u,f,u_bcs,g,ss,norm_res,.true.)
-         call lap(lapU,u,g)
-         write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
-         write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
-         e = u - u_exact
-         R = lapU - f
-         call zeroGhostPoints(R)
-         call compute(norm_e,u_exact,u)
-         call print(norm_e,'u_'//name//' vs u_exact')
-         call writeToFile(g,R,dir,'R_'//name)
-         call writeToFile(g,u,dir,'u_'//name)
-         call writeToFile(g,e,dir,'e_'//name)
-
-         call init(mg,s,u_bcs,g,ss,.true.)
-         call setIterationsPerLevel(mg,5)
-         call setIterationsAtMaxLevel(mg,100)
-         ! call testRP(mg,f,dir)
-
-         name = 'MMG'
-         if (allNeumann(u_bcs)) then
-           select case (dataType)
-           case (1); call setMaxIterations(ss,200) ! Cell centered data
-           case (2); call setMaxIterations(ss,200) ! Node data
-           case (3); call setMaxIterations(ss,200) ! Face data
-           case (4); call setMaxIterations(ss,200) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
-         else
-           select case (dataType)
-           case (1); call setMaxIterations(ss,80) ! Cell centered data
-           case (2); call setMaxIterations(ss,80) ! Node data
-           case (3); call setMaxIterations(ss,80) ! Face data
-           case (4); call setMaxIterations(ss,80) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
+         if (TF(5)) then ! MG
+           name = 'MMG'
+           if (allNeumann(u_bcs)) then
+             select case (dataType)
+             case (1); call setMaxIterations(ss,200) ! Cell centered data
+             case (2); call setMaxIterations(ss,200) ! Node data
+             case (3); call setMaxIterations(ss,200) ! Face data
+             case (4); call setMaxIterations(ss,200) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           else
+             select case (dataType)
+             case (1); call setMaxIterations(ss,80) ! Cell centered data
+             case (2); call setMaxIterations(ss,80) ! Node data
+             case (3); call setMaxIterations(ss,80) ! Face data
+             case (4); call setMaxIterations(ss,80) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           endif
+           u = real(0.0,cp) ! Initial guess
+           call poisson(MG,u,f,u_bcs,g,ss,norm_res,.true.)
+           call lap(lapU,u,g)
+           write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
+           write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
+           e = u - u_exact
+           R = lapU - f
+           call zeroGhostPoints(R)
+           call compute(norm_e,u_exact,u)
+           call print(norm_e,'u_'//name//' vs u_exact')
+           call writeToFile(g,R,dir,'R_'//name)
+           call writeToFile(g,u,dir,'u_'//name)
+           call writeToFile(g,e,dir,'e_'//name)
          endif
 
-         u = real(0.0,cp) ! Initial guess
-         call myPoisson(MG,u,f,u_bcs,g,ss,norm_res,.true.)
-         call lap(lapU,u,g)
-         write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
-         write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
-         e = u - u_exact
-         R = lapU - f
-         call zeroGhostPoints(R)
-         call compute(norm_e,u_exact,u)
-         call print(norm_e,'u_'//name//' vs u_exact')
-         call writeToFile(g,R,dir,'R_'//name)
-         call writeToFile(g,u,dir,'u_'//name)
-         call writeToFile(g,e,dir,'e_'//name)
-
-         name = 'SOR'
-         if (allNeumann(u_bcs)) then
-           select case (dataType)
-           case (1); call setMaxIterations(ss,5000) ! Cell centered data
-           case (2); call setMaxIterations(ss,2500) ! Node data
-           case (3); call setMaxIterations(ss,5000) ! Face data
-           case (4); call setMaxIterations(ss,5000) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
-         else
-           select case (dataType)
-           case (1); call setMaxIterations(ss,3500) ! Cell centered data
-           case (2); call setMaxIterations(ss,3500) ! Node data
-           case (3); call setMaxIterations(ss,3500) ! Face data
-           case (4); call setMaxIterations(ss,3500) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
+         if (TF(3)) then ! SOR
+           name = 'SOR'
+           if (allNeumann(u_bcs)) then
+             select case (dataType)
+             case (1); call setMaxIterations(ss,5000) ! Cell centered data
+             case (2); call setMaxIterations(ss,2500) ! Node data
+             case (3); call setMaxIterations(ss,5000) ! Face data
+             case (4); call setMaxIterations(ss,5000) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           else
+             select case (dataType)
+             case (1); call setMaxIterations(ss,3500) ! Cell centered data
+             case (2); call setMaxIterations(ss,3500) ! Node data
+             case (3); call setMaxIterations(ss,3500) ! Face data
+             case (4); call setMaxIterations(ss,3500) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           endif
+           u = real(0.0,cp) ! Initial guess
+           call poisson(SOR,u,f,u_bcs,g,ss,norm_res,.true.)
+           call lap(lapU,u,g)
+           write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
+           write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
+           e = u - u_exact
+           R = lapU - f
+           call zeroGhostPoints(R)
+           call compute(norm_e,u_exact,u)
+           call print(norm_e,'u_'//name//' vs u_exact')
+           call writeToFile(g,R,dir,'R_'//name)
+           call writeToFile(g,u,dir,'u_'//name)
+           call writeToFile(g,e,dir,'e_'//name)
          endif
-         u = real(0.0,cp) ! Initial guess
-         call myPoisson(SOR,u,f,u_bcs,g,ss,norm_res,.true.)
-         call lap(lapU,u,g)
-         write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
-         write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
-         e = u - u_exact
-         R = lapU - f
-         call zeroGhostPoints(R)
-         call compute(norm_e,u_exact,u)
-         call print(norm_e,'u_'//name//' vs u_exact')
-         call writeToFile(g,R,dir,'R_'//name)
-         call writeToFile(g,u,dir,'u_'//name)
-         call writeToFile(g,e,dir,'e_'//name)
 
-         name = 'JAC'
-         if (allNeumann(u_bcs)) then
-           select case (dataType)
-           case (1); call setMaxIterations(ss,2500) ! Cell centered data
-           case (2); call setMaxIterations(ss,2500) ! Node data
-           case (3); call setMaxIterations(ss,2500) ! Face data
-           case (4); call setMaxIterations(ss,2500) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
-         else
-           select case (dataType)
-           case (1); call setMaxIterations(ss,7000) ! Cell centered data
-           case (2); call setMaxIterations(ss,7000) ! Node data
-           case (3); call setMaxIterations(ss,7000) ! Face data
-           case (4); call setMaxIterations(ss,7000) ! Edge data
-           case default
-           stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
-           end select
+         if (TF(2)) then ! JAC
+           name = 'JAC'
+           if (allNeumann(u_bcs)) then
+             select case (dataType)
+             case (1); call setMaxIterations(ss,2500) ! Cell centered data
+             case (2); call setMaxIterations(ss,2500) ! Node data
+             case (3); call setMaxIterations(ss,2500) ! Face data
+             case (4); call setMaxIterations(ss,2500) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           else
+             select case (dataType)
+             case (1); call setMaxIterations(ss,7000) ! Cell centered data
+             case (2); call setMaxIterations(ss,7000) ! Node data
+             case (3); call setMaxIterations(ss,7000) ! Face data
+             case (4); call setMaxIterations(ss,7000) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           endif
+           u = real(0.0,cp) ! Initial guess
+           call poisson(JAC,u,f,u_bcs,g,ss,norm_res,.true.)
+           call lap(lapU,u,g)
+           write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
+           write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
+           e = u - u_exact
+           R = lapU - f
+           call zeroGhostPoints(R)
+           call compute(norm_e,u_exact,u)
+           call print(norm_e,'u_'//name//' vs u_exact')
+           call writeToFile(g,R,dir,'R_'//name)
+           call writeToFile(g,u,dir,'u_'//name)
+           call writeToFile(g,e,dir,'e_'//name)
          endif
-         u = real(0.0,cp) ! Initial guess
-         call myPoisson(JAC,u,f,u_bcs,g,ss,norm_res,.true.)
-         call lap(lapU,u,g)
-         write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
-         write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
-         e = u - u_exact
-         R = lapU - f
-         call zeroGhostPoints(R)
-         call compute(norm_e,u_exact,u)
-         call print(norm_e,'u_'//name//' vs u_exact')
-         call writeToFile(g,R,dir,'R_'//name)
-         call writeToFile(g,u,dir,'u_'//name)
-         call writeToFile(g,e,dir,'e_'//name)
+
+         if (TF(1)) then ! PSE
+           name = 'PSE'
+           call setTimeStep(PSE,real(0.0001,cp))
+           if (allNeumann(u_bcs)) then
+             select case (dataType)
+             case (1); call setMaxIterations(ss,2500) ! Cell centered data
+             case (2); call setMaxIterations(ss,2500) ! Node data
+             case (3); call setMaxIterations(ss,2500) ! Face data
+             case (4); call setMaxIterations(ss,2500) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           else
+             select case (dataType)
+             case (1); call setMaxIterations(ss,10000) ! Cell centered data
+             case (2); call setMaxIterations(ss,7000) ! Node data
+             case (3); call setMaxIterations(ss,7000) ! Face data
+             case (4); call setMaxIterations(ss,7000) ! Edge data
+             case default
+             stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
+             end select
+           endif
+           u = real(0.0,cp) ! Initial guess
+           call poisson(PSE,u,f,u_bcs,g,ss,norm_res,.true.)
+           call lap(lapU,u,g)
+           write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
+           write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
+           e = u - u_exact
+           R = lapU - f
+           call zeroGhostPoints(R)
+           call compute(norm_e,u_exact,u)
+           call print(norm_e,'u_'//name//' vs u_exact')
+           call writeToFile(g,R,dir,'R_'//name)
+           call writeToFile(g,u,dir,'u_'//name)
+           call writeToFile(g,e,dir,'e_'//name)
+         endif
 
          call delete(g)
          deallocate(e,u,f,u_exact,lapU,R)

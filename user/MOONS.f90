@@ -399,15 +399,22 @@
          ! Ha = real(100.0,cp)             ! Q  = 0.5 : Q = 1/N = Re/Ha^2 => Ha^2 = Re/Q
          Rem = real(1.0,cp)
          ! Rem = real(0.001,cp)
-         ds = 2.0d-5; dTime = ds
-         ! ds = 3.0d-4; dTime = ds
+         ! ds = 2.0d-5; dTime = ds
+         ds = 3.0d-4; dTime = ds
          ! Re = real(2.0,cp)
 
          case (1009)
-         Re = real(200.0,cp)
-         Ha = real(200.0,cp)
-         Rem = real(200.0,cp)
-         ds = 2.0d-5; dTime = ds
+         Re = real(1000.0,cp)
+         Ha = real(100.0,cp)
+         Rem = real(100.0,cp)
+
+         ! ds = 6.0d-4 ! For Rem = 1
+         ! ds = 6.0d-4 ! For Rem = 10
+         ds = 1.0d-3 ! For Rem = 100
+         ! ds = 6.0d-4 ! For Rem = 1000
+
+         dTime = ds ! Finite Rem
+         ! dTime = 1.0d-3 ! Low Rem
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -470,7 +477,8 @@
          case (1006); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 50*10**4
          case (1007); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 12*10**6
          case (1008); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
-         case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
+         case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 30*10**3
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
@@ -534,7 +542,8 @@
 
          ! case (1008); Ni = (/100,1,100/);   Nwtop = 0;           Nwbot = 0  ! (Bandaru)
          case (1008); Ni = (/64,1,64/);   Nwtop = 0;           Nwbot = 0  ! (Bandaru)
-         case (1009); Ni = 64;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
+         ! case (1009); Ni = 50;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
+         case (1009); Ni = 100;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
 
          case default
            Ni = (/64,32,32/)

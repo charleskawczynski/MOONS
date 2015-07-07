@@ -1,4 +1,6 @@
 clc; clear all; close all;
+norms_Jac = load('n_PSE.dat');
+n_PSE = 1:size(norms_Jac(:,1));
 norms_Jac = load('norms_Jacobi.dat');
 n_Jac = 1:size(norms_Jac(:,1));
 norms_SOR = load('norms_SOR.dat');

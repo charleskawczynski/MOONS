@@ -5,7 +5,7 @@
       ! for a given f, boundary conditions for u (u_bcs), grid (g)
       ! and solver settings (ss) using a Pseudo Time Stepping Method
       ! where
-      !    u_t + u_xx + u_yy + u_zz = f
+      !    u_t = u_xx + u_yy + u_zz - f = 0
       ! 
       !
       ! Input:
@@ -36,7 +36,8 @@
 
       private
       public :: PseudoTimeSolver,solve
-      private :: init,delete,setTimeStep
+      public :: setTimeStep
+      private :: init,delete
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -47,9 +48,6 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-      real(cp),parameter :: PI = 3.14159265358979
-
-      logical, parameter :: useGaussSeidel = .true.
 
       type PseudoTimeSolver
         character(len=5) :: name
@@ -111,7 +109,7 @@
         integer :: NU
 #endif
         
-        call init(PSE,shape(f),g)
+        call init(PSE,shape(f))
 
         call solverSettingsSet(ss)
         ijk = 0
@@ -137,7 +135,7 @@
           ijk = ijk + 1
 
           call lap(PSE%lapu,PSE%u%phi,g)
-          call subtract(PSE%res,PSE%f,PSE%lapu)
+          call subtract(PSE%res,PSE%lapu,PSE%f)
           call multiply(PSE%res,PSE%dt)
           call add(PSE%u,PSE%res)
 
@@ -184,7 +182,6 @@
         ! endif
 
         if (displayTF) then
-          write(*,*) 'PSE parameter = ',PSE%omega
           write(*,*) '(Final,max) '//PSE%name//' iteration = ',ijk,maxIterations
 
           call lap(PSE%lapu%phi,u,g)

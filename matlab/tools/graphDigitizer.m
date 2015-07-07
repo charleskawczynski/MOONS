@@ -15,7 +15,8 @@ function [x,y] = graphDigitizer(dir,name,griddata,smoothness,direction)
 %            griddata.ymax
 % 
 % smoothness > 1
-% direction = 1,2
+% direction = 1: traverse in x
+%             2: traverse in y
 
 % samplingFrequency > 1
 % darknessTol = ?
@@ -37,26 +38,18 @@ ymin = griddata.ymin;
 ymax = griddata.ymax;
 logX = false;
 logY = false;
+eX = true;
+eY = true;
 
 %% LOAD IMAGE
 A = imread([dir.working name.file name.ext]);
 
 %% ADD IMAGE LAYERS
-% f = 0;
-% for j = 1:3
-%     f = f + A(:,:,j);
-% end
 f = rgb2gray(A);
 f = f./max(max(f));
 %% ASSIGN VARIABLES
-r = length(f(:,1));
-c = length(f(1,:));
 s = size(f);
 t = 1;
-% xf = [];
-% yf = [];
-% yf_up = [];
-% yf_down = [];
 
 %% Traverse updown
 if direction == 1
@@ -64,8 +57,8 @@ if direction == 1
         coord = find(f(:,j) < darknessTol);
         if (isempty(coord) == 0)
             xf(t) = j;
-            yf_up(t) = r - coord(1);
-            yf_down(t) = r - coord(end);
+            yf_up(t) = s(1) - coord(1);
+            yf_down(t) = s(1) - coord(end);
             t = t+1;
         end
     end
@@ -76,18 +69,22 @@ elseif direction == 2
     for i = 1:samplingFrequency:s(1)
         coord = find(f(i,:) < darknessTol);
         if (isempty(coord)==0)
-            xf(t) = coord(1);
-            yf(t) = r-i;
+            xf_up(t) = coord(1);
+            xf_down(t) = coord(end);
+            yf(t) = s(1)-i;
             t = t+1;
         end
+    end
+    for t = 1:length(xf_up)
+        xf(t) = (xf_up(t) + xf_down(t))/2;
     end
 else
     error('A transverse direction was not correctly specified.')
 end
 
 %% Normalize coordinates by image size
-x = xmin + xf/c*(xmax-xmin);
-y = ymin + yf/r*(ymax-ymin);
+x = xmin + xf/s(2)*(xmax-xmin);
+y = ymin + yf/s(1)*(ymax-ymin);
 
 %% Smooth data
 if direction == 1
@@ -102,6 +99,12 @@ end
 if logY
     y = log(y);
 end
+% if eX
+%     x = exp(x);
+% end
+% if eY
+%     y = exp(y);
+% end
 
 %% Save digitized data
 if direction == 1

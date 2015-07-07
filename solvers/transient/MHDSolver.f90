@@ -66,8 +66,9 @@
            if (solveInduction) call solve(ind,mom%U,mom%g,ss_MHD,dir)
 
            call assign(F,real(0.0,cp))
-           if (addJCrossB) call computeAddJCrossB(F,ind,mom%g,ind%Ha,mom%Re,ind%Rem)
-           if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%g,mom%Gr,mom%Re,mom%Fr)
+           if (addJCrossB)  call computeAddJCrossB(F,ind,mom%g,ind%Ha,mom%Re,ind%Rem)
+           if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%g,mom%Gr,mom%Re)
+           if (addGravity)  call computeAddGravity(F,nrg,mom%g,mom%Fr)
 
            call checkCondition(ss_MHD,continueLoop) ! Check to leave loop
            if (.not.continueLoop) exit
@@ -78,7 +79,7 @@
            endif
            n_mhd = n_mhd + 1
            if (getPrintParams(ss_MHD)) then
-             call readSwitchFromFile(continueLoop,dir//'parameters/','killSwitch')
+             continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
            endif
          enddo
          ! ***************************************************************

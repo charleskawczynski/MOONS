@@ -209,7 +209,7 @@
          hmin(2) = real(-0.5,cp); hmax(2) = real(0.5,cp)
          hmin(3) = real(-1.0,cp); hmax(3) = real(1.0,cp)
          case (1009) ! Kawczynski
-         hmin = -one; hmax = one
+         hmin = zero; hmax = one
 
          case default
            write(*,*) 'Incorrect benchmarkCase in initGriddata';stop

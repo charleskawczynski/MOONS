@@ -1,4 +1,4 @@
-      module VF_mod
+      module vectorField_mod
 
         ! Rules:
         ! a = a + b => call add(a,b)
@@ -14,24 +14,30 @@
         ! c = b / a => call divide(c,b,a)
 
         ! Available pre-processor directives:
-        !         _PARALLELIZE_VF_
+        !         _DEBUG_VECTOR_
+        !         _PARALLELIZE_VECTOR_FIELD_
 
-        use SF_mod
+        use scalarField_mod
         implicit none
         private
 
-        ! Initialization / Deletion (allocate/deallocate)
-        public :: VF
-        public :: init,delete
+        public :: vectorField
+        public :: allocateVectorField
+        public :: allocateX,allocateY,allocateZ
 
-        ! Monitoring
-        public :: print
+        ! Optimized for readability:
+        public :: assignment(=)                 ! Causes segfault on hoffman
+        public :: operator(+),operator(-)       ! Causes segfault on hoffman
+        public :: operator(*),operator(/)       ! Causes segfault on hoffman
 
-        ! Operators
-        public :: assign
+        ! Optimized for speed:
+        public :: assign,delete
         public :: add,subtract
         public :: multiply,divide
         public :: sum,square
+
+        public :: checkVectorField
+        public :: printVectorField
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -43,60 +49,514 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-        type VF
+        type vectorField
           integer,dimension(3) :: sx,sy,sz
           real(cp),dimension(:,:,:),allocatable :: x,y,z
         end type
 
-        interface init;     module procedure initVFField1;          end interface
-        interface init;     module procedure initVFField2;          end interface
-        interface init;     module procedure initVFField3;          end interface
-        interface init;     module procedure initVFField4;          end interface
-        interface init;     module procedure initVFField5;          end interface
+#ifdef _DEBUG_VECTOR_
+      interface compare
+        module procedure compareVectorVector
+        module procedure compareVectorField
+      end interface
+#endif
 
-        interface delete;   module procedure deleteVF;              end interface
-        interface print;    module procedure printVF;               end interface
+      interface allocateVectorField
+        module procedure allocateVectorField1
+        module procedure allocateVectorField2
+        module procedure allocateVectorField3
+        module procedure allocateVectorField4
+        module procedure allocateVectorField5
+      end interface
 
-        interface assign;   module procedure vectorScalarAssign;    end interface
-        interface assign;   module procedure VFAssign;              end interface
-        interface assign;   module procedure vectorVectorAssign;    end interface
+      interface delete
+        module procedure deallocateVectorField
+      end interface
 
-        interface add;      module procedure vectorVectorAdd;       end interface
-        interface add;      module procedure VFAdd;                 end interface
-        interface add;      module procedure fieldVectorAdd;        end interface
-        interface add;      module procedure vectorScalarAdd;       end interface
-        interface add;      module procedure scalarVectorAdd;       end interface
+      ! Operators (optimized for readability)
 
-        interface subtract; module procedure vectorVectorSubtract;  end interface
-        interface subtract; module procedure VFSubtract;            end interface
-        interface subtract; module procedure fieldVectorSubtract;   end interface
-        interface subtract; module procedure vectorScalarSubtract;  end interface
-        interface subtract; module procedure scalarVectorSubtract;  end interface
+      interface assignment (=)
+        module procedure vectorScalarAssignOp
+        module procedure vectorFieldAssignOp
+        module procedure vectorVectorAssignOp
+      end interface
 
-        interface multiply; module procedure vectorVectorMultiply;  end interface
-        interface multiply; module procedure VFMultiply;            end interface
-        interface multiply; module procedure fieldVectorMultiply;   end interface
-        interface multiply; module procedure vectorScalarMultiply;  end interface
-        interface multiply; module procedure scalarVectorMultiply;  end interface
+      interface operator (+)
+        module procedure vectorVectorAddOp
+        module procedure vectorScalarAddOp
+        module procedure scalarVectorAddOp
+        module procedure vectorFieldAddOp
+        module procedure fieldVectorAddOp
+      end interface
 
-        interface divide;   module procedure vectorVectorDivide;    end interface
-        interface divide;   module procedure VFDivide;              end interface
-        interface divide;   module procedure fieldVectorDivide;     end interface
-        interface divide;   module procedure vectorScalarDivide;    end interface
-        interface divide;   module procedure scalarVectorDivide;    end interface
+      interface operator (-)
+        module procedure vectorVectorSubtractOp
+        module procedure vectorScalarSubtractOp
+        module procedure scalarVectorSubtractOp
+        module procedure vectorFieldSubtractOp
+        module procedure fieldVectorSubtractOp
+      end interface
 
-        interface square;   module procedure vectorVectorSquare;    end interface
-        interface sum;      module procedure vectorSum;             end interface
+      interface operator (*)
+        module procedure vectorVectirMultiplyOp
+        module procedure vectorScalarMultiplyOp
+        module procedure scalarVectorMultiplyOp
+        module procedure vectorFieldMultiplyOp
+        module procedure fieldVectorMultiplyOp
+      end interface
 
-        contains
+      interface operator (/)
+        module procedure vectorVectorDivideOp
+        module procedure vectorScalarDivideOp
+        module procedure scalarVectorDivideOp
+        module procedure vectorFieldDivideOp
+        module procedure fieldVectorDivideOp
+      end interface
 
+      ! Operators (optimized for speed)
+
+      interface assign
+        module procedure vectorScalarAssign
+        module procedure vectorFieldAssign
+        module procedure vectorVectorAssign
+      end interface
+
+      interface add
+        module procedure vectorVectorAdd
+        module procedure vectorFieldAdd
+        module procedure fieldVectorAdd
+        module procedure vectorScalarAdd
+        module procedure scalarVectorAdd
+      end interface
+
+      interface subtract
+        module procedure vectorVectorSubtract
+        module procedure vectorFieldSubtract
+        module procedure fieldVectorSubtract
+        module procedure vectorScalarSubtract
+        module procedure scalarVectorSubtract
+      end interface
+
+      interface multiply
+        module procedure vectorVectorMultiply
+        module procedure vectorFieldMultiply
+        module procedure fieldVectorMultiply
+        module procedure vectorScalarMultiply
+        module procedure scalarVectorMultiply
+      end interface
+
+      interface divide
+        module procedure vectorVectorDivide
+        module procedure vectorFieldDivide
+        module procedure fieldVectorDivide
+        module procedure vectorScalarDivide
+        module procedure scalarVectorDivide
+      end interface
+
+      interface square
+        module procedure vectorVectorSquare
+      end interface
+
+      interface sum
+        module procedure vectorSum
+      end interface
+
+      contains
+
+#ifdef _DEBUG_VECTOR_
+        function cmp(a,b) result(TFall)
+          implicit none
+          integer,dimension(3),intent(in) :: a,b
+          logical,dimension(3) :: TF
+          logical :: TFall
+          TF(1)=a(1).eq.b(1); TF(2)=a(2).eq.b(2); TF(3)=a(3).eq.b(3)
+          TFall=all(TF)
+        end function
+
+        subroutine compareVectorVector(f,g,name)
+          implicit none
+          type(vectorField),intent(in) :: f,g
+          character(len=*),intent(in),optional :: name
+          logical,dimension(3) :: TF
+          TF(1) = .not.cmp(f%sx,g%sx)
+          TF(2) = .not.cmp(f%sy,g%sy)
+          TF(3) = .not.cmp(f%sz,g%sz)
+          if(any(TF)) then
+            if (present(name)) then
+                  write(*,*) 'Vector-vector bad size inside ',name
+            else; write(*,*) 'Vector-vector bad size (unknown operator)'
+            endif
+            write(*,*) 'f(x,y,z) = ',f%sx,f%sy,f%sz
+            write(*,*) 'g(x,y,z) = ',g%sx,g%sy,g%sz
+            stop
+            write(*,*) '---------------------'
+          endif
+        end subroutine
+
+        subroutine compareVectorField(f,g,name)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          character(len=*),intent(in),optional :: name
+          logical,dimension(3) :: TF
+          TF(1) = .not.cmp(f%sx,g%s)
+          TF(2) = .not.cmp(f%sy,g%s)
+          TF(3) = .not.cmp(f%sz,g%s)
+          if(any(TF)) then
+            if (present(name)) then
+                  write(*,*) 'Vector-field bad size inside ',name
+            else; write(*,*) 'Vector-field bad size (unknown operator)'
+            endif
+            write(*,*) 'x,y,z,phi = ',f%sx,f%sy,f%sz,g%s
+            stop
+            write(*,*) '---------------------'
+          endif
+        end subroutine
+#endif
+
+        ! ***************** OPERATORS OPTIMIZED FOR READABILITY ************
+        ! ------------------- ASSIGN ------------------------
+
+        subroutine vectorScalarAssignOp(f,g)
+          implicit none
+          type(vectorField),intent(inout) :: f
+          real(cp),intent(in) :: g
+          f%x = g
+          f%y = g
+          f%z = g
+        end subroutine
+
+        subroutine vectorVectorAssignOp(f,g)
+          implicit none
+          type(vectorField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+          f%x = g%x
+          f%y = g%y
+          f%z = g%z
+          f%sx = g%sx
+          f%sy = g%sy
+          f%sz = g%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VV assign')
+#endif
+        end subroutine
+
+        subroutine vectorFieldAssignOp(f,g)
+          implicit none
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g
+          f%x = g%phi
+          f%y = g%phi
+          f%z = g%phi
+          f%sx = g%s
+          f%sy = g%s
+          f%sz = g%s
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VF assign')
+#endif
+        end subroutine
+
+      ! ------------------- ADD ------------------------
+
+        function vectorVectorAddOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f,g
+          type(vectorField) :: q
+          q%x = f%x + g%x
+          q%y = f%y + g%y
+          q%z = f%z + g%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VV add')
+#endif
+        end function
+
+        function vectorScalarAddOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x + g
+          q%y = f%y + g
+          q%z = f%z + g
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+        function scalarVectorAddOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x + g
+          q%y = f%y + g
+          q%z = f%z + g
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+
+        function vectorFieldAddOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x + g%phi
+          q%y = f%y + g%phi
+          q%z = f%z + g%phi
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+        function fieldVectorAddOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x + g%phi
+          q%y = f%y + g%phi
+          q%z = f%z + g%phi
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+
+      ! ------------------- SUBTRACT ------------------------
+
+        function vectorVectorSubtractOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f,g
+          type(vectorField) :: q
+          q%x = f%x - g%x
+          q%y = f%y - g%y
+          q%z = f%z - g%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+
+        function vectorScalarSubtractOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x - g
+          q%y = f%y - g
+          q%z = f%z - g
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+        function scalarVectorSubtractOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = g - f%x
+          q%y = g - f%y
+          q%z = g - f%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+
+        function vectorFieldSubtractOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x - g%phi
+          q%y = f%y - g%phi
+          q%z = f%z - g%phi
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+        function fieldVectorSubtractOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = g%phi - f%x
+          q%y = g%phi - f%y
+          q%z = g%phi - f%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+
+      ! ------------------- MULTIPLY ------------------------
+
+        function vectorVectirMultiplyOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f,g
+          type(vectorField) :: q
+          q%x = f%x * g%x
+          q%y = f%y * g%y
+          q%z = f%z * g%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+
+        function vectorScalarMultiplyOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x * g
+          q%y = f%y * g
+          q%z = f%z * g
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+        function scalarVectorMultiplyOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x * g
+          q%y = f%y * g
+          q%z = f%z * g
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+
+        function vectorFieldMultiplyOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x * g%phi
+          q%y = f%y * g%phi
+          q%z = f%z * g%phi
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+        function fieldVectorMultiplyOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x * g%phi
+          q%y = f%y * g%phi
+          q%z = f%z * g%phi
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+
+      ! ------------------- DIVIDE ------------------------
+
+        function vectorVectorDivideOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f,g
+          type(vectorField) :: q
+          q%x = f%x / g%x
+          q%y = f%y / g%y
+          q%z = f%z / g%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
+        end function
+
+        function vectorScalarDivideOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x / g
+          q%y = f%y / g
+          q%z = f%z / g
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+        function scalarVectorDivideOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          real(cp),intent(in) :: g
+          type(vectorField) :: q
+          q%x = g / f%x
+          q%y = g / f%y
+          q%z = g / f%z
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+        end function
+
+        function vectorFieldDivideOp(f,g) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = f%x / g%phi
+          q%y = f%y / g%phi
+          q%z = f%z / g%phi
+          q%sx = f%sx
+          q%sy = f%sy
+          q%sz = f%sz
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VF divide')
+#endif
+        end function
+        function fieldVectorDivideOp(g,f) result(q)
+          implicit none
+          type(vectorField),intent(in) :: f
+          type(scalarField),intent(in) :: g
+          type(vectorField) :: q
+          q%x = g%phi / f%x
+          q%y = g%phi / f%y
+          q%z = g%phi / f%z
+          q%sx = g%s
+          q%sy = g%s
+          q%sz = g%s
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'FV divide')
+#endif
+        end function
+
+
+        ! ***************** OPERATORS OPTIMIZED FOR SPEED ************
         ! ----------------- ASSIGN ------------------
 
         subroutine vectorVectorAssign(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(VF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -130,13 +590,16 @@
           f%y = g%y
           f%z = g%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VV assign')
+#endif
         end subroutine
 
-        subroutine VFAssign(f,g)
+        subroutine vectorFieldAssign(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -170,14 +633,17 @@
           f%y = g%phi
           f%z = g%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VF assign')
+#endif
         end subroutine
 
 
         subroutine vectorScalarAssign(f,g)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -217,9 +683,9 @@
 
         subroutine vectorVectorAdd(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(VF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -253,13 +719,16 @@
           f%y = f%y + g%y
           f%z = f%z + g%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VV add')
+#endif
         end subroutine
 
-        subroutine VFAdd(f,g)
+        subroutine vectorFieldAdd(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -293,12 +762,15 @@
           f%y = f%y + g%phi
           f%z = f%z + g%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
         end subroutine
         subroutine fieldVectorAdd(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g2
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -332,13 +804,16 @@
           f%y = f%y + g2%phi
           f%z = f%z + g2%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g2)
+#endif
         end subroutine
 
         subroutine vectorScalarAdd(f,g)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -375,9 +850,9 @@
         end subroutine
         subroutine scalarVectorAdd(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -417,9 +892,9 @@
 
         subroutine vectorVectorSubtract(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(VF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -453,13 +928,16 @@
           f%y = f%y - g%y
           f%z = f%z - g%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
         end subroutine
 
-        subroutine VFSubtract(f,g)
+        subroutine vectorFieldSubtract(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -493,12 +971,15 @@
           f%y = f%y - g%phi
           f%z = f%z - g%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
         end subroutine
         subroutine fieldVectorSubtract(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g2
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -532,13 +1013,16 @@
           f%y = g2%phi - f%y
           f%z = g2%phi - f%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g2)
+#endif
         end subroutine
 
         subroutine vectorScalarSubtract(f,g)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -575,9 +1059,9 @@
         end subroutine
         subroutine scalarVectorSubtract(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -617,9 +1101,9 @@
 
         subroutine vectorVectorMultiply(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(VF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -653,13 +1137,16 @@
           f%y = f%y * g%y
           f%z = f%z * g%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
         end subroutine
 
-        subroutine VFMultiply(f,g)
+        subroutine vectorFieldMultiply(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -693,12 +1180,15 @@
           f%y = f%y * g%phi
           f%z = f%z * g%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
         end subroutine
         subroutine fieldVectorMultiply(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g2
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -732,13 +1222,16 @@
           f%y = f%y * g2%phi
           f%z = f%z * g2%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g2)
+#endif
         end subroutine
 
         subroutine vectorScalarMultiply(f,g)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -775,9 +1268,9 @@
         end subroutine
         subroutine scalarVectorMultiply(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -817,9 +1310,9 @@
 
         subroutine vectorVectorDivide(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(VF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -853,13 +1346,16 @@
           f%y = f%y / g%y
           f%z = f%z / g%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g)
+#endif
         end subroutine
 
-        subroutine VFDivide(f,g)
+        subroutine vectorFieldDivide(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -893,12 +1389,15 @@
           f%y = f%y / g%phi
           f%z = f%z / g%phi
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g,'VF divide')
+#endif
         end subroutine
         subroutine fieldVectorDivide(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+          type(scalarField),intent(in) :: g2
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -932,13 +1431,16 @@
           f%y = g2%phi / f%y
           f%z = g2%phi / f%z
 #endif
+#ifdef _DEBUG_VECTOR_
+          call compare(f,g2,'FV divide')
+#endif
         end subroutine
 
         subroutine vectorScalarDivide(f,g)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -975,9 +1477,9 @@
         end subroutine
         subroutine scalarVectorDivide(g2,f)
           implicit none
-          type(VF),intent(inout) :: f
+          type(vectorField),intent(inout) :: f
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_VF_
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -1015,8 +1517,8 @@
 
         subroutine vectorVectorSquare(f)
           implicit none
-          type(VF),intent(inout) :: f
-#ifdef _PARALLELIZE_VF_
+          type(vectorField),intent(inout) :: f
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%sx(3)
@@ -1054,9 +1556,9 @@
 
         subroutine vectorSum(f,g)
           implicit none
-          type(SF),intent(inout) :: f
-          type(VF),intent(in) :: g
-#ifdef _PARALLELIZE_VF_
+          type(scalarField),intent(inout) :: f
+          type(vectorField),intent(in) :: g
+#ifdef _PARALLELIZE_VECTOR_FIELD_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,f%s(3)
@@ -1074,45 +1576,48 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
-        subroutine initVFField1(field,Nx,Ny,Nz)
+
+        subroutine allocateVectorField1(field,Nx,Ny,Nz)
           implicit none
-          type(VF),intent(inout) :: field
+          type(vectorField),intent(inout) :: field
           integer,dimension(3),intent(in) :: Nx,Ny,Nz
           call allocateX(field,Nx(1),Nx(2),Nx(3))
           call allocateY(field,Ny(1),Ny(2),Ny(3))
           call allocateZ(field,Nz(1),Nz(2),Nz(3))
         end subroutine
 
-        subroutine initVFField2(field,Nx,Ny,Nz)
+        subroutine allocateVectorField2(field,Nx,Ny,Nz)
           implicit none
-          type(VF),intent(inout) :: field
+          type(vectorField),intent(inout) :: field
           integer,intent(in) :: Nx,Ny,Nz
           call allocateX(field,Nx,Ny,Nz)
           call allocateY(field,Nx,Ny,Nz)
           call allocateZ(field,Nx,Ny,Nz)
         end subroutine
 
-        subroutine initVFField3(VF1,VF2)
+        subroutine allocateVectorField3(field1,field2)
           implicit none
-          type(VF),intent(inout) :: VF1
-          type(VF),intent(in) :: VF2
-          call allocateX(VF1,VF2%sx(1),VF2%sx(2),VF2%sx(3))
-          call allocateY(VF1,VF2%sy(1),VF2%sy(2),VF2%sy(3))
-          call allocateZ(VF1,VF2%sz(1),VF2%sz(2),VF2%sz(3))
+          type(vectorField),intent(inout) :: field1
+          type(vectorField),intent(in) :: field2
+          integer,dimension(3) :: sx,sy,sz
+          sx = shape(field2%x); sy = shape(field2%y); sz = shape(field2%z)
+          call allocateX(field1,sx(1),sx(2),sx(3))
+          call allocateY(field1,sy(1),sy(2),sy(3))
+          call allocateZ(field1,sz(1),sz(2),sz(3))
         end subroutine
 
-        subroutine initVFField4(SF1,SF2)
+        subroutine allocateVectorField4(f1,f2)
           implicit none
-          type(VF),intent(inout) :: SF1
-          type(SF),intent(in) :: SF2
-          call allocateX(SF1,SF2%s(1),SF2%s(2),SF2%s(3))
-          call allocateY(SF1,SF2%s(1),SF2%s(2),SF2%s(3))
-          call allocateZ(SF1,SF2%s(1),SF2%s(2),SF2%s(3))
+          type(vectorField),intent(inout) :: f1
+          type(scalarField),intent(in) :: f2
+          call allocateX(f1,f2%s(1),f2%s(2),f2%s(3))
+          call allocateY(f1,f2%s(1),f2%s(2),f2%s(3))
+          call allocateZ(f1,f2%s(1),f2%s(2),f2%s(3))
         end subroutine
 
-        subroutine initVFField5(f1,s)
+        subroutine allocateVectorField5(f1,s)
           implicit none
-          type(VF),intent(inout) :: f1
+          type(vectorField),intent(inout) :: f1
           integer,dimension(3),intent(in) :: s
           call allocateX(f1,s(1),s(2),s(3))
           call allocateY(f1,s(1),s(2),s(3))
@@ -1121,7 +1626,7 @@
 
         subroutine allocateX(field,Nx,Ny,Nz)
           implicit none
-          type(VF),intent(inout) :: field
+          type(vectorField),intent(inout) :: field
           integer,intent(in) :: Nx,Ny,Nz
           if (allocated(field%x)) deallocate(field%x)
           allocate(field%x(Nx,Ny,Nz)); field%sx = shape(field%x)
@@ -1129,7 +1634,7 @@
 
         subroutine allocateY(field,Nx,Ny,Nz)
           implicit none
-          type(VF),intent(inout) :: field
+          type(vectorField),intent(inout) :: field
           integer,intent(in) :: Nx,Ny,Nz
           if (allocated(field%y)) deallocate(field%y)
           allocate(field%y(Nx,Ny,Nz)); field%sy = shape(field%y)
@@ -1137,24 +1642,43 @@
 
         subroutine allocateZ(field,Nx,Ny,Nz)
           implicit none
-          type(VF),intent(inout) :: field
+          type(vectorField),intent(inout) :: field
           integer,intent(in) :: Nx,Ny,Nz
           if (allocated(field%z)) deallocate(field%z)
           allocate(field%z(Nx,Ny,Nz)); field%sz = shape(field%z)
         end subroutine
 
-        subroutine deleteVF(field)
+        subroutine deallocateVectorField(field)
           implicit none
-          type(VF),intent(inout) :: field
+          type(vectorField),intent(inout) :: field
           if (allocated(field%x)) deallocate(field%x)
           if (allocated(field%y)) deallocate(field%y)
           if (allocated(field%z)) deallocate(field%z)
           field%sx = 0; field%sy = 0; field%sz = 0
         end subroutine
 
-        subroutine printVF(field)
+        subroutine checkVectorField(field,name)
           implicit none
-          type(VF),intent(in) :: field
+          type(vectorField),intent(in) :: field
+          character(len=*),intent(in) :: name
+          write(*,*) 'Vector info for: ',name
+          if (allocated(field%x)) then
+                write(*,*) 'x allocated, sx = ',field%sx
+          else; write(*,*) 'x NOT allocated'
+          endif
+          if (allocated(field%y)) then
+                write(*,*) 'y allocated, sy = ',field%sy
+          else; write(*,*) 'y NOT allocated'
+          endif
+          if (allocated(field%z)) then
+                write(*,*) 'z allocated, sz = ',field%sz
+          else; write(*,*) 'z NOT allocated'
+          endif
+        end subroutine
+
+        subroutine printVectorField(field)
+          implicit none
+          type(vectorField),intent(in) :: field
           integer :: i,j,k
           if (allocated(field%x)) write(*,*) 'shape(x) = ',field%sx
           if (allocated(field%y)) write(*,*) 'shape(y) = ',field%sy

@@ -150,6 +150,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myTriSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \

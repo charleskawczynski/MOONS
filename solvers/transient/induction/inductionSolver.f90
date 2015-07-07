@@ -458,6 +458,38 @@
          endif
        end subroutine
 
+       subroutine inductionInfo(ind,ss_MHD,un)
+         ! Use un = 6 to print to screen
+         implicit none
+         type(induction),intent(in) :: ind
+         type(solverSettings),intent(inout) :: ss_MHD
+         integer,intent(in) :: un
+         if (getPrintParams(ss_MHD)) then
+           write(un,*) '**************************************************************'
+           write(un,*) '************************** MAGNETIC **************************'
+           write(un,*) '**************************************************************'
+           write(un,*) '(Rem) = ',ind%Rem
+           write(un,*) '(t,dt) = ',ind%t,ind%dTime
+           write(un,*) ''
+           write(un,*) 'N_cells = ',(/ind%g%c(1)%N,ind%g%c(2)%N,ind%g%c(3)%N/)
+           write(un,*) 'volume = ',ind%g%volume
+           write(un,*) 'min/max(h)_x = ',(/ind%g%c(1)%hmin,ind%g%c(1)%hmax/)
+           write(un,*) 'min/max(h)_y = ',(/ind%g%c(2)%hmin,ind%g%c(2)%hmax/)
+           write(un,*) 'min/max(h)_z = ',(/ind%g%c(3)%hmin,ind%g%c(3)%hmax/)
+           write(un,*) 'min/max(dh)_x = ',(/ind%g%c(1)%dhMin,ind%g%c(1)%dhMax/)
+           write(un,*) 'min/max(dh)_y = ',(/ind%g%c(2)%dhMin,ind%g%c(2)%dhMax/)
+           write(un,*) 'min/max(dh)_z = ',(/ind%g%c(3)%dhMin,ind%g%c(3)%dhMax/)
+           write(un,*) 'stretching_x = ',ind%g%c(1)%dhMax-ind%g%c(1)%dhMin
+           write(un,*) 'stretching_y = ',ind%g%c(2)%dhMax-ind%g%c(2)%dhMin
+           write(un,*) 'stretching_z = ',ind%g%c(3)%dhMax-ind%g%c(3)%dhMin
+           write(un,*) ''
+           call printPhysicalMinMax(ind%B,'Bx','By','Bz')
+           call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
+           call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
+           call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
+         endif
+       end subroutine
+
        subroutine inductionExportTransientFull(ind,g,dir)
          implicit none
          type(induction),intent(in) :: ind
@@ -538,7 +570,7 @@
          case (4); call lowRemCTmethod(ind,ind%g)
          case (5); call finiteRemCTmethod(ind,ind%temp_CC,ind%g)
          case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,ind%g,ss_MHD)
-         case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g,ss_MHD)
+         case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g)
          case (8); call lowRem_JacksExperiment(ind,ind%U_cct,ind%g)
          end select
          if (cleanB) then
@@ -549,18 +581,18 @@
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
-         call computeCurrent(ind%J_cc,ind%B,ind%B0,ind%mu,ind%g)
+         call computeCurrent(ind)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
+         call computeTotalMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
          call exportTransient(ind,ss_MHD)
-         if (getExportErrors(ss_MHD)) then
-           call computeDivergence(ind,ind%g)
-           ! call exportTransientFull(ind,ind%g,dir)
-         endif
+
+         if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%g)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
 
          if (getPrintParams(ss_MHD)) then
-           call readSwitchFromFile(exportNow,dir//'parameters/','exportNowB')
+           exportNow = readSwitchFromFile(dir//'parameters/','exportNowB')
          else; exportNow = .false.
          endif
 
@@ -572,35 +604,7 @@
            call export(ind,ind%g,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
-
-         call computeTotalMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
-
-         if (getPrintParams(ss_MHD)) then
-           write(*,*) '**************************************************************'
-           write(*,*) '************************** MAGNETIC **************************'
-           write(*,*) '**************************************************************'
-           write(*,*) '(Rem) = ',ind%Rem
-           write(*,*) '(t,dt) = ',ind%t,ind%dTime
-           ! write(*,*) '------------------------- GRID INFO --------------------------'
-           write(*,*) ''
-           write(*,*) 'N_cells = ',(/ind%g%c(1)%N,ind%g%c(2)%N,ind%g%c(3)%N/)
-           write(*,*) 'volume = ',ind%g%volume
-           write(*,*) 'min/max(h)_x = ',(/ind%g%c(1)%hmin,ind%g%c(1)%hmax/)
-           write(*,*) 'min/max(h)_y = ',(/ind%g%c(2)%hmin,ind%g%c(2)%hmax/)
-           write(*,*) 'min/max(h)_z = ',(/ind%g%c(3)%hmin,ind%g%c(3)%hmax/)
-           write(*,*) 'min/max(dh)_x = ',(/ind%g%c(1)%dhMin,ind%g%c(1)%dhMax/)
-           write(*,*) 'min/max(dh)_y = ',(/ind%g%c(2)%dhMin,ind%g%c(2)%dhMax/)
-           write(*,*) 'min/max(dh)_z = ',(/ind%g%c(3)%dhMin,ind%g%c(3)%dhMax/)
-           write(*,*) 'stretching_x = ',ind%g%c(1)%dhMax-ind%g%c(1)%dhMin
-           write(*,*) 'stretching_y = ',ind%g%c(2)%dhMax-ind%g%c(2)%dhMin
-           write(*,*) 'stretching_z = ',ind%g%c(3)%dhMax-ind%g%c(3)%dhMin
-           ! write(*,*) '------------------------ FIELD INFO --------------------------'
-           write(*,*) ''
-           call printPhysicalMinMax(ind%B,'Bx','By','Bz')
-           call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
-           call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
-           call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
-         endif
+         call inductionInfo(ind,ss_MHD,6)
        end subroutine
 
        subroutine lowRemPoissonOld(ind,U,g,ss_MHD)
@@ -805,117 +809,6 @@
          enddo
        end subroutine
 
-       subroutine finiteRemCTmethod_oldbutGood(ind,g)
-         ! finiteRemCTmethod solves the induction equation using the
-         ! Constrained Transport (CT) Method. The magnetic field is
-         ! stored and collocated at the cell center. The magnetic
-         ! field is updated using Faraday's Law, where the electric
-         ! field is solved for using appropriate fluxes as described
-         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
-         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
-         ! The velocity field is assumed to be cell centered.
-         implicit none
-         ! ********************** INPUT / OUTPUT ************************
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
-         real(cp) :: eps,k
-
-         ! Compute current from appropriate fluxes:
-         ! Assumes curl(B0) = 0 (so B is not added to this)
-         ! J = curl(B_face)_edge
-         call cellCenter2Face(ind%temp_F,ind%B,g)
-         call curl(ind%J,ind%temp_F,g)
-
-         ! Compute fluxes of u cross (B-B0)
-         call add(ind%B,ind%B0)
-         ! call cross(ind%Bstar,ind%U_cct,ind%B)
-         ! call cellCenter2Edge(ind%E,ind%Bstar,g)
-         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B,g)
-         call subtract(ind%B,ind%B0)
-
-         ! E = 1/Rem*j/sig - uxB
-         ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-         call multiply(ind%J,ind%sigmaInv_edge)
-         call divide(ind%J,ind%Rem)
-         call subtract(zero,ind%E) ! Try call multiply(ind%E,real(-1.0,cp))
-         call add(ind%E,ind%J)
-
-         ! F = Curl(E_edge)_face
-         call curl(ind%temp_F,ind%E,g)
-
-         ! tempVF = interp(F)_face->cc
-         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
-
-         ! Add induced field of previous time step (B^n)
-         ! ind%B = ind%B - ind%dTime*ind%temp_CC
-         call multiply(ind%temp_CC,ind%dTime)
-         call subtract(ind%B,ind%temp_CC)
-
-         ! Add time changing applied magnetic field
-         ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ! ind%temp_CC%y = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ! ind%temp_CC%z = real(0.0,cp)
-
-         ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-         ! ind%temp_CC%x = -ind%dTime*ind%omega*exp(dble(-ind%omega*ind%t))
-
-         ! k = real(0.1,cp); eps = real(0.001,cp)
-         ! ind%temp_CC%x = ind%temp_CC%x*(real(1.0,cp) + eps*sin(k*ind%t))
-         ! ind%temp_CC%y = real(0.0,cp)
-         ! ind%temp_CC%z = real(0.0,cp)
-         ! call subtract(ind%B,ind%temp_CC)
-
-         ! Impose BCs:
-         call applyAllBCs(ind%B,ind%B_bcs,g)
-       end subroutine
-
-       subroutine finiteRemCTmethod_newbutstillwrong(ind,F_CC,g)
-         ! Computes
-         !    E = j/(Rem*sig) - uxB
-         !    dBdt = -curl(E) + F
-         !    B^n+1 = B^n + {-curl(E) + F}
-         ! 
-         ! using the using the Constrained Transport (CT) Method. 
-         ! 
-         ! Reference:
-         ! "Tóth, G. The divergence Constraint in Shock-Capturing 
-         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: F_CC
-         type(grid),intent(in) :: g
-
-         ! E = uxB
-         call add(ind%B,ind%B0)
-         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B,g)
-         call subtract(ind%B,ind%B0)
-
-         ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
-         call cellCenter2Face(ind%temp_F,ind%B,g)
-         call curl(ind%J,ind%temp_F,g)
-         call divide(ind%J,ind%Rem)
-
-         ! -E = ( uxB - j/sig )_edge
-         call multiply(ind%J,ind%sigmaInv_edge)
-         call subtract(ind%E,ind%J)
-
-         ! dBdt = -Curl(E_edge)_face
-         call curl(ind%temp_F,ind%E,g)
-
-         ! dBdt_cc = interp(dBdt)_face->cc
-         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
-
-         ! dBdt = dBdt + F
-         call add(ind%temp_CC,F_CC)
-
-         ! B^n+1 = B^n + {-curl(E) + F}
-         call multiply(ind%temp_CC,ind%dTime)
-         call add(ind%B,ind%temp_CC)
-
-         ! Impose BCs:
-         call applyAllBCs(ind%B,ind%B_bcs,g)
-       end subroutine
-
        subroutine finiteRemCTmethod(ind,F_CC,g)
          ! Computes
          !    E = j/(Rem*sig) - uxB
@@ -1024,13 +917,12 @@
          call applyAllBCs(ind%B,ind%B_bcs,g)
        end subroutine
 
-       subroutine lowRemMultigrid(ind,U,g,ss_MHD)
+       subroutine lowRemMultigrid(ind,U,g)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(vectorField),intent(in) :: U
          type(grid),intent(in) :: g
-         type(solverSettings),intent(inout) :: ss_MHD
          type(multiGrid),dimension(2) :: MG
 
          call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
@@ -1060,7 +952,6 @@
          call grad(ind%Bstar,ind%phi%phi,g)
          call subtract(ind%B,ind%Bstar)
 
-         ! Impose BCs:
          call applyAllBCs(ind%B,ind%B_bcs,g)
        end subroutine
 
@@ -1078,8 +969,8 @@
          call subtract(ind%B_face,ind%temp_F2)
 
          call face2CellCenter(ind%B,ind%B_face,g)
-         ! Impose BCs:
-         ! call applyAllBCs(ind%B,ind%B_bcs,g)
+
+         call applyAllBCs(ind%B,ind%B_bcs,g)
        end subroutine
 
        subroutine cleanBMultigrid(ind,g,ss_MHD)
@@ -1169,22 +1060,13 @@
          call div(ind%divJ%phi,ind%J_cc,g)
        end subroutine
 
-       subroutine computeCurrent(J,B,B0,mu,g)
+       subroutine computeCurrent(ind)
          implicit none
-         type(vectorField),intent(inout) :: B,J
-         type(vectorField),intent(in) :: B0
-         type(scalarField),intent(in) :: mu
-         type(grid),intent(in) :: g
-         ! B = (B + B0)/mu
-         call add(B,B0)
-         ! call divide(B,mu)
-
-         ! J_cc = curl(B_cc)
-         call curl(J,B,g)
-
-         ! B = B*mu - B0
-         ! call multiply(B,mu)
-         call subtract(B,B0)
+         type(induction),intent(inout) :: ind
+         call assign(ind%Bstar,ind%B)
+         call add(ind%Bstar,ind%B0)
+         ! call divide(ind%Bstar,ind%mu)
+         call curl(ind%J_cc,ind%Bstar,ind%g)
        end subroutine
 
        subroutine computeTotalMagneticEnergy(ind,B,B0,g,ss_MHD)
@@ -1239,8 +1121,6 @@
          type(vectorField),intent(in) :: U_fi ! Raw momentum velocity
          type(grid),intent(in) :: g ! Momentum grid
          type(vectorField) :: temp
-         integer,dimension(3) :: Ni
-         integer :: embedType,dir
          logical,dimension(4) :: usedVelocity
 
          usedVelocity = (/.true.,.true.,.false.,.false./)
@@ -1325,7 +1205,7 @@
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          else
-          stop 'Error: unmatched case in perturb in inductionSolver.f90'
+          stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
          endif
        end subroutine
 
@@ -1356,44 +1236,6 @@
          else
           stop 'Error: unmatched case in perturb in inductionSolver.f90'
          endif
-       end subroutine
-
-       subroutine uniformify(ind,U)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(vectorField),intent(inout) :: U
-         integer,dimension(3) :: s
-         integer :: i
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
-         Nin1  = ind%SD%Nin1; Nin2  = ind%SD%Nin2; Nice1 = ind%SD%Nice1
-         Nice2 = ind%SD%Nice2; Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-         s = shape(U%x)
-         do i=1,s(1)
-           U%x(i,:,:) = U%x(Nici1(1)+2,:,:)
-         enddo
-       end subroutine
-
-       subroutine uniformifyX(ind,U)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(vectorField),intent(inout) :: U
-         integer,dimension(3) :: s
-         integer :: i
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
-         Nin1  = ind%SD%Nin1; Nin2  = ind%SD%Nin2; Nice1 = ind%SD%Nice1
-         Nice2 = ind%SD%Nice2; Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-         s = shape(U%x)
-         do i=1,s(1)
-           U%x(i,:,:) = U%x((Nici1(1)+Nici2(1))/2,:,:)
-         enddo
-         s = shape(U%y)
-         do i=1,s(1)
-           U%y(i,:,:) = U%y((Nici1(1)+Nici2(1))/2,:,:)
-         enddo
-         s = shape(U%z)
-         do i=1,s(1)
-           U%z(i,:,:) = U%z((Nici1(1)+Nici2(1))/2,:,:)
-         enddo
        end subroutine
 
        end module

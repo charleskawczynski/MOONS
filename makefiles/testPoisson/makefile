@@ -50,19 +50,19 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
 # ****************** DEBUGGING **********************
 # CPU time ~ Debugging level
-FCFLAGS += -g
+# FCFLAGS += -g
 # FCFLAGS += -g -Wall
 # FCFLAGS += -g -Wall -Wextra
 # FCFLAGS += -g -Wall -Wextra -fbacktrace
-# FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
-# FCFLAGS += -O0
+FCFLAGS += -O0
 # FCFLAGS += -O1
 # FCFLAGS += -O2
-FCFLAGS += -O3
+# FCFLAGS += -O3
 # FCFLAGS += -O4
 # FCFLAGS += -O5
 # **************** PARALLELIZATION ******************
@@ -91,6 +91,7 @@ FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 # Code verification
 FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
 FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
+FCFLAGS += -D_EXPORT_PSE_CONVERGENCE_
 FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
@@ -131,28 +132,32 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)static$(PS)solverSettings.f90 \
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)myError.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)user$(PS)griddata.f90 \
 	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
+	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)del.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)delVC.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)interpOps.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)ops_physics.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_discrete_complex.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)applyBCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myTriSolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)myJacobi.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)mySOR.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myADI.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)myMG.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)myPoisson.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeK.f90 \
@@ -166,7 +171,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
-	$(SRC_DIR)$(PS)unit_testing$(PS)poisson.f90 \
+	$(SRC_DIR)$(PS)unit_testing$(PS)testPoisson.f90 \
 	$(TARGET_DIR)$(PS)parametricStudy.f90
 
 # **************** DO NOT EDIT BELOW HERE *********************

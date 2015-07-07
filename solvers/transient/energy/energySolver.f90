@@ -31,7 +31,7 @@
        public :: energy,init,delete,solve
 
        public :: setDTime,setNmaxT,setPiGroups
-       public :: computeAddBuoyancy
+       public :: computeAddBuoyancy,computeAddGravity
        public :: export,exportRaw,exportTransient
        public :: printExportBCs
        public :: computeDivergence
@@ -299,6 +299,37 @@
          endif
        end subroutine
 
+       subroutine energyInfo(nrg,ss_MHD,un)
+         implicit none
+         type(energy),intent(in) :: nrg
+         type(solverSettings),intent(in) :: ss_MHD
+         integer,intent(in) :: un
+         if (getPrintParams(ss_MHD)) then
+           write(un,*) '**************************************************************'
+           write(un,*) '*************************** ENERGY ***************************'
+           write(un,*) '**************************************************************'
+           write(un,*) '(Re,Pr) = ',nrg%Re,nrg%Pr
+           write(un,*) '(Ec,Al) = ',nrg%Ec,nrg%Al
+           write(un,*) '(Rem) = ',nrg%Rem
+           write(un,*) '(t,dt) = ',nrg%time,nrg%dTime
+           write(un,*) ''
+           write(un,*) 'N_cells = ',(/nrg%g%c(1)%N,nrg%g%c(2)%N,nrg%g%c(3)%N/)
+           write(un,*) 'volume = ',nrg%g%volume
+           write(un,*) 'min/max(h)_x = ',(/nrg%g%c(1)%hmin,nrg%g%c(1)%hmax/)
+           write(un,*) 'min/max(h)_y = ',(/nrg%g%c(2)%hmin,nrg%g%c(2)%hmax/)
+           write(un,*) 'min/max(h)_z = ',(/nrg%g%c(3)%hmin,nrg%g%c(3)%hmax/)
+           write(un,*) 'min/max(dh)_x = ',(/nrg%g%c(1)%dhMin,nrg%g%c(1)%dhMax/)
+           write(un,*) 'min/max(dh)_y = ',(/nrg%g%c(2)%dhMin,nrg%g%c(2)%dhMax/)
+           write(un,*) 'min/max(dh)_z = ',(/nrg%g%c(3)%dhMin,nrg%g%c(3)%dhMax/)
+           write(un,*) 'stretching_x = ',nrg%g%c(1)%dhMax-nrg%g%c(1)%dhMin
+           write(un,*) 'stretching_y = ',nrg%g%c(2)%dhMax-nrg%g%c(2)%dhMin
+           write(un,*) 'stretching_z = ',nrg%g%c(3)%dhMax-nrg%g%c(3)%dhMin
+           write(un,*) ''
+           call printPhysicalMinMax(nrg%T%phi,nrg%T%s,'T')
+           call printPhysicalMinMax(nrg%divQ%phi,nrg%divQ%s,'divQ')
+         endif
+       end subroutine
+
        ! ******************* SOLVER ****************************
 
        subroutine solveEnergyEquation(nrg,U,g_mom,ss_MHD,dir)
@@ -325,14 +356,13 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          call exportTransient(nrg,ss_MHD)
-         if (getExportErrors(ss_MHD)) then
-           call computeDivergence(nrg,nrg%g)
-           ! call exportTransientFull(nrg,nrg%g,dir)
-         endif
+         if (getExportErrors(ss_MHD)) call computeDivergence(nrg,nrg%g)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(nrg,nrg%g,dir)
+
          ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,g_mom,ss_MHD) ! Maybe thermal energy?
 
          if (getPrintParams(ss_MHD)) then
-           call readSwitchFromFile(exportNow,dir//'parameters/','exportNowT')
+           exportNow = readSwitchFromFile(dir//'parameters/','exportNowT')
          else; exportNow = .false.
          endif
 
@@ -344,64 +374,28 @@
            call export(nrg,nrg%g,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
          endif
-
-
-         if (getPrintParams(ss_MHD)) then
-           write(*,*) '**************************************************************'
-           write(*,*) '*************************** ENERGY ***************************'
-           write(*,*) '**************************************************************'
-           write(*,*) '(Re,Pr) = ',nrg%Re,nrg%Pr
-           write(*,*) '(Ec,Al) = ',nrg%Ec,nrg%Al
-           write(*,*) '(Rem) = ',nrg%Rem
-           write(*,*) '(t,dt) = ',nrg%time,nrg%dTime
-           ! write(*,*) '------------------------- GRID INFO --------------------------'
-           write(*,*) ''
-           write(*,*) 'N_cells = ',(/nrg%g%c(1)%N,nrg%g%c(2)%N,nrg%g%c(3)%N/)
-           write(*,*) 'volume = ',nrg%g%volume
-           write(*,*) 'min/max(h)_x = ',(/nrg%g%c(1)%hmin,nrg%g%c(1)%hmax/)
-           write(*,*) 'min/max(h)_y = ',(/nrg%g%c(2)%hmin,nrg%g%c(2)%hmax/)
-           write(*,*) 'min/max(h)_z = ',(/nrg%g%c(3)%hmin,nrg%g%c(3)%hmax/)
-           write(*,*) 'min/max(dh)_x = ',(/nrg%g%c(1)%dhMin,nrg%g%c(1)%dhMax/)
-           write(*,*) 'min/max(dh)_y = ',(/nrg%g%c(2)%dhMin,nrg%g%c(2)%dhMax/)
-           write(*,*) 'min/max(dh)_z = ',(/nrg%g%c(3)%dhMin,nrg%g%c(3)%dhMax/)
-           write(*,*) 'stretching_x = ',nrg%g%c(1)%dhMax-nrg%g%c(1)%dhMin
-           write(*,*) 'stretching_y = ',nrg%g%c(2)%dhMax-nrg%g%c(2)%dhMin
-           write(*,*) 'stretching_z = ',nrg%g%c(3)%dhMax-nrg%g%c(3)%dhMin
-           ! write(*,*) '------------------------ FIELD INFO --------------------------'
-           write(*,*) ''
-           call printPhysicalMinMax(nrg%T%phi,nrg%T%s,'T')
-           call printPhysicalMinMax(nrg%divQ%phi,nrg%divQ%s,'divQ')
-         endif
+         call energyInfo(nrg,ss_MHD,6)
        end subroutine
 
        subroutine explicitEuler(nrg,g)
          implicit none
          type(energy),intent(inout) :: nrg
          type(grid),intent(in) :: g
-         integer :: i
-         type(del) :: d
 
-         call assign(nrg%Ttemp,real(0.0,cp))
          ! Advection
-         ! call assign(nrg%temp_CC,nrg%U_cct)
-         ! call multiply(nrg%temp_CC,nrg%T)
-         ! call div(nrg%Ttemp%phi,nrg%temp_CC,g)
-         ! call multiply(nrg%Ttemp,real(-1.0,cp))
-
+         call assign(nrg%Ttemp,real(0.0,cp))
          call cellCenter2Face(nrg%temp_F,nrg%T%phi,g)
          call multiply(nrg%temp_F,nrg%U_ft)
          call div(nrg%Ttemp%phi,nrg%temp_F,g)
          call multiply(nrg%Ttemp,real(-1.0,cp))
 
-         call assign(nrg%Tstar,nrg%Ttemp)
-
          ! Diffusion
+         call assign(nrg%Tstar,nrg%Ttemp)
          call lap(nrg%Ttemp%phi,nrg%T%phi,g)
          call divide(nrg%Ttemp,nrg%Re*nrg%Pr)
 
-         call add(nrg%Tstar,nrg%Ttemp)
-
          ! Explicit Euler
+         call add(nrg%Tstar,nrg%Ttemp)
          call multiply(nrg%Tstar,nrg%dTime)
          call add(nrg%T,nrg%Tstar)
 
@@ -411,14 +405,8 @@
 
        ! ********************* AUX *****************************
 
-       subroutine computeBuoyancy(buoyancy,nrg,g_mom,Gr,Re,Fr)
+       subroutine computeBuoyancy(buoyancy,nrg,g_mom,Gr,Re)
          ! Computes
-         ! 
-         !            1        Gr
-         !           --- g +  ---  T g
-         !           Fr^2     Re^2
-         ! 
-         ! Or computes
          ! 
          !            Gr
          !           ---  T g
@@ -426,30 +414,57 @@
          implicit none
          type(vectorField),intent(inout) :: buoyancy
          type(energy),intent(inout) :: nrg
-         real(cp),intent(in) :: Gr,Re,Fr
+         real(cp),intent(in) :: Gr,Re
          type(grid),intent(in) :: g_mom
-
          call assign(nrg%buoyancy,nrg%T)
          call multiply(nrg%buoyancy,Gr/(Re**real(2.0,cp)))
-         ! Not a good parameter since most times we want Fr = infinity...
-         ! call add(buoyancy,Fr**real(-2.0,cp))
          call multiply(nrg%buoyancy,nrg%gravity)
-
          call cellCenter2Face(nrg%temp_F,nrg%buoyancy,nrg%g)
          call extractFace(buoyancy,nrg%temp_F,nrg%SD,g_mom)
        end subroutine
 
-       subroutine computeAddBuoyancy(buoyancy,nrg,g_mom,Gr,Re,Fr)
+       subroutine computeAddBuoyancy(buoyancy,nrg,g_mom,Gr,Re)
          implicit none
          type(vectorField),intent(inout) :: buoyancy
          type(energy),intent(inout) :: nrg
-         real(cp),intent(in) :: Gr,Re,Fr
+         real(cp),intent(in) :: Gr,Re
          type(grid),intent(in) :: g_mom
          type(vectorField) :: temp
          call allocateVectorField(temp,buoyancy)
          call assign(temp,real(0.0,cp))
-         call computeBuoyancy(temp,nrg,g_mom,Gr,Re,Fr)
+         call computeBuoyancy(temp,nrg,g_mom,Gr,Re)
          call add(buoyancy,temp)
+         call delete(temp)
+       end subroutine
+
+       subroutine computeGravity(gravity,nrg,g_mom,Fr)
+         ! Computes
+         ! 
+         !            1   
+         !           --- g
+         !           Fr^2 
+         implicit none
+         type(vectorField),intent(inout) :: gravity
+         type(energy),intent(inout) :: nrg
+         real(cp),intent(in) :: Fr
+         type(grid),intent(in) :: g_mom
+         call assign(nrg%temp_CC,nrg%gravity)
+         call divide(nrg%temp_CC,Fr**real(2.0,cp))
+         call cellCenter2Face(nrg%temp_F,nrg%temp_CC,nrg%g)
+         call extractFace(gravity,nrg%temp_F,nrg%SD,g_mom)
+       end subroutine
+
+       subroutine computeAddGravity(gravity,nrg,g_mom,Fr)
+         implicit none
+         type(vectorField),intent(inout) :: gravity
+         type(energy),intent(inout) :: nrg
+         real(cp),intent(in) :: Fr
+         type(grid),intent(in) :: g_mom
+         type(vectorField) :: temp
+         call allocateVectorField(temp,gravity)
+         call assign(temp,real(0.0,cp))
+         call computeGravity(temp,nrg,g_mom,Fr)
+         call add(gravity,temp)
          call delete(temp)
        end subroutine
 

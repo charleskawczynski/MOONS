@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{empheq}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand*\widefbox[1]{\fbox{\hspace{2em}#1\hspace{2em}}}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of Theta Implicit ADI}
+Consider the equation
+\begin{equation}
+	\frac{\partial u}{\partial t}
+	=
+	\alpha_x \frac{\partial^2 u}{\partial x^2} +
+	\alpha_y \frac{\partial^2 u}{\partial y^2} +
+	\alpha_z \frac{\partial^2 u}{\partial z^2}
+	-
+	f
+\end{equation}
+Splitting this operator into several steps, we have
+\begin{equation}
+	\alpha_x \Delta_x (u_{n+1}^{*} \theta_x + u_{n} (1- \theta_x)) +
+	\alpha_y \Delta_y u_n +
+	\alpha_z \Delta_z u_n	-
+	f =
+	\frac{u_{n+1}^{*} - u_{n}}{\Delta t}
+\end{equation}
+\begin{equation}
+	\alpha_x \Delta_x (u_{n+1}^{*} \theta_x + u_{n} (1- \theta_x)) +
+	\alpha_y \Delta_y (u_{n+1}^{**}\theta_y + u_{n} (1- \theta_y)) +
+	\alpha_z \Delta_z u_n	-
+	f =
+	\frac{u_{n+1}^{**} - u_{n}}{\Delta t}
+\end{equation}
+\begin{equation}
+	\alpha_x \Delta_x (u_{n+1}^{*} \theta_x + u_{n} (1- \theta_x)) +
+	\alpha_y \Delta_y (u_{n+1}^{**}\theta_y + u_{n} (1- \theta_y)) +
+	\alpha_z \Delta_z (u_{n+1}\theta_z + u_{n} (1- \theta_z)) -
+	f =
+	\frac{u_{n+1} - u_{n}}{\Delta t}
+\end{equation}
+
+Where $\theta = 1/2$ refers to the semi-implicit ADI by Douglas, and $\theta = 1$ refers to a fully implicit treatment of the diffusion term, which makes the system singular, so we can only approach 1. After rearranging, we have
+
+\begin{subequations}
+\begin{empheq}[box=\widefbox]{align}
+	\left(
+	I - \theta_x \Delta t \alpha_x \Delta_x
+	\right) 
+	u_{n+1}^{*}
+	=
+	\left(
+	I + (1-\theta_x) \Delta t \alpha_x \Delta_x +
+	\Delta t \alpha_y \Delta_y +
+	\Delta t \alpha_z \Delta_z
+	\right)
+	u_n - \Delta t f \\
+	\left(
+	I - \theta_y \Delta t \alpha_y \Delta_y
+	\right) 
+	u_{n+1}^{**}
+	=
+	u_{n+1}^{*}
+	- (1-\theta_y) \Delta t \alpha_y \Delta_y u_n \\
+	\left(
+	I - \theta_z \Delta t \alpha_z \Delta_z
+	\right) 
+	u_{n+1}
+	=
+	u_{n+1}^{**}
+	- (1-\theta_z) \Delta t \alpha_z \Delta_z u_n
+\end{empheq}
+\end{subequations}
+
+
+\end{document}

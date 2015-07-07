@@ -55,13 +55,22 @@
         call closeAndMessage(un,name,dir)
       end subroutine
 
-      subroutine readSwitchFromFile(ks,dir,name)
+      ! subroutine readSwitchFromFile(ks,dir,name)
+      !   character(len=*),intent(in) :: dir,name
+      !   logical,intent(inout) :: ks
+      !   integer :: un
+      !   un = openToRead(dir,name)
+      !   read(un,'('//logfmt//')') ks
+      !   call closeExisting(un,name,dir)
+      ! end subroutine
+
+      function readSwitchFromFile(dir,name) result(ks)
         character(len=*),intent(in) :: dir,name
-        logical,intent(inout) :: ks
+        logical :: ks
         integer :: un
         un = openToRead(dir,name)
         read(un,'('//logfmt//')') ks
         call closeExisting(un,name,dir)
-      end subroutine
+      end function
 
       end module

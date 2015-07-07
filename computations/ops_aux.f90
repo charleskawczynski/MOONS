@@ -69,6 +69,11 @@
        interface zeroGhostPoints;         module procedure zeroGhostPointsVF;         end interface
        interface zeroGhostPoints;         module procedure zeroGhostPointsSF;         end interface
 
+       public :: zeroInterior
+       interface zeroInterior;            module procedure zeroInteriorReal;          end interface
+       interface zeroInterior;            module procedure zeroInteriorVF;            end interface
+       interface zeroInterior;            module procedure zeroInteriorSF;            end interface
+
        public :: printPhysicalMinMax
        interface printPhysicalMinMax;     module procedure printPhysicalMinMaxReal;   end interface
        interface printPhysicalMinMax;     module procedure printPhysicalMinMaxVF;     end interface
@@ -175,6 +180,16 @@
          f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
        end subroutine
 
+       subroutine zeroInteriorReal(f)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3) :: s
+         s = shape(f)
+         f(2:s(1)-1,:,:) = real(0.0,cp)
+         f(:,2:s(2)-1,:) = real(0.0,cp)
+         f(:,:,2:s(3)-1) = real(0.0,cp)
+       end subroutine
+
        subroutine printPhysicalMinMaxReal(u,s,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
@@ -215,6 +230,12 @@
          implicit none
          type(scalarField),intent(inout) :: SF
          call zeroGhostPoints(SF%phi)
+       end subroutine
+
+       subroutine zeroInteriorSF(SF)
+         implicit none
+         type(scalarField),intent(inout) :: SF
+         call zeroInterior(SF%phi)
        end subroutine
 
 
@@ -258,6 +279,14 @@
          call zeroGhostPoints(VF%x)
          call zeroGhostPoints(VF%y)
          call zeroGhostPoints(VF%z)
+       end subroutine
+
+       subroutine zeroInteriorVF(VF)
+         implicit none
+         type(vectorField),intent(inout) :: VF
+         call zeroInterior(VF%x)
+         call zeroInterior(VF%y)
+         call zeroInterior(VF%z)
        end subroutine
 
        subroutine printPhysicalMinMaxVF(U,namex,namey,namez)

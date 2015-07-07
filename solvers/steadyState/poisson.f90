@@ -37,6 +37,7 @@
       use BCs_mod
       use norms_mod
 
+      use PSE_mod
       use jacobi_mod
       use SOR_mod
       use ADI_mod
@@ -57,12 +58,26 @@
       private
       public :: poisson
 
+      interface poisson;    module procedure poisson_PSE;     end interface
       interface poisson;    module procedure poisson_Jacobi;  end interface
       interface poisson;    module procedure poisson_SOR;     end interface
       interface poisson;    module procedure poisson_ADI;     end interface
       interface poisson;    module procedure poisson_MG;      end interface
 
       contains
+
+      subroutine poisson_PSE(PSE,u,f,u_bcs,g,ss,err,displayTF)
+        implicit none
+        type(PseudoTimeSolver),intent(inout) :: PSE
+        real(cp),dimension(:,:,:),intent(inout) :: u
+        real(cp),dimension(:,:,:),intent(in) :: f
+        type(BCs),intent(in) :: u_bcs
+        type(grid),intent(in) :: g
+        type(solverSettings),intent(inout) :: ss
+        type(norms),intent(inout) :: err
+        logical,intent(in) :: displayTF
+        call solve(PSE,u,f,u_bcs,g,ss,err,displayTF)
+      end subroutine
 
       subroutine poisson_Jacobi(JAC,u,f,u_bcs,g,ss,err,displayTF)
         implicit none
