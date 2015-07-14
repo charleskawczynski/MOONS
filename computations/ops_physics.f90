@@ -33,8 +33,8 @@
        use del_mod
        use delVC_mod
        use grid_mod
-       use vectorField_mod
-       use scalarField_mod
+       use VF_mod
+       use SF_mod
        use ops_interp_mod
        use ops_discrete_mod
        use ops_aux_mod
@@ -210,10 +210,10 @@
          !           temp_CC               --> cell center.
          ! 
          implicit none
-         type(vectorField),intent(inout) :: div
-         type(vectorField),intent(in) :: U,ui
-         type(vectorField),intent(inout) :: temp_E1,temp_E2
-         type(vectorField),intent(inout) :: temp_CC
+         type(VF),intent(inout) :: div
+         type(VF),intent(in) :: U,ui
+         type(VF),intent(inout) :: temp_E1,temp_E2
+         type(VF),intent(inout) :: temp_CC
          type(grid),intent(in) :: g
          type(del) ::d
          integer :: pad
@@ -278,10 +278,10 @@
          !           temp_CC               --> cell center.
          ! 
          implicit none
-         type(vectorField),intent(inout) :: div
-         type(vectorField),intent(in) :: U,ui
-         type(vectorField),intent(inout) :: temp_E1,temp_E2
-         type(vectorField),intent(inout) :: temp_CC
+         type(VF),intent(inout) :: div
+         type(VF),intent(in) :: U,ui
+         type(VF),intent(inout) :: temp_E1,temp_E2
+         type(VF),intent(inout) :: temp_CC
          type(grid),intent(in) :: g
          type(del) ::d
          integer :: pad
@@ -406,7 +406,7 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: div
-         type(vectorField),intent(in) :: B,sigmaInv
+         type(VF),intent(in) :: B,sigmaInv
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          real(cp),dimension(:,:,:),allocatable :: temp
@@ -450,8 +450,8 @@
 
        subroutine faceAdvectVF(psi,U,Ui,g)
          implicit none
-         type(vectorField),intent(inout) :: psi
-         type(vectorField),intent(in) :: U,Ui
+         type(VF),intent(inout) :: psi
+         type(VF),intent(in) :: U,Ui
          type(grid),intent(in) :: g
          call faceAdvect(psi%x,U%x,U%y,U%z,Ui%x,g,1)
          call faceAdvect(psi%y,U%x,U%y,U%z,Ui%y,g,2)
@@ -460,8 +460,8 @@
 
        subroutine CCBfieldAdvectVF(div,U,B,g)
          implicit none
-         type(vectorField),intent(inout) :: div
-         type(vectorField),intent(in) :: U,B
+         type(VF),intent(inout) :: div
+         type(VF),intent(in) :: U,B
          type(grid),intent(in) :: g
          call CCBfieldAdvect(div%x,U%x,U%y,U%z,B%x,B%y,B%z,g,1)
          call CCBfieldAdvect(div%y,U%x,U%y,U%z,B%x,B%y,B%z,g,2)
@@ -470,8 +470,8 @@
 
        subroutine CCBfieldDiffuseVF(div,B,sigmaInv,g)
          implicit none
-         type(vectorField),intent(inout) :: div
-         type(vectorField),intent(in) :: B,sigmaInv
+         type(VF),intent(inout) :: div
+         type(VF),intent(in) :: B,sigmaInv
          type(grid),intent(in) :: g
          call CCBfieldDiffuse(div%x,B,sigmaInv,g,1)
          call CCBfieldDiffuse(div%y,B,sigmaInv,g,2)

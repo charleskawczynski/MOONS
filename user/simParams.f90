@@ -23,7 +23,7 @@
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .false.    ! (T/F)
+       logical :: nonUniformGridFluid       = .true.    ! (T/F)
        logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
@@ -60,7 +60,7 @@
        !                                                      upwind       difference
        logical :: addJCrossB = .true.
        logical :: addBuoyancy = .false.
-       logical :: addGravity = .true.
+       logical :: addGravity = .false.
 
        ! ************************ B-FIELD ***********************
        logical :: solveInduction = .true.
@@ -105,7 +105,7 @@
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
 
-       integer,parameter :: benchmarkCase = 1009
+       integer,parameter :: benchmarkCase = 1008
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -174,6 +174,8 @@
        !    1007: Parker (Cylinder)
        !    1008: Bandaru (Channel Flow)
        !    1009: Kawczynski (LDC demo cases)
+       !    1010: Kawczynski (LDC demo cases) for B = 0 BCs
+       !    1011: Kawczynski (Hunt/Shercliff demo cases) for B = 0 BCs
        ! 
        ! 10,000-series (Published work ONLY)
        ! 
@@ -203,7 +205,7 @@
        integer :: nskip_exportTransientFull  = 50     ! Very Expensive
        integer :: nskip_exportErrors         = 1000    ! Divergences / Residuals (expensive)
        ! integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
-       integer :: nskip_print                = 50     ! Printed data (cheap)
+       integer :: nskip_print                = 10     ! Printed data (cheap)
        ! integer :: nskip_print                = 10     ! Printed data (cheap)
        ! integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
 

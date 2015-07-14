@@ -57,7 +57,7 @@
        !              - Data is wall incoincident
        ! 
 
-       use vectorField_mod
+       use VF_mod
        use vectorBCs_mod
        use BCs_mod
        use grid_mod
@@ -84,7 +84,7 @@
 
        subroutine applyAllVectorBCs(U,b,g)
          implicit none
-         type(vectorField),intent(inout) :: U
+         type(VF),intent(inout) :: U
          type(vectorBCs),intent(in) :: b
          type(grid),intent(in) :: g
          call applyAllBCs(b%x,U%x,g)

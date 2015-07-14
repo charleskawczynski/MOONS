@@ -32,8 +32,8 @@
        ! 
        use del_mod
        use grid_mod
-       use vectorField_mod
-       use scalarField_mod
+       use VF_mod
+       use SF_mod
        use IO_scalarFields_mod
 
        implicit none
@@ -73,6 +73,11 @@
        interface zeroInterior;            module procedure zeroInteriorReal;          end interface
        interface zeroInterior;            module procedure zeroInteriorVF;            end interface
        interface zeroInterior;            module procedure zeroInteriorSF;            end interface
+
+       public :: treatInterface
+       interface treatInterface;          module procedure treatInterfaceReal;        end interface
+       interface treatInterface;          module procedure treatInterfaceVF;          end interface
+       interface treatInterface;          module procedure treatInterfaceSF;          end interface
 
        public :: printPhysicalMinMax
        interface printPhysicalMinMax;     module procedure printPhysicalMinMaxReal;   end interface
@@ -190,6 +195,29 @@
          f(:,:,2:s(3)-1) = real(0.0,cp)
        end subroutine
 
+       subroutine treatInterfaceReal(f)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3) :: s
+         integer :: i,j,k
+         real(cp) :: top,bot,int,mi,ma
+         mi = minval(f); ma = maxval(f)
+         int = real(0.5,cp)*(mi+ma)
+         top = real(0.5,cp)*(ma+int)
+         bot = real(0.5,cp)*(mi+int)
+         s = shape(f)
+         ! Make interface property the min/max of
+         ! fluid / wall domain depending on treatment
+
+         !$OMP PARALLEL DO
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+         if ((f(i,j,k).gt.bot).and.(f(i,j,k).lt.top)) then
+          f(i,j,k) = ma
+         endif
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
        subroutine printPhysicalMinMaxReal(u,s,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
@@ -226,16 +254,22 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine zeroGhostPointsSF(SF)
+       subroutine zeroGhostPointsSF(f)
          implicit none
-         type(scalarField),intent(inout) :: SF
-         call zeroGhostPoints(SF%phi)
+         type(SF),intent(inout) :: f
+         call zeroGhostPoints(f%phi)
        end subroutine
 
-       subroutine zeroInteriorSF(SF)
+       subroutine zeroInteriorSF(f)
          implicit none
-         type(scalarField),intent(inout) :: SF
-         call zeroInterior(SF%phi)
+         type(SF),intent(inout) :: f
+         call zeroInterior(f%phi)
+       end subroutine
+
+       subroutine treatInterfaceSF(f)
+         implicit none
+         type(SF),intent(inout) :: f
+         call treatInterface(f%phi)
        end subroutine
 
 
@@ -248,14 +282,14 @@
        subroutine collocatedMagnitudeVF(mag,V)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: mag
-         type(vectorfield),intent(in) :: V
+         type(VF),intent(in) :: V
          call collocatedMagnitude(mag,V%x,V%y,V%z)
        end subroutine
 
        subroutine stabilityTermsVF(fo,fi,g,n)
          implicit none
-         type(scalarField),intent(inout) :: fo
-         type(vectorField),intent(in) :: fi
+         type(SF),intent(inout) :: fo
+         type(VF),intent(in) :: fi
          type(grid),intent(in) :: g
          integer,intent(in) :: n
          call assign(fo,real(0.0,cp))
@@ -265,33 +299,41 @@
          call zeroGhostPoints(fo%phi)
        end subroutine
 
-       subroutine totalEnergyVF(e,VF,g)
+       subroutine totalEnergyVF(e,f,g)
          implicit none
-         type(vectorField),intent(in) :: VF
+         type(VF),intent(in) :: f
          real(cp),intent(inout) :: e
          type(grid),intent(in) :: g
-         call totalEnergy(e,VF%x,VF%y,VF%z,g)
+         call totalEnergy(e,f%x,f%y,f%z,g)
        end subroutine
 
-       subroutine zeroGhostPointsVF(VF)
+       subroutine zeroGhostPointsVF(f)
          implicit none
-         type(vectorField),intent(inout) :: VF
-         call zeroGhostPoints(VF%x)
-         call zeroGhostPoints(VF%y)
-         call zeroGhostPoints(VF%z)
+         type(VF),intent(inout) :: f
+         call zeroGhostPoints(f%x)
+         call zeroGhostPoints(f%y)
+         call zeroGhostPoints(f%z)
        end subroutine
 
-       subroutine zeroInteriorVF(VF)
+       subroutine zeroInteriorVF(f)
          implicit none
-         type(vectorField),intent(inout) :: VF
-         call zeroInterior(VF%x)
-         call zeroInterior(VF%y)
-         call zeroInterior(VF%z)
+         type(VF),intent(inout) :: f
+         call zeroInterior(f%x)
+         call zeroInterior(f%y)
+         call zeroInterior(f%z)
+       end subroutine
+
+       subroutine treatInterfaceVF(f)
+         implicit none
+         type(VF),intent(inout) :: f
+         call treatInterface(f%x)
+         call treatInterface(f%y)
+         call treatInterface(f%z)
        end subroutine
 
        subroutine printPhysicalMinMaxVF(U,namex,namey,namez)
          implicit none
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          character(len=*),intent(in) :: namex,namey,namez
          call printPhysicalMinMax(U%x,U%sx,namex)
          call printPhysicalMinMax(U%y,U%sy,namey)
@@ -300,7 +342,7 @@
 
        subroutine printGlobalMinMaxVF(U,namex,namey,namez)
          implicit none
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          character(len=*),intent(in) :: namex,namey,namez
          call printGlobalMinMax(U%x,namex)
          call printGlobalMinMax(U%y,namey)
@@ -309,15 +351,15 @@
 
        subroutine checkGlobalMinMaxVF(u,g,name)
          implicit none
-         type(vectorField),intent(in) :: u
+         type(VF),intent(in) :: u
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: name
-         type(vectorField) :: temp
+         type(VF) :: temp
          type(del) :: d
          real(cp),dimension(3) :: t
          integer :: i
 
-         call allocateVectorField(temp,u)
+         call init(temp,u)
 
          ! Resize x-direction:
          if (u%sx(1).eq.g%c(1)%sn) then
@@ -368,7 +410,7 @@
          real(cp),dimension(:,:,:),intent(in) :: u
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: name
-         type(scalarField) :: temp
+         type(SF) :: temp
          type(del) :: d
          integer :: i
          integer,dimension(3) :: s
@@ -376,9 +418,9 @@
 
          ! Resize x-direction:
          if (s(1).eq.g%c(1)%sn) then
-           call allocateField(temp,g%c(1)%sc,s(2),s(3))
+           call init(temp,g%c(1)%sc,s(2),s(3))
          elseif (s(1).eq.g%c(1)%sc) then
-           call allocateField(temp,g%c(1)%sn,s(2),s(3))
+           call init(temp,g%c(1)%sn,s(2),s(3))
          else
           stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
          endif

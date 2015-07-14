@@ -1,13 +1,10 @@
-      module SOR_mod
-      ! call SORSolver(u,f,u_bcs,g,ss,gridType,displayTF)
+      module FFT_poisson_mod
+      ! call FFT_poisson(u,f,u_bcs,g,ss,gridType,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), grid (g)
-      ! and solver settings (ss) using the iterative Successive Over 
-      ! Realxation (SOR) method
-      ! 
-      ! Note that the variant of Gauss-Seidel/SOR called
-      ! "red-black" Gauss-Seidel is used.
+      ! and solver settings (ss) using a Fast Fourier Transform (FFT) 
+      ! method
       !
       ! Input:
       !     u            = initial guess for u
@@ -18,8 +15,8 @@
       !     gridType     = (1,2) = (cell-based,node-based)
       !     displayTF    = print residuals to screen (T,F)
       ! 
-      ! Flags: (_PARALLELIZE_SOR_,
-      !         _EXPORT_SOR_CONVERGENCE_)
+      ! Flags: (_PARALLELIZE_FFT_,
+      !         _EXPORT_FFT_CONVERGENCE_)
 
       use grid_mod
       use BCs_mod
@@ -30,13 +27,13 @@
       use VF_mod
 
       use solverSettings_mod
-#ifdef _EXPORT_SOR_CONVERGENCE_
+#ifdef _EXPORT_FFT_CONVERGENCE_
       use IO_tools_mod
 #endif
       implicit none
 
       private
-      public :: SORSolver,solve
+      public :: FFTSolver,solve
       private :: init,delete
 
 #ifdef _SINGLE_PRECISION_
@@ -52,7 +49,7 @@
 
       logical, parameter :: useGaussSeidel = .true.
 
-      type SORSolver
+      type FFTSolver
         character(len=5) :: name
         type(grid) :: p,d ! Primary / Dual grids
         real(cp),dimension(:,:,:),allocatable :: lapu,f,res ! f zeros mean
@@ -61,99 +58,99 @@
         integer :: gridType ! (1,2,3) = (CC,N,Face)
       end type
       
-      interface init;        module procedure initSOR;       end interface
-      interface delete;      module procedure deleteSOR;     end interface
-      interface solve;       module procedure solveSOR;      end interface
+      interface init;        module procedure initFFT;       end interface
+      interface delete;      module procedure deleteFFT;     end interface
+      interface solve;       module procedure solveFFT;      end interface
 
       contains
 
-      subroutine initSOR(SOR,s,g)
+      subroutine initFFT(FFT,s,g)
         implicit none
-        type(SORSolver),intent(inout) :: SOR
+        type(FFTSolver),intent(inout) :: FFT
         integer,dimension(3),intent(in) :: s
         type(grid),intent(in) :: g
         integer :: Nx,Ny,Nz,i
         
-        SOR%s = s
+        FFT%s = s
 
         do i=1,3
-          if (SOR%s(i).eq.g%c(i)%sc) then
-            call init(SOR%p,g%c(i)%hc,i,2) ! grid made from cc --> p%dhn is dhc
-            call init(SOR%d,g%c(i)%hn,i,2) ! grid made from n --> d%dhn is dhn
-            SOR%gt(i) = 1
-          elseif(SOR%s(i).eq.g%c(i)%sn) then
-            call init(SOR%p,g%c(i)%hn,i,2) ! grid made from n --> p%dhn is dhn
-            call init(SOR%d,g%c(i)%hc,i,2) ! grid made from cc --> d%dhn is dhc
-            SOR%gt(i) = 0
+          if (FFT%s(i).eq.g%c(i)%sc) then
+            call init(FFT%p,g%c(i)%hc,i,2) ! grid made from cc --> p%dhn is dhc
+            call init(FFT%d,g%c(i)%hn,i,2) ! grid made from n --> d%dhn is dhn
+            FFT%gt(i) = 1
+          elseif(FFT%s(i).eq.g%c(i)%sn) then
+            call init(FFT%p,g%c(i)%hn,i,2) ! grid made from n --> p%dhn is dhn
+            call init(FFT%d,g%c(i)%hc,i,2) ! grid made from cc --> d%dhn is dhc
+            FFT%gt(i) = 0
           else
-            write(*,*) 's = ',SOR%s
+            write(*,*) 's = ',FFT%s
             write(*,*) 'sc = ',(/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
             write(*,*) 'sn = ',(/g%c(1)%sn,g%c(2)%sn,g%c(3)%sn/)
-            stop 'Error: grid type was not determined in SOR.f90'
+            stop 'Error: grid type was not determined in FFT.f90'
           endif
         enddo
 
         if (all((/(s(i).eq.g%c(i)%sc, i=1,3)/))) then ! Node data
-        SOR%gridType = 1
+        FFT%gridType = 1
 
         elseif (all((/(s(i).eq.g%c(i)%sn, i=1,3)/))) then ! CC data
-        SOR%gridType = 2
+        FFT%gridType = 2
 
         ! Face data
         elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sc/))) then
-        SOR%gridType = 3
+        FFT%gridType = 3
         elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
-        SOR%gridType = 3
+        FFT%gridType = 3
         elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
-        SOR%gridType = 3
+        FFT%gridType = 3
 
         ! Edge Data
         elseif (all((/s(1).eq.g%c(1)%sc,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sn/))) then
-          stop 'Error: edge data not yet supported in SOR.f90'
+          stop 'Error: edge data not yet supported in FFT.f90'
         elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sc,s(3).eq.g%c(3)%sn/))) then
-          stop 'Error: edge data not yet supported in SOR.f90'
+          stop 'Error: edge data not yet supported in FFT.f90'
         elseif (all((/s(1).eq.g%c(1)%sn,s(2).eq.g%c(2)%sn,s(3).eq.g%c(3)%sc/))) then
-          stop 'Error: edge data not yet supported in SOR.f90'
+          stop 'Error: edge data not yet supported in FFT.f90'
         else
           write(*,*) 's = ',s
           write(*,*) 'g%sn = ',(/(g%c(i)%sn, i=1,3)/)
           write(*,*) 'g%sc = ',(/(g%c(i)%sc, i=1,3)/)
-          stop 'Error: in grid size compared to input field in SOR.f90.'
+          stop 'Error: in grid size compared to input field in FFT.f90.'
         endif
 
 
-        allocate(SOR%lapu(SOR%s(1),SOR%s(2),SOR%s(3)))
-        allocate(SOR%f(SOR%s(1),SOR%s(2),SOR%s(3)))
-        allocate(SOR%res(SOR%s(1),SOR%s(2),SOR%s(3)))
+        allocate(FFT%lapu(FFT%s(1),FFT%s(2),FFT%s(3)))
+        allocate(FFT%f(FFT%s(1),FFT%s(2),FFT%s(3)))
+        allocate(FFT%res(FFT%s(1),FFT%s(2),FFT%s(3)))
 
         if (useGaussSeidel) then
-          SOR%omega = real(1.0,cp)
-          SOR%name = 'SOR'
+          FFT%omega = real(1.0,cp)
+          FFT%name = 'FFT'
         else
           Nx = s(1); Ny = s(2); Nz = s(3)
-          SOR%omega = real(2.0,cp)/(real(1.0,cp) + sqrt(real(1.0,cp) - & 
+          FFT%omega = real(2.0,cp)/(real(1.0,cp) + sqrt(real(1.0,cp) - & 
            ((cos(PI/real(Nx+1,cp)) + cos(PI/real(Ny+1,cp)) + &
              cos(PI/real(Nz+1,cp)))/real(3.0,cp))**real(2.0,cp)))
-          SOR%name = 'SOR'
+          FFT%name = 'FFT'
         endif
       end subroutine
 
-      subroutine deleteSOR(SOR)
+      subroutine deleteFFT(FFT)
         implicit none
-        type(SORSolver),intent(inout) :: SOR
-        call delete(SOR%p)
-        call delete(SOR%d)
-        deallocate(SOR%lapu)
-        deallocate(SOR%f)
-        deallocate(SOR%res)
+        type(FFTSolver),intent(inout) :: FFT
+        call delete(FFT%p)
+        call delete(FFT%d)
+        deallocate(FFT%lapu)
+        deallocate(FFT%f)
+        deallocate(FFT%res)
 
-        ! write(*,*) 'SOR object deleted'
+        ! write(*,*) 'FFT object deleted'
       end subroutine
 
 
-      subroutine solveSOR(SOR,u,f,u_bcs,g,ss,norm,displayTF)
+      subroutine solveFFT(FFT,u,f,u_bcs,g,ss,norm,displayTF)
         implicit none
-        type(SORSolver),intent(inout) :: SOR
+        type(FFTSolver),intent(inout) :: FFT
         real(cp),dimension(:,:,:),intent(inout) :: u
         real(cp),dimension(:,:,:),intent(in) :: f
         type(BCs),intent(in) :: u_bcs
@@ -165,11 +162,11 @@
         integer :: ijk
         logical :: TF,continueLoop
         integer :: maxIterations
-#ifdef _EXPORT_SOR_CONVERGENCE_
+#ifdef _EXPORT_FFT_CONVERGENCE_
         integer :: NU
 #endif
         
-        call init(SOR,shape(f),g)
+        call init(FFT,shape(f),g)
 
         call solverSettingsSet(ss)
         ijk = 0
@@ -184,10 +181,10 @@
         endif
         continueLoop = .true.
 
-        SOR%f = f ! CANNOT REMOVE MEAN FOR NEUMANN, RESULTS IN BAD RESIDUALS FOR SOR
+        FFT%f = f ! CANNOT REMOVE MEAN FOR NEUMANN, RESULTS IN BAD RESIDUALS FOR FFT
 
-#ifdef _EXPORT_SOR_CONVERGENCE_
-        NU = newAndOpen('out\','norm_SOR')
+#ifdef _EXPORT_FFT_CONVERGENCE_
+        NU = newAndOpen('out\','norm_FFT')
 #endif
 
         do while (continueLoop.and.TF)
@@ -195,37 +192,37 @@
 
           ! THE ORDER OF THESE ROUTINE CALLS IS IMPORTANT. DO NOT CHANGE.
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
           !$OMP PARALLEL
 
 #endif
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,0,0/)) ! Even in odd plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/0,0,0/)) ! Even in odd plane
 
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,0,0/)) ! Even in even plane
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,1,0/)) ! Even in even plane
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,0,1/)) ! Even in even plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/1,0,0/)) ! Even in even plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/0,1,0/)) ! Even in even plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/0,0,1/)) ! Even in even plane
 
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
           !$OMP END PARALLEL
           !$OMP PARALLEL
 
 #endif
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,1,1/)) ! Odd in odd plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/1,1,1/)) ! Odd in odd plane
 
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,1,1/)) ! Odd in even plane
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,0,1/)) ! Odd in even plane
-          call redBlack(u,SOR%f,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,1,0/)) ! Odd in even plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/0,1,1/)) ! Odd in even plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/1,0,1/)) ! Odd in even plane
+          call redBlack(u,FFT%f,FFT%s,FFT%p%c(1)%dhn,FFT%p%c(2)%dhn,FFT%p%c(3)%dhn,&
+          FFT%d%c(1)%dhn,FFT%d%c(2)%dhn,FFT%d%c(3)%dhn,FFT%omega,FFT%gt,(/1,1,0/)) ! Odd in even plane
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
           !$OMP END PARALLEL
 
 #endif
@@ -233,18 +230,18 @@
           call applyAllBCs(u_bcs,u,g)
 
           if (getMinToleranceTF(ss)) then
-            call lap(SOR%lapu,u,g)
-            SOR%res = SOR%lapu - SOR%f
-            call zeroGhostPoints(SOR%res)
-            call compute(norm,real(0.0,cp),SOR%res)
+            call lap(FFT%lapu,u,g)
+            FFT%res = FFT%lapu - FFT%f
+            call zeroGhostPoints(FFT%res)
+            call compute(norm,real(0.0,cp),FFT%res)
             call setTolerance(ss,getR2(norm))
           endif
 
-#ifdef _EXPORT_SOR_CONVERGENCE_
-            call lap(SOR%lapu,u,g)
-            SOR%res = SOR%lapu - SOR%f
-            call zeroGhostPoints(SOR%res)
-            call compute(norm,real(0.0,cp),SOR%res)
+#ifdef _EXPORT_FFT_CONVERGENCE_
+            call lap(FFT%lapu,u,g)
+            FFT%res = FFT%lapu - FFT%f
+            call zeroGhostPoints(FFT%res)
+            call compute(norm,real(0.0,cp),FFT%res)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
 
@@ -256,7 +253,7 @@
           ! ************************************************************************************
         enddo
 
-#ifdef _EXPORT_SOR_CONVERGENCE_
+#ifdef _EXPORT_FFT_CONVERGENCE_
         close(NU)
 #endif
         
@@ -266,23 +263,23 @@
           u = u - sum(u)/(max(1,size(u)))
         endif
 
-        ! Okay for SOR alone when comparing with u_exact, but not okay for MG
+        ! Okay for FFT alone when comparing with u_exact, but not okay for MG
         ! if (.not.allNeumann(u_bcs)) then
         !   u = u - sum(u)/(max(1,size(u)))
         ! endif
 
         if (displayTF) then
-          write(*,*) 'SOR parameter = ',SOR%omega
-          write(*,*) '(Final,max) '//SOR%name//' iteration = ',ijk,maxIterations
+          write(*,*) 'FFT parameter = ',FFT%omega
+          write(*,*) '(Final,max) '//FFT%name//' iteration = ',ijk,maxIterations
 
-          call lap(SOR%lapu,u,g)
-          SOR%res = SOR%lapu - SOR%f
-          call zeroGhostPoints(SOR%res)
-          call compute(norm,real(0.0,cp),SOR%res)
-          call print(norm,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
+          call lap(FFT%lapu,u,g)
+          FFT%res = FFT%lapu - FFT%f
+          call zeroGhostPoints(FFT%res)
+          call compute(norm,real(0.0,cp),FFT%res)
+          call print(norm,FFT%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
-        call delete(SOR)
+        call delete(FFT)
       end subroutine
 
       subroutine redBlack(u,f,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
@@ -296,7 +293,7 @@
         integer :: i,j,k
         real(cp) :: r
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
         !$OMP DO PRIVATE(r)
 
 #endif
@@ -322,7 +319,7 @@
           enddo
         enddo
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
         !$OMP END DO
 
 #endif
@@ -341,7 +338,7 @@
         integer :: i,j,k
         real(cp) :: r
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
         !$OMP DO PRIVATE(r)
 
 #endif
@@ -367,7 +364,7 @@
           enddo
         enddo
 
-#ifdef _PARALLELIZE_SOR_
+#ifdef _PARALLELIZE_FFT_
         !$OMP END DO
 
 #endif

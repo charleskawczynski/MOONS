@@ -29,7 +29,7 @@
        !                        -------> edgeDir
        ! 
        use grid_mod
-       use vectorField_mod
+       use VF_mod
        implicit none
 
        ! Compiler flags: ( fopenmp, _DEBUG_INTERP_ )
@@ -523,8 +523,8 @@
 
        subroutine face2CellCenterVF(cellCenter,face,g)
          implicit none
-         type(vectorField),intent(inout) :: cellCenter
-         type(vectorField),intent(in)    :: face
+         type(VF),intent(inout) :: cellCenter
+         type(VF),intent(in)    :: face
          type(grid),intent(in) :: g
          call face2CellCenter(cellCenter%x,face%x,g,1)
          call face2CellCenter(cellCenter%y,face%y,g,2)
@@ -533,8 +533,8 @@
 
        subroutine face2NodeVF(node,face,g)
          implicit none
-         type(vectorField),intent(inout) :: node
-         type(vectorField),intent(in) :: face
+         type(VF),intent(inout) :: node
+         type(VF),intent(in) :: face
          type(grid),intent(in) :: g
          call face2Node(node%x,face%x,g,1)
          call face2Node(node%y,face%y,g,2)
@@ -547,8 +547,8 @@
 
        subroutine cellCenter2FaceVF(face,cellCenter,g)
          implicit none
-         type(vectorField),intent(inout) :: face
-         type(vectorField),intent(in) :: cellCenter
+         type(VF),intent(inout) :: face
+         type(VF),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          call cellCenter2Face(face%x,cellCenter%x,g,1)
          call cellCenter2Face(face%y,cellCenter%y,g,2)
@@ -557,7 +557,7 @@
 
        subroutine cellCenter2Face2VF(face,cellCenter,g)
          implicit none
-         type(vectorField),intent(inout) :: face
+         type(VF),intent(inout) :: face
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          call cellCenter2Face(face%x,cellCenter,g,1)
@@ -567,8 +567,8 @@
 
        subroutine cellCenter2NodeVF(node,cellCenter,g)
          implicit none
-         type(vectorField),intent(inout) :: node
-         type(vectorField),intent(in) :: cellCenter
+         type(VF),intent(inout) :: node
+         type(VF),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          call cellCenter2Node(node%x,cellCenter%x,g)
          call cellCenter2Node(node%y,cellCenter%y,g)
@@ -577,8 +577,8 @@
 
        subroutine cellCenter2EdgeVF(edge,cellCenter,g)
          implicit none
-         type(vectorField),intent(inout) :: edge
-         type(vectorField),intent(in) :: cellCenter
+         type(VF),intent(inout) :: edge
+         type(VF),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          call cellCenter2Edge(edge%x,cellCenter%x,g,1)
          call cellCenter2Edge(edge%y,cellCenter%y,g,2)
@@ -587,7 +587,7 @@
 
        subroutine cellCenter2Edge2VF(edge,cellCenter,g)
          implicit none
-         type(vectorField),intent(inout) :: edge
+         type(VF),intent(inout) :: edge
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          call cellCenter2Edge(edge%x,cellCenter,g,1)
@@ -601,8 +601,8 @@
 
        subroutine node2EdgeVF(edge,node,g)
          implicit none
-         type(vectorField),intent(inout) :: edge
-         type(vectorField),intent(in) :: node
+         type(VF),intent(inout) :: edge
+         type(VF),intent(in) :: node
          type(grid),intent(in) :: g
          call node2Edge(edge%x,node%x,g,1)
          call node2Edge(edge%y,node%y,g,2)
@@ -611,7 +611,7 @@
 
        subroutine node2Edge2VF(edge,node,g)
          implicit none
-         type(vectorField),intent(inout) :: edge
+         type(VF),intent(inout) :: edge
          real(cp),dimension(:,:,:),intent(in) :: node
          type(grid),intent(in) :: g
          call node2Edge(edge%x,node,g,1)
@@ -621,8 +621,8 @@
 
        subroutine node2FaceVF(face,node,g)
          implicit none
-         type(vectorField),intent(inout) :: face
-         type(vectorField),intent(in) :: node
+         type(VF),intent(inout) :: face
+         type(VF),intent(in) :: node
          type(grid),intent(in) :: g
          call node2Face(face%x,node%x,g,1)
          call node2Face(face%y,node%y,g,2)
@@ -631,7 +631,7 @@
 
        subroutine node2Face2VF(face,node,g)
          implicit none
-         type(vectorField),intent(inout) :: face
+         type(VF),intent(inout) :: face
          real(cp),dimension(:,:,:),intent(in) :: node
          type(grid),intent(in) :: g
          call node2Face(face%x,node,g,1)
@@ -645,8 +645,8 @@
 
        subroutine edge2NodeVF(node,edge,g)
          implicit none
-         type(vectorField),intent(inout) :: node
-         type(vectorField),intent(in) :: edge
+         type(VF),intent(inout) :: node
+         type(VF),intent(in) :: edge
          type(grid),intent(in) :: g
          call edge2Node(node%x,edge%x,g,1)
          call edge2Node(node%y,edge%y,g,2)
@@ -655,8 +655,8 @@
 
        subroutine edge2CellCenterVF(cellCenter,edge,g)
          implicit none
-         type(vectorField),intent(inout) :: cellCenter
-         type(vectorField),intent(in) :: edge
+         type(VF),intent(inout) :: cellCenter
+         type(VF),intent(in) :: edge
          type(grid),intent(in) :: g
          call edge2CellCenter(cellCenter%x,edge%x,g,1)
          call edge2CellCenter(cellCenter%y,edge%y,g,2)

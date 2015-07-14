@@ -34,9 +34,9 @@
          if (restartT) then
            call initRestartT(T,g,dir)
          elseif (preDefinedT_ICs.ne.0) then
-           call initPreDefinedT(T,g)
+           call initPreDefinedT(T)
          else
-           call initUserTfield(T,g)
+           call initUserTfield(T)
          endif
        end subroutine
 
@@ -52,9 +52,8 @@
          deallocate(xc,yc,zc)
        end subroutine
 
-       subroutine initPreDefinedT(T,g)
+       subroutine initPreDefinedT(T)
          implicit none
-         type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: T
          select case (preDefinedT_ICs)
          case (1); call uniformTfield(T)
@@ -69,9 +68,8 @@
          T = real(0.0,cp)
        end subroutine
 
-       subroutine initUserTfield(T,g)
+       subroutine initUserTfield(T)
          implicit none
-         type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: T
          call uniformTfield(T)
        end subroutine

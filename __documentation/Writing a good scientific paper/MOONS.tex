@@ -1,0 +1,104 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\}
+\maketitle
+
+\section{Writing a good scientific paper}
+This is a collection of notes on how to make a paper well structured, grammatically and syntactically correct, enjoyable to read, memorable, 
+
+\section{Subjective notes}
+(1) what to say
+(2) order and logic
+(3) exact language
+
+
+\section{Easy check list}
+\begin{itemize}
+\item Who is your audience?
+\item Make sure tenses are appropriate and consistent
+\item Be specific: use numbers (avoid 'Long duct' instead say '10 meter long')
+\item A paragraph should begin with a topic sentence that sets the stage clearly for what will follow. Contents of the paragraph should reflect the topic sentence.
+\item 'the' is the most common used word in the dictionary, and often overused. Remove as much of them as possible.
+\end{itemize}
+
+\section{Notes from online}
+This is from the link
+http://course1.winona.edu/mdelong/EcoLab/21\%20Suggestions.html
+
+\subsection{Show us don't tell us}
+Rather than telling the reader that a result is interesting or significant, show them how it is interesting or significant. For instance, rather than 'The large difference in mean size between population C and population D is particularly interesting," write 'Mean size generally varied among populations by only a few centimeters, but mean size in populations C and D differed by 25 cm. Two hypotheses could account for this...." Rather than describing a result, show the reader what they need to know to come to their own conclusion about it.
+
+\subsection{Avoid abusing word forms}
+
+Use words in the form that conveys your meaning as clearly and simply as possible. A variety of writing problems arise from using verbs and adjectives as nouns. Such word forms are called nominalizations (Williams 1990). Consider the sentence, "The low rate of encounters was a reflection of population density reductions." The verbs, "to reflect" and "to reduce" are used as nouns, and the sentence is more turgid and less direct than when they are used as verbs: "The low rate of encounters reflects a reduced population density." Some nominalizations are both useful and effective, as in "taxation without representation." Williams (1990) has an excellent discussion of useless and useful nominalizations.
+
+\subsection{Do not use more words where fewer will do}
+Do not use long words where short ones will do. A good example is using "utilization' when "use" will do. Do not use jargon where regular language will do. Another example is the use of "in order to." Any time you write that phrase, delete it and replace it with "to." You will find that it does the job nicely. Do not use special words to make your writing seem more technical, scientific, or academic when the message is more clearly presented otherwise.
+
+
+\subsection{Think about the structure of paragraphs}
+
+A paragraph should begin with a topic sentence that sets the stage clearly for what will follow. Contents of the paragraph should reflect the topic sentence. Make topic sentences short and direct. Build the paragraph from the ideas introduced in your topic sentence and make the flow of individual sentences follow a logical sequence.
+
+Many writers try to finish each paragraph with a sentence that forms a bridge to the next paragraph. Paying attention to continuity between paragraphs is a good idea. However, such sentences are often better as a topic sentence for the following paragraph than a concluding sentence of the current one. It is nice to conclude a paragraph by recapitulating its main points and anticipating what follows, but you should avoid statements of conclusion or introduction that contain no new information or ideas.
+
+Strive for parallelism in structure at all times. When you present a list of ideas that you will explore further ('Three hypotheses may account for these results: hypothesis 1, hypothesis 2, hypothesis 3.), make sure that you address the ideas in the same sequence and format in which you have presented them initially. It is both confusing and frustrating to read a list presented as '1, 2, 3, 4,' and then find the topics dealt with '1,4,3,2.'
+
+Think about how the structure of your paragraphs will appear to the reader who is reading them for the first time. The reader should not have to read the text more than once to understand it. Carefully lead the reader along so that the structure of your argument as a whole is clear, as well as where the current text fits in it.
+
+Paragraphs containing only one or two sentences are rarely good paragraphs because they can't develop ideas adequately. Two-sentence paragraphs usually represent either misplaced pieces of other paragraphs or fragments of ideas that should be removed or expanded. Outlining helps pull topics together. They may initially appear that a separate paragraph is needed to define each when, in fact, the topics are quite related and can be included in the same paragraph.
+
+Choppiness both within and among paragraphs often results from the ease with which we can cut and paste text on the computer. Ideas that were written separately but belong together can be moved easily. Unfortunately, they often still read as if they were written separately. This is a great way to structure a draft. However, you must read over such text for continuity before submitting it to others for review.
+
+It is difficult to read for continuity on the computer screen because you can see so little text in front of you at any given moment. It is also more difficult to flip over several pages to scan for repetition, parallel structure, etc. To do a really good job of proofing a paper, most writers find it necessary to read hard copy at some point during the writing/rewriting process. Print all but final drafts on paper that has been used previously on one side.
+
+\subsection{Introductions and conclusions are the hardest parts - plan on spending a lot of time on them}
+
+Many technical writers prefer to write their introductions last because it is too difficult to craft that balance of general context and specific focus required for a good introduction. Often it is easier to achieve this after you have already worked through writing the entire paper or thesis. If you need to write the introduction first to set the stage for your own thinking, resist the temptation to perfect it. The introduction will likely need substantial modification by the time you have finished the rest of the paper. The same concerns apply to conclusions, abstracts, and summaries. These components of the paper are all that many people will read, and you must get your message across in as direct, crisp, and enticing a manner as possible. Plan on taking your time and giving these components several more drafts than the rest of the paper.
+
+\subsection{One Last style suggestion: limit the use of prepositional phrases at the start of sentences and limit the use of 'the'}
+
+It is very easy to start a sentence with a prepositional phrase, however, it often causes the main point of the sentence to be lost. Reread a sentence that starts with a prepositional phrase but place the phrase somewhere within the sentence, even at the end. You will often find that the sentence reads more clearly with the prepositional phrase buried within the sentence or that you do not need the phrase at all.
+
+'The" is probably the most overused word in the English language. When rewriting your first draft, think about whether or not the placement of every "the" is necessary. For example: "The samples were taken using a Ponar dredge" reads Just as well when written as 'Samples were taken using a Ponar Dredge." The only difference is the latter sentence is neat, tidy, and to the point.
+
+\end{document}

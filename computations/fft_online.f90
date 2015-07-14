@@ -1,4 +1,7 @@
 module fft_mod
+  ! References:
+  ! http://www.maths.cam.ac.uk/undergrad/course/na/ii/poisson_equation/poisson_equation.php
+  ! 
   implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -12,13 +15,12 @@ module fft_mod
 #endif
 
   integer,parameter :: dp = selected_real_kind(14)
-  real(cp),parameter :: pi=3.141592653589793238460_cp
+  real(cp),parameter :: pi = real(3.141592653589793238460,cp)
 
 contains
  
   ! In place Cooley-Tukey FFT
-  recursive subroutine computeFFT(fft,x)
-    type(fft),intent(inout)
+  recursive subroutine fft(x)
     complex(cp), dimension(:), intent(inout)  :: x
     complex(cp)                               :: t
     integer                                   :: N

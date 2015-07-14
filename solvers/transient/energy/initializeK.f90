@@ -2,7 +2,7 @@
        use simParams_mod
        use grid_mod
        use ops_embedExtract_mod
-       use scalarField_mod
+       use SF_mod
        implicit none
 
        private
@@ -33,7 +33,7 @@
          implicit none
          type(grid),intent(in) :: g
          type(subdomain),intent(in) :: SD
-         type(scalarField),intent(inout) :: k
+         type(SF),intent(inout) :: k
          if (preDefined_K.ne.0) then
            call initPredefinedK(k,SD,g)
          else
@@ -43,11 +43,11 @@
 
        subroutine initPredefinedK(k,SD,g)
          implicit none
-         type(scalarField),intent(inout) :: k
+         type(SF),intent(inout) :: k
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         type(scalarField) :: k_l
-         call allocateField(k_l,SD%s)
+         type(SF) :: k_l
+         call init(k_l,SD%s)
          call assign(k_l,real(1.0,cp))
          call assign(k,kStarWall)
          call embedCC(k,k_l,SD,g)
@@ -56,11 +56,11 @@
 
        subroutine initUserK(k,SD,g)
          implicit none
-         type(scalarField),intent(inout) :: k
+         type(SF),intent(inout) :: k
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
-         type(scalarField) :: k_l
-         call allocateField(k_l,SD%s)
+         type(SF) :: k_l
+         call init(k_l,SD%s)
          call assign(k_l,real(1.0,cp))
          call assign(k,kStarWall)
          call embedCC(k,k_l,SD,g)

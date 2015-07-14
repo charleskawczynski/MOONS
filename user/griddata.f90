@@ -198,8 +198,8 @@
          ! case (1006); hmin = -real(0.25,cp); hmax = real(0.25,cp) ! Isolated Eddy
          ! hmin(3) = real(-0.5,cp); hmax(3) = real(0.5,cp)          ! Isolated Eddy
 
-         ! case (1006); hmin = real(-0.5,cp); hmax = real(0.5,cp) ! Single Eddy
-         ! hmin(1) = real(-1.0,cp); hmax(1) = real(1.0,cp)
+         case (1006); hmin = real(-0.5,cp); hmax = real(0.5,cp) ! Single Eddy
+         hmin(1) = real(-1.0,cp); hmax(1) = real(1.0,cp) ! Extend for true periodicity
 
          case (1007); hmin = real(-2.0,cp); hmax = real(2.0,cp) ! Parker - Cylinder
          hmin(3) = real(-0.5,cp); hmax(3) = real(0.5,cp)
@@ -210,6 +210,12 @@
          hmin(3) = real(-1.0,cp); hmax(3) = real(1.0,cp)
          case (1009) ! Kawczynski
          hmin = zero; hmax = one
+         case (1010) ! Kawczynski
+         hmin = real(-0.5,cp); hmax = real(0.5,cp) ! for xyz
+
+         case (1011) ! Kawczynski
+         hmin = real(-1.0,cp); hmax = real(1.0,cp) ! for xyz
+         hmin(1) = real(-0.5,cp); hmax(1) = real(0.5,cp) ! for xyz
 
          case default
            write(*,*) 'Incorrect benchmarkCase in initGriddata';stop
@@ -274,6 +280,10 @@
          betai(3) = real(1.1,cp)
 
          case (1009); betai = 100000d0
+         case (1010); betai = 1.01d0
+         case (1011)
+         betai = hartmannBL(Ha,hmin,hmax)
+         betai(1) = 10000.0d0
 
          case default
            write(*,*) 'Incorrect benchmarkCase in setGriddata';stop
@@ -346,6 +356,10 @@
          case (1008); twtop = 0.0d0;   twbot = 0.0d0     ! Bandaru
 
          case (1009); twtop = 0.0d0;   twbot = 0.0d0     ! Kawczynski
+         ! case (1010); twtop = 5.0d0;   twbot = 5.0d0     ! Kawczynski for sigma* = 0.01
+         case (1010); twtop = 1.5d0;   twbot = 1.5d0     ! Kawczynski for sigma* = 0.001
+
+         case (1011); twtop = 0.0d0;   twbot = 0.0d0     ! Kawczynski
 
          case default
            stop 'Error: Incorrect benchmarkCase in setGriddata'

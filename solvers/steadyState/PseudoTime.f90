@@ -26,7 +26,7 @@
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
-      use scalarField_mod
+      use SF_mod
 
       use solverSettings_mod
 #ifdef _EXPORT_PSE_CONVERGENCE_
@@ -51,7 +51,7 @@
 
       type PseudoTimeSolver
         character(len=5) :: name
-        type(scalarField) :: u,lapu,f,res ! f zeros mean
+        type(SF) :: u,lapu,f,res ! f zeros mean
         real(cp) :: dt
         integer,dimension(3) :: s
       end type
@@ -68,10 +68,10 @@
         type(PseudoTimeSolver),intent(inout) :: PSE
         integer,dimension(3),intent(in) :: s
         PSE%s = s
-        call allocateField(PSE%lapu,s)
-        call allocateField(PSE%f,s)
-        call allocateField(PSE%u,s)
-        call allocateField(PSE%res,s)
+        call init(PSE%lapu,s)
+        call init(PSE%f,s)
+        call init(PSE%u,s)
+        call init(PSE%res,s)
         PSE%name = 'PSE'
       end subroutine
 

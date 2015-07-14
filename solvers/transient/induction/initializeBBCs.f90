@@ -2,8 +2,8 @@
        use grid_mod
        use BCs_mod
        use vectorBCs_mod
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
        implicit none
        ! Make some of these integers, neumann_i, neumann_c, etc. 
        ! global within this file.
@@ -18,12 +18,13 @@
 
        private
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer,parameter :: preDefinedB_BCs = 1
+       integer,dimension(3),parameter :: periodic_dir = (/1,1,0/) ! 1 = true, else false
+       integer,parameter :: preDefinedB_BCs = 3
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0
        !                                      3 : Bandaru
+       !                                      4 : B = 0 AND dBn/dn = 0
 
 
 #ifdef _SINGLE_PRECISION_
@@ -44,7 +45,7 @@
          implicit none
          type(vectorBCs),intent(inout) :: B_bcs
          type(BCs),intent(inout) :: phi_bcs
-         type(vectorField),intent(in) :: B
+         type(VF),intent(in) :: B
          type(grid),intent(in) :: g
          logical,intent(in) :: cleanB
 
@@ -55,7 +56,7 @@
          if (preDefinedB_BCs.ne.0) then
            call initPreDefinedBCs(B_bcs,phi_bcs,g,cleanB)
          else
-           call initUserBBCs(B_bcs,phi_bcs,cleanB)
+           call initUserBBCs(B_bcs)
          endif
          call setGrid(B_bcs,g)
          if (cleanB) call setGrid(phi_bcs,g)
@@ -76,6 +77,8 @@
          case (1) ! Default
          case (2); call initBeqZeroBCs(B_bcs)      ! B = 0
          case (3); call initBeqZeroBCs(B_bcs)
+                   call initBandaru(B_bcs)
+         case (4); call initBeqZeroBCs(B_bcs)
                    call initBandaru(B_bcs)
          case default
            write(*,*) 'Incorrect preDefinedB_BCs in initPreDefinedBfield';stop
@@ -143,11 +146,9 @@
          call setAllZero(B_bcs%z,dirichlet)
        end subroutine
 
-       subroutine initUserBBCs(B_bcs,phi_bcs,cleanB)
+       subroutine initUserBBCs(B_bcs)
          implicit none
-         type(BCs),intent(inout) :: phi_bcs
          type(vectorBCs),intent(inout) :: B_bcs
-         logical,intent(in) :: cleanB
          integer :: neumann,periodic_i
          neumann = 5
          periodic_i = 7 ! Wall incoincident
@@ -190,70 +191,6 @@
          case default
          stop 'Error: dir must = 1,2,3 in makePeriodic in initializeBBCs.f90'
          end select
-       end subroutine
-
-       subroutine initBandaruOld(B_bcs,g,component,wallDir,varyDir)
-         implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         type(grid),intent(in) :: g
-         integer,intent(in) :: component,wallDir,varyDir
-         select case (component)
-         case (1); call initBandaruProfileOld(B_bcs%x,g,wallDir,varyDir)
-         case (2); call initBandaruProfileOld(B_bcs%y,g,wallDir,varyDir)
-         case (3); call initBandaruProfileOld(B_bcs%z,g,wallDir,varyDir)
-         case default
-         stop 'Error: component must = 1,2,3 in initBandaru in initializeBBCs.f90'
-         end select
-       end subroutine
-
-       subroutine initBandaruProfileOld(B_bcs,g,dirWalls,varyDir)
-         implicit none
-         type(BCs),intent(inout) :: B_bcs
-         type(grid),intent(in) :: g
-         integer,intent(in) :: dirWalls,varyDir
-         type(scalarField) :: temp
-         integer,dimension(3) :: s
-         integer :: i,j,k
-         real(cp) :: ka
-         integer :: dirichlet,dirichlet_i
-         dirichlet_i = 2; dirichlet = dirichlet_i
-         s = B_bcs%s
-         ka = real(1.0,cp)
-         call allocateField(temp,s)
-         select case (varyDir)
-         case (1); 
-           do k=1,s(3);do j=1,s(2);do i=1,s(1)
-             temp%phi(i,j,k) = cos(ka*g%c(1)%hc(i))
-           enddo;enddo;enddo
-         case (2); 
-           do k=1,s(3);do j=1,s(2);do i=1,s(1)
-             temp%phi(i,j,k) = cos(ka*g%c(2)%hc(j))
-           enddo;enddo;enddo
-         case (3); 
-           do k=1,s(3);do j=1,s(2);do i=1,s(1)
-             temp%phi(i,j,k) = cos(ka*g%c(3)%hc(k))
-           enddo;enddo;enddo
-         case default
-         stop 'Error: component must = 1,2,3 in initBandaruProfile in initializeBBCs.f90'
-         end select
-
-         select case (dirWalls)
-         case (1); call setXminType(B_bcs,dirichlet)
-                   call setXminVals(B_bcs,reshape(temp%phi,(/s(2),s(3)/)))
-                   call setXmaxType(B_bcs,dirichlet)
-                   call setXmaxVals(B_bcs,reshape(temp%phi,(/s(2),s(3)/)))
-         case (2); call setYminType(B_bcs,dirichlet)
-                   call setYminVals(B_bcs,reshape(temp%phi,(/s(1),s(3)/)))
-                   call setYmaxType(B_bcs,dirichlet)
-                   call setYmaxVals(B_bcs,reshape(temp%phi,(/s(1),s(3)/)))
-         case (3); call setZminType(B_bcs,dirichlet)
-                   call setZminVals(B_bcs,reshape(temp%phi,(/s(1),s(2)/)))
-                   call setZmaxType(B_bcs,dirichlet)
-                   call setZmaxVals(B_bcs,reshape(temp%phi,(/s(1),s(2)/)))
-         case default
-         stop 'Error: component must = 1,2,3 in initBandaruProfile in initializeBBCs.f90'
-         end select
-         call delete(temp)
        end subroutine
 
        end module

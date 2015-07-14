@@ -13,9 +13,9 @@
        private
        public :: initUBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer,dimension(3),parameter :: periodic_dir = (/1,1,0/) ! 1 = true, else false
 
-       integer,parameter :: preDefinedU_BCs = 1
+       integer,parameter :: preDefinedU_BCs = 2
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -102,32 +102,33 @@
          case (2); ! Leave default
 
          case (3); call ductFlow_Uniform_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
-                   call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
+                   call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
+                   call ductFlow_dirichletP_IO(p_bcs,ductDirection,1)
 
          case (4); call ductFlow_fullyDevelopedProfile(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
 
-         case (5); call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
-                   call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
+         case (5); call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
+                   call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
 
-         case (6); ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
-                   ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
+         case (6); ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
+                   ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
 
-                   call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
-                   call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
-                   call ductFlow_periodicP_IO(p_bcs,g,ductDirection,-1)
-                   call ductFlow_periodicP_IO(p_bcs,g,ductDirection,1)
+                   call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
+                   call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
+                   call ductFlow_periodicP_IO(p_bcs,ductDirection,-1)
+                   call ductFlow_periodicP_IO(p_bcs,ductDirection,1)
 
-         ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
+         ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
          ! call ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
 
          case (7); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
          case (8); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,drivenFace,drivenDirection,drivenSign)
          case (9); 
          case (10)
-                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,-1)
-                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
-                   ! call ductFlow_periodicP_IO(p_bcs,g,ductDirection,-1)
-                   ! call ductFlow_periodicP_IO(p_bcs,g,ductDirection,1)
+                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
+                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
+                   ! call ductFlow_periodicP_IO(p_bcs,ductDirection,-1)
+                   ! call ductFlow_periodicP_IO(p_bcs,ductDirection,1)
          case default
            stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
          end select
@@ -135,7 +136,7 @@
          do i=1,3
            select case (periodic_dir(i))
            case (0)
-           case (1); call makePeriodic(u_bcs,v_bcs,w_bcs,p_bcs,g,i)
+           case (1); call makePeriodic(u_bcs,v_bcs,w_bcs,p_bcs,i)
            case default
            stop 'Error: periodic_dir must = 1,0 in initPredefinedUBCs in initializeUBCs.f90'
            end select
@@ -228,10 +229,9 @@
          deallocate(bvals)
        end subroutine
 
-       subroutine makePeriodic(u_bcs,v_bcs,w_bcs,p_bcs,g,dir)
+       subroutine makePeriodic(u_bcs,v_bcs,w_bcs,p_bcs,dir)
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs,p_bcs
-         type(grid),intent(in) :: g
          integer,intent(in) :: dir
          integer :: periodic_c,periodic_i
          periodic_c = 6 ! Wall coincident
@@ -326,10 +326,9 @@
          end select
        end subroutine
 
-       subroutine ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,g,ductDir,IO)
+       subroutine ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDir,IO)
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         type(grid),intent(in) :: g
          integer,intent(in) :: ductDir,IO
          integer :: neumann_n,neumann_t
          neumann_n = 3
@@ -375,10 +374,9 @@
          end select
        end subroutine
 
-       subroutine ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDir,IO)
+       subroutine ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,ductDir,IO)
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         type(grid),intent(in) :: g
          integer,intent(in) :: ductDir,IO
          integer :: periodic_c,periodic_i
          periodic_c = 6 ! Wall coincident
@@ -446,9 +444,8 @@
          call setZmaxType(w_bcs,1)
        end subroutine
 
-       subroutine ductFlow_dirichletP_IO(p_bcs,g,ductDir,IO)
+       subroutine ductFlow_dirichletP_IO(p_bcs,ductDir,IO)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: p_bcs
          integer,intent(in) :: ductDir,IO
          integer :: dirichlet
@@ -473,9 +470,8 @@
          end select
        end subroutine
 
-       subroutine ductFlow_periodicP_IO(p_bcs,g,ductDir,IO)
+       subroutine ductFlow_periodicP_IO(p_bcs,ductDir,IO)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: p_bcs
          integer,intent(in) :: ductDir,IO
          integer :: periodic_i
@@ -487,16 +483,16 @@
            case (1); call setXminType(p_bcs,periodic_i)
            case (2); call setYminType(p_bcs,periodic_i)
            case (3); call setZminType(p_bcs,periodic_i)
-           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_dirichletP_IO'
+           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_periodicP_IO'
            end select
          case (1)
            select case (ductDir)
            case (1); call setXmaxType(p_bcs,periodic_i)
            case (2); call setYmaxType(p_bcs,periodic_i)
            case (3); call setZmaxType(p_bcs,periodic_i)
-           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_dirichletP_IO'
+           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_periodicP_IO'
            end select
-         case default; stop 'Error: IO must = -1,1 in ductFlow_dirichletP_IO'
+         case default; stop 'Error: IO must = -1,1 in ductFlow_periodicP_IO'
          end select
        end subroutine
 

@@ -1,8 +1,8 @@
        module momentumSolver_mod
        use simParams_mod
        
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
 
        use initializeUBCs_mod
        use initializeUField_mod
@@ -82,18 +82,18 @@
 
        type momentum
          ! Field Quantities
-         type(vectorField) :: U,Ustar
-         type(vectorField) :: Unm1,U_CC
+         type(VF) :: U,Ustar
+         type(VF) :: Unm1,U_CC
 
-         ! type(vectorField) :: vorticity
-         type(vectorField) :: temp_F
-         type(vectorField) :: temp_E1,temp_E2
+         ! type(VF) :: vorticity
+         type(VF) :: temp_F
+         type(VF) :: temp_E1,temp_E2
 
-         type(scalarField) :: p,divU,temp_CC
+         type(SF) :: p,divU,temp_CC
 
-         type(scalarField) :: Fo_grid,Co_grid,Re_grid
+         type(SF) :: Fo_grid,Co_grid,Re_grid
 
-         type(scalarField) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
+         type(SF) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
 
          ! Boundary conditions
          type(BCs) :: p_bcs
@@ -154,30 +154,30 @@
          call allocateY(mom%U,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
          call allocateZ(mom%U,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateVectorField(mom%Ustar,mom%U)
-         call allocateVectorField(mom%Unm1,mom%U)
-         call allocateVectorField(mom%temp_F,mom%U)
+         call init(mom%Ustar,mom%U)
+         call init(mom%Unm1,mom%U)
+         call init(mom%temp_F,mom%U)
 
          call allocateX(mom%temp_E1,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
          call allocateY(mom%temp_E1,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
          call allocateZ(mom%temp_E1,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
 
-         call allocateVectorField(mom%temp_E2,mom%temp_E1)
+         call init(mom%temp_E2,mom%temp_E1)
 
          ! allocate P-Fields
-         call allocateField(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
-         call allocateField(mom%divU,mom%p)
-         call allocateVectorField(mom%U_CC,mom%p)
-         call allocateField(mom%temp_CC,mom%p)
-         call allocateField(mom%Fo_grid,mom%p)
-         call allocateField(mom%Co_grid,mom%p)
-         call allocateField(mom%Re_grid,mom%p)
+         call init(mom%p,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+         call init(mom%divU,mom%p)
+         call init(mom%U_CC,mom%p)
+         call init(mom%temp_CC,mom%p)
+         call init(mom%Fo_grid,mom%p)
+         call init(mom%Co_grid,mom%p)
+         call init(mom%Re_grid,mom%p)
 
-         call allocateField(mom%KE_adv,mom%p)
-         call allocateField(mom%KE_diff,mom%p)
-         call allocateField(mom%KE_pres,mom%p)
-         call allocateField(mom%KE_transient,mom%p)
-         call allocateField(mom%KE_jCrossB,mom%p)
+         call init(mom%KE_adv,mom%p)
+         call init(mom%KE_diff,mom%p)
+         call init(mom%KE_pres,mom%p)
+         call init(mom%KE_transient,mom%p)
+         call init(mom%KE_jCrossB,mom%p)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -371,22 +371,23 @@
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
-         type(vectorField) :: tempCCVF,tempNVF
+         type(VF) :: tempNVF
+         ! type(VF) :: tempCCVF
 
          write(*,*) 'Exporting PROCESSED Solutions for U'
 
          ! ********************** EXPORT IN NODES ***************************
          Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-         call allocateVectorField(tempNVF,Nx,Ny,Nz)
+         call init(tempNVF,Nx,Ny,Nz)
          call face2Node(tempNVF,mom%u,g)
          call writeToFile(g,tempNVF,dir//'Ufield/','uni','vni','wni')
          call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
          call delete(tempNVF)
-         call momentumExportTransientFull(mom,g,dir)
+         ! call exportTransientFull(mom,g,dir)
 
          ! ******************** EXPORT IN CELL CENTERS **********************
          ! Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         ! call allocateVectorField(tempCCVF,Nx,Ny,Nz)
+         ! call init(tempCCVF,Nx,Ny,Nz)
          ! call face2CellCenter(tempCCVF,mom%U,g)
          ! call writeToFile(g,tempCCVF,dir//'Ufield/','uci','vci','wci')
          ! call delete(tempCCVF)
@@ -438,9 +439,9 @@
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
-         type(vectorField) :: tempNVF
+         type(VF) :: tempNVF
          Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-         call allocateVectorField(tempNVF,Nx,Ny,Nz)
+         call init(tempNVF,Nx,Ny,Nz)
          call face2Node(tempNVF,mom%u,g)
          call writeVecPhysicalPlane(g,tempNVF,dir//'Ufield/transient/',&
           'uni_phys',&
@@ -457,7 +458,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
-         type(vectorField),intent(in) :: F
+         type(VF),intent(in) :: F
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
          logical :: exportNow
@@ -476,7 +477,7 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
          ! call computeKineticEnergy(mom,mom%g,F)
-         ! call computeTotalKineticEnergy(mom,ss_MHD)
+         call computeTotalKineticEnergy(mom,ss_MHD)
          ! call computeMomentumStability(mom,ss_MHD)
 
          if (getExportErrors(ss_MHD)) call computeDivergence(mom,mom%g)
@@ -503,7 +504,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
-         type(vectorField),intent(in) :: F
+         type(VF),intent(in) :: F
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
@@ -567,7 +568,8 @@
             mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
 
            call grad(mom%temp_F,mom%p%phi,g)
-           ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1)
+           ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
+           call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
            ! call divide(mom%temp_F,real(2.0,cp)) ! O(dt^2) pressure treatment
 
            ! Ustar = Ustar - dt*dp/dx
@@ -586,7 +588,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
-         type(vectorField),intent(in) :: F
+         type(VF),intent(in) :: F
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
          ! ********************** LOCAL VARIABLES ***********************
@@ -658,7 +660,7 @@
          implicit none
          type(momentum),intent(inout) :: mom
          type(grid),intent(in) :: g
-         type(vectorField),intent(in) :: F
+         type(VF),intent(in) :: F
          real(cp) :: Re,dt
          dt = mom%dTime
          Re = mom%Re
@@ -730,7 +732,6 @@
          implicit none
          type(momentum),intent(inout) :: mom
          type(solverSettings),intent(in) :: ss_MHD
-         real(cp) :: K_energy
           if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
            call face2CellCenter(mom%U_CC,mom%U,mom%g)
 
@@ -757,7 +758,7 @@
 
        subroutine addMeanPressureGrad(f,mpg,dir)
          implicit none
-         type(vectorField),intent(inout) :: f
+         type(VF),intent(inout) :: f
          real(cp),intent(in) :: mpg
          integer,intent(in) :: dir
          select case (dir)
@@ -844,31 +845,14 @@
 
        subroutine zeroWallCoincidentBoundariesVF(f,g)
          implicit none
-         type(vectorField),intent(inout) :: f
+         type(VF),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,0)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,0)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,0)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,2)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,2)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,2)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,3)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,3)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,3)
        end subroutine
-
-       subroutine computeTotalKineticEnergyOld(mom,U_cct,Nici1,Nici2,ss_MHD)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(vectorField),intent(in) :: U_cct
-         integer,dimension(3),intent(in) :: Nici1,Nici2
-         type(solverSettings),intent(in) :: ss_MHD
-         real(cp) :: K_energy
-          if (computeKU.and.getExportTransient(ss_MHD).or.mom%nstep.eq.0) then
-           ! call totalEnergy(K_energy,ind%U_cct,ind%g) ! Sergey uses interior...
-           call totalEnergy(K_energy,&
-             U_cct%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             U_cct%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             U_cct%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             mom%g)
-           call set(mom%KU_energy,mom%nstep,K_energy)
-           call apply(mom%KU_energy)
-          endif
-       end subroutine
-
 
        end module

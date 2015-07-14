@@ -10,8 +10,7 @@
 
        use grid_mod
        use norms_mod
-       use scalarField_mod
-       use vectorField_mod
+       use VF_mod
        use richardsonExtrapolation_mod
 
        use MOONS_mod
@@ -73,7 +72,7 @@
          integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
          ! integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart+Nsims-1)/)
          type(richardsonExtrapolation),dimension(Nsims-2) :: RE
-         type(vectorField),dimension(Nsims) :: U,B
+         type(VF),dimension(Nsims) :: U,B
          type(grid),dimension(Nsims) :: grid_mom,grid_ind
          write(*,*) '***************************************************'
          write(*,*) '**************** CONVERGENCE RATES ****************'
@@ -127,7 +126,7 @@
          integer :: i,dir
          integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
          type(richardsonExtrapolation),dimension(Nsims-2) :: RE
-         type(vectorField),dimension(Nsims) :: U,B
+         type(VF),dimension(Nsims) :: U,B
          type(grid),dimension(Nsims) :: grid_mom,grid_ind
          write(*,*) '***************************************************'
          write(*,*) '**************** CONVERGENCE RATES ****************'

@@ -33,8 +33,8 @@
        use del_mod
        use delVC_mod
        use grid_mod
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
        use ops_interp_mod
        use ops_aux_mod
 
@@ -348,7 +348,7 @@
 
        subroutine lapUniformCoeffSF(lapU,u,g)
          implicit none
-         type(scalarField),intent(inout) :: lapU
+         type(SF),intent(inout) :: lapU
          real(cp),dimension(:,:,:),intent(in) :: u
          type(grid),intent(in) :: g
          call lap(lapU%phi,u,g)
@@ -362,8 +362,8 @@
 
        subroutine collocatedCrossVF(AcrossB,A,B)
          implicit none
-         type(vectorField),intent(inout) :: AcrossB
-         type(vectorField),intent(in) :: A,B
+         type(VF),intent(inout) :: AcrossB
+         type(VF),intent(in) :: A,B
          call cross(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,1)
          call cross(AcrossB%y,A%x,A%y,A%z,B%x,B%y,B%z,2)
          call cross(AcrossB%z,A%x,A%y,A%z,B%x,B%y,B%z,3)
@@ -371,8 +371,8 @@
 
        subroutine lapUniformCoeffVF(lapU,u,g)
          implicit none
-         type(vectorField),intent(inout) :: lapU
-         type(vectorField),intent(in) :: u
+         type(VF),intent(inout) :: lapU
+         type(VF),intent(in) :: u
          type(grid),intent(in) :: g
          call lap(lapU%x,U%x,g)
          call lap(lapU%y,U%y,g)
@@ -381,8 +381,8 @@
 
        subroutine lapVariableCoeff1VF(lapU,U,k,g)
          implicit none
-         type(vectorField),intent(inout) :: lapU
-         type(vectorField),intent(in) :: U,k
+         type(VF),intent(inout) :: lapU
+         type(VF),intent(in) :: U,k
          type(grid),intent(in) :: g
          call lap(lapU%x,U%x,k%x,k%y,k%z,g)
          call lap(lapU%y,U%y,k%x,k%y,k%z,g)
@@ -391,9 +391,9 @@
 
        subroutine lapVariableCoeff2VF(lapU,U,k,g)
          implicit none
-         type(vectorField),intent(inout) :: lapU
-         type(vectorField),intent(in) :: U
-         type(scalarField),intent(in) :: k
+         type(VF),intent(inout) :: lapU
+         type(VF),intent(in) :: U
+         type(SF),intent(in) :: k
          type(grid),intent(in) :: g
          call lap(lapU%x,U%x,k%phi,g)
          call lap(lapU%y,U%y,k%phi,g)
@@ -403,14 +403,14 @@
        subroutine divVF(divU,U,g)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: divU
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          call div(divU,U%x,U%y,U%z,g)
        end subroutine
 
        subroutine gradVF(gradU,U,g)
          implicit none
-         type(vectorField),intent(inout) :: gradU
+         type(VF),intent(inout) :: gradU
          real(cp),dimension(:,:,:),intent(in) :: U
          type(grid),intent(in) :: g
          call grad(gradU%x,gradU%y,gradU%z,U,g)
@@ -418,8 +418,8 @@
 
        subroutine curlVF(curlU,U,g)
          implicit none
-         type(vectorField),intent(inout) :: curlU
-         type(vectorField),intent(in) :: U
+         type(VF),intent(inout) :: curlU
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          call curl(curlU%x,U%x,U%y,U%z,g,1)
          call curl(curlU%y,U%x,U%y,U%z,g,2)
@@ -428,7 +428,7 @@
 
        subroutine mixed_uniformCoeffVF(mix,f,g)
          implicit none
-         type(vectorField),intent(inout) :: mix
+         type(VF),intent(inout) :: mix
          real(cp),dimension(:,:,:),intent(in) :: f
          type(grid),intent(in) :: g
          call mixed(mix%x,f,g,2,3)
@@ -438,8 +438,8 @@
 
        subroutine mixed_variableCoeffVF(mix,f,k,g)
          implicit none
-         type(vectorField),intent(inout) :: mix
-         type(vectorField),intent(in) :: k
+         type(VF),intent(inout) :: mix
+         type(VF),intent(in) :: k
          real(cp),dimension(:,:,:),intent(in) :: f
          type(grid),intent(in) :: g
          call mixed(mix%x,f,k%y,g,2,3) ! Shape of k must match dir1

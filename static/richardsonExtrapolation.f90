@@ -32,8 +32,8 @@
 
        use grid_mod
        use norms_mod
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
 
        implicit none
 
@@ -131,7 +131,7 @@
 
        subroutine loadData(f,g,directory,nx,ny,nz)
          implicit none
-         type(vectorField),intent(inout) :: f
+         type(VF),intent(inout) :: f
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: directory,nx,ny,nz
          call readFromFile(g,f,directory,nx,ny,nz)
@@ -145,7 +145,7 @@
 
        function computeRE_VF(f,g,n,r,dir,directory,name) result (RE)
          implicit none
-         type(vectorField),dimension(n),intent(in) :: f
+         type(VF),dimension(n),intent(in) :: f
          type(grid),dimension(n),intent(in) :: g
          integer,dimension(3),intent(in) :: r
          integer,intent(in) :: n,dir
@@ -195,10 +195,10 @@
          integer,dimension(3) :: r1,r2,r3 ! no refinement compared to coarsest grid
          integer,dimension(3) :: s
          type(norms) :: f3_f2,f2_f1,f1_f0,f2_f0
-         type(scalarField) :: f0
+         type(SF) :: f0
          real(cp) :: Fs,r0
          r1 = r*r; r2 = r; r3 = 1; r0 = real(maxval(r),cp)
-         call allocateField(f0,shape(f1))
+         call init(f0,shape(f1))
          call assign(f0,real(0.0,cp))
 
          if (.not.(r0.gt.real(1.0,cp))) stop 'Refinement was not performed in computeRE in convergenceRate.f90'
@@ -256,11 +256,11 @@
          integer,dimension(3),intent(in) :: s
          type(grid),intent(in) :: g ! grid for e
          character(len=*),intent(in) :: dir,name
-         type(scalarField) :: e
+         type(SF) :: e
          type(norms) :: n
          integer :: i,j,k,i1,j1,k1,i2,j2,k2
 
-         call allocateField(e,s)
+         call init(e,s)
          !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
          do k=2,s(3)-1
            k1 = 2 + (k-2)*r1(3); k2 = 2 + (k-2)*r2(3)

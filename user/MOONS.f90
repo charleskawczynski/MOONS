@@ -12,8 +12,7 @@
        use ops_interp_mod
        use rundata_mod
        use norms_mod
-       use scalarField_mod
-       use vectorField_mod
+       use VF_mod
 
        use solverSettings_mod
        use BCs_mod
@@ -48,7 +47,7 @@
        subroutine MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
          implicit none
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
-         type(vectorField),intent(inout) :: U,B
+         type(VF),intent(inout) :: U,B
          type(grid),intent(inout) :: grid_mom,grid_ind
          character(len=*),intent(in) :: dir ! Output directory
 
@@ -213,9 +212,9 @@
          ! call export(mom,mom%g,dir)
          ! call export(ind,ind%g,dir)
 
-         call allocateVectorField(U,mom%g%c(1)%sn,mom%g%c(2)%sn,mom%g%c(3)%sn)
+         call init(U,mom%g%c(1)%sn,mom%g%c(2)%sn,mom%g%c(3)%sn)
          call face2Node(U,mom%U,mom%g)
-         if (solveInduction) call allocateVectorField(B,ind%g%c(1)%sn,ind%g%c(2)%sn,ind%g%c(3)%sn)
+         if (solveInduction) call init(B,ind%g%c(1)%sn,ind%g%c(2)%sn,ind%g%c(3)%sn)
          if (solveInduction) call cellCenter2Node(B,ind%B,ind%g)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
@@ -388,33 +387,43 @@
          ! Rem = 1000.0d0; ds = 1.0d-3
          case (1005); Re = 400d0;    Ha = 10.0d0 ; Rem = 1.0d0  ; ds = 1.0d-5; dTime = ds
          ! case (1006); Rem = 50.0d0*real(4.0,cp)*PI ; ds = 1.0d-4; dTime = ds
-         case (1006); Rem = real(1000.0,cp) ; ds = 1.0d-4; dTime = ds
+         case (1006); Rem = real(1000.0,cp) ; ds = 5.0d-5; dTime = ds
 
          case (1007); Rem = real(100.0,cp) ; ds = 3.0d-5; dTime = ds ! Parker
 
          case (1008); 
          Re = real(200.0,cp)
-         ! Ha = real(25.819888974716115,cp) ! Q  = 0.3 : Q = 1/N = Re/Ha^2 => Ha^2 = Re/Q
-         Ha = real(20.0,cp)             ! Q  = 0.5 : Q = 1/N = Re/Ha^2 => Ha^2 = Re/Q
+         Ha = real(25.819888974716115,cp) ! Q  = 0.3 : Q = 1/N = Re/Ha^2 => Ha^2 = Re/Q
+         ! Ha = real(20.0,cp)             ! Q  = 0.5 : Q = 1/N = Re/Ha^2 => Ha^2 = Re/Q
          ! Ha = real(100.0,cp)             ! Q  = 0.5 : Q = 1/N = Re/Ha^2 => Ha^2 = Re/Q
          Rem = real(1.0,cp)
          ! Rem = real(0.001,cp)
-         ! ds = 2.0d-5; dTime = ds
-         ds = 3.0d-4; dTime = ds
-         ! Re = real(2.0,cp)
+         ds = 2.0d-5; dTime = ds ! Q = 0.3, good dt
+         ! ds = 3.0d-4; dTime = ds
 
          case (1009)
-         Re = real(1000.0,cp)
-         Ha = real(100.0,cp)
+         Re = real(400.0,cp); Ha = real(20.0,cp)
+
+         ! Rem = real(0.0,cp);    ds = 1.0d-4;   dTime = 1.0d-2 ! (Rem = 0)
+         Rem = real(1.0,cp);    ds = 5.0d-5;   dTime = ds     ! (Rem = 1)
+         ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
+         ! Rem = real(100.0,cp);  ds = 5.0d-3;   dTime = ds     ! (Rem = 100)
+
+         case (1010)
+         Re = real(400.0,cp); Ha = real(20.0,cp)
+
+         ! Rem = real(0.0,cp);    ds = 1.0d-4;   dTime = 1.0d-2 ! (Rem = 0)
+         ! Rem = real(1.0,cp);    ds = 5.0d-5;   dTime = ds     ! (Rem = 1)
+         ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
+         ! Rem = real(100.0,cp);  ds = 5.0d-5;   dTime = ds     ! (Rem = 100) , sigma* = 0.01
+         Rem = real(100.0,cp);  ds = 5.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+
+         case (1011)
+         Re = real(10.0,cp)
+         Ha = real(500.0,cp)
          Rem = real(100.0,cp)
-
-         ! ds = 6.0d-4 ! For Rem = 1
-         ! ds = 6.0d-4 ! For Rem = 10
-         ds = 1.0d-3 ! For Rem = 100
-         ! ds = 6.0d-4 ! For Rem = 1000
-
-         dTime = ds ! Finite Rem
-         ! dTime = 1.0d-3 ! Low Rem
+         ds = 5.0d-8
+         dTime = 1.0d-7
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -474,11 +483,33 @@
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
          case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6
          case (1005); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 8000
-         case (1006); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 50*10**4
+         case (1006); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*5*10**4
          case (1007); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 12*10**6
-         case (1008); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
-         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
-         case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 30*10**3
+         ! case (1008); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7
+         case (1008); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! Q = 0.3
+
+         case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
+
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**3 ! (Rem = 0) B0x
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**3 ! (Rem = 0) B0y - done
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**3 ! (Rem = 0) B0z
+
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3*10**4 ! (Rem = 1) B0x
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3*10**4 ! (Rem = 1) B0y - pending
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3*10**4 ! (Rem = 1) B0z
+
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3*10**4 ! (Rem = 10) B0x
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3*10**4 ! (Rem = 10) B0y - done
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3*10**4 ! (Rem = 10) B0z
+
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0x
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0y - done
+         ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0z
+         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
+         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
+
+         case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
+
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
@@ -535,15 +566,17 @@
          ! case (1006); Ni = (/64,64,1/);   Nwtop = 32;          Nwbot = 32 ! (Weiss, Isolated Eddy)
          ! Nwtop(3) = 0;        Nwbot(3) = 0                                ! (Weiss, Isolated Eddy)
 
-         case (1006); Ni = (/100,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
-         Nwtop(2) = 0;           Nwbot(2) = 0                             ! (Weiss, Single Eddy)
+         case (1006); Ni = (/200,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
 
          case (1007); Ni = (/100,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Parker, Cylinder)
 
          ! case (1008); Ni = (/100,1,100/);   Nwtop = 0;           Nwbot = 0  ! (Bandaru)
          case (1008); Ni = (/64,1,64/);   Nwtop = 0;           Nwbot = 0  ! (Bandaru)
-         ! case (1009); Ni = 50;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
-         case (1009); Ni = 100;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
+         case (1009); Ni = 50;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
+         ! case (1009); Ni = 100;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
+         ! case (1010); Ni = 50;            Nwtop = 25;          Nwbot = 25  ! (Kawczynski - demo) for sigma* = 0.01
+         case (1010); Ni = 50;            Nwtop = 15;          Nwbot = 15  ! (Kawczynski - demo) for sigma* = 0.001
+         case (1011); Ni = (/1,45,45/);   Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo) for shercliff / hunt flow
 
          case default
            Ni = (/64,32,32/)
@@ -558,7 +591,7 @@
        subroutine MOONS(dir)
          implicit none
          character(len=*),intent(in) :: dir ! Output directory
-         type(vectorField) :: U,B
+         type(VF) :: U,B
          integer,dimension(3) :: Ni,Nwtop,Nwbot
          type(grid) :: grid_mom,grid_ind
          call MOONS_Single_Grid(Ni,Nwtop,Nwbot)
@@ -610,7 +643,7 @@
        subroutine MOONS_Parametric(U,B,grid_mom,grid_ind,Nall,dir)
          implicit none
          character(len=*),intent(in) :: dir ! Output directory
-         type(vectorField),intent(inout) :: U,B
+         type(VF),intent(inout) :: U,B
          type(grid),intent(inout) :: grid_mom,grid_ind
          integer,intent(in) :: Nall
          integer,dimension(3) :: Nwtop,Nwbot,Ni

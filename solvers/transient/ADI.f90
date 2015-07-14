@@ -22,7 +22,7 @@
       use applyBCs_mod
       use grid_mod
       use del_mod
-      use scalarField_mod
+      use SF_mod
       use solverSettings_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -62,7 +62,7 @@
         integer :: nTimeLevels,gridType
         real(cp) :: alpha,dt
         real(cp),dimension(:,:,:),allocatable :: alpha_var
-        type(scalarField),dimension(3) :: temp
+        type(SF),dimension(3) :: temp
         logical :: var_coeff = .false.
       end type
 

@@ -2,7 +2,7 @@
       use IO_vectorBase_mod
       use IO_scalarBase_mod
       use grid_mod
-      use vectorField_mod
+      use VF_mod
 
       implicit none
 
@@ -35,7 +35,7 @@
         implicit none
         character(len=*),intent(in) :: dir,namex,namey,namez
         type(grid),intent(in) :: g
-        type(vectorField),intent(inout) :: U
+        type(VF),intent(inout) :: U
         logical,intent(in),optional :: headerTecplotTemp
         type(grid) :: gtemp
         call init(gtemp,g)
@@ -177,7 +177,7 @@
         implicit none
         character(len=*),intent(in) :: dir,namex,namey,namez
         type(grid),intent(in) :: g
-        type(vectorField),intent(in) :: U
+        type(VF),intent(in) :: U
         integer,dimension(3) :: s
         integer :: i
         s = shape(U%x)
@@ -196,7 +196,7 @@
         implicit none
         character(len=*),intent(in) :: dir,namex,namey,namez
         type(grid),intent(in) :: g
-        type(vectorField),intent(in) :: U
+        type(VF),intent(in) :: U
         call writeVecFieldPhysical(g,U%x,U%y,U%z,dir,namex,namey,namez)
       end subroutine
 
@@ -205,7 +205,7 @@
         character(len=*),intent(in) :: directory,namex,namey,namez,ext
         type(grid),intent(in) :: g
         integer,intent(in) :: dir,p,n ! direction, plane
-        type(vectorField),intent(in) :: U
+        type(VF),intent(in) :: U
         call writeVecFieldPhysicalPlane(g,U%x,U%y,U%z,directory,namex,namey,namez,ext,dir,p,n)
       end subroutine
 

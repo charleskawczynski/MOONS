@@ -5,8 +5,8 @@
        use IO_scalarFields_mod
        use IO_vectorFields_mod
        use myTime_mod
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
 
        use initializeBBCs_mod
        use initializeBfield_mod
@@ -59,28 +59,29 @@
 
        real(cp),parameter :: zero = real(0.0,cp)
        real(cp),parameter :: one = real(1.0,cp)
-       real(cp),parameter :: PI = 3.14159265358979
+       real(cp),parameter :: PI = real(3.14159265358979,cp)
 
        type induction
          character(len=9) :: name = 'induction'
          ! --- Vector fields ---
-         type(vectorField) :: B,Bstar,B0,B_face                ! CC data
-         type(vectorField) :: J,J_cc,E,temp_E                  ! Edge data
+         type(VF) :: B,Bstar,B0,B_face                ! CC data
+         type(VF) :: J,J_cc,E,temp_E                  ! Edge data
+         ! type(VF),dimension(0:1) :: B                 ! CC data - Applied, and induced fields
 
-         type(vectorField) :: U_Ft                             ! Face data
-         type(vectorField) :: U_cct                            ! Cell Center data
-         type(vectorField) :: U_E,V_E,W_E                      ! Edge data
+         type(VF) :: U_Ft                             ! Face data
+         type(VF) :: U_cct                            ! Cell Center data
+         type(VF) :: U_E,V_E,W_E                      ! Edge data
 
-         type(vectorField) :: temp_E1,temp_E2                  ! Edge data
-         type(vectorField) :: temp_F,temp_F2
-         type(vectorField) :: jCrossB_F                        ! Face data
-         type(vectorField) :: temp_CC                          ! CC data
+         type(VF) :: temp_E1,temp_E2                  ! Edge data
+         type(VF) :: temp_F,temp_F2
+         type(VF) :: jCrossB_F                        ! Face data
+         type(VF) :: temp_CC                          ! CC data
 
-         type(vectorField) :: sigmaInv_edge,sigmaInv_face
+         type(VF) :: sigmaInv_edge,sigmaInv_face
 
          ! --- Scalar fields ---
-         type(scalarField) :: sigma,mu          ! CC data
-         type(scalarField) :: divB,divJ,phi,temp               ! CC data
+         type(SF) :: sigma,mu          ! CC data
+         type(SF) :: divB,divJ,phi,temp               ! CC data
          ! BCs:
          type(vectorBCs) :: B_bcs
          type(BCs) :: phi_bcs
@@ -144,48 +145,48 @@
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
          ! CC Data
-         call allocateVectorField(ind%B,Nx,Ny,Nz)
-         call allocateVectorField(ind%Bstar,ind%B)
-         call allocateVectorField(ind%B0,ind%B)
-         call allocateVectorField(ind%J_cc,ind%B)
-         call allocateVectorField(ind%U_cct,ind%B)
-         call allocateVectorField(ind%temp_CC,ind%B)
+         call init(ind%B,Nx,Ny,Nz)
+         call init(ind%Bstar,ind%B)
+         call init(ind%B0,ind%B)
+         call init(ind%J_cc,ind%B)
+         call init(ind%U_cct,ind%B)
+         call init(ind%temp_CC,ind%B)
 
          ! Edge Data
          call allocateX(ind%J,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
          call allocateY(ind%J,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
          call allocateZ(ind%J,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
 
-         call allocateVectorField(ind%E,ind%J)
-         call allocateVectorField(ind%U_E,ind%J)
-         call allocateVectorField(ind%V_E,ind%J)
-         call allocateVectorField(ind%W_E,ind%J)
-         call allocateVectorField(ind%temp_E,ind%J)
-         call allocateVectorField(ind%temp_E1,ind%J)
-         call allocateVectorField(ind%temp_E2,ind%J)
-         call allocateVectorField(ind%sigmaInv_edge,ind%J)
+         call init(ind%E,ind%J)
+         call init(ind%U_E,ind%J)
+         call init(ind%V_E,ind%J)
+         call init(ind%W_E,ind%J)
+         call init(ind%temp_E,ind%J)
+         call init(ind%temp_E1,ind%J)
+         call init(ind%temp_E2,ind%J)
+         call init(ind%sigmaInv_edge,ind%J)
 
          ! Face Data
          call allocateX(ind%U_Ft,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
          call allocateY(ind%U_Ft,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
          call allocateZ(ind%U_Ft,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateVectorField(ind%temp_F,ind%U_Ft)
-         call allocateVectorField(ind%sigmaInv_face,ind%U_Ft)
-         call allocateVectorField(ind%temp_F2,ind%U_Ft)
-         call allocateVectorField(ind%jCrossB_F,ind%U_Ft)
-         call allocateVectorField(ind%B_face,ind%U_Ft)
+         call init(ind%temp_F,ind%U_Ft)
+         call init(ind%sigmaInv_face,ind%U_Ft)
+         call init(ind%temp_F2,ind%U_Ft)
+         call init(ind%jCrossB_F,ind%U_Ft)
+         call init(ind%B_face,ind%U_Ft)
 
          ! --- Scalar Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
-         call allocateField(ind%sigma,Nx,Ny,Nz)
-         call allocateField(ind%mu,ind%sigma)
-         call allocateField(ind%phi,ind%sigma)
-         call allocateField(ind%temp,ind%sigma)
+         call init(ind%sigma,Nx,Ny,Nz)
+         call init(ind%mu,ind%sigma)
+         call init(ind%phi,ind%sigma)
+         call init(ind%temp,ind%sigma)
 
-         call allocateField(ind%divB,ind%sigma)
-         call allocateField(ind%divJ,ind%sigma)
+         call init(ind%divB,ind%sigma)
+         call init(ind%divJ,ind%sigma)
          write(*,*) '     Fields allocated'
 
 
@@ -202,6 +203,8 @@
          call initSigmaMu(ind%sigma,ind%mu,ind%SD,g)
          call divide(one,ind%sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma%phi,g)
+         call treatInterface(ind%sigmaInv_edge)
+
          call cellCenter2Face(ind%sigmaInv_face,ind%sigma%phi,g)
          call initSigmaMu(ind%sigma,ind%mu,ind%SD,g)
 
@@ -406,14 +409,14 @@
          integer :: Nx,Ny,Nz
          ! Interior
          real(cp),dimension(:,:,:),allocatable :: tempn,tempcc
-         type(vectorField) :: tempVFn,tempVFn2
+         type(VF) :: tempVFn,tempVFn2
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
            write(*,*) 'Exporting PROCESSED solutions for B'
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-           call allocateVectorField(tempVFn,Nx,Ny,Nz)
-           call allocateVectorField(tempVFn2,Nx,Ny,Nz)
+           call init(tempVFn,Nx,Ny,Nz)
+           call init(tempVFn2,Nx,Ny,Nz)
 
            call cellCenter2Node(tempVFn,ind%B,g)
            call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt_phys','Bynt_phys','Bznt_phys')
@@ -454,7 +457,7 @@
            call delete(tempVFn)
            call delete(tempVFn2)
            write(*,*) '     finished'
-           call inductionExportTransientFull(ind,g,dir)
+           ! call inductionExportTransientFull(ind,g,dir)
          endif
        end subroutine
 
@@ -496,13 +499,13 @@
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
-         type(vectorField) :: tempVFn,tempVFn2
+         type(VF) :: tempVFn,tempVFn2
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
            Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-           call allocateVectorField(tempVFn,Nx,Ny,Nz)
-           call allocateVectorField(tempVFn2,tempVFn)
+           call init(tempVFn,Nx,Ny,Nz)
+           call init(tempVFn2,tempVFn)
 
            ! call cellCenter2Node(tempVFn,ind%B,g)
            ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
@@ -516,7 +519,7 @@
            call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
            'Btotxnt_phys',&
            'Btotynt_phys',&
-           'Btotznt_phys','_'//int2str(ind%nstep),2,2,ind%nstep)
+           'Btotznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
            !call writeScalarPhysicalPlane(g,tempVFn%x,dir//'Bfield/transient/',&
            !'Bxnt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
@@ -542,7 +545,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
@@ -585,7 +588,8 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         call computeTotalMagneticEnergy(ind,ind%B,ind%B0,g_mom,ss_MHD)
+         call computeTotalMagneticEnergy(ind,ss_MHD)
+         ! call computeTotalMagneticEnergyFluid(ind,g_mom,ss_MHD)
          call exportTransient(ind,ss_MHD)
 
          if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%g)
@@ -610,7 +614,7 @@
        subroutine lowRemPoissonOld(ind,U,g,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
          call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
@@ -629,7 +633,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
 
@@ -657,7 +661,7 @@
          ! is applied.
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          integer :: i
          
@@ -685,7 +689,7 @@
        subroutine lowRemPseudoTimeStep(ind,U,g)
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          integer :: i
 
@@ -763,7 +767,7 @@
        subroutine lowRem_JacksExperiment(ind,U,g)
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          integer :: i,t,b
          b = 10
@@ -822,7 +826,7 @@
          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: F_CC
+         type(VF),intent(in) :: F_CC
          type(grid),intent(in) :: g
 
          ! E = uxB
@@ -869,7 +873,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
 
@@ -921,7 +925,7 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          type(multiGrid),dimension(2) :: MG
 
@@ -997,12 +1001,12 @@
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
          implicit none
-         type(vectorField),intent(inout) :: jcrossB
+         type(VF),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
-         type(vectorField) :: temp
-         call allocateVectorField(temp,jcrossB)
+         type(VF) :: temp
+         call init(temp,jcrossB)
          call assign(temp,real(0.0,cp))
          call computeJCrossB(temp,ind,g_mom,Ha,Re,Rem)
          call add(jcrossB,temp)
@@ -1016,7 +1020,7 @@
          !     low Rem:     Ha^2/Re curl(B_induced) x (B0)
          ! 
          implicit none
-         type(vectorField),intent(inout) :: jcrossB
+         type(VF),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
@@ -1063,26 +1067,23 @@
        subroutine computeCurrent(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         call assign(ind%Bstar,ind%B)
-         call add(ind%Bstar,ind%B0)
+         call add(ind%Bstar,ind%B0,ind%B)
          ! call divide(ind%Bstar,ind%mu)
          call curl(ind%J_cc,ind%Bstar,ind%g)
        end subroutine
 
-       subroutine computeTotalMagneticEnergy(ind,B,B0,g,ss_MHD)
+       subroutine computeTotalMagneticEnergyFluid(ind,g,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: B,B0
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
          real(cp) :: K_energy
-         integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
-         Nin1  = ind%SD%Nin1; Nin2  = ind%SD%Nin2; Nice1 = ind%SD%Nice1
-         Nice2 = ind%SD%Nice2; Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-          call assign(ind%Bstar,ind%B0)
-          call add(ind%Bstar,ind%B)
+         integer,dimension(3) :: Nici1,Nici2
+         Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
+          call assign(ind%Bstar,ind%B)
+          call multiply(ind%Bstar,ind%Rem)
+          call add(ind%Bstar,ind%B0)
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           ! call totalEnergy(K_energy,ind%B,ind%g) ! Sergey uses interior...
            call totalEnergy(K_energy,&
              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
@@ -1091,23 +1092,50 @@
            call set(ind%KB_energy,ind%nstep,K_energy)
            call apply(ind%KB_energy)
           endif
+          call assign(ind%Bstar,ind%B)
+          call multiply(ind%Bstar,ind%Rem)
           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           ! call totalEnergy(K_energy,ind%B,ind%g) ! Sergey uses interior...
            call totalEnergy(K_energy,&
-             B%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             B%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             B%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              g)
            call set(ind%KBi_energy,ind%nstep,K_energy)
            call apply(ind%KBi_energy)
           endif
           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           ! call totalEnergy(K_energy,B0,ind%g) ! Sergey uses interior...
            call totalEnergy(K_energy,&
-             B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+             ind%B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              g)
+           call set(ind%KB0_energy,ind%nstep,K_energy)
+           call apply(ind%KB0_energy)
+          endif
+       end subroutine
+
+       subroutine computeTotalMagneticEnergy(ind,ss_MHD)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(solverSettings),intent(in) :: ss_MHD
+         real(cp) :: K_energy
+          call assign(ind%Bstar,ind%B)
+          call multiply(ind%Bstar,ind%Rem)
+          call add(ind%Bstar,ind%B0)
+          if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call totalEnergy(K_energy,ind%Bstar,ind%g)
+           call set(ind%KB_energy,ind%nstep,K_energy)
+           call apply(ind%KB_energy)
+          endif
+          call assign(ind%Bstar,ind%B)
+          call multiply(ind%Bstar,ind%Rem)
+          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call totalEnergy(K_energy,ind%Bstar,ind%g)
+           call set(ind%KBi_energy,ind%nstep,K_energy)
+           call apply(ind%KBi_energy)
+          endif
+          if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call totalEnergy(K_energy,ind%B0,ind%g)
            call set(ind%KB0_energy,ind%nstep,K_energy)
            call apply(ind%KB0_energy)
           endif
@@ -1118,9 +1146,9 @@
        subroutine embedVelocity(ind,U_fi,g)
          implicit none
          type(induction),intent(inout) :: ind
-         type(vectorField),intent(in) :: U_fi ! Raw momentum velocity
+         type(VF),intent(in) :: U_fi ! Raw momentum velocity
          type(grid),intent(in) :: g ! Momentum grid
-         type(vectorField) :: temp
+         type(VF) :: temp
          logical,dimension(4) :: usedVelocity
 
          usedVelocity = (/.true.,.true.,.false.,.false./)

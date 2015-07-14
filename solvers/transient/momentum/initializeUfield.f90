@@ -2,7 +2,7 @@
        use IO_scalarFields_mod
        use IO_scalarBase_mod
        use grid_mod
-       use vectorField_mod
+       use VF_mod
        use BCs_mod
        implicit none
 
@@ -43,7 +43,7 @@
 
        subroutine initUfield(U,p,g,dir)
          implicit none
-         type(vectorField),intent(inout) :: U
+         type(VF),intent(inout) :: U
          real(cp),dimension(:,:,:),intent(inout) :: p
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
@@ -442,7 +442,7 @@
 
        ! subroutine vortex2D(U,g,s,dir,vsign,directory)
        !   implicit none
-       !   type(vectorField),intent(inout) :: U
+       !   type(VF),intent(inout) :: U
        !   type(grid),intent(in) :: g
        !   integer,dimension(3),intent(in) :: s
        !   integer,intent(in) :: dir,vsign
@@ -454,7 +454,7 @@
        !   type(scalarField) :: omega,psi
        !   type(BCs) :: psi_bcs
        !   type(solverSettings) :: ss_psi
-       !   type(vectorField) :: tempVF,temp
+       !   type(VF) :: tempVF,temp
        !   type(norms) :: norm
        !   type(mySOR) :: SOR
        !   real(cp) :: two,one
@@ -466,7 +466,7 @@
        !   call writeAllBoundaries(psi_bcs,directory//'parameters/','psi')
        !   omega0 = 1000.0
        !   alpha = 10000.0
-       !   call allocateField(omega,s)
+       !   call init(omega,s)
        !   do k = 1,s(3)
        !     do j = 1,s(2)
        !       do i = 1,s(1)
@@ -478,7 +478,7 @@
        !       enddo
        !     enddo
        !   enddo
-       !   call allocateField(psi,s)
+       !   call init(psi,s)
        !   call init(ss_psi)
        !   call setMaxIterations(ss_psi,100)
        !   call poisson(SOR,psi%phi,omega%phi,psi_bcs,g,ss_psi,norm,.true.)

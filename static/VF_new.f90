@@ -23,6 +23,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: VF
         public :: init,delete
+        public :: allocateX,allocateY,allocateZ
 
         ! Monitoring
         public :: print

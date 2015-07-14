@@ -5,8 +5,8 @@
        use IO_scalarFields_mod
        use IO_vectorFields_mod
        use myTime_mod
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
 
        use initializeTBCs_mod
        use initializeTfield_mod
@@ -52,15 +52,15 @@
        type energy
          character(len=6) :: name = 'energy'
          ! --- Vector fields ---
-         type(scalarField) :: T,Tstar,Ttemp         ! CC data
-         type(vectorField) :: temp_F,k              ! Face data
-         type(vectorField) :: U_cct,temp_CC         ! CC data
-         type(vectorField) :: U_ft                  ! Face data
-         type(vectorField) :: gravity               ! CC data
-         type(vectorField) :: buoyancy              ! CC data
+         type(SF) :: T,Tstar,Ttemp         ! CC data
+         type(VF) :: temp_F,k              ! Face data
+         type(VF) :: U_cct,temp_CC         ! CC data
+         type(VF) :: U_ft                  ! Face data
+         type(VF) :: gravity               ! CC data
+         type(VF) :: buoyancy              ! CC data
          ! --- Scalar fields ---
-         type(scalarField) :: k_cc                  ! CC data
-         type(scalarField) :: divQ                  ! CC data
+         type(SF) :: k_cc                  ! CC data
+         type(SF) :: divQ                  ! CC data
          ! BCs:
          type(BCs) :: T_bcs
          ! Solver settings
@@ -112,27 +112,27 @@
          ! --- Vector Fields ---
          Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
 
-         call allocateField(nrg%T,Nx,Ny,Nz)
-         call allocateField(nrg%Tstar,nrg%T)
-         call allocateField(nrg%Ttemp,nrg%T)
-         call allocateField(nrg%k_cc,nrg%T)
+         call init(nrg%T,Nx,Ny,Nz)
+         call init(nrg%Tstar,nrg%T)
+         call init(nrg%Ttemp,nrg%T)
+         call init(nrg%k_cc,nrg%T)
 
          call allocateX(nrg%temp_F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
          call allocateY(nrg%temp_F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
          call allocateZ(nrg%temp_F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
 
-         call allocateVectorField(nrg%U_cct,nrg%T%s)
-         call allocateVectorField(nrg%temp_CC,nrg%T%s)
-         call allocateVectorField(nrg%gravity,nrg%T%s)
-         call allocateVectorField(nrg%buoyancy,nrg%T%s)
-         call allocateVectorField(nrg%k,nrg%temp_F)
-         call allocateVectorField(nrg%U_ft,nrg%temp_F)
+         call init(nrg%U_cct,nrg%T%s)
+         call init(nrg%temp_CC,nrg%T%s)
+         call init(nrg%gravity,nrg%T%s)
+         call init(nrg%buoyancy,nrg%T%s)
+         call init(nrg%k,nrg%temp_F)
+         call init(nrg%U_ft,nrg%temp_F)
 
          call assign(nrg%gravity,real(0.0,cp))
          call assign(nrg%buoyancy,real(0.0,cp))
 
          ! --- Scalar Fields ---
-         call allocateField(nrg%divQ,Nx,Ny,Nz)
+         call init(nrg%divQ,Nx,Ny,Nz)
          write(*,*) '     Fields allocated'
 
 
@@ -335,7 +335,7 @@
        subroutine solveEnergyEquation(nrg,U,g_mom,ss_MHD,dir)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(vectorField),intent(in) :: U
+         type(VF),intent(in) :: U
          type(grid),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
@@ -412,7 +412,7 @@
          !           ---  T g
          !           Re^2
          implicit none
-         type(vectorField),intent(inout) :: buoyancy
+         type(VF),intent(inout) :: buoyancy
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Gr,Re
          type(grid),intent(in) :: g_mom
@@ -425,12 +425,12 @@
 
        subroutine computeAddBuoyancy(buoyancy,nrg,g_mom,Gr,Re)
          implicit none
-         type(vectorField),intent(inout) :: buoyancy
+         type(VF),intent(inout) :: buoyancy
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Gr,Re
          type(grid),intent(in) :: g_mom
-         type(vectorField) :: temp
-         call allocateVectorField(temp,buoyancy)
+         type(VF) :: temp
+         call init(temp,buoyancy)
          call assign(temp,real(0.0,cp))
          call computeBuoyancy(temp,nrg,g_mom,Gr,Re)
          call add(buoyancy,temp)
@@ -444,7 +444,7 @@
          !           --- g
          !           Fr^2 
          implicit none
-         type(vectorField),intent(inout) :: gravity
+         type(VF),intent(inout) :: gravity
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Fr
          type(grid),intent(in) :: g_mom
@@ -456,12 +456,12 @@
 
        subroutine computeAddGravity(gravity,nrg,g_mom,Fr)
          implicit none
-         type(vectorField),intent(inout) :: gravity
+         type(VF),intent(inout) :: gravity
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Fr
          type(grid),intent(in) :: g_mom
-         type(vectorField) :: temp
-         call allocateVectorField(temp,gravity)
+         type(VF) :: temp
+         call init(temp,gravity)
          call assign(temp,real(0.0,cp))
          call computeGravity(temp,nrg,g_mom,Fr)
          call add(gravity,temp)
@@ -491,9 +491,9 @@
        subroutine embedVelocityEnergy(nrg,U_fi,g)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(vectorField),intent(in) :: U_fi ! Raw momentum velocity
+         type(VF),intent(in) :: U_fi ! Raw momentum velocity
          type(grid),intent(in) :: g ! Momentum grid
-         type(vectorField) :: temp
+         type(VF) :: temp
          integer :: i
          logical,dimension(2) :: usedVelocity
 
@@ -504,7 +504,7 @@
          endif
 
          if (usedVelocity(2)) then ! Cell Center
-           call allocateVectorField(temp,(/(g%c(i)%sc,i=1,3)/))
+           call init(temp,(/(g%c(i)%sc,i=1,3)/))
            call face2CellCenter(temp%x,U_fi%x,g,1)
            call face2CellCenter(temp%y,U_fi%y,g,2)
            call face2CellCenter(temp%z,U_fi%z,g,3)

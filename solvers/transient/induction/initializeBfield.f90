@@ -2,7 +2,7 @@
        use IO_vectorFields_mod
        use IO_vectorBase_mod
        use grid_mod
-       use vectorField_mod
+       use VF_mod
        implicit none
 
        private
@@ -13,26 +13,26 @@
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB_ICs is used to define the applied field
 
-       integer,parameter :: preDefinedB_ICs = 1 ! NOTE: All cases use B_induced = 0
+       integer,parameter :: preDefinedB_ICs = 4 ! NOTE: All cases use B_induced = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Uniform applied (set applied_B_dir)
        !                                      2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
        !                                      3 : Fringing Magnetic field (ALEX experiments)
-       !                                      4 : Periodic (Bandaru)
+       !                                      4 : Fringing in (x,z) (Bandaru)
 
        integer,parameter :: fringe_dir = 1 ! Direction along which to fringe
        !                                 1 : B0(x,:,:)
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 3
+       integer,parameter :: applied_B_dir = 2
        !                                    0 : No applied field: B0 = (0,0,0)
        !                                    1 :    Applied field: B0 = (B0x,0,0)
        !                                    2 :    Applied field: B0 = (0,B0y,0)
        !                                    3 :    Applied field: B0 = (0,0,B0z)
        !                                    4 :    Applied field: B0 = (B0x,B0y,B0z)
 
-       integer,parameter :: current_B_dir = 2
+       integer,parameter :: current_B_dir = 2 ! (For Bandaru)
        !                                    1 : Applied field: B0 = (0,B0y,B0z)
        !                                    2 : Applied field: B0 = (B0x,0,B0z)
        !                                    3 : Applied field: B0 = (B0x,B0y,0)
@@ -52,7 +52,7 @@
 
        subroutine initBfield(B,B0,g,dir)
          implicit none
-         type(vectorField),intent(inout) :: B,B0
+         type(VF),intent(inout) :: B,B0
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          if (restartB) then
@@ -71,7 +71,7 @@
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          real(cp),dimension(:),allocatable :: xc,yc,zc
          real(cp),dimension(:),allocatable :: xn,yn,zn
          allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
@@ -87,7 +87,7 @@
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          real(cp),dimension(:),allocatable :: xc,yc,zc
          real(cp),dimension(:),allocatable :: xn,yn,zn
          allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
@@ -102,7 +102,7 @@
        subroutine initPreDefinedB0(B,g)
          implicit none
          type(grid),intent(in) :: g
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          select case (preDefinedB_ICs)
          case (1); call uniformBfield(B,applied_B_dir)
          case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
@@ -115,7 +115,7 @@
 
        subroutine uniformBfield(B,dir)
          implicit none
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          integer,intent(in) :: dir
          select case (dir)
          case (0); B%x = real(0.0,cp); B%y = real(0.0,cp); B%z = real(0.0,cp)
@@ -130,14 +130,14 @@
 
        subroutine initZeroField(B)
          implicit none
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          B%x = real(0.0,cp); B%y = real(0.0,cp); B%z = real(0.0,cp)
        end subroutine
 
        subroutine initFringingField_Sergey(B,g,applied_dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
          case (1); call initFringe_Sergey(B%x,g,fringeDir)
@@ -190,7 +190,7 @@
        subroutine initField_Bandaru(B,g,currentDir)
          implicit none
          type(grid),intent(in) :: g
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          integer,intent(in) :: currentDir
          integer :: i,j,k
          real(cp) :: ka ! kappa
@@ -232,7 +232,7 @@
        subroutine initFringingField_ALEX(B,g,dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
-         type(vectorField),intent(inout) :: B
+         type(VF),intent(inout) :: B
          integer,intent(in) :: dir,fringeDir
          select case (dir)
          case (1); call initFringe_ALEX(B%x,g,fringeDir)
@@ -278,7 +278,7 @@
 
        subroutine initUserBfield(B,B0)
          implicit none
-         type(vectorField),intent(inout) :: B,B0
+         type(VF),intent(inout) :: B,B0
          call initZeroField(B)
          call uniformBfield(B0,3)
        end subroutine

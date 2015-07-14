@@ -1,6 +1,6 @@
        module MHDSolver_mod
        use simParams_mod
-       use vectorField_mod
+       use VF_mod
        use IO_auxiliary_mod
        use myTime_mod
        use solverSettings_mod
@@ -26,10 +26,6 @@
        contains
 
        subroutine MHDSolver(nrg,mom,ind,ss_MHD,time,dir)
-         ! MHDSolver solves for the primary variables in the equations for
-         !        energy
-         !        momentum
-         !        induction
          implicit none
          type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
@@ -38,12 +34,12 @@
          type(myTime),intent(inout) :: time
          character(len=*),intent(in) :: dir ! Output directory
          ! *********************** LOCAL VARIABLES **********************
-         type(vectorField) :: F ! Forces added to momentum equation
+         type(VF) :: F ! Forces added to momentum equation
          integer :: n_mhd
          logical :: continueLoop
 
          call computationInProgress(time)
-         call allocateVectorField(F,mom%U)
+         call init(F,mom%U)
 
          ! ********************** PREP LOOP ******************************
          continueLoop = .true.
@@ -72,7 +68,7 @@
 
            call checkCondition(ss_MHD,continueLoop) ! Check to leave loop
            if (.not.continueLoop) exit
-           call stopTime(time,ss_MHD)
+           call stopTime(time,ss_MHD)               ! Get iteration time
            if (getPrintParams(ss_MHD)) then
              call estimateRemaining(time,ss_MHD)
              call print(time,'MHD solver')
@@ -99,12 +95,12 @@
          if (solveMomentum)  call exportTransient(mom,ss_MHD,dir)
          if (solveInduction) call exportTransient(ind,ss_MHD)
 
-         if (solveMomentum)  call exportRaw(mom,mom%g,dir)
-         if (solveInduction) call exportRaw(ind,ind%g,dir)
          if (solveEnergy)    call exportRaw(nrg,nrg%g,dir)
-         if (solveMomentum)  call export(mom,mom%g,dir)
-         if (solveInduction) call export(ind,ind%g,dir)
+         if (solveInduction) call exportRaw(ind,ind%g,dir)
+         if (solveMomentum)  call exportRaw(mom,mom%g,dir)
          if (solveEnergy)    call export(nrg,nrg%g,dir)
+         if (solveInduction) call export(ind,ind%g,dir)
+         if (solveMomentum)  call export(mom,mom%g,dir)
 
          call delete(F)
          call computationComplete(time)

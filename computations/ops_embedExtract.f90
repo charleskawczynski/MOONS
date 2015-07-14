@@ -3,8 +3,8 @@
        ! the CT method only uses embedEdge, and not embedCC or embedFace.
 
        use grid_mod
-       use scalarField_mod
-       use vectorField_mod
+       use SF_mod
+       use VF_mod
        use ops_aux_mod
 
        implicit none
@@ -29,7 +29,7 @@
        public :: embedCC
        public :: embedN
 
-       logical,parameter :: includeTF = .false.
+       logical,parameter :: includeTF = .true.
        integer,parameter :: includeDir = 0 ! (does nothing if includeTF = .false.)
                                        ! 0 (include all directions)
                                        ! 
@@ -40,6 +40,8 @@
                                        ! -1 (include all but x direction), not yet implemented
                                        ! -2 (include all but y direction), not yet implemented
                                        ! -3 (include all but z direction), not yet implemented
+
+       ! integer,dimension(3),parameter :: includeDir = (/1,1,1/) ! include directions (x,y,z)
 
        interface init;               module procedure initSubdomain;         end interface
 
@@ -99,8 +101,8 @@
          ! direction. This warrents including fictitious cells to ensure no variations
          ! exist along a particular direction.
          implicit none
-         type(vectorField),intent(inout) :: face_i
-         type(vectorField),intent(in) :: face_t
+         type(VF),intent(inout) :: face_i
+         type(VF),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          if (includeTF) then
@@ -121,8 +123,8 @@
 
        subroutine embedEdge(edge_t,edge_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: edge_t
-         type(vectorField),intent(in) :: edge_i
+         type(VF),intent(inout) :: edge_t
+         type(VF),intent(in) :: edge_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          if (includeTF) then
@@ -139,8 +141,8 @@
 
        subroutine embedFace(face_t,face_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: face_t
-         type(vectorField),intent(in) :: face_i
+         type(VF),intent(inout) :: face_t
+         type(VF),intent(in) :: face_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          if (includeTF) then
@@ -157,8 +159,8 @@
 
        subroutine embedCC_VF(CC_t,CC_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: CC_t
-         type(vectorField),intent(in) :: CC_i
+         type(VF),intent(inout) :: CC_t
+         type(VF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          if (includeTF) then
@@ -175,8 +177,8 @@
 
        subroutine embedCC_SF(CC_t,CC_i,SD,g)
          implicit none
-         type(scalarField),intent(inout) :: CC_t
-         type(scalarField),intent(in) :: CC_i
+         type(SF),intent(inout) :: CC_t
+         type(SF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          if (includeTF) then
@@ -193,8 +195,8 @@
 
        subroutine embedN(N_t,N_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: N_t
-         type(vectorField),intent(in) :: N_i
+         type(VF),intent(inout) :: N_t
+         type(VF),intent(in) :: N_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2
@@ -220,8 +222,8 @@
        subroutine extractFaceInclude(face_i,face_t,SD)
          ! Including ghost nodes / ghost cells / boundary values
          implicit none
-         type(vectorField),intent(inout) :: face_i
-         type(vectorField),intent(in) :: face_t
+         type(VF),intent(inout) :: face_i
+         type(VF),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
@@ -233,8 +235,8 @@
        subroutine extractFaceExclude(face_i,face_t,SD,g)
          ! Excluding ghost nodes / ghost cells / boundary values
          implicit none
-         type(vectorField),intent(inout) :: face_i
-         type(vectorField),intent(in) :: face_t
+         type(VF),intent(inout) :: face_i
+         type(VF),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
@@ -253,8 +255,8 @@
          ! Excluding ghost nodes / ghost cells
          ! Including boundary values
          implicit none
-         type(vectorField),intent(inout) :: face_i
-         type(vectorField),intent(in) :: face_t
+         type(VF),intent(inout) :: face_i
+         type(VF),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
@@ -276,8 +278,8 @@
        subroutine embedFaceInclude(face_t,face_i,SD,g) ! Not yet tested
          ! Include ghost cells (possibly for periodic BCs)
          implicit none
-         type(vectorField),intent(inout) :: face_t
-         type(vectorField),intent(in) :: face_i
+         type(VF),intent(inout) :: face_t
+         type(VF),intent(in) :: face_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
@@ -290,8 +292,8 @@
        subroutine embedFaceExclude(face_t,face_i,SD,g) ! Not yet tested
          ! Exclude wall boundary (the most physically likely case)
          implicit none
-         type(vectorField),intent(inout) :: face_t
-         type(vectorField),intent(in) :: face_i
+         type(VF),intent(inout) :: face_t
+         type(VF),intent(in) :: face_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
@@ -307,8 +309,8 @@
        subroutine embedFaceIncludeDir(face_t,face_i,SD,g,dir) ! Not yet tested
          ! Exclude wall boundary (the most physically likely case)
          implicit none
-         type(vectorField),intent(inout) :: face_t
-         type(vectorField),intent(in) :: face_i
+         type(VF),intent(inout) :: face_t
+         type(VF),intent(in) :: face_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
@@ -341,8 +343,8 @@
 
        subroutine embedEdgeInclude(edge_t,edge_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: edge_t
-         type(vectorField),intent(in) :: edge_i
+         type(VF),intent(inout) :: edge_t
+         type(VF),intent(in) :: edge_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
@@ -357,8 +359,8 @@
 
        subroutine embedEdgeExclude(edge_t,edge_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: edge_t
-         type(vectorField),intent(in) :: edge_i
+         type(VF),intent(inout) :: edge_t
+         type(VF),intent(in) :: edge_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
@@ -373,8 +375,8 @@
 
        subroutine embedEdgeIncludeDir(edge_t,edge_i,SD,g,dir)
          implicit none
-         type(vectorField),intent(inout) :: edge_t
-         type(vectorField),intent(in) :: edge_i
+         type(VF),intent(inout) :: edge_t
+         type(VF),intent(in) :: edge_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
@@ -407,8 +409,8 @@
 
        subroutine embedCCInclude_VF(CC_t,CC_i,SD)
          implicit none
-         type(vectorField),intent(inout) :: CC_t
-         type(vectorField),intent(in) :: CC_i
+         type(VF),intent(inout) :: CC_t
+         type(VF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nici1,Nici2
          Nici1 = SD%Nici1; Nici2 = SD%Nici2
@@ -419,8 +421,8 @@
 
        subroutine embedCCExclude_VF(CC_t,CC_i,SD,g)
          implicit none
-         type(vectorField),intent(inout) :: CC_t
-         type(vectorField),intent(in) :: CC_i
+         type(VF),intent(inout) :: CC_t
+         type(VF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nice1,Nice2
@@ -435,8 +437,8 @@
 
        subroutine embedCCIncludeDir_VF(CC_t,CC_i,SD,g,dir)
          implicit none
-         type(vectorField),intent(inout) :: CC_t
-         type(vectorField),intent(in) :: CC_i
+         type(VF),intent(inout) :: CC_t
+         type(VF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
@@ -474,8 +476,8 @@
 
        subroutine embedCCInclude_SF(CC_t,CC_i,SD)
          implicit none
-         type(scalarField),intent(inout) :: CC_t
-         type(scalarField),intent(in) :: CC_i
+         type(SF),intent(inout) :: CC_t
+         type(SF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nici1,Nici2
          Nici1 = SD%Nici1; Nici2 = SD%Nici2
@@ -484,8 +486,8 @@
 
        subroutine embedCCExclude_SF(CC_t,CC_i,SD)
          implicit none
-         type(scalarField),intent(inout) :: CC_t
-         type(scalarField),intent(in) :: CC_i
+         type(SF),intent(inout) :: CC_t
+         type(SF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nice1,Nice2
          Nice1 = SD%Nice1; Nice2 = SD%Nice2
@@ -495,8 +497,8 @@
 
        subroutine embedCCIncludeDir_SF(CC_t,CC_i,SD,g,dir)
          implicit none
-         type(scalarField),intent(inout) :: CC_t
-         type(scalarField),intent(in) :: CC_i
+         type(SF),intent(inout) :: CC_t
+         type(SF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,intent(in) :: dir

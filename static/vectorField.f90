@@ -23,6 +23,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: VF
         public :: init,delete
+        public :: allocateX,allocateY,allocateZ
 
         ! Monitoring
         public :: print
@@ -62,6 +63,7 @@
         interface assign;   module procedure vectorVectorAssign;    end interface
 
         interface add;      module procedure vectorVectorAdd;       end interface
+        interface add;      module procedure vectorVectorAdd2;      end interface
         interface add;      module procedure VFAdd;                 end interface
         interface add;      module procedure fieldVectorAdd;        end interface
         interface add;      module procedure vectorScalarAdd;       end interface
@@ -252,6 +254,46 @@
           f%x = f%x + g%x
           f%y = f%y + g%y
           f%z = f%z + g%z
+#endif
+        end subroutine
+
+        subroutine vectorVectorAdd2(f,g,r)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g,r
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sx(3)
+            do j=1,f%sx(2)
+              do i=1,f%sx(1)
+                f%x(i,j,k) = g%x(i,j,k) + r%x(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+          !$OMP PARALLEL DO
+          do k=1,f%sy(3)
+            do j=1,f%sy(2)
+              do i=1,f%sy(1)
+                f%y(i,j,k) = g%y(i,j,k) + r%y(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+          !$OMP PARALLEL DO
+          do k=1,f%sz(3)
+            do j=1,f%sz(2)
+              do i=1,f%sz(1)
+                f%z(i,j,k) = g%z(i,j,k) + r%z(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%x = g%x + r%x
+          f%y = g%y + r%y
+          f%z = g%z + r%z
 #endif
         end subroutine
 
