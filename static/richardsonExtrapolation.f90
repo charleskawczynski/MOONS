@@ -199,9 +199,9 @@
          real(cp) :: Fs,r0
          r1 = r*r; r2 = r; r3 = 1; r0 = real(maxval(r),cp)
          call init(f0,shape(f1))
-         call assign(f0,real(0.0,cp))
+         call assign(f0,0.0_cp)
 
-         if (.not.(r0.gt.real(1.0,cp))) stop 'Refinement was not performed in computeRE in convergenceRate.f90'
+         if (.not.(r0.gt.1.0_cp)) stop 'Refinement was not performed in computeRE in convergenceRate.f90'
 
          s = shape(f3)
          f3_f2 = computeMGError(f2,f3,r2,r3,s,g3,dir,name//'_23')
@@ -213,7 +213,7 @@
 
          RE%e_12 = f2_f1
          RE%e_23 = f3_f2
-         Fs = real(1.25,cp)
+         Fs = 1.25_cp
 
          ! Fine GCI
          RE%GCI_12 = computeGCI_norms(f2_f1,f1_f0,RE%p,r0,Fs,.true.)
@@ -359,14 +359,14 @@
          implicit none
          real(cp),intent(in) :: Fs,eps,p,r
          real(cp) :: GCI
-         GCI = (Fs * abs(eps)) / (r**p - real(1.0,cp))
+         GCI = (Fs * abs(eps)) / (r**p - 1.0_cp)
        end function
 
        function computeGCI_Fine(Fs,eps,p,r) result(GCI)
          implicit none
          real(cp),intent(in) :: Fs,eps,p,r
          real(cp) :: GCI
-         GCI = (Fs * abs(eps)) / (r**p - real(1.0,cp))
+         GCI = (Fs * abs(eps)) / (r**p - 1.0_cp)
        end function
 
        ! *******************************************************************************

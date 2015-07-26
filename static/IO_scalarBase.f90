@@ -24,17 +24,18 @@
 
       logical,parameter :: headerTecplot = .true.
 
-      interface readFromFile;  module procedure read3DFieldFromFile;    end interface
-      interface writeToFile;   module procedure write3DFieldToFile;     end interface
+      interface readFromFile;  module procedure read3DFieldFromFile;             end interface
+      interface writeToFile;   module procedure write3DFieldToFile;              end interface
 
       ! WRITE ONLY
 
-      interface writeToFile;   module procedure write3DMeshToFile;      end interface
+      interface writeToFile;   module procedure write3DMeshToFile;               end interface
 
-      interface writeToFile;   module procedure write0DFieldsToFile;    end interface
-      interface writeToFile;   module procedure write0DFieldToFile;     end interface
-      interface writeToFile;   module procedure write1DFieldToFile;     end interface
-      interface writeToFile;   module procedure write2DFieldToFile;     end interface
+      interface writeToFile;   module procedure write0DFieldsToFile;             end interface
+      interface writeToFile;   module procedure write0DFieldToFile;              end interface
+      interface writeToFile;   module procedure write1DFieldToFile;              end interface
+      interface writeToFile;   module procedure write2DFieldToFileTransient;     end interface
+      interface writeToFile;   module procedure write2DFieldToFile;              end interface
 
       contains
 
@@ -195,7 +196,7 @@
         call closeAndMessage(u,name,dir)
       end subroutine
 
-      subroutine write2DFieldToFile(x,y,arr,dir,name,ext,n,headerTecplotTemp)
+      subroutine write2DFieldToFileTransient(x,y,arr,dir,name,ext,n,headerTecplotTemp)
         implicit none
         character(len=*),intent(in) :: dir,name,ext
         real(cp),dimension(:),intent(in) :: x,y
@@ -218,6 +219,30 @@
           enddo
         enddo
         call closeAndMessage(u,trim(adjustl(name))//trim(adjustl(ext)),dir)
+      end subroutine
+
+      subroutine write2DFieldToFile(x,y,arr,dir,name,headerTecplotTemp)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        real(cp),dimension(:),intent(in) :: x,y
+        real(cp),dimension(:,:),intent(in) :: arr
+        logical,intent(in),optional :: headerTecplotTemp
+        integer u,i,j,sx,sy
+        sx = size(x); sy = size(y)
+        u = newAndOpen(dir,trim(adjustl(name)))
+
+        if (present(headerTecplotTemp)) then
+          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy)
+        else
+          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy)
+        endif
+
+        do j = 1,sy
+          do i = 1,sx
+            write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
+          enddo
+        enddo
+        call closeAndMessage(u,trim(adjustl(name)),dir)
       end subroutine
 
       end module

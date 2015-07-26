@@ -8,63 +8,67 @@
       ! call fft(omega,f,dir,pad)
       ! 
       ! INPUT:
-      !     f            = f(x,y,z)
-      !     dir          = direction along which to take the fourier transform (1,2,3)
-      !     pad          = (1,0) = (exclude,include) boundary calc along fourier transform direction
-      !                    |0000000|     |-------|
-      !                    |-------|  ,  |-------| Look at fft for implementation details
-      !                    |0000000|     |-------|
+      !     f    = f(x,y,z)
+      !     dir  = direction along which to take the FT (1,2,3)
+      !     pad  = (1,0) = (exclude,include) boundary calc along FT direction
+      !            |0000000|     |-------|
+      !            |-------|  ,  |-------| Look at fft for implementation details
+      !            |0000000|     |-------|
       !
       ! INDEXING: The index range of the incoming scalar field is assumed to begin at one.
       !
       ! CharlieKawczynski@gmail.com
       ! 7/12/2015
+      ! 
+      ! Good references:
+      ! 
+      ! https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 
       use grid_mod
       implicit none
+      
       private
-
-      public :: fft
+      public :: fft,fft1D
       interface fft;    module procedure applyFFT3D;    end interface
 
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
+       integer,parameter :: cip = selected_int_kind(8)
 #endif
 #ifdef _DOUBLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(14)
+       integer,parameter :: cip = selected_int_kind(32)
 #endif
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
+       integer,parameter :: cip = selected_int_kind(32)
 #endif
-       real(cp),parameter :: PI = real(3.14159265358979,cp)
+       ! integer,parameter :: cip = selected_int_kind(64)
+       ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
+       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       contains
 
-      recursive subroutine fft1D(x)
+      subroutine fft1D(x)
         complex(cp), dimension(:), intent(inout)  :: x
-        complex(cp)                               :: t
-        integer                                   :: N
-        integer                                   :: i
-        complex(cp), dimension(:), allocatable    :: even, odd
+        complex(cp), dimension(:), allocatable    :: temp
+        complex(cp)                               :: S,j ! sum, sqrt(-1)
+        integer(cip)                              :: N,i,k
         N=size(x)
-        if(N .le. 1) return
-        allocate(odd((N+1)/2))
-        allocate(even(N/2))
-        ! divide
-        odd  = x(1:N:2)
-        even = x(2:N:2)
-        ! conquer
-        call fft1D(odd)
-        call fft1D(even)
-        ! combine
-        do i=1,N/2
-           t=exp(cmplx(0.0_cp,-2.0_cp*pi*real(i-1,cp)/real(N,cp),cp))*even(i)
-           x(i)     = odd(i) + t
-           x(i+N/2) = odd(i) - t
-        end do
-        deallocate(odd)
-        deallocate(even)
+        allocate(temp(N))
+        j = cmplx(0.0_cp,1.0_cp,cp)
+        S = cmplx(0.0_cp,0.0_cp,cp)
+        temp = cmplx(0.0_cp,0.0_cp,cp)
+        do i = 1,N
+          do k = 1,N
+            S = S + x(k)*exp(-2.0_cp*PI*j*real(k-1,cp)*real(i-1,cp)/real(N,cp))
+          enddo
+          temp(i) = S
+          S = cmplx(0.0_cp,0.0_cp,cp)
+        enddo
+        x = temp
+        deallocate(temp)
       end subroutine
 
       subroutine applyFFT3D(omega,f,dir,pad)
@@ -91,19 +95,19 @@
         case (1)
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-              call fft1D(omega(:,j,k))
+            call fft1D(omega(:,j,k))
           enddo; enddo
           !$OMP END PARALLEL DO
         case (2)
           !$OMP PARALLEL DO
           do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-              call fft1D(omega(i,:,k))
+            call fft1D(omega(i,:,k))
           enddo; enddo
           !$OMP END PARALLEL DO
         case (3)
           !$OMP PARALLEL DO
           do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-              call fft1D(omega(i,j,:))
+            call fft1D(omega(i,j,:))
           enddo; enddo
           !$OMP END PARALLEL DO
         case default

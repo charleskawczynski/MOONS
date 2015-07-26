@@ -85,7 +85,7 @@
          allocate(c%hc(c%sc))
          allocate(c%dhc(c%sc-1))
 
-         c%hc = (/ ((hn(i+1)+hn(i))/real(2.0,cp),i=1,c%sn-1) /)
+         c%hc = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
          c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
 
          ! Additional information
@@ -135,10 +135,10 @@
          c%sn = c%sc-1
          allocate(c%hn(c%sn))
          allocate(c%dhn(c%sn-1))
-         c%hn(1) = c%hc(1) + c%dhc(1)/real(2.0,cp)
+         c%hn(1) = c%hc(1) + c%dhc(1)/2.0_cp
 
          do i = 1,c%sn-1
-          c%hn(i+1) = real(2.0,cp)*c%hc(i+1) - c%hn(i)
+          c%hn(i+1) = 2.0_cp*c%hc(i+1) - c%hn(i)
          enddo
 
          ! Differences
@@ -195,14 +195,14 @@
          real(cp) :: tol
          ! Check if consectutive
          do i=1,c%sn-1
-           if (c%hn(i+1)-c%hn(i).lt.c%dhMin/real(2.0,cp)) then
+           if (c%hn(i+1)-c%hn(i).lt.c%dhMin/2.0_cp) then
               write(*,*) 'i,dh',i,c%hn(i+1)-c%hn(i)
               write(*,*) 'hn = ',c%hn
               stop 'Error: coordinates are not consecutive.'
            endif
          enddo
          ! Check if cell centeres are in cell center
-         tol = c%dhMin*real(1.0**(-6.0),cp)
+         tol = c%dhMin*1.0_cp**(-6.0_cp)
          do i=1,c%sn-1
            if (abs((c%hc(i)-c%hn(i))-(c%hn(i+1)-c%hc(i))).gt.tol) then
               write(*,*) 'Cell centers are not centered'

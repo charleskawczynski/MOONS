@@ -111,9 +111,9 @@
          s = shape(x)
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
-           mag(i,j,k) = sqrt(x(i,j,k)**real(2.0,cp) +&
-                             y(i,j,k)**real(2.0,cp) +&
-                             z(i,j,k)**real(2.0,cp))
+           mag(i,j,k) = sqrt(x(i,j,k)**2.0_cp +&
+                             y(i,j,k)**2.0_cp +&
+                             z(i,j,k)**2.0_cp)
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
@@ -165,9 +165,9 @@
          eTemp = real(0.0,cp) ! temp is necessary for reduction
          !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
          do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-           eTemp = eTemp + (x(i,j,k)**real(2.0,cp) +&
-                            y(i,j,k)**real(2.0,cp) +&
-                            z(i,j,k)**real(2.0,cp))*g%c(1)%dhn(i)*&
+           eTemp = eTemp + (x(i,j,k)**2.0_cp +&
+                            y(i,j,k)**2.0_cp +&
+                            z(i,j,k)**2.0_cp)*g%c(1)%dhn(i)*&
                                                     g%c(2)%dhn(j)*&
                                                     g%c(3)%dhn(k)
          enddo; enddo; enddo
@@ -180,9 +180,9 @@
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
          s = shape(f)
-         f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
-         f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-         f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
+         f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+         f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+         f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
        end subroutine
 
        subroutine zeroInteriorReal(f)
@@ -190,9 +190,9 @@
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
          s = shape(f)
-         f(2:s(1)-1,:,:) = real(0.0,cp)
-         f(:,2:s(2)-1,:) = real(0.0,cp)
-         f(:,:,2:s(3)-1) = real(0.0,cp)
+         f(2:s(1)-1,:,:) = 0.0_cp
+         f(:,2:s(2)-1,:) = 0.0_cp
+         f(:,:,2:s(3)-1) = 0.0_cp
        end subroutine
 
        subroutine treatInterfaceReal(f)
@@ -202,9 +202,9 @@
          integer :: i,j,k
          real(cp) :: top,bot,int,mi,ma
          mi = minval(f); ma = maxval(f)
-         int = real(0.5,cp)*(mi+ma)
-         top = real(0.5,cp)*(ma+int)
-         bot = real(0.5,cp)*(mi+int)
+         int = 0.5_cp*(mi+ma)
+         top = 0.5_cp*(ma+int)
+         bot = 0.5_cp*(mi+int)
          s = shape(f)
          ! Make interface property the min/max of
          ! fluid / wall domain depending on treatment
@@ -240,7 +240,7 @@
          integer,intent(inout) :: i
          character(len=*),intent(in) :: name
          real(cp) :: tol
-         tol = real(10.0**(-32.0),cp)
+         tol = 10.0_cp**(-32.0_cp)
          if (maxval(abs(du)).gt.tol) then
            write(*,*) 'Min/Max ('//name//') = ',minval(du),maxval(du)
            i = 1
@@ -292,7 +292,7 @@
          type(VF),intent(in) :: fi
          type(grid),intent(in) :: g
          integer,intent(in) :: n
-         call assign(fo,real(0.0,cp))
+         call assign(fo,0.0_cp)
          call stabilityTerms(fo%phi,fi%x,g,n,1)
          call stabilityTerms(fo%phi,fi%y,g,n,2)
          call stabilityTerms(fo%phi,fi%z,g,n,3)

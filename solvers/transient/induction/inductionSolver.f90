@@ -57,9 +57,9 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       real(cp),parameter :: zero = real(0.0,cp)
-       real(cp),parameter :: one = real(1.0,cp)
-       real(cp),parameter :: PI = real(3.14159265358979,cp)
+       real(cp),parameter :: zero = 0.0_cp
+       real(cp),parameter :: one = 1.0_cp
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
        type induction
          character(len=9) :: name = 'induction'
@@ -260,8 +260,8 @@
          call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
          else; ind%nstep = 0
          endif
-         ind%t = real(0.0,cp)
-         ind%omega = real(1.0,cp)
+         ind%t = 0.0_cp
+         ind%omega = 1.0_cp
          write(*,*) '     Finished'
        end subroutine
 
@@ -562,7 +562,7 @@
          ! ind%B0%x = real(0.0,cp)
          ! ind%B0%y = real(0.0,cp)
          ! ind%B0%z = exp(-ind%omega*ind%t)
-         call assign(ind%temp_CC,real(0.0,cp))
+         call assign(ind%temp_CC,0.0_cp)
 
          call embedVelocity(ind,U,g_mom)
 
@@ -593,7 +593,7 @@
          call exportTransient(ind,ss_MHD)
 
          if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%g)
-         ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
+         if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
 
          if (getPrintParams(ss_MHD)) then
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowB')
@@ -764,55 +764,6 @@
          enddo
        end subroutine
 
-       subroutine lowRem_JacksExperiment(ind,U,g)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
-         integer :: i,t,b
-         b = 10
-         t = 21
-
-         do i=1,ind%NmaxB
-
-           ! Compute current from appropriate fluxes:
-
-           ! J = curl(B_face)_edge
-           call cellCenter2Face(ind%temp_F,ind%B,g)
-           call curl(ind%J,ind%temp_F,g)
-
-           ind%J%y(:,1:2,b) = real(1.0,cp)
-           ind%J%y(:,1:2,t) = real(-1.0,cp)
-
-           ind%J%y(:,ind%J%sy(2)-1:ind%J%sy(2),b) = real(1.0,cp)
-           ind%J%y(:,ind%J%sy(2)-1:ind%J%sy(2),t) = real(-1.0,cp)
-
-           ! Compute fluxes of u cross B0
-           call cross(ind%temp_CC,U,ind%B0)
-           call cellCenter2Edge(ind%E,ind%temp_CC,g)
-
-           ! E = j/sig - uxB
-           ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-           call multiply(ind%J,ind%sigmaInv_edge)
-           call subtract(zero,ind%E)
-           call add(ind%E,ind%J)
-
-           ! F = curl(E_edge)_face
-           call curl(ind%temp_F,ind%E,g)
-
-           ! tempVF = interp(F)_face->cc
-           call face2CellCenter(ind%temp_CC,ind%temp_F,g)
-
-           ! Add induced field of previous time step (B^n)
-           ! ind%B = ind%B - ind%dTime*ind%temp_CC
-           call multiply(ind%temp_CC,ind%dTime)
-           call subtract(ind%B,ind%temp_CC)
-
-           ! Impose BCs:
-           call applyAllBCs(ind%B,ind%B_bcs,g)
-         enddo
-       end subroutine
-
        subroutine finiteRemCTmethod(ind,F_CC,g)
          ! Computes
          !    E = j/(Rem*sig) - uxB
@@ -830,10 +781,8 @@
          type(grid),intent(in) :: g
 
          ! E = uxB
-         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B,g)
-         call edgeCrossCC_E(ind%temp_E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g)
-         call divide(ind%temp_E,ind%Rem)
-         call add(ind%E,ind%temp_E)
+         call add(ind%Bstar,ind%B,ind%B0)
+         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%Bstar,g)
 
          ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
          call cellCenter2Face(ind%temp_F,ind%B,g)
@@ -905,7 +854,7 @@
 
          ! Solve with semi-implicit ADI
          call setDt(ind%ADI_B,ind%dTime)
-         call setAlpha(ind%ADI_B,real(1.0,cp))
+         call setAlpha(ind%ADI_B,1.0_cp)
 
          call init(ind%ss_ADI)
          call setName(ind%ss_ADI,'ADI for B-field     ')
@@ -1007,7 +956,7 @@
          real(cp),intent(in) :: Ha,Re,Rem
          type(VF) :: temp
          call init(temp,jcrossB)
-         call assign(temp,real(0.0,cp))
+         call assign(temp,0.0_cp)
          call computeJCrossB(temp,ind,g_mom,Ha,Re,Rem)
          call add(jcrossB,temp)
          call delete(temp)
@@ -1016,8 +965,8 @@
        subroutine computeJCrossB(jcrossB,ind,g_mom,Ha,Re,Rem)
          ! computes
          ! 
-         !     finite Rem:  Ha^2/Re curl(B_induced) x (B0 + Rem*B_induced)
-         !     low Rem:     Ha^2/Re curl(B_induced) x (B0)
+         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
+         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
          ! 
          implicit none
          type(VF),intent(inout) :: jcrossB
@@ -1028,23 +977,21 @@
          select case (solveBMethod)
          case (5,6) ! Finite Rem
 
-           call assign(ind%Bstar,ind%B)
-           call multiply(ind%Bstar,Rem)
-           call add(ind%Bstar,ind%B0)
-
+           call add(ind%Bstar,ind%B,ind%B0)
            call curl(ind%J_cc,ind%B,ind%g)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
 
          case default ! Low Rem
 
            call curl(ind%J_cc,ind%B,ind%g)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
-
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
-
-         call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-         call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
-         call multiply(jcrossB,Ha**real(2.0,cp)/Re)
        end subroutine
 
        subroutine computeDivergenceInduction(ind,g)
@@ -1080,10 +1027,9 @@
          real(cp) :: K_energy
          integer,dimension(3) :: Nici1,Nici2
          Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-          call assign(ind%Bstar,ind%B)
-          call multiply(ind%Bstar,ind%Rem)
-          call add(ind%Bstar,ind%B0)
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call assign(ind%Bstar,ind%B)
+           call add(ind%Bstar,ind%B0)
            call totalEnergy(K_energy,&
              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
@@ -1092,9 +1038,8 @@
            call set(ind%KB_energy,ind%nstep,K_energy)
            call apply(ind%KB_energy)
           endif
-          call assign(ind%Bstar,ind%B)
-          call multiply(ind%Bstar,ind%Rem)
           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call assign(ind%Bstar,ind%B)
            call totalEnergy(K_energy,&
              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
@@ -1119,18 +1064,15 @@
          type(induction),intent(inout) :: ind
          type(solverSettings),intent(in) :: ss_MHD
          real(cp) :: K_energy
-          call assign(ind%Bstar,ind%B)
-          call multiply(ind%Bstar,ind%Rem)
-          call add(ind%Bstar,ind%B0)
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call assign(ind%Bstar,ind%B)
+           call add(ind%Bstar,ind%B0)
            call totalEnergy(K_energy,ind%Bstar,ind%g)
            call set(ind%KB_energy,ind%nstep,K_energy)
            call apply(ind%KB_energy)
           endif
-          call assign(ind%Bstar,ind%B)
-          call multiply(ind%Bstar,ind%Rem)
           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%Bstar,ind%g)
+           call totalEnergy(K_energy,ind%B,ind%g)
            call set(ind%KBi_energy,ind%nstep,K_energy)
            call apply(ind%KBi_energy)
           endif
@@ -1214,22 +1156,22 @@
          integer,dimension(3) :: s
          integer :: i,j,k
          s = shape(f)
-         wavenum = real(0.1,cp)
-         eps = real(0.01,cp)
+         wavenum = 0.1_cp
+         eps = 0.01_cp
          if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
            !$OMP PARALLEL DO
            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(real(1.0,cp) + eps(1)*sin(wavenum(1)*PI*g%c(1)%hn(i)) +&
-                                                 eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
-                                                 eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
+             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*g%c(1)%hn(i)) +&
+                                           eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
+                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
            !$OMP PARALLEL DO
            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(real(1.0,cp) + eps(1)*sin(wavenum(1)*PI*g%c(1)%hc(i)) +&
-                                                 eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
-                                                 eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
+             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*g%c(1)%hc(i)) +&
+                                           eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
+                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          else
@@ -1245,20 +1187,20 @@
          integer,dimension(3) :: s
          integer :: i,j,k
          s = shape(f)
-         wavenum = real(10.0,cp)
-         eps = real(0.1,cp)
+         wavenum = 10.0_cp
+         eps = 0.1_cp
          if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
            !$OMP PARALLEL DO
            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(real(1.0,cp) + eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
-                                                 eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
+             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
+                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
            !$OMP PARALLEL DO
            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(real(1.0,cp) + eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
-                                                 eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
+             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
+                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          else

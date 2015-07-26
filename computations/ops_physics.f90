@@ -55,7 +55,7 @@
 
        public :: orthogonalDirection
 
-       public :: faceAdvect
+       public :: faceAdvect,faceAdvectNew
        interface faceAdvect;    module procedure faceAdvectSF;   end interface
        interface faceAdvect;    module procedure faceAdvectVF;   end interface
 
@@ -167,7 +167,7 @@
          allocate(temp(s(1),s(2),s(3)))
          allocate(tempAve(s(1),s(2),s(3)))
 
-         psi = real(0.0,cp)
+         psi = 0.0_cp
          ! -------------------------- u d/dx --------------------------
          call face2Face(tempAve,u,g,1,dir)
          if (dir.eq.1) then
@@ -195,6 +195,56 @@
 
          deallocate(tempAve)
          deallocate(temp)
+       end subroutine
+
+       subroutine faceAdvectNew(div,U,Ui,g)
+         ! Computes
+         ! 
+         !               d
+         !  div_i = u_j --- (u_i)
+         !              dx_j
+         ! 
+         ! While minimizing interpolations.
+         !           div_i, U, Ui          --> cell face.
+         ! 
+         implicit none
+         type(VF),intent(inout) :: div
+         type(VF),intent(in) :: U,ui
+         type(grid),intent(in) :: g
+         type(VF) :: U_ave,V_ave,W_ave,temp
+         type(del) ::d
+         integer :: pad
+         pad = 1 ! Currently running for pad = 1, try pad = 0 next
+         call init(U_ave,U%sx,U%sy,U%sz)
+         call init(V_ave,U%sx,U%sy,U%sz)
+         call init(W_ave,U%sx,U%sy,U%sz)
+         call init(temp,div)
+
+         call assign(div,0.0_cp)
+         call face2Face(U_ave,V_ave,W_ave,U,g)
+
+         call d%assign(temp%x,Ui%x,g,1,1,pad) ! u_ave * d/dx (u_i)
+         call d%assign(temp%y,Ui%y,g,1,2,pad)
+         call d%assign(temp%z,Ui%z,g,1,3,pad)
+         call multiply(temp,U_ave)
+         call add(div,temp)
+
+         call d%assign(temp%x,Ui%x,g,1,1,pad) ! v_ave * d/dy (u_i)
+         call d%assign(temp%y,Ui%y,g,1,2,pad)
+         call d%assign(temp%z,Ui%z,g,1,3,pad)
+         call multiply(temp,V_ave)
+         call add(div,temp)
+
+         call d%assign(temp%x,Ui%x,g,1,1,pad) ! w_ave * d/dz (u_i)
+         call d%assign(temp%y,Ui%y,g,1,2,pad)
+         call d%assign(temp%z,Ui%z,g,1,3,pad)
+         call multiply(temp,W_ave)
+         call add(div,temp)
+
+         call delete(temp)
+         call delete(U_ave)
+         call delete(V_ave)
+         call delete(W_ave)
        end subroutine
 
        subroutine faceAdvectDonor(div,U,Ui,temp_E1,temp_E2,temp_CC,g)
@@ -351,7 +401,7 @@
 
          s = shape(div)
          allocate(temp(s(1),s(2),s(3)))
-         div = real(0.0,cp)
+         div = 0.0_cp
 
          ! * = needs interpolation --         *    *
          ! -------------------------- d/dx (u Bi - ui Bx)
@@ -413,7 +463,7 @@
          integer,dimension(3) :: s
          type(delVC) :: d
          s = shape(div)
-         div = real(0.0,cp)
+         div = 0.0_cp
          allocate(temp(s(1),s(2),s(3)))
          ! -------------------------- d/dx [ sigmaInv ( d/dxi (Bx/mu) - d/dx (Bi/mu) ) ]
          select case (dir)

@@ -13,7 +13,7 @@
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB_ICs is used to define the applied field
 
-       integer,parameter :: preDefinedB_ICs = 4 ! NOTE: All cases use B_induced = 0
+       integer,parameter :: preDefinedB_ICs = 1 ! NOTE: All cases use B_induced = 0
        !                                      0 : User-defined case (no override)
        !                                      1 : Uniform applied (set applied_B_dir)
        !                                      2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
@@ -36,6 +36,10 @@
        !                                    1 : Applied field: B0 = (0,B0y,B0z)
        !                                    2 : Applied field: B0 = (B0x,0,B0z)
        !                                    3 : Applied field: B0 = (B0x,B0y,0)
+
+       integer,parameter :: Bsign = 1 ! Change sign of B0 for predefined cases
+       !                            1 : B0 = B0
+       !                           -1 : B0 = -B0
 
 
 #ifdef _SINGLE_PRECISION_
@@ -109,7 +113,14 @@
          case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
          case (4); call initField_Bandaru(B,g,current_B_dir)
          case default
-           write(*,*) 'Incorrect preDefinedB_ICs case in initBfield.'; stop
+           write(*,*) 'Erro: Incorrect preDefinedB_ICs case in initBfield.'; stop
+         end select
+         select case (Bsign)
+         case (1)
+         case (-1)
+         call multiply(B,real(-1.0,cp))
+         case default
+         stop 'Error: Bsign must = -1,1 in initPreDefinedB0 in initializeBfield.f90'
          end select
        end subroutine
 

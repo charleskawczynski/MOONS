@@ -136,6 +136,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)fft.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)dct.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)del.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)delVC.f90 \
@@ -150,6 +153,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myTriSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)FFT_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \

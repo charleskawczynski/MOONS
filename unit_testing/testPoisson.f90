@@ -21,7 +21,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       real(cp),parameter :: PI = real(3.14159265358979,cp)
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
        contains
 
@@ -47,6 +47,8 @@
            call setAllZero(u_bcs,s(1),s(2),s(3),WC)
          elseif (all((/(g%c(i)%sc.eq.s(i),i=1,3)/))) then
            call setAllZero(u_bcs,s(1),s(2),s(3),WI)
+           call setZminType(u_bcs,7)
+           call setZmaxType(u_bcs,7)
 
          elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
            call setAllZero(u_bcs,s(1),s(2),s(3),WI)
@@ -86,27 +88,31 @@
          s = shape(u)
 
          select case (bctype)
-         case (1); p = (/real(3.0,cp),real(3.0,cp),real(3.0,cp)/)
-         case (2); p = (/real(2.0,cp),real(2.0,cp),real(2.0,cp)/)
+         case (1); p = (/3.0_cp,3.0_cp,3.0_cp/)
+         case (2); p = (/2.0_cp,2.0_cp,2.0_cp/)
          case default
          stop 'Error: bctype must = 1,2 in defineFunction in poisson.f90'
          end select
 
          if (bctype.eq.2) then
+           ! do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+           ! u(i,j,k) = cos(p(1)*PI*x(i))*&
+           !            cos(p(2)*PI*y(j))*&
+           !            cos(p(3)*PI*z(k))
+           ! enddo;enddo;enddo
            do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
-           u(i,j,k) = dcos(p(1)*PI*x(i))*&
-                      dcos(p(2)*PI*y(j))*&
-                      dcos(p(3)*PI*z(k))
+           u(i,j,k) = cos(p(1)*PI*x(i))*&
+                      cos(p(2)*PI*y(j))
            enddo;enddo;enddo
          elseif (bctype.eq.1) then
            do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
-           u(i,j,k) = dsin(p(1)*PI*x(i))*&
-                      dsin(p(2)*PI*y(j))*&
-                      dsin(p(3)*PI*z(k))
+           u(i,j,k) = sin(p(1)*PI*x(i))*&
+                      sin(p(2)*PI*y(j))*&
+                      sin(p(3)*PI*z(k))
            enddo;enddo;enddo
          endif
 
-         call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
+         ! call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
        end subroutine
 
        subroutine get_ModelProblem(g,f,u_bcs,u_exact)
@@ -119,8 +125,8 @@
          integer :: bctype
          s = shape(f)
 
-         bctype = 1 ! Dirichlet
-         ! bctype = 2 ! Neumann
+         ! bctype = 1 ! Dirichlet
+         bctype = 2 ! Neumann
          call defineBCs(u_bcs,g,s,bctype)
 
          ! Node data
@@ -155,7 +161,7 @@
            call applyAllBCs(u_bcs,u_exact,g)
          endif
 
-         u_exact = u_exact - sum(u_exact)/(max(1,size(u_exact)))
+         ! u_exact = u_exact - sum(u_exact)/(max(1,size(u_exact)))
 
          if (.not.allNeumann(u_bcs)) then
            ! Necessary AFTER mean is subtracted
@@ -163,6 +169,8 @@
          endif
 
          call lap(f,u_exact,g)
+         ! call applyAllBCs(u_bcs,f,g)
+         call applyAllBCs(u_bcs,u_exact,g)
 
          ! Important notes:
 
@@ -170,7 +178,7 @@
            call applyAllBCs(u_bcs,f,g) ! physical boundary must be set for Dirichlet problems
                                        ! for node data (two values are defined)
          endif
-         call zeroGhostPoints(f)        ! Necessary for BOTH Dirichlet problems AND Neumann
+         ! call zeroGhostPoints(f)        ! Necessary for BOTH Dirichlet problems AND Neumann
        end subroutine
 
        end module
@@ -194,6 +202,10 @@
        use solverSettings_mod
        use poisson_mod
        use ops_aux_mod
+       use dct_mod
+       use idct_mod
+       use fft_mod
+       use FFT_poisson_mod
 
        use modelProblem_mod
 
@@ -215,7 +227,9 @@
          character(len=*),intent(in) :: dir
 
          type(grid) :: g
-         integer,dimension(3),parameter :: N = 2**5 ! Number of cells
+         ! integer,dimension(3) :: N = (/3,4,1/) ! Number of cells
+         ! integer,dimension(3) :: N = (/5,5,1/) ! Number of cells
+         integer,dimension(3) :: N = (/40,40,1/) ! Number of cells
          real(cp),dimension(3) :: hmin,hmax
          integer,dimension(3) :: s
          integer :: i,dataType
@@ -223,22 +237,27 @@
          type(PseudoTimeSolver) :: PSE
          type(SORSolver) :: SOR
          type(myADI) :: ADI
+         type(FFTSolver) :: FT
          type(Jacobi) :: JAC
          type(multiGrid),dimension(4) :: MG
          type(BCs) :: u_bcs
-         logical,dimension(5) :: TF ! PseudoTime,jacobi,SOR,ADI,MG
+         logical,dimension(6) :: TF ! PseudoTime,jacobi,SOR,ADI,MG,FFT
          character(len=3) :: name
          type(norms) :: norm_res,norm_e
          type(solverSettings) :: ss
          type(gridGenerator) :: gg
+         complex(cp),dimension(10) :: t
+         real(cp),dimension(10) :: tR
          ! Field quantities
          real(cp),dimension(:,:,:),allocatable :: u,u_exact,f,lapU,e,R
 
          write(*,*) 'Number of cells = ',N
          TF = .false.
-         TF(4) = .true.
-         TF(3) = .true.
-         hmin = real(0.0,cp); hmax = real(1.0,cp)
+         ! TF(4) = .true.
+         ! TF(3) = .true.
+         TF(6) = .true.
+         hmin = 0.0_cp; hmax = 1.0_cp
+         hmin(3) = -0.5_cp; hmax(3) = 0.5_cp
          dh = (hmax-hmin)/real(N,cp)
          call init(gg,(/uniform(hmin(1),hmax(1),N(1))/),1)
          call init(gg,(/uniform(hmin(2),hmax(2),N(2))/),2)
@@ -254,6 +273,9 @@
          call init(ss)
          call setName(ss,'Lap(u) = f          ')
 
+         write(*,*) 'dh = ',g%c(1)%dhn(1)
+         write(*,*) 'xrange = ',g%c(1)%dhc(1),g%c(1)%hc(g%c(1)%sc)
+         write(*,*) 'yrange = ',g%c(2)%dhc(1),g%c(2)%hc(g%c(2)%sc)
          ! *************************************************************
          ! ****************** PARAMETERS TO DEFINE *********************
          ! *************************************************************
@@ -287,6 +309,10 @@
          call writeToFile(g,u_exact,dir,'u_exact')
          call writeToFile(g,f,dir,'f')
 
+
+
+         ! write(*,*) 'x = ',g%c(1)%hc
+         ! write(*,*) 'y = ',g%c(2)%hc
          write(*,*) 'System shape = ',s
          ! write(*,*) 'All neumann = ',allNeumann(u_bcs)
          ! stop 'Done'
@@ -295,10 +321,70 @@
          ! *************************************************************
          ! *************************************************************
 
+         if (TF(5)) then ! dct
+           do i=1,s(1)
+            u(i,:,:) = real(i,cp)
+           enddo
+           write(*,*) ''
+           write(*,*) 'u = ',u(:,1,1)
+           call dct1D(u(:,1,1))
+           write(*,*) 'dct(u) = ',u(:,1,1)
+           write(*,*) ''
+         endif
+
+         if (TF(6)) then ! fft
+           do i=1,size(t)
+             t(i) = cmplx(real(i,cp),0.0_cp,cp)
+             tR(i) = real(i,cp)
+           enddo
+           tR(1:3) = 0.0_cp
+           tR(4:10) = 10000000.0_cp
+           t(1:3) = 0.0_cp
+           t(4:10) = 10000000.0_cp
+           do i=size(t)/2+1,size(t) ! Mirror
+             t(i) = t(size(t)-i+1)
+             tR(i) = tR(size(tR)-i+1)
+           enddo
+           ! t(1:4) = cmplx(real(1,cp),real(0.0,cp),cp)
+           ! t(5:8) = cmplx(real(0,cp),real(0.0,cp),cp)
+           do i=1,size(t)
+             write(*,*) 'g = ',tR(i)
+           enddo
+           ! call fft1D(t)
+           ! do i=1,size(t)
+           !   write(*,*) 'fft(g) = ',t(i)
+           ! enddo
+           call dct1D(tR)
+           do i=1,size(tR)
+             write(*,*) 'dct(g) = ',tR(i)
+           enddo
+           ! call idct1D(tR)
+           ! do i=1,size(tR)
+           !   write(*,*) 'idct(g) = ',tR(i)
+           ! enddo
+         endif
+
+         if (TF(5)) then ! FFT
+           name = 'FFT'
+           u = 0.0_cp ! Initial guess
+           call poisson(FT,u,f,u_bcs,g,ss,norm_res,.true.,3)
+           call lap(lapU,u,g)
+           write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
+           write(*,*)  'mean u_exact for '//name//' = ', abs(sum(u_exact)/max(1,size(u_exact)))
+           e = u - u_exact
+           R = lapU - f
+           call zeroGhostPoints(R)
+           call compute(norm_e,u_exact,u)
+           call print(norm_e,'u_'//name//' vs u_exact')
+           call writeToFile(g,R,dir,'R_'//name)
+           call writeToFile(g,u,dir,'u_'//name)
+           call writeToFile(g,e,dir,'e_'//name)
+         endif
+
          if (TF(4)) then ! ADI
-           call setAlpha(ADI,real(1.0,cp))
-           if (allNeumann(u_bcs)) then; call setDt(ADI,real(0.01,cp)) ! Neumann
-           else;                        call setDt(ADI,real(0.001,cp))  ! Dirichlet
+           call setAlpha(ADI,1.0_cp)
+           if (allNeumann(u_bcs)) then; call setDt(ADI,0.01_cp) ! Neumann
+           else;                        call setDt(ADI,0.001_cp)  ! Dirichlet
            endif
            name = 'ADI'
            if (allNeumann(u_bcs)) then
@@ -320,7 +406,7 @@
              stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
              end select
            endif
-           u = real(0.0,cp) ! Initial guess
+           u = 0.0_cp ! Initial guess
            call poisson(ADI,u,f,u_bcs,g,ss,norm_res,.true.)
            call lap(lapU,u,g)
            write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
@@ -361,7 +447,7 @@
              stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
              end select
            endif
-           u = real(0.0,cp) ! Initial guess
+           u = 0.0_cp ! Initial guess
            call poisson(MG,u,f,u_bcs,g,ss,norm_res,.true.)
            call lap(lapU,u,g)
            write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
@@ -397,7 +483,7 @@
              stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
              end select
            endif
-           u = real(0.0,cp) ! Initial guess
+           u = 0.0_cp ! Initial guess
            call poisson(SOR,u,f,u_bcs,g,ss,norm_res,.true.)
            call lap(lapU,u,g)
            write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
@@ -433,7 +519,7 @@
              stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
              end select
            endif
-           u = real(0.0,cp) ! Initial guess
+           u = 0.0_cp ! Initial guess
            call poisson(JAC,u,f,u_bcs,g,ss,norm_res,.true.)
            call lap(lapU,u,g)
            write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))
@@ -450,7 +536,7 @@
 
          if (TF(1)) then ! PSE
            name = 'PSE'
-           call setTimeStep(PSE,real(0.0001,cp))
+           call setTimeStep(PSE,0.0001_cp)
            if (allNeumann(u_bcs)) then
              select case (dataType)
              case (1); call setMaxIterations(ss,2500) ! Cell centered data
@@ -470,7 +556,7 @@
              stop 'Error: dataType must = 1,2,3,4 in poisson.f90'
              end select
            endif
-           u = real(0.0,cp) ! Initial guess
+           u = 0.0_cp ! Initial guess
            call poisson(PSE,u,f,u_bcs,g,ss,norm_res,.true.)
            call lap(lapU,u,g)
            write(*,*)  'mean u for '//name//' = ', abs(sum(u)/max(1,size(u)))

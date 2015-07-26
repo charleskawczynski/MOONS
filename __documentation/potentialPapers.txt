@@ -1,0 +1,12 @@
+Potential paper titles:
+
+PRL: A new two-dimensional fully coupled magneto hydrodynamic model problem with closing currents for finite magnetic Reynolds number: description, flow regimes and stability.
+
+JCP/JFM: Liquid metal magneto hydrodynamic motion due to plasma disruptions
+
+JCP/JFM: Validity of pseudo vacuum Boundary conditions for finite magnetic Reynolds number flows
+
+FED: Relaxing the low magnetic Reynolds number approximation for magneto hydrodynamic liquid metal flows in fusion blankets
+
+JCP: Explicit multi-step time marching for diffusive-dominant magnetic fields in liquid metal magneto hydrodynamics for finite magnetic Reynolds number flows
+

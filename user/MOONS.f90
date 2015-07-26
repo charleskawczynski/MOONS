@@ -40,7 +40,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = real(3.14159265358979,cp)
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
        contains
 
@@ -425,6 +425,14 @@
          ds = 5.0d-8
          dTime = 1.0d-7
 
+         case (1012)
+         Re = real(100.0,cp); Ha = real(45.0,cp)
+         ds = 5.0d-5; dTime = 1.0d-3
+
+         case (1013)
+         Re = 400.0_cp
+         dTime = 10.0_cp**(-3.0_cp)
+
          case default
            stop 'Incorrect benchmarkCase in MOONS'
          end select
@@ -509,6 +517,9 @@
          case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
 
          case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
+         case (1012); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
+
+         case (1013); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
 
          case default
            stop 'Incorrect benchmarkCase in MOONS'
@@ -566,7 +577,9 @@
          ! case (1006); Ni = (/64,64,1/);   Nwtop = 32;          Nwbot = 32 ! (Weiss, Isolated Eddy)
          ! Nwtop(3) = 0;        Nwbot(3) = 0                                ! (Weiss, Isolated Eddy)
 
-         case (1006); Ni = (/200,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
+         ! case (1006); Ni = (/200,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
+         case (1006); Ni = (/400,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
+         ! case (1006); Ni = (/100,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Weiss, Single Eddy)
 
          case (1007); Ni = (/100,100,1/);   Nwtop = 0;           Nwbot = 0  ! (Parker, Cylinder)
 
@@ -577,6 +590,8 @@
          ! case (1010); Ni = 50;            Nwtop = 25;          Nwbot = 25  ! (Kawczynski - demo) for sigma* = 0.01
          case (1010); Ni = 50;            Nwtop = 15;          Nwbot = 15  ! (Kawczynski - demo) for sigma* = 0.001
          case (1011); Ni = (/1,45,45/);   Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo) for shercliff / hunt flow
+         case (1012); Ni = 64;            Nwtop = 0;           Nwbot = 0  ! Pattison
+         case (1013); Ni = (/100,100,1/);   Nwtop = 0;           Nwbot = 0  ! Pattison
 
          case default
            Ni = (/64,32,32/)

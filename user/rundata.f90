@@ -14,9 +14,9 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: zero = real(0.0,cp)
-       real(cp),parameter :: one = real(1.0,cp)
-       real(cp),parameter :: two = real(2.0,cp)
+       real(cp),parameter :: zero = 0.0_cp
+       real(cp),parameter :: one = 1.0_cp
+       real(cp),parameter :: two = 2.0_cp
 
        private
        
@@ -86,18 +86,18 @@
          ! *************** DIMENSIONLESS PARAMETERS **************
          this%Re = Re
          this%Ha = Ha
-         this%N = Ha**2.0d0/Re
+         this%N = Ha**2.0_cp/Re
          if (solveBMethod.eq.1) then
-           this%Rem = 1.0d-4
+           this%Rem = (10.0_cp)**(-4.0_cp)
          else
            this%Rem = Rem
          endif
          this%nu = one/this%Re
          this%eta = one/this%Rem
 
-         this%eta_K = this%Re**real(-3.0/4.0,cp)
-         this%u_eta_K = this%Re**real(-1.0/4.0,cp)
-         this%t_eta_K = this%Re**real(-1.0/2.0,cp)
+         this%eta_K = this%Re**(-3.0_cp/4.0_cp)
+         this%u_eta_K = this%Re**(-1.0_cp/4.0_cp)
+         this%t_eta_K = this%Re**(-1.0_cp/2.0_cp)
 
          ! *************** CHARACTERISTIC SCALES *****************
          ! Right now, the characteristic length and velocity
@@ -106,7 +106,7 @@
          ! This is not true in general and must be adjusted by
          ! the user.
 
-         this%L_c = 0.5d0*g_mom%maxRange
+         this%L_c = 0.5_cp*g_mom%maxRange
 
          ! Is this even necessary? I think setting U_c = 1
          ! might be better since velocity is basically controlled
@@ -122,16 +122,16 @@
          tempmax1 = maxval(abs(u))
          tempmax2 = maxval(abs(v))
          tempmax3 = maxval(abs(w))
-         this%umax = 0.5d0*maxval((/tempMax1,tempmax2,tempmax3/))
+         this%umax = 0.5_cp*maxval((/tempMax1,tempmax2,tempmax3/))
          this%U_c = this%umax
 
          ! ******************** TIME SCALES **********************
          ! Advective time
          this%t_c = this%L_c/this%U_c
          ! Momentum diffusion time
-         this%t_nu = this%L_c**2.0d0/this%nu
+         this%t_nu = this%L_c**2.0_cp/this%nu
          ! Magnetic diffusion time
-         this%t_eta = this%L_c**2.0d0/this%eta
+         this%t_eta = this%L_c**2.0_cp/this%eta
          ! Dimensionless time step
          this%dtime = dtime
          this%ds = ds
@@ -153,9 +153,9 @@
          ! Fourier number
          this%Fo = this%nu/this%nu_grid
          ! Magnetic Fourier number
-         this%Fo_m = this%dtime*this%eta/this%dhMin**2.0d0
+         this%Fo_m = this%dtime*this%eta/this%dhMin**2.0_cp
          ! Magnetic Fourier number
-         this%Fo = this%dtime*this%nu/this%dhMin**2.0d0
+         this%Fo = this%dtime*this%nu/this%dhMin**2.0_cp
          ! Grid Reynolds number
          this%Re_grid = this%Co/this%Fo
          ! Magnetic Prandtl number

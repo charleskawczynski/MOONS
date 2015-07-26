@@ -154,7 +154,7 @@
         real(cp),dimension(:),intent(inout) :: dfdh
         integer,intent(in) :: n,s,gt
         select case (n)
-        case (1); dfdh = collocated(f,dhp,s)
+        case (1); dfdh = collocated(f,dhp,s,gt)
         case (2); dfdh = collocated(f,dhp,dhd,s,gt)
         end select
       end subroutine
@@ -164,7 +164,7 @@
         real(cp),dimension(:),intent(inout) :: dfdh
         integer,intent(in) :: n,s,gt
         select case (n)
-        case (1); dfdh = dfdh + collocated(f,dhp,s)
+        case (1); dfdh = dfdh + collocated(f,dhp,s,gt)
         case (2); dfdh = dfdh + collocated(f,dhp,dhd,s,gt)
         end select
       end subroutine
@@ -174,7 +174,7 @@
         real(cp),dimension(:),intent(inout) :: dfdh
         integer,intent(in) :: n,s,gt
         select case (n)
-        case (1); dfdh = dfdh - collocated(f,dhp,s)
+        case (1); dfdh = dfdh - collocated(f,dhp,s,gt)
         case (2); dfdh = dfdh - collocated(f,dhp,dhd,s,gt)
         end select
       end subroutine
@@ -184,7 +184,7 @@
         real(cp),dimension(:),intent(inout) :: dfdh
         integer,intent(in) :: n,s,gt
         select case (n)
-        case (1); dfdh = dfdh * collocated(f,dhp,s)
+        case (1); dfdh = dfdh * collocated(f,dhp,s,gt)
         case (2); dfdh = dfdh * collocated(f,dhp,dhd,s,gt)
         end select
       end subroutine
@@ -194,7 +194,7 @@
         real(cp),dimension(:),intent(inout) :: dfdh
         integer,intent(in) :: n,s,gt
         select case (n)
-        case (1); dfdh = dfdh / collocated(f,dhp,s)
+        case (1); dfdh = dfdh / collocated(f,dhp,s,gt)
         case (2); dfdh = dfdh / collocated(f,dhp,dhd,s,gt)
         end select
       end subroutine
@@ -242,12 +242,12 @@
         if (genType.eq.1) then
           if (pad.gt.0) then
             select case (dir)
-          case (1); dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
-                    dfdh(:,1,:) = real(0.0,cp); dfdh(:,s(2),:) = real(0.0,cp)
-          case (2); dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
-                    dfdh(:,:,1) = real(0.0,cp); dfdh(:,:,s(3)) = real(0.0,cp)
-          case (3); dfdh(1,:,:) = real(0.0,cp); dfdh(s(1),:,:) = real(0.0,cp)
-                    dfdh(:,1,:) = real(0.0,cp); dfdh(:,s(2),:) = real(0.0,cp)
+          case (1); dfdh(:,:,1) = 0.0_cp; dfdh(:,:,s(3)) = 0.0_cp
+                    dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
+          case (2); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
+                    dfdh(:,:,1) = 0.0_cp; dfdh(:,:,s(3)) = 0.0_cp
+          case (3); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
+                    dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
           case default
             stop 'Error: dir must = 1,2,3 in delGen in del.f90.'
             end select

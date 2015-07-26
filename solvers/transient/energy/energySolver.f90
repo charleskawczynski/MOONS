@@ -47,7 +47,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       real(cp),parameter :: zero = real(0.0,cp)
+       real(cp),parameter :: zero = 0.0_cp
 
        type energy
          character(len=6) :: name = 'energy'
@@ -128,8 +128,8 @@
          call init(nrg%k,nrg%temp_F)
          call init(nrg%U_ft,nrg%temp_F)
 
-         call assign(nrg%gravity,real(0.0,cp))
-         call assign(nrg%buoyancy,real(0.0,cp))
+         call assign(nrg%gravity,0.0_cp)
+         call assign(nrg%buoyancy,0.0_cp)
 
          ! --- Scalar Fields ---
          call init(nrg%divQ,Nx,Ny,Nz)
@@ -172,7 +172,7 @@
          call readLastStepFromFile(nrg%nstep,dir//'parameters/','n_nrg')
          else; nrg%nstep = 0
          endif
-         nrg%time = real(0.0,cp)
+         nrg%time = 0.0_cp
          write(*,*) '     Finished'
        end subroutine
 
@@ -341,7 +341,7 @@
          character(len=*),intent(in) :: dir
          logical :: exportNow
 
-         nrg%gravity%y = real(1.0,cp)
+         nrg%gravity%y = 1.0_cp
 
          call embedVelocity(nrg,U,g_mom)
          select case (solveTMethod)
@@ -383,11 +383,11 @@
          type(grid),intent(in) :: g
 
          ! Advection
-         call assign(nrg%Ttemp,real(0.0,cp))
+         call assign(nrg%Ttemp,0.0_cp)
          call cellCenter2Face(nrg%temp_F,nrg%T%phi,g)
          call multiply(nrg%temp_F,nrg%U_ft)
          call div(nrg%Ttemp%phi,nrg%temp_F,g)
-         call multiply(nrg%Ttemp,real(-1.0,cp))
+         call multiply(nrg%Ttemp,-1.0_cp)
 
          ! Diffusion
          call assign(nrg%Tstar,nrg%Ttemp)
@@ -417,7 +417,7 @@
          real(cp),intent(in) :: Gr,Re
          type(grid),intent(in) :: g_mom
          call assign(nrg%buoyancy,nrg%T)
-         call multiply(nrg%buoyancy,Gr/(Re**real(2.0,cp)))
+         call multiply(nrg%buoyancy,Gr/(Re**2.0_cp))
          call multiply(nrg%buoyancy,nrg%gravity)
          call cellCenter2Face(nrg%temp_F,nrg%buoyancy,nrg%g)
          call extractFace(buoyancy,nrg%temp_F,nrg%SD,g_mom)
@@ -431,7 +431,7 @@
          type(grid),intent(in) :: g_mom
          type(VF) :: temp
          call init(temp,buoyancy)
-         call assign(temp,real(0.0,cp))
+         call assign(temp,0.0_cp)
          call computeBuoyancy(temp,nrg,g_mom,Gr,Re)
          call add(buoyancy,temp)
          call delete(temp)
@@ -449,7 +449,7 @@
          real(cp),intent(in) :: Fr
          type(grid),intent(in) :: g_mom
          call assign(nrg%temp_CC,nrg%gravity)
-         call divide(nrg%temp_CC,Fr**real(2.0,cp))
+         call divide(nrg%temp_CC,Fr**2.0_cp)
          call cellCenter2Face(nrg%temp_F,nrg%temp_CC,nrg%g)
          call extractFace(gravity,nrg%temp_F,nrg%SD,g_mom)
        end subroutine
@@ -462,7 +462,7 @@
          type(grid),intent(in) :: g_mom
          type(VF) :: temp
          call init(temp,gravity)
-         call assign(temp,real(0.0,cp))
+         call assign(temp,0.0_cp)
          call computeGravity(temp,nrg,g_mom,Fr)
          call add(gravity,temp)
          call delete(temp)
@@ -475,7 +475,7 @@
          if (solveEnergy) then
            call grad(nrg%temp_F,nrg%T%phi,g)
            call multiply(nrg%temp_F,nrg%k)
-           call multiply(nrg%temp_F,real(-1.0,cp))
+           call multiply(nrg%temp_F,-1.0_cp)
          endif
        end subroutine
 

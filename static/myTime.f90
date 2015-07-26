@@ -82,14 +82,14 @@
       subroutine initTime(this)
         implicit none
         type(myTime),intent(inout) :: this
-        this%t_start = 0.0
-        this%t_finish = 0.0
-        this%runTime = 0.0
-        this%runTimeCumulative = 0.0
-        this%runTimeAve = 0.0
-        this%percentageComplete = 0.0
-        this%estimatedRemaining = 0.0
-        this%estimatedTotal = 0.0
+        this%t_start = 0.0_cp
+        this%t_finish = 0.0_cp
+        this%runTime = 0.0_cp
+        this%runTimeCumulative = 0.0_cp
+        this%runTimeAve = 0.0_cp
+        this%percentageComplete = 0.0_cp
+        this%estimatedRemaining = 0.0_cp
+        this%estimatedTotal = 0.0_cp
         this%iterPerSec = 0
         this%iterPerHour = 0
         this%iterPerDay = 0
@@ -140,9 +140,9 @@
         ! else
           this%runTimeAve = this%runTimeCumulative/real(this%N,cp)
         ! endif
-        this%iterPerSec = floor(1.0/this%runTimeAve)
-        this%iterPerHour = floor(1.0/this%runTimeAve*3600.0)
-        this%iterPerDay = floor(1.0/this%runTimeAve*3600.0*24.0)
+        this%iterPerSec = floor(1.0_cp/this%runTimeAve)
+        this%iterPerHour = floor(1.0_cp/this%runTimeAve*3600.0_cp)
+        this%iterPerDay = floor(1.0_cp/this%runTimeAve*3600.0_cp*24.0_cp)
       end subroutine
 
       subroutine estimateRemainingNoSS(this,Nmax)
@@ -150,10 +150,10 @@
         type(myTime),intent(inout) :: this
         integer,intent(in) :: Nmax
         this%NMax = Nmax
-        this%estimatedRemaining = LIPx(real(0.0,cp),real(this%N-1,cp),&
+        this%estimatedRemaining = LIPx(0.0_cp,real(this%N-1,cp),&
         this%runTimeAve,real(this%N,cp),real(this%NMax,cp))
         this%estimatedTotal = this%runTimeAve*this%NMax
-        this%percentageComplete = real(this%N,cp)/real(this%NMax,cp)*100.0
+        this%percentageComplete = real(this%N,cp)/real(this%NMax,cp)*100.0_cp
         this%NRemaining = this%NMax - this%N
       end subroutine
 
@@ -163,26 +163,26 @@
         type(solverSettings),intent(in) :: ss
         if (getMaxIterationsTF(ss)) then
           this%NMax = getMaxIterations(ss)
-          this%estimatedRemaining = LIPx(real(0.0,cp),real(this%N-1,cp),&
+          this%estimatedRemaining = LIPx(0.0_cp,real(this%N-1,cp),&
           this%runTimeAve,real(this%N,cp),real(this%NMax,cp))
           this%estimatedTotal = this%runTimeAve*this%NMax
-          this%percentageComplete = real(this%N,cp)/real(this%NMax,cp)*100.0
+          this%percentageComplete = real(this%N,cp)/real(this%NMax,cp)*100.0_cp
         elseif (getMaxSimulationTimeTF(ss)) then
           ! Not yet tested
-          this%estimatedRemaining = LIPx(real(0.0,cp),real(getSimulationTime(ss),cp),&
+          this%estimatedRemaining = LIPx(0.0_cp,real(getSimulationTime(ss),cp),&
           this%runTimeAve,real(this%N,cp),real(getMaxSimulationTime(ss),cp))
         elseif (getMinToleranceTF(ss)) then
           ! Not yet tested
-          this%estimatedRemaining = LIPx(real(0.0,cp),real(getTolerance(ss),cp),&
+          this%estimatedRemaining = LIPx(0.0_cp,real(getTolerance(ss),cp),&
           this%runTimeAve,real(this%N,cp),real(getMinTolerance(ss),cp))
         elseif (getMaxCPUTimeTF(ss)) then
           ! Not yet tested
-          this%estimatedRemaining = LIPx(real(0.0,cp),real(getCPUTime(ss),cp),&
+          this%estimatedRemaining = LIPx(0.0_cp,real(getCPUTime(ss),cp),&
           this%runTimeAve,real(this%N,cp),real(getMaxCPUTime(ss),cp))
         endif
         this%NRemaining = this%NMax - this%N
         if (.not.getMaxIterationsTF(ss)) then
-          this%NMax = ceiling(this%N/this%percentageComplete*100.0)
+          this%NMax = ceiling(this%N/this%percentageComplete*100.0_cp)
         endif
       end subroutine
 
@@ -312,12 +312,12 @@
         implicit none
         real(cp),intent(inout) :: t
         character,intent(out) :: u
-         if ((t.ge.60.0).and.(t.lt.3600.0)) then
-          t = t/60.0; u = 'm'
-         elseif ((t.ge.3600.0).and.(t.lt.3600.0*24.0)) then
-          t = t/3600.0; u = 'h'
-         elseif (t.ge.3600.0*24.0) then
-          t = t/(3600.0*24.0); u = 'd'
+         if ((t.ge.60.0_cp).and.(t.lt.3600.0_cp)) then
+          t = t/60.0_cp; u = 'm'
+         elseif ((t.ge.3600.0_cp).and.(t.lt.3600.0_cp*24.0_cp)) then
+          t = t/3600.0_cp; u = 'h'
+         elseif (t.ge.3600.0_cp*24.0_cp) then
+          t = t/(3600.0_cp*24.0_cp); u = 'd'
          else; u = 's'
          endif
        end subroutine

@@ -23,7 +23,7 @@
 
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
 
-       logical :: nonUniformGridFluid       = .true.    ! (T/F)
+       logical :: nonUniformGridFluid       = .false.    ! (T/F)
        logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
@@ -49,7 +49,7 @@
        !                                   1 : Explicit Euler
        !                                   2 : Semi-Implicit 3D ADI (Douglas)
 
-       integer :: advectiveUFormulation = 1
+       integer :: advectiveUFormulation = 2
        !                                  1 : Donor-Cell (conservative form)
        !                                  2 : Advective form
        !                                  3 : Upwind (not yet implemented)
@@ -58,12 +58,12 @@
        ! real(cp) :: lambdu = 0.5 ! Upwind blending parameter  ( 0 <= lambdu <= 1 ) Not yet implemented
        !                                                       pure         central
        !                                                      upwind       difference
-       logical :: addJCrossB = .true.
+       logical :: addJCrossB = .false.
        logical :: addBuoyancy = .false.
        logical :: addGravity = .false.
 
        ! ************************ B-FIELD ***********************
-       logical :: solveInduction = .true.
+       logical :: solveInduction = .false.
        logical :: cleanB = .false.
        logical :: multiMaterials = .false.
        logical :: computeKB  = .true.    ! Compute Total   magnetic energy at each time step
@@ -105,7 +105,7 @@
        !      Geometry,stretching factors,...,Re,Ha,Rem,...,dt,Nmax
        ! 
 
-       integer,parameter :: benchmarkCase = 1008
+       integer,parameter :: benchmarkCase = 1013
        ! 
        ! 0-99-series (verification cases against exact solutions)
        ! 
@@ -176,6 +176,8 @@
        !    1009: Kawczynski (LDC demo cases)
        !    1010: Kawczynski (LDC demo cases) for B = 0 BCs
        !    1011: Kawczynski (Hunt/Shercliff demo cases) for B = 0 BCs
+       !    1012: Pattison (3D MHD LDC)
+       !    1013: 2D LDC (using FFT)
        ! 
        ! 10,000-series (Published work ONLY)
        ! 
@@ -205,7 +207,7 @@
        integer :: nskip_exportTransientFull  = 50     ! Very Expensive
        integer :: nskip_exportErrors         = 1000    ! Divergences / Residuals (expensive)
        ! integer :: nskip_exportErrors         = 100    ! Divergences / Residuals (expensive)
-       integer :: nskip_print                = 10     ! Printed data (cheap)
+       integer :: nskip_print                = 50     ! Printed data (cheap)
        ! integer :: nskip_print                = 10     ! Printed data (cheap)
        ! integer :: transientExportXYZ         = 1      ! Component to export (1,2,3) = (x,y,z)
 

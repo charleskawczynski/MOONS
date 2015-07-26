@@ -59,9 +59,9 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       real(cp),parameter :: zero = real(0.0,cp)
-       real(cp),parameter :: one = real(1.0,cp)
-       real(cp),parameter :: tol = 10.0**(-6.0) ! Minimum number to divide by when computing error.
+       real(cp),parameter :: zero = 0.0_cp
+       real(cp),parameter :: one = 1.0_cp
+       real(cp),parameter :: tol = 10.0_cp**(-6.0_cp) ! Minimum number to divide by when computing error.
 
        private
 
@@ -457,8 +457,8 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
@@ -473,8 +473,8 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
@@ -488,8 +488,8 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
@@ -504,8 +504,8 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
@@ -519,8 +519,8 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
@@ -535,8 +535,8 @@
          real(cp) :: n,denom
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
@@ -548,11 +548,11 @@
          type(norms),intent(inout) :: e
          real(cp),intent(in),dimension(:,:,:) :: approx
          real(cp) :: n,denom,exact
-         exact = real(0.0,cp)
+         exact = 0.0_cp
 
          call initError(e)
-         n = real(1.0,cp); call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = real(2.0,cp); call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
          !n = infinity
          e%Linf = maxval(abs(exact-approx))
          if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))

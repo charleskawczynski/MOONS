@@ -48,7 +48,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-      real(cp),parameter :: PI = 3.14159265358979
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
       logical, parameter :: useGaussSeidel = .true.
 
@@ -127,13 +127,13 @@
         allocate(SOR%res(SOR%s(1),SOR%s(2),SOR%s(3)))
 
         if (useGaussSeidel) then
-          SOR%omega = real(1.0,cp)
+          SOR%omega = 1.0_cp
           SOR%name = 'SOR'
         else
           Nx = s(1); Ny = s(2); Nz = s(3)
-          SOR%omega = real(2.0,cp)/(real(1.0,cp) + sqrt(real(1.0,cp) - & 
+          SOR%omega = 2.0_cp/(1.0_cp + sqrt(1.0_cp - & 
            ((cos(PI/real(Nx+1,cp)) + cos(PI/real(Ny+1,cp)) + &
-             cos(PI/real(Nz+1,cp)))/real(3.0,cp))**real(2.0,cp)))
+             cos(PI/real(Nz+1,cp)))/3.0_cp)**2.0_cp))
           SOR%name = 'SOR'
         endif
       end subroutine
@@ -236,7 +236,7 @@
             call lap(SOR%lapu,u,g)
             SOR%res = SOR%lapu - SOR%f
             call zeroGhostPoints(SOR%res)
-            call compute(norm,real(0.0,cp),SOR%res)
+            call compute(norm,0.0_cp,SOR%res)
             call setTolerance(ss,getR2(norm))
           endif
 
@@ -244,7 +244,7 @@
             call lap(SOR%lapu,u,g)
             SOR%res = SOR%lapu - SOR%f
             call zeroGhostPoints(SOR%res)
-            call compute(norm,real(0.0,cp),SOR%res)
+            call compute(norm,0.0_cp,SOR%res)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
 
@@ -278,7 +278,7 @@
           call lap(SOR%lapu,u,g)
           SOR%res = SOR%lapu - SOR%f
           call zeroGhostPoints(SOR%res)
-          call compute(norm,real(0.0,cp),SOR%res)
+          call compute(norm,0.0_cp,SOR%res)
           call print(norm,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
@@ -305,11 +305,11 @@
           do j=2+odd(2),s(2)-1,2
             do i=2+odd(1),s(1)-1,2
 
-              r = real(1.0,cp)/dxd(i-1+gt(1))*(real(1.0,cp)/dxp(i) + real(1.0,cp)/dxp(i-1)) + & 
-                  real(1.0,cp)/dyd(j-1+gt(2))*(real(1.0,cp)/dyp(j) + real(1.0,cp)/dyp(j-1)) + & 
-                  real(1.0,cp)/dzd(k-1+gt(3))*(real(1.0,cp)/dzp(k) + real(1.0,cp)/dzp(k-1))
+              r = 1.0_cp/dxd(i-1+gt(1))*(1.0_cp/dxp(i) + 1.0_cp/dxp(i-1)) + & 
+                  1.0_cp/dyd(j-1+gt(2))*(1.0_cp/dyp(j) + 1.0_cp/dyp(j-1)) + & 
+                  1.0_cp/dzd(k-1+gt(3))*(1.0_cp/dzp(k) + 1.0_cp/dzp(k-1))
 
-              u(i,j,k) = u(i,j,k)*(real(1.0,cp)-omega) + &
+              u(i,j,k) = u(i,j,k)*(1.0_cp-omega) + &
                  omega*( u(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1))) + &
                          u(i+1,j,k)/(dxp( i ) * dxd(i-1+gt(1))) + &
                          u(i,j-1,k)/(dyp(j-1) * dyd(j-1+gt(2))) + &
@@ -349,11 +349,11 @@
         do k=2+odd(3),s(3)-1,2
           do j=2+odd(2),s(2)-1,2
             do i=2+odd(1),s(1)-1,2
-                r = real(1.0,cp)/dxd(i-1+gt(1))*(sigma%x(i,j,k)/dxp(i) + sigma%x(i-1,j,k)/dxp(i-1)) + & 
-                    real(1.0,cp)/dyd(j-1+gt(2))*(sigma%y(i,j,k)/dyp(j) + sigma%y(i,j-1,k)/dyp(j-1)) + & 
-                    real(1.0,cp)/dzd(k-1+gt(3))*(sigma%z(i,j,k)/dzp(k) + sigma%z(i,j,k-1)/dzp(k-1))
+                r = 1.0_cp/dxd(i-1+gt(1))*(sigma%x(i,j,k)/dxp(i) + sigma%x(i-1,j,k)/dxp(i-1)) + & 
+                    1.0_cp/dyd(j-1+gt(2))*(sigma%y(i,j,k)/dyp(j) + sigma%y(i,j-1,k)/dyp(j-1)) + & 
+                    1.0_cp/dzd(k-1+gt(3))*(sigma%z(i,j,k)/dzp(k) + sigma%z(i,j,k-1)/dzp(k-1))
 
-                u(i,j,k) = u(i,j,k)*(real(1.0,cp)-omega) + &
+                u(i,j,k) = u(i,j,k)*(1.0_cp-omega) + &
 
                    omega*( u(i-1,j,k)*(sigma%x(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1)))) + &
                            u(i+1,j,k)*(sigma%x(i, j ,k)/(dxp( i ) * dxd(i-1+gt(1)))) + &

@@ -40,6 +40,7 @@
 
          call computationInProgress(time)
          call init(F,mom%U)
+         call assign(F,0.0_cp)
 
          ! ********************** PREP LOOP ******************************
          continueLoop = .true.
@@ -61,7 +62,7 @@
            if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
            if (solveInduction) call solve(ind,mom%U,mom%g,ss_MHD,dir)
 
-           call assign(F,real(0.0,cp))
+           call assign(F,0.0_cp)
            if (addJCrossB)  call computeAddJCrossB(F,ind,mom%g,ind%Ha,mom%Re,ind%Rem)
            if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%g,mom%Gr,mom%Re)
            if (addGravity)  call computeAddGravity(F,nrg,mom%g,mom%Fr)

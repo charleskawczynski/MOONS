@@ -75,6 +75,8 @@
        interface interp;              module procedure interpO2;             end interface
        interface extrap;              module procedure extrapO2;             end interface
 
+       interface face2Face;           module procedure face2FaceSF;          end interface
+       interface face2Face;           module procedure face2FaceVF;          end interface
        interface face2Node;           module procedure face2NodeSF;          end interface
        interface face2Node;           module procedure face2NodeVF;          end interface
        interface face2CellCenter;     module procedure face2CellCenterSF;    end interface
@@ -170,7 +172,7 @@
            do k=1,sg(3)-z
              do j=1,sg(2)-y
                do i=1,sg(1)-x
-                 f(i,j,k) = (g(i,j,k)+g(i+x,j+y,k+z))/real(2.0,cp)
+                 f(i,j,k) = (g(i,j,k)+g(i+x,j+y,k+z))/2.0_cp
                enddo
              enddo
            enddo
@@ -189,7 +191,7 @@
                  t = i*x + j*y + k*z
                  alpha = (gd%c(dir)%hn(t+1) - gd%c(dir)%hc(t))/(gd%c(dir)%hc(t+1) - gd%c(dir)%hc(t))
                  f(i+x,j+y,k+z) = g(i+x,j+y,k+z)*alpha + &
-                                  g(i,j,k)*(real(1.0,cp)-alpha)
+                                  g(i,j,k)*(1.0_cp-alpha)
                enddo
              enddo
            enddo
@@ -242,18 +244,18 @@
          !         *
          ! 
          select case (dir)
-         case (1); f(1,:,:) = real(2.0,cp)*g(1,:,:) - f(2,:,:)
-         case (2); f(:,1,:) = real(2.0,cp)*g(:,1,:) - f(:,2,:)
-         case (3); f(:,:,1) = real(2.0,cp)*g(:,:,1) - f(:,:,2)
+         case (1); f(1,:,:) = 2.0_cp*g(1,:,:) - f(2,:,:)
+         case (2); f(:,1,:) = 2.0_cp*g(:,1,:) - f(:,2,:)
+         case (3); f(:,:,1) = 2.0_cp*g(:,:,1) - f(:,:,2)
          end select
          ! FORWARD EXTRAPOLATION (* = assigned)
          !         f  g  f  g  f  g  f  g  f
          !         |--o--|--o--|--o--|--o--|    --> dir
          !                                 *
          select case (dir)
-         case (1); f(sf(1),:,:) = real(2.0,cp)*g(sg(1),:,:) - f(sf(1)-1,:,:)
-         case (2); f(:,sf(2),:) = real(2.0,cp)*g(:,sg(2),:) - f(:,sf(2)-1,:)
-         case (3); f(:,:,sf(3)) = real(2.0,cp)*g(:,:,sg(3)) - f(:,:,sf(3)-1)
+         case (1); f(sf(1),:,:) = 2.0_cp*g(sg(1),:,:) - f(sf(1)-1,:,:)
+         case (2); f(:,sf(2),:) = 2.0_cp*g(:,sg(2),:) - f(:,sf(2)-1,:)
+         case (3); f(:,:,sf(3)) = 2.0_cp*g(:,:,sg(3)) - f(:,:,sf(3)-1)
          end select
        end subroutine
 
@@ -312,24 +314,14 @@
          endif
        end subroutine
 
-       subroutine face2Face(faceAve,face,g,faceDir,aveLoc)
+       subroutine face2FaceSF(faceAve,face,g,faceDir,aveLoc)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: faceAve
          real(cp),dimension(:,:,:),intent(in) :: face
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir,aveLoc
          real(cp),dimension(:,:,:),allocatable :: cellCenter
-         integer :: x,y,z
-         integer,dimension(3) :: s
-         s = shape(face)
-         select case (faceDir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           stop 'Error: faceDir must = 1,2,3 in face2Face.'
-         end select
-         allocate(cellCenter(s(1)-x,s(2)-y,s(3)-z))
+         allocate(cellCenter(g%c(1)%sc,g%c(2)%sc,g%c(3)%sc))
          call face2CellCenter(cellCenter,face,g,faceDir)
          call cellCenter2Face(faceAve,cellCenter,g,aveLoc)
          deallocate(cellCenter)
@@ -342,9 +334,7 @@
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir
          real(cp),dimension(:,:,:),allocatable :: edge
-         integer,dimension(3) :: s,sn
-         integer :: x,y,z,edgeDir
-         s = shape(face); sn = shape(node)
+         integer :: edgeDir
          select case (faceDir)
          case (1); edgeDir = 2
          case (2); edgeDir = 1
@@ -353,14 +343,13 @@
            stop 'Error: faceDir must = 1,2,3 in face2Node.'
          end select
          select case (edgeDir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
+         case (1); allocate(edge(g%c(1)%sc,g%c(2)%sn,g%c(3)%sn))
+         case (2); allocate(edge(g%c(1)%sn,g%c(2)%sc,g%c(3)%sn))
+         case (3); allocate(edge(g%c(1)%sn,g%c(2)%sn,g%c(3)%sc))
          case default
            stop 'Error: faceDir must = 1,2,3 in face2Node.'
          end select
 
-         allocate(edge(sn(1)-x,sn(2)-y,sn(3)-z))
          call face2Edge(edge,face,g,faceDir,edgeDir)
          call edge2Node(node,edge,g,edgeDir)
          deallocate(edge)
@@ -385,12 +374,9 @@
          real(cp),dimension(:,:,:),intent(in) :: cellCenter
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),allocatable :: face,edge
-         integer,dimension(3) :: sc,sn
-         sc = shape(cellCenter)
-         sn = shape(node)
-         allocate(face(sn(1),sc(2),sc(3)))
+         allocate(face(g%c(1)%sn,g%c(2)%sc,g%c(3)%sc))
          call cellCenter2Face(face,cellCenter,g,1)
-         allocate(edge(sn(1),sn(2),sc(3)))
+         allocate(edge(g%c(1)%sn,g%c(2)%sn,g%c(3)%sc))
          call face2Edge(edge,face,g,1,3)
          deallocate(face)
          call edge2Node(node,edge,g,3)
@@ -520,6 +506,27 @@
        ! ****************************************************************************************
        ! ********************************* FACE INTERPOLATIONS **********************************
        ! ****************************************************************************************
+
+       subroutine face2FaceVF(faceX,faceY,faceZ,face,g)
+         ! [U_ave,V_ave,W_ave] = interp(U)
+         implicit none
+         type(VF),intent(inout) :: faceX,faceY,faceZ
+         type(VF),intent(in)    :: face
+         type(grid),intent(in) :: g
+
+         call assignX(faceX,face)
+         call assignY(faceY,face)
+         call assignZ(faceZ,face)
+
+         call face2Face(faceX%y,face%x,g,1,2)
+         call face2Face(faceX%z,face%x,g,1,3)
+
+         call face2Face(faceY%x,face%y,g,2,1)
+         call face2Face(faceY%z,face%y,g,2,3)
+
+         call face2Face(faceZ%x,face%z,g,3,1)
+         call face2Face(faceZ%y,face%z,g,3,2)
+       end subroutine
 
        subroutine face2CellCenterVF(cellCenter,face,g)
          implicit none

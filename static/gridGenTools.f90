@@ -13,9 +13,9 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       real(cp),parameter :: one = real(1.0,cp)
-       real(cp),parameter :: two = real(2.0,cp)
-       real(cp),parameter :: zero = real(0.0,cp)
+       real(cp),parameter :: one = 1.0_cp
+       real(cp),parameter :: two = 2.0_cp
+       real(cp),parameter :: zero = 0.0_cp
        
        ! Uniform grids
        public :: uniform,uniformLeft,uniformRight
@@ -148,8 +148,8 @@
          integer :: i
          real(cp) :: a,b,g ! beta,gamma
          allocate(hnbar(N+1))
-         a = real(1.0,cp); b = beta
-         g = (b+real(1.0,cp))/(b-real(1.0,cp))
+         a = 1.0_cp; b = beta
+         g = (b+1.0_cp)/(b-1.0_cp)
          ! Where N is the number of cells
          dh = (hmax - hmin)/real(N,cp)
          ! Total coordinates (uniform)
@@ -255,7 +255,7 @@
          integer :: i
          real(cp) :: a,B,c,d,e
          allocate(hnbar(N+1))
-         a = real(1.0,cp); c = real(2.0,cp)
+         a = 1.0_cp; c = 2.0_cp
          ! Where N is the number of cells
          dh = (hmax - hmin)/real(N,cp)
          ! Total coordinates (uniform)
@@ -291,7 +291,7 @@
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
          real(cp),intent(in) :: hmin,hmax,beta
-         hn = transformation2(hmin,hmax,N,real(0.0,cp),beta)
+         hn = transformation2(hmin,hmax,N,0.0_cp,beta)
        end function
 
        function robertsBoth(hmin,hmax,N,beta) result(hn)
@@ -299,7 +299,7 @@
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
          real(cp),intent(in) :: hmin,hmax,beta
-         hn = transformation2(hmin,hmax,N,real(0.5,cp),beta)
+         hn = transformation2(hmin,hmax,N,0.5_cp,beta)
        end function
 
        function cluster(hmin,hmax,N,yc,tau) result(hn)
@@ -332,9 +332,9 @@
          ! The 'if' statement protects against the case when 
          ! Ha = 1 (delta=h), which leads to beta = infinity. 
          ! HIMAG doesn't seem to protect against this.
-         if (delta.lt.h*real(0.99,cp)) then
-           beta = (real(1.0,cp) - delta/h)**(-real(0.5,cp))
-         else; beta = real(1000.0,cp)
+         if (delta.lt.h*0.99_cp) then
+           beta = (1.0_cp - delta/h)**(-0.5_cp)
+         else; beta = 1000.0_cp
          endif
        end function
 

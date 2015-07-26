@@ -100,12 +100,12 @@
          type(BCs),intent(in) :: b
          real(cp),dimension(:,:,:),intent(inout) :: u
          type(grid),intent(in) :: g
-         call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
          call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
          call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
+         call applyBCs(u,b%xMinType,1,b%xMinVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         call applyBCs(u,b%xMaxType,4,b%xMaxVals,g%c(1)%hn,g%c(1)%hc,b%s(1))
+         call applyBCs(u,b%zMinType,3,b%zMinVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         call applyBCs(u,b%zMaxType,6,b%zMaxVals,g%c(3)%hn,g%c(3)%hc,b%s(3))
        end subroutine
 
        subroutine applyBCs(u,bctype,face,bvals,hn,hc,s)
@@ -129,21 +129,21 @@
            case (6); u(:,:,s-1) = bvals
            end select
            select case (face) ! Linearly extrapolate to ghost node
-           case (1); u(1,:,:) = real(2.0,cp)*bvals - u(3,:,:)
-           case (2); u(:,1,:) = real(2.0,cp)*bvals - u(:,3,:)
-           case (3); u(:,:,1) = real(2.0,cp)*bvals - u(:,:,3)
-           case (4); u(s,:,:) = real(2.0,cp)*bvals - u(s-2,:,:)
-           case (5); u(:,s,:) = real(2.0,cp)*bvals - u(:,s-2,:)
-           case (6); u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-2)
+           case (1); u(1,:,:) = 2.0_cp*bvals - u(3,:,:)
+           case (2); u(:,1,:) = 2.0_cp*bvals - u(:,3,:)
+           case (3); u(:,:,1) = 2.0_cp*bvals - u(:,:,3)
+           case (4); u(s,:,:) = 2.0_cp*bvals - u(s-2,:,:)
+           case (5); u(:,s,:) = 2.0_cp*bvals - u(:,s-2,:)
+           case (6); u(:,:,s) = 2.0_cp*bvals - u(:,:,s-2)
            end select
          case (2) ! Dirichlet - interpolated - wall incoincident
            select case (face)
-           case (1); u(1,:,:) = real(2.0,cp)*bvals - u(2,:,:)
-           case (2); u(:,1,:) = real(2.0,cp)*bvals - u(:,2,:)
-           case (3); u(:,:,1) = real(2.0,cp)*bvals - u(:,:,2)
-           case (4); u(s,:,:) = real(2.0,cp)*bvals - u(s-1,:,:)
-           case (5); u(:,s,:) = real(2.0,cp)*bvals - u(:,s-1,:)
-           case (6); u(:,:,s) = real(2.0,cp)*bvals - u(:,:,s-1)
+           case (1); u(1,:,:) = 2.0_cp*bvals - u(2,:,:)
+           case (2); u(:,1,:) = 2.0_cp*bvals - u(:,2,:)
+           case (3); u(:,:,1) = 2.0_cp*bvals - u(:,:,2)
+           case (4); u(s,:,:) = 2.0_cp*bvals - u(s-1,:,:)
+           case (5); u(:,s,:) = 2.0_cp*bvals - u(:,s-1,:)
+           case (6); u(:,:,s) = 2.0_cp*bvals - u(:,:,s-1)
            end select
          ! *************************** NEUMANN *****************************
          ! The explicit Neumann BCs need to be double checked, I believe the
@@ -167,12 +167,12 @@
            end select
          case (4) ! Implicit Neumann - direct - wall coincident ~O(dh^2)
            select case (face)
-           case (1); u(1,:,:) = u(3,:,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
-           case (2); u(:,1,:) = u(:,3,:) - real(2.0,cp)*bvals*(hn(1)-hn(2))
-           case (3); u(:,:,1) = u(:,:,3) - real(2.0,cp)*bvals*(hn(1)-hn(2))
-           case (4); u(s,:,:) = u(s-2,:,:) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
-           case (5); u(:,s,:) = u(:,s-2,:) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
-           case (6); u(:,:,s) = u(:,:,s-2) - real(2.0,cp)*bvals*(hn(s)-hn(s-1))
+           case (1); u(1,:,:) = u(3,:,:) - 2.0_cp*bvals*(hn(1)-hn(2))
+           case (2); u(:,1,:) = u(:,3,:) - 2.0_cp*bvals*(hn(1)-hn(2))
+           case (3); u(:,:,1) = u(:,:,3) - 2.0_cp*bvals*(hn(1)-hn(2))
+           case (4); u(s,:,:) = u(s-2,:,:) - 2.0_cp*bvals*(hn(s)-hn(s-1))
+           case (5); u(:,s,:) = u(:,s-2,:) - 2.0_cp*bvals*(hn(s)-hn(s-1))
+           case (6); u(:,:,s) = u(:,:,s-2) - 2.0_cp*bvals*(hn(s)-hn(s-1))
            end select
          case (5) ! Implicit Neumann - interpolated - wall incoincident ~O(dh)
            select case (face)
@@ -213,12 +213,12 @@
            end select
          case (8) ! Periodic - interpolated - wall incoincident ~O(dh^2)
            select case (face)
-           case (1); u(1,:,:) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(2,:,:) + u(s-1,:,:) - u(3,:,:))
-           case (2); u(:,1,:) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(:,2,:) + u(:,s-1,:) - u(:,3,:))
-           case (3); u(:,:,1) = real(1.0,cp)/real(3.0,cp)*(real(3.0,cp)*u(:,:,2) + u(:,:,s-1) - u(:,:,3))
-           case (4); u(s,:,:) = real(-1.0,cp)/real(3.0,cp)*(u(s-2,:,:) - real(3.0,cp)*u(s-1,:,:) - u(2,:,:))
-           case (5); u(:,s,:) = real(-1.0,cp)/real(3.0,cp)*(u(:,s-2,:) - real(3.0,cp)*u(:,s-1,:) - u(:,2,:))
-           case (6); u(:,:,s) = real(-1.0,cp)/real(3.0,cp)*(u(:,:,s-2) - real(3.0,cp)*u(:,:,s-1) - u(:,:,2))
+           case (1); u(1,:,:) = 1.0_cp/3.0_cp*(3.0_cp*u(2,:,:) + u(s-1,:,:) - u(3,:,:))
+           case (2); u(:,1,:) = 1.0_cp/3.0_cp*(3.0_cp*u(:,2,:) + u(:,s-1,:) - u(:,3,:))
+           case (3); u(:,:,1) = 1.0_cp/3.0_cp*(3.0_cp*u(:,:,2) + u(:,:,s-1) - u(:,:,3))
+           case (4); u(s,:,:) = -1.0_cp/3.0_cp*(u(s-2,:,:) - 3.0_cp*u(s-1,:,:) - u(2,:,:))
+           case (5); u(:,s,:) = -1.0_cp/3.0_cp*(u(:,s-2,:) - 3.0_cp*u(:,s-1,:) - u(:,2,:))
+           case (6); u(:,:,s) = -1.0_cp/3.0_cp*(u(:,:,s-2) - 3.0_cp*u(:,:,s-1) - u(:,:,2))
            end select
          case default
          stop 'Error: Bad bctype! Caught in applyBCs.f90'

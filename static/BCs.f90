@@ -359,22 +359,22 @@
          this%s = (/Nx,Ny,Nz/)
 
          allocate(bvals(Ny,Nz)); call setXminType(this,bctype)
-         bvals = real(0.0,cp); call setXminVals(this,bvals); deallocate(bvals)
+         bvals = 0.0_cp; call setXminVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Ny,Nz)); call setXmaxType(this,bctype)
-         bvals = real(0.0,cp); call setXmaxVals(this,bvals); deallocate(bvals)
+         bvals = 0.0_cp; call setXmaxVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Nz)); call setYminType(this,bctype)
-         bvals = real(0.0,cp); call setYminVals(this,bvals); deallocate(bvals)
+         bvals = 0.0_cp; call setYminVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Nz)); call setYmaxType(this,bctype)
-         bvals = real(0.0,cp); call setYmaxVals(this,bvals); deallocate(bvals)
+         bvals = 0.0_cp; call setYmaxVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Ny)); call setZminType(this,bctype)
-         bvals = real(0.0,cp); call setZminVals(this,bvals); deallocate(bvals)
+         bvals = 0.0_cp; call setZminVals(this,bvals); deallocate(bvals)
 
          allocate(bvals(Nx,Ny)); call setZmaxType(this,bctype)
-         bvals = real(0.0,cp); call setZmaxVals(this,bvals); deallocate(bvals)
+         bvals = 0.0_cp; call setZmaxVals(this,bvals); deallocate(bvals)
        end subroutine
 
        subroutine setAllZeroNoSize(this,bctype)

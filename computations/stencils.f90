@@ -63,7 +63,7 @@
         integer,intent(in) :: s,gt
         real(cp),dimension(s-1+2*gt) :: dfdh
         integer :: i
-        dfdh(1) = real(0.0,cp); dfdh(s-1+2*gt) = real(0.0,cp)
+        dfdh(1) = 0.0_cp; dfdh(s-1+2*gt) = 0.0_cp
         dfdh(1+gt:s-1+gt) = (/((f(i+1)-f(i))/dhp(i),i=1,s-1)/)
       end function
 
@@ -86,25 +86,25 @@
         integer,intent(in) :: s,gt
         real(cp),dimension(s-1+2*gt) :: dfdh
         integer :: i
-        dfdh(1) = real(0.0,cp); dfdh(s-1+2*gt) = real(0.0,cp)
+        dfdh(1) = 0.0_cp; dfdh(s-1+2*gt) = 0.0_cp
 
         dfdh(2+gt:s-2+gt) = (/((+f(i-1) &
-                  -real(27.0,cp)*f(i)&
-                  +real(27.0,cp)*f(i+1)&
+                  -27.0_cp*f(i)&
+                  +27.0_cp*f(i+1)&
                                 -f(i+2) &
-                                )/(real(24.0,cp)*dhp(i)),i=2,s-2)/)
+                                )/(24.0_cp*dhp(i)),i=2,s-2)/)
         dfdh(1+gt) = (f(2)-f(1))/dhp(1)
         dfdh(s-1+gt) = (f(s)-f(s-1))/dhp(s-1)
       end function
 
-      function collocatedDfDh(f,dhp,s) result(dfdh)
+      function collocatedDfDh(f,dhp,s,gt) result(dfdh)
         implicit none
         real(cp),dimension(s) :: dfdh
         real(cp),intent(in),dimension(:) :: f
         real(cp),intent(in),dimension(:) :: dhp
-        integer,intent(in) :: s
+        integer,intent(in) :: gt,s
         integer :: i,j,k
-        real(cp) :: alpha,beta
+        real(cp) :: alpha,beta,temp_b
         ! Interior
         k = -1; j = 1
         do i=2,s-1
@@ -113,19 +113,42 @@
                     f(i+k)*beta/alpha + &
                     f(i+j)*(-alpha/beta))/(beta-alpha)
         enddo
-        dfdh(1) = real(0.0,cp); dfdh(s) = real(0.0,cp)
+        dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
+        if (gt.eq.1) then            ! Collocated CellCenter derivative
         ! Forward difference
-        i = 1; k = 1; j = 2
-        alpha = dhp(1); beta = dhp(1) + dhp(2)
+        k = -1; j = 1
+        temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
+        i = 2
+        alpha = -0.5_cp*dhp(i-1); beta = dhp(i)
         dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+                  temp_b*beta/alpha + &
+                  f(i+j)*(-alpha/beta))/(beta-alpha)
+        ! Backward difference
+        k = -1; j = 1
+        temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
+        i = s-1
+        alpha = -dhp(i-1); beta = 0.5_cp*dhp(i)
+        dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+                  f(i+k)*beta/alpha + &
+                  temp_b*(-alpha/beta))/(beta-alpha)
+        else                         ! Collocated Node derivative
+        ! Forward difference
+        k = 1; j = 2
+        temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
+        i = 2
+        alpha = dhp(i); beta = dhp(i)+dhp(i+1)
+        dfdh(i) = (temp_b*(alpha/beta-beta/alpha) +&
                   f(i+k)*beta/alpha + &
                   f(i+j)*(-alpha/beta))/(beta-alpha)
         ! Backward difference
-        i = s; k = -1; j = -2
+        k = -2; j = -1
+        temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
+        i = s-1
         alpha = -dhp(s-1); beta = -(dhp(s-1) + dhp(s-2))
-        dfdh(i) = (f( i )*(alpha/beta-beta/alpha) +&
+        dfdh(i) = (temp_b*(alpha/beta-beta/alpha) +&
                   f(i+k)*beta/alpha + &
                   f(i+j)*(-alpha/beta))/(beta-alpha)
+        endif
       end function
 
       function collocatedD2fDh2(f,dhp,dhd,s,gt) result(dfdh)
@@ -144,10 +167,48 @@
         real(cp),intent(in),dimension(:) :: dhp,dhd
         integer,intent(in) :: s,gt
         integer :: i
-        dfdh(1) = real(0.0,cp); dfdh(s) = real(0.0,cp)
+        integer :: j,k
+        real(cp) :: temp_b,alpha,beta
+        dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
         do i=2,s-1
           dfdh(i) = ((f(i+1)-f(i))/dhp(i) - (f(i)-f(i-1))/dhp(i-1))/dhd(i-1+gt)
         enddo
+
+        if (gt.eq.1) then              ! Collocated CellCenter derivative (gt = 1):
+          ! Forward difference
+          k = -1; j = 1
+          temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
+          i = 2
+          alpha = -0.5_cp*dhp(i-1); beta = dhp(i)
+          dfdh(i) = 2.0_cp*f(i)/(alpha*beta) + &
+                    2.0_cp*temp_b/(alpha**2.0_cp - alpha*beta) + &
+                    2.0_cp*f(i+j)/(beta**2.0_cp - alpha*beta)
+          ! Backward difference
+          k = -1; j = 1
+          temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
+          i = s-1
+          alpha = -dhp(i-1); beta = 0.5_cp*dhp(i)
+          dfdh(i) = 2.0_cp*f(i)/(alpha*beta) + &
+                    2.0_cp*f(i+k)/(alpha**2.0_cp - alpha*beta) + &
+                    2.0_cp*temp_b/(beta**2.0_cp - alpha*beta)
+        else                           ! Collocated Node derivative (gt = 0)
+          ! Forward difference
+          k = 1; j = 2
+          temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
+          i = 2
+          alpha = dhp(i); beta = dhp(i)+dhp(i+1)
+          dfdh(i) = 2.0_cp*temp_b/(alpha*beta) + &
+                    2.0_cp*f(i+k)/(alpha**2.0_cp - alpha*beta) + &
+                    2.0_cp*f(i+j)/(beta**2.0_cp - alpha*beta)
+          ! Backward difference
+          k = -2; j = -1
+          temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
+          i = s-1
+          alpha = -dhp(i-1)-dhp(i-2); beta = -dhp(i-1)
+          dfdh(i) = 2.0_cp*temp_b/(alpha*beta) + &
+                    2.0_cp*f(i+k)/(alpha**2.0_cp - alpha*beta) + &
+                    2.0_cp*f(i+j)/(beta**2.0_cp - alpha*beta)
+        endif
       end function
 
       function collocatedD2fDh2_conservative(f,k,dhp,dhd,s,gt) result(dfdh)
@@ -168,7 +229,7 @@
         real(cp),intent(in),dimension(:) :: dhp,dhd
         integer,intent(in) :: s,gt
         integer :: i
-        dfdh(1) = real(0.0,cp); dfdh(s) = real(0.0,cp)
+        dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
         do i=2,s-1
           dfdh(i) = f(i-1)*k(i-1+gt)/(dhp(i-1)*dhd(i-1+gt)) - &
                     f( i )*(k(i-1+gt)/(dhp(i-1)*dhd(i-1+gt))+k(i+gt)/(dhp(i)*dhd(i-1+gt))) + &

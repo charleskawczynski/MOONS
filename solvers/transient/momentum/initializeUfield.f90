@@ -37,7 +37,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = real(3.14159265358979,cp)
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
        contains
 
@@ -91,7 +91,7 @@
        subroutine initRest(u,v,w,p)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
-         u = real(0.0,cp); v = real(0.0,cp); w = real(0.0,cp); p = real(0.0,cp)
+         u = 0.0_cp; v = 0.0_cp; w = 0.0_cp; p = 0.0_cp
        end subroutine
 
        subroutine initFullyDevelopedDuctFlow(u,v,w,p,g,dir,posNeg)
@@ -122,29 +122,29 @@
          ! For max number of iterations in 
          ! infinite series solution:
          nMax = 100; mMax = 100
-         F = real(1.0,cp)
+         F = 1.0_cp
 
          select case (dir)
          case (1) ! u(y,z)
            s = g%c(1)%sn
-           width = (hmax(2) - hmin(2))/real(2.0,cp)
-           height = (hmax(3) - hmin(3))/real(2.0,cp)
+           width = (hmax(2) - hmin(2))/2.0_cp
+           height = (hmax(3) - hmin(3))/2.0_cp
            imax = Ni(2); jmax = Ni(3)
            allocate(hx(imax)); hx = g%c(2)%hc
            allocate(hy(jmax)); hy = g%c(3)%hc
            allocate(u_temp(s(2),s(3)))
          case (2) ! v(x,z)
            s = g%c(2)%sn
-           width = (hmax(1) - hmin(1))/real(2.0,cp)
-           height = (hmax(3) - hmin(3))/real(2.0,cp)
+           width = (hmax(1) - hmin(1))/2.0_cp
+           height = (hmax(3) - hmin(3))/2.0_cp
            imax = Ni(1); jmax = Ni(3)
            allocate(hx(imax)); hx = g%c(1)%hc
            allocate(hy(jmax)); hy = g%c(3)%hc
            allocate(u_temp(s(1),s(3)))
          case (3) ! w(x,y)
            s = g%c(3)%sn
-           width = (hmax(1) - hmin(1))/real(2.0,cp)
-           height = (hmax(2) - hmin(2))/real(2.0,cp)
+           width = (hmax(1) - hmin(1))/2.0_cp
+           height = (hmax(2) - hmin(2))/2.0_cp
            imax = Ni(1); jmax = Ni(2)
            allocate(hx(imax)); hx = g%c(1)%hc
            allocate(hy(jmax)); hy = g%c(2)%hc
@@ -158,24 +158,24 @@
            do j=1,jmax
              do m=1,mMax
                do n=1,nMax
-               A1 = real(16.0,cp)*F*alpha**real(2.0,cp)*height**real(2.0,cp)/&
-               ((real(m,cp)*PI)**real(2.0,cp)+(alpha*real(n,cp)*PI)**real(2.0,cp))
-               A2 = real(1.0,cp)/(real(m,cp)*PI)*real(1.0,cp)/(real(n,cp)*PI)
-               A3 = (real(1.0,cp)-cos(real(m,cp)*PI))*(real(1.0,cp)-cos(real(n,cp)*PI))
+               A1 = 16.0_cp*F*alpha**2.0_cp*height**2.0_cp/&
+               ((real(m,cp)*PI)**2.0_cp+(alpha*real(n,cp)*PI)**2.0_cp)
+               A2 = 1.0_cp/(real(m,cp)*PI)*1.0_cp/(real(n,cp)*PI)
+               A3 = (1.0_cp-cos(real(m,cp)*PI))*(1.0_cp-cos(real(n,cp)*PI))
                A = A1*A2*A3
-               u_temp(i,j) = u_temp(i,j) + A*sin(real(m,cp)*PI*(hx(i)-hmin(1))/(real(2.0,cp)*width))*&
-                                             sin(real(n,cp)*PI*(hy(j)-hmin(2))/(real(2.0,cp)*height))
+               u_temp(i,j) = u_temp(i,j) + A*sin(real(m,cp)*PI*(hx(i)-hmin(1))/(2.0_cp*width))*&
+                                             sin(real(n,cp)*PI*(hy(j)-hmin(2))/(2.0_cp*height))
                enddo
              enddo
            enddo
          enddo
 
          select case (dir)
-         case (1); do i=1,s(1); u(i,:,:) = sign(real(1.0,cp),real(posNeg,cp))*u_temp; enddo
-         case (2); do i=1,s(2); v(:,i,:) = sign(real(1.0,cp),real(posNeg,cp))*u_temp; enddo
-         case (3); do i=1,s(3); w(:,:,i) = sign(real(1.0,cp),real(posNeg,cp))*u_temp; enddo
+         case (1); do i=1,s(1); u(i,:,:) = sign(1.0_cp,real(posNeg,cp))*u_temp; enddo
+         case (2); do i=1,s(2); v(:,i,:) = sign(1.0_cp,real(posNeg,cp))*u_temp; enddo
+         case (3); do i=1,s(3); w(:,:,i) = sign(1.0_cp,real(posNeg,cp))*u_temp; enddo
          end select
-         p = real(0.0,cp)
+         p = 0.0_cp
 
          deallocate(u_temp)
          deallocate(hx,hy)
@@ -190,8 +190,8 @@
          p = 0.0d0
          do j=1,g%c(2)%sc
           do k=1,g%c(3)%sc
-            u(:,j,k) = (real(2.0,cp) - g%c(2)%hc(j)**real(2.0,cp) - &
-                                       g%c(3)%hc(k)**real(2.0,cp))/real(2.0,cp)
+            u(:,j,k) = (2.0_cp - g%c(2)%hc(j)**2.0_cp - &
+                                       g%c(3)%hc(k)**2.0_cp)/2.0_cp
           enddo
          enddo
        end subroutine
@@ -206,7 +206,7 @@
          v = 0.0d0; w = 0.0d0; p = 0.0d0
 
          do k=1,g%c(3)%sc
-           u(:,:,k) = real(0.5,cp)*Re*(real(1.0,cp) - g%c(3)%hc(k)**real(2.0,cp))
+           u(:,:,k) = real(0.5,cp)*Re*(1.0_cp - g%c(3)%hc(k)**2.0_cp)
          enddo
        end subroutine
        
@@ -243,12 +243,12 @@
          integer :: i,j,k
          integer,dimension(3) :: sx,sy,sz
          real(cp) :: two
-         two = real(2.0,cp)
+         two = 2.0_cp
 
          sx = shape(u); sy = shape(v); sz = shape(w)
          select case (dir)
          case (1)
-           u = real(0.0,cp)
+           u = 0.0_cp
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
                 v(i,j,k) =   cos(two*PI*g%c(2)%hn(j)) * &
                              sin(two*PI*g%c(3)%hc(k))
@@ -262,7 +262,7 @@
                 u(i,j,k) = - cos(two*PI*g%c(1)%hn(i)) * &
                              sin(two*PI*g%c(3)%hc(k))
            enddo;enddo;enddo
-           v = real(0.0,cp)
+           v = 0.0_cp
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
                 w(i,j,k) =   sin(two*PI*g%c(1)%hc(i)) * &
                              cos(two*PI*g%c(3)%hn(k))
@@ -276,7 +276,7 @@
                 v(i,j,k) = - sin(two*PI*g%c(1)%hc(i)) * &
                              cos(two*PI*g%c(2)%hn(j))
            enddo;enddo;enddo
-           w = real(0.0,cp)
+           w = 0.0_cp
          case default
          stop 'Error: dir must = 1,2,3 in isolatedEddy2D in initializeUfield.f90'
          end select
@@ -323,13 +323,13 @@
          integer :: i,j,k
          integer,dimension(3) :: sx,sy,sz
          real(cp) :: one,two,three,four
-         one = real(1.0,cp); two = real(2.0,cp)
+         one = 1.0_cp; two = 2.0_cp
          three = real(3.0,cp); four = real(4.0,cp)
 
          sx = shape(u); sy = shape(v); sz = shape(w)
          select case (dir)
          case (1)
-           u = real(0.0,cp)
+           u = 0.0_cp
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
                 v(i,j,k) =   (real(32,cp)*g%c(3)%hc(k)/PI)*((one-four*g%c(3)%hc(k)**two)**three) * &
                 cos(PI*g%c(2)%hn(j))
@@ -341,7 +341,7 @@
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
                 u(i,j,k) = - ((one-four*g%c(1)%hn(i)**two)**four)*sin(PI*g%c(3)%hc(k))
            enddo;enddo;enddo
-           v = real(0.0,cp)
+           v = 0.0_cp
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
                 w(i,j,k) =   (real(32,cp)*g%c(1)%hc(i)/PI)*((one-four*g%c(1)%hc(i)**two)**three) * &
                 cos(PI*g%c(3)%hn(k))
@@ -354,7 +354,7 @@
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
                 v(i,j,k) = - ((one-four*g%c(2)%hn(j)**two)**four)*sin(PI*g%c(1)%hc(i))
            enddo;enddo;enddo
-           w = real(0.0,cp)
+           w = 0.0_cp
          case default
          stop 'Error: dir must = 1,2,3 in singleEddy2D in initializeUfield.f90'
          end select
@@ -384,17 +384,17 @@
          integer,dimension(3) :: sx,sy,sz
          real(cp),dimension(3) :: hc
          real(cp) :: omega0,r0,two,r,theta
-         two = real(2.0,cp)
+         two = 2.0_cp
 
-         omega0 = real(1.0,cp)
-         r0 = real(1.0,cp)
-         u = real(0.0,cp); v = real(0.0,cp); w = real(0.0,cp)
+         omega0 = 1.0_cp
+         r0 = 1.0_cp
+         u = 0.0_cp; v = 0.0_cp; w = 0.0_cp
 
          sx = shape(u); sy = shape(v); sz = shape(w)
          select case (dir)
          case (1)
-           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/real(2.0,cp),i=1,3)/)
-           u = real(0.0,cp)
+           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
+           u = 0.0_cp
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
                 r = sqrt((g%c(2)%hn(j)-hc(2))**two + (g%c(3)%hc(k)-hc(3))**two)
                 if (r.lt.r0) v(i,j,k) =-omega0*r
@@ -404,18 +404,18 @@
                 if (r.lt.r0) w(i,j,k) = omega0*r
            enddo;enddo;enddo
          case (2)
-           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/real(2.0,cp),i=1,3)/)
+           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
                 r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(3)%hn(k)-hc(3))**two)
                 if (r.lt.r0) u(i,j,k) = omega0*r
            enddo;enddo;enddo
-           v = real(0.0,cp)
+           v = 0.0_cp
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
                 r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(3)%hn(k)-hc(3))**two)
                 if (r.lt.r0) w(i,j,k) =-omega0*r
            enddo;enddo;enddo
          case (3)
-           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/real(2.0,cp),i=1,3)/)
+           hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
                 r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(2)%hc(j)-hc(2))**two)
                 theta = atan2(g%c(2)%hc(j),g%c(1)%hn(i))
@@ -426,7 +426,7 @@
                 theta = atan2(g%c(2)%hn(j),g%c(1)%hc(i))
                 if (r.lt.r0) v(i,j,k) = omega0*r*cos(theta)
            enddo;enddo;enddo
-           w = real(0.0,cp)
+           w = 0.0_cp
          case default
          stop 'Error: dir must = 1,2,3 in singleEddy2D in initializeUfield.f90'
          end select
@@ -459,7 +459,7 @@
        !   type(mySOR) :: SOR
        !   real(cp) :: two,one
        !   integer,dimension(2) :: d
-       !   two = real(2.0,cp); one = real(1.0,cp)
+       !   two = 2.0_cp; one = 1.0_cp
        !   d = orthogonalDirections(dir)
        !   call setAllZero(psi_bcs,s,5)
        !   call checkBCs(psi_bcs)

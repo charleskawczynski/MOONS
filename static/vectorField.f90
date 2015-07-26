@@ -33,6 +33,7 @@
         public :: add,subtract
         public :: multiply,divide
         public :: sum,square
+        public :: assignX,assignY,assignZ
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -57,6 +58,10 @@
 
         interface delete;   module procedure deleteVF;              end interface
         interface print;    module procedure printVF;               end interface
+
+        interface assignX;   module procedure assignXVF;            end interface
+        interface assignY;   module procedure assignYVF;            end interface
+        interface assignZ;   module procedure assignZVF;            end interface
 
         interface assign;   module procedure vectorScalarAssign;    end interface
         interface assign;   module procedure VFAssign;              end interface
@@ -93,6 +98,66 @@
         contains
 
         ! ----------------- ASSIGN ------------------
+
+        subroutine assignXVF(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sx(3)
+            do j=1,f%sx(2)
+              do i=1,f%sx(1)
+                f%x(i,j,k) = g%x(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%x = g%x
+#endif
+        end subroutine
+
+        subroutine assignYVF(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sy(3)
+            do j=1,f%sy(2)
+              do i=1,f%sy(1)
+                f%y(i,j,k) = g%y(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%y = g%y
+#endif
+        end subroutine
+
+        subroutine assignZVF(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sz(3)
+            do j=1,f%sz(2)
+              do i=1,f%sz(1)
+                f%z(i,j,k) = g%z(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%z = g%z
+#endif
+        end subroutine
 
         subroutine vectorVectorAssign(f,g)
           implicit none

@@ -6,17 +6,25 @@ chdir(thisDir); myDir.this = thisDir;
 
 dir = struct; name = struct;
 
-dir.working = 'C:\Users\Charlie\Desktop\comparison\Shatrov\processed\';
-name.file = '3D stability region (figure 9a)';
+dir.working = 'C:\Users\Charlie\Desktop\comparison\Pattison\processed\';
+gd.xmin = 0; gd.xmax = 1; gd.ymin = -0.4;gd.ymax = 1;
+name.file = 'Ha0_NSE';
+name.file = 'Ha0_this_work';
+name.file = 'Ha45_NSE';
+name.file = 'Ha45_this_work';
 name.ext = '.png';
-griddata.xmin = 0;
-griddata.xmax = 6000;
-griddata.ymin = 0;
-griddata.ymax = 100;
-smoothness = 8;
+
+dir.working = 'C:\Users\Charlie\Desktop\comparison\Guj and Stella\data\';
+gd.xmin = -0.4; gd.xmax = 1; gd.ymin = 0;gd.ymax = 1;
+name.file = 'Re400_uvsy';
+% name.file = 'Re1000_uvsy';
+name.ext = '.png';
+
+
+smoothness = 3;
 direction = 2;
+darknessTol = 0.9;
+[x y] = graphDigitizer(dir,name,gd,smoothness,direction,darknessTol);
 
-[x y] = graphDigitizer(dir,name,griddata,smoothness,direction);
-
-plot(x,y)
+plot(x,y,'ro')
 

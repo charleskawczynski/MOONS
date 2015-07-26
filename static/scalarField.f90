@@ -66,6 +66,7 @@
 
         interface subtract;  module procedure fieldFieldSubtract;     end interface
         interface subtract;  module procedure fieldFieldSubtract2;    end interface
+        interface subtract;  module procedure SF_RFSubtract;          end interface
         interface subtract;  module procedure fieldScalarSubtract;    end interface
         interface subtract;  module procedure SFSubtract;             end interface
 
@@ -279,6 +280,26 @@
             do j=1,f%s(2)
               do i=1,f%s(1)
                 f%phi(i,j,k) = f%phi(i,j,k) - g
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%phi = f%phi - g
+#endif
+        end subroutine
+
+        subroutine SF_RFSubtract(f,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          real(cp),dimension(:,:,:),intent(in) :: g
+#ifdef _PARALLELIZE_SF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%s(3)
+            do j=1,f%s(2)
+              do i=1,f%s(1)
+                f%phi(i,j,k) = f%phi(i,j,k) - g(i,j,k)
               enddo
             enddo
           enddo

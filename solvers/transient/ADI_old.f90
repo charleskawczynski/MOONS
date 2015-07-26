@@ -94,11 +94,11 @@
 
         if (s(dir).eq.g%c(dir)%sc) then
           gt = 1
-          call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
+          call setUpSystem(loDiag,diag,upDiag,-0.5_cp*ADI%dt*ADI%alpha,&
            g%c(dir)%dhc,g%c(dir)%dhn,s(dir),gt)
         elseif (s(dir).eq.g%c(dir)%sn) then
           gt = 0
-          call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
+          call setUpSystem(loDiag,diag,upDiag,-0.5_cp*ADI%dt*ADI%alpha,&
            g%c(dir)%dhn,g%c(dir)%dhc,s(dir),gt)
         else
           stop 'Error: shape mismatch in initSystem in myADI.f90'

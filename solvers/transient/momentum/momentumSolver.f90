@@ -28,6 +28,7 @@
        use myTime_mod
 
        use jacobi_mod
+       use FFT_poisson_mod
        use SOR_mod
        use ADI_mod
        use MG_mod
@@ -103,6 +104,7 @@
          type(multiGrid),dimension(3) :: MG
          type(jacobi) :: Jacobi_p
          type(SORSolver) :: SOR_p
+         type(FFTSolver) :: FFT_p
          type(myADI) :: ADI_p,ADI_u
          type(probe) :: KU_energy
 
@@ -244,7 +246,7 @@
          else; mom%nstep = 0
          endif
          call init(mom%KU_energy,dir//'Ufield\','KU',.not.restartU)
-         mom%t = real(0.0,cp)
+         mom%t = 0.0_cp
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
          write(*,*) ''
@@ -308,9 +310,9 @@
          mom%Ha = Ha
          mom%Gr = Gr
          mom%Fr = Fr
-         mom%L_eta = Re**real(-3.0/4.0,cp)
-         mom%U_eta = Re**real(-1.0/4.0,cp)
-         mom%t_eta = Re**real(-1.0/2.0,cp)
+         mom%L_eta = Re**(-3.0_cp/4.0_cp)
+         mom%U_eta = Re**(-1.0_cp/4.0_cp)
+         mom%t_eta = Re**(-1.0_cp/2.0_cp)
        end subroutine
 
        ! ******************* EXPORT ****************************
@@ -512,12 +514,21 @@
          dt = mom%dTime
          Re = mom%Re
 
+
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation) ! Explicit Euler
          case (1);call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,g)
-         case (2);call faceAdvect(mom%temp_F,mom%U,mom%U,g)
+         case (2);! call faceAdvect(mom%temp_F,mom%U,mom%U,g)
+                  call faceAdvectNew(mom%temp_F,mom%U,mom%U,g)
          case (3);call faceAdvectHybrid(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,g)
          end select
+
+         write(*,*) 'maxval(advect%x) = ',maxval(mom%temp_F%x)
+         write(*,*) 'maxval(advect%y) = ',maxval(mom%temp_F%y)
+         ! write(*,*) 'maxval(advect%z) = ',maxval(mom%temp_F%z)
+         call writeScalarPlane(g,mom%temp_F%x,'out/','s1_advx',3,2)
+         call writeScalarPlane(g,mom%temp_F%y,'out/','s1_advy',3,2)
+         ! call writeScalarPlane(g,mom%temp_F%z,'out/','advz',3,2)
 
          ! if (mom%nstep.gt.0) then ! 2nd order Adams Bashforth
          !   select case (advectiveUFormulation)
@@ -525,17 +536,24 @@
          !   case (2);call faceAdvect(mom%Ustar,mom%Unm1,mom%Unm1,g)
          !   case (3);call faceAdvectHybrid(mom%Ustar,mom%Unm1,mom%Unm1,mom%temp_E1,mom%temp_E2,mom%U_CC,g)
          !   end select
-         !   call multiply(mom%temp_F,real(3.0/2.0,cp))
-         !   call multiply(mom%Ustar,real(1.0/2.0,cp))
+         !   call multiply(mom%temp_F,3.0_cp/2.0_cp)
+         !   call multiply(mom%Ustar,1.0_cp/2.0_cp)
          !   call subtract(mom%temp_F,mom%Ustar)
          ! endif
 
          ! Ustar = -TempVF
-         call multiply(mom%temp_F,(-real(1.0,cp)))
+         call multiply(mom%temp_F,-1.0_cp)
          call assign(mom%Ustar,mom%temp_F)
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%temp_F,mom%U,g)
+         write(*,*) 'maxval(lap%x) = ',maxval(mom%temp_F%x)
+         write(*,*) 'maxval(lap%y) = ',maxval(mom%temp_F%y)
+         ! write(*,*) 'maxval(lap%z) = ',maxval(mom%temp_F%z)
+         call writeScalarPlane(g,mom%temp_F%x,'out/','s2_lapUx',3,2)
+         call writeScalarPlane(g,mom%temp_F%y,'out/','s2_lapUy',3,2)
+         ! call writeScalarPlane(g,mom%temp_F%z,'out/','lapUz',3,2)
+         ! call writeScalarPhysicalPlane(g,mom%temp_F%x,'out/','lapUx','',3,2,mom%nstep)
          call divide(mom%temp_F,Re)
          call add(mom%Ustar,mom%temp_F)
 
@@ -554,34 +572,58 @@
          ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
+         write(*,*) 'maxval(Ustar%x) = ',maxval(mom%Ustar%x)
+         write(*,*) 'maxval(Ustar%y) = ',maxval(mom%Ustar%y)
+         ! write(*,*) 'maxval(Ustar%z) = ',maxval(mom%Ustar%z)
+         call writeScalarPlane(g,mom%Ustar%x,'out/','s3_ustar',3,2)
+         call writeScalarPlane(g,mom%Ustar%y,'out/','s3_vstar',3,2)
+         ! call writeScalarPlane(g,mom%Ustar%z,'out/','wstar',3,2)
 
          ! Pressure Correction -------------------------------------
-         if (mom%nstep.gt.0) then
-           call div(mom%temp_CC%phi,mom%Ustar,g)
-           ! Temp = Temp/dt
-           call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
-           ! call multiply(mom%temp_CC,real(2.0,cp)/dt) ! O(dt^2) pressure treatment
-           call zeroGhostPoints(mom%temp_CC%phi)
+         write(*,*) 'Inside pressure correction'
+         call div(mom%temp_CC%phi,mom%Ustar,g)
+         ! Temp = Temp/dt
+         call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
+         ! call multiply(mom%temp_CC,real(2.0,cp)/dt) ! O(dt^2) pressure treatment
+         call applyAllBCs(mom%p_bcs,mom%temp_CC%phi,g)
+         call zeroGhostPoints(mom%temp_CC%phi)
 
-           ! Solve lap(p) = div(U)/dt
-           call poisson(mom%SOR_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
-            mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         write(*,*) 'maxval(source) = ',maxval(mom%temp_CC%phi)
+         call writeScalarPlane(g,mom%temp_CC%phi,'out/','s4_source',3,2)
+         ! Solve lap(p) = div(U)/dt
+         ! call poisson(mom%SOR_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         call poisson(mom%FFT_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
+          mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
 
-           call grad(mom%temp_F,mom%p%phi,g)
-           ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
-           call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
-           ! call divide(mom%temp_F,real(2.0,cp)) ! O(dt^2) pressure treatment
+         write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
+         call writeScalarPlane(g,mom%p%phi,'out/','s6_p',3,2)
+         call grad(mom%temp_F,mom%p%phi,g)
+         ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
+         ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
+         ! call divide(mom%temp_F,real(2.0,cp)) ! O(dt^2) pressure treatment
 
-           ! Ustar = Ustar - dt*dp/dx
-           call multiply(mom%temp_F,dt)
-           call subtract(mom%Ustar,mom%temp_F)
-         endif
+         ! Ustar = Ustar - dt*dp/dx
+         call writeScalarPlane(g,mom%Ustar%x,'out/','s7_ustarb',3,2)
+         call writeScalarPlane(g,mom%Ustar%y,'out/','s7_vstarb',3,2)
+         call multiply(mom%temp_F,dt)
+         call subtract(mom%Ustar,mom%temp_F)
 
          call assign(mom%Unm1,mom%U) ! store U^n-1
 
          ! U = Ustar
          call assign(mom%U,mom%Ustar)
          call applyAllBCs(mom%U,mom%U_bcs,g)
+         
+         call writeScalarPlane(g,mom%U%x,'out/','s8_u',3,2)
+         call writeScalarPlane(g,mom%U%y,'out/','s8_v',3,2)
+
+         call div(mom%divU%phi,mom%U%x,mom%U%y,mom%U%z,g)
+         call zeroGhostPoints(mom%divU%phi)
+         write(*,*) 'maxval(divU) = ',maxval(mom%divU%phi)
+         call writeScalarPlane(g,mom%divU%phi,'out/','s9_divU',3,2)
+
+         if (mom%nstep.gt.0) stop 'Done'
        end subroutine
 
        subroutine semi_implicit_ADI(mom,F,g,ss_MHD)
@@ -605,7 +647,7 @@
          end select
 
          ! Ustar = -TempVF
-         call multiply(mom%temp_F,(-real(1.0,cp)))
+         call multiply(mom%temp_F,(-1.0_cp))
          call assign(mom%Ustar,mom%temp_F)
 
          ! Source Terms (e.g. N j x B) -----------------------------
@@ -617,10 +659,10 @@
          ! Where f = RHS of NS
          ! mom%Ustar = mom%Ustar + mom%U
          call setDt(mom%ADI_u,dt)
-         call setAlpha(mom%ADI_u,real(1.0,cp)/Re)
+         call setAlpha(mom%ADI_u,1.0_cp/Re)
 
          call assign(mom%temp_F,mom%Ustar)
-         call multiply(mom%temp_F,real(-1.0,cp))
+         call multiply(mom%temp_F,-1.0_cp)
 
          call apply(mom%ADI_u,mom%U%x,mom%temp_F%x,mom%U_bcs%x,g,&
             mom%ss_ADI,mom%err_ADI,getExportErrors(ss_MHD))
@@ -701,7 +743,7 @@
          call sum(mom%KE_pres,mom%U_CC)
          call subtract(mom%KE_transient,mom%KE_pres)
 
-         call divide(mom%KE_transient,real(2.0,cp)*mom%dTime)
+         call divide(mom%KE_transient,2.0_cp*mom%dTime)
 
          ! Pressure Correction -------------------------------------
          call grad(mom%temp_F,mom%p%phi,g)
@@ -787,56 +829,56 @@
          select case (dir)
          case (0)
            if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
-             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
            elseif (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
            elseif (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
-             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
            endif
          case (1)
            if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
-             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
            endif
          case (2)
            if (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
            endif
          case (3)
            if (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
-             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
            endif
          case (-1)
            if (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
            endif
            if (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
-             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
            endif
          case (-2)
            if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
-             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
            endif
            if (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = real(0.0,cp); f(:,:,s(3)) = real(0.0,cp)
-             f(:,:,2) = real(0.0,cp); f(:,:,s(3)-1) = real(0.0,cp)
+             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
            endif
          case (-3)
            if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = real(0.0,cp); f(s(1),:,:) = real(0.0,cp)
-             f(2,:,:) = real(0.0,cp); f(s(1)-1,:,:) = real(0.0,cp)
+             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
            endif
            if (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = real(0.0,cp); f(:,s(2),:) = real(0.0,cp)
-             f(:,2,:) = real(0.0,cp); f(:,s(2)-1,:) = real(0.0,cp)
+             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
            endif
          case default
            stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
@@ -847,12 +889,9 @@
          implicit none
          type(VF),intent(inout) :: f
          type(grid),intent(in) :: g
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,2)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,2)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,2)
-         call zeroWallCoincidentBoundaries(f%x,f%sx,g,3)
-         call zeroWallCoincidentBoundaries(f%y,f%sy,g,3)
-         call zeroWallCoincidentBoundaries(f%z,f%sz,g,3)
+         call zeroWallCoincidentBoundaries(f%x,f%sx,g,0)
+         call zeroWallCoincidentBoundaries(f%y,f%sy,g,0)
+         call zeroWallCoincidentBoundaries(f%z,f%sz,g,0)
        end subroutine
 
        end module

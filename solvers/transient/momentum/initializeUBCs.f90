@@ -13,9 +13,9 @@
        private
        public :: initUBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/1,1,0/) ! 1 = true, else false
+       integer,dimension(3),parameter :: periodic_dir = (/0,0,1/) ! 1 = true, else false
 
-       integer,parameter :: preDefinedU_BCs = 2
+       integer,parameter :: preDefinedU_BCs = 1
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -60,7 +60,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = real(3.14159265358979,cp)
+       real(cp),parameter :: PI = 3.14159265358979_cp
        
        contains
 
@@ -178,7 +178,7 @@
 
          select case (face)
          case (1) ! xmin
-           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
+           allocate(bvals(Ny,Nz)); bvals = sign(1.0_cp,real(posNeg,cp));
            select case (dir)
            case (1); stop 'Lid driven BCs is violating flow through.'
            case (2); call setXminVals(v_bcs,bvals)
@@ -186,7 +186,7 @@
            end select
 
          case (2) ! xmax
-           allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
+           allocate(bvals(Ny,Nz)); bvals = sign(1.0_cp,real(posNeg,cp));
            select case (dir)
            case (1); stop 'Lid driven BCs is violating flow through.'
            case (3); call setXmaxVals(v_bcs,bvals)
@@ -194,7 +194,7 @@
            end select
 
          case (3) ! ymin
-           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
+           allocate(bvals(Nx,Nz)); bvals = sign(1.0_cp,real(posNeg,cp));
            select case (dir)
            case (1); call setYminVals(u_bcs,bvals)
            case (2); stop 'Lid driven BCs is violating flow through.'
@@ -202,7 +202,7 @@
            end select
 
          case (4) ! ymax
-           allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(posNeg,cp));
+           allocate(bvals(Nx,Nz)); bvals = sign(1.0_cp,real(posNeg,cp));
            select case (dir)
            case (1); call setYmaxVals(u_bcs,bvals)
            case (2); stop 'Lid driven BCs is violating flow through.'
@@ -210,7 +210,7 @@
            end select
 
          case (5) ! zmin
-           allocate(bvals(Nx,Ny)); bvals = sign(real(1.0,cp),real(posNeg,cp));
+           allocate(bvals(Nx,Ny)); bvals = sign(1.0_cp,real(posNeg,cp));
            select case (dir)
            case (1); call setZminVals(u_bcs,bvals)
            case (2); call setZminVals(v_bcs,bvals)
@@ -218,7 +218,7 @@
            end select
 
          case (6) ! zmax
-           allocate(bvals(Nx,Ny)); bvals = sign(real(1.0,cp),real(posNeg,cp));
+           allocate(bvals(Nx,Ny)); bvals = sign(1.0_cp,real(posNeg,cp));
            select case (dir)
            case (1); call setZmaxVals(u_bcs,bvals)
            case (2); call setZmaxVals(v_bcs,bvals)
@@ -291,11 +291,11 @@
            select case (IO)
            case (-1)
              call setXminType(u_bcs,1) ! Dirichlet
-             allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(IO,cp))
+             allocate(bvals(Ny,Nz)); bvals = sign(1.0_cp,real(IO,cp))
              call setXminVals(u_bcs,bvals); deallocate(bvals)
            case (1)
              call setXmaxType(u_bcs,1) ! Dirichlet
-             allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(IO,cp))
+             allocate(bvals(Ny,Nz)); bvals = sign(1.0_cp,real(IO,cp))
              call setXmaxVals(u_bcs,bvals); deallocate(bvals)
            case default; stop 'IO must = 1,-1 in ductFlow_Uniform_IO'
            end select
@@ -303,11 +303,11 @@
            select case (IO)
            case (-1)
              call setYminType(v_bcs,1) ! Dirichlet
-             allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(IO,cp))
+             allocate(bvals(Nx,Nz)); bvals = sign(1.0_cp,real(IO,cp))
              call setYminVals(v_bcs,bvals); deallocate(bvals)
            case (1)
              call setYmaxType(v_bcs,1) ! Dirichlet
-             allocate(bvals(Nx,Nz)); bvals = sign(real(1.0,cp),real(IO,cp))
+             allocate(bvals(Nx,Nz)); bvals = sign(1.0_cp,real(IO,cp))
              call setYmaxVals(v_bcs,bvals); deallocate(bvals)
            case default; stop 'IO must = 1,-1 in ductFlow_Uniform_IO'
            end select
@@ -315,11 +315,11 @@
            select case (IO)
            case (-1)
              call setZminType(w_bcs,1) ! Dirichlet
-             allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(IO,cp))
+             allocate(bvals(Ny,Nz)); bvals = sign(1.0_cp,real(IO,cp))
              call setZminVals(w_bcs,bvals); deallocate(bvals)
            case (1)
              call setZmaxType(w_bcs,1) ! Dirichlet
-             allocate(bvals(Ny,Nz)); bvals = sign(real(1.0,cp),real(IO,cp))
+             allocate(bvals(Ny,Nz)); bvals = sign(1.0_cp,real(IO,cp))
              call setZmaxVals(w_bcs,bvals); deallocate(bvals)
            case default; stop 'IO must = 1,-1 in ductFlow_Uniform_IO'
            end select
@@ -524,11 +524,11 @@
          xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
          xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
 
-         omega0 = 1.0d0
-         r0 = 0.05d0
-         x0 = (x_N + x_0)/2.0d0
-         y0 = (y_N + y_0)/2.0d0
-         z0 = (z_N + z_0)/2.0d0
+         omega0 = 1.0_cp
+         r0 = 0.05_cp
+         x0 = (x_N + x_0)/2.0_cp
+         y0 = (y_N + y_0)/2.0_cp
+         z0 = (z_N + z_0)/2.0_cp
 
          select case (dir)
          case (1) ! u = 0
@@ -538,7 +538,7 @@
            allocate(bvals(Ny,Nz));
            do j=1,Ny
              do k=1,Nz
-               r = sqrt((yn(j)-y0)**2.0d0 + (zc(k)-z0)**2.0d0)
+               r = sqrt((yn(j)-y0)**2.0_cp + (zc(k)-z0)**2.0_cp)
                if (r.lt.r0) then
                  theta = atan2(zc(k),yn(j))
                  bvals(j,k) = -omega0*r*sin(theta)
@@ -555,7 +555,7 @@
            allocate(bvals(Nx,Nz));
            do j=1,Ny
              do k=1,Nz
-               r = sqrt((yc(j)-y0)**2.0d0 + (zn(k)-z0)**2.0d0)
+               r = sqrt((yc(j)-y0)**2.0_cp + (zn(k)-z0)**2.0_cp)
                if (r.lt.r0) then
                  theta = atan2(zn(k),yc(j))
                  bvals(j,k) = omega0*r*cos(theta)
@@ -612,29 +612,29 @@
          ! For max number of iterations in 
          ! infinite series solution:
          nMax = 100; mMax = 100
-         F = real(1.0,cp)
+         F = 1.0_cp
 
          select case (dir)
          case (1) ! u(y,z)
            s = g%c(1)%sn
-           width = (hmax(2) - hmin(2))/real(2.0,cp)
-           height = (hmax(3) - hmin(3))/real(2.0,cp)
+           width = (hmax(2) - hmin(2))/2.0_cp
+           height = (hmax(3) - hmin(3))/2.0_cp
            imax = Ni(2); jmax = Ni(3)
            allocate(hx(imax)); hx = g%c(2)%hc
            allocate(hy(jmax)); hy = g%c(3)%hc
            allocate(u_temp(s(2),s(3)))
          case (2) ! v(x,z)
            s = g%c(2)%sn
-           width = (hmax(1) - hmin(1))/real(2.0,cp)
-           height = (hmax(3) - hmin(3))/real(2.0,cp)
+           width = (hmax(1) - hmin(1))/2.0_cp
+           height = (hmax(3) - hmin(3))/2.0_cp
            imax = Ni(1); jmax = Ni(3)
            allocate(hx(imax)); hx = g%c(1)%hc
            allocate(hy(jmax)); hy = g%c(3)%hc
            allocate(u_temp(s(1),s(3)))
          case (3) ! w(x,y)
            s = g%c(3)%sn
-           width = (hmax(1) - hmin(1))/real(2.0,cp)
-           height = (hmax(2) - hmin(2))/real(2.0,cp)
+           width = (hmax(1) - hmin(1))/2.0_cp
+           height = (hmax(2) - hmin(2))/2.0_cp
            imax = Ni(1); jmax = Ni(2)
            allocate(hx(imax)); hx = g%c(1)%hc
            allocate(hy(jmax)); hy = g%c(2)%hc
@@ -648,13 +648,13 @@
            do j=1,jmax
              do m=1,mMax
                do n=1,nMax
-               A1 = real(16.0,cp)*F*alpha**real(2.0,cp)*height**real(2.0,cp)/&
-               ((real(m,cp)*PI)**real(2.0,cp)+(alpha*real(n,cp)*PI)**real(2.0,cp))
-               A2 = real(1.0,cp)/(real(m,cp)*PI)*real(1.0,cp)/(real(n,cp)*PI)
-               A3 = (real(1.0,cp)-cos(real(m,cp)*PI))*(real(1.0,cp)-cos(real(n,cp)*PI))
+               A1 = real(16.0,cp)*F*alpha**2.0_cp*height**2.0_cp/&
+               ((real(m,cp)*PI)**2.0_cp+(alpha*real(n,cp)*PI)**2.0_cp)
+               A2 = 1.0_cp/(real(m,cp)*PI)*1.0_cp/(real(n,cp)*PI)
+               A3 = (1.0_cp-cos(real(m,cp)*PI))*(1.0_cp-cos(real(n,cp)*PI))
                A = A1*A2*A3
-               u_temp(i,j) = u_temp(i,j) + A*sin(real(m,cp)*PI*(hx(i)-hmin(1))/(real(2.0,cp)*width))*&
-                                             sin(real(n,cp)*PI*(hy(j)-hmin(2))/(real(2.0,cp)*height))
+               u_temp(i,j) = u_temp(i,j) + A*sin(real(m,cp)*PI*(hx(i)-hmin(1))/(2.0_cp*width))*&
+                                             sin(real(n,cp)*PI*(hy(j)-hmin(2))/(2.0_cp*height))
                enddo
              enddo
            enddo

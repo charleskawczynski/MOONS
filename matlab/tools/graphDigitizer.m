@@ -1,4 +1,4 @@
-function [x,y] = graphDigitizer(dir,name,griddata,smoothness,direction)
+function [x,y] = graphDigitizer(dir,name,griddata,smoothness,direction,darknessTol)
 % graphDigitizer digitizes the figure given by the filename
 % file in directory dir with extension ext.
 %
@@ -28,8 +28,8 @@ function [x,y] = graphDigitizer(dir,name,griddata,smoothness,direction)
 % name.file = 'square duct - cleaned - ANL 3D Code'; name.ext = '.png';
 % [x_ANL3D dP_ANL3D] = graphDigitizer(myDir,name,gd,1,1);
 
-samplingFrequency = 1;
-darknessTol = 0.5;
+samplingFrequency = 5;
+% darknessTol = 0.1;
 
 %% DEFINE AXIS RANGE
 xmin = griddata.xmin;
@@ -54,12 +54,12 @@ t = 1;
 %% Traverse updown
 if direction == 1
     for j = 1:samplingFrequency:s(2)
-        coord = find(f(:,j) < darknessTol);
-        if (isempty(coord) == 0)
-            xf(t) = j;
-            yf_up(t) = s(1) - coord(1);
-            yf_down(t) = s(1) - coord(end);
-            t = t+1;
+        coord = find(f(:,j)/max(f(:,j)) < darknessTol);
+        if (~isempty(coord)) && (coord(1)~=coord(end))
+                xf(t) = j;
+                yf_up(t) = s(1) - coord(1);
+                yf_down(t) = s(1) - coord(end);
+                t = t+1;
         end
     end
     for t = 1:length(yf_up)
@@ -67,11 +67,11 @@ if direction == 1
     end
 elseif direction == 2
     for i = 1:samplingFrequency:s(1)
-        coord = find(f(i,:) < darknessTol);
-        if (isempty(coord)==0)
+        coord = find(f(i,:)/max(f(i,:)) < darknessTol);
+        if (~isempty(coord)) && (coord(1)~=coord(end))
             xf_up(t) = coord(1);
             xf_down(t) = coord(end);
-            yf(t) = s(1)-i;
+            yf(t) = s(1)-i+1;
             t = t+1;
         end
     end
