@@ -1,0 +1,217 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+MOONS implements several stretching functions. These stretching factors were adopted from \cite{pletcher2012computational}.
+
+\section{Roberts Transformation 1}
+
+This transformation clusters more points near $y=0$ as the stretching parameter $\beta \rightarrow 1$.
+
+\begin{equation}
+	y
+	=
+	h
+	\frac{(\beta+1)-(\beta-1) \left[ (\beta+1)/(\beta-1)^{1-\bar{y}} \right] }
+	{\left[ (\beta+1)/(\beta-1)^{1-\bar{y}} \right]+1}
+\end{equation}
+
+\section{Roberts Transformation 2}
+For this transformation, if $\alpha=0$, the mesh will be refined near $y=h$ only, whereas if $\alpha= \frac{1}{2}$, the mesh will be refined equally near $y=0$ and $y=h$.
+
+\begin{equation}
+	y 
+	= 
+	h 
+	\frac{
+	(\beta + 2 \alpha)
+	\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}
+	{
+	(2\alpha+1)
+	\left(1+\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right]
+	\right)
+	}
+\end{equation}
+
+Where $h$ is the length of the domain. Note that
+
+\begin{equation}
+	\alpha = 0 \qquad \rightarrow \text{mesh will be refined near $y=h$ only}
+\end{equation}
+\begin{equation}
+	\alpha = 1/2 \qquad \rightarrow \text{mesh will be refined near $y=h$ and $y=0$}
+\end{equation}
+\begin{equation}
+	\bar{y} = \text{uniformly spaced grid}
+\end{equation}
+
+If there exists a boundary layer of thickness $\delta$, then an adequate stretching parameter, $\beta$, may be chosen as
+
+\begin{equation}
+	\beta = \left( 1 - \frac{\delta}{h} \right)^{-1/2}
+	\qquad \qquad
+	\qquad \qquad
+	0 < \frac{\delta}{h} < 1
+\end{equation}
+
+
+\subsection{Scaled Robert's stretching function}
+In a slightly different notation, for a scaled grid, not starting at zero, we may write
+
+\begin{equation}
+	h = h_{min} + (h_{max}-h_{min}) \frac{y_{Roberts}}{h}
+\end{equation}
+
+\subsection{Matching the stretching parameter}
+Note that this section is for node data, and does not apply to cell center data, hence the notation for node indexes ($sn$ and $sn-1$).
+
+We would like to ensure that the ghost cell is the same size as the first interior cell in order to able to linearly extrapolate from the interior cells to the ghost cells.
+
+To do this, we must choose $\beta$ such that
+
+\begin{equation}
+	h_{sn} - h_{sn-1} = \Delta h
+\end{equation}
+Where
+\begin{equation}
+	\Delta h = h_{interior}(2) - h_{interior}(1)
+\end{equation}
+
+Note that this $\Delta h$ is dimensional. Plugging this in, we have
+
+\begin{equation}
+	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	-
+	\left[
+	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	\right]
+	=
+	\Delta h
+\end{equation}
+Eliminating the scaled sizes results in the equation that must be solved to match the stretching parameters
+\begin{equation}
+	\boxed{
+	\frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	-
+	\left[
+	\frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	\right]
+	=
+	\frac{\Delta h}{h_{max}-h_{min}}
+	}
+\end{equation}
+
+This is a nonlinear algebraic equation who's solution must be determined by an iterative method (I think).
+
+\subsubsection{Additional notes}
+Now, here comes the tricky part.
+Note that $\bar{h}_{sn}$ and $\bar{h}_{sn-1}$ are normalized with no stretching, and at the far end we have
+
+\begin{equation}
+	\gamma_{sn} = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{(\bar{h}_{sn}-\alpha)/(1-\alpha)} = 
+	\left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]
+	, \qquad \qquad
+	\gamma_{sn-1} = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{((1 - \frac{1}{N})-\alpha)/(1-\alpha)}
+\end{equation}
+
+and at the near end we have
+
+\begin{equation}
+	\gamma_{2} = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{(\Delta h^*-\alpha)/(1-\alpha)} = 
+	\left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]
+	, \qquad \qquad
+	\gamma_{1} = \left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]^{(0-\alpha)/(1-\alpha)}
+\end{equation}
+
+
+
+\section{Roberts Transformation 3}
+In this transformation, $\tau$ is the stretching parameter, which varies from zero (no stretching) to large values that produce the most refinement near $y=y_c$.
+
+\begin{equation}
+	y
+	=
+	y_c
+	\left\{
+	1
+	+
+	\frac{\sinh[\tau (\bar{y}-B)]}
+	{\sinh(\tau B)}
+	\right\}
+\end{equation}
+
+Where
+
+\begin{equation}
+	B
+	=
+	\frac{1}{2\tau}
+	\ln 
+	\left[
+	\frac{1+(e^\tau-1) (y_c/h)}{1+(e^{-\tau}-1) (y_c/h)}
+	\right]
+	\qquad \qquad \qquad \qquad
+	0 <\tau < \infty
+\end{equation}
+
+
+\bibliography{MOONS}
+\bibliographystyle{plain}
+
+
+\end{document}
+
+

@@ -133,19 +133,15 @@
                   temp_b*(-alpha/beta))/(beta-alpha)
         else                         ! Collocated Node derivative
         ! Forward difference
-        k = 1; j = 2
-        temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
-        i = 2
+        i = 2; k = 1; j = 2
         alpha = dhp(i); beta = dhp(i)+dhp(i+1)
-        dfdh(i) = (temp_b*(alpha/beta-beta/alpha) +&
+        dfdh(i) = (f(i)*(alpha/beta-beta/alpha) +&
                   f(i+k)*beta/alpha + &
                   f(i+j)*(-alpha/beta))/(beta-alpha)
         ! Backward difference
-        k = -2; j = -1
-        temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
-        i = s-1
+        i = s-1; k = -2; j = -1
         alpha = -dhp(s-1); beta = -(dhp(s-1) + dhp(s-2))
-        dfdh(i) = (temp_b*(alpha/beta-beta/alpha) +&
+        dfdh(i) = (f(i)*(alpha/beta-beta/alpha) +&
                   f(i+k)*beta/alpha + &
                   f(i+j)*(-alpha/beta))/(beta-alpha)
         endif
@@ -166,8 +162,7 @@
         real(cp),intent(in),dimension(:) :: f
         real(cp),intent(in),dimension(:) :: dhp,dhd
         integer,intent(in) :: s,gt
-        integer :: i
-        integer :: j,k
+        integer :: i,j,k
         real(cp) :: temp_b,alpha,beta
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
         do i=2,s-1
@@ -176,36 +171,28 @@
 
         if (gt.eq.1) then              ! Collocated CellCenter derivative (gt = 1):
           ! Forward difference
-          k = -1; j = 1
           temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
-          i = 2
-          alpha = -0.5_cp*dhp(i-1); beta = dhp(i)
-          dfdh(i) = 2.0_cp*f(i)/(alpha*beta) + &
+          alpha = -0.5_cp*dhp(1); beta = dhp(2)
+          dfdh(2) = 2.0_cp*f(2)/(alpha*beta) + &
                     2.0_cp*temp_b/(alpha**2.0_cp - alpha*beta) + &
-                    2.0_cp*f(i+j)/(beta**2.0_cp - alpha*beta)
+                    2.0_cp*f(3)/(beta**2.0_cp - alpha*beta)
           ! Backward difference
-          k = -1; j = 1
           temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
-          i = s-1
-          alpha = -dhp(i-1); beta = 0.5_cp*dhp(i)
-          dfdh(i) = 2.0_cp*f(i)/(alpha*beta) + &
-                    2.0_cp*f(i+k)/(alpha**2.0_cp - alpha*beta) + &
-                    2.0_cp*temp_b/(beta**2.0_cp - alpha*beta)
+          alpha = -dhp(s-2); beta = 0.5_cp*dhp(s-1)
+          dfdh(s-1) = 2.0_cp*f(s-1)/(alpha*beta) + &
+                      2.0_cp*f(s-2)/(alpha**2.0_cp - alpha*beta) + &
+                      2.0_cp*temp_b/(beta**2.0_cp - alpha*beta)
         else                           ! Collocated Node derivative (gt = 0)
           ! Forward difference
-          k = 1; j = 2
-          temp_b = 0.5_cp*(f(1)+f(2)) ! Linear interpolate to boundary
-          i = 2
+          i = 2; k = 1; j = 2
           alpha = dhp(i); beta = dhp(i)+dhp(i+1)
-          dfdh(i) = 2.0_cp*temp_b/(alpha*beta) + &
+          dfdh(i) = 2.0_cp*f( i )/(alpha*beta) + &
                     2.0_cp*f(i+k)/(alpha**2.0_cp - alpha*beta) + &
                     2.0_cp*f(i+j)/(beta**2.0_cp - alpha*beta)
           ! Backward difference
-          k = -2; j = -1
-          temp_b = 0.5_cp*(f(s)+f(s-1)) ! Linear interpolate to boundary
-          i = s-1
+          i = s-1; k = -2; j = -1
           alpha = -dhp(i-1)-dhp(i-2); beta = -dhp(i-1)
-          dfdh(i) = 2.0_cp*temp_b/(alpha*beta) + &
+          dfdh(i) = 2.0_cp*f( i )/(alpha*beta) + &
                     2.0_cp*f(i+k)/(alpha**2.0_cp - alpha*beta) + &
                     2.0_cp*f(i+j)/(beta**2.0_cp - alpha*beta)
         endif

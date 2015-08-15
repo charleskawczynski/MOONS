@@ -43,7 +43,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979_cp
+       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       type FFTSolver
         character(len=5) :: name
@@ -102,28 +102,16 @@
 
         call assign(FFT%f,f)
 
-        call writeScalarPlane(g,FFT%f%phi,'out/','s51_f',3,2)
-
         select case (dir)
         case (1); call dct(FFT%f%phi(:,2:s(2)-1,:),2,1)
+                  call dct(FFT%f%phi(:,:,2:s(3)-1),3,1)
         case (2); call dct(FFT%f%phi(2:s(1)-1,:,:),1,1)
+                  call dct(FFT%f%phi(:,:,2:s(3)-1),3,1)
         case (3); call dct(FFT%f%phi(2:s(1)-1,:,:),1,1)
+                  call dct(FFT%f%phi(:,2:s(2)-1,:),2,1)
         case default
         stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
         end select
-
-        call writeScalarPlane(g,FFT%f%phi,'out/','s52_fhat1',3,2)
-
-        select case (dir)
-        case (1); call dct(FFT%f%phi(:,:,2:s(3)-1),3,1)
-        case (2); call dct(FFT%f%phi(:,:,2:s(3)-1),3,1)
-        case (3); call dct(FFT%f%phi(:,2:s(2)-1,:),2,1)
-        case default
-        stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
-        end select
-
-        call writeScalarPlane(g,FFT%f%phi,'out/','s52_fhat2',3,2)
-        ! call writeScalarPlane(g,FFT%f%phi,'out/','s52_f_hat',3,2)
 
         ! THESE FORMULAS ARE ONLY VALID WHEN DX1 = DX2 WHERE DIR = 3
         select case (dir)
@@ -169,21 +157,18 @@
         case default
         stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
         end select
-        call writeScalarPlane(g,u,'out/','s53_u_hat',3,2)
 
         select case (dir)
         case (1); call idct(u(:,2:s(2)-1,:),2,1)
                   call idct(u(:,:,2:s(3)-1),3,1)
         case (2); call idct(u(2:s(1)-1,:,:),1,1)
                   call idct(u(:,:,2:s(3)-1),3,1)
-        case (3); 
+        case (3); call idct(u(2:s(1)-1,:,:),1,1)
                   call idct(u(:,2:s(2)-1,:),2,1)
-                  call idct(u(2:s(1)-1,:,:),1,1)
         case default
         stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
         end select
 
-        call writeScalarPlane(g,u,'out/','s54_u',3,2)
         call applyAllBCs(u_bcs,u,g)
 
         if (displayTF) then

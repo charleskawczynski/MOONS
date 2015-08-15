@@ -270,7 +270,7 @@
          endif
        end subroutine
 
-       subroutine mixed_uniformCoeffReal(mix,f,g,dir1,dir2)
+       subroutine mixed_uniformCoeffReal(mix,g,temp,dir1,dir2)
          ! mixed_uniformCoeffReal computes
          ! 
          ! mix =  d/dxj (df/dxi)
@@ -278,28 +278,21 @@
          !           |       |
          !          dir2    dir1
          !
-         !     if dir1 == dir2  --> Error (call laplacian instead)
+         !     if dir1 == dir2  --> Error (call Laplacian instead)
          !     if dir1 ≠ dir2   --> see below
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: mix
-         real(cp),dimension(:,:,:),intent(in) :: f
+         real(cp),dimension(:,:,:),intent(inout) :: temp
          type(grid),intent(in) :: g
          integer,intent(in) :: dir1,dir2
-         real(cp),dimension(:,:,:),allocatable :: temp
-         integer,dimension(3) :: s
          type(del) :: d
-
          if (dir1.eq.dir2) then
            write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeffReal in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
-
-         s = shape(f)
-         allocate(temp(s(1),s(2),s(3)))
          call d%assign(temp,f,g,1,dir1,1)
          call d%assign(mix,temp,g,1,dir2,1)
-         deallocate(temp)
        end subroutine
 
        subroutine mixed_variableCoeffReal(mix,f,k,g,dir1,dir2)

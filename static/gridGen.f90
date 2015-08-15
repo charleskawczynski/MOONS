@@ -21,16 +21,18 @@
        end type
        
        public :: gridGenerator,init,delete
-       public :: app,prep,applyGhost
+       public :: prep,app
+       public :: preMirror,appMirror
+       public :: prepGhost,appGhost
+       public :: applyGhost
        public :: pop,snip
-       ! public :: preMirror,appMirror
 
        interface init;        module procedure initGridGen;        end interface
        interface delete;      module procedure deleteGridGen;      end interface
-       interface app;         module procedure appGrid;            end interface
        interface prep;        module procedure prepGrid;           end interface
-       ! interface preMirror;   module procedure prepMirrorGrid;     end interface ! Allow to mirror grid
-       ! interface appMirror;   module procedure appMirrorGrid;      end interface ! Allow to mirror grid
+       interface app;         module procedure appGrid;            end interface
+       interface preMirror;   module procedure prepMirrorGrid;     end interface
+       interface appMirror;   module procedure appMirrorGrid;      end interface
 
        contains
 
@@ -49,6 +51,22 @@
          call delete(gg%g)
        end subroutine
 
+       subroutine prepGrid(gg,h,dir)
+         ! prepend hn to grid along dir
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         real(cp),dimension(:),intent(in) :: h
+         integer,intent(in) :: dir
+         real(cp),dimension(:),allocatable :: temp
+         integer :: s
+         s = gg%g%c(dir)%sn
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend'
+         allocate(temp(s))
+         temp = gg%g%c(dir)%hn
+         call init(gg%g,(/h,temp/),dir,2)
+         deallocate(temp)
+       end subroutine
+
        subroutine appGrid(gg,h,dir)
          ! append hn to grid along dir
          implicit none
@@ -65,19 +83,65 @@
          deallocate(temp)
        end subroutine
 
-       subroutine prepGrid(gg,h,dir)
-         ! perpend h to grid along dir
+       subroutine prepMirrorGrid(gg,dir)
+         ! prepend mirror hn to grid along dir
          implicit none
          type(gridGenerator),intent(inout) :: gg
-         real(cp),dimension(:),intent(in) :: h
          integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: temp
+         real(cp),dimension(:),allocatable :: h1,h2
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend'
-         allocate(temp(s))
-         temp = gg%g%c(dir)%hn
-         call init(gg%g,(/h,temp/),dir,2)
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
+         allocate(h1(s-1)); allocate(h2(s))
+         h2 = gg%g%c(dir)%hn; h1 = h2(s:2:-1)
+         call init(gg%g,(/h1,h2/),dir,2)
+         deallocate(h1,h2)
+       end subroutine
+
+       subroutine appMirrorGrid(gg,dir)
+         ! append mirror of hn to grid along dir
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         integer,intent(in) :: dir
+         real(cp),dimension(:),allocatable :: h1,h2
+         integer :: s
+         s = gg%g%c(dir)%sn
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to append mirror'
+         allocate(h1(s-1)); allocate(h2(s))
+         h2 = gg%g%c(dir)%hn; h1 = h2(s-1:1:-1)
+         call init(gg%g,(/h1,h2/),dir,2)
+         deallocate(h1,h2)
+       end subroutine
+
+       subroutine prepGhost(gg,dir)
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         integer,intent(in) :: dir
+         real(cp),dimension(:),allocatable :: temp
+         integer :: i,s
+         s = gg%g%c(dir)%sn
+         allocate(temp(s+1))
+         do i=1,s
+          temp(i+1) = gg%g%c(dir)%hn(i)
+         enddo
+         temp(1) = gg%g%c(dir)%hn(1) - (gg%g%c(dir)%hn(2) - gg%g%c(dir)%hn(1))
+         call init(gg%g,temp,dir,2)
+         deallocate(temp)
+       end subroutine
+
+       subroutine appGhost(gg,dir)
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         integer,intent(in) :: dir
+         real(cp),dimension(:),allocatable :: temp
+         integer :: i,s
+         s = gg%g%c(dir)%sn
+         allocate(temp(s+1))
+         do i=1,s
+          temp(i) = gg%g%c(dir)%hn(i)
+         enddo
+         temp(s+1) = gg%g%c(dir)%hn(s) + (gg%g%c(dir)%hn(s) - gg%g%c(dir)%hn(s-1))
+         call init(gg%g,temp,dir,2)
          deallocate(temp)
        end subroutine
 

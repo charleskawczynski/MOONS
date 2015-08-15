@@ -62,6 +62,9 @@
         interface assignX;   module procedure assignXVF;            end interface
         interface assignY;   module procedure assignYVF;            end interface
         interface assignZ;   module procedure assignZVF;            end interface
+        interface assignX;   module procedure assignXVFS;           end interface
+        interface assignY;   module procedure assignYVFS;           end interface
+        interface assignZ;   module procedure assignZVFS;           end interface
 
         interface assign;   module procedure vectorScalarAssign;    end interface
         interface assign;   module procedure VFAssign;              end interface
@@ -156,6 +159,66 @@
           !$OMP END PARALLEL DO
 #else
           f%z = g%z
+#endif
+        end subroutine
+
+        subroutine assignXVFS(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          real(cp),intent(in) :: g
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sx(3)
+            do j=1,f%sx(2)
+              do i=1,f%sx(1)
+                f%x(i,j,k) = g
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%x = g
+#endif
+        end subroutine
+
+        subroutine assignYVFS(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          real(cp),intent(in) :: g
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sy(3)
+            do j=1,f%sy(2)
+              do i=1,f%sy(1)
+                f%y(i,j,k) = g
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%y = g
+#endif
+        end subroutine
+
+        subroutine assignZVFS(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          real(cp),intent(in) :: g
+#ifdef _PARALLELIZE_VF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,f%sz(3)
+            do j=1,f%sz(2)
+              do i=1,f%sz(1)
+                f%z(i,j,k) = g
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          f%z = g
 #endif
         end subroutine
 

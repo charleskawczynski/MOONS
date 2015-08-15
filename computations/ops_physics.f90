@@ -33,6 +33,8 @@
        use del_mod
        use delVC_mod
        use grid_mod
+       use BCs_mod
+       use vectorBCs_mod
        use VF_mod
        use SF_mod
        use ops_interp_mod
@@ -60,6 +62,7 @@
        interface faceAdvect;    module procedure faceAdvectVF;   end interface
 
        public :: faceAdvectDonor,faceAdvectHybrid
+       ! public :: fluidDiffusion
 
        public :: CCBfieldAdvect
        interface CCBfieldAdvect;    module procedure CCBfieldAdvectSF;   end interface

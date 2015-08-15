@@ -24,8 +24,8 @@
       public :: getUnit,closeExisting
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
-      public :: int2Str,int2Str2,num2Str
-      public :: arrfmt,rarrfmt,logfmt,intfmt
+      public :: int2Str,int2Str2,num2Str,intLen
+      public :: arrfmt,rarrfmt,logfmt,intfmt,strcompress
 
        ! This website is a good reference for formatting:
        ! http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap05/format.html
@@ -204,6 +204,13 @@
         s = trim(adjustl(s))
       end function
 
+      function intLen(i) result(n)
+        implicit none
+        integer,intent(in) :: i
+        character(len=20) :: c
+        integer :: n
+        c = strcompress(int2str(i),n)
+      end function
 
       FUNCTION strcompress( input_string, n ) RESULT ( output_string ) 
         !------------------------------------------------------------------------------ 

@@ -32,17 +32,13 @@
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
-       integer,parameter :: cip = selected_int_kind(8)
 #endif
 #ifdef _DOUBLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(14)
-       integer,parameter :: cip = selected_int_kind(32)
 #endif
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
-       integer,parameter :: cip = selected_int_kind(32)
 #endif
-       ! integer,parameter :: cip = selected_int_kind(64)
        ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
@@ -61,7 +57,7 @@
         ! 
         real(cp),    dimension(:), intent(inout)  :: x
         complex(cp), dimension(:), allocatable    :: xx,e
-        integer(cip)                              :: N,k
+        integer                                   :: N,k
         complex(cp)                               :: j
         N = size(x)
         allocate(xx(2*N))

@@ -68,7 +68,7 @@
          integer,parameter :: Nsims = 4
          integer,parameter :: r0 = 2 ! Magnetiude of refinement factor
          integer,dimension(3),parameter :: r = (/r0,r0,r0/) ! Refinement factor
-         integer :: i,dir
+         integer :: i
          integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
          ! integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart+Nsims-1)/)
          type(richardsonExtrapolation),dimension(Nsims-2) :: RE
@@ -123,7 +123,7 @@
          integer,parameter :: Nsims = 4
          integer,parameter :: r0 = 2 ! Magnetiude of refinement factor
          integer,dimension(3),parameter :: r = (/r0,r0,r0/) ! Refinement factor
-         integer :: i,dir
+         integer :: i
          integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
          type(richardsonExtrapolation),dimension(Nsims-2) :: RE
          type(VF),dimension(Nsims) :: U,B

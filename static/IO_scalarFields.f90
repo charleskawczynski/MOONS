@@ -448,12 +448,11 @@
       !   call delete(temp)
       ! end subroutine
 
-      subroutine write3DMeshToFileGrid(g,val,dir,name)
+      subroutine write3DMeshToFileGrid(g,dir,name)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(grid),intent(in) :: g
-        real(cp),intent(in) :: val
-        call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,val,dir,name)
+        call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name)
       end subroutine
 
       end module

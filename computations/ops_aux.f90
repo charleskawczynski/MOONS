@@ -211,7 +211,7 @@
 
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
-         if ((f(i,j,k).gt.bot).and.(f(i,j,k).lt.top)) then
+         if ((f(i,j,k).gt.mi).and.(f(i,j,k).lt.ma)) then
           f(i,j,k) = ma
          endif
          enddo; enddo; enddo

@@ -25,7 +25,7 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 2
+       integer,parameter :: applied_B_dir = 3
        !                                    0 : No applied field: B0 = (0,0,0)
        !                                    1 :    Applied field: B0 = (B0x,0,0)
        !                                    2 :    Applied field: B0 = (0,B0y,0)

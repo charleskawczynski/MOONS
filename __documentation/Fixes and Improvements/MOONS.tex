@@ -65,36 +65,19 @@ In order to keep this document organized
 
 \section{Today}
 
-- Benchmark against (Parker,Bandaru)
+- Read plasma papers
 
-- Get parking permit for summer
-
-- Work on paper...
-
-- Look into plasma papers
-
-- Focus on paper for ISFNT (introduction, code description, test cases (V\&V), demo cases, plans for future, 5 pages?)
+- Focus on paper for ISFNT
 
 - Make a coordinates / grid import and corresponding corrections to the readme routines in the IO files.
 
 - Try performing refinement on 2D flow
 
-- Run high Re/Ha/Rem case to see if instabilities occur, monitor $Re_{grid}$.
-
-- Read Roache's error bars paper, develop equations for generalized richardson's method for more efficient mesh refinement.
-
-
-- Sweep through Re/Ha/Rem while testing convergence / Compute KE and KB equations and plot norms of terms vs time
-
 - First step is descriptive - phases (linear, non-linear, decay)
 
 - Look at KE equation and Bfield energy equation / read literature
 
-- Read more about benchmarking
-
-- Test Richardson Extrapolation routine
-
-- Look in literature for interface conditions for current and BCs for bfield
+- Read literature for interface conditions BCs for bfield
 
 - Figure out how to view time in tecplot as simulation runs
 
@@ -103,10 +86,7 @@ In order to keep this document organized
 \section{Tomorrow}
 - diff/adv terms on wall coincident boundaries
 
-- Develop routine for Richardson Extrapolation to estimate rate of convergence
-
 - Rigorously test gridGen and get rid of old one.
-
 
 \section{Future Plans}
 
@@ -118,17 +98,9 @@ In order to keep this document organized
 
 - Make a prepare directory routine in MOONS
 
-- Try refinement studies to make sure order of accuracy is correct
+- Make Poisson solvers (all) initialized outside of the call routine and look into benchmarking these solvers by looking at convergence rates
 
-- Compute residuals for momentum/induction equations allow for transient exporting using pre-processor directives
-
-- Make Poisson solvers (all) initialized outside of the call routine.
-
-- Look into benchmarking these solvers by looking at convergence rates
-
-- Introduce staggered B so it can be cleaned
-
-- Test cleaning procedure and compare with CT method
+- Introduce staggered B so it can be cleaned and test cleaning procedure and compare with CT method
 
 - Consider making setXMinType(1,2) for dirichlet / neumann and determine wall coincident / incoincident internally.
 
@@ -144,8 +116,6 @@ are above 1000, if so just use uniform grid.
 - Calculate cw in induction solver!
 
 \section{Futuristic Plans}
-
-- Documentation to add
 
 Dimensionless parameters to add:
 
@@ -210,11 +180,9 @@ velocity (likely u=0 inside). More tests could be done this way.
 
 - implement: 1) chimney flow 2) impinging jet flow
 
-- test the cylinder driven flow case =)
+- test the cylinder driven flow case
 
 - Finish developing solverSettings estimateRemaining() subroutine
-
-- Solve energy equation!
 
 - Allow for compressibility!
 
@@ -228,18 +196,10 @@ velocity (likely u=0 inside). More tests could be done this way.
       J-field: (face, cc, node)\_interior (face, cc, node)\_total domain
 
 \section{10 minute tasks}
-- remove 'my' in all of MOONS.
-
-- Convert real(cp),dimension(:,:,:) to scalar field for parallelization
-
-- rename scalarField and vectorField to field\_scalar and field\_vector
-
 - Update matlab script to plot KU and KB
 
 
 \section{Analysis and Literature}
-- Consider trying to assume separable with space and time, B induced = Bstar exp(-omega t). Exponents may cancel. Velocity will not be trivial though. But perhaps at early times motion is due to diffusion only.
-
 - Paper by Priede - Linear stability on Hunt flow ("not easy")
 
 - Work on analysis for simple PD
@@ -254,23 +214,11 @@ velocity (likely u=0 inside). More tests could be done this way.
 
 - KE/ME equation terms
 
-- Error bars / non-doubling grid refinement
-
-- The zeroWallCoincidentPoints in momentum solver decreased div(U) by several orders of magnitude. After changes below, try removing this routine call and see if it still affects div(U).
-
-- Change induction equation to be located on the cell face. This allows a natural CT method implementation, as well as allowing for cleaning of B for Gauss-Seidel Solver.
-
 - Re-run several benchmark tests.
-
-- div(B) cleaning for face data
 
 - Try making properties of mom/ind/nrg private!
 
 - Remove unecessary sigma fields
-
-- Test Poisson cases for face data
-
-- Test inductionSolver: Gauss-Seidel / cleaning procedure
 
 - Finish documentation: non-uniform grid stencils/outline of results: develop a python script to solve the system symbollically.
 
@@ -282,17 +230,9 @@ velocity (likely u=0 inside). More tests could be done this way.
 
 - Re-run Hunt/Shercliff flows with uniform grid in BL and with p = 0 at outlet
 
-- Consider using ADI for uniform grids, this may be the best way to look at validity of pseudo vacuum BCs
-
-- Maybe ADI is not correct (even though it seems to be) since it DOES NOT work (diverges) for large $\Delta t$.
-
-- Maybe look at older versions of ADI
-
 - Update documentation for stencils (include ghost node)
 
 - Maybe include documentation on Nin,Nice,Nici?
-
-- Look into paper by Pattsson? Morely co-authored ~2008/2009
 
 - Try comparing 1/Ha with cw for HIMAG vs MOONS and compare continuity of tangent(j)/sigma across interface
 

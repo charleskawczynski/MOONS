@@ -447,12 +447,12 @@
 #endif
 
         ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
-        if (allNeumann(u_bcs)) then
+        if (getAllNeumann(u_bcs)) then
           u = u - sum(u)/(max(1,size(u)))
         endif
 
         ! Okay for SOR alone when comparing with u_exact, but not okay for MG
-        ! if (.not.allNeumann(u_bcs)) then
+        ! if (.not.getAllNeumann(u_bcs)) then
         !   u = u - sum(u)/(max(1,size(u)))
         ! endif
 

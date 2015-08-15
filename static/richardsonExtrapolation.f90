@@ -71,7 +71,7 @@
          character(len=*),intent(in) :: name,directory
          integer,intent(in) :: Nsims
          integer,dimension(Nsims),intent(in) :: N
-         integer :: i,dir
+         integer :: i
          type(norms),dimension(2*(Nsims-2)) :: etemp,GCItemp
          type(norms),dimension(Nsims-2) :: ptemp,ARtemp
 
@@ -204,10 +204,10 @@
          if (.not.(r0.gt.1.0_cp)) stop 'Refinement was not performed in computeRE in convergenceRate.f90'
 
          s = shape(f3)
-         f3_f2 = computeMGError(f2,f3,r2,r3,s,g3,dir,name//'_23')
-         f2_f1 = computeMGError(f1,f2,r1,r2,s,g3,dir,name//'_12')
-         f1_f0 = computeMGError(f0%phi,f1,r1,r1,s,g3,dir,name//'_1')
-         f2_f0 = computeMGError(f0%phi,f2,r1,r2,s,g3,dir,name//'_2')
+         f3_f2 = computeMGError(f2,f3,r2,r3,s,g3,dir,name//'_23',.false.)    ! |f_3 - f_2|
+         f2_f1 = computeMGError(f1,f2,r1,r2,s,g3,dir,name//'_12',.false.)    ! |f_2 - f_1|
+         f1_f0 = computeMGError(f0%phi,f1,r1,r1,s,g3,dir,name//'_1',.false.) ! |   f_1   |
+         f2_f0 = computeMGError(f0%phi,f2,r1,r2,s,g3,dir,name//'_2',.false.) ! |   f_2   |
 
          RE%p = richardsonExtrap_norms(f3_f2,f2_f1,r0)
 
@@ -216,9 +216,9 @@
          Fs = 1.25_cp
 
          ! Fine GCI
-         RE%GCI_12 = computeGCI_norms(f2_f1,f1_f0,RE%p,r0,Fs,.true.)
+         RE%GCI_12 = computeGCI_norms(f2_f1,f1_f0,RE%p,r0,Fs,.true.) ! GCI = Fs*|f_2 - f_1|/|f_1|
          ! Coarse GCI
-         RE%GCI_23 = computeGCI_norms(f3_f2,f2_f0,RE%p,r0,Fs,.false.)
+         RE%GCI_23 = computeGCI_norms(f3_f2,f2_f0,RE%p,r0,Fs,.false.) ! GCI = Fs*|f_3 - f_2|/|f_2|
          
          RE%AR = computeAsymtoticRange_Norms(RE%GCI_12,RE%GCI_23,RE%p,r0)
          call delete(f0)
@@ -230,7 +230,7 @@
        ! *******************************************************************************
        ! *******************************************************************************
 
-       function computeMGError(f1,f2,r1,r2,s,g,dir,name) result(n)
+       function computeMGError(f1,f2,r1,r2,s,g,dir,name,plotTF) result(n)
          ! Computes
          ! 
          !    e = f2 - f1
@@ -256,6 +256,7 @@
          integer,dimension(3),intent(in) :: s
          type(grid),intent(in) :: g ! grid for e
          character(len=*),intent(in) :: dir,name
+         logical,intent(in) :: plotTF
          type(SF) :: e
          type(norms) :: n
          integer :: i,j,k,i1,j1,k1,i2,j2,k2
@@ -272,7 +273,7 @@
          enddo;enddo;enddo
          !$OMP END PARALLEL DO
          call zeroGhostPoints(e%phi)
-         ! call writeScalarPhysical(g,e%phi,dir,'MG_Error_'//name)
+         if (plotTF) call writeScalarPhysical(g,e%phi,dir,'MG_Error_'//name)
          call compute( n , e%phi(2:s(1)-1,2:s(2)-1,2:s(3)-1) )
          call delete(e)
        end function
@@ -324,6 +325,10 @@
        ! *******************************************************************************
 
        function computeGCI_norms(num,denom,p,r,Fs,fine) result(GCI)
+         ! Computes
+         ! 
+         !     GCI = (Fs * abs(num/denom) ) / (r**p - 1.0_cp)
+         ! 
          implicit none
          type(norms),intent(in) :: num,denom,p
          real(cp),intent(in) :: r,Fs
@@ -349,7 +354,7 @@
 
        function computeGCI_Coarse(Fs,eps,p,r) result(GCI)
          ! It appears that this is supposed to be computed using
-         !     GCI = (Fs * abs(eps) * r**p ) / (r**p - real(1.0,cp))
+         !     GCI = (Fs * abs(eps) * r**p ) / (r**p - 1.0_cp)
          ! but the example on NASA's site,
          ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
          ! shows that this is not the case, and there seem to be
@@ -389,6 +394,13 @@
        end function
 
        function computeAsymtoticRange_Real(GCI_12,GCI_23,p,r) result(AR)
+         ! Computes
+         !      
+         !      AR = alpha/r^p
+         !
+         ! Where
+         !      alpha = |eps_23|/|eps_12|
+         ! 
          implicit none
          real(cp),intent(in) :: GCI_12,GCI_23,p,r
          real(cp) :: AR

@@ -99,8 +99,8 @@ FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 # Internal debugging
 # FCFLAGS += -D_DEBUG_DELOPS_
 # FCFLAGS += -D_DEBUG_VECTOROPS_
-FCFLAGS += -D_DEBUG_DEL_
-FCFLAGS += -D_DEBUG_INTERP_
+# FCFLAGS += -D_DEBUG_DEL_
+# FCFLAGS += -D_DEBUG_INTERP_
 # FCFLAGS += -D_DEBUG_VECTOR_
 # FCFLAGS += -D_DEBUG_SCALAR_ not yet implemented
 # FCFLAGS += -D_CHECK_SYMMETRY_
@@ -111,6 +111,8 @@ FCFLAGS += -D_DEBUG_INTERP_
 TARGET = $(TARGET_DIR)$(PS)MOONS
 
 # **************** SOURCE FILES *********************
+# $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
+# $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
 
 SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)scalarField.f90 \
@@ -119,16 +121,22 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)IO_tecplotHeaders.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_scalarBase.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_vectorBase.f90 \
+	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
+	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)static$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)static$(PS)gridGenTools.f90 \
 	$(SRC_DIR)$(PS)static$(PS)grid.f90 \
 	$(SRC_DIR)$(PS)static$(PS)gridGen.f90 \
+	$(SRC_DIR)$(PS)static$(PS)matchGridStretching.f90 \
+	$(SRC_DIR)$(PS)static$(PS)generateGrids.f90 \
+	$(SRC_DIR)$(PS)static$(PS)exportRaw.f90 \
+	$(SRC_DIR)$(PS)static$(PS)export.f90 \
+	$(SRC_DIR)$(PS)static$(PS)export_VF.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_scalarFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_vectorFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_transientFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_auxiliary.f90 \
 	$(SRC_DIR)$(PS)static$(PS)version.f90 \
-	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)static$(PS)solverSettings.f90 \
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \

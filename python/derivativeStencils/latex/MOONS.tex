@@ -45,7 +45,7 @@ University of California Los Angeles, USA\\}
 
 \section{Finite Difference Schemes}
 
-The results in this document are generated from a linear system solver, using Python, in stencilMaker.py. The file is run from stencils.py. The linear system is a set of Taylor expansions about a point in space and is of the form of a Vandermonde matrix
+The results in this document are generated from a linear system solver, using Python, in stencilMaker.py. The file is run from stencils.py. The linear system is a set of Taylor expansions about a point in space and is of the form of a Vandermonde matrix:
 
 \begin{equation}
 	f_{i+k}
@@ -56,51 +56,29 @@ The results in this document are generated from a linear system solver, using Py
 	k = n_{left} \dots n_{right}
 \end{equation}
 
-Where the unknowns are the derivatives $f_i^{(j)}$. The input arguments, $n_{left}$ and $n_{right}$, are the number of points to the left and right of $i$ respectively. $f_{i+k}\forall k$ is assumed to be known. Also, by definition
+Where the unknowns are the derivatives $f_i^{(j)}$. The input arguments, $n_{left}$ and $n_{right}$, are the number of points to the left and right of $i$ respectively. $f_{i+k}\forall k$ is assumed to be known. The distance between $f_{i}$ and $f_{i+k}$ is
 \begin{equation}
 	\alpha_{i+k} 
 	=
 	h_{i+k} - h_{i}
 \end{equation}
-
-Since, in MOONS, $\Delta h_1 = h_2 - h_1$, let
-
-\begin{equation}
-	\Delta h_{i}
-	=
-	h_{i+1} - h_{i}
-	=
-	\alpha_{i+1}
-	\qquad
-	\rightarrow
-	\alpha_{i+k} = \Delta h_{i+k-1}
-\end{equation}
-
-Also note that, for $k>1$,
+Since, in MOONS, $\Delta h_1 = h_2 - h_1$, we can relate $\Delta h$ and $\alpha$ as follows
 
 \begin{equation}
-	\Delta h_{i+k-1}
-	=
-	\Delta h_{i+1}
-	+
-	\dots
-	+
-	\Delta h_{i+k-1}
+	\Delta h_{i} = h_{i+1} - h_{i} = \alpha_{i+1}
+	,\qquad \qquad
+	\Delta h_{i} + \Delta h_{i+1} = h_{i+2} - h_{i} = \alpha_{i+2}
 \end{equation}
 
-And for $k<1$,
+In general, we may write this as
 
 \begin{equation}
-	\Delta h_{i+k-1}
-	=
-	\Delta h_{i-1}
-	+
-	\dots
-	+
-	\Delta h_{i+k-1}
+	\alpha_{i+k} = h_{i+k} - h_{i}
+	,\qquad \qquad
+	\alpha_{i+k} = \sum_{j=0}^{k-1} \Delta h_{i+j}
 \end{equation}
 
-Again, to note how indexing is defined
+Again, to reiterate, the indexing convention is:
 
 \begin{equation}
 	\boxed{
@@ -123,9 +101,18 @@ Try including equations solved with and without truncation. The equation without
 \input{knowns}
 \subsection{Unknowns}
 \input{unknowns}
-\subsection{First Derivative}
+
+
+% \subsection{1st and 2nd Derivatives and Truncation}
+% \input{dfdx}
+% \input{dfdx_Truncation}
+% \input{d2fdx2}
+% \input{d2fdx2_Truncation}
+
+\subsection{1st and 2nd Derivatives}
 \input{dfdx}
-\subsection{Second Derivative}
+% \input{dfdx_safe}
 \input{d2fdx2}
+% \input{d2fdx2_safe}
 
 \end{document}

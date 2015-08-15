@@ -26,23 +26,22 @@
 
       use grid_mod
       implicit none
-      
+
       private
       public :: fft,fft1D
-      interface fft;    module procedure applyFFT3D;    end interface
+      interface fft;      module procedure applyFFT3D;    end interface
+      ! interface fft1D;    module procedure fft1D_full;    end interface
+      interface fft1D;    module procedure fft1D_CT;      end interface
 
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
-       integer,parameter :: cip = selected_int_kind(8)
 #endif
 #ifdef _DOUBLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(14)
-       integer,parameter :: cip = selected_int_kind(32)
 #endif
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
-       integer,parameter :: cip = selected_int_kind(32)
 #endif
        ! integer,parameter :: cip = selected_int_kind(64)
        ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
@@ -50,11 +49,22 @@
 
       contains
 
-      subroutine fft1D(x)
+      subroutine fft1D_full(x) ! Full Discrete Fourier Transform
+        ! Computes
+        ! 
+        !                  N
+        !    X(k) =       sum  x(n)*exp(-j*2*PI*(k-1)*(n-1)/N), 1 <= k <= N.
+        !                 n=1
+        ! 
+        ! Notes: This routine computes the full FT (very slow), allowing for an
+        !        arbitrary number of cells. If the number of cells
+        !        is 2^N, where N>1, then use the Cooley-Tukey FFT below.
+        ! 
+        ! 
         complex(cp), dimension(:), intent(inout)  :: x
         complex(cp), dimension(:), allocatable    :: temp
         complex(cp)                               :: S,j ! sum, sqrt(-1)
-        integer(cip)                              :: N,i,k
+        integer                                   :: N,i,k
         N=size(x)
         allocate(temp(N))
         j = cmplx(0.0_cp,1.0_cp,cp)
@@ -69,6 +79,40 @@
         enddo
         x = temp
         deallocate(temp)
+      end subroutine
+
+      recursive subroutine fft1D_CT(x) ! In place Cooley-Tukey FFT
+        ! Computes
+        ! 
+        !                  N
+        !    X(k) =       sum  x(n)*exp(-j*2*PI*(k-1)*(n-1)/N), 1 <= k <= N.
+        !                 n=1
+        ! 
+        ! Notes: Only valid for when the number of cells is 2^N, where N>1
+        ! 
+        complex(cp), dimension(:), intent(inout)  :: x
+        complex(cp)                               :: t
+        integer                                   :: N
+        integer                                   :: i
+        complex(cp), dimension(:), allocatable    :: even, odd
+        N=size(x)
+        if(N .le. 1) return
+        allocate(odd((N+1)/2))
+        allocate(even(N/2))
+        ! divide
+        odd =x(1:N:2)
+        even=x(2:N:2)
+        ! conquer
+        call fft1D(odd)
+        call fft1D(even)
+        ! combine
+        do i=1,N/2
+           t=exp(cmplx(0.0_cp,-2.0_cp*PI*real(i-1,cp)/real(N,cp),kind=cp))*even(i)
+           x(i)     = odd(i) + t
+           x(i+N/2) = odd(i) - t
+        end do
+        deallocate(odd)
+        deallocate(even)
       end subroutine
 
       subroutine applyFFT3D(omega,f,dir,pad)

@@ -1,0 +1,310 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\height}{0.4}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{12}
+\newcommand{\Deltah}{3}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of stencils in matrix form}
+
+The previous form of derivatives were not computationally efficient. It was realized that saving coefficients of each term in derivatives will be the most computationally efficient and not require much memory demands.
+
+Cell corner and cell centered data (and their indexing) are shown below.
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (2*\Deltah,0);
+      \draw [black,dashed] (2*\Deltah,0) to (4*\Deltah,0);
+      \draw [black] (4*\Deltah,0) to (6*\Deltah,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah,-\height) to (0+0*\Deltah,\height);
+      \draw [black] (1*\Deltah,-\height) to (0+1*\Deltah,\height);
+      \draw [black] (2*\Deltah,-\height) to (0+2*\Deltah,\height);
+      \draw [black] (4*\Deltah,-\height) to (0+4*\Deltah,\height);
+      \draw [black] (5*\Deltah,-\height) to (0+5*\Deltah,\height);
+      \draw [black] (6*\Deltah,-\height) to (0+6*\Deltah,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah+\Deltah/2,0) circle [radius=\radius];
+
+      \draw (0*\Deltah,0) node [black,below=\offSet] {$f_{n,1}$};
+      \draw (1*\Deltah,0) node [black,below=\offSet] {$f_{n,2}$};
+      \draw (2*\Deltah,0) node [black,below=\offSet] {$f_{n,3}$};
+      \draw (4*\Deltah,0) node [black,below=\offSet] {$f_{n,sn-2}$};
+      \draw (5*\Deltah,0) node [black,below=\offSet] {$f_{n,sn-1}$};
+      \draw (6*\Deltah,0) node [black,below=\offSet] {$f_{n,sn}$};
+
+      \draw (0*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{c,1}$};
+      \draw (1*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{c,2}$};
+      \draw (5*\Deltah-\Deltah/2,0) node [black,below=\offSet] {$f_{c,sc-1}$};
+      \draw (6*\Deltah-\Deltah/2,0) node [black,below=\offSet] {$f_{c,sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+We would like to get the coefficients of the derivative operator, $A$, when in the form
+\begin{equation} \label{eq:Af=b}
+  Af = g
+\end{equation}
+The size, and shape, of $A$ will depend on whether the input and output are collocated or not.
+
+Note that for both cell center and cell corner data,
+
+\begin{equation}
+  \Delta h_{j} = h_{j+1}-h_{j}
+\end{equation}
+
+\section{Staggered derivatives}
+\subsection{CC to N}
+Consider the first derivative of staggered cell corner data of the familiar form:
+\begin{equation}
+  g_{n,j} = \left( \frac{\partial f_{c}}{\partial h} \right)_{n,j} = \frac{f_{c,j+1}-f_{c,j}}{\Delta h_{c,j}}
+\end{equation}
+
+First, let's discuss the change in size of the vector. The size of $f_c$ is $sc$, and the size of $\left( \frac{\partial f_{c}}{\partial h} \right)_{n}$ is $sn$ (from the above figure). Which means that the multiplication in \ref{eq:Af=b} must be $(sn \times sc) \times (sc \times 1) = (sn \times 1)$. We may also write this as an interior multiplication as $(sn-2 \times sc) \times (sc \times 1) = (sn-2 \times 1)$
+
+\[
+Af = 
+\left[
+\begin{array}{ccccccccc}
+D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
+  & D_{2} & U_{2} &   &   &   &   &   &   \\
+  &   & D_{3} & U_{3} &   &   &   &   &   \\
+  &   &  & \ddots & \ddots &   &   &   &   \\
+  &   &   &   & D_{j} & U_{j} &   &   &   \\
+  &   &   &   &  & \ddots & \ddots &   &   \\
+  &   &   &   &   &   & D_{sc-2} & U_{sc-2} &   \\
+ 0 &   &   &   &   &   &   & D_{sc-1} & U_{sc-1} \\
+\end{array}
+\right]
+\left[ \begin{array}{c}
+f_{c,1} \\ f_{c,2} \\ \vdots \\ f_{c,j-1} \\ f_{c,j} \\ f_{c,j+1} \\ \vdots \\ f_{c,sc-1} \\ f_{c,sc}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+g_{n,2} \\ g_{n,3} \\ \vdots \\ g_{n,j-1} \\ g_{n,j} \\ g_{n,j+1} \\ \vdots \\ g_{n,sn-2} \\ g_{n,sn-1}
+\end{array} \right]
+ = \left( \frac{\partial f_{c}}{\partial h} \right)_{n,j}
+\]
+
+From the above diagram, it is clear that
+
+\begin{equation}
+  D_j = \frac{-1}{\Delta h_{c,j}}, \qquad
+  U_j = \frac{1}{\Delta h_{c,j}}, \qquad
+  \Delta h_{c,j} = h_{c,j+1}-h_{c,j}
+\end{equation}
+
+\subsection{N to CC}
+Consider the first derivative of staggered cell corner data of the familiar form:
+\begin{equation}
+  g_{c,j} = \left( \frac{\partial f_{n}}{\partial h} \right)_{c,j} = \frac{f_{n,j+1}-f_{n,j}}{\Delta h_{n,j}}
+\end{equation}
+
+First, let's discuss the change in size of the vector. The size of $f_n$ is $sn$, and the size of $\left( \frac{\partial f_{n}}{\partial h} \right)_{c}$ is $sc$. Which means that the multiplication in \ref{eq:Af=b} must be $(sc \times sn) \times (sn \times 1) = (sc \times 1)$.
+
+\[
+Af = 
+\left[
+\begin{array}{ccccccccc}
+D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
+  & D_{2} & U_{2} &   &   &   &   &   &   \\
+  &   & D_{3} & U_{3} &   &   &   &   &   \\
+  &   &  & \ddots & \ddots &   &   &   &   \\
+  &   &   &   & D_{j} & U_{j} &   &   &   \\
+  &   &   &   &  & \ddots & \ddots &   &   \\
+  &   &   &   &   &   & D_{sn-2} & U_{sn-2} &   \\
+ 0 &   &   &   &   &   &   & D_{sn-1} & U_{sn-1} \\
+\end{array}
+\right]
+\left[ \begin{array}{c}
+f_{n,1} \\ f_{n,2} \\ \vdots \\ f_{n,j-1} \\ f_{n,j} \\ f_{n,j+1} \\ \vdots \\ f_{n,sn-1} \\ f_{n,sn}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+g_{c,1} \\ g_{c,2} \\ \vdots \\ g_{c,j-1} \\ g_{c,j} \\ g_{c,j+1} \\ \vdots \\ g_{c,sc-1} \\ g_{c,sc}
+\end{array} \right]
+ = \left( \frac{\partial f_{c}}{\partial h} \right)_{n,j}
+\]
+
+From the above diagram, it is clear that
+
+\begin{equation}
+  D_j = \frac{-1}{\Delta h_{n,j}}, \qquad
+  U_j = \frac{1}{\Delta h_{n,j}}
+\end{equation}
+
+
+\section{Collocated derivatives}
+
+\subsection{1st Derivatives}
+
+\subsection{2nd Derivatives}
+Consider the second derivative of collocated data of the familiar form:
+\begin{equation}
+  g_{p,j} = 
+\frac{\partial}{\partial h} \left( k \frac{\partial f}{\partial h} \right)
+ = \frac{\frac{f_{j+1}-f_{j}}{h_{p,j+1}-h_{p,j}} k_{p,j+1/2} - \frac{f_{j}-f_{j-1}}{h_{p,j}-h_{p,j-1}} k_{p,j-1/2}}{h_{p,j+1/2} - h_{p,j-1/2}}
+\end{equation}
+
+This simplifies to
+
+\begin{equation}
+\frac{\partial}{\partial h} \left( k \frac{\partial f}{\partial h} \right)
+ = \left( \frac{k_{d,j-1+gt}}{\Delta h_{p,j-1} \Delta h_{d,j-1+gt}} \right) f_{j - 1} - 
+   \left( \frac{k_{d,j-1+gt}}{\Delta h_{p,j-1} \Delta h_{d,j-1+gt}} + \frac{k_{d,j+gt}}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right) f_{j} + 
+   \left( \frac{k_{d,j+gt}}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right) f_{j+1}
+\end{equation}
+
+Where
+\begin{equation}
+ gt = 
+\begin{cases} 
+    0 & \text{if $u \in $ N} \\
+    1 & \text{if $u \in $ CC} \\
+ \end{cases}
+\end{equation} 
+
+And in the case of uniform properties, we have
+
+\begin{equation}
+\frac{\partial}{\partial h} \left( \frac{\partial f}{\partial h} \right)
+ = \left( \frac{1}{\Delta h_{p,j-1} \Delta h_{d,j-1+gt}} \right) f_{j - 1} - 
+   \left( \frac{1}{\Delta h_{p,j-1} \Delta h_{d,j-1+gt}} + \frac{1}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right) f_{j} + 
+   \left( \frac{1}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right) f_{j+1}
+\end{equation}
+
+
+\[
+Af = 
+\left[
+\begin{array}{ccccccccc}
+D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
+L_{1} & D_{2} & U_{2} &   &   &   &   &   &   \\
+  & L_{2} & D_{3} & U_{3} &   &   &   &   &   \\
+  &   & \ddots & \ddots & \ddots &   &   &   &   \\
+  &   &   & L_{j-1} & D_{j} & U_{j} &   &   &   \\
+  &   &   &   & \ddots & \ddots & \ddots &   &   \\
+  &   &   &   &   & L_{s-3} & D_{s-2} & U_{s-2} &   \\
+  &   &   &   &   &   & L_{s-2} & D_{s-1} & U_{s-1} \\
+0 &   &   &   &   &   &   & L_{s-1} & D_{s}
+\end{array}
+\right]
+\left[ \begin{array}{c}
+f_{p,1} \\ f_{p,2} \\ \vdots \\ f_{p,j-1} \\ f_{p,j} \\ f_{p,j+1} \\ \vdots \\ f_{p,s-1} \\ f_{p,s}
+\end{array} \right]
+ = \left( \frac{\partial f_{p}}{\partial h} \right)_{p,j}
+\]
+
+From the above equations, it is clear that
+
+\begin{equation}
+  D_j = -\left( \frac{1}{\Delta h_{p,j-1} \Delta h_{d,j-1+gt}} + \frac{1}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right), \qquad j \in (2,s-1)
+\end{equation}
+
+\begin{equation}
+  L_j = \left( \frac{1}{\Delta h_{p,j-1} \Delta h_{d,j-1+gt}} \right), \qquad
+  U_j = \left( \frac{1}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right), \qquad j \in (2,s-1)
+\end{equation}
+
+\subsection{Boundaries}
+One-sided difference equations must be used at the boundaries in order to maintain 2nd order accuracy. Ghost cells are linearly extrapolated, which allows for simple BCs for the PPE. The extra data point can be used to our advantage because the boundary value is then easily obtained.
+
+For CC data, a weighted interior difference equation is used with half of the cell distance is used and the boundary value is computed by linear interpolation. For N data, a one-sided difference equation is used with the boundary value, again computed by linear interpolation. Each of these formulas are discussed in the next section.
+
+For convenience, the grid is shown again here:
+
+\begin{figure}[h!]
+  \begin{center}
+    \begin{tikzpicture}
+      \draw [black] (0,0) to (2*\Deltah,0);
+      \draw [black,dashed] (2*\Deltah,0) to (4*\Deltah,0);
+      \draw [black] (4*\Deltah,0) to (6*\Deltah,0);
+
+      % Nodes
+      \draw [black] (0*\Deltah,-\height) to (0+0*\Deltah,\height);
+      \draw [black] (1*\Deltah,-\height) to (0+1*\Deltah,\height);
+      \draw [black] (2*\Deltah,-\height) to (0+2*\Deltah,\height);
+      \draw [black] (4*\Deltah,-\height) to (0+4*\Deltah,\height);
+      \draw [black] (5*\Deltah,-\height) to (0+5*\Deltah,\height);
+      \draw [black] (6*\Deltah,-\height) to (0+6*\Deltah,\height);
+
+      % CCs
+      \draw [black] (0*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (1*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (4*\Deltah+\Deltah/2,0) circle [radius=\radius];
+      \draw [black] (5*\Deltah+\Deltah/2,0) circle [radius=\radius];
+
+      \draw (0*\Deltah,0) node [black,below=\offSet] {$f_{n,1}$};
+      \draw (1*\Deltah,0) node [black,below=\offSet] {$f_{n,2}$};
+      \draw (2*\Deltah,0) node [black,below=\offSet] {$f_{n,3}$};
+      \draw (4*\Deltah,0) node [black,below=\offSet] {$f_{n,sn-2}$};
+      \draw (5*\Deltah,0) node [black,below=\offSet] {$f_{n,sn-1}$};
+      \draw (6*\Deltah,0) node [black,below=\offSet] {$f_{n,sn}$};
+
+      \draw (0*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{c,1}$};
+      \draw (1*\Deltah+\Deltah/2,0) node [black,below=\offSet] {$f_{c,2}$};
+      \draw (5*\Deltah-\Deltah/2,0) node [black,below=\offSet] {$f_{c,sc-1}$};
+      \draw (6*\Deltah-\Deltah/2,0) node [black,below=\offSet] {$f_{c,sc}$};
+
+    \end{tikzpicture}
+    \caption{Index convention for node / face centered data}
+  \end{center}
+\end{figure}
+
+\subsubsection{Boundary treatment for CC data}
+
+
+\subsubsection{Boundary treatment for N data}
+
+
+\end{document}

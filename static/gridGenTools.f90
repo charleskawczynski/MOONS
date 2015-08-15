@@ -497,6 +497,11 @@
          deallocate(temp)
        end subroutine
 
+       subroutine reverseIndex_new(h)
+         real(cp),dimension(:),intent(inout) :: h
+         h = h(size(h):1:-1)
+       end subroutine
+
        subroutine defineGhostPoints(h)
          implicit none
          real(cp),dimension(:),intent(inout) :: h

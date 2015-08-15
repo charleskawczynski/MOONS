@@ -150,10 +150,10 @@
           ! FACE/EDGE-DATA IS NOT SUPPORTED AND CANNOT BE SIMPLY 
           ! SINCE THE NUMBER OF DATA POINTS DIFFERS BY 1 BETWEEN
           ! EACH DIRECTION FOR STAGGERED DATA.
-          if ((s(1).eq.g_base%c(1)%sn).and.(allNeumann(mg(1)%u_bcs))) bctype = 4       ! Neumann wall coincident
-          if ((s(1).eq.g_base%c(1)%sc).and.(allNeumann(mg(1)%u_bcs))) bctype = 5       ! Neumann wall incoincident
-          if ((s(1).eq.g_base%c(1)%sn).and.(.not.allNeumann(mg(1)%u_bcs))) bctype = 1  ! Dirichlet wall coincident
-          if ((s(1).eq.g_base%c(1)%sc).and.(.not.allNeumann(mg(1)%u_bcs))) bctype = 2  ! Dirichlet wall incoincident
+          if ((s(1).eq.g_base%c(1)%sn).and.(getAllNeumann(mg(1)%u_bcs))) bctype = 4       ! Neumann wall coincident
+          if ((s(1).eq.g_base%c(1)%sc).and.(getAllNeumann(mg(1)%u_bcs))) bctype = 5       ! Neumann wall incoincident
+          if ((s(1).eq.g_base%c(1)%sn).and.(.not.getAllNeumann(mg(1)%u_bcs))) bctype = 1  ! Dirichlet wall coincident
+          if ((s(1).eq.g_base%c(1)%sc).and.(.not.getAllNeumann(mg(1)%u_bcs))) bctype = 2  ! Dirichlet wall incoincident
           call setAllZero(mg(j)%u_bcs,N(1),N(2),N(3),bctype)
 
         enddo

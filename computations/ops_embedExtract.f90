@@ -29,7 +29,7 @@
        public :: embedCC
        public :: embedN
 
-       logical,parameter :: includeTF = .true.
+       logical,parameter :: includeTF = .false.
        integer,parameter :: includeDir = 0 ! (does nothing if includeTF = .false.)
                                        ! 0 (include all directions)
                                        ! 
@@ -78,11 +78,14 @@
          SD%N     = Ni+Nwtop+Nwbot
          SD%s     = (/(g%c(i)%sc,i=1,3)/)
          SD%Nin1  = Nwbot+2
-         SD%Nin2  = SD%N-Nwtop+2
          SD%Nice1 = Nwbot+2
-         SD%Nice2 = SD%N-Nwtop+1
          SD%Nici1 = Nwbot+1
-         SD%Nici2 = SD%N-Nwtop+2
+         ! SD%Nin2  = SD%N-Nwtop+2 ! or Ni+Nwbot+2
+         ! SD%Nice2 = SD%N-Nwtop+1 ! or Ni+Nwbot+1
+         ! SD%Nici2 = SD%N-Nwtop+2 ! or Ni+Nwbot+2
+         SD%Nin2  = Ni+Nwbot+2
+         SD%Nice2 = Ni+Nwbot+1
+         SD%Nici2 = Ni+Nwbot+2
        end subroutine
 
        ! *********************************************************************************

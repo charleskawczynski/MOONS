@@ -1,4 +1,5 @@
        module coordinates_mod
+       use triDiag_mod
        use IO_tools_mod
        implicit none
 
@@ -33,6 +34,9 @@
          real(cp),dimension(:),allocatable :: hc   ! Cell center coordinates
          real(cp),dimension(:),allocatable :: dhn  ! Difference in cell corner coordinates
          real(cp),dimension(:),allocatable :: dhc  ! Difference in cell center coordinates
+         type(triDiag) :: stagCC2N,stagN2CC
+         type(triDiag) :: lapCC,lapN
+         type(triDiag) :: colCC,colN
        end type
 
        interface init;      module procedure initCoordinates;        end interface
@@ -98,14 +102,14 @@
          type(coordinates),intent(in) :: d
          call delete(c)
          ! Node grid
-         c%sn = d%sn
+         c%sn = size(d%hn)
          allocate(c%hn(c%sn))
          allocate(c%dhn(c%sn-1))
          c%hn = d%hn
          c%dhn = d%dhn
 
          ! Cell center grid
-         c%sc = d%sc
+         c%sc = size(d%hc)
          allocate(c%hc(c%sc))
          allocate(c%dhc(c%sc-1))
          c%hc = d%hc
@@ -154,10 +158,124 @@
          ! Additional information
          c%dhMin = minval(c%dhn)
          c%dhMax = maxval(c%dhn)
-         c%hmin = c%hn(2); c%hmax = c%hn(c%sn-1) ! To account for ghost node
+         c%hmin = c%hn(2)
+         c%hmax = c%hn(c%sn-1) ! To account for ghost node
          c%maxRange = c%hmax-c%hmin
          c%N = size(c%hc)-2
+         call genStencils(c)
        end subroutine
+
+       ! *****************************************************************
+       ! ********************** DERIVATIVE STENCILS **********************
+       ! *****************************************************************
+
+       subroutine genStencils(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        call stencil_lapCC(c)
+        call stencil_lapN(c)
+        call stencil_stagCC2N(c)
+        call stencil_stagN2CC(c)
+        call stencil_colCC(c)
+        call stencil_colN(c)
+       end subroutine
+
+       subroutine stencil_lapCC(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: L,D,U
+        integer :: i,gt
+        gt = 1
+        allocate(L(c%sc-1)); allocate(D(c%sc)); allocate(U(c%sc-1))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        D(2:c%sc-1) = -(/(1.0_cp/(c%dhc(i-1)*c%dhn(i-1+gt))+1.0_cp/(c%dhc(i)*c%dhn(i-1+gt)),i=2,c%sc-1)/)
+        L(1:c%sc-2) =  (/(1.0_cp/(c%dhc(i-1)*c%dhn(i-1+gt)),i=2,c%sc-1)/)
+        U(2:c%sc-1) =  (/(1.0_cp/(c%dhc( i )*c%dhn(i-1+gt)),i=2,c%sc-1)/)
+        call init(c%lapCC,L,D,U)
+        deallocate(L,D,U)
+       end subroutine
+
+       subroutine stencil_lapN(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: L,D,U
+        integer :: i,gt
+        gt = 0
+        allocate(L(c%sn-1)); allocate(D(c%sn)); allocate(U(c%sn-1))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        D(2:c%sn-1) = -(/(1.0_cp/(c%dhn(i-1)*c%dhc(i-1+gt))+1.0_cp/(c%dhn(i)*c%dhc(i-1+gt)),i=2,c%sn-1)/)
+        L(1:c%sn-2) =  (/(1.0_cp/(c%dhn(i-1)*c%dhc(i-1+gt)),i=2,c%sn-1)/)
+        U(2:c%sn-1) =  (/(1.0_cp/(c%dhn( i )*c%dhc(i-1+gt)),i=2,c%sn-1)/)
+        call init(c%lapN,L,D,U)
+        deallocate(L,D,U)
+       end subroutine
+
+       subroutine stencil_colCC(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: L,D,U,denom
+        integer :: i
+        allocate(L(c%sc-1)); allocate(D(c%sc)); allocate(U(c%sc-1))
+        allocate(denom(c%sc-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        denom = (/(c%dhc(i-1)*c%dhc(i)*(c%dhc(i-1)+c%dhc(i)),i=2,c%sc-1)/)
+        D(2:c%sc-1) = (/((c%dhc(i)**2.0_cp-c%dhc(i-1)**2.0_cp)/denom(i-1),i=2,c%sc-1)/)
+        L(1:c%sc-2) = (/((-c%dhc(i)**2.0_cp)/denom(i-1),i=2,c%sc-1)/)
+        U(2:c%sc-1) = (/((c%dhc(i-1)**2.0_cp)/denom(i-1),i=2,c%sc-1)/)
+        call init(c%lapCC,L,D,U)
+        deallocate(L,D,U,denom)
+       end subroutine
+
+       subroutine stencil_colN(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: L,D,U,denom
+        integer :: i
+        allocate(L(c%sn-1)); allocate(D(c%sn)); allocate(U(c%sn-1))
+        allocate(denom(c%sn-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        denom = (/(c%dhn(i-1)*c%dhn(i)*(c%dhn(i-1)+c%dhn(i)),i=2,c%sn-1)/)
+        D(2:c%sn-1) = (/((c%dhn(i)**2.0_cp-c%dhn(i-1)**2.0_cp)/denom(i-1),i=2,c%sn-1)/)
+        L(1:c%sn-2) = (/((-c%dhn(i)**2.0_cp)/denom(i-1),i=2,c%sn-1)/)
+        U(2:c%sn-1) = (/((c%dhn(i-1)**2.0_cp)/denom(i-1),i=2,c%sn-1)/)
+        call init(c%lapCC,L,D,U)
+        deallocate(L,D,U,denom)
+       end subroutine
+
+       subroutine stencil_stagCC2N(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: D,U
+        integer :: i
+        allocate(D(c%sc-1)); allocate(U(c%sc-1))
+        D = 0.0_cp; U = 0.0_cp
+        D = (/(1.0_cp/c%dhc(i),i=1,c%sc-1)/)
+        U = (/(1.0_cp/c%dhc(i),i=1,c%sc-1)/)
+        call initD(c%stagCC2N,D)
+        call initU(c%stagCC2N,U)
+        deallocate(D,U)
+       end subroutine
+
+       subroutine stencil_stagN2CC(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: D,U
+        integer :: i
+        allocate(D(c%sn-1)); allocate(U(c%sn-1))
+        D = 0.0_cp; U = 0.0_cp
+        D = (/(1.0_cp/c%dhn(i),i=1,c%sn-1)/)
+        U = (/(1.0_cp/c%dhn(i),i=1,c%sn-1)/)
+        call initD(c%stagN2CC,D)
+        call initU(c%stagN2CC,U)
+        deallocate(D,U)
+       end subroutine
+
+       ! *****************************************************************
+       ! *****************************************************************
+       ! *****************************************************************
+
+
+       ! ----------------- RESTRICTION (FOR MULTIGRID) -----------------
 
        subroutine restrictCoordinates(r,c)
          ! Restriction for bad cases should only be allowed ~1 time
@@ -180,6 +298,8 @@
          else; call init(r,c) ! return c
          endif
        end subroutine
+
+       ! ---------------------------------------------------------------
 
        subroutine addGhostNodes(c)
          implicit none

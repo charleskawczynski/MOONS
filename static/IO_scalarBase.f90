@@ -60,13 +60,9 @@
           endif
         endif
 
-        do k = 1,sz
-          do j = 1,sy
-            do i = 1,sx
+        do k = 1,sz; do j = 1,sy; do i = 1,sx
               read(un,'(4'//rarrfmt//')') x(i),y(j),z(k),arr(i,j,k)
-            enddo
-          enddo
-        enddo
+        enddo; enddo; enddo
         call closeExisting(un,name,dir)
       end subroutine
 
@@ -88,17 +84,12 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+        else; if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
         endif
 
-        do k = 1,sz
-          do j = 1,sy
-            do i = 1,sx
+        do k = 1,sz; do j = 1,sy; do i = 1,sx
               write(u,'(4'//arrfmt//')') x(i),y(j),z(k),arr(i,j,k)
-            enddo
-          enddo
-        enddo
+        enddo; enddo; enddo
         call closeAndMessage(u,name,dir)
       end subroutine
 
@@ -114,17 +105,12 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+        else; if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
         endif
 
-        do k = 1,sz
-          do j = 1,sy
-            do i = 1,sx
+        do k = 1,sz; do j = 1,sy; do i = 1,sx
               write(u,'(4'//arrfmt//')') x(i),y(j),z(k),val
-            enddo
-          enddo
-        enddo
+        enddo; enddo; enddo
         call closeAndMessage(u,name,dir)
       end subroutine
 
@@ -139,8 +125,7 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name)
+        else; if (headerTecplot) call writeTecPlotHeader(u,name)
         endif
 
         do i = 1,s
@@ -160,8 +145,7 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name)
+        else; if (headerTecplot) call writeTecPlotHeader(u,name)
         endif
 
         do i = 1,s
@@ -186,8 +170,7 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx)
+        else; if (headerTecplot) call writeTecPlotHeader(u,name,sx)
         endif
 
         do i = 1,sx
@@ -209,15 +192,12 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeaderTransient(u,name,sx,sy,n)
-        else
-          if (headerTecplot) call writeTecPlotHeaderTransient(u,name,sx,sy,n)
+        else; if (headerTecplot) call writeTecPlotHeaderTransient(u,name,sx,sy,n)
         endif
 
-        do j = 1,sy
-          do i = 1,sx
-            write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
-          enddo
-        enddo
+        do j = 1,sy;  do i = 1,sx
+          write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
+        enddo;  enddo
         call closeAndMessage(u,trim(adjustl(name))//trim(adjustl(ext)),dir)
       end subroutine
 
@@ -233,15 +213,12 @@
 
         if (present(headerTecplotTemp)) then
           if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy)
-        else
-          if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy)
+        else; if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy)
         endif
 
-        do j = 1,sy
-          do i = 1,sx
-            write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
-          enddo
-        enddo
+        do j = 1,sy;  do i = 1,sx
+          write(u,'(3'//arrfmt//')') x(i),y(j),arr(i,j)
+        enddo;  enddo
         call closeAndMessage(u,trim(adjustl(name)),dir)
       end subroutine
 

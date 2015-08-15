@@ -41,7 +41,7 @@
        public :: setPiGroups
 
        public :: export,exportRaw,exportTransient
-       public :: printExportBCs
+       public :: printExportBCs,exportMaterial
        public :: computeAddJCrossB,computeJCrossB
 
        public :: computeDivergence
@@ -64,7 +64,7 @@
        type induction
          character(len=9) :: name = 'induction'
          ! --- Vector fields ---
-         type(VF) :: B,Bstar,B0,B_face                ! CC data
+         type(VF) :: B,dB0dt,Bstar,B0,B_face          ! CC data
          type(VF) :: J,J_cc,E,temp_E                  ! Edge data
          ! type(VF),dimension(0:1) :: B                 ! CC data - Applied, and induced fields
 
@@ -123,6 +123,7 @@
        interface exportTransient;      module procedure inductionExportTransient;      end interface
        interface exportTransientFull;  module procedure inductionExportTransientFull;  end interface
        interface computeDivergence;    module procedure computeDivergenceInduction;    end interface
+       interface exportMaterial;       module procedure inductionExportMaterial;       end interface
 
        interface setDTime;             module procedure setDTimeInduction;             end interface
 
@@ -151,6 +152,7 @@
          call init(ind%J_cc,ind%B)
          call init(ind%U_cct,ind%B)
          call init(ind%temp_CC,ind%B)
+         call init(ind%dB0dt,ind%B)
 
          ! Edge Data
          call allocateX(ind%J,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
@@ -255,6 +257,7 @@
 
          ! Initialize multigrid
          ! if (cleanB) call init(ind%MG,ind%phi%s,ind%phi_bcs,ind%g,ind%ss_cleanB,.false.)
+         call inductionInfo(ind,newAndOpen(dir//'parameters/','info_ind'))
 
          if (restartB) then
          call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
@@ -271,6 +274,7 @@
          call delete(ind%B)
          call delete(ind%Bstar)
          call delete(ind%B0)
+         call delete(ind%dB0dt)
 
          call delete(ind%U_cct)
          call delete(ind%U_Ft)
@@ -461,36 +465,47 @@
          endif
        end subroutine
 
-       subroutine inductionInfo(ind,ss_MHD,un)
+       subroutine inductionExportMaterial(ind,dir)
+         implicit none
+         type(induction),intent(in) :: ind
+         character(len=*),intent(in) :: dir
+         type(SF) :: tempSFn
+         integer :: i
+         if (solveInduction) then
+           call init(tempSFn,(/(ind%g%c(i)%sn,i=1,3)/))
+           call cellCenter2Node(tempSFn%phi,ind%sigma%phi,ind%g)
+           call treatInterface(tempSFn%phi)
+           call writeToFile(ind%g,tempSFn%phi,dir//'material/','sigman')
+         endif
+       end subroutine
+
+       subroutine inductionInfo(ind,un)
          ! Use un = 6 to print to screen
          implicit none
          type(induction),intent(in) :: ind
-         type(solverSettings),intent(inout) :: ss_MHD
          integer,intent(in) :: un
-         if (getPrintParams(ss_MHD)) then
-           write(un,*) '**************************************************************'
-           write(un,*) '************************** MAGNETIC **************************'
-           write(un,*) '**************************************************************'
-           write(un,*) '(Rem) = ',ind%Rem
-           write(un,*) '(t,dt) = ',ind%t,ind%dTime
-           write(un,*) ''
-           write(un,*) 'N_cells = ',(/ind%g%c(1)%N,ind%g%c(2)%N,ind%g%c(3)%N/)
-           write(un,*) 'volume = ',ind%g%volume
-           write(un,*) 'min/max(h)_x = ',(/ind%g%c(1)%hmin,ind%g%c(1)%hmax/)
-           write(un,*) 'min/max(h)_y = ',(/ind%g%c(2)%hmin,ind%g%c(2)%hmax/)
-           write(un,*) 'min/max(h)_z = ',(/ind%g%c(3)%hmin,ind%g%c(3)%hmax/)
-           write(un,*) 'min/max(dh)_x = ',(/ind%g%c(1)%dhMin,ind%g%c(1)%dhMax/)
-           write(un,*) 'min/max(dh)_y = ',(/ind%g%c(2)%dhMin,ind%g%c(2)%dhMax/)
-           write(un,*) 'min/max(dh)_z = ',(/ind%g%c(3)%dhMin,ind%g%c(3)%dhMax/)
-           write(un,*) 'stretching_x = ',ind%g%c(1)%dhMax-ind%g%c(1)%dhMin
-           write(un,*) 'stretching_y = ',ind%g%c(2)%dhMax-ind%g%c(2)%dhMin
-           write(un,*) 'stretching_z = ',ind%g%c(3)%dhMax-ind%g%c(3)%dhMin
-           write(un,*) ''
-           call printPhysicalMinMax(ind%B,'Bx','By','Bz')
-           call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
-           call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
-           call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
-         endif
+         write(un,*) '**************************************************************'
+         write(un,*) '************************** MAGNETIC **************************'
+         write(un,*) '**************************************************************'
+         write(un,*) '(Rem) = ',ind%Rem
+         write(un,*) '(t,dt) = ',ind%t,ind%dTime
+         write(un,*) ''
+         write(un,*) 'N_cells = ',(/ind%g%c(1)%N,ind%g%c(2)%N,ind%g%c(3)%N/)
+         write(un,*) 'volume = ',ind%g%volume
+         write(un,*) 'min/max(h)_x = ',(/ind%g%c(1)%hmin,ind%g%c(1)%hmax/)
+         write(un,*) 'min/max(h)_y = ',(/ind%g%c(2)%hmin,ind%g%c(2)%hmax/)
+         write(un,*) 'min/max(h)_z = ',(/ind%g%c(3)%hmin,ind%g%c(3)%hmax/)
+         write(un,*) 'min/max(dh)_x = ',(/ind%g%c(1)%dhMin,ind%g%c(1)%dhMax/)
+         write(un,*) 'min/max(dh)_y = ',(/ind%g%c(2)%dhMin,ind%g%c(2)%dhMax/)
+         write(un,*) 'min/max(dh)_z = ',(/ind%g%c(3)%dhMin,ind%g%c(3)%dhMax/)
+         write(un,*) 'stretching_x = ',ind%g%c(1)%dhMax-ind%g%c(1)%dhMin
+         write(un,*) 'stretching_y = ',ind%g%c(2)%dhMax-ind%g%c(2)%dhMin
+         write(un,*) 'stretching_z = ',ind%g%c(3)%dhMax-ind%g%c(3)%dhMin
+         write(un,*) ''
+         call printPhysicalMinMax(ind%B,'Bx','By','Bz')
+         call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
+         call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
+         call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
        end subroutine
 
        subroutine inductionExportTransientFull(ind,g,dir)
@@ -516,13 +531,13 @@
            call cellCenter2Node(tempVFn,ind%B,g)
            call cellCenter2Node(tempVFn2,ind%B0,g)
            call add(tempVFn,tempVFn2)
-           call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
-           'Btotxnt_phys',&
-           'Btotynt_phys',&
-           'Btotznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
+           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
+           ! 'Btotxnt_phys',&
+           ! 'Btotynt_phys',&
+           ! 'Btotznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
-           !call writeScalarPhysicalPlane(g,tempVFn%x,dir//'Bfield/transient/',&
-           !'Bxnt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
+           call writeScalarPhysicalPlane(g,tempVFn%z,dir//'Bfield/transient/',&
+           'Bznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
            ! call cellCenter2Node(tempVFn,ind%J_cc,g)
            ! call writeScalarPhysicalPlane(g,tempVFn%z,dir//'Jfield/transient/',&
@@ -551,30 +566,31 @@
          character(len=*),intent(in) :: dir
          logical :: exportNow
          ! ********************** LOCAL VARIABLES ***********************
-         ! ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
-         ! ind%B0%y = real(exp(dble(-ind%omega*ind%t)),cp)
-         ! ind%B0%z = real(1.0,cp)
+         ! ind%B0%x = exp(-ind%omega*ind%t)
+         ! ind%B0%y = exp(-ind%omega*ind%t)
+         ! ind%B0%z = 1.0_cp
 
-         ! ind%B0%x = real(exp(dble(-ind%omega*ind%t)),cp)
-         ! ind%B0%y = real(0.0,cp)
-         ! ind%B0%z = real(0.0,cp)
+         ! ind%B0%x = exp(-ind%omega*ind%t)
+         ! ind%B0%y = 0.0_cp
+         ! ind%B0%z = 0.0_cp
 
-         ! ind%B0%x = real(0.0,cp)
-         ! ind%B0%y = real(0.0,cp)
+         ! ind%B0%x = 0.0_cp
+         ! ind%B0%y = 0.0_cp
          ! ind%B0%z = exp(-ind%omega*ind%t)
-         call assign(ind%temp_CC,0.0_cp)
 
          call embedVelocity(ind,U,g_mom)
+
+         call assign(ind%dB0dt,0.0_cp)
+         call assignZ(ind%dB0dt,ind%omega*exp(-ind%omega*ind%t))
 
          select case (solveBMethod)
          case (1); call lowRemPoisson(ind,ind%U_cct,ind%g,ss_MHD)
          case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,ind%g)
          case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%g)
          case (4); call lowRemCTmethod(ind,ind%g)
-         case (5); call finiteRemCTmethod(ind,ind%temp_CC,ind%g)
-         case (6); call LowRem_semi_implicit_ADI(ind,ind%U_cct,ind%g,ss_MHD)
+         case (5); call finiteRemCTmethod(ind,ind%dB0dt,ind%g)
+         case (6); call lowRem_ADI(ind,ind%U_cct,ind%g,ss_MHD)
          case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g)
-         case (8); call lowRem_JacksExperiment(ind,ind%U_cct,ind%g)
          end select
          if (cleanB) then
            call cleanBSolution(ind,ind%g,ss_MHD)
@@ -589,13 +605,16 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          call computeTotalMagneticEnergy(ind,ss_MHD)
-         ! call computeTotalMagneticEnergyFluid(ind,g_mom,ss_MHD)
+         call computeTotalMagneticEnergyFluid(ind,g_mom,ss_MHD)
          call exportTransient(ind,ss_MHD)
+
+         ! call inductionExportTransientFull(ind,ind%g,dir) ! VERY Expensive
 
          if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%g)
          if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
 
          if (getPrintParams(ss_MHD)) then
+           call inductionInfo(ind,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowB')
          else; exportNow = .false.
          endif
@@ -608,7 +627,6 @@
            call export(ind,ind%g,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
-         call inductionInfo(ind,ss_MHD,6)
        end subroutine
 
        subroutine lowRemPoissonOld(ind,U,g,ss_MHD)
@@ -810,7 +828,7 @@
          call applyAllBCs(ind%B,ind%B_bcs,g)
        end subroutine
 
-       subroutine LowRem_semi_implicit_ADI(ind,U,g,ss_MHD)
+       subroutine lowRem_ADI(ind,U,g,ss_MHD)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
@@ -973,19 +991,91 @@
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
-
          select case (solveBMethod)
          case (5,6) ! Finite Rem
-
            call add(ind%Bstar,ind%B,ind%B0)
            call curl(ind%J_cc,ind%B,ind%g)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
-
          case default ! Low Rem
+           call curl(ind%J_cc,ind%B,ind%g)
+           call cross(ind%temp_CC,ind%J_cc,ind%B0)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/Re)
+         end select
+       end subroutine
 
+       subroutine computeJCrossB_Bface(jcrossB,ind,g_mom,Ha,Re,Rem)
+         ! computes
+         ! 
+         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
+         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
+         ! 
+         implicit none
+         type(VF),intent(inout) :: jcrossB
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g_mom
+         real(cp),intent(in) :: Ha,Re,Rem
+         select case (solveBMethod)
+         case (5,6) ! Finite Rem
+           call add(ind%Bstar,ind%B,ind%B0)
+           call curl(ind%J,ind%B,ind%g)
+           ! call edge2Face(ind%temp_F,ind%J,ind%g)
+
+           call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
+         case default ! Low Rem
+           call curl(ind%J_cc,ind%B,ind%g)
+           call cross(ind%temp_CC,ind%J_cc,ind%B0)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/Re)
+         end select
+       end subroutine
+
+       subroutine computeJCrossB_new(jcrossB,ind,g_mom,Ha,Re,Rem)
+         ! computes
+         ! 
+         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
+         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
+         ! 
+         implicit none
+         type(VF),intent(inout) :: jcrossB
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g_mom
+         real(cp),intent(in) :: Ha,Re,Rem
+
+         ! Magnetic Pressure (not yet done)
+         select case (solveBMethod)
+         case (5,6) ! Finite Rem
+           call add(ind%Bstar,ind%B,ind%B0)
+           call square(ind%Bstar)
+           call divide(ind%Bstar,2.0_cp)
+           ! call grad(ind%jCrossB_F,ind%Bstar,ind%g)
+           call multiply(ind%jCrossB_F,-1.0_cp)
+         case default ! Low Rem
+           call curl(ind%J_cc,ind%B,ind%g)
+           call cross(ind%temp_CC,ind%J_cc,ind%B0)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/Re)
+         end select
+
+         ! Magnetic Stress (not yet done)
+         select case (solveBMethod)
+         case (5,6) ! Finite Rem
+           call add(ind%Bstar,ind%B,ind%B0)
+           call curl(ind%J_cc,ind%B,ind%g)
+           call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
+         case default ! Low Rem
            call curl(ind%J_cc,ind%B,ind%g)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)

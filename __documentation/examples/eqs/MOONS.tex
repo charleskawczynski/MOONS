@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{tabularx, multirow, booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{xspace}
+\usepackage{mathtools}
+% \usepackage{epsfig}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+% \usepackage{floatrow}
+\usepackage{subcaption}
+
+\renewcommand{\tabularxcolumn}[1]{>{\small}m{#1}}
+% \def\tabularxcolumn#1{m{#1}}
+\newenvironment{tightcenter}
+{\par\centering}
+{\par}
+\begin{document}
+
+% \begin{tabularx}{0.45\textwidth}{>{\centering}m{1in} >{\centering}m{1in} >{\centering}m{1in}}
+%   \begin{equation}\label{eq:divU}
+%     \nabla \bullet \mathbf{u} = 0 , \notag
+%     \addtocounter{equation}{1}
+%   \end{equation}  &
+%   \begin{equation}\label{eq:divB}
+%     \nabla \bullet \mathbf{B} = 0 .    \notag
+%     \addtocounter{equation}{1}
+%   \end{equation} &
+%     (\ref{eq:divU},\ref{eq:divB})
+% \end{tabularx}
+
+
+\begin{tabularx}{0.5\textwidth}{>{\tightcenter}m{1in} >{\tightcenter}m{1in} >{\tightcenter}m{1in}}
+  \hline
+  \begin{equation}\label{eq:divU}
+    \nabla \bullet \mathbf{u} = 0 , \notag
+    \addtocounter{equation}{1}
+  \end{equation}
+  &
+  \begin{equation}\label{eq:divB}
+    \nabla \bullet \mathbf{B} = 0 .    \notag
+    \addtocounter{equation}{1}
+  \end{equation} &
+    (3,4) % (\ref{eq:divU},\ref{eq:divB})
+\end{tabularx}
+
+% \begin{tabularx}{0.8\textwidth}{XXX}
+%   \begin{equation}\label{eq:divU}
+%     \nabla \bullet \mathbf{u} = 0 , \notag
+%     \addtocounter{equation}{1}
+%   \end{equation}  &
+%   \begin{equation}\label{eq:divB}
+%     \nabla \bullet \mathbf{B} = 0 .    \notag
+%     \addtocounter{equation}{1}
+%   \end{equation} &
+%     (\ref{eq:divU},\ref{eq:divB})
+% \end{tabularx}
+
+
+% \begin{tabular}{ccc}
+%   \begin{equation}\label{eq:divU}
+%     \nabla \myCdot \mathbf{u} = 0 , \notag
+%     \addtocounter{equation}{1}
+%   \end{equation}  &
+%   \begin{equation}\label{eq:divB}
+%     \nabla \myCdot \mathbf{B} = 0 .    \notag
+%     \addtocounter{equation}{1}
+%   \end{equation} &
+%     (\ref{eq:divU},\ref{eq:divB}) \\
+% \end{tabular}
+
+
+\end{document}

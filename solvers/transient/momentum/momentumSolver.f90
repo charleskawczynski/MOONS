@@ -225,6 +225,11 @@
 
          write(*,*) '     momentum probes initialized'
 
+
+         ! Initialize interior solvers
+         call init(mom%SOR_p,mom%p%s,mom%g)
+         write(*,*) '     momentum SOR initialized'
+
          ! Initialize solver settings
          call init(mom%ss_ppe)
          call setName(mom%ss_ppe,'pressure poisson    ')
@@ -246,6 +251,8 @@
          else; mom%nstep = 0
          endif
          call init(mom%KU_energy,dir//'Ufield\','KU',.not.restartU)
+
+         call momentumInfo(mom,newAndOpen(dir//'parameters/','info_mom'))
          mom%t = 0.0_cp
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
@@ -280,10 +287,11 @@
          call delete(mom%transient_ppe)
          call delete(mom%transient_divU);
          call delete(mom%u_symmetry)
-         call delete(mom%g)
          call delete(mom%temp_E1)
          call delete(mom%temp_E2)
+         call delete(mom%g)
 
+         call delete(mom%SOR_p)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -382,6 +390,9 @@
          Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
          call init(tempNVF,Nx,Ny,Nz)
          call face2Node(tempNVF,mom%u,g)
+
+         ! call init(DS,dir//'Ufield/','uni','vni','wni'); call writeToFile(g,tempNVF,DS)
+
          call writeToFile(g,tempNVF,dir//'Ufield/','uni','vni','wni')
          call writeVecPhysical(g,tempNVF,dir//'Ufield/','uni_phys','vni_phys','wni_phys')
          call delete(tempNVF)
@@ -397,42 +408,39 @@
          write(*,*) '     finished'
        end subroutine
 
-       subroutine momentumInfo(mom,ss_MHD,un)
+       subroutine momentumInfo(mom,un)
          ! Use un = 6 to print to screen
          implicit none
          type(momentum),intent(in) :: mom
-         type(solverSettings),intent(in) :: ss_MHD
          integer,intent(in) :: un
-         if (getPrintParams(ss_MHD)) then
-           write(un,*) '**************************************************************'
-           write(un,*) '************************** MOMENTUM **************************'
-           write(un,*) '**************************************************************'
-           write(un,*) '(Re,Ha) = ',mom%Re,mom%Ha
-           write(un,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
-           write(un,*) '(t,dt) = ',mom%t,mom%dTime
-           write(un,*) 'Kolmogorov Length = ',mom%L_eta
-           write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
-           write(un,*) 'Kolmogorov Time = ',mom%t_eta
-           write(un,*) ''
-           write(un,*) 'N_cells = ',(/mom%g%c(1)%N,mom%g%c(2)%N,mom%g%c(3)%N/)
-           write(un,*) 'volume = ',mom%g%volume
-           write(un,*) 'min/max(h)_x = ',(/mom%g%c(1)%hmin,mom%g%c(1)%hmax/)
-           write(un,*) 'min/max(h)_y = ',(/mom%g%c(2)%hmin,mom%g%c(2)%hmax/)
-           write(un,*) 'min/max(h)_z = ',(/mom%g%c(3)%hmin,mom%g%c(3)%hmax/)
-           write(un,*) 'min/max(dh)_x = ',(/mom%g%c(1)%dhMin,mom%g%c(1)%dhMax/)
-           write(un,*) 'min/max(dh)_y = ',(/mom%g%c(2)%dhMin,mom%g%c(2)%dhMax/)
-           write(un,*) 'min/max(dh)_z = ',(/mom%g%c(3)%dhMin,mom%g%c(3)%dhMax/)
-           write(un,*) 'stretching_x = ',mom%g%c(1)%dhMax-mom%g%c(1)%dhMin
-           write(un,*) 'stretching_y = ',mom%g%c(2)%dhMax-mom%g%c(2)%dhMin
-           write(un,*) 'stretching_z = ',mom%g%c(3)%dhMax-mom%g%c(3)%dhMin
-           write(un,*) ''
-           call printPhysicalMinMax(mom%U,'u','v','w')
-           call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
-           call printPhysicalMinMax(mom%Fo_grid%phi,mom%Fo_grid%s,'Fo_grid')
-           call printPhysicalMinMax(mom%Co_grid%phi,mom%Co_grid%s,'Co_grid')
-           call printPhysicalMinMax(mom%Re_grid%phi,mom%Re_grid%s,'Re_grid')
-           write(*,*) ''
-         endif
+         write(un,*) '**************************************************************'
+         write(un,*) '************************** MOMENTUM **************************'
+         write(un,*) '**************************************************************'
+         write(un,*) '(Re,Ha) = ',mom%Re,mom%Ha
+         write(un,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
+         write(un,*) '(t,dt) = ',mom%t,mom%dTime
+         write(un,*) 'Kolmogorov Length = ',mom%L_eta
+         write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
+         write(un,*) 'Kolmogorov Time = ',mom%t_eta
+         write(un,*) ''
+         write(un,*) 'N_cells = ',(/mom%g%c(1)%N,mom%g%c(2)%N,mom%g%c(3)%N/)
+         write(un,*) 'volume = ',mom%g%volume
+         write(un,*) 'min/max(h)_x = ',(/mom%g%c(1)%hmin,mom%g%c(1)%hmax/)
+         write(un,*) 'min/max(h)_y = ',(/mom%g%c(2)%hmin,mom%g%c(2)%hmax/)
+         write(un,*) 'min/max(h)_z = ',(/mom%g%c(3)%hmin,mom%g%c(3)%hmax/)
+         write(un,*) 'min/max(dh)_x = ',(/mom%g%c(1)%dhMin,mom%g%c(1)%dhMax/)
+         write(un,*) 'min/max(dh)_y = ',(/mom%g%c(2)%dhMin,mom%g%c(2)%dhMax/)
+         write(un,*) 'min/max(dh)_z = ',(/mom%g%c(3)%dhMin,mom%g%c(3)%dhMax/)
+         write(un,*) 'stretching_x = ',mom%g%c(1)%dhMax-mom%g%c(1)%dhMin
+         write(un,*) 'stretching_y = ',mom%g%c(2)%dhMax-mom%g%c(2)%dhMin
+         write(un,*) 'stretching_z = ',mom%g%c(3)%dhMax-mom%g%c(3)%dhMin
+         write(un,*) ''
+         call printPhysicalMinMax(mom%U,'u','v','w')
+         call printPhysicalMinMax(mom%divU%phi,mom%divU%s,'divU')
+         call printPhysicalMinMax(mom%Fo_grid%phi,mom%Fo_grid%s,'Fo_grid')
+         call printPhysicalMinMax(mom%Co_grid%phi,mom%Co_grid%s,'Co_grid')
+         call printPhysicalMinMax(mom%Re_grid%phi,mom%Re_grid%s,'Re_grid')
+         write(*,*) ''
        end subroutine
 
        subroutine momentumExportTransientFull(mom,g,dir)
@@ -445,10 +453,14 @@
          Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
          call init(tempNVF,Nx,Ny,Nz)
          call face2Node(tempNVF,mom%u,g)
-         call writeVecPhysicalPlane(g,tempNVF,dir//'Ufield/transient/',&
-          'uni_phys',&
-          'vni_phys',&
-          'wni_phys','_'//int2str(mom%nstep),2,2,mom%nstep)
+
+         ! call init(DS,dir//'Ufield/transient/','uni','vni','wni','_phys')
+         ! call writeVecPhysicalPlane(g,tempNVF,DS,'_'//int2str(mom%nstep),3,2,mom%nstep)
+
+         ! call writeVecPhysicalPlane(g,tempNVF,dir//'Ufield/transient/',&
+         !  'uni_phys',&
+         !  'vni_phys',&
+         !  'wni_phys','_'//int2str(mom%nstep),3,2,mom%nstep)
          ! call writeScalarPhysicalPlane(g,mom%Re_grid%phi,dir//'Ufield/transient/',&
          !  'Re_grid','_'//int2str(mom%nstep),1,2,mom%nstep)
          call delete(tempNVF)
@@ -478,15 +490,17 @@
          call face2CellCenter(mom%U_CC,mom%U,mom%g)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
-         ! call computeKineticEnergy(mom,mom%g,F)
          call computeTotalKineticEnergy(mom,ss_MHD)
+
+         ! call computeKineticEnergy(mom,mom%g,F)
          ! call computeMomentumStability(mom,ss_MHD)
 
          if (getExportErrors(ss_MHD)) call computeDivergence(mom,mom%g)
-         ! if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%g,dir)
+         if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%g,dir)
          if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
 
          if (getPrintParams(ss_MHD)) then
+           call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
          else; exportNow = .false.
          endif
@@ -499,7 +513,6 @@
            call export(mom,mom%g,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
-         call momentumInfo(mom,ss_MHD,6)
        end subroutine
 
        subroutine explicitEuler(mom,F,g,ss_MHD)
@@ -514,7 +527,6 @@
          dt = mom%dTime
          Re = mom%Re
 
-
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation) ! Explicit Euler
          case (1);call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,g)
@@ -522,13 +534,6 @@
                   call faceAdvectNew(mom%temp_F,mom%U,mom%U,g)
          case (3);call faceAdvectHybrid(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,g)
          end select
-
-         write(*,*) 'maxval(advect%x) = ',maxval(mom%temp_F%x)
-         write(*,*) 'maxval(advect%y) = ',maxval(mom%temp_F%y)
-         ! write(*,*) 'maxval(advect%z) = ',maxval(mom%temp_F%z)
-         call writeScalarPlane(g,mom%temp_F%x,'out/','s1_advx',3,2)
-         call writeScalarPlane(g,mom%temp_F%y,'out/','s1_advy',3,2)
-         ! call writeScalarPlane(g,mom%temp_F%z,'out/','advz',3,2)
 
          ! if (mom%nstep.gt.0) then ! 2nd order Adams Bashforth
          !   select case (advectiveUFormulation)
@@ -547,13 +552,6 @@
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%temp_F,mom%U,g)
-         write(*,*) 'maxval(lap%x) = ',maxval(mom%temp_F%x)
-         write(*,*) 'maxval(lap%y) = ',maxval(mom%temp_F%y)
-         ! write(*,*) 'maxval(lap%z) = ',maxval(mom%temp_F%z)
-         call writeScalarPlane(g,mom%temp_F%x,'out/','s2_lapUx',3,2)
-         call writeScalarPlane(g,mom%temp_F%y,'out/','s2_lapUy',3,2)
-         ! call writeScalarPlane(g,mom%temp_F%z,'out/','lapUz',3,2)
-         ! call writeScalarPhysicalPlane(g,mom%temp_F%x,'out/','lapUx','',3,2,mom%nstep)
          call divide(mom%temp_F,Re)
          call add(mom%Ustar,mom%temp_F)
 
@@ -572,40 +570,27 @@
          ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
-         write(*,*) 'maxval(Ustar%x) = ',maxval(mom%Ustar%x)
-         write(*,*) 'maxval(Ustar%y) = ',maxval(mom%Ustar%y)
-         ! write(*,*) 'maxval(Ustar%z) = ',maxval(mom%Ustar%z)
-         call writeScalarPlane(g,mom%Ustar%x,'out/','s3_ustar',3,2)
-         call writeScalarPlane(g,mom%Ustar%y,'out/','s3_vstar',3,2)
-         ! call writeScalarPlane(g,mom%Ustar%z,'out/','wstar',3,2)
 
          ! Pressure Correction -------------------------------------
-         write(*,*) 'Inside pressure correction'
          call div(mom%temp_CC%phi,mom%Ustar,g)
          ! Temp = Temp/dt
          call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
          ! call multiply(mom%temp_CC,real(2.0,cp)/dt) ! O(dt^2) pressure treatment
-         call applyAllBCs(mom%p_bcs,mom%temp_CC%phi,g)
+         ! call applyAllBCs(mom%p_bcs,mom%temp_CC%phi,g)
          call zeroGhostPoints(mom%temp_CC%phi)
 
-         write(*,*) 'maxval(source) = ',maxval(mom%temp_CC%phi)
-         call writeScalarPlane(g,mom%temp_CC%phi,'out/','s4_source',3,2)
          ! Solve lap(p) = div(U)/dt
-         ! call poisson(mom%SOR_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
-         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
-         call poisson(mom%FFT_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
-          mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
+         call poisson(mom%SOR_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
+          mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         ! call poisson(mom%FFT_p,mom%p%phi,mom%temp_CC%phi,mom%p_bcs,g,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
 
-         write(*,*) 'maxval(p) = ',maxval(mom%p%phi)
-         call writeScalarPlane(g,mom%p%phi,'out/','s6_p',3,2)
          call grad(mom%temp_F,mom%p%phi,g)
          ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
          ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
          ! call divide(mom%temp_F,real(2.0,cp)) ! O(dt^2) pressure treatment
 
          ! Ustar = Ustar - dt*dp/dx
-         call writeScalarPlane(g,mom%Ustar%x,'out/','s7_ustarb',3,2)
-         call writeScalarPlane(g,mom%Ustar%y,'out/','s7_vstarb',3,2)
          call multiply(mom%temp_F,dt)
          call subtract(mom%Ustar,mom%temp_F)
 
@@ -614,16 +599,6 @@
          ! U = Ustar
          call assign(mom%U,mom%Ustar)
          call applyAllBCs(mom%U,mom%U_bcs,g)
-         
-         call writeScalarPlane(g,mom%U%x,'out/','s8_u',3,2)
-         call writeScalarPlane(g,mom%U%y,'out/','s8_v',3,2)
-
-         call div(mom%divU%phi,mom%U%x,mom%U%y,mom%U%z,g)
-         call zeroGhostPoints(mom%divU%phi)
-         write(*,*) 'maxval(divU) = ',maxval(mom%divU%phi)
-         call writeScalarPlane(g,mom%divU%phi,'out/','s9_divU',3,2)
-
-         if (mom%nstep.gt.0) stop 'Done'
        end subroutine
 
        subroutine semi_implicit_ADI(mom,F,g,ss_MHD)
@@ -893,5 +868,86 @@
          call zeroWallCoincidentBoundaries(f%y,f%sy,g,0)
          call zeroWallCoincidentBoundaries(f%z,f%sz,g,0)
        end subroutine
+
+!        subroutine ZWCB_general(f,s,face)
+!          ! face = zero wall coincident boundaries on...
+!          !       1: x_min
+!          !       2: x_max
+!          !       3: y_min
+!          !       4: y_max
+!          !       5: z_min
+!          !       6: z_max
+!          implicit none
+!          real(cp),dimension(:,:,:),intent(inout) :: f
+!          integer,dimension(3),intent(in) :: s
+!          integer,intent(in) :: face
+!          select case (face)
+!          case (1); f(2,:,:)      = 0.0_cp; f(1,:,:)    = 0.0_cp
+!          case (2); f(s(1)-1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+!          case (3); f(:,2,:)      = 0.0_cp; f(:,1,:)    = 0.0_cp
+!          case (4); f(:,s(2)-1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+!          case (5); f(:,:,2)      = 0.0_cp; f(:,:,1)    = 0.0_cp
+!          case (6); f(:,:,s(3)-1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+!          case default
+!            stop 'Error: face must = 1-6 in ZWCB'
+!          end select
+!        end subroutine
+
+!        subroutine ZWCB_allDirichlet(f,s,face)
+!          ! face = zero wall coincident boundaries on...
+!          !       1: x_min,x_max
+!          !       2: y_min,y_max
+!          !       3: z_min,z_max
+!          implicit none
+!          real(cp),dimension(:,:,:),intent(inout) :: f
+!          integer,dimension(3),intent(in) :: s
+!          integer,intent(in) :: face
+!          select case (face)
+!          case (1); f(2,:,:)      = 0.0_cp; f(1,:,:)    = 0.0_cp
+!                    f(s(1)-1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+!          case (3); f(:,2,:)      = 0.0_cp; f(:,1,:)    = 0.0_cp
+!                    f(:,s(2)-1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+!          case (5); f(:,:,2)      = 0.0_cp; f(:,:,1)    = 0.0_cp
+!                    f(:,:,s(3)-1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+!          case default
+!            stop 'Error: face must = 1,2,3 in ZWCB_allDirichlet'
+!          end select
+!        end subroutine
+
+!        subroutine ZWCB_VF(f) ! For all Dirichlet BCs
+!          implicit none
+!          type(VF),intent(inout) :: f
+!          call ZWCB(f%x,f%sx,1)
+!          call ZWCB(f%y,f%sy,2)
+!          call ZWCB(f%z,f%sz,3)
+!        end subroutine
+
+!        subroutine ZWCB_VF_general(f,g,U_bcs) ! General
+!          implicit none
+!          type(VF),intent(inout) :: f
+!          type(grid),intent(in) :: g
+!          type(vectorBCs),intent(in) :: U_bcs
+!          logical,dimension(3) :: TFall
+!          TFall(1) = getAllDirichlet(U_bcs%x)
+!          TFall(2) = getAllDirichlet(U_bcs%y)
+!          TFall(3) = getAllDirichlet(U_bcs%z)
+!          if (all(TFall)) then ! Prescribed velocity (i.e. no slip: viscosity doesn't play a role.)
+!            call ZWCB_allDirichlet(f%x,f%sx,1)
+!            call ZWCB_allDirichlet(f%y,f%sy,2)
+!            call ZWCB_allDirichlet(f%z,f%sz,3)
+!          else ! Potentially Neumann (d^2 u_normal / dx_tangent is not necessarily zero)
+!            if (any((U_bcs%x%xminType).eq.(/1,2/))) call ZWCB_general(f%x,f%sx,1)
+!            if (any((U_bcs%x%xmaxType).eq.(/1,2/))) call ZWCB_general(f%x,f%sx,2)
+
+!            if (any((U_bcs%y%yminType).eq.(/1,2/))) call ZWCB_general(f%y,f%sy,3)
+!            if (any((U_bcs%y%ymaxType).eq.(/1,2/))) call ZWCB_general(f%y,f%sy,4)
+
+!            if (any((U_bcs%z%zminType).eq.(/1,2/))) call ZWCB_general(f%z,f%sz,5)
+!            if (any((U_bcs%z%zmaxType).eq.(/1,2/))) call ZWCB_general(f%z,f%sz,6)
+!          endif
+!          call ZWCB_short(f%x,f%sx,g,1)
+!          call ZWCB_short(f%y,f%sy,g,2)
+!          call ZWCB_short(f%z,f%sz,g,3)
+!        end subroutine
 
        end module

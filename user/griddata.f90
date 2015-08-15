@@ -4,6 +4,7 @@
        use grid_mod
        use gridGen_mod
        use gridGenTools_mod
+       use matchGridStretching_mod
        use coordinates_mod
        implicit none
 
@@ -104,6 +105,8 @@
          real(cp),dimension(3) :: alphai,betai
          real(cp),dimension(3) :: alphaw,betaw
          real(cp),dimension(3) :: betawBot,betawTop
+         integer,dimension(3) :: Nvacbot,Nvactop
+         real(cp),dimension(3) :: vacbot,vactop
          integer,dimension(3) :: N
          real(cp) :: tau,y_c,dh,dh1,dh2
          integer :: i,j,N_cells_uniform
@@ -186,7 +189,8 @@
          hmin(1) = 0.0_cp; hmax(1) = 10.0_cp
 
          case (1003); hmin = -one; hmax = one ! for xyz
-         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         ! hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         hmin(3) = -0.5_cp; hmax(3) = 0.5_cp
          ! hmin(1) = real(-10.0,cp); hmax(1) = 10.0_cp
          ! hmin(1) = real(-5.0,cp); hmax(1) = real(5.0,cp)
 
@@ -210,9 +214,9 @@
          hmin(2) = -0.5_cp; hmax(2) = 0.5_cp
          hmin(3) = -1.0_cp; hmax(3) = 1.0_cp
          case (1009) ! Kawczynski
-         hmin = zero; hmax = one
-         case (1010) ! Kawczynski
          hmin = -0.5_cp; hmax = 0.5_cp ! for xyz
+         case (1010) ! Kawczynski
+         hmin = -1.0_cp; hmax = 1.0_cp ! for xyz
 
          case (1011) ! Kawczynski
          hmin = -1.0_cp; hmax = 1.0_cp ! for xyz
@@ -276,6 +280,7 @@
                       ! betai(1) = 1.004_cp
                       betai = 1.1_cp
                       betai(1) = 100000.0_cp
+                      betai = 100000.0_cp
 
          case (1004); betai = 100.0_cp
 
@@ -287,7 +292,7 @@
          betai(3) = 1.1_cp
 
          case (1009); betai = 100000_cp
-         case (1010); betai = 1.01_cp
+         case (1010); betai = 1.05_cp
          case (1011)
          betai = hartmannBL(Ha,hmin,hmax)
          betai(1) = 10000.0_cp
@@ -349,7 +354,8 @@
          !              twtop(2) = 0.01_cp;  twbot(2) = 0.01_cp
 
          case (1003); twtop = 0.1_cp;   twbot = 0.1_cp
-         twtop(1) = 0.0_cp;  twbot(1) = 0.0_cp
+         ! twtop(1) = 0.0_cp;  twbot(1) = 0.0_cp
+         twtop = 0.0_cp;  twbot = 0.0_cp
 
          case (1004); twtop = 0.0_cp;   twbot = 0.0_cp
 
@@ -376,6 +382,9 @@
            stop 'Error: Incorrect benchmarkCase in setGriddata'
          end select
 
+
+         write(*,*) 'betaw_before = ',betai
+
          if (benchmarkCase.ne.0) then
            alphai = oneHalf; alphaw = zero; betaw = betai
          endif
@@ -384,6 +393,14 @@
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,1) ! x
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,2) ! y
          call setGrid(this,hmin,hmax,alphai,betai,twtop,twbot,alphaw,betaw,N,Ni,Nwtop,Nwbot,3) ! z
+
+         write(*,*) 'betaw_after = ',this%betaw
+
+         do i =1,3
+           betaw(i) = betaRobertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),this%hi%c(i)%dhn(1))
+         enddo
+         write(*,*) 'betaw_new = ',betaw
+
 
          if (.not.nonUniformGridWall) then
            call reComputeTw(this)
@@ -471,6 +488,90 @@
          !   call init(g_ind,gg%g%c(i)%hn,i,2)
          ! enddo
          ! call delete(gg)
+
+         ! *****************************************************************
+         ! *****************************************************************
+         ! ****************** 3D CAVITY WITH VACUUM ************************
+         ! *****************************************************************
+         ! *****************************************************************
+
+!          ! 3D Cavity (interior)
+!          do i=1,3
+!            if (nonUniformGridFluid) then
+!                  call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
+!            else; call init(gg,(/uniform(hmin(i),hmax(i),Ni(i))/),i)
+!            endif
+!            call applyGhost(gg,i)
+!            call init(g_mom,gg%g%c(i)%hn,i,2)
+!          enddo
+
+!          if (autoMatchBetas) then
+!            do i=1,3
+!              dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
+!              call estimateBetaWRecursive(betawBot(i),betai(i),alphaw(i),Nwbot(i),hmin(i)-twbot(i),hmin(i),dh)
+!              dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
+!              call estimateBetaWRecursive(betawTop(i),betai(i),alphaw(i),Nwtop(i),hmax(i),hmax(i)+twtop(i),dh)
+!            enddo
+!          else
+!            betawTop = betaw; betawBot = betaw
+!          endif
+
+!          ! 3D Cavity (add walls in all directions)
+!          do i=1,3
+!            call snip(gg,i); call pop(gg,i) ! Remove ghost nodes
+         
+!            if (Nwbot(i).gt.0) then
+!              if (nonUniformGridWall) then
+!                call snip(gg,i)
+!                call prep(gg,(/robertsRight(hmin(i)-twbot(i),hmin(i),Nwbot(i),betaw(i))/),i)
+!              else
+!                dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
+!                call snip(gg,i)
+!                call prep(gg,(/uniformLeft(hmin(i),dh,Nwbot(i))/),i)
+!              endif
+!            endif
+!            if (Nwtop(i).gt.0) then
+!              if (nonUniformGridWall) then
+!                call pop(gg,i)
+!                call app(gg,(/robertsLeft(hmax(i),hmax(i)+twtop(i),Nwtop(i),betaw(i))/),i)
+!              else
+!                dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
+!                call pop(gg,i)
+!                call app(gg,(/uniformRight(hmax(i),dh,Nwtop(i))/),i)
+!              endif
+!            endif
+         
+!            call applyGhost(gg,i) ! re-apply ghosts
+!            call init(g_ind,gg%g%c(i)%hn,i,2)
+!          enddo
+
+!          ! 3D Cavity (add vacuum in all directions)
+!          Nvactop = 10; Nvacbot = 10
+!          vactop = 5.0_cp; vacbot = 5.0_cp
+!          do i=1,3
+!            call snip(gg,i); call pop(gg,i) ! Remove ghost nodes
+         
+!            if (nonUniformGridWall) then
+!              call snip(gg,i)
+!              call prep(gg,(/robertsRight(hmin(i)-twbot(i)-vacbot(i),hmin(i)-twbot(i),Nvacbot(i),betaw(i))/),i)
+!            else
+!              dh = gg%g%c(i)%hn(2)-gg%g%c(i)%hn(1)
+!              call snip(gg,i)
+!              call prep(gg,(/uniformLeft(hmin(i)-twbot(i),dh,Nvacbot(i))/),i)
+!            endif
+!            if (nonUniformGridWall) then
+!              call pop(gg,i)
+!              call app(gg,(/robertsLeft(hmax(i)+twtop(i),hmax(i)+twtop(i)+vactop(i),Nvactop(i),betaw(i))/),i)
+!            else
+!              dh = gg%g%c(i)%hn(gg%g%c(i)%sn)-gg%g%c(i)%hn(gg%g%c(i)%sn-1)
+!              call pop(gg,i)
+!              call app(gg,(/uniformRight(hmax(i)+twtop(i),dh,Nvactop(i))/),i)
+!            endif
+         
+!            call applyGhost(gg,i) ! re-apply ghosts
+!            call init(g_ind,gg%g%c(i)%hn,i,2)
+!          enddo
+!          call delete(gg)
 
 
          ! *****************************************************************

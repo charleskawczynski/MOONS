@@ -56,43 +56,40 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       public :: setXminType,getXminType
-       public :: setXmaxType,getXmaxType
-       public :: setYminType,getYminType
-       public :: setYmaxType,getYmaxType
-       public :: setZminType,getZminType
-       public :: setZmaxType,getZmaxType
+       ! Setters for type and value
+       public :: setXminType,setXmaxType
+       public :: setYminType,setYmaxType
+       public :: setZminType,setZmaxType
+       public :: setXminVals,setXmaxVals
+       public :: setYminVals,setYmaxVals
+       public :: setZminVals,setZmaxVals
 
-       public :: getXminVals,setXminVals
-       public :: getXmaxVals,setXmaxVals
-       public :: getYminVals,setYminVals
-       public :: getYmaxVals,setYmaxVals
-       public :: getZminVals,setZminVals
-       public :: getZmaxVals,setZmaxVals
-
-       public :: checkBCs
-       public :: BCsReady
+       ! Modifiers
        public :: setAllBVals
-
        public :: setAllZero
-       public :: getAllDirichlet,allNeumann
 
+       ! Checkers
+       public :: checkBCs,BCsReady
+       public :: getAllDirichlet,getAllNeumann
+
+       ! Print / export
        public :: printAllBoundaries
        public :: writeAllBoundaries
 
        type BCs
-         integer :: xminType,xmaxType
-         integer :: yminType,ymaxType
-         integer :: zminType,zmaxType
-         real(cp),dimension(:,:),allocatable :: xminVals,xmaxVals
-         real(cp),dimension(:,:),allocatable :: yminVals,ymaxVals
-         real(cp),dimension(:,:),allocatable :: zminVals,zmaxVals
+         integer :: xminType,xmaxType                               ! good
+         integer :: yminType,ymaxType                               ! good
+         integer :: zminType,zmaxType                               ! good
+         real(cp),dimension(:,:),allocatable :: xminVals,xmaxVals   ! good
+         real(cp),dimension(:,:),allocatable :: yminVals,ymaxVals   ! good
+         real(cp),dimension(:,:),allocatable :: zminVals,zmaxVals   ! good
+         integer,dimension(3) :: s
+
          real(cp),dimension(:),allocatable :: xn,yn,zn
          real(cp),dimension(:),allocatable :: xc,yc,zc
-         integer,dimension(3) :: s
          logical,dimension(6) :: TFb
          logical :: TFs
-         logical :: TFgrid
+         logical :: TFgrid,allDirichlet,allNeumann
          logical,dimension(6) :: TFvals
          logical :: BCsDefined = .false.
          type(grid) :: g
@@ -109,6 +106,13 @@
 
        contains
 
+
+       ! *******************************************************************************
+       ! *******************************************************************************
+       ! ************************************* INIT ************************************
+       ! *******************************************************************************
+       ! *******************************************************************************
+
        subroutine initBCs(this)
          implicit none
          type(BCs),intent(inout) :: this
@@ -118,6 +122,8 @@
          this%TFb = .false.
          this%TFs = .false.
          this%BCsDefined = .false.
+         call setAllDirichlet(this)
+         call setAllNeumann(this)
        end subroutine
 
        subroutine initBCsSize(this,Nx,Ny,Nz)
@@ -139,56 +145,32 @@
          this%zminType = u_bcs%zminType; this%zmaxType = u_bcs%zmaxType
          call init(this%g,u_bcs%g)
 
-         this%s = u_bcs%s
-         Nx = this%s(1); Ny = this%s(2); Nz = this%s(3)
+         this%s = u_bcs%s; Nx = this%s(1); Ny = this%s(2); Nz = this%s(3)
 
-         allocate(bvals(Ny,Nz));
-         call getXminVals(u_bcs,bvals)
-         call setXminVals(this,bvals)
-         deallocate(bvals)
-
-         allocate(bvals(Ny,Nz));
-         call getXmaxVals(u_bcs,bvals)
-         call setXmaxVals(this,bvals)
-         deallocate(bvals)
-
-         allocate(bvals(Nx,Nz));
-         call getYminVals(u_bcs,bvals)
-         call setYminVals(this,bvals)
-         deallocate(bvals)
-
-         allocate(bvals(Nx,Nz));
-         call getYmaxVals(u_bcs,bvals)
-         call setYmaxVals(this,bvals)
-         deallocate(bvals)
-
-         allocate(bvals(Nx,Ny));
-         call getZminVals(u_bcs,bvals)
-         call setZminVals(this,bvals)
-         deallocate(bvals)
-
-         allocate(bvals(Nx,Ny));
-         call getZmaxVals(u_bcs,bvals)
-         call setZmaxVals(this,bvals)
-         deallocate(bvals)
+         allocate(bvals(Ny,Nz)); bvals = u_bcs%xminVals
+         call setXminVals(this,bvals); deallocate(bvals)
+         allocate(bvals(Ny,Nz)); bvals = u_bcs%xmaxVals
+         call setXmaxVals(this,bvals); deallocate(bvals)
+         allocate(bvals(Nx,Nz)); bvals = u_bcs%yminVals
+         call setYminVals(this,bvals); deallocate(bvals)
+         allocate(bvals(Nx,Nz)); bvals = u_bcs%ymaxVals
+         call setYmaxVals(this,bvals); deallocate(bvals)
+         allocate(bvals(Nx,Ny)); bvals = u_bcs%zminVals
+         call setZminVals(this,bvals); deallocate(bvals)
+         allocate(bvals(Nx,Ny)); bvals = u_bcs%zmaxVals
+         call setZmaxVals(this,bvals); deallocate(bvals)
 
          this%TFb = .true.
          this%BCsDefined = .true.
+         call setAllDirichlet(this)
+         call setAllNeumann(this)
        end subroutine
 
-       subroutine setAllBVals(this,u)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:,:),intent(in) :: u
-         integer,dimension(3) :: s
-         s = this%s
-         call setXminVals(this,u(1,:,:))
-         call setYminVals(this,u(:,1,:))
-         call setZminVals(this,u(:,:,1))
-         call setXmaxVals(this,u(s(1),:,:))
-         call setYmaxVals(this,u(:,s(2),:))
-         call setZmaxVals(this,u(:,:,s(3)))
-       end subroutine
+       ! *******************************************************************************
+       ! *******************************************************************************
+       ! *********************************** DELETE ************************************
+       ! *******************************************************************************
+       ! *******************************************************************************
 
        subroutine deleteBCs(this)
          implicit none
@@ -211,6 +193,26 @@
          this%TFgrid = .false.
        end subroutine
 
+       ! *******************************************************************************
+       ! *******************************************************************************
+       ! *********************************** MODIFY ************************************
+       ! *******************************************************************************
+       ! *******************************************************************************
+
+       subroutine setAllBVals(this,u)
+         implicit none
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:,:),intent(in) :: u
+         integer,dimension(3) :: s
+         s = this%s
+         call setXminVals(this,u(1,:,:))
+         call setYminVals(this,u(:,1,:))
+         call setZminVals(this,u(:,:,1))
+         call setXmaxVals(this,u(s(1),:,:))
+         call setYmaxVals(this,u(:,s(2),:))
+         call setZmaxVals(this,u(:,:,s(3)))
+       end subroutine
+
        subroutine setGridBCs(this,g)
          implicit none
          type(BCs),intent(inout) :: this
@@ -224,128 +226,11 @@
          allocate(this%xc(g%c(1)%sc),this%xn(g%c(1)%sn))
          allocate(this%yc(g%c(2)%sc),this%yn(g%c(2)%sn))
          allocate(this%zc(g%c(3)%sc),this%zn(g%c(3)%sn))
-         this%xc = g%c(1)%hc
-         this%xn = g%c(1)%hn
-         this%yc = g%c(2)%hc
-         this%yn = g%c(2)%hn
-         this%zc = g%c(3)%hc
-         this%zn = g%c(3)%hn
+         this%xc = g%c(1)%hc; this%xn = g%c(1)%hn
+         this%yc = g%c(2)%hc; this%yn = g%c(2)%hn
+         this%zc = g%c(3)%hc; this%zn = g%c(3)%hn
          call init(this%g,g)
          this%TFgrid = .true.
-       end subroutine
-
-       subroutine setXminVals(this,xminVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: xminVals
-         integer,dimension(2) :: s
-         s = shape(xminVals)
-         if (allocated(this%xminVals)) deallocate(this%xminVals)
-         allocate(this%xminVals(s(1),s(2)))
-         this%xminVals = xminVals
-         this%TFvals(1) = .true.
-       end subroutine
-
-       subroutine getXminVals(this,xminVals)
-         implicit none
-         type(BCs),intent(in) :: this
-         real(cp),dimension(:,:),intent(inout) :: xminVals
-         xminVals = this%xminVals
-       end subroutine
-
-       subroutine setXmaxVals(this,xmaxVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: xmaxVals
-         integer,dimension(2) :: s
-         s = shape(xmaxVals)
-         if (allocated(this%xmaxVals)) deallocate(this%xmaxVals)
-         allocate(this%xmaxVals(s(1),s(2)))
-         this%xmaxVals = xmaxVals
-         this%TFvals(2) = .true.
-       end subroutine
-
-       subroutine getXmaxVals(this,xmaxVals)
-         implicit none
-         type(BCs),intent(in) :: this
-         real(cp),dimension(:,:),intent(inout) :: xmaxVals
-         xmaxVals = this%xmaxVals
-       end subroutine
-
-       subroutine setYminVals(this,yminVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: yminVals
-         integer,dimension(2) :: s
-         s = shape(yminVals)
-         if (allocated(this%yminVals)) deallocate(this%yminVals)
-         allocate(this%yminVals(s(1),s(2)))
-         this%yminVals = yminVals
-         this%TFvals(3) = .true.
-       end subroutine
-
-       subroutine getYminVals(this,yminVals)
-         implicit none
-         type(BCs),intent(in) :: this
-         real(cp),dimension(:,:),intent(inout) :: yminVals
-         yminVals = this%yminVals
-       end subroutine
-
-       subroutine setYmaxVals(this,ymaxVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: ymaxVals
-         integer,dimension(2) :: s
-         s = shape(ymaxVals)
-         if (allocated(this%ymaxVals)) deallocate(this%ymaxVals)
-         allocate(this%ymaxVals(s(1),s(2)))
-         this%ymaxVals = ymaxVals
-         this%TFvals(4) = .true.
-       end subroutine
-
-       subroutine getYmaxVals(this,ymaxVals)
-         implicit none
-         type(BCs),intent(in) :: this
-         real(cp),dimension(:,:),intent(inout) :: ymaxVals
-         ymaxVals = this%ymaxVals
-       end subroutine
-
-       subroutine setZminVals(this,zminVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: zminVals
-         integer,dimension(2) :: s
-         s = shape(zminVals)
-         if (allocated(this%zminVals)) deallocate(this%zminVals)
-         allocate(this%zminVals(s(1),s(2)))
-         this%zminVals = zminVals
-         this%TFvals(5) = .true.
-       end subroutine
-
-       subroutine getZminVals(this,zminVals)
-         implicit none
-         type(BCs),intent(in) :: this
-         real(cp),dimension(:,:),intent(inout) :: zminVals
-         zminVals = this%zminVals
-       end subroutine
-
-       subroutine setZmaxVals(this,zmaxVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: zmaxVals
-         integer,dimension(2) :: s
-         s = shape(zmaxVals)
-         if (allocated(this%zmaxVals)) deallocate(this%zmaxVals)
-         allocate(this%zmaxVals(s(1),s(2)))
-         this%zmaxVals = zmaxVals
-         this%TFvals(6) = .true.
-       end subroutine
-
-       subroutine getZmaxVals(this,zmaxVals)
-         implicit none
-         type(BCs),intent(in) :: this
-         real(cp),dimension(:,:),intent(inout) :: zmaxVals
-         zmaxVals = this%zmaxVals
        end subroutine
 
        subroutine setAllZeroGivenSize(this,Nx,Ny,Nz,bctype)
@@ -360,21 +245,18 @@
 
          allocate(bvals(Ny,Nz)); call setXminType(this,bctype)
          bvals = 0.0_cp; call setXminVals(this,bvals); deallocate(bvals)
-
          allocate(bvals(Ny,Nz)); call setXmaxType(this,bctype)
          bvals = 0.0_cp; call setXmaxVals(this,bvals); deallocate(bvals)
-
          allocate(bvals(Nx,Nz)); call setYminType(this,bctype)
          bvals = 0.0_cp; call setYminVals(this,bvals); deallocate(bvals)
-
          allocate(bvals(Nx,Nz)); call setYmaxType(this,bctype)
          bvals = 0.0_cp; call setYmaxVals(this,bvals); deallocate(bvals)
-
          allocate(bvals(Nx,Ny)); call setZminType(this,bctype)
          bvals = 0.0_cp; call setZminVals(this,bvals); deallocate(bvals)
-
          allocate(bvals(Nx,Ny)); call setZmaxType(this,bctype)
          bvals = 0.0_cp; call setZmaxVals(this,bvals); deallocate(bvals)
+         call setAllDirichlet(this)
+         call setAllNeumann(this)
        end subroutine
 
        subroutine setAllZeroNoSize(this,bctype)
@@ -382,99 +264,15 @@
          type(BCs),intent(inout) :: this
          integer,intent(in) :: bctype
          call setAllZero(this,this%s(1),this%s(2),this%s(3),bctype)
+         call setAllDirichlet(this)
+         call setAllNeumann(this)
        end subroutine
 
-       subroutine setXminType(this,xminType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: xminType
-         this%xminType = xminType
-         this%TFb(1) = .true.
-       end subroutine
-
-       subroutine setXmaxType(this,xmaxType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: xmaxType
-         this%xmaxType = xmaxType
-         this%TFb(2) = .true.
-       end subroutine
-
-       subroutine setYminType(this,yminType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: yminType
-         this%yminType = yminType
-         this%TFb(3) = .true.
-       end subroutine
-
-       subroutine setYmaxType(this,ymaxType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: ymaxType
-         this%ymaxType = ymaxType
-         this%TFb(4) = .true.
-       end subroutine
-
-       subroutine setZminType(this,zminType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: zminType
-         this%zminType = zminType
-         this%TFb(5) = .true.
-       end subroutine
-
-       subroutine setZmaxType(this,zmaxType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: zmaxType
-         this%zmaxType = zmaxType
-         this%TFb(6) = .true.
-       end subroutine
-
-! **************************************************************
-
-       function getXminType(this) result(xminType)
-         implicit none
-         type(BCs),intent(in) :: this
-         integer :: xminType
-         xminType = this%xminType
-       end function
-
-       function getXmaxType(this) result(xmaxType)
-         implicit none
-         type(BCs),intent(in) :: this
-         integer :: xmaxType
-         xmaxType = this%xmaxType
-       end function
-
-       function getYminType(this) result(yminType)
-         implicit none
-         type(BCs),intent(in) :: this
-         integer :: yminType
-         yminType = this%yminType
-       end function
-
-       function getYmaxType(this) result(ymaxType)
-         implicit none
-         type(BCs),intent(in) :: this
-         integer :: ymaxType
-         ymaxType = this%ymaxType
-       end function
-
-       function getZminType(this) result(zminType)
-         implicit none
-         type(BCs),intent(in) :: this
-         integer :: zminType
-         zminType = this%zminType
-       end function
-
-       function getZmaxType(this) result(zmaxType)
-         implicit none
-         type(BCs),intent(in) :: this
-         integer :: zmaxType
-         zmaxType = this%zmaxType
-       end function
+       ! *******************************************************************************
+       ! *******************************************************************************
+       ! ********************************* CHECKERS ************************************
+       ! *******************************************************************************
+       ! *******************************************************************************
 
        function BCsReady(this) result(TF)
          implicit none
@@ -486,13 +284,59 @@
        subroutine checkBCs(this)
          implicit none
          type(BCs),intent(inout) :: this
-
          this%BCsDefined = all((/this%TFb,this%TFvals,this%TFgrid/))
          if (.not.this%BCsDefined) then
-           write(*,*) 'BCs have not been fully defined. Terminating'
-           stop
+           write(*,*) 'BCs have not been fully defined. Terminating'; stop
          endif
        end subroutine
+
+       subroutine setAllDirichlet(this)
+         implicit none
+         type(BCs),intent(inout) :: this
+         logical :: TF
+         TF = .true.
+         if (TF.and.this%TFb(1)) TF = (this%xminType.eq.1)
+         if (TF.and.this%TFb(2)) TF = (this%xmaxType.eq.1)
+         if (TF.and.this%TFb(3)) TF = (this%yminType.eq.1)
+         if (TF.and.this%TFb(4)) TF = (this%ymaxType.eq.1)
+         if (TF.and.this%TFb(5)) TF = (this%zminType.eq.1)
+         if (TF.and.this%TFb(6)) TF = (this%zmaxType.eq.1)
+         this%allDirichlet = TF
+       end subroutine
+
+       subroutine setAllNeumann(this)
+         implicit none
+         type(BCs),intent(inout) :: this
+         logical,dimension(6) :: TFAll
+         TFAll = .false.
+         if (this%TFb(1)) TFAll(1) = (this%xminType.eq.3).or.((this%xminType.eq.4).or.(this%xminType.eq.5))
+         if (this%TFb(2)) TFAll(2) = (this%xmaxType.eq.3).or.((this%xmaxType.eq.4).or.(this%xmaxType.eq.5))
+         if (this%TFb(3)) TFAll(3) = (this%yminType.eq.3).or.((this%yminType.eq.4).or.(this%yminType.eq.5))
+         if (this%TFb(4)) TFAll(4) = (this%ymaxType.eq.3).or.((this%ymaxType.eq.4).or.(this%ymaxType.eq.5))
+         if (this%TFb(5)) TFAll(5) = (this%zminType.eq.3).or.((this%zminType.eq.4).or.(this%zminType.eq.5))
+         if (this%TFb(6)) TFAll(6) = (this%zmaxType.eq.3).or.((this%zmaxType.eq.4).or.(this%zmaxType.eq.5))
+         this%allNeumann = all(TFAll)
+       end subroutine
+
+       function getAllDirichlet(this) result(TF)
+         implicit none
+         type(BCs),intent(in) :: this
+         logical :: TF
+         TF = this%allDirichlet
+       end function
+
+       function getAllNeumann(this) result(TF)
+         implicit none
+         type(BCs),intent(in) :: this
+         logical :: TF
+         TF = this%allNeumann
+       end function
+
+       ! *******************************************************************************
+       ! *******************************************************************************
+       ! ******************************** PRINT/EXPORT *********************************
+       ! *******************************************************************************
+       ! *******************************************************************************
 
        subroutine printAllBoundaries(this,name)
          implicit none
@@ -545,34 +389,112 @@
          if (bctype.eq.8) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh^2)'; endif
        end subroutine
 
-       function getAllDirichlet(this) result(TF)
+       ! *******************************************************************************
+       ! *******************************************************************************
+       ! *********************** Setters for setVals and setType ***********************
+       ! *******************************************************************************
+       ! *******************************************************************************
+
+       subroutine setXminVals(this,xminVals)
          implicit none
-         type(BCs),intent(in) :: this
-         logical :: TF
-         TF = .true.
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:),intent(in) :: xminVals
+         integer,dimension(2) :: s
+         if (allocated(this%xminVals)) deallocate(this%xminVals)
+         s = shape(xminVals); allocate(this%xminVals(s(1),s(2)))
+         this%xminVals = xminVals; this%TFvals(1) = .true.
+       end subroutine
 
-         if (TF.and.this%TFb(1)) TF = (getXminType(this).eq.1)
-         if (TF.and.this%TFb(2)) TF = (getXmaxType(this).eq.1)
-         if (TF.and.this%TFb(3)) TF = (getYminType(this).eq.1)
-         if (TF.and.this%TFb(4)) TF = (getYmaxType(this).eq.1)
-         if (TF.and.this%TFb(5)) TF = (getZminType(this).eq.1)
-         if (TF.and.this%TFb(6)) TF = (getZmaxType(this).eq.1)
-       end function
-
-       function allNeumann(this) result(TF)
+       subroutine setXmaxVals(this,xmaxVals)
          implicit none
-         type(BCs),intent(in) :: this
-         logical,dimension(6) :: TFAll
-         logical :: TF
-         TFAll = .false.
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:),intent(in) :: xmaxVals
+         integer,dimension(2) :: s
+         if (allocated(this%xmaxVals)) deallocate(this%xmaxVals)
+         s = shape(xmaxVals); allocate(this%xmaxVals(s(1),s(2)))
+         this%xmaxVals = xmaxVals; this%TFvals(2) = .true.
+       end subroutine
 
-         if (this%TFb(1)) TFAll(1) = (getXminType(this).eq.3).or.((getXminType(this).eq.4).or.(getXminType(this).eq.5))
-         if (this%TFb(2)) TFAll(2) = (getXmaxType(this).eq.3).or.((getXmaxType(this).eq.4).or.(getXmaxType(this).eq.5))
-         if (this%TFb(3)) TFAll(3) = (getYminType(this).eq.3).or.((getYminType(this).eq.4).or.(getYminType(this).eq.5))
-         if (this%TFb(4)) TFAll(4) = (getYmaxType(this).eq.3).or.((getYmaxType(this).eq.4).or.(getYmaxType(this).eq.5))
-         if (this%TFb(5)) TFAll(5) = (getZminType(this).eq.3).or.((getZminType(this).eq.4).or.(getZminType(this).eq.5))
-         if (this%TFb(6)) TFAll(6) = (getZmaxType(this).eq.3).or.((getZmaxType(this).eq.4).or.(getZmaxType(this).eq.5))
-         TF = all(TFAll)
-       end function
+       subroutine setYminVals(this,yminVals)
+         implicit none
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:),intent(in) :: yminVals
+         integer,dimension(2) :: s
+         if (allocated(this%yminVals)) deallocate(this%yminVals)
+         s = shape(yminVals); allocate(this%yminVals(s(1),s(2)))
+         this%yminVals = yminVals; this%TFvals(3) = .true.
+       end subroutine
+
+       subroutine setYmaxVals(this,ymaxVals)
+         implicit none
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:),intent(in) :: ymaxVals
+         integer,dimension(2) :: s
+         if (allocated(this%ymaxVals)) deallocate(this%ymaxVals)
+         s = shape(ymaxVals); allocate(this%ymaxVals(s(1),s(2)))
+         this%ymaxVals = ymaxVals; this%TFvals(4) = .true.
+       end subroutine
+
+       subroutine setZminVals(this,zminVals)
+         implicit none
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:),intent(in) :: zminVals
+         integer,dimension(2) :: s
+         if (allocated(this%zminVals)) deallocate(this%zminVals)
+         s = shape(zminVals); allocate(this%zminVals(s(1),s(2)))
+         this%zminVals = zminVals; this%TFvals(5) = .true.
+       end subroutine
+
+       subroutine setZmaxVals(this,zmaxVals)
+         implicit none
+         type(BCs),intent(inout) :: this
+         real(cp),dimension(:,:),intent(in) :: zmaxVals
+         integer,dimension(2) :: s
+         if (allocated(this%zmaxVals)) deallocate(this%zmaxVals)
+         s = shape(zmaxVals); allocate(this%zmaxVals(s(1),s(2)))
+         this%zmaxVals = zmaxVals; this%TFvals(6) = .true.
+       end subroutine
+
+       subroutine setXminType(this,xminType)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: xminType
+         this%xminType = xminType; this%TFb(1) = .true.
+       end subroutine
+
+       subroutine setXmaxType(this,xmaxType)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: xmaxType
+         this%xmaxType = xmaxType; this%TFb(2) = .true.
+       end subroutine
+
+       subroutine setYminType(this,yminType)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: yminType
+         this%yminType = yminType; this%TFb(3) = .true.
+       end subroutine
+
+       subroutine setYmaxType(this,ymaxType)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: ymaxType
+         this%ymaxType = ymaxType; this%TFb(4) = .true.
+       end subroutine
+
+       subroutine setZminType(this,zminType)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: zminType
+         this%zminType = zminType; this%TFb(5) = .true.
+       end subroutine
+
+       subroutine setZmaxType(this,zmaxType)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: zmaxType
+         this%zmaxType = zmaxType; this%TFb(6) = .true.
+       end subroutine
 
        end module

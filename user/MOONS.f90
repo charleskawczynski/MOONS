@@ -8,6 +8,7 @@
        use myTime_mod
        use grid_mod
        use griddata_mod
+       use generateGrids_mod
        use ops_embedExtract_mod
        use ops_interp_mod
        use rundata_mod
@@ -106,23 +107,20 @@
 
          ! **************************************************************
          ! Initialize all grids
-         call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
-         call init(SD,Ni,Nwtop,Nwbot,grid_mom)
+         ! call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
+         call makeGrids(grid_mom,grid_ind,Ni,Nwtop,Nwbot)
+         call init(SD,Ni,Nwtop,Nwbot+10,grid_mom)
 
          ! Initialize Energy grid/fields/parameters
          call setDTime(nrg,dTime)
          call setPiGroups(nrg,Re,Pr,Ec,Al,Rem)
          call init(nrg,grid_ind,SD,dir)
-         if (exportGrids) call export(grid_ind,dir//'Ufield/','grid_nrg')
-         if (exportRawICs) call exportRaw(nrg,nrg%g,dir)
 
          ! Initialize Momentum grid/fields/parameters
          call setDTime(mom,dTime)
          call setNMaxPPE(mom,NmaxPPE)
          call setPiGroups(mom,Re,Ha,Gr,Fr)
          call init(mom,grid_mom,dir)
-         if (exportGrids) call export(grid_mom,dir//'Ufield/','grid_mom')
-         if (exportRawICs) call exportRaw(mom,mom%g,dir)
 
          ! Initialize Induction grid/fields/parameters
          call setDTime(ind,ds)
@@ -130,8 +128,23 @@
          call setNmaxCleanB(ind,NmaxCleanB)
          call setPiGroups(ind,Ha,Rem)
          if (solveInduction) call init(ind,grid_ind,SD,dir)
-         if (exportGrids) call export(grid_ind,dir//'Bfield/','grid_ind')
-         if (exportRawICs) call exportRaw(ind,ind%g,dir)
+
+         ! ******************** EXPORT GRIDS ****************************
+         if (exportGrids) call writeToFile(mom%g,dir//'Ufield/','grid_mom')
+         ! if (exportGrids) call writeToFile(ind%g,dir//'Tfield/','grid_nrg')
+         if (exportGrids) call writeToFile(ind%g,dir//'Bfield/','grid_ind')
+
+         ! ********************* EXPORT RAW ICs *************************
+         ! if (exportRawICs) call exportRaw(nrg,nrg%g,dir)
+         ! if (exportRawICs) call exportRaw(mom,mom%g,dir)
+         ! if (exportRawICs) call exportRaw(ind,ind%g,dir)
+
+         ! ********************* EXPORT ICs *****************************
+         ! if (exportICs) call export(mom,mom%g,dir)
+         ! if (exportICs) call export(nrg,nrg%g,dir)
+         ! if (exportICs) call embedVelocity(ind,mom%U,mom%g)
+         if (exportICs) call exportMaterial(ind,dir)
+         ! if (exportICs) call export(ind,ind%g,dir)
 
          ! ****************** INITIALIZE RUNDATA ************************
          ! These all need to be re-evaluated because the Fo and Co now depend
@@ -151,27 +164,28 @@
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
 
-         if (solveMomentum) call computeDivergence(mom,mom%g)
+
+         if (solveMomentum)  call computeDivergence(mom,mom%g)
          if (solveInduction) call computeDivergence(ind,ind%g)
 
-         if (exportRawICs) then
-           if (solveMomentum) call exportRaw(mom,mom%g,dir)
-           if (solveEnergy)   call exportRaw(nrg,nrg%g,dir)
-           if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
-           if (solveInduction) call exportRaw(ind,ind%g,dir)
-         endif
-         if (exportICs) then
-           if (solveMomentum) call export(mom,mom%g,dir)
-           if (solveEnergy)   call export(nrg,nrg%g,dir)
-           if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
-           if (solveInduction) call export(ind,ind%g,dir)
-         endif
+         ! if (exportRawICs) then
+         !   if (solveMomentum)  call exportRaw(mom,mom%g,dir)
+         !   if (solveEnergy)    call exportRaw(nrg,nrg%g,dir)
+         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
+         !   if (solveInduction) call exportRaw(ind,ind%g,dir)
+         ! endif
+         ! if (exportICs) then
+         !   if (solveMomentum)  call export(mom,mom%g,dir)
+         !   if (solveEnergy)    call export(nrg,nrg%g,dir)
+         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
+         !   if (solveInduction) call export(ind,ind%g,dir)
+         ! endif
 
          if (stopAfterExportICs) then
            stop 'Finished exporting ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          endif
 
-         call checkGrid(gd)
+         ! call checkGrid(gd)
 
          write(*,*) ''
          write(*,*) 'Press enter if these parameters are okay.'
@@ -275,9 +289,9 @@
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
          ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
          case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
-         ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-4; dTime = 1.0d-2
+         case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-4; dTime = 1.0d-2
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! Low but finite Rem
-         case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 10.0d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! finite Rem
+         ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 10.0d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! finite Rem
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 2.0d-6; dTime = 1.0d-2
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
          ! case (103); Re = 1000d0;   Ha = 100.0d0  ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 3.0d-4
@@ -340,7 +354,8 @@
          ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
          ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 10.0d0  ; ds = 1.0d-5; dTime = ds
 
-         Re = 100d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds ! Next
+         ! Re = 100d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds ! Next
+         Re = 10000.0_cp; Ha = 10000.0_cp; Rem = 100.0_cp; ds = 1.0d-5; dTime = ds ! Next
          ! Re = 500d0;    Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
          ! Re = 1000d0;   Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
          ! Re = 10000d0;  Ha = 100.0d0 ; Rem = 100.0d0  ; ds = 1.0d-5; dTime = ds
@@ -416,7 +431,7 @@
          ! Rem = real(1.0,cp);    ds = 5.0d-5;   dTime = ds     ! (Rem = 1)
          ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
          ! Rem = real(100.0,cp);  ds = 5.0d-5;   dTime = ds     ! (Rem = 100) , sigma* = 0.01
-         Rem = real(100.0,cp);  ds = 5.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         Rem = real(100.0,cp);  ds = 2.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
 
          case (1011)
          Re = real(10.0,cp)
@@ -485,7 +500,9 @@
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**1 ! Mimicking PD
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Mimicking PD
          ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**6 ! Mimicking PD
-         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 400000 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 400000 ! Mimicking PD
+         ! case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! Mimicking PD
+         case (1003); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 1 ! Mimicking PD
 
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**5 ! Salah
          ! case (1004); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 2*10**4
@@ -514,7 +531,8 @@
          ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0y - done
          ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0z
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
-         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
+         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
+         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
 
          case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          case (1012); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
@@ -571,7 +589,10 @@
          ! case (1003); Ni = (/1,64,64/); Nwtop = (/0,11,11/); Nwbot = Nwtop
          ! case (1003); Ni = (/1,100,100/); Nwtop = (/0,5,5/); Nwbot = Nwtop
          ! case (1003); Ni = (/1,160,160/); Nwtop = (/0,8,8/); Nwbot = Nwtop
-         case (1003); Ni = (/1,260,260/); Nwtop = (/0,13,13/); Nwbot = Nwtop
+         ! case (1003); Ni = (/1,260,260/); Nwtop = (/0,13,13/); Nwbot = Nwtop
+         ! case (1003); Ni = (/64,64,1/); Nwtop = 0; Nwbot = Nwtop
+         case (1003); Ni = (/64,64,1/); Nwtop = 0; Nwbot = Nwtop ! SK flow
+
          case (1004); Ni = 35;            Nwtop = 0;           Nwbot = 0
          case (1005); Ni = (/64,32,32/);  Nwtop = 0;           Nwbot = 0  ! (Jack's Experiment)
          ! case (1006); Ni = (/64,64,1/);   Nwtop = 32;          Nwbot = 32 ! (Weiss, Isolated Eddy)
@@ -588,10 +609,10 @@
          case (1009); Ni = 50;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
          ! case (1009); Ni = 100;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
          ! case (1010); Ni = 50;            Nwtop = 25;          Nwbot = 25  ! (Kawczynski - demo) for sigma* = 0.01
-         case (1010); Ni = 50;            Nwtop = 15;          Nwbot = 15  ! (Kawczynski - demo) for sigma* = 0.001
+         case (1010); Ni = 30;            Nwtop = (/8,0,8/);   Nwbot = 8  ! (Kawczynski - demo) for sigma* = 0.001
          case (1011); Ni = (/1,45,45/);   Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo) for shercliff / hunt flow
          case (1012); Ni = 64;            Nwtop = 0;           Nwbot = 0  ! Pattison
-         case (1013); Ni = (/100,100,1/);   Nwtop = 0;           Nwbot = 0  ! Pattison
+         case (1013); Ni = (/128,128,1/);   Nwtop = 0;           Nwbot = 0  ! Pattison
 
          case default
            Ni = (/64,32,32/)
