@@ -80,15 +80,15 @@
          !   the estimate beta satisfying T2_root(beta)=0 (assumes Newton converged!) 
          !   the number of iterations iters
          implicit none
-         real(cp), intent(inout) :: beta
-         real(cp), external :: T2_root, T2_prime
-         real(cp), intent(in) :: hmin,hmax,alpha,dh
+         real(cp),intent(inout) :: beta
+         real(cp),external :: T2_root, T2_prime
+         real(cp),intent(in) :: hmin,hmax,alpha,dh
          integer,intent(in) :: N
 
          real(cp) :: dbeta, fbeta, fbetaprime ! local variables
-         integer, parameter :: maxiter = 1000000
-         real(cp), parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
-         real(cp), parameter :: err = 10.0_cp**(-10.0_cp) ! We may have a problem
+         integer,parameter :: maxiter = 1000000
+         real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
+         real(cp),parameter :: err = 10.0_cp**(-10.0_cp) ! We may have a problem
          integer :: k
          logical :: debug
          debug = .false.

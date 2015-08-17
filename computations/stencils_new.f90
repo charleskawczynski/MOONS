@@ -39,9 +39,8 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      interface staggered;     module procedure staggered_O2;                     end interface
-      interface collocated;    module procedure collocated_O2;                  end interface
-      interface collocated;    module procedure collocatedD2fDh2;                end interface
+      interface staggered;     module procedure staggered_O2;                    end interface
+      interface collocated;    module procedure collocated_O2;                   end interface
       interface collocated;    module procedure collocatedD2fDh2_conservative;   end interface
 
       ! interface staggered;     module procedure staggered_O4;                     end interface
@@ -130,9 +129,9 @@
         dfdh(2) = 0.5_cp*(f(1)+f(2))*T%L(1) + &
                                f(2) *T%D(1) + &
                                f(3) *T%U(1)
-        dfdh(s-1) = 0.5_cp*(f(s)+f(s-1))*T%L(s-2) + &
-                                 f(s-1) *T%D(s-2) + &
-                                 f( s ) *T%U(s-2)
+        dfdh(s-1) =  f(s-2) *T%L(s-2) + &
+                     f(s-1) *T%D(s-2) + &
+        0.5_cp*(f(s)+f(s-1))*T%U(s-2)
         else
         ! Collocated cell-corner derivative, on boundary
         dfdh(2) = f(2)*T%D(1) + &

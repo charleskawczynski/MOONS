@@ -53,37 +53,41 @@
 #endif
 
        public :: cross
-       interface cross; module procedure collocatedCrossReal;     end interface
-       interface cross; module procedure collocatedCrossVF;       end interface
+       interface cross;     module procedure collocatedCrossReal;     end interface
+       interface cross;     module procedure collocatedCrossVF;       end interface
 
        public :: lap
-       interface lap;   module procedure lapUniformCoeffReal;     end interface
-       interface lap;   module procedure lapVariableCoeff1Real;   end interface
-       interface lap;   module procedure lapVariableCoeff2Real;   end interface
-       interface lap;   module procedure lapUniformCoeffSF;       end interface
-       interface lap;   module procedure lapUniformCoeffVF;       end interface
-       interface lap;   module procedure lapVariableCoeff1VF;     end interface
-       interface lap;   module procedure lapVariableCoeff2VF;     end interface
+       interface lap;       module procedure lapUniformCoeffReal;     end interface
+       interface lap;       module procedure lapVariableCoeff1Real;   end interface
+       interface lap;       module procedure lapVariableCoeff2Real;   end interface
+       interface lap;       module procedure lapUniformCoeffSF;       end interface
+       interface lap;       module procedure lapUniformCoeffVF;       end interface
+       interface lap;       module procedure lapVariableCoeff1VF;     end interface
+       interface lap;       module procedure lapVariableCoeff2VF;     end interface
 
        public :: div
-       interface div;   module procedure divReal;                 end interface
-       interface div;   module procedure divVF;                   end interface
+       interface div;       module procedure divReal;                 end interface
+       interface div;       module procedure divVF;                   end interface
 
        public :: grad
-       interface grad;  module procedure gradReal;                end interface
-       interface grad;  module procedure gradVF;                  end interface
+       interface grad;      module procedure gradReal;                end interface
+       interface grad;      module procedure gradVF;                  end interface
 
        public :: curl
-       interface curl;  module procedure curlReal;                end interface
-       interface curl;  module procedure curlVF;                  end interface
+       interface curl;      module procedure curlReal;                end interface
+       interface curl;      module procedure curlVF;                  end interface
+
+       public :: curlcurl
+       interface curlcurl;  module procedure curlcurlCoeffVF          end interface
+       interface curlcurl;  module procedure curlcurlUniformVF        end interface
 
        public :: CCVaryDel ! Needs to be removed eventually
 
        public :: mixed
-       interface mixed;  module procedure mixed_uniformCoeffReal; end interface
-       interface mixed;  module procedure mixed_uniformCoeffVF;   end interface
-       interface mixed;  module procedure mixed_variableCoeffReal;end interface
-       interface mixed;  module procedure mixed_variableCoeffVF;  end interface
+       interface mixed;     module procedure mixed_uniformCoeffReal;  end interface
+       interface mixed;     module procedure mixed_uniformCoeffVF;    end interface
+       interface mixed;     module procedure mixed_variableCoeffReal; end interface
+       interface mixed;     module procedure mixed_variableCoeffVF;   end interface
 
        contains
 
@@ -271,12 +275,11 @@
        end subroutine
 
        subroutine mixed_uniformCoeffReal(mix,g,temp,dir1,dir2)
-         ! mixed_uniformCoeffReal computes
-         ! 
-         ! mix =  d/dxj (df/dxi)
-         !           ^       ^
-         !           |       |
-         !          dir2    dir1
+         ! Computes
+         !     mix =  d/dxj (df/dxi)
+         !               ^       ^
+         !               |       |
+         !              dir2    dir1
          !
          !     if dir1 == dir2  --> Error (call Laplacian instead)
          !     if dir1 ≠ dir2   --> see below
@@ -295,15 +298,12 @@
          call d%assign(mix,temp,g,1,dir2,1)
        end subroutine
 
-       subroutine mixed_variableCoeffReal(mix,f,k,g,dir1,dir2)
-         ! mixed_variableCoeffReal computes
-         ! 
-         ! mix =  d/dxj (k df/dxi)
-         !           ^         ^
-         !           |         |
-         !          dir2      dir1
-         ! 
-         ! f and mix live at the cell center.
+       subroutine mixed_variableCoeffReal(mix,f,k,g,temp,dir1,dir2)
+         ! Computes
+         !     mix =  d/dxj (k df/dxi)
+         !               ^         ^
+         !               |         |
+         !              dir2      dir1
          !
          !     if dir1 == dir2  --> Error (call laplacian instead)
          !     if dir1 ≠ dir2   --> see below
@@ -312,25 +312,18 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: mix
+         real(cp),dimension(:,:,:),intent(inout) :: temp
          real(cp),dimension(:,:,:),intent(in) :: f,k
          type(grid),intent(in) :: g
          integer,intent(in) :: dir1,dir2
-         real(cp),dimension(:,:,:),allocatable :: temp
-         integer,dimension(3) :: sk
          type(del) :: d
-
          if (dir1.eq.dir2) then
            write(*,*) 'Error: dir1=dir2 in mixed_variableCoeffReal in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
-
-         sk = shape(k)
-
-         allocate(temp(sk(1),sk(2),sk(3)))
          call d%assign(temp,f,g,1,dir1,1)
          temp = temp*k
          call d%assign(mix,temp,g,1,dir2,1)
-         deallocate(temp)
        end subroutine
 
        ! *********************************************************************************
@@ -417,6 +410,45 @@
          call curl(curlU%x,U%x,U%y,U%z,g,1)
          call curl(curlU%y,U%x,U%y,U%z,g,2)
          call curl(curlU%z,U%x,U%y,U%z,g,3)
+       end subroutine
+
+       subroutine curlcurlCoeffVF(curlcurlU,U,k,temp,g)
+         ! Computes
+         !     curl( k curl(U) )
+         ! 
+         ! NOTE: curl(U) will live at the same location as k
+         ! 
+         implicit none
+         type(VF),intent(inout) :: curlcurlU
+         type(VF),intent(inout) :: temp
+         type(VF),intent(in) :: U,k
+         type(grid),intent(in) :: g
+         call curl(temp%x,U%x,U%y,U%z,g,1)
+         call curl(temp%y,U%x,U%y,U%z,g,2)
+         call curl(temp%z,U%x,U%y,U%z,g,3)
+         call multiply(temp,k)
+         call curl(curlcurlU%x,temp%x,temp%y,temp%z,g,1)
+         call curl(curlcurlU%y,temp%x,temp%y,temp%z,g,2)
+         call curl(curlcurlU%z,temp%x,temp%y,temp%z,g,3)
+       end subroutine
+
+       subroutine curlcurlUniformVF(curlcurlU,U,temp,g)
+         ! Computes
+         !     curl( curl(U) )
+         ! 
+         ! NOTE: curl(U) will live at the same location as k
+         ! 
+         implicit none
+         type(VF),intent(inout) :: curlcurlU
+         type(VF),intent(inout) :: temp
+         type(VF),intent(in) :: U
+         type(grid),intent(in) :: g
+         call curl(temp%x,U%x,U%y,U%z,g,1)
+         call curl(temp%y,U%x,U%y,U%z,g,2)
+         call curl(temp%z,U%x,U%y,U%z,g,3)
+         call curl(curlcurlU%x,temp%x,temp%y,temp%z,g,1)
+         call curl(curlcurlU%y,temp%x,temp%y,temp%z,g,2)
+         call curl(curlcurlU%z,temp%x,temp%y,temp%z,g,3)
        end subroutine
 
        subroutine mixed_uniformCoeffVF(mix,f,g)

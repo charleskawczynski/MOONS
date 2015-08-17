@@ -214,30 +214,49 @@
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,denom
-        integer :: i
-        allocate(L(c%sc-1)); allocate(D(c%sc)); allocate(U(c%sc-1))
-        allocate(denom(c%sc-2))
+        real(cp),dimension(:),allocatable :: dh
+        integer :: i,s
+        s = c%sc
+        allocate(dh(s-2)); dh = c%dhc
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
         L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-        denom = (/(c%dhc(i-1)*c%dhc(i)*(c%dhc(i-1)+c%dhc(i)),i=2,c%sc-1)/)
-        D(2:c%sc-1) = (/((c%dhc(i)**2.0_cp-c%dhc(i-1)**2.0_cp)/denom(i-1),i=2,c%sc-1)/)
-        L(1:c%sc-2) = (/((-c%dhc(i)**2.0_cp)/denom(i-1),i=2,c%sc-1)/)
-        U(2:c%sc-1) = (/((c%dhc(i-1)**2.0_cp)/denom(i-1),i=2,c%sc-1)/)
+        ! Front
+        L(1) = -(dh(i+1)+2.0_cp*dh(i))/(dh(i)*(dh(i+1)+dh(i)))
+        D(1) = (dh(i+1)+dh(i))/(dh(i)*dh(i))
+        U(1) = dh(i)/(dh(i)*(dh(i)+dh(i)))
+        ! Interior
+        L(2:s-3) = (/( (-dh(i-1)/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1)/)
+        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i))   ,i=2,s-1)/)
+        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i)))    ,i=2,s-1)/)
+        ! Back
+        L(s-2) = dh(i)/(dh(i)*(dh(i)+dh(i)))
+        D(s-2) = -(dh(i)+dh(i))/(dh(i)*dh(i))
+        U(s-2) = (2.0_cp*dh(i)+dh(i))/(dh(i)*(dh(i)+dh(i)))
         call init(c%lapCC,L,D,U)
-        deallocate(L,D,U,denom)
+        deallocate(L,D,U,denom,dh)
        end subroutine
 
        subroutine stencil_colN(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,denom
-        integer :: i
-        allocate(L(c%sn-1)); allocate(D(c%sn)); allocate(U(c%sn-1))
-        allocate(denom(c%sn-2))
+        integer :: i,s
+        s = c%sn
+        allocate(dh(s-2)); dh = c%dhn
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
         L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-        denom = (/(c%dhn(i-1)*c%dhn(i)*(c%dhn(i-1)+c%dhn(i)),i=2,c%sn-1)/)
-        D(2:c%sn-1) = (/((c%dhn(i)**2.0_cp-c%dhn(i-1)**2.0_cp)/denom(i-1),i=2,c%sn-1)/)
-        L(1:c%sn-2) = (/((-c%dhn(i)**2.0_cp)/denom(i-1),i=2,c%sn-1)/)
-        U(2:c%sn-1) = (/((c%dhn(i-1)**2.0_cp)/denom(i-1),i=2,c%sn-1)/)
+        i = 1 ! Front
+        L(i) = -(dh(i+1)+2.0_cp*dh(i))/(dh(i)*(dh(i+1)+dh(i)))
+        D(i) = (dh(i+1)+dh(i))/(dh(i+1)*dh(i))
+        U(i) = -dh(i)/(dh(i+1)*(dh(i+1)+dh(i)))
+        ! Interior
+        L(2:s-3) = (/( (-dh(i-1)/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-3)/)
+        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i))   ,i=2,s-3)/)
+        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i)))    ,i=2,s-3)/)
+        i = s-2 ! Back
+        L(i) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
+        D(i) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
+        U(i) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
         call init(c%lapCC,L,D,U)
         deallocate(L,D,U,denom)
        end subroutine
