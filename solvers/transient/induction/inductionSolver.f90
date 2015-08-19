@@ -611,7 +611,7 @@
          ! call inductionExportTransientFull(ind,ind%g,dir) ! VERY Expensive
 
          if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%g)
-         if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
 
          if (getPrintParams(ss_MHD)) then
            call inductionInfo(ind,6)
@@ -716,7 +716,7 @@
 
            ! ------------- diffusion term -------------
            call divide(ind%B,ind%mu)
-           call CCBfieldDiffuse(ind%temp_CC,ind%B,ind%sigmaInv_face,g)
+           ! call CCBfieldDiffuse(ind%temp_CC,ind%B,ind%sigmaInv_face,g)
            call multiply(ind%B,ind%mu)
 
            call multiply(ind%temp_CC,ind%dTime)

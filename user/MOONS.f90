@@ -532,7 +532,9 @@
          ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0z
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
-         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
+
+         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
+         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10*10**6 ! for testing - restarting
 
          case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          case (1012); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
