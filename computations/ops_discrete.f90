@@ -78,8 +78,8 @@
        interface curl;      module procedure curlVF;                  end interface
 
        public :: curlcurl
-       interface curlcurl;  module procedure curlcurlCoeffVF          end interface
-       interface curlcurl;  module procedure curlcurlUniformVF        end interface
+       interface curlcurl;  module procedure curlcurlCoeffVF;         end interface
+       interface curlcurl;  module procedure curlcurlUniformVF;       end interface
 
        public :: CCVaryDel ! Needs to be removed eventually
 
@@ -274,7 +274,7 @@
          endif
        end subroutine
 
-       subroutine mixed_uniformCoeffReal(mix,g,temp,dir1,dir2)
+       subroutine mixed_uniformCoeffReal(mix,f,g,temp,dir1,dir2)
          ! Computes
          !     mix =  d/dxj (df/dxi)
          !               ^       ^
@@ -286,6 +286,7 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: mix
+         real(cp),dimension(:,:,:),intent(in) :: f
          real(cp),dimension(:,:,:),intent(inout) :: temp
          type(grid),intent(in) :: g
          integer,intent(in) :: dir1,dir2
@@ -451,25 +452,28 @@
          call curl(curlcurlU%z,temp%x,temp%y,temp%z,g,3)
        end subroutine
 
-       subroutine mixed_uniformCoeffVF(mix,f,g)
+       subroutine mixed_uniformCoeffVF(mix,f,g,temp)
          implicit none
          type(VF),intent(inout) :: mix
+         type(VF),intent(inout) :: temp
          real(cp),dimension(:,:,:),intent(in) :: f
          type(grid),intent(in) :: g
-         call mixed(mix%x,f,g,2,3)
-         call mixed(mix%y,f,g,1,3)
-         call mixed(mix%z,f,g,1,2)
+         call mixed(mix%x,f,g,temp%x,2,3)
+         call mixed(mix%y,f,g,temp%y,1,3)
+         call mixed(mix%z,f,g,temp%z,1,2)
        end subroutine
 
-       subroutine mixed_variableCoeffVF(mix,f,k,g)
+       subroutine mixed_variableCoeffVF(mix,f,k,g,temp)
          implicit none
          type(VF),intent(inout) :: mix
+         type(VF),intent(inout) :: temp
          type(VF),intent(in) :: k
          real(cp),dimension(:,:,:),intent(in) :: f
          type(grid),intent(in) :: g
-         call mixed(mix%x,f,k%y,g,2,3) ! Shape of k must match dir1
-         call mixed(mix%y,f,k%x,g,1,3) ! Shape of k must match dir1
-         call mixed(mix%z,f,k%x,g,1,2) ! Shape of k must match dir1
+         call mixed(mix%x,f,k%y,g,temp%y,2,3) ! Shape of k must match dir1
+         call mixed(mix%y,f,k%x,g,temp%x,1,3) ! Shape of k must match dir1
+         call mixed(mix%z,f,k%x,g,temp%x,1,2) ! Shape of k must match dir1
+         call multiply(temp,k)
        end subroutine
 
        end module

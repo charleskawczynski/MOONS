@@ -17,7 +17,9 @@ endif
 
 # ************* DIRECTORY SETTINGS ******************
 SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
+
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
+# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj

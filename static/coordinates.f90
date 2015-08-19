@@ -172,12 +172,12 @@
        subroutine genStencils(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        call stencil_lapCC(c)
-        call stencil_lapN(c)
-        call stencil_stagCC2N(c)
-        call stencil_stagN2CC(c)
-        call stencil_colCC(c)
-        call stencil_colN(c)
+        ! call stencil_lapCC(c)
+        ! call stencil_lapN(c)
+        ! call stencil_stagCC2N(c)
+        ! call stencil_stagN2CC(c)
+        ! call stencil_colCC(c)
+        ! call stencil_colN(c)
        end subroutine
 
        subroutine stencil_lapCC(c)
@@ -221,14 +221,16 @@
         allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
         L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
         ! Front
+        i = 1
         L(1) = -(dh(i+1)+2.0_cp*dh(i))/(dh(i)*(dh(i+1)+dh(i)))
         D(1) = (dh(i+1)+dh(i))/(dh(i)*dh(i))
         U(1) = dh(i)/(dh(i)*(dh(i)+dh(i)))
         ! Interior
-        L(2:s-3) = (/( (-dh(i-1)/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1)/)
-        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i))   ,i=2,s-1)/)
-        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i)))    ,i=2,s-1)/)
+        L(2:s-3) = (/( (-dh(i-1)/(dh(i-1)*(dh(i-1)+dh(i)))) ,i=2,s-1)/)
+        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1)/)
+        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1)/)
         ! Back
+        i = s-1
         L(s-2) = dh(i)/(dh(i)*(dh(i)+dh(i)))
         D(s-2) = -(dh(i)+dh(i))/(dh(i)*dh(i))
         U(s-2) = (2.0_cp*dh(i)+dh(i))/(dh(i)*(dh(i)+dh(i)))
@@ -240,6 +242,7 @@
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,denom
+        real(cp),dimension(:),allocatable :: dh
         integer :: i,s
         s = c%sn
         allocate(dh(s-2)); dh = c%dhn
@@ -250,9 +253,9 @@
         D(i) = (dh(i+1)+dh(i))/(dh(i+1)*dh(i))
         U(i) = -dh(i)/(dh(i+1)*(dh(i+1)+dh(i)))
         ! Interior
-        L(2:s-3) = (/( (-dh(i-1)/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-3)/)
-        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i))   ,i=2,s-3)/)
-        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i)))    ,i=2,s-3)/)
+        L(2:s-3) = (/( (-dh(i-1)/(dh(i-1)*(dh(i-1)+dh(i)))) ,i=2,s-3)/)
+        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-3)/)
+        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-3)/)
         i = s-2 ! Back
         L(i) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
         D(i) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
