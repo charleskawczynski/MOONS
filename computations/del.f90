@@ -199,22 +199,32 @@
         end select
       end subroutine
 
-      subroutine delGen(dfdh,f,g,n,dir,pad,genType)
+      subroutine delGenGen(dfdh,f,g,n,dir,pad,genType)
+        implicit none
+        type(RF_array),intent(inout) :: dfdh
+        type(RF_array),intent(in) :: f
+        type(grid),intent(in) :: g
+        integer,intent(in) :: n,dir,pad,genType
+        integer :: i
+        do i=1,dfdh%s
+          call delGen(dfdh%RF(i)%f,f%RF(i)%f,g%g(i),n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s)
+        enddo
+      end subroutine
+
+      subroutine delGen(dfdh,f,g,n,dir,pad,genType,s,sdfdh)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
         real(cp),dimension(:,:,:),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType
-        integer,dimension(3) :: s
+        integer,dimension(3),intent(in) :: s,sdfdh
         integer :: i,j,k,diffType
 
-        s = shape(f)
-
 #ifdef _DEBUG_DEL_
-        call checkDimensions(shape(f),shape(dfdh),dir)
+        call checkDimensions(s,sdfdh,dir)
 #endif
 
-        diffType = getDiffType(s,shape(dfdh),g%c(dir)%sn,g%c(dir)%sc,dir)
+        diffType = getDiffType(s,sdfdh,g%c(dir)%sn,g%c(dir)%sc,dir)
 
         select case (dir)
         case (1)
@@ -253,7 +263,6 @@
             end select
           endif
         endif
-
       end subroutine
 
 
@@ -261,8 +270,8 @@
 
       subroutine assignDel(dfdh,f,g,n,dir,pad)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        type(RF_array),intent(inout) :: dfdh
+        type(RF_array),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,1)
@@ -270,8 +279,8 @@
 
       subroutine addDel(dfdh,f,g,n,dir,pad)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        type(RF_array),intent(inout) :: dfdh
+        type(RF_array),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,2)
@@ -279,8 +288,8 @@
 
       subroutine subtractDel(dfdh,f,g,n,dir,pad)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        type(RF_array),intent(inout) :: dfdh
+        type(RF_array),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,3)
@@ -288,8 +297,8 @@
 
       subroutine multiplyDel(dfdh,f,g,n,dir,pad)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        type(RF_array),intent(inout) :: dfdh
+        type(RF_array),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,4)
@@ -297,8 +306,8 @@
 
       subroutine divideDel(dfdh,f,g,n,dir,pad)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        type(RF_array),intent(inout) :: dfdh
+        type(RF_array),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,5)

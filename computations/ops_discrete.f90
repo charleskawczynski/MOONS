@@ -81,8 +81,6 @@
        interface curlcurl;  module procedure curlcurlCoeffVF          end interface
        interface curlcurl;  module procedure curlcurlUniformVF        end interface
 
-       public :: CCVaryDel ! Needs to be removed eventually
-
        public :: mixed
        interface mixed;     module procedure mixed_uniformCoeffReal;  end interface
        interface mixed;     module procedure mixed_uniformCoeffVF;    end interface
@@ -203,75 +201,6 @@
          case default
            stop 'Error: dir must = 1,2,3 in curlReal.'
          end select
-       end subroutine
-
-       subroutine CCVaryDel(df,f,k,g,dir1,dir2)
-         ! This is a depricated routine and needs to be deleted once the 
-         ! new routines (mixed_uniformCoeff,mixed_variableCoeff) have been tested.
-         ! 
-         ! 
-         ! Call laplacian if dir1=dir2.
-         ! 
-         ! The issue with this routine is that the mixed derivatives are ONLY
-         ! for CC data, all of the other operators can do computations for N/CC and 
-         ! operator specific data. This needs to be modified to operate on general data
-         ! in a natural way. See the discrete operators.tex file for documentation.
-         ! 
-         ! 
-         ! CCVaryDel computes
-         ! 
-         !     d/dxj (k df/dxi)
-         !        ^         ^
-         !        |         |
-         !       dir2      dir1
-         ! 
-         ! f and df live at the cell center.
-         !
-         !     dir1 == dir2
-         !            upwind -> interpolate coefficient -> upwind
-         !     dir1 ≠ dir2
-         !            CD2 -> CD2
-         ! 
-         ! del should be capable of computing conservative derivatives.
-         ! This routine needs adjusting to use this capability since
-         ! it uses multiple cores more efficiently.
-         ! 
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: df
-         real(cp),dimension(:,:,:),intent(in) :: f,k
-         type(grid),intent(in) :: g
-         integer,intent(in) :: dir1,dir2
-         real(cp),dimension(:,:,:),allocatable :: temp1,temp2
-         integer,dimension(3) :: s
-         integer :: x,y,z
-         type(del) :: d
-         s = shape(f)
-         select case (dir1)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: dir1 must = 1,2,3 in CCVaryDel.'; stop
-         end select
-
-         if (dir1.eq.dir2) then
-           allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
-           allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
-           call d%assign(temp1,f,g,1,dir1,0)
-           call cellCenter2Face(temp2,k,g,dir1)
-           temp1 = temp1*temp2
-           call d%assign(temp2,temp1,g,1,dir2,0)
-           df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)
-           deallocate(temp1,temp2)
-         else
-           allocate(temp1(s(1),s(2),s(3)))
-           allocate(temp2(s(1),s(2),s(3)))
-           call d%assign(temp1,f,g,1,dir1,0)
-           temp1 = temp1*k
-           call d%assign(temp2,temp1,g,1,dir2,0)
-           df = temp2
-           deallocate(temp1,temp2)
-         endif
        end subroutine
 
        subroutine mixed_uniformCoeffReal(mix,g,temp,dir1,dir2)
