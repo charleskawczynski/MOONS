@@ -34,7 +34,6 @@
        use grid_mod
        use VF_mod
        use SF_mod
-       use IO_scalarFields_mod
 
        implicit none
 
@@ -53,44 +52,41 @@
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
 
        public :: collocatedMagnitude
-       interface collocatedMagnitude;     module procedure collocatedMagnitudeReal;   end interface
-       interface collocatedMagnitude;     module procedure collocatedMagnitudeVF;     end interface
+       interface collocatedMagnitude;     module procedure collocatedMagnitude_RF;    end interface
+       interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
 
        public :: totalEnergy
-       interface totalEnergy;             module procedure totalEnergyReal;           end interface
-       interface totalEnergy;             module procedure totalEnergyVF;             end interface
+       interface totalEnergy;             module procedure totalEnergy_RF;            end interface
+       interface totalEnergy;             module procedure totalEnergy_VF;            end interface
 
        public :: stabilityTerms
-       interface stabilityTerms;          module procedure stabilityTermsReal;        end interface
-       interface stabilityTerms;          module procedure stabilityTermsVF;          end interface
+       interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
+       interface stabilityTerms;          module procedure stabilityTerms_SF;         end interface
+       interface stabilityTerms;          module procedure stabilityTerms_VF;         end interface
 
        public :: zeroGhostPoints
-       interface zeroGhostPoints;         module procedure zeroGhostPointsReal;       end interface
-       interface zeroGhostPoints;         module procedure zeroGhostPointsVF;         end interface
-       interface zeroGhostPoints;         module procedure zeroGhostPointsSF;         end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPoints_RF;        end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
 
        public :: zeroInterior
-       interface zeroInterior;            module procedure zeroInteriorReal;          end interface
-       interface zeroInterior;            module procedure zeroInteriorVF;            end interface
-       interface zeroInterior;            module procedure zeroInteriorSF;            end interface
+       interface zeroInterior;            module procedure zeroInterior_RF;           end interface
+       interface zeroInterior;            module procedure zeroInterior_VF;           end interface
+       interface zeroInterior;            module procedure zeroInterior_SF;           end interface
 
        public :: treatInterface
-       interface treatInterface;          module procedure treatInterfaceReal;        end interface
-       interface treatInterface;          module procedure treatInterfaceVF;          end interface
-       interface treatInterface;          module procedure treatInterfaceSF;          end interface
+       interface treatInterface;          module procedure treatInterface_RF;         end interface
+       interface treatInterface;          module procedure treatInterface_VF;         end interface
+       interface treatInterface;          module procedure treatInterface_SF;         end interface
 
        public :: printPhysicalMinMax
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxReal;   end interface
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMaxVF;     end interface
+       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_RF;    end interface
+       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_SF;    end interface
+       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_VF;    end interface
 
        public :: printGlobalMinMax
-       interface printGlobalMinMax;       module procedure printGlobalMinMaxReal;     end interface
-       interface printGlobalMinMax;       module procedure printGlobalMinMaxVF;       end interface
-
-       public :: checkGlobalMinMax
-       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxReal;     end interface
-       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxReal2;    end interface
-       interface checkGlobalMinMax;       module procedure checkGlobalMinMaxVF;       end interface
+       interface printGlobalMinMax;       module procedure printGlobalMinMax_RF;      end interface
+       interface printGlobalMinMax;       module procedure printGlobalMinMax_VF;      end interface
 
        contains
 
@@ -100,7 +96,7 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedMagnitudeReal(mag,x,y,z) ! Finished
+       subroutine collocatedMagnitude_RF(mag,x,y,z) ! Finished
          ! This routine was made in order to compare norm(B) with
          ! results from Salah
          implicit none
@@ -118,7 +114,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine stabilityTermsReal(fo,fi,g,n,dir) ! Finished
+       subroutine stabilityTerms_RF(fo,fi,g,n,dir) ! Finished
          ! Computes
          !                     |  fi  |
          !    fo =  max( fo  , | ---- | )
@@ -137,7 +133,7 @@
          case (2); x=0;y=1;z=0
          case (3); x=0;y=0;z=1
          case default
-           stop 'Error: dir must = 1,2,3 in stabilityTermsReal in ops_aux.f90'
+           stop 'Error: dir must = 1,2,3 in stabilityTerms_RF in ops_aux.f90'
          end select
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
@@ -148,10 +144,12 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine totalEnergyReal(e,x,y,z,g) ! Finished
+       subroutine totalEnergy_RF(e,x,y,z,g) ! Finished
          ! Computes
          ! 
-         !   e = ∫∫∫ ( x² + y² + z² ) dx dy dz
+         !          1
+         !   e = -------- ∫∫∫ ( x² + y² + z² ) dx dy dz
+         !        volume
          ! 
          ! Where x,y,z lives in the cell center.
          implicit none
@@ -168,14 +166,14 @@
            eTemp = eTemp + (x(i,j,k)**2.0_cp +&
                             y(i,j,k)**2.0_cp +&
                             z(i,j,k)**2.0_cp)*g%c(1)%dhn(i)*&
-                                                    g%c(2)%dhn(j)*&
-                                                    g%c(3)%dhn(k)
+                                              g%c(2)%dhn(j)*&
+                                              g%c(3)%dhn(k)
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = etemp/g%volume
        end subroutine
 
-       subroutine zeroGhostPointsReal(f)
+       subroutine zeroGhostPoints_RF(f)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
@@ -185,7 +183,7 @@
          f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
        end subroutine
 
-       subroutine zeroInteriorReal(f)
+       subroutine zeroInterior_RF(f)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
@@ -195,7 +193,7 @@
          f(:,:,2:s(3)-1) = 0.0_cp
        end subroutine
 
-       subroutine treatInterfaceReal(f)
+       subroutine treatInterface_RF(f)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3) :: s
@@ -218,7 +216,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine printPhysicalMinMaxReal(u,s,name)
+       subroutine printPhysicalMinMax_RF(u,s,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
          integer,dimension(3),intent(in) :: s
@@ -227,25 +225,11 @@
                                               maxval(u(2:s(1)-1,2:s(2)-1,2:s(3)-1))
        end subroutine
 
-       subroutine printGlobalMinMaxReal(u,name)
+       subroutine printGlobalMinMax_RF(u,name)
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: u
          character(len=*),intent(in) :: name
          write(*,*) 'Min/Max ('//name//') = ',minval(u),maxval(u)
-       end subroutine
-
-       subroutine checkGlobalMinMaxReal(du,name,i)
-         implicit none
-         real(cp),dimension(:,:,:),intent(in) :: du
-         integer,intent(inout) :: i
-         character(len=*),intent(in) :: name
-         real(cp) :: tol
-         tol = 10.0_cp**(-32.0_cp)
-         if (maxval(abs(du)).gt.tol) then
-           write(*,*) 'Min/Max ('//name//') = ',minval(du),maxval(du)
-           i = 1
-         else; i = 0
-         endif
        end subroutine
 
        ! *********************************************************************************
@@ -254,24 +238,50 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine zeroGhostPointsSF(f)
+       subroutine zeroGhostPoints_SF(f)
          implicit none
          type(SF),intent(inout) :: f
-         call zeroGhostPoints(f%phi)
+         integer :: i
+         do i=1,f%s; call zeroGhostPoints(f%RF(i)%f); enddo
        end subroutine
 
-       subroutine zeroInteriorSF(f)
+       subroutine zeroInterior_SF(f)
          implicit none
          type(SF),intent(inout) :: f
-         call zeroInterior(f%phi)
+         integer :: i
+         do i=1,f%s; call zeroInterior(f%RF(i)%f); enddo
        end subroutine
 
-       subroutine treatInterfaceSF(f)
+       subroutine treatInterface_SF(f)
          implicit none
          type(SF),intent(inout) :: f
-         call treatInterface(f%phi)
+         integer :: i
+         do i=1,f%s; call treatInterface(f%RF(i)%f); enddo
        end subroutine
 
+       subroutine printPhysicalMinMax_SF(U,name)
+         implicit none
+         type(SF),intent(in) :: U
+         character(len=*),intent(in) :: name
+         integer :: i
+         do i=1,U%s
+           call printPhysicalMinMax(U%RF(i)%f,U%RF(i)%s,name)
+         enddo
+       end subroutine
+
+       subroutine stabilityTerms_SF(fo,fi,g,n,dir)
+         implicit none
+         type(SF),intent(inout) :: fo
+         type(SF),intent(in) :: fi
+         type(grid),intent(in) :: g
+         integer,intent(in) :: n,dir
+         integer :: i
+         do i=1,fi%s
+           call assign(fo%RF(i),0.0_cp)
+           call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,g,n,dir)
+           call zeroGhostPoints(fo%RF(i)%f)
+         enddo
+       end subroutine
 
        ! *********************************************************************************
        ! *********************************************************************************
@@ -279,160 +289,93 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedMagnitudeVF(mag,V)
+       subroutine collocatedMagnitude_VF(mag,V)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: mag
+         type(SF),intent(inout) :: mag
          type(VF),intent(in) :: V
-         call collocatedMagnitude(mag,V%x,V%y,V%z)
+         integer :: i
+         do i=1,mag%s
+           call collocatedMagnitude(mag%RF(i)%f,V%x%RF(i)%f,V%y%RF(i)%f,V%z%RF(i)%f)
+         enddo
        end subroutine
 
-       subroutine stabilityTermsVF(fo,fi,g,n)
+       subroutine stabilityTerms_VF(fo,fi,g,n)
          implicit none
          type(SF),intent(inout) :: fo
          type(VF),intent(in) :: fi
          type(grid),intent(in) :: g
          integer,intent(in) :: n
-         call assign(fo,0.0_cp)
-         call stabilityTerms(fo%phi,fi%x,g,n,1)
-         call stabilityTerms(fo%phi,fi%y,g,n,2)
-         call stabilityTerms(fo%phi,fi%z,g,n,3)
-         call zeroGhostPoints(fo%phi)
+         call stabilityTerms(fo,fi%x,g,n,1)
+         call stabilityTerms(fo,fi%y,g,n,2)
+         call stabilityTerms(fo,fi%z,g,n,3)
        end subroutine
 
-       subroutine totalEnergyVF(e,f,g)
+       subroutine totalEnergy_VF(e,f,g)
          implicit none
          type(VF),intent(in) :: f
          real(cp),intent(inout) :: e
          type(grid),intent(in) :: g
-         call totalEnergy(e,f%x,f%y,f%z,g)
+         real(cp) :: eTemp
+         integer :: i
+         eTemp = 0.0_cp
+         do i=1,f%x%s
+           call totalEnergy(eTemp,f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,g)
+           e = e+eTemp
+         enddo
        end subroutine
 
-       subroutine zeroGhostPointsVF(f)
+       subroutine zeroGhostPoints_VF(f)
          implicit none
          type(VF),intent(inout) :: f
-         call zeroGhostPoints(f%x)
-         call zeroGhostPoints(f%y)
-         call zeroGhostPoints(f%z)
+         integer :: i
+         do i=1,f%x%s
+           call zeroGhostPoints(f%x%RF(i)%f)
+           call zeroGhostPoints(f%y%RF(i)%f)
+           call zeroGhostPoints(f%z%RF(i)%f)
+         enddo
        end subroutine
 
-       subroutine zeroInteriorVF(f)
+       subroutine zeroInterior_VF(f)
          implicit none
          type(VF),intent(inout) :: f
-         call zeroInterior(f%x)
-         call zeroInterior(f%y)
-         call zeroInterior(f%z)
+         integer :: i
+         do i=1,f%x%s
+           call zeroInterior(f%x%RF(i)%f)
+           call zeroInterior(f%y%RF(i)%f)
+           call zeroInterior(f%z%RF(i)%f)
+         enddo
        end subroutine
 
-       subroutine treatInterfaceVF(f)
+       subroutine treatInterface_VF(f)
          implicit none
          type(VF),intent(inout) :: f
-         call treatInterface(f%x)
-         call treatInterface(f%y)
-         call treatInterface(f%z)
+         integer :: i
+         do i=1,f%x%s
+           call treatInterface(f%x%RF(i)%f)
+           call treatInterface(f%y%RF(i)%f)
+           call treatInterface(f%z%RF(i)%f)
+         enddo
        end subroutine
 
-       subroutine printPhysicalMinMaxVF(U,namex,namey,namez)
+       subroutine printPhysicalMinMax_VF(U,namex,namey,namez)
          implicit none
          type(VF),intent(in) :: U
          character(len=*),intent(in) :: namex,namey,namez
-         call printPhysicalMinMax(U%x,U%sx,namex)
-         call printPhysicalMinMax(U%y,U%sy,namey)
-         call printPhysicalMinMax(U%z,U%sz,namez)
+         call printPhysicalMinMax(U%x,namex)
+         call printPhysicalMinMax(U%y,namey)
+         call printPhysicalMinMax(U%z,namez)
        end subroutine
 
-       subroutine printGlobalMinMaxVF(U,namex,namey,namez)
+       subroutine printGlobalMinMax_VF(U,namex,namey,namez)
          implicit none
          type(VF),intent(in) :: U
          character(len=*),intent(in) :: namex,namey,namez
-         call printGlobalMinMax(U%x,namex)
-         call printGlobalMinMax(U%y,namey)
-         call printGlobalMinMax(U%z,namez)
-       end subroutine
-
-       subroutine checkGlobalMinMaxVF(u,g,name)
-         implicit none
-         type(VF),intent(in) :: u
-         type(grid),intent(in) :: g
-         character(len=*),intent(in) :: name
-         type(VF) :: temp
-         type(del) :: d
-         real(cp),dimension(3) :: t
          integer :: i
-
-         call init(temp,u)
-
-         ! Resize x-direction:
-         if (u%sx(1).eq.g%c(1)%sn) then
-           call allocateX(temp,g%c(1)%sc,u%sx(2),u%sx(3))
-         elseif (u%sx(1).eq.g%c(1)%sc) then
-           call allocateX(temp,g%c(1)%sn,u%sx(2),u%sx(3))
-         else
-          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
-         endif
-
-         if (u%sy(1).eq.g%c(1)%sn) then
-           call allocateY(temp,g%c(1)%sc,u%sy(2),u%sy(3))
-         elseif (u%sy(1).eq.g%c(1)%sc) then
-           call allocateY(temp,g%c(1)%sn,u%sy(2),u%sy(3))
-         else
-          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
-         endif
-
-         if (u%sz(1).eq.g%c(1)%sn) then
-           call allocateZ(temp,g%c(1)%sc,u%sz(2),u%sz(3))
-         elseif (u%sz(1).eq.g%c(1)%sc) then
-           call allocateZ(temp,g%c(1)%sn,u%sz(2),u%sz(3))
-         else
-          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
-         endif
-
-         call d%assign(temp%x,u%x,g,1,1,0)
-         call d%assign(temp%y,u%y,g,1,1,0)
-         call d%assign(temp%z,u%z,g,1,1,0)
-         call checkGlobalMinMax(temp%x,name//'_x',i)
-         call checkGlobalMinMax(temp%y,name//'_y',i)
-         call checkGlobalMinMax(temp%z,name//'_z',i)
-         if (i.eq.1) then
-          call writeToFile(g,temp%x,'',name//'_x')
-          call writeToFile(g,temp%y,'',name//'_y')
-          call writeToFile(g,temp%z,'',name//'_z')
-          stop 'Done'
-         endif
-         t(1) = maxval(abs(u%x)); t(2) = maxval(abs(u%y)); t(3) = maxval(abs(u%z))
-         write(*,*) 'Good Max ('//name//') = ',maxval(t)
-         ! t(1) = maxval(abs(temp%x)); t(2) = maxval(abs(temp%y)); t(3) = maxval(abs(temp%z))
-         ! write(*,*) 'Good Max (d '//name//') = ',maxval(t)
-         call delete(temp)
-       end subroutine
-
-       subroutine checkGlobalMinMaxReal2(u,g,name)
-         implicit none
-         real(cp),dimension(:,:,:),intent(in) :: u
-         type(grid),intent(in) :: g
-         character(len=*),intent(in) :: name
-         type(SF) :: temp
-         type(del) :: d
-         integer :: i
-         integer,dimension(3) :: s
-         s = shape(u)
-
-         ! Resize x-direction:
-         if (s(1).eq.g%c(1)%sn) then
-           call init(temp,g%c(1)%sc,s(2),s(3))
-         elseif (s(1).eq.g%c(1)%sc) then
-           call init(temp,g%c(1)%sn,s(2),s(3))
-         else
-          stop 'Error: bad sizes in checkGlobalMinMaxVF in ops_aux.f90'
-         endif
-
-         call d%assign(temp%phi,u,g,1,1,0)
-         call checkGlobalMinMax(temp%phi,name//'_phi',i)
-         if (i.eq.1) then
-          call writeToFile(g,temp%phi,'',name//'_phi')
-          stop 'Done'
-         endif
-         write(*,*) 'Good Max ('//name//') = ',maxval(abs(u))
-         call delete(temp)
+         do i=1,U%x%s
+           call printGlobalMinMax(U%x%RF(i)%f,namex)
+           call printGlobalMinMax(U%y%RF(i)%f,namey)
+           call printGlobalMinMax(U%z%RF(i)%f,namez)
+         enddo
        end subroutine
 
        end module

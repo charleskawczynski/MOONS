@@ -34,15 +34,15 @@
 
       use solverSettings_mod
       use grid_mod
-      use BCs_mod
       use norms_mod
+      use SF_mod
 
       use FFT_poisson_mod
-      use PSE_mod
-      use jacobi_mod
+      ! use PSE_mod
+      ! use jacobi_mod
       use SOR_mod
-      use ADI_mod
-      use MG_mod
+      ! use ADI_mod
+      ! use MG_mod
 
       implicit none
 
@@ -60,91 +60,85 @@
       public :: poisson
 
       interface poisson;    module procedure poisson_FFT;     end interface
-      interface poisson;    module procedure poisson_PSE;     end interface
-      interface poisson;    module procedure poisson_Jacobi;  end interface
+      ! interface poisson;    module procedure poisson_PSE;     end interface
+      ! interface poisson;    module procedure poisson_Jacobi;  end interface
       interface poisson;    module procedure poisson_SOR;     end interface
-      interface poisson;    module procedure poisson_ADI;     end interface
-      interface poisson;    module procedure poisson_MG;      end interface
+      ! interface poisson;    module procedure poisson_ADI;     end interface
+      ! interface poisson;    module procedure poisson_MG;      end interface
 
       contains
 
-      subroutine poisson_FFT(FT,u,f,u_bcs,g,ss,err,displayTF,dir)
+      subroutine poisson_FFT(FT,u,f,g,ss,err,displayTF,dir)
         implicit none
         type(FFTSolver),intent(inout) :: FT
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
+        type(SF),intent(inout) :: u
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
         integer,intent(in) :: dir
-        call solve(FT,u,f,u_bcs,g,ss,err,displayTF,dir)
+        call solve(FT,u,f,g,ss,err,displayTF,dir)
       end subroutine
 
-      subroutine poisson_PSE(PSE,u,f,u_bcs,g,ss,err,displayTF)
-        implicit none
-        type(PseudoTimeSolver),intent(inout) :: PSE
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        type(solverSettings),intent(inout) :: ss
-        type(norms),intent(inout) :: err
-        logical,intent(in) :: displayTF
-        call solve(PSE,u,f,u_bcs,g,ss,err,displayTF)
-      end subroutine
+      ! subroutine poisson_PSE(PSE,u,f,g,ss,err,displayTF)
+      !   implicit none
+      !   type(PseudoTimeSolver),intent(inout) :: PSE
+      !   real(cp),dimension(:,:,:),intent(inout) :: u
+      !   real(cp),dimension(:,:,:),intent(in) :: f
+      !   type(grid),intent(in) :: g
+      !   type(solverSettings),intent(inout) :: ss
+      !   type(norms),intent(inout) :: err
+      !   logical,intent(in) :: displayTF
+      !   call solve(PSE,u,f,g,ss,err,displayTF)
+      ! end subroutine
 
-      subroutine poisson_Jacobi(JAC,u,f,u_bcs,g,ss,err,displayTF)
-        implicit none
-        type(jacobi),intent(inout) :: JAC
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        type(solverSettings),intent(inout) :: ss
-        type(norms),intent(inout) :: err
-        logical,intent(in) :: displayTF
-        call solve(JAC,u,f,u_bcs,g,ss,err,displayTF)
-      end subroutine
+      ! subroutine poisson_Jacobi(JAC,u,f,g,ss,err,displayTF)
+      !   implicit none
+      !   type(jacobi),intent(inout) :: JAC
+      !   real(cp),dimension(:,:,:),intent(inout) :: u
+      !   real(cp),dimension(:,:,:),intent(in) :: f
+      !   type(grid),intent(in) :: g
+      !   type(solverSettings),intent(inout) :: ss
+      !   type(norms),intent(inout) :: err
+      !   logical,intent(in) :: displayTF
+      !   call solve(JAC,u,f,g,ss,err,displayTF)
+      ! end subroutine
 
-      subroutine poisson_SOR(SOR,u,f,u_bcs,g,ss,err,displayTF)
+      subroutine poisson_SOR(SOR,u,f,g,ss,err,displayTF)
         implicit none
         type(SORSolver),intent(inout) :: SOR
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
+        type(SF),intent(inout) :: u
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: err
         logical,intent(in) :: displayTF
-        call solve(SOR,u,f,u_bcs,g,ss,err,displayTF)
+        call solve(SOR,u,f,g,ss,err,displayTF)
       end subroutine
 
-      subroutine poisson_ADI(ADI,u,f,u_bcs,g,ss,err,displayTF)
-        implicit none
-        type(myADI),intent(inout) :: ADI
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        type(solverSettings),intent(inout) :: ss
-        type(norms),intent(inout) :: err
-        logical,intent(in) :: displayTF
-        call solve(ADI,u,f,u_bcs,g,ss,err,displayTF)
-      end subroutine
+      ! subroutine poisson_ADI(ADI,u,f,g,ss,err,displayTF)
+      !   implicit none
+      !   type(myADI),intent(inout) :: ADI
+      !   real(cp),dimension(:,:,:),intent(inout) :: u
+      !   real(cp),dimension(:,:,:),intent(in) :: f
+      !   type(grid),intent(in) :: g
+      !   type(solverSettings),intent(inout) :: ss
+      !   type(norms),intent(inout) :: err
+      !   logical,intent(in) :: displayTF
+      !   call solve(ADI,u,f,g,ss,err,displayTF)
+      ! end subroutine
 
-      subroutine poisson_MG(MG,u,f,u_bcs,g,ss,err,displayTF)
-        implicit none
-        type(multiGrid),dimension(:),intent(inout) :: MG
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
-        type(grid),intent(in) :: g
-        type(solverSettings),intent(inout) :: ss
-        type(norms),intent(inout) :: err
-        logical,intent(in) :: displayTF
-        call solve(MG,u,f,u_bcs,g,ss,err,displayTF)
-      end subroutine
+      ! subroutine poisson_MG(MG,u,f,g,ss,err,displayTF)
+      !   implicit none
+      !   type(multiGrid),dimension(:),intent(inout) :: MG
+      !   real(cp),dimension(:,:,:),intent(inout) :: u
+      !   real(cp),dimension(:,:,:),intent(in) :: f
+      !   type(grid),intent(in) :: g
+      !   type(solverSettings),intent(inout) :: ss
+      !   type(norms),intent(inout) :: err
+      !   logical,intent(in) :: displayTF
+      !   call solve(MG,u,f,g,ss,err,displayTF)
+      ! end subroutine
 
       end module

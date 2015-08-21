@@ -28,19 +28,6 @@
 
        contains
 
-       subroutine mult(A,B,s)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: A
-         real(cp),dimension(:,:,:),intent(inout) :: B
-         integer,dimension(3),intent(in) :: s
-         integer :: i,j,k
-         !$OMP PARALLEL DO
-         do k=1,s(3); do j=1,s(2); do i=1,s(1)
-           A(i,j,k) = A(i,j,k)*B(i,j,k)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-       end subroutine
-
        ! *********************************************************************************
        ! *********************************************************************************
        ! ******************************* VECTOR ROUTINES *********************************
@@ -79,70 +66,70 @@
          call delete(tempB)
        end subroutine
 
-       subroutine faceCrossCC_E(AcrossB,A,B,g)
+       subroutine faceCrossCC_E(AcrossB,A,B,g,tempF)
          ! Computes
          ! 
          !      ( u_face x B_CC )_edge
          ! 
          ! While minimizing interpolations.
          implicit none
-         type(VF),intent(inout) :: AcrossB
+         type(VF),intent(inout) :: AcrossB,tempF
          type(VF),intent(in) :: A,B
          type(grid),intent(in) :: g
          type(VF) :: tempA,tempB
-         call init(tempA,AcrossB%sx(1),AcrossB%sx(2),AcrossB%sx(3))
+         call init(tempA,AcrossB%x)
          call init(tempB,tempA)
          call face2Edge(tempA%y,A%y,g,2,1)
          call face2Edge(tempA%z,A%z,g,3,1)
-         call cellCenter2Edge(tempB%y,B%y,g,1)
-         call cellCenter2Edge(tempB%z,B%z,g,1)
+         call cellCenter2Edge(tempB%y,B%y,g,tempF%y,1)
+         call cellCenter2Edge(tempB%z,B%z,g,tempF%y,1)
          call cross(AcrossB%x,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,1)
          call delete(tempA)
          call delete(tempB)
-         call init(tempA,AcrossB%sy(1),AcrossB%sy(2),AcrossB%sy(3))
+         call init(tempA,AcrossB%y)
          call init(tempB,tempA)
          call face2Edge(tempA%x,A%x,g,1,2)
          call face2Edge(tempA%z,A%z,g,3,2)
-         call cellCenter2Edge(tempB%x,B%x,g,2)
-         call cellCenter2Edge(tempB%z,B%z,g,2)
+         call cellCenter2Edge(tempB%x,B%x,g,tempF%x,2)
+         call cellCenter2Edge(tempB%z,B%z,g,tempF%x,2)
          call cross(AcrossB%y,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,2)
          call delete(tempA)
          call delete(tempB)
-         call init(tempA,AcrossB%sz(1),AcrossB%sz(2),AcrossB%sz(3))
+         call init(tempA,AcrossB%z)
          call init(tempB,tempA)
          call face2Edge(tempA%x,A%x,g,1,3)
          call face2Edge(tempA%y,A%y,g,2,3)
-         call cellCenter2Edge(tempB%x,B%x,g,3)
-         call cellCenter2Edge(tempB%y,B%y,g,3)
+         call cellCenter2Edge(tempB%x,B%x,g,tempF%x,3)
+         call cellCenter2Edge(tempB%y,B%y,g,tempF%x,3)
          call cross(AcrossB%z,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,3)
          call delete(tempA)
          call delete(tempB)
        end subroutine
 
-       subroutine edgeCrossCC_E(UcrossB,U,V,W,B,g)
+       subroutine edgeCrossCC_E(UcrossB,U,V,W,B,g,tempF)
          ! Computes
          ! 
          !      ( u_edge x B_CC )_edge
          ! 
          ! While minimizing interpolations.
          implicit none
-         type(VF),intent(inout) :: UcrossB
+         type(VF),intent(inout) :: UcrossB,tempF
          type(VF),intent(in) :: U,V,W,B
          type(grid),intent(in) :: g
          type(VF) :: tempB
-         call init(tempB,UcrossB%sx(1),UcrossB%sx(2),UcrossB%sx(3))
-         call cellCenter2Edge(tempB%y,B%y,g,1)
-         call cellCenter2Edge(tempB%z,B%z,g,1)
+         call init(tempB,UcrossB%x)
+         call cellCenter2Edge(tempB%y,B%y,g,tempF%y,1)
+         call cellCenter2Edge(tempB%z,B%z,g,tempF%y,1)
          call cross(UcrossB%x,U%x,V%x,W%x,tempB%x,tempB%y,tempB%z,1)
          call delete(tempB)
-         call init(tempB,UcrossB%sy(1),UcrossB%sy(2),UcrossB%sy(3))
-         call cellCenter2Edge(tempB%x,B%x,g,2)
-         call cellCenter2Edge(tempB%z,B%z,g,2)
+         call init(tempB,UcrossB%y)
+         call cellCenter2Edge(tempB%x,B%x,g,tempF%x,2)
+         call cellCenter2Edge(tempB%z,B%z,g,tempF%x,2)
          call cross(UcrossB%y,U%y,V%y,W%y,tempB%x,tempB%y,tempB%z,2)
          call delete(tempB)
-         call init(tempB,UcrossB%sz(1),UcrossB%sz(2),UcrossB%sz(3))
-         call cellCenter2Edge(tempB%x,B%x,g,3)
-         call cellCenter2Edge(tempB%y,B%y,g,3)
+         call init(tempB,UcrossB%z)
+         call cellCenter2Edge(tempB%x,B%x,g,tempF%x,3)
+         call cellCenter2Edge(tempB%y,B%y,g,tempF%x,3)
          call cross(UcrossB%z,U%z,V%z,W%z,tempB%x,tempB%y,tempB%z,3)
          call delete(tempB)
        end subroutine
@@ -199,8 +186,8 @@
          call face2Edge(temp_E2%y, U%z,g,3,2)
          call face2Edge(temp_E1%z,Ui%x,g,1,3)
          call face2Edge(temp_E2%z, U%y,g,2,3)
-         call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
-         call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
+         call multiply(temp_E1%y,temp_E2%y)
+         call multiply(temp_E1%z,temp_E2%z)
          call d%assign(div%x,temp_E1%y,g,1,3,pad)
          call d%add(div%x,temp_E1%z,g,1,2,pad)
 
@@ -209,8 +196,8 @@
          call face2Edge(temp_E2%z, U%x,g,1,3)
          call face2Edge(temp_E1%x,Ui%y,g,2,1)
          call face2Edge(temp_E2%x, U%z,g,3,1)
-         call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
-         call mult(temp_E1%z,temp_E2%z,temp_E1%sz)
+         call multiply(temp_E1%x,temp_E2%x)
+         call multiply(temp_E1%z,temp_E2%z)
          call d%assign(div%y,temp_E1%x,g,1,3,pad)
          call d%add(div%y,temp_E1%z,g,1,1,pad)
 
@@ -219,8 +206,8 @@
          call face2Edge(temp_E2%y, U%x,g,1,2)
          call face2Edge(temp_E1%x,Ui%z,g,3,1)
          call face2Edge(temp_E2%x, U%y,g,2,1)
-         call mult(temp_E1%x,temp_E2%x,temp_E1%sx)
-         call mult(temp_E1%y,temp_E2%y,temp_E1%sy)
+         call multiply(temp_E1%x,temp_E2%x)
+         call multiply(temp_E1%y,temp_E2%y)
          call d%assign(div%z,temp_E1%x,g,1,2,pad)
          call d%add(div%z,temp_E1%y,g,1,1,pad)
        end subroutine

@@ -1,4 +1,4 @@
-      module RF_mod
+      module RF_array_mod
         ! Naming convention: name = operation_type1_type2
         ! 
         !      RF_array = type(RF_array)
@@ -30,7 +30,7 @@
         ! Available pre-processor directives:
         !         _DEBUG_FIELD_ ! not yet implemented
         !         _PARALLELIZE_RF_
-
+        use RF_mod
         implicit none
         private
 
@@ -74,17 +74,13 @@
 
         interface assign;    module procedure assign_RF_S;            end interface
         interface assign;    module procedure assign_RF_RF;           end interface
-        interface assign;    module procedure assign_RF_R;            end interface
 
         interface add;       module procedure add_RF_RF;              end interface
-        interface add;       module procedure add_RF_R;               end interface
         interface add;       module procedure add_RF_S;               end interface
         interface add;       module procedure add_S_RF;               end interface
 
         interface subtract;  module procedure subtract_RF_RF;         end interface
         interface subtract;  module procedure subtract_RF_RF_RF;      end interface
-        interface subtract;  module procedure subtract_RF_R_R;        end interface
-        interface subtract;  module procedure subtract_RF_R;          end interface
         interface subtract;  module procedure subtract_RF_S;          end interface
         interface subtract;  module procedure subtract_S_RF;          end interface
 
@@ -109,7 +105,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g
           integer :: i
-          do i=1,f%s; call assign(f%f(i),g%f(i)); enddo
+          do i=1,f%s; call assign(f%RF(i),g%RF(i)); enddo
         end subroutine
 
         subroutine assign_RF_S(f,g)
@@ -117,7 +113,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call assign(f%f(i),g); enddo
+          do i=1,f%s; call assign(f%RF(i),g); enddo
         end subroutine
 
       ! ------------------- ADD ------------------------
@@ -127,7 +123,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g
           integer :: i
-          do i=1,f%s; call add(f%f(i),g%f(i)); enddo
+          do i=1,f%s; call add(f%RF(i),g%RF(i)); enddo
         end subroutine
 
         subroutine add_RF_S(f,g)
@@ -135,7 +131,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call add(f%f(i),g); enddo
+          do i=1,f%s; call add(f%RF(i),g); enddo
         end subroutine
 
         subroutine add_S_RF(g2,f)
@@ -143,7 +139,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call add(g2,f%f(i)); enddo
+          do i=1,f%s; call add(g2,f%RF(i)); enddo
         end subroutine
 
       ! ------------------- SUBTRACT ------------------------
@@ -153,7 +149,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g
           integer :: i
-          do i=1,f%s; call subtract(f%f(i),g%f(i)); enddo
+          do i=1,f%s; call subtract(f%RF(i),g%RF(i)); enddo
         end subroutine
 
         subroutine subtract_RF_RF_RF(f,g,q)
@@ -161,7 +157,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g,q
           integer :: i
-          do i=1,f%s; call subtract(f%f(i),g%f(i),q%f(i)); enddo
+          do i=1,f%s; call subtract(f%RF(i),g%RF(i),q%RF(i)); enddo
         end subroutine
 
         subroutine subtract_RF_S(f,g)
@@ -169,7 +165,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call subtract(f%f(i),g); enddo
+          do i=1,f%s; call subtract(f%RF(i),g); enddo
         end subroutine
 
         subroutine subtract_S_RF(g2,f)
@@ -177,7 +173,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call subtract(g2,f%f(i)); enddo
+          do i=1,f%s; call subtract(g2,f%RF(i)); enddo
         end subroutine
 
       ! ------------------- MULTIPLY ------------------------
@@ -187,7 +183,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g%f(i)); enddo
+          do i=1,f%s; call multiply(f%RF(i),g%RF(i)); enddo
         end subroutine
 
         subroutine multiply_RF_RF_RF(f,g,q)
@@ -195,7 +191,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g,q
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g%f(i),q%f(i)); enddo
+          do i=1,f%s; call multiply(f%RF(i),g%RF(i),q%RF(i)); enddo
         end subroutine
 
         subroutine multiply_RF_S(f,g)
@@ -203,7 +199,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g); enddo
+          do i=1,f%s; call multiply(f%RF(i),g); enddo
         end subroutine
 
         subroutine multiply_S_RF(g2,f)
@@ -211,7 +207,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g2); enddo
+          do i=1,f%s; call multiply(f%RF(i),g2); enddo
         end subroutine
 
       ! ------------------- DIVIDE ------------------------
@@ -221,7 +217,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g%f(i)); enddo
+          do i=1,f%s; call multiply(f%RF(i),g%RF(i)); enddo
         end subroutine
 
         subroutine divide_RF_RF_RF(f,g,q)
@@ -229,7 +225,7 @@
           type(RF_array),intent(inout) :: f
           type(RF_array),intent(in) :: g,q
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g%f(i),q%f(i)); enddo
+          do i=1,f%s; call multiply(f%RF(i),g%RF(i),q%RF(i)); enddo
         end subroutine
 
         subroutine divide_RF_S(f,g)
@@ -237,7 +233,7 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call multiply(f%f(i),g); enddo
+          do i=1,f%s; call multiply(f%RF(i),g); enddo
         end subroutine
 
         subroutine divide_S_RF(g2,f)
@@ -245,14 +241,14 @@
           type(RF_array),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call multiply(g2,g%f(i)); enddo
+          do i=1,f%s; call multiply(g2,f%RF(i)); enddo
         end subroutine
 
         subroutine square_RF(f)
           implicit none
           type(RF_array),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call square(f%f(i)); enddo
+          do i=1,f%s; call square(f%RF(i)); enddo
         end subroutine
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
@@ -262,7 +258,7 @@
           type(RF_array),intent(inout) :: f
           integer,intent(in) :: Nx,Ny,Nz
           integer :: i
-          do i=1,f%s; call init(f%f(i),Nx,Ny,Nz); enddo
+          do i=1,f%s; call init(f%RF(i),Nx,Ny,Nz); enddo
         end subroutine
 
         subroutine init_RF_2(f1,f2)
@@ -270,7 +266,7 @@
           type(RF_array),intent(inout) :: f1
           type(RF_array),intent(in) :: f2
           integer :: i
-          do i=1,f%s; call init(f1%f(i),f2%f(i)); enddo
+          do i=1,f1%s; call init(f1%RF(i),f2%RF(i)); enddo
         end subroutine
 
         subroutine init_RF_3(f,s)
@@ -278,21 +274,21 @@
           type(RF_array),intent(inout) :: f
           integer,dimension(3),intent(in) :: s
           integer :: i
-          do i=1,f%s; call init(f%f(i),s); enddo
+          do i=1,f%s; call init(f%RF(i),s); enddo
         end subroutine
 
         subroutine delete_RF(f)
           implicit none
           type(RF_array),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call delete(f%f(i)); enddo
+          do i=1,f%s; call delete(f%RF(i)); enddo
         end subroutine
 
         subroutine printRF(f)
           implicit none
           type(RF_array),intent(in) :: f
           integer :: i
-          do i=1,f%s; call print(f%f(i)); enddo
+          do i=1,f%s; call print(f%RF(i)); enddo
         end subroutine
 
       end module

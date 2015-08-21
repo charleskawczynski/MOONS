@@ -1,6 +1,8 @@
        module initializeUBCs_mod
        use grid_mod
        use BCs_mod
+       use VF_mod
+       use SF_mod
        use vectorBCs_mod
        implicit none
        ! From applyBCs.f90:
@@ -64,21 +66,26 @@
        
        contains
 
-       subroutine initUBCs(U_bcs,p_bcs,g)
+       subroutine initUBCs(U,p,g)
          implicit none
          ! Auxiliary data types
-         type(vectorBCs),intent(inout) :: U_bcs
-         type(BCs),intent(inout) :: p_bcs
+         type(VF),intent(inout) :: U
+         type(SF),intent(inout) :: p
          type(grid),intent(in) :: g
          if (preDefinedU_BCs.ne.0) then
-           call initPredefinedUBCs(U_bcs%x,U_bcs%y,U_bcs%z,p_bcs,g)
+           call initPredefinedUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,p%RF(1)%b,g)
          else
-           call initUserUBCs(U_bcs%x,U_bcs%y,U_bcs%z,p_bcs,g)
+           call initUserUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,p%RF(1)%b,g)
          endif
-         call setGrid(U_bcs,g)
-         call setGrid(p_bcs,g)
-         call checkVectorBCs(U_bcs)
-         call checkBCs(p_bcs)
+         call setGrid(U%x%RF(1)%b,g)
+         call setGrid(U%y%RF(1)%b,g)
+         call setGrid(U%z%RF(1)%b,g)
+         call setGrid(p%RF(1)%b,g)
+
+         call checkBCs(U%x%RF(1)%b)
+         call checkBCs(U%y%RF(1)%b)
+         call checkBCs(U%z%RF(1)%b)
+         call checkBCs(p%RF(1)%b)
        end subroutine
 
        subroutine initPredefinedUBCs(u_bcs,v_bcs,w_bcs,p_bcs,g)

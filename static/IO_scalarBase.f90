@@ -83,8 +83,8 @@
         endif
 
         if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
-        else; if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+          if (headerTecplotTemp) call writeTecPlotHeader(u,name,(/sx,sy,sz/))
+        else; if (headerTecplot) call writeTecPlotHeader(u,name,(/sx,sy,sz/))
         endif
 
         do k = 1,sz; do j = 1,sy; do i = 1,sx
@@ -104,8 +104,8 @@
         u = newAndOpen(dir,name)
 
         if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(u,name,sx,sy,sz)
-        else; if (headerTecplot) call writeTecPlotHeader(u,name,sx,sy,sz)
+          if (headerTecplotTemp) call writeTecPlotHeader(u,name,(/sx,sy,sz/))
+        else; if (headerTecplot) call writeTecPlotHeader(u,name,(/sx,sy,sz/))
         endif
 
         do k = 1,sz; do j = 1,sy; do i = 1,sx

@@ -1,4 +1,4 @@
-      module export_mod
+      module export_g_mod
       ! This module, along with exportRaw.f90 provide purely functional 
       ! pipeline routines to export data given inputs. The possible grid types
       ! can be checked in the getType_3D,getType_2D,getType_1D routines.
@@ -19,10 +19,20 @@
 
       private
 
-      public :: exp_3D_3Cg,exp_3D_2Cg,exp_3D_1Cg ! 3D Fields
-      public :: exp_2D_3Cg,exp_2D_2Cg,exp_2D_1Cg ! 2D Fields
-      public :: exp_1D_3Cg,exp_1D_2Cg,exp_1D_1Cg ! 1D Fields
-      public :: getType_3D,getType_2D,getType_1D ! getDataType
+      public :: exp_3D_3C_g,exp_3D_2C_g,exp_3D_1C_g ! 3D Fields
+      public :: exp_2D_3C_g,exp_2D_2C_g,exp_2D_1C_g ! 2D Fields
+      public :: exp_1D_3C_g,exp_1D_2C_g,exp_1D_1C_g ! 1D Fields
+
+      public :: exp_3D_1C_S_g ! For grid export
+      public :: exp_2D_1C_S_g ! For grid export
+      public :: exp_1D_1C_S_g ! For grid export
+
+      public :: getType_3D,getType_2D,getType_1D    ! getDataType
+
+      ! public :: getType
+      ! interface getType;  module procedure getType_1D; end interface
+      ! interface getType;  module procedure getType_2D; end interface
+      ! interface getType;  module procedure getType_3D; end interface
 
       contains
 
@@ -32,7 +42,7 @@
       ! ***********************************************************************
       ! ***********************************************************************
 
-      subroutine exp_3D_3Cg(g,DT,pad,un,arrfmt,s,u,v,w)
+      subroutine exp_3D_3C_g(g,DT,pad,un,arrfmt,s,u,v,w)
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u,v,w
         type(grid),intent(in) :: g
@@ -51,7 +61,7 @@
         end select
       end subroutine
 
-      subroutine exp_3D_2Cg(g,DT,pad,un,arrfmt,s,u,v)
+      subroutine exp_3D_2C_g(g,DT,pad,un,arrfmt,s,u,v)
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u,v
         type(grid),intent(in) :: g
@@ -70,7 +80,7 @@
         end select
       end subroutine
 
-      subroutine exp_3D_1Cg(g,DT,pad,un,arrfmt,s,u)
+      subroutine exp_3D_1C_g(g,DT,pad,un,arrfmt,s,u)
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u
         type(grid),intent(in) :: g
@@ -89,13 +99,32 @@
         end select
       end subroutine
 
+      subroutine exp_3D_1C_S_g(g,DT,pad,un,arrfmt,s,u)
+        implicit none
+        real(cp),intent(in) :: u
+        type(grid),intent(in) :: g
+        integer,intent(in) :: DT,pad,un
+        integer,dimension(3),intent(in) :: s
+        character(len=*),intent(in) :: arrfmt
+        select case (DT)
+        case (1); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u)
+        case (2); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u)
+        case (3); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u)
+        case (4); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u)
+        case (5); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u)
+        case (6); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u)
+        case (7); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u)
+        case (8); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u)
+        end select
+      end subroutine
+
       ! ***********************************************************************
       ! ***********************************************************************
       ! ****************************** 2D FIELDS ******************************
       ! ***********************************************************************
       ! ***********************************************************************
 
-      subroutine exp_2D_3Cg(g,DT,pad,un,arrfmt,s,axis,u,v,w)
+      subroutine exp_2D_3C_g(g,DT,pad,un,arrfmt,s,axis,u,v,w)
         implicit none
         real(cp),dimension(:,:),intent(in) :: u,v,w
         type(grid),intent(in) :: g
@@ -115,7 +144,7 @@
         end select
       end subroutine
 
-      subroutine exp_2D_2Cg(g,DT,pad,un,arrfmt,s,axis,u,v)
+      subroutine exp_2D_2C_g(g,DT,pad,un,arrfmt,s,axis,u,v)
         implicit none
         real(cp),dimension(:,:),intent(in) :: u,v
         type(grid),intent(in) :: g
@@ -135,7 +164,7 @@
         end select
       end subroutine
 
-      subroutine exp_2D_1Cg(g,DT,pad,un,arrfmt,s,axis,u)
+      subroutine exp_2D_1C_g(g,DT,pad,un,arrfmt,s,axis,u)
         implicit none
         real(cp),dimension(:,:),intent(in) :: u
         type(grid),intent(in) :: g
@@ -155,13 +184,33 @@
         end select
       end subroutine
 
+      subroutine exp_2D_1C_S_g(g,DT,pad,un,arrfmt,s,axis,u)
+        implicit none
+        real(cp),intent(in) :: u
+        type(grid),intent(in) :: g
+        integer,intent(in) :: DT,pad,un,axis
+        integer,dimension(2),intent(in) :: s
+        character(len=*),intent(in) :: arrfmt
+        integer,dimension(2) :: d
+        select case (axis)
+        case (1); d = (/2,3/); case (2); d = (/1,3/); case (3); d = (/1,2/)
+        case default; stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
+        end select
+        select case (DT)
+        case (1); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hn,u)
+        case (2); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hc,u)
+        case (3); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hc,u)
+        case (4); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hn,u)
+        end select
+      end subroutine
+
       ! ***********************************************************************
       ! ***********************************************************************
       ! ****************************** 1D FIELDS ******************************
       ! ***********************************************************************
       ! ***********************************************************************
 
-      subroutine exp_1D_3Cg(g,DT,pad,un,arrfmt,s,axis,u,v,w)
+      subroutine exp_1D_3C_g(g,DT,pad,un,arrfmt,s,axis,u,v,w)
         implicit none
         real(cp),dimension(:),intent(in) :: u,v,w
         type(grid),intent(in) :: g
@@ -175,7 +224,7 @@
         end select
       end subroutine
 
-      subroutine exp_1D_2Cg(g,DT,pad,un,arrfmt,s,axis,u,v)
+      subroutine exp_1D_2C_g(g,DT,pad,un,arrfmt,s,axis,u,v)
         implicit none
         real(cp),dimension(:),intent(in) :: u,v
         type(grid),intent(in) :: g
@@ -189,7 +238,7 @@
         end select
       end subroutine
 
-      subroutine exp_1D_1Cg(g,DT,pad,un,arrfmt,s,axis,u)
+      subroutine exp_1D_1C_g(g,DT,pad,un,arrfmt,s,axis,u)
         implicit none
         real(cp),dimension(:),intent(in) :: u
         type(grid),intent(in) :: g
@@ -200,6 +249,20 @@
         select case (DT)
         case (1); call exp_1D_1C(s,pad,un,arrfmt,g%c(axis)%hn,u)
         case (2); call exp_1D_1C(s,pad,un,arrfmt,g%c(axis)%hc,u)
+        end select
+      end subroutine
+
+      subroutine exp_1D_1C_S_g(g,DT,pad,un,arrfmt,s,axis,u)
+        implicit none
+        real(cp),intent(in) :: u
+        type(grid),intent(in) :: g
+        integer,intent(in) :: DT,pad,un,axis
+        integer,dimension(1),intent(in) :: s
+        character(len=*),intent(in) :: arrfmt
+        if (.not.any((/axis.eq.(/1,2,3/)/))) stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
+        select case (DT)
+        case (1); call exp_1D_1C_S(s,pad,un,arrfmt,g%c(axis)%hn,u)
+        case (2); call exp_1D_1C_S(s,pad,un,arrfmt,g%c(axis)%hc,u)
         end select
       end subroutine
 

@@ -1,8 +1,8 @@
        module MOONS_mod
        use simParams_mod
        use IO_tools_mod
-       use IO_scalarFields_mod
-       use IO_vectorFields_mod
+       use IO_SF_mod
+       use IO_VF_mod
        use IO_auxiliary_mod
        use version_mod
        use myTime_mod
@@ -109,12 +109,13 @@
          ! Initialize all grids
          ! call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
          call makeGrids(grid_mom,grid_ind,Ni,Nwtop,Nwbot)
-         call init(SD,Ni,Nwtop,Nwbot+10,grid_mom)
+         ! call init(SD,Ni,Nwtop,Nwbot+10,grid_mom)
+         call init(SD,Ni,Nwtop,Nwbot,grid_mom)
 
          ! Initialize Energy grid/fields/parameters
          call setDTime(nrg,dTime)
          call setPiGroups(nrg,Re,Pr,Ec,Al,Rem)
-         call init(nrg,grid_ind,SD,dir)
+         if (solveEnergy)  call init(nrg,grid_ind,SD,dir)
 
          ! Initialize Momentum grid/fields/parameters
          call setDTime(mom,dTime)
@@ -130,9 +131,9 @@
          if (solveInduction) call init(ind,grid_ind,SD,dir)
 
          ! ******************** EXPORT GRIDS ****************************
-         if (exportGrids) call writeToFile(mom%g,dir//'Ufield/','grid_mom')
-         ! if (exportGrids) call writeToFile(ind%g,dir//'Tfield/','grid_nrg')
-         if (exportGrids) call writeToFile(ind%g,dir//'Bfield/','grid_ind')
+         if (exportGrids) call export_grid(mom%g,dir//'Ufield/','grid_mom',0)
+         ! if (exportGrids) call export_grid(ind%g,dir//'Tfield/','grid_nrg',0)
+         if (exportGrids) call export_grid(ind%g,dir//'Bfield/','grid_ind',0)
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%g,dir)
@@ -151,7 +152,7 @@
          ! on the smallest spatial step (dhMin)
 
          call setRunData(rd,dTime,ds,Re,Ha,Rem,&
-          mom%U%x,mom%U%y,mom%U%z,grid_mom,grid_ind,addJCrossB,solveBMethod)
+          mom%U%x%RF(1)%f,mom%U%y%RF(1)%f,mom%U%z%RF(1)%f,grid_mom,grid_ind,addJCrossB,solveBMethod)
 
          ! ****************** INITIALIZE TIME ***************************
          call init(time)
@@ -226,10 +227,10 @@
          ! call export(mom,mom%g,dir)
          ! call export(ind,ind%g,dir)
 
-         call init(U,mom%g%c(1)%sn,mom%g%c(2)%sn,mom%g%c(3)%sn)
-         call face2Node(U,mom%U,mom%g)
-         if (solveInduction) call init(B,ind%g%c(1)%sn,ind%g%c(2)%sn,ind%g%c(3)%sn)
-         if (solveInduction) call cellCenter2Node(B,ind%B,ind%g)
+         call init_Node(U,mom%g)
+         call face2Node(U,mom%U,mom%g,mom%temp_E1)
+         if (solveInduction) call init_Node(B,ind%g)
+         if (solveInduction) call cellCenter2Node(B,ind%B,ind%g,ind%temp_F,ind%temp_E)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
@@ -283,10 +284,10 @@
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.0d-3 ! For mesh refinement
          ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.67d-2
          ! case (100); Re = 10000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 8.0d-4
-         case (100); Re = 1000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
+         ! case (100); Re = 1000d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 5.0d-3
 
          ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
-         ! case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
+         case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
          ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
          case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
          case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-4; dTime = 1.0d-2
@@ -462,10 +463,10 @@
          case (50);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          case (51);  NmaxPPE = 5; NmaxB = 0; NmaxMHD = 1000000
          
-         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
+         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 4000
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 80000
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10000
-         case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**5
+         ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**5
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
 
          case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
@@ -565,8 +566,8 @@
          case (4);    Ni = (/1,100,100/); Nwtop = (/0,5,5/);   Nwbot = (/0,5,5/) ! (Duct: Conducting)
          case (50);   Ni = 105;           Nwtop = 0;           Nwbot = 0
          case (51);   Ni = 105;           Nwtop = 0;           Nwbot = 0
-         ! case (100);  Ni = (/67,67,27/);  Nwtop = 0;           Nwbot = 0
-         case (100);  Ni = (/128,128,1/);  Nwtop = 0;           Nwbot = 0
+         case (100);  Ni = (/67,67,27/);  Nwtop = 0;           Nwbot = 0
+         ! case (100);  Ni = (/128,128,1/);  Nwtop = 0;           Nwbot = 0
          ! case (100);  Ni = (/256,256,1/);  Nwtop = 0;           Nwbot = 0
          case (101);  Ni = 52;            Nwtop = 0;           Nwbot = 0
          case (102);  Ni = 45;            Nwtop = 11;          Nwbot = 11

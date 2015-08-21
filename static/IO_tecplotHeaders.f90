@@ -23,22 +23,23 @@
       !************************ SCALAR FIELDS ******************************
       !*********************************************************************
 
-      subroutine writeTPH3DScalarField(u,name,sx,sy,sz)
+      subroutine writeTPH3DScalarField(u,name,s)
         implicit none
         character(len=*),intent(in) :: name
-        integer,intent(in) :: sx,sy,sz,u
+        integer,intent(in),dimension(3) :: s
+        integer,intent(in) :: u
         integer :: sn
         sn = len(name)
 
         write(u,'(A'//int2Str(sn+26)//')') 'TITLE = "3D Scalar Field ' // trim(adjustl(name)) // '"'
         write(u,'(A'//int2Str(sn+26)//')') 'VARIABLES = "X","Y","Z",'//'"'//trim(adjustl(name))//'"'
-        write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(sx))))) // & 
-                ',A6,A'    // int2str(len(trim(adjustl(int2str(sy))))) // & 
-                ',A6,A'    // int2str(len(trim(adjustl(int2str(sz))))) // & 
+        write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(s(1)))))) // & 
+                ',A6,A'    // int2str(len(trim(adjustl(int2str(s(2)))))) // & 
+                ',A6,A'    // int2str(len(trim(adjustl(int2str(s(3)))))) // & 
                 ',A20)') 'ZONE ', &
-                ', I = ',trim(adjustl(int2str(sx))), &
-                ', J = ',trim(adjustl(int2str(sy))), &
-                ', K = ',trim(adjustl(int2str(sz))), &
+                ', I = ',trim(adjustl(int2str(s(1)))), &
+                ', J = ',trim(adjustl(int2str(s(2)))), &
+                ', K = ',trim(adjustl(int2str(s(3)))), &
                 ' DATAPACKING = POINT'
       end subroutine
 
@@ -103,30 +104,31 @@
       !************************ VECTOR FIELDS ******************************
       !*********************************************************************
 
-      subroutine writeTPH3DVectorField(u,namex,namey,namez,sx,sy,sz)
+      subroutine writeTPH3DVectorField(u,namex,namey,namez,s)
         implicit none
         character(len=*),intent(in) :: namex,namey,namez
-        integer,intent(in) :: sx,sy,sz,u
+        integer,intent(in),dimension(3) :: s
+        integer,intent(in) :: u
         integer :: snx,sny,snz
         snx = len(namex); sny = len(namey); snz = len(namez)
         write(u,'(A'//int2Str(snx+sny+snz+28)//')') 'TITLE = "3D Vector Field '  & 
         // trim(adjustl(namex)) //','// trim(adjustl(namey)) //','// trim(adjustl(namez)) // '"'
         write(u,'(A'//int2Str(snx+sny+snz+32)//')') 'VARIABLES = "X","Y","Z",' & 
         //'"'//trim(adjustl(namex))//'",'//'"'//trim(adjustl(namey))//'",'//'"'//trim(adjustl(namez))//'"'
-        write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(sx))))) // & 
-                ',A6,A'    // int2str(len(trim(adjustl(int2str(sy))))) // & 
-                ',A6,A'    // int2str(len(trim(adjustl(int2str(sz))))) // & 
+        write(u,'(A5,A6,A' // int2str(len(trim(adjustl(int2str(s(1)))))) // & 
+                ',A6,A'    // int2str(len(trim(adjustl(int2str(s(2)))))) // & 
+                ',A6,A'    // int2str(len(trim(adjustl(int2str(s(3)))))) // & 
                 ',A20)') 'ZONE ', &
-                ', I = ',trim(adjustl(int2str(sx))), &
-                ', J = ',trim(adjustl(int2str(sy))), &
-                ', K = ',trim(adjustl(int2str(sz))), &
+                ', I = ',trim(adjustl(int2str(s(1)))), &
+                ', J = ',trim(adjustl(int2str(s(2)))), &
+                ', K = ',trim(adjustl(int2str(s(3)))), &
                 ' DATAPACKING = POINT'
       end subroutine
 
-      ! subroutine writeTPH3DVectorField(u,namex,namey,namez,sx,sy,sz)
+      ! subroutine writeTPH3DVectorField(u,namex,namey,namez,s)
       !   implicit none
       !   character(len=*),intent(in) :: namex,namey,namez
-      !   integer,intent(in) :: sx,sy,sz,u
+      !   integer,intent(in) :: s,u
       !   integer :: snx,sny,snz,sn
       !   snx = len(namex); sny = len(namey); snz = len(namez)
       !   sn = snx+sny+snz

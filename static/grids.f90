@@ -1,4 +1,4 @@
-       module grid_mod
+       module grids_mod
        use IO_tools_mod
        use IO_scalarBase_mod
        use coordinates_mod
@@ -16,23 +16,22 @@
 
        private
 
-       logical,parameter :: exportLight = .true. ! (T/F) => (cannot/can visualize)
-
-       public :: grid
+       public :: grids
        public :: init,delete
        public :: print,export ! import
        public :: restrict
 
-       type grid
-         real(cp) :: dhMin,dhMax,maxRange,volume
-         type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
+       type grids
+         integer :: s
+         type(grid),dimension(1) :: g
+         ! type(grid),dimension(:),allocatable :: g ! grids
        end type
 
        interface init;       module procedure initGridCopy;   end interface
        interface init;       module procedure initGrid1;      end interface
        interface init;       module procedure initGrid2;      end interface
        interface init;       module procedure initGrid3;      end interface
-       interface delete;     module procedure deleteGrid;     end interface
+       interface delete;     module procedure delete_grids;   end interface
 
        interface restrict;   module procedure restrictGrid1;  end interface
        interface restrict;   module procedure restrictGrid3;  end interface
@@ -44,11 +43,11 @@
        
        contains
 
-       subroutine deleteGrid(g)
+       subroutine delete_grids(g)
          implicit none
-         type(grid),intent(inout) :: g
+         type(grids),intent(inout) :: gs
          integer :: i
-         do i = 1,3; call delete(g%c(i)) ;enddo
+         do i = 1,3; call delete(gs%g(i)) ;enddo
          ! write(*,*) 'Grid deleted'
        end subroutine
 
@@ -146,10 +145,9 @@
            write(newU,*) 'maxRange = ',g%maxRange
            write(newU,*) 'volume = ',g%volume
            call addToFile(g,newU); close(newU)
-           write(*,*) 'Broken during new export development'
+           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name//'_n')
          else
-           write(*,*) 'Broken during new export development'
-           ! call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name//'_n')
+           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name//'_n')
            ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,1.0_cp,dir,name//'_c')
          endif
        end subroutine

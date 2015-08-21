@@ -6,19 +6,19 @@
        logical :: stopAfterExportICs        = .false.   ! Just export ICs, do not run simulation
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
        logical :: nonUniformGridFluid       = .false.   ! (T/F)
-       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
+       logical :: nonUniformGridWall        = .false.    ! (T/F, F-> overrides wall thickness)
        logical :: overrideGeometryWarnings  = .false.
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .true.
+       logical :: solveInduction            = .false.
 
        logical :: computeKU                 = .true.    ! Compute kinetic energy at each time step
        logical :: computeKB                 = .true.    ! Compute Total   magnetic energy at each time step
        logical :: computeKBi                = .true.    ! Compute Induced magnetic energy at each time step
        logical :: computeKB0                = .false.   ! Compute Applied magnetic energy at each time step
 
-       logical :: addJCrossB                = .true.
+       logical :: addJCrossB                = .false.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 
@@ -44,7 +44,7 @@
        integer :: nskip_exportTransient      = 50     ! Probed data (cheap)
        integer :: nskip_print                = 50     ! Printed data (cheap)
 
-       integer,parameter :: benchmarkCase = 1010
+       integer,parameter :: benchmarkCase = 100
        
          ! Eventually this should be shortened...
          ! 1000+ (Other test cases)

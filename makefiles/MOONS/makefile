@@ -45,7 +45,6 @@ FC      = gfortran
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
-
 # ******************** LIBRARIES ********************
 # FLIBS = $(LIB_DIR)$(PS)tecio.lib
 
@@ -84,10 +83,9 @@ FCFLAGS += -cpp
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
-FCFLAGS += -D_PARALLELIZE_Jacobi_
+# FCFLAGS += -D_PARALLELIZE_Jacobi_
 FCFLAGS += -D_PARALLELIZE_SOR_
-FCFLAGS += -D_PARALLELIZE_VECTOR_FIELD_
-FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
+FCFLAGS += -D_PARALLELIZE_RF_
 
 # Code verification
 # FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
@@ -100,9 +98,10 @@ FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 
 # Internal debugging
 # FCFLAGS += -D_DEBUG_DELOPS_
-# FCFLAGS += -D_DEBUG_VECTOROPS_
-# FCFLAGS += -D_DEBUG_DEL_
-# FCFLAGS += -D_DEBUG_INTERP_
+FCFLAGS += -D_DEBUG_VECTOROPS_
+FCFLAGS += -D_DEBUG_DEL_
+FCFLAGS += -D_DEBUG_INTERP_
+
 # FCFLAGS += -D_DEBUG_VECTOR_
 # FCFLAGS += -D_DEBUG_SCALAR_ not yet implemented
 # FCFLAGS += -D_CHECK_SYMMETRY_
@@ -116,35 +115,53 @@ TARGET = $(TARGET_DIR)$(PS)MOONS
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
 # $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
 
+# $(SRC_DIR)$(PS)static$(PS)IO_scalarFields.f90 \
+# $(SRC_DIR)$(PS)static$(PS)IO_vectorFields.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
+# $(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
+# $(SRC_DIR)$(PS)user$(PS)convergenceRate.f90 \
+
+
 SRCS_F =\
-	$(SRC_DIR)$(PS)static$(PS)scalarField.f90 \
-	$(SRC_DIR)$(PS)static$(PS)vectorField.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_tecplotHeaders.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_scalarBase.f90 \
 	$(SRC_DIR)$(PS)static$(PS)IO_vectorBase.f90 \
+	$(SRC_DIR)$(PS)static$(PS)IO_auxiliary.f90 \
+	$(SRC_DIR)$(PS)static$(PS)IO_transientFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
-	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)static$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)static$(PS)gridGenTools.f90 \
 	$(SRC_DIR)$(PS)static$(PS)grid.f90 \
 	$(SRC_DIR)$(PS)static$(PS)gridGen.f90 \
 	$(SRC_DIR)$(PS)static$(PS)matchGridStretching.f90 \
+	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)static$(PS)generateGrids.f90 \
-	$(SRC_DIR)$(PS)static$(PS)exportRaw.f90 \
-	$(SRC_DIR)$(PS)static$(PS)export.f90 \
+	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
+	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
+	$(SRC_DIR)$(PS)static$(PS)RF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)SF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)VF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)export_raw.f90 \
+	$(SRC_DIR)$(PS)static$(PS)export_g.f90 \
+	$(SRC_DIR)$(PS)static$(PS)export_RF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)export_SF.f90 \
 	$(SRC_DIR)$(PS)static$(PS)export_VF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_scalarFields.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_vectorFields.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_transientFields.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_auxiliary.f90 \
+	$(SRC_DIR)$(PS)static$(PS)import_raw.f90 \
+	$(SRC_DIR)$(PS)static$(PS)import_g.f90 \
+	$(SRC_DIR)$(PS)static$(PS)import_RF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)import_SF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)import_VF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)IO_SF.f90 \
+	$(SRC_DIR)$(PS)static$(PS)IO_VF.f90 \
 	$(SRC_DIR)$(PS)static$(PS)version.f90 \
 	$(SRC_DIR)$(PS)static$(PS)solverSettings.f90 \
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)user$(PS)griddata.f90 \
-	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
-	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)fft.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)dct.f90 \
@@ -164,12 +181,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myTriSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)FFT_poisson.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTfield.f90 \
@@ -184,8 +197,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
-	$(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
-	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90 \
 	$(TARGET_DIR)$(PS)parametricStudy.f90
 
 # **************** DO NOT EDIT BELOW HERE *********************

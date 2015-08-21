@@ -33,6 +33,7 @@
        use IO_tools_mod
        use grid_mod
        use norms_mod
+       use SF_mod
 
        implicit none
 
@@ -71,9 +72,7 @@
        interface set;           module procedure setIndexData1;             end interface
 
        interface set;           module procedure setErrorData;              end interface
-       interface set;           module procedure setErrorData1;             end interface
-       interface set;           module procedure setErrorData2;             end interface
-       interface set;           module procedure setErrorData3;             end interface
+       interface set;           module procedure setErrorData_SF;           end interface
 
        interface apply;         module procedure applyIndexProbe;           end interface
        interface apply;         module procedure applyErrorProbe;           end interface
@@ -150,31 +149,14 @@
           call set(ep%p,n,d)
         end subroutine
 
-        subroutine setErrorData1(ep,n,u)
+        subroutine setErrorData_SF(ep,n,u,g)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(cp),dimension(:),intent(in) :: u
-          call compute(ep%e,real(0.0,cp),u)
-          call set(ep%p,n,getL2(ep%e))
-        end subroutine
-
-        subroutine setErrorData2(ep,n,u)
-         implicit none
-          type(errorProbe),intent(inout) :: ep
-          integer,intent(in) :: n
-          real(cp),dimension(:,:),intent(in) :: u
-          call compute(ep%e,real(0.0,cp),u)
-          call set(ep%p,n,getL2(ep%e))
-        end subroutine
-
-        subroutine setErrorData3(ep,n,u)
-         implicit none
-          type(errorProbe),intent(inout) :: ep
-          integer,intent(in) :: n
-          real(cp),dimension(:,:,:),intent(in) :: u
-          call compute(ep%e,real(0.0,cp),u)
-          call set(ep%p,n,getL2(ep%e))
+          type(SF),intent(in) :: u
+          type(grid),intent(in) :: g
+          call compute(ep%e,u,g)
+          call set(ep%p,n,ep%e%L2)
         end subroutine
 
         subroutine applyIndexProbe(ip,n,u)
@@ -198,12 +180,13 @@
           call apply(ep%p)
         end subroutine
 
-        subroutine setApplyErrorProbe(ep,n,u)
+        subroutine setApplyErrorProbe(ep,n,u,g)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(cp),dimension(:,:,:),intent(in) :: u
-          call set(ep,n,u)
+          type(SF),intent(in) :: u
+          type(grid),intent(in) :: g
+          call set(ep,n,u,g)
           call apply(ep%p)
         end subroutine
 

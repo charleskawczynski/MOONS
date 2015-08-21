@@ -209,5 +209,4 @@
         call writeVecFieldPhysicalPlane(g,U%x,U%y,U%z,directory,namex,namey,namez,ext,dir,p,n)
       end subroutine
 
-
       end module

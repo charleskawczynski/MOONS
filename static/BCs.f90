@@ -98,6 +98,7 @@
        interface init;       module procedure initBCs;             end interface
        interface init;       module procedure initBCsCopy;         end interface
        interface init;       module procedure initBCsSize;         end interface
+       interface init;       module procedure initBCsSize2;        end interface
        interface delete;     module procedure deleteBCs;           end interface
        interface setGrid;    module procedure setGridBCs;          end interface
 
@@ -132,6 +133,14 @@
          integer,intent(in) :: Nx,Ny,Nz
          call initBCs(this)
          this%s = (/Nx,Ny,Nz/)
+       end subroutine
+
+       subroutine initBCsSize2(this,s)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,dimension(3),intent(in) :: s
+         call initBCs(this)
+         this%s = s
        end subroutine
 
        subroutine initBCsCopy(this,u_bcs)

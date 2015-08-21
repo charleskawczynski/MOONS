@@ -2,11 +2,13 @@
        use simParams_mod
        use IO_tools_mod
        use IO_auxiliary_mod
-       use IO_scalarFields_mod
-       use IO_vectorFields_mod
+       use export_SF_mod
+       use export_VF_mod
        use myTime_mod
        use SF_mod
        use VF_mod
+       use IO_SF_mod
+       use IO_VF_mod
 
        use initializeBBCs_mod
        use initializeBfield_mod
@@ -21,13 +23,11 @@
        use ops_discrete_mod
        use ops_discrete_complex_mod
        use ops_physics_mod
-       use BCs_mod
-       use vectorBCs_mod
        use applyBCs_mod
        use solverSettings_mod
        use SOR_mod
-       use ADI_mod
-       use MG_mod
+       ! use ADI_mod
+       ! use MG_mod
        use poisson_mod
        use probe_base_mod
        use probe_transient_mod
@@ -83,8 +83,7 @@
          type(SF) :: sigma,mu          ! CC data
          type(SF) :: divB,divJ,phi,temp               ! CC data
          ! BCs:
-         type(vectorBCs) :: B_bcs
-         type(BCs) :: phi_bcs
+         ! type(BCs) :: phi_bcs
          ! Solver settings
          type(solverSettings) :: ss_ind,ss_cleanB,ss_ADI
          ! Errors
@@ -93,8 +92,8 @@
          type(myTime) :: time_CP
 
          type(SORSolver) :: SOR_B, SOR_cleanB
-         type(myADI) :: ADI_B
-         type(multiGrid),dimension(2) :: MG ! For cleaning procedure
+         ! type(myADI) :: ADI_B
+         ! type(multiGrid),dimension(2) :: MG ! For cleaning procedure
 
          type(indexProbe) :: probe_Bx,probe_By,probe_Bz
          type(indexProbe) :: probe_J
@@ -143,71 +142,57 @@
          ind%g = g
          ind%SD = SD
          ! --- Vector Fields ---
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+         call init_CC(ind%B,g)
+         call init_CC(ind%Bstar,g)
+         call init_CC(ind%B0,g)
+         call init_CC(ind%J_cc,g)
+         call init_CC(ind%U_cct,g)
+         call init_CC(ind%temp_CC,g)
+         call init_CC(ind%dB0dt,g)
 
-         ! CC Data
-         call init(ind%B,Nx,Ny,Nz)
-         call init(ind%Bstar,ind%B)
-         call init(ind%B0,ind%B)
-         call init(ind%J_cc,ind%B)
-         call init(ind%U_cct,ind%B)
-         call init(ind%temp_CC,ind%B)
-         call init(ind%dB0dt,ind%B)
+         call init_Edge(ind%J,g)
+         call init_Edge(ind%E,g)
+         call init_Edge(ind%U_E,g)
+         call init_Edge(ind%V_E,g)
+         call init_Edge(ind%W_E,g)
+         call init_Edge(ind%temp_E,g)
+         call init_Edge(ind%temp_E1,g)
+         call init_Edge(ind%temp_E2,g)
+         call init_Edge(ind%sigmaInv_edge,g)
 
-         ! Edge Data
-         call allocateX(ind%J,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
-         call allocateY(ind%J,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
-         call allocateZ(ind%J,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
-
-         call init(ind%E,ind%J)
-         call init(ind%U_E,ind%J)
-         call init(ind%V_E,ind%J)
-         call init(ind%W_E,ind%J)
-         call init(ind%temp_E,ind%J)
-         call init(ind%temp_E1,ind%J)
-         call init(ind%temp_E2,ind%J)
-         call init(ind%sigmaInv_edge,ind%J)
-
-         ! Face Data
-         call allocateX(ind%U_Ft,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(ind%U_Ft,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(ind%U_Ft,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
-
-         call init(ind%temp_F,ind%U_Ft)
-         call init(ind%sigmaInv_face,ind%U_Ft)
-         call init(ind%temp_F2,ind%U_Ft)
-         call init(ind%jCrossB_F,ind%U_Ft)
-         call init(ind%B_face,ind%U_Ft)
+         call init_Face(ind%U_Ft,g)
+         call init_Face(ind%temp_F,g)
+         call init_Face(ind%sigmaInv_face,g)
+         call init_Face(ind%temp_F2,g)
+         call init_Face(ind%jCrossB_F,g)
+         call init_Face(ind%B_face,g)
 
          ! --- Scalar Fields ---
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+         call init_CC(ind%sigma,g)
+         call init_CC(ind%mu,g)
+         call init_CC(ind%phi,g)
+         call init_CC(ind%temp,g)
 
-         call init(ind%sigma,Nx,Ny,Nz)
-         call init(ind%mu,ind%sigma)
-         call init(ind%phi,ind%sigma)
-         call init(ind%temp,ind%sigma)
-
-         call init(ind%divB,ind%sigma)
-         call init(ind%divJ,ind%sigma)
+         call init_CC(ind%divB,g)
+         call init_CC(ind%divJ,g)
          write(*,*) '     Fields allocated'
 
-
          ! --- Initialize Fields ---
-         call initBBCs(ind%B_bcs,ind%phi_bcs,ind%B,g,cleanB)
+         call initBBCs(ind%B,g,cleanB)
          write(*,*) '     BCs initialized'
 
          call initBfield(ind%B,ind%B0,g,dir)
          write(*,*) '     B-field initialized'
 
-         call applyAllBCs(ind%B,ind%B_bcs,g)
+         call applyAllBCs(ind%B,g)
          write(*,*) '     BCs applied'
 
          call initSigmaMu(ind%sigma,ind%mu,ind%SD,g)
          call divide(one,ind%sigma)
-         call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma%phi,g)
+         call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma,g,ind%temp_F)
          call treatInterface(ind%sigmaInv_edge)
 
-         call cellCenter2Face(ind%sigmaInv_face,ind%sigma%phi,g)
+         call cellCenter2Face(ind%sigmaInv_face,ind%sigma,g)
          call initSigmaMu(ind%sigma,ind%mu,ind%SD,g)
 
          write(*,*) '     Materials initialized'
@@ -307,8 +292,8 @@
 
          call delete(ind%phi)
 
-         call delete(ind%B_bcs)
-         call delete(ind%phi_bcs)
+         ! call delete(ind%B_bcs)
+         ! call delete(ind%phi_bcs)
 
          call delete(ind%probe_Bx)
          call delete(ind%probe_By)
@@ -319,7 +304,7 @@
          call delete(ind%g)
 
          ! call delete(ind%SOR_B)
-         if (cleanB) call delete(ind%MG)
+         ! if (cleanB) call delete(ind%MG)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -359,10 +344,10 @@
          implicit none
          type(induction),intent(in) :: ind
          character(len=*),intent(in) :: dir
-         if (solveInduction) call printVectorBCs(ind%B_bcs,'Bx','By','Bz')
-         if (cleanB)         call printAllBoundaries(ind%phi_bcs,'phi')
-         if (solveInduction) call writeVectorBCs(ind%B_bcs,dir//'parameters/','Bx','By','Bz')
-         if (cleanB)         call writeAllBoundaries(ind%phi_bcs,dir//'parameters/','phi')
+         ! if (solveInduction) call printVectorBCs(ind%B%RF(1)%b,'Bx','By','Bz')
+         ! if (cleanB)         call printAllBoundaries(ind%phi%RF(1)%b,'phi')
+         ! if (solveInduction) call writeVectorBCs(ind%B_bcs,dir//'parameters/','Bx','By','Bz')
+         ! if (cleanB)         call writeAllBoundaries(ind%phi%RF(1)%b,dir//'parameters/','phi')
        end subroutine
 
        subroutine inductionExportTransient(ind,ss_MHD)
@@ -370,15 +355,15 @@
          type(induction),intent(inout) :: ind
          type(solverSettings),intent(in) :: ss_MHD
          if ((getExportTransient(ss_MHD))) then
-           call apply(ind%probe_Bx,ind%nstep,ind%B%x)
-           call apply(ind%probe_By,ind%nstep,ind%B%y)
-           call apply(ind%probe_Bz,ind%nstep,ind%B%z)
-           call apply(ind%probe_J,ind%nstep,ind%J_cc%x)
+           ! call apply(ind%probe_Bx,ind%nstep,ind%B%x)
+           ! call apply(ind%probe_By,ind%nstep,ind%B%y)
+           ! call apply(ind%probe_Bz,ind%nstep,ind%B%z)
+           ! call apply(ind%probe_J,ind%nstep,ind%J_cc%x)
          endif
 
          if (getExportErrors(ss_MHD)) then
-           call apply(ind%probe_divB,ind%nstep,ind%divB%phi)
-           call apply(ind%probe_divJ,ind%nstep,ind%divJ%phi)
+           ! call apply(ind%probe_divB,ind%nstep,ind%divB)
+           ! call apply(ind%probe_divJ,ind%nstep,ind%divJ)
          endif
        end subroutine
 
@@ -392,13 +377,12 @@
          else
            if (solveInduction) then
              write(*,*) 'Exporting RAW Solutions for B'
-             call writeToFile(g,ind%B0,dir//'Bfield/','B0xct','B0yct','B0zct')
-             call writeToFile(g,ind%B,dir//'Bfield/','Bxct','Byct','Bzct')
-             call writeToFile(g,ind%J_cc,dir//'Jfield/','jxct','jyct','jzct')
-             call writeToFile(g,ind%sigma%phi,dir//'material/','sigmac')
-             call writeToFile(g,ind%divB%phi,dir//'Bfield/','divBct')
-             call writeToFile(g,ind%divJ%phi,dir//'Jfield/','divJct')
-             if (cleanB) call writeToFile(g,ind%phi%phi,dir//'Bfield/','phi')
+             call export_3C_VF(g,ind%B0   ,dir//'Bfield/','B0ct',0)
+             call export_3C_VF(g,ind%B    ,dir//'Bfield/','Bct',0)
+             call export_3C_VF(g,ind%J_cc ,dir//'Jfield/','Jct',0)
+             call export_1C_SF(g,ind%sigma,dir//'material/','sigmac',0)
+             call export_1C_SF(g,ind%sigma,dir//'Bfield/','divBct',0)
+             call export_1C_SF(g,ind%sigma,dir//'Jfield/','divJct',0)
              write(*,*) '     finished'
            endif
          endif
@@ -406,76 +390,64 @@
 
        subroutine inductionExport(ind,g,dir)
          implicit none
-         type(induction),intent(in) :: ind
+         type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
-         ! Locals
-         integer :: Nx,Ny,Nz
-         ! Interior
-         real(cp),dimension(:,:,:),allocatable :: tempn,tempcc
+         type(SF) :: tempN,tempCC
          type(VF) :: tempVFn,tempVFn2
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
            write(*,*) 'Exporting PROCESSED solutions for B'
-           Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-           call init(tempVFn,Nx,Ny,Nz)
-           call init(tempVFn2,Nx,Ny,Nz)
 
-           call cellCenter2Node(tempVFn,ind%B,g)
-           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Bxnt_phys','Bynt_phys','Bznt_phys')
-           call writeToFile(g,tempVFn,dir//'Bfield/','Bxnt','Bynt','Bznt')
+           ! B
+           call init_Node(tempVFn,g)
+           call init_Node(tempVFn2,g)
+           call cellCenter2Node(tempVFn,ind%B,g,ind%temp_F,ind%temp_E)
+           call export_3C_VF(g,tempVFn,dir//'Bfield/','Bnt',0)
 
-           ! call face2Node(tempVFn,ind%jCrossB_F,g)
-           ! call writeVecPhysical(g,tempVFn,dir//'Ufield/','jCrossBx_phys','jCrossBy_phys','jCrossBz_phys')
-           ! call writeToFile(g,tempVFn,dir//'Ufield/','jCrossBxnt','jCrossBynt','jCrossBznt')
+           call cellCenter2Node(tempVFn,ind%B0,g,ind%temp_F,ind%temp_E)
+           call export_3C_VF(g,tempVFn,dir//'Bfield/','B0nt',0)
 
-           call cellCenter2Node(tempVFn,ind%B0,g)
-           call writeVecPhysical(g,tempVFn,dir//'Bfield/','B0xnt_phys','B0ynt_phys','B0znt_phys')
-
-           ! Total Magnetic field (for when B0 varies in space)
-           call cellCenter2Node(tempVFn,ind%B,g)
-           call cellCenter2Node(tempVFn2,ind%B0,g)
+           ! B0
+           call cellCenter2Node(tempVFn,ind%B,g,ind%temp_F,ind%temp_E)
+           call cellCenter2Node(tempVFn2,ind%B0,g,ind%temp_F,ind%temp_E)
            call add(tempVFn,tempVFn2)
-           call writeVecPhysical(g,tempVFn,dir//'Bfield/','Btotxnt_phys','Btotynt_phys','Btotznt_phys')
+           call export_3C_VF(g,tempVFn,dir//'Bfield/','Btotnt',0)
 
-           call cellCenter2Node(tempVFn,ind%J_cc,g)
-           call writeVecPhysical(g,tempVFn,dir//'Jfield/','jxnt_phys','jynt_phys','jznt_phys')
-
-         ! ----------------------- SIGMA/MU FIELD AT NODES ------------------------
-           Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-           allocate(tempn(Nx,Ny,Nz))
-           call cellCenter2Node(tempn,ind%sigma%phi,g)
-           call writeToFile(g,tempn,dir//'material/','sigman')
-           ! call cellCenter2Node(tempn,ind%mu%phi,g)
-           ! call writeToFile(g,tempn,dir//'material/','mun')
-           deallocate(tempn)
-
-         ! -------------------------- TOTAL DOMAIN VELOCITY -----------------------
-           call writeToFile(g,ind%U_cct,dir//'Ufield/','uct','vct','wct')
-           Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-           allocate(tempcc(Nx,Ny,Nz))
-           call div(tempcc,ind%U_cct%x,ind%U_cct%y,ind%U_cct%z,g)
-           call writeToFile(g,tempcc,dir//'Ufield/','divUct')
-           deallocate(tempcc)
+           ! J
+           call cellCenter2Node(tempVFn,ind%J_cc,g,ind%temp_F,ind%temp_E)
+           call export_3C_VF(g,tempVFn,dir//'Jfield/','Jtotnt_phys',0)
            call delete(tempVFn)
            call delete(tempVFn2)
+
+           ! sigma
+           call init_Node(tempN,g)
+           call cellCenter2Node(tempN,ind%sigma,g,ind%temp_F%x,ind%temp_E%z)
+           call export_1C_SF(g,tempN,dir//'material/','sigman',0)
+           call delete(tempN)
+
+           ! U_induction
+           call init_CC(tempCC,g)
+           call div(tempCC,ind%U_cct,g)
+           call export_1C_SF(g,tempCC,dir//'Ufield/','divUct',0)
+           call delete(tempCC)
            write(*,*) '     finished'
-           ! call inductionExportTransientFull(ind,g,dir)
          endif
        end subroutine
 
        subroutine inductionExportMaterial(ind,dir)
          implicit none
-         type(induction),intent(in) :: ind
+         type(induction),intent(inout) :: ind
          character(len=*),intent(in) :: dir
-         type(SF) :: tempSFn
+         type(SF) :: tempN
          integer :: i
          if (solveInduction) then
-           call init(tempSFn,(/(ind%g%c(i)%sn,i=1,3)/))
-           call cellCenter2Node(tempSFn%phi,ind%sigma%phi,ind%g)
-           call treatInterface(tempSFn%phi)
-           call writeToFile(ind%g,tempSFn%phi,dir//'material/','sigman')
+           call init_Node(tempN,ind%g)
+           call cellCenter2Node(tempN,ind%sigma,ind%g,ind%temp_F%x,ind%temp_E%z)
+           call treatInterface(tempN)
+           call export_1C_SF(ind%g,tempN,dir//'material/','sigman',0)
+           call delete(tempN)
          endif
        end subroutine
 
@@ -504,13 +476,13 @@
          write(un,*) ''
          call printPhysicalMinMax(ind%B,'Bx','By','Bz')
          call printPhysicalMinMax(ind%B0,'B0x','B0y','B0z')
-         call printPhysicalMinMax(ind%divB%phi,ind%divB%s,'divB')
-         call printPhysicalMinMax(ind%divJ%phi,ind%divJ%s,'divJ')
+         call printPhysicalMinMax(ind%divB,'divB')
+         call printPhysicalMinMax(ind%divJ,'divJ')
        end subroutine
 
        subroutine inductionExportTransientFull(ind,g,dir)
          implicit none
-         type(induction),intent(in) :: ind
+         type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
          integer :: Nx,Ny,Nz
@@ -523,31 +495,14 @@
            call init(tempVFn2,tempVFn)
 
            ! call cellCenter2Node(tempVFn,ind%B,g)
-           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
-           ! 'Bxnt_phys',&
-           ! 'Bynt_phys',&
-           ! 'Bznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
-           call cellCenter2Node(tempVFn,ind%B,g)
-           call cellCenter2Node(tempVFn2,ind%B0,g)
+           call cellCenter2Node(tempVFn,ind%B,g,ind%temp_F,ind%temp_E)
+           call cellCenter2Node(tempVFn2,ind%B0,g,ind%temp_F,ind%temp_E)
            call add(tempVFn,tempVFn2)
-           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Bfield/transient/',&
-           ! 'Btotxnt_phys',&
-           ! 'Btotynt_phys',&
-           ! 'Btotznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
-
-           call writeScalarPhysicalPlane(g,tempVFn%z,dir//'Bfield/transient/',&
-           'Bznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
            ! call cellCenter2Node(tempVFn,ind%J_cc,g)
-           ! call writeScalarPhysicalPlane(g,tempVFn%z,dir//'Jfield/transient/',&
-           ! 'Jznt_phys','_'//int2str(ind%nstep),3,2,ind%nstep)
 
            ! call cellCenter2Node(tempVFn,ind%J_cc,g)
-           ! call writeVecPhysicalPlane(g,tempVFn,dir//'Jfield/transient/',&
-           !  'jxnt_phys',&
-           !  'jynt_phys',&
-           !  'jznt_phys','_'//int2str(ind%nstep),1,2,ind%nstep)
 
            call delete(tempVFn)
            call delete(tempVFn2)
@@ -589,8 +544,8 @@
          case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%g)
          case (4); call lowRemCTmethod(ind,ind%g)
          case (5); call finiteRemCTmethod(ind,ind%dB0dt,ind%g)
-         case (6); call lowRem_ADI(ind,ind%U_cct,ind%g,ss_MHD)
-         case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g)
+         ! case (6); call lowRem_ADI(ind,ind%U_cct,ind%g,ss_MHD)
+         ! case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g)
          end select
          if (cleanB) then
            call cleanBSolution(ind,ind%g,ss_MHD)
@@ -605,7 +560,7 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          call computeTotalMagneticEnergy(ind,ss_MHD)
-         call computeTotalMagneticEnergyFluid(ind,g_mom,ss_MHD)
+         ! call computeTotalMagneticEnergyFluid(ind,g_mom,ss_MHD)
          call exportTransient(ind,ss_MHD)
 
          ! call inductionExportTransientFull(ind,ind%g,dir) ! VERY Expensive
@@ -635,15 +590,15 @@
          type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          type(solverSettings),intent(inout) :: ss_MHD
-         call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+         ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
 
-         call poisson(ind%SOR_B,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B%x,ind%temp_CC%x,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B%y,ind%temp_CC%y,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B%z,ind%temp_CC%z,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
        end subroutine
 
@@ -659,13 +614,13 @@
 
          call faceCurlCross_F(ind%temp_F,ind%U_Ft,ind%temp_F2,ind%temp_E1,ind%temp_E2,g)
 
-         call poisson(ind%SOR_B,ind%B_face%x,ind%temp_F%x,ind%B_bcs%x,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B_face%x,ind%temp_F%x,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B_face%y,ind%temp_F%y,ind%B_bcs%y,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B_face%y,ind%temp_F%y,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B_face%z,ind%temp_F%z,ind%B_bcs%z,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B_face%z,ind%temp_F%z,g,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
          call face2CellCenter(ind%B,ind%B_face,g)
@@ -691,7 +646,7 @@
            call add(ind%Bstar,ind%temp_CC)
            
            ! ------------- source term -------------
-           call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+           ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
            call multiply(ind%temp_CC,ind%dTime)
            call subtract(ind%Bstar,ind%temp_CC)
 
@@ -700,7 +655,7 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,ind%B_bcs,g)
+           call applyAllBCs(ind%B,g)
          enddo
        end subroutine
 
@@ -716,14 +671,14 @@
 
            ! ------------- diffusion term -------------
            call divide(ind%B,ind%mu)
-           call CCBfieldDiffuse(ind%temp_CC,ind%B,ind%sigmaInv_face,g)
+           ! call CCBfieldDiffuse(ind%temp_CC,ind%B,ind%sigmaInv_face,g)
            call multiply(ind%B,ind%mu)
 
            call multiply(ind%temp_CC,ind%dTime)
            call subtract(ind%Bstar,ind%temp_CC)
            
            ! ------------- source term -------------
-           call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+           ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
            call multiply(ind%temp_CC,ind%dTime)
            call subtract(ind%Bstar,ind%temp_CC)
 
@@ -731,7 +686,7 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,ind%B_bcs,g)
+           call applyAllBCs(ind%B,g)
          enddo
        end subroutine
 
@@ -758,7 +713,7 @@
            call curl(ind%J,ind%temp_F,g)
 
            ! Compute fluxes of u cross B0
-           call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g)
+           call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%B0,g,ind%temp_F)
 
            ! E = j/sig - uxB
            ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
@@ -778,7 +733,7 @@
            call subtract(ind%B,ind%temp_CC)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,ind%B_bcs,g)
+           call applyAllBCs(ind%B,g)
          enddo
        end subroutine
 
@@ -800,7 +755,7 @@
 
          ! E = uxB
          call add(ind%Bstar,ind%B,ind%B0)
-         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%Bstar,g)
+         call edgeCrossCC_E(ind%E,ind%U_E,ind%V_E,ind%W_E,ind%Bstar,g,ind%temp_F)
 
          ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
          call cellCenter2Face(ind%temp_F,ind%B,g)
@@ -825,140 +780,107 @@
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyAllBCs(ind%B,ind%B_bcs,g)
+         call applyAllBCs(ind%B,g)
        end subroutine
 
-       subroutine lowRem_ADI(ind,U,g,ss_MHD)
-         ! inductionSolverCT solves the induction equation using the
-         ! Constrained Transport (CT) Method. The magnetic field is
-         ! stored and collocated at the cell center. The magnetic
-         ! field is updated using Faraday's Law, where the electric
-         ! field is solved for using appropriate fluxes as described
-         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
-         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
-         ! The velocity field is assumed to be cell centered.
-         implicit none
-         ! ********************** INPUT / OUTPUT ************************
-         type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
-         type(solverSettings),intent(inout) :: ss_MHD
+!        subroutine lowRem_ADI(ind,U,g,ss_MHD)
+!          ! inductionSolverCT solves the induction equation using the
+!          ! Constrained Transport (CT) Method. The magnetic field is
+!          ! stored and collocated at the cell center. The magnetic
+!          ! field is updated using Faraday's Law, where the electric
+!          ! field is solved for using appropriate fluxes as described
+!          ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+!          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+!          ! The velocity field is assumed to be cell centered.
+!          implicit none
+!          ! ********************** INPUT / OUTPUT ************************
+!          type(induction),intent(inout) :: ind
+!          type(VF),intent(in) :: U
+!          type(grid),intent(in) :: g
+!          type(solverSettings),intent(inout) :: ss_MHD
 
-         ! J = curl(B_face)_edge
-         call cellCenter2Face(ind%temp_F,ind%B,g)
-         call curl(ind%J,ind%temp_F,g)
+!          ! J = curl(B_face)_edge
+!          call cellCenter2Face(ind%temp_F,ind%B,g)
+!          call curl(ind%J,ind%temp_F,g)
 
-         ! Compute fluxes of u cross B0
-         call cross(ind%temp_CC,U,ind%B0)
-         call cellCenter2Edge(ind%E,ind%temp_CC,g)
+!          ! Compute fluxes of u cross B0
+!          call cross(ind%temp_CC,U,ind%B0)
+!          call cellCenter2Edge(ind%E,ind%temp_CC,g)
 
-         ! E = j/sig - uxB
-         ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
-         call multiply(ind%J,ind%sigmaInv_edge)
-         call subtract(zero,ind%E)
-         call add(ind%E,ind%J)
+!          ! E = j/sig - uxB
+!          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
+!          call multiply(ind%J,ind%sigmaInv_edge)
+!          call subtract(zero,ind%E)
+!          call add(ind%E,ind%J)
 
-         ! F = Curl(E)
-         call curl(ind%temp_F,ind%E,g)
+!          ! F = Curl(E)
+!          call curl(ind%temp_F,ind%E,g)
 
-         ! tempVF = interp(F)_face->cc
-         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+!          ! tempVF = interp(F)_face->cc
+!          call face2CellCenter(ind%temp_CC,ind%temp_F,g)
 
-         ! Subtract laplacian from B^n
-         call lap(ind%Bstar,ind%B,ind%sigmaInv_face,g)
+!          ! Subtract laplacian from B^n
+!          call lap(ind%Bstar,ind%B,ind%sigmaInv_face,g)
 
-         ! ind%temp_CC = ind%temp_CC - ind%Bstar
-         call subtract(ind%temp_CC,ind%Bstar)
+!          ! ind%temp_CC = ind%temp_CC - ind%Bstar
+!          call subtract(ind%temp_CC,ind%Bstar)
 
-         ! Solve with semi-implicit ADI
-         call setDt(ind%ADI_B,ind%dTime)
-         call setAlpha(ind%ADI_B,1.0_cp)
+!          ! Solve with semi-implicit ADI
+!          call setDt(ind%ADI_B,ind%dTime)
+!          call setAlpha(ind%ADI_B,1.0_cp)
 
-         call init(ind%ss_ADI)
-         call setName(ind%ss_ADI,'ADI for B-field     ')
+!          call init(ind%ss_ADI)
+!          call setName(ind%ss_ADI,'ADI for B-field     ')
 
-         call apply(ind%ADI_B,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,&
-            ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
-         call apply(ind%ADI_B,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,&
-            ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
-         call apply(ind%ADI_B,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,&
-            ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
+!          call apply(ind%ADI_B,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,&
+!             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
+!          call apply(ind%ADI_B,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,&
+!             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
+!          call apply(ind%ADI_B,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,&
+!             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
 
-         ! Impose BCs:
-         call applyAllBCs(ind%B,ind%B_bcs,g)
-       end subroutine
+!          ! Impose BCs:
+!          call applyAllBCs(ind%B,ind%B_bcs,g)
+!        end subroutine
 
-       subroutine lowRemMultigrid(ind,U,g)
-         implicit none
-         ! ********************** INPUT / OUTPUT ************************
-         type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
-         type(multiGrid),dimension(2) :: MG
+!        subroutine lowRemMultigrid(ind,U,g)
+!          implicit none
+!          ! ********************** INPUT / OUTPUT ************************
+!          type(induction),intent(inout) :: ind
+!          type(VF),intent(in) :: U
+!          type(grid),intent(in) :: g
+!          type(multiGrid),dimension(2) :: MG
 
-         call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+!          call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
 
-         call poisson(MG,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,ind%ss_ind,&
-         ind%err_residual,.false.)
+!          call poisson(MG,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,ind%ss_ind,&
+!          ind%err_residual,.false.)
 
-         call poisson(MG,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,ind%ss_ind,&
-         ind%err_residual,.false.)
+!          call poisson(MG,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,ind%ss_ind,&
+!          ind%err_residual,.false.)
 
-         call poisson(MG,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,ind%ss_ind,&
-         ind%err_residual,.false.)
-       end subroutine
+!          call poisson(MG,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,ind%ss_ind,&
+!          ind%err_residual,.false.)
+!        end subroutine
 
        ! ******************* CLEANING **************************
-
-       subroutine cleanBSolutionOld(ind,g,ss_MHD)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
-         type(solverSettings),intent(in) :: ss_MHD
-         call div(ind%temp%phi,ind%B_face,g)
-
-         call poisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
-          ind%err_cleanB,getExportErrors(ss_MHD))
-
-         call grad(ind%Bstar,ind%phi%phi,g)
-         call subtract(ind%B,ind%Bstar)
-
-         call applyAllBCs(ind%B,ind%B_bcs,g)
-       end subroutine
 
        subroutine cleanBSolution(ind,g,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
-         call div(ind%temp%phi,ind%B_face,g)
+         call div(ind%temp,ind%B_face,g)
 
-         call poisson(ind%SOR_cleanB,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
+         call poisson(ind%SOR_cleanB,ind%phi,ind%temp,g,ind%ss_cleanB,&
           ind%err_cleanB,getExportErrors(ss_MHD))
 
-         call grad(ind%temp_F2,ind%phi%phi,g)
+         call grad(ind%temp_F2,ind%phi,g)
          call subtract(ind%B_face,ind%temp_F2)
 
          call face2CellCenter(ind%B,ind%B_face,g)
 
-         call applyAllBCs(ind%B,ind%B_bcs,g)
-       end subroutine
-
-       subroutine cleanBMultigrid(ind,g,ss_MHD)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
-         type(solverSettings),intent(in) :: ss_MHD
-
-         call div(ind%temp%phi,ind%B,g)
-         call poisson(ind%MG,ind%phi%phi,ind%temp%phi,ind%phi_bcs,g,ind%ss_cleanB,&
-          ind%err_CleanB,getExportErrors(ss_MHD))
-
-         call grad(ind%Bstar,ind%phi%phi,g)
-         call subtract(ind%B,ind%Bstar)
-
-         ! Impose BCs:
-         call applyAllBCs(ind%B,ind%B_bcs,g)
+         call applyAllBCs(ind%B,g)
        end subroutine
 
        ! ********************* COMPUTE *****************************
@@ -1093,12 +1015,12 @@
            case (4:5)
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
-             call div(ind%divB%phi,ind%temp_F,g)
+             call div(ind%divB,ind%temp_F,g)
            case default
-             call div(ind%divB%phi,ind%B,g)
+             call div(ind%divB,ind%B,g)
            end select
          endif
-         call div(ind%divJ%phi,ind%J_cc,g)
+         call div(ind%divJ,ind%J_cc,g)
        end subroutine
 
        subroutine computeCurrent(ind)
@@ -1109,45 +1031,45 @@
          call curl(ind%J_cc,ind%Bstar,ind%g)
        end subroutine
 
-       subroutine computeTotalMagneticEnergyFluid(ind,g,ss_MHD)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
-         type(solverSettings),intent(in) :: ss_MHD
-         real(cp) :: K_energy
-         integer,dimension(3) :: Nici1,Nici2
-         Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-          if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call assign(ind%Bstar,ind%B)
-           call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,&
-             ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             g)
-           call set(ind%KB_energy,ind%nstep,K_energy)
-           call apply(ind%KB_energy)
-          endif
-          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call assign(ind%Bstar,ind%B)
-           call totalEnergy(K_energy,&
-             ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             g)
-           call set(ind%KBi_energy,ind%nstep,K_energy)
-           call apply(ind%KBi_energy)
-          endif
-          if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,&
-             ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             ind%B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-             g)
-           call set(ind%KB0_energy,ind%nstep,K_energy)
-           call apply(ind%KB0_energy)
-          endif
-       end subroutine
+!        subroutine computeTotalMagneticEnergyFluid(ind,g,ss_MHD)
+!          implicit none
+!          type(induction),intent(inout) :: ind
+!          type(grid),intent(in) :: g
+!          type(solverSettings),intent(in) :: ss_MHD
+!          real(cp) :: K_energy
+!          integer,dimension(3) :: Nici1,Nici2
+!          Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
+!           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+!            call assign(ind%Bstar,ind%B)
+!            call add(ind%Bstar,ind%B0)
+!            call totalEnergy(K_energy,&
+!              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              g)
+!            call set(ind%KB_energy,ind%nstep,K_energy)
+!            call apply(ind%KB_energy)
+!           endif
+!           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+!            call assign(ind%Bstar,ind%B)
+!            call totalEnergy(K_energy,&
+!              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              g)
+!            call set(ind%KBi_energy,ind%nstep,K_energy)
+!            call apply(ind%KBi_energy)
+!           endif
+!           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+!            call totalEnergy(K_energy,&
+!              ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              ind%B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
+!              g)
+!            call set(ind%KB0_energy,ind%nstep,K_energy)
+!            call apply(ind%KB0_energy)
+!           endif
+!        end subroutine
 
        subroutine computeTotalMagneticEnergy(ind,ss_MHD)
          implicit none

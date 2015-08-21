@@ -28,6 +28,7 @@
       ! 5/15/2014
 
       use grid_mod
+      use SF_mod
       use stencils_mod
       implicit none
 
@@ -199,19 +200,19 @@
         end select
       end subroutine
 
-      subroutine delGenGen(dfdh,f,g,n,dir,pad,genType)
+      subroutine delGen(dfdh,f,g,n,dir,pad,genType)
         implicit none
-        type(RF_array),intent(inout) :: dfdh
-        type(RF_array),intent(in) :: f
+        type(SF),intent(inout) :: dfdh
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType
         integer :: i
         do i=1,dfdh%s
-          call delGen(dfdh%RF(i)%f,f%RF(i)%f,g%g(i),n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s)
+          call delGen_RF(dfdh%RF(i)%f,f%RF(i)%f,g,n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s)
         enddo
       end subroutine
 
-      subroutine delGen(dfdh,f,g,n,dir,pad,genType,s,sdfdh)
+      subroutine delGen_RF(dfdh,f,g,n,dir,pad,genType,s,sdfdh)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
         real(cp),dimension(:,:,:),intent(in) :: f
@@ -270,8 +271,8 @@
 
       subroutine assignDel(dfdh,f,g,n,dir,pad)
         implicit none
-        type(RF_array),intent(inout) :: dfdh
-        type(RF_array),intent(in) :: f
+        type(SF),intent(inout) :: dfdh
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,1)
@@ -279,8 +280,8 @@
 
       subroutine addDel(dfdh,f,g,n,dir,pad)
         implicit none
-        type(RF_array),intent(inout) :: dfdh
-        type(RF_array),intent(in) :: f
+        type(SF),intent(inout) :: dfdh
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,2)
@@ -288,8 +289,8 @@
 
       subroutine subtractDel(dfdh,f,g,n,dir,pad)
         implicit none
-        type(RF_array),intent(inout) :: dfdh
-        type(RF_array),intent(in) :: f
+        type(SF),intent(inout) :: dfdh
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,3)
@@ -297,8 +298,8 @@
 
       subroutine multiplyDel(dfdh,f,g,n,dir,pad)
         implicit none
-        type(RF_array),intent(inout) :: dfdh
-        type(RF_array),intent(in) :: f
+        type(SF),intent(inout) :: dfdh
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,4)
@@ -306,8 +307,8 @@
 
       subroutine divideDel(dfdh,f,g,n,dir,pad)
         implicit none
-        type(RF_array),intent(inout) :: dfdh
-        type(RF_array),intent(in) :: f
+        type(SF),intent(inout) :: dfdh
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad
         call delGen(dfdh,f,g,n,dir,pad,5)

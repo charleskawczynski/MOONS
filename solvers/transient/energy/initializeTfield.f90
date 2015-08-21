@@ -1,5 +1,5 @@
        module initializeTfield_mod
-       use IO_scalarBase_mod
+       use SF_mod
        use grid_mod
        implicit none
 
@@ -30,6 +30,17 @@
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
+         type(SF),intent(inout) :: T
+         integer :: i
+         do i=1,T%s
+           call initTfield_RF(T%RF(i)%f,g,dir)
+         enddo
+       end subroutine
+
+       subroutine initTfield_RF(T,g,dir)
+         implicit none
+         character(len=*),intent(in) :: dir
+         type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: T
          if (restartT) then
            call initRestartT(T,g,dir)
@@ -48,7 +59,7 @@
          real(cp),dimension(:),allocatable :: xc,yc,zc
          allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
          xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
-         call readFromFile(xc,yc,zc,T,dir//'Tfield/','T')
+         ! call readFromFile(xc,yc,zc,T,dir//'Tfield/','T')
          deallocate(xc,yc,zc)
        end subroutine
 

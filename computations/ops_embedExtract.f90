@@ -203,13 +203,16 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2
-         N_t%x(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-         N_i%x(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
-         N_t%y(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-         N_i%y(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
-         N_t%z(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-         N_i%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         do i=1,N_t%s
+           N_t%x%RF(i)%f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
+           N_i%x%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+           N_t%y%RF(i)%f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
+           N_i%y%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+           N_t%z%RF(i)%f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
+           N_i%z%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         enddo
        end subroutine
 
        ! *********************************************************************************
@@ -229,10 +232,13 @@
          type(VF),intent(in) :: face_t
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
-         face_i%x = face_t%x(Nin1(1)-1:Nin2(1)+1,Nici1(2)  :Nici2(2)  ,Nici1(3)  :Nici2(3)  )
-         face_i%y = face_t%y(Nici1(1)  :Nici2(1)  ,Nin1(2)-1:Nin2(2)+1,Nici1(3)  :Nici2(3)  )
-         face_i%z = face_t%z(Nici1(1)  :Nici2(1)  ,Nici1(2)  :Nici2(2)  ,Nin1(3)-1:Nin2(3)+1)
+         do i=1,face_i%s
+           face_i%x%RF(i)%f = face_t%x%RF(i)%f(Nin1(1)-1:Nin2(1)+1,Nici1(2)  :Nici2(2)  ,Nici1(3)  :Nici2(3)  )
+           face_i%y%RF(i)%f = face_t%y%RF(i)%f(Nici1(1)  :Nici2(1)  ,Nin1(2)-1:Nin2(2)+1,Nici1(3)  :Nici2(3)  )
+           face_i%z%RF(i)%f = face_t%z%RF(i)%f(Nici1(1)  :Nici2(1)  ,Nici1(2)  :Nici2(2)  ,Nin1(3)-1:Nin2(3)+1)
+         enddo
        end subroutine
 
        subroutine extractFaceExclude(face_i,face_t,SD,g)
@@ -243,14 +249,17 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
          call zeroGhostPoints(face_i)
-         face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
-         face_t%x( Nin1(1): Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-         face_i%y(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1) = &
-         face_t%y(Nice1(1):Nice2(1), Nin1(2): Nin2(2),Nice1(3):Nice2(3))
-         face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1) = &
-         face_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3): Nin2(3))
+         do i=1,face_i%s
+           face_i%x%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
+           face_t%x%RF(i)%f( Nin1(1): Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
+           face_i%y%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1) = &
+           face_t%y%RF(i)%f(Nice1(1):Nice2(1), Nin1(2): Nin2(2),Nice1(3):Nice2(3))
+           face_i%z%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1) = &
+           face_t%z%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3): Nin2(3))
+         enddo
        end subroutine
 
        subroutine extractFaceIncludeDir(face_i,face_t,SD,g)
@@ -263,15 +272,17 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
-
          call zeroGhostPoints(face_i)
-         face_i%x(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
-         face_t%x( Nin1(1)-1: Nin2(1)+1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
-         face_i%y(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1) = &
-         face_t%y(Nice1(1):Nice2(1), Nin1(2)-1: Nin2(2)+1,Nice1(3):Nice2(3))
-         face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:) = &
-         face_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)-1: Nin2(3)+1)
+         do i=1,face_i%s
+           face_i%x%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
+           face_t%x%RF(i)%f( Nin1(1)-1: Nin2(1)+1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))
+           face_i%y%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1) = &
+           face_t%y%RF(i)%f(Nice1(1):Nice2(1), Nin1(2)-1: Nin2(2)+1,Nice1(3):Nice2(3))
+           face_i%z%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:) = &
+           face_t%z%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2), Nin1(3)-1: Nin2(3)+1)
+         enddo
        end subroutine
 
        ! *********************************************************************************
@@ -286,10 +297,16 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
-         face_t%x( Nin1(1): Nin2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = face_i%x(2:g%c(1)%sn-1,:,:)
-         face_t%y(Nici1(1):Nici2(1), Nin1(2): Nin2(2),Nici1(3):Nici2(3)) = face_i%y(:,2:g%c(2)%sn-1,:)
-         face_t%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2), Nin1(3): Nin2(3)) = face_i%z(:,:,2:g%c(3)%sn-1)
+         do i=1,face_t%s
+         face_t%x%RF(i)%f( Nin1(1): Nin2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
+         face_i%x%RF(i)%f(2:g%c(1)%sn-1,:,:)
+         face_t%y%RF(i)%f(Nici1(1):Nici2(1), Nin1(2): Nin2(2),Nici1(3):Nici2(3)) = &
+         face_i%y%RF(i)%f(:,2:g%c(2)%sn-1,:)
+         face_t%z%RF(i)%f(Nici1(1):Nici2(1),Nici1(2):Nici2(2), Nin1(3): Nin2(3)) = &
+         face_i%z%RF(i)%f(:,:,2:g%c(3)%sn-1)
+         enddo
        end subroutine
 
        subroutine embedFaceExclude(face_t,face_i,SD,g) ! Not yet tested
@@ -300,13 +317,16 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
-         face_t%x(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-         face_t%y(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
-         face_i%y(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
-         face_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
-         face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+         do i=1,face_t%s
+         face_t%x%RF(i)%f(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         face_i%x%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         face_t%y%RF(i)%f(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
+         face_i%y%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+         face_t%z%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
+         face_i%z%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+         enddo
        end subroutine
 
        subroutine embedFaceIncludeDir(face_t,face_i,SD,g,dir) ! Not yet tested
@@ -318,30 +338,33 @@
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
+         integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1
          Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
+         do i=1,face_t%s
          select case (dir)
-         case (1); face_t%x(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-                   face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-                   face_t%y(Nici1(1):Nici2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
-                   face_i%y(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-                   face_t%z(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
-                   face_i%z(:,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
-         case (2); face_t%x(Nin1(1):Nin2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-                   face_i%x(2:g%c(1)%sn-1,:,2:g%c(3)%sc-1)
-                   face_t%y(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
-                   face_i%y(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
-                   face_t%z(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nin1(3):Nin2(3)) = &
-                   face_i%z(2:g%c(1)%sc-1,:,2:g%c(3)%sn-1)
-         case (3); face_t%x(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-                   face_i%x(2:g%c(1)%sn-1,2:g%c(2)%sc-1,:)
-                   face_t%y(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nici1(3):Nici2(3)) = &
-                   face_i%y(2:g%c(1)%sc-1,2:g%c(2)%sn-1,:)
-                   face_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
-                   face_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+         case (1); face_t%x%RF(i)%f(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+                   face_i%x%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+                   face_t%y%RF(i)%f(Nici1(1):Nici2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
+                   face_i%y%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+                   face_t%z%RF(i)%f(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
+                   face_i%z%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+         case (2); face_t%x%RF(i)%f(Nin1(1):Nin2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
+                   face_i%x%RF(i)%f(2:g%c(1)%sn-1,:,2:g%c(3)%sc-1)
+                   face_t%y%RF(i)%f(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
+                   face_i%y%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+                   face_t%z%RF(i)%f(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nin1(3):Nin2(3)) = &
+                   face_i%z%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sn-1)
+         case (3); face_t%x%RF(i)%f(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
+                   face_i%x%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,:)
+                   face_t%y%RF(i)%f(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nici1(3):Nici2(3)) = &
+                   face_i%y%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sn-1,:)
+                   face_t%z%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
+                   face_i%z%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
          case default
          stop 'Error: dir must = 1,2,3 in embedFaceIncludeDir in ops_embedExtract.f90'
          end select
+         enddo
        end subroutine
 
        subroutine embedEdgeInclude(edge_t,edge_i,SD,g)
@@ -351,13 +374,16 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nici1,Nici2
+         integer :: i
+         do i=1,edge_t%s
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
-         edge_t%x(Nici1(1):Nici2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-         edge_i%x(:,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
-         edge_t%y(Nin1(1):Nin2(1),Nici1(2):Nici2(2),Nin1(3):Nin2(3)) = &
-         edge_i%y(2:g%c(1)%sn-1,:,2:g%c(3)%sn-1)
-         edge_t%z(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nici1(3):Nici2(3)) = &
-         edge_i%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,:)
+         edge_t%x%RF(i)%f(Nici1(1):Nici2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
+         edge_i%x%RF(i)%f(:,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         edge_t%y%RF(i)%f(Nin1(1):Nin2(1),Nici1(2):Nici2(2),Nin1(3):Nin2(3)) = &
+         edge_i%y%RF(i)%f(2:g%c(1)%sn-1,:,2:g%c(3)%sn-1)
+         edge_t%z%RF(i)%f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nici1(3):Nici2(3)) = &
+         edge_i%z%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sn-1,:)
+         enddo
        end subroutine
 
        subroutine embedEdgeExclude(edge_t,edge_i,SD,g)
@@ -367,13 +393,16 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
+         integer :: i
+         do i=1,edge_t%s
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
-         edge_t%x(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-         edge_i%x(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
-         edge_t%y(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
-         edge_i%y(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
-         edge_t%z(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
-         edge_i%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+         edge_t%x%RF(i)%f(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
+         edge_i%x%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+         edge_t%y%RF(i)%f(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
+         edge_i%y%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+         edge_t%z%RF(i)%f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
+         edge_i%z%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+         enddo
        end subroutine
 
        subroutine embedEdgeIncludeDir(edge_t,edge_i,SD,g,dir)
@@ -384,30 +413,33 @@
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2,Nici1,Nici2
+         integer :: i
+         do i=1,edge_t%s
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1
          Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
          select case(dir)
-         case (1);edge_t%x(Nici1(1):Nici2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
-                  edge_i%x(:,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
-                  edge_t%y(Nin1(1)-1:Nin2(1)+1,Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
-                  edge_i%y(:,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
-                  edge_t%z(Nin1(1)-1:Nin2(1)+1,Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
-                  edge_i%z(:,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
-         case (2);edge_t%x(Nice1(1):Nice2(1),Nin1(2)-1:Nin2(2)+1,Nin1(3):Nin2(3)) = &
-                  edge_i%x(2:g%c(1)%sc-1,:,2:g%c(3)%sn-1)
-                  edge_t%y(Nin1(1):Nin2(1),Nici1(2):Nici2(2),Nin1(3):Nin2(3)) = &
-                  edge_i%y(2:g%c(1)%sn-1,:,2:g%c(3)%sn-1)
-                  edge_t%z(Nin1(1):Nin2(1),Nin1(2)-1:Nin2(2)+1,Nice1(3):Nice2(3)) = &
-                  edge_i%z(2:g%c(1)%sn-1,:,2:g%c(3)%sc-1)
-         case (3);edge_t%x(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nin1(3)-1:Nin2(3)+1) = &
-                  edge_i%x(2:g%c(1)%sc-1,2:g%c(2)%sn-1,:)
-                  edge_t%y(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nin1(3)-1:Nin2(3)+1) = &
-                  edge_i%y(2:g%c(1)%sn-1,2:g%c(2)%sc-1,:)
-                  edge_t%z(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nici1(3):Nici2(3)) = &
-                  edge_i%z(2:g%c(1)%sn-1,2:g%c(2)%sn-1,:)
+         case (1);edge_t%x%RF(i)%f(Nici1(1):Nici2(1),Nin1(2):Nin2(2),Nin1(3):Nin2(3)) = &
+                  edge_i%x%RF(i)%f(:,2:g%c(2)%sn-1,2:g%c(3)%sn-1)
+                  edge_t%y%RF(i)%f(Nin1(1)-1:Nin2(1)+1,Nice1(2):Nice2(2),Nin1(3):Nin2(3)) = &
+                  edge_i%y%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sn-1)
+                  edge_t%z%RF(i)%f(Nin1(1)-1:Nin2(1)+1,Nin1(2):Nin2(2),Nice1(3):Nice2(3)) = &
+                  edge_i%z%RF(i)%f(:,2:g%c(2)%sn-1,2:g%c(3)%sc-1)
+         case (2);edge_t%x%RF(i)%f(Nice1(1):Nice2(1),Nin1(2)-1:Nin2(2)+1,Nin1(3):Nin2(3)) = &
+                  edge_i%x%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sn-1)
+                  edge_t%y%RF(i)%f(Nin1(1):Nin2(1),Nici1(2):Nici2(2),Nin1(3):Nin2(3)) = &
+                  edge_i%y%RF(i)%f(2:g%c(1)%sn-1,:,2:g%c(3)%sn-1)
+                  edge_t%z%RF(i)%f(Nin1(1):Nin2(1),Nin1(2)-1:Nin2(2)+1,Nice1(3):Nice2(3)) = &
+                  edge_i%z%RF(i)%f(2:g%c(1)%sn-1,:,2:g%c(3)%sc-1)
+         case (3);edge_t%x%RF(i)%f(Nice1(1):Nice2(1),Nin1(2):Nin2(2),Nin1(3)-1:Nin2(3)+1) = &
+                  edge_i%x%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sn-1,:)
+                  edge_t%y%RF(i)%f(Nin1(1):Nin2(1),Nice1(2):Nice2(2),Nin1(3)-1:Nin2(3)+1) = &
+                  edge_i%y%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,:)
+                  edge_t%z%RF(i)%f(Nin1(1):Nin2(1),Nin1(2):Nin2(2),Nici1(3):Nici2(3)) = &
+                  edge_i%z%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sn-1,:)
          case default
          stop 'Error: dir must = 1,2,3 in embedEdgeDir in ops_embedExtract.f90'
          end select
+         enddo
        end subroutine
 
        subroutine embedCCInclude_VF(CC_t,CC_i,SD)
@@ -416,10 +448,16 @@
          type(VF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nici1,Nici2
+         integer :: i
+         do i=1,CC_t%s
          Nici1 = SD%Nici1; Nici2 = SD%Nici2
-         CC_t%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%x
-         CC_t%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%y
-         CC_t%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%z
+         CC_t%x%RF(i)%f(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
+         CC_i%x%RF(i)%f
+         CC_t%y%RF(i)%f(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
+         CC_i%y%RF(i)%f
+         CC_t%z%RF(i)%f(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
+         CC_i%z%RF(i)%f
+         enddo
        end subroutine
 
        subroutine embedCCExclude_VF(CC_t,CC_i,SD,g)
@@ -429,13 +467,16 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          integer,dimension(3) :: Nice1,Nice2
+         integer :: i
+         do i=1,CC_t%s
          Nice1 = SD%Nice1; Nice2 = SD%Nice2
-         CC_t%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         CC_i%x(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-         CC_t%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         CC_i%y(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-         CC_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         CC_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         CC_t%x%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         CC_i%x%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         CC_t%y%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         CC_i%y%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         CC_t%z%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         CC_i%z%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         enddo
        end subroutine
 
        subroutine embedCCIncludeDir_VF(CC_t,CC_i,SD,g,dir)
@@ -446,29 +487,32 @@
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          integer,dimension(3) :: Nice1,Nice2,Nici1,Nici2
+         integer :: i
+         do i=1,CC_t%s
          Nice1 = SD%Nice1; Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
          select case (dir)
-         case (1); CC_t%x(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%x(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-                   CC_t%y(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%y(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-                   CC_t%z(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%z(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-         case (2); CC_t%x(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%x(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
-                   CC_t%y(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%y(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
-                   CC_t%z(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%z(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
-         case (3); CC_t%x(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-                   CC_i%x(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
-                   CC_t%y(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-                   CC_i%y(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
-                   CC_t%z(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-                   CC_i%z(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
+         case (1); CC_t%x%RF(i)%f(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%x%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+                   CC_t%y%RF(i)%f(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%y%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+                   CC_t%z%RF(i)%f(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%z%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         case (2); CC_t%x%RF(i)%f(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%x%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
+                   CC_t%y%RF(i)%f(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%y%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
+                   CC_t%z%RF(i)%f(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%z%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
+         case (3); CC_t%x%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
+                   CC_i%x%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
+                   CC_t%y%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
+                   CC_i%y%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
+                   CC_t%z%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
+                   CC_i%z%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
          case default
          stop 'Error: dir must = 1,2,3 in embedCCIncludeDir_VF in ops_embedExtract.f90'
          end select
+         enddo
        end subroutine
 
        ! *********************************************************************************
@@ -483,8 +527,12 @@
          type(SF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nici1,Nici2
+         integer :: i
+         do i=1,CC_t%s
          Nici1 = SD%Nici1; Nici2 = SD%Nici2
-         CC_t%phi(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = CC_i%phi
+         CC_t%RF(i)%f(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)) = &
+         CC_i%RF(i)%f
+         enddo
        end subroutine
 
        subroutine embedCCExclude_SF(CC_t,CC_i,SD)
@@ -493,9 +541,12 @@
          type(SF),intent(in) :: CC_i
          type(subdomain),intent(in) :: SD
          integer,dimension(3) :: Nice1,Nice2
+         integer :: i
+         do i=1,CC_t%s
          Nice1 = SD%Nice1; Nice2 = SD%Nice2
-         CC_t%phi(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-         CC_i%phi(2:SD%s(1)-1,2:SD%s(2)-1,2:SD%s(3)-1)
+         CC_t%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+         CC_i%RF(i)%f(2:SD%s(1)-1,2:SD%s(2)-1,2:SD%s(3)-1)
+         enddo
        end subroutine
 
        subroutine embedCCIncludeDir_SF(CC_t,CC_i,SD,g,dir)
@@ -506,17 +557,20 @@
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          integer,dimension(3) :: Nice1,Nice2,Nici1,Nici2
+         integer :: i
+         do i=1,CC_t%s
          Nice1 = SD%Nice1; Nice2 = SD%Nice2; Nici1 = SD%Nici1; Nici2 = SD%Nici2
          select case (dir)
-         case (1); CC_t%phi(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%phi(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
-         case (2); CC_t%phi(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
-                   CC_i%phi(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
-         case (3); CC_t%phi(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
-                   CC_i%phi(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
+         case (1); CC_t%RF(i)%f(Nici1(1):Nici2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1)
+         case (2); CC_t%RF(i)%f(Nice1(1):Nice2(1),Nici1(2):Nici2(2),Nice1(3):Nice2(3)) = &
+                   CC_i%RF(i)%f(2:g%c(1)%sc-1,:,2:g%c(3)%sc-1)
+         case (3); CC_t%RF(i)%f(Nice1(1):Nice2(1),Nice1(2):Nice2(2),Nici1(3):Nici2(3)) = &
+                   CC_i%RF(i)%f(2:g%c(1)%sc-1,2:g%c(2)%sc-1,:)
          case default
          stop 'Error: dir must = 1,2,3 in embedCCIncludeDir_SF in ops_embedExtract.f90'
          end select
+         enddo
        end subroutine
 
 

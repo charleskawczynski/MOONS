@@ -35,22 +35,6 @@
 
        ! Compiler flags: ( fopenmp, _DEBUG_INTERP_ )
 
-       ! VECTOR INTERFACES:
-       !        face2Face_VF(faceX,faceY,faceZ,face,g,tempCC)
-       !        face2CellCenter_VF(cellCenter,face,g)
-       !        face2Node_VF(node,face,g,tempE)
-       !        cellCenter2Face_VF(face,cellCenter,g)
-       !        cellCenter2Face2_VF(face,cellCenter,g)
-       !        cellCenter2Node_VF(node,cellCenter,g,tempF,tempE)
-       !        cellCenter2Edge_VF_VF(edge,cellCenter,g,tempF)
-       !        cellCenter2Edge_VF_SF(edge,cellCenter,g,tempF)
-       !        node2Edge_VF(edge,node,g)
-       !        node2Edge2_VF(edge,node,g)
-       !        node2Face_VF_VF(face,node,g,tempE)
-       !        node2Face_VF_SF(face,node,g,tempE)
-       !        edge2Node_VF(node,edge,g)
-       !        edge2CellCenter_VF(cellCenter,edge,g,tempF)       
-
        private
 
 #ifdef _SINGLE_PRECISION_
@@ -228,7 +212,7 @@
            enddo
            !$OMP END DO
            !$OMP END PARALLEL
-           call extrap(f,g,dir)
+           call extrapO2(f,g,dir)
          else
            stop 'gridType must be 1 or 2 in interpO2. Terminating.'
          endif
@@ -439,15 +423,15 @@
          call interp(face,cellCenter,g,faceDir)
        end subroutine
 
-       subroutine cellCenter2Node_SF(node,cellCenter,g,tempFx,tempEz)
+       subroutine cellCenter2Node_SF(node,cellCenter,g,tempF,tempE)
          implicit none
          type(SF),intent(inout) :: node
          type(SF),intent(in) :: cellCenter
          type(grid),intent(in) :: g
-         type(SF),intent(inout) :: tempFx,tempEz
-         call cellCenter2Face(tempFx,cellCenter,g,1)
-         call face2Edge(tempEz,tempFx,g,1,3)
-         call edge2Node(node,tempEz,g,3)
+         type(SF),intent(inout) :: tempF,tempE
+         call cellCenter2Face(tempF,cellCenter,g,1)
+         call face2Edge(tempE,tempF,g,1,3)
+         call edge2Node(node,tempE,g,3)
        end subroutine
 
        subroutine cellCenter2Edge_SF(edge,cellCenter,g,tempF,edgeDir)
@@ -472,19 +456,20 @@
        ! ********************************* NODE INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine node2Face_SF(face,node,g,tempEyxx,faceDir)
+       subroutine node2Face_SF(face,node,g,tempE,faceDir)
          implicit none
-         type(SF),intent(inout) :: face,tempEyxx
+         type(SF),intent(inout) :: face
          type(SF),intent(in) :: node
          type(grid),intent(in) :: g
          integer,intent(in) :: faceDir
+         type(SF),intent(inout) :: tempE
          select case (faceDir)
-         case (1); call node2Edge(tempEyxx,node,g,2)
-                   call edge2Face(face,tempEyxx,g,2,faceDir)
-         case (2); call node2Edge(tempEyxx,node,g,1)
-                   call edge2Face(face,tempEyxx,g,1,faceDir)
-         case (3); call node2Edge(tempEyxx,node,g,1)
-                   call edge2Face(face,tempEyxx,g,1,faceDir)
+         case (1); call node2Edge(tempe,node,g,2)
+                   call edge2Face(face,tempe,g,2,faceDir)
+         case (2); call node2Edge(tempe,node,g,1)
+                   call edge2Face(face,tempe,g,1,faceDir)
+         case (3); call node2Edge(tempe,node,g,1)
+                   call edge2Face(face,tempe,g,1,faceDir)
          case default
            stop 'Error: faceDir must = 1,2,3 in node2Face.'
          end select
@@ -591,9 +576,9 @@
          type(VF),intent(inout) :: node,tempE
          type(VF),intent(in) :: face
          type(grid),intent(in) :: g
-         call face2Node(node%x,face%x,g,tempE%y,1)
-         call face2Node(node%y,face%y,g,tempE%x,2)
-         call face2Node(node%z,face%z,g,tempE%x,3)
+         call face2Node(node%x,face%x,g,tempE%x,1)
+         call face2Node(node%y,face%y,g,tempE%y,2)
+         call face2Node(node%z,face%z,g,tempE%z,3)
        end subroutine
 
        ! ****************************************************************************************
@@ -625,9 +610,9 @@
          type(VF),intent(inout) :: node,tempF,tempE
          type(VF),intent(in) :: cellCenter
          type(grid),intent(in) :: g
-         call cellCenter2Node(node%x,cellCenter%x,g,tempF%x,tempE%z)
-         call cellCenter2Node(node%y,cellCenter%y,g,tempF%x,tempE%z)
-         call cellCenter2Node(node%z,cellCenter%z,g,tempF%x,tempE%z)
+         call cellCenter2Node(node%x,cellCenter%x,g,tempF%x,tempE%x)
+         call cellCenter2Node(node%y,cellCenter%y,g,tempF%y,tempE%y)
+         call cellCenter2Node(node%z,cellCenter%z,g,tempF%z,tempE%z)
        end subroutine
 
        subroutine cellCenter2Edge_VF_VF(edge,cellCenter,g,tempF)
@@ -679,9 +664,9 @@
          type(VF),intent(inout) :: face,tempE
          type(VF),intent(in) :: node
          type(grid),intent(in) :: g
-         call node2Face(face%x,node%x,g,tempE%y,1)
-         call node2Face(face%y,node%y,g,tempE%x,2)
-         call node2Face(face%z,node%z,g,tempE%x,3)
+         call node2Face(face%x,node%x,g,tempE%x,1)
+         call node2Face(face%y,node%y,g,tempE%y,2)
+         call node2Face(face%z,node%z,g,tempE%z,3)
        end subroutine
 
        subroutine node2Face_VF_SF(face,node,g,tempE)
@@ -689,9 +674,9 @@
          type(VF),intent(inout) :: face,tempE
          type(SF),intent(in) :: node
          type(grid),intent(in) :: g
-         call node2Face(face%x,node,g,tempE%y,1)
-         call node2Face(face%y,node,g,tempE%x,2)
-         call node2Face(face%z,node,g,tempE%x,3)
+         call node2Face(face%x,node,g,tempE%x,1)
+         call node2Face(face%y,node,g,tempE%y,2)
+         call node2Face(face%z,node,g,tempE%z,3)
        end subroutine
 
        ! ****************************************************************************************

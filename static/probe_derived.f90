@@ -63,6 +63,7 @@
        use probe_base_mod
        use IO_tools_mod
 
+       use SF_mod
        use grid_mod
        use norms_mod
 
@@ -165,14 +166,14 @@
           case (2); p%x=0;p%y=1;p%z=0
           case (3); p%x=0;p%y=0;p%z=1
           case default
-            write(*,*) 'Error: component must = 1,2,3 in initaveProbe.';stop
+            stop 'Error: component must = 1,2,3 in initaveProbe.'
           end select
 
           ! Define location based on average:
           i1 = i; h1 = p%ip%h
           i2 = (/i1(1)+p%x,i1(2)+p%y,i1(3)+p%z/)
           call defineH(i2,g,s,h2)
-          h = real(0.5,cp)*(h1 + h2)
+          h = 0.5_cp*(h1 + h2)
           call resetH(p%ip,h)
         end subroutine
 
@@ -225,7 +226,7 @@
           ! call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),g,s,h2)
 
           ! Define location based on average:
-          p%h = real(0.5,cp)*(h1(direction) + h2(direction))
+          p%h = 0.5_cp*(h1(direction) + h2(direction))
         end subroutine
 
         ! ------------------ APPLY PROBE -----------------------
@@ -245,8 +246,8 @@
           integer,intent(in) :: n
           real(cp),dimension(:,:,:),intent(in) :: u
           real(cp) :: d
-          d = real(0.5,cp)*(u(p%ip%i(1)    ,p%ip%i(2)    ,p%ip%i(3)) +&
-                             u(p%ip%i(1)+p%x,p%ip%i(2)+p%y,p%ip%i(3)+p%z))
+          d = 0.5_cp*(u(p%ip%i(1)    ,p%ip%i(2)    ,p%ip%i(3)) +&
+                      u(p%ip%i(1)+p%x,p%ip%i(2)+p%y,p%ip%i(3)+p%z))
           call set(p%ip,n,d)
           call apply(p%ip)
         end subroutine
@@ -255,15 +256,15 @@
           implicit none
           type(planeErrorProbe),intent(inout) :: p
           integer,intent(in) :: n
-          real(cp),dimension(:,:,:),intent(in) :: u
+          type(SF),intent(in) :: u
           select case (p%dir)
-          case (1); call compute(p%ep%e,real(0.0,cp),u(p%i,:,:))
-          case (2); call compute(p%ep%e,real(0.0,cp),u(:,p%i,:))
-          case (3); call compute(p%ep%e,real(0.0,cp),u(:,:,p%i))
+          case (1); p%ep%e%Linf = maxval(u%RF(1)%f(p%i,:,:))
+          case (2); p%ep%e%Linf = maxval(u%RF(1)%f(:,p%i,:))
+          case (3); p%ep%e%Linf = maxval(u%RF(1)%f(:,:,p%i))
           case default
-            write(*,*) 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.';stop
+            stop 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.'
           end select
-          call set(p%ep,n,getL2(p%ep%e))
+          call set(p%ep,n,p%ep%e%Linf)
           call apply(p%ep)
         end subroutine
 
@@ -271,16 +272,15 @@
           implicit none
           type(avePlaneErrorProbe),intent(inout) :: p
           integer,intent(in) :: n
-          real(cp),dimension(:,:,:),intent(in) :: u
+          type(SF),intent(in) :: u
           select case (p%dir)
-          case (1); call compute(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(p%i,:,:)+u(p%i+1,:,:)))
-          case (2); call compute(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,p%i,:)+u(:,p%i+1,:)))
-          case (3); call compute(p%ep%e,real(0.0,cp),real(0.5,cp)*(u(:,:,p%i)+u(:,:,p%i+1)))
+          case (1); p%ep%e%Linf = maxval(0.5_cp*(u%RF(1)%f(p%i,:,:)+u%RF(1)%f(p%i+1,:,:)))
+          case (2); p%ep%e%Linf = maxval(0.5_cp*(u%RF(1)%f(:,p%i,:)+u%RF(1)%f(:,p%i+1,:)))
+          case (3); p%ep%e%Linf = maxval(0.5_cp*(u%RF(1)%f(:,:,p%i)+u%RF(1)%f(:,:,p%i+1)))
           case default
-            write(*,*) 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.';stop
+            stop 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.'
           end select
-
-          call set(p%ep,n,getL2(p%ep%e))
+          call set(p%ep,n,p%ep%e%Linf)
           call apply(p%ep)
         end subroutine
 

@@ -1,16 +1,18 @@
        module initializeUfield_mod
-       use IO_scalarFields_mod
-       use IO_scalarBase_mod
+       use IO_SF_mod
+       use IO_VF_mod
        use grid_mod
+       use SF_mod
        use VF_mod
        use BCs_mod
        implicit none
 
        private
-       public :: initUfield
-       public :: restartU
+       public :: initUfield,initPfield
+       public :: restartU,restartP
 
        logical,parameter :: restartU      = .false.
+       logical,parameter :: restartP      = restartU
        integer,parameter :: preDefinedU_ICs = 1
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
@@ -39,62 +41,166 @@
 #endif
        real(cp),parameter :: PI = 3.14159265358979_cp
 
+       interface initUfield;    module procedure initUfield_VF;   end interface
+       interface initPfield;    module procedure initPfield_SF;   end interface
+
        contains
 
-       subroutine initUfield(U,p,g,dir)
+       ! **************************************************************************
+       ! **************************************************************************
+       ! *********************** VECTOR FIELD INTERFACE ***************************
+       ! **************************************************************************
+       ! **************************************************************************
+
+       subroutine initUfield_VF(U,g,dir)
          implicit none
          type(VF),intent(inout) :: U
-         real(cp),dimension(:,:,:),intent(inout) :: p
+         character(len=*),intent(in) :: dir
+         type(grid),intent(in) :: g
+         call initUfield_SF(U%x,U%y,U%z,g,dir)
+       end subroutine
+
+       ! **************************************************************************
+       ! **************************************************************************
+       ! *********************** SCALAR FIELD INTERFACE ***************************
+       ! **************************************************************************
+       ! **************************************************************************
+       
+       subroutine initUfield_SF(U,V,W,g,dir)
+         implicit none
+         type(SF),intent(inout) :: U,V,W
+         character(len=*),intent(in) :: dir
+         type(grid),intent(in) :: g
+         integer :: i
+         do i=1,U%s
+           call initUfield_RF(U%RF(i)%f,U%RF(i)%f,U%RF(i)%f,g,dir)
+         enddo
+       end subroutine
+
+       subroutine initPfield_SF(p,g,dir)
+         implicit none
+         type(SF),intent(inout) :: p
+         character(len=*),intent(in) :: dir
+         type(grid),intent(in) :: g
+         integer :: i
+         do i=1,p%s
+           call initPfield_RF(p%RF(i)%f,g,dir)
+         enddo
+       end subroutine
+       
+       ! **************************************************************************
+       ! **************************************************************************
+       ! ************************ REAL FIELD INTERFACE ****************************
+       ! **************************************************************************
+       ! **************************************************************************
+
+       subroutine initUfield_RF(u,v,w,g,dir)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          if (restartU) then
-           call initRestartUfield(U%x,U%y,U%z,p,g,dir)
+               call initRestartUfield(u,v,w,g,dir)
          elseif (preDefinedU_ICs.ne.0) then
-           call initPreDefinedUfield(U%x,U%y,U%z,p,g)
-         else
-           call initUserUfield(U%x,U%y,U%z,p,g)
+               call initPreDefinedUfield(u,v,w,g)
+         else; call initUserUfield(u,v,w,g)
+         endif
+       end subroutine
+
+       subroutine initPfield_RF(p,g,dir)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: p
+         character(len=*),intent(in) :: dir
+         type(grid),intent(in) :: g
+         if (restartP) then
+               call initRestartPfield(p,g,dir)
+         elseif (preDefinedU_ICs.ne.0) then
+               call initPreDefinedPfield(p,g)
+         else; call initUserPfield(p)
          endif
        end subroutine
        
-       subroutine initRestartUfield(u,v,w,p,g,dir)
+       subroutine initRestartUfield(u,v,w,g,dir)
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
          type(grid) :: gtemp
          call init(gtemp,g)
-         call readFromFile(gtemp,u,dir//'Ufield/','ufi')
-         call readFromFile(gtemp,v,dir//'Ufield/','vfi')
-         call readFromFile(gtemp,w,dir//'Ufield/','wfi')
-         call readFromFile(gtemp,p,dir//'Ufield/','pci')
+         ! call readFromFile(gtemp,u,dir//'Ufield/','ufi')
+         ! call readFromFile(gtemp,v,dir//'Ufield/','vfi')
+         ! call readFromFile(gtemp,w,dir//'Ufield/','wfi')
          call delete(gtemp)
        end subroutine
        
-       subroutine initPreDefinedUfield(u,v,w,p,g)
+       subroutine initRestartPfield(p,g,dir)
          implicit none
-         ! Auxiliary data types
+         character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
+         real(cp),dimension(:,:,:),intent(inout) :: p
+         type(grid) :: gtemp
+         call init(gtemp,g)
+         ! call readFromFile(gtemp,p,dir//'Ufield/','pci')
+         call delete(gtemp)
+       end subroutine
+       
+       subroutine initPreDefinedPfield(p,g)
+         implicit none
+         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: p
+         p = 0.0_cp
+       end subroutine
 
-         call initRest(u,v,w,p)
+       subroutine initPreDefinedUfield(u,v,w,g)
+         implicit none
+         type(grid),intent(in) :: g
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
+
+         call initRest(u,v,w)
          select case (preDefinedU_ICs)
          case (1) ! Default
-         case (2); call initFullyDevelopedDuctFlow(u,v,w,p,g,ductDirection,ductSign)
+         case (2); call initFullyDevelopedDuctFlow(u,v,w,g,ductDirection,ductSign)
          case (3); ! call vortex2D(u,v,w,g,3,1)     ! Vortex
          case (4); call isolatedEddy2D(u,v,w,g,3,1) ! Isolated Eddy (Weiss)
          case (5); call singleEddy2D(u,v,w,g,3,1)   ! Single Eddy (Weiss)
          case (6); call cylinder2D(u,v,w,g,3,1)     ! Cylinder
-         case (7); call parabolic1D(u,v,w,p,g)        ! Bandaru (SS of Ha=0)
+         case (7); call parabolic1D(u,v,w,g)        ! Bandaru (SS of Ha=0)
          end select
        end subroutine
 
-       subroutine initRest(u,v,w,p)
+       ! **************************************************************************
+       ! **************************************************************************
+       ! ************************ REAL FIELD FUNCTIONS ****************************
+       ! **************************************************************************
+       ! **************************************************************************
+
+       subroutine initUserPfield(p)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
-         u = 0.0_cp; v = 0.0_cp; w = 0.0_cp; p = 0.0_cp
+         real(cp),dimension(:,:,:),intent(inout) :: p
+         p = 0.0_cp
        end subroutine
 
-       subroutine initFullyDevelopedDuctFlow(u,v,w,p,g,dir,posNeg)
+       subroutine initUserUfield(u,v,w,g)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
+         type(grid),intent(in) :: g
+         integer :: j,k
+         v = 0.0d0; w = 0.0d0
+         do j=1,g%c(2)%sc
+          do k=1,g%c(3)%sc
+            u(:,j,k) = (2.0_cp - g%c(2)%hc(j)**2.0_cp - &
+                                       g%c(3)%hc(k)**2.0_cp)/2.0_cp
+          enddo
+         enddo
+       end subroutine
+
+       subroutine initRest(u,v,w)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
+         u = 0.0_cp; v = 0.0_cp; w = 0.0_cp
+       end subroutine
+
+       subroutine initFullyDevelopedDuctFlow(u,v,w,g,dir,posNeg)
          ! This routine initializes a fully developed duct flow
          ! profile along direction dir.
          ! 
@@ -103,7 +209,7 @@
          ! RESIDE IN INITIALIZE UFIELD, NOT
          ! INITIALIZE UBCs
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,posNeg
 
@@ -175,36 +281,19 @@
          case (2); do i=1,s(2); v(:,i,:) = sign(1.0_cp,real(posNeg,cp))*u_temp; enddo
          case (3); do i=1,s(3); w(:,:,i) = sign(1.0_cp,real(posNeg,cp))*u_temp; enddo
          end select
-         p = 0.0_cp
 
          deallocate(u_temp)
          deallocate(hx,hy)
        end subroutine
 
-       subroutine initUserUfield(u,v,w,p,g)
+       subroutine parabolic1D(u,v,w,g)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
-         type(grid),intent(in) :: g
-         integer :: j,k
-         v = 0.0d0; w = 0.0d0
-         p = 0.0d0
-         do j=1,g%c(2)%sc
-          do k=1,g%c(3)%sc
-            u(:,j,k) = (2.0_cp - g%c(2)%hc(j)**2.0_cp - &
-                                       g%c(3)%hc(k)**2.0_cp)/2.0_cp
-          enddo
-         enddo
-       end subroutine
-
-       subroutine parabolic1D(u,v,w,p,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w,p
+         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
          type(grid),intent(in) :: g
          integer :: k
          real(cp) :: Re
          Re = real(200.0,cp)
-         v = 0.0d0; w = 0.0d0; p = 0.0d0
-
+         v = 0.0d0; w = 0.0d0
          do k=1,g%c(3)%sc
            u(:,:,k) = real(0.5,cp)*Re*(1.0_cp - g%c(3)%hc(k)**2.0_cp)
          enddo

@@ -41,17 +41,17 @@
 
        contains
 
-       subroutine initBBCs(B_bcs,phi_bcs,B,g,cleanB)
+       subroutine initBBCs(B,g,cleanB)
          implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         type(BCs),intent(inout) :: phi_bcs
-         type(VF),intent(in) :: B
+         type(VF),intent(inout) :: B
          type(grid),intent(in) :: g
          logical,intent(in) :: cleanB
+         type(BCs) :: phi_bcs
+         type(vectorBCs) :: B_bcs
 
-         call init(B_bcs%x,B%sx(1),B%sx(2),B%sx(3))
-         call init(B_bcs%y,B%sy(1),B%sy(2),B%sy(3))
-         call init(B_bcs%z,B%sz(1),B%sz(2),B%sz(3))
+         call init(B_bcs%x,B%x%RF(1)%s)
+         call init(B_bcs%y,B%y%RF(1)%s)
+         call init(B_bcs%z,B%z%RF(1)%s)
 
          if (preDefinedB_BCs.ne.0) then
            call initPreDefinedBCs(B_bcs,phi_bcs,g,cleanB)
@@ -62,6 +62,10 @@
          if (cleanB) call setGrid(phi_bcs,g)
          call checkVectorBCs(B_bcs)
          if (cleanB) call checkBCs(phi_bcs)
+
+         call init(B%x%RF(1)%b,B_bcs%x)
+         call init(B%y%RF(1)%b,B_bcs%y)
+         call init(B%z%RF(1)%b,B_bcs%z)
        end subroutine
 
        subroutine initPreDefinedBCs(B_bcs,phi_bcs,g,cleanB)

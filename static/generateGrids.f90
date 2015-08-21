@@ -35,6 +35,18 @@
          real(cp),dimension(3) :: hmin,hmax,betai
          real(cp),dimension(3) :: twtop,twbot
 
+         call getBMCParams(hmin,hmax,betai,twtop,twbot)
+         call cavity3D_uniform(g_mom,hmin,hmax,Ni)
+         call init(g_ind,g_mom)
+       end subroutine
+
+       subroutine makeGrids_BCs(g_mom,g_ind,Ni,Nwtop,Nwbot)
+         implicit none
+         type(grid),intent(inout) :: g_mom,g_ind
+         integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
+         real(cp),dimension(3) :: hmin,hmax,betai
+         real(cp),dimension(3) :: twtop,twbot
+
          integer,dimension(3) :: Nvactop,Nvacbot
          real(cp),dimension(3) :: tvactop,tvacbot
          type(grid) :: temp

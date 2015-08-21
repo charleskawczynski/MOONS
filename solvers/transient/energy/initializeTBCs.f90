@@ -1,6 +1,7 @@
        module initializeTBCs_mod
        use grid_mod
        use BCs_mod
+       use SF_mod
        implicit none
        ! From applyBCs.f90:
        ! bctype = 1 ! Dirichlet - direct - wall coincident
@@ -54,17 +55,17 @@
 
        contains
 
-       subroutine initTBCs(T_bcs,g)
+       subroutine initTBCs(T,g)
          implicit none
          type(grid),intent(in) :: g
-         type(BCs),intent(inout) :: T_bcs
+         type(SF),intent(inout) :: T
          if (preDefinedT_BCs.ne.0) then
-           call initPreDefinedBCs(T_bcs,g)
+           call initPreDefinedBCs(T%RF(1)%b,g)
          else
-           call initUserTBCs(T_bcs,g)
+           call initUserTBCs(T%RF(1)%b,g)
          endif
-         call setGrid(T_bcs,g)
-         call checkBCs(T_bcs)
+         call setGrid(T%RF(1)%b,g)
+         call checkBCs(T%RF(1)%b)
        end subroutine
 
        subroutine initPreDefinedBCs(T_bcs,g)

@@ -1,6 +1,4 @@
        module initializeBfield_mod
-       use IO_vectorFields_mod
-       use IO_vectorBase_mod
        use grid_mod
        use VF_mod
        implicit none
@@ -82,7 +80,7 @@
          allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
          xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
          xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
-         call readFromFile(xc,yc,zc,B%x,B%y,B%z,dir//'Bfield/','Bxct','Byct','Bzct')
+         ! call readFromFile(xc,yc,zc,B%x,B%y,B%z,dir//'Bfield/','Bxct','Byct','Bzct')
          deallocate(xn,yn,zn)
          deallocate(xc,yc,zc)
        end subroutine
@@ -98,7 +96,7 @@
          allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
          xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
          xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
-         call readFromFile(xc,yc,zc,B%x,B%y,B%z,dir//'Bfield/','B0xct','B0yct','B0zct')
+         ! call readFromFile(xc,yc,zc,B%x,B%y,B%z,dir//'Bfield/','B0xct','B0yct','B0zct')
          deallocate(xn,yn,zn)
          deallocate(xc,yc,zc)
        end subroutine
@@ -109,9 +107,9 @@
          type(VF),intent(inout) :: B
          select case (preDefinedB_ICs)
          case (1); call uniformBfield(B,applied_B_dir)
-         case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
-         case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
-         case (4); call initField_Bandaru(B,g,current_B_dir)
+         ! case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
+         ! case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
+         ! case (4); call initField_Bandaru(B%,g,current_B_dir)
          case default
            write(*,*) 'Erro: Incorrect preDefinedB_ICs case in initBfield.'; stop
          end select
@@ -129,11 +127,11 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: dir
          select case (dir)
-         case (0); B%x = real(0.0,cp); B%y = real(0.0,cp); B%z = real(0.0,cp)
-         case (1); B%x = real(1.0,cp); B%y = real(0.0,cp); B%z = real(0.0,cp)
-         case (2); B%x = real(0.0,cp); B%y = real(1.0,cp); B%z = real(0.0,cp)
-         case (3); B%x = real(0.0,cp); B%y = real(0.0,cp); B%z = real(1.0,cp)
-         case (4); B%x = real(1.0,cp); B%y = real(1.0,cp); B%z = real(1.0,cp)
+         case (0); call assign(B%x,0.0_cp); call assign(B%y,0.0_cp); call assign(B%z,0.0_cp)
+         case (1); call assign(B%x,1.0_cp); call assign(B%y,0.0_cp); call assign(B%z,0.0_cp)
+         case (2); call assign(B%x,0.0_cp); call assign(B%y,1.0_cp); call assign(B%z,0.0_cp)
+         case (3); call assign(B%x,0.0_cp); call assign(B%y,0.0_cp); call assign(B%z,1.0_cp)
+         case (4); call assign(B%x,1.0_cp); call assign(B%y,1.0_cp); call assign(B%z,1.0_cp)
          case default
          stop 'Error: dir must = 1,2,3 in uniformBfield.'
          end select
@@ -142,18 +140,18 @@
        subroutine initZeroField(B)
          implicit none
          type(VF),intent(inout) :: B
-         B%x = real(0.0,cp); B%y = real(0.0,cp); B%z = real(0.0,cp)
+         call assign(B%x,0.0_cp); call assign(B%y,0.0_cp); call assign(B%z,0.0_cp)
        end subroutine
 
-       subroutine initFringingField_Sergey(B,g,applied_dir,fringeDir)
+       subroutine initFringingField_Sergey(Bx,By,Bz,g,applied_dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
-         type(VF),intent(inout) :: B
+         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(B%x,g,fringeDir)
-         case (2); call initFringe_Sergey(B%y,g,fringeDir)
-         case (3); call initFringe_Sergey(B%z,g,fringeDir)
+         case (1); call initFringe_Sergey(Bx,g,fringeDir)
+         case (2); call initFringe_Sergey(By,g,fringeDir)
+         case (3); call initFringe_Sergey(Bz,g,fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
@@ -173,12 +171,12 @@
          s = shape(B)
          allocate(Btemp(s(dir)))
          ! Sergey's fringe:
-         Bstretch = real(0.2,cp)   ! stretching parameter
-         Bshift = real(1.5,cp)     ! shift parameter
+         Bstretch = 0.2_cp   ! stretching parameter
+         Bshift = 1.5_cp     ! shift parameter
 
          do i=1,s(dir)
            d = dble((g%c(dir)%hc(i)-Bshift)/Bstretch)
-           Btemp(i) = (real(1.0,cp)+tanh(d))/real(2.0,cp)
+           Btemp(i) = (1.0_cp+tanh(d))/2.0_cp
          enddo; i2 = 0
          ! write(*,*) 's(dir) = ',s(dir)
          do i=1+(s(dir)-1)/2,s(dir)
@@ -198,41 +196,42 @@
          deallocate(Btemp)
        end subroutine
 
-       subroutine initField_Bandaru(B,g,currentDir)
+       subroutine initField_Bandaru(Bx,By,Bz,g,currentDir)
          implicit none
          type(grid),intent(in) :: g
-         type(VF),intent(inout) :: B
+         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
          integer,intent(in) :: currentDir
+         integer,dimension(3) :: sx,sy,sz
          integer :: i,j,k
          real(cp) :: ka ! kappa
-         ka = real(1.0,cp)
-
+         ka = 1.0_cp
+         sx = shape(Bx); sy = shape(By); sz = shape(Bz)
          select case (currentDir)
          case (1); 
-           do i=1,B%sy(1);do j=1,B%sy(2);do k=1,B%sy(3)
-             B%y(i,j,k) = cos(ka*g%c(3)%hc(k)) * &
+           do i=1,sy(1);do j=1,sy(2);do k=1,sy(3)
+             By(i,j,k) = cos(ka*g%c(3)%hc(k)) * &
                          cosh(ka*g%c(2)%hc(j))/cosh(ka)
            enddo;enddo;enddo
-           do i=1,B%sz(1);do j=1,B%sz(2);do k=1,B%sz(3)
-             B%z(i,j,k) =-sin(ka*g%c(3)%hc(k)) * &
+           do i=1,sz(1);do j=1,sz(2);do k=1,sz(3)
+             Bz(i,j,k) =-sin(ka*g%c(3)%hc(k)) * &
                          sinh(ka*g%c(2)%hc(j))/cosh(ka)
            enddo;enddo;enddo
          case (2); 
-           do i=1,B%sx(1);do j=1,B%sx(2);do k=1,B%sx(3)
-             B%x(i,j,k) =-sin(ka*g%c(1)%hc(i)) * &
+           do i=1,sx(1);do j=1,sx(2);do k=1,sx(3)
+             Bx(i,j,k) =-sin(ka*g%c(1)%hc(i)) * &
                          sinh(ka*g%c(3)%hc(k))/cosh(ka)
            enddo;enddo;enddo
-           do i=1,B%sz(1);do j=1,B%sz(2);do k=1,B%sz(3)
-             B%z(i,j,k) = cos(ka*g%c(1)%hc(i)) * &
+           do i=1,sz(1);do j=1,sz(2);do k=1,sz(3)
+             Bz(i,j,k) = cos(ka*g%c(1)%hc(i)) * &
                          cosh(ka*g%c(3)%hc(k))/cosh(ka)
            enddo;enddo;enddo
          case (3); 
-           do i=1,B%sx(1);do j=1,B%sx(2);do k=1,B%sx(3)
-             B%x(i,j,k) = cos(ka*g%c(2)%hc(j)) * &
+           do i=1,sx(1);do j=1,sx(2);do k=1,sx(3)
+             Bx(i,j,k) = cos(ka*g%c(2)%hc(j)) * &
                          cosh(ka*g%c(1)%hc(i))/cosh(ka)
            enddo;enddo;enddo
-           do i=1,B%sy(1);do j=1,B%sy(2);do k=1,B%sy(3)
-             B%y(i,j,k) =-sin(ka*g%c(2)%hc(j)) * &
+           do i=1,sy(1);do j=1,sy(2);do k=1,sy(3)
+             By(i,j,k) =-sin(ka*g%c(2)%hc(j)) * &
                          sinh(ka*g%c(1)%hc(i))/cosh(ka)
            enddo;enddo;enddo
          case default
@@ -240,15 +239,15 @@
          end select
        end subroutine
 
-       subroutine initFringingField_ALEX(B,g,dir,fringeDir)
+       subroutine initFringingField_ALEX(Bx,By,Bz,g,dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
-         type(VF),intent(inout) :: B
+         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
          integer,intent(in) :: dir,fringeDir
          select case (dir)
-         case (1); call initFringe_ALEX(B%x,g,fringeDir)
-         case (2); call initFringe_ALEX(B%y,g,fringeDir)
-         case (3); call initFringe_ALEX(B%z,g,fringeDir)
+         case (1); call initFringe_ALEX(Bx,g,fringeDir)
+         case (2); call initFringe_ALEX(By,g,fringeDir)
+         case (3); call initFringe_ALEX(Bz,g,fringeDir)
          case default
          stop 'Error: dir must = 1,2,3 in initFringingField_ALEX.'
          end select
@@ -268,12 +267,12 @@
          s = shape(B0)
          allocate(Btemp(s(dir)))
          ! Sergey's fringe:
-         Bstretch = real(0.45,cp)   ! stretching parameter
-         Bshift = real(12.5,cp)     ! shift parameter
+         Bstretch = 0.45_cp   ! stretching parameter
+         Bshift = 12.5_cp     ! shift parameter
 
          do i=1,s(dir)
            d = dble(g%c(dir)%hc(i)-Bshift*Bstretch)
-           Btemp(i) = real(0.5,cp)*(real(1.0,cp)-tanh(d))
+           Btemp(i) = 0.5_cp*(1.0_cp-tanh(d))
          enddo
 
          select case (dir)

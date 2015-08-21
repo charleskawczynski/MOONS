@@ -26,8 +26,8 @@
        !        and sensible results.
 
        use IO_tools_mod
-       use IO_scalarFields_mod
-       use IO_vectorFields_mod
+       use IO_SF_mod
+       use IO_VF_mod
        use ops_aux_mod
 
        use grid_mod
@@ -273,7 +273,8 @@
          enddo;enddo;enddo
          !$OMP END PARALLEL DO
          call zeroGhostPoints(e%phi)
-         if (plotTF) call writeScalarPhysical(g,e%phi,dir,'MG_Error_'//name)
+         if (plotTF) call export_1C_SF(g,e,dir,'MG_Error_'//name,0)
+
          call compute( n , e%phi(2:s(1)-1,2:s(2)-1,2:s(3)-1) )
          call delete(e)
        end function

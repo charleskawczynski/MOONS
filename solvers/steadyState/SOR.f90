@@ -22,8 +22,8 @@
       !         _EXPORT_SOR_CONVERGENCE_)
 
       use grid_mod
-      use BCs_mod
       use applyBCs_mod
+      use BCs_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -66,6 +66,9 @@
       interface delete;      module procedure deleteSOR;     end interface
       interface solve;       module procedure solveSOR;      end interface
 
+      interface init_r;      module procedure init_r_RF;     end interface
+      interface init_r;      module procedure init_r_SF;     end interface
+
       contains
 
       subroutine initSOR(SOR,s,g)
@@ -97,7 +100,7 @@
         call init(SOR%lapu,SOR%s)
         call init(SOR%res,SOR%s)
         call init(SOR%r,SOR%s)
-        call init_r(SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+        call init_r(SOR%r,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
         SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%gt)
 
         if (useGaussSeidel) then
@@ -125,12 +128,11 @@
       end subroutine
 
 
-      subroutine solveSOR(SOR,u,f,u_bcs,g,ss,norm,displayTF)
+      subroutine solveSOR(SOR,u,f,g,ss,norm,displayTF)
         implicit none
         type(SORSolver),intent(inout) :: SOR
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
+        type(SF),intent(inout) :: u
+        type(SF),intent(in) :: f
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm
@@ -149,7 +151,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyAllBCs(u_bcs,u,g) ! Necessary with ghost nodes
+        call applyAllBCs(u,g) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -171,15 +173,12 @@
           !$OMP PARALLEL
 
 #endif
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,0,0/)) ! Even in odd plane
 
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,0,0/)) ! Even in even plane
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,1,0/)) ! Even in even plane
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,0,1/)) ! Even in even plane
+          call innerLoop(u,f,SOR%r,SOR,(/0,0,0/)) ! Even in odd plane
+
+          call innerLoop(u,f,SOR%r,SOR,(/1,0,0/)) ! Even in even plane
+          call innerLoop(u,f,SOR%r,SOR,(/0,1,0/)) ! Even in even plane
+          call innerLoop(u,f,SOR%r,SOR,(/0,0,1/)) ! Even in even plane
 
 
 #ifdef _PARALLELIZE_SOR_
@@ -187,37 +186,34 @@
           !$OMP PARALLEL
 
 #endif
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,1,1/)) ! Odd in odd plane
 
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/0,1,1/)) ! Odd in even plane
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,0,1/)) ! Odd in even plane
-          call redBlack(u,f,SOR%r%phi,SOR%s,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
-          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%omega,SOR%gt,(/1,1,0/)) ! Odd in even plane
+          call innerLoop(u,f,SOR%r,SOR,(/1,1,1/)) ! Odd in odd plane
+
+          call innerLoop(u,f,SOR%r,SOR,(/0,1,1/)) ! Odd in even plane
+          call innerLoop(u,f,SOR%r,SOR,(/1,0,1/)) ! Odd in even plane
+          call innerLoop(u,f,SOR%r,SOR,(/1,1,0/)) ! Odd in even plane
 
 #ifdef _PARALLELIZE_SOR_
           !$OMP END PARALLEL
 
 #endif
 
-          call applyAllBCs(u_bcs,u,g)
+          call applyAllBCs(u,g)
 
           if (getMinToleranceTF(ss)) then
             call lap(SOR%lapu,u,g)
-            call subtract(SOR%res,SOR%lapu%phi,f)
+            call subtract(SOR%res,SOR%lapu,f)
             call zeroGhostPoints(SOR%res)
-            call compute(norm,0.0_cp,SOR%res%phi)
-            call setTolerance(ss,getR2(norm))
+            call compute(norm,SOR%res,g)
+            call setTolerance(ss,norm%L2)
           endif
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
             call lap(SOR%lapu,u,g)
-            call subtract(SOR%res,SOR%lapu%phi,f)
+            call subtract(SOR%res,SOR%lapu,f)
             call zeroGhostPoints(SOR%res)
-            call compute(norm,0.0_cp,SOR%res%phi)
-            write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
+            call compute(norm,SOR%res,g)
+            write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
           call setIteration(ss,ijk)
@@ -235,8 +231,9 @@
         ! Subtract mean (for Pressure Poisson)
         ! Okay for SOR alone when comparing with u_exact, but not okay for MG
         ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
-        if (getAllNeumann(u_bcs)) then
-          u = u - sum(u)/(max(1,size(u)))
+        if (getAllNeumann(u%RF(1)%b)) then
+          call subtract(u,mean(u))
+          ! u = u - sum(u)/(max(1,size(u)))
         endif
 
         if (displayTF) then
@@ -244,13 +241,28 @@
           write(*,*) '(Final,max) '//SOR%name//' iteration = ',ijk,maxIterations
 
           call lap(SOR%lapu,u,g)
-          call subtract(SOR%res,SOR%lapu%phi,f)
+          call subtract(SOR%res,SOR%lapu,f)
           call zeroGhostPoints(SOR%res)
-          call compute(norm,0.0_cp,SOR%res%phi)
+          call compute(norm,SOR%res,g)
           call print(norm,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
         ! call delete(SOR)
+      end subroutine
+
+      subroutine innerLoop(u,f,r,SOR,odd)
+        implicit none
+        type(SF),intent(inout) :: u
+        type(SF),intent(in) :: f,r
+        type(SORSolver),intent(in) :: SOR
+        integer,dimension(3),intent(in) :: odd
+        integer :: i
+        do i=1,u%s
+          call redBlack(u%RF(i)%f,f%RF(i)%f,r%RF(i)%f,u%RF(i)%s,&
+          SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
+          SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,&
+          SOR%omega,SOR%gt,odd)
+        enddo
       end subroutine
 
       subroutine redBlack(u,f,r,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
@@ -291,7 +303,18 @@
 #endif
       end subroutine
 
-      subroutine init_r(r,s,dxp,dyp,dzp,dxd,dyd,dzd,gt)
+      subroutine init_r_SF(r,dxp,dyp,dzp,dxd,dyd,dzd,gt)
+        implicit none
+        type(SF),intent(inout) :: r
+        real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
+        integer,dimension(3),intent(in) :: gt
+        integer :: i
+        do i=1,r%s
+          call init_r(r%RF(i)%f,r%RF(i)%s,dxp,dyp,dzp,dxd,dyd,dzd,gt)
+        enddo
+      end subroutine
+
+      subroutine init_r_RF(r,s,dxp,dyp,dzp,dxd,dyd,dzd,gt)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: r
         integer,dimension(3) :: s
@@ -320,49 +343,49 @@
 #endif
       end subroutine
 
-      subroutine redBlackSigma(u,f,sigma,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
-        ! sigx,sigy,sigz are already interpolated to the correct location here
-        implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        real(cp),dimension(:,:,:),intent(in) :: f
-        type(VF),intent(in) :: sigma
-        integer,dimension(3) :: s,odd
-        real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
-        real(cp),intent(in) :: omega
-        integer,dimension(3),intent(in) :: gt
-        integer :: i,j,k
-        real(cp) :: r
+!       subroutine redBlackSigma(u,f,sigma,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
+!         ! sigx,sigy,sigz are already interpolated to the correct location here
+!         implicit none
+!         real(cp),dimension(:,:,:),intent(inout) :: u
+!         real(cp),dimension(:,:,:),intent(in) :: f
+!         type(VF),intent(in) :: sigma
+!         integer,dimension(3) :: s,odd
+!         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
+!         real(cp),intent(in) :: omega
+!         integer,dimension(3),intent(in) :: gt
+!         integer :: i,j,k
+!         real(cp) :: r
 
-#ifdef _PARALLELIZE_SOR_
-        !$OMP DO PRIVATE(r)
+! #ifdef _PARALLELIZE_SOR_
+!         !$OMP DO PRIVATE(r)
 
-#endif
+! #endif
 
-        do k=2+odd(3),s(3)-1,2
-          do j=2+odd(2),s(2)-1,2
-            do i=2+odd(1),s(1)-1,2
-                r = 1.0_cp/dxd(i-1+gt(1))*(sigma%x(i,j,k)/dxp(i) + sigma%x(i-1,j,k)/dxp(i-1)) + & 
-                    1.0_cp/dyd(j-1+gt(2))*(sigma%y(i,j,k)/dyp(j) + sigma%y(i,j-1,k)/dyp(j-1)) + & 
-                    1.0_cp/dzd(k-1+gt(3))*(sigma%z(i,j,k)/dzp(k) + sigma%z(i,j,k-1)/dzp(k-1))
+!         do k=2+odd(3),s(3)-1,2
+!           do j=2+odd(2),s(2)-1,2
+!             do i=2+odd(1),s(1)-1,2
+!                 r = 1.0_cp/dxd(i-1+gt(1))*(sigma%x(i,j,k)/dxp(i) + sigma%x(i-1,j,k)/dxp(i-1)) + & 
+!                     1.0_cp/dyd(j-1+gt(2))*(sigma%y(i,j,k)/dyp(j) + sigma%y(i,j-1,k)/dyp(j-1)) + & 
+!                     1.0_cp/dzd(k-1+gt(3))*(sigma%z(i,j,k)/dzp(k) + sigma%z(i,j,k-1)/dzp(k-1))
 
-                u(i,j,k) = u(i,j,k)*(1.0_cp-omega) + &
+!                 u(i,j,k) = u(i,j,k)*(1.0_cp-omega) + &
 
-                   omega*( u(i-1,j,k)*(sigma%x(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1)))) + &
-                           u(i+1,j,k)*(sigma%x(i, j ,k)/(dxp( i ) * dxd(i-1+gt(1)))) + &
-                           u(i,j-1,k)*(sigma%y(i,j-1,k)/(dyp(j-1) * dyd(j-1+gt(2)))) + &
-                           u(i,j+1,k)*(sigma%y(i, j ,k)/(dyp( j ) * dyd(j-1+gt(2)))) + &
-                           u(i,j,k-1)*(sigma%z(i,j,k-1)/(dzp(k-1) * dzd(k-1+gt(3)))) + &
-                           u(i,j,k+1)*(sigma%z(i,j, k )/(dzp( k ) * dzd(k-1+gt(3)))) &
-                         - f(i,j,k) )/r
+!                    omega*( u(i-1,j,k)*(sigma%x(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1)))) + &
+!                            u(i+1,j,k)*(sigma%x(i, j ,k)/(dxp( i ) * dxd(i-1+gt(1)))) + &
+!                            u(i,j-1,k)*(sigma%y(i,j-1,k)/(dyp(j-1) * dyd(j-1+gt(2)))) + &
+!                            u(i,j+1,k)*(sigma%y(i, j ,k)/(dyp( j ) * dyd(j-1+gt(2)))) + &
+!                            u(i,j,k-1)*(sigma%z(i,j,k-1)/(dzp(k-1) * dzd(k-1+gt(3)))) + &
+!                            u(i,j,k+1)*(sigma%z(i,j, k )/(dzp( k ) * dzd(k-1+gt(3)))) &
+!                          - f(i,j,k) )/r
 
-            enddo
-          enddo
-        enddo
+!             enddo
+!           enddo
+!         enddo
 
-#ifdef _PARALLELIZE_SOR_
-        !$OMP END DO
+! #ifdef _PARALLELIZE_SOR_
+!         !$OMP END DO
 
-#endif
-      end subroutine
+! #endif
+!       end subroutine
 
       end module

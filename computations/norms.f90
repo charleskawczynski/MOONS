@@ -47,6 +47,8 @@
        !
 
        use IO_tools_mod
+       use grid_mod
+       use SF_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -71,11 +73,6 @@
        public :: print
        public :: export,exportList
 
-       public :: getL1, getR1
-       public :: getL2, getR2
-       public :: getLinf, getRinf
-
-
        type norms
          ! private
          real(cp) :: L1,L2,Linf ! Absolute errors:
@@ -91,20 +88,11 @@
        interface exportList;      module procedure exportNormsList2;       end interface
        interface print;           module procedure printNorms;             end interface
 
-       interface compute;         module procedure computeError1;          end interface
-       interface compute;         module procedure computeError1Uniform;   end interface
-       interface compute;         module procedure computeError2;          end interface
-       interface compute;         module procedure computeError2Uniform;   end interface
-       interface compute;         module procedure computeError3;          end interface
-       interface compute;         module procedure computeError3Uniform;   end interface
-       interface compute;         module procedure computeError3Uniform2;  end interface
+       interface compute;         module procedure Compute_exact_present;  end interface
+       interface compute;         module procedure Compute_exact_absent;   end interface
 
-       interface LnError;         module procedure LnError1D;              end interface
-       interface LnError;         module procedure LnError1DUniform;       end interface
-       interface LnError;         module procedure LnError2D;              end interface
-       interface LnError;         module procedure LnError2DUniform;       end interface
-       interface LnError;         module procedure LnError3D;              end interface
-       interface LnError;         module procedure LnError3DUniform;       end interface
+       interface LnError;         module procedure Ln_exact_absent;         end interface
+       interface LnError;         module procedure Ln_exact_present;        end interface
 
        contains
 
@@ -227,337 +215,98 @@
 
        ! **************************************************************
        ! **************************************************************
-       ! ************************ GET ROUTINES ************************
-       ! **************************************************************
-       ! **************************************************************
-
-       function getL1(this) result(L1)
-         implicit none
-         type(norms),intent(in) :: this
-         real(cp) :: L1
-         L1 = this%L1
-       end function
-       
-       function getR1(this) result(R1)
-         implicit none
-         type(norms),intent(in) :: this
-         real(cp) :: R1
-         R1 = this%R1
-       end function
-
-       function getL2(this) result(L2)
-         implicit none
-         type(norms),intent(in) :: this
-         real(cp) :: L2
-         L2 = this%L2
-       end function
-       
-       function getR2(this) result(R2)
-         implicit none
-         type(norms),intent(in) :: this
-         real(cp) :: R2
-         R2 = this%R2
-       end function
-
-       function getLinf(this) result(Linf)
-         implicit none
-         type(norms),intent(in) :: this
-         real(cp) :: Linf
-         Linf = this%Linf
-       end function
-       
-       function getRinf(this) result(Rinf)
-         implicit none
-         type(norms),intent(in) :: this
-         real(cp) :: Rinf
-         Rinf = this%Rinf
-       end function
-
-       ! **************************************************************
-       ! **************************************************************
        ! ************************ COMPUTATIONS ************************
        ! **************************************************************
        ! **************************************************************
 
-       subroutine LnError1D(exact,approx,n,e,er,denom)
+       subroutine Ln_exact_present(exact,approx,g,n,e,er,denom)
          implicit none
-         real(cp),intent(in),dimension(:) :: exact,approx
+         type(SF) :: approx
+         type(SF),intent(in) :: exact
          real(cp),intent(in) :: n
          real(cp),intent(inout) :: e,er,denom
-         integer,dimension(1) :: s
-         real(cp),dimension(1) :: scp
+         type(grid),intent(in) :: g
+         real(cp) :: vol
          real(cp) :: eTemp,denomTemp
-         integer :: i
-         s = shape(approx); e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; scp = real(s,cp)
-         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-         do i=1,s(1)
-           eTemp = eTemp + abs(exact(i) - approx(i))**n
-           denomTemp = denomTemp + abs(exact(i))**n
-         enddo
-         !$OMP END PARALLEL DO
-         e = etemp
-         denom = denomTemp
-
-         e = e**(one/n)/(scp(1))
-         denom = denom/(scp(1))
-         if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+one); endif
-       end subroutine
-
-       subroutine LnError1DUniform(exact,approx,n,e,er,denom)
-         implicit none
-         real(cp),intent(in),dimension(:) :: approx
-         real(cp),intent(in) :: exact
-         real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er,denom
-         integer,dimension(1) :: s
-         real(cp),dimension(1) :: scp
-         real(cp) :: eTemp,denomTemp
-         integer :: i
-         s = shape(approx); e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; scp = real(s,cp)
-         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-         do i=1,s(1)
-           eTemp = eTemp + abs(exact - approx(i))**n
-           denomTemp = denomTemp + abs(exact)**n
-         enddo
-         !$OMP END PARALLEL DO
-         e = etemp
-         denom = denomTemp
-
-         e = e**(one/n)/(scp(1))
-         denom = denom/(scp(1))
-         if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+one); endif
-       end subroutine
-
-       subroutine LnError2D(exact,approx,n,e,er,denom)
-         implicit none
-         real(cp),intent(in),dimension(:,:) :: exact,approx
-         real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er,denom
-         integer,dimension(2) :: s
-         real(cp),dimension(2) :: scp
-         real(cp) :: eTemp,denomTemp
-         integer :: i,j
-         s = shape(approx); e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; scp = real(s,cp)
-         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-         do j=1,s(2)
-           do i=1,s(1)
-             eTemp = eTemp + abs(exact(i,j) - approx(i,j))**n
-             denomTemp = denomTemp + abs(exact(i,j))**n
-           enddo
-         enddo
-         !$OMP END PARALLEL DO
-         e = etemp
-         denom = denomTemp
-
-         e = e**(one/n)/(scp(1)*scp(2))
-         denom = denom/(scp(1)*scp(2))
-         if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+one); endif
-       end subroutine
-
-       subroutine LnError2DUniform(exact,approx,n,e,er,denom)
-         implicit none
-         real(cp),intent(in),dimension(:,:) :: approx
-         real(cp),intent(in) :: exact
-         real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er,denom
-         integer,dimension(2) :: s
-         real(cp),dimension(2) :: scp
-         real(cp) :: eTemp,denomTemp
-         integer :: i,j
-         s = shape(approx); e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; scp = real(s,cp)
-         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-         do j=1,s(2)
-           do i=1,s(1)
-             eTemp = eTemp + abs(exact - approx(i,j))**n
-             denomTemp = denomTemp + abs(exact)**n
-           enddo
-         enddo
-         !$OMP END PARALLEL DO
-         e = etemp
-         denom = denomTemp
-
-         e = e**(one/n)/(scp(1)*scp(2))
-         denom = denom/(scp(1)*scp(2))
-         if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+one); endif
-       end subroutine
-
-       subroutine LnError3D(exact,approx,n,e,er,denom)
-         implicit none
-         real(cp),intent(in),dimension(:,:,:) :: exact,approx
-         real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er,denom
-         integer,dimension(3) :: s
-         real(cp),dimension(3) :: scp
-         real(cp) :: eTemp,denomTemp
-         integer :: i,j,k
-         s = shape(approx); e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; scp = real(s,cp)
-         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-         do k=1,s(3)
-           do j=1,s(2)
-             do i=1,s(1)
-               eTemp = eTemp + abs(exact(i,j,k) - approx(i,j,k))**n
-               denomTemp = denomTemp + abs(exact(i,j,k))**n
+         integer :: i,j,k,t
+         e = zero; denom = zero
+         eTemp = zero; denomTemp = zero; vol = zero
+         do t=1,approx%s
+           !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
+           do k=1,approx%RF(t)%s(3)
+             do j=1,approx%RF(t)%s(2)
+               do i=1,approx%RF(t)%s(1)
+                 eTemp = eTemp + abs(exact%RF(t)%f(i,j,k) - approx%RF(t)%f(i,j,k))**n &
+                 *g%c(1)%dhn(i)*&
+                  g%c(2)%dhn(j)*&
+                  g%c(3)%dhn(k)
+                 denomTemp = denomTemp + abs(exact%RF(t)%f(i,j,k))**n
+               enddo
              enddo
            enddo
+           !$OMP END PARALLEL DO
          enddo
-         !$OMP END PARALLEL DO
          e = etemp
          denom = denomTemp
 
-         e = e**(one/n)/(scp(1)*scp(2)*scp(3))
-         denom = denom/(scp(1)*scp(2)*scp(3))
+         e = e**(one/n)/g%volume
+         denom = denom/g%volume
          if (denom.gt.tol) then; er = e/denom
          else; er = e/(denom+one); endif
        end subroutine
 
-       subroutine LnError3DUniform(exact,approx,n,e,er,denom)
+       subroutine Ln_exact_absent(approx,g,n,e,er)
          implicit none
-         real(cp),intent(in),dimension(:,:,:) :: approx
-         real(cp),intent(in) :: exact
+         type(SF) :: approx
          real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er,denom
-         integer,dimension(3) :: s
-         real(cp),dimension(3) :: scp
-         real(cp) :: eTemp,denomTemp
-         integer :: i,j,k
-         s = shape(approx); e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; scp = real(s,cp)
-         !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-         do k=1,s(3)
-           do j=1,s(2)
-             do i=1,s(1)
-               eTemp = eTemp + abs(exact - approx(i,j,k))**n
-               denomTemp = denomTemp + abs(exact)**n
+         real(cp),intent(inout) :: e,er
+         type(grid),intent(in) :: g
+         real(cp) :: eTemp
+         integer :: i,j,k,t
+         e = zero; eTemp = zero
+         do t=1,approx%s
+           !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp)
+           do k=1,approx%RF(t)%s(3)
+             do j=1,approx%RF(t)%s(2)
+               do i=1,approx%RF(t)%s(1)
+                 eTemp = eTemp + abs(approx%RF(t)%f(i,j,k))**n
+               enddo
              enddo
            enddo
+           !$OMP END PARALLEL DO
          enddo
-         !$OMP END PARALLEL DO
-         e = etemp
-         denom = denomTemp
-
-         e = e**(one/n)/(scp(1)*scp(2)*scp(3))
-         denom = denom/(scp(1)*scp(2)*scp(3))
-         if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+one); endif
+         e = etemp;   e = e**(one/n)/g%volume;   er = e
        end subroutine
 
-       subroutine computeError1(e,exact,approx)
+       subroutine Compute_exact_present(e,exact,approx,g)
          implicit none
          type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:) :: exact,approx
+         type(grid),intent(in) :: g
+         type(SF),intent(in) :: exact,approx
          real(cp) :: n,denom
 
          call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call Ln_exact_present(exact,approx,g,n,e%L1,e%R1,denom)
+         n = 2.0_cp; call Ln_exact_present(exact,approx,g,n,e%L2,e%R2,denom)
          !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
-         else; e%Rinf = (e%Linf)/maxval(abs(exact)+one); endif
+         e%Linf = maxabsdiff(exact,approx)
+         if (denom.gt.tol) then; e%Rinf = e%Linf/maxabs(exact)
+         else; e%Rinf = (e%Linf)/(maxabs(exact)+one); endif
        end subroutine
 
-       subroutine computeError1Uniform(e,exact,approx)
+       subroutine Compute_exact_absent(e,approx,g)
          implicit none
          type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:) :: approx
-         real(cp),intent(in) :: exact
-         real(cp) :: n,denom
+         type(grid),intent(in) :: g
+         type(SF),intent(in) :: approx
+         real(cp) :: n
 
          call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
+         n = 1.0_cp; call Ln_exact_absent(approx,g,n,e%L1,e%R1)
+         n = 2.0_cp; call Ln_exact_absent(approx,g,n,e%L2,e%R2)
          !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
+         e%Linf = maxabs(approx)
+         e%Rinf = e%Linf
        end subroutine
-
-       subroutine computeError2(e,exact,approx)
-         implicit none
-         type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:,:) :: exact,approx
-         real(cp) :: n,denom
-
-         call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
-         !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
-         else; e%Rinf = (e%Linf)/maxval(abs(exact)+one); endif
-       end subroutine
-
-       subroutine computeError2Uniform(e,exact,approx)
-         implicit none
-         type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:,:) :: approx
-         real(cp),intent(in) :: exact
-         real(cp) :: n,denom
-
-         call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
-         !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
-       end subroutine
-
-       subroutine computeError3(e,exact,approx)
-         implicit none
-         type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:,:,:) :: exact,approx
-         real(cp) :: n,denom
-
-         call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
-         !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/maxval(abs(exact))
-         else; e%Rinf = (e%Linf)/maxval(abs(exact)+one); endif
-       end subroutine
-
-       subroutine computeError3Uniform(e,exact,approx)
-         implicit none
-         type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:,:,:) :: approx
-         real(cp),intent(in) :: exact
-         real(cp) :: n,denom
-
-         call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
-         !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
-       end subroutine
-
-       subroutine computeError3Uniform2(e,approx)
-         implicit none
-         type(norms),intent(inout) :: e
-         real(cp),intent(in),dimension(:,:,:) :: approx
-         real(cp) :: n,denom,exact
-         exact = 0.0_cp
-
-         call initError(e)
-         n = 1.0_cp; call LnError(exact,approx,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call LnError(exact,approx,n,e%L2,e%R2,denom)
-         !n = infinity
-         e%Linf = maxval(abs(exact-approx))
-         if (denom.gt.tol) then; e%Rinf = e%Linf/(abs(exact))
-         else; e%Rinf = (e%Linf)/(abs(exact)+one); endif
-       end subroutine
-
 
        end module

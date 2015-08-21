@@ -78,8 +78,8 @@
         un = newAndOpen(dir,trim(adjustl(namex))//','//trim(adjustl(namey))//','//trim(adjustl(namez)))
 
         if (present(headerTecplotTemp)) then
-          if (headerTecplotTemp) call writeTecPlotHeader(un,namex,namey,namez,sx,sy,sz)
-        else; if (headerTecplot) call writeTecPlotHeader(un,namex,namey,namez,sx,sy,sz)
+          if (headerTecplotTemp) call writeTecPlotHeader(un,namex,namey,namez,(/sx,sy,sz/))
+        else; if (headerTecplot) call writeTecPlotHeader(un,namex,namey,namez,(/sx,sy,sz/))
         endif
 
          do k = 1,sz; do j = 1,sy; do i = 1,sx

@@ -31,7 +31,6 @@
        ! 
        ! 
        use del_mod
-       use delVC_mod
        use grid_mod
        use SF_mod
        use VF_mod
@@ -53,45 +52,45 @@
 #endif
 
        public :: cross
-       interface cross;     module procedure collocatedCrossReal;     end interface
-       interface cross;     module procedure collocatedCrossVF;       end interface
+       interface cross;     module procedure collocatedCross_RF;       end interface
+       interface cross;     module procedure collocatedCross_SF;       end interface
+       interface cross;     module procedure collocatedCross_VF;       end interface
 
        public :: lap
-       interface lap;       module procedure lapUniformCoeffReal;     end interface
-       interface lap;       module procedure lapVariableCoeff1Real;   end interface
-       interface lap;       module procedure lapVariableCoeff2Real;   end interface
-       interface lap;       module procedure lapUniformCoeffSF;       end interface
-       interface lap;       module procedure lapUniformCoeffVF;       end interface
-       interface lap;       module procedure lapVariableCoeff1VF;     end interface
-       interface lap;       module procedure lapVariableCoeff2VF;     end interface
+       interface lap;       module procedure lapUniformCoeff_SF;       end interface
+       interface lap;       module procedure lapUniformCoeff_VF;       end interface
 
        public :: div
-       interface div;       module procedure divReal;                 end interface
-       interface div;       module procedure divVF;                   end interface
+       interface div;       module procedure div_SF;                   end interface
+       interface div;       module procedure div_VF;                   end interface
 
        public :: grad
-       interface grad;      module procedure gradReal;                end interface
-       interface grad;      module procedure gradVF;                  end interface
+       interface grad;      module procedure grad_SF;                  end interface
+       interface grad;      module procedure grad_VF;                  end interface
 
        public :: curl
-       interface curl;      module procedure curlReal;                end interface
-       interface curl;      module procedure curlVF;                  end interface
+       interface curl;      module procedure curl_SF;                  end interface
+       interface curl;      module procedure curl_VF;                  end interface
 
        public :: curlcurl
-       interface curlcurl;  module procedure curlcurlCoeffVF;         end interface
-       interface curlcurl;  module procedure curlcurlUniformVF;       end interface
-
-       public :: CCVaryDel ! Needs to be removed eventually
+       interface curlcurl;  module procedure curlcurlCoeff_VF;         end interface
+       interface curlcurl;  module procedure curlcurlUniform_VF;       end interface
 
        public :: mixed
-       interface mixed;     module procedure mixed_uniformCoeffReal;  end interface
-       interface mixed;     module procedure mixed_uniformCoeffVF;    end interface
-       interface mixed;     module procedure mixed_variableCoeffReal; end interface
-       interface mixed;     module procedure mixed_variableCoeffVF;   end interface
+       interface mixed;     module procedure mixed_uniformCoeff_SF;    end interface
+       interface mixed;     module procedure mixed_uniformCoeff_VF;    end interface
+       interface mixed;     module procedure mixed_variableCoeff_SF;   end interface
+       interface mixed;     module procedure mixed_variableCoeff_VF;   end interface
 
        contains
 
-       subroutine collocatedCrossReal(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
+       ! *********************************************************************************
+       ! *********************************************************************************
+       ! ***************************** REAL FIELD ROUTINES *******************************
+       ! *********************************************************************************
+       ! *********************************************************************************
+
+       subroutine collocatedCross_RF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
          ! This routine computes the ith component of A x B on a collocated mesh
          ! dir = (1,2,3)
          implicit none
@@ -121,14 +120,33 @@
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case default
-           stop 'Error: dir must = 1,2,3 in crossReal.'
+           stop 'Error: dir must = 1,2,3 in cross_RF.'
          end select
        end subroutine
 
-       subroutine lapUniformCoeffReal(lapU,u,g)
+       ! *********************************************************************************
+       ! *********************************************************************************
+       ! *************************** SCALAR FIELD ROUTINES *******************************
+       ! *********************************************************************************
+       ! *********************************************************************************
+
+       subroutine collocatedCross_SF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
+         ! This routine computes the ith component of A x B on a collocated mesh
+         ! dir = (1,2,3)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: lapU
-         real(cp),dimension(:,:,:),intent(in) :: u
+         type(SF),intent(inout) :: AcrossB
+         type(SF),intent(in) :: Ax,Ay,Az,Bx,By,Bz
+         integer,intent(in) :: dir
+         integer :: i
+         do i=1,AcrossB%s
+           call cross(AcrossB%RF(i)%f,Ax%RF(i)%f,Ay%RF(i)%f,Az%RF(i)%f,Bx%RF(i)%f,By%RF(i)%f,Bz%RF(i)%f,dir)
+         enddo
+       end subroutine
+
+       subroutine lapUniformCoeff_SF(lapU,u,g)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
          type(grid),intent(in) :: g
          type(del) :: d
          call d%assign(lapU,u,g,2,1,1) ! Padding avoids calcs on fictive cells
@@ -136,32 +154,10 @@
             call d%add(lapU,u,g,2,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine lapVariableCoeff1Real(lapU,u,kx,ky,kz,g)
+       subroutine div_SF(divU,u,v,w,g)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: lapU
-         real(cp),dimension(:,:,:),intent(in) :: u,kx,ky,kz
-         type(grid),intent(in) :: g
-         type(delVC) :: d
-         call d%assign(lapU,u,kx,g,1,1)
-            call d%add(lapU,u,ky,g,2,1)
-            call d%add(lapU,u,kz,g,3,1)
-       end subroutine
-
-       subroutine lapVariableCoeff2Real(lapU,u,k,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: lapU
-         real(cp),dimension(:,:,:),intent(in) :: u,k
-         type(grid),intent(in) :: g
-         type(delVC) :: d
-         call d%assign(lapU,u,k,g,1,1)
-            call d%add(lapU,u,k,g,2,1)
-            call d%add(lapU,u,k,g,3,1)
-       end subroutine
-
-       subroutine divReal(divU,u,v,w,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: divU
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
+         type(SF),intent(inout) :: divU
+         type(SF),intent(in) :: u,v,w
          type(grid),intent(in) :: g
          type(del) :: d
          call d%assign(divU,u,g,1,1,0) ! Padding avoids calcs on fictive cells
@@ -173,10 +169,10 @@
          call zeroGhostPoints(divU) ! padding avoids boundaries
        end subroutine
 
-       subroutine gradReal(gradx,grady,gradz,u,g)
+       subroutine grad_SF(gradx,grady,gradz,u,g)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: gradx,grady,gradz
-         real(cp),dimension(:,:,:),intent(in) :: u
+         type(SF),intent(inout) :: gradx,grady,gradz
+         type(SF),intent(in) :: u
          type(grid),intent(in) :: g
          type(del) :: d
          call d%assign(gradx,u,g,1,1,1) ! Padding avoids calcs on fictive cells
@@ -184,12 +180,12 @@
          call d%assign(gradz,u,g,1,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine curlReal(curlU,u,v,w,g,dir)
-         ! curlReal computes curlU (component dir) of
+       subroutine curl_SF(curlU,u,v,w,g,dir)
+         ! curl_RF computes curlU (component dir) of
          ! the collocated u,v,w field.
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: curlU
-         real(cp),dimension(:,:,:),intent(in) :: u,v,w
+         type(SF),intent(inout) :: curlU
+         type(SF),intent(in) :: u,v,w
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          type(del) :: d
@@ -201,80 +197,11 @@
          case (3); call d%assign(curlU,v,g,1,1,0)
                  call d%subtract(curlU,u,g,1,2,0)
          case default
-           stop 'Error: dir must = 1,2,3 in curlReal.'
+           stop 'Error: dir must = 1,2,3 in curl_RF.'
          end select
        end subroutine
 
-       subroutine CCVaryDel(df,f,k,g,dir1,dir2)
-         ! This is a depricated routine and needs to be deleted once the 
-         ! new routines (mixed_uniformCoeff,mixed_variableCoeff) have been tested.
-         ! 
-         ! 
-         ! Call laplacian if dir1=dir2.
-         ! 
-         ! The issue with this routine is that the mixed derivatives are ONLY
-         ! for CC data, all of the other operators can do computations for N/CC and 
-         ! operator specific data. This needs to be modified to operate on general data
-         ! in a natural way. See the discrete operators.tex file for documentation.
-         ! 
-         ! 
-         ! CCVaryDel computes
-         ! 
-         !     d/dxj (k df/dxi)
-         !        ^         ^
-         !        |         |
-         !       dir2      dir1
-         ! 
-         ! f and df live at the cell center.
-         !
-         !     dir1 == dir2
-         !            upwind -> interpolate coefficient -> upwind
-         !     dir1 ≠ dir2
-         !            CD2 -> CD2
-         ! 
-         ! del should be capable of computing conservative derivatives.
-         ! This routine needs adjusting to use this capability since
-         ! it uses multiple cores more efficiently.
-         ! 
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: df
-         real(cp),dimension(:,:,:),intent(in) :: f,k
-         type(grid),intent(in) :: g
-         integer,intent(in) :: dir1,dir2
-         real(cp),dimension(:,:,:),allocatable :: temp1,temp2
-         integer,dimension(3) :: s
-         integer :: x,y,z
-         type(del) :: d
-         s = shape(f)
-         select case (dir1)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           write(*,*) 'Error: dir1 must = 1,2,3 in CCVaryDel.'; stop
-         end select
-
-         if (dir1.eq.dir2) then
-           allocate(temp1(s(1)+x,s(2)+y,s(3)+z))
-           allocate(temp2(s(1)+x,s(2)+y,s(3)+z))
-           call d%assign(temp1,f,g,1,dir1,0)
-           call cellCenter2Face(temp2,k,g,dir1)
-           temp1 = temp1*temp2
-           call d%assign(temp2,temp1,g,1,dir2,0)
-           df(1+x:s(1)-x,1+y:s(2)-y,1+z:s(3)-z) = temp2(1:s(1)-2*x,1:s(2)-2*y,1:s(3)-2*z)
-           deallocate(temp1,temp2)
-         else
-           allocate(temp1(s(1),s(2),s(3)))
-           allocate(temp2(s(1),s(2),s(3)))
-           call d%assign(temp1,f,g,1,dir1,0)
-           temp1 = temp1*k
-           call d%assign(temp2,temp1,g,1,dir2,0)
-           df = temp2
-           deallocate(temp1,temp2)
-         endif
-       end subroutine
-
-       subroutine mixed_uniformCoeffReal(mix,f,g,temp,dir1,dir2)
+       subroutine mixed_uniformCoeff_SF(mix,f,g,temp,dir1,dir2)
          ! Computes
          !     mix =  d/dxj (df/dxi)
          !               ^       ^
@@ -285,21 +212,20 @@
          !     if dir1 ≠ dir2   --> see below
          ! 
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: mix
-         real(cp),dimension(:,:,:),intent(in) :: f
-         real(cp),dimension(:,:,:),intent(inout) :: temp
+         type(SF),intent(inout) :: mix,temp
+         type(SF),intent(in) :: f
          type(grid),intent(in) :: g
          integer,intent(in) :: dir1,dir2
          type(del) :: d
          if (dir1.eq.dir2) then
-           write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeffReal in ops_discrete.f90'
+           write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeff_RF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
          call d%assign(temp,f,g,1,dir1,1)
          call d%assign(mix,temp,g,1,dir2,1)
        end subroutine
 
-       subroutine mixed_variableCoeffReal(mix,f,k,g,temp,dir1,dir2)
+       subroutine mixed_variableCoeff_SF(mix,f,k,g,temp,dir1,dir2)
          ! Computes
          !     mix =  d/dxj (k df/dxi)
          !               ^         ^
@@ -312,33 +238,18 @@
          ! NOTE: k must live in same domain as df/dxi
          ! 
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: mix
-         real(cp),dimension(:,:,:),intent(inout) :: temp
-         real(cp),dimension(:,:,:),intent(in) :: f,k
+         type(SF),intent(inout) :: mix,temp
+         type(SF),intent(in) :: f,k
          type(grid),intent(in) :: g
          integer,intent(in) :: dir1,dir2
          type(del) :: d
          if (dir1.eq.dir2) then
-           write(*,*) 'Error: dir1=dir2 in mixed_variableCoeffReal in ops_discrete.f90'
+           write(*,*) 'Error: dir1=dir2 in mixed_variableCoeff_RF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
          call d%assign(temp,f,g,1,dir1,1)
-         temp = temp*k
+         call multiply(temp,k)
          call d%assign(mix,temp,g,1,dir2,1)
-       end subroutine
-
-       ! *********************************************************************************
-       ! *********************************************************************************
-       ! ******************************* SCALAR ROUTINES *********************************
-       ! *********************************************************************************
-       ! *********************************************************************************
-
-       subroutine lapUniformCoeffSF(lapU,u,g)
-         implicit none
-         type(SF),intent(inout) :: lapU
-         real(cp),dimension(:,:,:),intent(in) :: u
-         type(grid),intent(in) :: g
-         call lap(lapU%phi,u,g)
        end subroutine
 
        ! *********************************************************************************
@@ -347,16 +258,16 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedCrossVF(AcrossB,A,B)
+       subroutine collocatedCross_VF(AcrossB,A,B)
          implicit none
          type(VF),intent(inout) :: AcrossB
          type(VF),intent(in) :: A,B
          call cross(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,1)
-         call cross(AcrossB%y,A%x,A%y,A%z,B%x,B%y,B%z,2)
-         call cross(AcrossB%z,A%x,A%y,A%z,B%x,B%y,B%z,3)
+         call cross(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,2)
+         call cross(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,3)
        end subroutine
 
-       subroutine lapUniformCoeffVF(lapU,u,g)
+       subroutine lapUniformCoeff_VF(lapU,u,g)
          implicit none
          type(VF),intent(inout) :: lapU
          type(VF),intent(in) :: u
@@ -366,44 +277,23 @@
          call lap(lapU%z,U%z,g)
        end subroutine
 
-       subroutine lapVariableCoeff1VF(lapU,U,k,g)
+       subroutine div_VF(divU,U,g)
          implicit none
-         type(VF),intent(inout) :: lapU
-         type(VF),intent(in) :: U,k
-         type(grid),intent(in) :: g
-         call lap(lapU%x,U%x,k%x,k%y,k%z,g)
-         call lap(lapU%y,U%y,k%x,k%y,k%z,g)
-         call lap(lapU%z,U%z,k%x,k%y,k%z,g)
-       end subroutine
-
-       subroutine lapVariableCoeff2VF(lapU,U,k,g)
-         implicit none
-         type(VF),intent(inout) :: lapU
-         type(VF),intent(in) :: U
-         type(SF),intent(in) :: k
-         type(grid),intent(in) :: g
-         call lap(lapU%x,U%x,k%phi,g)
-         call lap(lapU%y,U%y,k%phi,g)
-         call lap(lapU%z,U%z,k%phi,g)
-       end subroutine
-
-       subroutine divVF(divU,U,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: divU
+         type(SF),intent(inout) :: divU
          type(VF),intent(in) :: U
          type(grid),intent(in) :: g
          call div(divU,U%x,U%y,U%z,g)
        end subroutine
 
-       subroutine gradVF(gradU,U,g)
+       subroutine grad_VF(gradU,U,g)
          implicit none
          type(VF),intent(inout) :: gradU
-         real(cp),dimension(:,:,:),intent(in) :: U
+         type(SF),intent(in) :: U
          type(grid),intent(in) :: g
          call grad(gradU%x,gradU%y,gradU%z,U,g)
        end subroutine
 
-       subroutine curlVF(curlU,U,g)
+       subroutine curl_VF(curlU,U,g)
          implicit none
          type(VF),intent(inout) :: curlU
          type(VF),intent(in) :: U
@@ -413,7 +303,7 @@
          call curl(curlU%z,U%x,U%y,U%z,g,3)
        end subroutine
 
-       subroutine curlcurlCoeffVF(curlcurlU,U,k,temp,g)
+       subroutine curlcurlCoeff_VF(curlcurlU,U,k,temp,g)
          ! Computes
          !     curl( k curl(U) )
          ! 
@@ -433,7 +323,7 @@
          call curl(curlcurlU%z,temp%x,temp%y,temp%z,g,3)
        end subroutine
 
-       subroutine curlcurlUniformVF(curlcurlU,U,temp,g)
+       subroutine curlcurlUniform_VF(curlcurlU,U,temp,g)
          ! Computes
          !     curl( curl(U) )
          ! 
@@ -452,28 +342,27 @@
          call curl(curlcurlU%z,temp%x,temp%y,temp%z,g,3)
        end subroutine
 
-       subroutine mixed_uniformCoeffVF(mix,f,g,temp)
+       subroutine mixed_uniformCoeff_VF(mix,f,g,temp)
          implicit none
          type(VF),intent(inout) :: mix
          type(VF),intent(inout) :: temp
-         real(cp),dimension(:,:,:),intent(in) :: f
+         type(SF),intent(in) :: f
          type(grid),intent(in) :: g
          call mixed(mix%x,f,g,temp%x,2,3)
          call mixed(mix%y,f,g,temp%y,1,3)
          call mixed(mix%z,f,g,temp%z,1,2)
        end subroutine
 
-       subroutine mixed_variableCoeffVF(mix,f,k,g,temp)
+       subroutine mixed_variableCoeff_VF(mix,f,k,g,temp)
          implicit none
          type(VF),intent(inout) :: mix
          type(VF),intent(inout) :: temp
          type(VF),intent(in) :: k
-         real(cp),dimension(:,:,:),intent(in) :: f
+         type(SF),intent(in) :: f
          type(grid),intent(in) :: g
          call mixed(mix%x,f,k%y,g,temp%y,2,3) ! Shape of k must match dir1
          call mixed(mix%y,f,k%x,g,temp%x,1,3) ! Shape of k must match dir1
          call mixed(mix%z,f,k%x,g,temp%x,1,2) ! Shape of k must match dir1
-         call multiply(temp,k)
        end subroutine
 
        end module

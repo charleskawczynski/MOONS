@@ -1,9 +1,9 @@
        module energySolver_mod
        use simParams_mod
        use IO_tools_mod
-       use IO_auxiliary_mod
-       use IO_scalarFields_mod
-       use IO_vectorFields_mod
+       use IO_Auxiliary_mod
+       use IO_SF_mod
+       use IO_VF_mod
        use myTime_mod
        use SF_mod
        use VF_mod
@@ -104,54 +104,48 @@
          type(grid),intent(in) :: g
          type(subdomain),intent(in) :: SD
          character(len=*),intent(in) :: dir
-         integer :: Nx,Ny,Nz
          write(*,*) 'Initializing energy:'
 
          nrg%g = g
          nrg%SD = SD
-         ! --- Vector Fields ---
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
+         call init_CC(nrg%T,g)
+         call init_CC(nrg%Tstar,g)
+         call init_CC(nrg%Ttemp,g)
+         call init_CC(nrg%k_cc,g)
 
-         call init(nrg%T,Nx,Ny,Nz)
-         call init(nrg%Tstar,nrg%T)
-         call init(nrg%Ttemp,nrg%T)
-         call init(nrg%k_cc,nrg%T)
+         call init_Face(nrg%temp_F,g)
+         call init_Face(nrg%k,g)
+         call init_Face(nrg%U_ft,g)
 
-         call allocateX(nrg%temp_F,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-         call allocateY(nrg%temp_F,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-         call allocateZ(nrg%temp_F,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
-
-         call init(nrg%U_cct,nrg%T%s)
-         call init(nrg%temp_CC,nrg%T%s)
-         call init(nrg%gravity,nrg%T%s)
-         call init(nrg%buoyancy,nrg%T%s)
-         call init(nrg%k,nrg%temp_F)
-         call init(nrg%U_ft,nrg%temp_F)
+         call init_CC(nrg%U_cct,g)
+         call init_CC(nrg%temp_CC,g)
+         call init_CC(nrg%gravity,g)
+         call init_CC(nrg%buoyancy,g)
 
          call assign(nrg%gravity,0.0_cp)
          call assign(nrg%buoyancy,0.0_cp)
 
          ! --- Scalar Fields ---
-         call init(nrg%divQ,Nx,Ny,Nz)
+         call init_CC(nrg%divQ,g)
          write(*,*) '     Fields allocated'
 
 
          ! --- Initialize Fields ---
-         call initTBCs(nrg%T_bcs,nrg%g)
+         call initTBCs(nrg%T,nrg%g)
          write(*,*) '     BCs initialized'
 
-         call initTfield(nrg%T%phi,g,dir)
+         call initTfield(nrg%T,g,dir)
          write(*,*) '     T-field initialized'
 
-         call applyAllBCs(nrg%T_bcs,nrg%T%phi,g)
+         call applyAllBCs(nrg%T,g)
          write(*,*) '     BCs applied'
 
          call initK(nrg%k_cc,nrg%SD,g)
-         call cellCenter2Face(nrg%k,nrg%k_cc%phi,g)
+         call cellCenter2Face(nrg%k,nrg%k_cc,g)
          write(*,*) '     Materials initialized'
 
          call init(nrg%probe_T,dir//'Tfield/','transient_T',&
-         .not.restartT,shape(nrg%T%phi),(shape(nrg%T%phi)+1)/2,g)
+         .not.restartT,nrg%T%RF(1)%s,(nrg%T%RF(1)%s+1)/2,g)
 
          call init(nrg%probe_divQ,dir//'Tfield/','transient_divQ',.not.restartT)
 
@@ -247,11 +241,11 @@
          type(energy),intent(inout) :: nrg
          type(solverSettings),intent(in) :: ss_MHD
          if ((getExportTransient(ss_MHD))) then
-           call apply(nrg%probe_T,nrg%nstep,nrg%T%phi)
+           call apply(nrg%probe_T,nrg%nstep,nrg%T%RF(1)%f)
          endif
 
          if (getExportErrors(ss_MHD)) then
-           call apply(nrg%probe_divQ,nrg%nstep,nrg%divQ%phi)
+           ! call apply(nrg%probe_divQ,nrg%nstep,nrg%divQ)
          endif
        end subroutine
 
@@ -264,37 +258,34 @@
            ! This preserves the initial data
          else
            write(*,*) 'Exporting RAW Solutions for T'
-           call writeToFile(g,nrg%U_cct,dir//'Tfield/','U_cct','V_cct','W_cct')
-           call writeToFile(g,nrg%U_ft%x,dir//'Tfield/','U_ft')
-           call writeToFile(g,nrg%U_ft%y,dir//'Tfield/','V_ft')
-           call writeToFile(g,nrg%U_ft%z,dir//'Tfield/','W_ft')
-           call writeToFile(g,nrg%T%phi,dir//'Tfield/','Tct')
-           call writeToFile(g,nrg%divQ%phi,dir//'Tfield/','divQct')
-           call writeToFile(g,nrg%k_cc%phi,dir//'material/','kct')
+           call export_3C_VF(g,nrg%U_cct,dir//'Tfield/','U_cct',0)
+           call export_1C_SF(g,nrg%T,dir//'Tfield/','Tct',0)
+           call export_1C_SF(g,nrg%U_ft%x,dir//'Tfield/','U_ft',0)
+           call export_1C_SF(g,nrg%U_ft%y,dir//'Tfield/','V_ft',0)
+           call export_1C_SF(g,nrg%U_ft%z,dir//'Tfield/','W_ft',0)
+           call export_1C_SF(g,nrg%divQ,dir//'Tfield/','divQct',0)
+           call export_1C_SF(g,nrg%k_cc,dir//'Tfield/','kct',0)
            write(*,*) '     finished'
          endif
        end subroutine
 
        subroutine energyExport(nrg,g,dir)
          implicit none
-         type(energy),intent(in) :: nrg
+         type(energy),intent(inout) :: nrg
          type(grid),intent(in) :: g
          character(len=*),intent(in) :: dir
-         integer :: Nx,Ny,Nz
-         real(cp),dimension(:,:,:),allocatable :: tempn
+         type(SF) :: tempN,tempE
          if (solveEnergy) then
            write(*,*) 'Exporting PROCESSED Solutions for T'
-           Nx = g%c(1)%sn; Ny = g%c(2)%sn; Nz = g%c(3)%sn
-           allocate(tempn(Nx,Ny,Nz))
-           call cellCenter2Node(tempn,nrg%T%phi,g)
-           call writeToFile(g,tempn,dir//'Tfield/','Tnt')
-           call writeScalarPhysical(g,tempn,dir//'Tfield/','Tnt_phys')
+           call init_Node(tempN,g)
+           call init_Edge(tempE,g,3)
+           call cellCenter2Node(tempN,nrg%T,g,nrg%temp_F%x,tempE)
+           call export_1C_SF(g,tempN,dir//'Tfield/','Tnt',0)
          ! ----------------------- MATERIAL PROPERTIES AT NODES ------------------------
-
-           call cellCenter2Node(tempn,nrg%k_cc%phi,g)
-           call writeToFile(g,tempn,dir//'material/','knt')
-           call writeScalarPhysical(g,tempn,dir//'material/','knt_phys')
-           deallocate(tempn)
+           call cellCenter2Node(tempN,nrg%k_cc,g,nrg%temp_F%x,tempE)
+           call export_1C_SF(g,tempN,dir//'material/','knt',0)
+           call delete(tempN)
+           call delete(tempE)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -325,8 +316,8 @@
            write(un,*) 'stretching_y = ',nrg%g%c(2)%dhMax-nrg%g%c(2)%dhMin
            write(un,*) 'stretching_z = ',nrg%g%c(3)%dhMax-nrg%g%c(3)%dhMin
            write(un,*) ''
-           call printPhysicalMinMax(nrg%T%phi,nrg%T%s,'T')
-           call printPhysicalMinMax(nrg%divQ%phi,nrg%divQ%s,'divQ')
+           call printPhysicalMinMax(nrg%T,'T')
+           call printPhysicalMinMax(nrg%divQ,'divQ')
          endif
        end subroutine
 
@@ -341,7 +332,7 @@
          character(len=*),intent(in) :: dir
          logical :: exportNow
 
-         nrg%gravity%y = 1.0_cp
+         call assign(nrg%gravity%y,1.0_cp)
 
          call embedVelocity(nrg,U,g_mom)
          select case (solveTMethod)
@@ -384,14 +375,14 @@
 
          ! Advection
          call assign(nrg%Ttemp,0.0_cp)
-         call cellCenter2Face(nrg%temp_F,nrg%T%phi,g)
+         call cellCenter2Face(nrg%temp_F,nrg%T,g)
          call multiply(nrg%temp_F,nrg%U_ft)
-         call div(nrg%Ttemp%phi,nrg%temp_F,g)
+         call div(nrg%Ttemp,nrg%temp_F,g)
          call multiply(nrg%Ttemp,-1.0_cp)
 
          ! Diffusion
          call assign(nrg%Tstar,nrg%Ttemp)
-         call lap(nrg%Ttemp%phi,nrg%T%phi,g)
+         call lap(nrg%Ttemp,nrg%T,g)
          call divide(nrg%Ttemp,nrg%Re*nrg%Pr)
 
          ! Explicit Euler
@@ -400,7 +391,7 @@
          call add(nrg%T,nrg%Tstar)
 
          ! Impose BCs:
-         call applyAllBCs(nrg%T_bcs,nrg%T%phi,g)
+         call applyAllBCs(nrg%T,g)
        end subroutine
 
        ! ********************* AUX *****************************
@@ -473,7 +464,7 @@
          type(energy),intent(inout) :: nrg
          type(grid),intent(in) :: g
          if (solveEnergy) then
-           call grad(nrg%temp_F,nrg%T%phi,g)
+           call grad(nrg%temp_F,nrg%T,g)
            call multiply(nrg%temp_F,nrg%k)
            call multiply(nrg%temp_F,-1.0_cp)
          endif
@@ -484,7 +475,7 @@
          type(energy),intent(inout) :: nrg
          type(grid),intent(in) :: g
          if (solveEnergy) then
-           call div(nrg%divQ%phi,nrg%temp_F,g)
+           call div(nrg%divQ,nrg%temp_F,g)
          endif
        end subroutine
 

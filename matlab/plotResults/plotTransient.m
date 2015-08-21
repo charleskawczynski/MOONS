@@ -166,7 +166,7 @@ classdef plotTransient
             data = data.data;
             n = data(:,1);
             var = data(:,2);
-
+            name.file
             data2 = importdata([name.file '_info.dat']);
             h = data2.data(2,:);
             x = h(1); y = h(2); z = h(3);

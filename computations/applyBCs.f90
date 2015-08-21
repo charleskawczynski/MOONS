@@ -57,8 +57,8 @@
        !              - Data is wall incoincident
        ! 
 
+       use SF_mod
        use VF_mod
-       use vectorBCs_mod
        use BCs_mod
        use grid_mod
        implicit none
@@ -76,29 +76,41 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       interface applyAllBCs;    module procedure applyAllBCs;        end interface
-       interface applyAllBCs;    module procedure applyAllVectorBCs;  end interface
+       interface applyAllBCs;    module procedure applyAllBCs_RF;     end interface
+       interface applyAllBCs;    module procedure applyAllBCs_VF;     end interface
+       interface applyAllBCs;    module procedure applyAllBCs_SF;     end interface
        interface applyBCs;       module procedure applyBCs;           end interface
 
        contains
 
-       subroutine applyAllVectorBCs(U,b,g)
+       subroutine applyAllBCs_VF(U,g)
          implicit none
          type(VF),intent(inout) :: U
-         type(vectorBCs),intent(in) :: b
          type(grid),intent(in) :: g
-         call applyAllBCs(b%x,U%x,g)
-         call applyAllBCs(b%y,U%y,g)
-         call applyAllBCs(b%z,U%z,g)
+         call applyAllBCs(U%x,g)
+         call applyAllBCs(U%y,g)
+         call applyAllBCs(U%z,g)
        end subroutine
 
-       subroutine applyAllBCs(b,u,g)
+       subroutine applyAllBCs_SF(U,g)
+         implicit none
+         type(SF),intent(inout) :: U
+         type(grid),intent(in) :: g
+         integer :: i
+         do i=1,U%s
+           call applyAllBCs(U%RF(i)%f,U%RF(i)%b,g)
+           call applyAllBCs(U%RF(i)%f,U%RF(i)%b,g)
+           call applyAllBCs(U%RF(i)%f,U%RF(i)%b,g)
+         enddo
+       end subroutine
+
+       subroutine applyAllBCs_RF(u,b,g)
         ! Note that these boundary conditions are applied in a NON- arbitrary
         ! order and changing them WILL change the outcome of the results.
         ! Consider changing BCs to only affect interior data.
          implicit none
-         type(BCs),intent(in) :: b
          real(cp),dimension(:,:,:),intent(inout) :: u
+         type(BCs),intent(in) :: b
          type(grid),intent(in) :: g
          call applyBCs(u,b%yMinType,2,b%yMinVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
          call applyBCs(u,b%yMaxType,5,b%yMaxVals,g%c(2)%hn,g%c(2)%hc,b%s(2))
