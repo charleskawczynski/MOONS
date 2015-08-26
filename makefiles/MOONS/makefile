@@ -16,10 +16,10 @@ else
 endif
 
 # ************* DIRECTORY SETTINGS ******************
-SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS
+SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
@@ -30,6 +30,11 @@ VPATH =\
 	$(TARGET_DIR) \
 	$(SRC_DIR)$(PS)lib \
 	$(SRC_DIR)$(PS)user \
+	$(SRC_DIR)$(PS)IO \
+	$(SRC_DIR)$(PS)grid \
+	$(SRC_DIR)$(PS)probes \
+	$(SRC_DIR)$(PS)fields \
+	$(SRC_DIR)$(PS)ops \
 	$(SRC_DIR)$(PS)static \
 	$(SRC_DIR)$(PS)computations \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState \
@@ -50,19 +55,19 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
 # ****************** DEBUGGING **********************
 # CPU time ~ Debugging level
-FCFLAGS += -g
+# FCFLAGS += -g
 # FCFLAGS += -g -Wall
 # FCFLAGS += -g -Wall -Wextra
 # FCFLAGS += -g -Wall -Wextra -fbacktrace
-# FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
-# FCFLAGS += -O0
+FCFLAGS += -O0
 # FCFLAGS += -O1
 # FCFLAGS += -O2
-FCFLAGS += -O3
+# FCFLAGS += -O3
 # FCFLAGS += -O4
 # FCFLAGS += -O5
 # **************** PARALLELIZATION ******************
@@ -83,9 +88,19 @@ FCFLAGS += -cpp
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
+# FFT Methods
+# FCFLAGS += -D_FFT_FULL_
+FCFLAGS += -D_FFT_RADIX2_
+
+# Order of accuracy
+FCFLAGS += -D_STENCILS_O2_
+# FCFLAGS += -D_STENCILS_O4_
+
+# Parallelization
 # FCFLAGS += -D_PARALLELIZE_Jacobi_
 FCFLAGS += -D_PARALLELIZE_SOR_
 FCFLAGS += -D_PARALLELIZE_RF_
+# FCFLAGS += -D_PARALLELIZE_EMBEDEXTRACT_
 
 # Code verification
 # FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
@@ -93,20 +108,14 @@ FCFLAGS += -D_PARALLELIZE_RF_
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# check grid is performed every time a grid is initialized
-# FCFLAGS += -D_CHECK_GRID_
-
 # Internal debugging
-# FCFLAGS += -D_DEBUG_DELOPS_
-FCFLAGS += -D_DEBUG_VECTOROPS_
 FCFLAGS += -D_DEBUG_DEL_
 FCFLAGS += -D_DEBUG_INTERP_
-
-# FCFLAGS += -D_DEBUG_VECTOR_
-# FCFLAGS += -D_DEBUG_SCALAR_ not yet implemented
-# FCFLAGS += -D_CHECK_SYMMETRY_
-# FCFLAGS += -D_CHECK_SYMMETRY_DELOPS_
-# FCFLAGS += -D_CHECK_SYMMETRY_POISSON_
+FCFLAGS += -D_DEBUG_COORDINATES_
+# FCFLAGS += -D_DEBUG_RF_
+# FCFLAGS += -D_DEBUG_SF_
+# FCFLAGS += -D_DEBUG_VF_
+# FCFLAGS += -D_DEBUG_TF_
 
 
 TARGET = $(TARGET_DIR)$(PS)MOONS
@@ -117,46 +126,46 @@ TARGET = $(TARGET_DIR)$(PS)MOONS
 
 # $(SRC_DIR)$(PS)static$(PS)IO_scalarFields.f90 \
 # $(SRC_DIR)$(PS)static$(PS)IO_vectorFields.f90 \
+
 # $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
-# $(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
-# $(SRC_DIR)$(PS)user$(PS)convergenceRate.f90 \
+# $(SRC_DIR)$(PS)IO$(PS)IO_scalarBase.f90 \
+# $(SRC_DIR)$(PS)IO$(PS)IO_vectorBase.f90 \
 
 
 SRCS_F =\
-	$(SRC_DIR)$(PS)static$(PS)IO_tools.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_tecplotHeaders.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_scalarBase.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_vectorBase.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_auxiliary.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_transientFields.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)IO_transientFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
-	$(SRC_DIR)$(PS)static$(PS)coordinates.f90 \
-	$(SRC_DIR)$(PS)static$(PS)gridGenTools.f90 \
-	$(SRC_DIR)$(PS)static$(PS)grid.f90 \
-	$(SRC_DIR)$(PS)static$(PS)gridGen.f90 \
-	$(SRC_DIR)$(PS)static$(PS)matchGridStretching.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)gridGenTools.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)grid.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)gridGen.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)matchGridStretching.f90 \
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
-	$(SRC_DIR)$(PS)static$(PS)generateGrids.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)generateGrids.f90 \
 	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
-	$(SRC_DIR)$(PS)static$(PS)RF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)SF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)VF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)export_raw.f90 \
-	$(SRC_DIR)$(PS)static$(PS)export_g.f90 \
-	$(SRC_DIR)$(PS)static$(PS)export_RF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)export_SF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)export_VF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)import_raw.f90 \
-	$(SRC_DIR)$(PS)static$(PS)import_g.f90 \
-	$(SRC_DIR)$(PS)static$(PS)import_RF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)import_SF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)import_VF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_SF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)IO_VF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)export_g.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)export_RF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)export_VF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)import_g.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)import_RF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)import_SF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)import_VF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)IO_VF.f90 \
 	$(SRC_DIR)$(PS)static$(PS)version.f90 \
 	$(SRC_DIR)$(PS)static$(PS)solverSettings.f90 \
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
@@ -166,15 +175,16 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)computations$(PS)fft.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)dct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)idct.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)stencils_old.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)del_old.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)del.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)delVC.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)ops_interp.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)ops_aux.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)ops_discrete.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)ops_physics.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)ops_discrete_complex.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)ops_embedExtract.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)applyBCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
@@ -187,16 +197,19 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeTfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)initializeK.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)initializeBBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)initializeBfield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)initializeSigmaMu.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)initializeUBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)initializeUfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_BBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_Bfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_Sigma.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_UBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_Ufield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)energySolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)inductionSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
+	$(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
+	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90 \
 	$(TARGET_DIR)$(PS)parametricStudy.f90
 
 # **************** DO NOT EDIT BELOW HERE *********************

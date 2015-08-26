@@ -7,7 +7,7 @@ clear()
 nLeft = -2             # Number of points to the LEFT of central location (may be 0)
 nRight = 0             # Number of points to the RIGHT of central location (may be 0)
 
-nonUniformGrid = True  # Use non-uniform grid spacing
+nonUniformGrid = False  # Use non-uniform grid spacing
 substituteDH = True   # Substitute alpha_{i} for (h_{i+k} - h_{i}), takes longer
 multiLine = False       # multiline output
 

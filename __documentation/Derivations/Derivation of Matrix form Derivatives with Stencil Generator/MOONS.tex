@@ -108,14 +108,14 @@ Which means that indexing between the function and diagonals must be
 
 Results shown in the next section were obtained by running the python stencil maker and matching the appropriate indexes of the function and its coefficients.
 
-\subsection{1st Derivative (node data)}
+\section{Node Data}
 For node data, one-sided difference schemes must be used at the boundary.
-\subsubsection{Generator Results}
+\subsection{1st Derivative}
 Interior:
 \begin{equation} 
 f^{{(1)}}_{i} = \left(- \frac{\Delta h_{{i}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(\frac{- \Delta h_{{i-1}} + \Delta h_{{i}}}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
   , \qquad
-  i \in (2,s-1)
+  i \in (3,s-2)
  \end{equation} 
 Front boundary:
 \begin{equation} 
@@ -127,47 +127,52 @@ Back boundary:
 f^{{(1)}}_{i} = \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i-2}} \left(\Delta h_{{i-1}} + \Delta h_{{i-2}}\right)}\right)f_{{i-2}}+ \left(- \frac{\Delta h_{{i-1}} + \Delta h_{{i-2}}}{\Delta h_{{i-1}} \Delta h_{{i-2}}}\right)f_{{i-1}}+ \left(\frac{2 \Delta h_{{i-1}} + \Delta h_{{i-2}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i-2}}\right)}\right)f_{{i}}
  \end{equation} 
 
-\subsubsection{Matrix form}
-Interior matrix:
-\begin{equation}
-  L_{i-1} = \left(- \frac{\Delta h_{{i}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)
-  , \qquad
-  D_{i-1} = \left(\frac{- \Delta h_{{i-1}} + \Delta h_{{i}}}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)
-  , \qquad 
-  U_{i-1} = \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)
-  , \qquad
-  i \in (2,s-1)
-\end{equation}
+\subsection{2nd Derivative}
+Interior:
+\begin{equation} 
+f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(- \frac{2}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{2}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
+, \qquad
+  i \in (3,s-2)
+ \end{equation} 
 Front boundary:
-
-\begin{equation}
-  L_{1} = \left(- \frac{\Delta h_{{i+1}} + 2 \Delta h_{{i}}}{\Delta h_{{i}} \left(\Delta h_{{i+1}} + \Delta h_{{i}}\right)}\right)
-  :f_2
-  , \qquad
-  D_{1} = \left(\frac{\Delta h_{{i+1}} + \Delta h_{{i}}}{\Delta h_{{i+1}} \Delta h_{{i}}}\right)
-  :f_3
-  , \qquad 
-  U_{1} = \left(- \frac{\Delta h_{{i}}}{\Delta h_{{i+1}} \left(\Delta h_{{i+1}} + \Delta h_{{i}}\right)}\right)
-  :f_4
-\end{equation}
+\begin{equation} 
+f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i}} \left(\Delta h_{{i+1}} + \Delta h_{{i}}\right)}\right)f_{{i}}+ \left(- \frac{2}{\Delta h_{{i+1}} \Delta h_{{i}}}\right)f_{{i+1}}+ \left(\frac{2}{\Delta h_{{i+1}} \left(\Delta h_{{i+1}} + \Delta h_{{i}}\right)}\right)f_{{i+2}}
+ \end{equation} 
 Back boundary:
+\begin{equation} 
+f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i-2}} \left(\Delta h_{{i-1}} + \Delta h_{{i-2}}\right)}\right)f_{{i-2}}+ \left(- \frac{2}{\Delta h_{{i-1}} \Delta h_{{i-2}}}\right)f_{{i-1}}+ \left(\frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i-2}}\right)}\right)f_{{i}}
+ \end{equation}
 
-\begin{equation}
-  L_{s-2} = \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i-2}} \left(\Delta h_{{i-1}} + \Delta h_{{i-2}}\right)}\right)
+\section{Cell centered Data}
+For cell centered data, a centered difference schemes must be used at the boundary but with modified stencil near the boundary. In order to achieve this, the ghost and first interior cell are interpolated to give the boundary value, which is used with the modified stencil.
+
+\subsection{1st Derivative}
+Interior and boundaries with modified stencil:
+\begin{equation} 
+f^{{(1)}}_{i} = \left(- \frac{\Delta h_{{i}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(\frac{- \Delta h_{{i-1}} + \Delta h_{{i}}}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
   , \qquad
-  D_{s-2} = \left(- \frac{\Delta h_{{i-1}} + \Delta h_{{i-2}}}{\Delta h_{{i-1}} \Delta h_{{i-2}}}\right)
-  , \qquad 
-  U_{s-2} = \left(\frac{2 \Delta h_{{i-1}} + \Delta h_{{i-2}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i-2}}\right)}\right)
-\end{equation}
+  i \in (3,s-2)
+ \end{equation} 
 
 \subsection{2nd Derivative}
-\subsubsection{Generator Results}
-\subsubsection{Matrix form}
-\begin{multline} 
-\begin{aligned} 
-f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i}} \left(\Delta h_{{i+1}} + \Delta h_{{i}}\right)}\right)f_{i}+ \\ \left(- \frac{2}{\Delta h_{{i+1}} \Delta h_{{i}}}\right)f_{{i+1}}+ \\ \left(\frac{2}{\Delta h_{{i+1}} \left(\Delta h_{{i+1}} + \Delta h_{{i}}\right)}\right)f_{{i+2}}
- \end{aligned}
- \end{multline} 
+Interior and boundaries with modified stencil:
+\begin{equation} 
+f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(- \frac{2}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{2}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
+, \qquad
+  i \in (3,s-2)
+ \end{equation} 
+
+\section{Cell centered Data (alternative form)}
+\subsection{1st Derivative}
+\begin{equation} 
+f^{{(1)}}_{i} = \left(\frac{\alpha_{{i+1}}}{\alpha_{{i-1}} \left(\alpha_{{i+1}} - \alpha_{{i-1}}\right)}\right)f_{{i-1}}+ \left(- \frac{\alpha_{{i+1}} + \alpha_{{i-1}}}{\alpha_{{i+1}} \alpha_{{i-1}}}\right)f_{{i}}+ \left(- \frac{\alpha_{{i-1}}}{\alpha_{{i+1}} \left(\alpha_{{i+1}} - \alpha_{{i-1}}\right)}\right)f_{{i+1}}
+ \end{equation} 
+
+\subsection{2nd Derivative}
+\begin{equation} 
+f^{{(2)}}_{i} = \left(- \frac{2}{\alpha_{{i-1}} \left(\alpha_{{i+1}} - \alpha_{{i-1}}\right)}\right)f_{{i-1}}+ \left(\frac{2}{\alpha_{{i+1}} \alpha_{{i-1}}}\right)f_{{i}}+ \left(\frac{2}{\alpha_{{i+1}} \left(\alpha_{{i+1}} - \alpha_{{i-1}}\right)}\right)f_{{i+1}}
+ \end{equation} 
+
 
 
 \end{document}
