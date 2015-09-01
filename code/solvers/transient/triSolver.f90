@@ -8,12 +8,15 @@
       ! call apply(T,uOut,uIn,dir,pad) 
       ! 
       ! See applyTriSolver for more details
-
+      use triDiag_mod
+      use SF_mod
+      use BCs_mod
       implicit none
       
       private
-      public :: trisolver
-      public :: init, delete, apply
+      public :: triSolver
+      public :: init,delete,apply
+      ! public :: init_LU_coeffs
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -25,160 +28,343 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif      
 
-      type trisolver
-        private
-        real(cp),dimension(:),allocatable :: loDiag,diag,upDiag
-        integer :: s
+      type triSolver
+        type(triDiag) :: T
+        type(triDiag) :: LU ! Stored values for LU factorization
       end type
 
-      interface init;    module procedure initTriSolver;            end interface
-      interface delete;  module procedure deleteTriSolver;          end interface
-      interface apply;   module procedure applyTriSolverInterior;   end interface
+      interface init;    module procedure init_TriSolver_LDU;          end interface
+      interface init;    module procedure init_TriSolver_T;            end interface
+      interface init;    module procedure init_TriSolver_copy;         end interface
+      interface delete;  module procedure delete_TriSolver;            end interface
+      interface apply;   module procedure apply_TriSolverInterior_SF;  end interface
+      interface apply;   module procedure apply_TriSolverInterior_RF;  end interface
 
       contains
 
-      subroutine initTriSolver(T,loDiag,diag,upDiag)
-        implicit none
-        type(trisolver),intent(inout) :: T
-        real(cp),dimension(:),intent(in) :: loDiag,diag,upDiag
-        T%s = size(diag)
-        if (allocated(T%loDiag)) deallocate(T%loDiag)
-        if (allocated(T%diag))   deallocate(T%diag)
-        if (allocated(T%upDiag)) deallocate(T%upDiag)
+      ! ********************************************************************
+      ! **************************** INIT/DELETE ***************************
+      ! ********************************************************************
 
-        allocate(T%loDiag(T%s-1))
-        allocate(T%diag(T%s))
-        allocate(T%upDiag(T%s-1))
-        T%loDiag = loDiag
-        T%diag = diag
-        T%upDiag = upDiag
+      subroutine init_TriSolver_LDU(TS,L,D,U)
+        implicit none
+        type(triSolver),intent(inout) :: TS
+        real(cp),dimension(:),intent(in) :: L,D,U
+        call init(TS%T,L,D,U)
       end subroutine
 
-      subroutine deleteTriSolver(T)
+      subroutine init_TriSolver_T(TS,T)
         implicit none
-        type(trisolver),intent(inout) :: T
-        if (allocated(T%loDiag)) deallocate(T%loDiag)
-        if (allocated(T%diag))   deallocate(T%diag)
-        if (allocated(T%upDiag)) deallocate(T%upDiag)
-        T%s = 0
+        type(triSolver),intent(inout) :: TS
+        type(triDiag),intent(in) :: T
+        call init(TS%T,T)
       end subroutine
 
-      subroutine applyTriSolverInterior(T,uOut,uIn,dir,pad)
-        ! Returns
-        !           _                                                    _ -1
-        !          |  diag(1)  upDiag(1)                                  |
-        !          |loDiag(1)    diag(2) upDiag(2)                        |
-        !          |           loDiag(2)                                  |
-        ! uOut =   |                *       *       *                     | uIn
-        !          |                   *         *        *               |
-        !          |                loDiag(n-2)   diag(n-1)  upDiag(n-1)  |
-        !          |_                            loDiag(n-1)   diag(n)   _|
-        ! 
-        ! Note that this matrix is defined in setUpSystem (in myADI.f90) as:
-        ! 
-        !           _                                                    _ -1
-        !          |    1           0                                     |
-        !          |loDiag(1)    diag(2) upDiag(2)                        |
-        !          |           loDiag(2)                                  |
-        ! uOut =   |                *       *       *                     | uIn
-        !          |                   *         *        *               |
-        !          |                loDiag(n-2)   diag(n-1)  upDiag(n-1)  |
-        !          |_                                 0           1      _|
-        ! 
+      subroutine init_TriSolver_copy(TS_out,TS_in)
         implicit none
-        type(trisolver),intent(in) :: T
+        type(triSolver),intent(inout) :: TS_out
+        type(triSolver),intent(in) :: TS_in
+        call init(TS_out%T,TS_in%T%L,TS_in%T%D,TS_in%T%U)
+      end subroutine
+
+      subroutine init_LU_coeffs(TS)
+        implicit none
+        type(triSolver),intent(inout) :: TS
+        ! call init_beta_gamma(beta,gamma,a,b,c,n)
+        ! call initL(TS%LU,TS%L)
+      end subroutine
+
+      subroutine delete_TriSolver(TS)
+        implicit none
+        type(triSolver),intent(inout) :: TS
+        call delete(TS%T)
+      end subroutine
+
+      ! ********************************************************************
+      ! ******************************* SOLVE ******************************
+      ! ********************************************************************
+
+      subroutine apply_TriSolverInterior_SF(TS,uOut,uIn,dir,pad)
+        implicit none
+        type(triSolver),intent(in) :: TS
+        type(SF),intent(inout) :: uOut
+        type(SF),intent(in) :: uIn
+        integer,intent(in) :: pad,dir
+        integer :: i
+        do i=1,uOut%s
+          call apply_TriSolverInterior_RF(uOut%RF(i)%f,uIn%RF(i)%f,TS%T,uOut%RF(i)%b,dir,uOut%RF(i)%s,pad)
+        enddo
+      end subroutine
+
+      subroutine apply_TriSolverInterior_RF(uOut,uIn,T,b,dir,s,pad)
+        implicit none
         real(cp),dimension(:,:,:),intent(inout) :: uOut
         real(cp),dimension(:,:,:),intent(in) :: uIn
+        type(BCs),intent(in) :: b
+        type(triDiag),intent(in) :: T
+        integer,dimension(3),intent(in) :: s
         integer,intent(in) :: pad,dir
         integer :: i,j,k
-        integer,dimension(3) :: s
-        s = shape(uIn)
-
-        ! write(*,*) 'minval T%diag = ',minval(T%diag(2:s(1)-1))
-        ! write(*,*) 'minval T%loDiag = ',minval(T%loDiag(1:s(1)-1))
-        ! write(*,*) 'minval T%upDiag = ',minval(T%upDiag(2:s(1)-1))
-        ! write(*,*) 'maxval T%diag = ',maxval(T%diag(2:s(1)-1))
-        ! write(*,*) 'maxval T%loDiag = ',maxval(T%loDiag(1:s(1)-1))
-        ! write(*,*) 'maxval T%upDiag = ',maxval(T%upDiag(2:s(1)-1))
-        ! write(*,*) 'T%diag = ',T%diag
-        ! write(*,*) 'T%loDiag = ',T%loDiag
-        ! write(*,*) 'T%upDiag = ',T%upDiag
-        ! stop 'printed'
         select case (dir)
         case (1)
           !$OMP PARALLEL DO
-           do k=1+pad,s(3)-pad
-             do j=1+pad,s(2)-pad
-               call triSolve(uOut(2:s(1)-1,j,k),uIn(2:s(1)-1,j,k),&
-                T%loDiag(1:s(1)-2),T%diag(2:s(1)-1),T%upDiag(2:s(1)-1),s(1)-2)
-             enddo
-           enddo
+           do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
+             call triSolve_Dirichlet(uOut(:,j,k),uIn(:,j,k),T,b%xminvals(j,k),b%xmaxvals(j,k),s(1))
+           enddo; enddo
           !$OMP END PARALLEL DO
         case (2)
          !$OMP PARALLEL DO
-          do k=1+pad,s(3)-pad
-            do i=1+pad,s(1)-pad
-              call triSolve(uOut(i,2:s(2)-1,k),uIn(i,2:s(2)-1,k),&
-                T%loDiag(1:s(2)-2),T%diag(2:s(2)-1),T%upDiag(2:s(2)-1),s(2)-2)
-            enddo
-          enddo
+          do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+            call triSolve_Dirichlet(uOut(i,:,k),uIn(i,:,k),T,b%yminvals(i,k),b%ymaxvals(i,k),s(2))
+          enddo; enddo
          !$OMP END PARALLEL DO
         case (3)
          !$OMP PARALLEL DO
-          do j=1+pad,s(2)-pad
-            do i=1+pad,s(1)-pad
-              call triSolve(uOut(i,j,2:s(3)-1),uIn(i,j,2:s(3)-1),&
-                T%loDiag(1:s(3)-2),T%diag(2:s(3)-1),T%upDiag(2:s(3)-1),s(3)-2)
-            enddo
-          enddo
+          do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+            call triSolve_Dirichlet(uOut(i,j,:),uIn(i,j,:),T,b%zminvals(i,j),b%zmaxvals(i,j),s(3))
+          enddo; enddo
          !$OMP END PARALLEL DO
         case default
-        write(*,*) 'Error: dir must = 1,2,3 in applyTriSolverInterior.';stop
+        write(*,*) 'Error: dir must = 1,2,3 in solveTriSolver.';stop
         end select
       end subroutine
 
-      !---------------------Low level Tridiagonal solver---------------------
+      ! ********************************************************************
+      ! ***************************** DIRICHLET ****************************
+      ! ********************************************************************
 
-      subroutine triSolveEldredge(u,f,a,b,c,M)
+      subroutine triSolve_Dirichlet(x,d,T,b_front,b_back,n)
         implicit none
-        integer,intent(in) :: M
-        real(cp),dimension(:),intent(inout) :: u,c,f
-        real(cp),dimension(:),intent(in) :: a,b
-        real(cp) :: temp,ctemp, ftemp
-        integer j
-        c(1) = c(1) / b(1)
-        f(1) = f(1) / b(1)
-        ctemp = c(1)
-        ftemp = f(1)
-        do j = 2, M-1
-            temp = b(j) - a(j-1)*ctemp
-            ctemp = c(j)/temp
-            ftemp = (f(j) - a(j-1)*ftemp)/temp
-            c(j) = ctemp
-            f(j) = ftemp
-        enddo
-        f(M) = (f(M)-a(M-1)*f(M-1))/(b(M)-a(M-1)*c(M-1))
-        temp = f(M)
-        u(M) = temp
-        do j = M-1, 2, -1
-            temp = f(j) - c(j)*temp
-            u(j) = temp
-        enddo
-        u(1) = f(1) - c(1)*temp
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d
+        real(cp),intent(in) :: b_front,b_back
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: n
+        call triSolve_Dirichlet_CC(x,d,T,b_front,b_back,n)
+        ! call triSolve_Dirichlet_node(x,d,T,b_front,b_back,n)
       end subroutine
 
-      subroutine triSolve(u,f,loDiag,diag,upDiag,s)
+      subroutine triSolve_Dirichlet_CC(x,d,T,b_front,b_back,n)
+        ! Checked, works well for non-uniform grids
         implicit none
-        integer,intent(in) :: s
-        real(cp),dimension(:),intent(inout) :: u
-        real(cp),dimension(:),intent(in) :: f,diag
-        real(cp),dimension(:),intent(in) :: loDiag,upDiag
-        real(cp),dimension(:),allocatable :: upDiagTemp,fTemp
-        allocate(upDiagTemp(s-1))
-        allocate(fTemp(s))
-        upDiagTemp = upDiag; fTemp = f
-        call triSolveEldredge(u,fTemp,loDiag,diag,upDiagTemp,s)
-        deallocate(upDiagTemp,fTemp)
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d
+        real(cp),intent(in) :: b_front,b_back
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: n
+        real(cp),dimension(n) :: dtemp
+        dtemp = d
+        dtemp(2)   = dtemp(2)   - T%L(1)   * b_front
+        dtemp(n-1) = dtemp(n-1) - T%U(n-2) * b_back
+        call solve_tridiag_CK(x(2:n-1),&
+                              dtemp(2:n-1),&
+                              T%L(2:n-2),&
+                              T%D,&
+                              T%U(1:n-3),&
+                              n-2)
+      end subroutine
+
+      subroutine triSolve_Dirichlet_node(x,d,T,b_front,b_back,n)
+        ! Checked, works well for non-uniform grids
+        implicit none
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d
+        real(cp),intent(in) :: b_front,b_back
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: n
+        real(cp),dimension(n) :: dtemp
+        dtemp = d
+        ! write(*,*) 'b_front = ',b_front
+        ! write(*,*) 'b_back = ',b_back
+        ! stop 'Done'
+        dtemp(3)   = dtemp(3)   - T%L(2)   * b_front
+        dtemp(n-2) = dtemp(n-2) - T%U(n-3) * b_back
+        call solve_tridiag_CK(x(3:n-2),&
+                              dtemp(3:n-2),&
+                              T%L(3:n-3),&
+                              T%D(2:n-3),&
+                              T%U(2:n-4),&
+                              n-4)
+      end subroutine
+
+      ! ********************************************************************
+      ! ****************************** NEUMANN *****************************
+      ! ********************************************************************
+
+      subroutine triSolve_Neumann(x,d,T,b_front,b_back,n)
+        implicit none
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d
+        real(cp),intent(in) :: b_front,b_back
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: n
+        call triSolve_Neumann_CC(x,d,T,b_front,b_back,n)
+        ! call triSolve_Neumann_node(x,d,T,b_front,b_back,n)
+      end subroutine
+
+      subroutine triSolve_Neumann_CC(x,d,T,b_front,b_back,n)
+        implicit none
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d
+        real(cp),intent(in) :: b_front,b_back
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: n
+        real(cp),dimension(n) :: dtemp
+        dtemp = d
+        dtemp(2)   = dtemp(2)   - T%L(1)   * b_front
+        dtemp(n-1) = dtemp(n-1) - T%U(n-2) * b_back
+        call solve_tridiag_CK(x(2:n-1),&
+                              dtemp(2:n-1),&
+                              T%L(2:n-2),&
+                              T%D,&
+                              T%U(1:n-3),&
+                              n-2)
+      end subroutine
+
+      subroutine triSolve_Neumann_node(x,d,T,b_front,b_back,n)
+        implicit none
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d
+        real(cp),intent(in) :: b_front,b_back
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: n
+        real(cp),dimension(n) :: dtemp
+        dtemp = d
+        dtemp(2)   = dtemp(2)   - T%L(1)   * b_front
+        dtemp(n-1) = dtemp(n-1) - T%U(n-2) * b_back
+        call solve_tridiag_CK(x(2:n-1),&
+                              dtemp(2:n-1),&
+                              T%L(2:n-2),&
+                              T%D,&
+                              T%U(1:n-3),&
+                              n-2)
+      end subroutine
+
+
+      ! ********************************************************************
+      ! **************************** LOW-LEVEL *****************************
+      ! ********************************************************************
+
+      subroutine solve_tridiag_CK(x,d,a,b,c,n)
+        ! Returns
+        !           _                                          _ -1
+        !          |  b(1)  c(1)                                |
+        !          |  a(1)  b(2)  c(2)                          |
+        !          |        a(2)  b(3)  c(3)                    |
+        ! x    =   |           *     *     *                    | d
+        !          |                 *     *     *              |
+        !          |                    a(n-2)  b(n-1)  c(n-1)  |
+        !          |_                           a(n-1)  b(n)   _|
+        ! 
+        ! Where LU factorization has been used to solve the tridiagonal system:
+        ! 
+        !  x - result
+        !  d - right hand side
+        !  a - sub-diagonal
+        !  b - main diagonal
+        !  c - super-diagonal
+        !  n - system size
+        ! 
+        ! Charlie Kawczynski 8/30/2015
+        implicit none
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d,b
+        real(cp),dimension(n-1),intent(in) :: a,c
+        integer,intent(in) :: n
+        real(cp),dimension(n-1) :: gamma
+        real(cp),dimension(n) :: xstar,beta
+        real(cp) :: m
+        integer i
+        ! Define coefficients:
+        beta(1) = b(1)
+        gamma(1) = c(1)/beta(1)
+        do i = 2,n-1
+        beta(i) = b(i)-a(i-1)*gamma(i-1)
+        gamma(i) = c(i)/beta(i)
+        enddo
+        beta(n) = b(n)-a(n-1)*gamma(n-1)
+        ! Forward substitution:
+        xstar(1) = d(1)/beta(1)
+        do i = 2,n
+        m = d(i) - a(i-1)*xstar(i-1)
+        xstar(i) = m/beta(i)
+        enddo
+        ! Backward substitution:
+        x(n) = xstar(n)
+        do i = n-1, 1,-1
+        x(i) = xstar(i)-gamma(i)*x(i+1)
+        end do
+      end subroutine
+
+      subroutine solve_tridiag_CK_stored(x,d,a,beta,gamma,n)
+        ! Returns
+        !           _                                          _ -1
+        !          |  b(1)  c(1)                                |
+        !          |  a(1)  b(2)  c(2)                          |
+        !          |        a(2)  b(3)  c(3)                    |
+        ! x    =   |           *     *     *                    | d
+        !          |                 *     *     *              |
+        !          |                    a(n-2)  b(n-1)  c(n-1)  |
+        !          |_                           a(n-1)  b(n)   _|
+        ! 
+        ! Where LU factorization has been used to solve the tridiagonal system:
+        !  _                                          _ 
+        ! |  b(1)  c(1)                                |
+        ! |  a(1)  b(2)  c(2)                          |
+        ! |        a(2)  b(3)  c(3)                    |
+        ! |           *     *     *                    |
+        ! |                 *     *     *              |
+        ! |                    a(n-2)  b(n-1)  c(n-1)  |
+        ! |_                           a(n-1)  b(n)   _|
+        ! 
+        ! =
+        !  _                                               _   _                                          _ -1
+        ! |  beta(1)                                        | |  1  gamma(1)                               | 
+        ! |  alpha(1)  beta(2)                              | |        1  gamma(2)                         | 
+        ! |        alpha(2)  beta(3)                        | |              1  gamma(3)                   | 
+        ! |           *     *     *                         | |                 *     *                    | 
+        ! |                 *     *                         | |                       *     *              | 
+        ! |                    alpha(n-2)  beta(n-1)        | |                             1   gamma(n-1) | 
+        ! |_                           alpha(n-1)  beta(n) _| |_                                1         _| 
+        implicit none
+        real(cp),dimension(n),intent(inout) :: x
+        real(cp),dimension(n),intent(in) :: d,beta
+        real(cp),dimension(n-1),intent(in) :: a,gamma
+        integer,intent(in) :: n
+        real(cp),dimension(n) :: xstar
+        real(cp) :: m
+        integer i
+        ! Forward substitution:
+        xstar(1) = d(1)/beta(1)
+        do i = 2,n
+        m = d(i) - a(i-1)*xstar(i-1)
+        xstar(i) = m/beta(i)
+        enddo
+        ! Backward substitution:
+        x(n) = xstar(n)
+        do i = n-1, 1,-1
+        x(i) = xstar(i)-gamma(i)*x(i+1)
+        end do
+      end subroutine
+
+      subroutine init_beta_gamma(beta,gamma,a,b,c,n)
+        ! Returns LU in tridiagonal system for
+        ! solve_tridiag_CK_stored
+        implicit none
+        real(cp),dimension(n),intent(inout) :: beta
+        real(cp),dimension(n-1),intent(inout) :: gamma
+        real(cp),dimension(n-1),intent(in) :: a,c
+        real(cp),dimension(n),intent(in) :: b
+        integer,intent(in) :: n
+        integer i
+        ! Define coefficients:
+        beta(1) = b(1)
+        gamma(1) = c(1)/beta(1)
+        do i = 2,n-1
+        beta(i) = b(i)-a(i-1)*gamma(i-1)
+        gamma(i) = c(i)/beta(i)
+        enddo
+        beta(n) = b(n)-a(n-1)*gamma(n-1)
       end subroutine
 
       end module

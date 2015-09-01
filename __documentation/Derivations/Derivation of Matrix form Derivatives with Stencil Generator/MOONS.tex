@@ -48,54 +48,24 @@ The equations from the python stencil generator can be put into matrix form as f
 
 \[ Af = \left[
 \begin{array}{ccccccccc}
-D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
-L_{1} & D_{2} & U_{2} & UU  &   &   &   &   &   \\
-  & L_{2} & D_{3} & U_{3} &   &   &   &   &   \\
-  &   & \ddots & \ddots & \ddots &   &   &   &   \\
-  &   &   & L_{i-1} & D_{i} & U_{i} &   &   &   \\
-  &   &   &   & \ddots & \ddots & \ddots &   &   \\
-  &   &   &   &   & L_{s-3} & D_{s-2} & U_{s-2} &   \\
-  &   &   &   &   & LL & L_{s-2} & D_{s-1} & U_{s-1} \\
-0 &   &   &   &   &   &  & L_{s-1} & D_{s}
-\end{array} \right] \left[ \begin{array}{c}
-f_{1} \\ f_{2} \\ \vdots \\ f_{i-1} \\ f_{i} \\ f_{i+1} \\ \vdots \\ f_{s-1} \\ f_{s}
+L_{1} & D_{1}    & U_{1}     &           &           &           &         \\
+L_{2} & D_{2}    & U_{2}     &           &           &           &         \\
+      & \ddots   & \ddots    & \ddots    &           &           &         \\
+      &          & L_{i-1}   & D_{i-1}   & U_{i-1}   &           &         \\
+      &          &           & \ddots    & \ddots    & \ddots    &         \\
+      &          &           &           & L_{s-3}   & D_{s-3}   & U_{s-3} \\
+      &          &           &           & L_{s-2}   & D_{s-2}   & U_{s-2} \\
 \end{array} \right] 
-= \left( \frac{\partial f}{\partial h} \right)_{i} 
-\]
-The derivative on all ghost points are zero, so let's use the interior only:
-\[ Af = \left[
-\begin{array}{ccccccccc}
-0 & 0 &  &   &   &   &   &   & 0 \\
-L_{1} & D_{2} & U_{2} & UU  &   &   &   &   &   \\
-  & L_{2} & D_{3} & U_{3} &   &   &   &   &   \\
-  &   & \ddots & \ddots & \ddots &   &   &   &   \\
-  &   &   & L_{i-1} & D_{i} & U_{i} &   &   &   \\
-  &   &   &   & \ddots & \ddots & \ddots &   &   \\
-  &   &   &   &   & L_{s-3} & D_{s-2} & U_{s-2} &   \\
-  &   &   &   &   & LL & L_{s-2} & D_{s-1} & U_{s-1} \\
-0 &   &   &   &   &   &  & 0 & 0
-\end{array} \right] \left[ \begin{array}{c}
-f_{1} \\ f_{2} \\ \vdots \\ f_{i-1} \\ f_{i} \\ f_{i+1} \\ \vdots \\ f_{s-1} \\ f_{s}
-\end{array} \right] 
-= \left( \frac{\partial f}{\partial h} \right)_{i} 
-\]
-Reducing the size of this matrix and re-numbering, we have
-\[ Af = \left[
-\begin{array}{ccccccccc}
-L_{1} & D_{1} & U_{1} &  &   &   &   &   &   \\
-  & L_{2} & D_{2} & U_{2} &   &   &   &   &   \\
-  &   & \ddots & \ddots & \ddots &   &   &   &   \\
-  &   &   & L_{i-1} & D_{i-1} & U_{i-1} &   &   &   \\
-  &   &   &   & \ddots & \ddots & \ddots &   &   \\
-  &   &   &   &   & L_{s-3} & D_{s-3} & U_{s-3} &   \\
-  &   &   &   &   & & L_{s-2} & D_{s-2} & U_{s-2} \\
-\end{array} \right] \left[ \begin{array}{c}
+\left[ \begin{array}{c}
 f_{2} \\ \vdots \\ f_{i-1} \\ f_{i} \\ f_{i+1} \\ \vdots \\ f_{s-1}
-\end{array} \right] 
-= \left( \frac{\partial f}{\partial h} \right)_{i} 
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+f'_{2} \\ \vdots \\ f'_{i-1} \\ f'_{i} \\ f'_{i+1} \\ \vdots \\ f'_{s-1}
+\end{array} \right]
 \]
 
-Which means that indexing between the function and diagonals must be
+Note that the field $f$ starts at the second index which refers to the boundary value for node data (due to one ghost node) and the first interior cell for cell centered data (due to the ghost cell). Indexing between the function and diagonals must be
 \begin{equation}
   L_{i-1} : f_{i-1}
   , \qquad

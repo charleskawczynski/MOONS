@@ -32,11 +32,8 @@
          implicit none
          type(grid),intent(inout) :: g_mom,g_ind
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
-         real(cp),dimension(3) :: hmin,hmax,betai
-         real(cp),dimension(3) :: twtop,twbot
-
-         call cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)
-         ! call makeGrids_BCs(g_mom,g_ind,Ni,Nwtop,Nwbot)
+         ! call cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)
+         call makeGrids_BCs(g_mom,g_ind,Ni,Nwtop,Nwbot)
          call init_stencils(g_ind)
          call init_stencils(g_mom)
        end subroutine
@@ -47,7 +44,7 @@
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
          real(cp),dimension(3) :: hmin,hmax,betai
          real(cp),dimension(3) :: twtop,twbot
-         type(grid) :: temp
+         ! type(grid) :: temp
          call getBMCParams(hmin,hmax,betai,twtop,twbot)
          ! call cavity3D_uniform(g_mom,hmin,hmax,Ni)
          ! call extend_uniform(g_ind,g_mom,Nwtop,Nwbot) ! Extend to wall

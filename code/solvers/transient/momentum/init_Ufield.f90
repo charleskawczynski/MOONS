@@ -8,11 +8,9 @@
        implicit none
 
        private
-       public :: initUfield,initPfield
-       public :: restartU,restartP
+       public :: init_Ufield,restartU
 
        logical,parameter :: restartU      = .false.
-       logical,parameter :: restartP      = restartU
        integer,parameter :: preDefinedU_ICs = 1
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
@@ -41,116 +39,36 @@
 #endif
        real(cp),parameter :: PI = 3.14159265358979_cp
 
-       interface initUfield;    module procedure initUfield_VF;   end interface
-       interface initPfield;    module procedure initPfield_SF;   end interface
-
        contains
 
-       ! **************************************************************************
-       ! **************************************************************************
-       ! *********************** VECTOR FIELD INTERFACE ***************************
-       ! **************************************************************************
-       ! **************************************************************************
-
-       subroutine initUfield_VF(U,g,dir)
+       subroutine init_Ufield(U,g,dir)
          implicit none
          type(VF),intent(inout) :: U
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         call initUfield_SF(U%x,U%y,U%z,g,dir)
-       end subroutine
-
-       ! **************************************************************************
-       ! **************************************************************************
-       ! *********************** SCALAR FIELD INTERFACE ***************************
-       ! **************************************************************************
-       ! **************************************************************************
-       
-       subroutine initUfield_SF(U,V,W,g,dir)
-         implicit none
-         type(SF),intent(inout) :: U,V,W
-         character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
-         integer :: i
-         do i=1,U%s
-           call initUfield_RF(U%RF(i)%f,U%RF(i)%f,U%RF(i)%f,g,dir)
-         enddo
-       end subroutine
-
-       subroutine initPfield_SF(p,g,dir)
-         implicit none
-         type(SF),intent(inout) :: p
-         character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
-         integer :: i
-         do i=1,p%s
-           call initPfield_RF(p%RF(i)%f,g,dir)
-         enddo
-       end subroutine
-       
-       ! **************************************************************************
-       ! **************************************************************************
-       ! ************************ REAL FIELD INTERFACE ****************************
-       ! **************************************************************************
-       ! **************************************************************************
-
-       subroutine initUfield_RF(u,v,w,g,dir)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
-         character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
          if (restartU) then
-               call initRestartUfield(u,v,w,g,dir)
+               call initRestartUfield(U,g,dir)
          elseif (preDefinedU_ICs.ne.0) then
-               call initPreDefinedUfield(u,v,w,g)
-         else; call initUserUfield(u,v,w,g)
+               call initPreDefinedUfield(U%x%RF(1)%f,&
+                                         U%y%RF(1)%f,&
+                                         U%z%RF(1)%f,g)
+         else; call initUserUfield(U%x%RF(1)%f,&
+                                   U%y%RF(1)%f,&
+                                   U%z%RF(1)%f,g)
          endif
        end subroutine
 
-       subroutine initPfield_RF(p,g,dir)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: p
-         character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
-         if (restartP) then
-               call initRestartPfield(p,g,dir)
-         elseif (preDefinedU_ICs.ne.0) then
-               call initPreDefinedPfield(p,g)
-         else; call initUserPfield(p)
-         endif
-       end subroutine
-       
-       subroutine initRestartUfield(u,v,w,g,dir)
+       subroutine initRestartUfield(U,g,dir)
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: u,v,w
-         type(grid) :: gtemp
-         call init(gtemp,g)
-         ! call readFromFile(gtemp,u,dir//'Ufield/','ufi')
-         ! call readFromFile(gtemp,v,dir//'Ufield/','vfi')
-         ! call readFromFile(gtemp,w,dir//'Ufield/','wfi')
-         call delete(gtemp)
+         type(VF),intent(inout) :: U
+         type(grid) :: temp
+         call init(temp,g)
+         call import_3C_VF(temp,U,dir//'Ufield','ufi',0)
+         call delete(temp)
        end subroutine
        
-       subroutine initRestartPfield(p,g,dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: p
-         type(grid) :: gtemp
-         call init(gtemp,g)
-         ! call readFromFile(gtemp,p,dir//'Ufield/','pci')
-         call delete(gtemp)
-       end subroutine
-       
-       subroutine initPreDefinedPfield(p,g)
-         implicit none
-         type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: p
-         p = 0.0_cp
-       end subroutine
-
        subroutine initPreDefinedUfield(u,v,w,g)
          implicit none
          type(grid),intent(in) :: g
@@ -173,12 +91,6 @@
        ! ************************ REAL FIELD FUNCTIONS ****************************
        ! **************************************************************************
        ! **************************************************************************
-
-       subroutine initUserPfield(p)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: p
-         p = 0.0_cp
-       end subroutine
 
        subroutine initUserUfield(u,v,w,g)
          implicit none

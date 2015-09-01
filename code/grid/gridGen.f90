@@ -31,6 +31,8 @@
        interface delete;      module procedure deleteGridGen;      end interface
        interface prep;        module procedure prepGrid;           end interface
        interface app;         module procedure appGrid;            end interface
+       interface applyGhost;  module procedure applyGhost_dir;     end interface
+       interface applyGhost;  module procedure applyGhost_all;     end interface
        interface preMirror;   module procedure prepMirrorGrid;     end interface
        interface appMirror;   module procedure appMirrorGrid;      end interface
 
@@ -145,7 +147,7 @@
          deallocate(temp)
        end subroutine
 
-       subroutine applyGhost(gg,dir)
+       subroutine applyGhost_dir(gg,dir)
          implicit none
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
@@ -160,6 +162,12 @@
          temp(s+2) = gg%g%c(dir)%hn(s) + (gg%g%c(dir)%hn(s) - gg%g%c(dir)%hn(s-1))
          call init(gg%g,temp,dir,2)
          deallocate(temp)
+       end subroutine
+
+       subroutine applyGhost_all(gg)
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         call applyGhost(gg,1); call applyGhost(gg,2); call applyGhost(gg,3)
        end subroutine
 
        ! ********************************************************************

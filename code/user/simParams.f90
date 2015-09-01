@@ -28,7 +28,7 @@
        integer :: advectiveUFormulation     = 1 ! (1,2) = (Central difference, Advective)
        integer :: solveTMethod              = 1 ! (1) = (Explicit Euler)
        integer :: solveUMethod              = 1 ! (1) = (Explicit Euler)
-       integer :: solveBMethod              = 4
+       integer :: solveBMethod              = 5
        !                                      1 : Low Rem (GS, uniform properties)
        !                                      2 : Low Rem (PTS uniform properties)
        !                                      3 : Low Rem (PTS)
@@ -39,12 +39,12 @@
 
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
-       integer :: nskip_exportTransientFull  = 5000   ! Transient solution (very expensive)
-       integer :: nskip_exportErrors         = 1000   ! Divergences / Residuals (expensive)
-       integer :: nskip_exportTransient      = 100    ! Probed data (cheap)
-       integer :: nskip_print                = 100    ! Printed data (cheap)
+       integer :: nskip_exportTransientFull  = 100000 ! Transient solution (very expensive)
+       integer :: nskip_exportErrors         = 10000  ! Divergences / Residuals (expensive)
+       integer :: nskip_exportTransient      = 1000   ! Probed data (cheap)
+       integer :: nskip_print                = 100   ! Printed data (cheap)
 
-       integer,parameter :: benchmarkCase = 103
+       integer,parameter :: benchmarkCase = 1010
        
          ! Eventually this should be shortened...
          ! 1000+ (Other test cases)

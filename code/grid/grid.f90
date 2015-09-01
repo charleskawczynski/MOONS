@@ -15,9 +15,6 @@
 #endif
 
        private
-
-       logical,parameter :: exportLight = .true. ! (T/F) => (cannot/can visualize)
-
        public :: grid
        public :: init,delete
        public :: print,export ! import
@@ -43,11 +40,9 @@
        interface restrict;       module procedure restrictGrid3;       end interface
 
        interface print;          module procedure printGrid;           end interface
-       interface export;         module procedure exportGrid;          end interface
+       interface export;         module procedure exportGrid_light;    end interface
        interface addToFile;      module procedure addToFileGrid;       end interface
        interface init_Stencils;  module procedure init_Stencils_grid;  end interface
-       
-       ! interface export;     module procedure exportGrid1;     end interface
 
        contains
 
@@ -141,24 +136,18 @@
        end subroutine
 #endif
 
-       subroutine exportGrid(g,dir,name)
+       subroutine exportGrid_light(g,dir,name)
          implicit none
          type(grid), intent(in) :: g
          character(len=*),intent(in) :: dir,name
          integer :: newU
-         if (exportLight) then
-           newU = newAndOpen(dir,'gridXYZ_'//name)
-           write(newU,*) 'dhMin = ',g%dhMin
-           write(newU,*) 'dhMin = ',g%dhMax
-           write(newU,*) 'maxRange = ',g%maxRange
-           write(newU,*) 'volume = ',g%volume
-           call addToFile(g,newU); close(newU)
-           write(*,*) 'Broken during new export development'
-         else
-           write(*,*) 'Broken during new export development'
-           ! call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name//'_n')
-           ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,1.0_cp,dir,name//'_c')
-         endif
+         newU = newAndOpen(dir,'gridXYZ_'//name)
+         write(newU,*) 'dhMin = ',g%dhMin
+         write(newU,*) 'dhMin = ',g%dhMax
+         write(newU,*) 'maxRange = ',g%maxRange
+         write(newU,*) 'volume = ',g%volume
+         call addToFile(g,newU)
+         close(newU)
        end subroutine
 
        subroutine printGrid(g)

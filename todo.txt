@@ -1,0 +1,17 @@
+RESEARCH TO DO:
+
+	Right now, PPE residual looks wrong, fix it.
+
+	Get energy solver working
+
+	add other files that were taken out
+
+	Setup and re-run BCs simulation, re-explore dt
+
+	introduce subGrids and repeat
+
+	GET FALL PARKING DECAL
+
+	Look into permuting del input for contiguous arrays
+
+

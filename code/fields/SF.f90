@@ -36,9 +36,9 @@
         public :: init,delete
         ! Grid initialization
         public :: init_CC
+        public :: init_Node
         public :: init_Face
         public :: init_Edge
-        public :: init_Node
 
         ! Monitoring
         public :: print
@@ -70,15 +70,11 @@
           ! type(realField),dimension(:),allocatable :: RF
         end type
 
-        interface init;        module procedure init_SF_1;              end interface
-        interface init;        module procedure init_SF_2;              end interface
-        interface init;        module procedure init_SF_3;              end interface
-
-        ! interface init;        module procedure init_SF_copy;           end interface
+        interface init;        module procedure init_SF_copy;           end interface
         interface init_CC;     module procedure init_SF_CC;             end interface
+        interface init_Node;   module procedure init_SF_Node;           end interface
         interface init_Face;   module procedure init_SF_Face;           end interface
         interface init_Edge;   module procedure init_SF_Edge;           end interface
-        interface init_Node;   module procedure init_SF_Node;           end interface
 
         interface delete;      module procedure delete_SF;              end interface
 
@@ -390,31 +386,13 @@
           f%s = 1
         end subroutine
 
-        subroutine init_SF_1(f,Nx,Ny,Nz)
-          implicit none
-          type(SF),intent(inout) :: f
-          integer,intent(in) :: Nx,Ny,Nz
-          integer :: i
-          do i=1,f%s; call init(f%RF(i),Nx,Ny,Nz); enddo
-          call init_props(f)
-        end subroutine
-
-        subroutine init_SF_2(f1,f2)
+        subroutine init_SF_copy(f1,f2)
           implicit none
           type(SF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           integer :: i
           do i=1,f1%s; call init(f1%RF(i),f2%RF(i)); enddo
           call init_props(f1)
-        end subroutine
-
-        subroutine init_SF_3(f,s)
-          implicit none
-          type(SF),intent(inout) :: f
-          integer,dimension(3),intent(in) :: s
-          integer :: i
-          do i=1,f%s; call init(f%RF(i),s); enddo
-          call init_props(f)
         end subroutine
 
         subroutine init_SF_CC(f,g)

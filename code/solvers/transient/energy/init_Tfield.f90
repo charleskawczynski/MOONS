@@ -1,5 +1,6 @@
-       module initializeTfield_mod
+       module init_Tfield_mod
        use SF_mod
+       use IO_SF_mod
        use grid_mod
        implicit none
 
@@ -31,17 +32,6 @@
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          type(SF),intent(inout) :: T
-         integer :: i
-         do i=1,T%s
-           call initTfield_RF(T%RF(i)%f,g,dir)
-         enddo
-       end subroutine
-
-       subroutine initTfield_RF(T,g,dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: T
          if (restartT) then
            call initRestartT(T,g,dir)
          elseif (preDefinedT_ICs.ne.0) then
@@ -55,17 +45,16 @@
          implicit none
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: T
-         real(cp),dimension(:),allocatable :: xc,yc,zc
-         allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
-         xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
-         ! call readFromFile(xc,yc,zc,T,dir//'Tfield/','T')
-         deallocate(xc,yc,zc)
+         type(SF),intent(inout) :: T
+         type(grid) :: temp
+         call init(temp,g)
+         call import_1C_SF(temp,T,dir,'Tct',1)
+         call delete(temp)
        end subroutine
 
        subroutine initPreDefinedT(T)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: T
+         type(SF),intent(inout) :: T
          select case (preDefinedT_ICs)
          case (1); call uniformTfield(T)
          case default
@@ -75,13 +64,13 @@
 
        subroutine uniformTfield(T)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: T
-         T = real(0.0,cp)
+         type(SF),intent(inout) :: T
+         call assign(T,0.0_cp)
        end subroutine
 
        subroutine initUserTfield(T)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: T
+         type(SF),intent(inout) :: T
          call uniformTfield(T)
        end subroutine
 

@@ -21,7 +21,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: VF
         public :: init,delete
-        public :: allocateX,allocateY,allocateZ
+        ! public :: allocateX,allocateY,allocateZ
         ! Grid initialization
         public :: init_CC
         public :: init_Face
@@ -56,14 +56,8 @@
           ! type(SF),dimension(3) :: V ! components
         end type
 
-        interface init;         module procedure init_VF1;                 end interface
-        interface init;         module procedure init_VF2;                 end interface
-        interface init;         module procedure init_VF3;                 end interface
-        interface init;         module procedure init_VF4;                 end interface
-        interface init;         module procedure init_VF5;                 end interface
-
-        ! interface init;         module procedure init_VF_copy_VF;          end interface
-        ! interface init;         module procedure init_VF_copy_SF;          end interface
+        interface init;         module procedure init_VF_copy_VF;          end interface
+        interface init;         module procedure init_VF_copy_SF;          end interface
         interface init_CC;      module procedure init_VF_CC;               end interface
         interface init_Face;    module procedure init_VF_Face;             end interface
         interface init_Edge;    module procedure init_VF_Edge;             end interface
@@ -350,43 +344,19 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
-        subroutine init_VF1(f,Nx,Ny,Nz)
-          implicit none
-          type(VF),intent(inout) :: f
-          integer,dimension(3),intent(in) :: Nx,Ny,Nz
-          call init(f%x,Nx(1),Nx(2),Nx(3))
-          call init(f%y,Ny(1),Ny(2),Ny(3))
-          call init(f%z,Nz(1),Nz(2),Nz(3))
-        end subroutine
-
-        subroutine init_VF2(f,Nx,Ny,Nz)
-          implicit none
-          type(VF),intent(inout) :: f
-          integer,intent(in) :: Nx,Ny,Nz
-          call init(f%x,Nx,Nx,Nx); call init(f%y,Ny,Ny,Ny); call init(f%z,Nz,Nz,Nz)
-        end subroutine
-
-        subroutine init_VF3(f1,f2)
+        subroutine init_VF_copy_VF(f1,f2)
           implicit none
           type(VF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
         end subroutine
 
-        subroutine init_VF4(f1,f2)
+        subroutine init_VF_copy_SF(f1,f2)
           implicit none
           type(VF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
         end subroutine
-
-        subroutine init_VF5(f1,s)
-          implicit none
-          type(VF),intent(inout) :: f1
-          integer,dimension(3),intent(in) :: s
-          call init(f1%x,s); call init(f1%y,s); call init(f1%z,s)
-        end subroutine
-
 
         subroutine init_VF_CC(f,g)
           implicit none
@@ -416,27 +386,24 @@
           call init_Node(f%x,g); call init_Node(f%y,g); call init_Node(f%z,g)
         end subroutine
 
-
-        subroutine allocateX(f,Nx,Ny,Nz)
-          implicit none
-          type(VF),intent(inout) :: f
-          integer,intent(in) :: Nx,Ny,Nz
-          call init(f%x,Nx,Ny,Nz)
-        end subroutine
-
-        subroutine allocateY(f,Nx,Ny,Nz)
-          implicit none
-          type(VF),intent(inout) :: f
-          integer,intent(in) :: Nx,Ny,Nz
-          call init(f%y,Nx,Ny,Nz)
-        end subroutine
-
-        subroutine allocateZ(f,Nx,Ny,Nz)
-          implicit none
-          type(VF),intent(inout) :: f
-          integer,intent(in) :: Nx,Ny,Nz
-          call init(f%z,Nx,Ny,Nz)
-        end subroutine
+        ! subroutine allocateX(f,Nx,Ny,Nz)
+        !   implicit none
+        !   type(VF),intent(inout) :: f
+        !   integer,intent(in) :: Nx,Ny,Nz
+        !   call init(f%x,Nx,Ny,Nz)
+        ! end subroutine
+        ! subroutine allocateY(f,Nx,Ny,Nz)
+        !   implicit none
+        !   type(VF),intent(inout) :: f
+        !   integer,intent(in) :: Nx,Ny,Nz
+        !   call init(f%y,Nx,Ny,Nz)
+        ! end subroutine
+        ! subroutine allocateZ(f,Nx,Ny,Nz)
+        !   implicit none
+        !   type(VF),intent(inout) :: f
+        !   integer,intent(in) :: Nx,Ny,Nz
+        !   call init(f%z,Nx,Ny,Nz)
+        ! end subroutine
 
         subroutine delete_VF(f)
           implicit none

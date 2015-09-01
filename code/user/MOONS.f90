@@ -7,7 +7,7 @@
        use version_mod
        use myTime_mod
        use grid_mod
-       use griddata_mod
+       ! use griddata_mod
        use generateGrids_mod
        use ops_embedExtract_mod
        use ops_interp_mod
@@ -54,7 +54,7 @@
          type(induction) :: ind
          type(energy) :: nrg
          ! ********************** MEDIUM VARIABLES **********************
-         type(griddata) :: gd
+         ! type(griddata) :: gd
          type(rundata) :: rd
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
@@ -106,8 +106,12 @@
          ! Initialize all grids
          ! call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
          call makeGrids(grid_mom,grid_ind,Ni,Nwtop,Nwbot)
-         ! call init(SD,Ni,Nwtop,Nwbot+10,grid_mom)
-         call init(SD,Ni,Nwtop,Nwbot,grid_mom)
+         call init(SD,Ni,Nwtop,Nwbot+10,grid_mom)
+         ! call init(SD,Ni,Nwtop,Nwbot,grid_mom)
+
+         ! ******************** EXPORT GRIDS ****************************
+         if (exportGrids) call export_grid(grid_mom,dir//'Ufield/','grid_mom',1)
+         if (exportGrids) call export_grid(grid_ind,dir//'Bfield/','grid_ind',1)
 
          ! Initialize Energy grid/fields/parameters
          call setDTime(nrg,dTime)
@@ -126,11 +130,6 @@
          call setNmaxCleanB(ind,NmaxCleanB)
          call setPiGroups(ind,Ha,Rem)
          if (solveInduction) call init(ind,grid_ind,SD,dir)
-
-         ! ******************** EXPORT GRIDS ****************************
-         if (exportGrids) call export_grid(mom%g,dir//'Ufield/','grid_mom',1)
-         ! if (exportGrids) call export_grid(ind%g,dir//'Tfield/','grid_nrg',0)
-         if (exportGrids) call export_grid(ind%g,dir//'Bfield/','grid_ind',1)
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%g,dir)
@@ -155,9 +154,9 @@
          call init(time)
 
          ! *************** CHECK IF CONDITIONS ARE OK *******************
-         call printGriddata(gd)
+         ! call printGriddata(gd)
          call printRundata(rd)
-         call exportGriddata(gd,dir)
+         ! call exportGriddata(gd,dir)
          call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
@@ -233,7 +232,7 @@
 
          call delete(ind)
          call delete(mom)
-         call delete(gd)
+         ! call delete(gd)
 
          call computationComplete(time)
        end subroutine

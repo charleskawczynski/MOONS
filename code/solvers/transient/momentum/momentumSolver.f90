@@ -9,6 +9,7 @@
 
        use init_UBCs_mod
        use init_UField_mod
+       use init_PField_mod
 
        use IO_tools_mod
        use IO_auxiliary_mod
@@ -182,8 +183,8 @@
          write(*,*) '     BCs initialized'
 
          ! Use mom%g later, for no just g
-         call initUfield(mom%U,g,dir)
-         call initPfield(mom%p,g,dir)
+         call init_Ufield(mom%U,g,dir)
+         call init_Pfield(mom%p,g,dir)
          write(*,*) '     Field initialized'
 
          write(*,*) '     BCs sizes set'
@@ -223,7 +224,7 @@
 
 
          ! Initialize interior solvers
-         call init(mom%SOR_p,mom%p%RF(1)%s,mom%g)
+         call init(mom%SOR_p,mom%p,mom%g)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings

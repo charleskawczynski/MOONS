@@ -20,13 +20,13 @@
 
 
        ! This gets overridden by benchmarkCase
-       integer,parameter :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
+       integer,parameter :: preDefined_Sigma = 2 ! sigma* = sigma_wall/sigma_l
        !                                       0 : User-defined case (no override)
        !                                       1 : Subdomain dependent
        !                                       2 : Index based
        !                                       3 : Cylinder (2D)
 
-       real(cp) :: sigmaStarWall = 1.0_cp ! sigma* = sigma_wall/sigma_l
+       real(cp) :: sigmaStarWall = 0.001_cp ! sigma* = sigma_wall/sigma_l
 
        contains
 
@@ -49,7 +49,7 @@
          type(grid),intent(in) :: g
          select case (preDefined_Sigma)
          case (1); call initSubdomain(sigma,SD,g)
-         ! case (2); call initIndexBased(sigma,SD)
+         case (2); call initIndexBased(sigma,SD)
          ! case (3); call initCylinder2D(sigma,SD,g,3)
          case default
          stop 'Error: preDefined_Sigma not found in initPredefinedSigma in initializeSigma.f90'
@@ -62,7 +62,7 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          type(SF) :: sigma_l
-         call init(sigma_l,SD%s)
+         call init_CC(sigma_l,SD%g)
          call assign(sigma_l,1.0_cp)
          call assign(sigma,sigmaStarWall)
          call embedCC(sigma,sigma_l,SD,g)
@@ -71,14 +71,14 @@
 
        subroutine initIndexBased(sigma,SD)
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: sigma
+         type(SF),intent(inout) :: sigma
          type(subdomain),intent(in) :: SD
          integer :: pad
          pad = 6+1
-         sigma = sigmaStarWall
-         sigma(SD%Nice1(1)-pad:SD%Nice2(1)+pad,&
-               SD%Nice1(2)-pad:SD%Nice2(2)-1,&
-               SD%Nice1(3)-pad:SD%Nice2(3)+pad) = 1.0_cp
+         call assign(sigma,sigmaStarWall)
+         sigma%RF(1)%f(SD%Nice1(1)-pad:SD%Nice2(1)+pad,&
+                       SD%Nice1(2)-pad:SD%Nice2(2)-1,&
+                       SD%Nice1(3)-pad:SD%Nice2(3)+pad) = 1.0_cp
        end subroutine
 
        ! subroutine initCylinder2D(sigma,SD,g,dir)
@@ -127,7 +127,7 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          type(SF) :: sigma_l
-         call init(sigma_l,SD%s)
+         call init_CC(sigma_l,SD%g)
          call assign(sigma_l,1.0_cp)
          call assign(sigma,sigmaStarWall)
          call embedCC(sigma,sigma_l,SD,g)

@@ -39,6 +39,8 @@
         type(triDiag) :: stagCC2N,stagN2CC
         type(triDiag) :: lapCC,lapN
         type(triDiag) :: colCC,colN
+        ! type(triDiag) :: F_N,B_N     ! Forward and Backward Node based stencils for applying Neumann BCs
+        ! type(triDiag) :: F_CC,B_CC   ! Forward and Backward  CC  based stencils for applying Neumann BCs
         real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
       end type
 
@@ -361,6 +363,29 @@
       end subroutine
 
       ! *****************************************************************
+      ! ********** NEUMANN BOUNDARY CONDITION COEFFICIENTS **************
+      ! *****************************************************************
+
+      ! subroutine BC_N(c)
+      !   implicit none
+      !   type(coordinates),intent(inout) :: c
+      !   real(cp) :: L,D,U
+      !   integer :: i,s
+      !   s = c%sn
+      !   i = 1 ! Front
+      !   L = 1.0_cp/c%colN%L(i)       ! Coefficient of f'_{boundary}
+      !   D =-c%colN%D(i)/c%colN%L(i)  ! Coefficient of f_{first interior}
+      !   U =-c%colN%U(i)/c%colN%L(i)  ! Coefficient of f_{second interior}
+      !   call init(c%F_N,L,D,U)
+      !   i = s-2 ! Back
+      !   L = 1.0_cp/c%colN%U(i)       ! Coefficient of f'_{boundary}
+      !   D =-c%colN%D(i)/c%colN%U(i)  ! Coefficient of f_{first interior}
+      !   U =-c%colN%L(i)/c%colN%U(i)  ! Coefficient of f_{second interior}
+      !   call init(c%B_N,L,D,U)
+      ! end subroutine
+
+
+      ! *****************************************************************
       ! ****************** INTERPOLATION COEFFICIENTS *******************
       ! *****************************************************************
 
@@ -416,12 +441,12 @@
         call stencil_stagN2CC(c)
         call stencil_colCC(c)
         call stencil_colN(c)
-        ! call print(c%lapCC)
-        ! call print(c%lapN)
-        ! call print(c%stagCC2N)
-        ! call print(c%stagN2CC)
-        ! call print(c%colCC)
-        ! call print(c%colN)
+        ! call check(c%lapCC)
+        ! call check(c%lapN)
+        ! call check(c%stagCC2N)
+        ! call check(c%stagN2CC)
+        ! call check(c%colCC)
+        ! call check(c%colN)
         ! stop 'Done'
       end subroutine
 

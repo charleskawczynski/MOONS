@@ -1,0 +1,346 @@
+\documentclass[landscape]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+% \setlength{\headsep}{0in}        
+\setlength{\textheight}{525pt}   %\textheight: height of main text
+\setlength{\textwidth}{10in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+\section{Derivation of TDMA}
+The TDMA algorithm is derived by using LU factorization and back solving. We start with the matrix:
+\[
+\left[
+\begin{array}{ccccccccc}
+b_{1} & c_{1}    &           &           &           &           &         \\
+a_{1} & b_{2}    & c_{2}     &           &           &           &         \\
+      & \ddots   & \ddots    & \ddots    &           &           &         \\
+      &          & a_{i-1}   & b_{i}     & c_{i}     &           &         \\
+      &          &           & \ddots    & \ddots    & \ddots    &         \\
+      &          &           &           & a_{n-2}   & b_{n-1}   & c_{n-1} \\
+      &          &           &           &           & a_{n-1}   & b_{n}   \\
+\end{array} \right] 
+\left[ \begin{array}{c}
+x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+d_{1} \\ \vdots \\ d_{i-1} \\ d_{i} \\ d_{i+1} \\ \vdots \\ d_{n}
+\end{array} \right]
+\]
+\section{LU factorization}
+Applying LU factorization, we have:
+\[
+\left[\begin{array}{ccccccccc}
+b_{1} & c_{1}    &           &           &           &           &         \\
+a_{1} & b_{2}    & c_{2}     &           &           &           &         \\
+      & \ddots   & \ddots    & \ddots    &           &           &         \\
+      &          & a_{i-1}   & b_{i}     & c_{i}     &           &         \\
+      &          &           & \ddots    & \ddots    & \ddots    &         \\
+      &          &           &           & a_{n-2}   & b_{n-1}   & c_{n-1} \\
+      &          &           &           &           & a_{n-1}   & b_{n}   \\
+\end{array} \right] 
+\left[ \begin{array}{c}
+x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
+\end{array} \right]
+=
+\left[\begin{array}{ccccccccc}
+\beta_{1}  &               &              &              &              &             &           \\
+a_{1}      & \beta_{2}     &              &              &              &             &           \\
+           & \ddots        & \ddots       &              &              &             &           \\
+           &               & a_{i-1}      & \beta_{i}    &              &             &           \\
+           &               &              & \ddots       & \ddots       &             &           \\
+           &               &              &              & a_{n-2}      & \beta_{n-1} &           \\
+           &               &              &              &              & a_{n-1}     & \beta_{n} \\
+\end{array} \right] 
+\left[\begin{array}{ccccccccc}
+1     & \gamma_{1}  &           &           &              &           &             \\
+      & 1           & \gamma_{2}            &              &           &             \\
+      &             & \ddots    & \ddots    &              &           &             \\
+      &             &           & 1         & \gamma_{i}   &           &             \\
+      &             &           &           & \ddots       & \ddots    &             \\
+      &             &           &           &              & 1         & \gamma_{n-1}\\
+      &             &           &           &              &           & 1           \\
+\end{array} \right] 
+\left[ \begin{array}{c}
+x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+d_{1} \\ \vdots \\ d_{i-1} \\ d_{i} \\ d_{i+1} \\ \vdots \\ d_{n}
+\end{array} \right]
+\]
+
+\section{Coefficients}
+
+\[
+\left[\begin{array}{ccccccccc}
+b_{1} & c_{1}    &           &           &           &           &         \\
+a_{1} & b_{2}    & c_{2}     &           &           &           &         \\
+      & \ddots   & \ddots    & \ddots    &           &           &         \\
+      &          & a_{i-1}   & b_{i}     & c_{i}     &           &         \\
+      &          &           & \ddots    & \ddots    & \ddots    &         \\
+      &          &           &           & a_{n-2}   & b_{n-1}   & c_{n-1} \\
+      &          &           &           &           & a_{n-1}   & b_{n}   \\
+\end{array} \right] 
+=
+\left[\begin{array}{ccccccccc}
+\beta_{1}  &               &              &              &              &             &           \\
+a_{1} &      \beta_{2}     &              &              &              &             &           \\
+           & \ddots        & \ddots       &              &              &             &           \\
+           &               & a_{i-1}      & \beta_{i}    &              &             &           \\
+           &               &              & \ddots       & \ddots       &             &           \\
+           &               &              &              & a_{n-2}      & \beta_{n-1} &           \\
+           &               &              &              &              & a_{n-1}     & \beta_{n} \\
+\end{array} \right] 
+\left[\begin{array}{ccccccccc}
+1     & \gamma_{1}  &           &           &              &           &             \\
+      & 1           & \gamma_{2}            &              &           &             \\
+      &             & \ddots    & \ddots    &              &           &             \\
+      &             &           & 1         & \gamma_{i}   &           &             \\
+      &             &           &           & \ddots       & \ddots    &             \\
+      &             &           &           &              & 1         & \gamma_{n-1}\\
+      &             &           &           &              &           & 1           \\
+\end{array} \right] 
+\]
+
+Solving for these coefficients, we have
+
+\noindent
+Row 1
+\begin{equation}
+  b_1 = \beta_1
+  \qquad \rightarrow \qquad
+  \beta_1 = b_1
+\end{equation}
+\begin{equation}
+  c_1 = \beta_1 \gamma_1
+  \qquad \rightarrow \qquad
+  \gamma_1 = c_1/\beta_1
+\end{equation}
+Row 2
+\begin{equation}
+  b_2 = a_1 \gamma_1 + \beta_2
+  \qquad \rightarrow \qquad
+  \beta_2 = b_2 - a_1 \gamma_1
+\end{equation}
+\begin{equation}
+  c_2 = \beta_2 \gamma_2
+  \qquad \rightarrow \qquad
+  \gamma_2 = c_2/\beta_2
+\end{equation}
+Row i
+\begin{equation}
+  b_i = a_{i-1} \gamma_{i-1} + \beta_{i}
+  \qquad \rightarrow \qquad
+  \beta_i = b_i - a_{i-1} \gamma_{i-1}
+\end{equation}
+\begin{equation}
+  c_i = \beta_i \gamma_i
+  \qquad \rightarrow \qquad
+  \gamma_i = c_i/\beta_i
+\end{equation}
+
+\section{Algorithm}
+
+\subsection{Forward solving}
+
+\[
+\left[\begin{array}{ccccccccc}
+\beta_{1}  &               &              &              &              &             &           \\
+\alpha_{1} & \beta_{2}     &              &              &              &             &           \\
+           & \ddots        & \ddots       &              &              &             &           \\
+           &               & \alpha_{i-1} & \beta_{i}    &              &             &           \\
+           &               &              & \ddots       & \ddots       &             &           \\
+           &               &              &              & \alpha_{n-2} & \beta_{n-1} &           \\
+           &               &              &              &              & \alpha_{n-1}& \beta_{n} \\
+\end{array} \right] 
+\left[ \begin{array}{c}
+x^*_{1} \\ \vdots \\ x^*_{i-1} \\ x^*_{i} \\ x^*_{i+1} \\ \vdots \\ x^*_{n}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+d_{1} \\ \vdots \\ d_{i-1} \\ d_{i} \\ d_{i+1} \\ \vdots \\ d_{n}
+\end{array} \right]
+\]
+
+Solving for $x*$ we have
+
+Row 1
+\begin{equation}
+  \beta_1 x_1^* = d_1
+  \qquad \rightarrow \qquad
+  x_1^* = d_1/\beta_1
+\end{equation}
+Row 2
+\begin{equation}
+  \alpha_1 x_1^* + \beta_2 x_2^* = d_2
+  \qquad \rightarrow \qquad
+  x_2^* = \frac{1}{\beta_2} (d_2 - \alpha_1 x_1^*)
+\end{equation}
+Row i
+\begin{equation}
+  \alpha_{i-1} x_{i-1}^* + \beta_{i} x_{i}^* = d_{i}
+  \qquad \rightarrow \qquad
+  x_{i}^* = \frac{1}{\beta_{i}} (d_{i} - \alpha_{i-1} x_{i-1}^*)
+\end{equation}
+
+% \begin{equation}
+%   x_1^* = d_1 / \beta_1
+% \end{equation}
+% \begin{equation}
+%   x_{i-1}^* \alpha_{i-1} + x_i^* \beta_i = d_i
+%   \qquad
+%   \rightarrow
+%   \qquad
+%   x_i^* 
+%   =
+%   \frac{1}{\beta_i} (d_i - x_{i-1}^* \alpha_{i-1})
+%   \qquad
+%   i=[2,n]
+% \end{equation}
+
+\subsection{Backward solving}
+We have
+\[
+\left[\begin{array}{ccccccccc}
+1     & \gamma_{1}  &           &           &              &           &             \\
+      & 1           & \gamma_{2}            &              &           &             \\
+      &             & \ddots    & \ddots    &              &           &             \\
+      &             &           & 1         & \gamma_{i}   &           &             \\
+      &             &           &           & \ddots       & \ddots    &             \\
+      &             &           &           &              & 1         & \gamma_{n-1}\\
+      &             &           &           &              &           & 1           \\
+\end{array} \right] 
+\left[ \begin{array}{c}
+x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+x^*_{1} \\ \vdots \\ x^*_{i-1} \\ x^*_{i} \\ x^*_{i+1} \\ \vdots \\ x^*_{n}
+\end{array} \right]
+\]
+Solving for $x$, we have
+
+Row n
+\begin{equation}
+  x_n = x_n^*
+\end{equation}
+Row n-1
+\begin{equation}
+  x_{n-1} + x_n \gamma_{n-1} = x_{n-1}^*
+\end{equation}
+Row i
+\begin{equation}
+  x_i + x_{i+1} \gamma_{i} = x_{i}^*
+  \qquad \rightarrow \qquad
+  x_i = x_i^* - x_{i+1} \gamma_i
+\end{equation}
+
+
+% \begin{equation}
+%   x_n = x^*_n
+% \end{equation}
+
+% \begin{equation}
+%   x_{i} + \gamma_{i} x_{i+1} = x^*_{i}
+%   \qquad
+%   \rightarrow
+%   \qquad
+%   x_{i} = x^*_{i} - \gamma_{i} x_{i+1}
+%   \qquad
+%   i = [n-1,1]
+% \end{equation}
+
+\section{Near Final Algorithm and Form}
+Forward substitution
+\begin{equation}
+  x_1^* = d_1 / \beta_1
+  ,\qquad
+  x_i^* 
+  =
+  \frac{1}{\beta_i} (d_i - x_{i-1}^* \alpha_{i-1})
+  ,\qquad
+  i=[2,n]
+\end{equation}
+
+Backward substitution
+\begin{equation}
+  x_n = x^*_n
+  ,\qquad
+  x_{i} = x^*_{i} - \gamma_{i} x_{i+1}
+  \qquad
+  i = [n-1,1]
+\end{equation}
+
+\begin{equation}
+  \alpha_i = a_i
+  ,\qquad
+  \beta_i = c_i/\gamma_i
+  ,\qquad
+  i = [1,n-1]
+\end{equation}
+\begin{equation}
+  \gamma_i
+  =
+  \frac{c_i}{b_i - \gamma_{i-1} a_{i-1}}
+  ,\qquad
+  \gamma_1 = c_1/b_1 
+  ,\qquad
+  i = [2,n-1]
+\end{equation}
+
+\section{Final Algorithm and Form}
+Forward substitution
+\begin{equation}
+  x_1^* = d_1 / b_1
+  ,\qquad
+  x_i^* 
+  =
+  \frac{\gamma_i}{c_i} (d_i - x_{i-1}^* a_{i-1})
+  ,\qquad
+  i=[2,n]
+\end{equation}
+
+Backward substitution
+\begin{equation}
+  x_n = x^*_n
+  ,\qquad
+  x_{i} = x^*_{i} - \gamma_{i} x_{i+1}
+  \qquad
+  i = [n-1,1]
+\end{equation}
+
+
+\end{document}

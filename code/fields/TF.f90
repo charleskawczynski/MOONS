@@ -53,11 +53,8 @@
           type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
         end type
 
-        interface init;     module procedure init_TF3;                 end interface
-        interface init;     module procedure init_TF4;                 end interface
-
-        ! interface init;     module procedure init_TF_copy_VF;          end interface
-        ! interface init;     module procedure init_TF_copy_TF;          end interface
+        interface init;     module procedure init_TF_copy_VF;          end interface
+        interface init;     module procedure init_TF_copy_TF;          end interface
         interface init_CC;  module procedure init_TF_CC;               end interface
         interface init_Face;module procedure init_TF_Face;             end interface
         interface init_Edge;module procedure init_TF_Edge;             end interface
@@ -328,14 +325,14 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
-        subroutine init_TF3(f1,f2)
+        subroutine init_TF_copy_TF(f1,f2)
           implicit none
           type(TF),intent(inout) :: f1
           type(TF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
         end subroutine
 
-        subroutine init_TF4(f1,f2)
+        subroutine init_TF_copy_VF(f1,f2)
           implicit none
           type(TF),intent(inout) :: f1
           type(VF),intent(in) :: f2

@@ -66,6 +66,7 @@
          integer,dimension(3) :: Nice2
          integer,dimension(3) :: Nici1
          integer,dimension(3) :: Nici2
+         type(grid) :: g
        end type
 
        contains
@@ -88,6 +89,7 @@
          SD%Nin2  = Ni+Nwbot+2
          SD%Nice2 = Ni+Nwbot+1
          SD%Nici2 = Ni+Nwbot+2
+         call init(SD%g,g)
        end subroutine
 
        ! *********************************************************************************

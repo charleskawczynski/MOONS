@@ -16,7 +16,7 @@
       public :: triDiag
       public :: init,delete
       public :: initL,initD,initU
-      public :: print
+      public :: print,check
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -34,11 +34,15 @@
       end type
 
       interface init;    module procedure initTriDiag;            end interface
+      interface init;    module procedure init_Copy;              end interface
+      interface init;    module procedure init_Copy_array;        end interface
       interface initL;   module procedure init_TriDiagL;          end interface
       interface initD;   module procedure init_TriDiagD;          end interface
       interface initU;   module procedure init_TriDiagU;          end interface
-      interface delete;  module procedure deleteTriDiag;          end interface
+      interface delete;  module procedure delete_TriDiag;         end interface
+      interface delete;  module procedure delete_TriDiag_array;   end interface
       interface print;   module procedure printTriDiag;           end interface
+      interface check;   module procedure check_Tridiag;          end interface
 
       contains
 
@@ -46,11 +50,26 @@
         implicit none
         type(triDiag),intent(inout) :: T
         real(cp),dimension(:),intent(in) :: L,D,U
-        T%s = size(D)
-        T%sD = T%s
         call delete(T)
+        T%sL = size(L); T%sU = size(U); T%sD = size(D)
+        T%s = T%sD
         allocate(T%L(size(L))); allocate(T%D(T%s)); allocate(T%U(size(U)))
         T%L = L; T%D = D; T%U = U
+      end subroutine
+
+      subroutine init_Copy(T_out,T_in)
+        implicit none
+        type(triDiag),intent(inout) :: T_out
+        type(triDiag),intent(in) :: T_in
+        call init(T_out,T_in%L,T_in%D,T_in%U)
+      end subroutine
+
+      subroutine init_Copy_array(T_out,T_in)
+        implicit none
+        type(triDiag),dimension(:),intent(inout) :: T_out
+        type(triDiag),dimension(:),intent(in) :: T_in
+        integer :: i
+        do i=1,size(T_out); call init(T_out(i),T_in(i)%L,T_in(i)%D,T_in(i)%U); enddo
       end subroutine
 
       subroutine init_TriDiagL(T,L)
@@ -83,7 +102,7 @@
         T%U = U
       end subroutine
 
-      subroutine deleteTriDiag(T)
+      subroutine delete_TriDiag(T)
         implicit none
         type(triDiag),intent(inout) :: T
         if (allocated(T%L)) deallocate(T%L)
@@ -92,7 +111,28 @@
         T%s = 0; T%sL = 0; T%sD = 0; T%sU = 0
       end subroutine
 
+      subroutine delete_TriDiag_array(T)
+        implicit none
+        type(triDiag),dimension(:),intent(inout) :: T
+        integer :: i
+        do i=1,size(T); call delete(T(i)); enddo
+      end subroutine
+
       subroutine printTridiag(T)
+        implicit none
+        type(triDiag),intent(in) :: T
+        integer :: i
+        write(*,*) 's,sL,sD,sU = ',T%s,T%sL,T%sD,T%sU
+        if (all((/allocated(T%L),allocated(T%D),allocated(T%U)/))) then
+          write(*,*) 'L,D,U = '
+          do i=1,size(T%D); write(*,*) T%L(i),T%D(i),T%U(i); enddo
+        elseif (allocated(T%D).and.allocated(T%U)) then
+          write(*,*) 'D,U = '
+          do i=1,size(T%D); write(*,*) T%D(i),T%U(i); enddo
+        endif
+      end subroutine
+
+      subroutine check_Tridiag(T)
         implicit none
         type(triDiag),intent(in) :: T
         write(*,*) 's,sL,sD,sU = ',T%s,T%sL,T%sD,T%sU

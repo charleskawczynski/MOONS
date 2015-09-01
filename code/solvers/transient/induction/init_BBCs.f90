@@ -52,7 +52,7 @@
          call init(B_bcs%z,B%z%RF(1)%s)
 
          if (preDefinedB_BCs.ne.0) then
-           call initPreDefinedBCs(B_bcs,g)
+           call initPreDefinedBCs(B_bcs)
          else
            call initUserBBCs(B_bcs)
          endif
@@ -64,11 +64,10 @@
          call init(B%z%RF(1)%b,B_bcs%z)
        end subroutine
 
-       subroutine initPreDefinedBCs(B_bcs,g)
+       subroutine initPreDefinedBCs(B_bcs)
          implicit none
          type(vectorBCs),intent(inout) :: B_bcs
-         type(grid),intent(in) :: g
-         integer :: neumann,i
+         integer :: i
          
          call initPseudoVacuumBCs(B_bcs) ! Pseudo Vaccuum
          select case (preDefinedB_BCs)

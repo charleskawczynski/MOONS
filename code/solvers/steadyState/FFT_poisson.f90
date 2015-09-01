@@ -58,20 +58,20 @@
 
       contains
 
-      subroutine initFFT(FFT,s,g)
+      subroutine initFFT(FFT,u,g)
         implicit none
         type(FFTSolver),intent(inout) :: FFT
-        integer,dimension(3),intent(in) :: s
+        type(SF),intent(in) :: u
         type(grid),intent(in) :: g
-        FFT%s = s
+        FFT%s = u%RF(1)%s
         FFT%dx2 = g%c(1)%dhn(1)**2.0_cp
         FFT%dy2 = g%c(2)%dhn(1)**2.0_cp
         FFT%dz2 = g%c(3)%dhn(1)**2.0_cp
         FFT%Nx = g%c(1)%sc-2
         FFT%Ny = g%c(2)%sc-2
         FFT%Nz = g%c(3)%sc-2
-        call init(FFT%f,FFT%s)
-        call init(FFT%res,FFT%s)
+        call init(FFT%f,u)
+        call init(FFT%res,u)
         FFT%name = 'FFT'
       end subroutine
 
@@ -98,7 +98,7 @@
 
         do t=1,u%s
           s = U%RF(t)%s
-          call init(FFT,s,g)
+          call init(FFT,U,g)
           call assign(FFT%f%RF(t),f%RF(t))
 
           select case (dir)

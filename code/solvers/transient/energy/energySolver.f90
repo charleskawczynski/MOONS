@@ -8,9 +8,9 @@
        use SF_mod
        use VF_mod
 
-       use initializeTBCs_mod
-       use initializeTfield_mod
-       use initializeK_mod
+       use init_TBCs_mod
+       use init_Tfield_mod
+       use init_K_mod
 
        use ops_embedExtract_mod
        use grid_mod
@@ -485,7 +485,6 @@
          type(VF),intent(in) :: U_fi ! Raw momentum velocity
          type(grid),intent(in) :: g ! Momentum grid
          type(VF) :: temp
-         integer :: i
          logical,dimension(2) :: usedVelocity
 
          usedVelocity = (/.true.,.true./)
@@ -495,7 +494,7 @@
          endif
 
          if (usedVelocity(2)) then ! Cell Center
-           call init(temp,(/(g%c(i)%sc,i=1,3)/))
+           call init_CC(temp,g)
            call face2CellCenter(temp%x,U_fi%x,g,1)
            call face2CellCenter(temp%y,U_fi%y,g,2)
            call face2CellCenter(temp%z,U_fi%z,g,3)

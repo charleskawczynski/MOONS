@@ -95,15 +95,16 @@
          type(grid) :: g
        end type
 
-       interface init;       module procedure initBCs;             end interface
-       interface init;       module procedure initBCsCopy;         end interface
-       interface init;       module procedure initBCsSize;         end interface
-       interface init;       module procedure initBCsSize2;        end interface
-       interface delete;     module procedure deleteBCs;           end interface
-       interface setGrid;    module procedure setGridBCs;          end interface
+       interface init;       module procedure initBCs;               end interface
+       interface init;       module procedure initBCsCopy;           end interface
+       interface init;       module procedure initBCsSize;           end interface
+       interface init;       module procedure initBCsSize2;          end interface
+       interface delete;     module procedure deleteBCs;             end interface
+       interface setGrid;    module procedure setGridBCs;            end interface
 
-       interface setAllZero; module procedure setAllZeroGivenSize; end interface
-       interface setAllZero; module procedure setAllZeroNoSize;    end interface
+       interface setAllZero; module procedure setAllZeroGivenSize;   end interface
+       interface setAllZero; module procedure setAllZeroGivenSize_s; end interface
+       interface setAllZero; module procedure setAllZeroNoSize;      end interface
 
        contains
 
@@ -123,8 +124,8 @@
          this%TFb = .false.
          this%TFs = .false.
          this%BCsDefined = .false.
-         call setAllDirichlet(this)
-         call setAllNeumann(this)
+         call setAllDirichlet_TF(this)
+         call setAllNeumann_TF(this)
        end subroutine
 
        subroutine initBCsSize(this,Nx,Ny,Nz)
@@ -171,8 +172,8 @@
 
          this%TFb = .true.
          this%BCsDefined = .true.
-         call setAllDirichlet(this)
-         call setAllNeumann(this)
+         call setAllDirichlet_TF(this)
+         call setAllNeumann_TF(this)
        end subroutine
 
        ! *******************************************************************************
@@ -208,18 +209,34 @@
        ! *******************************************************************************
        ! *******************************************************************************
 
-       subroutine setAllBVals(this,u)
+       subroutine setAllBVals(this,u,g)
          implicit none
          type(BCs),intent(inout) :: this
          real(cp),dimension(:,:,:),intent(in) :: u
+         type(grid),intent(in) :: g
          integer,dimension(3) :: s
+         integer :: i
          s = this%s
-         call setXminVals(this,u(1,:,:))
-         call setYminVals(this,u(:,1,:))
-         call setZminVals(this,u(:,:,1))
-         call setXmaxVals(this,u(s(1),:,:))
-         call setYmaxVals(this,u(:,s(2),:))
-         call setZmaxVals(this,u(:,:,s(3)))
+         if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
+           call setXminVals(this,u(2,:,:))
+           call setYminVals(this,u(:,2,:))
+           call setZminVals(this,u(:,:,2))
+           call setXmaxVals(this,u(s(1)-1,:,:))
+           call setYmaxVals(this,u(:,s(2)-1,:))
+           call setZmaxVals(this,u(:,:,s(3)-1))
+         elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
+           call setXminVals(this,0.5_cp*(u(1,:,:)+u(2,:,:)))
+           call setYminVals(this,0.5_cp*(u(:,1,:)+u(:,2,:)))
+           call setZminVals(this,0.5_cp*(u(:,:,1)+u(:,:,2)))
+           call setXmaxVals(this,0.5_cp*(u(s(1),:,:)+u(s(1)-1,:,:)))
+           call setYmaxVals(this,0.5_cp*(u(:,s(2),:)+u(:,s(2)-1,:)))
+           call setZmaxVals(this,0.5_cp*(u(:,:,s(3))+u(:,:,s(3)-1)))
+         else
+           write(*,*) 's = ',s
+           write(*,*) 'sn = ',g%c(1)%sn,g%c(2)%sn,g%c(3)%sn
+           write(*,*) 'TF1 = ',(/(s(i).eq.g%c(i)%sn,i=1,3)/)
+           stop 'Error: setAllBVals not supported for face/edge data in BCs.f90'
+         endif
        end subroutine
 
        subroutine setGridBCs(this,g)
@@ -264,8 +281,16 @@
          bvals = 0.0_cp; call setZminVals(this,bvals); deallocate(bvals)
          allocate(bvals(Nx,Ny)); call setZmaxType(this,bctype)
          bvals = 0.0_cp; call setZmaxVals(this,bvals); deallocate(bvals)
-         call setAllDirichlet(this)
-         call setAllNeumann(this)
+         call setAllDirichlet_TF(this)
+         call setAllNeumann_TF(this)
+       end subroutine
+
+       subroutine setAllZeroGivenSize_s(this,s,bctype)
+         implicit none
+         type(BCs),intent(inout) :: this
+         integer,intent(in) :: bctype
+         integer,dimension(3),intent(in) :: s
+         call setAllZeroGivenSize(this,s(1),s(2),s(3),bctype)
        end subroutine
 
        subroutine setAllZeroNoSize(this,bctype)
@@ -273,8 +298,8 @@
          type(BCs),intent(inout) :: this
          integer,intent(in) :: bctype
          call setAllZero(this,this%s(1),this%s(2),this%s(3),bctype)
-         call setAllDirichlet(this)
-         call setAllNeumann(this)
+         call setAllDirichlet_TF(this)
+         call setAllNeumann_TF(this)
        end subroutine
 
        ! *******************************************************************************
@@ -295,11 +320,12 @@
          type(BCs),intent(inout) :: this
          this%BCsDefined = all((/this%TFb,this%TFvals,this%TFgrid/))
          if (.not.this%BCsDefined) then
+           write(*,*) 'TFb,TFvals,TFgrid = ',this%TFb,this%TFvals,this%TFgrid
            write(*,*) 'BCs have not been fully defined. Terminating'; stop
          endif
        end subroutine
 
-       subroutine setAllDirichlet(this)
+       subroutine setAllDirichlet_TF(this)
          implicit none
          type(BCs),intent(inout) :: this
          logical :: TF
@@ -313,7 +339,7 @@
          this%allDirichlet = TF
        end subroutine
 
-       subroutine setAllNeumann(this)
+       subroutine setAllNeumann_TF(this)
          implicit none
          type(BCs),intent(inout) :: this
          logical,dimension(6) :: TFAll

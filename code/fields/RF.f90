@@ -70,13 +70,12 @@
           integer,dimension(3) :: s                  ! Dimension
           real(cp),dimension(:,:,:),allocatable :: f ! field
           type(BCs) :: b
+          logical :: is_CC,is_Node,is_face,is_edge
         end type
 
-        interface init;       module procedure init_RF_1;              end interface
-        interface init;       module procedure init_RF_2;              end interface
-        interface init;       module procedure init_RF_3;              end interface
+        interface init;       module procedure init_RF_size;           end interface
+        interface init;       module procedure init_RF_copy;           end interface
 
-        ! interface init;       module procedure init_RF_Copy;           end interface
         interface init_CC;    module procedure init_RF_CC;             end interface
         interface init_Face;  module procedure init_RF_Face;           end interface
         interface init_Edge;  module procedure init_RF_Edge;           end interface
@@ -694,7 +693,7 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
-        subroutine init_RF_1(a,Nx,Ny,Nz)
+        subroutine init_RF_size(a,Nx,Ny,Nz)
           implicit none
           type(realField),intent(inout) :: a
           integer,intent(in) :: Nx,Ny,Nz
@@ -703,7 +702,7 @@
           a%s = shape(a%f)
         end subroutine
 
-        subroutine init_RF_2(f1,f2)
+        subroutine init_RF_copy(f1,f2)
           implicit none
           type(realField),intent(inout) :: f1
           type(realField),intent(in) :: f2
@@ -712,22 +711,30 @@
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))
           f1%s = shape(f1%f)
+          f1%is_CC = f2%is_CC
+          f1%is_node = f2%is_node
+          f1%is_face = f2%is_face
+          f1%is_edge = f2%is_edge
         end subroutine
 
-        subroutine init_RF_3(a,s)
-          implicit none
-          type(realField),intent(inout) :: a
-          integer,dimension(3),intent(in) :: s
-          if (allocated(a%f)) deallocate(a%f)
-          allocate(a%f(s(1),s(2),s(3)))
-          a%s = shape(a%f)
-        end subroutine
+        ! subroutine init_RF_3(a,s)
+        !   implicit none
+        !   type(realField),intent(inout) :: a
+        !   integer,dimension(3),intent(in) :: s
+        !   if (allocated(a%f)) deallocate(a%f)
+        !   allocate(a%f(s(1),s(2),s(3)))
+        !   a%s = shape(a%f)
+        ! end subroutine
+
+      ! ------------------- LOCATION-BASED ALLOCATE / DEALLOCATE --------------------
 
         subroutine init_RF_CC(a,g)
           implicit none
           type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+          call deleteDataLocation(a)
+          a%is_CC = .true.
         end subroutine
 
         subroutine init_RF_Face(a,g,dir)
@@ -741,6 +748,8 @@
           case (3); call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
           case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
           end select
+          call deleteDataLocation(a)
+          a%is_face = .true.
         end subroutine
 
         subroutine init_RF_Edge(a,g,dir)
@@ -754,6 +763,8 @@
           case (3); call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
           case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
           end select
+          call deleteDataLocation(a)
+          a%is_edge = .true.
         end subroutine
 
         subroutine init_RF_Node(a,g)
@@ -761,6 +772,17 @@
           type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
+          call deleteDataLocation(a)
+          a%is_node = .true.
+        end subroutine
+
+        subroutine deleteDataLocation(a)
+          implicit none
+          type(realField),intent(inout) :: a
+          a%is_CC = .false.
+          a%is_node = .false.
+          a%is_face = .false.
+          a%is_edge = .false.
         end subroutine
 
         subroutine delete_RF(a)

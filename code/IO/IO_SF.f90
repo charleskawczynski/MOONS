@@ -17,7 +17,7 @@
 #endif
 
       private
-      public :: export_1C_SF
+      public :: export_1C_SF,import_1C_SF
       public :: export_grid
 
       contains

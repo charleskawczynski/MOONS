@@ -71,13 +71,15 @@
 
       contains
 
-      subroutine initSOR(SOR,s,g)
+      subroutine initSOR(SOR,u,g)
         implicit none
         type(SORSolver),intent(inout) :: SOR
-        integer,dimension(3),intent(in) :: s
+        type(SF),intent(in) :: u
         type(grid),intent(in) :: g
+        integer,dimension(3) :: s
         integer :: Nx,Ny,Nz,i
         
+        s = u%RF(1)%s
         SOR%s = s
 
         do i=1,3
@@ -97,9 +99,9 @@
           endif
         enddo
 
-        call init(SOR%lapu,SOR%s)
-        call init(SOR%res,SOR%s)
-        call init(SOR%r,SOR%s)
+        call init(SOR%lapu,u)
+        call init(SOR%res,u)
+        call init(SOR%r,u)
         call init_r(SOR%r,SOR%p%c(1)%dhn,SOR%p%c(2)%dhn,SOR%p%c(3)%dhn,&
         SOR%d%c(1)%dhn,SOR%d%c(2)%dhn,SOR%d%c(3)%dhn,SOR%gt)
 
@@ -269,7 +271,7 @@
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: u
         real(cp),dimension(:,:,:),intent(in) :: f,r
-        integer,dimension(3) :: s,odd
+        integer,dimension(3),intent(in) :: s,odd
         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
         real(cp),intent(in) :: omega
         integer,dimension(3),intent(in) :: gt

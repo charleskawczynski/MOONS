@@ -57,6 +57,7 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
+
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
 FCFLAGS += -O0
@@ -90,14 +91,18 @@ FCFLAGS += -D_PARALLELIZE_VECTOR_FIELD_
 FCFLAGS += -D_PARALLELIZE_SCALAR_FIELD_
 
 # Code verification
-FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_Jacobi_CONVERGENCE_
 FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-FCFLAGS += -D_EXPORT_PSE_CONVERGENCE_
-FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
-FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
+FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_PSE_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
 # check grid is performed every time a grid is initialized
 # FCFLAGS += -D_CHECK_GRID_
+
+# Suppress warning about allocated fields in del operator
+FCFLAGS += noarg_temp_created
 
 # Internal debugging
 # FCFLAGS += -D_DEBUG_DELOPS_

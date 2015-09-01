@@ -128,7 +128,7 @@
          ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
          ! call ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
 
-         case (7); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
+         case (7); call cylinderDrivenBCs(v_bcs,w_bcs,g,1)
          case (8); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,g,drivenFace,drivenDirection,drivenSign)
          case (9); 
          case (10)
@@ -503,10 +503,10 @@
          end select
        end subroutine
 
-       subroutine cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,dir)
+       subroutine cylinderDrivenBCs(v_bcs,w_bcs,g,dir)
          implicit none
          ! Auxiliary data types
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
+         type(BCs),intent(inout) :: v_bcs,w_bcs
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
          real(cp),dimension(:,:),allocatable :: bvals

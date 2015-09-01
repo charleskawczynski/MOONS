@@ -426,6 +426,7 @@
            ! sigma
            call init_Node(tempN,g)
            call cellCenter2Node(tempN,ind%sigma,g,ind%temp_F%x,ind%temp_E%z)
+           call treatInterface(tempN)
            call export_1C_SF(g,tempN,dir//'material/','sigman',0)
            call delete(tempN)
 
@@ -444,7 +445,6 @@
          type(induction),intent(inout) :: ind
          character(len=*),intent(in) :: dir
          type(SF) :: tempN
-         integer :: i
          if (solveInduction) then
            call init_Node(tempN,ind%g)
            call cellCenter2Node(tempN,ind%sigma,ind%g,ind%temp_F%x,ind%temp_E%z)
@@ -537,7 +537,7 @@
 
          call embedVelocity(ind,U,g_mom)
 
-         call assign(ind%dB0dt,0.0_cp)
+         ! call assign(ind%dB0dt,0.0_cp)
          ! call assignZ(ind%dB0dt,ind%omega*exp(-ind%omega*ind%t))
 
          select case (solveBMethod)
@@ -545,7 +545,8 @@
          ! case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,ind%g)
          ! case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%g)
          case (4); call lowRemCTmethod(ind,ind%g)
-         case (5); call finiteRemCTmethod(ind,ind%dB0dt,ind%g)
+         ! case (5); call finiteRemCTmethod(ind,ind%dB0dt,ind%g)
+         case (5); call finiteRemCTmethod(ind,ind%g)
          ! case (6); call lowRem_ADI(ind,ind%U_cct,ind%g,ss_MHD)
          ! case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g)
          end select
@@ -736,7 +737,49 @@
          enddo
        end subroutine
 
-       subroutine finiteRemCTmethod(ind,F_CC,g)
+       subroutine finiteRemCTmethod(ind,g)
+         ! Computes
+         !    E = j/(Rem*sig) - uxB
+         !    dBdt = -curl(E) + F
+         !    B^n+1 = B^n + {-curl(E) + F}
+         ! 
+         ! using the using the Constrained Transport (CT) Method. 
+         ! 
+         ! Reference:
+         ! "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(grid),intent(in) :: g
+
+         ! E = uxB
+         call add(ind%Bstar,ind%B,ind%B0)
+         call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%Bstar,g,ind%temp_F)
+
+         ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
+         call cellCenter2Face(ind%temp_F,ind%B,g)
+         call curl(ind%J,ind%temp_F,g)
+         call divide(ind%J,ind%Rem)
+
+         ! -E = ( uxB - j/sig )_edge
+         call multiply(ind%J,ind%sigmaInv_edge)
+         call subtract(ind%E,ind%J)
+
+         ! dBdt = -Curl(E_edge)_face
+         call curl(ind%temp_F,ind%E,g)
+
+         ! dBdt_cc = interp(dBdt)_face->cc
+         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+
+         ! B^n+1 = B^n + {-curl(E) + F}
+         call multiply(ind%temp_CC,ind%dTime)
+         call add(ind%B,ind%temp_CC)
+
+         ! Impose BCs:
+         call applyAllBCs(ind%B,g)
+       end subroutine
+
+       subroutine finiteRemCTmethod_with_source(ind,F_CC,g)
          ! Computes
          !    E = j/(Rem*sig) - uxB
          !    dBdt = -curl(E) + F

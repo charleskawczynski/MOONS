@@ -1,6 +1,7 @@
        module init_Bfield_mod
        use grid_mod
        use VF_mod
+       use IO_VF_mod
        implicit none
 
        private
@@ -74,15 +75,10 @@
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          type(VF),intent(inout) :: B
-         real(cp),dimension(:),allocatable :: xc,yc,zc
-         real(cp),dimension(:),allocatable :: xn,yn,zn
-         allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
-         allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
-         xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
-         xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
-         ! call readFromFile(xc,yc,zc,B%x,B%y,B%z,dir//'Bfield/','Bxct','Byct','Bzct')
-         deallocate(xn,yn,zn)
-         deallocate(xc,yc,zc)
+         type(grid) :: temp
+         call init(temp,g)
+         call import_3C_VF(temp,B,dir,'Bnt',1)
+         call delete(temp)
        end subroutine
 
        subroutine initRestartB0(B,g,dir)
@@ -90,15 +86,10 @@
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          type(VF),intent(inout) :: B
-         real(cp),dimension(:),allocatable :: xc,yc,zc
-         real(cp),dimension(:),allocatable :: xn,yn,zn
-         allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
-         allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
-         xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
-         xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
-         ! call readFromFile(xc,yc,zc,B%x,B%y,B%z,dir//'Bfield/','B0xct','B0yct','B0zct')
-         deallocate(xn,yn,zn)
-         deallocate(xc,yc,zc)
+         type(grid) :: temp
+         call init(temp,g)
+         call import_3C_VF(temp,B,dir,'B0nt',1)
+         call delete(temp)
        end subroutine
 
        subroutine initPreDefinedB0(B,g)
@@ -107,16 +98,16 @@
          type(VF),intent(inout) :: B
          select case (preDefinedB_ICs)
          case (1); call uniformBfield(B,applied_B_dir)
-         ! case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
-         ! case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
-         ! case (4); call initField_Bandaru(B%,g,current_B_dir)
+         case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
+         case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
+         case (4); call initField_Bandaru(B,g,current_B_dir)
          case default
            write(*,*) 'Erro: Incorrect preDefinedB_ICs case in initBfield.'; stop
          end select
          select case (Bsign)
          case (1)
          case (-1)
-         call multiply(B,real(-1.0,cp))
+         call multiply(B,-1.0_cp)
          case default
          stop 'Error: Bsign must = -1,1 in initPreDefinedB0 in initializeBfield.f90'
          end select
@@ -126,12 +117,13 @@
          implicit none
          type(VF),intent(inout) :: B
          integer,intent(in) :: dir
+         call assign(B,0.0_cp)
          select case (dir)
-         case (0); call assign(B%x,0.0_cp); call assign(B%y,0.0_cp); call assign(B%z,0.0_cp)
-         case (1); call assign(B%x,1.0_cp); call assign(B%y,0.0_cp); call assign(B%z,0.0_cp)
-         case (2); call assign(B%x,0.0_cp); call assign(B%y,1.0_cp); call assign(B%z,0.0_cp)
-         case (3); call assign(B%x,0.0_cp); call assign(B%y,0.0_cp); call assign(B%z,1.0_cp)
-         case (4); call assign(B%x,1.0_cp); call assign(B%y,1.0_cp); call assign(B%z,1.0_cp)
+         case (0)
+         case (1); call assign(B%x,1.0_cp)
+         case (2); call assign(B%y,1.0_cp)
+         case (3); call assign(B%z,1.0_cp)
+         case (4); call assign(B,1.0_cp)
          case default
          stop 'Error: dir must = 1,2,3 in uniformBfield.'
          end select
@@ -140,18 +132,25 @@
        subroutine initZeroField(B)
          implicit none
          type(VF),intent(inout) :: B
-         call assign(B%x,0.0_cp); call assign(B%y,0.0_cp); call assign(B%z,0.0_cp)
+         call assign(B,0.0_cp)
        end subroutine
 
-       subroutine initFringingField_Sergey(Bx,By,Bz,g,applied_dir,fringeDir)
+       subroutine initUserBfield(B,B0)
+         implicit none
+         type(VF),intent(inout) :: B,B0
+         call initZeroField(B)
+         call uniformBfield(B0,3)
+       end subroutine
+
+       subroutine initFringingField_Sergey(B,g,applied_dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
+         type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(Bx,g,fringeDir)
-         case (2); call initFringe_Sergey(By,g,fringeDir)
-         case (3); call initFringe_Sergey(Bz,g,fringeDir)
+         case (1); call initFringe_Sergey(B%x%RF(1)%f,g,fringeDir)
+         case (2); call initFringe_Sergey(B%y%RF(1)%f,g,fringeDir)
+         case (3); call initFringe_Sergey(B%z%RF(1)%f,g,fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
@@ -196,7 +195,17 @@
          deallocate(Btemp)
        end subroutine
 
-       subroutine initField_Bandaru(Bx,By,Bz,g,currentDir)
+       subroutine initField_Bandaru(B,g,currentDir)
+         implicit none
+         type(grid),intent(in) :: g
+         type(VF),intent(inout) :: B
+         integer,intent(in) :: currentDir
+         call initField_Bandaru_RF(B%x%RF(1)%f,&
+                                   B%y%RF(1)%f,&
+                                   B%z%RF(1)%f,g,currentDir)
+       end subroutine
+
+       subroutine initField_Bandaru_RF(Bx,By,Bz,g,currentDir)
          implicit none
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
@@ -235,19 +244,19 @@
                          sinh(ka*g%c(1)%hc(i))/cosh(ka)
            enddo;enddo;enddo
          case default
-         stop 'Error: applied_dir must = 1,2,3 in initField_Bandaru.'
+         stop 'Error: applied_dir must = 1,2,3 in initField_Bandaru_RF in init_Bfield.'
          end select
        end subroutine
 
-       subroutine initFringingField_ALEX(Bx,By,Bz,g,dir,fringeDir)
+       subroutine initFringingField_ALEX(B,g,dir,fringeDir)
          implicit none
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
+         type(VF),intent(inout) :: B
          integer,intent(in) :: dir,fringeDir
          select case (dir)
-         case (1); call initFringe_ALEX(Bx,g,fringeDir)
-         case (2); call initFringe_ALEX(By,g,fringeDir)
-         case (3); call initFringe_ALEX(Bz,g,fringeDir)
+         case (1); call initFringe_ALEX(B%x%RF(1)%f,g,fringeDir)
+         case (2); call initFringe_ALEX(B%y%RF(1)%f,g,fringeDir)
+         case (3); call initFringe_ALEX(B%z%RF(1)%f,g,fringeDir)
          case default
          stop 'Error: dir must = 1,2,3 in initFringingField_ALEX.'
          end select
@@ -284,13 +293,6 @@
          end select
          write(*,*) 'Hello!',maxval(Btemp)
          deallocate(Btemp)
-       end subroutine
-
-       subroutine initUserBfield(B,B0)
-         implicit none
-         type(VF),intent(inout) :: B,B0
-         call initZeroField(B)
-         call uniformBfield(B0,3)
        end subroutine
 
        end module

@@ -1,4 +1,4 @@
-       module initializeTBCs_mod
+       module init_TBCs_mod
        use grid_mod
        use BCs_mod
        use SF_mod

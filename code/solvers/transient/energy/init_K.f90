@@ -1,4 +1,4 @@
-       module initializeK_mod
+       module init_K_mod
        use simParams_mod
        use grid_mod
        use ops_embedExtract_mod
@@ -47,10 +47,10 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          type(SF) :: k_l
-         call init(k_l,SD%s)
+         call init_CC(k_l,SD%g) ! SD%g = Interior grid
          call assign(k_l,real(1.0,cp))
          call assign(k,kStarWall)
-         call embedCC(k,k_l,SD,g)
+         call embedCC(k,k_l,SD,g) ! g = exterior grid
          call delete(k_l)
        end subroutine
 
@@ -60,12 +60,11 @@
          type(subdomain),intent(in) :: SD
          type(grid),intent(in) :: g
          type(SF) :: k_l
-         call init(k_l,SD%s)
+         call init_CC(k_l,SD%g) ! SD%g = Interior grid
          call assign(k_l,real(1.0,cp))
          call assign(k,kStarWall)
          call embedCC(k,k_l,SD,g)
          call delete(k_l)
        end subroutine
-
 
        end module
