@@ -1,7 +1,6 @@
        module MG_tools_mod
        use coordinates_mod
        use grid_mod
-       use SF_mod
        implicit none
 
        ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
@@ -23,11 +22,11 @@
        public :: restrict
        public :: prolongate
 
-       interface restrict;     module procedure restrictField1D_RF;   end interface
-       interface restrict;     module procedure restrictField_SF;     end interface
+       interface restrict;     module procedure restrictField1D;    end interface
+       interface restrict;     module procedure restrictField;      end interface
 
-       interface prolongate;   module procedure prolongateField1D_RF; end interface
-       interface prolongate;   module procedure prolongateField_SF;   end interface
+       interface prolongate;   module procedure prolongateField1D;  end interface
+       interface prolongate;   module procedure prolongateField;    end interface
 
        contains
 
@@ -186,7 +185,7 @@
       ! **********************************************************
       ! **********************************************************
 
-      subroutine prolongateField1D_RF(p,u,c,dir,s,sp,x,y,z)
+      subroutine prolongateField1D(p,u,c,dir,s,sp,x,y,z)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
         ! 
@@ -284,7 +283,7 @@
         end select
       end subroutine
 
-      subroutine prolongateField_SF(p,u,fg,temp1,temp2)
+      subroutine prolongateField(p,u,fg,temp1,temp2)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
         ! 

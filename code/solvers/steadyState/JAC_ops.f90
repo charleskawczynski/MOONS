@@ -54,7 +54,7 @@
 
       type JACSolver
         type(grid) :: g ! grid
-        type(SF) :: lapu,res,r ! laplacian, residual, coefficient
+        type(SF) :: lapu,res ! laplacian, residual, coefficient
         type(triDiag),dimension(3) :: T,L,D,U ! L,D,U for JAC
       end type
       
@@ -181,22 +181,20 @@
         do while (continueLoop.and.TF)
           ijk = ijk + 1
 
-          ! (L + U)^-1
-          call d%assign_T(JAC%lapu,u,g,JAC%L(1),1,1)
-          call d%add_T   (JAC%lapu,u,g,JAC%L(2),2,1)
-          call d%add_T (JAC%lapu,u,g,JAC%L(3),3,1)
-
-          call d%add_T(JAC%lapu,u,g,JAC%U(1),1,1)
-          call d%add_T(JAC%lapu,u,g,JAC%U(2),2,1)
-          call d%add_T(JAC%lapu,u,g,JAC%U(3),3,1)
-
-          ! {f - (L + U)^-1}
-          call subtract(JAC%res,f,JAC%lapu)
-
-          ! D^-1 {f - (L + U)^-1}
-          call d%assign_T(u,JAC%res,g,JAC%D(1),1,1)
-          call d%add_T   (u,JAC%res,g,JAC%D(2),2,1)
-          call d%add_T   (u,JAC%res,g,JAC%D(3),3,1)
+          select case (mod(ijk,3))
+          case (1); call d%assign_T(JAC%lapu,u,g,JAC%T(2),2,1) ! A_y
+                    call d%add_T   (JAC%lapu,u,g,JAC%T(3),3,1) ! A_z
+                    call add(JAC%res,f,JAC%lapu) ! f - (L+U) - (D_y+D_z)
+                    call d%assign_T(u,JAC%res,g,JAC%D(1),1,1)
+          case (2); call d%assign_T(JAC%lapu,u,g,JAC%T(1),1,1) ! A_x
+                    call d%add_T   (JAC%lapu,u,g,JAC%T(3),3,1) ! A_z
+                    call add(JAC%res,f,JAC%lapu) ! f - (L+U) - (D_x+D_z)
+                    call d%assign_T(u,JAC%res,g,JAC%D(2),2,1)
+          case (0); call d%assign_T(JAC%lapu,u,g,JAC%T(1),1,1) ! A_y
+                    call d%add_T   (JAC%lapu,u,g,JAC%T(2),2,1) ! A_z
+                    call add(JAC%res,f,JAC%lapu)
+                    call d%assign_T(u,JAC%res,g,JAC%D(3),3,1)
+          end select
 
           call applyAllBCs(u,g)
 

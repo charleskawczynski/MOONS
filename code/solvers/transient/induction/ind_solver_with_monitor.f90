@@ -468,7 +468,17 @@
          write(un,*) '(t,dt) = ',ind%t,ind%dTime
          write(un,*) '(nstep) = ',ind%nstep
          write(un,*) ''
-         call print(ind%g)
+         write(un,*) 'volume = ',ind%g%volume
+         write(un,*) 'N_cells = ',(/ind%g%c(1)%N,ind%g%c(2)%N,ind%g%c(3)%N/)
+         write(un,*) 'min/max(h)_x = ',(/ind%g%c(1)%hmin,ind%g%c(1)%hmax/)
+         write(un,*) 'min/max(h)_y = ',(/ind%g%c(2)%hmin,ind%g%c(2)%hmax/)
+         write(un,*) 'min/max(h)_z = ',(/ind%g%c(3)%hmin,ind%g%c(3)%hmax/)
+         write(un,*) 'min/max(dh)_x = ',(/ind%g%c(1)%dhMin,ind%g%c(1)%dhMax/)
+         write(un,*) 'min/max(dh)_y = ',(/ind%g%c(2)%dhMin,ind%g%c(2)%dhMax/)
+         write(un,*) 'min/max(dh)_z = ',(/ind%g%c(3)%dhMin,ind%g%c(3)%dhMax/)
+         write(un,*) 'stretching_x = ',ind%g%c(1)%dhMax-ind%g%c(1)%dhMin
+         write(un,*) 'stretching_y = ',ind%g%c(2)%dhMax-ind%g%c(2)%dhMin
+         write(un,*) 'stretching_z = ',ind%g%c(3)%dhMax-ind%g%c(3)%dhMin
          write(un,*) ''
          call printPhysicalMinMax(ind%B,'B')
          call printPhysicalMinMax(ind%B0,'B0')

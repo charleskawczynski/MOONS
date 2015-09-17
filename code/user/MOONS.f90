@@ -14,6 +14,9 @@
        use rundata_mod
        use VF_mod
 
+       use init_Bfield_mod ! For restart
+       use init_Ufield_mod ! For restart
+
        use solverSettings_mod
 
        use energySolver_mod
@@ -214,8 +217,16 @@
          ! call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
          ! call setIteration(ss_MHD,n_mhd)
 
-         call setMaxIterations(ss_MHD,NmaxMHD)
-         call setIteration(ss_MHD,0)
+         ! call setMaxIterations(ss_MHD,9880002+NmaxMHD)
+         ! call setIteration(ss_MHD,9880002)
+         call setMaxIterations(ss_MHD,19769901+NmaxMHD)
+         call setIteration(ss_MHD,19769901)
+
+
+         if (restartU.or.restartB) then
+         call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
+         else; n_mhd = 0
+         endif
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
@@ -428,7 +439,9 @@
          ! Rem = real(1.0,cp);    ds = 5.0d-5;   dTime = ds     ! (Rem = 1)
          ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
          ! Rem = real(100.0,cp);  ds = 5.0d-5;   dTime = ds     ! (Rem = 100) , sigma* = 0.01
+
          Rem = real(100.0,cp);  ds = 2.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         ! Rem = real(100.0,cp);  ds = 1.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
 
          case (1011)
          Re = real(10.0,cp)

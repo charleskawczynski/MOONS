@@ -10,7 +10,7 @@
        private
        public :: init_Ufield,restartU
 
-       logical,parameter :: restartU      = .false.
+       logical,parameter :: restartU      = .true.
        integer,parameter :: preDefinedU_ICs = 1
        !                                      0 : User-defined case (no override)
        !                                      1 : Rest (u,v,w = 0)
@@ -65,7 +65,14 @@
          type(VF),intent(inout) :: U
          type(grid) :: temp
          call init(temp,g)
-         call import_3C_VF(temp,U,dir//'Ufield','ufi',0)
+         call import_1C_SF(temp,U%x,dir//'Ufield/','ufi',0)
+         call import_1C_SF(temp,U%y,dir//'Ufield/','vfi',0)
+         call import_1C_SF(temp,U%z,dir//'Ufield/','wfi',0)
+
+         ! call export_1C_SF(temp,U%x,dir//'Ufield/','ufi_imported',0)
+         ! call export_1C_SF(temp,U%y,dir//'Ufield/','vfi_imported',0)
+         ! call export_1C_SF(temp,U%z,dir//'Ufield/','wfi_imported',0)
+         ! stop 'Done'
          call delete(temp)
        end subroutine
        
@@ -439,130 +446,5 @@
          stop 'Error: vsign must = -1,1 in singleEddy2D in initializeUfield.f90'
          end select
        end subroutine
-
-
-       ! subroutine vortex2D(U,g,s,dir,vsign,directory)
-       !   implicit none
-       !   type(VF),intent(inout) :: U
-       !   type(grid),intent(in) :: g
-       !   integer,dimension(3),intent(in) :: s
-       !   integer,intent(in) :: dir,vsign
-       !   character(len=*),intent(in) :: directory
-       !   integer :: Nx,Ny,Nz
-       !   integer :: i,j,k
-       !   ! Vortex variables
-       !   real(cp) :: omega0,r,alpha,r0
-       !   type(scalarField) :: omega,psi
-       !   type(BCs) :: psi_bcs
-       !   type(solverSettings) :: ss_psi
-       !   type(VF) :: tempVF,temp
-       !   type(norms) :: norm
-       !   type(mySOR) :: SOR
-       !   real(cp) :: two,one
-       !   integer,dimension(2) :: d
-       !   two = 2.0_cp; one = 1.0_cp
-       !   d = orthogonalDirections(dir)
-       !   call setAllZero(psi_bcs,s,5)
-       !   call checkBCs(psi_bcs)
-       !   call writeAllBoundaries(psi_bcs,directory//'parameters/','psi')
-       !   omega0 = 1000.0
-       !   alpha = 10000.0
-       !   call init(omega,s)
-       !   do k = 1,s(3)
-       !     do j = 1,s(2)
-       !       do i = 1,s(1)
-       !         r0 = sqrt( (g%c(d(1))%hmax-g%c(d(1))%hmin)**two + &
-       !                    (g%c(d(2))%hmax-g%c(d(2))%hmin)**two )
-       !         r = sqrt( g%c(d(1))%hc(i)**two + & 
-       !                   g%c(d(2))%hc(j)**two )/r0
-       !         omega(i,j,k) = omega0*(one - r**two)*exp(-alpha*r**two)
-       !       enddo
-       !     enddo
-       !   enddo
-       !   call init(psi,s)
-       !   call init(ss_psi)
-       !   call setMaxIterations(ss_psi,100)
-       !   call poisson(SOR,psi%phi,omega%phi,psi_bcs,g,ss_psi,norm,.true.)
-       !   call writeToFile(g,omega,directory//'Ufield/','omega')
-       !   call writeToFile(g,psi,directory//'Ufield/','psi')
-       !   call delete(omega)
-       !   call allocateX(tempVF,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
-       !   call allocateY(tempVF,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
-       !   call allocateZ(tempVF,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
-       !   call curl(U,tempVF,g)
-       !   call delete(psi)
-       !   call delete(tempVF)
-       ! end subroutine
-       
-
-       ! subroutine initVortex(u,v,w,g,vdir,vsign,dir)
-       !   implicit none
-       !   real(cp),dimension(:,:,:),intent(inout) :: u,v,w
-       !   type(grid),intent(in) :: g
-       !   integer,intent(in) :: vdir,vsign
-       !   character(len=*),intent(in) :: dir
-       !   integer :: Nx,Ny,Nz
-       !   real(cp) :: x_0,x_N
-       !   real(cp) :: y_0,y_N
-       !   real(cp) :: z_0,z_N
-       !   integer :: i,j,k
-       !   real(cp),dimension(:),allocatable :: xn,yn,zn
-       !   real(cp),dimension(:),allocatable :: xc,yc,zc
-       !   ! Vortex variables
-       !   real(cp) :: omega0,r,alpha,r0
-       !   real(cp),dimension(:,:,:),allocatable :: omega,psi
-       !   type(BCs) :: psi_bcs
-       !   type(solverSettings) :: ss_psi
-       !   real(cp),dimension(:,:,:),allocatable :: tempx,tempy,tempz,temp
-       !   type(myError) :: err
-       !   real(cp),dimension(3) :: hmin,hmax
-       !   type(mySOR) :: SOR
-       !   hmin = (/g%c(1)%hmin,g%c(2)%hmin,g%c(3)%hmin/)
-       !   hmax = (/g%c(1)%hmax,g%c(2)%hmax,g%c(3)%hmax/)
-       !   x_0 = g%c(1)%hmin; y_0 = g%c(2)%hmin; z_0 = g%c(3)%hmin
-       !   x_N = g%c(1)%hmax; y_N = g%c(2)%hmax; z_N = g%c(3)%hmax
-       !   allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
-       !   allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
-       !   xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
-       !   xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
-       !   call setAllZero(psi_bcs,Nx+2,Ny+2,Nz+2,5)
-       !   call checkBCs(psi_bcs)
-       !   call writeAllBoundaries(psi_bcs,dir//'parameters/','psi')
-       !   omega0 = 1000.0
-       !   alpha = 10000.0
-       !   allocate(omega(Nx+2,Ny+2,Nz+2))
-       !   do i=1,Nx+2
-       !     do j = 1,Ny+2
-       !       do k = 1,Nz+2
-       !          r0 = sqrt( (x_N-x_0)**2.0 + (y_N-y_0)**2.0 + (z_N-z_0)**2.0 )
-       !          r = sqrt( xc(i)**2.0 + yc(j)**2.0 + zc(k)**2.0 )/r0
-       !          omega(i,j,k) = omega0*(1.0 - r**2.0)*exp(-alpha*r**2.0)
-       !       enddo
-       !     enddo
-       !   enddo
-       !   allocate(psi(Nx+2,Ny+2,Nz+2))
-       !   call init(ss_psi)
-       !   call setMaxIterations(ss_psi,100)
-       !   omega = -omega
-       !   call myPoisson(SOR,psi,omega,psi_bcs,g,ss_psi,err,1,.true.)
-       !   call writeToFile(xc,yc,zc,omega,dir//'Ufield/','omega')
-       !   call writeToFile(xc,yc,zc,psi,dir//'Ufield/','psi')
-       !   deallocate(omega)
-       !   allocate(tempx(Nx+2,Ny+2,Nz+2))
-       !   allocate(tempy(Nx+2,Ny+2,Nz+2))
-       !   allocate(tempz(Nx+2,Ny+2,Nz+2))
-       !   allocate( temp(Nx+2,Ny+2,Nz+2))
-       !   call myCC2FaceGrad(tempx,tempy,tempz,psi,g)
-       !   call myFace2CellCenter(temp,tempy(:,1:Ny+1,:),g,2)
-       !   call myCellCenter2Face(u,temp,g,1)
-       !   call myFace2CellCenter(temp,tempx(1:Nx+1,:,:),g,1)
-       !   call myCellCenter2Face(v,temp,g,2)
-       !   v = -v
-       !   deallocate(psi)
-       !   w = 0.0
-       !   deallocate(tempx,tempy,tempz,temp)
-       !   deallocate(xn,yn,zn)
-       !   deallocate(xc,yc,zc)
-       ! end subroutine
 
        end module

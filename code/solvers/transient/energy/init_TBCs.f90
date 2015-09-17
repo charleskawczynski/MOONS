@@ -34,12 +34,6 @@
        !                                      5 {z_min}
        !                                      6 {z_max}
 
-       integer,parameter :: unstableDir = 1 ! not yet working..
-       !                                  1 : x
-       !                                  2 : y
-       !                                  3 : z
-       integer,parameter :: unstableSign = 1 ! : (1,-1)  ! not yet working..
-
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -59,134 +53,67 @@
          implicit none
          type(grid),intent(in) :: g
          type(SF),intent(inout) :: T
+
+         call init(T%RF(1)%b,g,T%RF(1)%s)
+
          if (preDefinedT_BCs.ne.0) then
-           call initPreDefinedBCs(T%RF(1)%b,g)
+           call initPreDefinedBCs(T%RF(1)%b)
          else
-           call initUserTBCs(T%RF(1)%b,g)
+           call initUserTBCs(T%RF(1)%b)
          endif
-         call setGrid(T%RF(1)%b,g)
-         call checkBCs(T%RF(1)%b)
        end subroutine
 
-       subroutine initPreDefinedBCs(T_bcs,g)
+       subroutine initPreDefinedBCs(T_bcs)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
-         integer :: Nx,Ny,Nz,neumann
-
-         ! By default, BCs are insulating
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         neumann = 5
-         
          select case (preDefinedT_BCs)
-         case (1); call initInsulatingBCs(T_bcs,g)
-         case (2); call initFixedBCs(T_bcs,g)
-                   call hotFaceBC(T_bcs,g,hotFace)
-         case (3); call initInsulatingBCs(T_bcs,g)
-                   call hotFaceBC(T_bcs,g,hotFace)
-                   call coldFaceBC(T_bcs,g,coldFace)
+         case (1); call initInsulatingBCs(T_bcs)
+         case (2); call initFixedBCs(T_bcs)
+                   call hotFaceBC(T_bcs,hotFace)
+         case (3); call initInsulatingBCs(T_bcs)
+                   call hotFaceBC(T_bcs,hotFace)
+                   call coldFaceBC(T_bcs,coldFace)
 
          case default
            write(*,*) 'Incorrect preDefinedT_BCs in initPreDefinedTfield';stop
          end select
        end subroutine
 
-       subroutine initInsulatingBCs(T_bcs,g)
+       subroutine initInsulatingBCs(T_bcs)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
-         integer :: Nx,Ny,Nz,neumann
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         neumann = 5
-         call setAllZero(T_bcs,Nx,Ny,Nz,neumann)
+         call init_Neumann(T_bcs)
+         call init(T_bcs,0.0_cp)
        end subroutine
 
-       subroutine hotFaceBC(T_bcs,g,face)
+       subroutine hotFaceBC(T_bcs,face)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
          integer,intent(in) :: face
-         real(cp),dimension(:,:),allocatable :: bvals
-         integer :: Nx,Ny,Nz,dirichlet
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         dirichlet = 2
-
-         select case (face)
-         case(1); allocate(bvals(Ny,Nz)); call setXMinType(T_bcs,dirichlet)
-         case(2); allocate(bvals(Ny,Nz)); call setXMaxType(T_bcs,dirichlet)
-         case(3); allocate(bvals(Nx,Nz)); call setYMinType(T_bcs,dirichlet)
-         case(4); allocate(bvals(Nx,Nz)); call setYMaxType(T_bcs,dirichlet)
-         case(5); allocate(bvals(Nx,Ny)); call setZMinType(T_bcs,dirichlet)
-         case(6); allocate(bvals(Nx,Ny)); call setZMaxType(T_bcs,dirichlet)
-         case default
-         stop 'Error: face must = 1:6 in hotFaceBC in initializeTBCs.f90'
-         end select
-         bvals = real(1.0,cp)
-         select case (face)
-         case(1); call setXMinVals(T_bcs,bvals)
-         case(2); call setXMaxVals(T_bcs,bvals)
-         case(3); call setYMinVals(T_bcs,bvals)
-         case(4); call setYMaxVals(T_bcs,bvals)
-         case(5); call setZMinVals(T_bcs,bvals)
-         case(6); call setZMaxVals(T_bcs,bvals)
-         case default
-         stop 'Error: face must = 1:6 in hotFaceBC in initializeTBCs.f90'
-         end select
-         deallocate(bvals)
+         call init_Dirichlet(T_bcs,face)
+         call init(T_bcs,1.0_cp,face)
        end subroutine
 
-       subroutine coldFaceBC(T_bcs,g,face)
+       subroutine coldFaceBC(T_bcs,face)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
          integer,intent(in) :: face
-         real(cp),dimension(:,:),allocatable :: bvals
-         integer :: Nx,Ny,Nz,dirichlet
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         dirichlet = 2
-
-         select case (face)
-         case(1); allocate(bvals(Ny,Nz)); call setXMinType(T_bcs,dirichlet)
-         case(2); allocate(bvals(Ny,Nz)); call setXMaxType(T_bcs,dirichlet)
-         case(3); allocate(bvals(Nx,Nz)); call setYMinType(T_bcs,dirichlet)
-         case(4); allocate(bvals(Nx,Nz)); call setYMaxType(T_bcs,dirichlet)
-         case(5); allocate(bvals(Nx,Ny)); call setZMinType(T_bcs,dirichlet)
-         case(6); allocate(bvals(Nx,Ny)); call setZMaxType(T_bcs,dirichlet)
-         case default
-         stop 'Error: face must = 1:6 in coldFaceBC in initializeTBCs.f90'
-         end select
-         bvals = real(0.0,cp)
-         select case (face)
-         case(1); call setXMinVals(T_bcs,bvals)
-         case(2); call setXMaxVals(T_bcs,bvals)
-         case(3); call setYMinVals(T_bcs,bvals)
-         case(4); call setYMaxVals(T_bcs,bvals)
-         case(5); call setZMinVals(T_bcs,bvals)
-         case(6); call setZMaxVals(T_bcs,bvals)
-         case default
-         stop 'Error: face must = 1:6 in coldFaceBC in initializeTBCs.f90'
-         end select
-         deallocate(bvals)
+         call init_Dirichlet(T_bcs,face)
+         call init(T_bcs,0.0_cp,face)
        end subroutine
 
-       subroutine initFixedBCs(T_bcs,g)
+       subroutine initFixedBCs(T_bcs)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
-         integer :: Nx,Ny,Nz,dirichlet
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         dirichlet = 2
-         call setAllZero(T_bcs,Nx,Ny,Nz,dirichlet)
+         call init_Dirichlet(T_bcs)
+         call init(T_bcs,0.0_cp)
        end subroutine
 
-       subroutine initUserTBCs(T_bcs,g)
+       subroutine initUserTBCs(T_bcs)
          implicit none
-         type(grid),intent(in) :: g
          type(BCs),intent(inout) :: T_bcs
-         integer :: Nx,Ny,Nz,neumann
-         Nx = g%c(1)%sc; Ny = g%c(2)%sc; Nz = g%c(3)%sc
-         neumann = 5
-         call setAllZero(T_bcs,Nx,Ny,Nz,neumann)
+         call init_Neumann(T_bcs)
+         call init(T_bcs,0.0_cp)
        end subroutine
 
        end module

@@ -36,13 +36,16 @@
          integer :: n                         ! n associated with data
          character(len=25) :: dir             ! probe directory
          character(len=25) :: name            ! probe name
+         integer :: un_d                      ! file unit number for data
+         integer :: un_i                      ! file unit number for info file
          logical :: TF_freshStart             ! simulation starts from t=0
        end type
 
        interface init;        module procedure initProbe;            end interface
        interface set;         module procedure setProbeData;         end interface
        interface apply;       module procedure applyProbe;           end interface
-       interface export;      module procedure exportProbe;          end interface
+
+       interface export;      module procedure export_Probe_info;    end interface
        interface printProbe;  module procedure printTransientProbe;  end interface
        interface delete;      module procedure deleteProbe;          end interface
 
@@ -57,6 +60,9 @@
          p%dir = dir
          p%name = name
          p%TF_freshStart = TF_freshStart
+         ! if (p%TF_freshStart)      p%un_d = newAndOpen(dir,name)
+         ! if (.not.p%TF_freshStart) p%un_d = openToAppend(dir,name)
+         p%un_d = newAndOpen(dir,name)
        end subroutine
 
        subroutine setProbeData(p,n,d)
@@ -70,18 +76,17 @@
        subroutine applyProbe(p)
          implicit none
          type(probe),intent(inout) :: p
-         call writeTransientToFile(p%n,p%d,adjustl(trim(p%dir)),&
-          adjustl(trim(p%name)),p%TF_freshStart)
+         open(p%un_d,file=trim(adjustl(p%dir)) // trim(adjustl(p%name)) // '.dat',position='append')
+         write(p%un_d,'(2'//arrfmt//')') real(p%n,cp),p%d
+         close(p%un_d)
          p%TF_freshStart = .false.
        end subroutine
 
        subroutine deleteProbe(p)
-        implicit none
-        type(probe),intent(in) :: p
-        integer :: utemp
-        utemp = getUnit(trim(adjustl(p%dir)),trim(adjustl(p%name)))
-        close(utemp)
-      end subroutine
+         implicit none
+         type(probe),intent(in) :: p
+         close(p%un_d); close(p%un_i)
+       end subroutine
 
        subroutine printTransientProbe(p,u)
          implicit none
@@ -95,7 +100,7 @@
          endif
        end subroutine
 
-       subroutine exportProbe(p,u)
+       subroutine export_Probe_info(p,u)
          implicit none
          type(probe), intent(in) :: p
          integer,intent(in),optional :: u
@@ -119,7 +124,6 @@
          integer,intent(in) :: u
          write(u,*) ' directory = ',p%dir
          write(u,*) ' name = ',p%name
-         write(u,*) ' fresh start = ',p%TF_freshStart
        end subroutine
 
        end module

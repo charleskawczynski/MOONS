@@ -1,50 +1,24 @@
        module BCs_mod
-       ! This is the BCs module. Here is an example of implementation
-       ! of setting and applying BCs for the magnetic field using Psuedo-vacuum BCs.
+       ! Making BCs is a 3 step process:
        ! 
-       !           type(BCs),intent(inout) :: Bx_bcs,By_bcs,Bz_bcs
-       !           integer :: Nx,Ny,Nz,neumann,dirichlet
-       !  
-       !           ! B-field boundary conditions
-       !           dirichlet = 2; neumann = 5 ! See applyBCs module
-       !           
-       !           call setAllZero(Bx_bcs,Nx,Ny,Nz,dirichlet)
-       !           call setXminType(Bx_bcs,neumann)
-       !           call setXmaxType(Bx_bcs,neumann)
-       !           call checkBCs(Bx_bcs)
-       !  
-       !           call setAllZero(By_bcs,Nx,Ny,Nz,dirichlet)
-       !           call setYminType(By_bcs,neumann)
-       !           call setYmaxType(By_bcs,neumann)
-       !           call checkBCs(By_bcs)
-       !  
-       !           call setAllZero(Bz_bcs,Nx,Ny,Nz,dirichlet)
-       !           call setZminType(Bz_bcs,neumann)
-       !           call setZmaxType(Bz_bcs,neumann)
-       !           call checkBCs(Bz_bcs)
-       !           .
-       !           .
-       !           .
-       !           call myAdvect(tempx,Bx0,By0,Bz0,u,gd)
-       !           call myPoisson(Bx,-Rem*tempx,B_bcs,gd)
-       !  
-       !           call myAdvect(tempy,Bx0,By0,Bz0,v,gd)
-       !           call myPoisson(By,-Rem*tempy,B_bcs,gd)
-       !  
-       !           call myAdvect(tempz,Bx0,By0,Bz0,w,gd)
-       !           call myPoisson(Bz,-Rem*tempz,B_bcs,gd)
-       !           .
-       !           .
-       !           .
+       !       1) Set grid / shape
+       !             call init(BCs,g,s)
+       !       2) Set type (can use grid information)
+       !             call init_Dirichlet(BCs); call init_Dirichlet(BCs,face)
+       !             call init_Neumann(BCs);   call init_Neumann(BCs,face)
+       !             call init_periodic(BCs);  call init_periodic(BCs,face)
+       !       3) Set values
+       !             call init(BCs,0.0)       (default)
+       !             call init(BCs,0.0,face)
+       !             call init(BCs,vals,face)
+       ! 
+       ! The convention for the faces is:
+       !   face = {1:6} = {x_min,x_max,y_min,y_max,z_min,z_max}
 
        use grid_mod
+       use boundary_mod
        use IO_tools_mod
        implicit none
-
-       private
-
-       public :: BCs
-       public :: init,delete,setGrid
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -56,356 +30,261 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       ! Setters for type and value
-       public :: setXminType,setXmaxType
-       public :: setYminType,setYmaxType
-       public :: setZminType,setZmaxType
-       public :: setXminVals,setXmaxVals
-       public :: setYminVals,setYmaxVals
-       public :: setZminVals,setZmaxVals
+       integer,parameter :: Dirichlet_n = 1    ! Correspond to applyBCs.f90
+       integer,parameter :: Dirichlet_cc = 2   ! Correspond to applyBCs.f90
+       integer,parameter :: Neumann_n = 3      ! Correspond to applyBCs.f90
+       ! integer,parameter :: Neumann_cc = 4   ! Correspond to applyBCs.f90
+       integer,parameter :: Neumann_cc = 5     ! Correspond to applyBCs.f90
+       integer,parameter :: periodic_n = 6     ! Correspond to applyBCs.f90
+       integer,parameter :: periodic_cc = 7    ! Correspond to applyBCs.f90
 
-       ! Modifiers
-       public :: setAllBVals
-       public :: setAllZero
+       private
+       public :: BCs
+       public :: init,delete
+       public :: print,export
 
-       ! Checkers
-       public :: checkBCs,BCsReady
-       public :: getAllDirichlet,getAllNeumann
+       ! Setters for type
+       public :: init_Dirichlet
+       public :: init_Neumann
+       public :: init_periodic
 
-       ! Print / export
-       public :: printAllBoundaries
-       public :: writeAllBoundaries
+       public :: getAllNeumann
+       public :: getDirichlet
+
+       public :: print_defined
 
        type BCs
-         integer :: xminType,xmaxType                               ! good
-         integer :: yminType,ymaxType                               ! good
-         integer :: zminType,zmaxType                               ! good
-         real(cp),dimension(:,:),allocatable :: xminVals,xmaxVals   ! good
-         real(cp),dimension(:,:),allocatable :: yminVals,ymaxVals   ! good
-         real(cp),dimension(:,:),allocatable :: zminVals,zmaxVals   ! good
-         integer,dimension(3) :: s
-
-         real(cp),dimension(:),allocatable :: xn,yn,zn
-         real(cp),dimension(:),allocatable :: xc,yc,zc
-         logical,dimension(6) :: TFb
-         logical :: TFs
-         logical :: TFgrid,allDirichlet,allNeumann
-         logical,dimension(6) :: TFvals
-         logical :: BCsDefined = .false.
+         type(boundary),dimension(6) :: face ! xmin,xmax,ymin,ymax,zmin,zmax
          type(grid) :: g
+         integer,dimension(3) :: s
+         logical :: gridDefined = .false.
+         logical :: defined = .false.
+         logical :: all_Dirichlet,all_Neumann
        end type
 
-       interface init;       module procedure initBCs;               end interface
-       interface init;       module procedure initBCsCopy;           end interface
-       interface init;       module procedure initBCsSize;           end interface
-       interface init;       module procedure initBCsSize2;          end interface
-       interface delete;     module procedure deleteBCs;             end interface
-       interface setGrid;    module procedure setGridBCs;            end interface
+       interface init;            module procedure init_BCs_copy;       end interface
 
-       interface setAllZero; module procedure setAllZeroGivenSize;   end interface
-       interface setAllZero; module procedure setAllZeroGivenSize_s; end interface
-       interface setAllZero; module procedure setAllZeroNoSize;      end interface
+       interface init;            module procedure init_gridShape_BCs;  end interface
+
+       interface init_Dirichlet;  module procedure init_Dirichlet_all;  end interface
+       interface init_Dirichlet;  module procedure init_Dirichlet_face; end interface
+       interface init_Neumann;    module procedure init_Neumann_all;    end interface
+       interface init_Neumann;    module procedure init_Neumann_face;   end interface
+       interface init_periodic;   module procedure init_periodic_all;   end interface
+       interface init_periodic;   module procedure init_periodic_face;  end interface
+
+       interface init;            module procedure init_vals_all_S;     end interface
+       interface init;            module procedure init_vals_face_vals; end interface
+       interface init;            module procedure init_val_face_S;     end interface
+
+       interface delete;          module procedure delete_BCs;          end interface
+       interface print;           module procedure print_BCs;           end interface
+       interface export;          module procedure export_BCs;          end interface
 
        contains
 
-
        ! *******************************************************************************
-       ! *******************************************************************************
-       ! ************************************* INIT ************************************
-       ! *******************************************************************************
+       ! ********************************** INIT GRID (1) ******************************
        ! *******************************************************************************
 
-       subroutine initBCs(this)
+       subroutine init_gridShape_BCs(b,g,s)
          implicit none
-         type(BCs),intent(inout) :: this
-         this%xminType = 0; this%xmaxType = 0
-         this%yminType = 0; this%ymaxType = 0
-         this%zminType = 0; this%zmaxType = 0
-         this%TFb = .false.
-         this%TFs = .false.
-         this%BCsDefined = .false.
-         call setAllDirichlet_TF(this)
-         call setAllNeumann_TF(this)
-       end subroutine
-
-       subroutine initBCsSize(this,Nx,Ny,Nz)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: Nx,Ny,Nz
-         call initBCs(this)
-         this%s = (/Nx,Ny,Nz/)
-       end subroutine
-
-       subroutine initBCsSize2(this,s)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,dimension(3),intent(in) :: s
-         call initBCs(this)
-         this%s = s
-       end subroutine
-
-       subroutine initBCsCopy(this,u_bcs)
-         implicit none
-         type(BCs),intent(inout) :: this
-         type(BCs),intent(in) :: u_bcs
-         real(cp),dimension(:,:), allocatable :: bvals
-         integer :: Nx,Ny,Nz
-         this%xminType = u_bcs%xminType; this%xmaxType = u_bcs%xmaxType
-         this%yminType = u_bcs%yminType; this%ymaxType = u_bcs%ymaxType
-         this%zminType = u_bcs%zminType; this%zmaxType = u_bcs%zmaxType
-         call init(this%g,u_bcs%g)
-
-         this%s = u_bcs%s; Nx = this%s(1); Ny = this%s(2); Nz = this%s(3)
-
-         allocate(bvals(Ny,Nz)); bvals = u_bcs%xminVals
-         call setXminVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Ny,Nz)); bvals = u_bcs%xmaxVals
-         call setXmaxVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Nz)); bvals = u_bcs%yminVals
-         call setYminVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Nz)); bvals = u_bcs%ymaxVals
-         call setYmaxVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Ny)); bvals = u_bcs%zminVals
-         call setZminVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Ny)); bvals = u_bcs%zmaxVals
-         call setZmaxVals(this,bvals); deallocate(bvals)
-
-         this%TFb = .true.
-         this%BCsDefined = .true.
-         call setAllDirichlet_TF(this)
-         call setAllNeumann_TF(this)
-       end subroutine
-
-       ! *******************************************************************************
-       ! *******************************************************************************
-       ! *********************************** DELETE ************************************
-       ! *******************************************************************************
-       ! *******************************************************************************
-
-       subroutine deleteBCs(this)
-         implicit none
-         type(BCs),intent(inout) :: this
-         if (allocated(this%xminVals)) deallocate(this%xminVals)
-         if (allocated(this%xmaxVals)) deallocate(this%xmaxVals)
-         if (allocated(this%yminVals)) deallocate(this%yminVals)
-         if (allocated(this%ymaxVals)) deallocate(this%ymaxVals)
-         if (allocated(this%zminVals)) deallocate(this%zminVals)
-         if (allocated(this%zmaxVals)) deallocate(this%zmaxVals)
-
-         if (allocated(this%xn)) deallocate(this%xn)
-         if (allocated(this%yn)) deallocate(this%yn)
-         if (allocated(this%zn)) deallocate(this%zn)
-         if (allocated(this%xc)) deallocate(this%xc)
-         if (allocated(this%yc)) deallocate(this%yc)
-         if (allocated(this%zc)) deallocate(this%zc)
-         this%TFb = .false.
-         this%BCsDefined = .false.
-         this%TFgrid = .false.
-       end subroutine
-
-       ! *******************************************************************************
-       ! *******************************************************************************
-       ! *********************************** MODIFY ************************************
-       ! *******************************************************************************
-       ! *******************************************************************************
-
-       subroutine setAllBVals(this,u,g)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:,:),intent(in) :: u
+         type(BCs),intent(inout) :: b
          type(grid),intent(in) :: g
-         integer,dimension(3) :: s
+         integer,dimension(3),intent(in) :: s
+         call init(b%g,g); b%s = s
+         call init(b%face(1),(/s(2),s(3)/))
+         call init(b%face(2),(/s(2),s(3)/))
+         call init(b%face(3),(/s(1),s(3)/))
+         call init(b%face(4),(/s(1),s(3)/))
+         call init(b%face(5),(/s(1),s(2)/))
+         call init(b%face(6),(/s(1),s(2)/))
+         b%gridDefined = .true.
+         call define_logicals(b)
+       end subroutine
+
+       ! *******************************************************************************
+       ! ********************************** INIT TYPE (2) ******************************
+       ! *******************************************************************************
+
+       subroutine init_ND_all(b,bctype_n,bctype_cc)
+         implicit none
+         type(BCs),intent(inout) :: b
+         integer,intent(in) :: bctype_n,bctype_cc
+         integer :: k
+         if (.not.b%gridDefined) stop 'Error: BC grid must be defined before type is defined'
+         do k=1,6; call init_ND_face(b,k,bctype_n,bctype_cc); enddo
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_ND_face(b,face,bctype_n,bctype_cc)
+         implicit none
+         type(BCs),intent(inout) :: b
+         integer,intent(in) :: face,bctype_n,bctype_cc
+         if (.not.b%gridDefined) stop 'Error: BC grid must be defined before type is defined'
+         select case (face)
+         case (1,2); if (b%s(1).eq.b%g%c(1)%sn) then; call init(b%face(face),bctype_n)
+                 elseif (b%s(1).eq.b%g%c(1)%sc) then; call init(b%face(face),bctype_cc)
+                 endif
+         case (3,4); if (b%s(2).eq.b%g%c(2)%sn) then; call init(b%face(face),bctype_n)
+                 elseif (b%s(2).eq.b%g%c(2)%sc) then; call init(b%face(face),bctype_cc)
+                 endif
+         case (5,6); if (b%s(3).eq.b%g%c(3)%sn) then; call init(b%face(face),bctype_n)
+                 elseif (b%s(3).eq.b%g%c(3)%sc) then; call init(b%face(face),bctype_cc)
+                 endif
+         end select
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_Dirichlet_all(b)
+         implicit none
+         type(BCs),intent(inout) :: b
+         call check_prereq(b)
+         call init_ND_all(b,Dirichlet_n,Dirichlet_cc)
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_Neumann_all(b)
+         implicit none
+         type(BCs),intent(inout) :: b
+         call check_prereq(b)
+         call init_ND_all(b,Neumann_n,Neumann_cc)
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_Periodic_all(b)
+         implicit none
+         type(BCs),intent(inout) :: b
+         call check_prereq(b)
+         call init_ND_all(b,periodic_n,periodic_cc)
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_Dirichlet_face(b,face)
+         implicit none
+         type(BCs),intent(inout) :: b
+         integer,intent(in) :: face
+         call check_prereq(b)
+         call init_ND_face(b,face,Dirichlet_n,Dirichlet_cc)
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_Neumann_face(b,face)
+         implicit none
+         type(BCs),intent(inout) :: b
+         integer,intent(in) :: face
+         call check_prereq(b)
+         call init_ND_face(b,face,Neumann_n,Neumann_cc)
+         call define_logicals(b)
+       end subroutine
+
+       subroutine init_Periodic_face(b,face)
+         implicit none
+         type(BCs),intent(inout) :: b
+         integer,intent(in) :: face
+         call check_prereq(b)
+         call init_ND_face(b,face,periodic_n,periodic_cc)
+         call define_logicals(b)
+       end subroutine
+
+       ! *******************************************************************************
+       ! ********************************** INIT VALS (3) ******************************
+       ! *******************************************************************************
+
+       subroutine init_vals_all_S(b,val)
+         implicit none
+         type(BCs),intent(inout) :: b
+         real(cp),intent(in) :: val
          integer :: i
-         s = this%s
-         if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
-           call setXminVals(this,u(2,:,:))
-           call setYminVals(this,u(:,2,:))
-           call setZminVals(this,u(:,:,2))
-           call setXmaxVals(this,u(s(1)-1,:,:))
-           call setYmaxVals(this,u(:,s(2)-1,:))
-           call setZmaxVals(this,u(:,:,s(3)-1))
-         elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
-           call setXminVals(this,0.5_cp*(u(1,:,:)+u(2,:,:)))
-           call setYminVals(this,0.5_cp*(u(:,1,:)+u(:,2,:)))
-           call setZminVals(this,0.5_cp*(u(:,:,1)+u(:,:,2)))
-           call setXmaxVals(this,0.5_cp*(u(s(1),:,:)+u(s(1)-1,:,:)))
-           call setYmaxVals(this,0.5_cp*(u(:,s(2),:)+u(:,s(2)-1,:)))
-           call setZmaxVals(this,0.5_cp*(u(:,:,s(3))+u(:,:,s(3)-1)))
-         else
-           write(*,*) 's = ',s
-           write(*,*) 'sn = ',g%c(1)%sn,g%c(2)%sn,g%c(3)%sn
-           write(*,*) 'TF1 = ',(/(s(i).eq.g%c(i)%sn,i=1,3)/)
-           stop 'Error: setAllBVals not supported for face/edge data in BCs.f90'
-         endif
+         do i=1,6; call init(b%face(i),val); enddo
+         call define_logicals(b)
        end subroutine
 
-       subroutine setGridBCs(this,g)
+       subroutine init_vals_face_vals(b,vals,face)
          implicit none
-         type(BCs),intent(inout) :: this
-         type(grid),intent(in) :: g
-         if (allocated(this%xc)) deallocate(this%xc)
-         if (allocated(this%yc)) deallocate(this%yc)
-         if (allocated(this%zc)) deallocate(this%zc)
-         if (allocated(this%xn)) deallocate(this%xn)
-         if (allocated(this%yn)) deallocate(this%yn)
-         if (allocated(this%zn)) deallocate(this%zn)
-         allocate(this%xc(g%c(1)%sc),this%xn(g%c(1)%sn))
-         allocate(this%yc(g%c(2)%sc),this%yn(g%c(2)%sn))
-         allocate(this%zc(g%c(3)%sc),this%zn(g%c(3)%sn))
-         this%xc = g%c(1)%hc; this%xn = g%c(1)%hn
-         this%yc = g%c(2)%hc; this%yn = g%c(2)%hn
-         this%zc = g%c(3)%hc; this%zn = g%c(3)%hn
-         call init(this%g,g)
-         this%TFgrid = .true.
+         type(BCs),intent(inout) :: b
+         real(cp),dimension(:,:),intent(in) :: vals
+         integer,intent(in) :: face
+         call init(b%face(face),vals)
+         call define_logicals(b)
        end subroutine
 
-       subroutine setAllZeroGivenSize(this,Nx,Ny,Nz,bctype)
+       subroutine init_val_face_S(b,val,face)
          implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: Nx,Ny,Nz
-         integer,intent(in) :: bctype
-         real(cp),dimension(:,:),allocatable :: bvals
-
-         call initBCs(this)
-         this%s = (/Nx,Ny,Nz/)
-
-         allocate(bvals(Ny,Nz)); call setXminType(this,bctype)
-         bvals = 0.0_cp; call setXminVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Ny,Nz)); call setXmaxType(this,bctype)
-         bvals = 0.0_cp; call setXmaxVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Nz)); call setYminType(this,bctype)
-         bvals = 0.0_cp; call setYminVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Nz)); call setYmaxType(this,bctype)
-         bvals = 0.0_cp; call setYmaxVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Ny)); call setZminType(this,bctype)
-         bvals = 0.0_cp; call setZminVals(this,bvals); deallocate(bvals)
-         allocate(bvals(Nx,Ny)); call setZmaxType(this,bctype)
-         bvals = 0.0_cp; call setZmaxVals(this,bvals); deallocate(bvals)
-         call setAllDirichlet_TF(this)
-         call setAllNeumann_TF(this)
-       end subroutine
-
-       subroutine setAllZeroGivenSize_s(this,s,bctype)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: bctype
-         integer,dimension(3),intent(in) :: s
-         call setAllZeroGivenSize(this,s(1),s(2),s(3),bctype)
-       end subroutine
-
-       subroutine setAllZeroNoSize(this,bctype)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: bctype
-         call setAllZero(this,this%s(1),this%s(2),this%s(3),bctype)
-         call setAllDirichlet_TF(this)
-         call setAllNeumann_TF(this)
+         type(BCs),intent(inout) :: b
+         real(cp),intent(in) :: val
+         integer,intent(in) :: face
+         call init(b%face(face),val)
+         call define_logicals(b)
        end subroutine
 
        ! *******************************************************************************
-       ! *******************************************************************************
-       ! ********************************* CHECKERS ************************************
-       ! *******************************************************************************
+       ! ******************************** COPY / DELETE ********************************
        ! *******************************************************************************
 
-       function BCsReady(this) result(TF)
+       subroutine init_BCs_copy(b_out,b_in)
          implicit none
-         type(BCs),intent(in) :: this
-         logical :: TF
-         TF = this%BCsDefined
-       end function
-
-       subroutine checkBCs(this)
-         implicit none
-         type(BCs),intent(inout) :: this
-         this%BCsDefined = all((/this%TFb,this%TFvals,this%TFgrid/))
-         if (.not.this%BCsDefined) then
-           write(*,*) 'TFb,TFvals,TFgrid = ',this%TFb,this%TFvals,this%TFgrid
-           write(*,*) 'BCs have not been fully defined. Terminating'; stop
-         endif
+         type(BCs),intent(inout) :: b_out
+         type(BCs),intent(in) :: b_in
+         integer :: i
+         do i=1,6; call init(b_out%face(i),b_in%face(i)); enddo
+         call init(b_out%g,b_in%g)
+         b_out%s = b_in%s
+         b_out%defined = b_in%defined
+         b_out%all_Dirichlet = b_in%all_Dirichlet
+         b_out%all_Neumann = b_in%all_Neumann
        end subroutine
 
-       subroutine setAllDirichlet_TF(this)
+       subroutine delete_BCs(b)
          implicit none
-         type(BCs),intent(inout) :: this
-         logical :: TF
-         TF = .true.
-         if (TF.and.this%TFb(1)) TF = (this%xminType.eq.1)
-         if (TF.and.this%TFb(2)) TF = (this%xmaxType.eq.1)
-         if (TF.and.this%TFb(3)) TF = (this%yminType.eq.1)
-         if (TF.and.this%TFb(4)) TF = (this%ymaxType.eq.1)
-         if (TF.and.this%TFb(5)) TF = (this%zminType.eq.1)
-         if (TF.and.this%TFb(6)) TF = (this%zmaxType.eq.1)
-         this%allDirichlet = TF
+         type(BCs),intent(inout) :: b
+         integer :: i
+         do i=1,6
+           call delete(b%face(i))
+         enddo
+         call delete(b%g)
+         b%gridDefined = .false.
+         call define_logicals(b)
        end subroutine
 
-       subroutine setAllNeumann_TF(this)
-         implicit none
-         type(BCs),intent(inout) :: this
-         logical,dimension(6) :: TFAll
-         TFAll = .false.
-         if (this%TFb(1)) TFAll(1) = (this%xminType.eq.3).or.((this%xminType.eq.4).or.(this%xminType.eq.5))
-         if (this%TFb(2)) TFAll(2) = (this%xmaxType.eq.3).or.((this%xmaxType.eq.4).or.(this%xmaxType.eq.5))
-         if (this%TFb(3)) TFAll(3) = (this%yminType.eq.3).or.((this%yminType.eq.4).or.(this%yminType.eq.5))
-         if (this%TFb(4)) TFAll(4) = (this%ymaxType.eq.3).or.((this%ymaxType.eq.4).or.(this%ymaxType.eq.5))
-         if (this%TFb(5)) TFAll(5) = (this%zminType.eq.3).or.((this%zminType.eq.4).or.(this%zminType.eq.5))
-         if (this%TFb(6)) TFAll(6) = (this%zmaxType.eq.3).or.((this%zmaxType.eq.4).or.(this%zmaxType.eq.5))
-         this%allNeumann = all(TFAll)
-       end subroutine
-
-       function getAllDirichlet(this) result(TF)
-         implicit none
-         type(BCs),intent(in) :: this
-         logical :: TF
-         TF = this%allDirichlet
-       end function
-
-       function getAllNeumann(this) result(TF)
-         implicit none
-         type(BCs),intent(in) :: this
-         logical :: TF
-         TF = this%allNeumann
-       end function
-
        ! *******************************************************************************
-       ! *******************************************************************************
-       ! ******************************** PRINT/EXPORT *********************************
-       ! *******************************************************************************
+       ! ******************************* PRINT / EXPORT ********************************
        ! *******************************************************************************
 
-       subroutine printAllBoundaries(this,name)
+       subroutine print_BCs(b,name)
          implicit none
-         type(BCs), intent(in) :: this
+         type(BCs), intent(in) :: b
          character(len=*),intent(in) :: name
-         call writeAllBCsToFileOrScreen(this,name,6)
+         call exp_AllBCs(b,name,6)
        end subroutine
 
-       subroutine writeAllBoundaries(this,dir,name)
+       subroutine export_BCs(b,dir,name)
          implicit none
-         type(BCs), intent(in) :: this
+         type(BCs), intent(in) :: b
          character(len=*),intent(in) :: dir,name
          integer :: NewU
          NewU = newAndOpen(dir,name//'_BoundaryConditions')
-         call writeAllBCsToFileOrScreen(this,name,newU)
+         call exp_AllBCs(b,name,newU)
          call closeAndMessage(newU,name//'_BoundaryConditions',dir)
        end subroutine
 
-       subroutine writeAllBCsToFileOrScreen(this,name,newU)
+       subroutine exp_AllBCs(b,name,newU)
          implicit none
-         type(BCs), intent(in) :: this
+         type(BCs), intent(in) :: b
          character(len=*),intent(in) :: name
          integer,intent(in) :: NewU
          write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
-         ! write(*,*) 'shape(BC) = ',this%s
-         if (this%TFb(1)) then; call writeBoundary(1,this%xminType,newU); endif
-         if (this%TFb(2)) then; call writeBoundary(2,this%xmaxType,newU); endif
-         if (this%TFb(3)) then; call writeBoundary(3,this%yminType,newU); endif
-         if (this%TFb(4)) then; call writeBoundary(4,this%ymaxType,newU); endif
-         if (this%TFb(5)) then; call writeBoundary(5,this%zminType,newU); endif
-         if (this%TFb(6)) then; call writeBoundary(6,this%zmaxType,newU); endif
+         if (b%defined) then
+           call exp_BC(1,b%face(1)%bctype,newU)
+           call exp_BC(2,b%face(2)%bctype,newU)
+           call exp_BC(3,b%face(3)%bctype,newU)
+           call exp_BC(4,b%face(4)%bctype,newU)
+           call exp_BC(5,b%face(5)%bctype,newU)
+           call exp_BC(6,b%face(6)%bctype,newU)
+         endif
        end subroutine
 
-       subroutine writeBoundary(face,bctype,NewU)
+       subroutine exp_BC(face,bctype,NewU)
          implicit none
          integer,intent(in) :: NewU,face,bctype
          if (face.eq.1) then; write(newU,'(7A)',advance='no') ' xmin: '; endif
@@ -425,111 +304,75 @@
        end subroutine
 
        ! *******************************************************************************
-       ! *******************************************************************************
-       ! *********************** Setters for setVals and setType ***********************
-       ! *******************************************************************************
+       ! ********************************* AUXILIARY ***********************************
        ! *******************************************************************************
 
-       subroutine setXminVals(this,xminVals)
+       subroutine check_prereq(b)
          implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: xminVals
-         integer,dimension(2) :: s
-         if (allocated(this%xminVals)) deallocate(this%xminVals)
-         s = shape(xminVals); allocate(this%xminVals(s(1),s(2)))
-         this%xminVals = xminVals; this%TFvals(1) = .true.
+         type(BCs),intent(in) :: b
+         if (.not.b%gridDefined) stop 'Error: BC grid must be defined before type is defined'
        end subroutine
 
-       subroutine setXmaxVals(this,xmaxVals)
+       subroutine define_logicals(b)
          implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: xmaxVals
-         integer,dimension(2) :: s
-         if (allocated(this%xmaxVals)) deallocate(this%xmaxVals)
-         s = shape(xmaxVals); allocate(this%xmaxVals(s(1),s(2)))
-         this%xmaxVals = xmaxVals; this%TFvals(2) = .true.
+         type(BCs),intent(inout) :: b
+         integer :: i
+         b%defined = all((/b%gridDefined,(b%face(i)%defined,i=1,6)/))
+
+         b%all_Dirichlet = all((/((b%face(i)%bctype.eq.Dirichlet_cc).or.&
+                                  (b%face(i)%bctype.eq.Dirichlet_n),i=1,6)/))
+
+         b%all_Neumann = all((/((b%face(i)%bctype.eq.Neumann_cc).or.&
+                                (b%face(i)%bctype.eq.Neumann_n),i=1,6)/))
        end subroutine
 
-       subroutine setYminVals(this,yminVals)
+       subroutine print_defined(b)
          implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: yminVals
-         integer,dimension(2) :: s
-         if (allocated(this%yminVals)) deallocate(this%yminVals)
-         s = shape(yminVals); allocate(this%yminVals(s(1),s(2)))
-         this%yminVals = yminVals; this%TFvals(3) = .true.
+         type(BCs),intent(in) :: b
+         write(*,*) 'face(1) {type,valule} = ',b%face(1)%def
+         write(*,*) 'face(2) {type,valule} = ',b%face(2)%def
+         write(*,*) 'face(3) {type,valule} = ',b%face(3)%def
+         write(*,*) 'face(4) {type,valule} = ',b%face(4)%def
+         write(*,*) 'face(5) {type,valule} = ',b%face(5)%def
+         write(*,*) 'face(6) {type,valule} = ',b%face(6)%def
+         write(*,*) ''
+         write(*,*) 'face(1) {type} = ',b%face(1)%bctype
+         write(*,*) 'face(2) {type} = ',b%face(2)%bctype
+         write(*,*) 'face(3) {type} = ',b%face(3)%bctype
+         write(*,*) 'face(4) {type} = ',b%face(4)%bctype
+         write(*,*) 'face(5) {type} = ',b%face(5)%bctype
+         write(*,*) 'face(6) {type} = ',b%face(6)%bctype
+         write(*,*) ''
+         write(*,*) 'face(1) {val} = ',b%face(1)%val
+         write(*,*) 'face(2) {val} = ',b%face(2)%val
+         write(*,*) 'face(3) {val} = ',b%face(3)%val
+         write(*,*) 'face(4) {val} = ',b%face(4)%val
+         write(*,*) 'face(5) {val} = ',b%face(5)%val
+         write(*,*) 'face(6) {val} = ',b%face(6)%val
+         write(*,*) ''
+         write(*,*) 'face(1) {s} = ',b%face(1)%s
+         write(*,*) 'face(2) {s} = ',b%face(2)%s
+         write(*,*) 'face(3) {s} = ',b%face(3)%s
+         write(*,*) 'face(4) {s} = ',b%face(4)%s
+         write(*,*) 'face(5) {s} = ',b%face(5)%s
+         write(*,*) 'face(6) {s} = ',b%face(6)%s
+         write(*,*) ''
+         write(*,*) 'b_grid = ',b%gridDefined
+         write(*,*) 'b_all = ',b%defined
        end subroutine
 
-       subroutine setYmaxVals(this,ymaxVals)
+       function getAllNeumann(b) result(TF)
          implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: ymaxVals
-         integer,dimension(2) :: s
-         if (allocated(this%ymaxVals)) deallocate(this%ymaxVals)
-         s = shape(ymaxVals); allocate(this%ymaxVals(s(1),s(2)))
-         this%ymaxVals = ymaxVals; this%TFvals(4) = .true.
-       end subroutine
+         type(BCs),intent(inout) :: b
+         logical :: TF
+         TF = b%all_Neumann
+       end function
 
-       subroutine setZminVals(this,zminVals)
+       function getDirichlet(b) result(TF)
          implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: zminVals
-         integer,dimension(2) :: s
-         if (allocated(this%zminVals)) deallocate(this%zminVals)
-         s = shape(zminVals); allocate(this%zminVals(s(1),s(2)))
-         this%zminVals = zminVals; this%TFvals(5) = .true.
-       end subroutine
-
-       subroutine setZmaxVals(this,zmaxVals)
-         implicit none
-         type(BCs),intent(inout) :: this
-         real(cp),dimension(:,:),intent(in) :: zmaxVals
-         integer,dimension(2) :: s
-         if (allocated(this%zmaxVals)) deallocate(this%zmaxVals)
-         s = shape(zmaxVals); allocate(this%zmaxVals(s(1),s(2)))
-         this%zmaxVals = zmaxVals; this%TFvals(6) = .true.
-       end subroutine
-
-       subroutine setXminType(this,xminType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: xminType
-         this%xminType = xminType; this%TFb(1) = .true.
-       end subroutine
-
-       subroutine setXmaxType(this,xmaxType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: xmaxType
-         this%xmaxType = xmaxType; this%TFb(2) = .true.
-       end subroutine
-
-       subroutine setYminType(this,yminType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: yminType
-         this%yminType = yminType; this%TFb(3) = .true.
-       end subroutine
-
-       subroutine setYmaxType(this,ymaxType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: ymaxType
-         this%ymaxType = ymaxType; this%TFb(4) = .true.
-       end subroutine
-
-       subroutine setZminType(this,zminType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: zminType
-         this%zminType = zminType; this%TFb(5) = .true.
-       end subroutine
-
-       subroutine setZmaxType(this,zmaxType)
-         implicit none
-         type(BCs),intent(inout) :: this
-         integer,intent(in) :: zmaxType
-         this%zmaxType = zmaxType; this%TFb(6) = .true.
-       end subroutine
+         type(BCs),intent(inout) :: b
+         logical :: TF
+         TF = b%all_Dirichlet
+       end function
 
        end module

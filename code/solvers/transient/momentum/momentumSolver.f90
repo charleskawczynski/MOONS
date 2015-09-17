@@ -7,6 +7,7 @@
        use VF_mod
        use TF_mod
 
+       use init_PBCs_mod
        use init_UBCs_mod
        use init_UField_mod
        use init_PField_mod
@@ -179,7 +180,8 @@
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
-         call initUBCs(mom%U,mom%p,g)
+         call init_UBCs(mom%U,g)
+         call init_PBCs(mom%p,g)
          write(*,*) '     BCs initialized'
 
          ! Use mom%g later, for no just g
@@ -190,8 +192,9 @@
          write(*,*) '     BCs sizes set'
 
          if (solveMomentum) call applyAllBCs(mom%U,g)
+         write(*,*) '     U BCs applied'
          if (solveMomentum) call applyAllBCs(mom%p,g)
-         write(*,*) '     BCs applied'
+         write(*,*) '     P BCs applied'
 
          call init(mom%err_DivU)
          call init(mom%err_PPE)
@@ -279,10 +282,10 @@
          call delete(mom%KE_transient)
          call delete(mom%KE_jCrossB)
 
-         ! call delete(mom%u_center);
+         call delete(mom%u_center);
          call delete(mom%transient_ppe)
          call delete(mom%transient_divU);
-         ! call delete(mom%u_symmetry)
+         call delete(mom%u_symmetry)
          call delete(mom%temp_E1)
          call delete(mom%temp_E2)
          call delete(mom%g)
@@ -399,27 +402,19 @@
          write(un,*) '(Re,Ha) = ',mom%Re,mom%Ha
          write(un,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
          write(un,*) '(t,dt) = ',mom%t,mom%dTime
+         write(un,*) '(nstep) = ',mom%nstep
          write(un,*) 'Kolmogorov Length = ',mom%L_eta
          write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
          write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
-         write(un,*) 'N_cells = ',(/mom%g%c(1)%N,mom%g%c(2)%N,mom%g%c(3)%N/)
-         write(un,*) 'volume = ',mom%g%volume
-         write(un,*) 'min/max(h)_x = ',(/mom%g%c(1)%hmin,mom%g%c(1)%hmax/)
-         write(un,*) 'min/max(h)_y = ',(/mom%g%c(2)%hmin,mom%g%c(2)%hmax/)
-         write(un,*) 'min/max(h)_z = ',(/mom%g%c(3)%hmin,mom%g%c(3)%hmax/)
-         write(un,*) 'min/max(dh)_x = ',(/mom%g%c(1)%dhMin,mom%g%c(1)%dhMax/)
-         write(un,*) 'min/max(dh)_y = ',(/mom%g%c(2)%dhMin,mom%g%c(2)%dhMax/)
-         write(un,*) 'min/max(dh)_z = ',(/mom%g%c(3)%dhMin,mom%g%c(3)%dhMax/)
-         write(un,*) 'stretching_x = ',mom%g%c(1)%dhMax-mom%g%c(1)%dhMin
-         write(un,*) 'stretching_y = ',mom%g%c(2)%dhMax-mom%g%c(2)%dhMin
-         write(un,*) 'stretching_z = ',mom%g%c(3)%dhMax-mom%g%c(3)%dhMin
+         call print(mom%g)
          write(un,*) ''
          call printPhysicalMinMax(mom%U,'u')
+         call printPhysicalMinMax(mom%p,'p')
          call printPhysicalMinMax(mom%divU,'divU')
-         call printPhysicalMinMax(mom%Fo_grid,'Fo_grid')
-         call printPhysicalMinMax(mom%Co_grid,'Co_grid')
-         call printPhysicalMinMax(mom%Re_grid,'Re_grid')
+         ! call printPhysicalMinMax(mom%Fo_grid,'Fo_grid')
+         ! call printPhysicalMinMax(mom%Co_grid,'Co_grid')
+         ! call printPhysicalMinMax(mom%Re_grid,'Re_grid')
          write(*,*) ''
        end subroutine
 
@@ -463,25 +458,30 @@
 
          ! call computeKineticEnergy(mom,mom%g,F)
          ! call computeMomentumStability(mom,ss_MHD)
-
          if (getExportErrors(ss_MHD)) call computeDivergence(mom,mom%g)
+         ! write(*,*) 'Got here 1'
          if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%g,dir)
+         ! write(*,*) 'Got here 2'
          if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
+         ! write(*,*) 'Got here 3'
 
          if (getPrintParams(ss_MHD)) then
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
          else; exportNow = .false.
          endif
+         ! write(*,*) 'Got here 4'
 
          if (getExportRawSolution(ss_MHD).or.exportNow) then
            call exportRaw(mom,mom%g,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
+         ! write(*,*) 'Got here 5'
          if (getExportSolution(ss_MHD).or.exportNow) then
            call export(mom,mom%g,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
+         ! write(*,*) 'Got here 6'
        end subroutine
 
        subroutine explicitEuler(mom,F,g,ss_MHD)
@@ -515,8 +515,6 @@
 
          ! Ustar = -TempVF
          call assignMinus(mom%Ustar,mom%temp_F)
-         ! call multiply(mom%temp_F,-1.0_cp)
-         ! call assign(mom%Ustar,mom%temp_F)
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%temp_F,mom%U,g)

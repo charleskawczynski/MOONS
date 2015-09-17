@@ -27,55 +27,14 @@
          integer,dimension(3),intent(in) :: s
          integer,intent(in) :: bctype
          type(grid),intent(in) :: g
-         integer :: i,WC,WI ! Wall coincident / Wall incoincident
-
-         ! bctype = 1 ! Dirichlet
-         !          2 ! Neumann
-
-         select case (bctype)
-         case (1); WC = 1; WI = 2
-         case (2); WC = 4; WI = 5
-         case default
-         stop 'Error: bctype must = 1,2 in poisson.f90'
-         end select
-
          call init(u_bcs,g,s)
          if (bctype.eq.1) then
-               call init_Dirichlet(u_bcs)
-         else; call init_Neumann(u_bcs)
+           call init_Dirichlet(u_bcs)
+         elseif (bctype.eq.2) then
+           call init_Neumann(u_bcs)
+         else; stop 'Error: bctype must = 1,2 in defineBCs in test_triSolver.f90'
          endif
          call init(u_bcs,0.0_cp)
-
-         if ( all( (/ (g%c(i)%sn.eq.s(i),i=1,3) /) ) ) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WC)
-         elseif (all((/(g%c(i)%sc.eq.s(i),i=1,3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WI)
-
-         elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WI)
-           call setXminType(u_bcs,WC); call setXmaxType(u_bcs,WC)
-         elseif (all((/g%c(1)%sc.eq.s(1),g%c(2)%sn.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WI)
-           call setYminType(u_bcs,1); call setYmaxType(u_bcs,1)
-         elseif (all((/g%c(1)%sc.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sn.eq.s(3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WI)
-           call setZminType(u_bcs,WC); call setZmaxType(u_bcs,WC)
-
-         elseif (all((/g%c(1)%sc.eq.s(1),g%c(2)%sn.eq.s(2),g%c(3)%sn.eq.s(3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WC)
-           call setXminType(u_bcs,WI); call setXmaxType(u_bcs,WI)
-         elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sc.eq.s(2),g%c(3)%sn.eq.s(3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WC)
-           call setYminType(u_bcs,WI); call setYmaxType(u_bcs,WI)
-         elseif (all((/g%c(1)%sn.eq.s(1),g%c(2)%sn.eq.s(2),g%c(3)%sc.eq.s(3)/))) then
-           call setAllZero(u_bcs,s(1),s(2),s(3),WC)
-           call setZminType(u_bcs,WI); call setZmaxType(u_bcs,WI)
-         else
-          stop 'Error: Bad sizes in defineBCs in poisson.f90'
-         endif
-
-         call setGrid(u_bcs,g)
-         call checkBCs(u_bcs)
        end subroutine
 
        subroutine defineFunction(u,x,y,z)
@@ -213,14 +172,13 @@
 
          call init(TS,g%c(1)%lapCC)
 
-         call init(u2%RF(1)%b,u2%RF(1)%s)
-         call setGrid(u2%RF(1)%b,g)
-         ! call setAllZero(u2%RF(1)%b,1) ! Dirichlet, Node
-         call setAllZero(u2%RF(1)%b,2) ! Dirichlet, CC
-         call setAllBVals(u2%RF(1)%b,u%RF(1)%f,g)
+         call init(u2%RF(1)%b,g,u2%RF(1)%s)
+         call init_Dirichlet(u2%RF(1)%b)
+         ! call init_Neumann(u2%RF(1)%b)
 
-         call checkBCs(u2%RF(1)%b)
-
+         call assign(u2,u)
+         call init_BCs(u2) ! Get BC vals from u
+         call assign(u2,0.0_cp)
          call applyAllBCs(u2,g) ! Need to define boundary value
 
          call apply(TS,u2,f,1,1)   ! u = A^-1 f

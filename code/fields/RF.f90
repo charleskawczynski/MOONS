@@ -44,6 +44,9 @@
         public :: init_Edge
         public :: init_Node
 
+        ! BC initialization
+        public :: init_BCs
+
         ! Monitoring
         public :: print
 
@@ -80,6 +83,8 @@
         interface init_Face;  module procedure init_RF_Face;           end interface
         interface init_Edge;  module procedure init_RF_Edge;           end interface
         interface init_Node;  module procedure init_RF_Node;           end interface
+
+        interface init_BCs;   module procedure init_BC_vals;           end interface
 
         interface delete;     module procedure delete_RF;              end interface
 
@@ -775,6 +780,28 @@
           call deleteDataLocation(a)
           a%is_node = .true.
         end subroutine
+
+        subroutine init_BC_vals(f)
+          implicit none
+          type(realField),intent(inout) :: f
+          if (f%is_node) then
+            call init(f%b,f%f(2,:,:),1)
+            call init(f%b,f%f(:,2,:),3)
+            call init(f%b,f%f(:,:,2),5)
+            call init(f%b,f%f(f%s(1)-1,:,:),2)
+            call init(f%b,f%f(:,f%s(2)-1,:),4)
+            call init(f%b,f%f(:,:,f%s(3)-1),6)
+          elseif (f%is_CC) then
+            call init(f%b,0.5_cp*(f%f(1,:,:)+f%f(2,:,:)),1)
+            call init(f%b,0.5_cp*(f%f(:,1,:)+f%f(:,2,:)),3)
+            call init(f%b,0.5_cp*(f%f(:,:,1)+f%f(:,:,2)),5)
+            call init(f%b,0.5_cp*(f%f(f%s(1),:,:)+f%f(f%s(1)-1,:,:)),2)
+            call init(f%b,0.5_cp*(f%f(:,f%s(2),:)+f%f(:,f%s(2)-1,:)),4)
+            call init(f%b,0.5_cp*(f%f(:,:,f%s(3))+f%f(:,:,f%s(3)-1)),6)
+          else; stop 'Error: field-based BC init is only available for N / CC data.'
+          endif
+        end subroutine
+
 
         subroutine deleteDataLocation(a)
           implicit none

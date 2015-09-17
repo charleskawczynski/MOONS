@@ -35,7 +35,7 @@
        !  arrfmt is for writing (current format)
       character(len=8),parameter :: rarrfmt = 'E23.12E3'  ! Make sure length is correct when adjusting
       character(len=8),parameter ::  arrfmt = 'E23.12E3'  ! Make sure length is correct when adjusting
-      character(len=3),parameter ::  intfmt = 'I10'       ! Make sure length is correct when adjusting
+      character(len=3),parameter ::  intfmt = 'I15'       ! Make sure length is correct when adjusting
       character(len=3),parameter ::  logfmt = 'L1'        ! Make sure length is correct when adjusting
 
       character(len=4),parameter :: fileType = '.dat'
@@ -104,19 +104,26 @@
         inquire(file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType, &
         number=NU,exist=ex,opened=op,action=act)
 
+        NU = newUnit()
         if (.not.op) then
-          NU = newUnit()
-        endif
-        if (ex) then
-          open(NU,file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType,&
-          status = 'old', action = 'readwrite',iostat=ok,position='append')
+          if (ex) then
+            open(NU,file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType,&
+            status = 'old', action = 'readwrite',iostat=ok,position='append')
+          else
+            write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
+            // fileType // ' does not exist. Terminating execution.'; stop
+          endif
+          if (ok.ne.0) then
+            write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
+            // fileType // ' was not opened successfully.'; stop
+          endif
         else
-          write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' does not exist. Terminating execution.'
-        endif
-        if (ok.ne.0) then
-          write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' was not opened successfully.'
+          ! write(*,*) 'dir/name/ext = ',trim(adjustl(dir)) // trim(adjustl(name)) // fileType
+          ! write(*,*) 'NU = ',NU
+          ! write(*,*) 'ex = ',ex
+          ! write(*,*) 'op = ',op
+          ! write(*,*) 'act = ',act
+          ! stop 'Error: file is already open, no need to call, just write to file'
         endif
       end function
 
@@ -138,11 +145,11 @@
           status = 'old', action = 'read',iostat=ok)
         else
           write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' does not exist. Terminating execution.'
+          // fileType // ' does not exist. Terminating execution.'; stop
         endif
         if (ok.ne.0) then
           write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' was not opened successfully.'
+          // fileType // ' was not opened successfully.'; stop
         endif
       end function
 
@@ -181,26 +188,29 @@
       end function
 
       function int2Str(i) result(s)
+        ! NOTE: the string length and the fmt must match!
         implicit none
         integer,intent(in) :: i
-        character(len=10) :: s
-        write(s,'(I10.10)') i
+        character(len=15) :: s
+        write(s,'(I15.15)') i
         s = trim(adjustl(s))
       end function
 
       function int2Str2(i) result(s)
+        ! NOTE: the string length and the fmt must match!
         implicit none
         integer,intent(in) :: i
-        character(len=9) :: s
-        write(s,'(I9)') i
+        character(len=15) :: s
+        write(s,'(I15)') i
         s = trim(adjustl(s))
       end function
 
       function num2Str(i) result(s)
+        ! NOTE: the string length and the fmt must match!
         implicit none
         real(cp),intent(in) :: i
-        character(len=8) :: s
-        write(s,'(F3.5)') i
+        character(len=15) :: s
+        write(s,'(F15.15)') i
         s = trim(adjustl(s))
       end function
 

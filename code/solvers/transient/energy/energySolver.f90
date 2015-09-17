@@ -232,8 +232,8 @@
          implicit none
          type(energy),intent(in) :: nrg
          character(len=*),intent(in) :: dir
-         if (solveenergy) call printAllBoundaries(nrg%T_bcs,'T')
-         if (solveenergy) call writeAllBoundaries(nrg%T_bcs,dir//'parameters/','T')
+         if (solveenergy) call print(nrg%T_bcs,'T')
+         if (solveenergy) call export(nrg%T_bcs,dir//'parameters/','T')
        end subroutine
 
        subroutine energyExportTransient(nrg,ss_MHD)

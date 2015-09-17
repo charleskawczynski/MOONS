@@ -29,6 +29,7 @@
        interface init;       module procedure init_type;             end interface
        interface init;       module procedure init_vals_RF;          end interface
        interface init;       module procedure init_val;              end interface
+       interface init;       module procedure init_shape;            end interface
        interface init;       module procedure init_copy;             end interface
 
        interface delete;     module procedure delete_boundary;       end interface
@@ -56,17 +57,29 @@
          type(boundary),intent(inout) :: b
          real(cp),dimension(:,:),intent(in) :: vals
          if (allocated(b%vals)) deallocate(b%vals)
-         b%s = shape(vals)
+         ! b%s = shape(vals) ! Is this necessary/good?
+         ! Make sure that b%s has been defined here in debug mode
          allocate(b%vals(b%s(1),b%s(2)))
+         b%val = vals(1,1)
          b%vals = vals
          b%def(2) = .true.
          b%defined = all(b%def)
+       end subroutine
+
+       subroutine init_shape(b,s)
+         implicit none
+         type(boundary),intent(inout) :: b
+         integer,dimension(2),intent(in) :: s
+         b%s = s
        end subroutine
 
        subroutine init_val(b,val)
          implicit none
          type(boundary),intent(inout) :: b
          real(cp),intent(in) :: val
+         if (allocated(b%vals)) deallocate(b%vals)
+         allocate(b%vals(b%s(1),b%s(2)))
+         b%vals = val
          b%val = val
          b%def(2) = .true.
          b%defined = all(b%def)
@@ -76,10 +89,16 @@
          implicit none
          type(boundary),intent(inout) :: b_out
          type(boundary),intent(in) :: b_in
-         call init(b_out,b_in%bctype)
-         if (allocated(b_in%vals)) call init(b_out,b_in%vals)
-         call init(b_out,b_in%val)
-         b_out%defined = all(b_out%def)
+         if (.not.b_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
+         if (allocated(b_in%vals)) then
+           call init(b_out,b_in%vals)
+         else; stop 'Error: trying to copy BC that has not been allocated vals'
+         endif
+         b_out%bctype = b_in%bctype
+         b_out%val = b_in%val
+         b_out%def = b_out%def
+         b_out%defined = b_out%defined
+         b_out%s = b_in%s
        end subroutine
 
        subroutine delete_boundary(b)

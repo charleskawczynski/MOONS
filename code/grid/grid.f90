@@ -153,8 +153,19 @@
        subroutine printGrid(g)
          implicit none
          type(grid), intent(in) :: g
-         integer :: i
-         do i = 1,3; call print(g%c(i)) ;enddo
+         integer :: i,un
+         un = 6
+         write(un,*) 'N_cells = ',(/g%c(1)%N,g%c(2)%N,g%c(3)%N/)
+         write(un,*) 'volume = ',g%volume
+         write(un,*) 'min/max(h)_x = ',(/g%c(1)%hmin,g%c(1)%hmax/)
+         write(un,*) 'min/max(h)_y = ',(/g%c(2)%hmin,g%c(2)%hmax/)
+         write(un,*) 'min/max(h)_z = ',(/g%c(3)%hmin,g%c(3)%hmax/)
+         write(un,*) 'min/max(dh)_x = ',(/g%c(1)%dhMin,g%c(1)%dhMax/)
+         write(un,*) 'min/max(dh)_y = ',(/g%c(2)%dhMin,g%c(2)%dhMax/)
+         write(un,*) 'min/max(dh)_z = ',(/g%c(3)%dhMin,g%c(3)%dhMax/)
+         write(un,*) 'stretching_x = ',g%c(1)%dhMax-g%c(1)%dhMin
+         write(un,*) 'stretching_y = ',g%c(2)%dhMax-g%c(2)%dhMin
+         write(un,*) 'stretching_z = ',g%c(3)%dhMax-g%c(3)%dhMin
        end subroutine
 
        subroutine addToFileGrid(g,u)

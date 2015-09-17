@@ -1,5 +1,4 @@
        module vectorBCs_mod
-
        use BCs_mod
        use grid_mod
        use IO_tools_mod
@@ -20,72 +19,63 @@
 
        public :: vectorBCs
        public :: init,delete
-       public :: printVectorBCs
-       public :: writeVectorBCs
-       public :: setGrid
-       public :: checkVectorBCs
+       public :: print,export
 
        type vectorBCs
          type(BCs) :: x,y,z
        end type
 
-       interface init;      module procedure initVectorBCsCopy;       end interface
-       interface delete;    module procedure deleteVectorBCs;         end interface
-       interface setGrid;   module procedure setVectorBCsGrid;        end interface
+       interface init;      module procedure init_VBCsCopy;       end interface
+       interface init;      module procedure init_VBCsGrid;       end interface
+       interface delete;    module procedure delete_VBCs;         end interface
+       interface print;     module procedure print_VBCs;          end interface
+       interface export;    module procedure export_VBCs;         end interface
 
        contains
 
-       subroutine initVectorBCsCopy(this,bx,by,bz)
+       subroutine init_VBCsCopy(VBC,bx,by,bz)
          implicit none
-         type(vectorBCs),intent(inout) :: this
+         type(vectorBCs),intent(inout) :: VBC
          type(BCs),intent(inout) :: bx,by,bz
-         write(*,*) 'Hello!!!'
-         call init(this%x,bx)
-         call init(this%y,by)
-         call init(this%z,bz)
+         call init(VBC%x,bx)
+         call init(VBC%y,by)
+         call init(VBC%z,bz)
        end subroutine
 
-       subroutine deleteVectorBCs(this)
+       subroutine delete_VBCs(VBC)
          implicit none
-         type(vectorBCs),intent(inout) :: this
-         call delete(this%x)
-         call delete(this%y)
-         call delete(this%z)
+         type(vectorBCs),intent(inout) :: VBC
+         call delete(VBC%x)
+         call delete(VBC%y)
+         call delete(VBC%z)
        end subroutine
 
-       subroutine setVectorBCsGrid(this,g)
+       subroutine init_VBCsGrid(VBC,g,s1,s2,s3)
          implicit none
-         type(vectorBCs),intent(inout) :: this
+         type(vectorBCs),intent(inout) :: VBC
          type(grid),intent(in) :: g
-         call setgrid(this%x,g)
-         call setgrid(this%y,g)
-         call setgrid(this%z,g)
+         integer,dimension(3),intent(in) :: s1,s2,s3
+         call init(VBC%x,g,s1)
+         call init(VBC%y,g,s2)
+         call init(VBC%z,g,s3)
        end subroutine
 
-       subroutine checkVectorBCs(this)
+       subroutine print_VBCs(VBC,name)
          implicit none
-         type(vectorBCs),intent(inout) :: this
-         call checkBCs(this%x)
-         call checkBCs(this%y)
-         call checkBCs(this%z)
+         type(vectorBCs),intent(in) :: VBC
+         character(len=*),intent(in) :: name
+         call print(VBC%x,name//'x')
+         call print(VBC%y,name//'y')
+         call print(VBC%z,name//'z')
        end subroutine
 
-       subroutine printVectorBCs(this,namex,namey,namez)
+       subroutine export_VBCs(VBC,dir,name)
          implicit none
-         type(vectorBCs),intent(in) :: this
-         character(len=*),intent(in) :: namex,namey,namez
-         call printAllBoundaries(this%x,namex)
-         call printAllBoundaries(this%y,namey)
-         call printAllBoundaries(this%z,namez)
-       end subroutine
-
-       subroutine writeVectorBCs(this,dir,namex,namey,namez)
-         implicit none
-         type(vectorBCs),intent(in) :: this
-         character(len=*),intent(in) :: dir,namex,namey,namez
-         call writeAllBoundaries(this%x,dir,namex)
-         call writeAllBoundaries(this%y,dir,namey)
-         call writeAllBoundaries(this%z,dir,namez)
+         type(vectorBCs),intent(in) :: VBC
+         character(len=*),intent(in) :: dir,name
+         call export(VBC%x,dir,name//'x')
+         call export(VBC%y,dir,name//'y')
+         call export(VBC%z,dir,name//'z')
        end subroutine
 
        end module

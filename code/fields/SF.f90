@@ -40,6 +40,8 @@
         public :: init_Face
         public :: init_Edge
 
+        public :: init_BCs
+
         ! Monitoring
         public :: print
 
@@ -75,6 +77,8 @@
         interface init_Node;   module procedure init_SF_Node;           end interface
         interface init_Face;   module procedure init_SF_Face;           end interface
         interface init_Edge;   module procedure init_SF_Edge;           end interface
+
+        interface init_BCs;    module procedure init_BCs_SF;            end interface
 
         interface delete;      module procedure delete_SF;              end interface
 
@@ -431,6 +435,13 @@
           integer :: i
           do i=1,f%s; call init_Node(f%RF(i),g); enddo
           call init_props(f)
+        end subroutine
+
+        subroutine init_BCs_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          do i=1,f%s; call init_BCs(f%RF(i)); enddo
         end subroutine
 
         subroutine delete_SF(f)

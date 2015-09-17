@@ -8,16 +8,17 @@
        public :: initBfield
        public :: restartB
 
-       logical,parameter :: restartB = .false. ! (induced field)
+       logical,parameter :: restartB  = .true. ! (induced field)
+       logical,parameter :: restartB0 = .false. ! (applied field)
        ! NOTE: - The applied field cannot (and probably should not) be restarted
-       !       - By default, preDefinedB_ICs is used to define the applied field
+       !       - By default, preDefinedB0_ICs is used to define the applied field
 
-       integer,parameter :: preDefinedB_ICs = 1 ! NOTE: All cases use B_induced = 0
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Uniform applied (set applied_B_dir)
-       !                                      2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
-       !                                      3 : Fringing Magnetic field (ALEX experiments)
-       !                                      4 : Fringing in (x,z) (Bandaru)
+       integer,parameter :: preDefinedB0_ICs = 1 ! NOTE: All cases use B_induced = 0
+       !                                       0 : User-defined case (no override)
+       !                                       1 : Uniform applied (set applied_B_dir)
+       !                                       2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
+       !                                       3 : Fringing Magnetic field (ALEX experiments)
+       !                                       4 : Fringing in (x,z) (Bandaru)
 
        integer,parameter :: fringe_dir = 1 ! Direction along which to fringe
        !                                 1 : B0(x,:,:)
@@ -59,14 +60,14 @@
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
          if (restartB) then
-           call initRestartB(B,g,dir)
-           call initRestartB0(B0,g,dir)
-           ! call initPreDefinedB0(B0,g)
-         elseif (preDefinedB_ICs.ne.0) then
-           call initZeroField(B)
-           call initPreDefinedB0(B0,g)
-         else
-           call initUserBfield(B,B0)
+               call initRestartB(B,g,dir)
+         else; call initZeroField(B)
+         endif
+         if (restartB0) then
+               call initRestartB0(B0,g,dir)
+         elseif (preDefinedB0_ICs.ne.0) then
+               call initPreDefinedB0(B0,g)
+         else; call initUserBfield(B,B0)
          endif
        end subroutine
 
@@ -77,7 +78,10 @@
          type(VF),intent(inout) :: B
          type(grid) :: temp
          call init(temp,g)
-         call import_3C_VF(temp,B,dir,'Bnt',1)
+         call import_3C_VF(temp,B,dir//'Bfield/','Bct',0)
+
+         ! call export_3C_VF(temp,B,dir//'Bfield/','Bct_imported',0)
+         ! stop 'Done'
          call delete(temp)
        end subroutine
 
@@ -88,7 +92,7 @@
          type(VF),intent(inout) :: B
          type(grid) :: temp
          call init(temp,g)
-         call import_3C_VF(temp,B,dir,'B0nt',1)
+         call import_3C_VF(temp,B,dir//'Bfield/','B0ct',0)
          call delete(temp)
        end subroutine
 
@@ -96,13 +100,13 @@
          implicit none
          type(grid),intent(in) :: g
          type(VF),intent(inout) :: B
-         select case (preDefinedB_ICs)
+         select case (preDefinedB0_ICs)
          case (1); call uniformBfield(B,applied_B_dir)
          case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
          case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
          case (4); call initField_Bandaru(B,g,current_B_dir)
          case default
-           write(*,*) 'Erro: Incorrect preDefinedB_ICs case in initBfield.'; stop
+           write(*,*) 'Erro: Incorrect preDefinedB0_ICs case in initBfield.'; stop
          end select
          select case (Bsign)
          case (1)

@@ -23,44 +23,35 @@
 
       logical,parameter :: headerTecplot = .true.
 
-      interface writeTransientToFile; module procedure writeTransientToFileXYZ; end interface
-      interface writeTransientToFile; module procedure writeTransientToFileRes; end interface
+      ! interface writeTransientToFile; module procedure writeTransientToFileXYZ;      end interface
+      interface writeTransientToFile; module procedure writeTransientToFileRes;      end interface
         
       contains
 
-      subroutine writeTransientToFileXYZ(x,y,z,n,val,dir,name,firstTime)
-        ! Fixes:
-        ! Output location then start iterating with time step and 
-        ! value, do not repeat location at every time step...
-        character(len=*),intent(in) :: dir,name
-        real(cp),intent(in) :: x,y,z,val
-        logical,intent(in) :: firstTime
-        integer,intent(in) :: n
-        integer :: un
-        if (firstTime) then
-          un = newAndOpen(dir,name)
-          call writeTecPlotHeader(un,name)
-        else
-          un = openToAppend(dir,name)
-        endif
-        write(un,'(5'//arrfmt//')') x,y,z,real(n,cp),val
-        close(un)
-      end subroutine
+      ! subroutine writeTransientToFileXYZ(x,y,z,n,val,dir,name,firstTime)
+      !   ! Fixes:
+      !   ! Output location then start iterating with time step and 
+      !   ! value, do not repeat location at every time step...
+      !   character(len=*),intent(in) :: dir,name
+      !   real(cp),intent(in) :: x,y,z,val
+      !   logical,intent(in) :: firstTime
+      !   integer,intent(in) :: n
+      !   integer :: un
+      !   if (firstTime) then
+      !     un = newAndOpen(dir,name)
+      !     call writeTecPlotHeader(un,name)
+      !   else
+      !     un = openToAppend(dir,name)
+      !   endif
+      !   write(un,'(5'//arrfmt//')') x,y,z,real(n,cp),val
+      !   close(un)
+      ! end subroutine
 
-      subroutine writeTransientToFileRes(n,val,dir,name,firstTime)
+      subroutine writeTransientToFileRes(n,val,dir,name,un)
         character(len=*),intent(in) :: dir,name
         real(cp),intent(in) :: val
-        logical,intent(in) :: firstTime
-        integer,intent(in) :: n
-        integer :: un
-        if (firstTime) then
-          un = newAndOpen(dir,name)
-          call writeTecPlotHeader(un,name)
-        else
-          un = openToAppend(dir,name)
-        endif
+        integer,intent(in) :: n,un
         write(un,'(2'//arrfmt//')') real(n,cp),val
-        close(un)
       end subroutine
 
       end module

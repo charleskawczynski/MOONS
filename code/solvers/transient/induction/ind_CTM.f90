@@ -13,6 +13,7 @@
 
        private
        public :: ind_CTM,init,delete,solve
+       ! public :: print,export
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -79,9 +80,9 @@
          call delete(CTM%B0)
          call delete(CTM%temp_CC)
 
-         call delete(CTM%sigmaInv_edge)
          call delete(CTM%J)
          call delete(CTM%E)
+         call delete(CTM%sigmaInv_edge)
 
          call delete(CTM%temp_F)
 

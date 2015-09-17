@@ -43,49 +43,25 @@
          ! Tensor Fields
          type(TF) :: U_E
          ! Vector Fields
-         type(VF) :: U,Ustar
+         type(VF) :: U,Ustar,temp_F
          type(VF) :: U_CC
-         type(VF) :: temp_F
          type(VF) :: temp_E1,temp_E2
-         type(SF) :: p,divU,temp_CC
-         type(SF) :: Fo_grid,Co_grid,Re_grid
-         type(SF) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
+         type(SF) :: p,temp_CC
 
-         type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
-         ! type(multiGrid),dimension(3) :: MG
-         ! type(jacobi) :: Jacobi_p
+         type(solverSettings) :: ss_mom,ss_ppe
          type(SORSolver) :: SOR_p
-         type(FFTSolver) :: FFT_p
-         ! type(myADI) :: ADI_p,ADI_u
-         type(probe) :: KU_energy
-
-         ! Residuals
-         type(norms) :: err_PPE,err_DivU,err_ADI
-         type(norms),dimension(5) :: e_KE_terms
 
          ! Time step, Reynolds number, grid
          integer :: nstep,NmaxPPE
          real(cp) :: dTime,t
-         real(cp) :: Re,Ha,Gr,Fr
-         type(grid) :: g
-         real(cp) :: L_eta,U_eta,t_eta ! Kolmogorov Scales
+         real(cp) :: Re,Ha
 
-         ! Transient probes
-         type(aveProbe) :: u_center,v_center,w_center
-         type(errorProbe) :: transient_ppe,transient_divU
-         type(avePlaneErrorProbe) :: u_symmetry
+         type(monitor) :: m
        end type
 
        interface init;                module procedure initmom_explicitEuler;               end interface
-       interface setPiGroups;         module procedure setPiGroupsmom_explicitEuler;        end interface
        interface delete;              module procedure deletemom_explicitEuler;             end interface
        interface solve;               module procedure solvemom_explicitEulerEquation;      end interface
-       interface export;              module procedure mom_explicitEulerExport;             end interface
-       interface exportRaw;           module procedure mom_explicitEulerExportRaw;          end interface
-       interface exportTransient;     module procedure mom_explicitEulerExportTransient;    end interface
-       interface exportTransientFull; module procedure mom_explicitEulerExportTransientFull;end interface
-       interface printExportBCs;      module procedure printExportmom_explicitEulerBCs;     end interface
-       interface computeDivergence;   module procedure computeDivergencemom_explicitEuler;  end interface
 
        interface ZWCB;                module procedure ZWCB_RF;                    end interface
        interface ZWCB;                module procedure ZWCB_SF;                    end interface
@@ -106,33 +82,19 @@
 
          mom%g = g
 
-         ! Tensor Fields
          call init_Edge(mom%U_E,g)
 
-         ! Vector Fields
          call init_Face(mom%U,g)
 
          call init_Face(mom%Ustar,g)
-         call init_Face(mom%Unm1,g)
          call init_Face(mom%temp_F,g)
 
          call init_Edge(mom%temp_E1,g)
          call init_Edge(mom%temp_E2,g)
 
-         ! Scalar Fields
          call init_CC(mom%p,g)
-         call init_CC(mom%divU,g)
          call init_CC(mom%U_CC,g)
          call init_CC(mom%temp_CC,g)
-         call init_CC(mom%Fo_grid,g)
-         call init_CC(mom%Co_grid,g)
-         call init_CC(mom%Re_grid,g)
-
-         call init_CC(mom%KE_adv,g)
-         call init_CC(mom%KE_diff,g)
-         call init_CC(mom%KE_pres,g)
-         call init_CC(mom%KE_transient,g)
-         call init_CC(mom%KE_jCrossB,g)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -150,102 +112,27 @@
          if (solvemom_explicitEuler) call applyAllBCs(mom%p,g)
          write(*,*) '     BCs applied'
 
-         call init(mom%err_DivU)
-         call init(mom%err_PPE)
-
-         call init(mom%u_center,dir//'Ufield/','transient_u',&
-         .not.restartU,mom%U%x%RF(1)%s,(mom%U%x%RF(1)%s+1)/2,g,1)
-
-         call init(mom%v_center,dir//'Ufield/','transient_v',&
-         .not.restartU,mom%U%y%RF(1)%s,(mom%U%y%RF(1)%s+1)/2,g,2)
-
-         call init(mom%w_center,dir//'Ufield/','transient_w',&
-         .not.restartU,mom%U%z%RF(1)%s,(mom%U%z%RF(1)%s+1)/2,g,3)
-
-         call init(mom%transient_divU,dir//'Ufield/','transient_divU',.not.restartU)
-         call init(mom%transient_ppe,dir//'Ufield/','transient_ppe',.not.restartU)
-         write(*,*) '     mom_explicitEuler probes initialized'
-
-         call init(mom%u_symmetry,dir//'Ufield/','u_symmetry',&
-         .not.restartU,mom%U%z%RF(1)%s,(mom%U%z%RF(1)%s+1)/2,g,3)
-         write(*,*) '     mom_explicitEuler probes initialized'
-
-         call export(mom%u_center)
-         call export(mom%v_center)
-         call export(mom%w_center)
-         call export(mom%transient_ppe)
-         call export(mom%transient_divU)
-         call export(mom%u_symmetry)
-
-         write(*,*) '     mom_explicitEuler probes initialized'
-
-
-         ! Initialize interior solvers
-         call init(mom%SOR_p,mom%p%RF(1)%s,mom%g)
-         write(*,*) '     mom_explicitEuler SOR initialized'
-
          ! Initialize solver settings
          call init(mom%ss_ppe)
          call setName(mom%ss_ppe,'pressure poisson    ')
          call setMaxIterations(mom%ss_ppe,mom%NmaxPPE)
-         ! call setSubtractMean(mom%ss_ppe)
 
-         ! Init ADI ss
-         ! call init(mom%ss_ADI)
-         ! call setName(mom%ss_ADI,'mom_explicitEuler ADI        ')
-
-         ! Init Multigrid solver
-         ! call init(mom%MG,mom%p%s,mom%p_bcs,mom%g,mom%ss_ppe,.false.)
-         ! call setMaxIterations(mom%ss_ADI,1) ! Not needed since apply() is used.
-
-         ! call setMinTolerance(mom%ss_ppe,real(1.0**(-6.0),cp))
-         ! call setMixedConditions(mom%ss_ppe)
-         if (restartU) then
-         call readLastStepFromFile(mom%nstep,dir//'parameters/','n_mom')
-         else; mom%nstep = 0
-         endif
-         call init(mom%KU_energy,dir//'Ufield\','KU',.not.restartU)
-
-         call mom_explicitEulerInfo(mom,newAndOpen(dir//'parameters/','info_mom'))
-         mom%t = 0.0_cp
-         write(*,*) '     Solver settings initialized'
-         write(*,*) '     Finished'
-         write(*,*) ''
        end subroutine
 
        subroutine deletemom_explicitEuler(mom)
          implicit none
          type(mom_explicitEuler),intent(inout) :: mom
-         call delete(mom%U_E)
          call delete(mom%U)
-         call delete(mom%Unm1)
+         call delete(mom%U_E)
          call delete(mom%Ustar)
          call delete(mom%temp_F)
          call delete(mom%p)
          call delete(mom%temp_CC)
-
-         call delete(mom%divU)
          call delete(mom%U_CC)
-         call delete(mom%Fo_grid)
-         call delete(mom%Co_grid)
-         call delete(mom%Re_grid)
-
-         call delete(mom%KE_adv)
-         call delete(mom%KE_diff)
-         call delete(mom%KE_pres)
-         call delete(mom%KE_transient)
-         call delete(mom%KE_jCrossB)
-
-         ! call delete(mom%u_center);
-         call delete(mom%transient_ppe)
-         call delete(mom%transient_divU);
-         ! call delete(mom%u_symmetry)
          call delete(mom%temp_E1)
          call delete(mom%temp_E2)
          call delete(mom%g)
-
          call delete(mom%SOR_p)
-         ! call delete(mom%MG)
          write(*,*) 'mom_explicitEuler object deleted'
        end subroutine
 
@@ -256,8 +143,7 @@
          type(grid),intent(in) :: g
          type(solverSettings),intent(in) :: ss_MHD
          real(cp) :: Re,dt
-         dt = mom%dTime
-         Re = mom%Re
+         dt = mom%dTime; Re = mom%Re
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation) ! Explicit Euler
@@ -409,86 +295,5 @@
          type(grid),intent(in) :: g
          call ZWCB(f%x,g); call ZWCB(f%y,g); call ZWCB(f%z,g)
        end subroutine
-
-!        subroutine ZWCB_general(f,s,face)
-!          ! face = zero wall coincident boundaries on...
-!          !       1: x_min
-!          !       2: x_max
-!          !       3: y_min
-!          !       4: y_max
-!          !       5: z_min
-!          !       6: z_max
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          integer,dimension(3),intent(in) :: s
-!          integer,intent(in) :: face
-!          select case (face)
-!          case (1); f(2,:,:)      = 0.0_cp; f(1,:,:)    = 0.0_cp
-!          case (2); f(s(1)-1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-!          case (3); f(:,2,:)      = 0.0_cp; f(:,1,:)    = 0.0_cp
-!          case (4); f(:,s(2)-1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-!          case (5); f(:,:,2)      = 0.0_cp; f(:,:,1)    = 0.0_cp
-!          case (6); f(:,:,s(3)-1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-!          case default
-!            stop 'Error: face must = 1-6 in ZWCB'
-!          end select
-!        end subroutine
-
-!        subroutine ZWCB_allDirichlet(f,s,face)
-!          ! face = zero wall coincident boundaries on...
-!          !       1: x_min,x_max
-!          !       2: y_min,y_max
-!          !       3: z_min,z_max
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          integer,dimension(3),intent(in) :: s
-!          integer,intent(in) :: face
-!          select case (face)
-!          case (1); f(2,:,:)      = 0.0_cp; f(1,:,:)    = 0.0_cp
-!                    f(s(1)-1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-!          case (3); f(:,2,:)      = 0.0_cp; f(:,1,:)    = 0.0_cp
-!                    f(:,s(2)-1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-!          case (5); f(:,:,2)      = 0.0_cp; f(:,:,1)    = 0.0_cp
-!                    f(:,:,s(3)-1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-!          case default
-!            stop 'Error: face must = 1,2,3 in ZWCB_allDirichlet'
-!          end select
-!        end subroutine
-
-!        subroutine ZWCB_VF(f) ! For all Dirichlet BCs
-!          implicit none
-!          type(VF),intent(inout) :: f
-!          call ZWCB(f%x,f%sx,1)
-!          call ZWCB(f%y,f%sy,2)
-!          call ZWCB(f%z,f%sz,3)
-!        end subroutine
-
-!        subroutine ZWCB_VF_general(f,g,U_bcs) ! General
-!          implicit none
-!          type(VF),intent(inout) :: f
-!          type(grid),intent(in) :: g
-!          type(vectorBCs),intent(in) :: U_bcs
-!          logical,dimension(3) :: TFall
-!          TFall(1) = getAllDirichlet(U_bcs%x)
-!          TFall(2) = getAllDirichlet(U_bcs%y)
-!          TFall(3) = getAllDirichlet(U_bcs%z)
-!          if (all(TFall)) then ! Prescribed velocity (i.e. no slip: viscosity doesn't play a role.)
-!            call ZWCB_allDirichlet(f%x,f%sx,1)
-!            call ZWCB_allDirichlet(f%y,f%sy,2)
-!            call ZWCB_allDirichlet(f%z,f%sz,3)
-!          else ! Potentially Neumann (d^2 u_normal / dx_tangent is not necessarily zero)
-!            if (any((U_bcs%x%xminType).eq.(/1,2/))) call ZWCB_general(f%x,f%sx,1)
-!            if (any((U_bcs%x%xmaxType).eq.(/1,2/))) call ZWCB_general(f%x,f%sx,2)
-
-!            if (any((U_bcs%y%yminType).eq.(/1,2/))) call ZWCB_general(f%y,f%sy,3)
-!            if (any((U_bcs%y%ymaxType).eq.(/1,2/))) call ZWCB_general(f%y,f%sy,4)
-
-!            if (any((U_bcs%z%zminType).eq.(/1,2/))) call ZWCB_general(f%z,f%sz,5)
-!            if (any((U_bcs%z%zmaxType).eq.(/1,2/))) call ZWCB_general(f%z,f%sz,6)
-!          endif
-!          call ZWCB_short(f%x,f%sx,g,1)
-!          call ZWCB_short(f%y,f%sy,g,2)
-!          call ZWCB_short(f%z,f%sz,g,3)
-!        end subroutine
 
        end module

@@ -2,6 +2,7 @@
       use varStr_mod
       use grid_mod
       use VF_mod
+      use SF_mod
       use IO_tools_mod
       use export_mod
       implicit none
@@ -33,12 +34,15 @@
 
       private
       public :: dataSet
+      public :: init,delete
+      ! public :: print,export
 
       interface init;     module procedure init_dataSet;   end interface
       interface init;     module procedure init_name;      end interface
       interface delete;   module procedure delete_dataSet; end interface
 
-      ! interface export;   module procedure export_DS;      end interface
+      interface export;   module procedure export_dataSet; end interface
+      interface print;    module procedure print_dataSet;  end interface
 
        type dataSet
         ! Example:
@@ -92,7 +96,7 @@
         call setCoord(DS,g,dim)
         call setVariables(DS)
         call setZone(DS)
-        call setTypeReal(DS,g,shape(U%x))
+        call setTypeReal(DS,g,U%x%RF(1)%s)
 
         call prepHeaderFMT(DS)
       end subroutine
@@ -236,7 +240,7 @@
         do i=1,size(DS%var);         call delete(DS%var(i));         enddo
         do i=1,size(DS%coord);       call delete(DS%coord(i));       enddo
         do i=1,size(DS%indVal);      call delete(DS%indVal(i));      enddo
-        do i=1,size(DS%ind);      call delete(DS%ind(i));      enddo
+        do i=1,size(DS%ind);         call delete(DS%ind(i));         enddo
         call delete(DS%directory);   call delete(DS%filename)
         call delete(DS%title);       call delete(DS%variables)
         call delete(DS%zone);        call delete(DS%zoneFMT)

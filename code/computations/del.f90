@@ -83,21 +83,24 @@
         call checkSideDimensions(s,sdfdh,dir)
 #endif
         select case (dir)
-        case (1); !$OMP PARALLEL DO
-                  do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-                      call diff(dfdh(:,j,k),f(:,j,k),T,diffType,s(1),sdfdh(1),genType,gt)
-                  enddo; enddo
-                  !$OMP END PARALLEL DO
-        case (2); !$OMP PARALLEL DO
-                  do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-                      call diff(dfdh(i,:,k),f(i,:,k),T,diffType,s(2),sdfdh(2),genType,gt)
-                  enddo; enddo
-                  !$OMP END PARALLEL DO
-        case (3); !$OMP PARALLEL DO
-                  do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-                      call diff(dfdh(i,j,:),f(i,j,:),T,diffType,s(3),sdfdh(3),genType,gt)
-                  enddo; enddo
-                  !$OMP END PARALLEL DO
+        case (1); 
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
+          call diff(dfdh(:,j,k),f(:,j,k),T,diffType,s(1),sdfdh(1),genType,gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case (2); 
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call diff(dfdh(i,:,k),f(i,:,k),T,diffType,s(2),sdfdh(2),genType,gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case (3); 
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call diff(dfdh(i,j,:),f(i,j,:),T,diffType,s(3),sdfdh(3),genType,gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in del.f90.'
         end select
@@ -182,16 +185,16 @@
         select case (diffType)
         case (1); gt = 1
                   select case (n)
-                  case (1); call delGen_T(dfdh,f,g%c(dir)%colCC,dir,pad,genType,diffType,gt,s,sdfdh)
-                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapCC,dir,pad,genType,diffType,gt,s,sdfdh)
+                  case (1); call delGen_T(dfdh,f,g%c(dir)%colCC,dir,pad,genType,1,gt,s,sdfdh)
+                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapCC,dir,pad,genType,1,gt,s,sdfdh)
                   end select
         case (2); gt = 0
                   select case (n)
-                  case (1); call delGen_T(dfdh,f,g%c(dir)%colN,dir,pad,genType,diffType,gt,s,sdfdh)
-                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapN,dir,pad,genType,diffType,gt,s,sdfdh)
+                  case (1); call delGen_T(dfdh,f,g%c(dir)%colN,dir,pad,genType,1,gt,s,sdfdh)
+                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapN,dir,pad,genType,1,gt,s,sdfdh)
                   end select
-        case (3); gt = 1; call delGen_T(dfdh,f,g%c(dir)%stagCC2N,dir,pad,genType,diffType,gt,s,sdfdh)
-        case (4); gt = 0; call delGen_T(dfdh,f,g%c(dir)%stagN2CC,dir,pad,genType,diffType,gt,s,sdfdh)
+        case (3); gt = 1; call delGen_T(dfdh,f,g%c(dir)%stagCC2N,dir,pad,genType,2,gt,s,sdfdh)
+        case (4); gt = 0; call delGen_T(dfdh,f,g%c(dir)%stagN2CC,dir,pad,genType,2,gt,s,sdfdh)
         end select
       end subroutine
 
@@ -286,11 +289,11 @@
             if ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sc)) then
           diffType = 1 ! Collocated derivative (CC)
         elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sn)) then
-          diffType = 1 ! Collocated derivative (N)
+          diffType = 2 ! Collocated derivative (N)
         elseif ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sn)) then
-          diffType = 2 ! Staggered derivative (CC->N)
+          diffType = 3 ! Staggered derivative (CC->N)
         elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sc)) then
-          diffType = 2 ! Staggered derivative (N->CC)
+          diffType = 4 ! Staggered derivative (N->CC)
         else
           write(*,*) 'sf = ',sf
           write(*,*) 'sdfdh = ',sdfdh

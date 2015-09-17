@@ -39,12 +39,13 @@
        
        subroutine initRestartPfield(p,g,dir)
          implicit none
+         type(SF),intent(inout) :: p
          character(len=*),intent(in) :: dir
          type(grid),intent(in) :: g
-         type(SF),intent(inout) :: p
          type(grid) :: temp
          call init(temp,g)
-         call import_1C_SF(temp,p,dir,'pci',0)
+         call import_1C_SF(temp,p,dir//'Ufield/','pci',0)
+         ! call export_1C_SF(temp,p,dir//'Ufield/','pci_imported',0)
          call delete(temp)
        end subroutine
        

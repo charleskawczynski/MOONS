@@ -1,0 +1,139 @@
+       module init_PBCs_mod
+       use grid_mod
+       use BCs_mod
+       use SF_mod
+       implicit none
+
+       private
+       public :: init_PBCs
+
+       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+
+       integer,parameter :: preDefinedP_BCs = 1
+       !                                      0 : User-defined case in initUserPBCs() (no override)
+       !                                      1 : All Neumann
+       !                                      2 : Duct Flow (Neumann with dirichlet at exit)
+
+       ! Duct Flow parameters: 
+       integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
+       ! ductSign may or may not work. Look into implementation
+       integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+
+
+#ifdef _SINGLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(8)
+#endif
+#ifdef _DOUBLE_PRECISION_
+       integer,parameter :: cp = selected_real_kind(14)
+#endif
+#ifdef _QUAD_PRECISION_
+       integer,parameter :: cp = selected_real_kind(32)
+#endif
+       
+       contains
+
+       subroutine init_PBCs(p,g)
+         implicit none
+         type(SF),intent(inout) :: p
+         type(grid),intent(in) :: g
+         call init(p%RF(1)%b,g,p%RF(1)%s)
+         if (preDefinedP_BCs.ne.0) then
+               call initPredefinedPBCs(p%RF(1)%b)
+         else; call initUserPBCs(p%RF(1)%b)
+         endif
+         call init(p%RF(1)%b,0.0_cp)
+       end subroutine
+
+       subroutine initPredefinedPBCs(p_bcs)
+         implicit none
+         type(BCs),intent(inout) :: p_bcs
+         integer :: i
+         ! Default P-Field BCs = neumann
+         call init_Neumann(p_bcs)
+
+         select case (preDefinedP_BCs)
+         case (1); 
+         case (2); call ductFlow_dirichletP_IO(p_bcs,ductDirection,1)
+         case (3); call ductFlow_periodicP_IO(p_bcs,ductDirection,-1)
+         case default
+           stop 'Error: preDefinedP_BCs must = 1:5 in initPredefinedPBCs.'
+         end select
+         do i=1,3
+           select case (periodic_dir(i))
+           case (0)
+           case (1); call makePeriodic(p_bcs,i)
+           case default
+           stop 'Error: periodic_dir must = 1,0 in initPredefinedPBCs in initializeUBCs.f90'
+           end select
+         enddo
+       end subroutine
+
+       subroutine initUserPBCs(p_bcs)
+         implicit none
+         type(BCs),intent(inout) :: p_bcs
+         call init_Neumann(p_bcs)
+       end subroutine
+
+       subroutine makePeriodic(p_bcs,dir)
+         implicit none
+         type(BCs),intent(inout) :: p_bcs
+         integer,intent(in) :: dir
+         select case (dir)
+         case (1); call init_periodic(p_bcs,1)
+                   call init_periodic(p_bcs,2)
+         case (2); call init_periodic(p_bcs,3)
+                   call init_periodic(p_bcs,4)
+         case (3); call init_periodic(p_bcs,5)
+                   call init_periodic(p_bcs,6)
+         case default
+         stop 'Error: dir must = 1,2,3 in makePeriodic in initializeUBCs.f90'
+         end select
+       end subroutine
+
+       subroutine ductFlow_dirichletP_IO(p_bcs,ductDir,IO)
+         implicit none
+         type(BCs),intent(inout) :: p_bcs
+         integer,intent(in) :: ductDir,IO
+         select case (IO)
+         case (-1)
+           select case (ductDir)
+           case (1); call init_Dirichlet(p_bcs,1)
+           case (2); call init_Dirichlet(p_bcs,3)
+           case (3); call init_Dirichlet(p_bcs,5)
+           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_dirichletP_IO'
+           end select
+         case (1)
+           select case (ductDir)
+           case (1); call init_Dirichlet(p_bcs,2)
+           case (2); call init_Dirichlet(p_bcs,3)
+           case (3); call init_Dirichlet(p_bcs,6)
+           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_dirichletP_IO'
+           end select
+         case default; stop 'Error: IO must = -1,1 in ductFlow_dirichletP_IO'
+         end select
+       end subroutine
+
+       subroutine ductFlow_periodicP_IO(p_bcs,ductDir,IO)
+         implicit none
+         type(BCs),intent(inout) :: p_bcs
+         integer,intent(in) :: ductDir,IO
+         select case (IO)
+         case (-1)
+           select case (ductDir)
+           case (1); call init_periodic(p_bcs,1)
+           case (2); call init_periodic(p_bcs,3)
+           case (3); call init_periodic(p_bcs,5)
+           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_periodicP_IO'
+           end select
+         case (1)
+           select case (ductDir)
+           case (1); call init_periodic(p_bcs,2)
+           case (2); call init_periodic(p_bcs,3)
+           case (3); call init_periodic(p_bcs,6)
+           case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_periodicP_IO'
+           end select
+         case default; stop 'Error: IO must = -1,1 in ductFlow_periodicP_IO'
+         end select
+       end subroutine
+
+       end module
