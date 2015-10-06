@@ -30,8 +30,9 @@
        !                        -------> edgeDir
        ! 
        ! 
-       use del_mod
+       use ops_del_mod
        use grid_mod
+       use ops_embedExtract_mod
        use VF_mod
        use SF_mod
 
@@ -58,6 +59,7 @@
        public :: totalEnergy
        interface totalEnergy;             module procedure totalEnergy_RF;            end interface
        interface totalEnergy;             module procedure totalEnergy_VF;            end interface
+       interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
 
        public :: stabilityTerms
        interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
@@ -304,6 +306,24 @@
          eTemp = 0.0_cp
          do i=1,f%x%s
            call totalEnergy(eTemp,f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,g,f%x%RF(i)%s)
+           e = e+eTemp
+         enddo
+       end subroutine
+
+       subroutine totalEnergy_VF_SD(e,f,SD)
+         implicit none
+         type(VF),intent(in) :: f
+         real(cp),intent(inout) :: e
+         type(subdomain),intent(in) :: SD
+         real(cp) :: eTemp
+         integer :: i
+         eTemp = 0.0_cp
+         do i=1,f%x%s
+           call totalEnergy(eTemp,&
+            f%x%RF(i)%f(SD%Nici1(1):SD%Nici2(1),SD%Nici1(2):SD%Nici2(2),SD%Nici1(3):SD%Nici2(3)),&
+            f%y%RF(i)%f(SD%Nici1(1):SD%Nici2(1),SD%Nici1(2):SD%Nici2(2),SD%Nici1(3):SD%Nici2(3)),&
+            f%z%RF(i)%f(SD%Nici1(1):SD%Nici2(1),SD%Nici1(2):SD%Nici2(2),SD%Nici1(3):SD%Nici2(3)),&
+            SD%g,f%x%RF(i)%s)
            e = e+eTemp
          enddo
        end subroutine

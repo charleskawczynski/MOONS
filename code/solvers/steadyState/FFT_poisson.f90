@@ -25,8 +25,8 @@
       use ops_discrete_mod
       use ops_aux_mod
       ! use IO_scalarFields_mod
-      use dct_mod
-      use idct_mod
+      use ops_dct_mod
+      use ops_idct_mod
       implicit none
 
       private

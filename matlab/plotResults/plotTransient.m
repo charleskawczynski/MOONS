@@ -118,7 +118,7 @@ classdef plotTransient
             addpath([myDir.working name.field])
 
             data = importdata([name.file '.dat']);
-            data = data.data;
+%             data = data.data;
             n = data(:,1);
             var = data(:,2);
 
@@ -158,12 +158,12 @@ classdef plotTransient
 
             addpath([myDir.working name.field])
     
-            data = importdata([name.file '.dat']);
-            data = data.data;
+%             data = importdata([name.file '.dat']);
+%             data = data.data;
             % data = myImport(name,1);
 
             data = importdata([name.file '.dat']);
-            data = data.data;
+%             data = data.data;
             n = data(:,1);
             var = data(:,2);
 

@@ -73,11 +73,16 @@
          type(SF),intent(inout) :: sigma
          type(subdomain),intent(in) :: SD
          integer :: pad
-         pad = 6+1
+         ! For t_vacuum > 0:
+         ! pad = 6+1
+         pad = 3+1
          call assign(sigma,sigmaStarWall)
          sigma%RF(1)%f(SD%Nice1(1)-pad:SD%Nice2(1)+pad,&
                        SD%Nice1(2)-pad:SD%Nice2(2)-1,&
                        SD%Nice1(3)-pad:SD%Nice2(3)+pad) = 1.0_cp
+
+         ! For t_vacuum = 0:
+         ! call assign(sigma,1.0_cp)
        end subroutine
 
        subroutine initCylinder2D(sigma,SD,g,dir)

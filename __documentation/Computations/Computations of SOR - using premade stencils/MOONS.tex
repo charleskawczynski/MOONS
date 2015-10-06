@@ -36,7 +36,7 @@
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
 \author{C. Kawczynski \\
 Department of Mechanical and Aerospace Engineering \\
 University of California Los Angeles, USA\\
@@ -262,6 +262,7 @@ Solving for the implicit terms
 \end{multline}
 Inverting this we have:
 \begin{equation}
+	\boxed{
 	u^{k+1}
 	=
 	A^{-1}
@@ -276,9 +277,11 @@ Inverting this we have:
 	U_z (\sigma_z U_z u^{ k })
 	\right\}
 	\right]
+	}
 \end{equation}
 Where
 \begin{equation}
+	\boxed{
 	A = 
 	U_x (\sigma_x D_x) +
 	U_y (\sigma_y D_y) +
@@ -286,6 +289,7 @@ Where
 	D_x (\sigma_x U_x) +
 	D_y (\sigma_y U_y) +
 	D_z (\sigma_z U_z)
+	}
 \end{equation}
 Note that $A$ is a 3D scalar field.
 
@@ -336,6 +340,11 @@ Where
 	D_x +
 	D_y +
 	D_z
+\end{equation}
+
+\section{Combining 2 one-sided difference operators}
+\begin{equation}
+	D_x \sigma_x D_x u
 \end{equation}
 
 \end{document}

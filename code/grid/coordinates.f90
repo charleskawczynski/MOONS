@@ -233,6 +233,7 @@
         U =  (/(1.0_cp/dh(i),i=1,s-1)/)
         call initD(c%stagCC2N,D)
         call initU(c%stagCC2N,U)
+        call initL(c%stagCC2N,U*0.0_cp)
         deallocate(D,U,dh)
       end subroutine
 
@@ -303,6 +304,7 @@
         U =  (/(1.0_cp/dh(i),i=1,s-1)/)
         call initD(c%stagN2CC,D)
         call initU(c%stagN2CC,U)
+        call initL(c%stagN2CC,U*0.0_cp)
         deallocate(D,U,dh)
       end subroutine
 
@@ -412,8 +414,8 @@
         ! Consider making a flag to only allow 1 time or
         ! use warnings to the user about the grid
         implicit none
-        type(coordinates),intent(in) :: c
         type(coordinates),intent(inout) :: r
+        type(coordinates),intent(in) :: c
         integer :: i
         if (c%sc.gt.3) then
           ! if (mod(c%sc,2).eq.0) call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),2) ! good case

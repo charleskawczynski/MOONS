@@ -68,6 +68,7 @@
           integer :: s = 1 ! Number of subdomains in domain decomposition
           integer,dimension(3) :: stot ! Total number of indexes in each direction (for export)
           type(realField),dimension(1) :: RF
+          logical :: is_CC,is_Node,is_face,is_edge
           ! integer :: s ! Number of subdomains in domain decomposition
           ! type(realField),dimension(:),allocatable :: RF
         end type
@@ -382,6 +383,15 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
+        subroutine deleteDataLocation(a)
+          implicit none
+          type(SF),intent(inout) :: a
+          a%is_CC = .false.
+          a%is_node = .false.
+          a%is_face = .false.
+          a%is_edge = .false.
+        end subroutine
+
         subroutine init_props(f)
           implicit none
           type(SF),intent(inout) :: f
@@ -396,6 +406,10 @@
           type(SF),intent(in) :: f2
           integer :: i
           do i=1,f1%s; call init(f1%RF(i),f2%RF(i)); enddo
+          f1%is_CC = f2%is_CC
+          f1%is_node = f2%is_node
+          f1%is_face = f2%is_face
+          f1%is_edge = f2%is_edge
           call init_props(f1)
         end subroutine
 
@@ -405,6 +419,8 @@
           type(grid),intent(in) :: g
           integer :: i
           do i=1,f%s; call init_CC(f%RF(i),g); enddo
+          call deleteDataLocation(f)
+          f%is_CC = .true.
           call init_props(f)
         end subroutine
 
@@ -415,6 +431,8 @@
           integer,intent(in) :: dir
           integer :: i
           do i=1,f%s; call init_Face(f%RF(i),g,dir); enddo
+          call deleteDataLocation(f)
+          f%is_face = .true.
           call init_props(f)
         end subroutine
 
@@ -425,6 +443,8 @@
           integer,intent(in) :: dir
           integer :: i
           do i=1,f%s; call init_Edge(f%RF(i),g,dir); enddo
+          call deleteDataLocation(f)
+          f%is_edge = .true.
           call init_props(f)
         end subroutine
 
@@ -434,6 +454,8 @@
           type(grid),intent(in) :: g
           integer :: i
           do i=1,f%s; call init_Node(f%RF(i),g); enddo
+          call deleteDataLocation(f)
+          f%is_node = .true.
           call init_props(f)
         end subroutine
 
@@ -441,7 +463,13 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call init_BCs(f%RF(i)); enddo
+          if (f%is_CC) then
+            do i=1,f%s; call init_BCs(f%RF(i),.true.,.false.); enddo
+          elseif (f%is_Node) then
+            do i=1,f%s; call init_BCs(f%RF(i),.false.,.true.); enddo
+          else
+            stop 'Error: no datatype found in init_BCs_SF in SF.f90'
+          endif
         end subroutine
 
         subroutine delete_SF(f)

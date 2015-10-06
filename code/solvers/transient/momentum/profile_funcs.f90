@@ -5,12 +5,14 @@
 
        private
        ! None of these have been tested yet..
-       public :: rotatingCylinder ! Done
-       public :: init_FD_DuctFlow ! Done
-       public :: parabolic1D      ! Done
-       public :: isolatedEddy2D   ! Need to change to func
-       public :: singleEddy2D     ! Need to change to func
-       public :: cylinder2D       ! Need to change to func
+       public :: rotatingCylinder   ! Done
+       public :: init_FD_DuctFlow   ! Done
+       public :: parabolic1D        ! Done
+       public :: shercliff_profile  ! Done
+       public :: hunt_profile       ! Done
+       public :: isolatedEddy2D     ! Need to change to func
+       public :: singleEddy2D       ! Need to change to func
+       public :: cylinder2D         ! Need to change to func
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -64,6 +66,137 @@
              end select
            endif
          enddo; enddo
+         deallocate(x); deallocate(y)
+       end function
+
+       function shercliff_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
+         ! Computes the Shercliff profile, w(x,y) for Hartmann number,Ha
+         ! Ref:
+         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      the inductionless MHD problem using a stabilized finite 
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         implicit none
+         real(cp),dimension(sx,sy) :: w
+         integer,intent(in) :: sx,sy
+         type(coordinates),intent(in) :: cx,cy
+         real(cp),intent(in) :: Ha,mu,dpdz
+         real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,d_B,L,term,a,b
+         integer :: i,j,k,iter
+         real(cp),dimension(:),allocatable :: x,y
+
+         allocate(x(sx)); allocate(y(sy))
+             if (sx.eq.cx%sn) then; x = cx%hn
+         elseif (sx.eq.cx%sc) then; x = cx%hc
+           else; stop 'Error: bad size in shercliff_profile in profile_funcs.f90'
+         endif
+             if (sy.eq.cy%sn) then; y = cy%hn
+         elseif (sy.eq.cy%sc) then; y = cy%hc
+           else; stop 'Error: bad size in shercliff_profile in profile_funcs.f90'
+         endif
+
+         a = (cx%hmax - cx%hmin)/2.0_cp
+         b = (cy%hmax - cy%hmin)/2.0_cp
+         L = b/a
+
+         d_B = 0.0_cp
+         iter = 100
+         do k=0,iter
+           do i=1,sx; do j=1,sy
+             alpha_k = (k+0.5_cp)*PI/L
+             N = (Ha**2.0_cp + 4.0_cp*alpha_k**2.0_cp)**(0.5_cp)
+             r1k = 0.5_cp*(Ha + N)
+             r2k = 0.5_cp*(-Ha + N)
+             V2 = shercliff_coeff(r1k,r2k,y(j)/a,d_B,N)
+             V3 = shercliff_coeff(r2k,r1k,y(j)/a,d_B,N)
+             
+             coeff = 2.0_cp*(-1.0_cp)**k*cos(alpha_k*x(i)/a)/(L*alpha_k**3.0_cp)
+             term = coeff*(1.0_cp - V2 - V3)
+             w(i,j) = w(i,j) + term
+           enddo; enddo
+         enddo
+         w = w/mu*(-dpdz)*a**2.0_cp
+         deallocate(x); deallocate(y)
+       end function
+
+       function shercliff_coeff(r1k,r2k,eta,d_B,N) result(V)
+         ! Computes the coefficient (V2,V3) in the Shercliff profile
+         ! expressions given in 
+         ! 
+         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      the inductionless MHD problem using a stabilized finite 
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         implicit none
+         real(cp),intent(in) :: r1k,r2k,eta,d_B,N
+         real(cp) :: A,B,C,D,V
+         A = d_B*r2k+(1.0_cp-exp(-2.0_cp*r2k))/(1.0_cp+exp(-2.0_cp*r2k))
+         B = (exp(-r1k*(1.0_cp-eta))+exp(-r1k*(1.0_cp+eta)))/2.0_cp
+         C = (1.0_cp+exp(-2.0_cp*r1k))/2.0_cp*d_B*N
+         D = (1.0_cp-exp(-2.0_cp*(r1k+r2k)))/(1.0_cp+exp(-2.0_cp*r2k))
+         V = A*B/(C+D)
+       end function
+
+       function hunt_coeff(r1k,r2k,eta,N) result(V)
+         ! Computes the coefficient (V2,V3) in the Hunt profile
+         ! expressions given in 
+         ! 
+         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      the inductionless MHD problem using a stabilized finite 
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         implicit none
+         real(cp),intent(in) :: r1k,r2k,eta,N
+         real(cp) :: A,B,C,V
+         A = r2k/N
+         B = exp(-r1k*(1.0_cp-eta))+exp(-r1k*(1.0_cp+eta))
+         C = 1.0_cp+exp(-2.0_cp*r1k)
+         V = A*B/C
+       end function
+
+       function hunt_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
+         ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
+         ! Ref:
+         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      the inductionless MHD problem using a stabilized finite 
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         implicit none
+         real(cp),dimension(sx,sy) :: w
+         integer,intent(in) :: sx,sy
+         type(coordinates),intent(in) :: cx,cy
+         real(cp),intent(in) :: Ha,mu,dpdz
+         real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,d_B,L,term,a,b
+         integer :: i,j,k,iter
+         real(cp),dimension(:),allocatable :: x,y
+
+         allocate(x(sx)); allocate(y(sy))
+             if (sx.eq.cx%sn) then; x = cx%hn
+         elseif (sx.eq.cx%sc) then; x = cx%hc
+           else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
+         endif
+             if (sy.eq.cy%sn) then; y = cy%hn
+         elseif (sy.eq.cy%sc) then; y = cy%hc
+           else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
+         endif
+
+         a = (cx%hmax - cx%hmin)/2.0_cp
+         b = (cy%hmax - cy%hmin)/2.0_cp
+         L = b/a
+
+         d_B = 0.0_cp
+         iter = 100
+         do k=0,iter
+           do i=1,sx; do j=1,sy
+             alpha_k = (k+0.5_cp)*PI/L
+             N = (Ha**2.0_cp + 4.0_cp*alpha_k**2.0_cp)**(0.5_cp)
+             r1k = 0.5_cp*(Ha + N)
+             r2k = 0.5_cp*(-Ha + N)
+             V2 = hunt_coeff(r1k,r2k,y(j)/a,N)
+             V3 = hunt_coeff(r2k,r1k,y(j)/a,N)
+             
+             coeff = 2.0_cp*(-1.0_cp)**k*cos(alpha_k*x(i)/a)/(L*alpha_k**3.0_cp)
+             term = coeff*(1.0_cp - V2 - V3)
+             w(i,j) = w(i,j) + term
+           enddo; enddo
+         enddo
+         w = w/mu*(-dpdz)*a**2.0_cp
          deallocate(x); deallocate(y)
        end function
 

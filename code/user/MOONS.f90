@@ -109,7 +109,8 @@
          ! Initialize all grids
          ! call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
          call makeGrids(grid_mom,grid_ind,Ni,Nwtop,Nwbot)
-         call init(SD,Ni,Nwtop,Nwbot+10,grid_mom)
+         ! call init(SD,Ni,Nwtop,Nwbot+10,grid_mom) ! N_wall = 8
+         call init(SD,Ni,Nwtop,Nwbot+10,grid_mom) ! N_wall = 5
          ! call init(SD,Ni,Nwtop,Nwbot,grid_mom)
 
          ! ******************** EXPORT GRIDS ****************************
@@ -214,14 +215,8 @@
          ! ******************* SET MHD SOLVER SETTINGS *******************
          call init(ss_MHD)
 
-         ! call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
-         ! call setIteration(ss_MHD,n_mhd)
-
-         ! call setMaxIterations(ss_MHD,9880002+NmaxMHD)
-         ! call setIteration(ss_MHD,9880002)
-         call setMaxIterations(ss_MHD,19769901+NmaxMHD)
-         call setIteration(ss_MHD,19769901)
-
+         call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
+         call setIteration(ss_MHD,n_mhd)
 
          if (restartU.or.restartB) then
          call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
@@ -542,7 +537,8 @@
          ! case (1009); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4*10**4 ! (Rem = 100) B0z
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
-         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
+         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
+         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**7 ! for testing
 
          case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          case (1012); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
@@ -619,7 +615,8 @@
          case (1009); Ni = 50;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
          ! case (1009); Ni = 100;            Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo)
          ! case (1010); Ni = 50;            Nwtop = 25;          Nwbot = 25  ! (Kawczynski - demo) for sigma* = 0.01
-         case (1010); Ni = 30;            Nwtop = (/8,0,8/);   Nwbot = 8  ! (Kawczynski - demo) for sigma* = 0.001
+         ! case (1010); Ni = 30;            Nwtop = (/8,0,8/);   Nwbot = 8  ! (Kawczynski - demo) for sigma* = 0.001
+         case (1010); Ni = 30;            Nwtop = (/5,0,5/);   Nwbot = 5  ! (Kawczynski - demo) for sigma* = 0.001, t_wall=0.05
          case (1011); Ni = (/1,45,45/);   Nwtop = 0;           Nwbot = 0  ! (Kawczynski - demo) for shercliff / hunt flow
          case (1012); Ni = 64;            Nwtop = 0;           Nwbot = 0  ! Pattison
          case (1013); Ni = (/128,128,1/);   Nwtop = 0;           Nwbot = 0  ! Pattison

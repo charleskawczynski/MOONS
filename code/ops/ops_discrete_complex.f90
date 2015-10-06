@@ -1,5 +1,5 @@
        module ops_discrete_complex_mod
-       use del_mod
+       use ops_del_mod
        use grid_mod
        use VF_mod
        use ops_interp_mod

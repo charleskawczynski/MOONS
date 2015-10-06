@@ -7,7 +7,6 @@
        use grid_mod
        use SF_mod
        use VF_mod
-       use ops_aux_mod
 
        implicit none
 
@@ -256,7 +255,6 @@
          integer,dimension(3) :: Nin1,Nice1
          integer :: i,j,k,t
          Nin1  = SD%Nin1; Nice1 = SD%Nice1
-         call zeroGhostPoints(face_i)
          do t=1,face_i%x%s
            !$OMP PARALLEL DO
            do k=2,face_i%x%RF(t)%s(3)-1; do j=2,face_i%x%RF(t)%s(2)-1; do i=2,face_i%x%RF(t)%s(1)-1
@@ -289,7 +287,6 @@
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
          integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
-         call zeroGhostPoints(face_i)
          do i=1,face_i%x%s
            face_i%x%RF(i)%f(2:g%c(1)%sn-1,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
            face_t%x%RF(i)%f( Nin1(1): Nin2(1),Nice1(2):Nice2(2),Nice1(3):Nice2(3))
@@ -313,7 +310,6 @@
          integer,dimension(3) :: Nin1,Nin2,Nice1,Nice2
          integer :: i
          Nin1  = SD%Nin1; Nin2  = SD%Nin2; Nice1 = SD%Nice1; Nice2 = SD%Nice2
-         call zeroGhostPoints(face_i)
          do i=1,face_i%x%s
            face_i%x%RF(i)%f(:,2:g%c(2)%sc-1,2:g%c(3)%sc-1) = &
            face_t%x%RF(i)%f( Nin1(1)-1: Nin2(1)+1,Nice1(2):Nice2(2),Nice1(3):Nice2(3))

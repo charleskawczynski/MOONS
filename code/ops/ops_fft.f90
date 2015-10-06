@@ -1,4 +1,4 @@
-      module fft_mod
+      module ops_fft_mod
       ! Returns the Fast Fourier Transform of the scalar field, f, wrt direction 
       ! dir (1,2,3) which corresponds to (x,y,z).
       ! 

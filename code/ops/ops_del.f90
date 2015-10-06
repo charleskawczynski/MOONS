@@ -1,4 +1,4 @@
-      module del_mod
+      module ops_del_mod
       ! Returns an n-derivative of the scalar field, f, 
       ! along direction dir (1,2,3) which corresponds to (x,y,z).
       ! 
@@ -44,7 +44,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      interface delGen;    module procedure delGen_temp_T;  end interface
+      interface delGen;    module procedure delGen_given_g; end interface
       interface delGen;    module procedure delGen_given_T; end interface
 
 
@@ -83,21 +83,24 @@
         call checkSideDimensions(s,sdfdh,dir)
 #endif
         select case (dir)
-        case (1); !$OMP PARALLEL DO
-                  do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-                      call diff(dfdh(:,j,k),f(:,j,k),T,diffType,s(1),sdfdh(1),genType,gt)
-                  enddo; enddo
-                  !$OMP END PARALLEL DO
-        case (2); !$OMP PARALLEL DO
-                  do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-                      call diff(dfdh(i,:,k),f(i,:,k),T,diffType,s(2),sdfdh(2),genType,gt)
-                  enddo; enddo
-                  !$OMP END PARALLEL DO
-        case (3); !$OMP PARALLEL DO
-                  do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-                      call diff(dfdh(i,j,:),f(i,j,:),T,diffType,s(3),sdfdh(3),genType,gt)
-                  enddo; enddo
-                  !$OMP END PARALLEL DO
+        case (1); 
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
+          call diff(dfdh(:,j,k),f(:,j,k),T,diffType,s(1),sdfdh(1),genType,gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case (2); 
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call diff(dfdh(i,:,k),f(i,:,k),T,diffType,s(2),sdfdh(2),genType,gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case (3); 
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call diff(dfdh(i,j,:),f(i,j,:),T,diffType,s(3),sdfdh(3),genType,gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in del.f90.'
         end select
@@ -145,7 +148,7 @@
       ! *********************** MED LEVEL ***********************
       ! *********************************************************
 
-      subroutine delGen_temp_T(dfdh,f,g,n,dir,pad,genType)
+      subroutine delGen_given_g(dfdh,f,g,n,dir,pad,genType)
         implicit none
         type(SF),intent(inout) :: dfdh
         type(SF),intent(in) :: f
@@ -209,7 +212,10 @@
         case (1,3); gt = 1
         case (2,4); gt = 0
         end select
-        call delGen_T(dfdh,f,T,dir,pad,genType,diffType,gt,s,sdfdh)
+        select case (diffType)
+        case (1,2); call delGen_T(dfdh,f,T,dir,pad,genType,1,gt,s,sdfdh)
+        case (3,4); call delGen_T(dfdh,f,T,dir,pad,genType,2,gt,s,sdfdh)
+        end select
       end subroutine
 
 
@@ -286,11 +292,11 @@
             if ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sc)) then
           diffType = 1 ! Collocated derivative (CC)
         elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sn)) then
-          diffType = 1 ! Collocated derivative (N)
+          diffType = 2 ! Collocated derivative (N)
         elseif ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sn)) then
-          diffType = 2 ! Staggered derivative (CC->N)
+          diffType = 3 ! Staggered derivative (CC->N)
         elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sc)) then
-          diffType = 2 ! Staggered derivative (N->CC)
+          diffType = 4 ! Staggered derivative (N->CC)
         else
           write(*,*) 'sf = ',sf
           write(*,*) 'sdfdh = ',sdfdh

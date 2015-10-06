@@ -117,7 +117,7 @@
       function collocatedD2fDh2_conservative(f,k,T1,T2,s,stemp,gt) result(dfdh)
         implicit none
         real(cp),intent(in),dimension(s) :: f
-        real(cp),dimension(stemp) :: k
+        real(cp),dimension(stemp),intent(in) :: k
         type(triDiag),intent(in) :: T1,T2
         integer,intent(in) :: s,stemp,gt
         real(cp),dimension(s) :: dfdh

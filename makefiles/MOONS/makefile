@@ -22,10 +22,10 @@ SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
 
 # Unit testing directories:
-# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
 
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -37,6 +37,7 @@ VPATH =\
 	$(TARGET_DIR) \
 	$(SRC_DIR)$(PS)lib \
 	$(SRC_DIR)$(PS)user \
+	$(SRC_DIR)$(PS)BCs \
 	$(SRC_DIR)$(PS)unit_testing \
 	$(SRC_DIR)$(PS)IO \
 	$(SRC_DIR)$(PS)grid \
@@ -53,6 +54,8 @@ VPATH =\
 
 # ************** COMPILER & STANDARD ****************
 FC      = gfortran
+# FC      = mpif90
+# FC      = mpirun -np 4
 # FCFLAGS = -std=f95
 
 # ****************** DEFAULT FLAGS ******************
@@ -63,23 +66,26 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
 # ****************** DEBUGGING **********************
 # CPU time ~ Debugging level
-FCFLAGS += -g
+# FCFLAGS += -g
 # FCFLAGS += -g -Wall
 # FCFLAGS += -g -Wall -Wextra
 # FCFLAGS += -g -Wall -Wextra -fbacktrace
-# FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
-# FCFLAGS += -O0
+FCFLAGS += -O0
 # FCFLAGS += -O1
 # FCFLAGS += -O2
-FCFLAGS += -O3
+# FCFLAGS += -O3
 # FCFLAGS += -O4
 # FCFLAGS += -O5
 # **************** PARALLELIZATION ******************
 FCFLAGS += -fopenmp
+# FCFLAGS += -mpirun -np 4
+# FCFLAGS += -mpif90 -np 4
+# FCFLAGS += -mpicc
 
 # ****************** PROFILING **********************
 # To profile, run simulation with the flag:
@@ -113,8 +119,8 @@ FCFLAGS += -D_PARALLELIZE_RF_
 # FCFLAGS += noarg_temp_created
 
 # Code verification
-# FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
-FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
+FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
@@ -130,23 +136,16 @@ FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_DEBUG_TF_
 
 
-TARGET = $(TARGET_DIR)$(PS)MOONS
-# TARGET = $(TARGET_DIR)$(PS)unitTest
+# TARGET = $(TARGET_DIR)$(PS)MOONS
+TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
 # $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
 
-# $(SRC_DIR)$(PS)static$(PS)IO_scalarFields.f90 \
-# $(SRC_DIR)$(PS)static$(PS)IO_vectorFields.f90 \
-
 # $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
-# $(SRC_DIR)$(PS)IO$(PS)IO_scalarBase.f90 \
-# $(SRC_DIR)$(PS)IO$(PS)IO_vectorBase.f90 \
-# $(SRC_DIR)$(PS)user$(PS)griddata.f90 \
 
 
 SRCS_F =\
@@ -154,6 +153,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_transientFields.f90 \
+	$(SRC_DIR)$(PS)static$(PS)array.f90 \
+	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)gridGenTools.f90 \
@@ -162,9 +163,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)matchGridStretching.f90 \
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)generateGrids.f90 \
-	$(SRC_DIR)$(PS)static$(PS)boundary.f90 \
-	$(SRC_DIR)$(PS)static$(PS)BCs.f90 \
-	$(SRC_DIR)$(PS)static$(PS)vectorBCs.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
@@ -186,20 +187,18 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)fft.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)dct.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)idct.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)stencils_old.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)del_old.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)del.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)applyBCs.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)applyBCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
@@ -210,6 +209,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)JAC_ops.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)CG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_Tfield.f90 \
@@ -233,11 +234,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90
 
 
-# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
-# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
+SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 

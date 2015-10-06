@@ -18,7 +18,7 @@
 
        use grid_mod
        use norms_mod
-       use del_mod
+       use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
@@ -382,6 +382,10 @@
              call export_1C_SF(g,ind%sigma,dir//'material/','sigmac',0)
              call export_1C_SF(g,ind%sigma,dir//'Bfield/','divBct',0)
              call export_1C_SF(g,ind%sigma,dir//'Jfield/','divJct',0)
+
+             call export_1C_SF(g,ind%U_E%x%x ,dir//'Ufield/','Uet',0)
+             call export_1C_SF(g,ind%U_E%y%y ,dir//'Ufield/','Vet',0)
+             call export_1C_SF(g,ind%U_E%z%z ,dir//'Ufield/','Wet',0)
              write(*,*) '     finished'
            endif
          endif
@@ -555,7 +559,8 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeTotalMagneticEnergy(ind,ss_MHD)
-         ! call computeTotalMagneticEnergyFluid(ind,g_mom,ss_MHD)
+         ! call computeTotalMagneticEnergyFluid(ind,ss_MHD)
+
          call exportTransient(ind,ss_MHD)
 
          ! call inductionExportTransientFull(ind,ind%g,dir) ! VERY Expensive
@@ -955,12 +960,14 @@
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
            call curl(ind%J_cc,ind%B,ind%g)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
        end subroutine
@@ -985,12 +992,14 @@
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
            call curl(ind%J_cc,ind%B,ind%g)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
        end subroutine
@@ -1020,6 +1029,7 @@
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
 
@@ -1037,6 +1047,7 @@
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
            call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
        end subroutine
@@ -1065,45 +1076,30 @@
          call curl(ind%J_cc,ind%Bstar,ind%g)
        end subroutine
 
-!        subroutine computeTotalMagneticEnergyFluid(ind,g,ss_MHD)
-!          implicit none
-!          type(induction),intent(inout) :: ind
-!          type(grid),intent(in) :: g
-!          type(solverSettings),intent(in) :: ss_MHD
-!          real(cp) :: K_energy
-!          integer,dimension(3) :: Nici1,Nici2
-!          Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-!           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-!            call assign(ind%Bstar,ind%B)
-!            call add(ind%Bstar,ind%B0)
-!            call totalEnergy(K_energy,&
-!              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              g)
-!            call set(ind%KB_energy,ind%nstep,K_energy)
-!            call apply(ind%KB_energy)
-!           endif
-!           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-!            call assign(ind%Bstar,ind%B)
-!            call totalEnergy(K_energy,&
-!              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              g)
-!            call set(ind%KBi_energy,ind%nstep,K_energy)
-!            call apply(ind%KBi_energy)
-!           endif
-!           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-!            call totalEnergy(K_energy,&
-!              ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              g)
-!            call set(ind%KB0_energy,ind%nstep,K_energy)
-!            call apply(ind%KB0_energy)
-!           endif
-!        end subroutine
+       subroutine computeTotalMagneticEnergyFluid(ind,ss_MHD)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(solverSettings),intent(in) :: ss_MHD
+         real(cp) :: K_energy
+          if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call assign(ind%Bstar,ind%B)
+           call add(ind%Bstar,ind%B0)
+           call totalEnergy(K_energy,ind%Bstar,ind%SD)
+           call set(ind%KB_energy,ind%nstep,K_energy)
+           call apply(ind%KB_energy)
+          endif
+          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call assign(ind%Bstar,ind%B)
+           call totalEnergy(K_energy,ind%Bstar,ind%SD)
+           call set(ind%KBi_energy,ind%nstep,K_energy)
+           call apply(ind%KBi_energy)
+          endif
+          if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
+           call totalEnergy(K_energy,ind%Bstar,ind%SD)
+           call set(ind%KB0_energy,ind%nstep,K_energy)
+           call apply(ind%KB0_energy)
+          endif
+       end subroutine
 
        subroutine computeTotalMagneticEnergy(ind,ss_MHD)
          implicit none

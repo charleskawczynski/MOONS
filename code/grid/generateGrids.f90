@@ -529,7 +529,8 @@
 
          case (1009); twtop = 0.0_cp;   twbot = 0.0_cp     ! Kawczynski
          ! case (1010); twtop = 5.0_cp;   twbot = 5.0_cp     ! Kawczynski for sigma* = 0.01
-         case (1010); twtop = (/0.5_cp,0.0_cp,0.5_cp/); twbot = 0.5_cp  ! Kawczynski for sigma* = 0.001
+         ! case (1010); twtop = (/0.5_cp,0.0_cp,0.5_cp/); twbot = 0.5_cp  ! Kawczynski for sigma* = 0.001
+         case (1010); twtop = (/0.05_cp,0.0_cp,0.05_cp/); twbot = 0.05_cp  ! Kawczynski for sigma* = 0.001
 
          case (1011); twtop = 0.0_cp;   twbot = 0.0_cp     ! Kawczynski
          case (1012); twtop = 0.0_cp;   twbot = 0.0_cp     ! Pattison

@@ -181,9 +181,9 @@
          call applyAllBCs(CTM%B,g)
        end subroutine
 
-       subroutine solve_LowRem(CTM,U_E,g,Rem,dTime,NmaxB)
+       subroutine solve_LowRem(CTM,U_E,g,dTime,NmaxB)
          ! Computes
-         !    E = j/(Rem*sig) - uxB
+         !    E = j/(sig) - uxB
          !    dBdt = -curl(E) + F
          !    B^n+1 = B^n + {-curl(E) + F}
          ! 
@@ -196,7 +196,7 @@
          type(ind_CTM),intent(inout) :: CTM
          type(TF),intent(in) :: U_E
          type(grid),intent(in) :: g
-         real(cp),intent(in) :: Rem,dTime
+         real(cp),intent(in) :: dTime
          integer,intent(in) :: NmaxB
          integer :: i
 

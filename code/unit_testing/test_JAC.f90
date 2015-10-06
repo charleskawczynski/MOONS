@@ -8,7 +8,7 @@
        implicit none
        private
 
-       public :: get_ModelProblem
+       public :: get_ModelProblem,defineSig
 
        ! integer,parameter :: modelProblem = 1
 
@@ -49,31 +49,37 @@
          type(SF),intent(inout) :: u
          real(cp),dimension(:),intent(in) :: x,y,z
          integer,intent(in) :: bctype
-         integer :: i,j,k
+         integer :: i,j,k,t,nmodes
          real(cp),dimension(3) :: p
          integer,dimension(3) :: s
          s = u%RF(1)%s
 
-         select case (bctype)
-         case (1); p = (/3.0_cp,3.0_cp,3.0_cp/)
-         case (2); p = (/2.0_cp,2.0_cp,2.0_cp/)
-         case default
-         stop 'Error: bctype must = 1,2 in defineFunction in poisson.f90'
-         end select
+         call assign(u,0.0_cp)
+         nmodes = 1
+         do t=1,nmodes
+           select case (bctype)
+           case (1); p = 3.0_cp
+           case (2); p = 2.0_cp
+           case default
+           stop 'Error: bctype must = 1,2 in defineFunction in poisson.f90'
+           end select
 
-         if (bctype.eq.2) then
-           do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
-           u%RF(1)%f(i,j,k) = cos(p(1)*PI*x(i))*&
-                              cos(p(2)*PI*y(j))*&
-                              cos(p(3)*PI*z(k))
-           enddo;enddo;enddo
-         elseif (bctype.eq.1) then
-           do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
-           u%RF(1)%f(i,j,k) = sin(p(1)*PI*x(i))*&
-                              sin(p(2)*PI*y(j))*&
-                              sin(p(3)*PI*z(k))
-           enddo;enddo;enddo
-         endif
+           p = p*real(t,cp)
+
+           if (bctype.eq.2) then
+             do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+             u%RF(1)%f(i,j,k) = u%RF(1)%f(i,j,k) +(cos(p(1)*PI*x(i))*&
+                                                   cos(p(2)*PI*y(j))*&
+                                                   cos(p(3)*PI*z(k)))/real(t,cp)
+             enddo;enddo;enddo
+           elseif (bctype.eq.1) then
+             do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+             u%RF(1)%f(i,j,k) = u%RF(1)%f(i,j,k) +(sin(p(1)*PI*x(i))*&
+                                                   sin(p(2)*PI*y(j))*&
+                                                   sin(p(3)*PI*z(k)))/real(t,cp)
+             enddo;enddo;enddo
+           endif
+         enddo
 
          ! call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
        end subroutine
@@ -132,11 +138,30 @@
          endif
        end subroutine
 
+       subroutine defineSig(sig)
+         implicit none
+         type(SF),intent(inout) :: sig
+         integer :: i,j,k
+         integer,dimension(3) :: s
+         logical,dimension(3) :: TF
+         integer :: frac
+         s = sig%RF(1)%s
+         frac = 3
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+         TF(1) = (i.gt.s(1)/frac).and.(i.lt.s(1) - s(1)/frac)
+         TF(2) = (j.gt.s(2)/frac).and.(j.lt.s(2) - s(2)/frac)
+         TF(3) = (k.gt.s(3)/frac).and.(k.lt.s(3) - s(3)/frac)
+         if (all(TF)) sig%RF(1)%f(i,j,k) = 0.01_cp
+         enddo; enddo; enddo
+
+       end subroutine
+
        end module
 
        module unit_test_mod
        use simParams_mod
        use IO_SF_mod
+       use IO_tools_mod
        use grid_mod
        use norms_mod
        use ops_discrete_mod
@@ -144,9 +169,11 @@
        use applyBCs_mod
        use JAC_mod
        use SF_mod
+       use VF_mod
        use gridGen_mod
        use gridGenTools_mod
        use solverSettings_mod
+       use ops_interp_mod
        use ops_aux_mod
 
        use modelProblem_mod
@@ -168,14 +195,17 @@
          implicit none
          character(len=*),intent(in) :: dir
          type(grid) :: g
-         integer,dimension(3) :: N = (/40,40,40/) ! Number of cells
+         integer,dimension(3) :: N = 50 ! Number of cells
          real(cp),dimension(3) :: hmin,hmax
          type(JACSolver) :: JAC
          character(len=3) :: name
          type(norms) :: norm_res,norm_e
          type(solverSettings) :: ss
          type(gridGenerator) :: gg
-         type(SF) :: u,u_exact,f,lapU,e,R
+         type(SF) :: u,u_exact,f,lapU,e,R,sig,temp_SF
+         type(VF) :: sigma,temp
+         real(cp) :: dt
+         integer :: i,NU
 
          write(*,*) 'Number of cells = ',N
 
@@ -197,12 +227,21 @@
          ! *************************************************************
 
          call init_CC(u,g)
+         call init(temp_SF,u)
+         call init_Face(sigma,g)
+         call init(sig,u)
+         call init(temp,sigma)
+
+         call assign(sig,1.0_cp)
+         call defineSig(sig)
+         call cellCenter2Face(sigma,sig,g)
 
          call init(e,u)
          call init(R,u)
          call init(u_exact,u)
          call init(f,u)
          call init(lapU,u)
+
          write(*,*) 'Before model problem'
          call get_ModelProblem(g,f,u,u_exact)
          write(*,*) 'after model problem'
@@ -210,20 +249,40 @@
 
          call export_1C_SF(g,u_exact,dir,'u_exact',0)
          call export_1C_SF(g,f,dir,'f',0)
+         call export_1C_SF(g,sig,dir,'sigma',0)
 
          ! *************************************************************
          ! *************************************************************
          ! *************************************************************
+         NU = newAndOpen('out\','norm_JAC')
 
+         ! Transient
+         dt = 0.10_cp
          name = 'JAC'
-         call setMaxIterations(ss,15) ! Cell centered data
+         call setMaxIterations(ss,100) ! Cell centered data
          call assign(u,0.0_cp)
-         call init(JAC,u,g)
-         call solve(JAC,u,f,g,ss,norm_res,.true.)
+         call init(JAC,u,g,sigma,dt)
+         do i=1,100
+           call assignMinus(temp_SF,u)
+           call divide(temp_SF,dt)
+           call add(temp_SF,f)
+
+           call solve(JAC,u,temp_SF,sigma,g,ss,norm_res,.true.,NU)
+           if (mod(i,5).eq.1) then
+           ! call export_1C_SF(g,u,dir,'u_'//name//'_'//int2str(i),0)
+
+           ! call compute_Au(lapU,u,sigma,g,temp,R,dt)
+           ! call subtract(R,lapU,temp_SF)
+           ! call zeroGhostPoints(R)
+           ! call export_1C_SF(g,R,dir,'R_'//name//'_'//int2str(i),0)
+           endif
+           write(*,*) 'Time = ',real(i,cp)*dt
+           write(*,*) 'Time step = ',i
+         enddo
          call delete(JAC)
-         call lap(lapU,u,g)
+         call compute_Au(lapU,u,sigma,g,temp,R,dt)
          call subtract(e,u,u_exact)
-         call subtract(R,lapU,f)
+         call subtract(R,lapU,temp_SF)
          call zeroGhostPoints(R)
          call export_1C_SF(g,R,dir,'R_'//name,0)
          call export_1C_SF(g,u,dir,'u_'//name,0)
@@ -231,11 +290,34 @@
          call subtract(u,u_exact)
          call compute(norm_e,u,g)
          call print(norm_e,'u_'//name//' vs u_exact')
+         close(NU)
+
+         ! Steady State
+         ! name = 'JAC'
+         ! call setMaxIterations(ss,6000) ! Cell centered data
+         ! call assign(u,0.0_cp)
+         ! call init(JAC,u,g,sigma)
+         ! call solve(JAC,u,f,sigma,g,ss,norm_res,.true.)
+         ! call delete(JAC)
+         ! call compute_Au(lapU,u,sigma,g,temp)
+         ! call subtract(e,u,u_exact)
+         ! call subtract(R,lapU,f)
+         ! call zeroGhostPoints(R)
+         ! call export_1C_SF(g,R,dir,'R_'//name,0)
+         ! call export_1C_SF(g,u,dir,'u_'//name,0)
+         ! call export_1C_SF(g,e,dir,'e_'//name,0)
+         ! call subtract(u,u_exact)
+         ! call compute(norm_e,u,g)
+         ! call print(norm_e,'u_'//name//' vs u_exact')
 
          call delete(g)
          call delete(e)
          call delete(u)
+         call delete(temp_SF)
+         call delete(sigma)
+         call delete(sig)
          call delete(f)
+         call delete(temp)
          call delete(u_exact)
          call delete(lapU)
          call delete(R)

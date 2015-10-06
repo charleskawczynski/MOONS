@@ -26,12 +26,9 @@
        use ops_physics_mod
        use applyBCs_mod
        use solverSettings_mod
-       use SOR_mod
-       ! use ADI_mod
-       ! use MG_mod
-       use poisson_mod
-       use probe_base_mod
-       use probe_transient_mod
+
+       use ind_methods_mod
+       use monitor_mod
 
        implicit none
 
@@ -544,69 +541,6 @@
          call curl(ind%J_cc,ind%Bstar,ind%g)
        end subroutine
 
-!        subroutine computeTotalMagneticEnergyFluid(ind,g,ss_MHD)
-!          implicit none
-!          type(induction),intent(inout) :: ind
-!          type(grid),intent(in) :: g
-!          type(solverSettings),intent(in) :: ss_MHD
-!          real(cp) :: K_energy
-!          integer,dimension(3) :: Nici1,Nici2
-!          Nici1 = ind%SD%Nici1; Nici2 = ind%SD%Nici2
-!           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-!            call assign(ind%Bstar,ind%B)
-!            call add(ind%Bstar,ind%B0)
-!            call totalEnergy(K_energy,&
-!              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              g)
-!            call set(ind%KB_energy,ind%nstep,K_energy)
-!            call apply(ind%KB_energy)
-!           endif
-!           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-!            call assign(ind%Bstar,ind%B)
-!            call totalEnergy(K_energy,&
-!              ind%Bstar%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%Bstar%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              g)
-!            call set(ind%KBi_energy,ind%nstep,K_energy)
-!            call apply(ind%KBi_energy)
-!           endif
-!           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-!            call totalEnergy(K_energy,&
-!              ind%B0%x(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%B0%y(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              ind%B0%z(Nici1(1):Nici2(1),Nici1(2):Nici2(2),Nici1(3):Nici2(3)),&
-!              g)
-!            call set(ind%KB0_energy,ind%nstep,K_energy)
-!            call apply(ind%KB0_energy)
-!           endif
-!        end subroutine
-
-       subroutine computeTotalMagneticEnergy(ind,ss_MHD)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(solverSettings),intent(in) :: ss_MHD
-         real(cp) :: K_energy
-          if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call assign(ind%Bstar,ind%B)
-           call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,ind%Bstar,ind%g)
-           call set(ind%KB_energy,ind%nstep,K_energy)
-           call apply(ind%KB_energy)
-          endif
-          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%B,ind%g)
-           call set(ind%KBi_energy,ind%nstep,K_energy)
-           call apply(ind%KBi_energy)
-          endif
-          if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%B0,ind%g)
-           call set(ind%KB0_energy,ind%nstep,K_energy)
-           call apply(ind%KB0_energy)
-          endif
-       end subroutine
 
        ! ********************* AUX *****************************
 
@@ -678,64 +612,5 @@
        !   ! endif
        ! end subroutine
 
-       subroutine perturbAll(f,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         type(grid),intent(in) :: g
-         real(cp),dimension(3) :: wavenum,eps
-         integer,dimension(3) :: s
-         integer :: i,j,k
-         s = shape(f)
-         wavenum = 0.1_cp
-         eps = 0.01_cp
-         if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*g%c(1)%hn(i)) +&
-                                           eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*g%c(1)%hc(i)) +&
-                                           eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         else
-          stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
-         endif
-       end subroutine
-
-       subroutine perturb(f,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         type(grid),intent(in) :: g
-         real(cp),dimension(3) :: wavenum,eps
-         integer,dimension(3) :: s
-         integer :: i,j,k
-         s = shape(f)
-         wavenum = 10.0_cp
-         eps = 0.1_cp
-         if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         else
-          stop 'Error: unmatched case in perturb in inductionSolver.f90'
-         endif
-       end subroutine
 
        end module

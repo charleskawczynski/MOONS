@@ -61,7 +61,17 @@
         implicit none
         type(triDiag),intent(inout) :: T_out
         type(triDiag),intent(in) :: T_in
-        call init(T_out,T_in%L,T_in%D,T_in%U)
+        logical,dimension(3) :: TF
+        TF(1) = allocated(T_in%L)
+        TF(2) = allocated(T_in%D)
+        TF(3) = allocated(T_in%U)
+        if (all(TF)) then
+          call init(T_out,T_in%L,T_in%D,T_in%U)
+        else
+          if (TF(1)) call initL(T_out,T_in%L)
+          if (TF(2)) call initD(T_out,T_in%D)
+          if (TF(3)) call initU(T_out,T_in%U)
+        endif
       end subroutine
 
       subroutine init_Copy_array(T_out,T_in)

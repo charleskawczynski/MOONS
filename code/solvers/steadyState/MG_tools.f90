@@ -2,6 +2,7 @@
        use coordinates_mod
        use grid_mod
        use SF_mod
+       use VF_mod
        implicit none
 
        ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
@@ -23,11 +24,13 @@
        public :: restrict
        public :: prolongate
 
-       interface restrict;     module procedure restrictField1D_RF;   end interface
-       interface restrict;     module procedure restrictField_SF;     end interface
+       interface restrict;     module procedure restrictField1D_RF;    end interface
+       interface restrict;     module procedure restrictField_SF;      end interface
+       interface restrict;     module procedure restrictField_SF_slow; end interface
+       interface restrict;     module procedure restrictField_VF;      end interface
 
-       interface prolongate;   module procedure prolongateField1D_RF; end interface
-       interface prolongate;   module procedure prolongateField_SF;   end interface
+       interface prolongate;   module procedure prolongateField1D_RF;  end interface
+       interface prolongate;   module procedure prolongateField_SF;    end interface
 
        contains
 
@@ -169,7 +172,6 @@
         type(SF),intent(in) :: u     ! fine field
         type(SF),intent(inout) :: r  ! restricted field
         type(grid),intent(in) :: g   ! fine coordinates
-        integer,dimension(3) :: su,sr
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
@@ -177,6 +179,38 @@
           call restrict(temp2%RF(i)%f,temp1%RF(i)%f,g%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
           call restrict(  r%RF(i)%f,  temp2%RF(i)%f,g%c(3),3,temp2%RF(i)%s,r%RF(i)%s    ,0,0,1)
         enddo
+      end subroutine
+
+      subroutine restrictField_SF_slow(r,u,g,g_rx,g_rxy)
+        ! This routine is specifically designed 
+        ! for the coefficient, sigma.
+        implicit none
+        type(SF),intent(in) :: u
+        type(SF),intent(inout) :: r
+        type(grid),intent(in) :: g,g_rx,g_rxy
+        type(SF) :: temp1,temp2
+        ! if (u%is_Face) call init_Face(temp1,g_rx,u%FaceDir)
+        if (u%is_CC)   call init_CC(temp1,g_rx)
+        if (u%is_Node) call init_Node(temp1,g_rx)
+        ! if (u%is_Edge) call init_Edge(temp1,g_rx,u%EdgeDir)
+
+        ! if (u%is_Face) call init_Face(temp2,g_rxy,u%FaceDir)
+        if (u%is_CC)   call init_CC(temp2,g_rxy)
+        if (u%is_Node) call init_Node(temp2,g_rxy)
+        ! if (u%is_Edge) call init_Edge(temp2,g_rxy,u%EdgeDir)
+        call restrict(r,u,g,temp1,temp2)
+        call delete(temp1)
+        call delete(temp2)
+      end subroutine
+
+      subroutine restrictField_VF(r,u,g,g_rx,g_rxy)
+        implicit none
+        type(VF),intent(in) :: u               ! fine field
+        type(VF),intent(inout) :: r            ! restricted field
+        type(grid),intent(in) :: g,g_rx,g_rxy  ! fine coordinates
+        call restrict(r%x,u%x,g,g_rx,g_rxy)
+        call restrict(r%y,u%y,g,g_rx,g_rxy)
+        call restrict(r%z,u%z,g,g_rx,g_rxy)
       end subroutine
 
 

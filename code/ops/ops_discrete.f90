@@ -30,7 +30,7 @@
        !                        -------> edgeDir
        ! 
        ! 
-       use del_mod
+       use ops_del_mod
        use grid_mod
        use SF_mod
        use VF_mod

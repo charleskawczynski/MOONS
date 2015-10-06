@@ -73,7 +73,6 @@
           integer,dimension(3) :: s                  ! Dimension
           real(cp),dimension(:,:,:),allocatable :: f ! field
           type(BCs) :: b
-          logical :: is_CC,is_Node,is_face,is_edge
         end type
 
         interface init;       module procedure init_RF_size;           end interface
@@ -716,10 +715,6 @@
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))
           f1%s = shape(f1%f)
-          f1%is_CC = f2%is_CC
-          f1%is_node = f2%is_node
-          f1%is_face = f2%is_face
-          f1%is_edge = f2%is_edge
         end subroutine
 
         ! subroutine init_RF_3(a,s)
@@ -738,8 +733,6 @@
           type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
-          call deleteDataLocation(a)
-          a%is_CC = .true.
         end subroutine
 
         subroutine init_RF_Face(a,g,dir)
@@ -753,8 +746,6 @@
           case (3); call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
           case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
           end select
-          call deleteDataLocation(a)
-          a%is_face = .true.
         end subroutine
 
         subroutine init_RF_Edge(a,g,dir)
@@ -768,8 +759,6 @@
           case (3); call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
           case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
           end select
-          call deleteDataLocation(a)
-          a%is_edge = .true.
         end subroutine
 
         subroutine init_RF_Node(a,g)
@@ -777,39 +766,34 @@
           type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
-          call deleteDataLocation(a)
-          a%is_node = .true.
         end subroutine
 
-        subroutine init_BC_vals(f)
+        subroutine init_BC_vals(f,is_CC,is_Node)
           implicit none
           type(realField),intent(inout) :: f
-          if (f%is_node) then
+          logical,intent(in) :: is_CC,is_Node
+          logical,dimension(2) :: TF
+          TF = (/is_CC,is_Node/)
+          if (count(TF).gt.1) then
+            stop 'Error: more than one datatype in init_BC_vals in RF.f90'
+          endif
+          if (is_Node) then
             call init(f%b,f%f(2,:,:),1)
             call init(f%b,f%f(:,2,:),3)
             call init(f%b,f%f(:,:,2),5)
             call init(f%b,f%f(f%s(1)-1,:,:),2)
             call init(f%b,f%f(:,f%s(2)-1,:),4)
             call init(f%b,f%f(:,:,f%s(3)-1),6)
-          elseif (f%is_CC) then
+          elseif (is_CC) then
             call init(f%b,0.5_cp*(f%f(1,:,:)+f%f(2,:,:)),1)
             call init(f%b,0.5_cp*(f%f(:,1,:)+f%f(:,2,:)),3)
             call init(f%b,0.5_cp*(f%f(:,:,1)+f%f(:,:,2)),5)
             call init(f%b,0.5_cp*(f%f(f%s(1),:,:)+f%f(f%s(1)-1,:,:)),2)
             call init(f%b,0.5_cp*(f%f(:,f%s(2),:)+f%f(:,f%s(2)-1,:)),4)
             call init(f%b,0.5_cp*(f%f(:,:,f%s(3))+f%f(:,:,f%s(3)-1)),6)
-          else; stop 'Error: field-based BC init is only available for N / CC data.'
+          else
+            stop 'Error: field-based BC init is only available for N / CC data.'
           endif
-        end subroutine
-
-
-        subroutine deleteDataLocation(a)
-          implicit none
-          type(realField),intent(inout) :: a
-          a%is_CC = .false.
-          a%is_node = .false.
-          a%is_face = .false.
-          a%is_edge = .false.
         end subroutine
 
         subroutine delete_RF(a)

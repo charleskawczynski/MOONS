@@ -40,7 +40,7 @@
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Simulation (MOONS)}
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
 \author{C. Kawczynski \\
 Department of Mechanical and Aerospace Engineering \\
 University of California Los Angeles, USA\\
@@ -256,7 +256,124 @@ From the above equations, it is clear that
   U_j = \left( \frac{1}{\Delta h_{p,j} \Delta h_{d,j-1+gt}} \right), \qquad j \in (2,s-1)
 \end{equation}
 
-\subsection{Boundaries}
+\section{2nd derivative via composition}
+
+The 3-point stencil to achieve 2nd order accuracy is
+
+
+\[ Af = \left[
+\begin{array}{ccccccccc}
+L_{1} & D_{1}    & U_{1}     &           &           &           &         \\
+L_{2} & D_{2}    & U_{2}     &           &           &           &         \\
+      & \ddots   & \ddots    & \ddots    &           &           &         \\
+      &          & L_{i-1}   & D_{i-1}   & U_{i-1}   &           &         \\
+      &          &           & \ddots    & \ddots    & \ddots    &         \\
+      &          &           &           & L_{s-3}   & D_{s-3}   & U_{s-3} \\
+      &          &           &           & L_{s-2}   & D_{s-2}   & U_{s-2} \\
+\end{array} \right] 
+\left[ \begin{array}{c}
+f_{2} \\ \vdots \\ f_{i-1} \\ f_{i} \\ f_{i+1} \\ \vdots \\ f_{s-1}
+\end{array} \right]
+=
+\left[ \begin{array}{c}
+f'_{2} \\ \vdots \\ f'_{i-1} \\ f'_{i} \\ f'_{i+1} \\ \vdots \\ f'_{s-1}
+\end{array} \right]
+\]
+
+\subsection{Node derivatives}
+We have
+
+\[
+Af = 
+\frac{\partial}{\partial h} \left( \frac{\partial f}{\partial h} \right)
+=
+\left[
+\begin{array}{ccccccccc}
+D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
+  & D_{2} & U_{2} &   &   &   &   &   &   \\
+  &   & D_{3} & U_{3} &   &   &   &   &   \\
+  &   &  & \ddots & \ddots &   &   &   &   \\
+  &   &   &   & D_{j} & U_{j} &   &   &   \\
+  &   &   &   &  & \ddots & \ddots &   &   \\
+  &   &   &   &   &   & D_{sc-2} & U_{sc-2} &   \\
+ 0 &   &   &   &   &   &   & D_{sc-1} & U_{sc-1} \\
+\end{array}
+\right]
+\left[ \begin{array}{c}
+k_{c,1} \\ k_{c,2} \\ \vdots \\ k_{c,j-1} \\ k_{c,j} \\ k_{c,j+1} \\ \vdots \\ k_{c,sc-1} \\ k_{c,sc}
+\end{array} \right]
+\]
+
+\[
+\left[
+\begin{array}{ccccccccc}
+D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
+  & D_{2} & U_{2} &   &   &   &   &   &   \\
+  &   & D_{3} & U_{3} &   &   &   &   &   \\
+  &   &  & \ddots & \ddots &   &   &   &   \\
+  &   &   &   & D_{j} & U_{j} &   &   &   \\
+  &   &   &   &  & \ddots & \ddots &   &   \\
+  &   &   &   &   &   & D_{sn-2} & U_{sn-2} &   \\
+ 0 &   &   &   &   &   &   & D_{sn-1} & U_{sn-1} \\
+\end{array}
+\right]
+\]
+
+Where $g \in CC$. Multiplying the first two we have
+\[
+Af = 
+\frac{\partial}{\partial h} \left( \frac{\partial f}{\partial h} \right)
+=
+\left[
+\begin{array}{ccccccccc}
+D_{1} k_{1} & U_{1} k_{2} &  &   &   &   &   &   & 0 \\
+  & D_{2} k_{2} & U_{2} k_{3} &   &   &   &   &   &   \\
+  &   & D_{3} k_{3} & U_{3} k_{4} &   &   &   &   &   \\
+  &   &  & \ddots & \ddots &   &   &   &   \\
+  &   &   &   & D_{j} k_{j} & U_{j} k_{j+1} &   &   &   \\
+  &   &   &   &  & \ddots & \ddots &   &   \\
+  &   &   &   &   &   & D_{sc-2} k_{sc-1} & U_{sc-2} k_{sc-1} &   \\
+ 0 &   &   &   &   &   &   & D_{sc-1} k_{sc-1} & U_{sc-1} k_{sc} \\
+\end{array}
+\right]
+\]
+
+\[
+\left[
+\begin{array}{ccccccccc}
+D_{1} & U_{1} &  &   &   &   &   &   & 0 \\
+  & D_{2} & U_{2} &   &   &   &   &   &   \\
+  &   & D_{3} & U_{3} &   &   &   &   &   \\
+  &   &  & \ddots & \ddots &   &   &   &   \\
+  &   &   &   & D_{j} & U_{j} &   &   &   \\
+  &   &   &   &  & \ddots & \ddots &   &   \\
+  &   &   &   &   &   & D_{sn-2} & U_{sn-2} &   \\
+ 0 &   &   &   &   &   &   & D_{sn-1} & U_{sn-1} \\
+\end{array}
+\right]
+\]
+
+First note that, currently in MOONS $sn = sc + 1$. Next, multiplying the two matrices of size 
+$(sc-1 \times sc) \times (sn-1 \times sn) = (sn-2 \times sn-1) \times (sn-1 \times sn) = (sn-2 \times sn)$ to operate on data of size $sn \times 1$ results in $sn-2 \times 1$ (only the interior/up to boundary data for node data), we have
+
+\begin{equation}
+  Af = 
+\end{equation}
+\[
+\left[
+\begin{array}{ccccccccc}
+D_1D_1k_1&(D_1k_1U_1+U_1k_2D_2) &U_1k_2U_2          &           &                             &                    0                      \\
+         &D_2D_2k_2           &(D_2U_2k_2+D_3U_2k_3)&U_2k_3U_3  &                             &                                         \\
+         &\ddots             &\ddots     &                             &                    &                                         \\
+         &D_j D_j k_j&(D_jU_jk_j+D_{j+1}U_{j}k_{j+1})&U_jk_{j+1}U_{j+1}   &                                         \\
+         &\ddots                       &\ddots              &                                         \\
+0        &D_{sn-2} D_{sn-2} k_{sn-2}&(D_{sn-2}U_{sn-2}k_{sn-2}+D_{sn-1}U_{sn-2}k_{sn-1})&U_{sn-2}k_{sn-1}U_{sn-1}   &                                         \\
+\end{array}
+\right]
+\]
+
+
+\section{Boundaries}
 One-sided difference equations must be used at the boundaries in order to maintain 2nd order accuracy. Ghost cells are linearly extrapolated, which allows for simple BCs for the PPE. The extra data point can be used to our advantage because the boundary value is then easily obtained.
 
 For CC data, a weighted interior difference equation is used with half of the cell distance is used and the boundary value is computed by linear interpolation. For N data, a one-sided difference equation is used with the boundary value, again computed by linear interpolation. Each of these formulas are discussed in the next section.
@@ -301,10 +418,10 @@ For convenience, the grid is shown again here:
   \end{center}
 \end{figure}
 
-\subsubsection{Boundary treatment for CC data}
+\subsection{Boundary treatment for CC data}
 
 
-\subsubsection{Boundary treatment for N data}
+\subsection{Boundary treatment for N data}
 
 
 \end{document}

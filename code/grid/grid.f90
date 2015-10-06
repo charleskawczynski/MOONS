@@ -18,7 +18,7 @@
        public :: grid
        public :: init,delete
        public :: print,export ! import
-       public :: restrict
+       public :: restrict,restrict_x,restrict_xy
        public :: init_Stencils
 
 #ifdef _DEBUG_COORDINATES_
@@ -38,6 +38,8 @@
 
        interface restrict;       module procedure restrictGrid1;       end interface
        interface restrict;       module procedure restrictGrid3;       end interface
+       interface restrict_x;     module procedure restrictGrid_x;      end interface
+       interface restrict_xy;    module procedure restrictGrid_xy;     end interface
 
        interface print;          module procedure printGrid;           end interface
        interface export;         module procedure exportGrid_light;    end interface
@@ -125,6 +127,19 @@
          do i = 1,3; call restrict(r%c(i),g%c(i)) ;enddo
        end subroutine
 
+       subroutine restrictGrid_x(r,g)
+         type(grid),intent(inout) :: r
+         type(grid),intent(in) :: g
+         call restrict(r%c(1),g%c(1))
+       end subroutine
+
+       subroutine restrictGrid_xy(r,g)
+         type(grid),intent(inout) :: r
+         type(grid),intent(in) :: g
+         call restrict(r%c(1),g%c(1))
+         call restrict(r%c(2),g%c(2))
+       end subroutine
+
        ! ---------------------------------------------- check grid
 
 #ifdef _CHECK_GRID_
@@ -153,7 +168,7 @@
        subroutine printGrid(g)
          implicit none
          type(grid), intent(in) :: g
-         integer :: i,un
+         integer :: un
          un = 6
          write(un,*) 'N_cells = ',(/g%c(1)%N,g%c(2)%N,g%c(3)%N/)
          write(un,*) 'volume = ',g%volume

@@ -1,7 +1,7 @@
        module grids_mod
+      ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use IO_tools_mod
-       use IO_scalarBase_mod
-       use coordinates_mod
+       use grid_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -15,156 +15,131 @@
 #endif
 
        private
-
        public :: grids
        public :: init,delete
        public :: print,export ! import
-       public :: restrict
+       public :: restrict,restrict_x,restrict_xy
+       public :: init_Stencils
+
+#ifdef _DEBUG_COORDINATES_
+      public :: checkgrids
+#endif
 
        type grids
-         integer :: s
-         type(grid),dimension(1) :: g
-         ! type(grid),dimension(:),allocatable :: g ! grids
+         integer :: s ! Number of grids
+         type(grid),dimension(:),allocatable :: g
        end type
 
-       interface init;       module procedure initGridCopy;   end interface
-       interface init;       module procedure initGrid1;      end interface
-       interface init;       module procedure initGrid2;      end interface
-       interface init;       module procedure initGrid3;      end interface
-       interface delete;     module procedure delete_grids;   end interface
+       interface init;           module procedure initgridsCopy;        end interface
+       interface init;           module procedure initgrids1;           end interface
+       interface init;           module procedure initgrids2;           end interface
+       interface init;           module procedure initgrids3;           end interface
+       interface delete;         module procedure deletegrids;          end interface
 
-       interface restrict;   module procedure restrictGrid1;  end interface
-       interface restrict;   module procedure restrictGrid3;  end interface
+       interface restrict;       module procedure restrictgrids1;       end interface
+       interface restrict;       module procedure restrictgrids3;       end interface
+       interface restrict_x;     module procedure restrictgrids_x;      end interface
+       interface restrict_xy;    module procedure restrictgrids_xy;     end interface
 
-       interface print;      module procedure printGrid;      end interface
-       interface export;     module procedure exportGrid;     end interface
-       interface addToFile;  module procedure addToFileGrid;  end interface
-       ! interface export;     module procedure exportGrid1;     end interface
-       
+       interface print;          module procedure printgrids;           end interface
+       interface export;         module procedure exportgrids_light;    end interface
+       interface addToFile;      module procedure addToFilegrids;       end interface
+       interface init_Stencils;  module procedure init_Stencils_grids;  end interface
+
        contains
 
-       subroutine delete_grids(g)
+       subroutine deletegrids(gs)
          implicit none
          type(grids),intent(inout) :: gs
          integer :: i
-         do i = 1,3; call delete(gs%g(i)) ;enddo
-         ! write(*,*) 'Grid deleted'
+         if (.not.allocated(gs%g)) stop 'Error: grids not allocated in deletegrids in grids.f90'
+         do i = 1,gs%s; call delete(gs%g(i)) ;enddo
        end subroutine
 
-       subroutine initGridCopy(g,f)
+       subroutine initgridsCopy(gs,gs_in)
          implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: f
+         type(grids),intent(inout) :: g
+         type(grids),intent(in) :: gs_in
          integer :: i
-         do i = 1,3; call init(g%c(i),f%c(i)%hn,2) ;enddo
-         call initProps(g)
+         if (.not.allocated(gs%g)) stop 'Error: grids not allocated in initgridsCopy in grids.f90'
+         do i = 1,gs%s; call init(gs%g(i),gs_in%g(i)) ;enddo
        end subroutine
 
-       subroutine initGrid1(g,h,dir,gridType)
+       subroutine initgrids1(gs,g)
          implicit none
+         type(grids),intent(inout) :: gs
          type(grid),intent(inout) :: g
-         real(cp),dimension(:),intent(in) :: h
-         integer,intent(in) :: dir,gridType
          integer :: i
-         call init(g%c(dir),h,gridType)
-         if (all((/(allocated(g%c(i)%hn),i=1,3)/))) then
-           call initProps(g)
-#ifdef _CHECK_GRID_
-           call checkGrid(g)
-#endif
-         endif
+         if (.not.allocated(gs%g)) stop 'Error: grids not allocated in initgrids1 in grids.f90'
+         call init(g%c(dir),h,gridsType)
        end subroutine
 
-       subroutine initGrid2(g,h1,h2,h3,gridType)
-        implicit none
-        type(grid),intent(inout) :: g
-        real(cp),dimension(:),intent(in) :: h1,h2,h3
-        integer,intent(in) :: gridType
-        call init(g%c(1),h1,gridType)
-        call init(g%c(2),h2,gridType)
-        call init(g%c(3),h3,gridType)
-        call initProps(g)
-       end subroutine
+       ! ------------------- restrict (for multigrids) --------------
 
-       subroutine initGrid3(g,h1,h2,h3,gridType)
-         implicit none
-         type(grid),intent(inout) :: g
-         real(cp),dimension(:),intent(in) :: h1,h2,h3
-         integer,dimension(3),intent(in) :: gridType
-         call init(g%c(1),h1,gridType(1))
-         call init(g%c(2),h2,gridType(2))
-         call init(g%c(3),h3,gridType(3))
-         call initProps(g)
-       end subroutine
-
-       subroutine initProps(g)
-         implicit none
-         type(grid),intent(inout) :: g
-         g%dhMin = minval((/g%c(1)%dhMin,g%c(2)%dhMin,g%c(3)%dhMin/))
-         g%dhMax = maxval((/g%c(1)%dhMax,g%c(2)%dhMax,g%c(3)%dhMax/))
-         g%maxRange = maxval((/g%c(1)%maxRange,g%c(2)%maxRange,g%c(3)%maxRange/))
-         g%volume = g%c(1)%maxRange*g%c(2)%maxRange*g%c(3)%maxRange
-       end subroutine
-        
-       ! ------------------- restrict (for multigrid) --------------
-
-       subroutine restrictGrid1(r,g,dir)
-         type(grid),intent(inout) :: r
-         type(grid),intent(in) :: g
+       subroutine restrictgrids1(rs,gs,dir)
+         type(grids),intent(inout) :: rs
+         type(grids),intent(in) :: gs
          integer,intent(in) :: dir
-         call restrict(r%c(dir),g%c(dir))
+         if (.not.allocated(gs%g)) stop 'Error: grids not allocated in restrictgrids1 in grids.f90'
+         do i = 1,gs%s; call restrict(rs%g(i)%c(dir),gs%g(i)%c(dir)) ;enddo
        end subroutine
 
-       subroutine restrictGrid3(r,g)
-         type(grid),intent(inout) :: r
-         type(grid),intent(in) :: g
+       subroutine restrictgrids3(rs,gs)
+         type(grids),intent(inout) :: rs
+         type(grids),intent(in) :: gs
          integer :: i
-         do i = 1,3; call restrict(r%c(i),g%c(i)) ;enddo
+         if (.not.allocated(rs%g)) stop 'Error: grids not allocated in restrictgrids3 in grids.f90'
+         do i = 1,gs%s; call restrict(rs%g(i),gs%g(i)) ;enddo
        end subroutine
 
-       ! ---------------------------------------------- check grid
+       subroutine restrictgrids_x(rs,gs)
+         type(grids),intent(inout) :: rs
+         type(grids),intent(in) :: gs
+         integer :: i
+         if (.not.allocated(rs%g)) stop 'Error: grids not allocated in restrictgrids_x in grids.f90'
+         do i = 1,gs%s; call restrict(rs%g(i)%c(1),gs%g(i)%c(1)) ;enddo
+       end subroutine
 
-#ifdef _CHECK_GRID_
-       subroutine checkGrid(g)
+       subroutine restrictgrids_xy(r,g)
+         type(grids),intent(inout) :: r
+         type(grids),intent(in) :: g
+         integer :: i
+         if (.not.allocated(rs%g)) stop 'Error: grids not allocated in restrictgrids_xy in grids.f90'
+         do i = 1,gs%s; call restrict(rs%g(i)%c(1),gs%g(i)%c(1)) ;enddo
+         do i = 1,gs%s; call restrict(rs%g(i)%c(2),gs%g(i)%c(2)) ;enddo
+       end subroutine
+
+       ! ---------------------------------------------- check grids
+
+#ifdef _CHECK_grids_
+       subroutine checkgrids(gs)
          implicit none
-         type(grid),intent(in) :: g
+         type(grids),intent(in) :: gs
          integer :: i
-         do i=1,3; call checkCoordinates(g%c(i)); enddo
+         do i = 1,gs%s; call checkCoordinates(gs%g(i)) ;enddo
        end subroutine
 #endif
 
-       subroutine exportGrid(g,dir,name)
+       subroutine exportgrids_light(g,dir,name)
          implicit none
-         type(grid), intent(in) :: g
+         type(grids), intent(in) :: gs
          character(len=*),intent(in) :: dir,name
-         integer :: newU
-         if (exportLight) then
-           newU = newAndOpen(dir,'gridXYZ_'//name)
-           write(newU,*) 'dhMin = ',g%dhMin
-           write(newU,*) 'dhMin = ',g%dhMax
-           write(newU,*) 'maxRange = ',g%maxRange
-           write(newU,*) 'volume = ',g%volume
-           call addToFile(g,newU); close(newU)
-           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name//'_n')
-         else
-           call writeToFile(g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,1.0_cp,dir,name//'_n')
-           ! call writeToFile(g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,1.0_cp,dir,name//'_c')
-         endif
+         integer :: i
+         do i = 1,gs%s; call export(gs%g(i)) ;enddo
        end subroutine
 
-       subroutine printGrid(g)
+       subroutine printgrids(g)
          implicit none
-         type(grid), intent(in) :: g
+         type(grids), intent(in) :: gs
          integer :: i
-         do i = 1,3; call print(g%c(i)) ;enddo
+         do i = 1,gs%s; call print(gs%g(i)) ;enddo
        end subroutine
 
-       subroutine addToFileGrid(g,u)
+       subroutine init_Stencils_grids(g)
          implicit none
-         type(grid), intent(in) :: g
-         integer,intent(in) :: u
+         type(grids), intent(inout) :: g
          integer :: i
-         do i = 1,3; call addToFile(g%c(i),u) ;enddo
+         do i = 1,gs%s; call init_stencils(gs%g(i)) ;enddo
        end subroutine
 
        end module

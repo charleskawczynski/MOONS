@@ -58,7 +58,7 @@
         type(SF) :: u,f,lapU,res,e
         type(SF) :: temp_rx  ! (or temp_pzy), temp fields for restriction / prolongation
         type(SF) :: temp_rxy ! (or temp_pz) , temp fields for restriction / prolongation
-        type(grid) :: g
+        type(grid) :: g,g_rx,g_rxy
         type(norms) :: norm
         type(solverSettings) :: ss
         integer :: nLevels
@@ -81,12 +81,12 @@
         type(solverSettings),intent(in) :: ss
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
-        integer :: i,j,nLevels,bctype
+        integer :: i,j,nLevels
 
         nLevels = size(mg)
         mg(:)%nLevels = size(mg)
         ! mg(:)%displayTF = displayTF
-        mg(:)%displayTF = .false.
+        mg(:)%displayTF = displayTF
         s = u%RF(1)%s
 
         ! ******************** Check size of data ********************
@@ -136,17 +136,26 @@
         ! 
         ! Need to choose a convention, which grid do these transition fields live?
         ! 
+        call init(mg(1)%g_rx,g_base)
+        call init(mg(1)%g_rxy,g_base)
+        do i = 1,mg(1)%nLevels
+          call restrict_x(mg(i)%g_rx,mg(i)%g)
+          call restrict_xy(mg(i)%g_rxy,mg(i)%g)
+        enddo
         do j = 1,mg(1)%nLevels
           if (s(1).eq.g_base%c(1)%sn) then
-            call init(mg(j)%temp_rx,mg(j)%g)
-            call init(mg(j)%temp_rxy,mg(j)%g)
+            call init_Node(mg(j)%temp_rx,mg(j)%g_rx)
+            call init_Node(mg(j)%temp_rxy,mg(j)%g_rxy)
           elseif (s(1).eq.g_base%c(1)%sc) then
-            call init(mg(j)%temp_rx,mg(j)%g)
-            call init(mg(j)%temp_rxy,mg(j)%g)
+            call init_CC(mg(j)%temp_rx,mg(j)%g_rx)
+            call init_CC(mg(j)%temp_rxy,mg(j)%g_rxy)
           endif
-
           call assign(mg(j)%temp_rx,0.0_cp)
           call assign(mg(j)%temp_rxy,0.0_cp)
+        enddo
+        do i = 1,mg(1)%nLevels
+          call delete(mg(i)%g_rx)
+          call delete(mg(i)%g_rxy)
         enddo
 
         ! ******************** Initialize norm/ss ********************
@@ -159,7 +168,7 @@
         mg(1)%MG_init = .true.
 
         call setIterationsPerLevel(mg,5)
-        ! call setIterationsAtMaxLevel(mg,100)
+        call setIterationsAtMaxLevel(mg,100)
         ! call setIterationsAtMaxLevel(mg,getMaxIterations(ss))
 
         ! call testRP(mg,'out\')
@@ -203,6 +212,8 @@
         call delete(mg%res)
         call delete(mg%e)
         call delete(mg%g)
+        call delete(mg%g_rx)
+        call delete(mg%g_rxy)
         call delete(mg%temp_rx)
         call delete(mg%temp_rxy)
       end subroutine
@@ -235,12 +246,11 @@
         write(*,*) '         Finished prolongating'
       end subroutine
 
-      subroutine solveMultiGrid(mg,u,f,u_bcs,g,ss,norm,displayTF)
+      subroutine solveMultiGrid(mg,u,f,g,ss,norm,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
-        type(BCs),intent(in) :: u_bcs
         type(grid),intent(in) :: g
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm

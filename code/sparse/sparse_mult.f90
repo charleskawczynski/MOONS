@@ -1,4 +1,4 @@
-      module del_mod
+      module sparse_mult_mod
       ! Returns an n-derivative of the scalar field, f, 
       ! along direction dir (1,2,3) which corresponds to (x,y,z).
       ! 
@@ -27,8 +27,7 @@
 
       use grid_mod
       use SF_mod
-      use triDiag_mod
-      use stencils_mod
+      use sparse_mod
       implicit none
 
       private
@@ -44,7 +43,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      interface delGen;    module procedure delGen_temp_T;  end interface
+      interface delGen;    module procedure delGen_given_g; end interface
       interface delGen;    module procedure delGen_given_T; end interface
 
 
@@ -148,7 +147,7 @@
       ! *********************** MED LEVEL ***********************
       ! *********************************************************
 
-      subroutine delGen_temp_T(dfdh,f,g,n,dir,pad,genType)
+      subroutine delGen_given_g(dfdh,f,g,n,dir,pad,genType)
         implicit none
         type(SF),intent(inout) :: dfdh
         type(SF),intent(in) :: f
@@ -212,7 +211,10 @@
         case (1,3); gt = 1
         case (2,4); gt = 0
         end select
-        call delGen_T(dfdh,f,T,dir,pad,genType,diffType,gt,s,sdfdh)
+        select case (diffType)
+        case (1,2); call delGen_T(dfdh,f,T,dir,pad,genType,1,gt,s,sdfdh)
+        case (3,4); call delGen_T(dfdh,f,T,dir,pad,genType,2,gt,s,sdfdh)
+        end select
       end subroutine
 
 
