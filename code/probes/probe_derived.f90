@@ -3,7 +3,7 @@
        ! 
        ! iProbe:
        !       type(iProbe) :: p
-       !       call init(p,g,s,i,dir,name,TF_freshStart)
+       !       call init(p,m,s,i,dir,name,TF_freshStart)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -25,7 +25,7 @@
        ! 
        ! aveProbe:
        !       type(aveProbe) :: p
-       !       call init(p,g,s,i,component,dir,name,TF_freshStart)
+       !       call init(p,m,s,i,component,dir,name,TF_freshStart)
        !       call print(p)                                    ! prints basic info (no data)
        !       call export(p)                                   ! exports basic probe info (no data)
        ! 
@@ -62,9 +62,8 @@
        use probe_transient_mod
        use probe_base_mod
        use IO_tools_mod
-
+       use mesh_mod
        use SF_mod
-       use grid_mod
        use norms_mod
 
        implicit none
@@ -136,30 +135,30 @@
 
         ! ------------------ INITIALIZE PROBE -----------------------
 
-        subroutine initCenterProbe(p,dir,name,TF_freshStart,s,g)
+        subroutine initCenterProbe(p,dir,name,TF_freshStart,s,m)
           implicit none
           type(centerProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer,dimension(3),intent(in) :: s
-          type(grid),intent(in) :: g
-          call init(p%ip,dir,name,TF_freshStart,s,(s+1)/2,g)
+          type(mesh),intent(in) :: m
+          call init(p%ip,dir,name,TF_freshStart,s,(s+1)/2,m)
         end subroutine
 
-        subroutine initAveProbe(p,dir,name,TF_freshStart,s,i,g,component)
+        subroutine initAveProbe(p,dir,name,TF_freshStart,s,i,m,component)
           implicit none
           type(aveProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer,dimension(3),intent(in) :: s,i
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,intent(in) :: component
           ! Local variables
           real(cp),dimension(3) :: h1,h2,h
           integer,dimension(3) :: i1,i2
-          call init(p%ip,dir,name,TF_freshStart,s,i,g)
+          call init(p%ip,dir,name,TF_freshStart,s,i,m)
 
           select case (component)
           case (1); p%x=1;p%y=0;p%z=0
@@ -172,18 +171,18 @@
           ! Define location based on average:
           i1 = i; h1 = p%ip%h
           i2 = (/i1(1)+p%x,i1(2)+p%y,i1(3)+p%z/)
-          call defineH(i2,g,s,h2)
+          call defineH(i2,m,s,h2)
           h = 0.5_cp*(h1 + h2)
           call resetH(p%ip,h)
         end subroutine
 
-        subroutine initPlaneErrorProbe(p,dir,name,TF_freshStart,s,i,g,direction)
+        subroutine initPlaneErrorProbe(p,dir,name,TF_freshStart,s,i,m,direction)
           implicit none
           type(planeErrorProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,dimension(3),intent(in) :: s,i
           integer,intent(in) :: direction
           ! Local variables
@@ -192,18 +191,18 @@
           p%i = i(direction)
           p%dir = direction
           ! DANGER: this passes nonsense to directions orthogonal to 'direction':
-          call defineH((/i(direction),i(direction),i(direction)/),g,s,h)
+          call defineH((/i(direction),i(direction),i(direction)/),m,s,h)
           p%h = h(direction)
         end subroutine
 
-        subroutine initAvePlaneErrorProbe(p,dir,name,TF_freshStart,s,i,g,direction)
+        subroutine initAvePlaneErrorProbe(p,dir,name,TF_freshStart,s,i,m,direction)
           implicit none
           type(avePlaneErrorProbe),intent(inout) :: p
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer,dimension(3),intent(in) :: s,i
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,intent(in) :: direction
           ! Local variables
           real(cp),dimension(3) :: h1,h2
@@ -220,10 +219,10 @@
           ! stop 'Error: direction must = 1,2,3 in initAvePlaneErrorProbe in probe_derived.f90'
           ! end select
           ! DANGER: this passes nonsense to directions orthogonal to 'direction':
-          call defineH(i,g,s,h1)
-          call defineH(i+1,g,s,h2)
-          ! call defineH((/i(direction),i(direction),i(direction)/),g,s,h1)
-          ! call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),g,s,h2)
+          call defineH(i,m,s,h1)
+          call defineH(i+1,m,s,h2)
+          ! call defineH((/i(direction),i(direction),i(direction)/),m,s,h1)
+          ! call defineH((/i(direction)+1,i(direction)+1,i(direction)+1/),m,s,h2)
 
           ! Define location based on average:
           p%h = 0.5_cp*(h1(direction) + h2(direction))

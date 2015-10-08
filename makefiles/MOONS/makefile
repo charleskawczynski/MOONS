@@ -147,22 +147,32 @@ TARGET = $(TARGET_DIR)$(PS)unitTest
 # $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
 
+# $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
+
 
 SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_transientFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)array.f90 \
 	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)stitch.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)gridGenTools.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)mesh.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)gridGen.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)matchGridStretching.f90 \
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)generateGrids.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)generateGrid.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)generateMesh.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
@@ -192,6 +202,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_split.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
@@ -215,7 +226,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_Tfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_K.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_BBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_Bfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_Sigma.f90 \
@@ -225,7 +235,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_Ufield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_Pfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)energySolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)inductionSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
@@ -236,7 +245,8 @@ SRCS_F =\
 
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
-SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
+SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 

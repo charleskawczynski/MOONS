@@ -2,6 +2,7 @@
        use IO_SF_mod
        use IO_VF_mod
        use grid_mod
+       use mesh_mod
        use SF_mod
        use VF_mod
        use BCs_mod
@@ -41,30 +42,30 @@
 
        contains
 
-       subroutine init_Ufield(U,g,dir)
+       subroutine init_Ufield(U,m,dir)
          implicit none
          type(VF),intent(inout) :: U
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          if (restartU) then
-               call initRestartUfield(U,g,dir)
+               call initRestartUfield(U,m,dir)
          elseif (preDefinedU_ICs.ne.0) then
                call initPreDefinedUfield(U%x%RF(1)%f,&
                                          U%y%RF(1)%f,&
-                                         U%z%RF(1)%f,g)
+                                         U%z%RF(1)%f,m%g(1))
          else; call initUserUfield(U%x%RF(1)%f,&
                                    U%y%RF(1)%f,&
-                                   U%z%RF(1)%f,g)
+                                   U%z%RF(1)%f,m%g(1))
          endif
        end subroutine
 
-       subroutine initRestartUfield(U,g,dir)
+       subroutine initRestartUfield(U,m,dir)
          implicit none
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: U
-         type(grid) :: temp
-         call init(temp,g)
+         type(mesh) :: temp
+         call init(temp,m)
          call import_1C_SF(temp,U%x,dir//'Ufield/','ufi',0)
          call import_1C_SF(temp,U%y,dir//'Ufield/','vfi',0)
          call import_1C_SF(temp,U%z,dir//'Ufield/','wfi',0)

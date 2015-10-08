@@ -37,6 +37,7 @@
        use VF_mod
        use BCs_mod
        use grid_mod
+       use mesh_mod
        implicit none
 
        private
@@ -59,25 +60,36 @@
 
        contains
 
-       subroutine applyAllBCs_VF(U,g)
+       subroutine applyAllBCs_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
-         type(grid),intent(in) :: g
-         call applyAllBCs(U%x,g)
-         call applyAllBCs(U%y,g)
-         call applyAllBCs(U%z,g)
+         type(mesh),intent(in) :: m
+         call applyAllBCs(U%x,m)
+         call applyAllBCs(U%y,m)
+         call applyAllBCs(U%z,m)
        end subroutine
 
-       subroutine applyAllBCs_SF(U,g)
+       subroutine applyAllBCs_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          integer :: i
-         do i=1,U%s
-           call applyAllBCs(U%RF(i)%f,U%RF(i)%b,g)
-           call applyAllBCs(U%RF(i)%f,U%RF(i)%b,g)
-           call applyAllBCs(U%RF(i)%f,U%RF(i)%b,g)
-         enddo
+         if (m%s.gt.1) then ! Check for stitching
+           do i=1,m%s
+             if (.not.m%g(i)%st(2)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),3,2)
+             if (.not.m%g(i)%st(2)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),4,2)
+             if (.not.m%g(i)%st(1)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),1,1)
+             if (.not.m%g(i)%st(1)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),2,1)
+             if (.not.m%g(i)%st(3)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),5,3)
+             if (.not.m%g(i)%st(3)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),6,3)
+           enddo
+           U%RF(1)%f(U%RF(1)%s(1),:,:) = U%RF(2)%f(2,:,:)
+           U%RF(2)%f(1,:,:) = U%RF(1)%f(U%RF(1)%s(1)-1,:,:)
+         else
+           do i=1,m%s
+             call applyAllBCs(U%RF(i)%f,U%RF(i)%b,m%g(i))
+           enddo
+         endif
        end subroutine
 
        subroutine applyAllBCs_RF(u,b,g)
@@ -88,18 +100,28 @@
          real(cp),dimension(:,:,:),intent(inout) :: u
          type(BCs),intent(in) :: b
          type(grid),intent(in) :: g
+         call applyBC_Face_dir(u,b,g,3,2)
+         call applyBC_Face_dir(u,b,g,4,2)
+         call applyBC_Face_dir(u,b,g,1,1)
+         call applyBC_Face_dir(u,b,g,2,1)
+         call applyBC_Face_dir(u,b,g,5,3)
+         call applyBC_Face_dir(u,b,g,6,3)
+       end subroutine
+
+       subroutine applyBC_Face_dir(u,b,g,f,d)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: u
+         type(BCs),intent(in) :: b
+         type(grid),intent(in) :: g
+         integer,intent(in) :: f,d ! face,dir
+
 #ifdef _DEBUG_APPLYBCS_
          if (.not.b%defined) then
           call print_defined(b)
           stop 'Error: BCs not fully defined..'
         endif
 #endif
-         call applyBCs(u,b%face(3)%bctype,3,b%face(3)%vals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         call applyBCs(u,b%face(4)%bctype,4,b%face(4)%vals,g%c(2)%hn,g%c(2)%hc,b%s(2))
-         call applyBCs(u,b%face(1)%bctype,1,b%face(1)%vals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyBCs(u,b%face(2)%bctype,2,b%face(2)%vals,g%c(1)%hn,g%c(1)%hc,b%s(1))
-         call applyBCs(u,b%face(5)%bctype,5,b%face(5)%vals,g%c(3)%hn,g%c(3)%hc,b%s(3))
-         call applyBCs(u,b%face(6)%bctype,6,b%face(6)%vals,g%c(3)%hn,g%c(3)%hc,b%s(3))
+         call applyBCs(u,b%face(f)%bctype,f,b%face(f)%vals,g%c(d)%hn,g%c(d)%hc,b%s(d))
        end subroutine
 
        subroutine applyBCs(u,bctype,face,bvals,hn,hc,s)

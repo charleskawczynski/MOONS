@@ -1,5 +1,5 @@
       module IO_SF_mod
-      use grid_mod
+      use mesh_mod
       use SF_mod
       use export_SF_mod
       use import_SF_mod
@@ -18,42 +18,45 @@
 
       private
       public :: export_1C_SF,import_1C_SF
-      public :: export_grid
+      public :: export_mesh
 
       contains
 
-      subroutine export_1C_SF(g,U,dir,name,pad)
+      subroutine export_1C_SF(m,U,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         integer,intent(in) :: pad
         type(SF),intent(in) :: U
         integer :: un
         un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_1C_SF(g,pad,un,arrfmt,trim(adjustl(name)),U)
+        call exp_1C_SF(m,pad,un,arrfmt,trim(adjustl(name)),U)
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine import_1C_SF(g,U,dir,name,pad)
+      subroutine import_1C_SF(m,U,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(grid),intent(inout) :: g
+        type(mesh),intent(in) :: m
         integer,intent(in) :: pad
         type(SF),intent(inout) :: U
+        type(mesh) :: temp
         integer :: un
         un = openToRead(dir,trim(adjustl(name)))
-        call imp_1C_SF(g,pad,un,arrfmt,trim(adjustl(name)),U)
+        call init(temp,m)
+        call imp_1C_SF(temp,pad,un,arrfmt,trim(adjustl(name)),U)
+        call delete(temp)
         call closeExisting(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine export_grid(g,dir,name,pad)
+      subroutine export_mesh(m,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         integer,intent(in) :: pad
         integer :: un
         un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_grid_SF(g,pad,un,arrfmt,trim(adjustl(name)))
+        call exp_mesh_SF(m,pad,un,arrfmt,trim(adjustl(name)))
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 

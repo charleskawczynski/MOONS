@@ -1,5 +1,6 @@
        module init_PBCs_mod
        use grid_mod
+       use mesh_mod
        use BCs_mod
        use SF_mod
        implicit none
@@ -32,11 +33,11 @@
        
        contains
 
-       subroutine init_PBCs(p,g)
+       subroutine init_PBCs(p,m)
          implicit none
          type(SF),intent(inout) :: p
-         type(grid),intent(in) :: g
-         call init(p%RF(1)%b,g,p%RF(1)%s)
+         type(mesh),intent(in) :: m
+         call init(p%RF(1)%b,m%g(1),p%RF(1)%s)
          if (preDefinedP_BCs.ne.0) then
                call initPredefinedPBCs(p%RF(1)%b)
          else; call initUserPBCs(p%RF(1)%b)

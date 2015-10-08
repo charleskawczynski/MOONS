@@ -17,7 +17,7 @@
       ! 
       ! Flags: (_PARALLELIZE_FFT_)
 
-      use grid_mod
+      use mesh_mod
       use applyBCs_mod
       use norms_mod
       use solversettings_mod
@@ -58,18 +58,18 @@
 
       contains
 
-      subroutine initFFT(FFT,u,g)
+      subroutine initFFT(FFT,u,m)
         implicit none
         type(FFTSolver),intent(inout) :: FFT
         type(SF),intent(in) :: u
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         FFT%s = u%RF(1)%s
-        FFT%dx2 = g%c(1)%dhn(1)**2.0_cp
-        FFT%dy2 = g%c(2)%dhn(1)**2.0_cp
-        FFT%dz2 = g%c(3)%dhn(1)**2.0_cp
-        FFT%Nx = g%c(1)%sc-2
-        FFT%Ny = g%c(2)%sc-2
-        FFT%Nz = g%c(3)%sc-2
+        FFT%dx2 = m%g(1)%c(1)%dhn(1)**2.0_cp
+        FFT%dy2 = m%g(1)%c(2)%dhn(1)**2.0_cp
+        FFT%dz2 = m%g(1)%c(3)%dhn(1)**2.0_cp
+        FFT%Nx = m%g(1)%c(1)%sc-2
+        FFT%Ny = m%g(1)%c(2)%sc-2
+        FFT%Nz = m%g(1)%c(3)%sc-2
         call init(FFT%f,u)
         call init(FFT%res,u)
         FFT%name = 'FFT'
@@ -82,12 +82,12 @@
         call delete(FFT%f)
       end subroutine
 
-      subroutine solveFFT_SF(FFT,u,f,g,ss,norm,displayTF,dir)
+      subroutine solveFFT_SF(FFT,u,f,m,ss,norm,displayTF,dir)
         implicit none
         type(FFTSolver),intent(inout) :: FFT
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
@@ -98,7 +98,7 @@
 
         do t=1,u%s
           s = U%RF(t)%s
-          call init(FFT,U,g)
+          call init(FFT,U,m)
           call assign(FFT%f%RF(t),f%RF(t))
 
           select case (dir)
@@ -168,13 +168,13 @@
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select
 
-          call applyAllBCs(u,g)
+          call applyAllBCs(u,m)
 
           if (displayTF) then
-            call lap(FFT%res,u,g)
+            call lap(FFT%res,u,m)
             call subtract(FFT%res,f)
             call zeroGhostPoints(FFT%res)
-            call compute(norm,FFT%res,g)
+            call compute(norm,FFT%res,m)
             call print(norm,FFT%name//' Residuals for '//trim(adjustl(getName(ss))))
           endif
           call delete(FFT)

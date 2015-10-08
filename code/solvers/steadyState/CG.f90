@@ -1,8 +1,8 @@
       module CG_mod
-      ! call CGSolver(CG,u,f,u_bcs,g,ss,norm,displayTF)
+      ! call CGSolver(CG,u,f,u_bcs,m,ss,norm,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
-      ! for a given f, boundary conditions for u (u_bcs), grid (g)
+      ! for a given f, boundary conditions for u (u_bcs), mesh (m)
       ! and solver settings (ss) using the Conjugate Gradient (CG) method
       ! 
       ! Note that the variant of Gauss-Seidel/CG called
@@ -12,14 +12,14 @@
       !     u            = initial guess for u
       !     f            = RHS of above equation
       !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
-      !     g            = contains grid information (dhc,dhn)
+      !     m            = contains mesh information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     norm         = Ln norms of residual
       !     displayTF    = print residuals to screen (T,F)
       ! 
       ! Pre-processor directives: (_PARALLELIZE_CG_,_EXPORT_CG_CONVERGENCE_)
 
-      use grid_mod
+      use mesh_mod
       use applyBCs_mod
       use BCs_mod
       use norms_mod
@@ -81,12 +81,12 @@
         call delete(CG%temp)
       end subroutine
 
-      subroutine solveCG(CG,u,f,g,ss,norm,displayTF)
+      subroutine solveCG(CG,u,f,m,ss,norm,displayTF)
         implicit none
         type(CGSolver),intent(inout) :: CG
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
@@ -102,7 +102,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyAllBCs(u,g) ! Necessary with ghost nodes
+        call applyAllBCs(u,m) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -116,7 +116,7 @@
 #endif
 
         ! lapU = lap(u)
-        call lap(CG%lapu,u,g)
+        call lap(CG%lapu,u,m)
         ! res = f - lap(u)
         call subtract(CG%res,f,CG%lapu)
         ! delta = r^T*r
@@ -126,7 +126,7 @@
           ijk = ijk + 1
 
           ! q = lap(res)
-          call lap(CG%q,CG%res,g)
+          call lap(CG%q,CG%res,m)
 
           ! alpha = delta/r^T q
           call dotProduct(CG%alpha,CG%res,CG%q,CG%temp)
@@ -139,7 +139,7 @@
 
           if (mod(ijk,50).eq.0) then
             ! res = f - lap(u)
-            call lap(CG%lapu,u,g)
+            call lap(CG%lapu,u,m)
             call subtract(CG%res,f,CG%lapu)
           else
             ! res = res - alpha*q
@@ -150,13 +150,13 @@
           ! delta = r^T*r
           call dotProduct(CG%delta,CG%res,CG%res,CG%temp)
 
-          call applyAllBCs(u,g)
+          call applyAllBCs(u,m)
 
 #ifdef _EXPORT_CG_CONVERGENCE_
-            call lap(CG%lapu,u,g)
+            call lap(CG%lapu,u,m)
             call subtract(CG%temp,CG%lapu,f)
             call zeroGhostPoints(CG%temp)
-            call compute(norm,CG%temp,g)
+            call compute(norm,CG%temp,m)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
@@ -182,10 +182,10 @@
         if (displayTF) then
           write(*,*) '(Final,max) CG iteration = ',ijk,maxIterations
 
-          call lap(CG%lapu,u,g)
+          call lap(CG%lapu,u,m)
           call subtract(CG%res,CG%lapu,f)
           call zeroGhostPoints(CG%res)
-          call compute(norm,CG%res,g)
+          call compute(norm,CG%res,m)
           call print(norm,'CG Residuals for '//trim(adjustl(getName(ss))))
         endif
 

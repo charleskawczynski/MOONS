@@ -800,6 +800,7 @@
           implicit none
           type(realField),intent(inout) :: a
           if (allocated(a%f)) deallocate(a%f)
+          call delete(a%b)
           a%s = 0
         end subroutine
 

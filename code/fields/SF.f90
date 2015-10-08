@@ -26,7 +26,7 @@
         ! c = a * b => call multiply(c,a,b)
         ! c = a / b => call divide(c,a,b)
         ! c = b / a => call divide(c,b,a)
-        use grid_mod
+        use mesh_mod
         use RF_mod
         implicit none
         private
@@ -65,10 +65,12 @@
 #endif
 
         type SF
-          integer :: s = 1 ! Number of subdomains in domain decomposition
-          integer,dimension(3) :: stot ! Total number of indexes in each direction (for export)
-          type(realField),dimension(1) :: RF
+          integer :: s ! Number of subdomains in domain decomposition
+          ! integer,dimension(3) :: stot ! Total number of indexes in each direction (for export)
+          type(realField),dimension(:),allocatable :: RF
           logical :: is_CC,is_Node,is_face,is_edge
+          integer :: face = 0 ! Direction of face data
+          integer :: edge = 0 ! Direction of edge data
           ! integer :: s ! Number of subdomains in domain decomposition
           ! type(realField),dimension(:),allocatable :: RF
         end type
@@ -392,71 +394,68 @@
           a%is_edge = .false.
         end subroutine
 
-        subroutine init_props(f)
-          implicit none
-          type(SF),intent(inout) :: f
-          integer :: i
-          f%stot = 0; do i=1,f%s; f%stot = f%stot + f%RF(i)%s; enddo
-          f%s = 1
-        end subroutine
-
         subroutine init_SF_copy(f1,f2)
           implicit none
           type(SF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           integer :: i
+          call delete(f1)
+          allocate(f1%RF(f2%s)); f1%s = f2%s
           do i=1,f1%s; call init(f1%RF(i),f2%RF(i)); enddo
           f1%is_CC = f2%is_CC
           f1%is_node = f2%is_node
           f1%is_face = f2%is_face
           f1%is_edge = f2%is_edge
-          call init_props(f1)
         end subroutine
 
-        subroutine init_SF_CC(f,g)
+        subroutine init_SF_CC(f,m)
           implicit none
           type(SF),intent(inout) :: f
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init_CC(f%RF(i),g); enddo
+          call delete(f)
+          allocate(f%RF(m%s)); f%s = m%s
+          do i=1,f%s; call init_CC(f%RF(i),m%g(i)); enddo
           call deleteDataLocation(f)
           f%is_CC = .true.
-          call init_props(f)
         end subroutine
 
-        subroutine init_SF_Face(f,g,dir)
+        subroutine init_SF_Face(f,m,dir)
           implicit none
           type(SF),intent(inout) :: f
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,intent(in) :: dir
           integer :: i
-          do i=1,f%s; call init_Face(f%RF(i),g,dir); enddo
+          call delete(f)
+          allocate(f%RF(m%s)); f%s = m%s
+          do i=1,f%s; call init_Face(f%RF(i),m%g(i),dir); enddo
           call deleteDataLocation(f)
           f%is_face = .true.
-          call init_props(f)
+          f%face = dir
         end subroutine
 
-        subroutine init_SF_Edge(f,g,dir)
+        subroutine init_SF_Edge(f,m,dir)
           implicit none
           type(SF),intent(inout) :: f
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,intent(in) :: dir
           integer :: i
-          do i=1,f%s; call init_Edge(f%RF(i),g,dir); enddo
+          allocate(f%RF(m%s)); f%s = m%s
+          do i=1,f%s; call init_Edge(f%RF(i),m%g(i),dir); enddo
           call deleteDataLocation(f)
           f%is_edge = .true.
-          call init_props(f)
+          f%edge = dir
         end subroutine
 
-        subroutine init_SF_Node(f,g)
+        subroutine init_SF_Node(f,m)
           implicit none
           type(SF),intent(inout) :: f
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init_Node(f%RF(i),g); enddo
+          allocate(f%RF(m%s)); f%s = m%s
+          do i=1,f%s; call init_Node(f%RF(i),m%g(i)); enddo
           call deleteDataLocation(f)
           f%is_node = .true.
-          call init_props(f)
         end subroutine
 
         subroutine init_BCs_SF(f)
@@ -476,8 +475,11 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call delete(f%RF(i)); enddo
-          call init_props(f)
+          if (allocated(f%RF)) then
+            do i=1,f%s; call delete(f%RF(i)); enddo
+            deallocate(f%RF)
+          endif
+          f%s = 0
         end subroutine
 
         subroutine print_SF(f)

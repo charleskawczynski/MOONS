@@ -1,8 +1,6 @@
        module domain_mod
        use subdomain_mod
        use mesh_mod
-       use SF_mod
-       use VF_mod
 
        implicit none
 
@@ -28,6 +26,7 @@
        type domain
          integer :: s ! Number of subdomains
          type(subdomain),dimension(:),allocatable :: sd
+         type(mesh) :: m_in,m_out
        end type
 
        contains
@@ -45,6 +44,8 @@
          integer :: i
          if (allocated(D%sd)) call delete(D)
          D%s = m_in%s
+         call init(D%m_in,m_in)
+         call init(D%m_out,m_in)
          allocate(D%sd(D%s))
          do i=1,D%s; call init(D%sd(i),m_in%g(i),m_tot%g(i)); enddo
        end subroutine

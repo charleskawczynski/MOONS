@@ -7,8 +7,10 @@
        use version_mod
        use myTime_mod
        use grid_mod
-       ! use griddata_mod
-       use generateGrids_mod
+       use mesh_mod
+       use domain_mod
+
+       use generateMesh_mod
        use ops_embedExtract_mod
        use ops_interp_mod
        use rundata_mod
@@ -45,11 +47,11 @@
 
        contains
 
-       subroutine MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
+       subroutine MOONS_solve(U,B,mesh_mom,mesh_ind,Ni,Nwtop,Nwbot,dir)
          implicit none
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
          type(VF),intent(inout) :: U,B
-         type(grid),intent(inout) :: grid_mom,grid_ind
+         type(mesh),intent(inout) :: mesh_mom,mesh_ind
          character(len=*),intent(in) :: dir ! Output directory
 
          ! ********************** BIG VARIABLES *************************
@@ -61,7 +63,7 @@
          type(rundata) :: rd
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
-         type(subdomain) :: SD
+         type(domain) :: D
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
          real(cp) :: dTime,ds
@@ -107,52 +109,55 @@
 
          ! **************************************************************
          ! Initialize all grids
-         ! call init(gd,grid_mom,grid_ind,Ni,Nwtop,Nwbot,Re,Ha)
-         call makeGrids(grid_mom,grid_ind,Ni,Nwtop,Nwbot)
-         ! call init(SD,Ni,Nwtop,Nwbot+10,grid_mom) ! N_wall = 8
-         call init(SD,Ni,Nwtop,Nwbot+10,grid_mom) ! N_wall = 5
-         ! call init(SD,Ni,Nwtop,Nwbot,grid_mom)
+         ! call init(gd,mesh_mom,mesh_ind,Ni,Nwtop,Nwbot,Re,Ha)
+         call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
+         ! call init(D,Ni,Nwtop,Nwbot+10,mesh_mom) ! N_wall = 8
+         ! call init(D,Ni,Nwtop,Nwbot+10,mesh_mom) ! N_wall = 5
+         ! call init(D,Ni,Nwtop,Nwbot,mesh_mom)
+
+         call init(D,mesh_mom,mesh_ind) ! Domain,interior,exterior
 
          ! ******************** EXPORT GRIDS ****************************
-         if (exportGrids) call export_grid(grid_mom,dir//'Ufield/','grid_mom',1)
-         if (exportGrids) call export_grid(grid_ind,dir//'Bfield/','grid_ind',1)
+         if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)
+         if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
 
          ! Initialize Energy grid/fields/parameters
          call setDTime(nrg,dTime)
          call setPiGroups(nrg,Re,Pr,Ec,Al,Rem)
-         if (solveEnergy)  call init(nrg,grid_ind,SD,dir)
+         if (solveEnergy)  call init(nrg,mesh_ind,D,dir)
 
          ! Initialize Momentum grid/fields/parameters
          call setDTime(mom,dTime)
          call setNMaxPPE(mom,NmaxPPE)
          call setPiGroups(mom,Re,Ha,Gr,Fr)
-         call init(mom,grid_mom,dir)
+         call init(mom,mesh_mom,dir)
 
          ! Initialize Induction grid/fields/parameters
          call setDTime(ind,ds)
          call setNmaxB(ind,NmaxB)
          call setNmaxCleanB(ind,NmaxCleanB)
          call setPiGroups(ind,Ha,Rem)
-         if (solveInduction) call init(ind,grid_ind,SD,dir)
+         if (solveInduction) call init(ind,mesh_ind,D,dir)
 
          ! ********************* EXPORT RAW ICs *************************
-         ! if (exportRawICs) call exportRaw(nrg,nrg%g,dir)
-         ! if (exportRawICs) call exportRaw(mom,mom%g,dir)
-         ! if (exportRawICs) call exportRaw(ind,ind%g,dir)
+         ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
+         ! if (exportRawICs) call exportRaw(mom,mom%m,dir)
+         ! if (exportRawICs) call exportRaw(ind,ind%m,dir)
 
          ! ********************* EXPORT ICs *****************************
-         ! if (exportICs) call export(mom,mom%g,dir)
-         ! if (exportICs) call export(nrg,nrg%g,dir)
-         ! if (exportICs) call embedVelocity(ind,mom%U,mom%g)
+         ! if (exportICs) call export(mom,mom%m,dir)
+         ! if (exportICs) call export(nrg,nrg%m,dir)
+         ! if (exportICs) call embedVelocity(ind,mom%U,mom%m)
          if (exportICs) call exportMaterial(ind,dir)
-         ! if (exportICs) call export(ind,ind%g,dir)
+         ! if (exportICs) call export(ind,ind%m,dir)
 
          ! ****************** INITIALIZE RUNDATA ************************
          ! These all need to be re-evaluated because the Fo and Co now depend
          ! on the smallest spatial step (dhMin)
 
          call setRunData(rd,dTime,ds,Re,Ha,Rem,&
-          mom%U%x%RF(1)%f,mom%U%y%RF(1)%f,mom%U%z%RF(1)%f,grid_mom,grid_ind,addJCrossB,solveBMethod)
+          mom%U%x%RF(1)%f,mom%U%y%RF(1)%f,mom%U%z%RF(1)%f,&
+          mesh_mom%g(1),mesh_ind%g(1),addJCrossB,solveBMethod)
 
          ! ****************** INITIALIZE TIME ***************************
          call init(time)
@@ -166,20 +171,20 @@
          call printExportBCs(mom,dir)
 
 
-         if (solveMomentum)  call computeDivergence(mom,mom%g)
-         if (solveInduction) call computeDivergence(ind,ind%g)
+         if (solveMomentum)  call computeDivergence(mom,mom%m)
+         if (solveInduction) call computeDivergence(ind,ind%m)
 
          ! if (exportRawICs) then
-         !   if (solveMomentum)  call exportRaw(mom,mom%g,dir)
-         !   if (solveEnergy)    call exportRaw(nrg,nrg%g,dir)
-         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
-         !   if (solveInduction) call exportRaw(ind,ind%g,dir)
+         !   if (solveMomentum)  call exportRaw(mom,mom%m,dir)
+         !   if (solveEnergy)    call exportRaw(nrg,nrg%m,dir)
+         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%m)
+         !   if (solveInduction) call exportRaw(ind,ind%m,dir)
          ! endif
          ! if (exportICs) then
-         !   if (solveMomentum)  call export(mom,mom%g,dir)
-         !   if (solveEnergy)    call export(nrg,nrg%g,dir)
-         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%g)
-         !   if (solveInduction) call export(ind,ind%g,dir)
+         !   if (solveMomentum)  call export(mom,mom%m,dir)
+         !   if (solveEnergy)    call export(nrg,nrg%m,dir)
+         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%m)
+         !   if (solveInduction) call export(ind,ind%m,dir)
          ! endif
 
          if (stopAfterExportICs) then
@@ -226,13 +231,13 @@
          ! ********************* SET B SOLVER SETTINGS *******************
 
          call MHDSolver(nrg,mom,ind,ss_MHD,time,dir)
-         ! call export(mom,mom%g,dir)
-         ! call export(ind,ind%g,dir)
+         ! call export(mom,mom%m,dir)
+         ! call export(ind,ind%m,dir)
 
-         if (solveMomentum) call init_Node(U,mom%g)
-         if (solveMomentum) call face2Node(U,mom%U,mom%g,mom%temp_E1)
-         if (solveInduction) call init_Node(B,ind%g)
-         if (solveInduction) call cellCenter2Node(B,ind%B,ind%g,ind%temp_F,ind%temp_E)
+         if (solveMomentum) call init_Node(U,mom%m)
+         if (solveMomentum) call face2Node(U,mom%U,mom%m,mom%temp_E1)
+         if (solveInduction) call init_Node(B,ind%m)
+         if (solveInduction) call cellCenter2Node(B,ind%B,ind%m,ind%temp_F,ind%temp_E)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
@@ -636,13 +641,13 @@
          character(len=*),intent(in) :: dir ! Output directory
          type(VF) :: U,B
          integer,dimension(3) :: Ni,Nwtop,Nwbot
-         type(grid) :: grid_mom,grid_ind
+         type(mesh) :: mesh_mom,mesh_ind
          call MOONS_Single_Grid(Ni,Nwtop,Nwbot)
-         call MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
+         call MOONS_solve(U,B,mesh_mom,mesh_ind,Ni,Nwtop,Nwbot,dir)
          call delete(U)
          call delete(B)
-         call delete(grid_mom)
-         call delete(grid_ind)
+         call delete(mesh_mom)
+         call delete(mesh_ind)
        end subroutine
 
        ! ***************************************************************
@@ -683,15 +688,15 @@
          ! Nwtop(1) = 0
        end subroutine
 
-       subroutine MOONS_Parametric(U,B,grid_mom,grid_ind,Nall,dir)
+       subroutine MOONS_Parametric(U,B,mesh_mom,mesh_ind,Nall,dir)
          implicit none
          character(len=*),intent(in) :: dir ! Output directory
          type(VF),intent(inout) :: U,B
-         type(grid),intent(inout) :: grid_mom,grid_ind
+         type(mesh),intent(inout) :: mesh_mom,mesh_ind
          integer,intent(in) :: Nall
          integer,dimension(3) :: Nwtop,Nwbot,Ni
          call MOONS_Parametric_Grid(Ni,Nwtop,Nwbot,(/Nall,Nall,Nall/))
-         call MOONS_solve(U,B,grid_mom,grid_ind,Ni,Nwtop,Nwbot,dir)
+         call MOONS_solve(U,B,mesh_mom,mesh_ind,Ni,Nwtop,Nwbot,dir)
        end subroutine
 
        end module

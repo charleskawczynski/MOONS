@@ -32,6 +32,8 @@
        ! 
        use ops_del_mod
        use grid_mod
+       use mesh_mod
+       use domain_mod
        use ops_embedExtract_mod
        use VF_mod
        use SF_mod
@@ -57,7 +59,6 @@
        interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
 
        public :: totalEnergy
-       interface totalEnergy;             module procedure totalEnergy_RF;            end interface
        interface totalEnergy;             module procedure totalEnergy_VF;            end interface
        interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
 
@@ -143,32 +144,33 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine totalEnergy_RF(e,x,y,z,g,s) ! Finished
+       subroutine totalEnergy_VF(e,u,m) ! Finished
          ! Computes
          ! 
          !          1
-         !   e = -------- ∫∫∫ ( x² + y² + z² ) dx dy dz
+         !   e = -------- ∫∫∫ ( u_x² + u_y² + u_z² ) dx dy dz
          !        volume
          ! 
          ! Where x,y,z lives in the cell center.
          implicit none
-         real(cp),dimension(:,:,:),intent(in) :: x,y,z
+         type(VF),intent(in) :: u
          real(cp),intent(inout) :: e
-         type(grid),intent(in) :: g
-         integer,dimension(3),intent(in) :: s
+         type(mesh),intent(in) :: m
          real(cp) :: eTemp
-         integer :: i,j,k
+         integer :: i,j,k,t
          eTemp = real(0.0,cp) ! temp is necessary for reduction
-         !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
-         do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-           eTemp = eTemp + (x(i,j,k)**2.0_cp +&
-                            y(i,j,k)**2.0_cp +&
-                            z(i,j,k)**2.0_cp)*g%c(1)%dhn(i)*&
-                                              g%c(2)%dhn(j)*&
-                                              g%c(3)%dhn(k)
-         enddo; enddo; enddo
+         !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
+         do t=1,u%s
+           do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
+             eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**2.0_cp +&
+                              u%y%RF(t)%f(i,j,k)**2.0_cp +&
+                              u%z%RF(t)%f(i,j,k)**2.0_cp)*m%g(t)%c(1)%dhn(i)*&
+                                                          m%g(t)%c(2)%dhn(j)*&
+                                                          m%g(t)%c(3)%dhn(k)
+           enddo; enddo; enddo
+         enddo
          !$OMP END PARALLEL DO
-         e = etemp/g%volume
+         e = etemp/m%volume
        end subroutine
 
        subroutine zeroGhostPoints_RF(f,s)
@@ -252,16 +254,16 @@
          write(*,*) 'Min/Max ('//name//') = ',min(u),max(u)
        end subroutine
 
-       subroutine stabilityTerms_SF(fo,fi,g,n,dir)
+       subroutine stabilityTerms_SF(fo,fi,m,n,dir)
          implicit none
          type(SF),intent(inout) :: fo
          type(SF),intent(in) :: fi
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          integer,intent(in) :: n,dir
          integer :: i
          do i=1,fi%s
            call assign(fo%RF(i),0.0_cp)
-           call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,g,n,fi%RF(i)%s,dir)
+           call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,m%g(i),n,fi%RF(i)%s,dir)
            call zeroGhostPoints(fo%RF(i)%f,fo%RF(i)%s)
          enddo
        end subroutine
@@ -285,47 +287,45 @@
          enddo
        end subroutine
 
-       subroutine stabilityTerms_VF(fo,fi,g,n)
+       subroutine stabilityTerms_VF(fo,fi,m,n)
          implicit none
          type(SF),intent(inout) :: fo
          type(VF),intent(in) :: fi
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          integer,intent(in) :: n
-         call stabilityTerms(fo,fi%x,g,n,1)
-         call stabilityTerms(fo,fi%y,g,n,2)
-         call stabilityTerms(fo,fi%z,g,n,3)
+         call stabilityTerms(fo,fi%x,m,n,1)
+         call stabilityTerms(fo,fi%y,m,n,2)
+         call stabilityTerms(fo,fi%z,m,n,3)
        end subroutine
 
-       subroutine totalEnergy_VF(e,f,g)
+       ! subroutine totalEnergy_VF(e,f,m)
+       !   implicit none
+       !   type(VF),intent(in) :: f
+       !   real(cp),intent(inout) :: e
+       !   type(mesh),intent(in) :: m
+       !   real(cp) :: eTemp
+       !   integer :: i
+       !   eTemp = 0.0_cp
+       !   do i=1,f%x%s
+       !     call totalEnergy(eTemp,f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,m%g(i),f%x%RF(i)%s)
+       !     e = e+eTemp
+       !   enddo
+       ! end subroutine
+
+       subroutine totalEnergy_VF_SD(e,f,D)
          implicit none
          type(VF),intent(in) :: f
          real(cp),intent(inout) :: e
-         type(grid),intent(in) :: g
-         real(cp) :: eTemp
-         integer :: i
-         eTemp = 0.0_cp
-         do i=1,f%x%s
-           call totalEnergy(eTemp,f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,g,f%x%RF(i)%s)
-           e = e+eTemp
-         enddo
-       end subroutine
-
-       subroutine totalEnergy_VF_SD(e,f,SD)
-         implicit none
-         type(VF),intent(in) :: f
-         real(cp),intent(inout) :: e
-         type(subdomain),intent(in) :: SD
-         real(cp) :: eTemp
-         integer :: i
-         eTemp = 0.0_cp
-         do i=1,f%x%s
-           call totalEnergy(eTemp,&
-            f%x%RF(i)%f(SD%Nici1(1):SD%Nici2(1),SD%Nici1(2):SD%Nici2(2),SD%Nici1(3):SD%Nici2(3)),&
-            f%y%RF(i)%f(SD%Nici1(1):SD%Nici2(1),SD%Nici1(2):SD%Nici2(2),SD%Nici1(3):SD%Nici2(3)),&
-            f%z%RF(i)%f(SD%Nici1(1):SD%Nici2(1),SD%Nici1(2):SD%Nici2(2),SD%Nici1(3):SD%Nici2(3)),&
-            SD%g,f%x%RF(i)%s)
-           e = e+eTemp
-         enddo
+         type(domain),intent(in) :: D
+         type(VF) :: temp
+         if      (f%x%is_CC)   then;   call init_CC(temp,D%m_in)
+         else if (f%x%is_Node) then; call init_Node(temp,D%m_in)
+         else if (f%x%is_Face) then; call init_Face(temp,D%m_in)
+         else if (f%x%is_Edge) then; call init_Edge(temp,D%m_in)
+         else; stop 'Error: undefined type in totalEnergy_VF_SD in ops_aux.f90'
+         endif
+         call totalEnergy(e,temp,D%m_in)
+         call delete(temp)
        end subroutine
 
        subroutine zeroGhostPoints_VF(f)

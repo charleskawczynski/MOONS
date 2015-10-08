@@ -109,7 +109,7 @@
            call splt%add_D(JAC%Dinv,temp,sigma%y,JAC%m,2,1)
            call splt%add_D(JAC%Dinv,temp,sigma%z,JAC%m,3,1)
 
-        ! call subtract(JAC%Dinv,1.0_cp/JAC%dt)
+        call subtract(JAC%Dinv,1.0_cp/JAC%dt)
         call divide(1.0_cp,JAC%Dinv)
         call zeroGhostPoints(JAC%Dinv)
       end subroutine
@@ -128,9 +128,9 @@
         call multiply(sig_temp,sigma)
         call div(Au,sig_temp,m)
         ! ∇•(σ∇u) - u/dt
-        ! call assignMinus(u_temp,u)
-        ! call divide(u_temp,dt)
-        ! call add(Au,u_temp)
+        call assignMinus(u_temp,u)
+        call divide(u_temp,dt)
+        call add(Au,u_temp)
       end subroutine
 
       subroutine solveJAC(JAC,u,f,sigma,m,ss,norm,displayTF,NU)

@@ -1,7 +1,7 @@
        module init_Tfield_mod
        use SF_mod
        use IO_SF_mod
-       use grid_mod
+       use mesh_mod
        implicit none
 
        private
@@ -27,13 +27,13 @@
 
        contains
 
-       subroutine initTfield(T,g,dir)
+       subroutine initTfield(T,m,dir)
          implicit none
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
          if (restartT) then
-           call initRestartT(T,g,dir)
+           call initRestartT(T,m,dir)
          elseif (preDefinedT_ICs.ne.0) then
            call initPreDefinedT(T)
          else
@@ -41,13 +41,13 @@
          endif
        end subroutine
 
-       subroutine initRestartT(T,g,dir)
+       subroutine initRestartT(T,m,dir)
          implicit none
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
-         type(grid) :: temp
-         call init(temp,g)
+         type(mesh) :: temp
+         call init(temp,m)
          call import_1C_SF(temp,T,dir,'Tct',1)
          call delete(temp)
        end subroutine

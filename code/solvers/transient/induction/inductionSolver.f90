@@ -16,7 +16,9 @@
        use init_Sigma_mod
        use ops_embedExtract_mod
 
+       use domain_mod
        use grid_mod
+       use mesh_mod
        use norms_mod
        use ops_del_mod
        use ops_aux_mod
@@ -100,8 +102,8 @@
          type(indexProbe) :: probe_J
          type(errorProbe) :: probe_divB,probe_divJ
          type(probe) :: KB_energy,KB0_energy,KBi_energy
-         type(grid) :: g
-         type(subdomain) :: SD
+         type(mesh) :: m
+         type(domain) :: D
 
          integer :: nstep             ! Nth time step
          integer :: NmaxB             ! Maximum number iterations in solving B (if iterative)
@@ -131,83 +133,83 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initInduction(ind,g,SD,dir)
+       subroutine initInduction(ind,m,D,dir)
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
-         type(subdomain),intent(in) :: SD
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
          character(len=*),intent(in) :: dir
          write(*,*) 'Initializing induction:'
 
-         ind%g = g
-         ind%SD = SD
+         call init(ind%m,m)
+         call init(ind%D,D)
          ! --- Tensor Fields ---
-         call init_Edge(ind%U_E,g)
+         call init_Edge(ind%U_E,m)
          ! --- Vector Fields ---
-         call init_CC(ind%B,g)
-         call init_CC(ind%Bstar,g)
-         call init_CC(ind%B0,g)
-         call init_CC(ind%J_cc,g)
-         call init_CC(ind%U_cct,g)
-         call init_CC(ind%temp_CC,g)
-         call init_CC(ind%dB0dt,g)
+         call init_CC(ind%B,m)
+         call init_CC(ind%Bstar,m)
+         call init_CC(ind%B0,m)
+         call init_CC(ind%J_cc,m)
+         call init_CC(ind%U_cct,m)
+         call init_CC(ind%temp_CC,m)
+         call init_CC(ind%dB0dt,m)
 
-         call init_Edge(ind%J,g)
-         call init_Edge(ind%E,g)
-         call init_Edge(ind%temp_E,g)
-         call init_Edge(ind%temp_E1,g)
-         call init_Edge(ind%temp_E2,g)
-         call init_Edge(ind%sigmaInv_edge,g)
+         call init_Edge(ind%J,m)
+         call init_Edge(ind%E,m)
+         call init_Edge(ind%temp_E,m)
+         call init_Edge(ind%temp_E1,m)
+         call init_Edge(ind%temp_E2,m)
+         call init_Edge(ind%sigmaInv_edge,m)
 
-         call init_Face(ind%U_Ft,g)
-         call init_Face(ind%temp_F,g)
-         call init_Face(ind%sigmaInv_face,g)
-         call init_Face(ind%temp_F2,g)
-         call init_Face(ind%jCrossB_F,g)
-         call init_Face(ind%B_face,g)
+         call init_Face(ind%U_Ft,m)
+         call init_Face(ind%temp_F,m)
+         call init_Face(ind%sigmaInv_face,m)
+         call init_Face(ind%temp_F2,m)
+         call init_Face(ind%jCrossB_F,m)
+         call init_Face(ind%B_face,m)
 
          ! --- Scalar Fields ---
-         call init_CC(ind%sigma,g)
-         call init_CC(ind%phi,g)
-         call init_CC(ind%temp,g)
+         call init_CC(ind%sigma,m)
+         call init_CC(ind%phi,m)
+         call init_CC(ind%temp,m)
 
-         call init_CC(ind%divB,g)
-         call init_CC(ind%divJ,g)
+         call init_CC(ind%divB,m)
+         call init_CC(ind%divJ,m)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call initBBCs(ind%B,g)
+         call initBBCs(ind%B,m)
          write(*,*) '     BCs initialized'
 
-         call initBfield(ind%B,ind%B0,g,dir)
+         call initBfield(ind%B,ind%B0,m,dir)
          write(*,*) '     B-field initialized'
 
-         call applyAllBCs(ind%B,g)
+         call applyAllBCs(ind%B,m)
          write(*,*) '     BCs applied'
 
-         call initSigma(ind%sigma,ind%SD,g)
+         call initSigma(ind%sigma,ind%D,m)
          call divide(one,ind%sigma)
-         call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma,g,ind%temp_F)
+         call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma,m,ind%temp_F)
          write(*,*) '     Sigma edge defined'
          call treatInterface(ind%sigmaInv_edge)
 
-         call cellCenter2Face(ind%sigmaInv_face,ind%sigma,g)
+         call cellCenter2Face(ind%sigmaInv_face,ind%sigma,m)
          write(*,*) '     Sigma face defined'
-         call initSigma(ind%sigma,ind%SD,g)
+         call initSigma(ind%sigma,ind%D,m)
 
          write(*,*) '     Materials initialized'
 
          call init(ind%probe_Bx,dir//'Bfield/','transient_Bx',&
-         .not.restartB,ind%B%x%RF(1)%s,(ind%B%x%RF(1)%s+1)/2*2/3,g)
+         .not.restartB,ind%B%x%RF(1)%s,(ind%B%x%RF(1)%s+1)/2*2/3,m)
 
          call init(ind%probe_By,dir//'Bfield/','transient_By',&
-         .not.restartB,ind%B%y%RF(1)%s,(ind%B%y%RF(1)%s+1)/2*2/3,g)
+         .not.restartB,ind%B%y%RF(1)%s,(ind%B%y%RF(1)%s+1)/2*2/3,m)
 
          call init(ind%probe_Bz,dir//'Bfield/','transient_Bz',&
-         .not.restartB,ind%B%z%RF(1)%s,(ind%B%z%RF(1)%s+1)/2*2/3,g)
+         .not.restartB,ind%B%z%RF(1)%s,(ind%B%z%RF(1)%s+1)/2*2/3,m)
 
          call init(ind%probe_J,dir//'Jfield/','transient_Jx',&
-         .not.restartB,ind%J_cc%x%RF(1)%s,(ind%J_cc%x%RF(1)%s+1)*2/3,g)
+         .not.restartB,ind%J_cc%x%RF(1)%s,(ind%J_cc%x%RF(1)%s+1)*2/3,m)
 
          call init(ind%probe_divB,dir//'Bfield/','transient_divB',.not.restartB)
          call init(ind%probe_divJ,dir//'Jfield/','transient_divJ',.not.restartB)
@@ -228,7 +230,7 @@
          call init(ind%err_cleanB)
          call init(ind%err_residual)
 
-         call cellCenter2Face(ind%temp_F,ind%B,ind%g)
+         call cellCenter2Face(ind%temp_F,ind%B,ind%m)
 
          ! Initialize solver settings
          call init(ind%ss_ind)
@@ -243,7 +245,7 @@
          write(*,*) '     Solver settings for cleaning initialized'
 
          ! Initialize multigrid
-         ! if (cleanB) call init(ind%MG,ind%phi%s,ind%phi_bcs,ind%g,ind%ss_cleanB,.false.)
+         ! if (cleanB) call init(ind%MG,ind%phi%s,ind%phi_bcs,ind%m,ind%ss_cleanB,.false.)
          call inductionInfo(ind,newAndOpen(dir//'parameters/','info_ind'))
 
          if (restartB) then
@@ -300,7 +302,7 @@
          call delete(ind%probe_J)
          call delete(ind%probe_divB)
          call delete(ind%probe_divJ)
-         call delete(ind%g)
+         call delete(ind%m)
 
          ! call delete(ind%SOR_B)
          ! if (cleanB) call delete(ind%MG)
@@ -361,40 +363,40 @@
          endif
 
          if (getExportErrors(ss_MHD)) then
-           call apply(ind%probe_divB,ind%nstep,ind%divB,ind%g)
-           call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%g)
+           call apply(ind%probe_divB,ind%nstep,ind%divB,ind%m)
+           call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%m)
          endif
        end subroutine
 
-       subroutine inductionExportRaw(ind,g,dir)
+       subroutine inductionExportRaw(ind,m,dir)
          implicit none
          type(induction),intent(in) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          if (restartB.and.(.not.solveInduction)) then
            ! This preserves the initial data
          else
            if (solveInduction) then
              write(*,*) 'Exporting RAW Solutions for B'
-             call export_3C_VF(g,ind%B0   ,dir//'Bfield/','B0ct',0)
-             call export_3C_VF(g,ind%B    ,dir//'Bfield/','Bct',0)
-             call export_3C_VF(g,ind%J_cc ,dir//'Jfield/','Jct',0)
-             call export_1C_SF(g,ind%sigma,dir//'material/','sigmac',0)
-             call export_1C_SF(g,ind%sigma,dir//'Bfield/','divBct',0)
-             call export_1C_SF(g,ind%sigma,dir//'Jfield/','divJct',0)
+             call export_3C_VF(m,ind%B0   ,dir//'Bfield/','B0ct',0)
+             call export_3C_VF(m,ind%B    ,dir//'Bfield/','Bct',0)
+             call export_3C_VF(m,ind%J_cc ,dir//'Jfield/','Jct',0)
+             call export_1C_SF(m,ind%sigma,dir//'material/','sigmac',0)
+             call export_1C_SF(m,ind%sigma,dir//'Bfield/','divBct',0)
+             call export_1C_SF(m,ind%sigma,dir//'Jfield/','divJct',0)
 
-             call export_1C_SF(g,ind%U_E%x%x ,dir//'Ufield/','Uet',0)
-             call export_1C_SF(g,ind%U_E%y%y ,dir//'Ufield/','Vet',0)
-             call export_1C_SF(g,ind%U_E%z%z ,dir//'Ufield/','Wet',0)
+             call export_1C_SF(m,ind%U_E%x%x ,dir//'Ufield/','Uet',0)
+             call export_1C_SF(m,ind%U_E%y%y ,dir//'Ufield/','Vet',0)
+             call export_1C_SF(m,ind%U_E%z%z ,dir//'Ufield/','Wet',0)
              write(*,*) '     finished'
            endif
          endif
        end subroutine
 
-       subroutine inductionExport(ind,g,dir)
+       subroutine inductionExport(ind,m,dir)
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          type(SF) :: tempN,tempCC
          type(VF) :: tempVFn,tempVFn2
@@ -404,43 +406,43 @@
            write(*,*) 'Exporting PROCESSED solutions for B'
 
            ! B
-           call init_Node(tempVFn,g)
-           call init_Node(tempVFn2,g)
-           call cellCenter2Node(tempVFn,ind%B,g,ind%temp_F,ind%temp_E)
-           call export_3C_VF(g,tempVFn,dir//'Bfield/','Bnt',0)
+           call init_Node(tempVFn,m)
+           call init_Node(tempVFn2,m)
+           call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
+           call export_3C_VF(m,tempVFn,dir//'Bfield/','Bnt',0)
 
-           ! call cellCenter2Node(tempVFn,ind%B0,g,ind%temp_F,ind%temp_E)
-           ! call export_3C_VF(g,tempVFn,dir//'Bfield/','B0nt',0)
+           ! call cellCenter2Node(tempVFn,ind%B0,m,ind%temp_F,ind%temp_E)
+           ! call export_3C_VF(m,tempVFn,dir//'Bfield/','B0nt',0)
 
            ! B0
-           call cellCenter2Node(tempVFn,ind%B,g,ind%temp_F,ind%temp_E)
-           call cellCenter2Node(tempVFn2,ind%B0,g,ind%temp_F,ind%temp_E)
+           call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
+           call cellCenter2Node(tempVFn2,ind%B0,m,ind%temp_F,ind%temp_E)
            call add(tempVFn,tempVFn2)
-           call export_3C_VF(g,tempVFn,dir//'Bfield/','Btotnt',0)
+           call export_3C_VF(m,tempVFn,dir//'Bfield/','Btotnt',0)
 
            ! J
-           call cellCenter2Node(tempVFn,ind%J_cc,g,ind%temp_F,ind%temp_E)
-           call export_3C_VF(g,tempVFn,dir//'Jfield/','Jtotnt_phys',0)
+           call cellCenter2Node(tempVFn,ind%J_cc,m,ind%temp_F,ind%temp_E)
+           call export_3C_VF(m,tempVFn,dir//'Jfield/','Jtotnt_phys',0)
            call delete(tempVFn)
            call delete(tempVFn2)
 
            ! JxB
-           ! call export_1C_SF(g,ind%jCrossB_F%x,dir//'Jfield/','jCrossB_Fx',0)
-           ! call export_1C_SF(g,ind%jCrossB_F%y,dir//'Jfield/','jCrossB_Fy',0)
-           ! call export_1C_SF(g,ind%jCrossB_F%z,dir//'Jfield/','jCrossB_Fz',0)
+           ! call export_1C_SF(m,ind%jCrossB_F%x,dir//'Jfield/','jCrossB_Fx',0)
+           ! call export_1C_SF(m,ind%jCrossB_F%y,dir//'Jfield/','jCrossB_Fy',0)
+           ! call export_1C_SF(m,ind%jCrossB_F%z,dir//'Jfield/','jCrossB_Fz',0)
 
            ! sigma
-           call init_Node(tempN,g)
-           call cellCenter2Node(tempN,ind%sigma,g,ind%temp_F%x,ind%temp_E%z)
+           call init_Node(tempN,m)
+           call cellCenter2Node(tempN,ind%sigma,m,ind%temp_F%x,ind%temp_E%z)
            call treatInterface(tempN)
-           call export_1C_SF(g,tempN,dir//'material/','sigman',0)
+           call export_1C_SF(m,tempN,dir//'material/','sigman',0)
            call delete(tempN)
 
            ! U_induction
-           call init_CC(tempCC,g)
-           call div(tempCC,ind%U_cct,g)
-           call export_3C_VF(g,ind%U_cct,dir//'Ufield/','Ucct',0)
-           call export_1C_SF(g,tempCC,dir//'Ufield/','divUct',0)
+           call init_CC(tempCC,m)
+           call div(tempCC,ind%U_cct,m)
+           call export_3C_VF(m,ind%U_cct,dir//'Ufield/','Ucct',0)
+           call export_1C_SF(m,tempCC,dir//'Ufield/','divUct',0)
            call delete(tempCC)
            write(*,*) '     finished'
          endif
@@ -452,10 +454,10 @@
          character(len=*),intent(in) :: dir
          type(SF) :: tempN
          if (solveInduction) then
-           call init_Node(tempN,ind%g)
-           call cellCenter2Node(tempN,ind%sigma,ind%g,ind%temp_F%x,ind%temp_E%z)
+           call init_Node(tempN,ind%m)
+           call cellCenter2Node(tempN,ind%sigma,ind%m,ind%temp_F%x,ind%temp_E%z)
            call treatInterface(tempN)
-           call export_1C_SF(ind%g,tempN,dir//'material/','sigman',0)
+           call export_1C_SF(ind%m,tempN,dir//'material/','sigman',0)
            call delete(tempN)
          endif
        end subroutine
@@ -472,7 +474,7 @@
          write(un,*) '(t,dt) = ',ind%t,ind%dTime
          write(un,*) '(nstep) = ',ind%nstep
          write(un,*) ''
-         call print(ind%g)
+         call print(ind%m)
          write(un,*) ''
          call printPhysicalMinMax(ind%B,'B')
          call printPhysicalMinMax(ind%B0,'B0')
@@ -480,27 +482,27 @@
          call printPhysicalMinMax(ind%divJ,'divJ')
        end subroutine
 
-       subroutine inductionExportTransientFull(ind,g,dir)
+       subroutine inductionExportTransientFull(ind,m,dir)
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          type(VF) :: tempVFn,tempVFn2
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
-           call init_Node(tempVFn,g)
-           call init_Node(tempVFn2,g)
+           call init_Node(tempVFn,m)
+           call init_Node(tempVFn2,m)
 
-           ! call cellCenter2Node(tempVFn,ind%B,g)
+           ! call cellCenter2Node(tempVFn,ind%B,m)
 
-           call cellCenter2Node(tempVFn,ind%B,g,ind%temp_F,ind%temp_E)
-           call cellCenter2Node(tempVFn2,ind%B0,g,ind%temp_F,ind%temp_E)
+           call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
+           call cellCenter2Node(tempVFn2,ind%B0,m,ind%temp_F,ind%temp_E)
            call add(tempVFn,tempVFn2)
 
-           ! call cellCenter2Node(tempVFn,ind%J_cc,g)
+           ! call cellCenter2Node(tempVFn,ind%J_cc,m)
 
-           ! call cellCenter2Node(tempVFn,ind%J_cc,g)
+           ! call cellCenter2Node(tempVFn,ind%J_cc,m)
 
            call delete(tempVFn)
            call delete(tempVFn2)
@@ -514,7 +516,7 @@
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
-         type(grid),intent(in) :: g_mom
+         type(mesh),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
          logical :: exportNow
@@ -532,23 +534,23 @@
          ! ind%B0%z = exp(-ind%omega*ind%t)
 
 
-         call embedVelocity(ind,U,g_mom)
+         call embedVelocity(ind,U)
 
          ! call assign(ind%dB0dt,0.0_cp)
          ! call assignZ(ind%dB0dt,ind%omega*exp(-ind%omega*ind%t))
 
          select case (solveBMethod)
-         ! case (1); call lowRemPoisson(ind,ind%U_cct,ind%g,ss_MHD)
-         ! case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,ind%g)
-         ! case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%g)
-         case (4); call lowRemCTmethod(ind,ind%g)
-         ! case (5); call finiteRemCTmethod(ind,ind%dB0dt,ind%g)
-         case (5); call finiteRemCTmethod(ind,ind%g)
-         ! case (6); call lowRem_ADI(ind,ind%U_cct,ind%g,ss_MHD)
-         ! case (7); call lowRemMultigrid(ind,ind%U_cct,ind%g)
+         ! case (1); call lowRemPoisson(ind,ind%U_cct,ind%m,ss_MHD)
+         ! case (2); call lowRemPseudoTimeStepUniform(ind,ind%U_cct,ind%m)
+         ! case (3); call lowRemPseudoTimeStep(ind,ind%U_cct,ind%m)
+         case (4); call lowRemCTmethod(ind,ind%m)
+         ! case (5); call finiteRemCTmethod(ind,ind%dB0dt,ind%m)
+         case (5); call finiteRemCTmethod(ind,ind%m)
+         ! case (6); call lowRem_ADI(ind,ind%U_cct,ind%m,ss_MHD)
+         ! case (7); call lowRemMultigrid(ind,ind%U_cct,ind%m)
          end select
 
-         if (cleanB) call cleanBSolution(ind,ind%g,ss_MHD)
+         if (cleanB) call cleanBSolution(ind,ind%m,ss_MHD)
 
          ind%nstep = ind%nstep + 1
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
@@ -563,10 +565,10 @@
 
          call exportTransient(ind,ss_MHD)
 
-         ! call inductionExportTransientFull(ind,ind%g,dir) ! VERY Expensive
+         ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
 
-         if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%g)
-         if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%g,dir)
+         if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%m)
+         if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
 
          if (getPrintParams(ss_MHD)) then
            call inductionInfo(ind,6)
@@ -575,59 +577,59 @@
          endif
 
          if (getExportRawSolution(ss_MHD).or.exportNow) then
-           call exportRaw(ind,ind%g,dir)
+           call exportRaw(ind,ind%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
          if (getExportSolution(ss_MHD).or.exportNow) then
-           call export(ind,ind%g,dir)
+           call export(ind,ind%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
        end subroutine
 
-       subroutine lowRemPoissonOld(ind,U,g,ss_MHD)
+       subroutine lowRemPoissonOld(ind,U,m,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(solverSettings),intent(inout) :: ss_MHD
-         ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+         ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,m)
 
-         call poisson(ind%SOR_B,ind%B%x,ind%temp_CC%x,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B%x,ind%temp_CC%x,m,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B%y,ind%temp_CC%y,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B%y,ind%temp_CC%y,m,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B%z,ind%temp_CC%z,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B%z,ind%temp_CC%z,m,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
        end subroutine
 
-       subroutine lowRemPoisson(ind,U,g,ss_MHD)
+       subroutine lowRemPoisson(ind,U,m,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(solverSettings),intent(inout) :: ss_MHD
 
-         call cellCenter2Face(ind%temp_F2,ind%B0,g)
+         call cellCenter2Face(ind%temp_F2,ind%B0,m)
 
-         call faceCurlCross_F(ind%temp_F,ind%U_Ft,ind%temp_F2,g, &
+         call faceCurlCross_F(ind%temp_F,ind%U_Ft,ind%temp_F2,m, &
          ind%temp_E1,ind%temp_E2,ind%temp_F2)
 
-         call poisson(ind%SOR_B,ind%B_face%x,ind%temp_F%x,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B_face%x,ind%temp_F%x,m,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B_face%y,ind%temp_F%y,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B_face%y,ind%temp_F%y,m,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call poisson(ind%SOR_B,ind%B_face%z,ind%temp_F%z,g,ind%ss_ind,&
+         call poisson(ind%SOR_B,ind%B_face%z,ind%temp_F%z,m,ind%ss_ind,&
          ind%err_residual,getExportErrors(ss_MHD))
 
-         call face2CellCenter(ind%B,ind%B_face,g)
+         call face2CellCenter(ind%B,ind%B_face,m)
        end subroutine
 
-       subroutine lowRemPseudoTimeStepUniform(ind,U,g)
+       subroutine lowRemPseudoTimeStepUniform(ind,U,m)
          ! This routine assumed div(B)=0 (which requires uniform properties), 
          ! which is how it differs from lowRemPseudoTimeStep(). This was an 
          ! important case to test against the Poisson solution, since the 
@@ -636,18 +638,18 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          integer :: i
          
          do i=1,ind%NmaxB
            call assign(ind%Bstar,zero)
            ! ------------- diffusion term -------------
-           call lap(ind%temp_CC,ind%B,g)
+           call lap(ind%temp_CC,ind%B,m)
            call multiply(ind%temp_CC,ind%dTime)
            call add(ind%Bstar,ind%temp_CC)
            
            ! ------------- source term -------------
-           ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+           ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,m)
            call multiply(ind%temp_CC,ind%dTime)
            call subtract(ind%Bstar,ind%temp_CC)
 
@@ -655,28 +657,28 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,g)
+           call applyAllBCs(ind%B,m)
          enddo
        end subroutine
 
-       subroutine lowRemPseudoTimeStep(ind,U,g)
+       subroutine lowRemPseudoTimeStep(ind,U,m)
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          integer :: i
 
          do i=1,ind%NmaxB
            call assign(ind%Bstar,zero)
 
            ! ------------- diffusion term -------------
-           ! call CCBfieldDiffuse(ind%temp_CC,ind%B,ind%sigmaInv_face,g)
+           ! call CCBfieldDiffuse(ind%temp_CC,ind%B,ind%sigmaInv_face,m)
 
            call multiply(ind%temp_CC,ind%dTime)
            call subtract(ind%Bstar,ind%temp_CC)
            
            ! ------------- source term -------------
-           ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+           ! call CCBfieldAdvect(ind%temp_CC,U,ind%B0,m)
            call multiply(ind%temp_CC,ind%dTime)
            call subtract(ind%Bstar,ind%temp_CC)
 
@@ -684,22 +686,22 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,g)
+           call applyAllBCs(ind%B,m)
          enddo
        end subroutine
 
-       subroutine lowRemCTmethod(ind,g)
+       subroutine lowRemCTmethod(ind,m)
          ! inductionSolverCT solves the induction equation using the
          ! Constrained Transport (CT) Method. The magnetic field is
          ! stored and collocated at the cell center. The magnetic
          ! field is updated using Faraday's Law, where the electric
          ! field is solved for using appropriate fluxes as described
-         ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! in "Tóth, m. The divergence Constraint in Shock-Capturing 
          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
          ! The velocity field is assumed to be cell centered.
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          integer :: i
 
          do i=1,ind%NmaxB
@@ -707,11 +709,11 @@
            ! Compute current from appropriate fluxes:
 
            ! J = curl(B_face)_edge
-           call cellCenter2Face(ind%temp_F,ind%B,g)
-           call curl(ind%J,ind%temp_F,g)
+           call cellCenter2Face(ind%temp_F,ind%B,m)
+           call curl(ind%J,ind%temp_F,m)
 
            ! Compute fluxes of u cross B0
-           call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%B0,g,ind%temp_F)
+           call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%B0,m,ind%temp_F)
 
            ! E = j/sig - uxB
            ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
@@ -720,10 +722,10 @@
            call add(ind%E,ind%J)
 
            ! F = curl(E_edge)_face
-           call curl(ind%temp_F,ind%E,g)
+           call curl(ind%temp_F,ind%E,m)
 
            ! tempVF = interp(F)_face->cc
-           call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+           call face2CellCenter(ind%temp_CC,ind%temp_F,m)
 
            ! Add induced field of previous time step (B^n)
            ! ind%B = ind%B - ind%dTime*ind%temp_CC
@@ -731,11 +733,11 @@
            call subtract(ind%B,ind%temp_CC)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,g)
+           call applyAllBCs(ind%B,m)
          enddo
        end subroutine
 
-       subroutine finiteRemCTmethod(ind,g)
+       subroutine finiteRemCTmethod(ind,m)
          ! Computes
          !    E = j/(Rem*sig) - uxB
          !    dBdt = -curl(E) + F
@@ -744,19 +746,19 @@
          ! using the using the Constrained Transport (CT) Method. 
          ! 
          ! Reference:
-         ! "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! "Tóth, m. The divergence Constraint in Shock-Capturing 
          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
 
          ! E = uxB
          call add(ind%Bstar,ind%B,ind%B0)
-         call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%Bstar,g,ind%temp_F)
+         call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%Bstar,m,ind%temp_F)
 
          ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
-         call cellCenter2Face(ind%temp_F,ind%B,g)
-         call curl(ind%J,ind%temp_F,g)
+         call cellCenter2Face(ind%temp_F,ind%B,m)
+         call curl(ind%J,ind%temp_F,m)
          call divide(ind%J,ind%Rem)
 
          ! -E = ( uxB - j/sig )_edge
@@ -764,20 +766,20 @@
          call subtract(ind%E,ind%J)
 
          ! dBdt = -Curl(E_edge)_face
-         call curl(ind%temp_F,ind%E,g)
+         call curl(ind%temp_F,ind%E,m)
 
          ! dBdt_cc = interp(dBdt)_face->cc
-         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+         call face2CellCenter(ind%temp_CC,ind%temp_F,m)
 
          ! B^n+1 = B^n + {-curl(E) + F}
          call multiply(ind%temp_CC,ind%dTime)
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyAllBCs(ind%B,g)
+         call applyAllBCs(ind%B,m)
        end subroutine
 
-       subroutine finiteRemCTmethod_with_source(ind,F_CC,g)
+       subroutine finiteRemCTmethod_with_source(ind,F_CC,m)
          ! Computes
          !    E = j/(Rem*sig) - uxB
          !    dBdt = -curl(E) + F
@@ -786,20 +788,20 @@
          ! using the using the Constrained Transport (CT) Method. 
          ! 
          ! Reference:
-         ! "Tóth, G. The divergence Constraint in Shock-Capturing 
+         ! "Tóth, m. The divergence Constraint in Shock-Capturing 
          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: F_CC
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
 
          ! E = uxB
          call add(ind%Bstar,ind%B,ind%B0)
-         call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%Bstar,g,ind%temp_F)
+         call edgeCrossCC_E(ind%E,ind%U_E%x,ind%U_E%y,ind%U_E%z,ind%Bstar,m,ind%temp_F)
 
          ! J = Rem^-1 curl(B_face)_edge ! Assumes curl(B0) = 0
-         call cellCenter2Face(ind%temp_F,ind%B,g)
-         call curl(ind%J,ind%temp_F,g)
+         call cellCenter2Face(ind%temp_F,ind%B,m)
+         call curl(ind%J,ind%temp_F,m)
          call divide(ind%J,ind%Rem)
 
          ! -E = ( uxB - j/sig )_edge
@@ -807,10 +809,10 @@
          call subtract(ind%E,ind%J)
 
          ! dBdt = -Curl(E_edge)_face
-         call curl(ind%temp_F,ind%E,g)
+         call curl(ind%temp_F,ind%E,m)
 
          ! dBdt_cc = interp(dBdt)_face->cc
-         call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+         call face2CellCenter(ind%temp_CC,ind%temp_F,m)
 
          ! dBdt = dBdt + F
          call add(ind%temp_CC,F_CC)
@@ -820,32 +822,32 @@
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyAllBCs(ind%B,g)
+         call applyAllBCs(ind%B,m)
        end subroutine
 
-!        subroutine lowRem_ADI(ind,U,g,ss_MHD)
+!        subroutine lowRem_ADI(ind,U,m,ss_MHD)
 !          ! inductionSolverCT solves the induction equation using the
 !          ! Constrained Transport (CT) Method. The magnetic field is
 !          ! stored and collocated at the cell center. The magnetic
 !          ! field is updated using Faraday's Law, where the electric
 !          ! field is solved for using appropriate fluxes as described
-!          ! in "Tóth, G. The divergence Constraint in Shock-Capturing 
+!          ! in "Tóth, m. The divergence Constraint in Shock-Capturing 
 !          ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
 !          ! The velocity field is assumed to be cell centered.
 !          implicit none
 !          ! ********************** INPUT / OUTPUT ************************
 !          type(induction),intent(inout) :: ind
 !          type(VF),intent(in) :: U
-!          type(grid),intent(in) :: g
+!          type(mesh),intent(in) :: m
 !          type(solverSettings),intent(inout) :: ss_MHD
 
 !          ! J = curl(B_face)_edge
-!          call cellCenter2Face(ind%temp_F,ind%B,g)
-!          call curl(ind%J,ind%temp_F,g)
+!          call cellCenter2Face(ind%temp_F,ind%B,m)
+!          call curl(ind%J,ind%temp_F,m)
 
 !          ! Compute fluxes of u cross B0
 !          call cross(ind%temp_CC,U,ind%B0)
-!          call cellCenter2Edge(ind%E,ind%temp_CC,g)
+!          call cellCenter2Edge(ind%E,ind%temp_CC,m)
 
 !          ! E = j/sig - uxB
 !          ! ind%E = ind%J*ind%sigmaInv_edge - ind%E
@@ -854,13 +856,13 @@
 !          call add(ind%E,ind%J)
 
 !          ! F = Curl(E)
-!          call curl(ind%temp_F,ind%E,g)
+!          call curl(ind%temp_F,ind%E,m)
 
 !          ! tempVF = interp(F)_face->cc
-!          call face2CellCenter(ind%temp_CC,ind%temp_F,g)
+!          call face2CellCenter(ind%temp_CC,ind%temp_F,m)
 
 !          ! Subtract laplacian from B^n
-!          call lap(ind%Bstar,ind%B,ind%sigmaInv_face,g)
+!          call lap(ind%Bstar,ind%B,ind%sigmaInv_face,m)
 
 !          ! ind%temp_CC = ind%temp_CC - ind%Bstar
 !          call subtract(ind%temp_CC,ind%Bstar)
@@ -872,77 +874,76 @@
 !          call init(ind%ss_ADI)
 !          call setName(ind%ss_ADI,'ADI for B-field     ')
 
-!          call apply(ind%ADI_B,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,&
+!          call apply(ind%ADI_B,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,m,&
 !             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
-!          call apply(ind%ADI_B,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,&
+!          call apply(ind%ADI_B,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,m,&
 !             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
-!          call apply(ind%ADI_B,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,&
+!          call apply(ind%ADI_B,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,m,&
 !             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
 
 !          ! Impose BCs:
-!          call applyAllBCs(ind%B,ind%B_bcs,g)
+!          call applyAllBCs(ind%B,ind%B_bcs,m)
 !        end subroutine
 
-!        subroutine lowRemMultigrid(ind,U,g)
+!        subroutine lowRemMultigrid(ind,U,m)
 !          implicit none
 !          ! ********************** INPUT / OUTPUT ************************
 !          type(induction),intent(inout) :: ind
 !          type(VF),intent(in) :: U
-!          type(grid),intent(in) :: g
+!          type(mesh),intent(in) :: m
 !          type(multiGrid),dimension(2) :: MG
 
-!          call CCBfieldAdvect(ind%temp_CC,U,ind%B0,g)
+!          call CCBfieldAdvect(ind%temp_CC,U,ind%B0,m)
 
-!          call poisson(MG,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,g,ind%ss_ind,&
+!          call poisson(MG,ind%B%x,ind%temp_CC%x,ind%B_bcs%x,m,ind%ss_ind,&
 !          ind%err_residual,.false.)
 
-!          call poisson(MG,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,g,ind%ss_ind,&
+!          call poisson(MG,ind%B%y,ind%temp_CC%y,ind%B_bcs%y,m,ind%ss_ind,&
 !          ind%err_residual,.false.)
 
-!          call poisson(MG,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,g,ind%ss_ind,&
+!          call poisson(MG,ind%B%z,ind%temp_CC%z,ind%B_bcs%z,m,ind%ss_ind,&
 !          ind%err_residual,.false.)
 !        end subroutine
 
        ! ******************* CLEANING **************************
 
-       subroutine cleanBSolution(ind,g,ss_MHD)
+       subroutine cleanBSolution(ind,m,ss_MHD)
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(solverSettings),intent(in) :: ss_MHD
-         call div(ind%temp,ind%B_face,g)
+         call div(ind%temp,ind%B_face,m)
 
-         call poisson(ind%SOR_cleanB,ind%phi,ind%temp,g,ind%ss_cleanB,&
+         call poisson(ind%SOR_cleanB,ind%phi,ind%temp,m,ind%ss_cleanB,&
           ind%err_cleanB,getExportErrors(ss_MHD))
 
-         call grad(ind%temp_F2,ind%phi,g)
+         call grad(ind%temp_F2,ind%phi,m)
          call subtract(ind%B_face,ind%temp_F2)
 
-         call face2CellCenter(ind%B,ind%B_face,g)
+         call face2CellCenter(ind%B,ind%B_face,m)
 
-         call applyAllBCs(ind%B,g)
+         call applyAllBCs(ind%B,m)
        end subroutine
 
        ! ********************* COMPUTE *****************************
 
-       subroutine computeAddJCrossB(jcrossB,ind,g_mom,Ha,Re,Rem)
+       subroutine computeAddJCrossB(jcrossB,ind,Ha,Re,Rem)
          ! addJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
          implicit none
          type(VF),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
          type(VF) :: temp
          call init(temp,jcrossB)
          call assign(temp,0.0_cp)
-         call computeJCrossB(temp,ind,g_mom,Ha,Re,Rem)
+         call computeJCrossB(temp,ind,Ha,Re,Rem)
          call add(jcrossB,temp)
          call delete(temp)
        end subroutine
 
-       subroutine computeJCrossB(jcrossB,ind,g_mom,Ha,Re,Rem)
+       subroutine computeJCrossB(jcrossB,ind,Ha,Re,Rem)
          ! computes
          ! 
          !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
@@ -951,28 +952,27 @@
          implicit none
          type(VF),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
          select case (solveBMethod)
          case (5,6) ! Finite Rem
            call add(ind%Bstar,ind%B,ind%B0)
-           call curl(ind%J_cc,ind%B,ind%g)
+           call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%g)
+           call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
        end subroutine
 
-       subroutine computeJCrossB_Bface(jcrossB,ind,g_mom,Ha,Re,Rem)
+       subroutine computeJCrossB_Bface(jcrossB,ind,Ha,Re,Rem)
          ! computes
          ! 
          !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
@@ -981,30 +981,29 @@
          implicit none
          type(VF),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
          select case (solveBMethod)
          case (5,6) ! Finite Rem
            call add(ind%Bstar,ind%B,ind%B0)
-           call curl(ind%J,ind%B,ind%g)
-           ! call edge2Face(ind%temp_F,ind%J,ind%g)
+           call curl(ind%J,ind%B,ind%m)
+           ! call edge2Face(ind%temp_F,ind%J,ind%m)
 
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%g)
+           call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
        end subroutine
 
-       subroutine computeJCrossB_new(jcrossB,ind,g_mom,Ha,Re,Rem)
+       subroutine computeJCrossB_new(jcrossB,ind,Ha,Re,Rem)
          ! computes
          ! 
          !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
@@ -1013,7 +1012,6 @@
          implicit none
          type(VF),intent(inout) :: jcrossB
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g_mom
          real(cp),intent(in) :: Ha,Re,Rem
 
          ! Magnetic Pressure (not yet done)
@@ -1022,13 +1020,13 @@
            call add(ind%Bstar,ind%B,ind%B0)
            call square(ind%Bstar)
            call divide(ind%Bstar,2.0_cp)
-           ! call grad(ind%jCrossB_F,ind%Bstar,ind%g)
+           ! call grad(ind%jCrossB_F,ind%Bstar,ind%m)
            call multiply(ind%jCrossB_F,-1.0_cp)
          case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%g)
+           call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
@@ -1037,43 +1035,43 @@
          select case (solveBMethod)
          case (5,6) ! Finite Rem
            call add(ind%Bstar,ind%B,ind%B0)
-           call curl(ind%J_cc,ind%B,ind%g)
+           call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%g)
+           call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%g)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%SD,g_mom)
+           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
        end subroutine
 
-       subroutine computeDivergenceInduction(ind,g)
+       subroutine computeDivergenceInduction(ind,m)
          implicit none
          type(induction),intent(inout) :: ind
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          if (solveInduction) then
            select case (solveBMethod)
            case (4:5)
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
-             call div(ind%divB,ind%temp_F,g)
+             call div(ind%divB,ind%temp_F,m)
            case default
-             call div(ind%divB,ind%B,g)
+             call div(ind%divB,ind%B,m)
            end select
          endif
-         call div(ind%divJ,ind%J_cc,g)
+         call div(ind%divJ,ind%J_cc,m)
        end subroutine
 
        subroutine computeCurrent(ind)
          implicit none
          type(induction),intent(inout) :: ind
          call add(ind%Bstar,ind%B0,ind%B)
-         call curl(ind%J_cc,ind%Bstar,ind%g)
+         call curl(ind%J_cc,ind%Bstar,ind%m)
        end subroutine
 
        subroutine computeTotalMagneticEnergyFluid(ind,ss_MHD)
@@ -1084,18 +1082,18 @@
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            call assign(ind%Bstar,ind%B)
            call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,ind%Bstar,ind%SD)
+           call totalEnergy(K_energy,ind%Bstar,ind%D)
            call set(ind%KB_energy,ind%nstep,K_energy)
            call apply(ind%KB_energy)
           endif
           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            call assign(ind%Bstar,ind%B)
-           call totalEnergy(K_energy,ind%Bstar,ind%SD)
+           call totalEnergy(K_energy,ind%Bstar,ind%D)
            call set(ind%KBi_energy,ind%nstep,K_energy)
            call apply(ind%KBi_energy)
           endif
           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%Bstar,ind%SD)
+           call totalEnergy(K_energy,ind%Bstar,ind%D)
            call set(ind%KB0_energy,ind%nstep,K_energy)
            call apply(ind%KB0_energy)
           endif
@@ -1109,17 +1107,17 @@
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            call assign(ind%Bstar,ind%B)
            call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,ind%Bstar,ind%g)
+           call totalEnergy(K_energy,ind%Bstar,ind%m)
            call set(ind%KB_energy,ind%nstep,K_energy)
            call apply(ind%KB_energy)
           endif
           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%B,ind%g)
+           call totalEnergy(K_energy,ind%B,ind%m)
            call set(ind%KBi_energy,ind%nstep,K_energy)
            call apply(ind%KBi_energy)
           endif
           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%B0,ind%g)
+           call totalEnergy(K_energy,ind%B0,ind%m)
            call set(ind%KB0_energy,ind%nstep,K_energy)
            call apply(ind%KB0_energy)
           endif
@@ -1127,132 +1125,131 @@
 
        ! ********************* AUX *****************************
 
-       subroutine embedVelocity(ind,U_E,g)
+       subroutine embedVelocity(ind,U_E)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U_E ! Momentum edge velocity
-         type(grid),intent(in) :: g ! Momentum grid
-         call embedEdge(ind%U_E%x,U_E%x,ind%SD,g)
-         call embedEdge(ind%U_E%y,U_E%y,ind%SD,g)
-         call embedEdge(ind%U_E%z,U_E%z,ind%SD,g)
+         call embedEdge(ind%U_E%x,U_E%x,ind%D)
+         call embedEdge(ind%U_E%y,U_E%y,ind%D)
+         call embedEdge(ind%U_E%z,U_E%z,ind%D)
        end subroutine
 
-       ! subroutine embedVelocity_old(ind,U_fi,g)
+       ! subroutine embedVelocity_old(ind,U_fi,m)
        !   implicit none
        !   type(induction),intent(inout) :: ind
        !   type(VF),intent(in) :: U_fi ! Raw momentum velocity
-       !   type(grid),intent(in) :: g ! Momentum grid
+       !   type(mesh),intent(in) :: m ! Momentum mesh
        !   type(VF) :: temp
        !   logical,dimension(4) :: usedVelocity
        !   usedVelocity = (/.true.,.false.,.false.,.false./)
        !   if (usedVelocity(1)) then ! Edge - 2 interpolations
-       !     call init_Edge(temp,g)
-       !     call face2Edge(temp%x,U_fi%x,g,1,1)
-       !     call face2Edge(temp%y,U_fi%x,g,1,2)
-       !     call face2Edge(temp%z,U_fi%x,g,1,3)
-       !     call embedEdge(ind%U_E,temp,ind%SD,g)
-       !     call face2Edge(temp%x,U_fi%y,g,2,1)
-       !     call face2Edge(temp%y,U_fi%y,g,2,2)
-       !     call face2Edge(temp%z,U_fi%y,g,2,3)
-       !     call embedEdge(ind%V_E,temp,ind%SD,g)
-       !     call face2Edge(temp%x,U_fi%z,g,3,1)
-       !     call face2Edge(temp%y,U_fi%z,g,3,2)
-       !     call face2Edge(temp%z,U_fi%z,g,3,3)
-       !     call embedEdge(ind%W_E,temp,ind%SD,g)
+       !     call init_Edge(temp,m)
+       !     call face2Edge(temp%x,U_fi%x,m,1,1)
+       !     call face2Edge(temp%y,U_fi%x,m,1,2)
+       !     call face2Edge(temp%z,U_fi%x,m,1,3)
+       !     call embedEdge(ind%U_E,temp,ind%D,m)
+       !     call face2Edge(temp%x,U_fi%y,m,2,1)
+       !     call face2Edge(temp%y,U_fi%y,m,2,2)
+       !     call face2Edge(temp%z,U_fi%y,m,2,3)
+       !     call embedEdge(ind%V_E,temp,ind%D,m)
+       !     call face2Edge(temp%x,U_fi%z,m,3,1)
+       !     call face2Edge(temp%y,U_fi%z,m,3,2)
+       !     call face2Edge(temp%z,U_fi%z,m,3,3)
+       !     call embedEdge(ind%W_E,temp,ind%D,m)
        !     call delete(temp)
        !     ! call printPhysicalMinMax(ind%U_E,'U_E')
        !     ! call printPhysicalMinMax(ind%V_E,'V_E')
        !     ! call printPhysicalMinMax(ind%W_E,'W_E')
        !   endif
        !   if (usedVelocity(2)) then ! CC - 1 interpolation
-       !     call init_CC(temp,g)
-       !     call face2CellCenter(temp%x,U_fi%x,g,1)
-       !     call face2CellCenter(temp%y,U_fi%y,g,2)
-       !     call face2CellCenter(temp%z,U_fi%z,g,3)
-       !     call embedCC(ind%U_cct,temp,ind%SD,g)
+       !     call init_CC(temp,m)
+       !     call face2CellCenter(temp%x,U_fi%x,m,1)
+       !     call face2CellCenter(temp%y,U_fi%y,m,2)
+       !     call face2CellCenter(temp%z,U_fi%z,m,3)
+       !     call embedCC(ind%U_cct,temp,ind%D,m)
        !     call delete(temp)
        !   endif
        !   if (usedVelocity(3)) then ! Face - no interpolations
-       !     call embedFace(ind%U_Ft,U_Fi,ind%SD,g)
+       !     call embedFace(ind%U_Ft,U_Fi,ind%D,m)
        !   endif
        !   ! if (usedVelocity(4)) then ! Node - 3 interpolations (not needed for any solvers)
-       !     ! call allocateX(temp,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
-       !     ! call allocateY(temp,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
-       !     ! call allocateZ(temp,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
-       !     ! call face2Node(temp%x,U_fi%x,g,1)
-       !     ! call face2Node(temp%y,U_fi%x,g,1)
-       !     ! call face2Node(temp%z,U_fi%x,g,1)
-       !     ! call embedNode(ind%U_N,temp,Nin1,Nin2,g)
-       !     ! call face2Node(temp%x,U_fi%y,g,2)
-       !     ! call face2Node(temp%y,U_fi%y,g,2)
-       !     ! call face2Node(temp%z,U_fi%y,g,2)
-       !     ! call embedNode(ind%V_N,temp,Nin1,Nin2,g)
-       !     ! call face2Node(temp%x,U_fi%z,g,3)
-       !     ! call face2Node(temp%y,U_fi%z,g,3)
-       !     ! call face2Node(temp%z,U_fi%z,g,3)
-       !     ! call embedNode(ind%W_N,temp,Nin1,Nin2,g)
+       !     ! call allocateX(temp,m%c(1)%sc,m%c(2)%sn,m%c(3)%sn)
+       !     ! call allocateY(temp,m%c(1)%sn,m%c(2)%sc,m%c(3)%sn)
+       !     ! call allocateZ(temp,m%c(1)%sn,m%c(2)%sn,m%c(3)%sc)
+       !     ! call face2Node(temp%x,U_fi%x,m,1)
+       !     ! call face2Node(temp%y,U_fi%x,m,1)
+       !     ! call face2Node(temp%z,U_fi%x,m,1)
+       !     ! call embedNode(ind%U_N,temp,Nin1,Nin2,m)
+       !     ! call face2Node(temp%x,U_fi%y,m,2)
+       !     ! call face2Node(temp%y,U_fi%y,m,2)
+       !     ! call face2Node(temp%z,U_fi%y,m,2)
+       !     ! call embedNode(ind%V_N,temp,Nin1,Nin2,m)
+       !     ! call face2Node(temp%x,U_fi%z,m,3)
+       !     ! call face2Node(temp%y,U_fi%z,m,3)
+       !     ! call face2Node(temp%z,U_fi%z,m,3)
+       !     ! call embedNode(ind%W_N,temp,Nin1,Nin2,m)
        !     ! call delete(temp)
        !   ! endif
        ! end subroutine
 
-       subroutine perturbAll(f,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         type(grid),intent(in) :: g
-         real(cp),dimension(3) :: wavenum,eps
-         integer,dimension(3) :: s
-         integer :: i,j,k
-         s = shape(f)
-         wavenum = 0.1_cp
-         eps = 0.01_cp
-         if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*g%c(1)%hn(i)) +&
-                                           eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*g%c(1)%hc(i)) +&
-                                           eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         else
-          stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
-         endif
-       end subroutine
+!        subroutine perturbAll(f,m)
+!          implicit none
+!          real(cp),dimension(:,:,:),intent(inout) :: f
+!          type(mesh),intent(in) :: m
+!          real(cp),dimension(3) :: wavenum,eps
+!          integer,dimension(3) :: s
+!          integer :: i,j,k
+!          s = shape(f)
+!          wavenum = 0.1_cp
+!          eps = 0.01_cp
+!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hn(i)) +&
+!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hc(i)) +&
+!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          else
+!           stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
+!          endif
+!        end subroutine
 
-       subroutine perturb(f,g)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         type(grid),intent(in) :: g
-         real(cp),dimension(3) :: wavenum,eps
-         integer,dimension(3) :: s
-         integer :: i,j,k
-         s = shape(f)
-         wavenum = 10.0_cp
-         eps = 0.1_cp
-         if (all((/(s(i).eq.g%c(i)%sn,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*g%c(2)%hn(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hn(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (all((/(s(i).eq.g%c(i)%sc,i=1,3)/))) then
-           !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
-             f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*g%c(2)%hc(j)) +&
-                                           eps(3)*sin(wavenum(3)*PI*g%c(3)%hc(k)) )
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         else
-          stop 'Error: unmatched case in perturb in inductionSolver.f90'
-         endif
-       end subroutine
+!        subroutine perturb(f,m)
+!          implicit none
+!          real(cp),dimension(:,:,:),intent(inout) :: f
+!          type(mesh),intent(in) :: m
+!          real(cp),dimension(3) :: wavenum,eps
+!          integer,dimension(3) :: s
+!          integer :: i,j,k
+!          s = shape(f)
+!          wavenum = 10.0_cp
+!          eps = 0.1_cp
+!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          else
+!           stop 'Error: unmatched case in perturb in inductionSolver.f90'
+!          endif
+!        end subroutine
 
        end module

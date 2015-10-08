@@ -8,8 +8,8 @@
        !      De Vahl Davis, G. Natural convection of air in a square cavity: a 
        !      benchmark solution. Int. J. Num. Methods Fluids 3, 249–264 (1983).
        ! 
-       ! Index 1 indicates finest grid.
-       ! Index Nsims indicates coarsest grid.
+       ! Index 1 indicates finest mesh.
+       ! Index Nsims indicates coarsest mesh.
        ! 
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
@@ -30,7 +30,7 @@
        use IO_VF_mod
        use ops_aux_mod
 
-       use grid_mod
+       use mesh_mod
        use norms_mod
        use SF_mod
        use VF_mod
@@ -112,30 +112,28 @@
          temp = newAndOpen(dir,name)
 
          if (sn.eq.s) then
-           write(temp,'(7(A10))') 'N','L1','L2','Linf','R1','R2','Rinf'
+           write(temp,'(7(A10))') 'N','L1','L2','Linf'
            do i=1,s
-             write(temp,'(1I5,6'//arrfmt//')') N(i),e(i)%L1, e(i)%L2, e(i)%Linf, &
-                                                    e(i)%R1, e(i)%R2, e(i)%Rinf
+             write(temp,'(1I5,4'//arrfmt//')') N(i),e(i)%L1, e(i)%L2, e(i)%Linf
            enddo
          elseif (sn.eq.s+2) then
-           write(temp,'(9(A10))') 'N1','N2','N3','L1','L2','Linf','R1','R2','Rinf'
+           write(temp,'(6(A10))') 'N1','N2','N3','L1','L2','Linf'
            do i=1,s
-             write(temp,'(3I5,6'//arrfmt//')') N(i),N(i+1),N(i+2),&
-                                               e(i)%L1, e(i)%L2, e(i)%Linf,&
-                                               e(i)%R1, e(i)%R2, e(i)%Rinf
+             write(temp,'(3I5,3'//arrfmt//')') N(i),N(i+1),N(i+2),&
+                                               e(i)%L1, e(i)%L2, e(i)%Linf
            enddo
          else
            stop 'Error: unknown size in exportREList in richardsonExtrapolation.f90'
          endif
        end subroutine
 
-       subroutine loadData(f,g,directory,name,pad)
+       subroutine loadData(f,m,directory,name,pad)
          implicit none
          type(VF),intent(inout) :: f
-         type(grid),intent(inout) :: g
+         type(mesh),intent(inout) :: m
          character(len=*),intent(in) :: directory,name
          integer,intent(in) :: pad
-         call import_3C_VF(g,f,directory,name,pad)
+         call import_3C_VF(m,f,directory,name,pad)
        end subroutine
 
        ! *******************************************************************************
@@ -144,10 +142,10 @@
        ! *******************************************************************************
        ! *******************************************************************************
 
-       function computeRE_VF(f,g,n,r,dir,directory,name) result (RE)
+       function computeRE_VF(f,m,n,r,dir,directory,name) result (RE)
          implicit none
          type(VF),dimension(n),intent(in) :: f
-         type(grid),dimension(n),intent(in) :: g
+         type(mesh),dimension(n),intent(in) :: m
          integer,dimension(3),intent(in) :: r
          integer,intent(in) :: n,dir
          character(len=*),intent(in) :: directory,name
@@ -155,16 +153,16 @@
          integer :: i
          do i=1,n-2
            select case (dir)
-           case (1); RE(i) = computeRE_Real(f(i)%x,f(i+1)%x,f(i+2)%x,g(i),g(i+2),r,directory,name//int2str2(i))
-           case (2); RE(i) = computeRE_Real(f(i)%y,f(i+1)%y,f(i+2)%y,g(i),g(i+2),r,directory,name//int2str2(i))
-           case (3); RE(i) = computeRE_Real(f(i)%z,f(i+1)%z,f(i+2)%z,g(i),g(i+2),r,directory,name//int2str2(i))
+           case (1); RE(i) = computeRE_Real(f(i)%x,f(i+1)%x,f(i+2)%x,m(i),m(i+2),r,directory,name//int2str2(i))
+           case (2); RE(i) = computeRE_Real(f(i)%y,f(i+1)%y,f(i+2)%y,m(i),m(i+2),r,directory,name//int2str2(i))
+           case (3); RE(i) = computeRE_Real(f(i)%z,f(i+1)%z,f(i+2)%z,m(i),m(i+2),r,directory,name//int2str2(i))
            case default
            stop 'Error: dir must = 1,2,3 in computeRE_VF in convergenceRate.f90'
            end select
          enddo
        end function
 
-       function computeRE_Real(f1,f2,f3,g1,g3,r,dir,name) result (RE)
+       function computeRE_Real(f1,f2,f3,m1,m3,r,dir,name) result (RE)
          ! Computes the properties of RE, which include
          ! 
          !            |f3 - f2|   /
@@ -183,30 +181,30 @@
          !               |f2|
          ! 
          ! Note that 
-         !      f1 is the finest grid
-         !      f3 is the coarsest grid
-         !      grid refinement means that maxval(r) must > 1 for at least one direction
+         !      f1 is the finest mesh
+         !      f3 is the coarsest mesh
+         !      mesh refinement means that maxval(r) must > 1 for at least one direction
          ! 
          implicit none
          type(SF),intent(in) :: f1,f2,f3 ! Cell corner data, (f1 -> finest, f3-> coarsest)
-         type(grid),intent(in) :: g1,g3 ! Grid for f3
+         type(mesh),intent(in) :: m1,m3 ! Mesh for f3
          integer,dimension(3),intent(in) :: r ! refinement factor
          character(len=*),intent(in) :: dir,name ! directory / name
          type(richardsonExtrapolation) :: RE ! parametric results
-         integer,dimension(3) :: r1,r2,r3 ! no refinement compared to coarsest grid
+         integer,dimension(3) :: r1,r2,r3 ! no refinement compared to coarsest mesh
          type(norms) :: f3_f2,f2_f1,f1_f0,f2_f0
          type(SF) :: f0
          real(cp) :: Fs,r0
          r1 = r*r; r2 = r; r3 = 1; r0 = real(maxval(r),cp)
-         call init_Node(f0,g1)
+         call init_Node(f0,m1)
          call assign(f0,0.0_cp)
 
          if (.not.(r0.gt.1.0_cp)) stop 'Refinement was not performed in computeRE_Real in convergenceRate.f90'
 
-         f3_f2 = computeMGError(f2,f3,r2,r3,g3,dir,name//'_23',.false.)    ! |f_3 - f_2|
-         f2_f1 = computeMGError(f1,f2,r1,r2,g3,dir,name//'_12',.false.)    ! |f_2 - f_1|
-         f1_f0 = computeMGError(f0,f1,r1,r1,g3,dir,name//'_1',.false.)     ! |   f_1   |
-         f2_f0 = computeMGError(f0,f2,r1,r2,g3,dir,name//'_2',.false.)     ! |   f_2   |
+         f3_f2 = computeMGError(f2,f3,r2,r3,m3,dir,name//'_23',.false.)    ! |f_3 - f_2|
+         f2_f1 = computeMGError(f1,f2,r1,r2,m3,dir,name//'_12',.false.)    ! |f_2 - f_1|
+         f1_f0 = computeMGError(f0,f1,r1,r1,m3,dir,name//'_1',.false.)     ! |   f_1   |
+         f2_f0 = computeMGError(f0,f2,r1,r2,m3,dir,name//'_2',.false.)     ! |   f_2   |
 
          RE%p = richardsonExtrap_norms(f3_f2,f2_f1,r0)
 
@@ -229,12 +227,12 @@
        ! *******************************************************************************
        ! *******************************************************************************
 
-       function computeMGError(f1,f2,r1,r2,g,dir,name,plotTF) result(n)
+       function computeMGError(f1,f2,r1,r2,m,dir,name,plotTF) result(n)
          ! Computes
          ! 
          !    e = f2 - f1
          ! 
-         ! On the grid defined by the shape s. The grid taken from 
+         ! On the mesh defined by the shape s. The mesh taken from 
          ! f1 and f2 depend on the refinement factors r1 and r2.
          ! 
          ! Note that
@@ -243,23 +241,23 @@
          !     shape(f1)/r1 should = s
          !     shape(f2)/r2 should = s
          ! 
-         !     r1(dir) = 1 --> f1 need not skip grid points along direction dir in grid
-         !     r1(dir) = 2 --> f1 needs to skip every other grid point along direction dir in grid
+         !     r1(dir) = 1 --> f1 need not skip mesh points along direction dir in mesh
+         !     r1(dir) = 2 --> f1 needs to skip every other mesh point along direction dir in mesh
          ! 
-         !     r2(dir) = 1 --> f2 need not skip grid points along direction dir in grid
-         !     r2(dir) = 2 --> f2 needs to skip every other grid point along direction dir in grid
+         !     r2(dir) = 1 --> f2 need not skip mesh points along direction dir in mesh
+         !     r2(dir) = 2 --> f2 needs to skip every other mesh point along direction dir in mesh
          ! 
          implicit none
          type(SF),intent(in) :: f2,f1
          integer,dimension(3),intent(in) :: r1,r2
-         type(grid),intent(in) :: g ! grid for e
+         type(mesh),intent(in) :: m ! mesh for e
          character(len=*),intent(in) :: dir,name
          logical,intent(in) :: plotTF
          type(SF) :: e
          type(norms) :: n
          integer :: i,j,k,i1,j1,k1,i2,j2,k2,t
 
-         call init_Node(e,g)
+         call init_Node(e,m)
          do t = 1,e%s
            !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
            do k=2,e%RF(t)%s(3)-1
@@ -273,9 +271,9 @@
            !$OMP END PARALLEL DO
          enddo
          call zeroGhostPoints(e)
-         if (plotTF) call export_1C_SF(g,e,dir,'MG_Error_'//name,0)
+         if (plotTF) call export_1C_SF(m,e,dir,'MG_Error_'//name,0)
 
-         call compute(n,e,g)
+         call compute(n,e,m)
          call delete(e)
        end function
 
@@ -300,9 +298,6 @@
          p%L1   = richardsonExtrap_Real(num%L1  ,denom%L1,  r)
          p%L2   = richardsonExtrap_Real(num%L2  ,denom%L2,  r)
          p%Linf = richardsonExtrap_Real(num%Linf,denom%Linf,r)
-         p%R1   = richardsonExtrap_Real(num%R1  ,denom%R1,  r)
-         p%R2   = richardsonExtrap_Real(num%R2  ,denom%R2,  r)
-         p%Rinf = richardsonExtrap_Real(num%Rinf,denom%Rinf,r)
        end function
 
        function richardsonExtrap_Real(num,denom,r) result(p)
@@ -338,9 +333,6 @@
          GCI%L1   = computeGCI_Real(Fs,num%L1  /denom%L1  ,p%L1  ,r,fine)
          GCI%L2   = computeGCI_Real(Fs,num%L2  /denom%L2  ,p%L2  ,r,fine)
          GCI%Linf = computeGCI_Real(Fs,num%Linf/denom%Linf,p%Linf,r,fine)
-         GCI%R1   = computeGCI_Real(Fs,num%R1  /denom%R1  ,p%R1  ,r,fine)
-         GCI%R2   = computeGCI_Real(Fs,num%R2  /denom%R2  ,p%R2  ,r,fine)
-         GCI%Rinf = computeGCI_Real(Fs,num%Rinf/denom%Rinf,p%Rinf,r,fine)
        end function
 
        function computeGCI_Real(Fs,eps,p,r,fine) result(GCI)
@@ -389,9 +381,6 @@
          AR%L1   = computeAsymtoticRange_Real(GCI_12%L1  ,GCI_23%L1  ,p%L1  ,r)
          AR%L2   = computeAsymtoticRange_Real(GCI_12%L2  ,GCI_23%L2  ,p%L2  ,r)
          AR%Linf = computeAsymtoticRange_Real(GCI_12%Linf,GCI_23%Linf,p%Linf,r)
-         AR%R1   = computeAsymtoticRange_Real(GCI_12%R1  ,GCI_23%R1  ,p%R1  ,r)
-         AR%R2   = computeAsymtoticRange_Real(GCI_12%R2  ,GCI_23%R2  ,p%R2  ,r)
-         AR%Rinf = computeAsymtoticRange_Real(GCI_12%Rinf,GCI_23%Rinf,p%Rinf,r)
        end function
 
        function computeAsymtoticRange_Real(GCI_12,GCI_23,p,r) result(AR)

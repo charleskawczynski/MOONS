@@ -31,7 +31,7 @@
        ! 
        use probe_transient_mod
        use IO_tools_mod
-       use grid_mod
+       use mesh_mod
        use norms_mod
        use SF_mod
 
@@ -91,17 +91,17 @@
 
        contains
 
-        subroutine initIndexProbe(ip,dir,name,TF_freshStart,s,i,g)
+        subroutine initIndexProbe(ip,dir,name,TF_freshStart,s,i,m)
           implicit none
           type(indexProbe),intent(inout) :: ip
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,dimension(3),intent(in) :: s,i
           character(len=*),intent(in) :: dir
           character(len=*),intent(in) :: name
           logical,intent(in) :: TF_freshStart
           integer :: k
           call init(ip%p,dir,name,TF_freshStart)
-          call defineH(i,g,s,ip%h)
+          call defineH(i,m,s,ip%h)
           ip%i = (/(maxval((/i(k),1/)),k=1,3)/)
         end subroutine
 
@@ -149,13 +149,13 @@
           call set(ep%p,n,d)
         end subroutine
 
-        subroutine setErrorData_SF(ep,n,u,g)
+        subroutine setErrorData_SF(ep,n,u,m)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
           type(SF),intent(in) :: u
-          type(grid),intent(in) :: g
-          call compute(ep%e,u,g)
+          type(mesh),intent(in) :: m
+          call compute(ep%e,u,m)
           call set(ep%p,n,ep%e%L2)
         end subroutine
 
@@ -180,36 +180,36 @@
           call apply(ep%p)
         end subroutine
 
-        subroutine setApplyErrorProbe(ep,n,u,g)
+        subroutine setApplyErrorProbe(ep,n,u,m)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
           type(SF),intent(in) :: u
-          type(grid),intent(in) :: g
-          call set(ep,n,u,g)
+          type(mesh),intent(in) :: m
+          call set(ep,n,u,m)
           call apply(ep%p)
         end subroutine
 
-        subroutine defineH(i,g,s,h)
+        subroutine defineH(i,m,s,h)
          implicit none
           integer,dimension(3),intent(in) :: i
-          type(grid),intent(in) :: g
+          type(mesh),intent(in) :: m
           integer,dimension(3),intent(in) :: s
           real(cp),dimension(3),intent(inout) :: h
           h = 0
-          if (s(1).eq.g%c(1)%sc) h(1) = g%c(1)%hc(i(1))
-          if (s(1).eq.g%c(1)%sc) h(1) = g%c(1)%hc(i(1))
-          if (s(2).eq.g%c(2)%sc) h(2) = g%c(2)%hc(i(2))
-          if (s(2).eq.g%c(2)%sc) h(2) = g%c(2)%hc(i(2))
-          if (s(3).eq.g%c(3)%sc) h(3) = g%c(3)%hc(i(3))
-          if (s(3).eq.g%c(3)%sc) h(3) = g%c(3)%hc(i(3))
+          if (s(1).eq.m%g(1)%c(1)%sc) h(1) = m%g(1)%c(1)%hc(i(1))
+          if (s(1).eq.m%g(1)%c(1)%sc) h(1) = m%g(1)%c(1)%hc(i(1))
+          if (s(2).eq.m%g(1)%c(2)%sc) h(2) = m%g(1)%c(2)%hc(i(2))
+          if (s(2).eq.m%g(1)%c(2)%sc) h(2) = m%g(1)%c(2)%hc(i(2))
+          if (s(3).eq.m%g(1)%c(3)%sc) h(3) = m%g(1)%c(3)%hc(i(3))
+          if (s(3).eq.m%g(1)%c(3)%sc) h(3) = m%g(1)%c(3)%hc(i(3))
 
-          if (s(1).eq.g%c(1)%sn) h(1) = g%c(1)%hn(i(1))
-          if (s(1).eq.g%c(1)%sn) h(1) = g%c(1)%hn(i(1))
-          if (s(2).eq.g%c(2)%sn) h(2) = g%c(2)%hn(i(2))
-          if (s(2).eq.g%c(2)%sn) h(2) = g%c(2)%hn(i(2))
-          if (s(3).eq.g%c(3)%sn) h(3) = g%c(3)%hn(i(3))
-          if (s(3).eq.g%c(3)%sn) h(3) = g%c(3)%hn(i(3))
+          if (s(1).eq.m%g(1)%c(1)%sn) h(1) = m%g(1)%c(1)%hn(i(1))
+          if (s(1).eq.m%g(1)%c(1)%sn) h(1) = m%g(1)%c(1)%hn(i(1))
+          if (s(2).eq.m%g(1)%c(2)%sn) h(2) = m%g(1)%c(2)%hn(i(2))
+          if (s(2).eq.m%g(1)%c(2)%sn) h(2) = m%g(1)%c(2)%hn(i(2))
+          if (s(3).eq.m%g(1)%c(3)%sn) h(3) = m%g(1)%c(3)%hn(i(3))
+          if (s(3).eq.m%g(1)%c(3)%sn) h(3) = m%g(1)%c(3)%hn(i(3))
         end subroutine
 
         ! ------------------ PRINT / EXPORT PROBE --------------------- index probe

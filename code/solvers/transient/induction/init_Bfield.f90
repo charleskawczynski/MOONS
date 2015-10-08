@@ -1,5 +1,6 @@
        module init_Bfield_mod
        use grid_mod
+       use mesh_mod
        use VF_mod
        use IO_VF_mod
        implicit none
@@ -54,30 +55,30 @@
 
        contains
 
-       subroutine initBfield(B,B0,g,dir)
+       subroutine initBfield(B,B0,m,dir)
          implicit none
          type(VF),intent(inout) :: B,B0
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          if (restartB) then
-               call initRestartB(B,g,dir)
+               call initRestartB(B,m,dir)
          else; call initZeroField(B)
          endif
          if (restartB0) then
-               call initRestartB0(B0,g,dir)
+               call initRestartB0(B0,m,dir)
          elseif (preDefinedB0_ICs.ne.0) then
-               call initPreDefinedB0(B0,g)
+               call initPreDefinedB0(B0,m)
          else; call initUserBfield(B,B0)
          endif
        end subroutine
 
-       subroutine initRestartB(B,g,dir)
+       subroutine initRestartB(B,m,dir)
          implicit none
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
-         type(grid) :: temp
-         call init(temp,g)
+         type(mesh) :: temp
+         call init(temp,m)
          call import_3C_VF(temp,B,dir//'Bfield/','Bct',0)
 
          ! call export_3C_VF(temp,B,dir//'Bfield/','Bct_imported',0)
@@ -85,26 +86,26 @@
          call delete(temp)
        end subroutine
 
-       subroutine initRestartB0(B,g,dir)
+       subroutine initRestartB0(B,m,dir)
          implicit none
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
-         type(grid) :: temp
-         call init(temp,g)
+         type(mesh) :: temp
+         call init(temp,m)
          call import_3C_VF(temp,B,dir//'Bfield/','B0ct',0)
          call delete(temp)
        end subroutine
 
-       subroutine initPreDefinedB0(B,g)
+       subroutine initPreDefinedB0(B,m)
          implicit none
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          select case (preDefinedB0_ICs)
          case (1); call uniformBfield(B,applied_B_dir)
-         case (2); call initFringingField_Sergey(B,g,applied_B_dir,fringe_dir)
-         case (3); call initFringingField_ALEX(B,g,applied_B_dir,fringe_dir)
-         case (4); call initField_Bandaru(B,g,current_B_dir)
+         case (2); call initFringingField_Sergey(B,m,applied_B_dir,fringe_dir)
+         case (3); call initFringingField_ALEX(B,m,applied_B_dir,fringe_dir)
+         case (4); call initField_Bandaru(B,m,current_B_dir)
          case default
            write(*,*) 'Erro: Incorrect preDefinedB0_ICs case in initBfield.'; stop
          end select
@@ -146,15 +147,15 @@
          call uniformBfield(B0,3)
        end subroutine
 
-       subroutine initFringingField_Sergey(B,g,applied_dir,fringeDir)
+       subroutine initFringingField_Sergey(B,m,applied_dir,fringeDir)
          implicit none
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(B%x%RF(1)%f,g,fringeDir)
-         case (2); call initFringe_Sergey(B%y%RF(1)%f,g,fringeDir)
-         case (3); call initFringe_Sergey(B%z%RF(1)%f,g,fringeDir)
+         case (1); call initFringe_Sergey(B%x%RF(1)%f,m%g(1),fringeDir)
+         case (2); call initFringe_Sergey(B%y%RF(1)%f,m%g(1),fringeDir)
+         case (3); call initFringe_Sergey(B%z%RF(1)%f,m%g(1),fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
@@ -199,14 +200,14 @@
          deallocate(Btemp)
        end subroutine
 
-       subroutine initField_Bandaru(B,g,currentDir)
+       subroutine initField_Bandaru(B,m,currentDir)
          implicit none
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          integer,intent(in) :: currentDir
          call initField_Bandaru_RF(B%x%RF(1)%f,&
                                    B%y%RF(1)%f,&
-                                   B%z%RF(1)%f,g,currentDir)
+                                   B%z%RF(1)%f,m%g(1),currentDir)
        end subroutine
 
        subroutine initField_Bandaru_RF(Bx,By,Bz,g,currentDir)
@@ -252,15 +253,15 @@
          end select
        end subroutine
 
-       subroutine initFringingField_ALEX(B,g,dir,fringeDir)
+       subroutine initFringingField_ALEX(B,m,dir,fringeDir)
          implicit none
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          integer,intent(in) :: dir,fringeDir
          select case (dir)
-         case (1); call initFringe_ALEX(B%x%RF(1)%f,g,fringeDir)
-         case (2); call initFringe_ALEX(B%y%RF(1)%f,g,fringeDir)
-         case (3); call initFringe_ALEX(B%z%RF(1)%f,g,fringeDir)
+         case (1); call initFringe_ALEX(B%x%RF(1)%f,m%g(1),fringeDir)
+         case (2); call initFringe_ALEX(B%y%RF(1)%f,m%g(1),fringeDir)
+         case (3); call initFringe_ALEX(B%z%RF(1)%f,m%g(1),fringeDir)
          case default
          stop 'Error: dir must = 1,2,3 in initFringingField_ALEX.'
          end select

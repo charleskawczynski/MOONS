@@ -9,6 +9,7 @@
        use ops_aux_mod
 
        use grid_mod
+       use mesh_mod
        use norms_mod
        use VF_mod
        use richardsonExtrapolation_mod
@@ -73,7 +74,7 @@
          ! integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart+Nsims-1)/)
          type(richardsonExtrapolation),dimension(Nsims-2) :: RE
          type(VF),dimension(Nsims) :: U,B
-         type(grid),dimension(Nsims) :: grid_mom,grid_ind
+         type(mesh),dimension(Nsims) :: mesh_mom,mesh_ind
          write(*,*) '***************************************************'
          write(*,*) '**************** CONVERGENCE RATES ****************'
          write(*,*) '***************************************************'
@@ -84,7 +85,7 @@
          if (Nsims.lt.3) stop 'Error: size(f) must > 3 for convergence rate test.'
 
          do i=1,Nsims ! Start with finest grid
-           call MOONS_Parametric(U(i),B(i),grid_mom(i),grid_ind(i),Ni(i),&
+           call MOONS_Parametric(U(i),B(i),mesh_mom(i),mesh_ind(i),Ni(i),&
            directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\')
          enddo
 
@@ -93,20 +94,20 @@
          write(*,*) '***************************************************'
          write(*,*) 'parametric Ni = ',Ni
 
-         RE = computeRe(U,grid_mom,Nsims,r,1,directory,'U')
+         RE = computeRe(U,mesh_mom,Nsims,r,1,directory,'U')
          call reportResults(RE,'U',directory,Nsims,Ni)
-         RE = computeRe(U,grid_mom,Nsims,r,2,directory,'V')
+         RE = computeRe(U,mesh_mom,Nsims,r,2,directory,'V')
          call reportResults(RE,'V',directory,Nsims,Ni)
-         RE = computeRe(U,grid_mom,Nsims,r,3,directory,'W')
+         RE = computeRe(U,mesh_mom,Nsims,r,3,directory,'W')
          call reportResults(RE,'W',directory,Nsims,Ni)
          do i=1,Nsims; call delete(U(i)); enddo
           
          if (solveInduction) then
-           RE = computeRe(B,grid_ind,Nsims,r,1,directory,'Bx')
+           RE = computeRe(B,mesh_ind,Nsims,r,1,directory,'Bx')
            call reportResults(RE,'Bx',directory,Nsims,Ni)
-           RE = computeRe(B,grid_ind,Nsims,r,2,directory,'By')
+           RE = computeRe(B,mesh_ind,Nsims,r,2,directory,'By')
            call reportResults(RE,'By',directory,Nsims,Ni)
-           RE = computeRe(B,grid_ind,Nsims,r,3,directory,'Bz')
+           RE = computeRe(B,mesh_ind,Nsims,r,3,directory,'Bz')
            call reportResults(RE,'Bz',directory,Nsims,Ni)
            do i=1,Nsims; call delete(B(i)); enddo
          endif
@@ -127,7 +128,7 @@
          integer,dimension(Nsims) :: Ni = (/(r0**i,i=Nstart,Nstart+Nsims-1)/)
          type(richardsonExtrapolation),dimension(Nsims-2) :: RE
          type(VF),dimension(Nsims) :: U,B
-         type(grid),dimension(Nsims) :: grid_mom,grid_ind
+         type(mesh),dimension(Nsims) :: mesh_mom,mesh_ind
          write(*,*) '***************************************************'
          write(*,*) '**************** CONVERGENCE RATES ****************'
          write(*,*) '***************************************************'
@@ -136,27 +137,27 @@
          write(*,*) 'parametric Ni = ',Ni
 
          do i=1,Nsims ! Start with finest grid
-           call MOONS_Parametric(U(i),B(i),grid_mom(i),grid_ind(i),Ni(i),&
+           call MOONS_Parametric(U(i),B(i),mesh_mom(i),mesh_ind(i),Ni(i),&
            directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\')
          enddo
 
          do i=1,Nsims ! Start with finest grid
-           call loadData(U(i),grid_mom(i),&
+           call loadData(U(i),mesh_mom(i),&
             directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\Ufield\',&
             'uni,vni,wni',1)
          enddo
 
-         RE = computeRe(U,grid_mom,Nsims,r,1,directory,'U')
+         RE = computeRe(U,mesh_mom,Nsims,r,1,directory,'U')
          call reportResults(RE,'U',directory,Nsims,Ni)
-         RE = computeRe(U,grid_mom,Nsims,r,2,directory,'V')
+         RE = computeRe(U,mesh_mom,Nsims,r,2,directory,'V')
          call reportResults(RE,'V',directory,Nsims,Ni)
-         RE = computeRe(U,grid_mom,Nsims,r,3,directory,'W')
+         RE = computeRe(U,mesh_mom,Nsims,r,3,directory,'W')
          call reportResults(RE,'W',directory,Nsims,Ni)
 
          ! Clean up
          do i=1,Nsims
            call delete(U(i))
-           call delete(grid_mom(i))
+           call delete(mesh_mom(i))
          enddo
        end subroutine
 

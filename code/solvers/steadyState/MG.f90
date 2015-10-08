@@ -1,15 +1,15 @@
       module MG_mod
-      ! call MGSolver(u,f,u_bcs,g,ss,displayTF)
+      ! call MGSolver(u,f,u_bcs,m,ss,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
-      ! for a given f, boundary conditions for u (u_bcs), griddata (g)
+      ! for a given f, boundary conditions for u (u_bcs), griddata (m)
       ! and solver settings (ss) using the MultiGrid (MG) method
       !
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
       !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
-      !     g            = contains grid information (dhc,dhn)
+      !     m            = contains mesh information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
       ! 
@@ -21,6 +21,7 @@
 
       use coordinates_mod
       use grid_mod
+      use mesh_mod
       use SF_mod
       use BCs_mod
       use solverSettings_mod
@@ -58,7 +59,7 @@
         type(SF) :: u,f,lapU,res,e
         type(SF) :: temp_rx  ! (or temp_pzy), temp fields for restriction / prolongation
         type(SF) :: temp_rxy ! (or temp_pz) , temp fields for restriction / prolongation
-        type(grid) :: g,g_rx,g_rxy
+        type(mesh) :: m,m_rx,m_rxy
         type(norms) :: norm
         type(solverSettings) :: ss
         integer :: nLevels
@@ -73,11 +74,11 @@
 
       contains
 
-      subroutine initMultiGrid(mg,u,g_base,ss,displayTF)
+      subroutine initMultiGrid(mg,u,m_base,ss,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
         type(SF),intent(in) :: u
-        type(grid),intent(in) :: g_base
+        type(mesh),intent(in) :: m_base
         type(solverSettings),intent(in) :: ss
         logical,intent(in) :: displayTF
         integer,dimension(3) :: s
@@ -90,35 +91,35 @@
         s = u%RF(1)%s
 
         ! ******************** Check size of data ********************
-        if (all((/(s(i).eq.g_base%c(i)%sn,i=1,3)/))) then
-        elseif (all((/(s(i).eq.g_base%c(i)%sc,i=1,3)/))) then
+        if (u%is_Node) then
+        elseif (u%is_CC) then
         else; stop 'Error: MG only supports N or CC data in MG.f90'
         endif
 
         ! ******************** Initialize grids ********************
-        call init(mg(1)%g,g_base)
+        call init(mg(1)%m,m_base)
         do i = 1,mg(1)%nLevels-1
-          call restrict(mg(i+1)%g,mg(i)%g)
+          call restrict(mg(i+1)%m,mg(i)%m)
         enddo
         write(*,*) 'Multigrid levels:'
         do j = 1,mg(1)%nLevels
-          write(*,*) 'N_cells of level ',j,' = ',(/(mg(j)%g%c(i)%sc,i=1,3)/)-2
+          write(*,*) 'N_cells of grid 1 level ',j,' = ',(/(mg(j)%m%g(1)%c(i)%sc,i=1,3)/)-2
         enddo
 
         ! ******************** Initialize fields ********************
         do j = 1,mg(1)%nLevels
-          if (s(1).eq.g_base%c(1)%sn) then
-            call init_node(mg(j)%u,mg(j)%g)
-            call init_node(mg(j)%f,mg(j)%g)
-            call init_node(mg(j)%lapU,mg(j)%g)
-            call init_node(mg(j)%res,mg(j)%g)
-            call init_node(mg(j)%e,mg(j)%g)
-          elseif (s(1).eq.g_base%c(1)%sc) then
-            call init_CC(mg(j)%u,mg(j)%g)
-            call init_CC(mg(j)%f,mg(j)%g)
-            call init_CC(mg(j)%lapU,mg(j)%g)
-            call init_CC(mg(j)%res,mg(j)%g)
-            call init_CC(mg(j)%e,mg(j)%g)
+          if (u%is_Node) then
+            call init_node(mg(j)%u,mg(j)%m)
+            call init_node(mg(j)%f,mg(j)%m)
+            call init_node(mg(j)%lapU,mg(j)%m)
+            call init_node(mg(j)%res,mg(j)%m)
+            call init_node(mg(j)%e,mg(j)%m)
+          elseif (u%is_CC) then
+            call init_CC(mg(j)%u,mg(j)%m)
+            call init_CC(mg(j)%f,mg(j)%m)
+            call init_CC(mg(j)%lapU,mg(j)%m)
+            call init_CC(mg(j)%res,mg(j)%m)
+            call init_CC(mg(j)%e,mg(j)%m)
           endif
 
           call assign(mg(j)%u,0.0_cp)
@@ -134,28 +135,28 @@
         !          temp_rpx (restricted/prolongated in x)
         !          temp_rpy (restricted/prolongated in y)
         ! 
-        ! Need to choose a convention, which grid do these transition fields live?
+        ! Need to choose a convention, which mesh do these transition fields live?
         ! 
-        call init(mg(1)%g_rx,g_base)
-        call init(mg(1)%g_rxy,g_base)
+        call init(mg(1)%m_rx,m_base)
+        call init(mg(1)%m_rxy,m_base)
         do i = 1,mg(1)%nLevels
-          call restrict_x(mg(i)%g_rx,mg(i)%g)
-          call restrict_xy(mg(i)%g_rxy,mg(i)%g)
+          call restrict_x(mg(i)%m_rx,mg(i)%m)
+          call restrict_xy(mg(i)%m_rxy,mg(i)%m)
         enddo
         do j = 1,mg(1)%nLevels
-          if (s(1).eq.g_base%c(1)%sn) then
-            call init_Node(mg(j)%temp_rx,mg(j)%g_rx)
-            call init_Node(mg(j)%temp_rxy,mg(j)%g_rxy)
-          elseif (s(1).eq.g_base%c(1)%sc) then
-            call init_CC(mg(j)%temp_rx,mg(j)%g_rx)
-            call init_CC(mg(j)%temp_rxy,mg(j)%g_rxy)
+          if (u%is_Node) then
+            call init_Node(mg(j)%temp_rx,mg(j)%m_rx)
+            call init_Node(mg(j)%temp_rxy,mg(j)%m_rxy)
+          elseif (u%is_CC) then
+            call init_CC(mg(j)%temp_rx,mg(j)%m_rx)
+            call init_CC(mg(j)%temp_rxy,mg(j)%m_rxy)
           endif
           call assign(mg(j)%temp_rx,0.0_cp)
           call assign(mg(j)%temp_rxy,0.0_cp)
         enddo
         do i = 1,mg(1)%nLevels
-          call delete(mg(i)%g_rx)
-          call delete(mg(i)%g_rxy)
+          call delete(mg(i)%m_rx)
+          call delete(mg(i)%m_rxy)
         enddo
 
         ! ******************** Initialize norm/ss ********************
@@ -211,9 +212,9 @@
         call delete(mg%lapU)
         call delete(mg%res)
         call delete(mg%e)
-        call delete(mg%g)
-        call delete(mg%g_rx)
-        call delete(mg%g_rxy)
+        call delete(mg%m)
+        call delete(mg%m_rx)
+        call delete(mg%m_rxy)
         call delete(mg%temp_rx)
         call delete(mg%temp_rxy)
       end subroutine
@@ -226,32 +227,32 @@
         integer :: i,nLevels
         nLevels = mg(1)%nLevels
         call assign(mg(1)%f,f)
-        call export_1C_SF(mg(1)%g,mg(1)%f,dir,'f_Grid1',1)
+        call export_1C_SF(mg(1)%m,mg(1)%f,dir,'f_Grid1',1)
         do i = 1,mg(1)%nLevels-1
-          call restrict(mg(i+1)%f,mg(i)%f,mg(i)%g,mg(i)%temp_rx,mg(i)%temp_rxy)
-          call export_1C_SF(mg(i+1)%g,mg(i+1)%f,dir,'f_Grid'//int2str(i+1),1)
+          call restrict(mg(i+1)%f,mg(i)%f,mg(i)%m,mg(i)%temp_rx,mg(i)%temp_rxy)
+          call export_1C_SF(mg(i+1)%m,mg(i+1)%f,dir,'f_Grid'//int2str(i+1),1)
           write(*,*) 'Finished restricting multigrid level ',i
         enddo
         write(*,*) '         Finished restricting'
 
         mg(nLevels)%u = mg(nLevels)%f
         write(*,*) '         Assigned coarsest level'
-        call export_1C_SF(mg(nLevels)%g,mg(nLevels)%f,dir,'u_Grid'//int2str(nLevels),1)
+        call export_1C_SF(mg(nLevels)%m,mg(nLevels)%f,dir,'u_Grid'//int2str(nLevels),1)
 
         do i = mg(1)%nLevels, 2,-1
-          call prolongate(mg(i-1)%u,mg(i)%u,mg(i-1)%g,mg(i-1)%temp_rxy,mg(i-1)%temp_rx)
-          call export_1C_SF(mg(i-1)%g,mg(i-1)%f,dir,'u_Grid'//int2str(i-1),1)
+          call prolongate(mg(i-1)%u,mg(i)%u,mg(i-1)%m,mg(i-1)%temp_rxy,mg(i-1)%temp_rx)
+          call export_1C_SF(mg(i-1)%m,mg(i-1)%f,dir,'u_Grid'//int2str(i-1),1)
           write(*,*) 'Finished prolongating multigrid level ',i
         enddo
         write(*,*) '         Finished prolongating'
       end subroutine
 
-      subroutine solveMultiGrid(mg,u,f,g,ss,norm,displayTF)
+      subroutine solveMultiGrid(mg,u,f,m,ss,norm,displayTF)
         implicit none
         type(multiGrid),dimension(:),intent(inout) :: mg
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm
         type(SORSolver) :: SOR
@@ -284,11 +285,11 @@
 
           ! 1) Smooth on finest level
           ! Improvement on efficiency: Pass back residual from smoother:
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%g,&
+          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%m,&
             mg(1)%ss,mg(1)%norm,mg(1)%displayTF)
 
           ! 2) Get residual on finest level
-          call lap(mg(1)%lapU,mg(1)%u,mg(1)%g)
+          call lap(mg(1)%lapU,mg(1)%u,mg(1)%m)
           call subtract(mg(1)%res,mg(1)%f,mg(1)%lapU)
 
           ! Zero boundary values
@@ -299,19 +300,19 @@
           ! on level 2.
           call Vcycle(mg,1)
 
-          ! 4) Prolong correction back to grid level 1
-          call prolongate(mg(1)%e,mg(2)%e,mg(1)%g,mg(1)%temp_rxy,mg(1)%temp_rx)
+          ! 4) Prolong correction back to mesh level 1
+          call prolongate(mg(1)%e,mg(2)%e,mg(1)%m,mg(1)%temp_rxy,mg(1)%temp_rx)
           call add(mg(1)%u,mg(1)%e)
 
           ! 5) Final smoothing sweeps
-          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%g,&
+          call solve(SOR,mg(1)%u,mg(1)%f,mg(1)%m,&
             mg(1)%ss,mg(1)%norm,mg(1)%displayTF)
 
 #ifdef _EXPORT_MG_CONVERGENCE_
-            call lap(mg(1)%lapu,mg(1)%u,mg(1)%g)
+            call lap(mg(1)%lapu,mg(1)%u,mg(1)%m)
             call subtract(mg(1)%res,mg(1)%lapu,mg(1)%f)
             call zeroGhostPoints(mg(1)%res)
-            call compute(norm,mg(1)%res,mg(1)%g)
+            call compute(norm,mg(1)%res,mg(1)%m)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
@@ -332,10 +333,10 @@
         if (displayTF) then
           write(*,*) 'Number of V-Cycles = ',i_MG
 
-          call lap(mg(1)%lapu,u,g)
+          call lap(mg(1)%lapu,u,m)
           call subtract(mg(1)%res,mg(1)%lapu,mg(1)%f)
           call zeroGhostPoints(mg(1)%res)
-          call compute(norm,mg(1)%res,mg(1)%g)
+          call compute(norm,mg(1)%res,mg(1)%m)
           call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
       end subroutine
@@ -350,9 +351,9 @@
 
         nLevels = size(mg)
 
-        ! 1) Restrict the residual onto the coarse grid
+        ! 1) Restrict the residual onto the coarse mesh
         !    and use it as the source term of the error
-        call restrict(mg(j+1)%res,mg(j)%res,mg(j)%g,mg(j)%temp_rx,mg(j)%temp_rxy)
+        call restrict(mg(j+1)%res,mg(j)%res,mg(j)%m,mg(j)%temp_rx,mg(j)%temp_rxy)
         mg(j+1)%f = mg(j+1)%res
 
         if (j+1 .lt. nLevels) then
@@ -361,14 +362,14 @@
 
           ! Have not reached coarsest level, prepare to
           ! solve for error, and restrict residual to coarse
-          ! grid
+          ! mesh
 
           ! 2) Smooth
-          call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%g,&
+          call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%m,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
           ! 3) Get residual
-          call lap(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%g)
+          call lap(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%m)
           call subtract(mg(j+1)%res,mg(j+1)%f,mg(j+1)%lapU)
           ! Zero boundary values
           call zeroGhostPoints(mg(j+1)%res)
@@ -379,26 +380,26 @@
           ! Finished Vcycle decent. Prepare to ascend back to level 1
           ! 5) Prolongate the error
 
-          call prolongate(mg(j+1)%e,mg(j+2)%e,mg(j+1)%g,mg(j+1)%temp_rxy,mg(j+1)%temp_rx)
+          call prolongate(mg(j+1)%e,mg(j+2)%e,mg(j+1)%m,mg(j+1)%temp_rxy,mg(j+1)%temp_rx)
           call add(mg(j+1)%u,mg(j+1)%e)
 
           ! 6) Final smoothing sweeps
-          call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%g,&
+          call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%m,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
-          ! The solution on any grid above the 
-          ! base grid is the error!
+          ! The solution on any mesh above the 
+          ! base mesh is the error!
           call assign(mg(j+1)%e,mg(j+1)%u)
 
         else ! At coarsest level. Solve exactly.
 
           ! call setMaxIterations(mg(j+1)%ss,5) ! Fixed
           ! call setMaxIterations(mg(j+1)%ss,floor(exp(real(mg(j+1)%nlevels,cp)))) ! Dynamic
-          call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%g,&
+          call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%m,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
-          ! The solution on any grid above the 
-          ! base grid is the correction on the 
-          ! finer grid!
+          ! The solution on any mesh above the 
+          ! base mesh is the correction on the 
+          ! finer mesh!
           call assign(mg(j+1)%e,mg(j+1)%u)
         endif
       end subroutine

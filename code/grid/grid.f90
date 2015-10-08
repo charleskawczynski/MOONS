@@ -2,6 +2,7 @@
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use IO_tools_mod
        use coordinates_mod
+       use stitch_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -27,7 +28,9 @@
 
        type grid
          real(cp) :: dhMin,dhMax,maxRange,volume
+         integer :: N_cells
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
+         type(stitch),dimension(3) :: st
        end type
 
        interface init;           module procedure initGridCopy;        end interface
@@ -61,7 +64,7 @@
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: f
          integer :: i
-         do i = 1,3; call init(g%c(i),f%c(i)%hn,2) ;enddo
+         do i = 1,3; call init(g%c(i),f%c(i)) ;enddo
          call initProps(g)
        end subroutine
 
@@ -109,6 +112,7 @@
          g%dhMax = maxval((/g%c(1)%dhMax,g%c(2)%dhMax,g%c(3)%dhMax/))
          g%maxRange = maxval((/g%c(1)%maxRange,g%c(2)%maxRange,g%c(3)%maxRange/))
          g%volume = g%c(1)%maxRange*g%c(2)%maxRange*g%c(3)%maxRange
+         g%N_cells = g%c(1)%N + g%c(2)%N + g%c(3)%N
        end subroutine
         
        ! ------------------- restrict (for multigrid) --------------
@@ -181,6 +185,9 @@
          write(un,*) 'stretching_x = ',g%c(1)%dhMax-g%c(1)%dhMin
          write(un,*) 'stretching_y = ',g%c(2)%dhMax-g%c(2)%dhMin
          write(un,*) 'stretching_z = ',g%c(3)%dhMax-g%c(3)%dhMin
+         write(un,*) 'stitches_x = ',g%st(1)%hmin,g%st(1)%hmax
+         write(un,*) 'stitches_y = ',g%st(2)%hmin,g%st(2)%hmax
+         write(un,*) 'stitches_z = ',g%st(3)%hmin,g%st(3)%hmax
        end subroutine
 
        subroutine addToFileGrid(g,u)

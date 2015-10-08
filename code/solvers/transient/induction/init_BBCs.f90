@@ -1,5 +1,6 @@
        module init_BBCs_mod
        use grid_mod
+       use mesh_mod
        use BCs_mod
        use vectorBCs_mod
        use SF_mod
@@ -41,15 +42,15 @@
 
        contains
 
-       subroutine initBBCs(B,g)
+       subroutine initBBCs(B,m)
          implicit none
          type(VF),intent(inout) :: B
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(vectorBCs) :: B_bcs
 
-         call init(B_bcs%x,g,B%x%RF(1)%s)
-         call init(B_bcs%y,g,B%y%RF(1)%s)
-         call init(B_bcs%z,g,B%z%RF(1)%s)
+         call init(B_bcs%x,m%g(1),B%x%RF(1)%s)
+         call init(B_bcs%y,m%g(1),B%y%RF(1)%s)
+         call init(B_bcs%z,m%g(1),B%z%RF(1)%s)
 
          if (preDefinedB_BCs.ne.0) then
            call initPreDefinedBCs(B_bcs)

@@ -29,7 +29,7 @@
         integer,intent(in),dimension(3) :: s
         integer,intent(in) :: u
         integer :: sn
-        sn = len(name)
+        sn = len(trim(adjustl(name)))
 
         write(u,'(A'//int2Str(sn+26)//')') 'TITLE = "3D Scalar Field ' // trim(adjustl(name)) // '"'
         write(u,'(A'//int2Str(sn+26)//')') 'VARIABLES = "X","Y","Z",'//'"'//trim(adjustl(name))//'"'

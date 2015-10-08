@@ -53,7 +53,7 @@
          integer :: i,j,k,t,nmodes
          real(cp),dimension(3) :: p
          integer,dimension(3) :: s
-         s = u%RF(1)%s
+         s = (/size(x),size(y),size(z)/)
 
          call assign(u,0.0_cp)
          nmodes = 1
@@ -68,13 +68,13 @@
            p = p*real(t,cp)
 
            if (bctype.eq.2) then
-             do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+             do k = 2,s(3)-1; do j = 2,s(2)-1; do i = 2,s(1)-1
              u%RF(1)%f(i,j,k) = u%RF(1)%f(i,j,k) +(cos(p(1)*PI*x(i))*&
                                                    cos(p(2)*PI*y(j))*&
                                                    cos(p(3)*PI*z(k)))/real(t,cp)
              enddo;enddo;enddo
            elseif (bctype.eq.1) then
-             do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+             do k = 2,s(3)-1; do j = 2,s(2)-1; do i = 2,s(1)-1
              u%RF(1)%f(i,j,k) = u%RF(1)%f(i,j,k) +(sin(p(1)*PI*x(i))*&
                                                    sin(p(2)*PI*y(j))*&
                                                    sin(p(3)*PI*z(k)))/real(t,cp)
@@ -90,14 +90,16 @@
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: u,u_exact,f
          integer,dimension(3) :: s
-         integer :: bctype
+         integer :: bctype,i
          s = f%RF(1)%s
 
          bctype = 1 ! Dirichlet
          ! bctype = 2 ! Neumann
-         call defineBCs(u%RF(1)%b,m%g(1),s,bctype)
-         call defineBCs(u_exact%RF(1)%b,m%g(1),s,bctype)
-         call defineBCs(f%RF(1)%b,m%g(1),s,bctype)
+         do i=1,m%s
+           call defineBCs(u%RF(i)%b,m%g(i),s,bctype)
+           call defineBCs(u_exact%RF(i)%b,m%g(i),s,bctype)
+           call defineBCs(f%RF(i)%b,m%g(i),s,bctype)
+         enddo
 
          ! Node data
          if (f%is_Node) then
@@ -136,6 +138,10 @@
                call applyAllBCs(u,m)
          else; call applyAllBCs(f,m)
          endif
+         call assignMinus(f,u_exact)
+         call multiply(f,266.4793_cp)
+         ! f%RF(1)%f(52,:,:) = 0.0_cp
+         ! call assign(f%RF(2),0.0_cp)
        end subroutine
 
        subroutine defineSig(sig)
@@ -165,6 +171,7 @@
        use grid_mod
        use mesh_mod
        use norms_mod
+       use generateGrid_mod
        use ops_discrete_mod
        use BCs_mod
        use applyBCs_mod
@@ -198,7 +205,7 @@
          character(len=*),intent(in) :: dir
          type(grid) :: g
          type(mesh) :: m
-         integer,dimension(3) :: N = 50 ! Number of cells
+         integer,dimension(3) :: N = (/50,50,50/) ! Number of cells
          real(cp),dimension(3) :: hmin,hmax
          type(JACSolver) :: JAC
          type(SORSolver) :: SOR
@@ -214,16 +221,17 @@
          write(*,*) 'Number of cells = ',N
 
          hmin = 0.0_cp; hmax = 1.0_cp
-         call init(gg,(/uniform(hmin(1),hmax(1),N(1))/),1)
-         call init(gg,(/uniform(hmin(2),hmax(2),N(2))/),2)
-         call init(gg,(/uniform(hmin(3),hmax(3),N(3))/),3)
-         call applyGhost(gg)
-         call init_stencils(gg%g)
-         call init(g,gg%g)
-
+         ! hmax(1) = hmax(1) + hmax(1) ! To test 1 domain
+         call cavity3D_uniform(g,hmin,hmax,N)
          call init(m,g)
-         call export(m,dir,'m_base')
+         hmin(1) = hmin(1) + hmax(1)
+         hmax(1) = hmin(1) + hmax(1)
+         call cavity3D_uniform(g,hmin,hmax,N)
+         call add(m,g)
+         call patch(m)
 
+         call export(m,dir,'m_base')
+         call print(m)
          call init(ss)
          call setName(ss,'Lap(u) = f          ')
 
@@ -242,6 +250,7 @@
          call export_1C_SF(m,sig,dir,'sigma',0)
 
          call cellCenter2Face(sigma,sig,m)
+         ! call export_1C_SF(m,sigma%x,dir,'sigma_x',1)
 
          call init(e,u)
          call init(R,u)
@@ -251,76 +260,31 @@
 
          write(*,*) 'Before model problem'
          call get_ModelProblem(m,f,u,u_exact)
+         ! call get_ModelProblem(m,f,temp_SF,u_exact)
          write(*,*) 'Model problem finished!'
+
+         ! call lap(temp_SF,f,m)
+         ! call applyAllBCs(temp_SF,m)
+         ! call export_1C_SF(m,temp_SF,dir,'lap(f)',0)
+         ! stop 'Done'
 
          call export_1C_SF(m,u_exact,dir,'u_exact',0)
          call export_1C_SF(m,f,dir,'f',0)
+
 
          ! *************************************************************
          ! *************************************************************
          ! *************************************************************
          NU = newAndOpen('out\','norm_JAC')
 
-         ! Transient
-         ! dt = 0.10_cp
-         ! name = 'JAC'
-         ! call setMaxIterations(ss,100) ! Cell centered data
-         ! call assign(u,0.0_cp)
-         ! call init(JAC,u,m,sigma,dt)
-         ! do i=1,100
-         !   call assignMinus(temp_SF,u)
-         !   call divide(temp_SF,dt)
-         !   call add(temp_SF,f)
-         !   call solve(JAC,u,temp_SF,sigma,m,ss,norm_res,.true.,NU)
-         !   if (mod(i,5).eq.1) then
-         !   ! call export_1C_SF(m,u,dir,'u_'//name//'_'//int2str(i),0)
-         !   ! call compute_Au(lapU,u,sigma,m,temp,R,dt)
-         !   ! call subtract(R,lapU,temp_SF)
-         !   ! call zeroGhostPoints(R)
-         !   ! call export_1C_SF(m,R,dir,'R_'//name//'_'//int2str(i),0)
-         !   endif
-         !   write(*,*) 'Time = ',real(i,cp)*dt
-         !   write(*,*) 'Time step = ',i
-         ! enddo
-         ! call delete(JAC)
-         ! call compute_Au(lapU,u,sigma,m,temp,R,dt)
-         ! call subtract(e,u,u_exact)
-         ! call subtract(R,lapU,temp_SF)
-         ! call zeroGhostPoints(R)
-         ! call export_1C_SF(m,R,dir,'R_'//name,0)
-         ! call export_1C_SF(m,u,dir,'u_'//name,0)
-         ! call export_1C_SF(m,e,dir,'e_'//name,0)
-         ! call subtract(u,u_exact)
-         ! call compute(norm_e,u,m)
-         ! call print(norm_e,'u_'//name//' vs u_exact')
-         ! close(NU)
-
-         ! Steady State
-         ! name = 'JAC'
-         ! call setMaxIterations(ss,10) ! Cell centered data
-         ! call assign(u,0.0_cp)
-         ! call init(JAC,u,m,sigma)
-         ! call solve(JAC,u,f,sigma,m,ss,norm_res,.true.)
-         ! call delete(JAC)
-         ! call compute_Au(lapU,u,sigma,m,temp)
-         ! call subtract(e,u,u_exact)
-         ! call subtract(R,lapU,f)
-         ! call zeroGhostPoints(R)
-         ! call export_1C_SF(m,R,dir,'R_'//name,0)
-         ! call export_1C_SF(m,u,dir,'u_'//name,0)
-         ! call export_1C_SF(m,e,dir,'e_'//name,0)
-         ! call subtract(u,u_exact)
-         ! call compute(norm_e,u,m)
-         ! call print(norm_e,'u_'//name//' vs u_exact')
-
-         ! Steady State
-         name = 'SOR'
-         call setMaxIterations(ss,1000) ! Cell centered data
+         name = 'JAC'
+         dt = 0.01_cp
+         call setMaxIterations(ss,100) ! Cell centered data
          call assign(u,0.0_cp)
-         call init(SOR,u,m)
-         call solve(SOR,u,f,m,ss,norm_res,.true.)
-         call delete(SOR)
-         call lap(lapU,u,m)
+         call init(JAC,u,m,sigma,dt)
+         call solve(JAC,u,f,sigma,m,ss,norm_res,.true.,NU)
+         call delete(JAC)
+         call compute_Au(lapU,u,sigma,m,temp,R,dt)
          call subtract(e,u,u_exact)
          call subtract(R,lapU,f)
          call zeroGhostPoints(R)
@@ -330,6 +294,25 @@
          call subtract(u,u_exact)
          call compute(norm_e,u,m)
          call print(norm_e,'u_'//name//' vs u_exact')
+
+
+         ! ! Steady State
+         ! name = 'SOR'
+         ! call setMaxIterations(ss,100) ! Cell centered data
+         ! call assign(u,0.0_cp)
+         ! call init(SOR,u,m)
+         ! call solve(SOR,u,f,m,ss,norm_res,.true.)
+         ! call delete(SOR)
+         ! call lap(lapU,u,m)
+         ! call subtract(e,u,u_exact)
+         ! call subtract(R,lapU,f)
+         ! call zeroGhostPoints(R)
+         ! call export_1C_SF(m,R,dir,'R_'//name,0)
+         ! call export_1C_SF(m,u,dir,'u_'//name,0)
+         ! call export_1C_SF(m,e,dir,'e_'//name,0)
+         ! call subtract(u,u_exact)
+         ! call compute(norm_e,u,m)
+         ! call print(norm_e,'u_'//name//' vs u_exact')
 
          call delete(m)
          call delete(g)

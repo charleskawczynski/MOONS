@@ -1,5 +1,6 @@
        module init_TBCs_mod
        use grid_mod
+       use mesh_mod
        use BCs_mod
        use SF_mod
        implicit none
@@ -49,12 +50,12 @@
 
        contains
 
-       subroutine initTBCs(T,g)
+       subroutine initTBCs(T,m)
          implicit none
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
 
-         call init(T%RF(1)%b,g,T%RF(1)%s)
+         call init(T%RF(1)%b,m%g(1),T%RF(1)%s)
 
          if (preDefinedT_BCs.ne.0) then
            call initPreDefinedBCs(T%RF(1)%b)

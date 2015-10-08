@@ -1,6 +1,7 @@
        module init_Pfield_mod
        use IO_SF_mod
        use grid_mod
+       use mesh_mod
        use SF_mod
        use BCs_mod
        use init_Ufield_mod ! for restartU
@@ -24,26 +25,26 @@
 
        contains
 
-       subroutine init_Pfield(p,g,dir)
+       subroutine init_Pfield(p,m,dir)
          implicit none
          type(SF),intent(inout) :: p
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          if (restartP) then
-               call initRestartPfield(p,g,dir)
+               call initRestartPfield(p,m,dir)
          elseif (preDefinedP_ICs.ne.0) then
                call initPreDefinedPfield(p)
          else; call initUserPfield(p)
          endif
        end subroutine
        
-       subroutine initRestartPfield(p,g,dir)
+       subroutine initRestartPfield(p,m,dir)
          implicit none
          type(SF),intent(inout) :: p
          character(len=*),intent(in) :: dir
-         type(grid),intent(in) :: g
-         type(grid) :: temp
-         call init(temp,g)
+         type(mesh),intent(in) :: m
+         type(mesh) :: temp
+         call init(temp,m)
          call import_1C_SF(temp,p,dir//'Ufield/','pci',0)
          ! call export_1C_SF(temp,p,dir//'Ufield/','pci_imported',0)
          call delete(temp)

@@ -1,6 +1,7 @@
        module MG_tools_mod
        use coordinates_mod
        use grid_mod
+       use mesh_mod
        use SF_mod
        use VF_mod
        implicit none
@@ -155,7 +156,7 @@
         end select
       end subroutine
 
-      subroutine restrictField_SF(r,u,g,temp1,temp2)
+      subroutine restrictField_SF(r,u,m,temp1,temp2)
         ! This routine restricts the field u {fine grid} to r {coarse grid}
         ! There are 4 possible scenarios
         ! 
@@ -171,48 +172,47 @@
         implicit none
         type(SF),intent(in) :: u     ! fine field
         type(SF),intent(inout) :: r  ! restricted field
-        type(grid),intent(in) :: g   ! fine coordinates
+        type(mesh),intent(in) :: m   ! fine coordinates
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call restrict(temp1%RF(i)%f,  u%RF(i)%f  ,g%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
-          call restrict(temp2%RF(i)%f,temp1%RF(i)%f,g%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
-          call restrict(  r%RF(i)%f,  temp2%RF(i)%f,g%c(3),3,temp2%RF(i)%s,r%RF(i)%s    ,0,0,1)
+          call restrict(temp1%RF(i)%f,  u%RF(i)%f  ,m%g(i)%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
+          call restrict(temp2%RF(i)%f,temp1%RF(i)%f,m%g(i)%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
+          call restrict(  r%RF(i)%f,  temp2%RF(i)%f,m%g(i)%c(3),3,temp2%RF(i)%s,r%RF(i)%s    ,0,0,1)
         enddo
       end subroutine
 
-      subroutine restrictField_SF_slow(r,u,g,g_rx,g_rxy)
+      subroutine restrictField_SF_slow(r,u,m,m_rx,m_rxy)
         ! This routine is specifically designed 
         ! for the coefficient, sigma.
         implicit none
         type(SF),intent(in) :: u
         type(SF),intent(inout) :: r
-        type(grid),intent(in) :: g,g_rx,g_rxy
+        type(mesh),intent(in) :: m,m_rx,m_rxy
         type(SF) :: temp1,temp2
         ! if (u%is_Face) call init_Face(temp1,g_rx,u%FaceDir)
-        if (u%is_CC)   call init_CC(temp1,g_rx)
-        if (u%is_Node) call init_Node(temp1,g_rx)
+        if (u%is_CC)   call init_CC(temp1,m_rx)
+        if (u%is_Node) call init_Node(temp1,m_rx)
         ! if (u%is_Edge) call init_Edge(temp1,g_rx,u%EdgeDir)
 
         ! if (u%is_Face) call init_Face(temp2,g_rxy,u%FaceDir)
-        if (u%is_CC)   call init_CC(temp2,g_rxy)
-        if (u%is_Node) call init_Node(temp2,g_rxy)
+        if (u%is_CC)   call init_CC(temp2,m_rxy)
+        if (u%is_Node) call init_Node(temp2,m_rxy)
         ! if (u%is_Edge) call init_Edge(temp2,g_rxy,u%EdgeDir)
-        call restrict(r,u,g,temp1,temp2)
+        call restrict(r,u,m,temp1,temp2)
         call delete(temp1)
         call delete(temp2)
       end subroutine
 
-      subroutine restrictField_VF(r,u,g,g_rx,g_rxy)
+      subroutine restrictField_VF(r,u,m,m_rx,m_rxy)
         implicit none
         type(VF),intent(in) :: u               ! fine field
         type(VF),intent(inout) :: r            ! restricted field
-        type(grid),intent(in) :: g,g_rx,g_rxy  ! fine coordinates
-        call restrict(r%x,u%x,g,g_rx,g_rxy)
-        call restrict(r%y,u%y,g,g_rx,g_rxy)
-        call restrict(r%z,u%z,g,g_rx,g_rxy)
+        type(mesh),intent(in) :: m,m_rx,m_rxy  ! fine coordinates
+        call restrict(r%x,u%x,m,m_rx,m_rxy)
+        call restrict(r%y,u%y,m,m_rx,m_rxy)
+        call restrict(r%z,u%z,m,m_rx,m_rxy)
       end subroutine
-
 
       ! **********************************************************
       ! **********************************************************
@@ -318,7 +318,7 @@
         end select
       end subroutine
 
-      subroutine prolongateField_SF(p,u,fg,temp1,temp2)
+      subroutine prolongateField_SF(p,u,mf,temp1,temp2)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
         ! 
@@ -330,13 +330,13 @@
         implicit none
         type(SF),intent(in) :: u    ! size = s
         type(SF),intent(inout) :: p ! size = 2*s-1
-        type(grid),intent(in) :: fg ! fine grid
+        type(mesh),intent(in) :: mf ! fine grid
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call prolongate(temp1%RF(i)%f,  u%RF(i)%f  ,fg%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
-          call prolongate(temp2%RF(i)%f,temp1%RF(i)%f,fg%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
-          call prolongate(  p%RF(i)%f,  temp2%RF(i)%f,fg%c(3),3,temp2%RF(i)%s,p%RF(i)%s    ,0,0,1)
+          call prolongate(temp1%RF(i)%f,  u%RF(i)%f  ,mf%g(i)%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
+          call prolongate(temp2%RF(i)%f,temp1%RF(i)%f,mf%g(i)%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
+          call prolongate(  p%RF(i)%f,  temp2%RF(i)%f,mf%g(i)%c(3),3,temp2%RF(i)%s,p%RF(i)%s    ,0,0,1)
         enddo
       end subroutine
 

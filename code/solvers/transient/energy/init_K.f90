@@ -1,7 +1,8 @@
        module init_K_mod
        use simParams_mod
-       use grid_mod
+       use mesh_mod
        use ops_embedExtract_mod
+       use domain_mod
        use SF_mod
        implicit none
 
@@ -26,44 +27,43 @@
        !                                       1 : k* = kStar
        real(cp) :: kStarWall = real(1000.0,cp) ! k* = k_wall/k_l
 
-
        contains
 
-       subroutine initK(k,SD,g)
+       subroutine initK(k,D,g)
          implicit none
-         type(grid),intent(in) :: g
-         type(subdomain),intent(in) :: SD
+         type(mesh),intent(in) :: g
+         type(domain),intent(in) :: D
          type(SF),intent(inout) :: k
          if (preDefined_K.ne.0) then
-           call initPredefinedK(k,SD,g)
+           call initPredefinedK(k,D,g)
          else
-           call initUserK(k,SD,g)
+           call initUserK(k,D,g)
          endif
        end subroutine
 
-       subroutine initPredefinedK(k,SD,g)
+       subroutine initPredefinedK(k,D,g)
          implicit none
          type(SF),intent(inout) :: k
-         type(subdomain),intent(in) :: SD
-         type(grid),intent(in) :: g
+         type(domain),intent(in) :: D
+         type(mesh),intent(in) :: g
          type(SF) :: k_l
-         call init_CC(k_l,SD%g) ! SD%g = Interior grid
-         call assign(k_l,real(1.0,cp))
+         call init_CC(k_l,D%m_in) ! SD%g = Interior mesh
+         call assign(k_l,1.0_cp)
          call assign(k,kStarWall)
-         call embedCC(k,k_l,SD,g) ! g = exterior grid
+         call embedCC(k,k_l,D)
          call delete(k_l)
        end subroutine
 
-       subroutine initUserK(k,SD,g)
+       subroutine initUserK(k,D,g)
          implicit none
          type(SF),intent(inout) :: k
-         type(subdomain),intent(in) :: SD
-         type(grid),intent(in) :: g
+         type(domain),intent(in) :: D
+         type(mesh),intent(in) :: g
          type(SF) :: k_l
-         call init_CC(k_l,SD%g) ! SD%g = Interior grid
-         call assign(k_l,real(1.0,cp))
+         call init_CC(k_l,D%m_in) ! D%g = Interior mesh
+         call assign(k_l,1.0_cp)
          call assign(k,kStarWall)
-         call embedCC(k,k_l,SD,g)
+         call embedCC(k,k_l,D)
          call delete(k_l)
        end subroutine
 

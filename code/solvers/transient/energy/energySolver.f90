@@ -13,7 +13,8 @@
        use init_K_mod
 
        use ops_embedExtract_mod
-       use grid_mod
+       use domain_mod
+       use mesh_mod
        use norms_mod
        use ops_del_mod
        use ops_aux_mod
@@ -70,8 +71,8 @@
 
          type(indexProbe) :: probe_T
          type(errorProbe) :: probe_divQ
-         type(grid) :: g
-         type(subdomain) :: SD
+         type(mesh) :: m
+         type(domain) :: D
 
          integer :: nstep             ! Nth time step
          integer :: NmaxT             ! Maximum number iterations in solving T (if iterative)
@@ -98,54 +99,55 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initenergy(nrg,g,SD,dir)
+       subroutine initenergy(nrg,m,D,dir)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(grid),intent(in) :: g
-         type(subdomain),intent(in) :: SD
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
          character(len=*),intent(in) :: dir
          write(*,*) 'Initializing energy:'
 
-         nrg%g = g
-         nrg%SD = SD
-         call init_CC(nrg%T,g)
-         call init_CC(nrg%Tstar,g)
-         call init_CC(nrg%Ttemp,g)
-         call init_CC(nrg%k_cc,g)
+         call init(nrg%m,m)
+         call init(nrg%D,D)
 
-         call init_Face(nrg%temp_F,g)
-         call init_Face(nrg%k,g)
-         call init_Face(nrg%U_ft,g)
+         call init_CC(nrg%T,m)
+         call init_CC(nrg%Tstar,m)
+         call init_CC(nrg%Ttemp,m)
+         call init_CC(nrg%k_cc,m)
 
-         call init_CC(nrg%U_cct,g)
-         call init_CC(nrg%temp_CC,g)
-         call init_CC(nrg%gravity,g)
-         call init_CC(nrg%buoyancy,g)
+         call init_Face(nrg%temp_F,m)
+         call init_Face(nrg%k,m)
+         call init_Face(nrg%U_ft,m)
+
+         call init_CC(nrg%U_cct,m)
+         call init_CC(nrg%temp_CC,m)
+         call init_CC(nrg%gravity,m)
+         call init_CC(nrg%buoyancy,m)
 
          call assign(nrg%gravity,0.0_cp)
          call assign(nrg%buoyancy,0.0_cp)
 
          ! --- Scalar Fields ---
-         call init_CC(nrg%divQ,g)
+         call init_CC(nrg%divQ,m)
          write(*,*) '     Fields allocated'
 
 
          ! --- Initialize Fields ---
-         call initTBCs(nrg%T,nrg%g)
+         call initTBCs(nrg%T,nrg%m)
          write(*,*) '     BCs initialized'
 
-         call initTfield(nrg%T,g,dir)
+         call initTfield(nrg%T,m,dir)
          write(*,*) '     T-field initialized'
 
-         call applyAllBCs(nrg%T,g)
+         call applyAllBCs(nrg%T,m)
          write(*,*) '     BCs applied'
 
-         call initK(nrg%k_cc,nrg%SD,g)
-         call cellCenter2Face(nrg%k,nrg%k_cc,g)
+         call initK(nrg%k_cc,nrg%D,m)
+         call cellCenter2Face(nrg%k,nrg%k_cc,m)
          write(*,*) '     Materials initialized'
 
          call init(nrg%probe_T,dir//'Tfield/','transient_T',&
-         .not.restartT,nrg%T%RF(1)%s,(nrg%T%RF(1)%s+1)/2,g)
+         .not.restartT,nrg%T%RF(1)%s,(nrg%T%RF(1)%s+1)/2,m)
 
          call init(nrg%probe_divQ,dir//'Tfield/','transient_divQ',.not.restartT)
 
@@ -195,7 +197,7 @@
 
          call delete(nrg%probe_T)
          call delete(nrg%probe_divQ)
-         call delete(nrg%g)
+         call delete(nrg%m)
 
          write(*,*) 'energy object deleted'
        end subroutine
@@ -249,41 +251,41 @@
          endif
        end subroutine
 
-       subroutine energyExportRaw(nrg,g,dir)
+       subroutine energyExportRaw(nrg,m,dir)
          implicit none
          type(energy),intent(in) :: nrg
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          if (restartT.and.(.not.solveEnergy)) then
            ! This preserves the initial data
          else
            write(*,*) 'Exporting RAW Solutions for T'
-           call export_3C_VF(g,nrg%U_cct,dir//'Tfield/','U_cct',0)
-           call export_1C_SF(g,nrg%T,dir//'Tfield/','Tct',0)
-           call export_1C_SF(g,nrg%U_ft%x,dir//'Tfield/','U_ft',0)
-           call export_1C_SF(g,nrg%U_ft%y,dir//'Tfield/','V_ft',0)
-           call export_1C_SF(g,nrg%U_ft%z,dir//'Tfield/','W_ft',0)
-           call export_1C_SF(g,nrg%divQ,dir//'Tfield/','divQct',0)
-           call export_1C_SF(g,nrg%k_cc,dir//'Tfield/','kct',0)
+           call export_3C_VF(m,nrg%U_cct,dir//'Tfield/','U_cct',0)
+           call export_1C_SF(m,nrg%T,dir//'Tfield/','Tct',0)
+           call export_1C_SF(m,nrg%U_ft%x,dir//'Tfield/','U_ft',0)
+           call export_1C_SF(m,nrg%U_ft%y,dir//'Tfield/','V_ft',0)
+           call export_1C_SF(m,nrg%U_ft%z,dir//'Tfield/','W_ft',0)
+           call export_1C_SF(m,nrg%divQ,dir//'Tfield/','divQct',0)
+           call export_1C_SF(m,nrg%k_cc,dir//'Tfield/','kct',0)
            write(*,*) '     finished'
          endif
        end subroutine
 
-       subroutine energyExport(nrg,g,dir)
+       subroutine energyExport(nrg,m,dir)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          type(SF) :: tempN,tempE
          if (solveEnergy) then
            write(*,*) 'Exporting PROCESSED Solutions for T'
-           call init_Node(tempN,g)
-           call init_Edge(tempE,g,3)
-           call cellCenter2Node(tempN,nrg%T,g,nrg%temp_F%x,tempE)
-           call export_1C_SF(g,tempN,dir//'Tfield/','Tnt',0)
+           call init_Node(tempN,m)
+           call init_Edge(tempE,m,3)
+           call cellCenter2Node(tempN,nrg%T,m,nrg%temp_F%x,tempE)
+           call export_1C_SF(m,tempN,dir//'Tfield/','Tnt',0)
          ! ----------------------- MATERIAL PROPERTIES AT NODES ------------------------
-           call cellCenter2Node(tempN,nrg%k_cc,g,nrg%temp_F%x,tempE)
-           call export_1C_SF(g,tempN,dir//'material/','knt',0)
+           call cellCenter2Node(tempN,nrg%k_cc,m,nrg%temp_F%x,tempE)
+           call export_1C_SF(m,tempN,dir//'material/','knt',0)
            call delete(tempN)
            call delete(tempE)
            write(*,*) '     finished'
@@ -304,17 +306,7 @@
            write(un,*) '(Rem) = ',nrg%Rem
            write(un,*) '(t,dt) = ',nrg%time,nrg%dTime
            write(un,*) ''
-           write(un,*) 'N_cells = ',(/nrg%g%c(1)%N,nrg%g%c(2)%N,nrg%g%c(3)%N/)
-           write(un,*) 'volume = ',nrg%g%volume
-           write(un,*) 'min/max(h)_x = ',(/nrg%g%c(1)%hmin,nrg%g%c(1)%hmax/)
-           write(un,*) 'min/max(h)_y = ',(/nrg%g%c(2)%hmin,nrg%g%c(2)%hmax/)
-           write(un,*) 'min/max(h)_z = ',(/nrg%g%c(3)%hmin,nrg%g%c(3)%hmax/)
-           write(un,*) 'min/max(dh)_x = ',(/nrg%g%c(1)%dhMin,nrg%g%c(1)%dhMax/)
-           write(un,*) 'min/max(dh)_y = ',(/nrg%g%c(2)%dhMin,nrg%g%c(2)%dhMax/)
-           write(un,*) 'min/max(dh)_z = ',(/nrg%g%c(3)%dhMin,nrg%g%c(3)%dhMax/)
-           write(un,*) 'stretching_x = ',nrg%g%c(1)%dhMax-nrg%g%c(1)%dhMin
-           write(un,*) 'stretching_y = ',nrg%g%c(2)%dhMax-nrg%g%c(2)%dhMin
-           write(un,*) 'stretching_z = ',nrg%g%c(3)%dhMax-nrg%g%c(3)%dhMin
+           call print(nrg%m)
            write(un,*) ''
            call printPhysicalMinMax(nrg%T,'T')
            call printPhysicalMinMax(nrg%divQ,'divQ')
@@ -323,34 +315,34 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solveEnergyEquation(nrg,U,g_mom,ss_MHD,dir)
+       subroutine solveEnergyEquation(nrg,U,m_mom,ss_MHD,dir)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
-         type(grid),intent(in) :: g_mom
+         type(mesh),intent(in) :: m_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
          logical :: exportNow
 
          call assign(nrg%gravity%y,1.0_cp)
 
-         call embedVelocity(nrg,U,g_mom)
+         call embedVelocity(nrg,U,m_mom)
          select case (solveTMethod)
-         case (1); call ExplicitEuler(nrg,nrg%g)
+         case (1); call ExplicitEuler(nrg,nrg%m)
          end select
          nrg%nstep = nrg%nstep + 1
          nrg%time = nrg%time + nrg%dTime ! This only makes sense for finite Rem
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
-         call computeFlux(nrg,nrg%g)
+         call computeFlux(nrg,nrg%m)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          call exportTransient(nrg,ss_MHD)
-         if (getExportErrors(ss_MHD)) call computeDivergence(nrg,nrg%g)
-         ! if (getExportErrors(ss_MHD)) call exportTransientFull(nrg,nrg%g,dir)
+         if (getExportErrors(ss_MHD)) call computeDivergence(nrg,nrg%m)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(nrg,nrg%m,dir)
 
-         ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,g_mom,ss_MHD) ! Maybe thermal energy?
+         ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,m_mom,ss_MHD) ! Maybe thermal energy?
 
          if (getPrintParams(ss_MHD)) then
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowT')
@@ -358,31 +350,31 @@
          endif
 
          if (getExportRawSolution(ss_MHD).or.exportNow) then
-           call exportRaw(nrg,nrg%g,dir)
+           call exportRaw(nrg,nrg%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
          endif
          if (getExportSolution(ss_MHD).or.exportNow) then
-           call export(nrg,nrg%g,dir)
+           call export(nrg,nrg%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
          endif
          call energyInfo(nrg,ss_MHD,6)
        end subroutine
 
-       subroutine explicitEuler(nrg,g)
+       subroutine explicitEuler(nrg,m)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
 
          ! Advection
          call assign(nrg%Ttemp,0.0_cp)
-         call cellCenter2Face(nrg%temp_F,nrg%T,g)
+         call cellCenter2Face(nrg%temp_F,nrg%T,m)
          call multiply(nrg%temp_F,nrg%U_ft)
-         call div(nrg%Ttemp,nrg%temp_F,g)
+         call div(nrg%Ttemp,nrg%temp_F,m)
          call multiply(nrg%Ttemp,-1.0_cp)
 
          ! Diffusion
          call assign(nrg%Tstar,nrg%Ttemp)
-         call lap(nrg%Ttemp,nrg%T,g)
+         call lap(nrg%Ttemp,nrg%T,m)
          call divide(nrg%Ttemp,nrg%Re*nrg%Pr)
 
          ! Explicit Euler
@@ -391,12 +383,12 @@
          call add(nrg%T,nrg%Tstar)
 
          ! Impose BCs:
-         call applyAllBCs(nrg%T,g)
+         call applyAllBCs(nrg%T,m)
        end subroutine
 
        ! ********************* AUX *****************************
 
-       subroutine computeBuoyancy(buoyancy,nrg,g_mom,Gr,Re)
+       subroutine computeBuoyancy(buoyancy,nrg,Gr,Re)
          ! Computes
          ! 
          !            Gr
@@ -406,29 +398,27 @@
          type(VF),intent(inout) :: buoyancy
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Gr,Re
-         type(grid),intent(in) :: g_mom
          call assign(nrg%buoyancy,nrg%T)
          call multiply(nrg%buoyancy,Gr/(Re**2.0_cp))
          call multiply(nrg%buoyancy,nrg%gravity)
-         call cellCenter2Face(nrg%temp_F,nrg%buoyancy,nrg%g)
-         call extractFace(buoyancy,nrg%temp_F,nrg%SD,g_mom)
+         call cellCenter2Face(nrg%temp_F,nrg%buoyancy,nrg%m)
+         call extractFace(buoyancy,nrg%temp_F,nrg%D)
        end subroutine
 
-       subroutine computeAddBuoyancy(buoyancy,nrg,g_mom,Gr,Re)
+       subroutine computeAddBuoyancy(buoyancy,nrg,Gr,Re)
          implicit none
          type(VF),intent(inout) :: buoyancy
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Gr,Re
-         type(grid),intent(in) :: g_mom
          type(VF) :: temp
          call init(temp,buoyancy)
          call assign(temp,0.0_cp)
-         call computeBuoyancy(temp,nrg,g_mom,Gr,Re)
+         call computeBuoyancy(temp,nrg,Gr,Re)
          call add(buoyancy,temp)
          call delete(temp)
        end subroutine
 
-       subroutine computeGravity(gravity,nrg,g_mom,Fr)
+       subroutine computeGravity(gravity,nrg,Fr)
          ! Computes
          ! 
          !            1   
@@ -438,67 +428,65 @@
          type(VF),intent(inout) :: gravity
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Fr
-         type(grid),intent(in) :: g_mom
          call assign(nrg%temp_CC,nrg%gravity)
          call divide(nrg%temp_CC,Fr**2.0_cp)
-         call cellCenter2Face(nrg%temp_F,nrg%temp_CC,nrg%g)
-         call extractFace(gravity,nrg%temp_F,nrg%SD,g_mom)
+         call cellCenter2Face(nrg%temp_F,nrg%temp_CC,nrg%m)
+         call extractFace(gravity,nrg%temp_F,nrg%D)
        end subroutine
 
-       subroutine computeAddGravity(gravity,nrg,g_mom,Fr)
+       subroutine computeAddGravity(gravity,nrg,Fr)
          implicit none
          type(VF),intent(inout) :: gravity
          type(energy),intent(inout) :: nrg
          real(cp),intent(in) :: Fr
-         type(grid),intent(in) :: g_mom
          type(VF) :: temp
          call init(temp,gravity)
          call assign(temp,0.0_cp)
-         call computeGravity(temp,nrg,g_mom,Fr)
+         call computeGravity(temp,nrg,Fr)
          call add(gravity,temp)
          call delete(temp)
        end subroutine
 
-       subroutine computeFlux(nrg,g)
+       subroutine computeFlux(nrg,m)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          if (solveEnergy) then
-           call grad(nrg%temp_F,nrg%T,g)
+           call grad(nrg%temp_F,nrg%T,m)
            call multiply(nrg%temp_F,nrg%k)
            call multiply(nrg%temp_F,-1.0_cp)
          endif
        end subroutine
 
-       subroutine computeDivergenceEnergy(nrg,g)
+       subroutine computeDivergenceEnergy(nrg,m)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          if (solveEnergy) then
-           call div(nrg%divQ,nrg%temp_F,g)
+           call div(nrg%divQ,nrg%temp_F,m)
          endif
        end subroutine
 
-       subroutine embedVelocityEnergy(nrg,U_fi,g)
+       subroutine embedVelocityEnergy(nrg,U_fi,m)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U_fi ! Raw momentum velocity
-         type(grid),intent(in) :: g ! Momentum grid
+         type(mesh),intent(in) :: m ! Momentum mesh
          type(VF) :: temp
          logical,dimension(2) :: usedVelocity
 
          usedVelocity = (/.true.,.true./)
 
          if (usedVelocity(1)) then ! Face
-           call embedFace(nrg%U_ft,U_fi,nrg%SD,g)
+           call embedFace(nrg%U_ft,U_fi,nrg%D)
          endif
 
          if (usedVelocity(2)) then ! Cell Center
-           call init_CC(temp,g)
-           call face2CellCenter(temp%x,U_fi%x,g,1)
-           call face2CellCenter(temp%y,U_fi%y,g,2)
-           call face2CellCenter(temp%z,U_fi%z,g,3)
-           call embedCC(nrg%U_cct,temp,nrg%SD,g)
+           call init_CC(temp,m)
+           call face2CellCenter(temp%x,U_fi%x,m,1)
+           call face2CellCenter(temp%y,U_fi%y,m,2)
+           call face2CellCenter(temp%z,U_fi%z,m,3)
+           call embedCC(nrg%U_cct,temp,nrg%D)
            call delete(temp)
          endif
        end subroutine

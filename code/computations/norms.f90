@@ -1,53 +1,26 @@
        module norms_mod
-       ! This module calculates the L1,L2 and Linfinity norm of a given
-       ! 3D exact and approximate matrices.
+       ! Computes L_1,L_2,L_inf norms of a scalar field.
        !
-       ! Input:
-       ! exact  = 3D exact solution to compare against
-       ! approx = 3D approximate solution
-       !
-       ! Output:
-       !        e%L1 = L1 norm
-       !        e%L2 = L2 norm
-       !        e%Linf = Linf norm (maximum of abs(exact - approx) )
-       !
-       !        e%R1 = L1 norm
-       !        e%R2 = L2 norm
-       !        e%Rinf = Linf norm (maximum of abs(exact - approx) )
+       ! Input / Output:
+       !        u  = scalar field
+       !        m  = mesh
+       !        norm = {L_1,L_2,L_inf}
        ! 
-       ! The L-n norm is computed as:
+       ! L-n norm computations:
+       !                             1     NxNyNz
+       !               Ln(u)     = ------   sum  abs( u(i,j,k) )^n
+       !                           NxNyNz  ijk=1
        ! 
-       !                      1     NxNyNz
-       !            L-n   = ------   sum  (abs(exact(i,j,k) - approx(i,j,k)))^n
-       !                    NxNyNz  ijk=1
+       ! L-infinity norm computations:
+       !                             1
+       !               Linf(u)   = ------  max( abs( u(i,j,k) ) )
+       !                           NxNyNz   
        ! 
-       ! The L-infinity norm is computed as:
-       !                      1      
-       !            L-n   = ------  max(abs(exact(i,j,k) - approx(i,j,k)))
-       !                    NxNyNz   
-       ! The L-n relative norm is computed as:
-       ! 
-       !                           NxNyNz
-       !                            sum  (abs(exact(i,j,k) - approx(i,j,k)))^n
-       !                           ijk=1
-       !    L-n relative  =       --------------------------------------------
-       !                                     NxNyNz
-       !                                      sum  (exact(i,j,k))^n
-       !                                     ijk=1
-       ! 
-       ! The L-infinity relative norm is computed as:
-       ! 
-       !                            max(abs(exact - approx))
-       !    L-n relative  =       --------------------------
-       !                                max(abs(exact))
-       ! 
-       ! Note: In the case that the exact solution is zero, the relative norms
-       !       are computed as ((exact-approx)+1)/(exact+1) as to avoid division
-       !       by zero.
-       !
 
        use IO_tools_mod
        use grid_mod
+       use mesh_mod
+       use RF_mod
        use SF_mod
        implicit none
 
@@ -61,22 +34,15 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       real(cp),parameter :: zero = 0.0_cp
-       real(cp),parameter :: one = 1.0_cp
-       real(cp),parameter :: tol = 10.0_cp**(-6.0_cp) ! Minimum number to divide by when computing error.
-
        private
 
        public :: norms
-       public :: init
-       public :: compute
+       public :: init,compute
        public :: print
        public :: export,exportList
 
        type norms
-         ! private
          real(cp) :: L1,L2,Linf ! Absolute errors:
-         real(cp) :: R1,R2,Rinf ! Relative errors:
        end type
 
        interface init;            module procedure initError;              end interface
@@ -88,11 +54,7 @@
        interface exportList;      module procedure exportNormsList2;       end interface
        interface print;           module procedure printNorms;             end interface
 
-       interface compute;         module procedure Compute_exact_present;  end interface
-       interface compute;         module procedure Compute_exact_absent;   end interface
-
-       interface LnError;         module procedure Ln_exact_absent;         end interface
-       interface LnError;         module procedure Ln_exact_present;        end interface
+       interface compute;         module procedure compute_norms;          end interface
 
        contains
 
@@ -105,8 +67,7 @@
        subroutine initError(e)
          implicit none
          type(norms),intent(inout) :: e
-         e%L1 = zero; e%L2 = zero; e%Linf = zero
-         e%R1 = zero; e%R2 = zero; e%Rinf = zero
+         e%L1 = 0.0_cp; e%L2 = 0.0_cp; e%Linf = 0.0_cp
        end subroutine
 
        subroutine initCopy(eCopy,e)
@@ -114,7 +75,6 @@
          type(norms),intent(inout) :: eCopy
          type(norms),intent(in) :: e
          eCopy%L1 = e%L1; eCopy%L2 = e%L2; eCopy%Linf = e%Linf
-         eCopy%R1 = e%R1; eCopy%R2 = e%R2; eCopy%Rinf = e%Rinf
        end subroutine
 
        ! **************************************************************
@@ -156,11 +116,8 @@
          case (1); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%L1,i=1,s)/)
          case (2); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%L2,i=1,s)/)
          case (3); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%Linf,i=1,s)/)
-         case (4); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%R1,i=1,s)/)
-         case (5); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%R2,i=1,s)/)
-         case (6); write(temp,'('//int2str2(s)//arrfmt//')') (/(e(i)%Rinf,i=1,s)/)
          case default
-         stop 'Error: num must = 1:6 in exportNorms2 in norms.f90'
+         stop 'Error: num must = 1:3 in exportNorms2 in norms.f90'
          end select
        end subroutine
 
@@ -175,7 +132,7 @@
                temp = u
          else; temp = newAndOpen(dir,name)
          endif
-         write(temp,'(6(A10))') 'L1','L2','Linf','R1','R2','Rinf'
+         write(temp,'(6(A10))') 'L1','L2','Linf'
          do i=1,s
            call exportList(e(i),dir,name,temp)
          enddo
@@ -191,7 +148,7 @@
                temp = u
          else; temp = newAndOpen(dir,name)
          endif
-           write(temp,'(6'//arrfmt//')') e%L1, e%L2, e%Linf, e%R1, e%R2, e%Rinf
+           write(temp,'(6'//arrfmt//')') e%L1, e%L2, e%Linf
        end subroutine
 
        subroutine writeNormsToFileOrScreen(err,name,newU)
@@ -205,9 +162,6 @@
          write(newU,*) 'L1 = ',err%L1
          write(newU,*) 'L2 = ',err%L2
          write(newU,*) 'Linf = ',err%Linf
-         write(newU,*) 'R1 = ',err%R1
-         write(newU,*) 'R2 = ',err%R2
-         write(newU,*) 'Rinf = ',err%Rinf
          write(newU,*) '++++++++++++++++++++++++++++',&
                     '++++++++++++++++++++++++++++'
          write(newU,*) ''
@@ -219,94 +173,86 @@
        ! **************************************************************
        ! **************************************************************
 
-       subroutine Ln_exact_present(exact,approx,g,n,e,er,denom)
+       subroutine compute_sum_grid(e,u,g,n) ! Finished
+         ! Computes
+         ! 
+         !          1
+         !   e = -------- { ∫∫∫ ( u(i,j,k)^n ) }^(1/n) dx dy dz
+         !        volume
+         ! 
+         ! Where x,y,z lives in the cell center.
          implicit none
-         type(SF) :: approx
-         type(SF),intent(in) :: exact
-         real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er,denom
+         type(realField),intent(in) :: u
+         real(cp),intent(inout) :: e
          type(grid),intent(in) :: g
-         real(cp) :: vol
-         real(cp) :: eTemp,denomTemp
-         integer :: i,j,k,t
-         e = zero; denom = zero
-         eTemp = zero; denomTemp = zero; vol = zero
-         do t=1,approx%s
-           !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp,denomTemp)
-           do k=1,approx%RF(t)%s(3)
-             do j=1,approx%RF(t)%s(2)
-               do i=1,approx%RF(t)%s(1)
-                 eTemp = eTemp + abs(exact%RF(t)%f(i,j,k) - approx%RF(t)%f(i,j,k))**n &
-                 *g%c(1)%dhn(i)*&
-                  g%c(2)%dhn(j)*&
-                  g%c(3)%dhn(k)
-                 denomTemp = denomTemp + abs(exact%RF(t)%f(i,j,k))**n
-               enddo
-             enddo
-           enddo
-           !$OMP END PARALLEL DO
-         enddo
-         e = etemp
-         denom = denomTemp
-
-         e = e**(one/n)/g%volume
-         denom = denom/g%volume
-         if (denom.gt.tol) then; er = e/denom
-         else; er = e/(denom+one); endif
+         real(cp),intent(in) :: n
+         real(cp) :: eTemp
+         integer :: i,j,k
+         eTemp = real(0.0,cp) ! temp is necessary for reduction
+         !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
+         do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
+           eTemp = eTemp + (u%f(i,j,k)**n)*g%c(1)%dhn(i)*&
+                                           g%c(2)%dhn(j)*&
+                                           g%c(3)%dhn(k)
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         e = eTemp
        end subroutine
 
-       subroutine Ln_exact_absent(approx,g,n,e,er)
+       subroutine compute_Ln_tot(e,u,m,n) ! MPI friendly
          implicit none
-         type(SF) :: approx
+         type(SF),intent(in) :: u
+         real(cp),intent(inout) :: e
+         type(mesh),intent(in) :: m
          real(cp),intent(in) :: n
-         real(cp),intent(inout) :: e,er
-         type(grid),intent(in) :: g
+         real(cp) :: eTemp
+         integer :: i
+         eTemp = 0.0_cp
+         do i=1,u%s
+           call compute_sum_grid(eTemp,u%RF(i),m%g(i),n)
+           e = e + eTemp
+         enddo
+         e = e**(1.0_cp/n)/m%volume
+       end subroutine
+
+       subroutine compute_Ln(e,u,m,n) ! Open-MP friendly
+         ! Computes
+         ! 
+         !          1
+         !   e = -------- { ∫∫∫ | u(i,j,k)^n | }^(1/n) dx dy dz
+         !        volume
+         ! 
+         ! Where x,y,z lives in the cell center.
+         implicit none
+         type(SF),intent(in) :: u
+         real(cp),intent(inout) :: e
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: n
          real(cp) :: eTemp
          integer :: i,j,k,t
-         e = zero; eTemp = zero
-         do t=1,approx%s
-           !$OMP PARALLEL DO SHARED(n), REDUCTION(+:eTemp)
-           do k=1,approx%RF(t)%s(3)
-             do j=1,approx%RF(t)%s(2)
-               do i=1,approx%RF(t)%s(1)
-                 eTemp = eTemp + abs(approx%RF(t)%f(i,j,k))**n
-               enddo
-             enddo
-           enddo
-           !$OMP END PARALLEL DO
+         eTemp = real(0.0,cp) ! temp is necessary for reduction
+         !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
+         do t=1,u%s
+           do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             eTemp = eTemp + abs(u%RF(t)%f(i,j,k)**n)*m%g(t)%c(1)%dhn(i)*&
+                                                      m%g(t)%c(2)%dhn(j)*&
+                                                      m%g(t)%c(3)%dhn(k)
+           enddo; enddo; enddo
          enddo
-         e = etemp;   e = e**(one/n)/g%volume;   er = e
+         !$OMP END PARALLEL DO
+         e = eTemp**(1.0_cp/n)/m%volume
        end subroutine
 
-       subroutine Compute_exact_present(e,exact,approx,g)
+       subroutine compute_norms(e,u,m)
          implicit none
          type(norms),intent(inout) :: e
-         type(grid),intent(in) :: g
-         type(SF),intent(in) :: exact,approx
-         real(cp) :: n,denom
-
-         call initError(e)
-         n = 1.0_cp; call Ln_exact_present(exact,approx,g,n,e%L1,e%R1,denom)
-         n = 2.0_cp; call Ln_exact_present(exact,approx,g,n,e%L2,e%R2,denom)
-         !n = infinity
-         e%Linf = maxabsdiff(exact,approx)
-         if (denom.gt.tol) then; e%Rinf = e%Linf/maxabs(exact)
-         else; e%Rinf = (e%Linf)/(maxabs(exact)+one); endif
-       end subroutine
-
-       subroutine Compute_exact_absent(e,approx,g)
-         implicit none
-         type(norms),intent(inout) :: e
-         type(grid),intent(in) :: g
-         type(SF),intent(in) :: approx
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: u
          real(cp) :: n
-
          call initError(e)
-         n = 1.0_cp; call Ln_exact_absent(approx,g,n,e%L1,e%R1)
-         n = 2.0_cp; call Ln_exact_absent(approx,g,n,e%L2,e%R2)
-         !n = infinity
-         e%Linf = maxabs(approx)
-         e%Rinf = e%Linf
+         n = 1.0_cp; call compute_Ln(e%L1,u,m,n)
+         n = 2.0_cp; call compute_Ln(e%L2,u,m,n)
+         e%Linf = maxabs(u)
        end subroutine
 
        end module

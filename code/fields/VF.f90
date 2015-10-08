@@ -13,7 +13,7 @@
         ! c = a / b => call divide(c,a,b)
         ! c = b / a => call divide(c,b,a)
 
-        use grid_mod
+        use mesh_mod
         use SF_mod
         implicit none
         private
@@ -358,32 +358,32 @@
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
         end subroutine
 
-        subroutine init_VF_CC(f,g)
+        subroutine init_VF_CC(f,m)
           implicit none
           type(VF),intent(inout) :: f
-          type(grid),intent(in) :: g
-          call init_CC(f%x,g); call init_CC(f%y,g); call init_CC(f%z,g)
+          type(mesh),intent(in) :: m
+          call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
         end subroutine
 
-        subroutine init_VF_Edge(f,g)
+        subroutine init_VF_Edge(f,m)
           implicit none
           type(VF),intent(inout) :: f
-          type(grid),intent(in) :: g
-          call init_Edge(f%x,g,1); call init_Edge(f%y,g,2); call init_Edge(f%z,g,3)
+          type(mesh),intent(in) :: m
+          call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
         end subroutine
 
-        subroutine init_VF_Face(f,g)
+        subroutine init_VF_Face(f,m)
           implicit none
           type(VF),intent(inout) :: f
-          type(grid),intent(in) :: g
-          call init_Face(f%x,g,1); call init_Face(f%y,g,2); call init_Face(f%z,g,3)
+          type(mesh),intent(in) :: m
+          call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
         end subroutine
 
-        subroutine init_VF_Node(f,g)
+        subroutine init_VF_Node(f,m)
           implicit none
           type(VF),intent(inout) :: f
-          type(grid),intent(in) :: g
-          call init_Node(f%x,g); call init_Node(f%y,g); call init_Node(f%z,g)
+          type(mesh),intent(in) :: m
+          call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
         end subroutine
 
         ! subroutine allocateX(f,Nx,Ny,Nz)

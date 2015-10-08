@@ -1,7 +1,6 @@
        module subdomain_mod
        use grid_mod
-       use SF_mod
-       use VF_mod
+       use coordinates_mod
 
        implicit none
 
@@ -49,7 +48,6 @@
 
          integer,dimension(3) :: out1,out2
          integer,dimension(3) :: in1,in2
-         type(grid) :: g_in,g_tot
        end type
 
        contains
@@ -64,12 +62,12 @@
          call define_CI(SD,1)
          call define_CI(SD,2)
          call define_CI(SD,3)
-         call define_T(SD,1)
-         call define_T(SD,2)
-         call define_T(SD,3)
-         call define_N(SD)
-         call init(SD%g_in,g_in)
-         call init(SD%g_tot,g_tot)
+         call define_T(SD,g_tot,1)
+         call define_T(SD,g_tot,2)
+         call define_T(SD,g_tot,3)
+         call define_N(SD,1)
+         call define_N(SD,2)
+         call define_N(SD,3)
        end subroutine
 
        subroutine init_subdomain_copy(SD_out,SD_in)
@@ -86,8 +84,6 @@
          SD_out%TNB1 = SD_in%TNB1; SD_out%TNB2 = SD_in%TNB2
          SD_out%TNI1 = SD_in%TNI1; SD_out%TNI2 = SD_in%TNI2
          SD_out%TNE1 = SD_in%TNE1; SD_out%TNE2 = SD_in%TNE2
-         call init(SD_out%g_in,SD_in%g_in)
-         call init(SD_out%g_tot,SD_in%g_tot)
        end subroutine
 
        subroutine delete_subdomain(SD)
@@ -103,14 +99,12 @@
          SD%TNB1 = 0; SD%TNB2 = 0
          SD%TNI1 = 0; SD%TNI2 = 0
          SD%TNE1 = 0; SD%TNE2 = 0
-         call delete(SD%g_in)
-         call delete(SD%g_tot)
        end subroutine
 
        subroutine define_CE(SD,c_in,c_tot,dir)
          implicit none
          type(subdomain),intent(inout) :: SD
-         type(grid),intent(in) :: c_in,c_tot
+         type(coordinates),intent(in) :: c_in,c_tot
          integer,intent(in) :: dir
          logical :: before,after
          integer :: i
@@ -142,24 +136,25 @@
          implicit none
          type(subdomain),intent(inout) :: SD
          integer,intent(in) :: dir
-         SD%N1(dir) = SD%CE1(dir)-1
-         SD%N2(dir) = SD%CE2(dir)+1
-         SD%NE1(dir) = SD%N1(dir)+1
-         SD%NE2(dir) = SD%N2(dir)-1
+         SD%NB1(dir) = SD%CE1(dir)-1
+         SD%NB2(dir) = SD%CE2(dir)+1
+         SD%NE1(dir) = SD%NB1(dir)+1
+         SD%NE2(dir) = SD%NB2(dir)-1
        end subroutine
 
-       subroutine define_T(SD,dir)
+       subroutine define_T(SD,g_tot,dir)
          implicit none
          type(subdomain),intent(inout) :: SD
+         type(grid),intent(in) :: g_tot
          integer,intent(in) :: dir
-         SD%TN1(dir) = 2
-         SD%TNE1(dir) = SD%TN1(dir)+1
+         SD%TNB1(dir) = 2
+         SD%TNE1(dir) = SD%TNB1(dir)+1
          SD%CE1(dir) = 3
          SD%CI1(dir) = 2
-         SD%TN2(dir)  = SD%g_tot%c(dir)sn-1
-         SD%TNE2(dir) = SD%TN2(dir)-1
-         SD%TCI2(dir) = SD%g_tot%c(dir)sc-1
-         SD%TCE2(dir) = SD%g_tot%c(dir)sc-2
+         SD%TNB2(dir) = g_tot%c(dir)%sn-1
+         SD%TNE2(dir) = SD%TNB2(dir)-1
+         SD%TCI2(dir) = g_tot%c(dir)%sc-1
+         SD%TCE2(dir) = g_tot%c(dir)%sc-2
        end subroutine
 
        end module

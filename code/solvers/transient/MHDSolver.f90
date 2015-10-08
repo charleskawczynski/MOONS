@@ -57,14 +57,14 @@
          do while (continueLoop)
            call startTime(time)
            call setIteration(ss_MHD,n_mhd)
-           if (solveEnergy)    call solve(nrg,mom%U,mom%g,ss_MHD,dir)
+           if (solveEnergy)    call solve(nrg,mom%U,mom%m,ss_MHD,dir)
            if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
-           if (solveInduction) call solve(ind,mom%U_E,mom%g,ss_MHD,dir)
+           if (solveInduction) call solve(ind,mom%U_E,mom%m,ss_MHD,dir)
 
            call assign(F,0.0_cp)
-           if (addJCrossB)  call computeAddJCrossB(F,ind,mom%g,ind%Ha,mom%Re,ind%Rem)
-           if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%g,mom%Gr,mom%Re)
-           if (addGravity)  call computeAddGravity(F,nrg,mom%g,mom%Fr)
+           if (addJCrossB)  call computeAddJCrossB(F,ind,ind%Ha,mom%Re,ind%Rem)
+           if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%Gr,mom%Re)
+           if (addGravity)  call computeAddGravity(F,nrg,mom%Fr)
 
            call checkCondition(ss_MHD,continueLoop) ! Check to leave loop
            if (.not.continueLoop) exit
@@ -95,12 +95,12 @@
          if (solveMomentum)  call exportTransient(mom,ss_MHD,dir)
          if (solveInduction) call exportTransient(ind,ss_MHD)
 
-         if (solveEnergy)    call exportRaw(nrg,nrg%g,dir)
-         if (solveInduction) call exportRaw(ind,ind%g,dir)
-         if (solveMomentum)  call exportRaw(mom,mom%g,dir)
-         if (solveEnergy)    call export(nrg,nrg%g,dir)
-         if (solveInduction) call export(ind,ind%g,dir)
-         if (solveMomentum)  call export(mom,mom%g,dir)
+         if (solveEnergy)    call exportRaw(nrg,nrg%m,dir)
+         if (solveInduction) call exportRaw(ind,ind%m,dir)
+         if (solveMomentum)  call exportRaw(mom,mom%m,dir)
+         if (solveEnergy)    call export(nrg,nrg%m,dir)
+         if (solveInduction) call export(ind,ind%m,dir)
+         if (solveMomentum)  call export(mom,mom%m,dir)
 
          call delete(F)
          call computationComplete(time)

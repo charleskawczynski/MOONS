@@ -1,9 +1,9 @@
       module import_SF_mod
       ! This module, along with exportRaw.f90 provide purely functional 
-      ! pipeline routines to export data given inputs. The possible grid types
+      ! pipeline routines to export data given inputs. The possible mesh types
       ! can be checked in the getType_3D,getType_2D,getType_1D routines.
       ! 
-      use grid_mod
+      use mesh_mod
       use SF_mod
       use import_RF_mod
       implicit none
@@ -23,42 +23,42 @@
 
       contains
 
-      subroutine imp_3C_SF(g,pad,un,arrfmt,name,A,B,C)
+      subroutine imp_3C_SF(m,pad,un,arrfmt,name,A,B,C)
         implicit none
         type(SF),intent(inout) :: A,B,C
-        type(grid),intent(inout) :: g
+        type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
         integer :: i
         read(un,*);read(un,*);read(un,*) ! Read tecplot header
         do i=1,A%s
-          call imp_3C_RF(g,pad,un,arrfmt,name,A%RF(i),B%RF(i),C%RF(i))
+          call imp_3C_RF(m%g(i),pad,un,arrfmt,name,A%RF(i),B%RF(i),C%RF(i))
         enddo
       end subroutine
 
-      subroutine imp_2C_SF(g,pad,un,arrfmt,name,A,B)
+      subroutine imp_2C_SF(m,pad,un,arrfmt,name,A,B)
         implicit none
         type(SF),intent(inout) :: A,B
-        type(grid),intent(inout) :: g
+        type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
         integer :: i
         read(un,*);read(un,*);read(un,*) ! Read tecplot header
         do i=1,A%s
-          call imp_2C_RF(g,pad,un,arrfmt,name,A%RF(i),B%RF(i))
+          call imp_2C_RF(m%g(i),pad,un,arrfmt,name,A%RF(i),B%RF(i))
         enddo
       end subroutine
 
-      subroutine imp_1C_SF(g,pad,un,arrfmt,name,A)
+      subroutine imp_1C_SF(m,pad,un,arrfmt,name,A)
         implicit none
         type(SF),intent(inout) :: A
-        type(grid),intent(inout) :: g
+        type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
         integer :: i
         read(un,*);read(un,*);read(un,*) ! Read tecplot header
         do i=1,A%s
-          call imp_1C_RF(g,pad,un,arrfmt,name,A%RF(i))
+          call imp_1C_RF(m%g(i),pad,un,arrfmt,name,A%RF(i))
         enddo
       end subroutine
 

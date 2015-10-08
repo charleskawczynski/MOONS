@@ -1,5 +1,5 @@
       module IO_VF_mod
-      use grid_mod
+      use mesh_mod
       use VF_mod
       use export_VF_mod
       use import_VF_mod
@@ -23,27 +23,27 @@
 
       contains
 
-      subroutine export_3C_VF(g,U,dir,name,pad)
+      subroutine export_3C_VF(m,U,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(grid),intent(in) :: g
+        type(mesh),intent(in) :: m
         integer,intent(in) :: pad
         type(VF),intent(in) :: U
         integer :: un
         un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_3C_VF(g,pad,un,arrfmt,trim(adjustl(name)),U)
+        call exp_3C_VF(m,pad,un,arrfmt,trim(adjustl(name)),U)
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine import_3C_VF(g,U,dir,name,pad)
+      subroutine import_3C_VF(m,U,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(grid),intent(inout) :: g
+        type(mesh),intent(inout) :: m
         integer,intent(in) :: pad
         type(VF),intent(inout) :: U
         integer :: un
         un = openToRead(dir,trim(adjustl(name)))
-        call imp_3C_VF(g,pad,un,arrfmt,trim(adjustl(name)),U)
+        call imp_3C_VF(m,pad,un,arrfmt,trim(adjustl(name)),U)
         call closeExisting(un,trim(adjustl(name)),dir)
       end subroutine
 

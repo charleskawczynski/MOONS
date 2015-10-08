@@ -1,5 +1,6 @@
        module init_UBCs_mod
        use grid_mod
+       use mesh_mod
        use BCs_mod
        use VF_mod
        use SF_mod
@@ -66,17 +67,17 @@
 
        contains
 
-       subroutine init_UBCs(U,g)
+       subroutine init_UBCs(U,m)
          implicit none
          type(VF),intent(inout) :: U
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
 
-         call init(U%x%RF(1)%b,g,U%x%RF(1)%s)
-         call init(U%y%RF(1)%b,g,U%y%RF(1)%s)
-         call init(U%z%RF(1)%b,g,U%z%RF(1)%s)
+         call init(U%x%RF(1)%b,m%g(1),U%x%RF(1)%s)
+         call init(U%y%RF(1)%b,m%g(1),U%y%RF(1)%s)
+         call init(U%z%RF(1)%b,m%g(1),U%z%RF(1)%s)
 
          if (preDefinedU_BCs.ne.0) then
-           call initPredefinedUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,g)
+           call initPredefinedUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,m%g(1))
          else
            call initUserUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b)
          endif
