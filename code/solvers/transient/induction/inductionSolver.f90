@@ -457,6 +457,7 @@
            call init_Node(tempN,ind%m)
            call cellCenter2Node(tempN,ind%sigma,ind%m,ind%temp_F%x,ind%temp_E%z)
            call treatInterface(tempN)
+           call export_1C_SF(ind%m,ind%sigma,dir//'material/','sigmac',0)
            call export_1C_SF(ind%m,tempN,dir//'material/','sigman',0)
            call delete(tempN)
          endif

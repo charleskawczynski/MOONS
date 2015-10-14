@@ -18,9 +18,10 @@
       public :: coordinates
       public :: init,delete
       public :: print,export
-      public :: addToFile
-      public :: init_stencils
-      public :: stitch_stencils ! For stitching multi-domains
+
+      ! For stitching multi-domains, only
+      ! after coordinates has been defined
+      public :: stitch_stencils 
 
       ! For multi-grid
       public :: restrict
@@ -30,6 +31,15 @@
 #endif
 
       type coordinates
+        ! Stencils for del (ops_del.f90)
+        type(triDiag) :: stagCC2N,stagN2CC
+        type(triDiag) :: lapCC,lapN
+        type(triDiag) :: colCC,colN
+        ! Stencils for splitting methods (jacobi/SOR)
+        type(triDiag) :: D_CC2N,U_CC2N
+        type(triDiag) :: D_N2CC,U_N2CC
+         ! Properties
+        real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
         integer :: N                                    ! Number of cells
         real(cp) :: hmin,hmax                           ! Min/Max value of domain
         real(cp) :: dhMin,dhMax,maxRange                ! Smallest spatial step/Maximum range
@@ -38,15 +48,7 @@
         real(cp),dimension(:),allocatable :: hc         ! Cell center coordinates
         real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
         real(cp),dimension(:),allocatable :: dhc        ! Difference in cell center coordinates
-        type(triDiag) :: stagCC2N,stagN2CC
-        type(triDiag) :: lapCC,lapN
-        type(triDiag) :: colCC,colN
-        ! Stencils for splitting methods (jacobi/SOR)
-        type(triDiag) :: D_CC2N,U_CC2N
-        type(triDiag) :: D_N2CC,U_N2CC
-        ! type(triDiag) :: F_N,B_N     ! Forward and Backward Node based stencils for applying Neumann BCs
-        ! type(triDiag) :: F_CC,B_CC   ! Forward and Backward  CC  based stencils for applying Neumann BCs
-        real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
+        logical :: defined = .false.
       end type
 
       interface init;              module procedure initCoordinates;        end interface
@@ -54,13 +56,12 @@
       interface delete;            module procedure deleteCoordinates;      end interface
 
       interface print;             module procedure printCoordinates;       end interface
-      interface export;            module procedure exportCoordinates;      end interface
-      interface addToFile;         module procedure addToFileCoordinates;   end interface
+      interface export;            module procedure export_c;               end interface
 
       interface restrict;          module procedure restrictCoordinates;    end interface
-      interface init_stencils;     module procedure init_stencils_c;        end interface
 
       interface stitch_stencils;    module procedure stitch_stencils_c;     end interface
+      interface init_stencils;     module procedure init_stencils_c;        end interface ! Private
       
       contains
 
@@ -77,17 +78,12 @@
         if (allocated(c%dhc)) deallocate(c%dhc)
         if (allocated(c%alpha)) deallocate(c%alpha)
         if (allocated(c%beta)) deallocate(c%beta)
-      end subroutine
-
-      subroutine initCoordinates(c,h,gridType)
-        implicit none
-        type(coordinates),intent(inout) :: c
-         real(cp),dimension(:),intent(in) :: h
-        integer,intent(in) :: gridType
-        select case (gridType)
-        case (1); call initCellCenter(c,h)
-        case (2); call initNodes(c,h)
-        end select
+        call delete(c%stagCC2N); call delete(c%stagN2CC)
+        call delete(c%lapCC); call delete(c%lapN)
+        call delete(c%colCC); call delete(c%colN)
+        call delete(c%D_CC2N); call delete(c%U_CC2N)
+        call delete(c%D_N2CC); call delete(c%U_N2CC)
+        c%defined = .false.
       end subroutine
 
       subroutine initCopy(c,d)
@@ -116,16 +112,21 @@
 
         c%sn = d%sn
         c%sc = d%sc
+        c%defined = d%defined
         call initProps(c)
+        call init_stencils(c)
       end subroutine
 
-      subroutine initNodes(c,hn)
+      subroutine initCoordinates(c,hn,sn)
         implicit none
         type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),intent(in) :: hn
+        integer,intent(in) :: sn
+        real(cp),dimension(sn),intent(in) :: hn
         integer :: i
         call delete(c)
         ! Node grid
+        if (.not.(size(hn).gt.0)) stop 'Error: hn not allocated in initCoordinates in coordinates.f90'
+        if (.not.(size(hn).eq.sn)) stop 'Error: sn.ne.size(hn) in initCoordinates in coordinates.f90'
         c%sn = size(hn)
         allocate(c%hn(c%sn))
         allocate(c%dhn(c%sn-1))
@@ -142,39 +143,8 @@
 
         ! Additional information
         call initProps(c)
-      end subroutine
-
-      subroutine initCellCenter(c,hc)
-        ! hc must includes the ghost cell.
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),intent(in) :: hc
-        integer :: i
-        call delete(c)
-        ! Node grid
-        stop 'Coordinates are being init. via cell centers!'
-
-        ! Cell center grid
-        c%sc = size(hc)
-        allocate(c%hc(c%sc))
-        allocate(c%dhc(c%sc-1))
-        c%hc = hc
-        c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
-
-        c%sn = c%sc-1
-        allocate(c%hn(c%sn))
-        allocate(c%dhn(c%sn-1))
-        c%hn(1) = c%hc(1) + c%dhc(1)/2.0_cp
-
-        do i = 1,c%sn-1
-         c%hn(i+1) = 2.0_cp*c%hc(i+1) - c%hn(i)
-        enddo
-
-        ! Differences
-        c%dhn = (/(c%hn(i+1)-c%hn(i),i=1,c%sn-1)/)
-
-        ! Additional information
-        call initProps(c)
+        call init_stencils(c)
+        c%defined = .true.
       end subroutine
 
       subroutine initProps(c)
@@ -193,38 +163,53 @@
       ! ***************************** IO ********************************
       ! *****************************************************************
 
-      subroutine exportCoordinates(c,dir,name,u)
-        implicit none
-        type(coordinates), intent(in) :: c
-        character(len=*),intent(in) :: dir,name
-        integer,intent(in),optional :: u
-        integer :: newU
-        if (present(u)) then
-          call addToFile(c,u)
-        else
-          newU = newAndOpen(dir,name)
-          call addToFile(c,newU)
-          close(newU)
-        endif
-      end subroutine
+      ! subroutine exportCoordinates(c,dir,name,u)
+      !   implicit none
+      !   type(coordinates), intent(in) :: c
+      !   character(len=*),intent(in) :: dir,name
+      !   integer,intent(in),optional :: u
+      !   integer :: newU
+      !   if (present(u)) then
+      !     call addToFile(c,u)
+      !   else
+      !     newU = newAndOpen(dir,name)
+      !     call addToFile(c,newU)
+      !     close(newU)
+      !   endif
+      ! end subroutine
+
+      ! subroutine exportCoordinates(c,dir,name,u)
+      !   implicit none
+      !   type(coordinates), intent(in) :: c
+      !   character(len=*),intent(in) :: dir,name
+      !   integer,intent(in),optional :: u
+      !   integer :: newU
+      !   if (present(u)) then
+      !     call addToFile(c,u)
+      !   else
+      !     newU = newAndOpen(dir,name)
+      !     call addToFile(c,newU)
+      !     close(newU)
+      !   endif
+      ! end subroutine
 
       subroutine printCoordinates(c)
         implicit none
         type(coordinates),intent(in) :: c
-        call addToFile(c,6)
+        call export(c,6)
       end subroutine
 
-      subroutine addToFileCoordinates(c,u)
+      subroutine export_c(c,un)
         implicit none
         type(coordinates), intent(in) :: c
-        integer,intent(in) :: u
-        write(u,*) '------- coordinates -------'
-        write(u,*) 'sn = ',c%sn
-        write(u,*) 'sc = ',c%sc
-        write(u,*) 'hn = ',c%hn
-        write(u,*) 'hc = ',c%hc
-        write(u,*) 'dhn = ',c%dhn
-        write(u,*) 'dhc = ',c%dhc
+        integer,intent(in) :: un
+        write(un,*) ' ---------------- coordinates'
+        write(un,*) 'sn = ',c%sn
+        write(un,*) 'sc = ',c%sc
+        write(un,*) 'hn = ',c%hn
+        write(un,*) 'hc = ',c%hc
+        write(un,*) 'dhn = ',c%dhn
+        write(un,*) 'dhc = ',c%dhc
       end subroutine
 
       ! *****************************************************************
@@ -385,6 +370,7 @@
         implicit none
         type(coordinates),intent(inout) :: c
         logical,intent(in) :: hmin,hmax
+        if (.not.c%defined) stop 'Error: coordinates not defined in stitch_stencils_c in coordinates.f90'
         call stitch_lapCC(c,hmin,hmax)
         call stitch_colCC(c,hmin,hmax)
         call stitch_lapN(c,hmin,hmax)
@@ -531,6 +517,8 @@
         implicit none
         type(coordinates),intent(inout) :: c
         integer :: t
+        if (allocated(c%alpha)) deallocate(c%alpha)
+        if (allocated(c%beta)) deallocate(c%beta)
         allocate(c%alpha(c%sc-1))
         allocate(c%beta(c%sc-1))
         do t=1,size(c%alpha)
@@ -554,13 +542,11 @@
         type(coordinates),intent(in) :: c
         integer :: i
         if (c%sc.gt.3) then
-          ! if (mod(c%sc,2).eq.0) call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),2) ! good case
           if (mod(c%sc,2).eq.0) then
-            call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),2)
+            call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),c%sc/2)
             call addGhostNodes(r)
+            else; stop 'Error: coordinates must be even in restrictCoordinates in coordinates.f90'
           endif
-
-          if (mod(c%sc,2).ne.0) call init(r,(/c%hc(1),(/(c%hc(2*i),i=1,(c%sc-1)/2)/),c%hc(c%sc)/),1) ! bad case
         else; call init(r,c) ! return c
         endif
       end subroutine
@@ -588,6 +574,7 @@
         call init_D_N2CC(c)
         call init_U_CC2N(c)
         call init_U_N2CC(c)
+        
         ! call check(c%lapCC)
         ! call check(c%lapN)
         ! call check(c%stagCC2N)
@@ -600,7 +587,7 @@
       subroutine addGhostNodes(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        call init(c,(/c%hn(1)-c%dhn(1),c%hn,c%hn(c%sn)+(c%dhn(c%sn-1))/),2)
+        call init(c,(/c%hn(1)-c%dhn(1),c%hn,c%hn(c%sn)+(c%dhn(c%sn-1))/),c%sn+2)
       end subroutine
 
 #ifdef _DEBUG_COORDINATES_
@@ -609,6 +596,12 @@
         implicit none
         type(coordinates),intent(in) :: c
         write(*,*) 'Starting to check coordinates'
+        call check(c%lapCC)
+        call check(c%lapN)
+        call check(c%stagCC2N)
+        call check(c%stagN2CC)
+        call check(c%colCC)
+        call check(c%colN)
         write(*,*) 'step 0'; call check_consecutive(c)
         write(*,*) 'step 1'; call check_stencilSymmetry(c,c%stagCC2N,'stagCC2N')
         write(*,*) 'step 2'; call check_stencilSymmetry(c,c%stagN2CC,'stagN2CC')
@@ -616,7 +609,8 @@
         write(*,*) 'step 4'; call check_stencilSymmetry(c,c%lapN,'lapN')
         write(*,*) 'step 5'; call check_stencilSymmetry(c,c%colCC,'colCC')
         write(*,*) 'step 6'; call check_stencilSymmetry(c,c%colN,'colN')
-        write(*,*) 'done'
+        write(*,*) 'Done checking coordinates'
+        ! stop 'Done'
       end subroutine
 
       subroutine check_consecutive(c)
@@ -654,44 +648,62 @@
         real(cp) :: tol,temp
         tol = c%dhMin*1.0_cp**(-15.0_cp)
         ! Check L
-        do i=1,T%sL
-          if (allocated(T%L)) then
-           temp = T%L(i) - T%L(T%s-i+1)
-           ! write(*,*) 'temp(L(',i,')) = ',temp
-           if (abs(temp).gt.tol) then
-             write(*,*) 'Error: coordinate stencils are not symmetric at location ',i
-             write(*,*) 'for L on stencil '//name
-             write(*,*) 'T%L = ',T%L
-             stop 'Done'
-           endif
-          endif
-        enddo
+        ! do i=1,T%sL
+        !   if (allocated(T%L)) then
+        !    temp = abs(T%L(i)) - abs(T%L(T%s-i+1))
+        !    ! write(*,*) 'temp(L(',i,')) = ',temp
+        !    if (abs(temp).gt.tol) then
+        !      write(*,*) 'Error: coordinate stencils are not symmetric at location ',i
+        !      write(*,*) 'for L on stencil '//name
+        !      write(*,*) 'T%L = ',T%L
+        !      write(*,*) 'error = ',abs(temp)
+        !      stop 'Done'
+        !    endif
+        !   endif
+        ! enddo
+        ! Check LU
+        ! if (allocated(T%L).and.(allocated(T%U))) then
+        !   if (T%sL.ne.T%sU) stop 'Error: T%sL must = T%sU in check_stencilSymmetry in coordinates.f90'
+        !   do i=1,T%sL
+        !      temp = abs(T%L(i)) - abs(T%U(T%s-i+1))
+        !      if (abs(temp).gt.tol) then
+        !        write(*,*) 'Error: coordinate stencils are not symmetric at location ',i
+        !        write(*,*) 'for LU on stencil '//name
+        !        write(*,*) 'T%L = ',T%L
+        !        write(*,*) 'T%U = ',T%U
+        !        write(*,*) 'error = ',abs(temp)
+        !        stop 'Done'
+        !      endif
+        !   enddo
+        ! endif
         ! Check D
         do i=1,T%sD
           if (allocated(T%D)) then
-          temp = T%D(i) - T%D(T%s-i+1)
+          temp = abs(T%D(i)) - abs(T%D(T%s-i+1))
           ! write(*,*) 'temp(D(',i,')) = ',temp
           if (abs(temp).gt.tol) then
             write(*,*) 'Error: coordinate stencils are not symmetric at location ',i
             write(*,*) 'for D on stencil '//name
             write(*,*) 'T%D = ',T%D
+            write(*,*) 'error = ',abs(temp)
             stop 'Done'
           endif
           endif
         enddo
         ! Check U
-        do i=1,T%sU
-          if (allocated(T%U)) then
-          temp = T%U(i) - T%U(T%s-i+1)
-          ! write(*,*) 'temp(U(',i,')) = ',temp
-          if (abs(temp).gt.tol) then
-            write(*,*) 'Error: coordinate stencils are not symmetric at location ',i
-            write(*,*) 'for U on stencil '//name
-            write(*,*) 'T%U = ',T%U
-            stop 'Done'
-          endif
-          endif
-        enddo
+        ! do i=1,T%sU
+        !   if (allocated(T%U)) then
+        !   temp = abs(T%U(i)) - abs(T%U(T%s-i+1))
+        !   ! write(*,*) 'temp(U(',i,')) = ',temp
+        !   if (abs(temp).gt.tol) then
+        !     write(*,*) 'Error: coordinate stencils are not symmetric at location ',i
+        !     write(*,*) 'for U on stencil '//name
+        !     write(*,*) 'T%U = ',T%U
+        !      write(*,*) 'error = ',abs(temp)
+        !     stop 'Done'
+        !   endif
+        !   endif
+        ! enddo
       end subroutine
 
 #endif

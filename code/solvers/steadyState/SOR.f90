@@ -88,12 +88,12 @@
         do t=1,u%s
           do i=1,3
             if (SOR%s(i).eq.m%g(t)%c(i)%sc) then
-              call init(SOR%p%g(t),m%g(t)%c(i)%hc,i,2) ! mesh made from cc --> p%dhn is dhc
-              call init(SOR%d%g(t),m%g(t)%c(i)%hn,i,2) ! mesh made from n --> d%dhn is dhn
+              call init(SOR%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+              call init(SOR%d%g(t),m%g(t)%c(i)%hn,i) ! mesh made from n --> d%dhn is dhn
               SOR%gt(i) = 1
             elseif(SOR%s(i).eq.m%g(t)%c(i)%sn) then
-              call init(SOR%p%g(t),m%g(t)%c(i)%hn,i,2) ! mesh made from n --> p%dhn is dhn
-              call init(SOR%d%g(t),m%g(t)%c(i)%hc,i,2) ! mesh made from cc --> d%dhn is dhc
+              call init(SOR%p%g(t),m%g(t)%c(i)%hn,i) ! mesh made from n --> p%dhn is dhn
+              call init(SOR%d%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> d%dhn is dhc
               SOR%gt(i) = 0
             else
               write(*,*) 's = ',SOR%s

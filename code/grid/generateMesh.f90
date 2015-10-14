@@ -32,8 +32,6 @@
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
          ! call cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)
          call makeGrids_BCs(g_mom,g_ind,Ni,Nwtop,Nwbot)
-         call init_stencils(g_ind)
-         call init_stencils(g_mom)
        end subroutine
 
        subroutine cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)

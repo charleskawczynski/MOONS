@@ -44,7 +44,7 @@
          real(cp),dimension(:),intent(in) :: h
          integer,intent(in) :: dir
          call delete(gg%g%c(dir))
-         call init(gg%g,h,dir,2)
+         call init(gg%g,h,dir)
        end subroutine
 
        subroutine deleteGridGen(gg)
@@ -65,7 +65,7 @@
          if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend'
          allocate(temp(s))
          temp = gg%g%c(dir)%hn
-         call init(gg%g,(/h,temp/),dir,2)
+         call init(gg%g,(/h,temp/),dir)
          deallocate(temp)
        end subroutine
 
@@ -81,7 +81,7 @@
          if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to append'
          allocate(temp(s))
          temp = gg%g%c(dir)%hn
-         call init(gg%g,(/temp,h/),dir,2)
+         call init(gg%g,(/temp,h/),dir)
          deallocate(temp)
        end subroutine
 
@@ -96,7 +96,7 @@
          if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
          allocate(h1(s-1)); allocate(h2(s))
          h2 = gg%g%c(dir)%hn; h1 = h2(s:2:-1)
-         call init(gg%g,(/h1,h2/),dir,2)
+         call init(gg%g,(/h1,h2/),dir)
          deallocate(h1,h2)
        end subroutine
 
@@ -111,11 +111,12 @@
          if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to append mirror'
          allocate(h1(s-1)); allocate(h2(s))
          h2 = gg%g%c(dir)%hn; h1 = h2(s-1:1:-1)
-         call init(gg%g,(/h1,h2/),dir,2)
+         call init(gg%g,(/h1,h2/),dir)
          deallocate(h1,h2)
        end subroutine
 
        subroutine prepGhost(gg,dir)
+         ! Prepends a ghost point
          implicit none
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
@@ -127,11 +128,12 @@
           temp(i+1) = gg%g%c(dir)%hn(i)
          enddo
          temp(1) = gg%g%c(dir)%hn(1) - (gg%g%c(dir)%hn(2) - gg%g%c(dir)%hn(1))
-         call init(gg%g,temp,dir,2)
+         call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
 
        subroutine appGhost(gg,dir)
+         ! Appends a ghost point
          implicit none
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
@@ -143,7 +145,7 @@
           temp(i) = gg%g%c(dir)%hn(i)
          enddo
          temp(s+1) = gg%g%c(dir)%hn(s) + (gg%g%c(dir)%hn(s) - gg%g%c(dir)%hn(s-1))
-         call init(gg%g,temp,dir,2)
+         call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
 
@@ -160,7 +162,7 @@
          enddo
          temp(1) = gg%g%c(dir)%hn(1) - (gg%g%c(dir)%hn(2) - gg%g%c(dir)%hn(1))
          temp(s+2) = gg%g%c(dir)%hn(s) + (gg%g%c(dir)%hn(s) - gg%g%c(dir)%hn(s-1))
-         call init(gg%g,temp,dir,2)
+         call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
 
@@ -188,7 +190,7 @@
          do i=1,s-1
           temp(i) = gg%g%c(dir)%hn(i)
          enddo
-         call init(gg%g,temp,dir,2)
+         call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
 
@@ -204,7 +206,7 @@
          do i=2,s
           temp(i-1) = gg%g%c(dir)%hn(i)
          enddo
-         call init(gg%g,temp,dir,2)
+         call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
 

@@ -91,22 +91,22 @@
          type(VF),intent(in) :: face_t
          type(domain),intent(in) :: D
          integer :: i
-         do i=1,face_i%x%s
-           call EE(face_i%x%RF(i),face_t%x%RF(i),&
-            (/D%sd(i)%NB1(1), D%sd(i)%CI1(2), D%sd(i)%CI1(3)/),&
-            (/D%sd(i)%NB2(1), D%sd(i)%CI2(2), D%sd(i)%CI2(3)/),&
-           (/D%sd(i)%TNB1(1),D%sd(i)%TCI1(2),D%sd(i)%TCI1(3)/),&
-           (/D%sd(i)%TNB2(1),D%sd(i)%TCI2(2),D%sd(i)%TCI2(3)/))
-           call EE(face_i%y%RF(i),face_t%y%RF(i),&
-            (/D%sd(i)%CI1(1) ,D%sd(i)%NB1(2), D%sd(i)%CI1(3)/),&
-            (/D%sd(i)%CI2(1) ,D%sd(i)%NB2(2), D%sd(i)%CI2(3)/),&
-           (/D%sd(i)%TCI1(1),D%sd(i)%TNB1(2),D%sd(i)%TCI1(3)/),&
-           (/D%sd(i)%TCI2(1),D%sd(i)%TNB2(2),D%sd(i)%TCI2(3)/))
-           call EE(face_i%z%RF(i),face_t%z%RF(i),&
-            (/D%sd(i)%CI1(1) ,D%sd(i)%CI1(2) ,D%sd(i)%NB1(3)/),&
-            (/D%sd(i)%CI2(1) ,D%sd(i)%CI2(2) ,D%sd(i)%NB2(3)/),&
-           (/D%sd(i)%TCI1(1),D%sd(i)%TCI1(2),D%sd(i)%TNB1(3)/),&
-           (/D%sd(i)%TCI2(1),D%sd(i)%TCI2(2),D%sd(i)%TNB2(3)/))
+         do i=1,D%s
+           call EE(face_i%x%RF(D%sd(i)%g_in_id),face_t%x%RF(D%sd(i)%g_tot_id),&
+            (/D%sd(i)%TNB1(1), D%sd(i)%TCI1(2), D%sd(i)%TCI1(3)/),&
+            (/D%sd(i)%TNB2(1), D%sd(i)%TCI2(2), D%sd(i)%TCI2(3)/),&
+           (/D%sd(i)%NB1(1),D%sd(i)%CI1(2),D%sd(i)%CI1(3)/),&
+           (/D%sd(i)%NB2(1),D%sd(i)%CI2(2),D%sd(i)%CI2(3)/))
+           call EE(face_i%y%RF(D%sd(i)%g_in_id),face_t%y%RF(D%sd(i)%g_tot_id),&
+            (/D%sd(i)%TCI1(1) ,D%sd(i)%TNB1(2), D%sd(i)%TCI1(3)/),&
+            (/D%sd(i)%TCI2(1) ,D%sd(i)%TNB2(2), D%sd(i)%TCI2(3)/),&
+           (/D%sd(i)%CI1(1),D%sd(i)%NB1(2),D%sd(i)%CI1(3)/),&
+           (/D%sd(i)%CI2(1),D%sd(i)%NB2(2),D%sd(i)%CI2(3)/))
+           call EE(face_i%z%RF(D%sd(i)%g_in_id),face_t%z%RF(D%sd(i)%g_tot_id),&
+            (/D%sd(i)%TCI1(1) ,D%sd(i)%TCI1(2) ,D%sd(i)%TNB1(3)/),&
+            (/D%sd(i)%TCI2(1) ,D%sd(i)%TCI2(2) ,D%sd(i)%TNB2(3)/),&
+           (/D%sd(i)%CI1(1),D%sd(i)%CI1(2),D%sd(i)%NB1(3)/),&
+           (/D%sd(i)%CI2(1),D%sd(i)%CI2(2),D%sd(i)%NB2(3)/))
          enddo
        end subroutine
 
@@ -117,22 +117,22 @@
          type(VF),intent(in) :: Edge_i
          type(domain),intent(in) :: D
          integer :: i
-         do i=1,Edge_t%x%s
-           call EE(Edge_t%x%RF(i),Edge_i%x%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TNB1(2),D%sd(i)%TNB1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TNB2(2),D%sd(i)%TNB2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%NB1(2), D%sd(i)%NB1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%NB2(2), D%sd(i)%NB2(3)/))
-           call EE(Edge_t%y%RF(i),Edge_i%y%RF(i),&
-           (/D%sd(i)%TNB1(1),D%sd(i)%TCE1(2),D%sd(i)%TNB1(3)/),&
-           (/D%sd(i)%TNB2(1),D%sd(i)%TCE2(2),D%sd(i)%TNB2(3)/),&
-            (/D%sd(i)%NB1(1), D%sd(i)%CE1(2), D%sd(i)%NB1(3)/),&
-            (/D%sd(i)%NB2(1), D%sd(i)%CE2(2), D%sd(i)%NB2(3)/))
-           call EE(Edge_t%z%RF(i),Edge_i%z%RF(i),&
-           (/D%sd(i)%TNB1(1),D%sd(i)%TNB1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TNB2(1),D%sd(i)%TNB2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%NB1(1), D%sd(i)%NB1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%NB2(1), D%sd(i)%NB2(2), D%sd(i)%CE2(3)/))
+         do i=1,D%s
+           call EE(Edge_t%x%RF(D%sd(i)%g_tot_id),Edge_i%x%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%NB1(2),D%sd(i)%NB1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%NB2(2),D%sd(i)%NB2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TNB1(2), D%sd(i)%TNB1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TNB2(2), D%sd(i)%TNB2(3)/))
+           call EE(Edge_t%y%RF(D%sd(i)%g_tot_id),Edge_i%y%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%NB1(1),D%sd(i)%CE1(2),D%sd(i)%NB1(3)/),&
+           (/D%sd(i)%NB2(1),D%sd(i)%CE2(2),D%sd(i)%NB2(3)/),&
+            (/D%sd(i)%TNB1(1), D%sd(i)%TCE1(2), D%sd(i)%TNB1(3)/),&
+            (/D%sd(i)%TNB2(1), D%sd(i)%TCE2(2), D%sd(i)%TNB2(3)/))
+           call EE(Edge_t%z%RF(D%sd(i)%g_tot_id),Edge_i%z%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%NB1(1),D%sd(i)%NB1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%NB2(1),D%sd(i)%NB2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TNB1(1), D%sd(i)%TNB1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TNB2(1), D%sd(i)%TNB2(2), D%sd(i)%TCE2(3)/))
          enddo
        end subroutine
 
@@ -143,22 +143,22 @@
          type(VF),intent(in) :: Face_i
          type(domain),intent(in) :: D
          integer :: i
-         do i=1,Face_t%x%s
-           call EE(Face_t%x%RF(i),Face_i%x%RF(i),&
-           (/D%sd(i)%TNB1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TNB2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%NB1(1), D%sd(i)%CE1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%NB2(1), D%sd(i)%CE2(2), D%sd(i)%CE2(3)/))
-           call EE(Face_t%y%RF(i),Face_i%y%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TNB1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TNB2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%NB1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%NB2(2), D%sd(i)%CE2(3)/))
-           call EE(Face_t%z%RF(i),Face_i%z%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TNB1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNB2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%CE1(2), D%sd(i)%NB1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%CE2(2), D%sd(i)%NB2(3)/))
+         do i=1,D%s
+           call EE(Face_t%x%RF(D%sd(i)%g_tot_id),Face_i%x%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%NB1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%NB2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TNB1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TNB2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
+           call EE(Face_t%y%RF(D%sd(i)%g_tot_id),Face_i%y%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%NB1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%NB2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TNB1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TNB2(2), D%sd(i)%TCE2(3)/))
+           call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%NB1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%NB2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TNB1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TNB2(3)/))
          enddo
        end subroutine
 
@@ -169,22 +169,22 @@
          type(VF),intent(in) :: CC_i
          type(domain),intent(in) :: D
          integer :: i
-         do i=1,CC_t%x%s
-           call EE(CC_t%x%RF(i),CC_i%x%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%CE1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%CE2(2), D%sd(i)%CE2(3)/))
-           call EE(CC_t%y%RF(i),CC_i%y%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%CE1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%CE2(2), D%sd(i)%CE2(3)/))
-           call EE(CC_t%z%RF(i),CC_i%z%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%CE1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%CE2(2), D%sd(i)%CE2(3)/))
+         do i=1,D%s
+           call EE(CC_t%x%RF(D%sd(i)%g_tot_id),CC_i%x%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
+           call EE(CC_t%y%RF(D%sd(i)%g_tot_id),CC_i%y%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
+           call EE(CC_t%z%RF(D%sd(i)%g_tot_id),CC_i%z%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
          enddo
        end subroutine
 
@@ -195,14 +195,13 @@
          type(SF),intent(in) :: CC_i
          type(domain),intent(in) :: D
          integer :: i
-         do i=1,CC_t%s
-           call EE(CC_t%RF(i),CC_i%RF(i),&
-           (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-           (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
-            (/D%sd(i)%CE1(1), D%sd(i)%CE1(2), D%sd(i)%CE1(3)/),&
-            (/D%sd(i)%CE2(1), D%sd(i)%CE2(2), D%sd(i)%CE2(3)/))
+         do i=1,D%s
+           call EE(CC_t%RF(D%sd(i)%g_tot_id),CC_i%RF(D%sd(i)%g_in_id),&
+           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
+           (/D%sd(i)%CE2(1),D%sd(i)%CI2(2),D%sd(i)%CE2(3)/),&
+            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1), D%sd(i)%TCI2(2), D%sd(i)%TCE2(3)/))
          enddo
        end subroutine
-
 
        end module

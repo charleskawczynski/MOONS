@@ -157,8 +157,18 @@
          TF(1) = (i.gt.s(1)/frac).and.(i.lt.s(1) - s(1)/frac)
          TF(2) = (j.gt.s(2)/frac).and.(j.lt.s(2) - s(2)/frac)
          TF(3) = (k.gt.s(3)/frac).and.(k.lt.s(3) - s(3)/frac)
-         ! if (all(TF)) sig%RF(1)%f(i,j,k) = 0.01_cp
+         if (all(TF)) sig%RF(1)%f(i,j,k) = 0.01_cp
          enddo; enddo; enddo
+         if (size(sig%RF).eq.2) then
+           s = sig%RF(2)%s
+           frac = 3
+           do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           TF(1) = (i.gt.s(1)/frac).and.(i.lt.s(1) - s(1)/frac)
+           TF(2) = (j.gt.s(2)/frac).and.(j.lt.s(2) - s(2)/frac)
+           TF(3) = (k.gt.s(3)/frac).and.(k.lt.s(3) - s(3)/frac)
+           if (all(TF)) sig%RF(2)%f(i,j,k) = 0.01_cp
+           enddo; enddo; enddo
+         endif
 
        end subroutine
 
@@ -170,6 +180,7 @@
        use IO_tools_mod
        use grid_mod
        use mesh_mod
+       use geometries_mod
        use norms_mod
        use generateGrid_mod
        use ops_discrete_mod
@@ -182,8 +193,12 @@
        use gridGen_mod
        use gridGenTools_mod
        use solverSettings_mod
+       use ops_embedExtract_mod
        use ops_interp_mod
        use ops_aux_mod
+       use domain_mod
+       use extendGrid_mod
+       use connectGrid_mod
 
        use modelProblem_mod
 
@@ -203,8 +218,8 @@
        subroutine unit_test(dir)
          implicit none
          character(len=*),intent(in) :: dir
-         type(grid) :: g
-         type(mesh) :: m
+         type(grid) :: g,g2,g1
+         type(mesh) :: m,m_temp,m_tot
          integer,dimension(3) :: N = (/50,50,50/) ! Number of cells
          real(cp),dimension(3) :: hmin,hmax
          type(JACSolver) :: JAC
@@ -213,22 +228,68 @@
          type(norms) :: norm_res,norm_e
          type(solverSettings) :: ss
          type(gridGenerator) :: gg
-         type(SF) :: u,u_exact,f,lapU,e,R,sig,temp_SF
+         type(domain) :: D
+         type(SF) :: u,u_exact,f,lapU,e,R,sig,temp_SF,sig_tot
          type(VF) :: sigma,temp
          real(cp) :: dt
          integer :: i,NU
 
          write(*,*) 'Number of cells = ',N
 
+         ! Fluid domain (separate)
          hmin = 0.0_cp; hmax = 1.0_cp
-         ! hmax(1) = hmax(1) + hmax(1) ! To test 1 domain
-         call cavity3D_uniform(g,hmin,hmax,N)
-         call init(m,g)
-         hmin(1) = hmin(1) + hmax(1)
-         hmax(1) = hmin(1) + hmax(1)
-         call cavity3D_uniform(g,hmin,hmax,N)
-         call add(m,g)
+         call cavity3D_uniform(g,hmin,hmax,N); call init(m,g)
+         hmin = 1.0_cp; hmax = 2.0_cp
+         call cavity3D_uniform(g1,hmin,hmax,N); call add(m,g1)
+         call initProps(m)
          call patch(m)
+
+         ! Wall domain (total)
+         call ext_app_uniform(g2,g,10,1); call ext_prep_uniform(g,g2,10,1)
+         call ext_app_uniform(g2,g,10,2); call ext_prep_uniform(g,g2,10,2)
+         call ext_app_uniform(g2,g,10,3); call ext_prep_uniform(g,g2,10,3)
+         call init(m_tot,g)
+         call initProps(m_tot)
+         call patch(m_tot)
+
+         call print(m)
+         call print(m_tot)
+
+         call init(D,m,m_tot)
+         call print(D,'domain')
+
+         call init_CC(sig_tot,m_tot)
+         call init_CC(sig,m)
+
+         call assign(sig,1.0_cp)
+         call assign(sig_tot,0.0_cp)
+         ! call export_1C_SF(m_tot,sig_tot,dir,'sigma_tot',0)
+         ! call export_1C_SF(m,sig,dir,'sigma',0)
+
+         call embedCC(sig_tot,sig,D)
+         ! call export_1C_SF(m_tot,sig_tot,dir,'sigma_tot_new',0)
+
+         call delete(g2)
+         ! call print(m)
+
+         call flow_past_square(m_temp)
+         call export_mesh(m_temp,dir,'flow_past_square',1); call delete(m_temp)
+
+         call ins_elbow(m_temp)
+         call export_mesh(m_temp,dir,'elbow',1); call delete(m_temp)
+
+         call ins_u_bend(m_temp)
+         call export_mesh(m_temp,dir,'ubend',1); call delete(m_temp)
+
+         call ins_sudden_expansion(m_temp)
+         call export_mesh(m_temp,dir,'sudden_expansion',1); call delete(m_temp)
+
+         call ins_sep_channel(m_temp)
+         call export_mesh(m_temp,dir,'sep_channel',1); call delete(m_temp)
+
+         ! call print(m_temp)
+         ! call delete(m_temp)
+         stop 'Done'
 
          call export(m,dir,'m_base')
          call print(m)
@@ -316,6 +377,7 @@
 
          call delete(m)
          call delete(g)
+         call delete(g2)
          call delete(e)
          call delete(u)
          call delete(temp_SF)

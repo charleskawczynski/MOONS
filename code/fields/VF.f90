@@ -52,8 +52,6 @@
         type VF
           integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
-          ! integer :: s               ! number of components
-          ! type(SF),dimension(3) :: V ! components
         end type
 
         interface init;         module procedure init_VF_copy_VF;          end interface

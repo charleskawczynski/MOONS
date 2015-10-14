@@ -83,8 +83,6 @@
              if (.not.m%g(i)%st(3)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),5,3)
              if (.not.m%g(i)%st(3)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),6,3)
            enddo
-           U%RF(1)%f(U%RF(1)%s(1),:,:) = U%RF(2)%f(2,:,:)
-           U%RF(2)%f(1,:,:) = U%RF(1)%f(U%RF(1)%s(1)-1,:,:)
          else
            do i=1,m%s
              call applyAllBCs(U%RF(i)%f,U%RF(i)%b,m%g(i))
@@ -119,7 +117,7 @@
          if (.not.b%defined) then
           call print_defined(b)
           stop 'Error: BCs not fully defined..'
-        endif
+         endif
 #endif
          call applyBCs(u,b%face(f)%bctype,f,b%face(f)%vals,g%c(d)%hn,g%c(d)%hc,b%s(d))
        end subroutine

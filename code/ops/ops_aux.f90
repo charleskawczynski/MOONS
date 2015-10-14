@@ -158,9 +158,9 @@
          type(mesh),intent(in) :: m
          real(cp) :: eTemp
          integer :: i,j,k,t
-         eTemp = real(0.0,cp) ! temp is necessary for reduction
+         eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
-         do t=1,u%s
+         do t=1,u%x%s
            do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
              eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**2.0_cp +&
                               u%y%RF(t)%f(i,j,k)**2.0_cp +&

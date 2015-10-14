@@ -7,6 +7,7 @@
 
       type stitch
         logical :: hmax,hmin
+        integer :: hmax_id,hmin_id
       end type
 
       interface init;   module procedure init_stitch;   end interface
@@ -20,6 +21,8 @@
         type(stitch),intent(inout) :: s
         s%hmin = .false.
         s%hmax = .false.
+        s%hmin_id = 0
+        s%hmax_id = 0
       end subroutine
 
       subroutine init_stitch(s,hmin,hmax)
@@ -36,6 +39,8 @@
         type(stitch),intent(in) :: s_in
         s_out%hmin = s_in%hmin
         s_out%hmax = s_in%hmax
+        s_out%hmin_id = s_in%hmin_id
+        s_out%hmax_id = s_in%hmax_id
       end subroutine
 
       end module

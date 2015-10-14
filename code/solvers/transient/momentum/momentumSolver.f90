@@ -33,6 +33,7 @@
        ! use jacobi_mod
        use FFT_poisson_mod
        use SOR_mod
+       use JAC_mod
        ! use ADI_mod
        ! use MG_mod
        use poisson_mod
@@ -98,8 +99,8 @@
 
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          ! type(multiGrid),dimension(3) :: MG
-         ! type(jacobi) :: Jacobi_p
          type(SORSolver) :: SOR_p
+         type(JACSolver) :: JAC_p
          type(FFTSolver) :: FFT_p
          ! type(myADI) :: ADI_p,ADI_u
          type(probe) :: KU_energy
@@ -149,7 +150,7 @@
          character(len=*),intent(in) :: dir
          write(*,*) 'Initializing momentum:'
 
-         mom%m = m
+         call init(mom%m,m)
 
          ! Tensor Fields
          call init_Edge(mom%U_E,m)
@@ -229,6 +230,7 @@
 
          ! Initialize interior solvers
          call init(mom%SOR_p,mom%p,mom%m)
+         call init(mom%JAC_p,mom%p,mom%m)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings
@@ -292,6 +294,7 @@
          call delete(mom%m)
 
          call delete(mom%SOR_p)
+         call delete(mom%JAC_p)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -460,32 +463,92 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          ! call computeMomentumStability(mom,ss_MHD)
          if (getExportErrors(ss_MHD)) call computeDivergence(mom,mom%m)
-         ! write(*,*) 'Got here 1'
          if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%m,dir)
-         ! write(*,*) 'Got here 2'
          if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
-         ! write(*,*) 'Got here 3'
 
          if (getPrintParams(ss_MHD)) then
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
          else; exportNow = .false.
          endif
-         ! write(*,*) 'Got here 4'
 
          if (getExportRawSolution(ss_MHD).or.exportNow) then
            call exportRaw(mom,mom%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
-         ! write(*,*) 'Got here 5'
          if (getExportSolution(ss_MHD).or.exportNow) then
            call export(mom,mom%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
-         ! write(*,*) 'Got here 6'
        end subroutine
 
        subroutine explicitEuler(mom,F,m,ss_MHD)
+         implicit none
+         ! ********************** INPUT / OUTPUT ************************
+         type(momentum),intent(inout) :: mom
+         type(VF),intent(in) :: F
+         type(mesh),intent(in) :: m
+         type(solverSettings),intent(in) :: ss_MHD
+         ! ********************** LOCAL VARIABLES ***********************
+         real(cp) :: Re,dt
+         dt = mom%dTime
+         Re = mom%Re
+         ! write(*,*) 's(RF) = ',mom%U%x%s
+         ! call print_defined(mom%p%RF(1)%b)
+         ! stop 'Done'
+
+         ! Advection Terms -----------------------------------------
+         select case (advectiveUFormulation) ! Explicit Euler
+         case (1); call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,m)
+         case (2); call faceAdvectNew(mom%temp_F,mom%U,mom%U,m)
+         end select
+
+         ! Ustar = -TempVF
+         call assignMinus(mom%Ustar,mom%temp_F)
+
+         ! Laplacian Terms -----------------------------------------
+         call lap(mom%temp_F,mom%U,m)
+         call divide(mom%temp_F,Re)
+         call add(mom%Ustar,mom%temp_F)
+
+         ! Source Terms (e.m. N j x B) -----------------------------
+         call add(mom%Ustar,F)
+
+         ! Zero wall coincident forcing (may be bad for neumann BCs)
+         call ZWCB(mom%Ustar,m)
+
+         ! Solve with explicit Euler --------------------
+         ! Ustar = U + dt*Ustar
+         call multiply(mom%Ustar,dt)
+         call add(mom%Ustar,mom%U)
+
+         ! Pressure Correction -------------------------------------
+         call div(mom%temp_CC,mom%Ustar,m)
+         ! Temp = Temp/dt
+         call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
+         ! call applyAllBCs(mom%p_bcs,mom%temp_CC,m)
+         call zeroGhostPoints(mom%temp_CC)
+
+         ! Solve lap(p) = div(U)/dt
+         ! call poisson(mom%SOR_p,mom%p,mom%temp_CC,m,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         call solve(mom%JAC_p,mom%p,mom%temp_CC,m,&
+          mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         ! call poisson(mom%FFT_p,mom%p,mom%temp_CC,m,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
+
+         call grad(mom%temp_F,mom%p,m)
+         ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
+         ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
+
+         ! U = Ustar - dt*dp/dx
+         call multiply(mom%temp_F,dt)
+         call subtract(mom%U,mom%Ustar,mom%temp_F)
+
+         call applyAllBCs(mom%U,m)
+       end subroutine
+
+       subroutine order2TimeMarching(mom,F,m,ss_MHD)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(momentum),intent(inout) :: mom
@@ -833,11 +896,11 @@
          enddo
        end subroutine
 
-       subroutine ZWCB_VF(f,g)
+       subroutine ZWCB_VF(f,m)
          implicit none
          type(VF),intent(inout) :: f
-         type(mesh),intent(in) :: g
-         call ZWCB(f%x,g); call ZWCB(f%y,g); call ZWCB(f%z,g)
+         type(mesh),intent(in) :: m
+         call ZWCB(f%x,m); call ZWCB(f%y,m); call ZWCB(f%z,m)
        end subroutine
 
 !        subroutine ZWCB_general(f,s,face)

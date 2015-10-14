@@ -42,9 +42,8 @@
          do i=1,3
            call init(gg,(/uniform(hmin(i),hmax(i),Ni(i))/),i)
            call applyGhost(gg,i)
-           call init(g,gg%g%c(i)%hn,i,2)
+           call init(g,gg%g%c(i)%hn,i)
          enddo
-         call init_Stencils(gg%g)
          call init(g,gg%g)
          call delete(gg)
        end subroutine
@@ -59,9 +58,8 @@
          do i=1,3
            call init(gg,(/robertsBoth(hmin(i),hmax(i),Ni(i),betai(i))/),i)
            call applyGhost(gg,i)
-           call init(g,gg%g%c(i)%hn,i,2)
+           call init(g,gg%g%c(i)%hn,i)
          enddo
-         call init_Stencils(gg%g)
          call init(g,gg%g)
          call delete(gg)
        end subroutine
@@ -94,9 +92,8 @@
            enddo
            call app(gg,(/uniformLeft(hmax(i),dh2,N_cells_uniform)/),i)
            call applyGhost(gg,i)
-           call init(g,gg%g%c(i)%hn,i,2)
+           call init(g,gg%g%c(i)%hn,i)
          enddo
-         call init_Stencils(gg%g)
          call init(g,gg%g)
          call delete(gg)
        end subroutine
@@ -130,9 +127,8 @@
              call app(gg,(/uniformRight(hmax(i),dh,Ntop(i))/),i)
            endif
            call applyGhost(gg,i) ! re-apply ghosts
-           call init(g,gg%g%c(i)%hn,i,2)
+           call init(g,gg%g%c(i)%hn,i)
          enddo
-         call init_Stencils(g)
          call delete(gg)
        end subroutine
 
@@ -164,9 +160,8 @@
              call app(gg,(/robertsLeft(hmax(i),hmax(i)+ttop(i),Ntop(i),betaTop(i))/),i)
            endif
            call applyGhost(gg,i) ! re-apply ghosts
-           call init(g,gg%g%c(i)%hn,i,2) ! Final assignment
+           call init(g,gg%g%c(i)%hn,i) ! Final assignment
          enddo
-         call init_Stencils(g)
          call delete(gg)
        end subroutine
 
@@ -198,9 +193,8 @@
              call app(gg,(/robertsBoth(hmax(i),hmax(i)+ttop(i),Ntop(i),betaTop(i))/),i)
            endif
            call applyGhost(gg,i) ! re-apply ghosts
-           call init(g,gg%g%c(i)%hn,i,2) ! Final assignment
+           call init(g,gg%g%c(i)%hn,i) ! Final assignment
          enddo
-         call init_Stencils(g)
          call delete(gg)
        end subroutine
 
@@ -234,9 +228,8 @@
              call app(gg,temp%g%c(i)%hn,i)
              call appGhost(gg,i) ! re-apply ghosts
            endif
-           call init(g,gg%g%c(i)%hn,i,2) ! Final assignment
+           call init(g,gg%g%c(i)%hn,i) ! Final assignment
          enddo
-         call init_Stencils(g)
          call delete(gg)
          call delete(temp)
        end subroutine

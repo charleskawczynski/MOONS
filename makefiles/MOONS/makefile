@@ -22,10 +22,10 @@ SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
 
 # Unit testing directories:
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
+# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
 
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -119,25 +119,25 @@ FCFLAGS += -D_PARALLELIZE_RF_
 # FCFLAGS += noarg_temp_created
 
 # Code verification
-FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
 # Internal debugging
-# FCFLAGS += -D_DEBUG_DEL_
-# FCFLAGS += -D_DEBUG_INTERP_
+FCFLAGS += -D_DEBUG_DEL_
+FCFLAGS += -D_DEBUG_INTERP_
 # FCFLAGS += -D_DEBUG_COORDINATES_
-# FCFLAGS += -D_DEBUG_APPLYBCS_
+FCFLAGS += -D_DEBUG_APPLYBCS_
 # FCFLAGS += -D_DEBUG_RF_
 # FCFLAGS += -D_DEBUG_SF_
 # FCFLAGS += -D_DEBUG_VF_
 # FCFLAGS += -D_DEBUG_TF_
 
 
-# TARGET = $(TARGET_DIR)$(PS)MOONS
-TARGET = $(TARGET_DIR)$(PS)unitTest
+TARGET = $(TARGET_DIR)$(PS)MOONS
+# TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
@@ -168,11 +168,15 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)mesh.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)gridGen.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)matchGridStretching.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)extendGrid.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)connectGrid.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)box3D.f90 \
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)generateGrid.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)generateMesh.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)geometries.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
@@ -197,6 +201,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)applyStitches.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
@@ -245,7 +250,7 @@ SRCS_F =\
 
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
-SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90

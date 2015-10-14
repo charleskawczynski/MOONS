@@ -61,7 +61,7 @@
         type(mesh) :: m ! mesh
         type(SF) :: Au,res,Dinv ! laplacian, residual, coefficient
         type(VF) :: temp ! intermediate fields, same size as sigma
-        type(VF) :: sigma ! for sigma = uniform
+        real(cp) :: dt
       end type
       
       interface init;        module procedure initJAC;       end interface
@@ -70,20 +70,22 @@
 
       contains
 
-      subroutine initJAC(JAC,u,m)
+      subroutine initJAC(JAC,u,m,sigma,dt)
         implicit none
         type(JACSolver),intent(inout) :: JAC
         type(SF),intent(in) :: u
+        type(VF),intent(in) :: sigma
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: dt
+        JAC%dt = dt
         call init(JAC%m,m)
         call init(JAC%Au,u)
         call init(JAC%res,u)
         call init(JAC%Dinv,u)
-        call init_Face(JAC%sigma,m)
-        call init(JAC%temp,JAC%sigma)
+        call init(JAC%temp,sigma)
 
         ! Init Diagonal inverse:
-        call defineDinv(JAC)
+        call defineDinv(JAC,sigma)
       end subroutine
 
       subroutine deleteJAC(JAC)
@@ -94,42 +96,50 @@
         call delete(JAC%res)
         call delete(JAC%Dinv)
         call delete(JAC%temp)
-        call delete(JAC%sigma)
       end subroutine
 
-      subroutine defineDinv(JAC)
+      subroutine defineDinv(JAC,sigma)
         implicit none
         type(JACSolver),intent(inout) :: JAC
+        type(VF),intent(in) :: sigma
         type(SF) :: temp
         type(split) :: splt
         call init(temp,JAC%Dinv)
-        call assign(JAC%sigma,1.0_cp)
         call assign(temp,1.0_cp)
-        call splt%assign_D(JAC%Dinv,temp,JAC%sigma%x,JAC%m,1,1)
-           call splt%add_D(JAC%Dinv,temp,JAC%sigma%y,JAC%m,2,1)
-           call splt%add_D(JAC%Dinv,temp,JAC%sigma%z,JAC%m,3,1)
+        call splt%assign_D(JAC%Dinv,temp,sigma%x,JAC%m,1,1)
+           call splt%add_D(JAC%Dinv,temp,sigma%y,JAC%m,2,1)
+           call splt%add_D(JAC%Dinv,temp,sigma%z,JAC%m,3,1)
 
-        call export_1C_SF(JAC%m,JAC%Dinv,'out/LDC/Ufield/','D_inv',0)
+        ! call subtract(JAC%Dinv,1.0_cp/JAC%dt)
         call divide(1.0_cp,JAC%Dinv)
         call zeroGhostPoints(JAC%Dinv)
       end subroutine
 
-      subroutine compute_Au(Au,u,m,sig_temp)
+      subroutine compute_Au(Au,u,sigma,m,sig_temp,u_temp,dt)
         implicit none
         type(SF),intent(inout) :: Au
         type(SF),intent(in) :: u
+        type(SF),intent(inout) :: u_temp
         type(mesh),intent(in) :: m
+        type(VF),intent(in) :: sigma
         type(VF),intent(inout) :: sig_temp
+        real(cp),intent(in) :: dt
         ! ∇•(σ∇u)
         call grad(sig_temp,u,m)
+        call multiply(sig_temp,sigma)
         call div(Au,sig_temp,m)
+        ! ∇•(σ∇u) - u/dt
+        ! call assignMinus(u_temp,u)
+        ! call divide(u_temp,dt)
+        ! call add(Au,u_temp)
       end subroutine
 
-      subroutine solveJAC(JAC,u,f,m,ss,norm,displayTF)
+      subroutine solveJAC(JAC,u,f,sigma,m,ss,norm,displayTF,NU)
         implicit none
         type(JACSolver),intent(inout) :: JAC
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
+        type(VF),intent(in) :: sigma
         type(mesh),intent(in) :: m
         type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm
@@ -167,18 +177,18 @@
         do while (continueLoop.and.TF)
           ijk = ijk + 1
 
-          call splt%assign_LU(JAC%Au,u,JAC%sigma%x,m,1,1)
-             call splt%add_LU(JAC%Au,u,JAC%sigma%y,m,2,1)
-             call splt%add_LU(JAC%Au,u,JAC%sigma%z,m,3,1)
+          call splt%assign_LU(JAC%Au,u,sigma%x,m,1,1)
+             call splt%add_LU(JAC%Au,u,sigma%y,m,2,1)
+             call splt%add_LU(JAC%Au,u,sigma%z,m,3,1)
 
           call subtract(JAC%res,f,JAC%Au)
           call multiply(u,JAC%Dinv,JAC%res)
 
-          ! call applyStitches(u,m)
+          call applyStitches(u,m)
           call applyAllBCs(u,m)
 
           if (getMinToleranceTF(ss)) then
-            call compute_Au(JAC%Au,u,m,JAC%temp)
+            call compute_Au(JAC%Au,u,sigma,m,JAC%temp,JAC%res,JAC%dt)
             call subtract(JAC%res,JAC%Au,f)
             call zeroGhostPoints(JAC%res)
             call compute(norm,JAC%res,m)
@@ -186,7 +196,7 @@
           endif
 
 #ifdef _EXPORT_JAC_CONVERGENCE_
-            call compute_Au(JAC%Au,u,m,JAC%temp)
+            call compute_Au(JAC%Au,u,sigma,m,JAC%temp,JAC%res,JAC%dt)
             call subtract(JAC%res,JAC%Au,f)
             call zeroGhostPoints(JAC%res)
             call compute(norm,JAC%res,m)
@@ -216,7 +226,7 @@
         if (displayTF) then
           write(*,*) '(Final,max) JAC iteration = ',ijk,maxIterations
 
-          call compute_Au(JAC%Au,u,m,JAC%temp)
+          call compute_Au(JAC%Au,u,sigma,m,JAC%temp,JAC%res,JAC%dt)
           call subtract(JAC%res,JAC%Au,f)
           call zeroGhostPoints(JAC%res)
           call compute(norm,JAC%res,m)

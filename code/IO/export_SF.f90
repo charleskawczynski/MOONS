@@ -92,14 +92,15 @@
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
         integer,dimension(3) :: s
-        integer :: i
-        s = m%N_cells
+        integer :: i,j
         ! Pad needs to be included somehow
         ! The MESH size needs to be passed somehow, maybe
         ! set and pass props in mesh init.
-        call writeTecPlotHeader(un,name,s-2*pad)
+        call exp_Header_3D_SF(un,name)
         do i=1,m%s
-          call exp_grid_RF(m%g(i),pad,un,arrfmt)
+          s = (/(m%g(i)%c(j)%sn,j=1,3)/)
+          call exp_Zone_3I(un,s-2*pad,i)
+          call exp_grid_RF(m%g(i),pad,un,arrfmt,s)
         enddo
       end subroutine
 

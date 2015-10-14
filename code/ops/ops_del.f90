@@ -182,8 +182,12 @@
         CC   = any((/ f%is_CC   , f%is_Face.and.(f%face.ne.dir) , f%is_Edge.and.(f%edge.eq.dir) /))
         ! Node = any((/ f%is_Node , f%is_Face.and.(f%face.ne.dir) , f%is_Edge.and.(f%edge.eq.dir) /))
         do i=1,m%s
-          if (m%g(i)%st(dir)%hmin) then; pad1 = 1; else; pad1 = 0; endif
-          if (m%g(i)%st(dir)%hmax) then; pad2 = 1; else; pad2 = 0; endif
+          if (m%g(i)%st(dir)%hmin) then; pad1 = 1;
+            stop 'WTF'
+          else; pad1 = 0; endif
+          if (m%g(i)%st(dir)%hmax) then; pad2 = 1;
+            stop 'WTF'
+          else; pad2 = 0; endif
           call delGen_RF_given_g(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
             n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,CC,pad1,pad2)
         enddo

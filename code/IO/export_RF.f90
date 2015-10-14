@@ -58,13 +58,12 @@
         call exp_3D_1C_g(g,DT,pad,un,arrfmt,A%s,A%f)
       end subroutine
 
-      subroutine exp_grid_RF(g,pad,un,arrfmt)
+      subroutine exp_grid_RF(g,pad,un,arrfmt,s)
         implicit none
         type(grid),intent(in) :: g
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt
-        integer,dimension(3) :: s
-        s = (/g%c(1)%sn,g%c(2)%sn,g%c(3)%sn/)
+        integer,dimension(3),intent(in) :: s
         call exp_3D_1C_S_g(g,1,pad,un,arrfmt,s,1.0_cp)
       end subroutine
 

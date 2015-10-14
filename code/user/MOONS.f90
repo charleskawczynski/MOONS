@@ -9,8 +9,11 @@
        use grid_mod
        use mesh_mod
        use domain_mod
+       use geometries_mod
+       use extendGrid_mod
 
        use generateMesh_mod
+       use box3D_mod
        use ops_embedExtract_mod
        use ops_interp_mod
        use rundata_mod
@@ -58,6 +61,7 @@
          type(momentum) :: mom
          type(induction) :: ind
          type(energy) :: nrg
+         type(mesh) :: m_temp
          ! ********************** MEDIUM VARIABLES **********************
          ! type(griddata) :: gd
          type(rundata) :: rd
@@ -109,8 +113,27 @@
 
          ! **************************************************************
          ! Initialize all grids
-         ! call init(gd,mesh_mom,mesh_ind,Ni,Nwtop,Nwbot,Re,Ha)
+
+         ! call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
+
+         call cube(mesh_mom)
+         call initProps(mesh_mom)
+         call patch(mesh_mom)
+
+         call init(m_temp,mesh_mom)
+         call init(mesh_ind,mesh_mom)
+
+         ! call ext_prep_Roberts_R(mesh_ind%g(1),m_temp%g(1),0.05_cp,Nwbot(1),1)
+         ! call ext_prep_Roberts_R(m_temp%g(1),mesh_ind%g(1),0.05_cp,Nwbot(2),2)
+         ! call ext_prep_Roberts_R(mesh_ind%g(1),m_temp%g(1),0.05_cp,Nwbot(3),3)
+         ! call ext_app_Roberts_L(m_temp%g(1),mesh_ind%g(1),0.05_cp,Nwtop(1),1)
+         ! call ext_app_Roberts_L(mesh_ind%g(1),m_temp%g(1),0.05_cp,Nwtop(3),3)
+
+         call initProps(mesh_ind)
+         call patch(mesh_ind)
          call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
+         call initProps(mesh_mom)
+         call patch(mesh_mom)
          ! call init(D,Ni,Nwtop,Nwbot+10,mesh_mom) ! N_wall = 8
          ! call init(D,Ni,Nwtop,Nwbot+10,mesh_mom) ! N_wall = 5
          ! call init(D,Ni,Nwtop,Nwbot,mesh_mom)
@@ -243,6 +266,7 @@
 
          call delete(ind)
          call delete(mom)
+         call delete(m_temp)
          ! call delete(gd)
 
          call computationComplete(time)
@@ -440,8 +464,8 @@
          ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
          ! Rem = real(100.0,cp);  ds = 5.0d-5;   dTime = ds     ! (Rem = 100) , sigma* = 0.01
 
-         Rem = real(100.0,cp);  ds = 2.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
          ! Rem = real(100.0,cp);  ds = 1.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         Rem = real(100.0,cp);  ds = 2.0d-3;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
 
          case (1011)
          Re = real(10.0,cp)
@@ -478,7 +502,8 @@
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**5
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
 
-         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
+         ! case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
+         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10000
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
@@ -543,7 +568,8 @@
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
-         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**7 ! for testing
+         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**7 ! for testing
+         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**4 ! for testing
 
          case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          case (1012); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing

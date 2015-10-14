@@ -38,7 +38,7 @@
         integer :: sn
         sn = len(trim(adjustl(name)))
         write(u,'(A25)') 'TITLE = "3D Vector Field"'
-        write(u,'(A'//int2Str(sn+38)//')') 'VARIABLES = "X","Y","Z",'& 
+        write(u,'(A'//int2Str(3*sn+38)//')') 'VARIABLES = "X","Y","Z",'& 
         //'"'//trim(adjustl(name))//'_x",'&
         //'"'//trim(adjustl(name))//'_y",'&
         //'"'//trim(adjustl(name))//'_z"'
@@ -66,7 +66,7 @@
         integer :: sn
         sn = len(trim(adjustl(name)))
         write(u,'(A25)') 'TITLE = "2D Vector Field"'
-        write(u,'(A'//int2Str(sn+29)//')') 'VARIABLES = "X","Y",'& 
+        write(u,'(A'//int2Str(2*sn+29)//')') 'VARIABLES = "X","Y",'& 
         //'"'//trim(adjustl(name))//'_x",'&
         //'"'//trim(adjustl(name))//'_y"'
       end subroutine
@@ -79,13 +79,13 @@
         sn = len(trim(adjustl(name)))
         write(u,'(A25)') 'TITLE = "2D Vector Field"'
         select case (dir)
-        case (1); write(u,'(A'//int2Str(sn+29)//')') 'VARIABLES = "Y","Z",'& 
+        case (1); write(u,'(A'//int2Str(2*sn+29)//')') 'VARIABLES = "Y","Z",'& 
                   //'"'//trim(adjustl(name))//'_y",'&
                   //'"'//trim(adjustl(name))//'_z"'
-        case (2); write(u,'(A'//int2Str(sn+29)//')') 'VARIABLES = "X","Z",'& 
+        case (2); write(u,'(A'//int2Str(2*sn+29)//')') 'VARIABLES = "X","Z",'& 
                   //'"'//trim(adjustl(name))//'_x",'&
                   //'"'//trim(adjustl(name))//'_z"'
-        case (3); write(u,'(A'//int2Str(sn+29)//')') 'VARIABLES = "X","Y",'& 
+        case (3); write(u,'(A'//int2Str(2*sn+29)//')') 'VARIABLES = "X","Y",'& 
                   //'"'//trim(adjustl(name))//'_x",'&
                   //'"'//trim(adjustl(name))//'_y"'
         case default; stop 'Error: dir must = 1,2,3 in exp_Header_2D in exp_Tec_Header.f90'

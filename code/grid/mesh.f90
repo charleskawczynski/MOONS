@@ -21,16 +21,17 @@
        public :: print,export ! import
        public :: patch
        public :: restrict,restrict_x,restrict_xy
-       public :: init_Stencils,initProps
+       public :: initProps
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkmesh
 #endif
 
        type mesh
+         type(grid),dimension(:),allocatable :: g
+         ! Properties
          integer :: s       ! Number of grids
          integer,dimension(3) :: N_cells ! Number of cells, for export
-         type(grid),dimension(:),allocatable :: g
          real(cp) :: volume
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
@@ -49,9 +50,10 @@
        interface restrict_x;     module procedure restrictmesh_x;      end interface
        interface restrict_xy;    module procedure restrictmesh_xy;     end interface
 
-       interface print;          module procedure printmesh;           end interface
-       interface export;         module procedure exportmesh_light;    end interface
-       interface init_Stencils;  module procedure init_Stencils_mesh;  end interface
+       interface print;          module procedure print_mesh;          end interface
+       interface export;         module procedure export_mesh;         end interface
+       interface export;         module procedure exportmesh_all;      end interface
+
 
        contains
 
@@ -59,10 +61,14 @@
          implicit none
          type(mesh),intent(inout) :: m
          type(grid),intent(in) :: g
+         integer :: i,k
          call delete(m)
          allocate(m%g(1))
          call init(m%g(1),g); m%s = 1
          call initProps(m)
+         do k=1,3 ! Remove all patches
+           do i=1,m%s; call delete(m%g(i)%st(k)); enddo
+         enddo
        end subroutine
 
        subroutine addGrid(m,g)
@@ -101,13 +107,14 @@
          implicit none
          type(mesh),intent(inout) :: m_out
          type(mesh),intent(in) :: m_in
-         integer :: i
+         integer :: i,k
          if (.not.allocated(m_in%g)) stop 'Error: mesh not allocated in initmeshCopy in mesh.f90'
          call delete(m_out)
+         m_out%s = m_in%s
          allocate(m_out%g(m_in%s))
          do i = 1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
+         do k=1,3; do i = 1,m_in%s; call init(m_out%g(i)%st(k),m_in%g(i)%st(k)) ;enddo; enddo
          call initProps(m_out)
-         m_out%s = m_in%s
        end subroutine
 
        subroutine initProps_mesh(m)
@@ -130,7 +137,7 @@
              m%dhmax(j) = m%g(1)%c(j)%dhmax
            enddo
          endif
-         m%N_cells = 0
+         m%N_cells = 0; m%volume = 0.0_cp
          do i=1,m%s
            m%volume = m%volume + m%g(i)%volume
            do j=1,3
@@ -142,15 +149,36 @@
        subroutine patch_grids(m)
          implicit none
          type(mesh),intent(inout) :: m
-         integer :: i,j,k
-         if (.not.allocated(m%g)) stop 'Error: mesh not allocated in initProps_mesh in mesh.f90'
+         integer :: i,j,k,a1,a2
+         real(cp) :: tol
+         logical,dimension(5) :: TF
+         if (.not.allocated(m%g)) stop 'Error: mesh not allocated in patch_grids in mesh.f90'
+         if (size(m%g).ne.m%s) stop 'Error: mesh size not correct in patch_grids in mesh.f90'
          do k=1,3 ! Remove all patches first
-           do i=1,m%s; call init(m%g(i)%st(k),.false.,.false.); enddo
+           do i=1,m%s; call delete(m%g(i)%st(k)); enddo
          enddo
+         call initProps(m) ! Need dhmin etc.
          if (m%s.gt.1) then
+           tol = 0.01_cp
            do k=1,3; do i=1,m%s; do j=1,m%s
-             if (abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.0.01_cp*m%dhmin(k)) then
-                   m%g(i)%st(k)%hmin = .true.;  m%g(j)%st(k)%hmax = .true.
+             if (i.ne.j) then
+               TF(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
+               select case (k)
+               case (1); a1 = 2; a2 = 3
+               case (2); a1 = 1; a2 = 3
+               case (3); a1 = 1; a2 = 2
+               end select
+               TF(2) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmin
+               TF(3) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmax
+               TF(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmin
+               TF(5) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmax
+               if (all(TF)) then
+                 m%g(i)%st(k)%hmin = .true.;  m%g(j)%st(k)%hmax = .true.
+                 if ((m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmax).gt.0.0_cp) then
+                       m%g(i)%st(k)%hmin_id = j;  m%g(j)%st(k)%hmax_id = i
+                 else; m%g(i)%st(k)%hmin_id = i;  m%g(j)%st(k)%hmax_id = j
+                 endif
+               endif
              endif
            enddo; enddo; enddo
 
@@ -198,47 +226,52 @@
 
        ! ---------------------------------------------- check mesh
 
-#ifdef _DEBUG_MESH_
+#ifdef _DEBUG_COORDINATES_
        subroutine checkmesh(m)
          implicit none
          type(mesh),intent(in) :: m
          integer :: i
-         do i = 1,m%s; call checkCoordinates(m%g(i)) ;enddo
+         do i = 1,m%s; call checkGrid(m%g(i)) ;enddo
        end subroutine
 #endif
 
-       subroutine exportmesh_light(m,dir,name)
+       subroutine exportmesh_all(m,dir,name)
          implicit none
          type(mesh), intent(in) :: m
          character(len=*),intent(in) :: dir,name
-         integer :: i
-         do i = 1,m%s; call export(m%g(i),dir,name) ;enddo
+         integer :: i,NU
+         NU = newAndOpen(dir,name)
+         do i = 1,m%s; call export_all(m%g(i),NU) ;enddo
+         call closeandMessage(NU,name,dir)
        end subroutine
 
-       subroutine printmesh(m)
+       subroutine print_mesh(m)
          implicit none
          type(mesh), intent(in) :: m
-         integer :: i
-         write(*,*) ' ************* mesh ************* '
-         do i = 1,m%s
-           call print(m%g(i))
-           write(*,*) ' -------------------------------- '
-         enddo
-         write(*,*) 's = ',m%s
-         write(*,*) 'N_cells = ',m%N_cells
-         write(*,*) 'volume = ',m%volume
-         write(*,*) 'hmin = ',m%hmin
-         write(*,*) 'hmax = ',m%hmax
-         write(*,*) 'dhmin = ',m%dhmin
-         write(*,*) 'dhmax = ',m%dhmax
-         write(*,*) ' ******************************** '
+         call export(m,6)
        end subroutine
 
-       subroutine init_Stencils_mesh(m)
+       subroutine export_mesh(m,un)
          implicit none
-         type(mesh), intent(inout) :: m
+         type(mesh), intent(in) :: m
+         integer,intent(in) :: un
          integer :: i
-         do i = 1,m%s; call init_stencils(m%g(i)) ;enddo
+         write(un,*) ' ************* mesh ************* '
+         do i = 1,m%s
+         write(un,*) 'grid ID = ',i
+         call export(m%g(i),un)
+         write(un,*) ' -------------------------------- '
+         enddo
+         write(un,*) 's = ',m%s
+         write(un,*) 'N_cells = ',m%N_cells
+         write(un,*) 'volume = ',m%volume
+         write(un,*) 'min/max(h)_x = ',(/m%hmin(1),m%hmax(1)/)
+         write(un,*) 'min/max(h)_y = ',(/m%hmin(2),m%hmax(2)/)
+         write(un,*) 'min/max(h)_z = ',(/m%hmin(3),m%hmax(3)/)
+         write(un,*) 'min/max(dh)_x = ',(/m%dhmin(1),m%dhmax(1)/)
+         write(un,*) 'min/max(dh)_y = ',(/m%dhmin(2),m%dhmax(2)/)
+         write(un,*) 'min/max(dh)_z = ',(/m%dhmin(3),m%dhmax(3)/)
+         write(un,*) ' ******************************** '
        end subroutine
 
        end module

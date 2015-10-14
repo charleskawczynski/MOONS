@@ -21,7 +21,7 @@
 #endif
 
        ! This gets overridden by benchmarkCase
-       integer,parameter :: preDefined_Sigma = 2 ! sigma* = sigma_wall/sigma_l
+       integer,parameter :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
        !                                       0 : User-defined case (no override)
        !                                       1 : Subdomain dependent
        !                                       2 : Cylinder (2D)

@@ -40,7 +40,7 @@
         public :: init_Face
         public :: init_Edge
 
-        public :: init_BCs
+        public :: init_BCs,init_BC_props
 
         ! Monitoring
         public :: print
@@ -52,7 +52,6 @@
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
-
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -66,59 +65,58 @@
 
         type SF
           integer :: s ! Number of subdomains in domain decomposition
-          ! integer,dimension(3) :: stot ! Total number of indexes in each direction (for export)
           type(realField),dimension(:),allocatable :: RF
           logical :: is_CC,is_Node,is_face,is_edge
+          logical :: all_neumann ! If necessary to subtract mean
           integer :: face = 0 ! Direction of face data
           integer :: edge = 0 ! Direction of edge data
-          ! integer :: s ! Number of subdomains in domain decomposition
-          ! type(realField),dimension(:),allocatable :: RF
         end type
 
-        interface init;        module procedure init_SF_copy;           end interface
-        interface init_CC;     module procedure init_SF_CC;             end interface
-        interface init_Node;   module procedure init_SF_Node;           end interface
-        interface init_Face;   module procedure init_SF_Face;           end interface
-        interface init_Edge;   module procedure init_SF_Edge;           end interface
+        interface init;           module procedure init_SF_copy;           end interface
+        interface init_CC;        module procedure init_SF_CC;             end interface
+        interface init_Node;      module procedure init_SF_Node;           end interface
+        interface init_Face;      module procedure init_SF_Face;           end interface
+        interface init_Edge;      module procedure init_SF_Edge;           end interface
 
-        interface init_BCs;    module procedure init_BCs_SF;            end interface
+        interface init_BCs;       module procedure init_BCs_SF;            end interface
+        interface init_BC_props;  module procedure init_BC_props_SF;       end interface
 
-        interface delete;      module procedure delete_SF;              end interface
+        interface delete;         module procedure delete_SF;              end interface
 
-        interface assign;      module procedure assign_SF_S;            end interface
-        interface assign;      module procedure assign_SF_SF;           end interface
-        interface assignMinus; module procedure assignMinus_SF_SF;      end interface
+        interface assign;         module procedure assign_SF_S;            end interface
+        interface assign;         module procedure assign_SF_SF;           end interface
+        interface assignMinus;    module procedure assignMinus_SF_SF;      end interface
 
-        interface add;         module procedure add_SF_SF;              end interface
-        interface add;         module procedure add_SF_SF_SF;           end interface
-        interface add;         module procedure add_SF_S;               end interface
-        interface add;         module procedure add_S_SF;               end interface
+        interface add;            module procedure add_SF_SF;              end interface
+        interface add;            module procedure add_SF_SF_SF;           end interface
+        interface add;            module procedure add_SF_S;               end interface
+        interface add;            module procedure add_S_SF;               end interface
 
-        interface multiply;    module procedure multiply_SF_SF;         end interface
-        interface multiply;    module procedure multiply_SF_SF_SF;      end interface
-        interface multiply;    module procedure multiply_SF_S;          end interface
-        interface multiply;    module procedure multiply_S_SF;          end interface
+        interface multiply;       module procedure multiply_SF_SF;         end interface
+        interface multiply;       module procedure multiply_SF_SF_SF;      end interface
+        interface multiply;       module procedure multiply_SF_S;          end interface
+        interface multiply;       module procedure multiply_S_SF;          end interface
 
-        interface subtract;    module procedure subtract_SF_SF;         end interface
-        interface subtract;    module procedure subtract_SF_SF_SF;      end interface
-        interface subtract;    module procedure subtract_SF_S;          end interface
-        interface subtract;    module procedure subtract_S_SF;          end interface
+        interface subtract;       module procedure subtract_SF_SF;         end interface
+        interface subtract;       module procedure subtract_SF_SF_SF;      end interface
+        interface subtract;       module procedure subtract_SF_S;          end interface
+        interface subtract;       module procedure subtract_S_SF;          end interface
 
-        interface divide;      module procedure divide_SF_SF;           end interface
-        interface divide;      module procedure divide_SF_SF_SF;        end interface
-        interface divide;      module procedure divide_SF_S;            end interface
-        interface divide;      module procedure divide_S_SF;            end interface
+        interface divide;         module procedure divide_SF_SF;           end interface
+        interface divide;         module procedure divide_SF_SF_SF;        end interface
+        interface divide;         module procedure divide_SF_S;            end interface
+        interface divide;         module procedure divide_S_SF;            end interface
 
-        interface square;      module procedure square_SF;              end interface
-        interface print;       module procedure print_SF;               end interface
-        interface min;         module procedure min_SF;                 end interface
-        interface max;         module procedure max_SF;                 end interface
-        interface min;         module procedure min_pad_SF;             end interface
-        interface max;         module procedure max_pad_SF;             end interface
-        interface maxabs;      module procedure maxabs_SF;              end interface
-        interface maxabsdiff;  module procedure maxabsdiff_SF;          end interface
-        interface mean;        module procedure mean_SF;                end interface
-        interface sum;         module procedure sum_SF;                 end interface
+        interface square;         module procedure square_SF;              end interface
+        interface print;          module procedure print_SF;               end interface
+        interface min;            module procedure min_SF;                 end interface
+        interface max;            module procedure max_SF;                 end interface
+        interface min;            module procedure min_pad_SF;             end interface
+        interface max;            module procedure max_pad_SF;             end interface
+        interface maxabs;         module procedure maxabs_SF;              end interface
+        interface maxabsdiff;     module procedure maxabsdiff_SF;          end interface
+        interface mean;           module procedure mean_SF;                end interface
+        interface sum;            module procedure sum_SF;                 end interface
 
       contains
 
@@ -469,6 +467,14 @@
           else
             stop 'Error: no datatype found in init_BCs_SF in SF.f90'
           endif
+          call init_BC_props(f)
+        end subroutine
+
+        subroutine init_BC_props_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1,f%s)/))
         end subroutine
 
         subroutine delete_SF(f)
