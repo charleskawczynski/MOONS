@@ -206,10 +206,17 @@
         write(un,*) ' ---------------- coordinates'
         write(un,*) 'sn = ',c%sn
         write(un,*) 'sc = ',c%sc
-        write(un,*) 'hn = ',c%hn
-        write(un,*) 'hc = ',c%hc
-        write(un,*) 'dhn = ',c%dhn
-        write(un,*) 'dhc = ',c%dhc
+        ! write(un,*) 'hn = ',c%hn
+        ! write(un,*) 'hc = ',c%hc
+        ! write(un,*) 'dhn = ',c%dhn
+        ! write(un,*) 'dhc = ',c%dhc
+        ! write(un,*) 'alpha = ',c%alpha
+        ! write(un,*) 'beta = ',c%beta
+        ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
+        ! write(*,*) 'lapCC: '; call print(c%lapCC); write(*,*) 'lapN:';call print(c%lapN)
+        ! write(*,*) 'colCC: '; call print(c%colCC); write(*,*) 'colN:';call print(c%colN)
+        ! write(*,*) 'D_CC2N: '; call print(c%D_CC2N); write(*,*) 'U_CC2N:';call print(c%U_CC2N)
+        ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
       end subroutine
 
       ! *****************************************************************

@@ -185,6 +185,12 @@
          write(un,*) 'stitch_id_y = ',g%st(2)%hmin_id,g%st(2)%hmax_id
          write(un,*) 'stitch_id_z = ',g%st(3)%hmin_id,g%st(3)%hmax_id
          write(un,*) 'defined = ',g%defined
+         ! write(un,*) 'c(1)'
+         ! call print(g%c(1))
+         ! write(un,*) 'c(2)'
+         ! call print(g%c(2))
+         ! write(un,*) 'c(3)'
+         ! call print(g%c(3))
        end subroutine
 
        subroutine print_Grid(g)

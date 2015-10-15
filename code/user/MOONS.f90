@@ -117,11 +117,9 @@
          ! call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
 
          call cube(mesh_mom)
-         call initProps(mesh_mom)
-         call patch(mesh_mom)
-
-         call init(m_temp,mesh_mom)
-         call init(mesh_ind,mesh_mom)
+         call cube(mesh_ind)
+         ! call initProps(mesh_mom)
+         ! call patch(mesh_mom)
 
          ! call ext_prep_Roberts_R(mesh_ind%g(1),m_temp%g(1),0.05_cp,Nwbot(1),1)
          ! call ext_prep_Roberts_R(m_temp%g(1),mesh_ind%g(1),0.05_cp,Nwbot(2),2)
@@ -129,11 +127,15 @@
          ! call ext_app_Roberts_L(m_temp%g(1),mesh_ind%g(1),0.05_cp,Nwtop(1),1)
          ! call ext_app_Roberts_L(mesh_ind%g(1),m_temp%g(1),0.05_cp,Nwtop(3),3)
 
-         call initProps(mesh_ind)
-         call patch(mesh_ind)
          call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
+
          call initProps(mesh_mom)
          call patch(mesh_mom)
+
+         call initProps(mesh_ind)
+         call patch(mesh_ind)
+         ! call print(mesh_mom%g(1))
+         ! stop 'Done'
          ! call init(D,Ni,Nwtop,Nwbot+10,mesh_mom) ! N_wall = 8
          ! call init(D,Ni,Nwtop,Nwbot+10,mesh_mom) ! N_wall = 5
          ! call init(D,Ni,Nwtop,Nwbot,mesh_mom)
@@ -320,7 +322,8 @@
          ! case (100); Re = 1d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-6
          case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
          ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
-         case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
+         ! case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
+         case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-6
          case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-4; dTime = 1.0d-2
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! Low but finite Rem
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 10.0d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! finite Rem

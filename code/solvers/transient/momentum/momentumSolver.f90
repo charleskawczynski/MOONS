@@ -493,9 +493,6 @@
          real(cp) :: Re,dt
          dt = mom%dTime
          Re = mom%Re
-         ! write(*,*) 's(RF) = ',mom%U%x%s
-         ! call print_defined(mom%p%RF(1)%b)
-         ! stop 'Done'
 
          ! Advection Terms -----------------------------------------
          select case (advectiveUFormulation) ! Explicit Euler
@@ -505,14 +502,17 @@
 
          ! Ustar = -TempVF
          call assignMinus(mom%Ustar,mom%temp_F)
+         call printPhysicalMinMax(mom%temp_F,'advect')
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%temp_F,mom%U,m)
          call divide(mom%temp_F,Re)
+         call printPhysicalMinMax(mom%temp_F,'diff')
          call add(mom%Ustar,mom%temp_F)
 
          ! Source Terms (e.m. N j x B) -----------------------------
          call add(mom%Ustar,F)
+         call printPhysicalMinMax(F,'jcrossB')
 
          ! Zero wall coincident forcing (may be bad for neumann BCs)
          call ZWCB(mom%Ustar,m)
@@ -521,6 +521,7 @@
          ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
+         call printPhysicalMinMax(mom%Ustar,'Unm1')
 
          ! Pressure Correction -------------------------------------
          call div(mom%temp_CC,mom%Ustar,m)
@@ -528,6 +529,7 @@
          call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
          ! call applyAllBCs(mom%p_bcs,mom%temp_CC,m)
          call zeroGhostPoints(mom%temp_CC)
+         call printPhysicalMinMax(mom%Ustar,'PPE_input')
 
          ! Solve lap(p) = div(U)/dt
          ! call poisson(mom%SOR_p,mom%p,mom%temp_CC,m,&
@@ -540,7 +542,10 @@
          call grad(mom%temp_F,mom%p,m)
          ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
          ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
-
+         call printPhysicalMinMax(mom%Ustar,'grad(p)')
+         
+         write(*,*) 'nstep = ',mom%nstep
+         if (mom%nstep.eq.2) stop 'Done'
          ! U = Ustar - dt*dp/dx
          call multiply(mom%temp_F,dt)
          call subtract(mom%U,mom%Ustar,mom%temp_F)
