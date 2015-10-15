@@ -40,8 +40,8 @@
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransientFull  = 100000 ! Transient solution (very expensive)
-       integer :: nskip_exportErrors         = 10000  ! Divergences / Residuals (expensive)
-       integer :: nskip_exportTransient      = 1000   ! Probed data (cheap)
+       integer :: nskip_exportErrors         = 100  ! Divergences / Residuals (expensive)
+       integer :: nskip_exportTransient      = 100   ! Probed data (cheap)
        integer :: nskip_print                = 100   ! Printed data (cheap)
 
        integer :: n_points_exportTransientFull  = 200   ! Transient solution (very expensive)

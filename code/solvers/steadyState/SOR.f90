@@ -148,8 +148,6 @@
 #ifdef _EXPORT_SOR_CONVERGENCE_
         integer :: NU
 #endif
-        
-        ! call init(SOR,shape(f),m)
 
         call solverSettingsSet(ss)
         ijk = 0
@@ -237,7 +235,6 @@
         ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
         if (getAllNeumann(u%RF(1)%b)) then
           call subtract(u,mean(u))
-          ! u = u - sum(u)/(max(1,size(u)))
         endif
 
         if (displayTF) then
@@ -251,7 +248,6 @@
           call print(norm,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
         endif
 
-        ! call delete(SOR)
       end subroutine
 
       subroutine innerLoop(u,f,r,SOR,odd)
@@ -307,13 +303,13 @@
 #endif
       end subroutine
 
-      subroutine init_r_SF(r,d,p,gt)
+      subroutine init_r_SF(r,p,d,gt)
         implicit none
         type(SF),intent(inout) :: r
-        type(mesh),intent(in) :: d,p
+        type(mesh),intent(in) :: p,d
         integer,dimension(3),intent(in) :: gt
         integer :: i
-        do i=1,r%s
+        do i=1,p%s
           call init_r(r%RF(i)%f,r%RF(i)%s,&
             p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
             d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,gt)
@@ -323,7 +319,7 @@
       subroutine init_r_RF(r,s,dxp,dyp,dzp,dxd,dyd,dzd,gt)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: r
-        integer,dimension(3) :: s
+        integer,dimension(3),intent(in) :: s
         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
         integer,dimension(3),intent(in) :: gt
         integer :: i,j,k

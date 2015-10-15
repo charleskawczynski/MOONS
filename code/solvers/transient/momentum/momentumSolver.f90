@@ -32,6 +32,7 @@
 
        ! use jacobi_mod
        use FFT_poisson_mod
+       use PSE_mod
        use SOR_mod
        use JAC_mod
        ! use ADI_mod
@@ -99,6 +100,7 @@
 
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          ! type(multiGrid),dimension(3) :: MG
+         type(PSESolver) :: PSE_p
          type(SORSolver) :: SOR_p
          type(JACSolver) :: JAC_p
          type(FFTSolver) :: FFT_p
@@ -229,6 +231,7 @@
 
 
          ! Initialize interior solvers
+         call init(mom%PSE_p,mom%p,mom%m)
          call init(mom%SOR_p,mom%p,mom%m)
          call init(mom%JAC_p,mom%p,mom%m)
          write(*,*) '     momentum SOR initialized'
@@ -294,6 +297,7 @@
          call delete(mom%m)
 
          call delete(mom%SOR_p)
+         call delete(mom%PSE_p)
          call delete(mom%JAC_p)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
@@ -448,7 +452,7 @@
          case (1); call explicitEuler(mom,F,mom%m,ss_MHD)
          ! case (2); call semi_implicit_ADI(mom,F,mom%m,ss_MHD)
          case default
-         write(*,*) 'Error: solveUMethod must = 1,2 in solveMomentumEquation.';stop
+         stop 'Error: solveUMethod must = 1,2 in solveMomentumEquation.'
          end select
          mom%t = mom%t + mom%dTime
          mom%nstep = mom%nstep + 1
@@ -502,17 +506,17 @@
 
          ! Ustar = -TempVF
          call assignMinus(mom%Ustar,mom%temp_F)
-         call printPhysicalMinMax(mom%temp_F,'advect')
+         ! call printPhysicalMinMax(mom%temp_F,'advect')
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%temp_F,mom%U,m)
          call divide(mom%temp_F,Re)
-         call printPhysicalMinMax(mom%temp_F,'diff')
+         ! call printPhysicalMinMax(mom%temp_F,'diff')
          call add(mom%Ustar,mom%temp_F)
 
          ! Source Terms (e.m. N j x B) -----------------------------
          call add(mom%Ustar,F)
-         call printPhysicalMinMax(F,'jcrossB')
+         ! call printPhysicalMinMax(F,'jcrossB')
 
          ! Zero wall coincident forcing (may be bad for neumann BCs)
          call ZWCB(mom%Ustar,m)
@@ -521,7 +525,7 @@
          ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
          call add(mom%Ustar,mom%U)
-         call printPhysicalMinMax(mom%Ustar,'Unm1')
+         ! call printPhysicalMinMax(mom%Ustar,'Unm1')
 
          ! Pressure Correction -------------------------------------
          call div(mom%temp_CC,mom%Ustar,m)
@@ -529,23 +533,25 @@
          call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
          ! call applyAllBCs(mom%p_bcs,mom%temp_CC,m)
          call zeroGhostPoints(mom%temp_CC)
-         call printPhysicalMinMax(mom%Ustar,'PPE_input')
+         ! call printPhysicalMinMax(mom%temp_CC,'PPE_input')
 
          ! Solve lap(p) = div(U)/dt
-         ! call poisson(mom%SOR_p,mom%p,mom%temp_CC,m,&
-         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
-         call solve(mom%JAC_p,mom%p,mom%temp_CC,m,&
+         call poisson(mom%SOR_p,mom%p,mom%temp_CC,m,&
           mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         ! call solve(mom%JAC_p,mom%p,mom%temp_CC,m,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         ! call solve(mom%PSE_p,mom%p,mom%temp_CC,m,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
          ! call poisson(mom%FFT_p,mom%p,mom%temp_CC,m,&
          !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
 
          call grad(mom%temp_F,mom%p,m)
          ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
          ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
-         call printPhysicalMinMax(mom%Ustar,'grad(p)')
+         ! call printPhysicalMinMax(mom%temp_F,'grad(p)')
          
-         write(*,*) 'nstep = ',mom%nstep
-         if (mom%nstep.eq.2) stop 'Done'
+         ! write(*,*) 'nstep = ',mom%nstep
+         ! if (mom%nstep.eq.2) stop 'Done'
          ! U = Ustar - dt*dp/dx
          call multiply(mom%temp_F,dt)
          call subtract(mom%U,mom%Ustar,mom%temp_F)

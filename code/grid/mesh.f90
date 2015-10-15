@@ -113,7 +113,6 @@
          m_out%s = m_in%s
          allocate(m_out%g(m_in%s))
          do i = 1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
-         do k=1,3; do i = 1,m_in%s; call init(m_out%g(i)%st(k),m_in%g(i)%st(k)) ;enddo; enddo
          call initProps(m_out)
        end subroutine
 
