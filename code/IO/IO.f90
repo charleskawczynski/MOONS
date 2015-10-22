@@ -18,7 +18,7 @@
 
       private
       public :: export_3D_1C,export_2D_1C
-      public :: import_3D_1C
+      public :: import_3D_1C,import_2D_1C
 
       public :: export_mesh
 
@@ -48,7 +48,7 @@
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine import_3D_1C(m,U,dir,name,pad)
+      subroutine import_1C_SF(m,U,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(mesh),intent(in) :: m
@@ -58,7 +58,7 @@
         integer :: un
         un = openToRead(dir,trim(adjustl(name)))
         call init(temp,m)
-        call imp_3D_1C(temp,pad,un,arrfmt,trim(adjustl(name)),U)
+        call imp_1C_SF(temp,pad,un,arrfmt,trim(adjustl(name)),U)
         call delete(temp)
         call closeExisting(un,trim(adjustl(name)),dir)
       end subroutine

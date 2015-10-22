@@ -109,7 +109,7 @@
            call splt%add_D(JAC%Dinv,temp,JAC%sigma%y,JAC%m,2,1)
            call splt%add_D(JAC%Dinv,temp,JAC%sigma%z,JAC%m,3,1)
 
-        call export_1C_SF(JAC%m,JAC%Dinv,'out/LDC/Ufield/','D_inv',0)
+        call export_3D_1C(JAC%m,JAC%Dinv,'out/LDC/Ufield/','D_inv',0)
         call divide(1.0_cp,JAC%Dinv)
         call zeroGhostPoints(JAC%Dinv)
       end subroutine

@@ -102,8 +102,9 @@
          type(indexProbe) :: probe_J
          type(errorProbe) :: probe_divB,probe_divJ
          type(probe) :: KB_energy,KB0_energy,KBi_energy
+         type(probe) :: KB_f_energy,KB0_f_energy,KBi_f_energy
          type(mesh) :: m
-         type(domain) :: D
+         type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
 
          integer :: nstep             ! Nth time step
          integer :: NmaxB             ! Maximum number iterations in solving B (if iterative)
@@ -133,16 +134,17 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initInduction(ind,m,D,dir)
+       subroutine initInduction(ind,m,D_fluid,D_sigma,dir)
          implicit none
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(domain),intent(in) :: D_fluid,D_sigma
          character(len=*),intent(in) :: dir
          write(*,*) 'Initializing induction:'
 
          call init(ind%m,m)
-         call init(ind%D,D)
+         call init(ind%D_fluid,D_fluid)
+         call init(ind%D_sigma,D_sigma)
          ! --- Tensor Fields ---
          call init_Edge(ind%U_E,m)
          ! --- Vector Fields ---
@@ -187,7 +189,8 @@
          call applyAllBCs(ind%B,m)
          write(*,*) '     BCs applied'
 
-         call initSigma(ind%sigma,ind%D,m)
+         ! call initSigma(ind%sigma,ind%D_fluid,m) ! If sigma changes across fluid
+         call initSigma(ind%sigma,ind%D_sigma,m) ! If sigma changes across wall
          call divide(one,ind%sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma,m,ind%temp_F)
          write(*,*) '     Sigma edge defined'
@@ -195,7 +198,7 @@
 
          call cellCenter2Face(ind%sigmaInv_face,ind%sigma,m)
          write(*,*) '     Sigma face defined'
-         call initSigma(ind%sigma,ind%D,m)
+         call initSigma(ind%sigma,ind%D_sigma,m)
 
          write(*,*) '     Materials initialized'
 
@@ -223,6 +226,9 @@
          call init(ind%KB_energy,dir//'Bfield\','KB',.not.restartB)
          call init(ind%KBi_energy,dir//'Bfield\','KBi',.not.restartB)
          call init(ind%KB0_energy,dir//'Bfield\','KB0',.not.restartB)
+         call init(ind%KB_f_energy,dir//'Bfield\','KB_f',.not.restartB)
+         call init(ind%KBi_f_energy,dir//'Bfield\','KBi_f',.not.restartB)
+         call init(ind%KB0_f_energy,dir//'Bfield\','KB0_f',.not.restartB)
          write(*,*) '     B/J probes initialized'
 
          call init(ind%err_divB)
@@ -302,7 +308,15 @@
          call delete(ind%probe_J)
          call delete(ind%probe_divB)
          call delete(ind%probe_divJ)
+         call delete(ind%KB_energy)
+         call delete(ind%KBi_energy)
+         call delete(ind%KB0_energy)
+         call delete(ind%KB_f_energy)
+         call delete(ind%KBi_f_energy)
+         call delete(ind%KB0_f_energy)
          call delete(ind%m)
+         call delete(ind%D_fluid)
+         call delete(ind%D_sigma)
 
          ! call delete(ind%SOR_B)
          ! if (cleanB) call delete(ind%MG)
@@ -378,16 +392,16 @@
          else
            if (solveInduction) then
              write(*,*) 'Exporting RAW Solutions for B'
-             call export_3C_VF(m,ind%B0   ,dir//'Bfield/','B0ct',0)
-             call export_3C_VF(m,ind%B    ,dir//'Bfield/','Bct',0)
-             call export_3C_VF(m,ind%J_cc ,dir//'Jfield/','Jct',0)
-             call export_1C_SF(m,ind%sigma,dir//'material/','sigmac',0)
-             call export_1C_SF(m,ind%sigma,dir//'Bfield/','divBct',0)
-             call export_1C_SF(m,ind%sigma,dir//'Jfield/','divJct',0)
+             call export_3D_3C(m,ind%B0   ,dir//'Bfield/','B0ct',0)
+             call export_3D_3C(m,ind%B    ,dir//'Bfield/','Bct',0)
+             call export_3D_3C(m,ind%J_cc ,dir//'Jfield/','Jct',0)
+             call export_3D_1C(m,ind%sigma,dir//'material/','sigmac',0)
+             call export_3D_1C(m,ind%sigma,dir//'Bfield/','divBct',0)
+             call export_3D_1C(m,ind%sigma,dir//'Jfield/','divJct',0)
 
-             call export_1C_SF(m,ind%U_E%x%x ,dir//'Ufield/','Uet',0)
-             call export_1C_SF(m,ind%U_E%y%y ,dir//'Ufield/','Vet',0)
-             call export_1C_SF(m,ind%U_E%z%z ,dir//'Ufield/','Wet',0)
+             call export_3D_1C(m,ind%U_E%x%x ,dir//'Ufield/','Uet',0)
+             call export_3D_1C(m,ind%U_E%y%y ,dir//'Ufield/','Vet',0)
+             call export_3D_1C(m,ind%U_E%z%z ,dir//'Ufield/','Wet',0)
              write(*,*) '     finished'
            endif
          endif
@@ -409,40 +423,42 @@
            call init_Node(tempVFn,m)
            call init_Node(tempVFn2,m)
            call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
-           call export_3C_VF(m,tempVFn,dir//'Bfield/','Bnt',0)
+           call export_3D_3C(m,tempVFn,dir//'Bfield/','Bnt',0)
+           call export_3D_3C(m,tempVFn,dir//'Bfield/','Bnt_phys',1)
 
            ! call cellCenter2Node(tempVFn,ind%B0,m,ind%temp_F,ind%temp_E)
-           ! call export_3C_VF(m,tempVFn,dir//'Bfield/','B0nt',0)
+           ! call export_3D_3C(m,tempVFn,dir//'Bfield/','B0nt',0)
 
            ! B0
            call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
            call cellCenter2Node(tempVFn2,ind%B0,m,ind%temp_F,ind%temp_E)
            call add(tempVFn,tempVFn2)
-           call export_3C_VF(m,tempVFn,dir//'Bfield/','Btotnt',0)
+           call export_3D_3C(m,tempVFn,dir//'Bfield/','Btotnt',0)
+           call export_3D_3C(m,tempVFn,dir//'Bfield/','Btotnt_phys',1)
 
            ! J
            call cellCenter2Node(tempVFn,ind%J_cc,m,ind%temp_F,ind%temp_E)
-           call export_3C_VF(m,tempVFn,dir//'Jfield/','Jtotnt_phys',0)
+           call export_3D_3C(m,tempVFn,dir//'Jfield/','Jtotnt_phys',0)
            call delete(tempVFn)
            call delete(tempVFn2)
 
            ! JxB
-           ! call export_1C_SF(m,ind%jCrossB_F%x,dir//'Jfield/','jCrossB_Fx',0)
-           ! call export_1C_SF(m,ind%jCrossB_F%y,dir//'Jfield/','jCrossB_Fy',0)
-           ! call export_1C_SF(m,ind%jCrossB_F%z,dir//'Jfield/','jCrossB_Fz',0)
+           ! call export_3D_1C(m,ind%jCrossB_F%x,dir//'Jfield/','jCrossB_Fx',0)
+           ! call export_3D_1C(m,ind%jCrossB_F%y,dir//'Jfield/','jCrossB_Fy',0)
+           ! call export_3D_1C(m,ind%jCrossB_F%z,dir//'Jfield/','jCrossB_Fz',0)
 
            ! sigma
            call init_Node(tempN,m)
            call cellCenter2Node(tempN,ind%sigma,m,ind%temp_F%x,ind%temp_E%z)
            call treatInterface(tempN)
-           call export_1C_SF(m,tempN,dir//'material/','sigman',0)
+           call export_3D_1C(m,tempN,dir//'material/','sigman',1)
            call delete(tempN)
 
            ! U_induction
            call init_CC(tempCC,m)
            call div(tempCC,ind%U_cct,m)
-           call export_3C_VF(m,ind%U_cct,dir//'Ufield/','Ucct',0)
-           call export_1C_SF(m,tempCC,dir//'Ufield/','divUct',0)
+           call export_3D_3C(m,ind%U_cct,dir//'Ufield/','Ucct',0)
+           call export_3D_1C(m,tempCC,dir//'Ufield/','divUct',0)
            call delete(tempCC)
            write(*,*) '     finished'
          endif
@@ -457,8 +473,8 @@
            call init_Node(tempN,ind%m)
            call cellCenter2Node(tempN,ind%sigma,ind%m,ind%temp_F%x,ind%temp_E%z)
            call treatInterface(tempN)
-           call export_1C_SF(ind%m,ind%sigma,dir//'material/','sigmac',0)
-           call export_1C_SF(ind%m,tempN,dir//'material/','sigman',0)
+           call export_3D_1C(ind%m,ind%sigma,dir//'material/','sigmac',0)
+           call export_3D_1C(ind%m,tempN,dir//'material/','sigman',1)
            call delete(tempN)
          endif
        end subroutine
@@ -475,7 +491,7 @@
          write(un,*) '(t,dt) = ',ind%t,ind%dTime
          write(un,*) '(nstep) = ',ind%nstep
          write(un,*) ''
-         call print(ind%m)
+         call export(ind%m,un)
          write(un,*) ''
          call printPhysicalMinMax(ind%B,'B')
          call printPhysicalMinMax(ind%B0,'B0')
@@ -561,8 +577,8 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         ! call computeTotalMagneticEnergy(ind,ss_MHD)
-         ! call computeTotalMagneticEnergyFluid(ind,ss_MHD)
+         call computeTotalMagneticEnergy(ind,ss_MHD)
+         call computeTotalMagneticEnergyFluid(ind,ss_MHD)
 
          call exportTransient(ind,ss_MHD)
 
@@ -960,14 +976,14 @@
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
@@ -991,14 +1007,14 @@
 
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
@@ -1027,7 +1043,7 @@
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
@@ -1039,13 +1055,13 @@
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
          case default ! Low Rem
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%B0)
            call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D)
+           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
            call zeroGhostPoints(jCrossB)
            call multiply(jcrossB,Ha**2.0_cp/Re)
          end select
@@ -1083,20 +1099,20 @@
           if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            call assign(ind%Bstar,ind%B)
            call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,ind%Bstar,ind%D)
-           call set(ind%KB_energy,ind%nstep,K_energy)
-           call apply(ind%KB_energy)
+           call totalEnergy(K_energy,ind%Bstar,ind%D_fluid)
+           call set(ind%KB_f_energy,ind%nstep,K_energy)
+           call apply(ind%KB_f_energy)
           endif
           if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
            call assign(ind%Bstar,ind%B)
-           call totalEnergy(K_energy,ind%Bstar,ind%D)
-           call set(ind%KBi_energy,ind%nstep,K_energy)
-           call apply(ind%KBi_energy)
+           call totalEnergy(K_energy,ind%Bstar,ind%D_fluid)
+           call set(ind%KBi_f_energy,ind%nstep,K_energy)
+           call apply(ind%KBi_f_energy)
           endif
           if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%Bstar,ind%D)
-           call set(ind%KB0_energy,ind%nstep,K_energy)
-           call apply(ind%KB0_energy)
+           call totalEnergy(K_energy,ind%Bstar,ind%D_fluid)
+           call set(ind%KB0_f_energy,ind%nstep,K_energy)
+           call apply(ind%KB0_f_energy)
           endif
        end subroutine
 
@@ -1130,9 +1146,34 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U_E ! Momentum edge velocity
-         call embedEdge(ind%U_E%x,U_E%x,ind%D)
-         call embedEdge(ind%U_E%y,U_E%y,ind%D)
-         call embedEdge(ind%U_E%z,U_E%z,ind%D)
+         call embedEdge(ind%U_E%x,U_E%x,ind%D_fluid)
+         call embedEdge(ind%U_E%y,U_E%y,ind%D_fluid)
+         call embedEdge(ind%U_E%z,U_E%z,ind%D_fluid)
+         ! call Neumanize(ind%U_E%x%x,6)
+         ! call Neumanize(ind%U_E%x%y,6)
+         ! call Neumanize(ind%U_E%x%z,6)
+         ! call Neumanize(ind%U_E%y%x,6)
+         ! call Neumanize(ind%U_E%y%y,6)
+         ! call Neumanize(ind%U_E%y%z,6)
+         ! call Neumanize(ind%U_E%z%x,6)
+         ! call Neumanize(ind%U_E%z%y,6)
+         ! call Neumanize(ind%U_E%z%z,6)
+       end subroutine
+
+       subroutine Neumanize(f,face)
+         implicit none
+         type(SF),intent(inout) :: f
+         integer,intent(in) :: face
+         integer :: i
+         select case (face)
+         case (1); do i=1,f%s; f%RF(i)%f(1,:,:) = f%RF(i)%f(2,:,:)                        ; enddo
+         case (2); do i=1,f%s; f%RF(i)%f(f%RF(i)%s(1),:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:); enddo
+         case (3); do i=1,f%s; f%RF(i)%f(:,1,:) = f%RF(i)%f(:,2,:)                        ; enddo
+         case (4); do i=1,f%s; f%RF(i)%f(:,f%RF(i)%s(2),:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:); enddo
+         case (5); do i=1,f%s; f%RF(i)%f(:,:,1) = f%RF(i)%f(:,:,2)                        ; enddo
+         case (6); do i=1,f%s; f%RF(i)%f(:,:,f%RF(i)%s(3)) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1); enddo
+         case default; stop 'Error: face must = 1:6 in Neumanize in inductionSolver.f90'
+         end select
        end subroutine
 
        ! subroutine embedVelocity_old(ind,U_fi,m)
@@ -1148,15 +1189,15 @@
        !     call face2Edge(temp%x,U_fi%x,m,1,1)
        !     call face2Edge(temp%y,U_fi%x,m,1,2)
        !     call face2Edge(temp%z,U_fi%x,m,1,3)
-       !     call embedEdge(ind%U_E,temp,ind%D,m)
+       !     call embedEdge(ind%U_E,temp,ind%D_fluid,m)
        !     call face2Edge(temp%x,U_fi%y,m,2,1)
        !     call face2Edge(temp%y,U_fi%y,m,2,2)
        !     call face2Edge(temp%z,U_fi%y,m,2,3)
-       !     call embedEdge(ind%V_E,temp,ind%D,m)
+       !     call embedEdge(ind%V_E,temp,ind%D_fluid,m)
        !     call face2Edge(temp%x,U_fi%z,m,3,1)
        !     call face2Edge(temp%y,U_fi%z,m,3,2)
        !     call face2Edge(temp%z,U_fi%z,m,3,3)
-       !     call embedEdge(ind%W_E,temp,ind%D,m)
+       !     call embedEdge(ind%W_E,temp,ind%D_fluid,m)
        !     call delete(temp)
        !     ! call printPhysicalMinMax(ind%U_E,'U_E')
        !     ! call printPhysicalMinMax(ind%V_E,'V_E')
@@ -1167,11 +1208,11 @@
        !     call face2CellCenter(temp%x,U_fi%x,m,1)
        !     call face2CellCenter(temp%y,U_fi%y,m,2)
        !     call face2CellCenter(temp%z,U_fi%z,m,3)
-       !     call embedCC(ind%U_cct,temp,ind%D,m)
+       !     call embedCC(ind%U_cct,temp,ind%D_fluid,m)
        !     call delete(temp)
        !   endif
        !   if (usedVelocity(3)) then ! Face - no interpolations
-       !     call embedFace(ind%U_Ft,U_Fi,ind%D,m)
+       !     call embedFace(ind%U_Ft,U_Fi,ind%D_fluid,m)
        !   endif
        !   ! if (usedVelocity(4)) then ! Node - 3 interpolations (not needed for any solvers)
        !     ! call allocateX(temp,m%c(1)%sc,m%c(2)%sn,m%c(3)%sn)

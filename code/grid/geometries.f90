@@ -5,6 +5,7 @@
        use connectGrid_mod
        use gridGenTools_mod
        use grid_mod
+       use domain_mod
        use mesh_mod
        implicit none
 
@@ -20,6 +21,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+       public :: BC_sim_mom,BC_sim_ind
        public :: cube
        public :: ins_elbow
        public :: ins_u_bend
@@ -49,18 +51,88 @@
        ! ************************* GENERATE ROUTINES *************************
        ! *********************************************************************
 
+       subroutine BC_sim_mom(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         call delete(m)
+         ! N = (/30,30,15/); hmin = -1.0_cp; hmax = 1.0_cp ! For symmetry
+         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp ! For full 3D
+         ! hmax(3) = 0.0_cp ! Symmetric w.r.t z ! For symmetry
+         beta = hartmannBL(20.0_cp,hmin,hmax)
+         call box3D_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
+         call box3D_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
+         ! call box3D_Roberts_L(g,hmin(3),hmax(3),N(3),beta(3),3) ! For symmetry
+         call box3D_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3) ! For full 3D
+         call add(m,g)
+
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine BC_sim_ind(m_ind,m_mom,D_sigma)
+         implicit none
+         type(mesh),intent(inout) :: m_ind
+         type(mesh),intent(in) :: m_mom
+         type(domain),intent(inout) :: D_sigma
+         type(mesh) :: m_sigma
+         type(grid) :: g
+         real(cp) :: tw,tv
+         integer :: N
+         call delete(m_ind)
+         call init(g,m_mom%g(1))
+         ! Wall
+         N = 8; tw = 0.5_cp
+         ! N = 5; tw = 0.05_cp;
+         call ext_Roberts_B_IO(g,tw,N,1)
+         ! call ext_prep_Roberts_B_IO(g,tw,N,3) ! For symmetry
+         call ext_Roberts_B_IO(g,tw,N,3) ! For full 3D
+         call ext_prep_Roberts_B_IO(g,tw,N,2)
+
+         ! Define domain for electrical conductivity
+         call add(m_sigma,g)
+         call initProps(m_sigma)
+         call patch(m_sigma)
+
+         ! Vacuum
+         tv = 5.0_cp - tw ! Vacuum extends to 6 (hmax = 1 + 5 + tw)
+         N = 10
+         call ext_Roberts_near_IO(g,tv,N,1)
+         call ext_Roberts_near_IO(g,tv,N,3) ! For full 3D
+         ! call ext_prep_Roberts_R_IO(g,tv,N,3) ! For symmetry
+         call ext_prep_Roberts_R_IO(g,tv,N,2)
+         call ext_app_Roberts_L_IO (g,5.0_cp,N+6,2)
+
+         call add(m_ind,g)
+         call initProps(m_ind)
+         call patch(m_ind)
+
+         call init(D_sigma,m_sigma,m_ind)
+         call delete(m_sigma)
+         call delete(g)
+       end subroutine
+
        subroutine cube(m)
          implicit none
          type(mesh),intent(inout) :: m
          type(grid) :: g
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
-         N = 52; hmin = 0.0_cp; hmax = 1.0_cp
-         beta = reynoldsBL(1000.0_cp,hmin,hmax)
+         call delete(m)
+         N = 45; hmin = -1.0_cp; hmax = 1.0_cp
+         ! beta = reynoldsBL(1000.0_cp,hmin,hmax)
+         ! beta = hartmannBL(Ha,hmin,hmax)
          ! beta = 10000.0_cp
-         call box3D_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
-         call box3D_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
-         call box3D_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
+         ! call box3D_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
+         ! call box3D_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
+         ! call box3D_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
+
+         call box3D_uniform(g,hmin(1),hmax(1),N(1),1)
+         call box3D_uniform(g,hmin(2),hmax(2),N(2),2)
+         call box3D_uniform(g,hmin(3),hmax(3),N(3),3)
          call add(m,g)
 
          call initProps(m)
@@ -74,6 +146,7 @@
          type(grid) :: g1,g2
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
+         call delete(m)
          N = 40; beta = 1.1_cp
          hmin = 0.0_cp; hmax = 1.0_cp
          call box3D_Roberts_R(g1,hmin(1),hmax(1),N(1),beta(1),1)
@@ -96,20 +169,25 @@
          type(grid) :: g1,g2
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
-         N = 40
-         hmin = 0.0_cp; hmax = 1.0_cp; beta = 1.1_cp
-         call box3D_Roberts_B(g1,hmin(1),hmax(1),N(1),beta(1),1)
+         call delete(m)
+         N = 30
+         hmin = 0.0_cp; hmax = 1.0_cp; beta = 1.05_cp
+         hmax(1) = 5.0_cp
+         call box3D_Roberts_R(g1,hmin(1),hmax(1), 40 ,beta(1),1)
          call box3D_Roberts_B(g1,hmin(2),hmax(2),N(2),beta(2),2)
-         call box3D_Roberts_B(g1,hmin(3),hmax(3),N(3),beta(3),3)
+         ! call box3D_Roberts_B(g1,hmin(3),hmax(3),N(3),beta(3),3)
+         call box3D_uniform(g1,hmin(3),hmax(3),1,3)
          call add(m,g1)
 
-         call con_app_Roberts_B (g2,g1,1.0_cp,N(1),1); call add(m,g2)
-         call con_app_Roberts_B (g1,g2,2.0_cp,N(2),2); call add(m,g1)
-         call con_app_Roberts_B (g2,g1,1.0_cp,N(2),2); call add(m,g2)
-         call con_prep_Roberts_B(g1,g2,1.0_cp,N(1),1); call add(m,g1)
+         call con_app_Roberts_B (g2,g1,1.0_cp,N(1),1); call add(m,g2) ! first corner
+         call con_app_Roberts_B (g1,g2,2.0_cp,N(2),2); call add(m,g1) ! Long 
+         call con_app_Roberts_B (g2,g1,1.0_cp,N(2),2); call add(m,g2) ! second corner
+         call con_prep_Roberts_R(g1,g2,5.0_cp, 40 ,1); call add(m,g1) ! exit
 
          call initProps(m)
          call patch(m)
+         call print(m)
+         stop 'Done'
          call delete(g1)
          call delete(g2)
        end subroutine
@@ -120,6 +198,7 @@
          type(grid) :: g1,g2
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
+         call delete(m)
          N = 40
          hmin = -0.5_cp; hmax = 0.5_cp; beta = 1.1_cp
          hmin(1) = 0.0_cp; hmax(1) = 1.0_cp
@@ -144,6 +223,7 @@
          type(grid) :: g1,g2,g3
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
+         call delete(m)
          N = 40
          hmin = -0.5_cp; hmax = 0.5_cp; beta = 1.1_cp
          hmin(1) = 0.0_cp; hmax(1) = 1.0_cp
@@ -176,6 +256,7 @@
          type(grid) :: g1,g2,g3
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
+         call delete(m)
          N = 30
          hmin = -0.5_cp; hmax = 0.5_cp; beta = 1.1_cp
          hmin(1) = 0.0_cp; hmax(1) = 3.0_cp

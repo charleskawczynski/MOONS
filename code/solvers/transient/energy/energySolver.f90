@@ -260,13 +260,13 @@
            ! This preserves the initial data
          else
            write(*,*) 'Exporting RAW Solutions for T'
-           call export_3C_VF(m,nrg%U_cct,dir//'Tfield/','U_cct',0)
-           call export_1C_SF(m,nrg%T,dir//'Tfield/','Tct',0)
-           call export_1C_SF(m,nrg%U_ft%x,dir//'Tfield/','U_ft',0)
-           call export_1C_SF(m,nrg%U_ft%y,dir//'Tfield/','V_ft',0)
-           call export_1C_SF(m,nrg%U_ft%z,dir//'Tfield/','W_ft',0)
-           call export_1C_SF(m,nrg%divQ,dir//'Tfield/','divQct',0)
-           call export_1C_SF(m,nrg%k_cc,dir//'Tfield/','kct',0)
+           call export_3D_3C(m,nrg%U_cct,dir//'Tfield/','U_cct',0)
+           call export_3D_1C(m,nrg%T,dir//'Tfield/','Tct',0)
+           call export_3D_1C(m,nrg%U_ft%x,dir//'Tfield/','U_ft',0)
+           call export_3D_1C(m,nrg%U_ft%y,dir//'Tfield/','V_ft',0)
+           call export_3D_1C(m,nrg%U_ft%z,dir//'Tfield/','W_ft',0)
+           call export_3D_1C(m,nrg%divQ,dir//'Tfield/','divQct',0)
+           call export_3D_1C(m,nrg%k_cc,dir//'Tfield/','kct',0)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -282,10 +282,10 @@
            call init_Node(tempN,m)
            call init_Edge(tempE,m,3)
            call cellCenter2Node(tempN,nrg%T,m,nrg%temp_F%x,tempE)
-           call export_1C_SF(m,tempN,dir//'Tfield/','Tnt',0)
+           call export_3D_1C(m,tempN,dir//'Tfield/','Tnt',0)
          ! ----------------------- MATERIAL PROPERTIES AT NODES ------------------------
            call cellCenter2Node(tempN,nrg%k_cc,m,nrg%temp_F%x,tempE)
-           call export_1C_SF(m,tempN,dir//'material/','knt',0)
+           call export_3D_1C(m,tempN,dir//'material/','knt',0)
            call delete(tempN)
            call delete(tempE)
            write(*,*) '     finished'

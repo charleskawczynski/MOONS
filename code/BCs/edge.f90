@@ -1,4 +1,4 @@
-       module boundary_mod
+       module edge_mod
        use IO_tools_mod
        implicit none
 
@@ -13,15 +13,15 @@
 #endif
 
        private
-       public :: boundary
+       public :: edge
        public :: init,delete
        public :: print,export
 
-       type boundary
+       type edge
          integer :: bctype
-         real(cp),dimension(:,:),allocatable :: vals
+         real(cp),dimension(:),allocatable :: vals
          real(cp) :: val
-         integer,dimension(2) :: s
+         integer :: s
          logical,dimension(2) :: def = .false. ! true if (bctype,vals) are defined
          logical :: defined = .false. ! = all(defined)
        end type
@@ -29,13 +29,12 @@
        interface init;       module procedure init_type;             end interface
        interface init;       module procedure init_vals_RF;          end interface
        interface init;       module procedure init_val;              end interface
-       interface init;       module procedure init_shape;            end interface
        interface init;       module procedure init_copy;             end interface
 
-       interface delete;     module procedure delete_boundary;       end interface
-       interface print;      module procedure print_boundary;        end interface
-       interface export;     module procedure export_boundary;       end interface
-       interface export;     module procedure export_boundary_unit;  end interface
+       interface delete;     module procedure delete_edge;       end interface
+       interface print;      module procedure print_edge;        end interface
+       interface export;     module procedure export_edge;       end interface
+       interface export;     module procedure export_edge_unit;  end interface
 
        contains
 
@@ -43,114 +42,109 @@
        ! ********************************* INIT/DELETE *********************************
        ! *******************************************************************************
 
-       subroutine init_type(b,bctype)
+       subroutine init_type(e,bctype)
          implicit none
-         type(boundary),intent(inout) :: b
+         type(edge),intent(inout) :: e
          integer,intent(in) :: bctype
-         b%bctype = bctype
-         b%def(1) = .true.
-         b%defined = all(b%def)
+         e%bctype = bctype
+         e%def(1) = .true.
+         e%defined = all(e%def)
        end subroutine
 
-       subroutine init_vals_RF(b,vals)
+       subroutine init_vals_RF(e,vals,s)
          implicit none
-         type(boundary),intent(inout) :: b
-         real(cp),dimension(:,:),intent(in) :: vals
-         if (allocated(b%vals)) deallocate(b%vals)
-         ! b%s = shape(vals) ! Is this necessary/good?
-         ! Make sure that b%s has been defined here in debug mode
-         allocate(b%vals(b%s(1),b%s(2)))
-         b%val = vals(1,1)
-         b%vals = vals
-         b%def(2) = .true.
-         b%defined = all(b%def)
+         type(edge),intent(inout) :: e
+         real(cp),dimension(:),intent(in) :: vals
+         integer,intent(in) :: s
+         e%s = s
+         if (allocated(e%vals)) deallocate(e%vals)
+         ! e%s = shape(vals) ! Is this necessary/good?
+         ! Make sure that e%s has been defined here in debug mode
+         allocate(e%vals(e%s))
+         e%val = vals(1)
+         e%vals = vals
+         e%def(2) = .true.
+         e%defined = all(e%def)
        end subroutine
 
-       subroutine init_shape(b,s)
+       subroutine init_val(e,val)
          implicit none
-         type(boundary),intent(inout) :: b
-         integer,dimension(2),intent(in) :: s
-         b%s = s
-       end subroutine
-
-       subroutine init_val(b,val)
-         implicit none
-         type(boundary),intent(inout) :: b
+         type(edge),intent(inout) :: e
          real(cp),intent(in) :: val
-         if (allocated(b%vals)) deallocate(b%vals)
-         allocate(b%vals(b%s(1),b%s(2)))
-         b%vals = val
-         b%val = val
-         b%def(2) = .true.
-         b%defined = all(b%def)
+         if (allocated(e%vals)) deallocate(e%vals)
+         allocate(e%vals(e%s))
+         e%vals = val
+         e%val = val
+         e%def(2) = .true.
+         e%defined = all(e%def)
        end subroutine
 
-       subroutine init_copy(b_out,b_in)
+       subroutine init_copy(e_out,e_in)
          implicit none
-         type(boundary),intent(inout) :: b_out
-         type(boundary),intent(in) :: b_in
-         if (.not.b_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
-         if (allocated(b_in%vals)) then
-           call init(b_out,b_in%vals)
+         type(edge),intent(inout) :: e_out
+         type(edge),intent(in) :: e_in
+         if (.not.e_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
+         if (allocated(e_in%vals)) then
+           call init(e_out,e_in%vals,e_in%s)
          else; stop 'Error: trying to copy BC that has not been allocated vals'
          endif
-         b_out%bctype = b_in%bctype
-         b_out%val = b_in%val
-         b_out%def = b_in%def
-         b_out%defined = b_in%defined
-         b_out%s = b_in%s
+         e_out%bctype = e_in%bctype
+         e_out%val = e_in%val
+         e_out%def = e_out%def
+         e_out%defined = e_out%defined
+         e_out%s = e_in%s
        end subroutine
 
-       subroutine delete_boundary(b)
+       subroutine delete_edge(e)
          implicit none
-         type(boundary),intent(inout) :: b
-         if (allocated(b%vals)) deallocate(b%vals)
-         b%s = 0
-         b%def = .false.
-         b%defined = all(b%def)
+         type(edge),intent(inout) :: e
+         if (allocated(e%vals)) deallocate(e%vals)
+         e%s = 0
+         e%def = .false.
+         e%defined = all(e%def)
        end subroutine
 
        ! *******************************************************************************
        ! ******************************** PRINT/EXPORT *********************************
        ! *******************************************************************************
 
-       subroutine print_boundary(b,name)
+       subroutine print_edge(e,name)
          implicit none
-         type(boundary), intent(in) :: b
+         type(edge), intent(in) :: e
          character(len=*),intent(in) :: name
-         call exp_boundary(b,name,6)
+         call exp_edge(e,name,6)
        end subroutine
 
-       subroutine export_boundary(b,dir,name)
+       subroutine export_edge(e,dir,name)
          implicit none
-         type(boundary), intent(in) :: b
+         type(edge), intent(in) :: e
          character(len=*),intent(in) :: dir,name
          integer :: NewU
-         NewU = newAndOpen(dir,name//'_boundary')
-         call exp_boundary(b,name,newU)
-         call closeAndMessage(newU,name//'_BoundaryConditions',dir)
+         NewU = newAndOpen(dir,name//'_edge')
+         call exp_edge(e,name,newU)
+         call closeAndMessage(newU,name//'_edgeConditions',dir)
        end subroutine
 
-       subroutine export_boundary_unit(b,newU,name)
+       subroutine export_edge_unit(e,newU,name)
          implicit none
-         type(boundary), intent(in) :: b
+         type(edge), intent(in) :: e
          integer,intent(in) :: newU
          character(len=*),intent(in) :: name
-         call exp_boundary(b,name,newU)
+         call exp_edge(e,name,newU)
        end subroutine
 
-       subroutine exp_boundary(b,name,newU)
+       subroutine exp_edge(e,name,newU)
          implicit none
-         type(boundary), intent(in) :: b
+         type(edge), intent(in) :: e
          character(len=*),intent(in) :: name
          integer,intent(in) :: NewU
-         if (.not.b%defined) stop 'Error: boundary not defined in writeBoundary in boundary.f90'
+         if (.not.e%defined) stop 'Error: edge not defined in writeedge in edge.f90'
 
-         write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
-         call writeBoundary(b%bctype,newU)
+         write(newU,*) 'edge conditions for ' // trim(adjustl(name))
+         call writeedge(e%bctype,newU)
        end subroutine
 
-       subroutine writeBoundary(bctype,NewU)
+       subroutine writeEdge(bctype,NewU)
          implicit none
          integer,intent(in) :: NewU,bctype
          if (bctype.eq.1) then; write(newU,*) 'Dirichlet - direct - wall coincident'; endif

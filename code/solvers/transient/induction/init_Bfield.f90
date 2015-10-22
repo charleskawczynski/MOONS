@@ -79,7 +79,7 @@
          type(VF),intent(inout) :: B
          type(mesh) :: temp
          call init(temp,m)
-         call import_3C_VF(temp,B,dir//'Bfield/','Bct',0)
+         call import_3D_3C(temp,B,dir//'Bfield/','Bct',0)
 
          ! call export_3C_VF(temp,B,dir//'Bfield/','Bct_imported',0)
          ! stop 'Done'
@@ -93,7 +93,7 @@
          type(VF),intent(inout) :: B
          type(mesh) :: temp
          call init(temp,m)
-         call import_3C_VF(temp,B,dir//'Bfield/','B0ct',0)
+         call import_3D_3C(temp,B,dir//'Bfield/','B0ct',0)
          call delete(temp)
        end subroutine
 

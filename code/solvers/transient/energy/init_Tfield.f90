@@ -48,7 +48,7 @@
          type(SF),intent(inout) :: T
          type(mesh) :: temp
          call init(temp,m)
-         call import_1C_SF(temp,T,dir,'Tct',1)
+         call import_3D_1C(temp,T,dir,'Tct',1)
          call delete(temp)
        end subroutine
 

@@ -24,7 +24,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       public :: extractFace
+       public :: extractFace,extractCC
        public :: embedFace
        public :: embedEdge
        public :: embedCC
@@ -69,9 +69,9 @@
          integer,dimension(3) :: out_temp
          out_temp = out1-1
          !$OMP PARALLEL DO
-         do k=out1(3),out2(3);do j=out1(2),out2(2);do j=out1(1),out2(1)
+         do k=out1(3),out2(3);do j=out1(2),out2(2);do i=out1(1),out2(1)
          RF_out%f(i,j,k) = &
-         RF_in %f(i-out_temp(1),j-out_temp(2),k-out_temp(3))
+         RF_in %f(in1(1)+(i-out1(1)),in1(2)+(j-out1(2)),in1(3)+(k-out1(3)))
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
 #else
@@ -84,8 +84,7 @@
        ! *************************** CASE SPECIFIC ROUTINES ******************************
        ! *********************************************************************************
 
-       subroutine extractFace(face_i,face_t,D)
-         ! Including ghost nodes / ghost cells / boundary values
+       subroutine extractFace(face_i,face_t,D) ! Used for velocity into induction
          implicit none
          type(VF),intent(inout) :: face_i
          type(VF),intent(in) :: face_t
@@ -93,20 +92,86 @@
          integer :: i
          do i=1,D%s
            call EE(face_i%x%RF(D%sd(i)%g_in_id),face_t%x%RF(D%sd(i)%g_tot_id),&
-            (/D%sd(i)%TNB1(1), D%sd(i)%TCI1(2), D%sd(i)%TCI1(3)/),&
-            (/D%sd(i)%TNB2(1), D%sd(i)%TCI2(2), D%sd(i)%TCI2(3)/),&
-           (/D%sd(i)%NB1(1),D%sd(i)%CI1(2),D%sd(i)%CI1(3)/),&
-           (/D%sd(i)%NB2(1),D%sd(i)%CI2(2),D%sd(i)%CI2(3)/))
+            (/D%sd(i)%TNE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TNE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
+            (/D%sd(i)% NE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% NE2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/))
            call EE(face_i%y%RF(D%sd(i)%g_in_id),face_t%y%RF(D%sd(i)%g_tot_id),&
-            (/D%sd(i)%TCI1(1) ,D%sd(i)%TNB1(2), D%sd(i)%TCI1(3)/),&
-            (/D%sd(i)%TCI2(1) ,D%sd(i)%TNB2(2), D%sd(i)%TCI2(3)/),&
-           (/D%sd(i)%CI1(1),D%sd(i)%NB1(2),D%sd(i)%CI1(3)/),&
-           (/D%sd(i)%CI2(1),D%sd(i)%NB2(2),D%sd(i)%CI2(3)/))
+            (/D%sd(i)%TCE1(1),D%sd(i)%TNE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TNE2(2),D%sd(i)%TCE2(3)/),&
+            (/D%sd(i)% CE1(1),D%sd(i)% NE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% NE2(2),D%sd(i)% CE2(3)/))
            call EE(face_i%z%RF(D%sd(i)%g_in_id),face_t%z%RF(D%sd(i)%g_tot_id),&
-            (/D%sd(i)%TCI1(1) ,D%sd(i)%TCI1(2) ,D%sd(i)%TNB1(3)/),&
-            (/D%sd(i)%TCI2(1) ,D%sd(i)%TCI2(2) ,D%sd(i)%TNB2(3)/),&
-           (/D%sd(i)%CI1(1),D%sd(i)%CI1(2),D%sd(i)%NB1(3)/),&
-           (/D%sd(i)%CI2(1),D%sd(i)%CI2(2),D%sd(i)%NB2(3)/))
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TNE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNE2(3)/),&
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% NE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% NE2(3)/))
+         enddo
+       end subroutine
+
+       subroutine embedFace(Face_t,Face_i,D) ! Used for jCrossB into momentum
+         implicit none
+         type(VF),intent(inout) :: Face_t
+         type(VF),intent(in) :: Face_i
+         type(domain),intent(in) :: D
+         integer :: i
+         do i=1,D%s
+           call EE(Face_t%x%RF(D%sd(i)%g_tot_id),Face_i%x%RF(D%sd(i)%g_in_id),&
+            (/D%sd(i)% NB1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% NB2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/),&
+            (/D%sd(i)%TNB1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TNB2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/))
+           call EE(Face_t%y%RF(D%sd(i)%g_tot_id),Face_i%y%RF(D%sd(i)%g_in_id),&
+            (/D%sd(i)% CE1(1),D%sd(i)% NB1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% NB2(2),D%sd(i)% CE2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TNB1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TNB2(2),D%sd(i)%TCE2(3)/))
+           call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),&
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% NB1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% NB2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TNB1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNB2(3)/))
+         enddo
+       end subroutine
+
+       subroutine embedCC_SF(CC_t,CC_i,D) ! Used for material properties
+         implicit none
+         type(SF),intent(inout) :: CC_t
+         type(SF),intent(in) :: CC_i
+         type(domain),intent(in) :: D
+         integer :: i
+         do i=1,D%s
+           call EE(CC_t%RF(D%sd(i)%g_tot_id),CC_i%RF(D%sd(i)%g_in_id),&
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/))
+         enddo
+       end subroutine
+
+       subroutine extractCC(CC_i,CC_t,D)
+         ! Including ghost nodes / ghost cells / boundary values
+         implicit none
+         type(VF),intent(inout) :: CC_i
+         type(VF),intent(in) :: CC_t
+         type(domain),intent(in) :: D
+         integer :: i
+         do i=1,D%s
+           call EE(CC_i%x%RF(D%sd(i)%g_in_id),CC_t%x%RF(D%sd(i)%g_tot_id),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/))
+           call EE(CC_i%y%RF(D%sd(i)%g_in_id),CC_t%y%RF(D%sd(i)%g_tot_id),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/))
+           call EE(CC_i%z%RF(D%sd(i)%g_in_id),CC_t%z%RF(D%sd(i)%g_tot_id),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/),&
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/))
          enddo
        end subroutine
 
@@ -119,46 +184,20 @@
          integer :: i
          do i=1,D%s
            call EE(Edge_t%x%RF(D%sd(i)%g_tot_id),Edge_i%x%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%NB1(2),D%sd(i)%NB1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%NB2(2),D%sd(i)%NB2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TNB1(2), D%sd(i)%TNB1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TNB2(2), D%sd(i)%TNB2(3)/))
+            (/D%sd(i)% CE1(1),D%sd(i)% NE1(2),D%sd(i)% NE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% NE2(2),D%sd(i)% NE2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TNE1(2),D%sd(i)%TNE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TNE2(2),D%sd(i)%TNE2(3)/))
            call EE(Edge_t%y%RF(D%sd(i)%g_tot_id),Edge_i%y%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%NB1(1),D%sd(i)%CE1(2),D%sd(i)%NB1(3)/),&
-           (/D%sd(i)%NB2(1),D%sd(i)%CE2(2),D%sd(i)%NB2(3)/),&
-            (/D%sd(i)%TNB1(1), D%sd(i)%TCE1(2), D%sd(i)%TNB1(3)/),&
-            (/D%sd(i)%TNB2(1), D%sd(i)%TCE2(2), D%sd(i)%TNB2(3)/))
+            (/D%sd(i)% NE1(1),D%sd(i)% CE1(2),D%sd(i)% NE1(3)/),&
+            (/D%sd(i)% NE2(1),D%sd(i)% CE2(2),D%sd(i)% NE2(3)/),&
+            (/D%sd(i)%TNE1(1),D%sd(i)%TCE1(2),D%sd(i)%TNE1(3)/),&
+            (/D%sd(i)%TNE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNE2(3)/))
            call EE(Edge_t%z%RF(D%sd(i)%g_tot_id),Edge_i%z%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%NB1(1),D%sd(i)%NB1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%NB2(1),D%sd(i)%NB2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TNB1(1), D%sd(i)%TNB1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TNB2(1), D%sd(i)%TNB2(2), D%sd(i)%TCE2(3)/))
-         enddo
-       end subroutine
-
-       subroutine embedFace(Face_t,Face_i,D)
-         ! Including ghost nodes / ghost cells / boundary values
-         implicit none
-         type(VF),intent(inout) :: Face_t
-         type(VF),intent(in) :: Face_i
-         type(domain),intent(in) :: D
-         integer :: i
-         do i=1,D%s
-           call EE(Face_t%x%RF(D%sd(i)%g_tot_id),Face_i%x%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%NB1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%NB2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TNB1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TNB2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
-           call EE(Face_t%y%RF(D%sd(i)%g_tot_id),Face_i%y%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%NB1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%NB2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TNB1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TNB2(2), D%sd(i)%TCE2(3)/))
-           call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%NB1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%NB2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TNB1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TNB2(3)/))
+            (/D%sd(i)% NE1(1),D%sd(i)% NE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% NE2(1),D%sd(i)% NE2(2),D%sd(i)% CE2(3)/),&
+            (/D%sd(i)%TNE1(1),D%sd(i)%TNE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TNE2(1),D%sd(i)%TNE2(2),D%sd(i)%TCE2(3)/))
          enddo
        end subroutine
 
@@ -171,36 +210,20 @@
          integer :: i
          do i=1,D%s
            call EE(CC_t%x%RF(D%sd(i)%g_tot_id),CC_i%x%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
            call EE(CC_t%y%RF(D%sd(i)%g_tot_id),CC_i%y%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
            call EE(CC_t%z%RF(D%sd(i)%g_tot_id),CC_i%z%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%CE2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TCE2(2), D%sd(i)%TCE2(3)/))
-         enddo
-       end subroutine
-
-       subroutine embedCC_SF(CC_t,CC_i,D)
-         ! Including ghost nodes / ghost cells / boundary values
-         implicit none
-         type(SF),intent(inout) :: CC_t
-         type(SF),intent(in) :: CC_i
-         type(domain),intent(in) :: D
-         integer :: i
-         do i=1,D%s
-           call EE(CC_t%RF(D%sd(i)%g_tot_id),CC_i%RF(D%sd(i)%g_in_id),&
-           (/D%sd(i)%CE1(1),D%sd(i)%CE1(2),D%sd(i)%CE1(3)/),&
-           (/D%sd(i)%CE2(1),D%sd(i)%CI2(2),D%sd(i)%CE2(3)/),&
-            (/D%sd(i)%TCE1(1), D%sd(i)%TCE1(2), D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1), D%sd(i)%TCI2(2), D%sd(i)%TCE2(3)/))
+            (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
+            (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
          enddo
        end subroutine
 

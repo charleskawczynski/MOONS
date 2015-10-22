@@ -26,6 +26,7 @@
        use ops_physics_mod
 
        use applyBCs_mod
+       use applyStitches_mod
 
        use solverSettings_mod
        use myTime_mod
@@ -186,6 +187,8 @@
          ! Initialize U-field, P-field and all BCs
          call init_UBCs(mom%U,m)
          call init_PBCs(mom%p,m)
+         ! call print_defined(mom%U%x%RF(1)%b)
+         ! stop 'Done'
          write(*,*) '     BCs initialized'
 
          ! Use mom%m later, for no just m
@@ -357,28 +360,30 @@
          if (solveMomentum.and.getExportErrors(ss_MHD)) then
            call set(mom%transient_ppe,mom%nstep,mom%err_PPE%L2)
            call apply(mom%transient_ppe)
-           call export(mom%e_KE_terms,dir//'Ufield/energy/','e_KE_terms'//int2str(mom%nstep),1)
-
+           ! call export(mom%e_KE_terms,dir//'Ufield/energy/','e_KE_terms'//int2str(mom%nstep),1)
            call apply(mom%transient_divU,mom%nstep,mom%divU,mom%m)
            call apply(mom%u_symmetry,mom%nstep,mom%U%z)
          endif
        end subroutine
 
-       subroutine momentumExportRaw(mom,m,dir)
+       subroutine momentumExportRaw(mom,m,F,dir)
          implicit none
          type(momentum),intent(in) :: mom
          type(mesh),intent(in) :: m
+         type(VF),intent(in) :: F
          character(len=*),intent(in) :: dir
          if (restartU.and.(.not.solveMomentum)) then
            ! This preserves the initial data
          else
            write(*,*) 'Exporting RAW Solutions for U'
-           call export_1C_SF(m,mom%U%x,dir//'Ufield/','ufi',0)
-           call export_1C_SF(m,mom%U%y,dir//'Ufield/','vfi',0)
-           call export_1C_SF(m,mom%U%z,dir//'Ufield/','wfi',0)
-           call export_1C_SF(m,mom%p,dir//'Ufield/','pci',0)
-           call export_1C_SF(m,mom%divU,dir//'Ufield/','divUci',0)
-
+           call export_3D_1C(m,mom%U%x,dir//'Ufield/','ufi',0)
+           call export_3D_1C(m,mom%U%y,dir//'Ufield/','vfi',0)
+           call export_3D_1C(m,mom%U%z,dir//'Ufield/','wfi',0)
+           call export_3D_1C(m,mom%p,dir//'Ufield/','pci',0)
+           call export_3D_1C(m,F%x,dir//'Ufield/','jCrossB_x',0)
+           call export_3D_1C(m,F%y,dir//'Ufield/','jCrossB_y',0)
+           call export_3D_1C(m,F%z,dir//'Ufield/','jCrossB_z',0)
+           call export_3D_1C(m,mom%divU,dir//'Ufield/','divUci',0)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -393,8 +398,9 @@
          ! ********************** EXPORT IN NODES ***************************
          call init_Node(tempNVF,m)
          call face2Node(tempNVF,mom%u,m,mom%temp_E1)
-         call export_3C_VF(m,tempNVF ,dir//'Ufield/','Uni',0)
-         call export_3C_VF(m,tempNVF ,dir//'Ufield/','Uni_phys',1)
+         call export_3D_3C(m,tempNVF ,dir//'Ufield/','Uni',0)
+         call export_3D_1C(m,mom%p,dir//'Ufield/','pci_phys',1)
+         call export_3D_3C(m,tempNVF ,dir//'Ufield/','Uni_phys',1)
          call delete(tempNVF)
          write(*,*) '     finished'
        end subroutine
@@ -415,7 +421,7 @@
          write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
          write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
-         call print(mom%m)
+         call export(mom%m,un)
          write(un,*) ''
          call printPhysicalMinMax(mom%U,'u')
          call printPhysicalMinMax(mom%p,'p')
@@ -432,8 +438,10 @@
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          type(VF) :: tempNVF
+
          call init_Node(tempNVF,m)
          call face2Node(tempNVF,mom%U,m,mom%temp_E1)
+         call export_2D_2C(mom%m,tempNVF,dir//'Ufield/transient/','Uni_phys',1,mom%nstep)
          call delete(tempNVF)
        end subroutine
 
@@ -467,7 +475,7 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          ! call computeMomentumStability(mom,ss_MHD)
          if (getExportErrors(ss_MHD)) call computeDivergence(mom,mom%m)
-         if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%m,dir)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%m,dir)
          if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
 
          if (getPrintParams(ss_MHD)) then
@@ -477,7 +485,7 @@
          endif
 
          if (getExportRawSolution(ss_MHD).or.exportNow) then
-           call exportRaw(mom,mom%m,dir)
+           call exportRaw(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
          if (getExportSolution(ss_MHD).or.exportNow) then
@@ -556,6 +564,8 @@
          call multiply(mom%temp_F,dt)
          call subtract(mom%U,mom%Ustar,mom%temp_F)
 
+         ! call applyAllGhostBCs(mom%U,m)
+         ! call applyStitches(mom%U,m) ! Needed? or ruining things?
          call applyAllBCs(mom%U,m)
        end subroutine
 
@@ -635,6 +645,7 @@
          call multiply(mom%temp_F,dt)
          call subtract(mom%U,mom%Ustar,mom%temp_F)
 
+         call applyStitches(mom%U,m)
          call applyAllBCs(mom%U,m)
        end subroutine
 
@@ -892,6 +903,36 @@
              f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
              f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
            endif
+         case default
+           stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
+         end select
+       end subroutine
+
+       subroutine ZWCB_RF_test(f,s,g,face)
+         ! face = zero wall coincident boundaries on...
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3),intent(in) :: s
+         type(grid),intent(in) :: g
+         integer,intent(in) :: face
+         select case (face)
+         case (0) ! All faces
+           if (s(1).eq.g%c(1)%sn) then
+             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
+             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
+           elseif (s(2).eq.g%c(2)%sn) then
+             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
+             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
+           elseif (s(3).eq.g%c(3)%sn) then
+             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
+             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
+           endif
+         case (1); if (s(1).eq.g%c(1)%sn) then; f(1,:,:) = 0.0_cp;    f(2,:,:) = 0.0_cp;      endif
+         case (2); if (s(1).eq.g%c(1)%sn) then; f(s(1),:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp; endif
+         case (3); if (s(2).eq.g%c(2)%sn) then; f(:,1,:) = 0.0_cp;    f(:,2,:) = 0.0_cp;      endif
+         case (4); if (s(2).eq.g%c(2)%sn) then; f(:,s(2),:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp; endif
+         case (5); if (s(3).eq.g%c(3)%sn) then; f(:,:,1) = 0.0_cp;    f(:,:,2) = 0.0_cp;      endif
+         case (6); if (s(3).eq.g%c(3)%sn) then; f(:,:,s(3)) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp; endif
          case default
            stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
          end select

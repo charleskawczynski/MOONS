@@ -1,38 +1,37 @@
-      module stitch_mod
+      module stitch_face_mod
       ! This routine is used in grid as
-      !        hmin(1) = hmin_x; hmax(1) = hmax_x
-      !        hmin(2) = hmin_y; hmax(2) = hmax_y
-      !        hmin(3) = hmin_z; hmax(3) = hmax_z
-      ! covering all 6 faces.
+      !        hmin(i) {(x,y,z)}
+      !        hmax(1) {(x,y,z)}
+      ! for direction i, covering all 6 faces.
       implicit none
 
       private
-      public :: stitch
+      public :: stitch_face
       public :: init,delete
 
-      type stitch
-        logical :: hmax,hmin
-        integer :: hmax_id,hmin_id
+      type stitch_face
+        logical,dimension(3) :: hmax,hmin
+        integer,dimension(3) :: hmax_id,hmin_id
       end type
 
-      interface init;   module procedure init_stitch;   end interface
+      interface init;   module procedure init_stitch_face;   end interface
       interface init;   module procedure init_copy;     end interface
-      interface delete; module procedure delete_stitch; end interface
+      interface delete; module procedure delete_stitch_face; end interface
       
       contains
 
-      subroutine delete_stitch(s)
+      subroutine delete_stitch_face(s)
         implicit none
-        type(stitch),intent(inout) :: s
+        type(stitch_face),intent(inout) :: s
         s%hmin = .false.
         s%hmax = .false.
         s%hmin_id = 0
         s%hmax_id = 0
       end subroutine
 
-      subroutine init_stitch(s,hmin,hmax)
+      subroutine init_stitch_face(s,hmin,hmax)
         implicit none
-        type(stitch),intent(inout) :: s
+        type(stitch_face),intent(inout) :: s
         logical,intent(in) :: hmin,hmax
         s%hmin = hmin
         s%hmax = hmax
@@ -40,8 +39,8 @@
 
       subroutine init_copy(s_out,s_in)
         implicit none
-        type(stitch),intent(inout) :: s_out
-        type(stitch),intent(in) :: s_in
+        type(stitch_face),intent(inout) :: s_out
+        type(stitch_face),intent(in) :: s_in
         s_out%hmin = s_in%hmin
         s_out%hmax = s_in%hmax
         s_out%hmin_id = s_in%hmin_id

@@ -5,6 +5,7 @@
       ! 
       use export_raw_mod
       use grid_mod
+      use SF_mod
       implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -19,20 +20,23 @@
 
       private
 
-      public :: exp_3D_3C_g,exp_3D_2C_g,exp_3D_1C_g ! 3D Fields
-      public :: exp_2D_3C_g,exp_2D_2C_g,exp_2D_1C_g ! 2D Fields
-      public :: exp_1D_3C_g,exp_1D_2C_g,exp_1D_1C_g ! 1D Fields
+      public :: exp_3D_3C_g ! Most likely to be used
+      public :: exp_3D_2C_g
+      public :: exp_3D_1C_g ! Most likely to be used
+
+      public :: exp_2D_3C_g
+      public :: exp_2D_2C_g ! Most likely to be used
+      public :: exp_2D_1C_g ! Most likely to be used
+
+      public :: exp_1D_3C_g
+      public :: exp_1D_2C_g
+      public :: exp_1D_1C_g ! Most likely to be used
 
       public :: exp_3D_1C_S_g ! For grid export
       public :: exp_2D_1C_S_g ! For grid export
       public :: exp_1D_1C_S_g ! For grid export
 
       public :: getType_3D,getType_2D,getType_1D    ! getDataType
-
-      ! public :: getType
-      ! interface getType;  module procedure getType_1D; end interface
-      ! interface getType;  module procedure getType_2D; end interface
-      ! interface getType;  module procedure getType_3D; end interface
 
       contains
 
@@ -287,7 +291,7 @@
         elseif (all(s.eq.(/g%c(1)%sn,g%c(2)%sc,g%c(3)%sn/))) then; DT = 7 ! Edge Data y
         elseif (all(s.eq.(/g%c(1)%sn,g%c(2)%sn,g%c(3)%sc/))) then; DT = 8 ! Edge Data z
         else
-          write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'
+          write(*,*) 'Error: grid-field mismatch with '//name//' in 3D in dataSet.f90.'
           stop 'Done'
         endif
       end function
@@ -305,24 +309,36 @@
         elseif (all(s.eq.(/g%c(2)%sc,g%c(3)%sc/))) then; DT = 2 ! CC data
         elseif (all(s.eq.(/g%c(2)%sn,g%c(3)%sc/))) then; DT = 3 ! Face data y
         elseif (all(s.eq.(/g%c(2)%sc,g%c(3)%sn/))) then; DT = 4 ! Face data z
-        else; write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'; stop 'Done'
+        else; write(*,*) 'Error: grid-field mismatch with '//name//' in 2D in dataSet.f90.';
+        write(*,*) 's = ',s
+        write(*,*) 'g%c%sn = ',(/g%c(1)%sn,g%c(2)%sn,g%c(3)%sn/)
+        write(*,*) 'g%c%sc = ',(/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+        stop 'Done'
         endif
         case (2)
             if (all(s.eq.(/g%c(1)%sn,g%c(3)%sn/))) then; DT = 1 ! Node data
         elseif (all(s.eq.(/g%c(1)%sc,g%c(3)%sc/))) then; DT = 2 ! CC data
         elseif (all(s.eq.(/g%c(1)%sn,g%c(3)%sc/))) then; DT = 3 ! Face data x
         elseif (all(s.eq.(/g%c(1)%sc,g%c(3)%sn/))) then; DT = 4 ! Face data z
-        else; write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'; stop 'Done'
+        else; write(*,*) 'Error: grid-field mismatch with '//name//' in 2D in dataSet.f90.';
+        write(*,*) 's = ',s
+        write(*,*) 'g%c%sn = ',(/g%c(1)%sn,g%c(2)%sn,g%c(3)%sn/)
+        write(*,*) 'g%c%sc = ',(/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+        stop 'Done'
         endif
         case (3)
             if (all(s.eq.(/g%c(1)%sn,g%c(2)%sn/))) then; DT = 1 ! Node data
         elseif (all(s.eq.(/g%c(1)%sc,g%c(2)%sc/))) then; DT = 2 ! CC data
         elseif (all(s.eq.(/g%c(1)%sn,g%c(2)%sc/))) then; DT = 3 ! Face data x
         elseif (all(s.eq.(/g%c(1)%sc,g%c(2)%sn/))) then; DT = 4 ! Face data y
-        else; write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'; stop 'Done'
+        else; write(*,*) 'Error: grid-field mismatch with '//name//' in 2D in dataSet.f90.';
+        write(*,*) 's = ',s
+        write(*,*) 'g%c%sn = ',(/g%c(1)%sn,g%c(2)%sn,g%c(3)%sn/)
+        write(*,*) 'g%c%sc = ',(/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
+        stop 'Done'
         endif
         case default
-          write(*,*) 'Error: axis must = 1,2,3 for '//name//' in dataSet.f90.'; stop 'Done'
+          write(*,*) 'Error: axis must = 1,2,3 for '//name//' in 2D in dataSet.f90.'; stop 'Done'
         end select
       end function
 
@@ -337,20 +353,20 @@
         case (1)
             if (all(s.eq.(/g%c(1)%sn/))) then; DT = 1 ! Node data
         elseif (all(s.eq.(/g%c(1)%sc/))) then; DT = 2 ! CC data
-        else; write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'; stop 'Done'
+        else; write(*,*) 'Error: grid-field mismatch with '//name//' in 1D in dataSet.f90.'; stop 'Done'
         endif
         case (2)
             if (all(s.eq.(/g%c(2)%sn/))) then; DT = 1 ! Node data
         elseif (all(s.eq.(/g%c(2)%sc/))) then; DT = 2 ! CC data
-        else; write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'; stop 'Done'
+        else; write(*,*) 'Error: grid-field mismatch with '//name//' in 1D in dataSet.f90.'; stop 'Done'
         endif
         case (3)
             if (all(s.eq.(/g%c(3)%sn/))) then; DT = 1 ! Node data
         elseif (all(s.eq.(/g%c(3)%sc/))) then; DT = 2 ! CC data
-        else; write(*,*) 'Error: grid-field mismatch with '//name//' in dataSet.f90.'; stop 'Done'
+        else; write(*,*) 'Error: grid-field mismatch with '//name//' in 1D in dataSet.f90.'; stop 'Done'
         endif
         case default
-          write(*,*) 'Error: axis must = 1,2,3 for '//name//' in dataSet.f90.'; stop 'Done'
+          write(*,*) 'Error: axis must = 1,2,3 for '//name//' in 1D in dataSet.f90.'; stop 'Done'
         end select
       end function
 

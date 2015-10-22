@@ -227,21 +227,21 @@
         integer :: i,nLevels
         nLevels = mg(1)%nLevels
         call assign(mg(1)%f,f)
-        call export_1C_SF(mg(1)%m,mg(1)%f,dir,'f_Grid1',1)
+        call export_3D_1C(mg(1)%m,mg(1)%f,dir,'f_Grid1',1)
         do i = 1,mg(1)%nLevels-1
           call restrict(mg(i+1)%f,mg(i)%f,mg(i)%m,mg(i)%temp_rx,mg(i)%temp_rxy)
-          call export_1C_SF(mg(i+1)%m,mg(i+1)%f,dir,'f_Grid'//int2str(i+1),1)
+          call export_3D_1C(mg(i+1)%m,mg(i+1)%f,dir,'f_Grid'//int2str(i+1),1)
           write(*,*) 'Finished restricting multigrid level ',i
         enddo
         write(*,*) '         Finished restricting'
 
         mg(nLevels)%u = mg(nLevels)%f
         write(*,*) '         Assigned coarsest level'
-        call export_1C_SF(mg(nLevels)%m,mg(nLevels)%f,dir,'u_Grid'//int2str(nLevels),1)
+        call export_3D_1C(mg(nLevels)%m,mg(nLevels)%f,dir,'u_Grid'//int2str(nLevels),1)
 
         do i = mg(1)%nLevels, 2,-1
           call prolongate(mg(i-1)%u,mg(i)%u,mg(i-1)%m,mg(i-1)%temp_rxy,mg(i-1)%temp_rx)
-          call export_1C_SF(mg(i-1)%m,mg(i-1)%f,dir,'u_Grid'//int2str(i-1),1)
+          call export_3D_1C(mg(i-1)%m,mg(i-1)%f,dir,'u_Grid'//int2str(i-1),1)
           write(*,*) 'Finished prolongating multigrid level ',i
         enddo
         write(*,*) '         Finished prolongating'

@@ -133,7 +133,7 @@
          type(mesh),intent(inout) :: m
          character(len=*),intent(in) :: directory,name
          integer,intent(in) :: pad
-         call import_3C_VF(m,f,directory,name,pad)
+         call import_3D_3C(m,f,directory,name,pad)
        end subroutine
 
        ! *******************************************************************************
@@ -271,7 +271,7 @@
            !$OMP END PARALLEL DO
          enddo
          call zeroGhostPoints(e)
-         if (plotTF) call export_1C_SF(m,e,dir,'MG_Error_'//name,0)
+         if (plotTF) call export_3D_1C(m,e,dir,'MG_Error_'//name,0)
 
          call compute(n,e,m)
          call delete(e)

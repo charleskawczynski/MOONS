@@ -125,17 +125,13 @@
          select case (face)
          case (1,2); if (b%s(1).eq.b%g%c(1)%sn) then; call init(b%face(face),bctype_n)
                  elseif (b%s(1).eq.b%g%c(1)%sc) then; call init(b%face(face),bctype_cc)
-                 else; stop 'Error: size mismatch in init_ND_face in BCs.f90'
                  endif
          case (3,4); if (b%s(2).eq.b%g%c(2)%sn) then; call init(b%face(face),bctype_n)
                  elseif (b%s(2).eq.b%g%c(2)%sc) then; call init(b%face(face),bctype_cc)
-                 else; stop 'Error: size mismatch in init_ND_face in BCs.f90'
                  endif
          case (5,6); if (b%s(3).eq.b%g%c(3)%sn) then; call init(b%face(face),bctype_n)
                  elseif (b%s(3).eq.b%g%c(3)%sc) then; call init(b%face(face),bctype_cc)
-                 else; stop 'Error: size mismatch in init_ND_face in BCs.f90'
                  endif
-         case default; stop 'Error: case not found in init_ND_face in BCs.f90'
          end select
          call define_logicals(b)
        end subroutine
@@ -234,7 +230,6 @@
          do i=1,6; call init(b_out%face(i),b_in%face(i)); enddo
          call init(b_out%g,b_in%g)
          b_out%s = b_in%s
-         b_out%gridDefined = b_in%gridDefined
          b_out%defined = b_in%defined
          b_out%all_Dirichlet = b_in%all_Dirichlet
          b_out%all_Neumann = b_in%all_Neumann
@@ -244,7 +239,9 @@
          implicit none
          type(BCs),intent(inout) :: b
          integer :: i
-         do i=1,6; call delete(b%face(i)); enddo
+         do i=1,6
+           call delete(b%face(i))
+         enddo
          call delete(b%g)
          b%gridDefined = .false.
          call define_logicals(b)

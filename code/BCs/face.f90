@@ -1,4 +1,4 @@
-       module boundary_mod
+       module face_mod
        use IO_tools_mod
        implicit none
 
@@ -13,11 +13,11 @@
 #endif
 
        private
-       public :: boundary
+       public :: face
        public :: init,delete
        public :: print,export
 
-       type boundary
+       type face
          integer :: bctype
          real(cp),dimension(:,:),allocatable :: vals
          real(cp) :: val
@@ -32,10 +32,10 @@
        interface init;       module procedure init_shape;            end interface
        interface init;       module procedure init_copy;             end interface
 
-       interface delete;     module procedure delete_boundary;       end interface
-       interface print;      module procedure print_boundary;        end interface
-       interface export;     module procedure export_boundary;       end interface
-       interface export;     module procedure export_boundary_unit;  end interface
+       interface delete;     module procedure delete_face;       end interface
+       interface print;      module procedure print_face;        end interface
+       interface export;     module procedure export_face;       end interface
+       interface export;     module procedure export_face_unit;  end interface
 
        contains
 
@@ -43,52 +43,52 @@
        ! ********************************* INIT/DELETE *********************************
        ! *******************************************************************************
 
-       subroutine init_type(b,bctype)
+       subroutine init_type(f,bctype)
          implicit none
-         type(boundary),intent(inout) :: b
+         type(face),intent(inout) :: f
          integer,intent(in) :: bctype
-         b%bctype = bctype
-         b%def(1) = .true.
-         b%defined = all(b%def)
+         f%bctype = bctype
+         f%def(1) = .true.
+         f%defined = all(f%def)
        end subroutine
 
-       subroutine init_vals_RF(b,vals)
+       subroutine init_vals_RF(f,vals)
          implicit none
-         type(boundary),intent(inout) :: b
+         type(face),intent(inout) :: f
          real(cp),dimension(:,:),intent(in) :: vals
-         if (allocated(b%vals)) deallocate(b%vals)
-         ! b%s = shape(vals) ! Is this necessary/good?
-         ! Make sure that b%s has been defined here in debug mode
-         allocate(b%vals(b%s(1),b%s(2)))
-         b%val = vals(1,1)
-         b%vals = vals
-         b%def(2) = .true.
-         b%defined = all(b%def)
+         if (allocated(f%vals)) deallocate(f%vals)
+         ! f%s = shape(vals) ! Is this necessary/good?
+         ! Make sure that f%s has been defined here in debug mode
+         allocate(f%vals(f%s(1),f%s(2)))
+         f%val = vals(1,1)
+         f%vals = vals
+         f%def(2) = .true.
+         f%defined = all(f%def)
        end subroutine
 
-       subroutine init_shape(b,s)
+       subroutine init_shape(f,s)
          implicit none
-         type(boundary),intent(inout) :: b
+         type(face),intent(inout) :: f
          integer,dimension(2),intent(in) :: s
-         b%s = s
+         f%s = s
        end subroutine
 
-       subroutine init_val(b,val)
+       subroutine init_val(f,val)
          implicit none
-         type(boundary),intent(inout) :: b
+         type(face),intent(inout) :: f
          real(cp),intent(in) :: val
-         if (allocated(b%vals)) deallocate(b%vals)
-         allocate(b%vals(b%s(1),b%s(2)))
-         b%vals = val
-         b%val = val
-         b%def(2) = .true.
-         b%defined = all(b%def)
+         if (allocated(f%vals)) deallocate(f%vals)
+         allocate(f%vals(f%s(1),f%s(2)))
+         f%vals = val
+         f%val = val
+         f%def(2) = .true.
+         f%defined = all(f%def)
        end subroutine
 
        subroutine init_copy(b_out,b_in)
          implicit none
-         type(boundary),intent(inout) :: b_out
-         type(boundary),intent(in) :: b_in
+         type(face),intent(inout) :: b_out
+         type(face),intent(in) :: b_in
          if (.not.b_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
          if (allocated(b_in%vals)) then
            call init(b_out,b_in%vals)
@@ -96,61 +96,61 @@
          endif
          b_out%bctype = b_in%bctype
          b_out%val = b_in%val
-         b_out%def = b_in%def
-         b_out%defined = b_in%defined
+         b_out%def = b_out%def
+         b_out%defined = b_out%defined
          b_out%s = b_in%s
        end subroutine
 
-       subroutine delete_boundary(b)
+       subroutine delete_face(f)
          implicit none
-         type(boundary),intent(inout) :: b
-         if (allocated(b%vals)) deallocate(b%vals)
-         b%s = 0
-         b%def = .false.
-         b%defined = all(b%def)
+         type(face),intent(inout) :: f
+         if (allocated(f%vals)) deallocate(f%vals)
+         f%s = 0
+         f%def = .false.
+         f%defined = all(f%def)
        end subroutine
 
        ! *******************************************************************************
        ! ******************************** PRINT/EXPORT *********************************
        ! *******************************************************************************
 
-       subroutine print_boundary(b,name)
+       subroutine print_face(f,name)
          implicit none
-         type(boundary), intent(in) :: b
+         type(face), intent(in) :: f
          character(len=*),intent(in) :: name
-         call exp_boundary(b,name,6)
+         call exp_face(f,name,6)
        end subroutine
 
-       subroutine export_boundary(b,dir,name)
+       subroutine export_face(f,dir,name)
          implicit none
-         type(boundary), intent(in) :: b
+         type(face), intent(in) :: f
          character(len=*),intent(in) :: dir,name
          integer :: NewU
-         NewU = newAndOpen(dir,name//'_boundary')
-         call exp_boundary(b,name,newU)
-         call closeAndMessage(newU,name//'_BoundaryConditions',dir)
+         NewU = newAndOpen(dir,name//'_face')
+         call exp_face(f,name,newU)
+         call closeAndMessage(newU,name//'_faceConditions',dir)
        end subroutine
 
-       subroutine export_boundary_unit(b,newU,name)
+       subroutine export_face_unit(f,newU,name)
          implicit none
-         type(boundary), intent(in) :: b
+         type(face), intent(in) :: f
          integer,intent(in) :: newU
          character(len=*),intent(in) :: name
-         call exp_boundary(b,name,newU)
+         call exp_face(f,name,newU)
        end subroutine
 
-       subroutine exp_boundary(b,name,newU)
+       subroutine exp_face(f,name,newU)
          implicit none
-         type(boundary), intent(in) :: b
+         type(face), intent(in) :: f
          character(len=*),intent(in) :: name
          integer,intent(in) :: NewU
-         if (.not.b%defined) stop 'Error: boundary not defined in writeBoundary in boundary.f90'
+         if (.not.f%defined) stop 'Error: face not defined in writeface in face.f90'
 
-         write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
-         call writeBoundary(b%bctype,newU)
+         write(newU,*) 'face conditions for ' // trim(adjustl(name))
+         call writeface(f%bctype,newU)
        end subroutine
 
-       subroutine writeBoundary(bctype,NewU)
+       subroutine writeface(bctype,NewU)
          implicit none
          integer,intent(in) :: NewU,bctype
          if (bctype.eq.1) then; write(newU,*) 'Dirichlet - direct - wall coincident'; endif

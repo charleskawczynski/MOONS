@@ -39,8 +39,10 @@
         public :: init_Node
         public :: init_Face
         public :: init_Edge
+        public :: CC_along,Node_along
 
         public :: init_BCs,init_BC_props
+        
 
         ! Monitoring
         public :: print
@@ -117,6 +119,9 @@
         interface maxabsdiff;     module procedure maxabsdiff_SF;          end interface
         interface mean;           module procedure mean_SF;                end interface
         interface sum;            module procedure sum_SF;                 end interface
+
+        interface CC_along;       module procedure CC_along_SF;            end interface
+        interface Node_along;     module procedure Node_along_SF;          end interface
 
       contains
 
@@ -455,6 +460,22 @@
           call deleteDataLocation(f)
           f%is_node = .true.
         end subroutine
+
+        function CC_along_SF(f,dir) result(TF)
+          implicit none
+          type(SF),intent(in) :: f
+          integer,intent(in) :: dir
+          logical :: TF
+          TF = any((/f%is_CC,f%is_Face.and.(f%face.ne.dir),f%is_Edge.and.(f%edge.eq.dir)/))
+        end function
+
+        function Node_along_SF(f,dir) result(TF)
+          implicit none
+          type(SF),intent(in) :: f
+          integer,intent(in) :: dir
+          logical :: TF
+          TF = any((/f%is_Node,f%is_Face.and.(f%face.eq.dir),f%is_Edge.and.(f%edge.ne.dir)/))
+        end function
 
         subroutine init_BCs_SF(f)
           implicit none

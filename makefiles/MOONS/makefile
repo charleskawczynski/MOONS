@@ -114,7 +114,7 @@ FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_PARALLELIZE_Jacobi_
 FCFLAGS += -D_PARALLELIZE_SOR_
 FCFLAGS += -D_PARALLELIZE_RF_
-# FCFLAGS += -D_PARALLELIZE_EMBEDEXTRACT_
+FCFLAGS += -D_PARALLELIZE_EMBEDEXTRACT_
 
 # FCFLAGS += noarg_temp_created
 
@@ -126,10 +126,10 @@ FCFLAGS += -D_PARALLELIZE_RF_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
 # Internal debugging
-FCFLAGS += -D_DEBUG_DEL_
-FCFLAGS += -D_DEBUG_INTERP_
+# FCFLAGS += -D_DEBUG_DEL_
+# FCFLAGS += -D_DEBUG_INTERP_
 # FCFLAGS += -D_DEBUG_COORDINATES_
-FCFLAGS += -D_DEBUG_APPLYBCS_
+# FCFLAGS += -D_DEBUG_APPLYBCS_
 # FCFLAGS += -D_DEBUG_RF_
 # FCFLAGS += -D_DEBUG_SF_
 # FCFLAGS += -D_DEBUG_VF_
@@ -150,10 +150,15 @@ TARGET = $(TARGET_DIR)$(PS)MOONS
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
 
+# $(SRC_DIR)$(PS)BCs$(PS)corner.f90 \
+# $(SRC_DIR)$(PS)BCs$(PS)edge.f90 \
+# $(SRC_DIR)$(PS)BCs$(PS)face.f90 \
+# $(SRC_DIR)$(PS)grid$(PS)stitch.f90 \
+# $(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
+
 
 SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
-	$(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
@@ -161,7 +166,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)array.f90 \
 	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)stitch.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)stitch_face.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)stitch_edge.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)stitch_corner.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)gridGenTools.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90 \
@@ -186,12 +193,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90 \
-	$(SRC_DIR)$(PS)IO$(PS)export_RF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_VF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)import_g.f90 \
-	$(SRC_DIR)$(PS)IO$(PS)import_RF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)import_SF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)import_VF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90 \

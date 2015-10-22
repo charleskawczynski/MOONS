@@ -67,7 +67,7 @@
          type(rundata) :: rd
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
-         type(domain) :: D
+         type(domain) :: D,D_sigma
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
          real(cp) :: dTime,ds
@@ -116,8 +116,8 @@
 
          ! call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
 
-         call cube(mesh_mom)
-         call cube(mesh_ind)
+         ! call cube(mesh_mom)
+         ! call cube(mesh_ind)
          ! call initProps(mesh_mom)
          ! call patch(mesh_mom)
 
@@ -127,11 +127,27 @@
          ! call ext_app_Roberts_L(m_temp%g(1),mesh_ind%g(1),0.05_cp,Nwtop(1),1)
          ! call ext_app_Roberts_L(mesh_ind%g(1),m_temp%g(1),0.05_cp,Nwtop(3),3)
 
-         call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
+         ! call makeGrids(mesh_mom%g(1),mesh_ind%g(1),Ni,Nwtop,Nwbot)
+
+         ! call ins_u_bend(mesh_mom)
+         call BC_sim_mom(mesh_mom)
+         call BC_sim_ind(mesh_ind,mesh_mom,D_sigma)
+
+         ! call cube(mesh_mom)
+         ! call init(mesh_ind,mesh_mom)
+         ! call init(m_temp,mesh_mom)
+         ! call ext_prep_uniform(mesh_ind%g(1),m_temp%g(1),Nwbot(1),1)
+         ! call ext_prep_uniform(m_temp%g(1),mesh_ind%g(1),Nwbot(2),2)
+         ! call ext_prep_uniform(mesh_ind%g(1),m_temp%g(1),Nwbot(3),3)
+         ! call init(m_temp,mesh_ind)
+         ! call ext_app_uniform(mesh_ind%g(1),m_temp%g(1),Nwtop(1),1)
+         ! call ext_app_uniform(m_temp%g(1),mesh_ind%g(1),Nwtop(2),2)
+         !call ext_app_uniform(m_temp%g(1),mesh_ind%g(1),Nwtop(3),3)
+
+         ! call init(mesh_ind,m_temp)
 
          call initProps(mesh_mom)
          call patch(mesh_mom)
-
          call initProps(mesh_ind)
          call patch(mesh_ind)
          ! call print(mesh_mom%g(1))
@@ -162,7 +178,7 @@
          call setNmaxB(ind,NmaxB)
          call setNmaxCleanB(ind,NmaxCleanB)
          call setPiGroups(ind,Ha,Rem)
-         if (solveInduction) call init(ind,mesh_ind,D,dir)
+         if (solveInduction) call init(ind,mesh_ind,D,D_sigma,dir)
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
@@ -323,7 +339,9 @@
          case (100); Re = 400d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-2
          ! case (100); Re = 4.0d0;    Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 1.679d-3 ! Low Rem for momentum ADI
          ! case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
-         case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
+         ! case (101); Re = 1000d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
+         ! case (101); Re = 400d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
+         case (101); Re = 400d0;   Ha = 0.0d0    ; Rem = 1.0d0 ; ds = 1.0d-4; dTime = 2.5d-4
          case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-4; dTime = 1.0d-2
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 0.01d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! Low but finite Rem
          ! case (102); Re = 100d0;    Ha = 10.0d0   ; Rem = 10.0d0 ; ds = 1.0d-6; dTime = 1.0d-2 ! finite Rem
@@ -460,15 +478,15 @@
          ! Rem = real(100.0,cp);  ds = 5.0d-3;   dTime = ds     ! (Rem = 100)
 
          case (1010)
-         Re = real(400.0,cp); Ha = real(20.0,cp)
+         Re = 400.0_cp; Ha = 20.0_cp
 
          ! Rem = real(0.0,cp);    ds = 1.0d-4;   dTime = 1.0d-2 ! (Rem = 0)
          ! Rem = real(1.0,cp);    ds = 5.0d-5;   dTime = ds     ! (Rem = 1)
          ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
          ! Rem = real(100.0,cp);  ds = 5.0d-5;   dTime = ds     ! (Rem = 100) , sigma* = 0.01
 
-         ! Rem = real(100.0,cp);  ds = 1.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
-         Rem = real(100.0,cp);  ds = 2.0d-3;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         Rem = 100.0_cp;  ds = 1.0d-7;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         ! Rem = real(100.0,cp);  ds = 2.0d-3;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
 
          case (1011)
          Re = real(10.0,cp)
@@ -505,14 +523,15 @@
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 10**5
          ! case (100); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 70000 ! For convergence rate test
 
-         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
+         ! case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 3*10**5
+         case (101); NmaxPPE = 5; NmaxB = 0; NmaxMHD = 2*10**5 ! u-bend flow
          case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 4000
          ! case (102); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20000
          case (103); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 500000
          case (104); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 3000000
 
          case (105); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6000
-         case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000
+         case (106); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 6000
          case (107); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 60000
          case (108); NmaxPPE = 5; NmaxB = 50; NmaxMHD = 20000
 
@@ -570,8 +589,8 @@
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 6*10**6 ! for testing
          ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 20*10**6 ! for testing
-         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**7 ! for testing
-         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**4 ! for testing
+         case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 5*10**7 ! for testing
+         ! case (1010); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**4 ! for testing
 
          case (1011); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing
          case (1012); NmaxPPE = 5; NmaxB = 5; NmaxMHD = 10**7 ! for testing

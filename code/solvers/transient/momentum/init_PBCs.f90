@@ -37,12 +37,17 @@
          implicit none
          type(SF),intent(inout) :: p
          type(mesh),intent(in) :: m
-         call init(p%RF(1)%b,m%g(1),p%RF(1)%s)
-         if (preDefinedP_BCs.ne.0) then
-               call initPredefinedPBCs(p%RF(1)%b)
-         else; call initUserPBCs(p%RF(1)%b)
-         endif
-         call init(p%RF(1)%b,0.0_cp)
+         integer :: i
+         do i=1,m%s
+           call init(p%RF(i)%b,m%g(i),p%RF(i)%s)
+           if (preDefinedP_BCs.ne.0) then
+                 call initPredefinedPBCs(p%RF(i)%b)
+           else; call initUserPBCs(p%RF(i)%b)
+           endif
+           call init(p%RF(i)%b,0.0_cp)
+         enddo
+         ! call init_Neumann(p%RF(1)%b,6)
+         ! call init_Dirichlet(p%RF(m%s)%b,1) ! Not suree if 1 or 2
        end subroutine
 
        subroutine initPredefinedPBCs(p_bcs)

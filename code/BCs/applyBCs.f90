@@ -42,6 +42,7 @@
 
        private
        public :: applyAllBCs
+       ! public :: applyAllGhostBCs
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -53,10 +54,14 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       interface applyAllBCs;    module procedure applyAllBCs_RF;     end interface
-       interface applyAllBCs;    module procedure applyAllBCs_VF;     end interface
-       interface applyAllBCs;    module procedure applyAllBCs_SF;     end interface
-       interface applyBCs;       module procedure applyBCs;           end interface
+       interface applyAllGhostBCs;  module procedure applyAllGhost_SF;   end interface
+       interface applyAllGhostBCs;  module procedure applyAllGhost_VF;   end interface
+
+
+       interface applyAllBCs;       module procedure applyAllBCs_RF;     end interface
+       interface applyAllBCs;       module procedure applyAllBCs_VF;     end interface
+       interface applyAllBCs;       module procedure applyAllBCs_SF;     end interface
+       interface applyBCs;          module procedure applyBCs;           end interface
 
        contains
 
@@ -69,6 +74,15 @@
          call applyAllBCs(U%z,m)
        end subroutine
 
+       subroutine applyAllGhost_VF(U,m)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         call applyAllGhostBCs(U%x,m)
+         call applyAllGhostBCs(U%y,m)
+         call applyAllGhostBCs(U%z,m)
+       end subroutine
+
        subroutine applyAllBCs_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
@@ -76,16 +90,33 @@
          integer :: i
          if (m%s.gt.1) then ! Check for stitching
            do i=1,m%s
-             if (.not.m%g(i)%st(2)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),3,2)
-             if (.not.m%g(i)%st(2)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),4,2)
-             if (.not.m%g(i)%st(1)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),1,1)
-             if (.not.m%g(i)%st(1)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),2,1)
-             if (.not.m%g(i)%st(3)%hmin) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),5,3)
-             if (.not.m%g(i)%st(3)%hmax) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),6,3)
+             if (.not.m%g(i)%st_face%hmin(2)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),3,2)
+             if (.not.m%g(i)%st_face%hmax(2)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),4,2)
+             if (.not.m%g(i)%st_face%hmin(1)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),1,1)
+             if (.not.m%g(i)%st_face%hmax(1)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),2,1)
+             if (.not.m%g(i)%st_face%hmin(3)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),5,3)
+             if (.not.m%g(i)%st_face%hmax(3)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),6,3)
            enddo
          else
            do i=1,m%s
              call applyAllBCs(U%RF(i)%f,U%RF(i)%b,m%g(i))
+           enddo
+         endif
+       end subroutine
+
+       subroutine applyAllGhost_SF(U,m)
+         implicit none
+         type(SF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         integer :: i
+         if (m%s.gt.1) then ! Check for stitching
+           do i=1,m%s
+             if (CC_along(U,2)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),3,2)
+             if (CC_along(U,2)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),4,2)
+             if (CC_along(U,1)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),1,1)
+             if (CC_along(U,1)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),2,1)
+             if (CC_along(U,3)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),5,3)
+             if (CC_along(U,3)) call applyBC_Face_dir(U%RF(i)%f,U%RF(i)%b,m%g(i),6,3)
            enddo
          endif
        end subroutine

@@ -2,7 +2,10 @@
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use IO_tools_mod
        use coordinates_mod
-       use stitch_mod
+       ! use stitch_mod
+       use stitch_face_mod
+       use stitch_edge_mod
+       use stitch_corner_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -21,7 +24,7 @@
        public :: print,export ! import
        public :: print_all,export_all
        public :: restrict,restrict_x,restrict_xy
-       public :: initProps
+       public :: initProps,export_stitches
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkGrid
@@ -29,7 +32,10 @@
 
        type grid
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
-         type(stitch),dimension(3) :: st
+         ! type(stitch),dimension(3) :: st
+         type(stitch_face)   :: st_face   ! Face-stitch
+         type(stitch_edge)   :: st_edge   ! Edge-stitch
+         type(stitch_corner) :: st_corner ! Corner-stitch
          ! Properties
          real(cp) :: dhMin,dhMax,maxRange,volume
          integer :: N_cells
@@ -50,6 +56,7 @@
        interface print;          module procedure print_Grid;          end interface
        interface print_all;      module procedure print_Grid_all;      end interface
        interface export;         module procedure export_Grid;         end interface
+       interface export_stitches;module procedure export_grid_stitches;end interface
        interface export_all;     module procedure export_Grid_all;     end interface
 
        contains
@@ -59,7 +66,10 @@
          type(grid),intent(inout) :: g
          integer :: i
          do i = 1,3; call delete(g%c(i)) ;enddo
-         do i = 1,3; call delete(g%st(i)) ;enddo
+         ! do i = 1,3; call delete(g%st(i)) ;enddo
+         call delete(g%st_face)
+         call delete(g%st_edge)
+         call delete(g%st_corner)
          call initProps(g)
          ! write(*,*) 'Grid deleted'
        end subroutine
@@ -70,7 +80,10 @@
          type(grid),intent(in) :: f
          integer :: i
          do i = 1,3; call init(g%c(i),f%c(i)) ;enddo
-         do i = 1,3; call init(g%st(i),f%st(i)) ;enddo
+         ! do i = 1,3; call init(g%st(i),f%st(i)) ;enddo
+         call init(g%st_face,f%st_face)
+         call init(g%st_edge,f%st_edge)
+         call init(g%st_corner,f%st_corner)
          call initProps(g)
          if (.not.g%defined) stop 'Error: tried copying grid that was not fully defined'
        end subroutine
@@ -177,20 +190,26 @@
          write(un,*) 'stretching_x = ',g%c(1)%dhMax-g%c(1)%dhMin
          write(un,*) 'stretching_y = ',g%c(2)%dhMax-g%c(2)%dhMin
          write(un,*) 'stretching_z = ',g%c(3)%dhMax-g%c(3)%dhMin
-         write(un,*) ''
-         write(un,*) 'stitches_x = ',g%st(1)%hmin,g%st(1)%hmax
-         write(un,*) 'stitches_y = ',g%st(2)%hmin,g%st(2)%hmax
-         write(un,*) 'stitches_z = ',g%st(3)%hmin,g%st(3)%hmax
-         write(un,*) 'stitch_id_x = ',g%st(1)%hmin_id,g%st(1)%hmax_id
-         write(un,*) 'stitch_id_y = ',g%st(2)%hmin_id,g%st(2)%hmax_id
-         write(un,*) 'stitch_id_z = ',g%st(3)%hmin_id,g%st(3)%hmax_id
          write(un,*) 'defined = ',g%defined
-         ! write(un,*) 'c(1)'
-         ! call print(g%c(1))
-         ! write(un,*) 'c(2)'
-         ! call print(g%c(2))
-         ! write(un,*) 'c(3)'
-         ! call print(g%c(3))
+       end subroutine
+
+       subroutine export_grid_stitches(g,un)
+         implicit none
+         type(grid), intent(in) :: g
+         integer,intent(in) :: un
+         integer :: i
+         write(un,*) 'stitches_face (hmin) = ',(/(g%st_face%hmin(i),i=1,3)/)
+         write(un,*) 'stitches_face (hmax) = ',(/(g%st_face%hmax(i),i=1,3)/)
+         
+         write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
+         write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)
+         write(un,*) 'stitches_edge (maxmin) = ',(/(g%st_edge%maxmin(i),i=1,3)/)
+         write(un,*) 'stitches_edge (maxmax) = ',(/(g%st_edge%maxmax(i),i=1,3)/)
+
+         write(un,*) 'stitches_corner (minmin) = ',g%st_corner%minmin
+         write(un,*) 'stitches_corner (minmax) = ',(/(g%st_corner%minmax(i),i=1,3)/)
+         write(un,*) 'stitches_corner (maxmin) = ',(/(g%st_corner%maxmin(i),i=1,3)/)
+         write(un,*) 'stitches_corner (maxmax) = ',g%st_corner%maxmax
        end subroutine
 
        subroutine print_Grid(g)

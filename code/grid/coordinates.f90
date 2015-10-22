@@ -21,7 +21,7 @@
 
       ! For stitching multi-domains, only
       ! after coordinates has been defined
-      public :: stitch_stencils 
+      public :: stitch_stencils
 
       ! For multi-grid
       public :: restrict
@@ -49,6 +49,7 @@
         real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
         real(cp),dimension(:),allocatable :: dhc        ! Difference in cell center coordinates
         logical :: defined = .false.
+        logical :: stencils_defined = .false.
       end type
 
       interface init;              module procedure initCoordinates;        end interface
@@ -60,7 +61,7 @@
 
       interface restrict;          module procedure restrictCoordinates;    end interface
 
-      interface stitch_stencils;    module procedure stitch_stencils_c;     end interface
+      interface stitch_stencils;   module procedure stitch_stencils_c;      end interface
       interface init_stencils;     module procedure init_stencils_c;        end interface ! Private
       
       contains
@@ -84,6 +85,7 @@
         call delete(c%D_CC2N); call delete(c%U_CC2N)
         call delete(c%D_N2CC); call delete(c%U_N2CC)
         c%defined = .false.
+        c%stencils_defined = .false.
       end subroutine
 
       subroutine initCopy(c,d)
@@ -113,8 +115,8 @@
         c%sn = d%sn
         c%sc = d%sc
         c%defined = d%defined
+        c%stencils_defined = d%stencils_defined
         call initProps(c)
-        call init_stencils(c)
       end subroutine
 
       subroutine initCoordinates(c,hn,sn)
@@ -377,7 +379,12 @@
         implicit none
         type(coordinates),intent(inout) :: c
         logical,intent(in) :: hmin,hmax
-        if (.not.c%defined) stop 'Error: coordinates not defined in stitch_stencils_c in coordinates.f90'
+        if (.not.c%defined) then
+          stop 'Error: coordinates not defined in stitch_stencils_c in coordinates.f90'
+        endif
+        if (.not.c%stencils_defined) then
+          stop 'Error: coordinate stencils not defined in stitch_stencils_c in coordinates.f90'
+        endif
         call stitch_lapCC(c,hmin,hmax)
         call stitch_colCC(c,hmin,hmax)
         call stitch_lapN(c,hmin,hmax)
@@ -565,30 +572,33 @@
       subroutine init_stencils_c(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        ! Interpolation stencils
-        call init_interpStencil(c)
+        if (c%sc.gt.2) then
+          ! Interpolation stencils
+          call init_interpStencil(c)
 
-        ! Derivative stencils
-        call stencil_lapCC(c)
-        call stencil_lapN(c)
-        call stencil_stagCC2N(c)
-        call stencil_stagN2CC(c)
-        call stencil_colCC(c)
-        call stencil_colN(c)
+          ! Derivative stencils
+          call stencil_lapCC(c)
+          call stencil_lapN(c)
+          call stencil_stagCC2N(c)
+          call stencil_stagN2CC(c)
+          call stencil_colCC(c)
+          call stencil_colN(c)
 
-        ! Splitting method stencils:
-        call init_D_CC2N(c)
-        call init_D_N2CC(c)
-        call init_U_CC2N(c)
-        call init_U_N2CC(c)
-        
-        ! call check(c%lapCC)
-        ! call check(c%lapN)
-        ! call check(c%stagCC2N)
-        ! call check(c%stagN2CC)
-        ! call check(c%colCC)
-        ! call check(c%colN)
-        ! stop 'Done'
+          ! Splitting method stencils:
+          call init_D_CC2N(c)
+          call init_D_N2CC(c)
+          call init_U_CC2N(c)
+          call init_U_N2CC(c)
+          
+          ! call check(c%lapCC)
+          ! call check(c%lapN)
+          ! call check(c%stagCC2N)
+          ! call check(c%stagN2CC)
+          ! call check(c%colCC)
+          ! call check(c%colN)
+          ! stop 'Done'
+          c%stencils_defined = .true.
+        endif
       end subroutine
 
       subroutine addGhostNodes(c)

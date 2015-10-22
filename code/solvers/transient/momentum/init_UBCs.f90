@@ -71,16 +71,26 @@
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
+         integer :: i
 
-         call init(U%x%RF(1)%b,m%g(1),U%x%RF(1)%s)
-         call init(U%y%RF(1)%b,m%g(1),U%y%RF(1)%s)
-         call init(U%z%RF(1)%b,m%g(1),U%z%RF(1)%s)
+         do i=1,m%s
+           call init(U%x%RF(i)%b,m%g(i),U%x%RF(i)%s)
+           call init(U%y%RF(i)%b,m%g(i),U%y%RF(i)%s)
+           call init(U%z%RF(i)%b,m%g(i),U%z%RF(i)%s)
+           if (preDefinedU_BCs.ne.0) then
+             call initPredefinedUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b,m%g(i))
+           else
+             call initUserUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b)
+           endif
+         enddo
+         ! call init_Neumann(U%x%RF(1)%b,6)
+         ! call init_Neumann(U%y%RF(1)%b,6)
+         ! call init_Neumann(U%z%RF(1)%b,6)
 
-         if (preDefinedU_BCs.ne.0) then
-           call initPredefinedUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,m%g(1))
-         else
-           call initUserUBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b)
-         endif
+         ! call init(U%x%RF(1)%b,1.0_cp,1)
+         ! call init_Neumann(U%x%RF(m%s)%b,1)
+         ! call init_Neumann(U%y%RF(m%s)%b,1)
+         ! call init_Neumann(U%z%RF(m%s)%b,1)
        end subroutine
 
        subroutine initPredefinedUBCs(u_bcs,v_bcs,w_bcs,g)

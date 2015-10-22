@@ -152,6 +152,9 @@
          !        volume
          ! 
          ! Where x,y,z lives in the cell center.
+         ! This will yields expected results ONLY
+         ! when fluid domains are completely contained
+         ! by the total domain (case 1 in define_CE in subdomain.f90).
          implicit none
          type(VF),intent(in) :: u
          real(cp),intent(inout) :: e
@@ -160,7 +163,7 @@
          integer :: i,j,k,t
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
-         do t=1,u%x%s
+         do t=1,m%s
            do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
              eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**2.0_cp +&
                               u%y%RF(t)%f(i,j,k)**2.0_cp +&
@@ -298,32 +301,15 @@
          call stabilityTerms(fo,fi%z,m,n,3)
        end subroutine
 
-       ! subroutine totalEnergy_VF(e,f,m)
-       !   implicit none
-       !   type(VF),intent(in) :: f
-       !   real(cp),intent(inout) :: e
-       !   type(mesh),intent(in) :: m
-       !   real(cp) :: eTemp
-       !   integer :: i
-       !   eTemp = 0.0_cp
-       !   do i=1,f%x%s
-       !     call totalEnergy(eTemp,f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,m%g(i),f%x%RF(i)%s)
-       !     e = e+eTemp
-       !   enddo
-       ! end subroutine
-
        subroutine totalEnergy_VF_SD(e,f,D)
          implicit none
          type(VF),intent(in) :: f
          real(cp),intent(inout) :: e
          type(domain),intent(in) :: D
          type(VF) :: temp
-         if      (f%x%is_CC)   then;   call init_CC(temp,D%m_in)
-         else if (f%x%is_Node) then; call init_Node(temp,D%m_in)
-         else if (f%x%is_Face) then; call init_Face(temp,D%m_in)
-         else if (f%x%is_Edge) then; call init_Edge(temp,D%m_in)
-         else; stop 'Error: undefined type in totalEnergy_VF_SD in ops_aux.f90'
-         endif
+         if (.not.f%x%is_CC) stop 'Error: Total energy must be computed on CC in totalEnergy_VF_SD in ops_aux.f90'
+         call init_CC(temp,D%m_in)
+         call extractCC(temp,f,D)
          call totalEnergy(e,temp,D%m_in)
          call delete(temp)
        end subroutine

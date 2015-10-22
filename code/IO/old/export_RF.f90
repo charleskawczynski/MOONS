@@ -21,7 +21,6 @@
       private
 
       public :: exp_3C_RF,exp_2C_RF,exp_1C_RF ! 3D Fields
-      public :: exp_grid_RF
 
       contains
 
@@ -56,15 +55,6 @@
         integer :: DT
         DT = getType_3D(g,A%s,name)
         call exp_3D_1C_g(g,DT,pad,un,arrfmt,A%s,A%f)
-      end subroutine
-
-      subroutine exp_grid_RF(g,pad,un,arrfmt,s)
-        implicit none
-        type(grid),intent(in) :: g
-        integer,intent(in) :: pad,un
-        character(len=*),intent(in) :: arrfmt
-        integer,dimension(3),intent(in) :: s
-        call exp_3D_1C_S_g(g,1,pad,un,arrfmt,s,1.0_cp)
       end subroutine
 
       end module

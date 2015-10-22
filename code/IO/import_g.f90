@@ -18,16 +18,20 @@
 #endif
 
       private
-      public :: imp_3D_3C_g,imp_3D_2C_g,imp_3D_1C_g ! 3D Fields
-      public :: imp_2D_3C_g,imp_2D_2C_g,imp_2D_1C_g ! 2D Fields
-      public :: imp_1D_3C_g,imp_1D_2C_g,imp_1D_1C_g ! 1D Fields
+
+      public :: imp_3D_3C_g ! Most likely to be used
+      public :: imp_3D_2C_g
+      public :: imp_3D_1C_g ! Most likely to be used
+
+      public :: imp_2D_3C_g
+      public :: imp_2D_2C_g ! Most likely to be used
+      public :: imp_2D_1C_g ! Most likely to be used
+
+      public :: imp_1D_3C_g
+      public :: imp_1D_2C_g
+      public :: imp_1D_1C_g ! Most likely to be used
 
       public :: getType_3D,getType_2D,getType_1D    ! getDataType
-
-      ! public :: getType
-      ! interface getType;  module procedure getType_1D; end interface
-      ! interface getType;  module procedure getType_2D; end interface
-      ! interface getType;  module procedure getType_3D; end interface
 
       contains
 

@@ -1,6 +1,5 @@
       module IO_auxiliary_mod
       use IO_tools_mod
-      use IO_tecplotHeaders_mod
       implicit none
 
      ! Fixes / Improvements:

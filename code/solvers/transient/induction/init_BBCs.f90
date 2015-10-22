@@ -47,20 +47,27 @@
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
          type(vectorBCs) :: B_bcs
+         integer :: i
 
-         call init(B_bcs%x,m%g(1),B%x%RF(1)%s)
-         call init(B_bcs%y,m%g(1),B%y%RF(1)%s)
-         call init(B_bcs%z,m%g(1),B%z%RF(1)%s)
+         do i=1,m%s
+           call init(B_bcs%x,m%g(i),B%x%RF(i)%s)
+           call init(B_bcs%y,m%g(i),B%y%RF(i)%s)
+           call init(B_bcs%z,m%g(i),B%z%RF(i)%s)
 
-         if (preDefinedB_BCs.ne.0) then
-           call initPreDefinedBCs(B_bcs)
-         else
-           call initUserBBCs(B_bcs)
-         endif
+           if (preDefinedB_BCs.ne.0) then
+             call initPreDefinedBCs(B_bcs)
+           else
+             call initUserBBCs(B_bcs)
+           endif
 
-         call init(B%x%RF(1)%b,B_bcs%x) ! Copy vector BCs to field
-         call init(B%y%RF(1)%b,B_bcs%y) ! Copy vector BCs to field
-         call init(B%z%RF(1)%b,B_bcs%z) ! Copy vector BCs to field
+           call init(B%x%RF(i)%b,B_bcs%x) ! Copy vector BCs to field
+           call init(B%y%RF(i)%b,B_bcs%y) ! Copy vector BCs to field
+           call init(B%z%RF(i)%b,B_bcs%z) ! Copy vector BCs to field
+         enddo
+         ! call init_Neumann(B%x%RF(1)%b,6)
+         ! call init_Neumann(B%y%RF(1)%b,6)
+         ! call init_Neumann(B%z%RF(1)%b,6)
+         call delete(B_bcs)
        end subroutine
 
        subroutine initPreDefinedBCs(B_bcs)

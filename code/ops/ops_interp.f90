@@ -30,6 +30,7 @@
        ! 
        use grid_mod
        use mesh_mod
+       use applyStitches_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -282,6 +283,7 @@
          do i=1,f%s
            call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
          enddo
+         ! call applyStitches(f,m)
        end subroutine
 
 #ifdef _DEBUG_INTERP_

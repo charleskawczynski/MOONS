@@ -66,9 +66,9 @@
          type(VF),intent(inout) :: U
          type(mesh) :: temp
          call init(temp,m)
-         call import_1C_SF(temp,U%x,dir//'Ufield/','ufi',0)
-         call import_1C_SF(temp,U%y,dir//'Ufield/','vfi',0)
-         call import_1C_SF(temp,U%z,dir//'Ufield/','wfi',0)
+         call import_3D_1C(temp,U%x,dir//'Ufield/','ufi',0)
+         call import_3D_1C(temp,U%y,dir//'Ufield/','vfi',0)
+         call import_3D_1C(temp,U%z,dir//'Ufield/','wfi',0)
 
          ! call export_1C_SF(temp,U%x,dir//'Ufield/','ufi_imported',0)
          ! call export_1C_SF(temp,U%y,dir//'Ufield/','vfi_imported',0)

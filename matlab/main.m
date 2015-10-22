@@ -17,6 +17,10 @@ addpath([myDir.MOONSdir 'matlab\plotResults'])
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS - BMCs\BMC_102 - double check, low Rem\';
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS - BMCs\BMC_102, low but finite Rem\';
 myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\';
+% myDir.source = 'C:\Users\Charlie\Desktop\MOONS - BMCs\BMC - simple\';
+% myDir.source = 'C:\Users\Charlie\Desktop\MOONS - BMCs\BMC_1010 - with new domain, only 2h in but not crashing, next trying symmetry\';
+
+
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\N_16\';
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\N_32\';
 % myDir.source = 'C:\Users\Charlie\Desktop\MOONS\out\LDC\N_64\';
@@ -94,8 +98,8 @@ includePlot.transientOnly = true;
 %% TRANSIENT U,B,J DATA
 PT = plotTransient();
 PT.U(myDir,myPlot,includePlot,name)
-% PT.B(myDir,myPlot,includePlot,name)
-% PT.J(myDir,myPlot,includePlot,name)
+PT.B(myDir,myPlot,includePlot,name)
+PT.J(myDir,myPlot,includePlot,name)
 
 PR = plotResults();
 

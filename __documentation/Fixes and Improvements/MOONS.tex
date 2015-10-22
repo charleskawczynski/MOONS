@@ -53,23 +53,45 @@ In order to keep this document organized
 
 \section{Goals / Requirements}
 
-- Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
-
-- Compare methods for enforcing divB and trade-offs
---Plot(Rem vs Runtime vs div(B))
-
-- Mimicking plasma disruption
-
-- Benchmarking (convergence rates / Hydro flows / Hunt and Shercliff flow)
+\begin{itemize}
+\item Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
+	\begin{itemize}
+	\item Read papers on coupling fluid and vacuum domains
+	\item Develop Jacobi-solver for curl-curl operator
+	\item Read papers / start writing
+	\end{itemize}
+\item Finite $Re_m$ Shercliff/Hunt flows
+	\begin{itemize}
+	\item Read papers
+	\end{itemize}
+\item Mimicking plasma disruption
+	\begin{itemize}
+	\item Read papers
+	\end{itemize}
+\end{itemize}
 
 
 \section{Today}
 
+- Finish lecture presentation for tomorrow
+
+- Consider cases for edges/corners in multi-domain
+
+- Finish Jacobi-solver
+
+- Test domain/subdomain modules in BMC 102
+
+- Re-run BC sim to get transient data
+
+- Print / fill out invoice
+
+\section{Tomorrow}
+
+- Continue fixing file names and folder names for better organization
+
 - Finish up subdomain.f90 / embedExtract routines
 
 - Consider/try making solvers (momentum/induction) functional instead of OO.
-
-- Make subgrids and repeat process conducted with SF.
 
 - Read plasma papers
 
@@ -81,15 +103,13 @@ In order to keep this document organized
 
 - Make norm computations based on volume integrals, this is more natural.
 
-\section{Tomorrow}
+\section{Future Plans}
 
 - Try performing refinement on 2D flow
 
 - Look at KE equation and Bfield energy equation
 
 - Figure out how to view time in tecplot as simulation runs
-
-\section{Future Plans}
 
 - Naming convention for all ops should be (Real,SF,VF) = (real(cp),scalarField,vectorField)
 

@@ -7,7 +7,8 @@
       ! Realxation (SOR) method
       ! 
       ! Note that the variant of Gauss-Seidel/SOR called
-      ! "red-black" Gauss-Seidel is used.
+      ! "red-black" Gauss-Seidel is used, where the fields are 
+      ! traversed in a 3D checkerboarding manner.
       !
       ! Input:
       !     u            = initial guess for u
@@ -18,12 +19,12 @@
       !     norm         = Ln norms of residual
       !     displayTF    = print residuals to screen (T,F)
       ! 
-      ! Flags: (_PARALLELIZE_SOR_,
-      !         _EXPORT_SOR_CONVERGENCE_)
+      ! Flags: (_PARALLELIZE_SOR_,_EXPORT_SOR_CONVERGENCE_)
 
       use grid_mod
       use mesh_mod
       use applyBCs_mod
+      use applyStitches_mod
       use BCs_mod
       use norms_mod
       use ops_discrete_mod
@@ -85,22 +86,20 @@
         call init(SOR%p,m)
         call init(SOR%d,m)
 
-        do t=1,u%s
-          do i=1,3
-            if (SOR%s(i).eq.m%g(t)%c(i)%sc) then
-              call init(SOR%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
-              call init(SOR%d%g(t),m%g(t)%c(i)%hn,i) ! mesh made from n --> d%dhn is dhn
-              SOR%gt(i) = 1
-            elseif(SOR%s(i).eq.m%g(t)%c(i)%sn) then
-              call init(SOR%p%g(t),m%g(t)%c(i)%hn,i) ! mesh made from n --> p%dhn is dhn
-              call init(SOR%d%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> d%dhn is dhc
+        if (u%is_CC) then
+          do t=1,u%s; do i=1,3
+            call init(SOR%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            SOR%gt(i) = 1
+          enddo; enddo
+        elseif(u%is_Node) then
+          do t=1,u%s; do i=1,3
+            call init(SOR%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
               SOR%gt(i) = 0
-            else
-              write(*,*) 's = ',SOR%s
-              stop 'Error: mesh type was not determined in SOR.f90'
-            endif
-          enddo
-        enddo
+          enddo; enddo
+        elseif (u%is_Face) then
+        elseif (u%is_Edge) then
+        else; stop 'Error: mesh type was not determined in SOR.f90'
+        endif
 
         call init(SOR%lapu,u)
         call init(SOR%res,u)
@@ -127,8 +126,6 @@
         call delete(SOR%lapu)
         call delete(SOR%res)
         call delete(SOR%r)
-
-        ! write(*,*) 'SOR object deleted'
       end subroutine
 
 
@@ -176,24 +173,28 @@
 
 #endif
 
-          call innerLoop(u,f,SOR%r,SOR,(/0,0,0/)) ! Even in odd plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/0,0,0/)) ! Even in odd plane
 
-          call innerLoop(u,f,SOR%r,SOR,(/1,0,0/)) ! Even in even plane
-          call innerLoop(u,f,SOR%r,SOR,(/0,1,0/)) ! Even in even plane
-          call innerLoop(u,f,SOR%r,SOR,(/0,0,1/)) ! Even in even plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/1,0,0/)) ! Even in even plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/0,1,0/)) ! Even in even plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/0,0,1/)) ! Even in even plane
 
 
 #ifdef _PARALLELIZE_SOR_
           !$OMP END PARALLEL
+
+#endif
+
+#ifdef _PARALLELIZE_SOR_
           !$OMP PARALLEL
 
 #endif
 
-          call innerLoop(u,f,SOR%r,SOR,(/1,1,1/)) ! Odd in odd plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/1,1,1/)) ! Odd in odd plane
 
-          call innerLoop(u,f,SOR%r,SOR,(/0,1,1/)) ! Odd in even plane
-          call innerLoop(u,f,SOR%r,SOR,(/1,0,1/)) ! Odd in even plane
-          call innerLoop(u,f,SOR%r,SOR,(/1,1,0/)) ! Odd in even plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/0,1,1/)) ! Odd in even plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/1,0,1/)) ! Odd in even plane
+          call innerLoop(u,f,m,SOR%r,SOR,(/1,1,0/)) ! Odd in even plane
 
 #ifdef _PARALLELIZE_SOR_
           !$OMP END PARALLEL
@@ -250,10 +251,11 @@
 
       end subroutine
 
-      subroutine innerLoop(u,f,r,SOR,odd)
+      subroutine innerLoop(u,f,m,r,SOR,odd)
         implicit none
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f,r
+        type(mesh),intent(in) :: m
         type(SORSolver),intent(in) :: SOR
         integer,dimension(3),intent(in) :: odd
         integer :: i
@@ -262,6 +264,7 @@
           SOR%p%g(i)%c(1)%dhn,SOR%p%g(i)%c(2)%dhn,SOR%p%g(i)%c(3)%dhn,&
           SOR%d%g(i)%c(1)%dhn,SOR%d%g(i)%c(2)%dhn,SOR%d%g(i)%c(3)%dhn,&
           SOR%omega,SOR%gt,odd)
+          ! call applyStitches(u,m)
         enddo
       end subroutine
 
