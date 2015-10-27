@@ -945,6 +945,12 @@
          integer :: i
          do i=1,f%s
            call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),0)
+
+           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),1)
+           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),2)
+           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),3)
+           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),4)
+           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),5)
          enddo
        end subroutine
 

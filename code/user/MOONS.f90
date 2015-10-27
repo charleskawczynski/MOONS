@@ -485,7 +485,8 @@
          ! Rem = real(10.0,cp);   ds = 5.0d-4;   dTime = ds     ! (Rem = 10)
          ! Rem = real(100.0,cp);  ds = 5.0d-5;   dTime = ds     ! (Rem = 100) , sigma* = 0.01
 
-         Rem = 100.0_cp;  ds = 1.0d-7;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         ! Rem = 100.0_cp;  ds = 1.0d-7;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
+         Rem = 100.0_cp;  ds = 2.0d-6;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
          ! Rem = real(100.0,cp);  ds = 2.0d-3;   dTime = ds     ! (Rem = 100) , sigma* = 0.001, fine grid
 
          case (1011)

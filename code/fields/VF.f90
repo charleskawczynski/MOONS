@@ -90,6 +90,7 @@
         interface subtract;     module procedure subtract_S_VF;            end interface
 
         interface multiply;     module procedure multiply_VF_VF;           end interface
+        interface multiply;     module procedure multiply_VF_VF_VF;        end interface
         interface multiply;     module procedure multiply_VF_SF;           end interface
         interface multiply;     module procedure multiply_SF_VF;           end interface
         interface multiply;     module procedure multiply_VF_S;            end interface
@@ -265,6 +266,13 @@
           type(VF),intent(inout) :: f
           type(VF),intent(in) :: g
           call multiply(f%x,g%x); call multiply(f%y,g%y); call multiply(f%z,g%z)
+        end subroutine
+
+        subroutine multiply_VF_VF_VF(f,g,q)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g,q
+          call multiply(f%x,g%x,q%x); call multiply(f%y,g%y,q%y); call multiply(f%z,g%z,q%z)
         end subroutine
 
         subroutine multiply_VF_SF(f,g)

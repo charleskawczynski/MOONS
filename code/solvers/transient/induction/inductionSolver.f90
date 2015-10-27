@@ -195,6 +195,9 @@
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigma,m,ind%temp_F)
          write(*,*) '     Sigma edge defined'
          call treatInterface(ind%sigmaInv_edge)
+         ! call Neumanize(ind%sigmaInv_edge%x,6)
+         ! call Neumanize(ind%sigmaInv_edge%y,6)
+         ! call Neumanize(ind%sigmaInv_edge%z,6)
 
          call cellCenter2Face(ind%sigmaInv_face,ind%sigma,m)
          write(*,*) '     Sigma face defined'

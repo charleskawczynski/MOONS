@@ -1,4 +1,4 @@
-       module BCs_mod
+       module BC_mod
        ! Making BCs is a 3 step process:
        ! 
        !       1) Set grid / shape
@@ -15,7 +15,8 @@
        ! The convention for the faces is:
        !   face = {1:6} = {x_min,x_max,y_min,y_max,z_min,z_max}
 
-       use grid_mod
+       use mesh_mod
+       use SF_mod
        use boundary_mod
        use IO_tools_mod
        implicit none
@@ -57,10 +58,10 @@
        public :: print_defined
 
        type BCs
-         type(boundary),dimension(6) :: face ! xmin,xmax,ymin,ymax,zmin,zmax
-         type(grid) :: g
-         integer,dimension(3) :: s
-         logical :: gridDefined = .false.
+         integer :: s
+         type(BC_grid),dimension(:),allocatable :: BC_g
+         type(mesh) :: m
+         logical :: meshDefined = .false.
          logical :: defined = .false.
          logical :: all_Dirichlet,all_Neumann
        end type
@@ -92,12 +93,12 @@
        ! ********************************** INIT GRID (1) ******************************
        ! *******************************************************************************
 
-       subroutine init_gridShape_BCs(b,g,s)
+       subroutine init_BCs(B,m,U)
          implicit none
          type(BCs),intent(inout) :: b
-         type(grid),intent(in) :: g
-         integer,dimension(3),intent(in) :: s
-         call init(b%g,g); b%s = s
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: U
+         call init(b%m,m)
          call init(b%face(1),(/s(2),s(3)/))
          call init(b%face(2),(/s(2),s(3)/))
          call init(b%face(3),(/s(1),s(3)/))

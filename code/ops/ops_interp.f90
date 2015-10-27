@@ -72,6 +72,7 @@
        ! ------------------------------- INTERPOLATION ROUTINES ---------------------------------
        ! Base interpolation
        public :: interp               ! call interp(f,m,gd,dir)
+       public :: extrap               ! call extrap(f,m,gd,dir)
 
        ! Derived interpolations
        public :: face2Face            ! call face2Face(faceAve,f,m,dir,aveLoc)
@@ -93,8 +94,11 @@
        ! * = has vector interface
 
        interface interp;              module procedure interpO2_RF;          end interface
-       interface extrap;              module procedure extrapO2_RF;          end interface
        interface interp;              module procedure interpO2_SF;          end interface
+       interface extrap;              module procedure extrapO2_RF;          end interface
+
+       interface extrap;              module procedure extrapLinear_RF;      end interface
+       interface extrap;              module procedure extrapO2_SF;          end interface
 
        ! SF interps
 
@@ -273,6 +277,29 @@
          end select
        end subroutine
 
+       subroutine extrapLinear_RF(f,sf,dir)
+         ! extrapO2 extrapolates f to ghost points.
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3),intent(in) :: sf
+         integer,intent(in) :: dir
+         select case (dir)
+         case (1); f(1,:,:) = 2.0_cp*f(2,:,:) - f(3,:,:); f(sf(1),:,:) = 2.0_cp*f(sf(1)-1,:,:) - f(sf(1)-2,:,:)
+         case (2); f(:,1,:) = 2.0_cp*f(:,2,:) - f(:,3,:); f(:,sf(2),:) = 2.0_cp*f(:,sf(2)-1,:) - f(:,sf(2)-2,:)
+         case (3); f(:,:,1) = 2.0_cp*f(:,:,2) - f(:,:,3); f(:,:,sf(3)) = 2.0_cp*f(:,:,sf(3)-1) - f(:,:,sf(3)-2)
+         end select
+       end subroutine
+
+       subroutine extrapO2_SF(f,m)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         integer :: i,k
+         do k=1,3; do i=1,m%s
+           call extrap(f%RF(i)%f,f%RF(i)%s,k) ! Calls linear, collocated extrapolation
+         enddo; enddo
+       end subroutine
+
        subroutine interpO2_SF(f,g,m,dir)
          implicit none
          type(SF),intent(inout) :: f
@@ -280,7 +307,7 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
          integer :: i
-         do i=1,f%s
+         do i=1,m%s
            call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
          enddo
          ! call applyStitches(f,m)

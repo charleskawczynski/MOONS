@@ -64,8 +64,8 @@
            call init(B%y%RF(i)%b,B_bcs%y) ! Copy vector BCs to field
            call init(B%z%RF(i)%b,B_bcs%z) ! Copy vector BCs to field
          enddo
-         ! call init_Neumann(B%x%RF(1)%b,6)
-         ! call init_Neumann(B%y%RF(1)%b,6)
+         ! call init_Antisymmetry(B%x%RF(1)%b,6)
+         ! call init_Antisymmetry(B%y%RF(1)%b,6)
          ! call init_Neumann(B%z%RF(1)%b,6)
          call delete(B_bcs)
        end subroutine

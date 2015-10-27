@@ -45,9 +45,21 @@ University of California Los Angeles, USA\\
 
 \section{Computing the curl curl with variable properties}
 This file describes how to construct the operator
-\begin{equation}
-	\nabla \times (k \nabla \times)
-\end{equation}
+\begin{multline}
+	\nabla \times (k \nabla \times) = \\
+	\nabla \times (
+	\hat{x} (\partial_y B_z - \partial_z B_y) k_{e,x} \\
+	- \hat{y} (\partial_x B_z - \partial_z B_x) k_{e,y} \\
+	+ \hat{z} (\partial_x B_y - \partial_y B_x) k_{e,z} ) \\
+	= \\
+	 \hat{x} \left\{ \partial_y \left[ (\partial_x B_y - \partial_y B_x) k_{e,z} \right] -
+	  \partial_z \left[ (\partial_x B_z - \partial_z B_x) k_{e,y} \right] \right\} \\
+	-\hat{y} \left\{ \partial_x \left[ (\partial_x B_y - \partial_y B_x) k_{e,z} \right] -
+	 \partial_z \left[ (\partial_y B_z - \partial_z B_y) k_{e,x} \right]  \right\} \\
+	+\hat{z} \left\{ \partial_x \left[ (\partial_x B_z - \partial_z B_x) k_{e,y} \right] -
+	 \partial_y \left[ (\partial_y B_z - \partial_z B_y) k_{e,x} \right]  \right\} \\
+	.
+\end{multline}
 Where $k = \frac{1}{\sigma}$ in the induction equation.
 
 

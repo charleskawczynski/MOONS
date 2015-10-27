@@ -33,6 +33,7 @@
        !              - Data is wall incoincident
        ! 
 
+       use RF_mod
        use SF_mod
        use VF_mod
        use BCs_mod
@@ -81,43 +82,67 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
-         if (CC_along(dir)) then
-           select case (dir)
-           case (1); do i=1,m%s
-                       if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),1)
-                       if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),2)
-                     enddo
-           case (2); do i=1,m%s
-                       if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),3)
-                       if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),4)
-                     enddo
-           case (3); do i=1,m%s
-                       if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),5)
-                       if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),6)
-                     enddo
-           end select
+         integer :: i
+         if (m%s.gt.1) then
+           if (CC_along(U,dir)) then
+             select case (dir)
+             case (1); do i=1,m%s
+                         if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),1)
+                         if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),2)
+                       enddo
+             case (2); do i=1,m%s
+                         if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),3)
+                         if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),4)
+                       enddo
+             case (3); do i=1,m%s
+                         if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),5)
+                         if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_CC_RF(U%RF(i),m%g(i),6)
+                       enddo
+             end select
+           elseif (Node_along(U,dir)) then
+             select case (dir)
+             case (1); do i=1,m%s
+                         if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_N_RF(U%RF(i),m%g(i),1)
+                         if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_N_RF(U%RF(i),m%g(i),2)
+                       enddo
+             case (2); do i=1,m%s
+                         if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_N_RF(U%RF(i),m%g(i),3)
+                         if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_N_RF(U%RF(i),m%g(i),4)
+                       enddo
+             case (3); do i=1,m%s
+                         if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_N_RF(U%RF(i),m%g(i),5)
+                         if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_N_RF(U%RF(i),m%g(i),6)
+                       enddo
+             end select
+           else; stop 'Error: datatype not found in applyBCs.f90'
+           endif
+         else
+           if (CC_along(U,dir)) then
+             select case (dir)
+             case (1); call apply_face_CC_RF(U%RF(1),m%g(1),1)
+                       call apply_face_CC_RF(U%RF(1),m%g(1),2)
+             case (2); call apply_face_CC_RF(U%RF(1),m%g(1),3)
+                       call apply_face_CC_RF(U%RF(1),m%g(1),4)
+             case (3); call apply_face_CC_RF(U%RF(1),m%g(1),5)
+                       call apply_face_CC_RF(U%RF(1),m%g(1),6)
+             end select
+           elseif (Node_along(U,dir)) then
+             select case (dir)
+             case (1); call apply_face_N_RF(U%RF(1),m%g(1),1)
+                       call apply_face_N_RF(U%RF(1),m%g(1),2)
+             case (2); call apply_face_N_RF(U%RF(1),m%g(1),3)
+                       call apply_face_N_RF(U%RF(1),m%g(1),4)
+             case (3); call apply_face_N_RF(U%RF(1),m%g(1),5)
+                       call apply_face_N_RF(U%RF(1),m%g(1),6)
+             end select
+           else; stop 'Error: datatype not found in applyBCs.f90'
+           endif
          endif
-         elseif (Node_along(dir)) then
-           select case (dir)
-           case (1); do i=1,m%s
-                       if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_N_RF(U%RF(i),m%g(i),1)
-                       if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_N_RF(U%RF(i),m%g(i),2)
-                     enddo
-           case (2); do i=1,m%s
-                       if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_N_RF(U%RF(i),m%g(i),3)
-                       if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_N_RF(U%RF(i),m%g(i),4)
-                     enddo
-           case (3); do i=1,m%s
-                       if (.not.m%g(i)%st_face%hmin(dir)) call apply_face_N_RF(U%RF(i),m%g(i),5)
-                       if (.not.m%g(i)%st_face%hmax(dir)) call apply_face_N_RF(U%RF(i),m%g(i),6)
-                     enddo
-           end select
-         else; stop 'Error: datatype not found in applyBCs.f90'
        end subroutine
 
-       subroutine apply_face_N_RF(U,g,face)
+       subroutine apply_face_N_RF(RF,g,face)
          implicit none
-         type(realField),intent(inout) :: U
+         type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: face
          ! For readability, the faces are traversed in the order:
@@ -129,38 +154,44 @@
                                         RF%f(2,2:RF%s(2)-1,2:RF%s(3)-1),&
                                         RF%f(3,2:RF%s(2)-1,2:RF%s(3)-1),&
                                         RF%f(RF%s(1)-2,2:RF%s(2)-1,2:RF%s(3)-1),&
-                                        RF%b%vals,RF%b%bctype,g%c(1)%dhn(1))
+                                        RF%f(RF%s(1)-3,2:RF%s(2)-1,2:RF%s(3)-1),&
+                                        RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(1)%dhn(1))
          case (2); call apply_face_Node(RF%f(RF%s(1),2:RF%s(2)-1,2:RF%s(3)-1),&
                                         RF%f(RF%s(1)-1,2:RF%s(2)-1,2:RF%s(3)-1),&
                                         RF%f(RF%s(1)-2,2:RF%s(2)-1,2:RF%s(3)-1),&
+                                        RF%f(2,2:RF%s(2)-1,2:RF%s(3)-1),&
                                         RF%f(3,2:RF%s(2)-1,2:RF%s(3)-1),&
-                                        RF%b%vals,RF%b%bctype,g%c(1)%dhn(g%c(1)%sn-1))
+                                        RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(1)%dhn(g%c(1)%sn-1))
          case (3); call apply_face_Node(RF%f(2:RF%s(1)-1,1,2:RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,2,2:RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,3,2:RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,RF%s(2)-2,2:RF%s(3)-1),&
-                                        RF%b%vals,RF%b%bctype,g%c(2)%dhn(1))
+                                        RF%f(2:RF%s(1)-1,RF%s(2)-3,2:RF%s(3)-1),&
+                                        RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(2)%dhn(1))
          case (4); call apply_face_Node(RF%f(2:RF%s(1)-1,RF%s(2),2:RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,RF%s(2)-1,2:RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,RF%s(2)-2,2:RF%s(3)-1),&
+                                        RF%f(2:RF%s(1)-1,2,2:RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,3,2:RF%s(3)-1),&
-                                        RF%b%vals,RF%b%bctype,g%c(2)%dhn(g%c(2)%sn-1))
+                                        RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(2)%dhn(g%c(2)%sn-1))
          case (5); call apply_face_Node(RF%f(2:RF%s(1)-1,2:RF%s(2)-1,1),&
                                         RF%f(2:RF%s(1)-1,2:RF%s(2)-1,2),&
                                         RF%f(2:RF%s(1)-1,2:RF%s(2)-1,3),&
                                         RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)-2),&
-                                        RF%b%vals,RF%b%bctype,g%c(3)%dhn(1))
+                                        RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)-3),&
+                                        RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(3)%dhn(1))
          case (6); call apply_face_Node(RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)),&
                                         RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)-1),&
                                         RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)-2),&
+                                        RF%f(2:RF%s(1)-1,2:RF%s(2)-1,2),&
                                         RF%f(2:RF%s(1)-1,2:RF%s(2)-1,3),&
-                                        RF%b%vals,RF%b%bctype,g%c(3)%dhn(g%c(3)%sn-1))
+                                        RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(3)%dhn(g%c(3)%sn-1))
          end select
        end subroutine
 
-       subroutine apply_face_CC_RF(U,g,face)
+       subroutine apply_face_CC_RF(RF,g,face)
          implicit none
-         type(realField),intent(inout) :: U
+         type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: face
          ! For readability, the faces are traversed in the order:
@@ -171,34 +202,34 @@
          case (1); call apply_face_CC(RF%f(1,2:RF%s(2)-1,2:RF%s(3)-1),&
                                       RF%f(2,2:RF%s(2)-1,2:RF%s(3)-1),&
                                       RF%f(RF%s(1)-1,2:RF%s(2)-1,2:RF%s(3)-1),&
-                                      RF%b%vals,RF%b%bctype,g%c(1)%dhc(1))
+                                      RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(1)%dhc(1))
          case (2); call apply_face_CC(RF%f(RF%s(1),2:RF%s(2)-1,2:RF%s(3)-1),&
                                       RF%f(RF%s(1)-1,2:RF%s(2)-1,2:RF%s(3)-1),&
                                       RF%f(2,2:RF%s(2)-1,2:RF%s(3)-1),&
-                                      RF%b%vals,RF%b%bctype,g%c(1)%dhc(g%c(1)%sc-1))
+                                      RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(1)%dhc(g%c(1)%sc-1))
          case (3); call apply_face_CC(RF%f(2:RF%s(1)-1,1,2:RF%s(3)-1),&
                                       RF%f(2:RF%s(1)-1,2,2:RF%s(3)-1),&
                                       RF%f(2:RF%s(1)-1,RF%s(2)-1,2:RF%s(3)-1),&
-                                      RF%b%vals,RF%b%bctype,g%c(2)%dhc(1))
+                                      RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(2)%dhc(1))
          case (4); call apply_face_CC(RF%f(2:RF%s(1)-1,RF%s(2),2:RF%s(3)-1),&
                                       RF%f(2:RF%s(1)-1,RF%s(2)-1,2:RF%s(3)-1),&
                                       RF%f(2:RF%s(1)-1,2,2:RF%s(3)-1),&
-                                      RF%b%vals,RF%b%bctype,g%c(2)%dhc(g%c(2)%sc-1))
+                                      RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(2)%dhc(g%c(2)%sc-1))
          case (5); call apply_face_CC(RF%f(2:RF%s(1)-1,2:RF%s(2)-1,1),&
                                       RF%f(2:RF%s(1)-1,2:RF%s(2)-1,2),&
                                       RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)-1),&
-                                      RF%b%vals,RF%b%bctype,g%c(3)%dhc(1))
+                                      RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(3)%dhc(1))
          case (6); call apply_face_CC(RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)),&
                                       RF%f(2:RF%s(1)-1,2:RF%s(2)-1,RF%s(3)-1),&
                                       RF%f(2:RF%s(1)-1,2:RF%s(2)-1,2),&
-                                      RF%b%vals,RF%b%bctype,g%c(3)%dhc(g%c(3)%sc-1))
+                                      RF%b%face(face)%vals,RF%b%face(face)%bctype,g%c(3)%dhc(g%c(3)%sc-1))
          end select
        end subroutine
 
-       subroutine apply_face_Node(ug,ub,ui,ui_opp,bvals,bctype,dh)
+       subroutine apply_face_Node(ug,ub,ui,unb_opp,ui_opp,bvals,bctype,dh)
          implicit none
-         real(cp),intent(inout),dimension(:,:) :: ug,ub,ui,ui_opp
-         real(cp),dimension(:,:),intent(in) :: bvals
+         real(cp),dimension(:,:),intent(inout) :: ug,ub
+         real(cp),dimension(:,:),intent(in) :: bvals,ui,ui_opp,unb_opp
          real(cp),intent(in) :: dh
          integer,intent(in) :: bctype
          select case (bctype)
@@ -216,8 +247,8 @@
 
        subroutine apply_face_CC(ug,ui,ui_opp,bvals,bctype,dh)
          implicit none
-         real(cp),intent(inout),dimension(:,:) :: ug,ui,ui_opp
-         real(cp),dimension(:,:),intent(in) :: bvals
+         real(cp),dimension(:,:),intent(inout) :: ug
+         real(cp),dimension(:,:),intent(in) :: bvals,ui,ui_opp
          real(cp),intent(in) :: dh
          integer,intent(in) :: bctype
          select case (bctype)

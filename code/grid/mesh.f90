@@ -191,129 +191,178 @@
        subroutine patch_grids(m)
          implicit none
          type(mesh),intent(inout) :: m
-         integer :: i,j,k,a1,a2
+         integer :: i
          real(cp) :: tol
-         logical,dimension(5) :: TF_face
-         logical,dimension(6) :: TF_edge
-         logical,dimension(6) :: TF_corner
          if (.not.allocated(m%g)) stop 'Error: mesh not allocated in patch_grids in mesh.f90'
          if (size(m%g).ne.m%s) stop 'Error: mesh size not correct in patch_grids in mesh.f90'
-         ! Remove all patches first
-         do i=1,m%s
-           call delete(m%g(i)%st_face)
-           call delete(m%g(i)%st_edge)
-           call delete(m%g(i)%st_corner)
-         enddo
-
-         call initProps(m) ! Need dhmin etc.
          if (m%s.gt.1) then
            tol = 0.01_cp
-           do k=1,3; do i=1,m%s; do j=1,m%s
-             if (i.ne.j) then
-               ! **************************************************
-               ! ********************** FACES *********************
-               ! ************************************************** (6)
-               TF_face(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
-               select case (k)
-               case (1); a1 = 2; a2 = 3 ! orthogonal directions to contact face
-               case (2); a1 = 1; a2 = 3 ! orthogonal directions to contact face
-               case (3); a1 = 1; a2 = 2 ! orthogonal directions to contact face
-               end select
-               TF_face(2) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmin
-               TF_face(3) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmax
-               TF_face(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmin
-               TF_face(5) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmax
-
-               if (all(TF_face)) then
-                 m%g(i)%st_face%hmin(k) = .true.
-                 m%g(i)%st_face%hmin_id(k) = j
-                 m%g(j)%st_face%hmax(k) = .true.
-                 m%g(j)%st_face%hmax_id(k) = i
-               endif
-               ! **************************************************
-               ! ********************** EDGES *********************
-               ! ************************************************** (12)
-
-               TF_edge(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (min)
-               TF_edge(2) = abs(m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (max)
-               select case (k)
-               case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
-               case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
-               case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
-               end select
-               TF_edge(3) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! min/max (a1)
-               TF_edge(4) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! max/min (a1)
-               TF_edge(5) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2) ! min/max (a2)
-               TF_edge(6) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2) ! max/min (a2)
-                   if (TF_edge(1).and.TF_edge(2).and.TF_edge(3).and.TF_edge(5)) then
-                 m%g(i)%st_edge%minmin(k) = .true.
-                 m%g(i)%st_edge%minmin_id(k) = j
-                 m%g(j)%st_edge%maxmax(k) = .true.
-                 m%g(j)%st_edge%maxmax_id(k) = i
-               elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(3).and.TF_edge(6)) then
-                 m%g(i)%st_edge%minmax(k) = .true.
-                 m%g(i)%st_edge%minmax_id(k) = j
-                 m%g(j)%st_edge%maxmin(k) = .true.
-                 m%g(j)%st_edge%maxmin_id(k) = i
-               elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(4).and.TF_edge(5)) then
-                 m%g(i)%st_edge%maxmin(k) = .true.
-                 m%g(i)%st_edge%maxmin_id(k) = j
-                 m%g(j)%st_edge%minmax(k) = .true.
-                 m%g(j)%st_edge%minmax_id(k) = i
-               elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(4).and.TF_edge(6)) then
-                 m%g(i)%st_edge%maxmax(k) = .true.
-                 m%g(i)%st_edge%maxmax_id(k) = j
-                 m%g(j)%st_edge%minmin(k) = .true.
-                 m%g(j)%st_edge%minmin_id(k) = i
-               endif
-
-               ! **************************************************
-               ! ********************* CORNERS ********************
-               ! ************************************************** (8)
-               ! Corners apply to only 3D problems, so for now, 
-               ! let's not worry about this...
-
-               TF_corner(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (min)
-               TF_corner(2) = abs(m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (max)
-               select case (k)
-               case (1); a1 = 2; a2 = 3 ! orthogonal directions to contact face
-               case (2); a1 = 1; a2 = 3 ! orthogonal directions to contact face
-               case (3); a1 = 1; a2 = 2 ! orthogonal directions to contact face
-               end select
-               TF_corner(3) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1)
-               TF_corner(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2)
-               TF_corner(5) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2)
-               TF_corner(6) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1)
-
-                   if (TF_corner(3).and.TF_corner(4).and.TF_corner(1)) then
-                 m%g(i)%st_corner%minmin = .true.
-                 m%g(i)%st_corner%minmin_id = j
-                 m%g(j)%st_corner%maxmax = .true.
-                 m%g(j)%st_corner%maxmax_id = i
-               elseif (TF_corner(5).and.TF_corner(6).and.TF_corner(1)) then
-                 m%g(i)%st_corner%minmax(k) = .true.
-                 m%g(i)%st_corner%minmax_id(k) = j
-                 m%g(j)%st_corner%maxmin(k) = .true.
-                 m%g(j)%st_corner%maxmin_id(k) = i
-               elseif (TF_corner(3).and.TF_corner(5).and.TF_corner(2)) then
-                 m%g(i)%st_corner%maxmin(k) = .true.
-                 m%g(i)%st_corner%maxmin_id(k) = j
-                 m%g(j)%st_corner%minmax(k) = .true.
-                 m%g(j)%st_corner%minmax_id(k) = i
-               elseif (TF_corner(4).and.TF_corner(6).and.TF_corner(2)) then
-                 m%g(i)%st_corner%maxmax = .true.
-                 m%g(i)%st_corner%maxmax_id = j
-                 m%g(j)%st_corner%minmin = .true.
-                 m%g(j)%st_corner%minmin_id = i
-               endif
-
-             endif
-           enddo; enddo; enddo
-
-           do k=1,3; do i=1,m%s
-              call stitch_stencils(m%g(i)%c(k),m%g(i)%st_face%hmin(k),m%g(i)%st_face%hmax(k))
-           enddo; enddo
+           ! Remove all patches first
+           do i=1,m%s; call delete(m%g(i)%st_face); enddo
+           do i=1,m%s; call delete(m%g(i)%st_edge); enddo
+           do i=1,m%s; call delete(m%g(i)%st_corner); enddo
+           call initProps(m) ! Need dhmin etc.
+           call patch_Faces(m,tol)
+           call patch_Edges(m,tol)
+           call patch_Corners(m,tol)
          endif
+       end subroutine
+
+       subroutine patch_Faces(m,tol) ! 6 faces per grid
+         ! Find grids who share a face.
+         implicit none
+         type(mesh),intent(inout) :: m
+         real(cp),intent(in) :: tol
+         integer :: i,j,k,a1,a2
+         logical,dimension(5) :: TF_face
+         do k=1,3; do i=1,m%s; do j=1,m%s
+           if (i.ne.j) then
+             TF_face(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
+             select case (k)
+             case (1); a1 = 2; a2 = 3 ! orthogonal directions to contact face
+             case (2); a1 = 1; a2 = 3 ! orthogonal directions to contact face
+             case (3); a1 = 1; a2 = 2 ! orthogonal directions to contact face
+             end select
+             TF_face(2) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmin
+             TF_face(3) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmax
+             TF_face(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmin
+             TF_face(5) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmax
+
+             if (all(TF_face)) then
+               m%g(i)%st_face%hmin(k) = .true.
+               m%g(i)%st_face%hmin_id(k) = j
+               m%g(j)%st_face%hmax(k) = .true.
+               m%g(j)%st_face%hmax_id(k) = i
+             endif
+           endif
+         enddo; enddo; enddo
+         do k=1,3; do i=1,m%s
+            call stitch_stencils(m%g(i)%c(k),m%g(i)%st_face%hmin(k),m%g(i)%st_face%hmax(k))
+         enddo; enddo
+       end subroutine
+
+       subroutine patch_Edges(m,tol) ! 12 edges per grid
+         implicit none
+         type(mesh),intent(inout) :: m
+         real(cp),intent(in) :: tol
+         call patch_Edges_diag(m,tol)
+         call patch_Edges_adjoin_face(m)
+       end subroutine
+
+       subroutine patch_Edges_diag(m,tol) ! 12 edges per grid
+         ! Find grids who share an edge, but NOT a face.
+         implicit none
+         type(mesh),intent(inout) :: m
+         real(cp),intent(in) :: tol
+         integer :: i,j,k,a1,a2
+         logical,dimension(6) :: TF_edge
+         do k=1,3; do i=1,m%s; do j=1,m%s
+           if (i.ne.j) then
+             TF_edge(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (min)
+             TF_edge(2) = abs(m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (max)
+             select case (k)
+             case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
+             case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
+             case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
+             end select
+             TF_edge(3) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! min/max (a1)
+             TF_edge(4) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! max/min (a1)
+             TF_edge(5) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2) ! min/max (a2)
+             TF_edge(6) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2) ! max/min (a2)
+                 if (TF_edge(1).and.TF_edge(2).and.TF_edge(3).and.TF_edge(5)) then
+               m%g(i)%st_edge%minmin(k) = .true.
+               m%g(i)%st_edge%minmin_id(k) = j
+               m%g(j)%st_edge%maxmax(k) = .true.
+               m%g(j)%st_edge%maxmax_id(k) = i
+             elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(3).and.TF_edge(6)) then
+               m%g(i)%st_edge%minmax(k) = .true.
+               m%g(i)%st_edge%minmax_id(k) = j
+               m%g(j)%st_edge%maxmin(k) = .true.
+               m%g(j)%st_edge%maxmin_id(k) = i
+             elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(4).and.TF_edge(5)) then
+               m%g(i)%st_edge%maxmin(k) = .true.
+               m%g(i)%st_edge%maxmin_id(k) = j
+               m%g(j)%st_edge%minmax(k) = .true.
+               m%g(j)%st_edge%minmax_id(k) = i
+             elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(4).and.TF_edge(6)) then
+               m%g(i)%st_edge%maxmax(k) = .true.
+               m%g(i)%st_edge%maxmax_id(k) = j
+               m%g(j)%st_edge%minmin(k) = .true.
+               m%g(j)%st_edge%minmin_id(k) = i
+             endif
+           endif
+         enddo; enddo; enddo
+       end subroutine
+
+       subroutine patch_Edges_adjoin_face(m) ! 12 edges per grid
+         ! Remove edges that do not adjoin to 4 faces
+         implicit none
+         type(mesh),intent(inout) :: m
+         integer :: i,k,a1,a2
+         logical :: TF
+         do k=1,3; do i=1,m%s
+             select case (k)
+             case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
+             case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
+             case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
+             end select
+             TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmin(a2))
+             if (.not.TF) m%g(i)%st_edge%minmin(k) = .false.
+
+             TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmax(a2))
+             if (.not.TF) m%g(i)%st_edge%minmax(k) = .false.
+
+             TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmin(a2))
+             if (.not.TF) m%g(i)%st_edge%minmax(k) = .false.
+
+             TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmax(a2))
+             if (.not.TF) m%g(i)%st_edge%maxmax(k) = .false.
+         enddo; enddo
+       end subroutine
+
+       subroutine patch_Corners(m,tol) ! 8 corners per grid
+         ! Find grids who share an corner, but NOT an edge.
+         implicit none
+         type(mesh),intent(inout) :: m
+         real(cp),intent(in) :: tol
+         integer :: i,j,k,a1,a2
+         logical,dimension(6) :: TF_corner
+         do k=1,3; do i=1,m%s; do j=1,m%s
+           if (i.ne.j) then
+             TF_corner(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (min)
+             TF_corner(2) = abs(m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (max)
+             select case (k)
+             case (1); a1 = 2; a2 = 3 ! orthogonal directions to contact face
+             case (2); a1 = 1; a2 = 3 ! orthogonal directions to contact face
+             case (3); a1 = 1; a2 = 2 ! orthogonal directions to contact face
+             end select
+             TF_corner(3) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1)
+             TF_corner(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2)
+             TF_corner(5) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2)
+             TF_corner(6) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1)
+                 if (TF_corner(3).and.TF_corner(4).and.TF_corner(1)) then
+               m%g(i)%st_corner%minmin = .true.
+               m%g(i)%st_corner%minmin_id = j
+               m%g(j)%st_corner%maxmax = .true.
+               m%g(j)%st_corner%maxmax_id = i
+             elseif (TF_corner(5).and.TF_corner(6).and.TF_corner(1)) then
+               m%g(i)%st_corner%minmax(k) = .true.
+               m%g(i)%st_corner%minmax_id(k) = j
+               m%g(j)%st_corner%maxmin(k) = .true.
+               m%g(j)%st_corner%maxmin_id(k) = i
+             elseif (TF_corner(3).and.TF_corner(5).and.TF_corner(2)) then
+               m%g(i)%st_corner%maxmin(k) = .true.
+               m%g(i)%st_corner%maxmin_id(k) = j
+               m%g(j)%st_corner%minmax(k) = .true.
+               m%g(j)%st_corner%minmax_id(k) = i
+             elseif (TF_corner(4).and.TF_corner(6).and.TF_corner(2)) then
+               m%g(i)%st_corner%maxmax = .true.
+               m%g(i)%st_corner%maxmax_id = j
+               m%g(j)%st_corner%minmin = .true.
+               m%g(j)%st_corner%minmin_id = i
+             endif
+           endif
+         enddo; enddo; enddo
        end subroutine
 
        ! ------------------- restrict (for multimesh) --------------

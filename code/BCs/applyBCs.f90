@@ -60,7 +60,9 @@
 
        interface applyAllBCs;       module procedure applyAllBCs_RF;     end interface
        interface applyAllBCs;       module procedure applyAllBCs_VF;     end interface
+       interface applyAllBCs;       module procedure applyAllBCs_VF2;    end interface
        interface applyAllBCs;       module procedure applyAllBCs_SF;     end interface
+       interface applyAllBCs;       module procedure applyAllBCs_SF2;    end interface
        interface applyBCs;          module procedure applyBCs;           end interface
 
        contains
@@ -74,6 +76,16 @@
          call applyAllBCs(U%z,m)
        end subroutine
 
+       subroutine applyAllBCs_VF2(U,m,B)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(VF),intent(in) :: B
+         type(mesh),intent(in) :: m
+         call applyAllBCs(U%x,m,B%x)
+         call applyAllBCs(U%y,m,B%y)
+         call applyAllBCs(U%z,m,B%z)
+       end subroutine
+
        subroutine applyAllGhost_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
@@ -81,6 +93,28 @@
          call applyAllGhostBCs(U%x,m)
          call applyAllGhostBCs(U%y,m)
          call applyAllGhostBCs(U%z,m)
+       end subroutine
+
+       subroutine applyAllBCs_SF2(U,m,B)
+         implicit none
+         type(SF),intent(inout) :: U
+         type(SF),intent(in) :: B
+         type(mesh),intent(in) :: m
+         integer :: i
+         if (m%s.gt.1) then ! Check for stitching
+           do i=1,m%s
+             if (.not.m%g(i)%st_face%hmin(2)) call applyBC_Face_dir(U%RF(i)%f,B%RF(i)%b,m%g(i),3,2)
+             if (.not.m%g(i)%st_face%hmax(2)) call applyBC_Face_dir(U%RF(i)%f,B%RF(i)%b,m%g(i),4,2)
+             if (.not.m%g(i)%st_face%hmin(1)) call applyBC_Face_dir(U%RF(i)%f,B%RF(i)%b,m%g(i),1,1)
+             if (.not.m%g(i)%st_face%hmax(1)) call applyBC_Face_dir(U%RF(i)%f,B%RF(i)%b,m%g(i),2,1)
+             if (.not.m%g(i)%st_face%hmin(3)) call applyBC_Face_dir(U%RF(i)%f,B%RF(i)%b,m%g(i),5,3)
+             if (.not.m%g(i)%st_face%hmax(3)) call applyBC_Face_dir(U%RF(i)%f,B%RF(i)%b,m%g(i),6,3)
+           enddo
+         else
+           do i=1,m%s
+             call applyAllBCs(U%RF(i)%f,B%RF(i)%b,m%g(i))
+           enddo
+         endif
        end subroutine
 
        subroutine applyAllBCs_SF(U,m)
@@ -254,6 +288,25 @@
            case (2); u(s,:,:) = -1.0_cp/3.0_cp*(u(s-2,:,:) - 3.0_cp*u(s-1,:,:) - u(2,:,:))
            case (4); u(:,s,:) = -1.0_cp/3.0_cp*(u(:,s-2,:) - 3.0_cp*u(:,s-1,:) - u(:,2,:))
            case (6); u(:,:,s) = -1.0_cp/3.0_cp*(u(:,:,s-2) - 3.0_cp*u(:,:,s-1) - u(:,:,2))
+           end select
+         ! *************************** ANTI-SYMMETRIC *****************************
+         case (9) ! Anti-symmetric - direct - wall coincident
+           select case (face)
+           case (1); u(2,:,:) =   0.0_cp; u(1,:,:) = -u(3,:,:)
+           case (3); u(:,2,:) =   0.0_cp; u(:,1,:) = -u(:,3,:)
+           case (5); u(:,:,2) =   0.0_cp; u(:,:,1) = -u(:,:,3)
+           case (2); u(s-1,:,:) = 0.0_cp; u(s,:,:) = -u(s-2,:,:)
+           case (4); u(:,s-1,:) = 0.0_cp; u(:,s,:) = -u(:,s-2,:)
+           case (6); u(:,:,s-1) = 0.0_cp; u(:,:,s) = -u(:,:,s-2)
+           end select
+         case (10) ! Anti-symmetric - direct - wall incoincident
+           select case (face)
+           case (1); u(1,:,:) = -u(2,:,:)
+           case (3); u(:,1,:) = -u(:,2,:)
+           case (5); u(:,:,1) = -u(:,:,2)
+           case (2); u(s,:,:) = -u(s-1,:,:)
+           case (4); u(:,s,:) = -u(:,s-1,:)
+           case (6); u(:,:,s) = -u(:,:,s-1)
            end select
          case default
          stop 'Error: Bad bctype! Caught in applyBCs.f90'

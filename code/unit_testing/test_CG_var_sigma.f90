@@ -82,7 +82,7 @@
            endif
          enddo
 
-         call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
+         ! call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
        end subroutine
 
        subroutine get_ModelProblem(m,f,u,u_exact)
@@ -203,21 +203,31 @@
          type(norms) :: norm_res,norm_e
          type(gridGenerator) :: gg
          type(SF) :: u,u_exact,f,Au,e,R,sig,temp_SF,temp2
+         type(VF) :: sigma,temp
          real(cp) :: dt
          integer :: i,NU
 
          call cube(m)
 
+         call init(m,g)
          call export(m,dir,'m_base')
 
          ! *************************************************************
          ! ****************** PARAMETERS TO DEFINE *********************
          ! *************************************************************
 
-         call init_Node(u,m)
+         call init_CC(u,m)
          call init(temp_SF,u)
          call init(temp2,u)
+         call init_Face(sigma,m)
          call init(sig,u)
+         call init(temp,sigma)
+
+         call assign(sig,1.0_cp)
+         call defineSig(sig)
+         call export_3D_1C(m,sig,dir,'sigma',0)
+
+         call cellCenter2Face(sigma,sig,m)
 
          call init(e,u)
          call init(R,u)
@@ -241,11 +251,10 @@
          call assign(u,0.0_cp)
          ! call CG(x,b,m,n,norm,displayTF,temp,Ap,r,p)
          call CG(u,f,m,100,norm_res,.true.,temp_SF,Au,R,temp2)
-         call compute_Ax(Au,u,m)
+         call compute_Ap(Au,u,m)
          call subtract(e,u,u_exact)
          call subtract(R,Au,f)
          call zeroGhostPoints(R)
-         call zeroWall(R,m)
          call export_3D_1C(m,R,dir,'R_'//name,0)
          call export_3D_1C(m,u,dir,'u_'//name,0)
          call export_3D_1C(m,e,dir,'e_'//name,0)
@@ -255,12 +264,14 @@
 
          call delete(m)
          call delete(g)
-         call delete(sig)
          call delete(e)
          call delete(u)
          call delete(temp_SF)
          call delete(temp2)
+         call delete(sigma)
+         call delete(sig)
          call delete(f)
+         call delete(temp)
          call delete(u_exact)
          call delete(Au)
          call delete(R)

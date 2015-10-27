@@ -22,10 +22,10 @@ SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
 
 # Unit testing directories:
-# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
 
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -66,19 +66,19 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
 
 # ****************** DEBUGGING **********************
 # CPU time ~ Debugging level
-FCFLAGS += -g
+# FCFLAGS += -g
 # FCFLAGS += -g -Wall
 # FCFLAGS += -g -Wall -Wextra
 # FCFLAGS += -g -Wall -Wextra -fbacktrace
-# FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
 # FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
 
 # **************** OPTIMIZATION *********************
 # Speed-up ~ Optimization level
-# FCFLAGS += -O0
+FCFLAGS += -O0
 # FCFLAGS += -O1
 # FCFLAGS += -O2
-FCFLAGS += -O3
+# FCFLAGS += -O3
 # FCFLAGS += -O4
 # FCFLAGS += -O5
 # **************** PARALLELIZATION ******************
@@ -126,18 +126,18 @@ FCFLAGS += -D_PARALLELIZE_EMBEDEXTRACT_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
 # Internal debugging
-# FCFLAGS += -D_DEBUG_DEL_
-# FCFLAGS += -D_DEBUG_INTERP_
+FCFLAGS += -D_DEBUG_DEL_
+FCFLAGS += -D_DEBUG_INTERP_
 # FCFLAGS += -D_DEBUG_COORDINATES_
-# FCFLAGS += -D_DEBUG_APPLYBCS_
+FCFLAGS += -D_DEBUG_APPLYBCS_
 # FCFLAGS += -D_DEBUG_RF_
 # FCFLAGS += -D_DEBUG_SF_
 # FCFLAGS += -D_DEBUG_VF_
 # FCFLAGS += -D_DEBUG_TF_
 
 
-TARGET = $(TARGET_DIR)$(PS)MOONS
-# TARGET = $(TARGET_DIR)$(PS)unitTest
+# TARGET = $(TARGET_DIR)$(PS)MOONS
+TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
@@ -150,11 +150,11 @@ TARGET = $(TARGET_DIR)$(PS)MOONS
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
 
-# $(SRC_DIR)$(PS)BCs$(PS)corner.f90 \
-# $(SRC_DIR)$(PS)BCs$(PS)edge.f90 \
-# $(SRC_DIR)$(PS)BCs$(PS)face.f90 \
 # $(SRC_DIR)$(PS)grid$(PS)stitch.f90 \
 # $(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
+# $(SRC_DIR)$(PS)BCs$(PS)apply_faces.f90 \
+# $(SRC_DIR)$(PS)BCs$(PS)apply_edges.f90 \
+# $(SRC_DIR)$(PS)BCs$(PS)apply_corners.f90 \
 
 
 SRCS_F =\
@@ -185,6 +185,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)geometries.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)corner.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)edge.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)face.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
@@ -258,7 +261,7 @@ SRCS_F =\
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
+SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90

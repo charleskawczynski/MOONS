@@ -72,6 +72,11 @@
        interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
 
+       public :: zeroWall
+       interface zeroWall;                module procedure zeroWall_RF;               end interface
+       interface zeroWall;                module procedure zeroWall_VF;               end interface
+       interface zeroWall;                module procedure zeroWall_SF;               end interface
+
        public :: zeroInterior
        interface zeroInterior;            module procedure zeroInterior_RF;           end interface
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
@@ -185,6 +190,31 @@
          f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
        end subroutine
 
+       subroutine zeroWall_RF(f,s,dir,face)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3),intent(in) :: s
+         integer,intent(in) :: dir,face
+         select case (dir)
+         case (1); select case (face)
+                   case (1); f(2,:,:) = 0.0_cp
+                   case (2); f(s(1)-1,:,:) = 0.0_cp
+                   case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
+                   end select
+         case (2); select case (face)
+                   case (3); f(:,2,:) = 0.0_cp
+                   case (4); f(:,s(2)-1,:) = 0.0_cp
+                   case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
+                   end select
+         case (3); select case (face)
+                   case (5); f(:,:,2) = 0.0_cp
+                   case (6); f(:,:,s(3)-1) = 0.0_cp
+                   case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
+                   end select
+         case default; stop 'Error: dir must = 1,2,3 in zeroWall_RF in ops_aux.f90'
+         end select
+       end subroutine
+
        subroutine zeroInterior_RF(f,s)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -227,6 +257,23 @@
          type(SF),intent(inout) :: f
          integer :: i
          do i=1,f%s; call zeroGhostPoints(f%RF(i)%f,f%RF(i)%s); enddo
+       end subroutine
+
+       subroutine zeroWall_SF(f,m)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         integer :: i
+         do i=1,m%s
+           if ((.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1))) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+           if ((.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1))) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+
+           if ((.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2))) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+           if ((.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2))) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+
+           if ((.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3))) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+           if ((.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3))) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+         enddo
        end subroutine
 
        subroutine zeroInterior_SF(f)
@@ -288,6 +335,13 @@
                                                 V%z%RF(i)%f,&
                                                 V%x%RF(i)%s)
          enddo
+       end subroutine
+
+       subroutine zeroWall_VF(V,m)
+         implicit none
+         type(VF),intent(inout) :: V
+         type(mesh),intent(in) :: m
+         call zeroWall(V%x,m); call zeroWall(V%y,m); call zeroWall(V%z,m)
        end subroutine
 
        subroutine stabilityTerms_VF(fo,fi,m,n)

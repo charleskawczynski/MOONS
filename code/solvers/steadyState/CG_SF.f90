@@ -6,8 +6,6 @@
       use ops_aux_mod
       use BCs_mod
       use SF_mod
-      use VF_mod
-      use ops_interp_mod
       implicit none
 
       private
@@ -25,33 +23,18 @@
 
       contains
 
-      subroutine compute_Ax1(Ax,x,m)
-        implicit none
-        type(SF),intent(inout) :: Ax
-        type(SF),intent(in) :: x
-        type(mesh),intent(in) :: m
-        call lap(Ax,x,m)
-        call zeroGhostPoints(Ax)
-      end subroutine
-
       subroutine compute_Ax(Ax,x,m)
         implicit none
         type(SF),intent(inout) :: Ax
         type(SF),intent(in) :: x
         type(mesh),intent(in) :: m
-        type(VF) :: temp
-        call init_Edge(temp,m)
-        call grad(temp,x,m)
-        ! call zeroWall(temp,m)
-        call div(Ax,temp,m)
-        call zeroGhostPoints(Ax)
-        call delete(temp)
+        call lap(Ax,x,m)
       end subroutine
 
       subroutine CG(x,b,m,n,norm,displayTF,temp,Ax,r,p)
         implicit none
         type(SF),intent(inout) :: x
-        type(SF),intent(inout) :: b
+        type(SF),intent(in) :: b
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n
@@ -61,8 +44,8 @@
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call applyAllBCs(x,m)
         call compute_Ax(Ax,x,m) ! Compute Ax
-        call subtract(r,b,Ax)   ! r = b - Ax
-        call zeroGhostPoints(r); call zeroWall(r,m)
+        call subtract(r,b,Ax) ! r = b - Ax
+        call applyAllBCs(r,m,x) ! Ensures residual on boundary is zero
         call assign(p,r)
         call dotProduct(rsold,r,r,temp) ! rsold = r^T*r
         do i=1,minval((/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/))
@@ -76,38 +59,32 @@
           call assign(temp,Ax)                  ! Update r
           call multiply(temp,alpha)             ! Update r
           call subtract(r,temp)                 ! Update r
-          call zeroWall(r,m)                    ! For dirichlet BCs
           call dotProduct(rsnew,r,r,temp)       ! Update r
           if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
-
-          call compute_Ax(Ax,x,m)
-          call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp); call zeroWall(temp,m)
-          call compute(norm,temp,m)
-          write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
-
+          write(*,*) 'Residual = ',sqrt(rsnew)
           call assign(temp,p)                   ! Update p & rsold
           call multiply(temp,rsnew/rsold)
+          call applyAllBCs(r,m,x)
           call add(p,r,temp)
+          call applyAllBCs(p,m,x)
           rsold = rsnew
-
         enddo
+        call delete(p%RF(1)%b)
         ! if (getAllNeumann(x)) call subtract(x,mean(x))
         if (getAllNeumann(x%RF(1)%b)) call subtract(x,mean(x))
         call applyAllBCs(x,m)
         if (displayTF) then
           call compute_Ax(Ax,x,m)
-          call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp)
-          call zeroWall(temp,m)
-          call compute(norm,temp,m)
+          call subtract(r,b,Ax)
+          call zeroGhostPoints(r)
+          call compute(norm,r,m)
           write(*,*) 'Number of CG iterations = ',n
           write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/)
           call print(norm,'CG Residuals')
         endif
       end subroutine
 
-      subroutine dotProduct(dot,A,B,temp)
+      subroutine dotProduct_SF(dot,A,B,temp)
         implicit none
         real(cp),intent(inout) :: dot
         type(SF),intent(in) :: A,B

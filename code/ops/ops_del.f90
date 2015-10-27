@@ -102,6 +102,9 @@
 #ifdef _DEBUG_DEL_
         call checkSideDimensions(s,sdfdh,dir)
 #endif
+
+        ! if (genType.eq.1) dfdh = 0.0_cp
+
         select case (dir)
         case (1); 
         !$OMP PARALLEL DO
