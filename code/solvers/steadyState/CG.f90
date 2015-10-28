@@ -41,7 +41,10 @@
         type(SF),intent(in) :: x
         type(mesh),intent(in) :: m
         type(VF) :: temp
-        call init_Face(temp,m)
+        if (x%is_Node) then;    call init_Edge(temp,m)
+        elseif (x%is_CC) then;  call init_Face(temp,m)
+        else; stop 'Error: data type unknown in compute_Ax in CG.f90'
+        endif
         call assign(temp,0.0_cp)
         call grad(temp,x,m)
         call div(Ax,temp,m)
