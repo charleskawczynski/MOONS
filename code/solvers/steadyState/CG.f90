@@ -66,6 +66,7 @@
         call applyAllBCs(b,m,x)
         call compute_Ax(Ax,x,m) ! Compute Ax
         call subtract(r,b,Ax)   ! r = b - Ax
+        call zeroWall(r,m)
         call assign(p,r)
         i_stop = 3
         ! call export_3D_1C(m,b,'out/','b',0)
@@ -85,12 +86,14 @@
           call assign(temp,Ax)                  ! Update r
           call multiply(temp,alpha)             ! Update r
           call subtract(r,temp)                 ! Update r
+          call zeroWall(r,m)                    ! For dirichlet BCs
           call dotProduct(rsnew,r,r,temp)       ! Update r
           if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
 
+          ! if (i.eq.i_stop) call export_3D_1C(m,x,'out/','x_istop',0)
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp) ! OK (for MY residual computation)
+          call zeroGhostPoints(temp); call zeroWall(temp,m) ! OK (for MY residual computation)
           call compute(norm,temp,m)
           ! if (i.eq.i_stop) call export_3D_1C(m,temp,'out/','R_mine',0)
           write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
@@ -113,7 +116,7 @@
         if (displayTF) then
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp) ! OK (for MY residual computation)
+          call zeroGhostPoints(temp); call zeroWall(temp,m) ! OK (for MY residual computation)
           call compute(norm,temp,m)
           write(*,*) 'Number of CG iterations = ',n
           write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/)
