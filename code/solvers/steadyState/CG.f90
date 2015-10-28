@@ -63,7 +63,6 @@
         integer :: i,i_stop
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call applyAllBCs(x,m)
-        call applyAllBCs(b,m,x)
         call compute_Ax(Ax,x,m) ! Compute Ax
         call subtract(r,b,Ax)   ! r = b - Ax
         call zeroWall(r,m)

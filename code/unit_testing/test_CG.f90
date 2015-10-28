@@ -66,17 +66,15 @@
          call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
        end subroutine
 
-       subroutine get_ModelProblem(m,f,u,u_exact)
+       subroutine get_ModelProblem(m,f,u,u_exact,bctype)
          implicit none
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: u,u_exact,f
+         integer,intent(in) :: bctype
          type(VF) :: temp
          integer,dimension(3) :: s
-         integer :: bctype
          s = f%RF(1)%s
 
-         bctype = 1 ! Dirichlet
-         ! bctype = 2 ! Neumann
          call init(u%RF(1)%b,m%g(1),s)
          if (bctype.eq.1) then
           call init_Dirichlet(u%RF(1)%b)
@@ -120,14 +118,10 @@
          call div(f,temp,m)
          ! call lap(f,u_exact,m) ! 2nd order boundary treatment (only uniform props)
          call delete(temp)
+         call subtract(u_exact,mean(u_exact))
 
-         ! If Dirichlet, apply BCs to u so u = u_exact
-         ! on boundary, otherwise make f satisfy BCs
-         if (bctype.eq.1) then
-               call applyAllBCs(u,m)
-               call applyAllBCs(f,m,u)
-         else; call applyAllBCs(f,m,u)
-         endif
+         call applyAllBCs(u,m)
+         call applyAllBCs(f,m,u)
        end subroutine
 
        subroutine defineSig(sig)
@@ -196,7 +190,7 @@
          type(gridGenerator) :: gg
          type(SF) :: u,u_exact,f,Au,e,R,sig,temp_SF,temp2,Aug,ug
          real(cp) :: dt
-         integer :: i,NU
+         integer :: i,NU,bctype
 
          call cube(m)
 
@@ -206,7 +200,10 @@
          ! ****************** PARAMETERS TO DEFINE *********************
          ! *************************************************************
 
+         ! bctype = 1 ! Dirichlet
+         bctype = 2 ! Neumann
          call init_CC(u,m)
+
          call init(temp_SF,u)
          call init(temp2,u)
          call init(sig,u)
@@ -220,7 +217,7 @@
          call init(ug,u)
 
          write(*,*) 'Before model problem'
-         call get_ModelProblem(m,f,u,u_exact)
+         call get_ModelProblem(m,f,u,u_exact,bctype)
          write(*,*) 'Model problem finished!'
 
          call export_3D_1C(m,u_exact,dir,'u_exact',0)
