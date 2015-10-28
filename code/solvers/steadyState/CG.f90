@@ -1,4 +1,5 @@
       module CG_mod
+      use IO_SF_mod
       use mesh_mod
       use applyBCs_mod
       use norms_mod
@@ -40,11 +41,10 @@
         type(SF),intent(in) :: x
         type(mesh),intent(in) :: m
         type(VF) :: temp
-        call init_Edge(temp,m)
+        call init_Face(temp,m)
+        call assign(temp,0.0_cp)
         call grad(temp,x,m)
-        ! call zeroWall(temp,m)
         call div(Ax,temp,m)
-        call zeroGhostPoints(Ax)
         call delete(temp)
       end subroutine
 
@@ -57,16 +57,22 @@
         integer,intent(in) :: n
         logical,intent(in) :: displayTF
         type(SF),intent(inout) :: temp,Ax,r,p
-        integer :: i
+        integer :: i,i_stop
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call applyAllBCs(x,m)
+        call applyAllBCs(b,m,x)
         call compute_Ax(Ax,x,m) ! Compute Ax
         call subtract(r,b,Ax)   ! r = b - Ax
-        call zeroGhostPoints(r); call zeroWall(r,m)
         call assign(p,r)
+        i_stop = 3
+        ! call export_3D_1C(m,b,'out/','b',0)
+        ! call export_3D_1C(m,x,'out/','x_sol',0)
         call dotProduct(rsold,r,r,temp) ! rsold = r^T*r
         do i=1,minval((/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/))
           call compute_Ax(Ax,p,m)               ! Compute Ax / alpha
+          ! if (i.eq.i_stop) call export_3D_1C(m,Ax,'out/','Ax',0)
+          ! if (i.eq.i_stop) call export_3D_1C(m,p,'out/','p',0)
+
           call dotProduct(alpha_temp,p,Ax,temp) ! Compute Ax / alpha
           alpha = rsold/alpha_temp              ! Compute Ax / alpha
           call assign(temp,p)                   ! Update x
@@ -76,20 +82,26 @@
           call assign(temp,Ax)                  ! Update r
           call multiply(temp,alpha)             ! Update r
           call subtract(r,temp)                 ! Update r
-          call zeroWall(r,m)                    ! For dirichlet BCs
           call dotProduct(rsnew,r,r,temp)       ! Update r
           if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
 
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp); call zeroWall(temp,m)
+          call zeroGhostPoints(temp) ! OK (for MY residual computation)
           call compute(norm,temp,m)
+          ! if (i.eq.i_stop) call export_3D_1C(m,temp,'out/','R_mine',0)
           write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
+          
+          ! if (i.eq.i_stop) call export_3D_1C(m,r,'out/','r',0)
+
+          ! if (i.eq.i_stop) stop 'Done'
 
           call assign(temp,p)                   ! Update p & rsold
           call multiply(temp,rsnew/rsold)
           call add(p,r,temp)
+          call zeroGhostPoints(p)
           rsold = rsnew
+          if (getAllNeumann(x%RF(1)%b)) call subtract(x,mean(x))
 
         enddo
         ! if (getAllNeumann(x)) call subtract(x,mean(x))
@@ -98,8 +110,7 @@
         if (displayTF) then
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp)
-          call zeroWall(temp,m)
+          call zeroGhostPoints(temp) ! OK (for MY residual computation)
           call compute(norm,temp,m)
           write(*,*) 'Number of CG iterations = ',n
           write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/)

@@ -156,32 +156,32 @@
          call init(mom%m,m)
 
          ! Tensor Fields
-         call init_Edge(mom%U_E,m)
+         call init_Edge(mom%U_E,m);        call assign(mom%U_E,0.0_cp)
 
          ! Vector Fields
-         call init_Face(mom%U,m)
+         call init_Face(mom%U,m);          call assign(mom%U,0.0_cp)
 
-         call init_Face(mom%Ustar,m)
-         call init_Face(mom%Unm1,m)
-         call init_Face(mom%temp_F,m)
+         call init_Face(mom%Ustar,m);      call assign(mom%Ustar,0.0_cp)
+         call init_Face(mom%Unm1,m);       call assign(mom%Unm1,0.0_cp)
+         call init_Face(mom%temp_F,m);     call assign(mom%temp_F,0.0_cp)
 
-         call init_Edge(mom%temp_E1,m)
-         call init_Edge(mom%temp_E2,m)
+         call init_Edge(mom%temp_E1,m);    call assign(mom%temp_E1,0.0_cp)
+         call init_Edge(mom%temp_E2,m);    call assign(mom%temp_E2,0.0_cp)
 
          ! Scalar Fields
-         call init_CC(mom%p,m)
-         call init_CC(mom%divU,m)
-         call init_CC(mom%U_CC,m)
-         call init_CC(mom%temp_CC,m)
-         call init_CC(mom%Fo_grid,m)
-         call init_CC(mom%Co_grid,m)
-         call init_CC(mom%Re_grid,m)
+         call init_CC(mom%p,m);            call assign(mom%p,0.0_cp)
+         call init_CC(mom%divU,m);         call assign(mom%divU,0.0_cp)
+         call init_CC(mom%U_CC,m);         call assign(mom%U_CC,0.0_cp)
+         call init_CC(mom%temp_CC,m);      call assign(mom%temp_CC,0.0_cp)
+         call init_CC(mom%Fo_grid,m);      call assign(mom%Fo_grid,0.0_cp)
+         call init_CC(mom%Co_grid,m);      call assign(mom%Co_grid,0.0_cp)
+         call init_CC(mom%Re_grid,m);      call assign(mom%Re_grid,0.0_cp)
 
-         call init_CC(mom%KE_adv,m)
-         call init_CC(mom%KE_diff,m)
-         call init_CC(mom%KE_pres,m)
-         call init_CC(mom%KE_transient,m)
-         call init_CC(mom%KE_jCrossB,m)
+         call init_CC(mom%KE_adv,m);       call assign(mom%KE_adv,0.0_cp)
+         call init_CC(mom%KE_diff,m);      call assign(mom%KE_diff,0.0_cp)
+         call init_CC(mom%KE_pres,m);      call assign(mom%KE_pres,0.0_cp)
+         call init_CC(mom%KE_transient,m); call assign(mom%KE_transient,0.0_cp)
+         call init_CC(mom%KE_jCrossB,m);   call assign(mom%KE_jCrossB,0.0_cp)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs

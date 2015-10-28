@@ -3,6 +3,7 @@
        use mesh_mod
        use BCs_mod
        use SF_mod
+       use VF_mod
        use applyBCs_mod
        use ops_discrete_mod
        use ops_aux_mod
@@ -10,8 +11,6 @@
        private
 
        public :: get_ModelProblem,defineSig
-
-       ! integer,parameter :: modelProblem = 1
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -26,24 +25,6 @@
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
        contains
-
-       subroutine defineBCs(u_bcs,g,s,bctype)
-         implicit none
-         type(BCs),intent(inout) :: u_bcs
-         integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: bctype
-         type(grid),intent(in) :: g
-         ! bctype = 1 ! Dirichlet
-         !          2 ! Neumann
-         call init(u_bcs,g,s)
-         if (bctype.eq.1) then
-          call init_Dirichlet(u_bcs)
-         elseif (bctype.eq.2) then
-          call init_Neumann(u_bcs)
-         else; stop 'Error: bctype must = 1,2 in test_JAC.f90'
-         endif
-         call init(u_bcs,0.0_cp)
-       end subroutine
 
        subroutine defineFunction(u,x,y,z,bctype)
          implicit none
@@ -89,24 +70,31 @@
          implicit none
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: u,u_exact,f
+         type(VF) :: temp
          integer,dimension(3) :: s
          integer :: bctype
          s = f%RF(1)%s
 
          bctype = 1 ! Dirichlet
          ! bctype = 2 ! Neumann
-         call defineBCs(u%RF(1)%b,m%g(1),s,bctype)
-         call defineBCs(u_exact%RF(1)%b,m%g(1),s,bctype)
-         call defineBCs(f%RF(1)%b,m%g(1),s,bctype)
+         call init(u%RF(1)%b,m%g(1),s)
+         if (bctype.eq.1) then
+          call init_Dirichlet(u%RF(1)%b)
+         elseif (bctype.eq.2) then
+          call init_Neumann(u%RF(1)%b)
+         else; stop 'Error: bctype must = 1,2 in test_JAC.f90'
+         endif
+         call init(u%RF(1)%b,0.0_cp)
 
          ! Node data
          if (f%is_Node) then
            call defineFunction(u_exact,m%g(1)%c(1)%hn,m%g(1)%c(2)%hn,m%g(1)%c(3)%hn,bctype)
+           call init_Edge(temp,m)
 
            ! CC data
          elseif (f%is_CC) then
            call defineFunction(u_exact,m%g(1)%c(1)%hc,m%g(1)%c(2)%hc,m%g(1)%c(3)%hc,bctype)
-
+           call init_Face(temp,m)
            ! Face data
          elseif (f%is_Face.and.f%face.eq.1) then
            call defineFunction(u_exact,m%g(1)%c(1)%hn,m%g(1)%c(2)%hc,m%g(1)%c(3)%hc,bctype)
@@ -127,14 +115,18 @@
          endif
 
          ! f must reach to ghost nodes, which must be defined
-         call applyAllBCs(u_exact,m)
-         call lap(f,u_exact,m)
+         call applyAllBCs(u_exact,m,u)
+         call grad(temp,u_exact,m)
+         call div(f,temp,m)
+         ! call lap(f,u_exact,m) ! 2nd order boundary treatment (only uniform props)
+         call delete(temp)
 
          ! If Dirichlet, apply BCs to u so u = u_exact
          ! on boundary, otherwise make f satisfy BCs
          if (bctype.eq.1) then
                call applyAllBCs(u,m)
-         else; call applyAllBCs(f,m)
+               call applyAllBCs(f,m,u)
+         else; call applyAllBCs(f,m,u)
          endif
        end subroutine
 
@@ -202,7 +194,7 @@
          character(len=3) :: name
          type(norms) :: norm_res,norm_e
          type(gridGenerator) :: gg
-         type(SF) :: u,u_exact,f,Au,e,R,sig,temp_SF,temp2
+         type(SF) :: u,u_exact,f,Au,e,R,sig,temp_SF,temp2,Aug,ug
          real(cp) :: dt
          integer :: i,NU
 
@@ -214,7 +206,7 @@
          ! ****************** PARAMETERS TO DEFINE *********************
          ! *************************************************************
 
-         call init_Node(u,m)
+         call init_CC(u,m)
          call init(temp_SF,u)
          call init(temp2,u)
          call init(sig,u)
@@ -224,6 +216,8 @@
          call init(u_exact,u)
          call init(f,u)
          call init(Au,u)
+         call init(Aug,u)
+         call init(ug,u)
 
          write(*,*) 'Before model problem'
          call get_ModelProblem(m,f,u,u_exact)
@@ -245,7 +239,6 @@
          call subtract(e,u,u_exact)
          call subtract(R,Au,f)
          call zeroGhostPoints(R)
-         call zeroWall(R,m)
          call export_3D_1C(m,R,dir,'R_'//name,0)
          call export_3D_1C(m,u,dir,'u_'//name,0)
          call export_3D_1C(m,e,dir,'e_'//name,0)
@@ -261,6 +254,8 @@
          call delete(temp_SF)
          call delete(temp2)
          call delete(f)
+         call delete(Aug)
+         call delete(ug)
          call delete(u_exact)
          call delete(Au)
          call delete(R)
