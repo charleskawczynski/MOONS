@@ -118,7 +118,7 @@
          call div(f,temp,m)
          ! call lap(f,u_exact,m) ! 2nd order boundary treatment (only uniform props)
          call delete(temp)
-         call subtract(u_exact,mean(u_exact))
+         if (bctype.eq.2) call subtract(u_exact,mean(u_exact))
 
          call applyAllBCs(u,m)
          call applyAllBCs(f,m,u)
@@ -202,7 +202,7 @@
 
          ! bctype = 1 ! Dirichlet
          bctype = 2 ! Neumann
-         call init_Node(u,m)
+         call init_CC(u,m)
 
          call init(temp_SF,u)
          call init(temp2,u)
@@ -236,11 +236,12 @@
          call subtract(e,u,u_exact)
          call subtract(R,Au,f)
          call zeroGhostPoints(R)
+         call zeroWall(R,m,u)
          call export_3D_1C(m,R,dir,'R_'//name,0)
          call export_3D_1C(m,u,dir,'u_'//name,0)
          call export_3D_1C(m,e,dir,'e_'//name,0)
-         call subtract(u,u_exact)
-         call compute(norm_e,u,m)
+         call zeroGhostPoints(e)
+         call compute(norm_e,e,m)
          call print(norm_e,'u_'//name//' vs u_exact')
 
          call delete(m)
