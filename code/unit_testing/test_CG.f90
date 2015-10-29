@@ -202,7 +202,7 @@
 
          ! bctype = 1 ! Dirichlet
          bctype = 2 ! Neumann
-         call init_CC(u,m)
+         call init_Node(u,m)
 
          call init(temp_SF,u)
          call init(temp2,u)

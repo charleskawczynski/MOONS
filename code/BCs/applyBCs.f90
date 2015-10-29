@@ -227,12 +227,12 @@
          ! formulas are correct for only du/dn = 0.
          case (3) ! Explicit Neumann - direct - wall coincident ~O(dh)?
            select case (face)
-           case (1); u(2,:,:) = u(3,:,:);     u(1,:,:) = u(3,:,:)
-           case (3); u(:,2,:) = u(:,3,:);     u(:,1,:) = u(:,3,:)
-           case (5); u(:,:,2) = u(:,:,3);     u(:,:,1) = u(:,:,3)
-           case (2); u(s-1,:,:) = u(s-2,:,:); u(s,:,:) = u(s-2,:,:)
-           case (4); u(:,s-1,:) = u(:,s-2,:); u(:,s,:) = u(:,s-2,:)
-           case (6); u(:,:,s-1) = u(:,:,s-2); u(:,:,s) = u(:,:,s-2)
+           case (1); u(1,:,:) = u(3,:,:) !;   u(2,:,:) = u(3,:,:) ! This second part seems to not make sense
+           case (3); u(:,1,:) = u(:,3,:) !;   u(:,2,:) = u(:,3,:) ! This second part seems to not make sense
+           case (5); u(:,:,1) = u(:,:,3) !;   u(:,:,2) = u(:,:,3) ! This second part seems to not make sense
+           case (2); u(s,:,:) = u(s-2,:,:) !; u(s-1,:,:) = u(s-2,:,:) ! This second part seems to not make sense
+           case (4); u(:,s,:) = u(:,s-2,:) !; u(:,s-1,:) = u(:,s-2,:) ! This second part seems to not make sense
+           case (6); u(:,:,s) = u(:,:,s-2) !; u(:,:,s-1) = u(:,:,s-2) ! This second part seems to not make sense
            end select
          case (4) ! Implicit Neumann - direct - wall coincident ~O(dh^2)
            select case (face)

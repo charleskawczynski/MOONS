@@ -259,7 +259,32 @@
          do i=1,f%s; call zeroGhostPoints(f%RF(i)%f,f%RF(i)%s); enddo
        end subroutine
 
-       subroutine zeroWall_SF(f,m)
+       subroutine zeroWall_SF(f,m,u)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         logical :: TF
+         integer :: i
+         do i=1,m%s
+           TF = (.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1)).and.(u%RF(i)%b%face(1)%bctype.ne.3)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+           TF = (.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1)).and.(u%RF(i)%b%face(2)%bctype.ne.3)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+
+           TF = (.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2)).and.(u%RF(i)%b%face(3)%bctype.ne.3)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+           TF = (.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2)).and.(u%RF(i)%b%face(4)%bctype.ne.3)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+
+           TF = (.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3)).and.(u%RF(i)%b%face(5)%bctype.ne.3)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+           TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(u%RF(i)%b%face(6)%bctype.ne.3)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+         enddo
+       end subroutine
+
+       subroutine zeroWall_SF_old(f,m)
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
@@ -337,11 +362,12 @@
          enddo
        end subroutine
 
-       subroutine zeroWall_VF(V,m)
+       subroutine zeroWall_VF(V,m,U)
          implicit none
          type(VF),intent(inout) :: V
+         type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
-         call zeroWall(V%x,m); call zeroWall(V%y,m); call zeroWall(V%z,m)
+         call zeroWall(V%x,m,U%x); call zeroWall(V%y,m,U%y); call zeroWall(V%z,m,U%z)
        end subroutine
 
        subroutine stabilityTerms_VF(fo,fi,m,n)

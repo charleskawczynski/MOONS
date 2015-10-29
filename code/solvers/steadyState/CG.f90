@@ -65,48 +65,53 @@
         call applyAllBCs(x,m)
         call compute_Ax(Ax,x,m) ! Compute Ax
         call subtract(r,b,Ax)   ! r = b - Ax
-        call zeroWall(r,m)
+        call zeroWall(r,m,x)
         call assign(p,r)
-        i_stop = 3
+        i_stop = 1
         ! call export_3D_1C(m,b,'out/','b',0)
-        ! call export_3D_1C(m,x,'out/','x_sol',0)
-        call dotProduct(rsold,r,r,temp) ! rsold = r^T*r
+        ! call export_3D_1C(m,x,'out/','x_init',0)
+        call dotProduct(rsold,r,r,m,x,temp) ! rsold = r^T*r
         do i=1,minval((/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/))
           call compute_Ax(Ax,p,m)               ! Compute Ax / alpha
-          ! if (i.eq.i_stop) call export_3D_1C(m,Ax,'out/','Ax',0)
           ! if (i.eq.i_stop) call export_3D_1C(m,p,'out/','p',0)
+          ! if (i.eq.i_stop) call export_3D_1C(m,Ax,'out/','Ap',0)
 
-          call dotProduct(alpha_temp,p,Ax,temp) ! Compute Ax / alpha
+          call dotProduct(alpha_temp,p,Ax,m,x,temp) ! Compute Ax / alpha
           alpha = rsold/alpha_temp              ! Compute Ax / alpha
+
           call assign(temp,p)                   ! Update x
           call multiply(temp,alpha)             ! Update x
           call add(x,temp)                      ! Update x
           call applyAllBCs(x,m)                 ! Apply BCs to x
+          ! if (i.eq.i_stop) call export_3D_1C(m,x,'out/','x',0)
+
           call assign(temp,Ax)                  ! Update r
           call multiply(temp,alpha)             ! Update r
           call subtract(r,temp)                 ! Update r
-          call zeroWall(r,m)                    ! For dirichlet BCs
-          call dotProduct(rsnew,r,r,temp)       ! Update r
-          if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
+          call zeroWall(r,m,x)                  ! For dirichlet BCs
 
-          ! if (i.eq.i_stop) call export_3D_1C(m,x,'out/','x_istop',0)
-          call compute_Ax(Ax,x,m)
-          call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp); call zeroWall(temp,m) ! OK (for MY residual computation)
-          call compute(norm,temp,m)
-          ! if (i.eq.i_stop) call export_3D_1C(m,temp,'out/','R_mine',0)
-          write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
-          
           ! if (i.eq.i_stop) call export_3D_1C(m,r,'out/','r',0)
 
-          ! if (i.eq.i_stop) stop 'Done'
+          call dotProduct(rsnew,r,r,m,x,temp)   ! Update r
+          if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
+
+          call compute_Ax(Ax,x,m)
+          call subtract(temp,b,Ax)
+          call zeroGhostPoints(temp); call zeroWall(temp,m,x) ! OK (for MY residual computation)
+          call compute(norm,temp,m)
+          ! if (i.eq.i_stop) call export_3D_1C(m,temp,'out/','r_mine',0)
+          write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
 
           call assign(temp,p)                   ! Update p & rsold
           call multiply(temp,rsnew/rsold)
           call add(p,r,temp)
           call zeroGhostPoints(p)
+          ! if (i.eq.i_stop) call export_3D_1C(m,p,'out/','p_new',0)
+
           rsold = rsnew
           if (getAllNeumann(x%RF(1)%b)) call subtract(x,mean(x))
+
+          ! if (i.eq.i_stop) stop 'Done'
 
         enddo
         ! if (getAllNeumann(x)) call subtract(x,mean(x))
@@ -115,7 +120,7 @@
         if (displayTF) then
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp); call zeroWall(temp,m) ! OK (for MY residual computation)
+          call zeroGhostPoints(temp); call zeroWall(temp,m,x) ! OK (for MY residual computation)
           call compute(norm,temp,m)
           write(*,*) 'Number of CG iterations = ',n
           write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells(1)*m%N_cells(2)*m%N_cells(3)/)
@@ -123,13 +128,15 @@
         endif
       end subroutine
 
-      subroutine dotProduct(dot,A,B,temp)
+      subroutine dotProduct(dot,A,B,m,x,temp)
         implicit none
         real(cp),intent(inout) :: dot
-        type(SF),intent(in) :: A,B
+        type(mesh),intent(in) :: m
+        type(SF),intent(in) :: A,B,x
         type(SF),intent(inout) :: temp
         call multiply(temp,A,B)
         call zeroGhostPoints(temp)
+        call zeroWall(temp,m,x)
         dot = sum(temp)
       end subroutine
 
