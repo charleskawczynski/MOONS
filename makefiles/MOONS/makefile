@@ -18,6 +18,7 @@ endif
 # ************* DIRECTORY SETTINGS ******************
 # Code directory
 SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+# SRC_DIR = C:$(PS)Users$(PS)LM_MHD$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 
 # Output directory
