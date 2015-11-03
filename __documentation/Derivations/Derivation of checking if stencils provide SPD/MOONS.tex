@@ -1,0 +1,173 @@
+\documentclass[landscape]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+% \setlength{\oddsidemargin}{0.1in}
+% \setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+% \setlength{\headsep}{0in}        
+\setlength{\textheight}{525pt}   %\textheight: height of main text
+\setlength{\textwidth}{10in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+% \setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+% \maketitle
+
+\section{Check if stencils provied Symmetric Positive Definite (SPD)}
+
+We would like to look at two cases, CC to node multiplication and node to CC mult.
+
+\section{Operating on CC data}
+
+\[
+Af_{sc} = A_{N}A_{CC}f_{sc} = 
+\left[
+\begin{array}{ccccccccc}
+D_{n,1} & U_{n,1} &  &   &   & 0 \\
+  & \ddots & \ddots &   &   \\
+  &   & D_{n,j} & U_{n,j} &   \\
+  &   &  & \ddots & \ddots &   \\
+ 0&   &   &   & D_{n,sn-1} & U_{n,sn-1} \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+  0&  0&   &   &   &   0 \\
+D_{c,1} & U_{c,1} &  &   &   & \\
+  & \ddots & \ddots &   &   \\
+  &   & D_{c,j} & U_{c,j} &   \\
+  &   &  & \ddots & \ddots &   \\
+  &   &   &   & D_{c,sc-1} & U_{c,sc-1} \\
+ 0&  &   &   &   0 &  0 \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+  f_{c,1} \\ f_{c,2} \\ \vdots \\ f_{c,j} \\ f_{c,j+1} \\ \vdots \\ f_{c,sc-1} \\ f_{c,sc}
+\end{array}
+\right]
+=
+\]
+\[
+\left[
+\begin{array}{ccccccccc}
+D_{c,1}U_{n,1} & U_{c,1} U_{n,1} &  &   &   & 0 \\
+D_{c,1}D_{n,2}  & D_{n,2} U_{c,1} + D_{c,2}U_{n,2} & U_{c,2} U_{n,2} &   &   \\
+  & \ddots & \ddots &   &   \\
+  &   D_{c,j-1}D_{n,j} & D_{n,j} U_{c,j-1} + D_{c,j}U_{n,j} & U_{n,j} U_{c,j} &  & \\
+  &   &  & \ddots & \ddots &   \\
+  &   &   &  D_{n,sn-2}D_{c,sc-2} & D_{n,sn-2} U_{c,sc-2} + D_{c,sc-1}U_{n,sn-2} & U_{n,sn-2} U_{c,sc-1} \\
+ 0&   &   &    & D_{n,sn-1} D_{c,sc-1}  & D_{n,sn-1} U_{c,sc-1} \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+  f_{c,1} \\ \vdots \\ f_{c,j-1} \\ f_{c,j} \\ f_{c,j+1} \\ \vdots \\ f_{c,sc}
+\end{array}
+\right]
+\]
+
+It looks like the above operator could be symmetric.
+
+\clearpage
+
+\section{Operating on N data}
+\[
+Af_{sn} = A_{CC}A_{N}f_{sn} = 
+\left[
+\begin{array}{ccccccccc}
+  0&  0&   &   &   &   0 \\
+D_{c,1} & U_{c,1} &  &   &   & \\
+  & \ddots & \ddots &   &   \\
+  &   & D_{c,j} & U_{c,j} &   \\
+  &   &  & \ddots & \ddots &   \\
+  &   &   &   & D_{c,sc-1} & U_{c,sc-1} \\
+ 0&  &   &   &   0 &  0 \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+D_{n,1} & U_{n,1} &  &   &   & 0 \\
+  & \ddots & \ddots &   &   \\
+  &   & D_{n,j} & U_{n,j} &   \\
+  &   &  & \ddots & \ddots &   \\
+ 0&   &   &   & D_{n,sn-1} & U_{n,sn-1} \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+  f_{n,1} \\ f_{n,2} \\ \vdots \\ f_{n,j} \\ f_{n,j+1} \\ \vdots \\ f_{n,sn-1} \\ f_{n,sn}
+\end{array}
+\right]
+=
+\]
+\[
+\left[
+\begin{array}{ccccccccc}
+ 0&   &   &    &    & 0 \\
+ D_{c,1}D_{n,1} & D_{n,2} U_{c,1} + D_{c,1}U_{n,1} & U_{c,1} U_{n,2} &   &   \\
+  & \ddots & \ddots &   &   \\
+  &   D_{c,j}D_{n,j} & D_{n,j+1} U_{c,j} + D_{c,j}U_{n,j} & U_{c,j} U_{n,j+1} &  & \\
+  &   &  & \ddots & \ddots &   \\
+  &   &   &  D_{c,sc-1}D_{n,sn-2} & D_{n,sn-1} U_{c,sc-1} + D_{c,sc-1}U_{n,sn-2} & U_{c,sc-1} U_{n,sn-1} \\
+ 0&   &   &    &    & 0 \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+  f_{n,1} \\ \vdots \\ f_{n,j-1} \\ f_{n,j} \\ f_{n,j+1} \\ \vdots \\ f_{n,sn}
+\end{array}
+\right]
+\]
+
+It looks like the above operator is NOT symmetric. Let's make it symmetric...
+\[
+\left[
+\begin{array}{ccccccccc}
+ 1-D_{c,1}D_{n,1}&  D_{c,1}D_{n,1} &   &    &    & 0 \\
+ D_{c,1}D_{n,1} & D_{n,2} U_{c,1} + D_{c,1}U_{n,1} & U_{c,1} U_{n,2} &   &   \\
+  & \ddots & \ddots &   &   \\
+  &   D_{c,j}D_{n,j} & D_{n,j+1} U_{c,j} + D_{c,j}U_{n,j} & U_{c,j} U_{n,j+1} &  & \\
+  &   &  & \ddots & \ddots &   \\
+  &   &   &  D_{c,sc-1}D_{n,sn-2} & D_{n,sn-1} U_{c,sc-1} + D_{c,sc-1}U_{n,sn-2} & U_{c,sc-1} U_{n,sn-1} \\
+ 0&   &   &    &  U_{c,sc-1} U_{n,sn-1}  & 1-U_{c,sc-1} U_{n,sn-1} \\
+\end{array}
+\right]
+\left[
+\begin{array}{ccccccccc}
+  f_{n,1} \\ \vdots \\ f_{n,j-1} \\ f_{n,j} \\ f_{n,j+1} \\ \vdots \\ f_{n,sn}
+\end{array}
+\right]
+\]
+
+\end{document}

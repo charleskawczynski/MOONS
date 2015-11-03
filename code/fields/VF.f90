@@ -94,6 +94,7 @@
         interface multiply;     module procedure multiply_VF_SF;           end interface
         interface multiply;     module procedure multiply_SF_VF;           end interface
         interface multiply;     module procedure multiply_VF_S;            end interface
+        interface multiply;     module procedure multiply_VF_S3;           end interface
         interface multiply;     module procedure multiply_S_VF;            end interface
 
         interface divide;       module procedure divide_VF_VF;             end interface
@@ -294,6 +295,13 @@
           type(VF),intent(inout) :: f
           real(cp),intent(in) :: g
           call multiply(f%x,g); call multiply(f%y,g); call multiply(f%z,g)
+        end subroutine
+
+        subroutine multiply_VF_S3(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          real(cp),dimension(3),intent(in) :: g
+          call multiply(f%x,g(1)); call multiply(f%y,g(2)); call multiply(f%z,g(3))
         end subroutine
 
         subroutine multiply_S_VF(g2,f)

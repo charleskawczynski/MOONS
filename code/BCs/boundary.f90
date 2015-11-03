@@ -119,6 +119,7 @@
          type(boundary), intent(in) :: b
          character(len=*),intent(in) :: name
          call exp_boundary(b,name,6)
+         write(*,*) 'val = ',b%val
        end subroutine
 
        subroutine export_boundary(b,dir,name)

@@ -34,6 +34,7 @@
       type sparse
         type(array),dimension(:),allocatable :: A
         integer,dimension(:),allocatable :: elem  ! indexes for allocated L,D,U ect.
+        logical :: SPD ! Symmetric Positive Definite
         integer :: s
       end type
 

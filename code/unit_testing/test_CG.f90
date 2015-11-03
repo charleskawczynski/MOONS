@@ -42,8 +42,6 @@
            select case (bctype)
            case (1); p = 3.0_cp
            case (2); p = 2.0_cp
-           case default
-           stop 'Error: bctype must = 1,2 in defineFunction in poisson.f90'
            end select
 
            p = p*real(t,cp)
@@ -60,10 +58,20 @@
                                                    sin(p(2)*PI*y(j))*&
                                                    sin(p(3)*PI*z(k)))/real(t,cp)
              enddo;enddo;enddo
+           elseif (bctype.eq.3) then ! Heated plate type problem
+             u%RF(1)%f = 0.0_cp
            endif
-         enddo
 
-         call zeroGhostPoints(u)        ! Necessary for BOTH Dirichlet problems AND Neumann
+           ! if (bctype.eq.2) then
+           !   do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+           !   u%RF(1)%f(i,:,:) = u%RF(1)%f(i,:,:) + cos(p(1)*PI*x(i))/real(t,cp)
+           !   enddo;enddo;enddo
+           ! elseif (bctype.eq.1) then
+           !   do k = 1,s(3); do j = 1,s(2); do i = 1,s(1)
+           !   u%RF(1)%f(i,:,:) = u%RF(1)%f(i,:,:) + sin(p(1)*PI*x(i))/real(t,cp)
+           !   enddo;enddo;enddo
+           ! endif
+         enddo
        end subroutine
 
        subroutine get_ModelProblem(m,f,u,u_exact,bctype)
@@ -78,11 +86,21 @@
          call init(u%RF(1)%b,m%g(1),s)
          if (bctype.eq.1) then
           call init_Dirichlet(u%RF(1)%b)
+          call init(u%RF(1)%b,0.0_cp)
          elseif (bctype.eq.2) then
           call init_Neumann(u%RF(1)%b)
+          call init(u%RF(1)%b,0.0_cp)
+         elseif (bctype.eq.3) then
+          call init_Dirichlet(u%RF(1)%b)
+          call init(u%RF(1)%b,1.0_cp)
+          call init(u%RF(1)%b,0.0_cp,3)
+          call init(u%RF(1)%b,0.0_cp,4)
+          call init_Neumann(u%RF(1)%b,1)
+          call init_Neumann(u%RF(1)%b,2)
+          call init(u%RF(1)%b,0.0_cp,1)
+          call init(u%RF(1)%b,0.0_cp,2)
          else; stop 'Error: bctype must = 1,2 in test_JAC.f90'
          endif
-         call init(u%RF(1)%b,0.0_cp)
 
          ! Node data
          if (f%is_Node) then
@@ -113,15 +131,21 @@
          endif
 
          ! f must reach to ghost nodes, which must be defined
-         call applyAllBCs(u_exact,m,u)
-         call grad(temp,u_exact,m)
-         call div(f,temp,m)
-         ! call lap(f,u_exact,m) ! 2nd order boundary treatment (only uniform props)
+         select case (bctype)
+         case (1); call applyAllBCs(u_exact,m,u)
+                   call grad(temp,u_exact,m); call div(f,temp,m) ! Results in strange res, but converges slowly
+         case (2); call subtract(u_exact,mean(u_exact))
+                   call applyAllBCs(u_exact,m,f)
+                   ! call lap(f,u_exact,m) ! Results in good looking res but diverges
+                   call grad(temp,u_exact,m); call div(f,temp,m) ! Results in strange res, but converges slowly
+         case (3); f%RF(1)%f = 0.0_cp
+                   call applyAllBCs(f,m,u)
+         end select
+         
          call delete(temp)
-         if (bctype.eq.2) call subtract(u_exact,mean(u_exact))
-
+         
          call applyAllBCs(u,m)
-         call applyAllBCs(f,m,u)
+         call zeroGhostPoints(f)
        end subroutine
 
        subroutine defineSig(sig)
@@ -201,8 +225,9 @@
          ! *************************************************************
 
          ! bctype = 1 ! Dirichlet
-         bctype = 2 ! Neumann
-         call init_CC(u,m)
+         ! bctype = 2 ! Neumann
+         bctype = 3 ! Hot plate type problem
+         call init_Node(u,m)
 
          call init(temp_SF,u)
          call init(temp2,u)
@@ -231,7 +256,7 @@
          name = 'CG '
          call assign(u,0.0_cp)
          ! call CG(x,b,m,n,norm,displayTF,temp,Ap,r,p)
-         call CG(u,f,m,100,norm_res,.true.,temp_SF,Au,R,temp2)
+         call CG(u,f,m,1000,norm_res,.true.,temp_SF,Au,R,temp2)
          call compute_Ax(Au,u,m)
          call subtract(e,u,u_exact)
          call subtract(R,Au,f)
@@ -239,6 +264,7 @@
          call zeroWall(R,m,u)
          call export_3D_1C(m,R,dir,'R_'//name,0)
          call export_3D_1C(m,u,dir,'u_'//name,0)
+         call export_3D_1C(m,u,dir,'u_phys_'//name,1)
          call export_3D_1C(m,e,dir,'e_'//name,0)
          call zeroGhostPoints(e)
          call compute(norm_e,e,m)

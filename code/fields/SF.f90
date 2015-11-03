@@ -488,6 +488,7 @@
           else
             stop 'Error: no datatype found in init_BCs_SF in SF.f90'
           endif
+          f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1%f%s)/))
           call init_BC_props(f)
         end subroutine
 

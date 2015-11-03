@@ -6,16 +6,17 @@ p = mfilename('fullpath');
 chdir(thisDir); myDir.this = thisDir;
 
 %% PARAMS
-n = 2^7; % Number of cells
+% n = 2^7; % Number of cells
+n = 20; % Number of cells
 neumann = true; % (true,false) = (f=cose(), f = sin()) and with appropriate BCs
 Nsweeps = 100; % Number of multi-scale sweeps / ordinary sweeps
-p = 1*2; % Fourier Mode, look at p = 1 for neumann: looks bad
+p = 1*4; % Fourier Mode, look at p = 1 for neumann: looks bad
 nlevels = floor(log2(n));
 tol = 1e-6; % stopping tolerance
 dt = 0.1;
 solveInterior = true;
 multiScale = true;
-alpha = 2;
+alpha = 1;
 
 %% Grid generation (c for coordinates)
 c.hn = linspace(0,1,n+1);                   % Node grid

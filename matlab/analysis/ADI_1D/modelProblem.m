@@ -94,7 +94,7 @@ classdef modelProblem
             [loDiag, Diag, upDiag] = setUpSystem(a,.5*dt*alpha,h,n);
             Diag(2:end-1) = 1 + Diag(2:end-1);
             A = diag(Diag) + diag(upDiag,1) + diag(loDiag,-1);
-
+            dbstop at 98 in modelProblem
             rhs = A*un - dt*f;
             [loDiag, Diag, upDiag] = setUpSystem(a,-.5*dt*alpha,h,n);
             Diag(2:end-1) = 1 + Diag(2:end-1);
@@ -186,10 +186,10 @@ classdef modelProblem
             [loDiag, Diag, upDiag] = setUpSystemNeumannTotal(a,.5*dt*alpha,h,n);
             Diag = 1 + Diag;
             A = diag(Diag) + diag(upDiag,1) + diag(loDiag,-1);
-
+            dbstop at 190 in modelProblem
             utemp = un; utemp(2:end-1) = 0;
             lapUBC = lap(a,utemp,alpha,h);
-
+%             dbstop at 197 in modelProblem
             % f(1) = f(1) - alpha/(h^2)*un(2);
             % f(end) = f(end) - alpha/(h^2)*un(end-1);
             % rhs = A*un - dt*f;
@@ -295,7 +295,7 @@ classdef modelProblem
 
             utemp = un; utemp(2:end-1) = 0;
             lapUBC = lap(a,utemp,alpha,dh);
-
+            dbstop at 303 in modelProblem
             % Boundary values no longer matter since interior of matrix is
             % inverted.
             % f(1) = f(1) - lapUBC(2);

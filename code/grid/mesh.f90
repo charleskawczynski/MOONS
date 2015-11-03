@@ -32,6 +32,7 @@
          ! Properties
          integer :: s       ! Number of grids
          integer,dimension(3) :: N_cells ! Number of cells, for export
+         integer :: N_cells_tot ! Total number of cells
          real(cp) :: volume
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
@@ -138,12 +139,13 @@
              m%dhmax(j) = m%g(1)%c(j)%dhmax
            enddo
          endif
-         m%N_cells = 0; m%volume = 0.0_cp
+         m%N_cells = 0; m%N_cells_tot = 0; m%volume = 0.0_cp
          do i=1,m%s
            m%volume = m%volume + m%g(i)%volume
            do j=1,3
              m%N_cells(j) = m%N_cells(j) + m%g(i)%c(j)%N
            enddo
+           m%N_cells_tot = m%N_cells_tot + m%g(i)%c(1)%N*m%g(i)%c(2)%N*m%g(i)%c(3)%N
          enddo
        end subroutine
 

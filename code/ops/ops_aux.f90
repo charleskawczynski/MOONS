@@ -74,8 +74,10 @@
 
        public :: zeroWall
        interface zeroWall;                module procedure zeroWall_RF;               end interface
-       interface zeroWall;                module procedure zeroWall_VF;               end interface
        interface zeroWall;                module procedure zeroWall_SF;               end interface
+       interface zeroWall;                module procedure zeroWall_VF;               end interface
+       interface zeroWall;                module procedure zeroWall_conditional_SF;   end interface
+       interface zeroWall;                module procedure zeroWall_conditional_VF;   end interface
 
        public :: zeroInterior
        interface zeroInterior;            module procedure zeroInterior_RF;           end interface
@@ -259,7 +261,23 @@
          do i=1,f%s; call zeroGhostPoints(f%RF(i)%f,f%RF(i)%s); enddo
        end subroutine
 
-       subroutine zeroWall_SF(f,m,u)
+       subroutine zeroWall_SF(f,m)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         logical :: TF
+         integer :: i
+         do i=1,m%s
+           call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+           call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+           call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+           call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+           call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+           call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+         enddo
+       end subroutine
+
+       subroutine zeroWall_conditional_SF(f,m,u)
          implicit none
          type(SF),intent(inout) :: f
          type(SF),intent(in) :: u
@@ -281,23 +299,6 @@
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
            TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(u%RF(i)%b%face(6)%bctype.ne.3)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
-         enddo
-       end subroutine
-
-       subroutine zeroWall_SF_old(f,m)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         integer :: i
-         do i=1,m%s
-           if ((.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1))) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-           if ((.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1))) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
-
-           if ((.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2))) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-           if ((.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2))) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
-
-           if ((.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3))) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-           if ((.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3))) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
          enddo
        end subroutine
 
@@ -362,7 +363,14 @@
          enddo
        end subroutine
 
-       subroutine zeroWall_VF(V,m,U)
+       subroutine zeroWall_VF(V,m)
+         implicit none
+         type(VF),intent(inout) :: V
+         type(mesh),intent(in) :: m
+         call zeroWall(V%x,m); call zeroWall(V%y,m); call zeroWall(V%z,m)
+       end subroutine
+
+       subroutine zeroWall_conditional_VF(V,m,U)
          implicit none
          type(VF),intent(inout) :: V
          type(VF),intent(in) :: U

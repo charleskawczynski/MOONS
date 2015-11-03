@@ -234,6 +234,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PSE.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)CG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)CG_ind.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)poisson.f90 \
