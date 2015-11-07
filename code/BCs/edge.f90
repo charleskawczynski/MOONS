@@ -1,4 +1,10 @@
        module edge_mod
+       ! Edges are organized as follows
+       !        minmin(i) {(y,z),(x,z),(x,y)}
+       !        minmax(i) {(y,z),(x,z),(x,y)}
+       !        maxmin(i) {(y,z),(x,z),(x,y)}
+       !        maxmax(i) {(y,z),(x,z),(x,y)}
+       ! for direction i, covering all 12 edge.
        use IO_tools_mod
        implicit none
 

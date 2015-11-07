@@ -55,13 +55,12 @@
 
        public :: orthogonalDirection
 
+       ! public :: advect_advectionForm
+       ! public :: advect_divergenceForm
+
        public :: faceAdvectNew
        public :: faceAdvectDonor
        ! public :: fluidDiffusion
-
-       ! public :: CCBfieldDiffuse
-       ! interface CCBfieldDiffuse;    module procedure CCBfieldDiffuseSF;   end interface
-       ! interface CCBfieldDiffuse;    module procedure CCBfieldDiffuseVF;   end interface
 
        contains
 
@@ -117,7 +116,7 @@
          type(VF) :: U_ave,V_ave,W_ave,temp
          type(del) ::d
          integer :: pad
-         pad = 1 ! Currently running for pad = 1, try pad = 0 next
+         pad = 1
          call init(U_ave,U)
          call init(V_ave,U)
          call init(W_ave,U)
@@ -170,7 +169,7 @@
          type(mesh),intent(in) :: m
          type(del) ::d
          integer :: pad
-         pad = 1 ! Currently running for pad = 1, try pad = 0 next
+         pad = 1
 
          call zeroGhostPoints(div)
          

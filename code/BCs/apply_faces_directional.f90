@@ -56,26 +56,26 @@
          if (CC_along(U,dir)) then
            do i=1,m%s
              if (.not.m%g(i)%st_face%hmin(dir)) call app_CC_RF(U%RF(i)%f,m%g(i),U%RF(i)%s,f(1),&
-                                                               U%RF(i)%b%face(f(1))%vals,&
-                                                               U%RF(i)%b%face(f(1))%bctype,&
+                                                               U%RF(i)%b%face(dir)%hmin%vals,&
+                                                               U%RF(i)%b%face(dir)%hmin%bctype,&
                                                                m%g(i)%c(dir)%dhc(1),&
                                                                m%g(i)%c(dir)%dhc(m%g(i)%c(dir)%sc-1))
              if (.not.m%g(i)%st_face%hmax(dir)) call app_CC_RF(U%RF(i)%f,m%g(i),U%RF(i)%s,f(2),&
-                                                               U%RF(i)%b%face(f(2))%vals,&
-                                                               U%RF(i)%b%face(f(2))%bctype,&
+                                                               U%RF(i)%b%face(dir)%hmax%vals,&
+                                                               U%RF(i)%b%face(dir)%hmax%bctype,&
                                                                m%g(i)%c(dir)%dhc(m%g(i)%c(dir)%sc-1),&
                                                                m%g(i)%c(dir)%dhc(1))
            enddo
          elseif (Node_along(U,dir)) then
            do i=1,m%s
              if (.not.m%g(i)%st_face%hmin(dir)) call app_N_RF(U%RF(i)%f,m%g(i),U%RF(i)%s,f(1),&
-                                                              U%RF(i)%b%face(f(1))%vals,&
-                                                              U%RF(i)%b%face(f(1))%bctype,&
+                                                              U%RF(i)%b%face(dir)%hmin%vals,&
+                                                              U%RF(i)%b%face(dir)%hmin%bctype,&
                                                               m%g(i)%c(dir)%dhc(1),&
                                                               m%g(i)%c(dir)%dhc(m%g(i)%c(dir)%sc-1))
              if (.not.m%g(i)%st_face%hmax(dir)) call app_N_RF(U%RF(i)%f,m%g(i),U%RF(i)%s,f(2),&
-                                                              U%RF(i)%b%face(f(2))%vals,&
-                                                              U%RF(i)%b%face(f(2))%bctype,&
+                                                              U%RF(i)%b%face(dir)%hmax%vals,&
+                                                              U%RF(i)%b%face(dir)%hmax%bctype,&
                                                               m%g(i)%c(dir)%dhc(m%g(i)%c(dir)%sc-1),&
                                                               m%g(i)%c(dir)%dhc(1))
            enddo

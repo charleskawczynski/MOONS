@@ -96,130 +96,90 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_edge_SF(U,m,1,2,3,(/1,2,3,4/))
-         call apply_edge_SF(U,m,2,1,3,(/5,6,7,8/))
-         call apply_edge_SF(U,m,3,1,2,(/9,10,11,12/))
+         integer :: k
+         call apply_edge_SF(U,m,1,2,3)
+         call apply_edge_SF(U,m,2,1,3)
+         call apply_edge_SF(U,m,3,1,2)
        end subroutine
 
-       subroutine apply_edge_SF(U,m,dir,d1,d2,e)
+       subroutine apply_edge_SF(U,m,dir,e,d1,d2)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir,d1,d2
-         integer,dimension(4),intent(in) :: e
          integer :: i
          logical :: CCd1,CCd2
          CCd1 = CC_along(U,d1)
          CCd2 = CC_along(U,d2)
          do i=1,m%s
-          call app_minmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(1))%vals,&
-          U%RF(i)%b%e(e(1))%bctype,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmin
-          call app_minmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(2))%vals,&
-          U%RF(i)%b%e(e(2))%bctype,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmax
-          call app_maxmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(3))%vals,&
-          U%RF(i)%b%e(e(3))%bctype,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmin
-          call app_maxmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(4))%vals,&
-          U%RF(i)%b%e(e(4))%bctype,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmax
+          call app_minmin(U%RF(i)%f,m%g(i),U%RF(i)%b%edge(dir)%minmin%vals,U%RF(i)%b%edge(dir)%minmin%bctype,U%RF(i)%s,dir,d1,d2,CCd1,CCd2) ! minmin
+          call app_minmax(U%RF(i)%f,m%g(i),U%RF(i)%b%edge(dir)%minmax%vals,U%RF(i)%b%edge(dir)%minmax%bctype,U%RF(i)%s,dir,d1,d2,CCd1,CCd2) ! minmax
+          call app_maxmin(U%RF(i)%f,m%g(i),U%RF(i)%b%edge(dir)%maxmin%vals,U%RF(i)%b%edge(dir)%maxmin%bctype,U%RF(i)%s,dir,d1,d2,CCd1,CCd2) ! maxmin
+          call app_maxmax(U%RF(i)%f,m%g(i),U%RF(i)%b%edge(dir)%maxmax%vals,U%RF(i)%b%edge(dir)%maxmax%bctype,U%RF(i)%s,dir,d1,d2,CCd1,CCd2) ! maxmax
          enddo
        end subroutine
 
-       subroutine app_minmin(f,g,v,t,d1,d2,s,CCd1,CCd2,dir)
+       subroutine app_minmin(f,g,d1,d2,s,CCd1,CCd2,dir,pad)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          type(grid),intent(in) :: g
          real(cp),dimension(:),intent(in) :: v
          integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: dir,d1,d2,t
+         integer,intent(in) :: dir,d1,d2,t,pad
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
-         case (1); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(1)/),&
-                              1,1,1)
-         case (2); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(1)/),&
-                              1,1,1)
-         case (3); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(1)/),&
-                              1,1,1)
+         case (1); call app_E(v,t,s(d1),s(d2),g%c(d1)%dhc(1),g%c(d2)%dhc(1),g%c(d1)%dhn(1),g%c(d2)%dhn(1),CCd1,CCd2,dir,f,1,1,1)
+         case (2); call app_E(v,t,s(d1),s(d2),g%c(d1)%dhc(1),g%c(d2)%dhc(1),g%c(d1)%dhn(1),g%c(d2)%dhn(1),CCd1,CCd2,dir,f,1,1,1)
+         case (3); call app_E(v,t,s(d1),s(d2),g%c(d1)%dhc(1),g%c(d2)%dhc(1),g%c(d1)%dhn(1),g%c(d2)%dhn(1),CCd1,CCd2,dir,f,1,1,1)
          end select
        end subroutine
 
-       subroutine app_minmax(f,g,v,t,d1,d2,s,CCd1,CCd2,dir)
+       subroutine app_minmax(f,g,d1,d2,s,CCd1,CCd2,dir,pad)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          type(grid),intent(in) :: g
          real(cp),dimension(:),intent(in) :: v
          integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: dir,d1,d2,t
+         integer,intent(in) :: dir,d1,d2,t,pad
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
-         case (1); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
-                              2,1,-1)
-         case (2); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
-                              2,1,-1)
-         case (3); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
-                              2,1,-1)
+         case (1); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,2,1,-1)
+         case (2); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,2,1,-1)
+         case (3); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,2,1,-1)
          end select
        end subroutine
 
-       subroutine app_maxmin(f,g,v,t,d1,d2,s,CCd1,CCd2,dir)
+       subroutine app_maxmin(f,g,d1,d2,s,CCd1,CCd2,dir,pad)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          type(grid),intent(in) :: g
          real(cp),dimension(:),intent(in) :: v
          integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: dir,d1,d2,t
+         integer,intent(in) :: dir,d1,d2,t,pad
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
-         case (1); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(1)/),&
-                              3,-1,1)
-         case (2); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(1)/),&
-                              3,-1,1)
-         case (3); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(1)/),&
-                              3,-1,1)
+         case (1); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,3,-1,1)
+         case (2); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,3,-1,1)
+         case (3); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,3,-1,1)
          end select
        end subroutine
 
-       subroutine app_maxmax(f,g,v,t,d1,d2,s,CCd1,CCd2,dir)
+       subroutine app_maxmax(f,g,d1,d2,s,CCd1,CCd2,dir,pad)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          type(grid),intent(in) :: g
          real(cp),dimension(:),intent(in) :: v
          integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: dir,d1,d2,t
+         integer,intent(in) :: dir,d1,d2,t,pad
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
-         case (1); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
-                              4,-1,-1)
-         case (2); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
-                              4,-1,-1)
-         case (3); call app_E(v,t,s(d1),s(d2),CCd1,CCd2,dir,f,d1,d2,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
-                              4,-1,-1)
+         case (1); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,4,-1,-1)
+         case (2); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,4,-1,-1)
+         case (3); call app_E(v,t,s(d1),s(d2),g%c(d1),g%c(d2),CCd1,CCd2,dir,f,4,-1,-1)
          end select
        end subroutine
 
-       subroutine app_E(v,t,s1,s2,CCd1,CCd2,dir,f,d1,d2,dhc,dhn,corner,m1,m2)
+       subroutine app_E(v,t,s1,s2,d1,d2,dhc,dhn,CCd1,CCd2,dir,f,corner,m1,m2)
          ! At this point, data should be sent in a convention so that the 
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
@@ -274,13 +234,13 @@
          integer,intent(in) :: dir,t,s1,s2,d1,d2,corner
          integer,intent(in) :: m1,m2 ! index to move along d1 and d2 TOWARDS THE INTERIOR
          logical,intent(in) :: CCd1,CCd2
-         integer :: i1,i2 ! Refence index (e.g. CC ghost cell edge boundary)
+         integer,dimension(2) :: i ! Refence index (e.g. CC ghost cell edge boundary)
 
-         if (CCd1.and.((corner.eq.1).or.(corner.eq.2))) then; i1 = 1;  else; i1 = 2;    endif
-         if (CCd1.and.((corner.eq.3).or.(corner.eq.4))) then; i1 = s1; else; i1 = s1-1; endif
+         if (CCd1.and.((corner.eq.1).or.(corner.eq.2))) then; i(1) = 1;  else; i(1) = 2;    endif
+         if (CCd1.and.((corner.eq.3).or.(corner.eq.4))) then; i(1) = s1; else; i(1) = s1-1; endif
 
-         if (CCd2.and.((corner.eq.1).or.(corner.eq.2))) then; i2 = 1;  else; i2 = 2;    endif
-         if (CCd2.and.((corner.eq.3).or.(corner.eq.4))) then; i2 = s2; else; i2 = s2-1; endif
+         if (CCd2.and.((corner.eq.1).or.(corner.eq.2))) then; i(2) = 1;  else; i(2) = 2;    endif
+         if (CCd2.and.((corner.eq.3).or.(corner.eq.4))) then; i(2) = s2; else; i(2) = s2-1; endif
 
          if     (CCd1.and.CCd2)               then
            select case (dir) !            ug            ui             ug1           ug2
@@ -316,7 +276,7 @@
          real(cp),dimension(:),intent(inout) :: ug
          real(cp),dimension(:),intent(in) :: bvals,ui,ug1,ug2
          real(cp),dimension(2),intent(in) :: dh
-         integer,intent(in) :: bctype
+         integer,intent(in) :: t
          select case (bctype)
          ! *************************** DIRICHLET *****************************
          case (1); ug = 4.0_cp*bvals - (ui + ug1 + ug2)         ! Dirichlet - CC data
@@ -332,8 +292,7 @@
          implicit none
          real(cp),dimension(:),intent(inout) :: ub,ug1,ug2
          real(cp),dimension(:),intent(in) :: bvals,ui1,ui2
-         real(cp),dimension(2),intent(in) :: dh ! needed for non-zero Neumann
-         integer,intent(in) :: bctype
+         real(cp),dimension(2),intent(in) :: dh
          select case (bctype)
          ! *************************** DIRICHLET *****************************
          case (1); ub = bvals               ! Dirichlet - N data
@@ -344,18 +303,18 @@
          end select
        end subroutine
 
-       subroutine a_F(bctype,dh,bvals,ug,ui)
+       subroutine app_F(bctype,dh,bvals,ug,ui)
          !     F :    ug, ui
          implicit none
          real(cp),dimension(:),intent(inout) :: ug
          real(cp),dimension(:),intent(in) :: ui,bvals
          real(cp),dimension(2),intent(in) :: dh
-         integer,intent(in) :: bctype
          select case (bctype)
          ! *************************** DIRICHLET *****************************
-         case (2); ug = 2.0_cp*bvals - ui ! Dirichlet - interpolated - wall incoincident
+         case (1); ub = bvals; ug = 2.0_cp*bvals - ui ! Dirichlet - direct - wall coincident
          ! *************************** NEUMANN *****************************
-         case (5); ug = ui + dh*bvals     ! Implicit Neumann - interpolated - wall incoincident ~O(dh)
+         case (3); ub = ui; ug = ui                   ! Explicit Neumann - direct - wall coincident ~O(dh)?
+         case (4); ug = ui - 2.0_cp*bvals*dh          ! Implicit Neumann - direct - wall coincident ~O(dh^2)
          case default
          stop 'Error: Bad bctype! Caught in applyBCs.f90'
          end select

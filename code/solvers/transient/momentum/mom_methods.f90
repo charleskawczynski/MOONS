@@ -1,6 +1,5 @@
        module mom_methods_mod
-       use simParams_mod
-       use grid_mod
+       use mesh_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -15,7 +14,14 @@
        implicit none
        private
        
-       public :: solve
+       ! Routine names are besed on the following convention:
+       ! 1) Time marching scheme (Explicit Euler, Diffusion-Implicit, etc.)
+       ! 2) PPE method (Gauss-Seidel, SOR, multigrid, FFT, etc.)
+       ! 3) Advection term treatment (Divergence form, advective form)
+       ! 4) Mean pressure gradient (included or not)
+
+       public :: timeMarchingScheme_PPEMethod_Advection
+       public :: Euler_SOR_Donor
 
 
 #ifdef _SINGLE_PRECISION_
@@ -28,57 +34,88 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       interface solve;    module procedure Euler_SOR_Donor;   end interface
-
        contains
 
-       subroutine Euler_SOR_Donor(SOR,U,p,F,U_CC,mpg,g,Re,dt,ss_ppe,&
+       subroutine Euler_SOR_Donor_mpg(SOR,U,p,F,U_CC,mpg,m,Re,dt,ss_ppe,&
          Ustar,temp_F,temp_CC,temp_E1,temp_E2,printNorms)
          implicit none
          type(SORSolver),intent(inout) :: SOR
          type(VF),intent(inout) :: p
          type(VF),intent(in) :: U,F,mpg,U_CC
          type(VF),intent(inout) :: Ustar,temp_F,temp_CC,temp_E1,temp_E2
-         type(grid),intent(in) :: g
+         type(mesh),intent(in) :: m
          logical,intent(in) :: printNorms
          type(solverSettings),intent(inout) :: ss_ppe
          type(norms),intent(inout) :: norm_PPE
          real(cp),intent(in) :: Re,dt
-         ! Advection terms
-         call faceAdvectDonor(temp_F,U,U,temp_E1,temp_E2,U_CC,g)
-         call assignMinus(Ustar,temp_F) ! Ustar = -TempVF
+         
+         call faceAdvectDonor(temp_F,U,U,temp_E1,temp_E2,U_CC,m) ! Advection terms
+         call assignMinus(Ustar,temp_F)                          ! Ustar = -TempVF
 
-         ! Diffusion terms
-         call lap(temp_F,U,g)
+         call lap(temp_F,U,m)                                    ! Diffusion terms
          call divide(temp_F,Re)
          call add(Ustar,temp_F)
 
-         ! Source Terms (e.g. N j x B)
-         call add(Ustar,F)
+         call add(Ustar,F)                                       ! Source Terms (e.g. N j x B)
 
-         call ZWCB(Ustar,g) ! Zero wall coincident forcing (may be bad for neumann BCs)
+         call zeroWall(Ustar,m,U)                                ! Zero forces on non-Neumann walls
 
-         ! Ustar = U + dt*Ustar
-         call multiply(Ustar,dt)
+         call multiply(Ustar,dt)                                 ! Ustar = U + dt*Ustar
          call add(Ustar,U)
 
-         ! Pressure Poisson equation ∇²p = div(u)/dt
-         call div(temp_CC,Ustar,g)
-         call divide(temp_CC,dt) ! O(dt) pressure treatment
+         call div(temp_CC,Ustar,m)                               ! PPE: ∇²p = div(u)/dt
+         call divide(temp_CC,dt)                                 ! O(dt) pressure treatment
          call zeroGhostPoints(temp_CC)
-         call solve(SOR,p,temp_CC,g,ss_ppe,norm_PPE,printNorms)
+         call solve(SOR,p,temp_CC,m,ss_ppe,norm_PPE,printNorms)
 
-         ! Compute pressure gradient, temp_F = ∇p
-         call grad(temp_F,p,g)
+         call grad(temp_F,p,m)                                   ! Pressure gradient, temp_F = ∇p
 
-         ! Add mean pressure gradient
-         call subtract(temp_F,mpg)
+         call subtract(temp_F,mpg)                               ! Add mean pressure gradient
 
-         ! Pressure correction U^{n+1} = Ustar - dt ∇p
-         call multiply(temp_F,dt)
+         call multiply(temp_F,dt)                                ! Pressure correction U^{n+1} = Ustar - dt ∇p
          call subtract(U,Ustar,temp_F)
 
-         call applyAllBCs(U,g)
+         call applyAllBCs(U,m)
+       end subroutine
+
+       subroutine Euler_SOR_Donor(SOR,U,p,F,U_CC,m,Re,dt,ss_ppe,&
+         Ustar,temp_F,temp_CC,temp_E1,temp_E2,printNorms)
+         implicit none
+         type(SORSolver),intent(inout) :: SOR
+         type(VF),intent(inout) :: p
+         type(VF),intent(in) :: U,F,U_CC
+         type(VF),intent(inout) :: Ustar,temp_F,temp_CC,temp_E1,temp_E2
+         type(mesh),intent(in) :: m
+         logical,intent(in) :: printNorms
+         type(solverSettings),intent(inout) :: ss_ppe
+         type(norms),intent(inout) :: norm_PPE
+         real(cp),intent(in) :: Re,dt
+         
+         call faceAdvectDonor(temp_F,U,U,temp_E1,temp_E2,U_CC,m) ! Advection terms
+         call assignMinus(Ustar,temp_F)                          ! Ustar = -TempVF
+
+         call lap(temp_F,U,m)                                    ! Diffusion terms
+         call divide(temp_F,Re)
+         call add(Ustar,temp_F)
+
+         call add(Ustar,F)                                       ! Source Terms (e.g. N j x B)
+
+         call zeroWall(Ustar,m,U)                                ! Zero forces on non-Neumann walls
+
+         call multiply(Ustar,dt)                                 ! Ustar = U + dt*Ustar
+         call add(Ustar,U)
+
+         call div(temp_CC,Ustar,m)                               ! PPE: ∇²p = div(u)/dt
+         call divide(temp_CC,dt)                                 ! O(dt) pressure treatment
+         call zeroGhostPoints(temp_CC)
+         call solve(SOR,p,temp_CC,m,ss_ppe,norm_PPE,printNorms)
+
+         call grad(temp_F,p,m)                                   ! Pressure gradient, temp_F = ∇p
+
+         call multiply(temp_F,dt)                                ! Pressure correction U^{n+1} = Ustar - dt ∇p
+         call subtract(U,Ustar,temp_F)
+
+         call applyAllBCs(U,m)
        end subroutine
 
        end module

@@ -16,17 +16,21 @@ else
 endif
 
 # ************* DIRECTORY SETTINGS ******************
+USER = Charlie
+# USER = LM_MHD
+
 # Code directory
-SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # SRC_DIR = C:$(PS)Users$(PS)LM_MHD$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 
 # Output directory
-# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
 
 # Unit testing directories:
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Desktop$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -154,7 +158,6 @@ TARGET = $(TARGET_DIR)$(PS)unitTest
 # $(SRC_DIR)$(PS)grid$(PS)stitch.f90 \
 # $(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
 # $(SRC_DIR)$(PS)BCs$(PS)apply_faces.f90 \
-# $(SRC_DIR)$(PS)BCs$(PS)apply_edges.f90 \
 # $(SRC_DIR)$(PS)BCs$(PS)apply_corners.f90 \
 
 
@@ -224,6 +227,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)applyBCs.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_edges.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_faces.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \

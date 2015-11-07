@@ -992,6 +992,38 @@
          end select
        end subroutine
 
+       subroutine computeJCrossB_functional(jcrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,Bstar,temp_CC,jCrossB_F)
+         ! computes
+         ! 
+         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
+         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
+         ! 
+         implicit none
+         type(VF),intent(inout) :: jcrossB
+         type(VF),intent(in) :: B,B0
+         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,jCrossB_F
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D_fluid
+         real(cp),intent(in) :: Ha,Re,Rem
+         select case (solveBMethod)
+         case (5,6) ! Finite Rem
+           call add(Bstar,B,B0)
+           call curl(J_cc,B,m)
+           call cross(temp_CC,J_cc,Bstar)
+           call cellCenter2Face(jCrossB_F,temp_CC,m)
+           call extractFace(jcrossB,jCrossB_F,D_fluid)
+           call zeroGhostPoints(jCrossB)
+           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
+         case default ! Low Rem
+           call curl(J_cc,B,m)
+           call cross(temp_CC,J_cc,B0)
+           call cellCenter2Face(jCrossB_F,temp_CC,m)
+           call extractFace(jcrossB,jCrossB_F,D_fluid)
+           call zeroGhostPoints(jCrossB)
+           call multiply(jcrossB,Ha**2.0_cp/Re)
+         end select
+       end subroutine
+
        subroutine computeJCrossB_Bface(jcrossB,ind,Ha,Re,Rem)
          ! computes
          ! 

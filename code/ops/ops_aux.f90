@@ -265,7 +265,6 @@
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         logical :: TF
          integer :: i
          do i=1,m%s
            call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
@@ -278,6 +277,8 @@
        end subroutine
 
        subroutine zeroWall_conditional_SF(f,m,u)
+         ! Sets wall coincident values to zero if 
+         ! boundary conditions of u are NOT Neumann (bctype=3)
          implicit none
          type(SF),intent(inout) :: f
          type(SF),intent(in) :: u

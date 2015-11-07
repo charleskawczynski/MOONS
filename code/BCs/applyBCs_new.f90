@@ -35,16 +35,14 @@
 
        use SF_mod
        use VF_mod
-       use BCs_mod
        use apply_faces_mod
        use apply_edges_mod
        use apply_corners_mod
-       use grid_mod
        use mesh_mod
        implicit none
 
        private
-       public :: applyAllBCs
+       public :: applyBCs
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -57,21 +55,21 @@
 #endif
 
 
-       interface applyAllBCs;       module procedure applyAllBCs_VF;     end interface
-       interface applyAllBCs;       module procedure applyAllBCs_SF;     end interface
+       interface applyBCs;       module procedure applyBCs_VF;     end interface
+       interface applyBCs;       module procedure applyBCs_SF;     end interface
 
        contains
 
-       subroutine applyAllBCs_VF(U,m)
+       subroutine applyBCs_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call applyAllBCs(U%x,m)
-         call applyAllBCs(U%y,m)
-         call applyAllBCs(U%z,m)
+         call applyBCs(U%x,m)
+         call applyBCs(U%y,m)
+         call applyBCs(U%z,m)
        end subroutine
 
-       subroutine applyAllBCs_SF(U,m)
+       subroutine applyBCs_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
