@@ -188,7 +188,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)geometries.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)corner.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)edge.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90 \
@@ -226,9 +226,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)applyBCs.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)apply_edges.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_faces.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_edges.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_corners.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)applyBCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \

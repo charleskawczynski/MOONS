@@ -139,7 +139,7 @@
          call initTfield(nrg%T,m,dir)
          write(*,*) '     T-field initialized'
 
-         call applyAllBCs(nrg%T,m)
+         call applyBCs(nrg%T,m)
          write(*,*) '     BCs applied'
 
          call initK(nrg%k_cc,nrg%D,m)
@@ -383,7 +383,7 @@
          call add(nrg%T,nrg%Tstar)
 
          ! Impose BCs:
-         call applyAllBCs(nrg%T,m)
+         call applyBCs(nrg%T,m)
        end subroutine
 
        ! ********************* AUX *****************************

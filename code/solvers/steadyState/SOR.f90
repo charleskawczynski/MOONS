@@ -150,7 +150,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyAllBCs(u,m) ! Necessary with ghost nodes
+        call applyBCs(u,m) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -201,7 +201,7 @@
 
 #endif
 
-          call applyAllBCs(u,m)
+          call applyBCs(u,m)
 
           if (getMinToleranceTF(ss)) then
             call lap(SOR%lapu,u,m)

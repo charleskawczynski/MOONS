@@ -260,17 +260,17 @@
          integer,intent(in) :: dir
          select case (dir)
          case (1); call init(v_bcs,rotatingCylinder(g%c(2),g%c(3),&
-          v_bcs%face(1)%s(1),v_bcs%face(1)%s(2),0.1_cp,1.0_cp,1),1)
+          v_bcs%f(1)%s(1),v_bcs%f(1)%s(2),0.1_cp,1.0_cp,1),1)
                    call init(w_bcs,rotatingCylinder(g%c(2),g%c(3),&
-          w_bcs%face(1)%s(1),w_bcs%face(1)%s(2),0.1_cp,1.0_cp,2),1)
+          w_bcs%f(1)%s(1),w_bcs%f(1)%s(2),0.1_cp,1.0_cp,2),1)
          case (2); call init(u_bcs,rotatingCylinder(g%c(1),g%c(3),&
-          u_bcs%face(2)%s(1),u_bcs%face(2)%s(2),0.1_cp,1.0_cp,1),2)
+          u_bcs%f(2)%s(1),u_bcs%f(2)%s(2),0.1_cp,1.0_cp,1),2)
                    call init(w_bcs,rotatingCylinder(g%c(1),g%c(3),&
-          w_bcs%face(2)%s(1),w_bcs%face(2)%s(2),0.1_cp,1.0_cp,2),2)
+          w_bcs%f(2)%s(1),w_bcs%f(2)%s(2),0.1_cp,1.0_cp,2),2)
          case (3); call init(u_bcs,rotatingCylinder(g%c(1),g%c(2),&
-          u_bcs%face(3)%s(1),u_bcs%face(3)%s(2),0.1_cp,1.0_cp,1),3)
+          u_bcs%f(3)%s(1),u_bcs%f(3)%s(2),0.1_cp,1.0_cp,1),3)
                    call init(v_bcs,rotatingCylinder(g%c(1),g%c(2),&
-          v_bcs%face(3)%s(1),v_bcs%face(3)%s(2),0.1_cp,1.0_cp,2),3)
+          v_bcs%f(3)%s(1),v_bcs%f(3)%s(2),0.1_cp,1.0_cp,2),3)
          end select
        end subroutine
 
@@ -283,11 +283,11 @@
          face = getFace(dir,posNeg)
          select case (dir)
          case (1); call init(u_bcs,init_FD_DuctFlow(g%c(2),g%c(3),&
-                    u_bcs%face(face)%s(1),u_bcs%face(face)%s(2)),1)
+                    u_bcs%f(face)%s(1),u_bcs%f(face)%s(2)),1)
          case (2); call init(v_bcs,init_FD_DuctFlow(g%c(1),g%c(3),&
-                    v_bcs%face(face)%s(1),v_bcs%face(face)%s(2)),2)
+                    v_bcs%f(face)%s(1),v_bcs%f(face)%s(2)),2)
          case (3); call init(w_bcs,init_FD_DuctFlow(g%c(1),g%c(2),&
-                    w_bcs%face(face)%s(1),w_bcs%face(face)%s(2)),3)
+                    w_bcs%f(face)%s(1),w_bcs%f(face)%s(2)),3)
          end select
        end subroutine
 

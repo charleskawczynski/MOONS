@@ -53,7 +53,7 @@
         type(SF),intent(inout) :: temp,Ax,r,p
         integer :: i
         real(cp) :: alpha,rsold,rsnew,alpha_temp
-        call applyAllBCs(x,m)
+        call applyBCs(x,m)
         call compute_Ax(Ax,x,m) ! Compute Ax
 
         ! call extrap(b,m)
@@ -73,7 +73,7 @@
           call assign(temp,p)                       ! Update x
           call multiply(temp,alpha)                 ! Update x
           call add(x,temp)                          ! Update x
-          call applyAllBCs(x,m)                     ! Update x
+          call applyBCs(x,m)                     ! Update x
 
           call assign(temp,Ax)                      ! Update r
           call multiply(temp,alpha)                 ! Update r
@@ -104,7 +104,7 @@
 
         enddo
         if (x%all_Neumann) call subtract(x,mean(x))
-        call applyAllBCs(x,m)
+        call applyBCs(x,m)
         if (displayTF) then
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)

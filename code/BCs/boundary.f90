@@ -1,5 +1,4 @@
        module boundary_mod
-       use IO_tools_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -14,98 +13,159 @@
 
        private
        public :: boundary
+       public :: init_Dirichlet,init_Neumann,init_Periodic,init_symmetric,init_antisymmetric
+       public :: init_face,init_edge,init_corner
        public :: init,delete
        public :: print,export
 
        type boundary
-         integer :: bctype
-         real(cp),dimension(:,:),allocatable :: vals
-         real(cp) :: val
-         integer,dimension(2) :: s
-         logical,dimension(2) :: def = .false. ! true if (bctype,vals) are defined
+         logical :: Dirichlet,Neumann,Periodic,symmetric,antisymmetric
+         logical :: face,edge,corner
+         real(cp) :: meanVal
+         logical,dimension(3) :: def = .false. ! {bctype,location,value}
          logical :: defined = .false. ! = all(defined)
        end type
 
-       interface init;       module procedure init_type;             end interface
-       interface init;       module procedure init_vals_RF;          end interface
-       interface init;       module procedure init_val;              end interface
-       interface init;       module procedure init_shape;            end interface
-       interface init;       module procedure init_copy;             end interface
+       interface init_Dirichlet;      module procedure init_Dirichlet_b;      end interface
+       interface init_Neumann;        module procedure init_Neumann_b;        end interface
+       interface init_Periodic;       module procedure init_Periodic_b;       end interface
+       interface init_symmetric;      module procedure init_symmetric_b;      end interface
+       interface init_antisymmetric;  module procedure init_antisymmetric_b;  end interface
 
-       interface delete;     module procedure delete_boundary;       end interface
-       interface print;      module procedure print_boundary;        end interface
-       interface export;     module procedure export_boundary;       end interface
-       interface export;     module procedure export_boundary_unit;  end interface
+       interface init_face;           module procedure init_face_b;           end interface
+       interface init_edge;           module procedure init_edge_b;           end interface
+       interface init_corner;         module procedure init_corner_b;         end interface
+
+       interface init;                 module procedure init_val0;            end interface
+       interface init;                 module procedure init_val1;            end interface
+       interface init;                 module procedure init_val2;            end interface
+       interface init;                 module procedure init_copy;            end interface
+       interface delete;               module procedure delete_boundary;      end interface
+
+       interface print;                module procedure print_boundary;       end interface
+       interface export;               module procedure export_boundary;      end interface
 
        contains
 
        ! *******************************************************************************
-       ! ********************************* INIT/DELETE *********************************
+       ! *********************************** TYPE **************************************
        ! *******************************************************************************
 
-       subroutine init_type(b,bctype)
+       subroutine deleteType(b)
          implicit none
          type(boundary),intent(inout) :: b
-         integer,intent(in) :: bctype
-         b%bctype = bctype
-         b%def(1) = .true.
-         b%defined = all(b%def)
+         b%Dirichlet = .false.;   b%Neumann = .false.; 
+         b%Periodic = .false.;    b%symmetric = .false.; 
+         b%antisymmetric = .false.; b%def(1) = .false.; b%defined = all(b%def)
        end subroutine
 
-       subroutine init_vals_RF(b,vals)
+       subroutine init_Dirichlet_b(b)
          implicit none
          type(boundary),intent(inout) :: b
-         real(cp),dimension(:,:),intent(in) :: vals
-         if (allocated(b%vals)) deallocate(b%vals)
-         ! b%s = shape(vals) ! Is this necessary/good?
-         ! Make sure that b%s has been defined here in debug mode
-         allocate(b%vals(b%s(1),b%s(2)))
-         b%val = vals(1,1)
-         b%vals = vals
-         b%def(2) = .true.
-         b%defined = all(b%def)
+         call deleteType(b); b%Dirichlet = .true.; b%def(1) = .true.; b%defined = all(b%def)
        end subroutine
-
-       subroutine init_shape(b,s)
+       subroutine init_Neumann_b(b)
          implicit none
          type(boundary),intent(inout) :: b
-         integer,dimension(2),intent(in) :: s
-         b%s = s
+         call deleteType(b); b%Neumann = .true.; b%def(1) = .true.; b%defined = all(b%def)
+       end subroutine
+       subroutine init_Periodic_b(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         call deleteType(b); b%Periodic = .true.; b%def(1) = .true.; b%defined = all(b%def)
+       end subroutine
+       subroutine init_symmetric_b(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         call deleteType(b); b%symmetric = .true.; b%def(1) = .true.; b%defined = all(b%def)
+       end subroutine
+       subroutine init_antisymmetric_b(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         call deleteType(b); b%antisymmetric = .true.; b%def(1) = .true.; b%defined = all(b%def)
        end subroutine
 
-       subroutine init_val(b,val)
+       ! *******************************************************************************
+       ! ********************************* LOCATION ************************************
+       ! *******************************************************************************
+
+       subroutine deleteLocation(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         b%face = .false.; b%edge = .false.; b%corner = .false.; b%def(2) = .false.; b%defined = all(b%def)
+       end subroutine
+
+       subroutine init_face_b(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         call deleteLocation(b); b%face = .true.; b%def(2) = .true.; b%defined = all(b%def)
+       end subroutine
+       subroutine init_edge_b(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         call deleteLocation(b); b%edge = .true.; b%def(2) = .true.; b%defined = all(b%def)
+       end subroutine
+       subroutine init_corner_b(b)
+         implicit none
+         type(boundary),intent(inout) :: b
+         call deleteLocation(b); b%corner = .true.; b%def(2) = .true.; b%defined = all(b%def)
+       end subroutine
+
+       ! *******************************************************************************
+       ! ********************************** VAL ****************************************
+       ! *******************************************************************************
+
+       subroutine init_val0(b,val)
          implicit none
          type(boundary),intent(inout) :: b
          real(cp),intent(in) :: val
-         if (allocated(b%vals)) deallocate(b%vals)
-         allocate(b%vals(b%s(1),b%s(2)))
-         b%vals = val
-         b%val = val
-         b%def(2) = .true.
-         b%defined = all(b%def)
+         b%meanVal = val; b%def(3) = .true.; b%defined = all(b%def)
        end subroutine
+
+       subroutine init_val1(b,val)
+         implicit none
+         type(boundary),intent(inout) :: b
+         real(cp),dimension(:),intent(in) :: val
+         b%meanVal = sum(val)/size(val); b%def(3) = .true.; b%defined = all(b%def)
+       end subroutine
+
+       subroutine init_val2(b,val)
+         implicit none
+         type(boundary),intent(inout) :: b
+         real(cp),dimension(:,:),intent(in) :: val
+         b%meanVal = sum(val)/size(val); b%def(3) = .true.; b%defined = all(b%def)
+       end subroutine
+
+       ! *******************************************************************************
+       ! ******************************** COPY & DELETE ********************************
+       ! *******************************************************************************
 
        subroutine init_copy(b_out,b_in)
          implicit none
          type(boundary),intent(inout) :: b_out
          type(boundary),intent(in) :: b_in
          if (.not.b_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
-         if (allocated(b_in%vals)) then
-           call init(b_out,b_in%vals)
-         else; stop 'Error: trying to copy BC that has not been allocated vals'
-         endif
-         b_out%bctype = b_in%bctype
-         b_out%val = b_in%val
+         b_out%Dirichlet = b_in%Dirichlet
+         b_out%Neumann = b_in%Neumann
+         b_out%Periodic = b_in%Periodic
+         b_out%symmetric = b_in%symmetric
+         b_out%antisymmetric = b_in%antisymmetric
+
+         b_out%face = b_in%face
+         b_out%edge = b_in%edge
+         b_out%corner = b_in%corner
+
+         b_out%meanVal = b_in%meanVal
          b_out%def = b_in%def
          b_out%defined = b_in%defined
-         b_out%s = b_in%s
        end subroutine
 
        subroutine delete_boundary(b)
          implicit none
          type(boundary),intent(inout) :: b
-         if (allocated(b%vals)) deallocate(b%vals)
-         b%s = 0
+         call deleteType(b)
+         call deleteLocation(b)
+         call init(b,0.0_cp)
          b%def = .false.
          b%defined = all(b%def)
        end subroutine
@@ -114,54 +174,36 @@
        ! ******************************** PRINT/EXPORT *********************************
        ! *******************************************************************************
 
-       subroutine print_boundary(b,name)
+       subroutine print_boundary(b)
          implicit none
          type(boundary), intent(in) :: b
-         character(len=*),intent(in) :: name
-         call exp_boundary(b,name,6)
-         write(*,*) 'val = ',b%val
+         call export(b,6)
        end subroutine
 
-       subroutine export_boundary(b,dir,name)
+       subroutine export_boundary(b,NewU)
          implicit none
-         type(boundary), intent(in) :: b
-         character(len=*),intent(in) :: dir,name
-         integer :: NewU
-         NewU = newAndOpen(dir,name//'_boundary')
-         call exp_boundary(b,name,newU)
-         call closeAndMessage(newU,name//'_BoundaryConditions',dir)
-       end subroutine
-
-       subroutine export_boundary_unit(b,newU,name)
-         implicit none
-         type(boundary), intent(in) :: b
-         integer,intent(in) :: newU
-         character(len=*),intent(in) :: name
-         call exp_boundary(b,name,newU)
-       end subroutine
-
-       subroutine exp_boundary(b,name,newU)
-         implicit none
-         type(boundary), intent(in) :: b
-         character(len=*),intent(in) :: name
+         type(boundary),intent(in) :: b
          integer,intent(in) :: NewU
-         if (.not.b%defined) stop 'Error: boundary not defined in writeBoundary in boundary.f90'
+         logical :: TF
+         TF = .false. ! show all regardless
 
-         write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
-         call writeBoundary(b%bctype,newU)
-       end subroutine
+         if (.not.b%defined) then 
+           write(newU,*) 'def = ',b%def
+           write(newU,*) 'defined = ',b%defined
+           stop 'Error: trying to export boundary before fully defined'
+         endif
+         if (TF.or.b%Dirichlet)     write(newU,*) 'Dirichlet = ',b%Dirichlet
+         if (TF.or.b%Neumann)       write(newU,*) 'Neumann = ',b%Neumann
+         if (TF.or.b%Periodic)      write(newU,*) 'Periodic = ',b%Periodic
+         if (TF.or.b%symmetric)     write(newU,*) 'symmetric = ',b%symmetric
+         if (TF.or.b%antisymmetric) write(newU,*) 'antisymmetric = ',b%antisymmetric
+         if (TF.or.b%face)          write(newU,*) 'face = ',b%face
+         if (TF.or.b%edge)          write(newU,*) 'edge = ',b%edge
+         if (TF.or.b%corner)        write(newU,*) 'corner = ',b%corner
 
-       subroutine writeBoundary(bctype,NewU)
-         implicit none
-         integer,intent(in) :: NewU,bctype
-         if (bctype.eq.1) then; write(newU,*) 'Dirichlet - direct - wall coincident'; endif
-         if (bctype.eq.2) then; write(newU,*) 'Dirichlet - interpolated - wall incoincident'; endif
-         if (bctype.eq.3) then; write(newU,*) 'Neumann - direct - wall coincident ~O(dh^2)'; endif
-         if (bctype.eq.4) then; write(newU,*) 'Neumann - direct - wall coincident ~O(dh)'; endif
-         if (bctype.eq.5) then; write(newU,*) 'Neumann - interpolated - wall incoincident O(dh)'; endif
-         if (bctype.eq.6) then; write(newU,*) 'Periodic - direct - wall coincident ~O(dh)'; endif
-         if (bctype.eq.7) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh)'; endif
-         if (bctype.eq.8) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh^2)'; endif
+         write(newU,*) 'def = ',b%def
+         write(newU,*) 'defined = ',b%defined
+         write(newU,*) 'meanVal = ',b%meanVal
        end subroutine
 
        end module

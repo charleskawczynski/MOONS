@@ -66,8 +66,8 @@
          integer,dimension(3),intent(in) :: out1,out2,in1,in2
 #ifdef _PARALLELIZE_EMBEDEXTRACT_
          integer :: i,j,k
-         integer,dimension(3) :: out_temp
-         out_temp = out1-1
+         integer,dimension(3) :: suppress_warning
+         suppress_warning = in2 ! in2 is not needed for parallel computations
          !$OMP PARALLEL DO
          do k=out1(3),out2(3);do j=out1(2),out2(2);do i=out1(1),out2(1)
          RF_out%f(i,j,k) = &

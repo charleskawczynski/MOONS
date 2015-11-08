@@ -168,7 +168,7 @@
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select
 
-          call applyAllBCs(u,m)
+          call applyBCs(u,m)
 
           if (displayTF) then
             call lap(FFT%res,u,m)

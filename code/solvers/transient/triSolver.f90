@@ -109,19 +109,19 @@
         case (1)
         !$OMP PARALLEL DO
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-        call triSolve_Dirichlet(uOut(:,j,k),uIn(:,j,k),T,b%face(1)%vals(j,k),b%face(4)%vals(j,k),s(1))
+        call triSolve_Dirichlet(uOut(:,j,k),uIn(:,j,k),T,b%f(1)%vals(j,k),b%f(4)%vals(j,k),s(1))
         enddo; enddo
         !$OMP END PARALLEL DO
         case (2)
         !$OMP PARALLEL DO
         do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        call triSolve_Dirichlet(uOut(i,:,k),uIn(i,:,k),T,b%face(2)%vals(i,k),b%face(5)%vals(i,k),s(2))
+        call triSolve_Dirichlet(uOut(i,:,k),uIn(i,:,k),T,b%f(2)%vals(i,k),b%f(5)%vals(i,k),s(2))
         enddo; enddo
         !$OMP END PARALLEL DO
          case (3)
         !$OMP PARALLEL DO
         do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        call triSolve_Dirichlet(uOut(i,j,:),uIn(i,j,:),T,b%face(3)%vals(i,j),b%face(6)%vals(i,j),s(3))
+        call triSolve_Dirichlet(uOut(i,j,:),uIn(i,j,:),T,b%f(3)%vals(i,j),b%f(6)%vals(i,j),s(3))
         enddo; enddo
         !$OMP END PARALLEL DO
         case default

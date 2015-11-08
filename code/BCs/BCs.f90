@@ -14,10 +14,32 @@
        ! 
        ! The convention for the faces is:
        !   face = {1:6} = {x_min,x_max,y_min,y_max,z_min,z_max}
+       ! 
+       ! 
+       ! 
+       ! 
+       !              ^
+       !              |
+       !              |
+       !              |-------------/
+       !             /             / |
+       !            /             /  |
+       !           /             /   |
+       !          |--------------    |____________>
+       !          |             |   /
+       !          |             |  /
+       !          |             | /
+       !          |_____________|/
+       !         /
+       !        /
+       !       /
+       ! 
 
        use grid_mod
-       use boundary_mod
+       use bctype_mod
+       use face_mod
        use edge_mod
+       use corner_mod
        use IO_tools_mod
        implicit none
 
@@ -30,16 +52,6 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-
-       integer,parameter :: Dirichlet_n = 1      ! Correspond to applyBCs.f90
-       integer,parameter :: Dirichlet_cc = 2     ! Correspond to applyBCs.f90
-       integer,parameter :: Neumann_n = 3        ! Correspond to applyBCs.f90
-       ! integer,parameter :: Neumann_cc = 4     ! Correspond to applyBCs.f90
-       integer,parameter :: Neumann_cc = 5       ! Correspond to applyBCs.f90
-       integer,parameter :: periodic_n = 6       ! Correspond to applyBCs.f90
-       integer,parameter :: periodic_cc = 7      ! Correspond to applyBCs.f90
-       integer,parameter :: antisymmetry_n = 9   ! Correspond to applyBCs.f90
-       integer,parameter :: antisymmetry_cc = 10 ! Correspond to applyBCs.f90
 
        private
        public :: BCs
@@ -55,11 +67,10 @@
        public :: getAllNeumann
        public :: getDirichlet
 
-       public :: print_defined
-
        type BCs
-         type(boundary),dimension(6) :: face ! xmin,xmax,ymin,ymax,zmin,zmax
-         type(edge),dimension(12) :: e
+         type(face),dimension(6) :: f   ! xmin,xmax,ymin,ymax,zmin,zmax
+         type(edge),dimension(12) :: e  ! {1:12} = {x,y,z: minmin,minmax,maxmin,maxmax}
+         type(corner),dimension(8) :: c ! 
          type(grid) :: g
          integer,dimension(3) :: s
          logical :: gridDefined = .false.
@@ -94,156 +105,143 @@
        ! ********************************** INIT GRID (1) ******************************
        ! *******************************************************************************
 
-       subroutine init_gridShape_BCs(b,g,s)
+       subroutine init_gridShape_BCs(BC,g,s)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          type(grid),intent(in) :: g
          integer,dimension(3),intent(in) :: s
-         call init(b%g,g); b%s = s
-         call init(b%face(1),(/s(2),s(3)/))
-         call init(b%face(2),(/s(2),s(3)/))
-         call init(b%face(3),(/s(1),s(3)/))
-         call init(b%face(4),(/s(1),s(3)/))
-         call init(b%face(5),(/s(1),s(2)/))
-         call init(b%face(6),(/s(1),s(2)/))
-         b%gridDefined = .true.
-         call define_logicals(b)
+         integer :: i
+         call init(BC%g,g); BC%s = s
+         call init(BC%f(1),(/s(2),s(3)/))
+         call init(BC%f(2),(/s(2),s(3)/))
+         call init(BC%f(3),(/s(1),s(3)/))
+         call init(BC%f(4),(/s(1),s(3)/))
+         call init(BC%f(5),(/s(1),s(2)/))
+         call init(BC%f(6),(/s(1),s(2)/))
+
+         do i=1,4;  call init(BC%e(i),s(1)); enddo
+         do i=5,8;  call init(BC%e(i),s(2)); enddo
+         do i=9,12; call init(BC%e(i),s(3)); enddo
+
+         BC%gridDefined = .true.
+         call define_logicals(BC)
        end subroutine
 
        ! *******************************************************************************
        ! ********************************** INIT TYPE (2) ******************************
        ! *******************************************************************************
 
-       subroutine init_BCType_all(b,bctype_n,bctype_cc)
+       subroutine init_Dirichlet_all(BC)
          implicit none
-         type(BCs),intent(inout) :: b
-         integer,intent(in) :: bctype_n,bctype_cc
-         integer :: k
-         if (.not.b%gridDefined) stop 'Error: BC grid must be defined before type is defined'
-         do k=1,6; call init_BCType_face(b,k,bctype_n,bctype_cc); enddo
-         call define_logicals(b)
+         type(BCs),intent(inout) :: BC
+         integer :: i
+         call check_prereq(BC)
+         do i=1,6;  call init_Dirichlet(BC%f(i)%b); enddo
+         do i=1,12; call init_Dirichlet(BC%e(i)%b); enddo
+         do i=1,8;  call init_Dirichlet(BC%c(i)%b); enddo
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_BCType_face(b,face,bctype_n,bctype_cc)
+       subroutine init_Neumann_all(BC)
          implicit none
-         type(BCs),intent(inout) :: b
-         integer,intent(in) :: face,bctype_n,bctype_cc
-         if (.not.b%gridDefined) stop 'Error: BC grid must be defined before type is defined'
-         select case (face)
-         case (1,2); if (b%s(1).eq.b%g%c(1)%sn) then; call init(b%face(face),bctype_n)
-                 elseif (b%s(1).eq.b%g%c(1)%sc) then; call init(b%face(face),bctype_cc)
-                 else; stop 'Error: size mismatch in init_BCType_face in BCs.f90'
-                 endif
-         case (3,4); if (b%s(2).eq.b%g%c(2)%sn) then; call init(b%face(face),bctype_n)
-                 elseif (b%s(2).eq.b%g%c(2)%sc) then; call init(b%face(face),bctype_cc)
-                 else; stop 'Error: size mismatch in init_BCType_face in BCs.f90'
-                 endif
-         case (5,6); if (b%s(3).eq.b%g%c(3)%sn) then; call init(b%face(face),bctype_n)
-                 elseif (b%s(3).eq.b%g%c(3)%sc) then; call init(b%face(face),bctype_cc)
-                 else; stop 'Error: size mismatch in init_BCType_face in BCs.f90'
-                 endif
-         case default; stop 'Error: case not found in init_BCType_face in BCs.f90'
-         end select
-         call define_logicals(b)
+         type(BCs),intent(inout) :: BC
+         integer :: i
+         call check_prereq(BC)
+         do i=1,6;  call init_Neumann(BC%f(i)%b); enddo
+         do i=1,12; call init_Neumann(BC%e(i)%b); enddo
+         do i=1,8;  call init_Neumann(BC%c(i)%b); enddo
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_Dirichlet_all(b)
+       subroutine init_Periodic_all(BC)
          implicit none
-         type(BCs),intent(inout) :: b
-         call check_prereq(b)
-         call init_BCType_all(b,Dirichlet_n,Dirichlet_cc)
-         call define_logicals(b)
+         type(BCs),intent(inout) :: BC
+         integer :: i
+         call check_prereq(BC)
+         do i=1,6;  call init_Periodic(BC%f(i)%b); enddo
+         do i=1,12; call init_Periodic(BC%e(i)%b); enddo
+         do i=1,8;  call init_Periodic(BC%c(i)%b); enddo
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_Neumann_all(b)
+       subroutine init_antisymmetry_all(BC)
          implicit none
-         type(BCs),intent(inout) :: b
-         call check_prereq(b)
-         call init_BCType_all(b,Neumann_n,Neumann_cc)
-         call define_logicals(b)
+         type(BCs),intent(inout) :: BC
+         integer :: i
+         call check_prereq(BC)
+         do i=1,6;  call init_antisymmetric(BC%f(i)%b); enddo
+         do i=1,12; call init_antisymmetric(BC%e(i)%b); enddo
+         do i=1,8;  call init_antisymmetric(BC%c(i)%b); enddo
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_Periodic_all(b)
+       subroutine init_Dirichlet_face(BC,face)
          implicit none
-         type(BCs),intent(inout) :: b
-         call check_prereq(b)
-         call init_BCType_all(b,periodic_n,periodic_cc)
-         call define_logicals(b)
-       end subroutine
-
-       subroutine init_antisymmetry_all(b)
-         implicit none
-         type(BCs),intent(inout) :: b
-         call check_prereq(b)
-         call init_BCType_all(b,periodic_n,periodic_cc)
-         call define_logicals(b)
-       end subroutine
-
-       subroutine init_Dirichlet_face(b,face)
-         implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          integer,intent(in) :: face
-         call check_prereq(b)
-         call init_BCType_face(b,face,Dirichlet_n,Dirichlet_cc)
-         call define_logicals(b)
+         call check_prereq(BC)
+         call init_Dirichlet(BC%f(face)%b)
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_Neumann_face(b,face)
+       subroutine init_Neumann_face(BC,face)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          integer,intent(in) :: face
-         call check_prereq(b)
-         call init_BCType_face(b,face,Neumann_n,Neumann_cc)
-         call define_logicals(b)
+         call check_prereq(BC)
+         call init_Neumann(BC%f(face)%b)
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_Periodic_face(b,face)
+       subroutine init_Periodic_face(BC,face)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          integer,intent(in) :: face
-         call check_prereq(b)
-         call init_BCType_face(b,face,periodic_n,periodic_cc)
-         call define_logicals(b)
+         call check_prereq(BC)
+         call init_Periodic(BC%f(face)%b)
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_antisymmetry_face(b,face)
+       subroutine init_antisymmetry_face(BC,face)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          integer,intent(in) :: face
-         call check_prereq(b)
-         call init_BCType_face(b,face,antisymmetry_n,antisymmetry_cc)
-         call define_logicals(b)
+         call check_prereq(BC)
+         call init_antisymmetric(BC%f(face)%b)
+         call define_logicals(BC)
        end subroutine
 
        ! *******************************************************************************
        ! ********************************** INIT VALS (3) ******************************
        ! *******************************************************************************
 
-       subroutine init_vals_all_S(b,val)
+       subroutine init_vals_all_S(BC,val)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          real(cp),intent(in) :: val
          integer :: i
-         do i=1,6; call init(b%face(i),val); enddo
-         call define_logicals(b)
+         do i=1,6;  call init(BC%f(i),val); enddo
+         do i=1,12; call init(BC%e(i),val); enddo
+         do i=1,8;  call init(BC%c(i),val); enddo
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_vals_face_vals(b,vals,face)
+       subroutine init_vals_face_vals(BC,vals,face)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          real(cp),dimension(:,:),intent(in) :: vals
          integer,intent(in) :: face
-         call init(b%face(face),vals)
-         call define_logicals(b)
+         call init(BC%f(face),vals)
+         call define_logicals(BC)
        end subroutine
 
-       subroutine init_val_face_S(b,val,face)
+       subroutine init_val_face_S(BC,val,face)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          real(cp),intent(in) :: val
          integer,intent(in) :: face
-         call init(b%face(face),val)
-         call define_logicals(b)
+         call init(BC%f(face),val)
+         call define_logicals(BC)
        end subroutine
 
        ! *******************************************************************************
@@ -255,7 +253,9 @@
          type(BCs),intent(inout) :: b_out
          type(BCs),intent(in) :: b_in
          integer :: i
-         do i=1,6; call init(b_out%face(i),b_in%face(i)); enddo
+         do i=1,6;  call init(b_out%f(i),b_in%f(i)); enddo
+         do i=1,12; call init(b_out%e(i),b_in%e(i)); enddo
+         do i=1,8;  call init(b_out%c(i),b_in%c(i)); enddo
          call init(b_out%g,b_in%g)
          b_out%s = b_in%s
          b_out%gridDefined = b_in%gridDefined
@@ -264,144 +264,117 @@
          b_out%all_Neumann = b_in%all_Neumann
        end subroutine
 
-       subroutine delete_BCs(b)
+       subroutine delete_BCs(BC)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          integer :: i
-         do i=1,6; call delete(b%face(i)); enddo
-         call delete(b%g)
-         b%gridDefined = .false.
-         call define_logicals(b)
+         do i=1,6;  call delete(BC%f(i)); enddo
+         do i=1,12; call delete(BC%e(i)); enddo
+         do i=1,8;  call delete(BC%c(i)); enddo
+         call delete(BC%g)
+         BC%gridDefined = .false.
+         BC%s = 0
+         call define_logicals(BC)
        end subroutine
 
        ! *******************************************************************************
        ! ******************************* PRINT / EXPORT ********************************
        ! *******************************************************************************
 
-       subroutine print_BCs(b,name)
+       subroutine print_BCs(BC,name)
          implicit none
-         type(BCs), intent(in) :: b
+         type(BCs), intent(in) :: BC
          character(len=*),intent(in) :: name
-         call exp_AllBCs(b,name,6)
+         call exp_BCs(BC,name,6)
        end subroutine
 
-       subroutine export_BCs(b,dir,name)
+       subroutine export_BCs(BC,dir,name)
          implicit none
-         type(BCs), intent(in) :: b
+         type(BCs), intent(in) :: BC
          character(len=*),intent(in) :: dir,name
          integer :: NewU
          NewU = newAndOpen(dir,name//'_BoundaryConditions')
-         call exp_AllBCs(b,name,newU)
+         call exp_BCs(BC,name,newU)
          call closeAndMessage(newU,name//'_BoundaryConditions',dir)
        end subroutine
 
-       subroutine exp_AllBCs(b,name,newU)
+       subroutine exp_BCs(BC,name,newU)
          implicit none
-         type(BCs), intent(in) :: b
+         type(BCs), intent(in) :: BC
          character(len=*),intent(in) :: name
          integer,intent(in) :: NewU
+         integer :: i
          write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
-         if (b%defined) then
-           call exp_BC(1,b%face(1)%bctype,newU)
-           call exp_BC(2,b%face(2)%bctype,newU)
-           call exp_BC(3,b%face(3)%bctype,newU)
-           call exp_BC(4,b%face(4)%bctype,newU)
-           call exp_BC(5,b%face(5)%bctype,newU)
-           call exp_BC(6,b%face(6)%bctype,newU)
-         endif
-       end subroutine
 
-       subroutine exp_BC(face,bctype,NewU)
-         implicit none
-         integer,intent(in) :: NewU,face,bctype
-         if (face.eq.1) then; write(newU,'(7A)',advance='no') ' xmin: '; endif
-         if (face.eq.2) then; write(newU,'(7A)',advance='no') ' xmax: '; endif
-         if (face.eq.3) then; write(newU,'(7A)',advance='no') ' ymin: '; endif
-         if (face.eq.4) then; write(newU,'(7A)',advance='no') ' ymax: '; endif
-         if (face.eq.5) then; write(newU,'(7A)',advance='no') ' zmin: '; endif
-         if (face.eq.6) then; write(newU,'(7A)',advance='no') ' zmax: '; endif
-         if (bctype.eq.1) then; write(newU,*) 'Dirichlet - direct - wall coincident'; endif
-         if (bctype.eq.2) then; write(newU,*) 'Dirichlet - interpolated - wall incoincident'; endif
-         if (bctype.eq.3) then; write(newU,*) 'Neumann - direct - wall coincident ~O(dh^2)'; endif
-         if (bctype.eq.4) then; write(newU,*) 'Neumann - direct - wall coincident ~O(dh)'; endif
-         if (bctype.eq.5) then; write(newU,*) 'Neumann - interpolated - wall incoincident O(dh)'; endif
-         if (bctype.eq.6) then; write(newU,*) 'Periodic - direct - wall coincident ~O(dh)'; endif
-         if (bctype.eq.7) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh)'; endif
-         if (bctype.eq.8) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh^2)'; endif
-         if (bctype.eq.9) then; write(newU,*) 'Anti-symmetry - direct - wall coincident'; endif
-         if (bctype.eq.10) then; write(newU,*) 'Anti-symmetry - interpolated - wall incoincident'; endif
+         write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
+         write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
+         write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
+         write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
+         write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
+         if (BC%defined) then
+             write(newU,*) ' -------------- FACES -------------- '
+           do i=1,6
+             write(newU,*) 'Face ',i
+             call export(BC%f(i),newU)
+           enddo
+
+             write(newU,*) ' -------------- EDGES -------------- '
+           do i=1,12
+             write(newU,*) 'Edge ',i
+             call export(BC%e(i),newU)
+           enddo
+
+             write(newU,*) ' ------------- CORNERS ------------- '
+           do i=1,8
+             write(newU,*) 'Corner ',i
+             call export(BC%c(i),newU)
+           enddo
+         endif
        end subroutine
 
        ! *******************************************************************************
        ! ********************************* AUXILIARY ***********************************
        ! *******************************************************************************
 
-       subroutine check_prereq(b)
+       subroutine check_prereq(BC)
          implicit none
-         type(BCs),intent(in) :: b
-         if (.not.b%gridDefined) stop 'Error: BC grid must be defined before type is defined'
+         type(BCs),intent(in) :: BC
+         if (.not.BC%gridDefined) stop 'Error: BC grid must be defined before type is defined'
        end subroutine
 
-       subroutine define_logicals(b)
+       subroutine define_logicals(BC)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          integer :: i
-         b%defined = all((/b%gridDefined,(b%face(i)%defined,i=1,6)/))
+         logical,dimension(3) :: TF
+         TF(1) = all((/BC%gridDefined,(BC%f(i)%defined,i=1,6)/))
+         TF(2) = all((/BC%gridDefined,(BC%e(i)%defined,i=1,12)/))
+         TF(3) = all((/BC%gridDefined,(BC%c(i)%defined,i=1,8)/))
+         BC%defined = all(TF)
 
-         b%all_Dirichlet = all((/((b%face(i)%bctype.eq.Dirichlet_cc).or.&
-                                  (b%face(i)%bctype.eq.Dirichlet_n),i=1,6)/))
+         TF(1) = all((/(BC%f(i)%b%Dirichlet,i=1,6)/))
+         TF(2) = all((/(BC%e(i)%b%Dirichlet,i=1,12)/))
+         TF(3) = all((/(BC%c(i)%b%Dirichlet,i=1,8)/))
+         BC%all_Dirichlet = all(TF)
 
-         b%all_Neumann = all((/((b%face(i)%bctype.eq.Neumann_cc).or.&
-                                (b%face(i)%bctype.eq.Neumann_n),i=1,6)/))
+         TF(1) = all((/(BC%f(i)%b%Neumann,i=1,6)/))
+         TF(2) = all((/(BC%e(i)%b%Neumann,i=1,12)/))
+         TF(3) = all((/(BC%c(i)%b%Neumann,i=1,8)/))
+         BC%all_Neumann = all(TF)
        end subroutine
 
-       subroutine print_defined(b)
+       function getAllNeumann(BC) result(TF)
          implicit none
-         type(BCs),intent(in) :: b
-         write(*,*) 'face(1) {type,valule} = ',b%face(1)%def
-         write(*,*) 'face(2) {type,valule} = ',b%face(2)%def
-         write(*,*) 'face(3) {type,valule} = ',b%face(3)%def
-         write(*,*) 'face(4) {type,valule} = ',b%face(4)%def
-         write(*,*) 'face(5) {type,valule} = ',b%face(5)%def
-         write(*,*) 'face(6) {type,valule} = ',b%face(6)%def
-         write(*,*) ''
-         write(*,*) 'face(1) {type} = ',b%face(1)%bctype
-         write(*,*) 'face(2) {type} = ',b%face(2)%bctype
-         write(*,*) 'face(3) {type} = ',b%face(3)%bctype
-         write(*,*) 'face(4) {type} = ',b%face(4)%bctype
-         write(*,*) 'face(5) {type} = ',b%face(5)%bctype
-         write(*,*) 'face(6) {type} = ',b%face(6)%bctype
-         write(*,*) ''
-         write(*,*) 'face(1) {val} = ',b%face(1)%val
-         write(*,*) 'face(2) {val} = ',b%face(2)%val
-         write(*,*) 'face(3) {val} = ',b%face(3)%val
-         write(*,*) 'face(4) {val} = ',b%face(4)%val
-         write(*,*) 'face(5) {val} = ',b%face(5)%val
-         write(*,*) 'face(6) {val} = ',b%face(6)%val
-         write(*,*) ''
-         write(*,*) 'face(1) {s} = ',b%face(1)%s
-         write(*,*) 'face(2) {s} = ',b%face(2)%s
-         write(*,*) 'face(3) {s} = ',b%face(3)%s
-         write(*,*) 'face(4) {s} = ',b%face(4)%s
-         write(*,*) 'face(5) {s} = ',b%face(5)%s
-         write(*,*) 'face(6) {s} = ',b%face(6)%s
-         write(*,*) ''
-         write(*,*) 'b_grid = ',b%gridDefined
-         write(*,*) 'b_all = ',b%defined
-       end subroutine
-
-       function getAllNeumann(b) result(TF)
-         implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          logical :: TF
-         TF = b%all_Neumann
+         TF = BC%all_Neumann
        end function
 
-       function getDirichlet(b) result(TF)
+       function getDirichlet(BC) result(TF)
          implicit none
-         type(BCs),intent(inout) :: b
+         type(BCs),intent(inout) :: BC
          logical :: TF
-         TF = b%all_Dirichlet
+         TF = BC%all_Dirichlet
        end function
 
        end module

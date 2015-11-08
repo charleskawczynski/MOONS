@@ -6,6 +6,7 @@
        !        maxmax(i) {(y,z),(x,z),(x,y)}
        ! for direction i, covering all 12 edge.
        use IO_tools_mod
+       use bctype_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -24,15 +25,14 @@
        public :: print,export
 
        type edge
-         integer :: bctype
+         type(bctype) :: b
          real(cp),dimension(:),allocatable :: vals
-         real(cp) :: val
          integer :: s
-         logical,dimension(2) :: def = .false. ! true if (bctype,vals) are defined
-         logical :: defined = .false. ! = all(defined)
+         logical,dimension(2) :: def = .false. ! (size,vals)
+         logical :: defined = .false. ! = all(e%def)
        end type
 
-       interface init;       module procedure init_type;             end interface
+       interface init;       module procedure init_size;             end interface
        interface init;       module procedure init_vals_RF;          end interface
        interface init;       module procedure init_val;              end interface
        interface init;       module procedure init_copy;             end interface
@@ -40,7 +40,6 @@
        interface delete;     module procedure delete_edge;       end interface
        interface print;      module procedure print_edge;        end interface
        interface export;     module procedure export_edge;       end interface
-       interface export;     module procedure export_edge_unit;  end interface
 
        contains
 
@@ -48,26 +47,25 @@
        ! ********************************* INIT/DELETE *********************************
        ! *******************************************************************************
 
-       subroutine init_type(e,bctype)
+       subroutine init_size(e,s)
          implicit none
          type(edge),intent(inout) :: e
-         integer,intent(in) :: bctype
-         e%bctype = bctype
+         integer,intent(in) :: s
+         if (s.lt.1) stop 'Error: edge size input less than 1 in edge.f90'
+         e%s = s
          e%def(1) = .true.
          e%defined = all(e%def)
        end subroutine
 
-       subroutine init_vals_RF(e,vals,s)
+       subroutine init_vals_RF(e,vals)
          implicit none
          type(edge),intent(inout) :: e
          real(cp),dimension(:),intent(in) :: vals
-         integer,intent(in) :: s
-         e%s = s
-         if (allocated(e%vals)) deallocate(e%vals)
-         ! e%s = shape(vals) ! Is this necessary/good?
-         ! Make sure that e%s has been defined here in debug mode
-         allocate(e%vals(e%s))
-         e%val = vals(1)
+         integer :: s
+         s = size(vals)
+         if (s.lt.1) stop 'Error: edge size input less than 1 in edge.f90'
+         if (s.ne.e%s) stop 'Error: shape mis-match in init_vals_RF in edge.f90'
+         call init(e%b,vals)
          e%vals = vals
          e%def(2) = .true.
          e%defined = all(e%def)
@@ -77,10 +75,11 @@
          implicit none
          type(edge),intent(inout) :: e
          real(cp),intent(in) :: val
-         if (allocated(e%vals)) deallocate(e%vals)
-         allocate(e%vals(e%s))
+         integer :: s
+         s = size(e%vals)
+         if (s.lt.1) stop 'Error: edge size less than 1 in edge.f90'
+         call init(e%b,val)
          e%vals = val
-         e%val = val
          e%def(2) = .true.
          e%defined = all(e%def)
        end subroutine
@@ -89,13 +88,9 @@
          implicit none
          type(edge),intent(inout) :: e_out
          type(edge),intent(in) :: e_in
-         if (.not.e_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
-         if (allocated(e_in%vals)) then
-           call init(e_out,e_in%vals,e_in%s)
-         else; stop 'Error: trying to copy BC that has not been allocated vals'
-         endif
-         e_out%bctype = e_in%bctype
-         e_out%val = e_in%val
+         if (.not.e_in%defined) stop 'Error: trying to copy undefined edge in edge.f90'
+         call init(e_out%b,e_in%b)
+         e_out%vals = e_out%vals
          e_out%def = e_out%def
          e_out%defined = e_out%defined
          e_out%s = e_in%s
@@ -105,62 +100,28 @@
          implicit none
          type(edge),intent(inout) :: e
          if (allocated(e%vals)) deallocate(e%vals)
+         call delete(e%b)
          e%s = 0
          e%def = .false.
-         e%defined = all(e%def)
+         e%defined = .false.
        end subroutine
 
        ! *******************************************************************************
        ! ******************************** PRINT/EXPORT *********************************
        ! *******************************************************************************
 
-       subroutine print_edge(e,name)
+       subroutine print_edge(e)
          implicit none
          type(edge), intent(in) :: e
-         character(len=*),intent(in) :: name
-         call exp_edge(e,name,6)
+         call export(e,6)
        end subroutine
 
-       subroutine export_edge(e,dir,name)
+       subroutine export_edge(e,newU)
          implicit none
          type(edge), intent(in) :: e
-         character(len=*),intent(in) :: dir,name
-         integer :: NewU
-         NewU = newAndOpen(dir,name//'_edge')
-         call exp_edge(e,name,newU)
-         call closeAndMessage(newU,name//'_edgeConditions',dir)
-       end subroutine
-
-       subroutine export_edge_unit(e,newU,name)
-         implicit none
-         type(edge), intent(in) :: e
-         integer,intent(in) :: newU
-         character(len=*),intent(in) :: name
-         call exp_edge(e,name,newU)
-       end subroutine
-
-       subroutine exp_edge(e,name,newU)
-         implicit none
-         type(edge), intent(in) :: e
-         character(len=*),intent(in) :: name
          integer,intent(in) :: NewU
-         if (.not.e%defined) stop 'Error: edge not defined in writeedge in edge.f90'
-
-         write(newU,*) 'edge conditions for ' // trim(adjustl(name))
-         call writeedge(e%bctype,newU)
-       end subroutine
-
-       subroutine writeEdge(bctype,NewU)
-         implicit none
-         integer,intent(in) :: NewU,bctype
-         if (bctype.eq.1) then; write(newU,*) 'Dirichlet - direct - wall coincident'; endif
-         if (bctype.eq.2) then; write(newU,*) 'Dirichlet - interpolated - wall incoincident'; endif
-         if (bctype.eq.3) then; write(newU,*) 'Neumann - direct - wall coincident ~O(dh^2)'; endif
-         if (bctype.eq.4) then; write(newU,*) 'Neumann - direct - wall coincident ~O(dh)'; endif
-         if (bctype.eq.5) then; write(newU,*) 'Neumann - interpolated - wall incoincident O(dh)'; endif
-         if (bctype.eq.6) then; write(newU,*) 'Periodic - direct - wall coincident ~O(dh)'; endif
-         if (bctype.eq.7) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh)'; endif
-         if (bctype.eq.8) then; write(newU,*) 'Periodic - interpolated - wall incoincident ~O(dh^2)'; endif
+         if (.not.e%defined) stop 'Error: edge not defined in export_edge in edge.f90'
+         call export(e%b,newU)
        end subroutine
 
        end module

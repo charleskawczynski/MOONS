@@ -286,19 +286,19 @@
          logical :: TF
          integer :: i
          do i=1,m%s
-           TF = (.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1)).and.(u%RF(i)%b%face(1)%bctype.ne.3)
+           TF = (.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1)).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-           TF = (.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1)).and.(u%RF(i)%b%face(2)%bctype.ne.3)
+           TF = (.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1)).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
 
-           TF = (.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2)).and.(u%RF(i)%b%face(3)%bctype.ne.3)
+           TF = (.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2)).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-           TF = (.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2)).and.(u%RF(i)%b%face(4)%bctype.ne.3)
+           TF = (.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2)).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
 
-           TF = (.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3)).and.(u%RF(i)%b%face(5)%bctype.ne.3)
+           TF = (.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3)).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-           TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(u%RF(i)%b%face(6)%bctype.ne.3)
+           TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
            if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
          enddo
        end subroutine

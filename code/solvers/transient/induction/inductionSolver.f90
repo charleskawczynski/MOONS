@@ -186,7 +186,7 @@
          call initBfield(ind%B,ind%B0,m,dir)
          write(*,*) '     B-field initialized'
 
-         call applyAllBCs(ind%B,m)
+         call applyBCs(ind%B,m)
          write(*,*) '     BCs applied'
 
          ! call initSigma(ind%sigma,ind%D_fluid,m) ! If sigma changes across fluid
@@ -677,7 +677,7 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,m)
+           call applyBCs(ind%B,m)
          enddo
        end subroutine
 
@@ -706,7 +706,7 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,m)
+           call applyBCs(ind%B,m)
          enddo
        end subroutine
 
@@ -753,7 +753,7 @@
            call subtract(ind%B,ind%temp_CC)
 
            ! Impose BCs:
-           call applyAllBCs(ind%B,m)
+           call applyBCs(ind%B,m)
          enddo
        end subroutine
 
@@ -796,7 +796,7 @@
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyAllBCs(ind%B,m)
+         call applyBCs(ind%B,m)
        end subroutine
 
        subroutine finiteRemCTmethod_with_source(ind,F_CC,m)
@@ -842,7 +842,7 @@
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyAllBCs(ind%B,m)
+         call applyBCs(ind%B,m)
        end subroutine
 
 !        subroutine lowRem_ADI(ind,U,m,ss_MHD)
@@ -902,7 +902,7 @@
 !             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
 
 !          ! Impose BCs:
-!          call applyAllBCs(ind%B,ind%B_bcs,m)
+!          call applyBCs(ind%B,ind%B_bcs,m)
 !        end subroutine
 
 !        subroutine lowRemMultigrid(ind,U,m)
@@ -942,7 +942,7 @@
 
          call face2CellCenter(ind%B,ind%B_face,m)
 
-         call applyAllBCs(ind%B,m)
+         call applyBCs(ind%B,m)
        end subroutine
 
        ! ********************* COMPUTE *****************************

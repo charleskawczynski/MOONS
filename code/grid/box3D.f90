@@ -19,6 +19,7 @@
 
        public :: box3D_uniform
        public :: box3D_Roberts_L,box3D_Roberts_R,box3D_Roberts_B
+       public :: box3D_cluster
        ! public :: box3D_uniformBL
 
        contains

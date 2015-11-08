@@ -147,7 +147,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyAllBCs(u,m) ! Necessary with ghost nodes
+        call applyBCs(u,m) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -175,7 +175,7 @@
           call multiply(u,JAC%Dinv,JAC%res)
 
           ! call applyStitches(u,m)
-          call applyAllBCs(u,m)
+          call applyBCs(u,m)
 
           if (getMinToleranceTF(ss)) then
             call compute_Au(JAC%Au,u,m,JAC%temp)

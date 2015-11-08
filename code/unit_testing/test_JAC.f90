@@ -127,14 +127,14 @@
          endif
 
          ! f must reach to ghost nodes, which must be defined
-         call applyAllBCs(u_exact,m)
+         call applyBCs(u_exact,m)
          call lap(f,u_exact,m)
 
          ! If Dirichlet, apply BCs to u so u = u_exact
          ! on boundary, otherwise make f satisfy BCs
          if (bctype.eq.1) then
-               call applyAllBCs(u,m)
-         else; call applyAllBCs(f,m)
+               call applyBCs(u,m)
+         else; call applyBCs(f,m)
          endif
        end subroutine
 

@@ -102,7 +102,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyAllBCs(u,m) ! Necessary with ghost nodes
+        call applyBCs(u,m) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -123,7 +123,7 @@
           call multiply(PSE%res,0.0000001_cp)
           call add(u,PSE%res)
 
-          call applyAllBCs(u,m)
+          call applyBCs(u,m)
 
           if (getMinToleranceTF(ss)) then
             call lap(PSE%lapu,u,m)

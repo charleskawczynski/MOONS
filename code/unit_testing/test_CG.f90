@@ -132,19 +132,19 @@
 
          ! f must reach to ghost nodes, which must be defined
          select case (bctype)
-         case (1); call applyAllBCs(u_exact,m,u)
+         case (1); call applyBCs(u_exact,m,u)
                    call grad(temp,u_exact,m); call div(f,temp,m) ! Results in strange res, but converges slowly
          case (2); call subtract(u_exact,mean(u_exact))
-                   call applyAllBCs(u_exact,m,f)
+                   call applyBCs(u_exact,m,f)
                    ! call lap(f,u_exact,m) ! Results in good looking res but diverges
                    call grad(temp,u_exact,m); call div(f,temp,m) ! Results in strange res, but converges slowly
          case (3); f%RF(1)%f = 0.0_cp
-                   call applyAllBCs(f,m,u)
+                   call applyBCs(f,m,u)
          end select
          
          call delete(temp)
          
-         call applyAllBCs(u,m)
+         call applyBCs(u,m)
          call zeroGhostPoints(f)
        end subroutine
 

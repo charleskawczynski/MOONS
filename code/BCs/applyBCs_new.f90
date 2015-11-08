@@ -73,10 +73,9 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: k
-         do k=1,3; call apply_faces(U,m,k); enddo
-         do k=1,3; call apply_edges(U,m,k); enddo
-         ! do k=1,3; call apply_corner(U,m,k); enddo
+         call apply_faces(U,m)
+         call apply_edges(U,m)
+         call apply_corner(U,m)
        end subroutine
 
        end module
