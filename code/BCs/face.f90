@@ -45,10 +45,10 @@
          implicit none
          type(face),intent(inout) :: f
          integer,dimension(2),intent(in) :: s
-         if (allocated(f%vals)) deallocate(f%vals)
          if ((s(1).lt.1).or.(s(2).lt.1)) stop 'Error: shape input in init_shape < 1 in face.f90'
+         if (allocated(f%vals)) deallocate(f%vals)
+         allocate(f%vals(s(1),s(2)))
          f%s = s
-         f%vals = 0.0_cp
          f%def(1) = .true.
          f%defined = all(f%def)
        end subroutine
@@ -86,9 +86,9 @@
          type(face),intent(in) :: b_in
          if (.not.b_in%defined) stop 'Error: trying to copy undefined face in face.f90'
          call init(b_out%b,b_in%b)
-         b_out%vals = b_out%vals
-         b_out%def = b_out%def
-         b_out%defined = b_out%defined
+         b_out%vals = b_in%vals
+         b_out%def = b_in%def
+         b_out%defined = b_in%defined
          b_out%s = b_in%s
        end subroutine
 

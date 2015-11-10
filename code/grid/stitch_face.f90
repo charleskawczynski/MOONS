@@ -15,7 +15,7 @@
       end type
 
       interface init;   module procedure init_stitch_face;   end interface
-      interface init;   module procedure init_copy;     end interface
+      interface init;   module procedure init_copy;          end interface
       interface delete; module procedure delete_stitch_face; end interface
       
       contains

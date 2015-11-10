@@ -25,8 +25,8 @@
        use ops_discrete_mod
        use ops_physics_mod
 
-       use applyBCs_mod
-       use applyStitches_mod
+       use apply_BCs_mod
+       use apply_stitches_mod
 
        use solverSettings_mod
        use myTime_mod
@@ -198,9 +198,9 @@
 
          write(*,*) '     BCs sizes set'
 
-         if (solveMomentum) call applyBCs(mom%U,m)
+         if (solveMomentum) call apply_BCs(mom%U,m)
          write(*,*) '     U BCs applied'
-         if (solveMomentum) call applyBCs(mom%p,m)
+         if (solveMomentum) call apply_BCs(mom%p,m)
          write(*,*) '     P BCs applied'
 
          call init(mom%err_DivU)
@@ -539,7 +539,7 @@
          call div(mom%temp_CC,mom%Ustar,m)
          ! Temp = Temp/dt
          call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
-         ! call applyBCs(mom%p_bcs,mom%temp_CC,m)
+         ! call apply_BCs(mom%p_bcs,mom%temp_CC,m)
          call zeroGhostPoints(mom%temp_CC)
          ! call printPhysicalMinMax(mom%temp_CC,'PPE_input')
 
@@ -565,8 +565,8 @@
          call subtract(mom%U,mom%Ustar,mom%temp_F)
 
          ! call applyAllGhostBCs(mom%U,m)
-         ! call applyStitches(mom%U,m) ! Needed? or ruining things?
-         call applyBCs(mom%U,m)
+         ! call apply_stitches(mom%U,m) ! Needed? or ruining things?
+         call apply_BCs(mom%U,m)
        end subroutine
 
        subroutine order2TimeMarching(mom,F,m,ss_MHD)
@@ -627,7 +627,7 @@
          ! Temp = Temp/dt
          call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
          ! call multiply(mom%temp_CC,real(2.0,cp)/dt) ! O(dt^2) pressure treatment
-         ! call applyBCs(mom%p_bcs,mom%temp_CC,m)
+         ! call apply_BCs(mom%p_bcs,mom%temp_CC,m)
          call zeroGhostPoints(mom%temp_CC)
 
          ! Solve lap(p) = div(U)/dt
@@ -645,8 +645,8 @@
          call multiply(mom%temp_F,dt)
          call subtract(mom%U,mom%Ustar,mom%temp_F)
 
-         call applyStitches(mom%U,m)
-         call applyBCs(mom%U,m)
+         call apply_stitches(mom%U,m)
+         call apply_BCs(mom%U,m)
        end subroutine
 
 !        subroutine semi_implicit_ADI(mom,F,m,ss_MHD)
@@ -716,7 +716,7 @@
 
 !          ! U = Ustar
 !          call assign(mom%U,mom%Ustar)
-!          call applyBCs(mom%U,mom%U_bcs,m)
+!          call apply_BCs(mom%U,mom%U_bcs,m)
 !        end subroutine
 
        ! ********************* COMPUTE **************************

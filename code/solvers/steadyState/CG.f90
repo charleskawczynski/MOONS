@@ -1,7 +1,7 @@
       module CG_mod
       use IO_SF_mod
       use mesh_mod
-      use applyBCs_mod
+      use apply_BCs_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -53,7 +53,7 @@
         type(SF),intent(inout) :: temp,Ax,r,p
         integer :: i
         real(cp) :: alpha,rsold,rsnew,alpha_temp
-        call applyBCs(x,m)
+        call apply_BCs(x,m)
         call compute_Ax(Ax,x,m) ! Compute Ax
 
         ! call extrap(b,m)
@@ -73,7 +73,7 @@
           call assign(temp,p)                       ! Update x
           call multiply(temp,alpha)                 ! Update x
           call add(x,temp)                          ! Update x
-          call applyBCs(x,m)                     ! Update x
+          call apply_BCs(x,m)                     ! Update x
 
           call assign(temp,Ax)                      ! Update r
           call multiply(temp,alpha)                 ! Update r
@@ -104,7 +104,7 @@
 
         enddo
         if (x%all_Neumann) call subtract(x,mean(x))
-        call applyBCs(x,m)
+        call apply_BCs(x,m)
         if (displayTF) then
           call compute_Ax(Ax,x,m)
           call subtract(temp,b,Ax)

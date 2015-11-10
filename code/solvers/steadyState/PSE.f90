@@ -23,7 +23,7 @@
 
       use grid_mod
       use mesh_mod
-      use applyBCs_mod
+      use apply_BCs_mod
       use BCs_mod
       use norms_mod
       use ops_discrete_mod
@@ -102,7 +102,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyBCs(u,m) ! Necessary with ghost nodes
+        call apply_BCs(u,m) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -123,7 +123,7 @@
           call multiply(PSE%res,0.0000001_cp)
           call add(u,PSE%res)
 
-          call applyBCs(u,m)
+          call apply_BCs(u,m)
 
           if (getMinToleranceTF(ss)) then
             call lap(PSE%lapu,u,m)

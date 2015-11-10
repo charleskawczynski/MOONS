@@ -1,7 +1,7 @@
       module CG_ind_mod
       use IO_SF_mod
       use mesh_mod
-      use applyBCs_mod
+      use apply_BCs_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -73,7 +73,7 @@
         type(VF),intent(inout) :: temp,Ax,r,p
         integer :: i
         real(cp),dimension(3) :: alpha,rsold,rsnew,alpha_temp
-        call applyBCs(x,m)
+        call apply_BCs(x,m)
         call compute_Ax(Ax,x,xnm1,sigmaInv,dt,Rem,m) ! Compute Ax
         call subtract(r,b,Ax)                        ! r = b - Ax
         call zeroGhostPoints(r)                      ! Ghost cells of input should not matter
@@ -87,7 +87,7 @@
           call assign(temp,p)                                      ! Update x
           call multiply(temp,alpha)                                ! Update x
           call add(x,temp)                                         ! Update x
-          call applyBCs(x,m)                                    ! Update x
+          call apply_BCs(x,m)                                    ! Update x
           call assign(temp,Ax)                                     ! Update r
           call multiply(temp,alpha)                                ! Update r
           call subtract(r,temp)                                    ! Update r
@@ -113,7 +113,7 @@
         if (x%x%all_Neumann) call subtract(x%x,mean(x%x))
         if (x%y%all_Neumann) call subtract(x%y,mean(x%y))
         if (x%z%all_Neumann) call subtract(x%z,mean(x%z))
-        call applyBCs(x,m)
+        call apply_BCs(x,m)
         if (displayTF) then
           call compute_Ax(Ax,x,xnm1,sigmaInv,dt,Rem,m)
           call subtract(temp,b,Ax)
@@ -141,7 +141,7 @@
         type(VF),intent(inout) :: temp,Ax,r,p
         integer :: i
         real(cp),dimension(3) :: alpha,rsold,rsnew,alpha_temp
-        call applyBCs(x,m)
+        call apply_BCs(x,m)
         call compute_Ax(Ax,x,sigmaInv,m) ! Compute Ax
         call subtract(r,b,Ax)            ! r = b - Ax
         call zeroGhostPoints(r)          ! Ghost cells of input should not matter
@@ -155,7 +155,7 @@
           call assign(temp,p)                                      ! Update x
           call multiply(temp,alpha)                                ! Update x
           call add(x,temp)                                         ! Update x
-          call applyBCs(x,m)                                    ! Update x
+          call apply_BCs(x,m)                                    ! Update x
           call assign(temp,Ax)                                     ! Update r
           call multiply(temp,alpha)                                ! Update r
           call subtract(r,temp)                                    ! Update r
@@ -181,7 +181,7 @@
         if (x%x%all_Neumann) call subtract(x%x,mean(x%x))
         if (x%y%all_Neumann) call subtract(x%y,mean(x%y))
         if (x%z%all_Neumann) call subtract(x%z,mean(x%z))
-        call applyBCs(x,m)
+        call apply_BCs(x,m)
         if (displayTF) then
           call compute_Ax(Ax,x,sigmaInv,m)
           call subtract(temp,b,Ax)

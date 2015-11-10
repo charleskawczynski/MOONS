@@ -37,7 +37,7 @@
        private
 
        public :: norms
-       public :: init,compute
+       public :: init,compute,compute_MPI
        public :: print
        public :: export,exportList
 
@@ -55,6 +55,7 @@
        interface print;           module procedure printNorms;             end interface
 
        interface compute;         module procedure compute_norms;          end interface
+       interface compute_MPI;     module procedure compute_Ln_tot;         end interface
 
        contains
 

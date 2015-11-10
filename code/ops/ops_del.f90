@@ -31,7 +31,7 @@
       use SF_mod
       use triDiag_mod
       use stencils_mod
-      use applyStitches_mod
+      use apply_stitches_mod
       implicit none
 
       private

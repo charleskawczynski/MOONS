@@ -22,7 +22,7 @@
        use ops_discrete_mod
        use ops_physics_mod
        use BCs_mod
-       use applyBCs_mod
+       use apply_BCs_mod
        use solverSettings_mod
        use probe_base_mod
 
@@ -139,7 +139,7 @@
          call initTfield(nrg%T,m,dir)
          write(*,*) '     T-field initialized'
 
-         call applyBCs(nrg%T,m)
+         call apply_BCs(nrg%T,m)
          write(*,*) '     BCs applied'
 
          call initK(nrg%k_cc,nrg%D,m)
@@ -383,7 +383,7 @@
          call add(nrg%T,nrg%Tstar)
 
          ! Impose BCs:
-         call applyBCs(nrg%T,m)
+         call apply_BCs(nrg%T,m)
        end subroutine
 
        ! ********************* AUX *****************************

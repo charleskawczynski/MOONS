@@ -23,8 +23,8 @@
 
       use grid_mod
       use mesh_mod
-      use applyBCs_mod
-      use applyStitches_mod
+      use apply_BCs_mod
+      use apply_stitches_mod
       use BCs_mod
       use norms_mod
       use ops_discrete_mod
@@ -150,7 +150,7 @@
         ijk = 0
 
         ! Boundaries
-        call applyBCs(u,m) ! Necessary with ghost nodes
+        call apply_BCs(u,m) ! Necessary with ghost nodes
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
@@ -201,7 +201,7 @@
 
 #endif
 
-          call applyBCs(u,m)
+          call apply_BCs(u,m)
 
           if (getMinToleranceTF(ss)) then
             call lap(SOR%lapu,u,m)
@@ -259,7 +259,7 @@
         type(SORSolver),intent(in) :: SOR
         integer,dimension(3),intent(in) :: odd
         integer :: i
-        do i=1,u%s
+        do i=1,m%s
           call redBlack(u%RF(i)%f,f%RF(i)%f,r%RF(i)%f,u%RF(i)%s,&
           SOR%p%g(i)%c(1)%dhn,SOR%p%g(i)%c(2)%dhn,SOR%p%g(i)%c(3)%dhn,&
           SOR%d%g(i)%c(1)%dhn,SOR%d%g(i)%c(2)%dhn,SOR%d%g(i)%c(3)%dhn,&

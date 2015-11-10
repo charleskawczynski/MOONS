@@ -30,8 +30,13 @@
          implicit none
          type(grid),intent(inout) :: g_mom,g_ind
          integer,dimension(3),intent(in) :: Ni,Nwtop,Nwbot
-         ! call cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)
-         call makeGrids_BCs(g_mom,g_ind,Ni,Nwtop,Nwbot)
+         logical :: TF
+         TF = .false.
+         if (TF) then
+           call cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)
+         else
+           call makeGrids_BCs(g_mom,g_ind,Ni,Nwtop,Nwbot)
+         endif
        end subroutine
 
        subroutine cavity3D_withWalls(g_mom,g_ind,Ni,Nwtop,Nwbot)

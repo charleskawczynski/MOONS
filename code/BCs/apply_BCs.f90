@@ -1,5 +1,5 @@
-       module applyBCs_mod
-       ! Pre-processor directives: (_DEBUG_APPLYBCS_)
+       module apply_BCs_mod
+       ! Pre-processor directives: (_DEBUG_apply_BCs_)
        ! 
        ! Making BCs is a 3 step process:
        ! 
@@ -35,14 +35,14 @@
 
        use SF_mod
        use VF_mod
-       use apply_faces_mod
-       use apply_edges_mod
-       use apply_corners_mod
+       use apply_BCs_faces_mod
+       use apply_BCs_edges_mod
+       use apply_BCs_corners_mod
        use mesh_mod
        implicit none
 
        private
-       public :: applyBCs
+       public :: apply_BCs
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -55,27 +55,50 @@
 #endif
 
 
-       interface applyBCs;       module procedure applyBCs_VF;     end interface
-       interface applyBCs;       module procedure applyBCs_SF;     end interface
+       interface apply_BCs;    module procedure apply_BCs_VF;                 end interface
+       interface apply_BCs;    module procedure apply_BCs_SF;                 end interface
+
+       interface apply_BCs;    module procedure apply_BCs_VF_given_BC;        end interface
+       interface apply_BCs;    module procedure apply_BCs_SF_given_BC;        end interface
 
        contains
 
-       subroutine applyBCs_VF(U,m)
+       subroutine apply_BCs_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call applyBCs(U%x,m)
-         call applyBCs(U%y,m)
-         call applyBCs(U%z,m)
+         call apply_BCs(U%x,m)
+         call apply_BCs(U%y,m)
+         call apply_BCs(U%z,m)
        end subroutine
 
-       subroutine applyBCs_SF(U,m)
+       subroutine apply_BCs_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_faces(U,m)
-         call apply_edges(U,m)
-         call apply_corner(U,m)
+         call apply_BCs_faces(U,m)
+         call apply_BCs_edges(U,m)
+         call apply_BCs_corners(U,m)
+       end subroutine
+
+       subroutine apply_BCs_VF_given_BC(U,m,BC)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: BC
+         call apply_BCs(U%x,m,BC%x)
+         call apply_BCs(U%y,m,BC%y)
+         call apply_BCs(U%z,m,BC%z)
+       end subroutine
+
+       subroutine apply_BCs_SF_given_BC(U,m,BC)
+         implicit none
+         type(SF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: BC
+         call apply_BCs_faces(U,m,BC)
+         call apply_BCs_edges(U,m)
+         call apply_BCs_corners(U,m)
        end subroutine
 
        end module

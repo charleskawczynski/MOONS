@@ -25,7 +25,7 @@
       use SF_mod
       use BCs_mod
       use solverSettings_mod
-      use applyBCs_mod
+      use apply_BCs_mod
       use norms_mod
       use MG_tools_mod
       use ops_discrete_mod

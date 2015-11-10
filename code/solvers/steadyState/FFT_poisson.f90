@@ -18,7 +18,7 @@
       ! Flags: (_PARALLELIZE_FFT_)
 
       use mesh_mod
-      use applyBCs_mod
+      use apply_BCs_mod
       use norms_mod
       use solversettings_mod
       use SF_mod
@@ -168,7 +168,7 @@
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select
 
-          call applyBCs(u,m)
+          call apply_BCs(u,m)
 
           if (displayTF) then
             call lap(FFT%res,u,m)

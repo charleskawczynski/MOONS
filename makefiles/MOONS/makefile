@@ -155,10 +155,8 @@ TARGET = $(TARGET_DIR)$(PS)unitTest
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
 
-# $(SRC_DIR)$(PS)grid$(PS)stitch.f90 \
 # $(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
-# $(SRC_DIR)$(PS)BCs$(PS)apply_faces.f90 \
-# $(SRC_DIR)$(PS)BCs$(PS)apply_corners.f90 \
+# $(SRC_DIR)$(PS)IO$(PS)IO_transientFields.f90 \
 
 
 SRCS_F =\
@@ -166,7 +164,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
-	$(SRC_DIR)$(PS)IO$(PS)IO_transientFields.f90 \
 	$(SRC_DIR)$(PS)static$(PS)array.f90 \
 	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
@@ -213,7 +210,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)applyStitches.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_faces.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_edges.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_corners.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)apply_stitches.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
@@ -226,15 +226,14 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)apply_faces.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)apply_edges.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)apply_corners.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)applyBCs.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)static$(PS)monitor.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)myTriSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)triSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)FFT_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)JAC_ops.f90 \

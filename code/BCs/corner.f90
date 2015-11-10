@@ -52,7 +52,7 @@
          if (.not.c_in%defined) stop 'Error: trying to copy undefined corner in corner.f90'
          call init(c_out%b,c_in%b)
          c_out%val = c_in%val
-         c_out%defined = c_out%defined
+         c_out%defined = c_in%defined
        end subroutine
 
        subroutine delete_corner(c)

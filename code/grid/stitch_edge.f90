@@ -12,8 +12,8 @@
       public :: init,delete
 
       type stitch_edge
-        logical,dimension(3) :: minmax,maxmin,minmin,maxmax
-        integer,dimension(3) :: minmax_id,maxmin_id,minmin_id,maxmax_id
+        logical,dimension(3) :: minmin,minmax,maxmin,maxmax
+        integer,dimension(3) :: minmin_id,minmax_id,maxmin_id,maxmax_id
       end type
 
       interface init;   module procedure init_copy;          end interface
@@ -24,23 +24,23 @@
       subroutine delete_stitch_edge(s)
         implicit none
         type(stitch_edge),intent(inout) :: s
-        s%minmax = .false.; s%maxmin = .false.
         s%minmin = .false.; s%maxmax = .false.
-        s%minmax_id = 0; s%maxmin_id = 0
-        s%minmin_id = 0; s%maxmax_id = 0
+        s%minmin_id = 0;    s%maxmax_id = 0
+        s%minmax = .false.; s%maxmin = .false.
+        s%minmax_id = 0;    s%maxmin_id = 0
       end subroutine
 
       subroutine init_copy(s_out,s_in)
         implicit none
         type(stitch_edge),intent(inout) :: s_out
         type(stitch_edge),intent(in) :: s_in
+        s_out%minmin = s_in%minmin
         s_out%minmax = s_in%minmax
         s_out%maxmin = s_in%maxmin
-        s_out%minmin = s_in%minmin
         s_out%maxmax = s_in%maxmax
+        s_out%minmin_id = s_in%minmin_id
         s_out%minmax_id = s_in%minmax_id
         s_out%maxmin_id = s_in%maxmin_id
-        s_out%minmin_id = s_in%minmin_id
         s_out%maxmax_id = s_in%maxmax_id
       end subroutine
 

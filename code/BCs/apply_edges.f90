@@ -282,11 +282,35 @@
          logical,intent(in) :: CCd1,CCd2
          integer :: i1,i2 ! Refence index (e.g. CC ghost cell edge boundary)
 
-         if (CCd1.and.((corner.eq.1).or.(corner.eq.2))) then; i1 = 1;  else; i1 = 2;    endif
-         if (CCd1.and.((corner.eq.3).or.(corner.eq.4))) then; i1 = s1; else; i1 = s1-1; endif
-
-         if (CCd2.and.((corner.eq.1).or.(corner.eq.2))) then; i2 = 1;  else; i2 = 2;    endif
-         if (CCd2.and.((corner.eq.3).or.(corner.eq.4))) then; i2 = s2; else; i2 = s2-1; endif
+         if (CCd1.and.CCd2) then
+           select case (corner)
+           case (1); i1 = 1; i2 = 1
+           case (2); i1 = 1; i2 = s2
+           case (3); i1 = s1; i2 = 1
+           case (4); i1 = s1; i2 = s2
+           end select
+         elseif ((.not.CCd1).and.(.not.CCd2)) then
+           select case (corner)
+           case (1); i1 = 2; i2 = 2
+           case (2); i1 = 2; i2 = s2-1
+           case (3); i1 = s1-1; i2 = 2
+           case (4); i1 = s1-1; i2 = s2-1
+           end select
+         elseif (CCd1.and.(.not.CCd2)) then
+           select case (corner)
+           case (1); i1 = 1; i2 = 2
+           case (2); i1 = 1; i2 = s2-1
+           case (3); i1 = s1; i2 = 2
+           case (4); i1 = s1; i2 = s2-1
+           end select
+         elseif ((.not.CCd1).and.CCd2) then
+           select case (corner)
+           case (1); i1 = 2; i2 = 1
+           case (2); i1 = 2; i2 = s2
+           case (3); i1 = s1-1; i2 = 1
+           case (4); i1 = s1-1; i2 = s2
+           end select
+         endif
 
          if     (CCd1.and.CCd2)               then
            select case (dir) !            ug            ui             ug1           ug2
@@ -302,15 +326,15 @@
            end select
          elseif ((.not.CCd1).and.(CCd2))      then ! F(d1)
            select case (dir) ! minmin     ug        ui
-           case (1); call a_F(bct,dhc(d2),v,f(:,i1,i2),f(:,i1,i2+m2))
-           case (2); call a_F(bct,dhc(d2),v,f(i1,:,i2),f(i1,:,i2+m2))
-           case (3); call a_F(bct,dhc(d2),v,f(i1,i2,:),f(i1,i2+m2,:))
+           case (1); call a_F(bct,dhc(2),v,f(:,i1,i2),f(:,i1,i2+m2))
+           case (2); call a_F(bct,dhc(2),v,f(i1,:,i2),f(i1,:,i2+m2))
+           case (3); call a_F(bct,dhc(2),v,f(i1,i2,:),f(i1,i2+m2,:))
            end select
          elseif (CCd1.and.(.not.CCd2))        then ! F(d2)
            select case (dir) ! minmin     ug        ui
-           case (1); call a_F(bct,dhc(d1),v,f(:,i1,i2),f(:,i1+m1,i2))
-           case (2); call a_F(bct,dhc(d1),v,f(i1,:,i2),f(i1+m1,:,i2))
-           case (3); call a_F(bct,dhc(d1),v,f(i1,i2,:),f(i1+m1,i2,:))
+           case (1); call a_F(bct,dhc(1),v,f(:,i1,i2),f(:,i1+m1,i2))
+           case (2); call a_F(bct,dhc(1),v,f(i1,:,i2),f(i1+m1,:,i2))
+           case (3); call a_F(bct,dhc(1),v,f(i1,i2,:),f(i1+m1,i2,:))
            end select
          else; stop 'Error: case not found in app_E in apply_edges.f90'
          endif

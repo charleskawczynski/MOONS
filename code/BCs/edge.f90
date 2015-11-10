@@ -53,6 +53,8 @@
          integer,intent(in) :: s
          if (s.lt.1) stop 'Error: edge size input less than 1 in edge.f90'
          e%s = s
+         if (allocated(e%vals)) deallocate(e%vals)
+         allocate(e%vals(s))
          e%def(1) = .true.
          e%defined = all(e%def)
        end subroutine
@@ -76,6 +78,7 @@
          type(edge),intent(inout) :: e
          real(cp),intent(in) :: val
          integer :: s
+         if (.not.allocated(e%vals)) stop 'Error: edge not allocated in edge.f90'
          s = size(e%vals)
          if (s.lt.1) stop 'Error: edge size less than 1 in edge.f90'
          call init(e%b,val)
@@ -90,9 +93,9 @@
          type(edge),intent(in) :: e_in
          if (.not.e_in%defined) stop 'Error: trying to copy undefined edge in edge.f90'
          call init(e_out%b,e_in%b)
-         e_out%vals = e_out%vals
-         e_out%def = e_out%def
-         e_out%defined = e_out%defined
+         e_out%vals = e_in%vals
+         e_out%def = e_in%def
+         e_out%defined = e_in%defined
          e_out%s = e_in%s
        end subroutine
 

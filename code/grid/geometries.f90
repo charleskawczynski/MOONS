@@ -22,6 +22,7 @@
 #endif
 
        public :: BC_sim_mom,BC_sim_ind
+       public :: cube_uniform
        public :: cube
        public :: ins_elbow
        public :: ins_u_bend
@@ -115,26 +116,39 @@
          call delete(g)
        end subroutine
 
+       subroutine cube_uniform(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax
+         integer,dimension(3) :: N
+         call delete(m)
+         N = 45; hmin = 0.0_cp; hmax = 1.0_cp
+         call box3D_uniform(g,hmin(1),hmax(1),N(1),1)
+         call box3D_uniform(g,hmin(2),hmax(2),N(2),2)
+         call box3D_uniform(g,hmin(3),hmax(3),N(3),3)
+         call add(m,g)
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
        subroutine cube(m)
          implicit none
          type(mesh),intent(inout) :: m
          type(grid) :: g
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
+         real(cp) :: Ha,Re
+         Ha = 20.0_cp; Re = 100.0_cp
          call delete(m)
          N = 45; hmin = 0.0_cp; hmax = 1.0_cp
-         ! beta = reynoldsBL(1000.0_cp,hmin,hmax)
-         ! beta = hartmannBL(Ha,hmin,hmax)
-         ! beta = 10000.0_cp
-         ! call box3D_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
-         ! call box3D_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
-         ! call box3D_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
-
-         call box3D_uniform(g,hmin(1),hmax(1),N(1),1)
-         call box3D_uniform(g,hmin(2),hmax(2),N(2),2)
-         call box3D_uniform(g,hmin(3),hmax(3),N(3),3)
+         beta = reynoldsBL(Re,hmin,hmax)
+         beta = hartmannBL(Ha,hmin,hmax)
+         call box3D_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
+         call box3D_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
+         call box3D_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
          call add(m,g)
-
          call initProps(m)
          call patch(m)
          call delete(g)

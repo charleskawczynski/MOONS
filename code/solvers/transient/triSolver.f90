@@ -16,7 +16,6 @@
       private
       public :: triSolver
       public :: init,delete,apply
-      ! public :: init_LU_coeffs
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -67,13 +66,6 @@
         call init(TS_out%T,TS_in%T%L,TS_in%T%D,TS_in%T%U)
       end subroutine
 
-      subroutine init_LU_coeffs(TS)
-        implicit none
-        type(triSolver),intent(inout) :: TS
-        ! call init_beta_gamma(beta,gamma,a,b,c,n)
-        ! call initL(TS%LU,TS%L)
-      end subroutine
-
       subroutine delete_TriSolver(TS)
         implicit none
         type(triSolver),intent(inout) :: TS
@@ -91,12 +83,14 @@
         type(SF),intent(in) :: uIn
         integer,intent(in) :: pad,dir
         integer :: i
+        logical :: CC
+        CC = CC_along(uIn,dir)
         do i=1,uOut%s
-          call apply_TriSolverInterior_RF(uOut%RF(i)%f,uIn%RF(i)%f,TS%T,uOut%RF(i)%b,dir,uOut%RF(i)%s,pad)
+          call apply_TriSolverInterior_RF(uOut%RF(i)%f,uIn%RF(i)%f,TS%T,uOut%RF(i)%b,dir,uOut%RF(i)%s,pad,CC)
         enddo
       end subroutine
 
-      subroutine apply_TriSolverInterior_RF(uOut,uIn,T,b,dir,s,pad)
+      subroutine apply_TriSolverInterior_RF(uOut,uIn,T,b,dir,s,pad,CC)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: uOut
         real(cp),dimension(:,:,:),intent(in) :: uIn
@@ -104,29 +98,55 @@
         type(triDiag),intent(in) :: T
         integer,dimension(3),intent(in) :: s
         integer,intent(in) :: pad,dir
+        logical,intent(in) :: CC
         integer :: i,j,k
-        select case (dir)
-        case (1)
-        !$OMP PARALLEL DO
-        do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-        call triSolve_Dirichlet(uOut(:,j,k),uIn(:,j,k),T,b%f(1)%vals(j,k),b%f(4)%vals(j,k),s(1))
-        enddo; enddo
-        !$OMP END PARALLEL DO
-        case (2)
-        !$OMP PARALLEL DO
-        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        call triSolve_Dirichlet(uOut(i,:,k),uIn(i,:,k),T,b%f(2)%vals(i,k),b%f(5)%vals(i,k),s(2))
-        enddo; enddo
-        !$OMP END PARALLEL DO
-         case (3)
-        !$OMP PARALLEL DO
-        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        call triSolve_Dirichlet(uOut(i,j,:),uIn(i,j,:),T,b%f(3)%vals(i,j),b%f(6)%vals(i,j),s(3))
-        enddo; enddo
-        !$OMP END PARALLEL DO
-        case default
-        write(*,*) 'Error: dir must = 1,2,3 in solveTriSolver.';stop
-        end select
+        if (CC) then
+          select case (dir)
+          case (1)
+          !$OMP PARALLEL DO
+          do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
+          call triSolve_Dirichlet_CC(uOut(:,j,k),uIn(:,j,k),T,b%f(1)%vals(j,k),b%f(4)%vals(j,k),s(1))
+          enddo; enddo
+          !$OMP END PARALLEL DO
+          case (2)
+          !$OMP PARALLEL DO
+          do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call triSolve_Dirichlet_CC(uOut(i,:,k),uIn(i,:,k),T,b%f(2)%vals(i,k),b%f(5)%vals(i,k),s(2))
+          enddo; enddo
+          !$OMP END PARALLEL DO
+           case (3)
+          !$OMP PARALLEL DO
+          do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call triSolve_Dirichlet_CC(uOut(i,j,:),uIn(i,j,:),T,b%f(3)%vals(i,j),b%f(6)%vals(i,j),s(3))
+          enddo; enddo
+          !$OMP END PARALLEL DO
+          case default
+          write(*,*) 'Error: dir must = 1,2,3 in solveTriSolver.';stop
+          end select
+        else
+          select case (dir)
+          case (1)
+          !$OMP PARALLEL DO
+          do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
+          call triSolve_Dirichlet_node(uOut(:,j,k),uIn(:,j,k),T,b%f(1)%vals(j,k),b%f(4)%vals(j,k),s(1))
+          enddo; enddo
+          !$OMP END PARALLEL DO
+          case (2)
+          !$OMP PARALLEL DO
+          do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call triSolve_Dirichlet_node(uOut(i,:,k),uIn(i,:,k),T,b%f(2)%vals(i,k),b%f(5)%vals(i,k),s(2))
+          enddo; enddo
+          !$OMP END PARALLEL DO
+           case (3)
+          !$OMP PARALLEL DO
+          do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call triSolve_Dirichlet_node(uOut(i,j,:),uIn(i,j,:),T,b%f(3)%vals(i,j),b%f(6)%vals(i,j),s(3))
+          enddo; enddo
+          !$OMP END PARALLEL DO
+          case default
+          write(*,*) 'Error: dir must = 1,2,3 in solveTriSolver.';stop
+          end select
+        endif
       end subroutine
 
       ! ********************************************************************
@@ -174,9 +194,6 @@
         integer,intent(in) :: n
         real(cp),dimension(n) :: dtemp
         dtemp = d
-        ! write(*,*) 'b_front = ',b_front
-        ! write(*,*) 'b_back = ',b_back
-        ! stop 'Done'
         dtemp(3)   = dtemp(3)   - T%L(2)   * b_front
         dtemp(n-2) = dtemp(n-2) - T%U(n-3) * b_back
         call solve_tridiag_CK(x(3:n-2),&

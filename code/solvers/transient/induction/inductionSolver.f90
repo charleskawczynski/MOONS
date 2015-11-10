@@ -26,7 +26,7 @@
        use ops_discrete_mod
        use ops_discrete_complex_mod
        use ops_physics_mod
-       use applyBCs_mod
+       use apply_BCs_mod
        use solverSettings_mod
        use SOR_mod
        ! use ADI_mod
@@ -186,7 +186,7 @@
          call initBfield(ind%B,ind%B0,m,dir)
          write(*,*) '     B-field initialized'
 
-         call applyBCs(ind%B,m)
+         call apply_BCs(ind%B,m)
          write(*,*) '     BCs applied'
 
          ! call initSigma(ind%sigma,ind%D_fluid,m) ! If sigma changes across fluid
@@ -677,7 +677,7 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyBCs(ind%B,m)
+           call apply_BCs(ind%B,m)
          enddo
        end subroutine
 
@@ -706,7 +706,7 @@
            call add(ind%B,ind%Bstar)
 
            ! Impose BCs:
-           call applyBCs(ind%B,m)
+           call apply_BCs(ind%B,m)
          enddo
        end subroutine
 
@@ -753,7 +753,7 @@
            call subtract(ind%B,ind%temp_CC)
 
            ! Impose BCs:
-           call applyBCs(ind%B,m)
+           call apply_BCs(ind%B,m)
          enddo
        end subroutine
 
@@ -796,7 +796,7 @@
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyBCs(ind%B,m)
+         call apply_BCs(ind%B,m)
        end subroutine
 
        subroutine finiteRemCTmethod_with_source(ind,F_CC,m)
@@ -842,7 +842,7 @@
          call add(ind%B,ind%temp_CC)
 
          ! Impose BCs:
-         call applyBCs(ind%B,m)
+         call apply_BCs(ind%B,m)
        end subroutine
 
 !        subroutine lowRem_ADI(ind,U,m,ss_MHD)
@@ -902,7 +902,7 @@
 !             ind%ss_ADI,ind%err_ADI,getExportErrors(ss_MHD))
 
 !          ! Impose BCs:
-!          call applyBCs(ind%B,ind%B_bcs,m)
+!          call apply_BCs(ind%B,ind%B_bcs,m)
 !        end subroutine
 
 !        subroutine lowRemMultigrid(ind,U,m)
@@ -942,7 +942,7 @@
 
          call face2CellCenter(ind%B,ind%B_face,m)
 
-         call applyBCs(ind%B,m)
+         call apply_BCs(ind%B,m)
        end subroutine
 
        ! ********************* COMPUTE *****************************

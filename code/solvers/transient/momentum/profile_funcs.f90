@@ -71,10 +71,10 @@
 
        function shercliff_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
          ! Computes the Shercliff profile, w(x,y) for Hartmann number,Ha
-         ! Ref:
-         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         ! Reference:
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
          !      the inductionless MHD problem using a stabilized finite 
-         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),dimension(sx,sy) :: w
          integer,intent(in) :: sx,sy
@@ -120,11 +120,11 @@
 
        function shercliff_coeff(r1k,r2k,eta,d_B,N) result(V)
          ! Computes the coefficient (V2,V3) in the Shercliff profile
-         ! expressions given in 
+         ! expressions given in reference:
          ! 
-         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
          !      the inductionless MHD problem using a stabilized finite 
-         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),intent(in) :: r1k,r2k,eta,d_B,N
          real(cp) :: A,B,C,D,V
@@ -137,11 +137,11 @@
 
        function hunt_coeff(r1k,r2k,eta,N) result(V)
          ! Computes the coefficient (V2,V3) in the Hunt profile
-         ! expressions given in 
+         ! expressions given in reference:
          ! 
-         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
          !      the inductionless MHD problem using a stabilized finite 
-         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),intent(in) :: r1k,r2k,eta,N
          real(cp) :: A,B,C,V
@@ -153,10 +153,10 @@
 
        function hunt_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
          ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
-         ! Ref:
-         !      1. Planas, R., Badia, S. & Codina, R. Approximation of 
+         ! Reference:
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
          !      the inductionless MHD problem using a stabilized finite 
-         !      element method. J. Comput. Phys. 230, 2977–2996 (2011).
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),dimension(sx,sy) :: w
          integer,intent(in) :: sx,sy
@@ -261,14 +261,12 @@
          enddo
          deallocate(h)
        end function
-       
 
-
-       subroutine isolatedEddy2D(u,v,g)
-         ! From
-         !      Weiss, N. O. The Expulsion of Magnetic Flux 
+       function isolatedEddy2D(cx,cy,sx,sy,component) result(f)
+         ! Computes velocities fx,fy from reference:
+         !      "Weiss, N. O. The Expulsion of Magnetic Flux 
          !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
-         !      Sci. 293, 310–328 (1966).
+         !      Sci. 293, 310–328 (1966).""
          ! 
          ! Computes
          !           U = curl(psi)
@@ -280,24 +278,76 @@
          ! Computes
          !       u = dpsi/dy =   cos(2 pi x) sin(2 pi y)
          !       v =-dpsi/dx = - sin(2 pi x) cos(2 pi y)
+         ! 
+         ! Component = (1,2) = (x,y)
          implicit none
-         real(cp),dimension(:,:),intent(inout) :: u,v
-         type(grid),intent(in) :: g
+         real(cp),dimension(sx,sy) :: f
+         integer,intent(in) :: sx,sy
+         type(coordinates),intent(in) :: cx,cy
+         integer,intent(in) :: component
          integer :: i,j
-         integer,dimension(2) :: sx,sy
          real(cp) :: wavenum
-         wavenum = 2.0_cp
+         real(cp),dimension(:),allocatable :: x,y
+         if (sx.lt.1) stop 'Error: sx < 1 in isolatedEddy2D in profile_funcs.f90'
+         if (sy.lt.1) stop 'Error: sy < 1 in isolatedEddy2D in profile_funcs.f90'
+         allocate(x(sx)); allocate(y(sy))
+             if (sx.eq.cx%sn) then; x = cx%hn
+         elseif (sx.eq.cx%sc) then; x = cx%hc
+           else; stop 'Error: bad size in isolatedEddy2D in profile_funcs.f90'
+         endif
+             if (sy.eq.cy%sn) then; y = cy%hn
+         elseif (sy.eq.cy%sc) then; y = cy%hc
+           else; stop 'Error: bad size in isolatedEddy2D in profile_funcs.f90'
+         endif
 
-         sx = shape(u); sy = shape(v)
-         do j=1,sx(2);do i=1,sx(1)
-              u(i,j) =   cos(wavenum*PI*g%c(1)%hn(i)) * &
-                         sin(wavenum*PI*g%c(2)%hc(j))
-         enddo;enddo
-         do j=1,sy(2);do i=1,sy(1)
-              v(i,j) = - sin(wavenum*PI*g%c(1)%hc(i)) * &
-                         cos(wavenum*PI*g%c(2)%hn(j))
-         enddo;enddo
-       end subroutine
+         wavenum = 2.0_cp
+         select case (component)
+         case (1); do j=1,sy;do i=1,sx
+                     f(i,j) =   cos(wavenum*PI*x(i)) * &
+                                sin(wavenum*PI*y(j))
+                   enddo;enddo
+         case (2); do j=1,sy;do i=1,sx
+                     f(i,j) = - sin(wavenum*PI*x(i)) * &
+                                cos(wavenum*PI*y(j))
+                   enddo;enddo
+         case default; stop 'Error: bad component input in isolatedEddy2D in profile_funcs.f90'
+         end select
+         deallocate(x,y)
+       end function
+
+       ! subroutine isolatedEddy2D(u,v,g)
+       !   ! From
+       !   !      Weiss, N. O. The Expulsion of Magnetic Flux 
+       !   !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
+       !   !      Sci. 293, 310–328 (1966).
+       !   ! 
+       !   ! Computes
+       !   !           U = curl(psi)
+       !   ! Where
+       !   !           psi = (-1/(2 pi)) cos(2 pi x) cos(2 pi y)
+       !   !           u = dpsi/dy
+       !   !           v =-dpsi/dx
+       !   !           w = 0
+       !   ! Computes
+       !   !       u = dpsi/dy =   cos(2 pi x) sin(2 pi y)
+       !   !       v =-dpsi/dx = - sin(2 pi x) cos(2 pi y)
+       !   implicit none
+       !   real(cp),dimension(:,:),intent(inout) :: u,v
+       !   type(grid),intent(in) :: g
+       !   integer :: i,j
+       !   integer,dimension(2) :: sx,sy
+       !   real(cp) :: wavenum
+       !   wavenum = 2.0_cp
+       !   sx = shape(u); sy = shape(v)
+       !   do j=1,sx(2);do i=1,sx(1)
+       !        u(i,j) =   cos(wavenum*PI*g%c(1)%hn(i)) * &
+       !                   sin(wavenum*PI*g%c(2)%hc(j))
+       !   enddo;enddo
+       !   do j=1,sy(2);do i=1,sy(1)
+       !        v(i,j) = - sin(wavenum*PI*g%c(1)%hc(i)) * &
+       !                   cos(wavenum*PI*g%c(2)%hn(j))
+       !   enddo;enddo
+       ! end subroutine
 
        subroutine singleEddy2D(u,v,g)
          ! From

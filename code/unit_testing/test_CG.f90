@@ -4,7 +4,7 @@
        use BCs_mod
        use SF_mod
        use VF_mod
-       use applyBCs_mod
+       use apply_BCs_mod
        use ops_discrete_mod
        use ops_aux_mod
        implicit none
@@ -132,19 +132,19 @@
 
          ! f must reach to ghost nodes, which must be defined
          select case (bctype)
-         case (1); call applyBCs(u_exact,m,u)
+         case (1); call apply_BCs(u_exact,m,u)
                    call grad(temp,u_exact,m); call div(f,temp,m) ! Results in strange res, but converges slowly
          case (2); call subtract(u_exact,mean(u_exact))
-                   call applyBCs(u_exact,m,f)
+                   call apply_BCs(u_exact,m,f)
                    ! call lap(f,u_exact,m) ! Results in good looking res but diverges
                    call grad(temp,u_exact,m); call div(f,temp,m) ! Results in strange res, but converges slowly
          case (3); f%RF(1)%f = 0.0_cp
-                   call applyBCs(f,m,u)
+                   call apply_BCs(f,m,u)
          end select
          
          call delete(temp)
          
-         call applyBCs(u,m)
+         call apply_BCs(u,m)
          call zeroGhostPoints(f)
        end subroutine
 
@@ -177,7 +177,7 @@
        use norms_mod
        use ops_discrete_mod
        use BCs_mod
-       use applyBCs_mod
+       use apply_BCs_mod
        use CG_mod
        use SOR_mod
        use SF_mod
