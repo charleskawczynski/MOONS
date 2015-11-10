@@ -37,80 +37,6 @@ MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
 LIB_DIR = $(SRC_DIR)$(PS)lib
 
-# ************** COMPILER & STANDARD ****************
-FC      = gfortran
-
-# ****************** DEFAULT FLAGS ******************
-FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp -g
-# FCFLAGS += -std=f95
-# Precision
-# FCFLAGS += -D_SINGLE_PRECISION_
-FCFLAGS += -D_DOUBLE_PRECISION_
-# FCFLAGS += -D_QUAD_PRECISION_
-
-# FFT Methods
-# FCFLAGS += -D_FFT_FULL_
-FCFLAGS += -D_FFT_RADIX2_
-
-# Order of accuracy of finite difference stencil
-FCFLAGS += -D_STENCILS_O2_
-# FCFLAGS += -D_STENCILS_O4_
-FCFLAGS += -fopenmp
-
-# ******************** LIBRARIES ********************
-# FLIBS = $(LIB_DIR)$(PS)tecio.lib
-
-# ****************** DEBUGGING **********************
-FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0
-FC_DEBUG += -D_DEBUG_DEL_
-FC_DEBUG += -D_DEBUG_INTERP_
-# FC_DEBUG += -D_DEBUG_COORDINATES_
-FC_DEBUG += -D_DEBUG_APPLYBCS_
-# FC_DEBUG += -D_DEBUG_RF_
-# FC_DEBUG += -D_DEBUG_SF_
-# FC_DEBUG += -D_DEBUG_VF_
-# FC_DEBUG += -D_DEBUG_TF_
-FCFLAGS += $(FC_DEBUG)
-
-# **************** OPTIMIZE/PARALLELIZE *********************
-FC_OPTIMIZE += -O3
-FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
-FC_OPTIMIZE += -D_PARALLELIZE_SOR_
-FC_OPTIMIZE += -D_PARALLELIZE_RF_
-FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
-# FC_OPTIMIZE += mpif90
-# FC_OPTIMIZE += mpirun -np 4
-
-# ****************** PROFILING **********************
-# To profile: run sim profile flag, then run
-# gprof MOONS.exe > timeReport.txt
-FC_PROFILE += -pg
-
-# ******** ITERATIVE SOLVER CONVERGENCE TESTS *******
-
-# Code verification
-# FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
-
-FCFLAGS += $(FC_DEBUG)
-# FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
-
-# ********** UNIT TEST / FULL SIMULATION *************
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
-
-
-# TARGET = $(TARGET_DIR)$(PS)MOONS
-TARGET = $(TARGET_DIR)$(PS)unitTest
-
 # **************** INCLUDE PATHS ********************
 VPATH =\
 	$(TARGET_DIR) \
@@ -131,6 +57,93 @@ VPATH =\
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum \
 	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction
+
+# ************** COMPILER & STANDARD ****************
+FC      = gfortran
+# FC      = mpif90
+# FC      = mpirun -np 4
+# FCFLAGS = -std=f95
+
+# ****************** DEFAULT FLAGS ******************
+FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized
+
+# ******************** LIBRARIES ********************
+# FLIBS = $(LIB_DIR)$(PS)tecio.lib
+
+# ****************** DEBUGGING **********************
+# CPU time ~ Debugging level
+# FCFLAGS += -g
+# FCFLAGS += -g -Wall
+# FCFLAGS += -g -Wall -Wextra
+# FCFLAGS += -g -Wall -Wextra -fbacktrace
+FCFLAGS += -g -Wall -Wextra -fbacktrace -fcheck=all
+# FCFLAGS += -g -Wall -Wextra -pedantic -fbacktrace -Q
+
+# **************** OPTIMIZATION *********************
+# Speed-up ~ Optimization level
+FCFLAGS += -O0
+# FCFLAGS += -O1
+# FCFLAGS += -O2
+# FCFLAGS += -O3
+# FCFLAGS += -O4
+# FCFLAGS += -O5
+# **************** PARALLELIZATION ******************
+FCFLAGS += -fopenmp
+# FCFLAGS += -mpirun -np 4
+# FCFLAGS += -mpif90 -np 4
+# FCFLAGS += -mpicc
+
+# ****************** PROFILING **********************
+# To profile, run simulation with the flag:
+# FCFLAGS += -pg
+# Then run the following command:
+# gprof MOONS.exe > timeReport.txt
+
+# *********** PRE-PROCESSOR DIRECTIVES **************
+FCFLAGS += -cpp
+
+# *********** PRE-PROCESSOR DEFINITIONS *************
+# Precision
+# FCFLAGS += -D_SINGLE_PRECISION_
+FCFLAGS += -D_DOUBLE_PRECISION_
+# FCFLAGS += -D_QUAD_PRECISION_
+
+# FFT Methods
+# FCFLAGS += -D_FFT_FULL_
+FCFLAGS += -D_FFT_RADIX2_
+
+# Order of accuracy
+FCFLAGS += -D_STENCILS_O2_
+# FCFLAGS += -D_STENCILS_O4_
+
+# Parallelization
+# FCFLAGS += -D_PARALLELIZE_Jacobi_
+FCFLAGS += -D_PARALLELIZE_SOR_
+FCFLAGS += -D_PARALLELIZE_RF_
+FCFLAGS += -D_PARALLELIZE_EMBEDEXTRACT_
+
+# FCFLAGS += noarg_temp_created
+
+# Code verification
+# FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
+
+# Internal debugging
+FCFLAGS += -D_DEBUG_DEL_
+FCFLAGS += -D_DEBUG_INTERP_
+# FCFLAGS += -D_DEBUG_COORDINATES_
+FCFLAGS += -D_DEBUG_APPLYBCS_
+# FCFLAGS += -D_DEBUG_RF_
+# FCFLAGS += -D_DEBUG_SF_
+# FCFLAGS += -D_DEBUG_VF_
+# FCFLAGS += -D_DEBUG_TF_
+
+
+# TARGET = $(TARGET_DIR)$(PS)MOONS
+TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
@@ -250,7 +263,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
 	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90
 
-SRCS_F += $(UNIT_TEST)
+
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
+SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
+# SRCS_F += $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
@@ -277,7 +296,7 @@ clean:
 
 run: myRun
 myRun: $(TARGET)
-	cd $(TARGET_DIR) && $(MKE) run
+	cd $(TARGET_DIR) && MKE run
 
 info:;  @echo " "
 	@echo " "

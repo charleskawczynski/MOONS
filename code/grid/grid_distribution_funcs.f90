@@ -1,4 +1,4 @@
-       module gridGenTools_mod
+       module grid_distribution_funcs_mod
        implicit none
 
        private

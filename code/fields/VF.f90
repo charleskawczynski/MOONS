@@ -30,6 +30,8 @@
 
         ! Monitoring
         public :: print
+        public :: print_BCs
+        public :: export_BCs
 
         ! Operators
         public :: assign,assignMinus
@@ -63,6 +65,8 @@
 
         interface delete;       module procedure delete_VF;                end interface
         interface print;        module procedure print_VF;                 end interface
+        interface print_BCs;    module procedure print_BCs_VF;             end interface
+        interface export_BCs;   module procedure export_BCs_VF;            end interface
 
         interface assignX;      module procedure assign_VF_VF_X;          end interface
         interface assignY;      module procedure assign_VF_VF_Y;          end interface
@@ -429,6 +433,24 @@
           implicit none
           type(VF),intent(in) :: f
           call print(f%x); call print(f%y); call print(f%z)
+        end subroutine
+
+        subroutine print_BCs_VF(f,name)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: name
+          call print_BCs(f%x,name//'_x')
+          call print_BCs(f%y,name//'_y')
+          call print_BCs(f%z,name//'_z')
+        end subroutine
+
+        subroutine export_BCs_VF(f,dir,name)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: dir,name
+          call export_BCs(f%x,dir,name//'_x')
+          call export_BCs(f%y,dir,name//'_y')
+          call export_BCs(f%z,dir,name//'_z')
         end subroutine
 
       end module

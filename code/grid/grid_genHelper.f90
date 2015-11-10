@@ -1,4 +1,4 @@
-       module gridGen_mod
+       module grid_genHelper_mod
        ! This module is operates on node data only, 
        ! since it describes the physical domain.
        use grid_mod

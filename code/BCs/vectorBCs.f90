@@ -60,22 +60,21 @@
          call init(VBC%z,g,s3)
        end subroutine
 
-       subroutine print_VBCs(VBC,name)
+       subroutine print_VBCs(VBC)
          implicit none
          type(vectorBCs),intent(in) :: VBC
-         character(len=*),intent(in) :: name
-         call print(VBC%x,name//'x')
-         call print(VBC%y,name//'y')
-         call print(VBC%z,name//'z')
+         call print(VBC%x)
+         call print(VBC%y)
+         call print(VBC%z)
        end subroutine
 
-       subroutine export_VBCs(VBC,dir,name)
+       subroutine export_VBCs(VBC,un)
          implicit none
          type(vectorBCs),intent(in) :: VBC
-         character(len=*),intent(in) :: dir,name
-         call export(VBC%x,dir,name//'x')
-         call export(VBC%y,dir,name//'y')
-         call export(VBC%z,dir,name//'z')
+         integer,intent(in) :: un
+         call export(VBC%x,un)
+         call export(VBC%y,un)
+         call export(VBC%z,un)
        end subroutine
 
        end module

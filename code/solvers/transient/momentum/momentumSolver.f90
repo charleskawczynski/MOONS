@@ -2,7 +2,6 @@
        use simParams_mod
        
        use BCs_mod
-       use grid_mod
        use mesh_mod
        use SF_mod
        use VF_mod
@@ -135,10 +134,6 @@
        interface exportTransientFull; module procedure momentumExportTransientFull;end interface
        interface printExportBCs;      module procedure printExportMomentumBCs;     end interface
        interface computeDivergence;   module procedure computeDivergenceMomentum;  end interface
-
-       interface ZWCB;                module procedure ZWCB_RF;                    end interface
-       interface ZWCB;                module procedure ZWCB_SF;                    end interface
-       interface ZWCB;                module procedure ZWCB_VF;                    end interface
 
        interface setDTime;            module procedure setDTimeMomentum;           end interface
 
@@ -339,10 +334,10 @@
          implicit none
          type(momentum),intent(in) :: mom
          character(len=*),intent(in) :: dir
-         ! call printVectorBCs(mom%U_bcs,'u','v','w')
-         ! call printAllBoundaries(mom%p_bcs,'p')
-         ! call writeVectorBCs(mom%U_bcs,dir//'parameters/','u','v','w')
-         ! call writeAllBoundaries(mom%p_bcs,dir//'parameters/','p')
+         if (solveMomentum) call print_BCs(mom%U,'U')
+         if (solveMomentum) call export_BCs(mom%U,dir//'parameters/','U')
+         if (solveMomentum) call print_BCs(mom%p,'p')
+         if (solveMomentum) call export_BCs(mom%p,dir//'parameters/','p')
        end subroutine
 
        subroutine momentumExportTransient(mom,ss_MHD,dir)
@@ -527,7 +522,7 @@
          ! call printPhysicalMinMax(F,'jcrossB')
 
          ! Zero wall coincident forcing (may be bad for neumann BCs)
-         call ZWCB(mom%Ustar,m)
+         call zeroWall_conditional(mom%Ustar,m)
 
          ! Solve with explicit Euler --------------------
          ! Ustar = U + dt*Ustar
@@ -615,7 +610,7 @@
          call add(mom%Ustar,F)
 
          ! Zero wall coincident forcing (may be bad for neumann BCs)
-         call ZWCB(mom%Ustar,m)
+         call zeroWall_conditional(mom%Ustar,m)
 
          ! Solve with explicit Euler --------------------
          ! Ustar = U + dt*Ustar
@@ -834,212 +829,5 @@
          stop 'Error: dir must = 1,2,3 in addMeanPressureGrad in momentumSolver.f90'
          end select
        end subroutine
-
-       subroutine ZWCB_RF(f,s,g,dir)
-         ! dir = zero wall coincident boundaries on...
-         !       0: all faces
-         !       1: x_min / x_max faces
-         !       2: y_min / y_max faces
-         !       3: z_min / z_max faces
-         !      -1: all but x_min / x_max faces
-         !      -2: all but y_min / y_max faces
-         !      -3: all but z_min / z_max faces
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: s
-         type(grid),intent(in) :: g
-         integer,intent(in) :: dir
-         select case (dir)
-         case (0)
-           if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
-           elseif (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
-           elseif (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
-           endif
-         case (1)
-           if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
-           endif
-         case (2)
-           if (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
-           endif
-         case (3)
-           if (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
-           endif
-         case (-1)
-           if (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
-           endif
-           if (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
-           endif
-         case (-2)
-           if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
-           endif
-           if (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
-           endif
-         case (-3)
-           if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
-           endif
-           if (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
-           endif
-         case default
-           stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
-         end select
-       end subroutine
-
-       subroutine ZWCB_RF_test(f,s,g,face)
-         ! face = zero wall coincident boundaries on...
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: s
-         type(grid),intent(in) :: g
-         integer,intent(in) :: face
-         select case (face)
-         case (0) ! All faces
-           if (s(1).eq.g%c(1)%sn) then
-             f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-             f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
-           elseif (s(2).eq.g%c(2)%sn) then
-             f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-             f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
-           elseif (s(3).eq.g%c(3)%sn) then
-             f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-             f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
-           endif
-         case (1); if (s(1).eq.g%c(1)%sn) then; f(1,:,:) = 0.0_cp;    f(2,:,:) = 0.0_cp;      endif
-         case (2); if (s(1).eq.g%c(1)%sn) then; f(s(1),:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp; endif
-         case (3); if (s(2).eq.g%c(2)%sn) then; f(:,1,:) = 0.0_cp;    f(:,2,:) = 0.0_cp;      endif
-         case (4); if (s(2).eq.g%c(2)%sn) then; f(:,s(2),:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp; endif
-         case (5); if (s(3).eq.g%c(3)%sn) then; f(:,:,1) = 0.0_cp;    f(:,:,2) = 0.0_cp;      endif
-         case (6); if (s(3).eq.g%c(3)%sn) then; f(:,:,s(3)) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp; endif
-         case default
-           stop 'Error: dir must = 0,1,2,3 in zeroWallCoincidentBoundaries'
-         end select
-       end subroutine
-
-       subroutine ZWCB_SF(f,m)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         integer :: i
-         do i=1,f%s
-           call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),0)
-
-           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),1)
-           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),2)
-           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),3)
-           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),4)
-           ! call ZWCB(f%RF(i)%f,f%RF(i)%s,m%g(i),5)
-         enddo
-       end subroutine
-
-       subroutine ZWCB_VF(f,m)
-         implicit none
-         type(VF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         call ZWCB(f%x,m); call ZWCB(f%y,m); call ZWCB(f%z,m)
-       end subroutine
-
-!        subroutine ZWCB_general(f,s,face)
-!          ! face = zero wall coincident boundaries on...
-!          !       1: x_min
-!          !       2: x_max
-!          !       3: y_min
-!          !       4: y_max
-!          !       5: z_min
-!          !       6: z_max
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          integer,dimension(3),intent(in) :: s
-!          integer,intent(in) :: face
-!          select case (face)
-!          case (1); f(2,:,:)      = 0.0_cp; f(1,:,:)    = 0.0_cp
-!          case (2); f(s(1)-1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-!          case (3); f(:,2,:)      = 0.0_cp; f(:,1,:)    = 0.0_cp
-!          case (4); f(:,s(2)-1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-!          case (5); f(:,:,2)      = 0.0_cp; f(:,:,1)    = 0.0_cp
-!          case (6); f(:,:,s(3)-1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-!          case default
-!            stop 'Error: face must = 1-6 in ZWCB'
-!          end select
-!        end subroutine
-
-!        subroutine ZWCB_allDirichlet(f,s,face)
-!          ! face = zero wall coincident boundaries on...
-!          !       1: x_min,x_max
-!          !       2: y_min,y_max
-!          !       3: z_min,z_max
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          integer,dimension(3),intent(in) :: s
-!          integer,intent(in) :: face
-!          select case (face)
-!          case (1); f(2,:,:)      = 0.0_cp; f(1,:,:)    = 0.0_cp
-!                    f(s(1)-1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-!          case (3); f(:,2,:)      = 0.0_cp; f(:,1,:)    = 0.0_cp
-!                    f(:,s(2)-1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-!          case (5); f(:,:,2)      = 0.0_cp; f(:,:,1)    = 0.0_cp
-!                    f(:,:,s(3)-1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-!          case default
-!            stop 'Error: face must = 1,2,3 in ZWCB_allDirichlet'
-!          end select
-!        end subroutine
-
-!        subroutine ZWCB_VF(f) ! For all Dirichlet BCs
-!          implicit none
-!          type(VF),intent(inout) :: f
-!          call ZWCB(f%x,f%sx,1)
-!          call ZWCB(f%y,f%sy,2)
-!          call ZWCB(f%z,f%sz,3)
-!        end subroutine
-
-!        subroutine ZWCB_VF_general(f,g,U_bcs) ! General
-!          implicit none
-!          type(VF),intent(inout) :: f
-!          type(grid),intent(in) :: g
-!          type(vectorBCs),intent(in) :: U_bcs
-!          logical,dimension(3) :: TFall
-!          TFall(1) = getAllDirichlet(U_bcs%x)
-!          TFall(2) = getAllDirichlet(U_bcs%y)
-!          TFall(3) = getAllDirichlet(U_bcs%z)
-!          if (all(TFall)) then ! Prescribed velocity (i.e. no slip: viscosity doesn't play a role.)
-!            call ZWCB_allDirichlet(f%x,f%sx,1)
-!            call ZWCB_allDirichlet(f%y,f%sy,2)
-!            call ZWCB_allDirichlet(f%z,f%sz,3)
-!          else ! Potentially Neumann (d^2 u_normal / dx_tangent is not necessarily zero)
-!            if (any((U_bcs%x%xminType).eq.(/1,2/))) call ZWCB_general(f%x,f%sx,1)
-!            if (any((U_bcs%x%xmaxType).eq.(/1,2/))) call ZWCB_general(f%x,f%sx,2)
-
-!            if (any((U_bcs%y%yminType).eq.(/1,2/))) call ZWCB_general(f%y,f%sy,3)
-!            if (any((U_bcs%y%ymaxType).eq.(/1,2/))) call ZWCB_general(f%y,f%sy,4)
-
-!            if (any((U_bcs%z%zminType).eq.(/1,2/))) call ZWCB_general(f%z,f%sz,5)
-!            if (any((U_bcs%z%zmaxType).eq.(/1,2/))) call ZWCB_general(f%z,f%sz,6)
-!          endif
-!          call ZWCB_short(f%x,f%sx,g,1)
-!          call ZWCB_short(f%y,f%sy,g,2)
-!          call ZWCB_short(f%z,f%sz,g,3)
-!        end subroutine
 
        end module

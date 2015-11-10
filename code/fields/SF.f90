@@ -26,8 +26,10 @@
         ! c = a * b => call multiply(c,a,b)
         ! c = a / b => call divide(c,a,b)
         ! c = b / a => call divide(c,b,a)
+        use IO_tools_mod
         use mesh_mod
         use RF_mod
+        use BCs_mod
         implicit none
         private
 
@@ -46,6 +48,8 @@
 
         ! Monitoring
         public :: print
+        public :: print_BCs
+        public :: export_BCs
 
         ! Operators
         public :: assign,assignMinus
@@ -84,6 +88,9 @@
         interface init_BC_props;  module procedure init_BC_props_SF;       end interface
 
         interface delete;         module procedure delete_SF;              end interface
+        interface print;          module procedure print_SF;               end interface
+        interface print_BCs;      module procedure print_BCs_SF;           end interface
+        interface export_BCs;     module procedure export_BCs_SF;          end interface
 
         interface assign;         module procedure assign_SF_S;            end interface
         interface assign;         module procedure assign_SF_SF;           end interface
@@ -110,7 +117,6 @@
         interface divide;         module procedure divide_S_SF;            end interface
 
         interface square;         module procedure square_SF;              end interface
-        interface print;          module procedure print_SF;               end interface
         interface min;            module procedure min_SF;                 end interface
         interface max;            module procedure max_SF;                 end interface
         interface min;            module procedure min_pad_SF;             end interface
@@ -515,6 +521,36 @@
           type(SF),intent(in) :: f
           integer :: i
           do i=1,f%s; call print(f%RF(i)); enddo
+        end subroutine
+
+        subroutine print_BCs_SF(f,name)
+          implicit none
+          type(SF),intent(in) :: f
+          character(len=*),intent(in) :: name
+          call exp_BCs_SF(f,name,6)
+        end subroutine
+
+        subroutine export_BCs_SF(f,dir,name)
+          implicit none
+          type(SF),intent(in) :: f
+          character(len=*),intent(in) :: dir,name
+          integer :: un
+          un = newAndOpen(dir,name//'_BoundaryConditions')
+          call exp_BCs_SF(f,name,un)
+          call closeAndMessage(un,name//'_BoundaryConditions',dir)
+        end subroutine
+
+        subroutine exp_BCs_SF(f,name,un)
+          implicit none
+          type(SF),intent(in) :: f
+          character(len=*),intent(in) :: name
+          integer,intent(in) :: un
+          integer :: i
+          write(un,*) ' ------ BCs for ' // name // ' ------ '
+          do i=1,f%s
+            call export(f%RF(i)%b,un)
+          enddo
+          write(un,*) ' ------------------------------------ '
         end subroutine
 
       end module

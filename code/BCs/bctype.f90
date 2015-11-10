@@ -150,18 +150,24 @@
            write(newU,*) 'Dirichlet = ',b%Dirichlet
            write(newU,*) 'Neumann = ',b%Neumann
            write(newU,*) 'Periodic = ',b%Periodic
-           write(newU,*) 'symmetric = ',b%symmetric
-           write(newU,*) 'antisymmetric = ',b%antisymmetric
+           write(newU,*) 'Symmetric = ',b%symmetric
+           write(newU,*) 'Antisymmetric = ',b%antisymmetric
          else
-           if (b%Dirichlet)     write(newU,*) 'Dirichlet'
-           if (b%Neumann)       write(newU,*) 'Neumann'
-           if (b%Periodic)      write(newU,*) 'Periodic'
-           if (b%symmetric)     write(newU,*) 'symmetric'
-           if (b%antisymmetric) write(newU,*) 'antisymmetric'
+           ! if (b%Dirichlet)     write(newU,*) 'Dirichlet'
+           ! if (b%Neumann)       write(newU,*) 'Neumann'
+           ! if (b%Periodic)      write(newU,*) 'Periodic'
+           ! if (b%symmetric)     write(newU,*) 'Symmetric'
+           ! if (b%antisymmetric) write(newU,*) 'Antisymmetric'
+
+           if (b%Dirichlet)     write(newU,'(A,T1)',advance='no') 'D'
+           if (b%Neumann)       write(newU,'(A,T1)',advance='no') 'N'
+           if (b%Periodic)      write(newU,'(A,T1)',advance='no') 'P'
+           if (b%symmetric)     write(newU,'(A,T1)',advance='no') 'S'
+           if (b%antisymmetric) write(newU,'(A,T1)',advance='no') 'A'
          endif
 
          write(newU,*) 'meanVal = ',b%meanVal
-         write(newU,*) 'defined = ',b%defined
+         ! write(newU,*) 'defined = ',b%defined
        end subroutine
 
        end module

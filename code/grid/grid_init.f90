@@ -1,8 +1,8 @@
-       module box3D_mod
+       module grid_init_mod
        use grid_mod
-       use gridGen_mod
-       use gridGenTools_mod
-       use matchGridStretching_mod
+       use grid_genHelper_mod
+       use grid_distribution_funcs_mod
+       use grid_stretchParamMatch_mod
        implicit none
 
        private
@@ -17,10 +17,10 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       public :: box3D_uniform
-       public :: box3D_Roberts_L,box3D_Roberts_R,box3D_Roberts_B
-       public :: box3D_cluster
-       ! public :: box3D_uniformBL
+       public :: grid_uniform
+       public :: grid_Roberts_L,grid_Roberts_R,grid_Roberts_B
+       public :: grid_cluster
+       ! public :: grid_uniformBL
 
        contains
 
@@ -37,7 +37,7 @@
          call delete(gg)
        end subroutine
 
-       subroutine box3D_uniform(g,hmin,hmax,N,dir)
+       subroutine grid_uniform(g,hmin,hmax,N,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
@@ -47,7 +47,7 @@
          call process(g,gg,dir)
        end subroutine
 
-       subroutine box3D_Roberts_L(g,hmin,hmax,N,beta,dir)
+       subroutine grid_Roberts_L(g,hmin,hmax,N,beta,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
@@ -57,7 +57,7 @@
          call process(g,gg,dir)
        end subroutine
 
-       subroutine box3D_Roberts_R(g,hmin,hmax,N,beta,dir)
+       subroutine grid_Roberts_R(g,hmin,hmax,N,beta,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
@@ -67,7 +67,7 @@
          call process(g,gg,dir)
        end subroutine
 
-       subroutine box3D_Roberts_B(g,hmin,hmax,N,beta,dir)
+       subroutine grid_Roberts_B(g,hmin,hmax,N,beta,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
@@ -77,7 +77,7 @@
          call process(g,gg,dir)
        end subroutine
 
-       subroutine box3D_cluster(g,hmin,hmax,N,yc,tau,dir)
+       subroutine grid_cluster(g,hmin,hmax,N,yc,tau,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
@@ -87,7 +87,7 @@
          call process(g,gg,dir)
        end subroutine
 
-       ! subroutine box3D_Roberts_L_UBL(g,hmin,hmax,N,beta,N_uniform,dir)
+       ! subroutine grid_Roberts_L_UBL(g,hmin,hmax,N,beta,N_uniform,dir)
        !   ! Implements a uniform boundary layer near clustered region
        !   implicit none
        !   type(grid),intent(inout) :: g

@@ -362,10 +362,8 @@
          implicit none
          type(induction),intent(in) :: ind
          character(len=*),intent(in) :: dir
-         ! if (solveInduction) call printVectorBCs(ind%B%RF(1)%b,'Bx','By','Bz')
-         ! if (cleanB)         call printAllBoundaries(ind%phi%RF(1)%b,'phi')
-         ! if (solveInduction) call writeVectorBCs(ind%B_bcs,dir//'parameters/','Bx','By','Bz')
-         ! if (cleanB)         call writeAllBoundaries(ind%phi%RF(1)%b,dir//'parameters/','phi')
+         if (solveInduction) call print_BCs(ind%B,'B')
+         if (cleanB)         call print_BCs(ind%phi,'phi')
        end subroutine
 
        subroutine inductionExportTransient(ind,ss_MHD)
@@ -1184,31 +1182,6 @@
          call embedEdge(ind%U_E%x,U_E%x,ind%D_fluid)
          call embedEdge(ind%U_E%y,U_E%y,ind%D_fluid)
          call embedEdge(ind%U_E%z,U_E%z,ind%D_fluid)
-         ! call Neumanize(ind%U_E%x%x,6)
-         ! call Neumanize(ind%U_E%x%y,6)
-         ! call Neumanize(ind%U_E%x%z,6)
-         ! call Neumanize(ind%U_E%y%x,6)
-         ! call Neumanize(ind%U_E%y%y,6)
-         ! call Neumanize(ind%U_E%y%z,6)
-         ! call Neumanize(ind%U_E%z%x,6)
-         ! call Neumanize(ind%U_E%z%y,6)
-         ! call Neumanize(ind%U_E%z%z,6)
-       end subroutine
-
-       subroutine Neumanize(f,face)
-         implicit none
-         type(SF),intent(inout) :: f
-         integer,intent(in) :: face
-         integer :: i
-         select case (face)
-         case (1); do i=1,f%s; f%RF(i)%f(1,:,:) = f%RF(i)%f(2,:,:)                        ; enddo
-         case (2); do i=1,f%s; f%RF(i)%f(f%RF(i)%s(1),:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:); enddo
-         case (3); do i=1,f%s; f%RF(i)%f(:,1,:) = f%RF(i)%f(:,2,:)                        ; enddo
-         case (4); do i=1,f%s; f%RF(i)%f(:,f%RF(i)%s(2),:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:); enddo
-         case (5); do i=1,f%s; f%RF(i)%f(:,:,1) = f%RF(i)%f(:,:,2)                        ; enddo
-         case (6); do i=1,f%s; f%RF(i)%f(:,:,f%RF(i)%s(3)) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1); enddo
-         case default; stop 'Error: face must = 1:6 in Neumanize in inductionSolver.f90'
-         end select
        end subroutine
 
        ! subroutine embedVelocity_old(ind,U_fi,m)
@@ -1269,64 +1242,5 @@
        !   ! endif
        ! end subroutine
 
-!        subroutine perturbAll(f,m)
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          type(mesh),intent(in) :: m
-!          real(cp),dimension(3) :: wavenum,eps
-!          integer,dimension(3) :: s
-!          integer :: i,j,k
-!          s = shape(f)
-!          wavenum = 0.1_cp
-!          eps = 0.01_cp
-!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hn(i)) +&
-!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hc(i)) +&
-!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          else
-!           stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
-!          endif
-!        end subroutine
-
-!        subroutine perturb(f,m)
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          type(mesh),intent(in) :: m
-!          real(cp),dimension(3) :: wavenum,eps
-!          integer,dimension(3) :: s
-!          integer :: i,j,k
-!          s = shape(f)
-!          wavenum = 10.0_cp
-!          eps = 0.1_cp
-!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          else
-!           stop 'Error: unmatched case in perturb in inductionSolver.f90'
-!          endif
-!        end subroutine
 
        end module

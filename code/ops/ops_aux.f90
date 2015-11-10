@@ -76,8 +76,12 @@
        interface zeroWall;                module procedure zeroWall_RF;               end interface
        interface zeroWall;                module procedure zeroWall_SF;               end interface
        interface zeroWall;                module procedure zeroWall_VF;               end interface
-       interface zeroWall;                module procedure zeroWall_conditional_SF;   end interface
-       interface zeroWall;                module procedure zeroWall_conditional_VF;   end interface
+        
+       public :: zeroWall_conditional
+       interface zeroWall_conditional;    module procedure zeroWall_conditional_SF;   end interface
+       interface zeroWall_conditional;    module procedure zeroWall_conditional_VF;   end interface
+       interface zeroWall_conditional;    module procedure zeroWall_conditional_SF2;  end interface
+       interface zeroWall_conditional;    module procedure zeroWall_conditional_VF2;  end interface
 
        public :: zeroInterior
        interface zeroInterior;            module procedure zeroInterior_RF;           end interface
@@ -96,6 +100,10 @@
        public :: printGlobalMinMax
        interface printGlobalMinMax;       module procedure printGlobalMinMax_SF;      end interface
        interface printGlobalMinMax;       module procedure printGlobalMinMax_VF;      end interface
+
+       ! public :: perturb
+       ! interface perturb;       module procedure perturb_SF;      end interface
+       ! interface perturb;       module procedure perturb_VF;      end interface
 
        contains
 
@@ -248,6 +256,66 @@
          !$OMP END PARALLEL DO
        end subroutine
 
+!        subroutine perturbAll(f,m)
+!          implicit none
+!          real(cp),dimension(:,:,:),intent(inout) :: f
+!          type(mesh),intent(in) :: m
+!          real(cp),dimension(3) :: wavenum,eps
+!          integer,dimension(3) :: s
+!          integer :: i,j,k
+!          s = shape(f)
+!          wavenum = 0.1_cp
+!          eps = 0.01_cp
+!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hn(i)) +&
+!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hc(i)) +&
+!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          else
+!           stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
+!          endif
+!        end subroutine
+
+!        subroutine perturb(f,m)
+!          implicit none
+!          real(cp),dimension(:,:,:),intent(inout) :: f
+!          type(mesh),intent(in) :: m
+!          real(cp),dimension(3) :: wavenum,eps
+!          integer,dimension(3) :: s
+!          integer :: i,j,k
+!          s = shape(f)
+!          wavenum = 10.0_cp
+!          eps = 0.1_cp
+!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
+!            !$OMP PARALLEL DO
+!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
+!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
+!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
+!            enddo; enddo; enddo
+!            !$OMP END PARALLEL DO
+!          else
+!           stop 'Error: unmatched case in perturb in inductionSolver.f90'
+!          endif
+!        end subroutine
+
        ! *********************************************************************************
        ! *********************************************************************************
        ! ******************************* SCALAR ROUTINES *********************************
@@ -276,7 +344,33 @@
          enddo
        end subroutine
 
-       subroutine zeroWall_conditional_SF(f,m,u)
+       subroutine zeroWall_conditional_SF(f,m)
+         ! Sets wall coincident values to zero if 
+         ! boundary conditions of u are NOT Neumann (bctype=3)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         logical :: TF
+         integer :: i
+         do i=1,m%s
+           TF = (.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1)).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+           TF = (.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1)).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+
+           TF = (.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2)).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+           TF = (.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2)).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+
+           TF = (.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3)).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+           TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
+           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+         enddo
+       end subroutine
+
+       subroutine zeroWall_conditional_SF2(f,m,u)
          ! Sets wall coincident values to zero if 
          ! boundary conditions of u are NOT Neumann (bctype=3)
          implicit none
@@ -371,12 +465,23 @@
          call zeroWall(V%x,m); call zeroWall(V%y,m); call zeroWall(V%z,m)
        end subroutine
 
-       subroutine zeroWall_conditional_VF(V,m,U)
+       subroutine zeroWall_conditional_VF2(V,m,U)
          implicit none
          type(VF),intent(inout) :: V
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
-         call zeroWall(V%x,m,U%x); call zeroWall(V%y,m,U%y); call zeroWall(V%z,m,U%z)
+         call zeroWall_conditional(V%x,m,U%x)
+         call zeroWall_conditional(V%y,m,U%y)
+         call zeroWall_conditional(V%z,m,U%z)
+       end subroutine
+
+       subroutine zeroWall_conditional_VF(U,m)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         call zeroWall_conditional(U%x,m)
+         call zeroWall_conditional(U%y,m)
+         call zeroWall_conditional(U%z,m)
        end subroutine
 
        subroutine stabilityTerms_VF(fo,fi,m,n)

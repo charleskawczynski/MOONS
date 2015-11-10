@@ -60,7 +60,7 @@
         call subtract(r,b,Ax)   ! r = b - Ax
 
         call zeroGhostPoints(r) ! Ghost cells of input should not matter
-        call zeroWall(r,m,x)    ! Boundary residual for Dirichlet BCs is zero
+        call zeroWall_conditional(r,m,x)    ! Boundary residual for Dirichlet BCs is zero
 
         call assign(p,r)
         call dotProduct(rsold,r,r,m,x,temp) ! rsold = r^T*r
@@ -79,7 +79,7 @@
           call multiply(temp,alpha)                 ! Update r
           call subtract(r,temp)                     ! Update r
           call zeroGhostPoints(r)                   ! Update r
-          call zeroWall(r,m,x)                      ! Update r
+          call zeroWall_conditional(r,m,x)                      ! Update r
 
           call dotProduct(rsnew,r,r,m,x,temp)
           if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
@@ -125,7 +125,7 @@
         type(SF),intent(inout) :: temp
         call multiply(temp,A,B)
         call zeroGhostPoints(temp)
-        call zeroWall(temp,m,x)
+        call zeroWall_conditional(temp,m,x)
         dot = sum(temp)
       end subroutine
 

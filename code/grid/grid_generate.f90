@@ -1,8 +1,8 @@
-       module generateGrid_mod
+       module grid_generate_mod
        use grid_mod
-       use gridGen_mod
-       use gridGenTools_mod
-       use matchGridStretching_mod
+       use grid_genHelper_mod
+       use grid_distribution_funcs_mod
+       use grid_stretchParamMatch_mod
        implicit none
 
        private

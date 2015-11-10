@@ -183,8 +183,6 @@
        use SF_mod
        use VF_mod
        use geometries_mod
-       use gridGen_mod
-       use gridGenTools_mod
        use solverSettings_mod
        use ops_interp_mod
        use ops_aux_mod
@@ -211,10 +209,9 @@
          type(mesh) :: m
          character(len=3) :: name
          type(norms) :: norm_res,norm_e
-         type(gridGenerator) :: gg
          type(SF) :: u,u_exact,f,Au,e,R,sig,temp_SF,temp2,Aug,ug
          real(cp) :: dt
-         integer :: i,NU,bctype
+         integer :: bctype
 
          call cube(m)
 
@@ -261,7 +258,7 @@
          call subtract(e,u,u_exact)
          call subtract(R,Au,f)
          call zeroGhostPoints(R)
-         call zeroWall(R,m,u)
+         call zeroWall_conditional(R,m,u)
          call export_3D_1C(m,R,dir,'R_'//name,0)
          call export_3D_1C(m,u,dir,'u_'//name,0)
          call export_3D_1C(m,u,dir,'u_phys_'//name,1)

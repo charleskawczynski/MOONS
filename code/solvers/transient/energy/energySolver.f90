@@ -142,7 +142,7 @@
          call apply_BCs(nrg%T,m)
          write(*,*) '     BCs applied'
 
-         call initK(nrg%k_cc,nrg%D,m)
+         call initK(nrg%k_cc,nrg%D)
          call cellCenter2Face(nrg%k,nrg%k_cc,m)
          write(*,*) '     Materials initialized'
 
@@ -234,8 +234,8 @@
          implicit none
          type(energy),intent(in) :: nrg
          character(len=*),intent(in) :: dir
-         if (solveenergy) call print(nrg%T_bcs,'T')
-         if (solveenergy) call export(nrg%T_bcs,dir//'parameters/','T')
+         if (solveEnergy) call print_BCs(nrg%T,'T')
+         if (solveEnergy) call export_BCs(nrg%T,dir//'parameters/','T')
        end subroutine
 
        subroutine energyExportTransient(nrg,ss_MHD)

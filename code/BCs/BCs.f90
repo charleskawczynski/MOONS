@@ -281,40 +281,28 @@
        ! ******************************* PRINT / EXPORT ********************************
        ! *******************************************************************************
 
-       subroutine print_BCs(BC,name)
+       subroutine print_BCs(BC)
          implicit none
          type(BCs), intent(in) :: BC
-         character(len=*),intent(in) :: name
-         call exp_BCs(BC,name,6)
+         call export_BCs(BC,6)
        end subroutine
 
-       subroutine export_BCs(BC,dir,name)
+       subroutine export_BCs(BC,newU)
          implicit none
-         type(BCs), intent(in) :: BC
-         character(len=*),intent(in) :: dir,name
-         integer :: NewU
-         NewU = newAndOpen(dir,name//'_BoundaryConditions')
-         call exp_BCs(BC,name,newU)
-         call closeAndMessage(newU,name//'_BoundaryConditions',dir)
-       end subroutine
-
-       subroutine exp_BCs(BC,name,newU)
-         implicit none
-         type(BCs), intent(in) :: BC
-         character(len=*),intent(in) :: name
+         type(BCs),intent(in) :: BC
          integer,intent(in) :: NewU
          integer :: i
-         write(newU,*) 'Boundary conditions for ' // trim(adjustl(name))
 
-         write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
-         write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
-         write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
-         write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
-         write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
+         ! write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
+         ! write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
+         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
+         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
+         ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
          if (BC%defined) then
              write(newU,*) ' -------------- FACES -------------- '
            do i=1,6
-             write(newU,*) 'Face ',i
+             ! write(newU,*) 'Face ',i
+             write(newU,'(I1,T1,I1,T1,I1,T1,I1,T1,I1,T1,I1,T1)') i
              call export(BC%f(i),newU)
            enddo
 
@@ -324,11 +312,11 @@
              call export(BC%e(i),newU)
            enddo
 
-             write(newU,*) ' ------------- CORNERS ------------- '
-           do i=1,8
-             write(newU,*) 'Corner ',i
-             call export(BC%c(i),newU)
-           enddo
+           !   write(newU,*) ' ------------- CORNERS ------------- '
+           ! do i=1,8
+           !   write(newU,*) 'Corner ',i
+           !   call export(BC%c(i),newU)
+           ! enddo
          endif
        end subroutine
 

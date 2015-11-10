@@ -1,4 +1,4 @@
-       module matchGridStretching_mod
+       module grid_stretchParamMatch_mod
        implicit none
 
        private
