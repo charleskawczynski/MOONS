@@ -58,6 +58,7 @@ In order to keep this document organized
 	\begin{itemize}
 	\item Read papers on coupling fluid and vacuum domains
 	\item Develop Jacobi-solver for curl-curl operator
+	\item Develop CG-solver
 	\item Read papers / start writing
 	\end{itemize}
 \item Finite $Re_m$ Shercliff/Hunt flows
@@ -73,46 +74,37 @@ In order to keep this document organized
 
 \section{Today}
 
-- Consider cases for edges/corners in multi-domain
+- Finish and test CG-solver in BMC\_102
 
-- Consider making high-level routines functional based
+- Re-run BC sim to get transient data (pending)
 
-- Finish Jacobi-solver
+- Test edge BCs
 
-- Test domain/subdomain modules in BMC 102
-
-- Re-run BC sim to get transient data
-
-- Print / fill out invoice
-
+- Read Moreau book about energy transfer
 
 \section{Tomorrow}
 
+- Documentation for benchmark cases (methodology, format, execution)
+
 - Decide on format of input file (what parameters will be set in input file and what will be coded)
 
-- Documentation for benchmark cases
+- Look to improve performance of apply\_edges
 
-- Need to generalize Zero Wall-Coincident Boundaries (ZWCB) dependent on velocity boundary conditions
-	If Dirichlet, then zero?
-	Maybe ask Eldredge about intermediate velocities
+- Consider new organization of solver folder
 
 - Continue fixing file names and folder names for better organization
-
-- Finish up subdomain.f90 / embedExtract routines
 
 - Consider/try making solvers (momentum/induction) functional instead of OO.
 
 - Read plasma papers
 
-- Make a coordinates / grid import and corresponding corrections to the readme routines in the IO files.
-
-- First step is descriptive - phases (linear, non-linear, decay)
+- First step of SK flow is descriptive - phases (linear, non-linear, decay)
 
 - Read literature for interface conditions BCs for bfield
 
-- Make norm computations based on volume integrals, this is more natural.
-
 \section{Future Plans}
+
+- Make a coordinates / grid import and corresponding corrections to the readme routines in the IO files.
 
 - Try performing refinement on 2D flow
 

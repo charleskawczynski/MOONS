@@ -16,6 +16,11 @@
        !               Linf(u)   = ------  max( abs( u(i,j,k) ) )
        !                           NxNyNz   
        ! 
+       ! Computes
+       ! 
+       !          1
+       !   e = -------- { ∫∫∫ | u(i,j,k)^n | }^(1/n) dx dy dz
+       !        volume
 
        use IO_tools_mod
        use grid_mod
@@ -189,7 +194,7 @@
          real(cp),intent(in) :: n
          real(cp) :: eTemp
          integer :: i,j,k
-         eTemp = real(0.0,cp) ! temp is necessary for reduction
+         eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO SHARED(g), REDUCTION(+:eTemp)
          do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
            eTemp = eTemp + (u%f(i,j,k)**n)*g%c(1)%dhn(i)*&
@@ -231,7 +236,7 @@
          real(cp),intent(in) :: n
          real(cp) :: eTemp
          integer :: i,j,k,t
-         eTemp = real(0.0,cp) ! temp is necessary for reduction
+         eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
          do t=1,u%s
            do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1

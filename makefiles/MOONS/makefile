@@ -27,8 +27,6 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
-
-# Unit testing directories:
 TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
@@ -70,7 +68,6 @@ FC_DEBUG += -D_DEBUG_APPLYBCS_
 # FC_DEBUG += -D_DEBUG_SF_
 # FC_DEBUG += -D_DEBUG_VF_
 # FC_DEBUG += -D_DEBUG_TF_
-FCFLAGS += $(FC_DEBUG)
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -O3
@@ -95,16 +92,16 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
+# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
 
