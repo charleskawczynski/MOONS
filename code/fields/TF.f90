@@ -1,4 +1,25 @@
       module TF_mod
+      ! Tensor fields are a bit difficult to think about.. So here's 
+      ! a short description as to how they are constructed, used.
+      ! 
+      ! TF = [VF_x,VF_y,VF_z]
+      ! 
+      ! If TF is staggered, then realize that
+      ! 
+      ! call init_Face(TF,m)
+      !
+      ! Implies
+      ! 
+      ! TF = [ VF_x  , VF_y  , VF_z  ]
+      !         ||      ||      ||
+      !    x [(n,c,c),(n,c,c),(n,c,c)]
+      !    y [(c,n,c),(c,n,c),(c,n,c)]
+      !    z [(c,c,n),(c,c,n),(c,c,n)]
+      ! 
+      ! That is to say that each "component" of the TF is a
+      ! staggered vector field depending on initialization.
+      ! 
+      ! 
 
         ! Rules:
         ! a = a + b => call add(a,b)

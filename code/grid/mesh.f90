@@ -149,47 +149,6 @@
          enddo
        end subroutine
 
-       ! subroutine patch_grids_old(m)
-       !   implicit none
-       !   type(mesh),intent(inout) :: m
-       !   integer :: i,j,k,a1,a2
-       !   real(cp) :: tol
-       !   logical,dimension(5) :: TF
-       !   if (.not.allocated(m%g)) stop 'Error: mesh not allocated in patch_grids in mesh.f90'
-       !   if (size(m%g).ne.m%s) stop 'Error: mesh size not correct in patch_grids in mesh.f90'
-       !   do k=1,3 ! Remove all patches first
-       !     do i=1,m%s; call delete(m%g(i)%st(k)); enddo
-       !   enddo
-       !   call initProps(m) ! Need dhmin etc.
-       !   if (m%s.gt.1) then
-       !     tol = 0.01_cp
-       !     do k=1,3; do i=1,m%s; do j=1,m%s
-       !       if (i.ne.j) then
-       !         TF(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
-       !         select case (k)
-       !         case (1); a1 = 2; a2 = 3
-       !         case (2); a1 = 1; a2 = 3
-       !         case (3); a1 = 1; a2 = 2
-       !         end select
-       !         TF(2) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmin
-       !         TF(3) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmax
-       !         TF(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmin).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmin
-       !         TF(5) = abs(m%g(i)%c(a2)%hmax-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2) ! Adjacent face 2 hmax
-       !         if (all(TF)) then
-       !           m%g(i)%st(k)%hmin = .true.;  m%g(j)%st(k)%hmax = .true.
-       !           if ((m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmax).gt.0.0_cp) then
-       !                 m%g(i)%st(k)%hmin_id = j;  m%g(j)%st(k)%hmax_id = i
-       !           else; m%g(i)%st(k)%hmin_id = i;  m%g(j)%st(k)%hmax_id = j
-       !           endif
-       !         endif
-       !       endif
-       !     enddo; enddo; enddo
-       !     do k=1,3; do i=1,m%s
-       !        call stitch_stencils(m%g(i)%c(k),m%g(i)%st(k)%hmin,m%g(i)%st(k)%hmax)
-       !     enddo; enddo
-       !   endif
-       ! end subroutine
-
        subroutine patch_grids(m)
          implicit none
          type(mesh),intent(inout) :: m

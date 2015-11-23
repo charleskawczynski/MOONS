@@ -125,7 +125,7 @@
         enddo; enddo
         !$OMP END PARALLEL DO
         case default
-        stop 'Error: dir must = 1,2,3 in delGen_T in del.f90.'
+        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
 
         if (genType.eq.1) then
@@ -138,7 +138,7 @@
           case (3); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
                     dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
           case default
-            stop 'Error: dir must = 1,2,3 in delGen_T in del.f90.'
+            stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
             end select
           endif
         endif
@@ -250,7 +250,7 @@
           write(*,*) 'sn = ',sn
           write(*,*) 'sc = ',sc
           write(*,*) 'dir = ',dir
-          stop 'Error: diffType undetermined in del.f90.'
+          stop 'Error: diffType undetermined in ops_del.f90.'
         endif
       end function
 
@@ -263,14 +263,14 @@
         integer,dimension(3),intent(in) :: s1,s2
         integer,intent(in) :: dir
         select case (dir)
-        case (1); if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 1 in del'
-                  if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 2 in del'
-        case (2); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 3 in del'
-                  if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 4 in del'
-        case (3); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 5 in del'
-                  if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 6 in del'
+        case (1); if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 1 in checkSideDimensions in ops_del.f90'
+                  if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 2 in checkSideDimensions in ops_del.f90'
+        case (2); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 3 in checkSideDimensions in ops_del.f90'
+                  if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 4 in checkSideDimensions in ops_del.f90'
+        case (3); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 5 in checkSideDimensions in ops_del.f90'
+                  if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 6 in checkSideDimensions in ops_del.f90'
         case default
-        stop 'Error: dir must = 1,2,3 in del.f90'
+        stop 'Error: dir must = 1,2,3 in ops_del.f90'
         end select
       end subroutine
 #endif

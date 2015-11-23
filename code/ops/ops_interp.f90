@@ -93,6 +93,9 @@
 
        ! * = has vector interface
 
+       ! interface interp;              module procedure interp_gen_SF_SF;   end interface
+       ! interface interp;              module procedure interp_gen_VF_SF;   end interface
+
        interface interp;              module procedure interpO2_RF;          end interface
        interface interp;              module procedure interpO2_SF;          end interface
        interface extrap;              module procedure extrapO2_RF;          end interface
@@ -130,8 +133,9 @@
        interface face2CellCenter;     module procedure face2CellCenter_VF;    end interface
        interface face2Node;           module procedure face2Node_VF;          end interface
 
-       interface cellCenter2Face;     module procedure cellCenter2Face_VF;    end interface
-       interface cellCenter2Face;     module procedure cellCenter2Face2_VF;   end interface
+       interface cellCenter2Face;     module procedure cellCenter2Face_VF_VF; end interface
+       interface cellCenter2Face;     module procedure cellCenter2Face_VF_SF; end interface
+       interface cellCenter2Face;     module procedure cellCenter2Face_TF_VF; end interface
        interface cellCenter2Node;     module procedure cellCenter2Node_VF;    end interface
        interface cellCenter2Edge;     module procedure cellCenter2Edge_VF_VF; end interface
        interface cellCenter2Edge;     module procedure cellCenter2Edge_VF_SF; end interface
@@ -703,7 +707,7 @@
        ! *********************************** CC INTERPOLATIONS **********************************
        ! ****************************************************************************************
 
-       subroutine cellCenter2Face_VF(face,cellCenter,m)
+       subroutine cellCenter2Face_VF_VF(face,cellCenter,m)
          implicit none
          type(VF),intent(inout) :: face
          type(VF),intent(in) :: cellCenter
@@ -713,7 +717,7 @@
          call cellCenter2Face(face%z,cellCenter%z,m,3)
        end subroutine
 
-       subroutine cellCenter2Face2_VF(face,cellCenter,m)
+       subroutine cellCenter2Face_VF_SF(face,cellCenter,m)
          implicit none
          type(VF),intent(inout) :: face
          type(SF),intent(in) :: cellCenter
@@ -721,6 +725,16 @@
          call cellCenter2Face(face%x,cellCenter,m,1)
          call cellCenter2Face(face%y,cellCenter,m,2)
          call cellCenter2Face(face%z,cellCenter,m,3)
+       end subroutine
+
+       subroutine cellCenter2Face_TF_VF(face,cellCenter,m)
+         implicit none
+         type(TF),intent(inout) :: face
+         type(VF),intent(in) :: cellCenter
+         type(mesh),intent(in) :: m
+         call cellCenter2Face(face%x,cellCenter%x,m) ! Interp SF to VF
+         call cellCenter2Face(face%y,cellCenter%y,m) ! Interp SF to VF
+         call cellCenter2Face(face%z,cellCenter%z,m) ! Interp SF to VF
        end subroutine
 
        subroutine cellCenter2Node_VF(node,cellCenter,m,tempF,tempE)

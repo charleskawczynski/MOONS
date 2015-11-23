@@ -12,12 +12,12 @@ PS1 = $(strip \)
 extf90 = $(strip .f90)
 
 # ************* MAKE CONFIGURATION ******************
-MKE = gmake
-# MKE = make
+# MKE = gmake
+MKE = make
 # ************* DIRECTORY SETTINGS ******************
-USER = Charlie
+# USER = Charlie
 # USER = LM_MHD
-# USER = charl
+USER = charl
 
 # Code directory
 SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
@@ -27,8 +27,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -92,9 +92,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -105,8 +105,8 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
 
-# TARGET = $(TARGET_DIR)$(PS)MOONS
-TARGET = $(TARGET_DIR)$(PS)unitTest
+TARGET = $(TARGET_DIR)$(PS)MOONS
+# TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** INCLUDE PATHS ********************
 VPATH =\
@@ -122,12 +122,19 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields \
 	$(SRC_DIR)$(PS)ops \
 	$(SRC_DIR)$(PS)static \
+	$(SRC_DIR)$(PS)sparse \
 	$(SRC_DIR)$(PS)computations \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState \
-	$(SRC_DIR)$(PS)solvers$(PS)transient \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction
+	$(SRC_DIR)$(PS)solvers \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
+	$(SRC_DIR)$(PS)solvers$(PS)SOR \
+	$(SRC_DIR)$(PS)solvers$(PS)MG \
+	$(SRC_DIR)$(PS)solvers$(PS)CG \
+	$(SRC_DIR)$(PS)solvers$(PS)FFT \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE \
+	$(SRC_DIR)$(PS)solvers$(PS)ADI \
+	$(SRC_DIR)$(PS)solvers$(PS)energy \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum \
+	$(SRC_DIR)$(PS)solvers$(PS)induction
 
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
@@ -218,31 +225,37 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)static$(PS)monitor.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)triSolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)FFT_poisson.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)JAC_ops.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)SOR.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PSE.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)CG.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)CG_ind.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG_tools.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)MG.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)poisson.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_TBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_Tfield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)init_K.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_BBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_Bfield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)init_Sigma.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)profile_funcs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_UBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_PBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_Ufield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)init_Pfield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)energy$(PS)energySolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)inductionSolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)momentum$(PS)momentumSolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)transient$(PS)MHDSolver.f90 \
+	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)ADI$(PS)triSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)JAC_ops.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_operators.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_operators.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_ind.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG_tools.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Pfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energySolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)inductionSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentumSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90 \
+	$(SRC_DIR)$(PS)user$(PS)inputFile.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
 	$(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
 	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90

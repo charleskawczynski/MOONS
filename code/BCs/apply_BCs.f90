@@ -77,8 +77,8 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          call apply_BCs_faces(U,m)
-         call apply_BCs_edges(U,m)
-         call apply_BCs_corners(U,m)
+         ! call apply_BCs_edges(U,m)
+         ! call apply_BCs_corners(U,m)
        end subroutine
 
        subroutine apply_BCs_VF_given_BC(U,m,BC)
@@ -97,8 +97,8 @@
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: BC
          call apply_BCs_faces(U,m,BC)
-         call apply_BCs_edges(U,m)
-         call apply_BCs_corners(U,m)
+         ! call apply_BCs_edges(U,m)
+         ! call apply_BCs_corners(U,m)
        end subroutine
 
        end module

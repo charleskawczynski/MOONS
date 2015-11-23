@@ -34,6 +34,7 @@
        use mesh_mod
        use SF_mod
        use VF_mod
+       use TF_mod
        use ops_interp_mod
        use ops_aux_mod
 
@@ -59,6 +60,8 @@
        public :: lap
        interface lap;       module procedure lapUniformCoeff_SF;       end interface
        interface lap;       module procedure lapUniformCoeff_VF;       end interface
+       interface lap;       module procedure lapVarCoeff_SF;           end interface
+       interface lap;       module procedure lapVarCoeff_VF;           end interface
 
        public :: div
        interface div;       module procedure div_SF;                   end interface
@@ -71,6 +74,7 @@
        public :: curl
        interface curl;      module procedure curl_SF;                  end interface
        interface curl;      module procedure curl_VF;                  end interface
+       interface curl;      module procedure curl_TF;                  end interface
 
        public :: curlcurl
        interface curlcurl;  module procedure curlcurlCoeff_VF;         end interface
@@ -154,6 +158,19 @@
          call d%assign(lapU,u,m,2,1,1) ! Padding avoids calcs on fictive cells
             call d%add(lapU,u,m,2,2,1) ! Padding avoids calcs on fictive cells
             call d%add(lapU,u,m,2,3,1) ! Padding avoids calcs on fictive cells
+       end subroutine
+
+       subroutine lapVarCoeff_SF(lapU,u,k,m,temp,dir)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u,k
+         type(mesh),intent(in) :: m
+         type(SF),intent(inout) :: temp
+         integer,intent(in) :: dir
+         type(del) :: d
+         call d%assign(temp,u,m,1,dir,1)
+         call multiply(temp,k)
+         call d%assign(lapU,temp,m,1,dir,1)
        end subroutine
 
        subroutine div_SF(divU,u,v,w,m)
@@ -279,6 +296,18 @@
          call lap(lapU%z,U%z,m)
        end subroutine
 
+       subroutine lapVarCoeff_VF(lapU,u,k,m,temp)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(VF),intent(in) :: k
+         type(mesh),intent(in) :: m
+         type(VF),intent(inout) :: temp ! same shape as k
+         call grad(temp,u,m)
+         call multiply(temp,k)
+         call div(lapU,temp,m)
+       end subroutine
+
        subroutine div_VF(divU,U,m)
          implicit none
          type(SF),intent(inout) :: divU
@@ -305,6 +334,26 @@
          call curl(curlU%z,U%x,U%y,U%z,m,3)
        end subroutine
 
+       subroutine curl_TF(curlU,U,m)
+         implicit none
+         type(VF),intent(inout) :: curlU
+         type(TF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         call curl(curlU%x,U%x%x,U%y%z,U%z%y,m,1) ! Note the diagonal input does not matter
+         call curl(curlU%y,U%x%z,U%y%y,U%z%x,m,2) ! Note the diagonal input does not matter
+         call curl(curlU%z,U%x%y,U%y%x,U%z%z,m,3) ! Note the diagonal input does not matter
+       end subroutine
+
+       subroutine curl_TF_version2(curlU,U,m)
+         implicit none
+         type(VF),intent(inout) :: curlU
+         type(TF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         call curl(curlU%x,U%x%x,U%y%y,U%z%z,m,1) ! Note the diagonal input does not matter
+         call curl(curlU%y,U%x%x,U%y%y,U%z%z,m,2) ! Note the diagonal input does not matter
+         call curl(curlU%z,U%x%x,U%y%y,U%z%z,m,3) ! Note the diagonal input does not matter
+       end subroutine
+
        subroutine curlcurlCoeff_VF(curlcurlU,U,k,temp,m)
          ! Computes
          !     curl( k curl(U) )
@@ -316,13 +365,9 @@
          type(VF),intent(inout) :: temp
          type(VF),intent(in) :: U,k
          type(mesh),intent(in) :: m
-         call curl(temp%x,U%x,U%y,U%z,m,1)
-         call curl(temp%y,U%x,U%y,U%z,m,2)
-         call curl(temp%z,U%x,U%y,U%z,m,3)
+         call curl(temp,U,m)
          call multiply(temp,k)
-         call curl(curlcurlU%x,temp%x,temp%y,temp%z,m,1)
-         call curl(curlcurlU%y,temp%x,temp%y,temp%z,m,2)
-         call curl(curlcurlU%z,temp%x,temp%y,temp%z,m,3)
+         call curl(curlcurlU,temp,m)
        end subroutine
 
        subroutine curlcurlUniform_VF(curlcurlU,U,temp,m)
@@ -336,12 +381,8 @@
          type(VF),intent(inout) :: temp
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
-         call curl(temp%x,U%x,U%y,U%z,m,1)
-         call curl(temp%y,U%x,U%y,U%z,m,2)
-         call curl(temp%z,U%x,U%y,U%z,m,3)
-         call curl(curlcurlU%x,temp%x,temp%y,temp%z,m,1)
-         call curl(curlcurlU%y,temp%x,temp%y,temp%z,m,2)
-         call curl(curlcurlU%z,temp%x,temp%y,temp%z,m,3)
+         call curl(temp,U,m)
+         call curl(curlcurlU,temp,m)
        end subroutine
 
        subroutine mixed_uniformCoeff_VF(mix,f,m,temp)

@@ -77,6 +77,8 @@
          integer :: i
          if (CC_along(U,dir)) then
            do i=1,m%s
+             if (.not.U%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
+             if (.not.U%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
              if (.not.m%g(i)%st_face%hmin(dir)) call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
                                                                U%RF(i)%b%f(f(1))%vals,&
                                                                U%RF(i)%b%f(f(1))%b,&
@@ -88,6 +90,8 @@
            enddo
          elseif (Node_along(U,dir)) then
            do i=1,m%s
+             if (.not.U%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
+             if (.not.U%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
              if (.not.m%g(i)%st_face%hmin(dir)) call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
                                                               U%RF(i)%b%f(f(1))%vals,&
                                                               U%RF(i)%b%f(f(1))%b,&
@@ -111,6 +115,8 @@
          integer :: i
          if (CC_along(U,dir)) then
            do i=1,m%s
+             if (.not.B%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
+             if (.not.B%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
              if (.not.m%g(i)%st_face%hmin(dir)) call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
                                                                B%RF(i)%b%f(f(1))%vals,&
                                                                B%RF(i)%b%f(f(1))%b,&
@@ -122,6 +128,8 @@
            enddo
          elseif (Node_along(U,dir)) then
            do i=1,m%s
+             if (.not.B%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
+             if (.not.B%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
              if (.not.m%g(i)%st_face%hmin(dir)) call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
                                                               B%RF(i)%b%f(f(1))%vals,&
                                                               B%RF(i)%b%f(f(1))%b,&
@@ -188,7 +196,7 @@
          if     (b%Dirichlet) then; ug = 2.0_cp*bvals - ui
          elseif (b%Neumann) then;   ug = ui + dh*bvals
          elseif (b%Periodic) then;  ug = ui_opp
-         else; stop 'Error: Bad bctype! Caught in apply_BCs_faces.f90'
+         else; stop 'Error: Bad bctype! Caught in app_CC in apply_BCs_faces.f90'
          endif
        end subroutine
 
@@ -202,7 +210,7 @@
          ! elseif (b%Neumann) then;   ub = ui; ug = ui
          elseif (b%Neumann) then;   ug = ui - 2.0_cp*bvals*dh
          elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp
-         else; stop 'Error: Bad bctype! Caught in apply_BCs_faces.f90'
+         else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'
          endif
        end subroutine
 

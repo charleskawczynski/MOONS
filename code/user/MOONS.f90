@@ -24,6 +24,7 @@
        use energySolver_mod
        use momentumSolver_mod
        use inductionSolver_mod
+       use inputFile_mod
 
        use MHDSolver_mod
        use omp_lib
@@ -79,7 +80,6 @@
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
          type(domain) :: D_fluid,D_sigma
-         type(VF) :: U,B
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
          real(cp) :: dt_eng,dt_mom,dt_ind
@@ -139,7 +139,7 @@
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
-         ! if (exportRawICs) call exportRaw(mom,mom%m,dir)
+         if (exportRawICs) call exportRaw(mom,mom%m,mom%temp_F,dir)
          ! if (exportRawICs) call exportRaw(ind,ind%m,dir)
 
          ! ********************* EXPORT ICs *****************************
@@ -164,6 +164,8 @@
          call exportRundata(rd,dir)
          call printExportBCs(ind,dir)
          call printExportBCs(mom,dir)
+         call print(mom%m)
+         ! call print(ind%m)
 
 
          if (solveMomentum)  call computeDivergence(mom,mom%m)
@@ -229,67 +231,15 @@
          ! call export(mom,mom%m,dir)
          ! call export(ind,ind%m,dir)
 
-         if (solveMomentum) call init_Node(U,mom%m)
-         if (solveMomentum) call face2Node(U,mom%U,mom%m,mom%temp_E1)
-         if (solveInduction) call init_Node(B,ind%m)
-         if (solveInduction) call cellCenter2Node(B,ind%B,ind%m,ind%temp_F,ind%temp_E)
-
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
          call delete(ind)
          call delete(mom)
 
-         call delete(U)
-         call delete(B)
          call delete(mesh_mom)
          call delete(mesh_ind)
 
          call computationComplete(time)
-       end subroutine
-
-       subroutine readInputFile(dir,Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB)
-         implicit none
-         character(len=*),intent(in) :: dir
-         real(cp),intent(inout) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
-         real(cp),intent(inout) :: dt_eng,dt_mom,dt_ind
-         integer,intent(inout) :: NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB
-         integer :: un
-         ! ***************** DEFAULT VALUES *****************
-         Re = 1000.0d0
-         Ha = 100.0d0
-         Gr = 0.0_cp
-         Fr = 0.0d0
-         Pr = 0.71d0
-         Ec = 0.0d0
-         Al = 0.0d0
-         Rem = 1.0d0
-         dt_eng = 1.0d-4
-         dt_mom = 1.0d-4
-         dt_ind = 1.0d-4
-         NmaxMHD = 1000000 ! One million steps
-         NmaxPPE    = 5 ! Number of PPE steps
-         NmaxB      = 5 ! Number of Steps for Low Rem approx to solve B
-         NmaxCleanB = 5 ! Number of Steps to clean B
-
-         un = newUnit()
-         open(unit=un,file = dir//'input.ini',status='unknown')
-         read(un,*) Re
-         read(un,*) Ha
-         read(un,*) Gr
-         read(un,*) Fr
-         read(un,*) Pr
-         read(un,*) Ec
-         read(un,*) Al
-         read(un,*) Rem
-         read(un,*) dt_mom
-         read(un,*) dt_ind
-         read(un,*) dt_eng
-         read(un,*) NmaxMHD
-         read(un,*) NmaxPPE
-         read(un,*) NmaxB
-         read(un,*) NmaxCleanB
-         close(un)
        end subroutine
 
        end module

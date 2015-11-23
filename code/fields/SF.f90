@@ -44,7 +44,7 @@
         public :: CC_along,Node_along
 
         public :: init_BCs,init_BC_props
-        
+        public :: dot_product
 
         ! Monitoring
         public :: print
@@ -76,6 +76,7 @@
           logical :: all_neumann ! If necessary to subtract mean
           integer :: face = 0 ! Direction of face data
           integer :: edge = 0 ! Direction of edge data
+          integer :: numEl
         end type
 
         interface init;           module procedure init_SF_copy;           end interface
@@ -83,6 +84,8 @@
         interface init_Node;      module procedure init_SF_Node;           end interface
         interface init_Face;      module procedure init_SF_Face;           end interface
         interface init_Edge;      module procedure init_SF_Edge;           end interface
+
+        interface dot_product;    module procedure dot_product_SF;         end interface
 
         interface init_BCs;       module procedure init_BCs_SF;            end interface
         interface init_BC_props;  module procedure init_BC_props_SF;       end interface
@@ -113,6 +116,7 @@
 
         interface divide;         module procedure divide_SF_SF;           end interface
         interface divide;         module procedure divide_SF_SF_SF;        end interface
+        interface divide;         module procedure divide_SF_S_SF;         end interface
         interface divide;         module procedure divide_SF_S;            end interface
         interface divide;         module procedure divide_S_SF;            end interface
 
@@ -275,6 +279,15 @@
           do i=1,f%s; call divide(f%RF(i),g%RF(i),q%RF(i)); enddo
         end subroutine
 
+        subroutine divide_SF_S_SF(f,g,q)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: q
+          real(cp),intent(in) :: g
+          integer :: i
+          do i=1,f%s; call divide(f%RF(i),g,q%RF(i)); enddo
+        end subroutine
+
         subroutine divide_SF_S(f,g)
           implicit none
           type(SF),intent(inout) :: f
@@ -392,6 +405,15 @@
           enddo
         end function
 
+        function dot_product_SF(A,B,temp) result(dot)
+          implicit none
+          type(SF),intent(in) :: A,B
+          type(SF),intent(inout) :: temp
+          real(cp) :: dot
+          call multiply(temp,A,B)
+          dot = sum(temp)
+        end function
+
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
         subroutine deleteDataLocation(a)
@@ -403,6 +425,16 @@
           a%is_edge = .false.
         end subroutine
 
+        subroutine computeNumEl(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          f%numEl = 0
+          do i=1,f%s
+          f%numEl = f%numEl + f%RF(i)%s(1)*f%RF(i)%s(2)*f%RF(i)%s(3)
+          enddo
+        end subroutine
+
         subroutine init_SF_copy(f1,f2)
           implicit none
           type(SF),intent(inout) :: f1
@@ -411,10 +443,14 @@
           call delete(f1)
           allocate(f1%RF(f2%s)); f1%s = f2%s
           do i=1,f1%s; call init(f1%RF(i),f2%RF(i)); enddo
+          f1%numEl = f2%numEl
           f1%is_CC = f2%is_CC
           f1%is_node = f2%is_node
           f1%is_face = f2%is_face
           f1%is_edge = f2%is_edge
+
+          f1%face = f2%face
+          f1%edge = f2%edge
         end subroutine
 
         subroutine init_SF_CC(f,m)
@@ -426,6 +462,7 @@
           allocate(f%RF(m%s)); f%s = m%s
           do i=1,f%s; call init_CC(f%RF(i),m%g(i)); enddo
           call deleteDataLocation(f)
+          call computeNumEl(f)
           f%is_CC = .true.
         end subroutine
 
@@ -439,6 +476,7 @@
           allocate(f%RF(m%s)); f%s = m%s
           do i=1,f%s; call init_Face(f%RF(i),m%g(i),dir); enddo
           call deleteDataLocation(f)
+          call computeNumEl(f)
           f%is_face = .true.
           f%face = dir
         end subroutine
@@ -452,6 +490,7 @@
           allocate(f%RF(m%s)); f%s = m%s
           do i=1,f%s; call init_Edge(f%RF(i),m%g(i),dir); enddo
           call deleteDataLocation(f)
+          call computeNumEl(f)
           f%is_edge = .true.
           f%edge = dir
         end subroutine
@@ -464,6 +503,7 @@
           allocate(f%RF(m%s)); f%s = m%s
           do i=1,f%s; call init_Node(f%RF(i),m%g(i)); enddo
           call deleteDataLocation(f)
+          call computeNumEl(f)
           f%is_node = .true.
         end subroutine
 
@@ -514,6 +554,7 @@
             deallocate(f%RF)
           endif
           f%s = 0
+          f%numEl = 0
         end subroutine
 
         subroutine print_SF(f)

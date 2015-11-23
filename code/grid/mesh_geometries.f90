@@ -157,11 +157,16 @@
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
          real(cp) :: Ha,Re
-         Ha = 20.0_cp; Re = 100.0_cp
+         Ha = 10.0_cp; Re = 100.0_cp
          call delete(m)
-         N = 45; hmin = 0.0_cp; hmax = 1.0_cp
+         N = (/3,4,5/); hmin = 0.0_cp; hmax = 1.0_cp
          beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
+
+         ! call grid_uniform(g,hmin(1),hmax(1),N(1),1)
+         ! call grid_uniform(g,hmin(2),hmax(2),N(2),2)
+         ! call grid_uniform(g,hmin(3),hmax(3),N(3),3)
+
          call grid_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
          call grid_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
          call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
@@ -290,8 +295,8 @@
          call delete(m)
          N = 30
          hmin = -0.5_cp; hmax = 0.5_cp; beta = 1.1_cp
-         hmin(1) = 0.0_cp; hmax(1) = 3.0_cp
-         call grid_Roberts_R(g2,hmin(1),hmax(1),N(1),beta(1),1)
+         hmin(1) = 0.0_cp; hmax(1) = 2.0_cp
+         call grid_Roberts_R(g2,hmin(1),hmax(1),N(1),beta(1),1) ! Central entrance
          call grid_Roberts_B(g2,hmin(2),hmax(2),N(2),beta(2),2)
          call grid_Roberts_B(g2,hmin(3),hmax(3),1,beta(3),3)
          call add(m,g2)
@@ -300,10 +305,10 @@
          call con_prep_Roberts_B(g3,g2,1.0_cp,N(2),2); call add(m,g3) ! right entrance
 
          call con_app_Roberts_B(g2,g1,1.0_cp,N(1),1); call add(m,g2) ! left side
-         call con_app_Roberts_L(g1,g2,5.0_cp,N(1),1); call add(m,g1) ! left side exit
+         call con_app_Roberts_L(g1,g2,10.0_cp,60,1); call add(m,g1) ! left side exit
 
          call con_app_Roberts_B(g2,g3,1.0_cp,N(1),1); call add(m,g2) ! right side
-         call con_app_Roberts_L(g3,g2,5.0_cp,N(1),1); call add(m,g3) ! right side exit
+         call con_app_Roberts_L(g3,g2,10.0_cp,60,1); call add(m,g3) ! right side exit
 
          call con_app_Roberts_B(g2,g3,1.0_cp,N(2),2); call add(m,g2) ! trailing cube
 

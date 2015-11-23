@@ -10,6 +10,7 @@
       public :: init,delete
 
       type stitch_face
+        ! type(stitch),dimension(6) :: st
         logical,dimension(3) :: hmax,hmin
         integer,dimension(3) :: hmax_id,hmin_id
       end type

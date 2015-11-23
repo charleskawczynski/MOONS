@@ -54,6 +54,10 @@
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
 
+       public :: dot_product
+       interface dot_product;             module procedure dot_product_SF;            end interface
+       interface dot_product;             module procedure dot_product_VF;            end interface
+
        public :: collocatedMagnitude
        interface collocatedMagnitude;     module procedure collocatedMagnitude_RF;    end interface
        interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
@@ -61,6 +65,10 @@
        public :: totalEnergy
        interface totalEnergy;             module procedure totalEnergy_VF;            end interface
        interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
+
+       public :: volume
+       interface volume;                  module procedure volume_SF;                 end interface
+       interface volume;                  module procedure volume_VF;                 end interface
 
        public :: stabilityTerms
        interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
@@ -100,6 +108,14 @@
        public :: printGlobalMinMax
        interface printGlobalMinMax;       module procedure printGlobalMinMax_SF;      end interface
        interface printGlobalMinMax;       module procedure printGlobalMinMax_VF;      end interface
+
+       public :: noise
+       interface noise;                   module procedure noise_RF;                  end interface
+       interface noise;                   module procedure noise_SF;                  end interface
+       interface noise;                   module procedure noise_VF;                  end interface
+
+       public :: unitVector
+       interface unitVector;              module procedure unitVector_SF;             end interface
 
        ! public :: perturb
        ! interface perturb;       module procedure perturb_SF;      end interface
@@ -191,6 +207,90 @@
          e = etemp/m%volume
        end subroutine
 
+       subroutine volume_SF(u,m)
+         ! Computes
+         ! 
+         !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+         implicit none
+         type(SF),intent(inout) :: u
+         type(mesh),intent(in) :: m
+         integer :: i,j,k,t
+         if (u%is_CC) then
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         elseif (u%is_Node) then
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         elseif (u%is_Face) then
+         select case (u%face)
+         case (1);
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         case (2);
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         case (3);
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
+         end select
+         elseif (u%is_Edge) then
+         select case (u%edge)
+         case (1);
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         case (2);
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         case (3);
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
+         end select
+         else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
+         endif
+       end subroutine
+
        subroutine zeroGhostPoints_RF(f,s)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -256,6 +356,20 @@
          !$OMP END PARALLEL DO
        end subroutine
 
+       subroutine noise_RF(f,s)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: f
+         integer,dimension(3),intent(in) :: s
+         integer :: i,j,k
+         real(cp) :: r
+         !$OMP PARALLEL DO
+         do k=1,s(3); do j=1,s(2); do i=1,s(1)
+         call random_number(r)
+         f(i,j,k) = r
+         enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
 !        subroutine perturbAll(f,m)
 !          implicit none
 !          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -315,6 +429,30 @@
 !           stop 'Error: unmatched case in perturb in inductionSolver.f90'
 !          endif
 !        end subroutine
+
+      function dot_product_VF(A,B,m,x,temp) result(dot)
+        implicit none
+        type(mesh),intent(in) :: m
+        type(VF),intent(in) :: A,B,x
+        type(VF),intent(inout) :: temp
+        real(cp) :: dot
+        call multiply(temp,A,B)
+        call zeroGhostPoints(temp)
+        call zeroWall_conditional(temp,m,x)
+        dot = sum(temp%x) + sum(temp%y) + sum(temp%z)
+      end function
+
+      function dot_product_SF(A,B,m,x,temp) result(dot)
+        implicit none
+        type(mesh),intent(in) :: m
+        type(SF),intent(in) :: A,B,x
+        type(SF),intent(inout) :: temp
+        real(cp) :: dot
+        call multiply(temp,A,B)
+        call zeroGhostPoints(temp)
+        call zeroWall_conditional(temp,m,x)
+        dot = sum(temp)
+      end function
 
        ! *********************************************************************************
        ! *********************************************************************************
@@ -423,6 +561,36 @@
          type(SF),intent(in) :: U
          character(len=*),intent(in) :: name
          write(*,*) 'Min/Max ('//name//') = ',min(u),max(u)
+       end subroutine
+
+       subroutine noise_SF(U)
+         implicit none
+         type(SF),intent(inout) :: U
+         integer :: i
+         do i=1,U%s; call noise(U%RF(i)%f,U%RF(i)%s); enddo
+       end subroutine
+
+       subroutine unitVector_SF(U,un)
+         implicit none
+         type(SF),intent(inout) :: U
+         integer,intent(in) :: un
+         integer :: i,j,k,t,m
+         m = 1
+         if (un.lt.1) stop 'Error: un must > 0 in unitVector_SF in ops_aux.f90'
+         if (un.gt.U%numEl) stop 'Error: un must < U%numEl in unitVector_SF in ops_aux.f90'
+         do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
+         if (m.eq.un) then; U%RF(t)%f(i,j,k) = 1.0_cp
+         else;              U%RF(t)%f(i,j,k) = 0.0_cp
+         endif
+         m = m + 1
+         enddo; enddo; enddo; enddo
+       end subroutine
+
+       subroutine volume_VF(u,m)
+         implicit none
+         type(VF),intent(inout) :: u
+         type(mesh),intent(in) :: m
+         call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
        end subroutine
 
        subroutine stabilityTerms_SF(fo,fi,m,n,dir)
@@ -548,6 +716,12 @@
          call printGlobalMinMax(U%x,name//'_x')
          call printGlobalMinMax(U%y,name//'_y')
          call printGlobalMinMax(U%z,name//'_z')
+       end subroutine
+
+       subroutine noise_VF(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         call noise(U%x); call noise(U%y); call noise(U%z)
        end subroutine
 
        end module

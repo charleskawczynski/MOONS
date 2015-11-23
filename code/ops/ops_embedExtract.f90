@@ -213,17 +213,17 @@
             (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
             (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
             (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/))
            call EE(CC_t%y%RF(D%sd(i)%g_tot_id),CC_i%y%RF(D%sd(i)%g_in_id),&
             (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
             (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
             (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/))
            call EE(CC_t%z%RF(D%sd(i)%g_tot_id),CC_i%z%RF(D%sd(i)%g_in_id),&
             (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
             (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
             (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/))
          enddo
        end subroutine
 

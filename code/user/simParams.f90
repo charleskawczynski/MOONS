@@ -16,7 +16,7 @@
        logical :: computeKU                 = .true.    ! Compute kinetic energy at each time step
        logical :: computeKB                 = .true.    ! Compute Total   magnetic energy at each time step
        logical :: computeKBi                = .true.    ! Compute Induced magnetic energy at each time step
-       logical :: computeKB0                = .false.   ! Compute Applied magnetic energy at each time step
+       logical :: computeKB0                = .true.   ! Compute Applied magnetic energy at each time step
 
        logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.
@@ -28,7 +28,7 @@
        integer :: advectiveUFormulation     = 1 ! (1,2) = (Central difference, Advective)
        integer :: solveTMethod              = 1 ! (1) = (Explicit Euler)
        integer :: solveUMethod              = 1 ! (1) = (Explicit Euler)
-       integer :: solveBMethod              = 5
+       integer :: solveBMethod              = 6
        !                                      1 : Low Rem (GS, uniform properties)
        !                                      2 : Low Rem (PTS uniform properties)
        !                                      3 : Low Rem (PTS)
@@ -40,15 +40,15 @@
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransientFull  = 1000  ! Transient solution (very expensive)
-       integer :: nskip_exportErrors         = 1000  ! Divergences / Residuals (expensive)
-       integer :: nskip_exportTransient      = 100  ! Probed data (cheap)
-       integer :: nskip_print                = 100  ! Printed data (cheap)
+       integer :: nskip_exportErrors         = 10  ! Divergences / Residuals (expensive)
+       integer :: nskip_exportTransient      = 10  ! Probed data (cheap)
+       integer :: nskip_print                = 10  ! Printed data (cheap)
 
        ! integer :: n_points_exportTransientFull  = 200   ! Transient solution (very expensive)
        ! integer :: n_points_exportErrors         = 200   ! Divergences / Residuals (expensive)
        ! integer :: n_points_exportTransient      = 500   ! Probed data (cheap)
 
-       integer,parameter :: benchmarkCase = 1010
+       integer,parameter :: benchmarkCase = 102
        
          ! Eventually this should be shortened...
          ! 1000+ (Other test cases)

@@ -36,11 +36,29 @@
        ! 
        !       o Edge data is separated into 3 (edge) directions. This is 
        !         listed and illustrated below
-       !                e(i)%minmin - corresponding to {(y,z),(x,z),(x,y)}
-       !                e(i)%minmax - corresponding to {(y,z),(x,z),(x,y)}
-       !                e(i)%maxmin - corresponding to {(y,z),(x,z),(x,y)}
-       !                e(i)%maxmax - corresponding to {(y,z),(x,z),(x,y)}
+       !         Edges are organized as follows
+       !                minmin(i)
+       !                minmax(i)
+       !                maxmin(i)
+       !                maxmax(i)
        !         for direction i, covering all 12 edge.
+       !         
+       !         To be more explicit:
+       !         
+       !         x:  (i=1)   minmin(1):  ymin,zmin ! Right hand rule
+       !                     minmax(2):  ymin,zmax ! Right hand rule
+       !                     maxmin(3):  ymax,zmin ! Right hand rule
+       !                     maxmax(4):  ymax,zmax ! Right hand rule
+       !         
+       !         y:  (i=2)   minmin(5):  xmin,zmin ! LEFT hand rule
+       !                     minmax(6):  xmin,zmax ! LEFT hand rule
+       !                     maxmin(7):  xmax,zmin ! LEFT hand rule
+       !                     maxmax(8):  xmax,zmax ! LEFT hand rule
+       !         
+       !         z:  (i=3)   minmin(9):  xmin,ymin ! Right hand rule
+       !                     minmax(10): xmin,ymax ! Right hand rule
+       !                     maxmin(11): xmax,ymin ! Right hand rule
+       !                     maxmax(12): xmax,ymax ! Right hand rule
        ! 
        !          d2
        !          ^
@@ -97,10 +115,33 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_edge_SF(U,m,1,2,3,(/1,2,3,4/))
-         call apply_edge_SF(U,m,2,1,3,(/5,6,7,8/))
-         call apply_edge_SF(U,m,3,1,2,(/9,10,11,12/))
+         call apply_edge_SF(U,m,1,2,3,(/1,2,3,4/))     ! Y-Z, right hand rule
+         call apply_edge_SF(U,m,2,1,3,(/5,6,7,8/))     ! X-Z, left  hand rule
+         call apply_edge_SF(U,m,3,1,2,(/9,10,11,12/))  ! X-Y, right hand rule
        end subroutine
+
+       function direction_from_face(f) result(d)
+         implicit none
+         integer,intent(in) :: f
+         integer :: d
+         select case (f)
+         case (1,2); d = 1
+         case (3,4); d = 2
+         case (5,6); d = 3
+         case default; stop 'Error: face must = 1:6 in direction_from_face in apply_BCs_edges.f90'
+         end select
+       end function
+
+       function is_min(f) result(TF)
+         implicit none
+         integer,intent(in) :: f
+         logical :: TF
+         select case (f)
+         case (1,3,5); TF = .true.
+         case (2,4,6); TF = .false.
+         case default; stop 'Error: face must = 1:6 in is_min in apply_BCs_edges.f90'
+         end select
+       end function
 
        subroutine apply_edge_SF(U,m,dir,d1,d2,e)
          implicit none
@@ -109,19 +150,91 @@
          integer,intent(in) :: dir,d1,d2
          integer,dimension(4),intent(in) :: e
          integer :: i
+         integer,dimension(2) :: a,fd
          logical :: CCd1,CCd2
+         logical,dimension(4) :: TF
+         logical,dimension(2) :: TF_prep
          CCd1 = CC_along(U,d1)
          CCd2 = CC_along(U,d2)
-         do i=1,m%s
-          call app_minmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(1))%vals,&
-          U%RF(i)%b%e(e(1))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmin
-          call app_minmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(2))%vals,&
-          U%RF(i)%b%e(e(2))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmax
-          call app_maxmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(3))%vals,&
-          U%RF(i)%b%e(e(3))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmin
-          call app_maxmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(4))%vals,&
-          U%RF(i)%b%e(e(4))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmax
-         enddo
+         if (m%s.gt.1) then; do i=1,m%s
+           ! Conditions to apply edges (ALL must be true): 
+           ! 1) At least 1 adjacent face must be Dirichlet
+           ! 2) The Dirichlet face must not be stitched
+           ! 3) The other adjacent face cannot be Periodic
+
+           a = adjacent_faces(e(1))
+           fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
+           if (is_min(a(1))) then;
+                 TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           else; TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           endif
+           if (is_min(a(2))) then;
+                 TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           endif
+           TF(1) = any(TF_prep)
+
+           a = adjacent_faces(e(2))
+           fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
+           if (is_min(a(1))) then;
+                 TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           else; TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           endif
+           if (is_min(a(2))) then;
+                 TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           endif
+           TF(2) = any(TF_prep)
+
+           a = adjacent_faces(e(3))
+           fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
+           if (is_min(a(1))) then;
+                 TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           else; TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           endif
+           if (is_min(a(2))) then;
+                 TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           endif
+           TF(3) = any(TF_prep)
+
+           a = adjacent_faces(e(4))
+           fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
+           if (is_min(a(1))) then;
+                 TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           else; TF_prep(1) = U%RF(i)%b%f(a(1))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(1)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(1))%b%Periodic))
+           endif
+           if (is_min(a(2))) then;
+                 TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
+                                                           .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
+           endif
+           TF(4) = any(TF_prep)
+
+           if (TF(1)) call app_minmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(1))%vals,&
+           U%RF(i)%b%e(e(1))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmin
+           if (TF(2)) call app_minmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(2))%vals,&
+           U%RF(i)%b%e(e(2))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmax
+           if (TF(3)) call app_maxmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(3))%vals,&
+           U%RF(i)%b%e(e(3))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmin
+           if (TF(4)) call app_maxmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(4))%vals,&
+           U%RF(i)%b%e(e(4))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmax
+         enddo; endif
        end subroutine
 
        subroutine app_minmin(f,g,v,bct,d1,d2,s,CCd1,CCd2,dir)
@@ -288,6 +401,7 @@
            case (2); i1 = 1; i2 = s2
            case (3); i1 = s1; i2 = 1
            case (4); i1 = s1; i2 = s2
+           case default; stop 'Error: corner must = 1:4 in app_E in apply_BCs_edges.f90'
            end select
          elseif ((.not.CCd1).and.(.not.CCd2)) then
            select case (corner)
@@ -295,6 +409,7 @@
            case (2); i1 = 2; i2 = s2-1
            case (3); i1 = s1-1; i2 = 2
            case (4); i1 = s1-1; i2 = s2-1
+           case default; stop 'Error: corner must = 1:4 in app_E in apply_BCs_edges.f90'
            end select
          elseif (CCd1.and.(.not.CCd2)) then
            select case (corner)
@@ -302,6 +417,7 @@
            case (2); i1 = 1; i2 = s2-1
            case (3); i1 = s1; i2 = 2
            case (4); i1 = s1; i2 = s2-1
+           case default; stop 'Error: corner must = 1:4 in app_E in apply_BCs_edges.f90'
            end select
          elseif ((.not.CCd1).and.CCd2) then
            select case (corner)
@@ -309,7 +425,9 @@
            case (2); i1 = 2; i2 = s2
            case (3); i1 = s1-1; i2 = 1
            case (4); i1 = s1-1; i2 = s2
+           case default; stop 'Error: corner must = 1:4 in app_E in apply_BCs_edges.f90'
            end select
+         else; stop 'Error: case not found in apply_BCs_edges.f90'
          endif
 
          if     (CCd1.and.CCd2)               then
@@ -349,9 +467,8 @@
          type(bctype),intent(in) :: bct
          if (bct%Dirichlet) then;   ug = 4.0_cp*bvals - (ui + ug1 + ug2)
          elseif (bct%Neumann) then; 
-         ug = -(ug1*dh(1) + ug2*dh(2))/(dh(1)+dh(2)) ! (hard coded zero)
-         ug = -(ug1*dh(1) + ug2*dh(2))/(dh(1)+dh(2)) ! (hard coded zero)
-         else; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
+         ug = 0.5_cp*(ug1 + ug2) ! (hard coded zero)
+         else !; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
          endif
        end subroutine
 
@@ -366,7 +483,7 @@
          elseif (bct%Neumann) then; 
            ug1 = ui1 - 2.0_cp*dh(1)*bvals
            ug2 = ui2 - 2.0_cp*dh(2)*bvals
-         else; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'
+         else !; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'
          endif
        end subroutine
 
@@ -379,8 +496,9 @@
          type(bctype),intent(in) :: bct
          if (bct%Dirichlet) then;   ug = 2.0_cp*bvals - ui
          elseif (bct%Neumann) then; ug = ui + dh*bvals
-         else; stop 'Error: Bad bctype! Caught in a_F in apply_BCs_edges.f90'
+         else !; stop 'Error: Bad bctype! Caught in a_F in apply_BCs_edges.f90'
          endif
        end subroutine
+
 
        end module

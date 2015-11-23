@@ -112,6 +112,7 @@
 
         interface divide;     module procedure divide_RF_RF;           end interface
         interface divide;     module procedure divide_RF_RF_RF;        end interface
+        interface divide;     module procedure divide_RF_S_RF;         end interface
         interface divide;     module procedure divide_RF_S;            end interface
         interface divide;     module procedure divide_S_RF;            end interface
 
@@ -554,6 +555,27 @@
           !$OMP END PARALLEL DO
 #else
           a%f = b%f / c%f
+#endif
+        end subroutine
+
+        subroutine divide_RF_S_RF(a,b,c)
+          implicit none
+          type(realField),intent(inout) :: a
+          type(realField),intent(in) :: c
+          real(cp),intent(in) :: b
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3)
+            do j=1,a%s(2)
+              do i=1,a%s(1)
+                a%f(i,j,k) = b / c%f(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = b / c%f
 #endif
         end subroutine
 

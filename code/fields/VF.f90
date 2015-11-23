@@ -28,6 +28,8 @@
         public :: init_Edge
         public :: init_Node
 
+        public :: dot_product
+
         ! Monitoring
         public :: print
         public :: print_BCs
@@ -63,6 +65,8 @@
         interface init_Edge;    module procedure init_VF_Edge;             end interface
         interface init_Node;    module procedure init_VF_Node;             end interface
 
+        interface dot_product;  module procedure dot_product_VF;           end interface
+
         interface delete;       module procedure delete_VF;                end interface
         interface print;        module procedure print_VF;                 end interface
         interface print_BCs;    module procedure print_BCs_VF;             end interface
@@ -95,6 +99,7 @@
 
         interface multiply;     module procedure multiply_VF_VF;           end interface
         interface multiply;     module procedure multiply_VF_VF_VF;        end interface
+        interface multiply;     module procedure multiply_VF_VF_SF;        end interface
         interface multiply;     module procedure multiply_VF_SF;           end interface
         interface multiply;     module procedure multiply_SF_VF;           end interface
         interface multiply;     module procedure multiply_VF_S;            end interface
@@ -103,6 +108,7 @@
 
         interface divide;       module procedure divide_VF_VF;             end interface
         interface divide;       module procedure divide_VF_SF;             end interface
+        interface divide;       module procedure divide_VF_S_VF;           end interface
         interface divide;       module procedure divide_VF_S;              end interface
         interface divide;       module procedure divide_S_VF;              end interface
 
@@ -280,6 +286,14 @@
           call multiply(f%x,g%x,q%x); call multiply(f%y,g%y,q%y); call multiply(f%z,g%z,q%z)
         end subroutine
 
+        subroutine multiply_VF_VF_SF(f,g,q)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          type(SF),intent(in) :: q
+          call multiply(f%x,g%x,q); call multiply(f%y,g%y,q); call multiply(f%z,g%z,q)
+        end subroutine
+
         subroutine multiply_VF_SF(f,g)
           implicit none
           type(VF),intent(inout) :: f
@@ -329,6 +343,14 @@
           type(VF),intent(inout) :: f
           type(SF),intent(in) :: g
           call divide(f%x,g); call divide(f%y,g); call divide(f%z,g)
+        end subroutine
+
+        subroutine divide_VF_S_VF(f,g,q)
+          implicit none
+          type(VF),intent(inout) :: f
+          real(cp),intent(in) :: g
+          type(VF),intent(inout) :: q
+          call divide(f%x,g,q%x); call divide(f%y,g,q%y); call divide(f%z,g,q%z)
         end subroutine
 
         subroutine divide_VF_S(f,g)
@@ -404,24 +426,14 @@
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
         end subroutine
 
-        ! subroutine allocateX(f,Nx,Ny,Nz)
-        !   implicit none
-        !   type(VF),intent(inout) :: f
-        !   integer,intent(in) :: Nx,Ny,Nz
-        !   call init(f%x,Nx,Ny,Nz)
-        ! end subroutine
-        ! subroutine allocateY(f,Nx,Ny,Nz)
-        !   implicit none
-        !   type(VF),intent(inout) :: f
-        !   integer,intent(in) :: Nx,Ny,Nz
-        !   call init(f%y,Nx,Ny,Nz)
-        ! end subroutine
-        ! subroutine allocateZ(f,Nx,Ny,Nz)
-        !   implicit none
-        !   type(VF),intent(inout) :: f
-        !   integer,intent(in) :: Nx,Ny,Nz
-        !   call init(f%z,Nx,Ny,Nz)
-        ! end subroutine
+        function dot_product_VF(A,B,temp) result(dot)
+          implicit none
+          type(VF),intent(in) :: A,B
+          type(VF),intent(inout) :: temp
+          real(cp) :: dot
+          call multiply(temp,A,B)
+          dot = sum(temp%x) + sum(temp%y) + sum(temp%z)
+        end function
 
         subroutine delete_VF(f)
           implicit none
