@@ -112,7 +112,7 @@
          case (1)
            select case (ductDir)
            case (1); call init_Dirichlet(p_bcs,2)
-           case (2); call init_Dirichlet(p_bcs,3)
+           case (2); call init_Dirichlet(p_bcs,4)
            case (3); call init_Dirichlet(p_bcs,6)
            case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_dirichletP_IO'
            end select
@@ -135,7 +135,7 @@
          case (1)
            select case (ductDir)
            case (1); call init_periodic(p_bcs,2)
-           case (2); call init_periodic(p_bcs,3)
+           case (2); call init_periodic(p_bcs,4)
            case (3); call init_periodic(p_bcs,6)
            case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_periodicP_IO'
            end select

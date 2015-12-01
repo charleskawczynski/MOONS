@@ -29,7 +29,7 @@
 
       type Jacobi
         type(mesh) :: m
-        type(VF) :: Au,res,Dinv,D,sigma,tempk
+        type(VF) :: Au,res,Dinv,D,sigma,tempk,vol
       end type
       
       interface init;        module procedure init_Jacobi;       end interface
@@ -52,9 +52,12 @@
         call init_Face(JAC%sigma,m)
         call init(JAC%tempk,JAC%sigma)
         call assign(JAC%sigma,sigma)
-        ! call get_diagonal_VF(operator,D,k,temp,m)
-        call get_diagonal(compute_A,JAC%D,JAC%sigma,JAC%tempk,m)
-        call divide(JAC%Dinv,1.0_cp,JAC%D)
+        call init(JAC%vol,u)
+        call volume(JAC%vol,m)
+        ! call get_diagonal_VF(operator,D,vol,m,tempk,c,k)
+        call get_diagonal(compute_A,JAC%D,JAC%vol,m,JAC%tempk,1.0_cp,JAC%sigma)
+        call assign(JAC%Dinv,JAC%D)
+        call invert(JAC%Dinv)
       end subroutine
 
       subroutine solve_Jacobi(JAC,u,f,n,norm,displayTF)

@@ -1,6 +1,7 @@
       module CG_operators_mod
       use mesh_mod
       use ops_discrete_mod
+      use ops_discrete_local_mod
       use ops_aux_mod
       use SF_mod
       use VF_mod
@@ -12,6 +13,7 @@
       public :: Laplacian_nonuniform_props
       public :: B_diff_nat_stag
       public :: B_diff_CC
+      public :: B_diff_nat_stag_diag
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -39,7 +41,7 @@
         call zeroGhostPoints(Ax)
       end subroutine
 
-      subroutine Laplacian_nonuniform_props(Ax,x,vol,m,tempk,k,c)
+      subroutine Laplacian_nonuniform_props(Ax,x,vol,m,tempk,c,k)
         ! Computes:   A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax
@@ -55,10 +57,10 @@
         call zeroGhostPoints(Ax)
       end subroutine
 
-      subroutine B_diff_nat_stag(Ax,x,vol,m,tempk,k,c)
-        ! Computes:   A = {I + dt/Rem ∇x(k∇x)}
+      subroutine B_diff_nat_stag(Ax,x,vol,m,tempk,c,k)
+        ! Computes:   A = V {I + dt/Rem ∇x(k∇x)}
         ! Where B and J are intended to live at the 
-        ! cell face and edge respectively
+        ! cell face and edge respectively. V is the cell volume.
         implicit none
         type(VF),intent(inout) :: Ax
         type(VF),intent(in) :: x,vol
@@ -66,8 +68,6 @@
         type(mesh),intent(in) :: m
         type(VF),intent(inout) :: tempk
         real(cp),intent(in) :: c
-        call assign(Ax,x)
-        call zeroWall_conditional(Ax,m,x)
         call curl(tempk,x,m)
         call multiply(tempk,k)
         call curl(Ax,tempk,m)
@@ -77,7 +77,24 @@
         call zeroGhostPoints(Ax)
       end subroutine
 
-      subroutine B_diff_CC(Ax,x,vol,m,tempk,k,c)
+      subroutine B_diff_nat_stag_diag(Ax,x,vol,m,tempk,c,k,local_index)
+        ! Computes:   A = ∇x(k∇x)
+        ! Where B and J are intended to live at the 
+        ! cell face and edge respectively. V is the cell volume.
+        implicit none
+        type(VF),intent(inout) :: Ax
+        type(VF),intent(in) :: x,vol
+        type(VF),intent(in) :: k
+        type(mesh),intent(in) :: m
+        type(VF),intent(inout) :: tempk
+        real(cp),intent(in) :: c
+        integer,intent(in) :: local_index
+        call curl(tempk,x,m,local_index)
+        call multiply(tempk,k)
+        call curl(Ax,tempk,m,local_index)
+      end subroutine
+
+      subroutine B_diff_CC(Ax,x,vol,m,tempk,c,k)
         ! Computes:   A = {I + dt/Rem ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax

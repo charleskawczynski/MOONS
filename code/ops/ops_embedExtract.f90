@@ -159,19 +159,19 @@
          do i=1,D%s
            call EE(Face_t%x%RF(D%sd(i)%g_tot_id),Face_i%x%RF(D%sd(i)%g_in_id),&
             (/D%sd(i)% NB1(1),D%sd(i)% CE1(2),D%sd(i)% CE1(3)/),&
-            (/D%sd(i)% NB2(1),D%sd(i)% CE2(2),D%sd(i)% CI2(3)/),&
+            (/D%sd(i)% NB2(1),D%sd(i)% CE2(2),D%sd(i)% CE2(3)/),&
             (/D%sd(i)%TNB1(1),D%sd(i)%TCE1(2),D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TNB2(1),D%sd(i)%TCE2(2),D%sd(i)%TCI2(3)/))
+            (/D%sd(i)%TNB2(1),D%sd(i)%TCE2(2),D%sd(i)%TCE2(3)/))
            call EE(Face_t%y%RF(D%sd(i)%g_tot_id),Face_i%y%RF(D%sd(i)%g_in_id),&
             (/D%sd(i)% CE1(1),D%sd(i)% NB1(2),D%sd(i)% CE1(3)/),&
-            (/D%sd(i)% CE2(1),D%sd(i)% NB2(2),D%sd(i)% CI2(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% NB2(2),D%sd(i)% CE2(3)/),&
             (/D%sd(i)%TCE1(1),D%sd(i)%TNB1(2),D%sd(i)%TCE1(3)/),&
-            (/D%sd(i)%TCE2(1),D%sd(i)%TNB2(2),D%sd(i)%TCI2(3)/))
+            (/D%sd(i)%TCE2(1),D%sd(i)%TNB2(2),D%sd(i)%TCE2(3)/))
            call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),&
             (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% NB1(3)/),&
-            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% NI2(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% NE2(3)/),&
             (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TNB1(3)/),&
-            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNI2(3)/))
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNE2(3)/))
          enddo
        end subroutine
 

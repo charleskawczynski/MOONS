@@ -28,7 +28,7 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -92,9 +92,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -120,6 +120,9 @@ VPATH =\
 	$(SRC_DIR)$(PS)grid \
 	$(SRC_DIR)$(PS)probes \
 	$(SRC_DIR)$(PS)fields \
+	$(SRC_DIR)$(PS)fields$(PS)RF \
+	$(SRC_DIR)$(PS)fields$(PS)SF \
+	$(SRC_DIR)$(PS)fields$(PS)VF \
 	$(SRC_DIR)$(PS)ops \
 	$(SRC_DIR)$(PS)static \
 	$(SRC_DIR)$(PS)sparse \
@@ -136,6 +139,12 @@ VPATH =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum \
 	$(SRC_DIR)$(PS)solvers$(PS)induction
 
+# $(SRC_DIR)$(PS)fields$(PS)RF \
+# $(SRC_DIR)$(PS)fields$(PS)SF \
+# $(SRC_DIR)$(PS)fields$(PS)VF \
+# $(SRC_DIR)$(PS)fields$(PS)TF \
+
+
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
 # $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
@@ -148,6 +157,27 @@ VPATH =\
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
 
 # $(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_ind.f90 \
+
+# $(SRC_DIR)$(PS)fields$(PS)RF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)SF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)TF.f90 \
+
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign_negative.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_add.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_subtract.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_multiply.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_divide.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_square.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_sum.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_aux.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)SF$(PS)SF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)TF$(PS)TF.f90 \
+
 
 
 SRCS_F =\
@@ -210,11 +240,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_del_local.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_split.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_local.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90 \
@@ -237,7 +269,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_operators.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_ind.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG_tools.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \

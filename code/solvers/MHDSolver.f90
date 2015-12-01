@@ -59,7 +59,8 @@
            if (solveEnergy)    call solve(nrg,mom%U,mom%m,ss_MHD,dir)
            if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
            ! if (solveInduction) call solve(ind,mom%U_E,mom%m,ss_MHD,dir)
-           if (solveInduction) call solve(ind,mom%U_CC,mom%m,ss_MHD,dir)
+           if (solveInduction) call solve(ind,mom%U,mom%m,ss_MHD,dir)
+           ! if (solveInduction) call solve(ind,mom%U_CC,mom%m,ss_MHD,dir)
 
            call assign(F,0.0_cp)
            if (addJCrossB)  call computeAddJCrossB(F,ind,ind%Ha,mom%Re,ind%Rem)

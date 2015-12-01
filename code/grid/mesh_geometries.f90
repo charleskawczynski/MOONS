@@ -122,7 +122,7 @@
          real(cp),dimension(3) :: hmin,hmax
          integer,dimension(3) :: N
          call delete(m)
-         N = 45; hmin = -1.0_cp; hmax = 1.0_cp
+         N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
          call grid_uniform(g,hmin(1),hmax(1),N(1),1)
          call grid_uniform(g,hmin(2),hmax(2),N(2),2)
          call grid_uniform(g,hmin(3),hmax(3),N(3),3)

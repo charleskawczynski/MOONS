@@ -29,7 +29,8 @@
        use apply_BCs_mod
        use solverSettings_mod
        use SOR_mod
-       use CG_ind_mod
+       use CG_mod
+       use PCG_mod
        ! use ADI_mod
        ! use MG_mod
        use probe_base_mod
@@ -64,7 +65,7 @@
          ! --- Vector fields ---
          type(VF) :: B,dB0dt,Bstar,B0                 ! CC data
          type(VF) :: J,J_cc,E,temp_E                  ! Edge data
-         type(VF) :: Bnm1,curlUCrossB
+         type(VF) :: Bnm1,curlUCrossB,B_face
 
          type(VF) :: U_Ft                             ! Face data
          type(VF) :: U_cct                            ! Cell Center data
@@ -90,6 +91,8 @@
          type(myTime) :: time_CP
 
          type(SORSolver) :: SOR_B, SOR_cleanB
+         type(CG_solver) :: CG_B
+         type(PCG_solver) :: PCG_B
 
          type(indexProbe) :: probe_Bx,probe_By,probe_Bz
          type(indexProbe) :: probe_J
@@ -156,16 +159,17 @@
          call init_Edge(ind%temp_E2,m);       call assign(ind%temp_E2,0.0_cp)
          call init_Edge(ind%sigmaInv_edge,m); call assign(ind%sigmaInv_edge,0.0_cp)
 
-         call init_Face(ind%U_Ft,m)
+         call init_Face(ind%U_Ft,m);          call assign(ind%U_Ft,0.0_cp)
+         call init_Face(ind%B_face,m);        call assign(ind%B_face,0.0_cp)
          call init_Face(ind%temp_F,m);        call assign(ind%temp_F,0.0_cp)
          call init_Face(ind%sigmaInv_face,m); call assign(ind%sigmaInv_face,0.0_cp)
          call init_Face(ind%temp_F2,m);       call assign(ind%temp_F2,0.0_cp)
          call init_Face(ind%jCrossB_F,m);     call assign(ind%jCrossB_F,0.0_cp)
+         call init_Face(ind%curlUCrossB,m);   call assign(ind%curlUCrossB,0.0_cp)
 
          ! --- Scalar Fields ---
          call init_CC(ind%sigma,m);           call assign(ind%sigma,0.0_cp)
          call init_CC(ind%Bnm1,m);            call assign(ind%Bnm1,0.0_cp)
-         call init_CC(ind%curlUCrossB,m);     call assign(ind%curlUCrossB,0.0_cp)
          call init_CC(ind%sigmaInv,m);        call assign(ind%sigmaInv,0.0_cp)
 
          call init_CC(ind%phi,m);             call assign(ind%phi,0.0_cp)
@@ -177,6 +181,7 @@
 
          ! --- Initialize Fields ---
          call initBBCs(ind%B,m)
+         call initBBCs(ind%B_face,m)
          write(*,*) '     BCs initialized'
 
          call initBfield(ind%B,ind%B0,m,dir)
@@ -199,6 +204,10 @@
          call treatInterface(ind%sigmaInv_edge)
          call treatInterface(ind%sigmaInv_face)
          write(*,*) '     Interface treated'
+
+         ! init(CG,m,x,k)
+         call init(ind%CG_B,ind%m,ind%B_face,ind%sigmaInv_edge)
+         call init(ind%PCG_B,ind%m,ind%B_face,ind%sigmaInv_edge,ind%dTime,ind%Rem)
 
          call init(ind%probe_Bx,dir//'Bfield/','transient_Bx',&
          .not.restartB,ind%B%x%RF(1)%s,(ind%B%x%RF(1)%s+1)/2*2/3,m)
@@ -286,6 +295,7 @@
          call delete(ind%temp_E1)
          call delete(ind%temp_E2)
          call delete(ind%temp_F)
+         call delete(ind%B_face)
          call delete(ind%temp_F2)
          call delete(ind%jCrossB_F)
          call delete(ind%Bnm1)
@@ -318,6 +328,8 @@
          call delete(ind%m)
          call delete(ind%D_fluid)
          call delete(ind%D_sigma)
+         call delete(ind%CG_B)
+         call delete(ind%PCG_B)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -547,7 +559,8 @@
 
 
          ! call embedVelocity_E(ind,U)
-         call embedVelocity_CC(ind,U)
+         call embedVelocity_F(ind,U)
+         ! call embedVelocity_CC(ind,U)
 
          ! call assign(ind%dB0dt,0.0_cp)
          ! call assignZ(ind%dB0dt,ind%omega*exp(-ind%omega*ind%t))
@@ -579,22 +592,36 @@
 
          ! call cross(ind%temp_CC,ind%U_cct,ind%B0) ! Low Rem
 
-         call add(ind%Bstar,ind%B,ind%B0) ! Finite Rem
-         call cross(ind%temp_CC,ind%U_cct,ind%Bstar)
+         ! call add(ind%Bstar,ind%B,ind%B0) ! Finite Rem
+         ! call cross(ind%temp_CC,ind%U_cct,ind%Bstar)
 
-         call curl(ind%curlUCrossB,ind%temp_CC,ind%m)
-         call multiply(ind%curlUCrossB,ind%dTime)
-         call add(ind%curlUCrossB,ind%Bnm1)
-         call CG_ind(ind%B,&
-                     ind%curlUCrossB,&
-                     ind%sigmaInv,&
-                     ind%dTime,&
-                     ind%Rem,&
-                     ind%m,&
-                     10,&
-                     ind%norm_B,&
-                     getExportErrors(ss_MHD))
+         ! call curl(ind%curlUCrossB,ind%temp_CC,ind%m)
+         ! call multiply(ind%curlUCrossB,ind%dTime)
+         ! call add(ind%curlUCrossB,ind%Bnm1)
+         ! call CG_ind(ind%B,&
+         !             ind%curlUCrossB,&
+         !             ind%sigmaInv,&
+         !             ind%dTime,&
+         !             ind%Rem,&
+         !             ind%m,&
+         !             10,&
+         !             ind%norm_B,&
+         !             getExportErrors(ss_MHD))
          ! stop 'Done'
+
+         ! call assign(ind%Bstar,ind%B0)    ! Low Rem
+         call add(ind%Bstar,ind%B0,ind%B) ! Finite Rem
+         call cellCenter2Face(ind%temp_F,ind%Bstar,ind%m)
+
+         call faceCurlCross_F(ind%curlUCrossB,ind%U_Ft,ind%temp_F,&
+                              ind%m,ind%temp_E1,ind%temp_E2,ind%temp_F2)
+         call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative
+
+         call add(ind%curlUCrossB,ind%B_face)
+         call solve(ind%PCG_B,ind%B_face,ind%curlUCrossB,&
+         ind%dTime,ind%Rem,ind%m,1000,ind%norm_B,getExportErrors(ss_MHD))
+
+         call face2cellCenter(ind%B,ind%B_face,ind%m)
 
          ! call cross(ind%temp_CC,ind%U_cct,ind%B0)
          ! call curl(ind%curlUCrossB,ind%temp_CC,ind%m)
@@ -606,7 +633,6 @@
          ! call poisson(ind%SOR_B,ind%B%z,ind%curlUCrossB%z,ind%m,ind%ss_ind,&
          ! ind%err_residual,getExportErrors(ss_MHD))
 
-         call assign(ind%Bnm1,ind%B)
          ! case (6); call lowRem_ADI(ind,ind%U_cct,ind%m,ss_MHD)
          ! case (7); call lowRemMultigrid(ind,ind%U_cct,ind%m)
          end select
@@ -901,6 +927,8 @@
              ! CT method enforces div(b) = 0, (result is in CC), 
              ! when computed from FACE-centered data:
              call div(ind%divB,ind%temp_F,m)
+           case (6)
+             call div(ind%divB,ind%B_face,m)
            case default
              call div(ind%divB,ind%B,m)
            end select
@@ -975,13 +1003,18 @@
          call embedEdge(ind%U_E%z,U_E%z,ind%D_fluid)
        end subroutine
 
+       subroutine embedVelocity_F(ind,U_F)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(VF),intent(in) :: U_F ! Momentum edge velocity
+         call embedFace(ind%U_Ft,U_F,ind%D_fluid)
+       end subroutine
+
        subroutine embedVelocity_CC(ind,U_CC)
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U_CC ! Momentum edge velocity
-         call embedCC(ind%U_cct%x,U_CC%x,ind%D_fluid)
-         call embedCC(ind%U_cct%y,U_CC%y,ind%D_fluid)
-         call embedCC(ind%U_cct%z,U_CC%z,ind%D_fluid)
+         call embedCC(ind%U_cct,U_CC,ind%D_fluid)
        end subroutine
 
 

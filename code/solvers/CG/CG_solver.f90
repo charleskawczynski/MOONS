@@ -11,7 +11,6 @@
       use BCs_mod
       use SF_mod
       use VF_mod
-      use TF_mod
       implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -32,13 +31,13 @@
 
       contains
 
-      subroutine solve_CG_SF(operator,x,b,vol,k,c,m,n,norm,compute_norms,tempx,tempk,Ax,r,p)
+      subroutine solve_CG_SF(operator,x,b,vol,c,k,m,n,norm,compute_norms,tempx,tempk,Ax,r,p)
         implicit none
         external :: operator
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol
-        type(VF),intent(in) :: k
         real(cp),intent(in) :: c
+        type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
@@ -48,14 +47,15 @@
         integer :: i
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call apply_BCs(x,m)
-        call operator(Ax,x,vol,m,tempk,k,c)
-        call subtract(r,b,Ax)
+        call operator(Ax,x,vol,m,tempk,c,k)
+        call multiply(r,b,vol)
+        call subtract(r,Ax)
         call zeroGhostPoints(r)
         call zeroWall_conditional(r,m,x)
         call assign(p,r)
         rsold = dot_product(r,r,m,x,tempx)
         do i=1,n
-          call operator(Ax,p,vol,m,tempk,k,c)
+          call operator(Ax,p,vol,m,tempk,c,k)
           alpha_temp = dot_product(p,Ax,m,x,tempx)
           alpha = rsold/alpha_temp
           call assign(tempx,p)
@@ -70,11 +70,12 @@
           rsnew = dot_product(r,r,m,x,tempx)
           if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
           ! ------------------------ My residual computation ------------------
-          ! call operator(Ax,x,k,m)
-          ! call subtract(temp,b,Ax)
-          ! call zeroGhostPoints(temp)
-          ! call zeroWall(temp,m)
-          ! call compute(norm,temp,m)
+          ! call operator(Ax,x,vol,m,tempk,c,k)
+          ! call multiply(r,b,vol)
+          ! call subtract(r,Ax)
+          ! call zeroGhostPoints(r)
+          ! call zeroWall_conditional(r,m,x)
+          ! call compute(norm,r,m)
           ! if (i.eq.i_stop) call export_3D_1C(m,temp,'out/','r_mine',0)
           ! write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
           ! -------------------------------------------------------------------
@@ -87,24 +88,24 @@
         if (x%all_Neumann) call subtract(x,mean(x))
         call apply_BCs(x,m)
         if (compute_norms) then
-          call operator(Ax,x,vol,m,tempk,k,c)
-          call subtract(tempx,b,Ax)
-          call zeroGhostPoints(tempx)
-          call zeroWall(tempx,m)
-          call compute(norm,tempx,m)
-          write(*,*) 'Number of CG iterations = ',n
-          write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells_tot/)
+          call operator(Ax,x,vol,m,tempk,c,k)
+          call multiply(r,b,vol)
+          call subtract(r,Ax)
+          call zeroGhostPoints(r)
+          call zeroWall_conditional(r,m,x)
+          call compute(norm,r,m)
           call print(norm,'CG Residuals')
+          write(*,*) 'CG iterations (executed/max) = ',i-1,n
         endif
       end subroutine
       
-      subroutine solve_CG_VF(operator,x,b,vol,k,c,m,n,norm,compute_norms,tempx,tempk,Ax,r,p)
+      subroutine solve_CG_VF(operator,x,b,vol,c,k,m,n,norm,compute_norms,tempx,tempk,Ax,r,p)
         implicit none
         external :: operator
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol
-        type(VF),intent(in) :: k
         real(cp),intent(in) :: c
+        type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),dimension(3),intent(inout) :: norm
@@ -114,14 +115,15 @@
         integer :: i
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call apply_BCs(x,m)
-        call operator(Ax,x,vol,m,tempk,k,c)
-        call subtract(r,b,Ax)
+        call operator(Ax,x,vol,m,tempk,c,k)
+        call multiply(r,b,vol)
+        call subtract(r,Ax)
         call zeroGhostPoints(r)
         call zeroWall_conditional(r,m,x)
         call assign(p,r)
         rsold = dot_product(r,r,m,x,tempx)
         do i=1,n
-          call operator(Ax,p,vol,m,tempk,k,c)
+          call operator(Ax,p,vol,m,tempk,c,k)
           alpha_temp = dot_product(p,Ax,m,x,tempx)
           alpha = rsold/alpha_temp
           call assign(tempx,p)
@@ -133,15 +135,18 @@
           call subtract(r,tempx)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          rsnew = dot_product(r,r,m,x,tempx)
+          rsnew = dot_product(r,r,m,x,tempx)   
           if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
           ! ------------------------ My residual computation ------------------
-          ! call operator(Ax,x,k,m)
-          ! call subtract(temp,b,Ax)
-          ! call zeroGhostPoints(temp)
-          ! call zeroWall(temp,m)
-          ! call compute(norm,temp,m)
-          ! if (i.eq.i_stop) call export_3D_1C(m,temp,'out/','r_mine',0)
+          ! call operator(Ax,x,vol,m,tempk,c,k)
+          ! call multiply(r,b,vol)
+          ! call subtract(r,Ax)
+          ! call zeroGhostPoints(r)
+          ! call zeroWall_conditional(r,m,x)
+          ! call compute(norm(1),r%x,m)
+          ! call compute(norm(2),r%y,m)
+          ! call compute(norm(3),r%z,m)
+          ! if (i.eq.i_stop) call export_3D_1C(m,tempx,'out/','r_mine',0)
           ! write(*,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
           ! -------------------------------------------------------------------
           call assign(tempx,p)
@@ -155,18 +160,18 @@
         if (x%z%all_Neumann) call subtract(x%z,mean(x%z))
         call apply_BCs(x,m)
         if (compute_norms) then
-          call operator(Ax,x,vol,m,tempk,k,c)
-          call subtract(tempx,b,Ax)
-          call zeroGhostPoints(tempx)
-          call zeroWall(tempx,m)
-          call compute(norm(1),tempx%x,m)
-          call compute(norm(2),tempx%y,m)
-          call compute(norm(3),tempx%z,m)
-          write(*,*) 'Number of CG iterations = ',n
-          write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells_tot/)
+          call operator(Ax,x,vol,m,tempk,c,k)
+          call multiply(r,b,vol)
+          call subtract(r,Ax)
+          call zeroGhostPoints(r)
+          call zeroWall_conditional(r,m,x)
+          call compute(norm(1),r%x,m)
+          call compute(norm(2),r%y,m)
+          call compute(norm(3),r%z,m)
           call print(norm(1),'CG Residuals (x)')
           call print(norm(2),'CG Residuals (y)')
           call print(norm(3),'CG Residuals (z)')
+          write(*,*) 'CG iterations (executed/max) = ',i-1,n
         endif
       end subroutine
 

@@ -631,9 +631,9 @@
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: tempCC
 
-         call assignX(faceX,face)
-         call assignY(faceY,face)
-         call assignZ(faceZ,face)
+         call assign(faceX%x,face%x)
+         call assign(faceY%y,face%y)
+         call assign(faceZ%z,face%z)
 
          call face2Face(faceX%y,face%x,m,tempCC,1,2)
          call face2Face(faceX%z,face%x,m,tempCC,1,3)

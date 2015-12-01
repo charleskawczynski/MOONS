@@ -11,7 +11,6 @@
       use BCs_mod
       use SF_mod
       use VF_mod
-      use TF_mod
       implicit none
 
       private
@@ -31,89 +30,78 @@
 
       contains
 
-      subroutine solve_PCG_VF(operator,x,b,vol,k,c,m,n,norm,displayTF,temp,Ax,rk,rkp1,p)
+      subroutine solve_PCG_VF(operator,x,b,vol,c,k,m,n,norm,compute_norms,tempx,tempk,Ax,r,p,z,Minv)
         implicit none
         external :: operator
         type(VF),intent(inout) :: x
-        type(VF),intent(in) :: b,k,vol
+        type(VF),intent(in) :: b,vol,Minv
         real(cp),intent(in) :: c
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),dimension(3),intent(inout) :: norm
         integer,intent(in) :: n
-        logical,intent(in) :: displayTF
-        type(VF),intent(inout) :: temp,Ax,rk,rkp1,p,z
-        integer :: k
-        real(cp) :: alpha,beta,rsold,rsnew,alpha_temp
+        logical,intent(in) :: compute_norms
+        type(VF),intent(inout) :: tempx,Ax,r,p,z
+        integer :: i
+        real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call apply_BCs(x,m)
-
-        call operator(Ax,x,vol,m,tempk,k,c)
-        call multiply(rk,b,vol)
-        call subtract(rk,Ax)
-        call zeroGhostPoints(rk)
-        call zeroWall(rk,m)
-
-        call multiply(z,Minv,rk)
-        call assign(p,rk)
-        rsold = dotProduct(rk,rk,m,x,temp)
-
-        do k=1,n
-          call operator(Ax,p,vol,m,tempk,k,c)
-          alpha_temp = dotProduct(p,Ax,m,x,temp)
-          alpha = dotProduct(rk,z,m,x,temp)
-          alpha = alpha/alpha_temp
-          
-          call assign(temp,p)
-          call multiply(temp,alpha)
-          call add(x,temp)
+        call operator(Ax,x,vol,m,tempk,c,k)
+        call multiply(r,b,vol)
+        call subtract(r,Ax)
+        call zeroGhostPoints(r)
+        call zeroWall_conditional(r,m,x)
+        call multiply(z,Minv,r)
+        call assign(p,z)
+        rhok = dot_product(r,z,m,x,tempx)
+        do i=1,n
+          call operator(Ax,p,vol,m,tempk,c,k)
+          alpha = rhok/dot_product(p,Ax,m,x,tempx)
+          call assign(tempx,p) ! x = x + alpha p
+          call multiply(tempx,alpha)
+          call add(x,tempx)
           call apply_BCs(x,m)
-
-          call assign(temp,Ax)
-          call multiply(temp,alpha)
-          call subtract(rkp1,rk,temp)
-          call zeroGhostPoints(rkp1)
-          call zeroWall(rkp1,m)
-          rsnew = dotProduct(rkp1,rkp1,m,x,temp)
-          if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
-
+          call assign(tempx,Ax) ! r = r - alpha Ap
+          call multiply(tempx,alpha)
+          call subtract(r,tempx)
+          call zeroGhostPoints(r)
+          call zeroWall_conditional(r,m,x)
+          res_norm = dot_product(r,r,m,x,tempx)
+          if (sqrt(res_norm).lt.10.0_cp**(-10.0_cp)) then; exit; endif
           ! ------------------------ My residual computation ------------------
           ! call operator(Ax,x,sigmaInv,dt,Rem,m)
-          ! call subtract(temp,b,Ax)
-          ! call zeroGhostPoints(temp)
-          ! call zeroWall(temp,m)
-          ! call compute(norm,temp,m)
-          ! if (k.eq.k_stop) call export_3D_1C(m,temp,'out/','r_mine',0)
+          ! call subtract(tempx,b,Ax)
+          ! call zeroGhostPoints(tempx)
+          ! call zeroWall_conditional(tempx,m,x)
+          ! call compute(norm,tempx,m)
+          ! if (i.eq.i_stop) call export_3D_1C(m,tempx,'out/','r_mine',0)
           ! write(un,*) 'Residual (CG,mine) = ',sqrt(rsnew),norm%Linf
           ! -------------------------------------------------------------------
-
-          call multiply(z,Minv,rkp1)
-          beta_temp = dotProduct(zkp1,rkp1,m,x,temp)
-          beta = dotProduct(zk,rk,m,x,temp)
-          beta = beta_temp/beta
-          call assign(temp,p)
-          call multiply(temp,beta)
-          call add(p,rkp1,temp)
+          call multiply(z,Minv,r)
+          rhokp1 = dot_product(z,r,m,x,tempx)
+          call assign(tempx,p) ! p = z + beta p
+          call multiply(tempx,rhokp1/rhok)
+          call add(p,z,tempx)
           call zeroGhostPoints(p)
-          rsold = rsnew
-          call assign(rkp1,rk)
+          rhok = rhokp1
         enddo
-        endif
         if (x%x%all_Neumann) call subtract(x%x,mean(x%x))
         if (x%y%all_Neumann) call subtract(x%y,mean(x%y))
         if (x%z%all_Neumann) call subtract(x%z,mean(x%z))
         call apply_BCs(x,m)
-        if (displayTF) then
-          call operator(Ax,x,vol,m,tempk,k,c)
-          call subtract(temp,b,Ax)
-          call zeroGhostPoints(temp)
-          call zeroWall(temp,m)
-          call compute(norm(1),temp%x,m)
-          call compute(norm(2),temp%y,m)
-          call compute(norm(3),temp%z,m)
-          write(*,*) 'Number of CG iterations = ',n
-          write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells_tot/)
-          call print(norm(1),'CG Residuals (x)')
-          call print(norm(2),'CG Residuals (y)')
-          call print(norm(3),'CG Residuals (z)')
+        if (compute_norms) then
+          call operator(Ax,x,vol,m,tempk,c,k)
+          call multiply(r,b,vol)
+          call subtract(r,Ax)
+          call zeroGhostPoints(r)
+          call zeroWall_conditional(r,m,x)
+          call compute(norm(1),tempx%x,m)
+          call compute(norm(2),tempx%y,m)
+          call compute(norm(3),tempx%z,m)
+          call print(norm(1),'PCG Residuals (x)')
+          call print(norm(2),'PCG Residuals (y)')
+          call print(norm(3),'PCG Residuals (z)')
+          write(*,*) 'PCG iterations (executed/max) = ',i-1,n
         endif
       end subroutine
 

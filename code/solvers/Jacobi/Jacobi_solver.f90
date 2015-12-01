@@ -56,7 +56,7 @@
         if (u%all_neumann) call subtract(u,mean(u))
         if (displayTF) then
           call operator(Au,u,m)
-          call post(u,f,m,n,norm,Au,res)
+          call post(Au,f,m,n,norm,res)
         endif
       end subroutine
 
@@ -80,7 +80,7 @@
         if (u%all_neumann) call subtract(u,mean(u))
         if (displayTF) then
           call operator(Au,u,k,m)
-          call post(u,f,m,n,norm,Au,res)
+          call post(Au,f,m,n,norm,res)
         endif
       end subroutine
 
@@ -105,7 +105,7 @@
         if (u%z%all_neumann) call subtract(u%z,mean(u%z))
         if (displayTF) then
           call operator(Au,u,m)
-          call post(u,f,m,n,norm,Au,res)
+          call post(Au,f,m,n,norm,res)
         endif
       end subroutine
 
@@ -130,7 +130,7 @@
         if (u%z%all_neumann) call subtract(u%z,mean(u%z))
         if (displayTF) then
           call operator(Au,u,k,m)
-          call post(u,f,m,n,norm,Au,res)
+          call post(Au,f,m,n,norm,res)
         endif
       end subroutine
 
@@ -158,10 +158,10 @@
         call apply_BCs(u,m)
       end subroutine
 
-      subroutine post_SF(u,f,m,n,norm,Au,res)
+      subroutine post_SF(Au,f,m,n,norm,res)
         implicit none
-        type(SF),intent(inout) :: u,Au,res
-        type(SF),intent(in) :: f
+        type(SF),intent(inout) :: res
+        type(SF),intent(in) :: f,Au
         type(mesh),intent(in) :: m
         integer,intent(inout) :: n
         type(norms),intent(inout) :: norm
@@ -172,10 +172,10 @@
         call print(norm,'Jacobi residuals')
       end subroutine
 
-      subroutine post_VF(u,f,m,n,norm,Au,res)
+      subroutine post_VF(Au,f,m,n,norm,res)
         implicit none
-        type(VF),intent(inout) :: u,Au,res
-        type(VF),intent(in) :: f
+        type(VF),intent(inout) :: res
+        type(VF),intent(in) :: f,Au
         type(mesh),intent(in) :: m
         integer,intent(inout) :: n
         type(norms),intent(inout) :: norm

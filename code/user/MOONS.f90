@@ -119,18 +119,18 @@
          if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)
          if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
 
-         ! Initialize Energy grid/fields/parameters
+         ! Initialize Energy grid/fields/parameters, order is important!
          call setDTime(nrg,dt_eng)
          call setPiGroups(nrg,Re,Pr,Ec,Al,Rem)
          if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,dir)
 
-         ! Initialize Momentum grid/fields/parameters
+         ! Initialize Momentum grid/fields/parameters, order is important!
          call setDTime(mom,dt_mom)
          call setNMaxPPE(mom,NmaxPPE)
          call setPiGroups(mom,Re,Ha,Gr,Fr)
          call init(mom,mesh_mom,dir)
 
-         ! Initialize Induction grid/fields/parameters
+         ! Initialize Induction grid/fields/parameters, order is important!
          call setDTime(ind,dt_ind)
          call setNmaxB(ind,NmaxB)
          call setNmaxCleanB(ind,NmaxCleanB)

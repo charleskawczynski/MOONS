@@ -163,9 +163,8 @@
         NU = newAndOpen('out\','norm_SOR')
 #endif
 
-        ! do while (continueLoop.and.TF)
-        !   ijk = ijk + 1
-        do ijk=1,1
+        do while (continueLoop.and.TF)
+          ijk = ijk + 1
 
           ! THE ORDER OF THESE ROUTINE CALLS IS IMPORTANT. DO NOT CHANGE.
 
@@ -236,7 +235,6 @@
         ! Okay for SOR alone when comparing with u_exact, but not okay for MG
         ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
         if (u%all_Neumann) call subtract(u,mean(u))
-
         if (displayTF) then
           write(*,*) 'SOR parameter = ',SOR%omega
           write(*,*) '(Final,max) '//SOR%name//' iteration = ',ijk,maxIterations
@@ -263,7 +261,7 @@
           SOR%p%g(i)%c(1)%dhn,SOR%p%g(i)%c(2)%dhn,SOR%p%g(i)%c(3)%dhn,&
           SOR%d%g(i)%c(1)%dhn,SOR%d%g(i)%c(2)%dhn,SOR%d%g(i)%c(3)%dhn,&
           SOR%omega,SOR%gt,odd)
-          call apply_stitches(u,m)
+          ! call apply_stitches(u,m)
         enddo
       end subroutine
 

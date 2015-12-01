@@ -104,6 +104,29 @@
            m%s = 0; deallocate(m%g)
          else; m%s = 0
          endif
+         call remove_stitches(m)
+       end subroutine
+
+       subroutine remove_stitches(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         integer :: i,k
+         do i=1,m%s; do k=1,3
+           m%g(i)%st_face%hmin(k) = .false.
+           m%g(i)%st_face%hmin_id(k) = 0
+           m%g(i)%st_face%hmax(k) = .false.
+           m%g(i)%st_face%hmax_id(k) = 0
+
+           m%g(i)%st_edge%minmin(k) = .false.
+           m%g(i)%st_edge%minmin_id(k) = 0
+           m%g(i)%st_edge%maxmax(k) = .false.
+           m%g(i)%st_edge%maxmax_id(k) = 0
+
+           m%g(i)%st_corner%minmin = .false.
+           m%g(i)%st_corner%minmin_id = 0
+           m%g(j)%st_corner%maxmax = .false.
+           m%g(j)%st_corner%maxmax_id = 0
+         enddo; enddo
        end subroutine
 
        subroutine initmeshCopy(m_out,m_in)
@@ -152,7 +175,7 @@
        subroutine patch_grids(m)
          implicit none
          type(mesh),intent(inout) :: m
-         integer :: i
+         integer :: i,k
          real(cp) :: tol
          if (.not.allocated(m%g)) stop 'Error: mesh not allocated in patch_grids in mesh.f90'
          if (size(m%g).ne.m%s) stop 'Error: mesh size not correct in patch_grids in mesh.f90'
@@ -166,6 +189,7 @@
            call patch_Faces(m,tol)
            call patch_Edges(m,tol)
            call patch_Corners(m,tol)
+         else; call remove_stitches(m)
          endif
        end subroutine
 

@@ -96,10 +96,10 @@
         real(cp) :: cosi,cosj,cosk
         integer,dimension(3) :: s
 
+        call assign(FFT%f,f)
         do t=1,u%s
           s = U%RF(t)%s
           call init(FFT,U,m)
-          call assign(FFT%f%RF(t),f%RF(t))
 
           select case (dir)
           case (1); call dct(FFT%f%RF(t)%f(:,2:s(2)-1,:),2,1)

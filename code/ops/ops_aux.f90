@@ -117,6 +117,12 @@
        public :: unitVector
        interface unitVector;              module procedure unitVector_SF;             end interface
 
+       public :: deleteUnitVector
+       interface deleteUnitVector;        module procedure deleteUnitVector_SF;       end interface
+
+       ! public :: get_multi_index
+       ! interface get_multi_index;         module procedure get_multi_index_SF;        end interface
+
        ! public :: perturb
        ! interface perturb;       module procedure perturb_SF;      end interface
        ! interface perturb;       module procedure perturb_VF;      end interface
@@ -574,16 +580,22 @@
          implicit none
          type(SF),intent(inout) :: U
          integer,intent(in) :: un
-         integer :: i,j,k,t,m
-         m = 1
+         integer :: i,j,k,t
          if (un.lt.1) stop 'Error: un must > 0 in unitVector_SF in ops_aux.f90'
          if (un.gt.U%numEl) stop 'Error: un must < U%numEl in unitVector_SF in ops_aux.f90'
-         do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-         if (m.eq.un) then; U%RF(t)%f(i,j,k) = 1.0_cp
-         else;              U%RF(t)%f(i,j,k) = 0.0_cp
-         endif
-         m = m + 1
-         enddo; enddo; enddo; enddo
+         call get_3D_index(i,j,k,t,U,un)
+         U%RF(t)%f(i,j,k) = 1.0_cp
+       end subroutine
+
+       subroutine deleteUnitVector_SF(U,un)
+         implicit none
+         type(SF),intent(inout) :: U
+         integer,intent(in) :: un
+         integer :: i,j,k,t
+         if (un.lt.1) stop 'Error: un must > 0 in unitVector_consecutive_SF in ops_aux.f90'
+         if (un.gt.U%numEl) stop 'Error: un must < U%numEl in unitVector_consecutive_SF in ops_aux.f90'
+         call get_3D_index(i,j,k,t,U,un)
+         U%RF(t)%f(i,j,k) = 0.0_cp
        end subroutine
 
        subroutine volume_VF(u,m)
@@ -600,8 +612,8 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: n,dir
          integer :: i
+         call assign(fo,0.0_cp)
          do i=1,fi%s
-           call assign(fo%RF(i),0.0_cp)
            call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,m%g(i),n,fi%RF(i)%s,dir)
            call zeroGhostPoints(fo%RF(i)%f,fo%RF(i)%s)
          enddo

@@ -498,7 +498,7 @@
          ! ********************** LOCAL VARIABLES ***********************
          real(cp) :: Re,dt
          logical :: TF
-         TF = mom%nstep.eq.0
+         TF = mom%nstep.lt.1
          dt = mom%dTime
          Re = mom%Re
 
@@ -509,16 +509,18 @@
          end select
 
          ! Ustar = -TempVF
-         call assignMinus(mom%Ustar,mom%temp_F)
+         ! call multiply(mom%Ustar,mom%temp_F,-1.0_cp)
+         call assign(mom%Ustar,mom%temp_F)
+         call multiply(mom%Ustar,-1.0_cp)
          ! call printPhysicalMinMax(mom%temp_F,'advect')
          ! if (TF) call export_2D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','advect_x',0,3)
          ! if (TF) call export_2D_1C(mom%m,mom%Ustar%y,'out/LDC/Ufield/','advect_y',0,3)
 
          ! Laplacian Terms -----------------------------------------
          call lap(mom%temp_F,mom%U,m)
-         call divide(mom%temp_F,Re)
+         call multiply(mom%temp_F,1.0_cp/Re)
          ! call printPhysicalMinMax(mom%temp_F,'diff')
-         ! if (TF) call export_2D_1C(mom%m,mom%temp_F%x,'out/LDC/Ufield/','diffuse_x',0,3)
+         ! if (TF) call export_3D_1C(mom%m,mom%temp_F%x,'out/LDC/Ufield/','diffuse_x',0)
          ! if (TF) call export_2D_1C(mom%m,mom%temp_F%y,'out/LDC/Ufield/','diffuse_y',0,3)
          call add(mom%Ustar,mom%temp_F)
 
@@ -527,8 +529,10 @@
          ! call printPhysicalMinMax(F,'jcrossB')
 
          ! Zero wall coincident forcing (may be bad for neumann BCs)
-         call zeroWall_conditional(mom%Ustar,m)
+         ! if (TF) call export_3D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','U_before_ZWC',0)
+         call zeroWall_conditional(mom%Ustar,m,mom%U)
 
+         ! if (TF) call export_3D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','U_after_ZWC',0)
          ! Solve with explicit Euler --------------------
          ! Ustar = U + dt*Ustar
          call multiply(mom%Ustar,dt)
@@ -538,17 +542,18 @@
          ! Apply intermediate BCs and stitching
          call apply_stitches(mom%Ustar,m)
          call apply_BCs(mom%Ustar,m,mom%U)
+         ! if (TF) call export_3D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','U_before_div',0)
 
          ! Pressure Correction -------------------------------------
          call div(mom%temp_CC,mom%Ustar,m)
          ! Temp = Temp/dt
-         call divide(mom%temp_CC,dt) ! O(dt) pressure treatment
+         call multiply(mom%temp_CC,1.0_cp/dt) ! O(dt) pressure treatment
          ! call apply_BCs(mom%p_bcs,mom%temp_CC,m)
          call zeroGhostPoints(mom%temp_CC)
          ! call printPhysicalMinMax(mom%temp_CC,'PPE_input')
 
          call apply_stitches(mom%temp_CC,m)
-         ! if (TF) call export_2D_1C(mom%m,mom%temp_CC,'out/LDC/Ufield/','PPE_input',0,3)
+         ! if (TF) call export_3D_1C(mom%m,mom%temp_CC,'out/LDC/Ufield/','PPE_input',0)
          ! if (TF) call export_3D_1C(mom%m,mom%temp_CC,'out/LDC/Ufield/','PPE_input_full',0)
          ! if (TF) call export_3D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_before',0)
 
@@ -562,6 +567,8 @@
          ! call solve(mom%FFT_p,mom%p,mom%temp_CC,m,&
          !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
          ! if (TF) call export_2D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_solution',0,3)
+         ! if (TF) call export_3D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_solution',0)
+         ! if (TF) stop 'DONE'
 
          call grad(mom%temp_F,mom%p,m)
          ! if (TF) call export_2D_1C(mom%m,mom%temp_F%x,'out/LDC/Ufield/','gradP_x',0,3)
