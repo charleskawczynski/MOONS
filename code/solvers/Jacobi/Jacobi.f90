@@ -16,6 +16,7 @@
       public :: Jacobi
       public :: init,delete
       public :: solve
+      logical :: visualize_operator = .false.
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -29,7 +30,7 @@
 
       type Jacobi
         type(mesh) :: m
-        type(VF) :: Au,res,Dinv,D,sigma,tempk,vol
+        type(VF) :: Ax,res,Dinv,D,k,tempk,vol
       end type
       
       interface init;        module procedure init_Jacobi;       end interface
@@ -38,71 +39,53 @@
 
       contains
 
-      subroutine init_Jacobi(JAC,u,sigma,m)
+      subroutine init_Jacobi(JAC,x,k,m,dt,Rem)
         implicit none
         type(Jacobi),intent(inout) :: JAC
-        type(VF),intent(in) :: u
-        type(VF),intent(in) :: sigma
+        type(VF),intent(in) :: x
+        type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: dt,Rem
         call init(JAC%m,m)
-        call init(JAC%Au,u)
-        call init(JAC%res,u)
-        call init(JAC%Dinv,u)
-        call init(JAC%D,u)
-        call init_Face(JAC%sigma,m)
-        call init(JAC%tempk,JAC%sigma)
-        call assign(JAC%sigma,sigma)
-        call init(JAC%vol,u)
+        call init(JAC%Ax,x)
+        call init(JAC%res,x)
+        call init(JAC%Dinv,x)
+        call init(JAC%D,x)
+        call init_Face(JAC%k,m)
+        call init(JAC%tempk,JAC%k)
+        call assign(JAC%k,k)
+        call init(JAC%vol,x)
         call volume(JAC%vol,m)
-        ! call get_diagonal_VF(operator,D,vol,m,tempk,c,k)
-        call get_diagonal(compute_A,JAC%D,JAC%vol,m,JAC%tempk,1.0_cp,JAC%sigma)
+
+        call get_diagonal(B_diff_nat_stag_diag,JAC%D,JAC%vol,m,JAC%tempk,dt/Rem,JAC%k)
+        call multiply(JAC%D,dt/Rem)
+        call add(JAC%D,1.0_cp)
+
         call assign(JAC%Dinv,JAC%D)
         call invert(JAC%Dinv)
       end subroutine
 
-      subroutine solve_Jacobi(JAC,u,f,n,norm,displayTF)
+      subroutine solve_Jacobi(JAC,x,f,n,norm,displayTF)
         implicit none
         type(Jacobi),intent(inout) :: JAC
-        type(VF),intent(inout) :: u
+        type(VF),intent(inout) :: x
         type(VF),intent(in) :: f
         integer,intent(inout) :: n
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
-        ! call solve_VF(operator,u,f,k,Dinv,D,m,n,norm,displayTF,Au,res)
-        call solve(compute_A,u,f,JAC%sigma,JAC%Dinv,JAC%D,JAC%m,n,norm,displayTF,JAC%Au,JAC%res)
+        ! call solve_VF(operator,x,f,k,Dinv,D,m,n,norm,displayTF,Ax,res)
+        call solve(B_diff_nat_stag,x,f,JAC%k,JAC%Dinv,JAC%D,JAC%m,n,norm,displayTF,JAC%Ax,JAC%res)
       end subroutine
 
       subroutine delete_Jacobi(JAC)
         implicit none
         type(Jacobi),intent(inout) :: JAC
         call delete(JAC%m)
-        call delete(JAC%Au)
+        call delete(JAC%Ax)
         call delete(JAC%res)
         call delete(JAC%Dinv)
         call delete(JAC%D)
-        call delete(JAC%sigma)
-      end subroutine
-
-      subroutine compute_A(Au,u,k,m,temp)
-        implicit none
-        type(VF),intent(inout) :: Au
-        type(VF),intent(inout) :: temp
-        type(VF),intent(in) :: k
-        type(VF),intent(in) :: u
-        type(mesh),intent(in) :: m
-        call compute_diffusion(Au,u,k,m,temp)
-      end subroutine
-
-      subroutine compute_diffusion(Au,u,k,m,temp) ! ∇•(∇u)
-        implicit none
-        type(VF),intent(inout) :: Au
-        type(VF),intent(inout) :: temp
-        type(VF),intent(in) :: k
-        type(VF),intent(in) :: u
-        type(mesh),intent(in) :: m
-        call curl(temp,u,m)
-        call multiply(temp,k)
-        call curl(Au,temp,m)
+        call delete(JAC%k)
       end subroutine
 
       end module

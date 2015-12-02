@@ -29,6 +29,7 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
 TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -39,7 +40,7 @@ LIB_DIR = $(SRC_DIR)$(PS)lib
 FC      = gfortran
 
 # ****************** DEFAULT FLAGS ******************
-FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp -g
+FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=f95
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
@@ -51,7 +52,7 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 FCFLAGS += -D_FFT_RADIX2_
 
 # Order of accuracy of finite difference stencil
-FCFLAGS += -D_STENCILS_O2_
+# FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_STENCILS_O4_
 FCFLAGS += -fopenmp
 
@@ -59,7 +60,7 @@ FCFLAGS += -fopenmp
 # FLIBS = $(LIB_DIR)$(PS)tecio.lib
 
 # ****************** DEBUGGING **********************
-FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0
+FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
 FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_INTERP_
 # FC_DEBUG += -D_DEBUG_COORDINATES_
@@ -70,7 +71,7 @@ FC_DEBUG += -D_DEBUG_APPLYBCS_
 # FC_DEBUG += -D_DEBUG_TF_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
-FC_OPTIMIZE += -O3
+FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_RF_
@@ -92,9 +93,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -123,6 +124,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)RF \
 	$(SRC_DIR)$(PS)fields$(PS)SF \
 	$(SRC_DIR)$(PS)fields$(PS)VF \
+	$(SRC_DIR)$(PS)fields$(PS)TF \
 	$(SRC_DIR)$(PS)ops \
 	$(SRC_DIR)$(PS)static \
 	$(SRC_DIR)$(PS)sparse \
@@ -177,7 +179,16 @@ VPATH =\
 # $(SRC_DIR)$(PS)fields$(PS)SF$(PS)SF.f90 \
 # $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF.f90 \
 # $(SRC_DIR)$(PS)fields$(PS)TF$(PS)TF.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign_negative.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_add.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_subtract.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_multiply.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_divide.f90 \
+# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_aux.f90 \
 
+# $(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG_tools.f90 \
+# $(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG.f90 \
 
 
 SRCS_F =\
@@ -212,10 +223,24 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign_negative.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_add.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_subtract.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_multiply.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_divide.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_square.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_sum.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_aux.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)SF$(PS)SF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_obj.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign_negative.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_add.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_subtract.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)TF$(PS)TF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90 \
@@ -271,8 +296,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG_tools.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90 \

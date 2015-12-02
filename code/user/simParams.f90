@@ -11,14 +11,14 @@
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .false.
+       logical :: solveInduction            = .true.
 
        logical :: computeKU                 = .true.    ! Compute kinetic energy at each time step
        logical :: computeKB                 = .true.    ! Compute Total   magnetic energy at each time step
        logical :: computeKBi                = .true.    ! Compute Induced magnetic energy at each time step
        logical :: computeKB0                = .true.   ! Compute Applied magnetic energy at each time step
 
-       logical :: addJCrossB                = .false.
+       logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 

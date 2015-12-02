@@ -26,6 +26,10 @@
       private
       public :: PCG_solver
       public :: init,solve,delete
+
+      logical :: visualize_operator = .false.
+      logical :: test_symmetry_TF = .false.
+      logical :: precondition = .false.
       
       interface init;    module procedure init_PCG_VF;  end interface
       interface solve;   module procedure solve_PCG_VF; end interface
@@ -45,32 +49,28 @@
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k
         real(cp),intent(in) :: dt,Rem
-        type(VF) :: temp_CC,temp_N,temp_F,temp_E
-        logical :: analyzeA
+        ! type(VF) :: temp_CC,temp_N,temp_F,temp_E
 
-        call init_CC(temp_CC,m)
-        call init_Node(temp_N,m)
-        call init_Face(temp_F,m)
-        call init_Edge(temp_E,m)
-        write(*,*) 'Reached before tests'
-        call assign(temp_F,0.0_cp)
-        call add(temp_F,1.0_cp)
-        call export_3D_1C(m,temp_F%x,'out/LDC/','temp_F(x)',0)
-        call export_3D_1C(m,temp_F%y,'out/LDC/','temp_F(y)',0)
-        call export_3D_1C(m,temp_F%z,'out/LDC/','temp_F(z)',0)
-
-        call assign(temp_E,0.0_cp)
-        call add(temp_E,1.0_cp)
-        call export_3D_1C(m,temp_E%x,'out/LDC/','temp_E(x)',0)
-        call export_3D_1C(m,temp_E%y,'out/LDC/','temp_E(y)',0)
-        call export_3D_1C(m,temp_E%z,'out/LDC/','temp_E(z)',0)
-
-        call delete(temp_CC)
-        call delete(temp_N)
-        call delete(temp_F)
-        call delete(temp_E)
-        stop 'Done testing'
-
+        ! call init_CC(temp_CC,m)
+        ! call init_Node(temp_N,m)
+        ! call init_Face(temp_F,m)
+        ! call init_Edge(temp_E,m)
+        ! write(*,*) 'Reached before tests'
+        ! call assign(temp_F,0.0_cp)
+        ! call add(temp_F,1.0_cp)
+        ! call export_3D_1C(m,temp_F%x,'out/LDC/','temp_F(x)',0)
+        ! call export_3D_1C(m,temp_F%y,'out/LDC/','temp_F(y)',0)
+        ! call export_3D_1C(m,temp_F%z,'out/LDC/','temp_F(z)',0)
+        ! call assign(temp_E,0.0_cp)
+        ! call add(temp_E,1.0_cp)
+        ! call export_3D_1C(m,temp_E%x,'out/LDC/','temp_E(x)',0)
+        ! call export_3D_1C(m,temp_E%y,'out/LDC/','temp_E(y)',0)
+        ! call export_3D_1C(m,temp_E%z,'out/LDC/','temp_E(z)',0)
+        ! call delete(temp_CC)
+        ! call delete(temp_N)
+        ! call delete(temp_F)
+        ! call delete(temp_E)
+        ! stop 'Done testing'
 
         call init(PCG%r,x)
         call init(PCG%p,x)
@@ -93,19 +93,17 @@
 
         ! The complicated part of the diagonal is the curl-curl, so
         ! let's compute that automatically and then modify the rest after:
-        call get_diagonal(B_diff_nat_stag_diag,PCG%Minv,PCG%vol,m,PCG%tempk,dt/Rem,PCG%k)
-        call multiply(PCG%Minv,dt/Rem)
-        call add(PCG%Minv,1.0_cp)
-        call multiply(PCG%Minv,PCG%vol)
+        if (precondition) then
+          call get_diagonal(B_diff_nat_stag_diag,PCG%Minv,PCG%vol,m,PCG%tempk,dt/Rem,PCG%k)
+          call multiply(PCG%Minv,dt/Rem)
+          call add(PCG%Minv,1.0_cp)
+          call multiply(PCG%Minv,PCG%vol)
+        else; call assign(PCG%Minv,1.0_cp)
+        endif
 
-        ! call assign(PCG%Minv,1.0_cp)
+        if (test_symmetry_TF) call test_symmetry(B_diff_nat_stag,'PCG_VF',x,PCG%vol,m,PCG%tempk,dt/Rem,PCG%k)
 
-        analyzeA = .false.
-        if (analyzeA) then
-          write(*,*) '     Starting symmetry test'
-          ! call test_symmetry_VF(operator,name,x,vol,m,tempk,c,k)
-          call test_symmetry(B_diff_nat_stag,'PCG_VF',x,PCG%vol,m,PCG%tempk,dt/Rem,PCG%k)
-          write(*,*) '     Finished symmetry test'
+        if (visualize_operator) then
           ! call export_operator_VF(operator,name,dir,x,vol,m,tempk,c,k)
           call export_operator(B_diff_nat_stag,'PCG_VF','out/LDC/',x,PCG%vol,m,PCG%tempk,dt/Rem,PCG%k)
           write(*,*) '     Finished exporting operator'

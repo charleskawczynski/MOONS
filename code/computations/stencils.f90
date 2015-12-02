@@ -23,8 +23,6 @@
 
       private
       public :: staggered, collocated
-      public :: collocated_transpose
-      public :: collocated_symmetric
       ! For splitting methods:
       public :: collocated_LU
       public :: collocated_D
@@ -44,11 +42,9 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      interface staggered;            module procedure staggered_O2;                    end interface
-      interface collocated;           module procedure collocated_O2;                   end interface
-      interface collocated_transpose; module procedure collocated_O2_transpose;         end interface
-      interface collocated_symmetric; module procedure collocated_O2_symmetric;         end interface
-      interface collocated;           module procedure collocatedD2fDh2_conservative;   end interface
+      interface staggered;   module procedure staggered_O2;                         end interface
+      interface collocated;  module procedure collocated_O2_interior_O1_boundary;   end interface
+      interface collocated;  module procedure collocatedD2fDh2_conservative;        end interface
 
       ! interface staggered;     module procedure staggered_O4;                     end interface
 
@@ -80,7 +76,7 @@
         dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
       end function
 
-      function collocated_O2(f,T,s,CC,pad1,pad2) result(dfdh)
+      function collocated_O2_interior_O1_boundary(f,T,s,CC,pad1,pad2) result(dfdh)
         ! This routine computes the 1st or 2nd derivative (depending
         ! on the triDiag, T) of f on the primary grid. The result 
         ! lives on the primary grid. gt indicates whether f lives on 
@@ -114,138 +110,44 @@
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp ! Ghost points
       end function
 
-      function collocated_O2_transpose(f,T,s,CC,pad1,pad2) result(dfdh)
-        ! This routine computes the 1st or 2nd derivative (depending
-        ! on the triDiag, T) of f on the primary grid. The result 
-        ! lives on the primary grid. gt indicates whether f lives on 
-        ! the cell center or node of the grid.
-        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
-        ! 
-        ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
-        implicit none
-        real(cp),intent(in),dimension(s) :: f
-        type(triDiag),intent(in) :: T
-        logical,intent(in) :: CC
-        integer,intent(in) :: s,pad1,pad2
-        real(cp),dimension(s) :: dfdh
-        integer :: i
-        if (CC) then 
-          dfdh(1) = f(2)*T%L(1)
-          i = 2
-          dfdh(i) = f( i )*(T%D(1)) +&
-                    f(i+1)*(T%L(2))
-          do i=3,s-2 ! Interior is used everywhere for SPD
-            dfdh(i) = f(i-1)*T%U(i-2) +&
-                      f( i )*T%D(i-1) +&
-                      f(i+1)*T%L(i)
-          enddo
-          i = s-1
-          dfdh(i) = f(i-1)*(T%U(s-3)) +&
-                    f( i )*(T%D(s-2))
-
-          dfdh(s) = f(s-1)*T%U(s-2)
-
-        else ! Collocated cell-corner derivative, on boundary
-          dfdh(2) = f(2)*T%U(1) + &
-                    f(3)*T%D(1) + &
-                    f(4)*T%L(1)
-          dfdh(s-1) = f(s-3)*T%U(s-2) + &
-                      f(s-2)*T%D(s-2) + &
-                      f(s-1)*T%L(s-2)
-          do i=3-pad1,s-2+pad2
-            dfdh(i) = f(i-1)*T%U(i-1) + f(i)*T%D(i-1) + f(i+1)*T%L(i-1)
-          enddo
-        endif
-        dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp ! Ghost points
-      end function
-
-      function collocated_O2_symmetric(f,T,s,CC,pad1,pad2) result(dfdh)
-        ! This routine computes the 1st or 2nd derivative (depending
-        ! on the triDiag, T) of f on the primary grid. The result 
-        ! lives on the primary grid. gt indicates whether f lives on 
-        ! the cell center or node of the grid.
-        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
-        ! 
-        ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
-        implicit none
-        real(cp),intent(in),dimension(s) :: f
-        type(triDiag),intent(in) :: T
-        logical,intent(in) :: CC
-        integer,intent(in) :: s,pad1,pad2
-        real(cp),dimension(s) :: dfdh
-        integer :: i
-        if (CC) then
-          dfdh(1) = f(2)*T%L(1)
-          i = 2
-          dfdh(i) = f(i-1)*(T%L(i-1)) +&
-                    f( i )*(T%D(i-1)+T%D(1)) +&
-                    f(i+1)*(T%U(i-1)+T%L(2))
-          do i=3,s-2 ! Interior is used everywhere for SPD
-            dfdh(i) = f(i-1)*(T%L(i-1)+T%U(i-2)) +&
-                      f( i )*(T%D(i-1)+T%D(i-1)) +&
-                      f(i+1)*(T%U(i-1)+T%L(i))
-          enddo
-          i = s-1
-          dfdh(i) = f(i-1)*(T%L(i-1)+T%U(s-3)) +&
-                    f( i )*(T%D(i-1)+T%D(s-2)) +&
-                    f(i+1)*(T%U(i-1))
-
-          dfdh(s) = f(s-1)*T%U(s-2)
-
-        else ! Collocated cell-corner derivative, on boundary
-          dfdh(2) = f(2)*T%U(1) + &
-                    f(3)*T%D(1) + &
-                    f(4)*T%L(1)
-          dfdh(s-1) = f(s-3)*T%U(s-2) + &
-                      f(s-2)*T%D(s-2) + &
-                      f(s-1)*T%L(s-2)
-          do i=3-pad1,s-2+pad2
-            dfdh(i) = f(i-1)*T%U(i-1) + f(i)*T%D(i-1) + f(i+1)*T%L(i-1)
-          enddo
-        endif
-        dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp ! Ghost points
-      end function
-
-      function collocated_O2_old(f,T,s,CC,pad1,pad2) result(dfdh)
-        ! This routine computes the 1st or 2nd derivative (depending
-        ! on the triDiag, T) of f on the primary grid. The result 
-        ! lives on the primary grid. gt indicates whether f lives on 
-        ! the cell center or node of the grid.
-        ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
-        !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
-        ! 
-        ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
-        implicit none
-        real(cp),intent(in),dimension(s) :: f
-        type(triDiag),intent(in) :: T
-        logical,intent(in) :: CC
-        integer,intent(in) :: s,pad1,pad2
-        real(cp),dimension(s) :: dfdh
-        integer :: i
-        if (CC) then ! Collocated cell-center derivative, half cell from boundary
-        ! Linear interpolation is used to obtain boundary value
-        dfdh(2) = 0.5_cp*(f(1)+f(2))*T%L(1) + &
-                               f(2) *T%D(1) + &
-                               f(3) *T%U(1)
-        dfdh(s-1) =  f(s-2) *T%L(s-2) + &
-                     f(s-1) *T%D(s-2) + &
-        0.5_cp*(f(s)+f(s-1))*T%U(s-2)
-        else ! Collocated cell-corner derivative, on boundary
-        dfdh(2) = f(2)*T%L(1) + &
-                  f(3)*T%D(1) + &
-                  f(4)*T%U(1)
-        dfdh(s-1) = f(s-3)*T%L(s-2) + &
-                    f(s-2)*T%D(s-2) + &
-                    f(s-1)*T%U(s-2)
-        endif
-        ! Interior (overwrites above stencil if stitching is needed)
-        do i=3-pad1,s-2+pad2
-          dfdh(i) = f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
-        enddo
-        dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp ! Ghost points
-      end function
+      ! function collocated_O2_interior_O2_boundary(f,T,s,CC,pad1,pad2) result(dfdh)
+      !   ! This routine computes the 1st or 2nd derivative (depending
+      !   ! on the triDiag, T) of f on the primary grid. The result 
+      !   ! lives on the primary grid. gt indicates whether f lives on 
+      !   ! the cell center or node of the grid.
+      !   ! gt = 1 :  f {CC} , dfdh {N}    (NOT d2fdh2)
+      !   !      0 :  f {N}  , dfdh {CC}   (NOT d2fdh2)
+      !   ! 
+      !   ! NOTE: dfdh = d/dh (f) {interior}, dfdh = 0 {boundary,ghost cells}
+      !   implicit none
+      !   real(cp),intent(in),dimension(s) :: f
+      !   type(triDiag),intent(in) :: T
+      !   logical,intent(in) :: CC
+      !   integer,intent(in) :: s,pad1,pad2
+      !   real(cp),dimension(s) :: dfdh
+      !   integer :: i
+      !   if (CC) then ! Collocated cell-center derivative, half cell from boundary
+      !   ! Linear interpolation is used to obtain boundary value
+      !   dfdh(2) = 0.5_cp*(f(1)+f(2))*T%L(1) + &
+      !                          f(2) *T%D(1) + &
+      !                          f(3) *T%U(1)
+      !   dfdh(s-1) =  f(s-2) *T%L(s-2) + &
+      !                f(s-1) *T%D(s-2) + &
+      !   0.5_cp*(f(s)+f(s-1))*T%U(s-2)
+      !   else ! Collocated cell-corner derivative, on boundary
+      !   dfdh(2) = f(2)*T%L(1) + &
+      !             f(3)*T%D(1) + &
+      !             f(4)*T%U(1)
+      !   dfdh(s-1) = f(s-3)*T%L(s-2) + &
+      !               f(s-2)*T%D(s-2) + &
+      !               f(s-1)*T%U(s-2)
+      !   endif
+      !   ! Interior (overwrites above stencil if stitching is needed)
+      !   do i=3-pad1,s-2+pad2
+      !     dfdh(i) = f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
+      !   enddo
+      !   dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp ! Ghost points
+      ! end function
 
       function collocatedD2fDh2_conservative(f,k,T1,T2,s,stemp,gt) result(dfdh)
         implicit none

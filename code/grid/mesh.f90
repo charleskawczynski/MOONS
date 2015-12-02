@@ -124,8 +124,8 @@
 
            m%g(i)%st_corner%minmin = .false.
            m%g(i)%st_corner%minmin_id = 0
-           m%g(j)%st_corner%maxmax = .false.
-           m%g(j)%st_corner%maxmax_id = 0
+           m%g(i)%st_corner%maxmax = .false.
+           m%g(i)%st_corner%maxmax_id = 0
          enddo; enddo
        end subroutine
 
@@ -175,7 +175,7 @@
        subroutine patch_grids(m)
          implicit none
          type(mesh),intent(inout) :: m
-         integer :: i,k
+         integer :: i
          real(cp) :: tol
          if (.not.allocated(m%g)) stop 'Error: mesh not allocated in patch_grids in mesh.f90'
          if (size(m%g).ne.m%s) stop 'Error: mesh size not correct in patch_grids in mesh.f90'
@@ -207,6 +207,7 @@
              case (1); a1 = 2; a2 = 3 ! orthogonal directions to contact face
              case (2); a1 = 1; a2 = 3 ! orthogonal directions to contact face
              case (3); a1 = 1; a2 = 2 ! orthogonal directions to contact face
+             case default; stop 'Error: k must = 1,2,3 in patch_Faces in mesh.f90'
              end select
              TF_face(2) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmin
              TF_face(3) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! Adjacent face 1 hmax
@@ -249,6 +250,7 @@
              case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
              case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
              case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
+             case default; stop 'Error: k must = 1,2,3 in patch_Edges_diag in mesh.f90'
              end select
              TF_edge(3) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1) ! min/max (a1)
              TF_edge(4) = abs(m%g(i)%c(a1)%hmax-m%g(j)%c(a1)%hmin).lt.tol*m%dhmin(a1) ! max/min (a1)
@@ -290,6 +292,7 @@
              case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
              case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
              case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
+             case default; stop 'Error: k must = 1,2,3 in patch_Edges_adjoin_face in mesh.f90'
              end select
              TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmin(a2))
              if (.not.TF) m%g(i)%st_edge%minmin(k) = .false.
@@ -320,6 +323,7 @@
              case (1); a1 = 2; a2 = 3 ! orthogonal directions to contact face
              case (2); a1 = 1; a2 = 3 ! orthogonal directions to contact face
              case (3); a1 = 1; a2 = 2 ! orthogonal directions to contact face
+             case default; stop 'Error: k must = 1,2,3 in patch_Corners in mesh.f90'
              end select
              TF_corner(3) = abs(m%g(i)%c(a1)%hmin-m%g(j)%c(a1)%hmax).lt.tol*m%dhmin(a1)
              TF_corner(4) = abs(m%g(i)%c(a2)%hmin-m%g(j)%c(a2)%hmax).lt.tol*m%dhmin(a2)

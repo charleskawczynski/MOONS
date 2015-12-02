@@ -543,7 +543,7 @@
          type(mesh),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
-         logical :: exportNow
+         logical :: exportNow,lowRem
          ! ********************** LOCAL VARIABLES ***********************
          ! ind%B0%x = exp(-ind%omega*ind%t)
          ! ind%B0%y = exp(-ind%omega*ind%t)
@@ -609,19 +609,33 @@
          !             getExportErrors(ss_MHD))
          ! stop 'Done'
 
-         ! call assign(ind%Bstar,ind%B0)    ! Low Rem
-         call add(ind%Bstar,ind%B0,ind%B) ! Finite Rem
-         call cellCenter2Face(ind%temp_F,ind%Bstar,ind%m)
+         lowRem = .true.
+         if (lowRem) then
+           call cellCenter2Face(ind%temp_F,ind%B0,ind%m)
 
-         call faceCurlCross_F(ind%curlUCrossB,ind%U_Ft,ind%temp_F,&
-                              ind%m,ind%temp_E1,ind%temp_E2,ind%temp_F2)
-         call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative
+           call faceCurlCross_F(ind%curlUCrossB,ind%U_Ft,ind%temp_F,&
+                                ind%m,ind%temp_E1,ind%temp_E2,ind%temp_F2)
+           call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative
 
-         call add(ind%curlUCrossB,ind%B_face)
-         call solve(ind%PCG_B,ind%B_face,ind%curlUCrossB,&
-         ind%dTime,ind%Rem,ind%m,1000,ind%norm_B,getExportErrors(ss_MHD))
+           call add(ind%curlUCrossB,ind%B_face)
+           call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,&
+           ind%dTime,1.0_cp,ind%m,5,ind%norm_B,getExportErrors(ss_MHD))
 
-         call face2cellCenter(ind%B,ind%B_face,ind%m)
+           call face2cellCenter(ind%B,ind%B_face,ind%m)
+         else
+           call add(ind%Bstar,ind%B0,ind%B) ! Finite Rem
+           call cellCenter2Face(ind%temp_F,ind%Bstar,ind%m)
+
+           call faceCurlCross_F(ind%curlUCrossB,ind%U_Ft,ind%temp_F,&
+                                ind%m,ind%temp_E1,ind%temp_E2,ind%temp_F2)
+           call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative
+
+           call add(ind%curlUCrossB,ind%B_face)
+           call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,&
+           ind%dTime,ind%Rem,ind%m,5,ind%norm_B,getExportErrors(ss_MHD))
+
+           call face2cellCenter(ind%B,ind%B_face,ind%m)
+         endif
 
          ! call cross(ind%temp_CC,ind%U_cct,ind%B0)
          ! call curl(ind%curlUCrossB,ind%temp_CC,ind%m)
@@ -789,7 +803,7 @@
          type(induction),intent(inout) :: ind
          real(cp),intent(in) :: Ha,Re,Rem
          select case (solveBMethod)
-         case (5,6) ! Finite Rem
+         case (5) ! Finite Rem
            call add(ind%Bstar,ind%B,ind%B0)
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
