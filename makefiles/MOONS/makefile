@@ -28,7 +28,7 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
