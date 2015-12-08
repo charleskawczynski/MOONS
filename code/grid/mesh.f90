@@ -36,6 +36,7 @@
          real(cp) :: volume
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
+         real(cp) :: dhmax_max,dhmin_min
        end type
 
        interface init;           module procedure init_grid;           end interface
@@ -170,6 +171,8 @@
            enddo
            m%N_cells_tot = m%N_cells_tot + m%g(i)%c(1)%N*m%g(i)%c(2)%N*m%g(i)%c(3)%N
          enddo
+         m%dhmin_min = minval((/m%dhmin(1),m%dhmin(2),m%dhmin(3)/))
+         m%dhmax_max = maxval((/m%dhmax(1),m%dhmax(2),m%dhmax(3)/))
        end subroutine
 
        subroutine patch_grids(m)

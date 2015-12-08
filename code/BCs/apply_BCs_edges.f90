@@ -467,8 +467,8 @@
          type(bctype),intent(in) :: bct
          if (bct%Dirichlet) then;   ug = 4.0_cp*bvals - (ui + ug1 + ug2)
          elseif (bct%Neumann) then; 
-         ug = 0.5_cp*(ug1 + ug2) ! (hard coded zero)
-         else !; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
+         ug = (ug1*dh(1) + ug2*dh(2))/(dh(1)+dh(2)) ! (hard coded zero)
+         else; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
          endif
        end subroutine
 
@@ -483,7 +483,7 @@
          elseif (bct%Neumann) then; 
            ug1 = ui1 - 2.0_cp*dh(1)*bvals
            ug2 = ui2 - 2.0_cp*dh(2)*bvals
-         else !; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'
+         else; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'
          endif
        end subroutine
 
@@ -496,7 +496,7 @@
          type(bctype),intent(in) :: bct
          if (bct%Dirichlet) then;   ug = 2.0_cp*bvals - ui
          elseif (bct%Neumann) then; ug = ui + dh*bvals
-         else !; stop 'Error: Bad bctype! Caught in a_F in apply_BCs_edges.f90'
+         else; stop 'Error: Bad bctype! Caught in a_F in apply_BCs_edges.f90'
          endif
        end subroutine
 

@@ -6,7 +6,8 @@
       use SF_mod
       use VF_mod
       use IO_SF_mod
-      use Jacobi_operators_mod
+      use IO_tools_mod
+      use matrix_free_operators_mod
       use Jacobi_solver_mod
       use matrix_mod
 
@@ -31,6 +32,8 @@
       type Jacobi
         type(mesh) :: m
         type(VF) :: Ax,res,Dinv,D,k,tempk,vol
+        type(norms) :: norm
+        integer,dimension(3) :: un ! unit to export norm
       end type
       
       interface init;        module procedure init_Jacobi;       end interface
@@ -39,13 +42,14 @@
 
       contains
 
-      subroutine init_Jacobi(JAC,x,k,m,dt,Rem)
+      subroutine init_Jacobi(JAC,x,k,m,dt,Rem,dir,name)
         implicit none
         type(Jacobi),intent(inout) :: JAC
         type(VF),intent(in) :: x
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: dt,Rem
+        character(len=*),intent(in) :: dir,name
         call init(JAC%m,m)
         call init(JAC%Ax,x)
         call init(JAC%res,x)
@@ -56,25 +60,41 @@
         call assign(JAC%k,k)
         call init(JAC%vol,x)
         call volume(JAC%vol,m)
+        JAC%un(1) = newAndOpen(dir,'norm_JAC_x_'//name)
+        JAC%un(2) = newAndOpen(dir,'norm_JAC_y_'//name)
+        JAC%un(3) = newAndOpen(dir,'norm_JAC_z_'//name)
+
+        call init(JAC%norm)
 
         call get_diagonal(B_diff_nat_stag_diag,JAC%D,JAC%vol,m,JAC%tempk,dt/Rem,JAC%k)
         call multiply(JAC%D,dt/Rem)
         call add(JAC%D,1.0_cp)
 
+        if (visualize_operator) then
+          ! call export_operator_VF(operator,name,dir,x,vol,m,tempk,c,k)
+          call export_operator(B_diff_nat_stag,'JAC_VF','out/LDC/',x,JAC%vol,m,JAC%tempk,dt/Rem,JAC%k)
+          write(*,*) '     Finished exporting operator'
+
+          call export_matrix(JAC%D,'out/LDC/','diag(JAC_VF)')
+          write(*,*) '     Finished exporting diagonal'
+          stop 'Done'
+        endif
+
         call assign(JAC%Dinv,JAC%D)
         call invert(JAC%Dinv)
       end subroutine
 
-      subroutine solve_Jacobi(JAC,x,f,n,norm,displayTF)
+      subroutine solve_Jacobi(JAC,x,f,m,n,compute_norm)
         implicit none
         type(Jacobi),intent(inout) :: JAC
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: f
-        integer,intent(inout) :: n
-        type(norms),intent(inout) :: norm
-        logical,intent(in) :: displayTF
-        ! call solve_VF(operator,x,f,k,Dinv,D,m,n,norm,displayTF,Ax,res)
-        call solve(B_diff_nat_stag,x,f,JAC%k,JAC%Dinv,JAC%D,JAC%m,n,norm,displayTF,JAC%Ax,JAC%res)
+        type(mesh),intent(in) :: m
+        integer,intent(in) :: n
+        logical,intent(in) :: compute_norm
+        ! call solve(operator,x,f,vol,k,c,Dinv,D,m,n,norm,compute_norm,un,Ax,res,tempk)
+        call solve(B_diff_nat_stag,x,f,JAC%vol,JAC%k,1.0_cp,JAC%Dinv,&
+        JAC%D,m,n,JAC%norm,compute_norm,JAC%un,JAC%Ax,JAC%res,JAC%tempk)
       end subroutine
 
       subroutine delete_Jacobi(JAC)
@@ -86,6 +106,8 @@
         call delete(JAC%Dinv)
         call delete(JAC%D)
         call delete(JAC%k)
+        call init(JAC%norm)
+        JAC%un = 0
       end subroutine
 
       end module

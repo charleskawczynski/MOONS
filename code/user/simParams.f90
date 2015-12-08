@@ -1,8 +1,8 @@
        module simParams_mod
        implicit none
        logical :: exportGrids               = .true.   ! Export all Grids before starting simulation
-       logical :: exportRawICs              = .false.   ! Export Raw ICs before starting simulation
-       logical :: exportICs                 = .false.   ! Export Post-Processed ICs before starting simulation
+       logical :: exportRawICs              = .true.   ! Export Raw ICs before starting simulation
+       logical :: exportICs                 = .true.   ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.   ! Just export ICs, do not run simulation
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
        logical :: nonUniformGridFluid       = .true.   ! (T/F)
@@ -40,9 +40,9 @@
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransientFull  = 1000  ! Transient solution (very expensive)
-       integer :: nskip_exportErrors         = 10  ! Divergences / Residuals (expensive)
-       integer :: nskip_exportTransient      = 10  ! Probed data (cheap)
-       integer :: nskip_print                = 10  ! Printed data (cheap)
+       integer :: nskip_exportErrors         = 100  ! Divergences / Residuals (expensive)
+       integer :: nskip_exportTransient      = 100  ! Probed data (cheap)
+       integer :: nskip_print                = 100  ! Printed data (cheap)
 
        ! integer :: n_points_exportTransientFull  = 200   ! Transient solution (very expensive)
        ! integer :: n_points_exportErrors         = 200   ! Divergences / Residuals (expensive)

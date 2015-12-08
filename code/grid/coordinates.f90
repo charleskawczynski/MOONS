@@ -318,27 +318,14 @@
       subroutine stencil_colCC(c)
         implicit none
         type(coordinates),intent(inout) :: c
+#ifdef _O2_BOUNDARIES_
+        call stencil_colCC_2nd_order_boundaries(c)
+#else
         call stencil_colCC_1st_order_boundaries(c)
+#endif
       end subroutine
 
-      subroutine stencil_colCC_1st_order_boundaries(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U
-        real(cp),dimension(:),allocatable :: dh
-        integer :: i,s
-        s = c%sc
-        allocate(dh(s-1)); dh = c%dhc
-        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-        ! Interior
-        L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
-        D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
-        U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
-        call init(c%colCC,L,D,U)
-        deallocate(L,D,U,dh)
-      end subroutine
-
+#ifdef _O2_BOUNDARIES_
       subroutine stencil_colCC_2nd_order_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -366,14 +353,8 @@
         call init(c%colCC,L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-
-      subroutine stencil_lapCC(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        call stencil_lapCC_1st_order_boundaries(c)
-      end subroutine
-
-      subroutine stencil_lapCC_1st_order_boundaries(c)
+#else
+      subroutine stencil_colCC_1st_order_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -384,13 +365,25 @@
         allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
         L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
         ! Interior
-        L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-        D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
-        U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-        call init(c%lapCC,L,D,U)
+        L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
+        D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
+        U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
+        call init(c%colCC,L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
+#endif
 
+      subroutine stencil_lapCC(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+#ifdef _O2_BOUNDARIES_
+        call stencil_lapCC_2nd_order_boundaries(c)
+#else
+        call stencil_lapCC_1st_order_boundaries(c)
+#endif
+      end subroutine
+
+#ifdef _O2_BOUNDARIES_
       subroutine stencil_lapCC_2nd_order_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -418,6 +411,25 @@
         call init(c%lapCC,L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
+#else
+      subroutine stencil_lapCC_1st_order_boundaries(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        real(cp),dimension(:),allocatable :: L,D,U
+        real(cp),dimension(:),allocatable :: dh
+        integer :: i,s
+        s = c%sc
+        allocate(dh(s-1)); dh = c%dhc
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        ! Interior
+        L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
+        D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
+        U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
+        call init(c%lapCC,L,D,U)
+        deallocate(L,D,U,dh)
+      end subroutine
+#endif
 
       ! *****************************************************************
       ! ************************ STITCH STENCILS ************************

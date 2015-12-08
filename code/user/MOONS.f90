@@ -90,7 +90,7 @@
 
          call omp_set_num_threads(12) ! Set number of openMP threads
 
-         call readInputFile(dir,Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
+         call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
          dt_eng,dt_mom,dt_ind,NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB)
 
          call create_directory(dir)

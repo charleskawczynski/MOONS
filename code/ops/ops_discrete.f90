@@ -53,38 +53,41 @@
 #endif
 
        public :: cross
-       interface cross;     module procedure collocatedCross_RF;       end interface
-       interface cross;     module procedure collocatedCross_SF;       end interface
-       interface cross;     module procedure collocatedCross_VF;       end interface
+       interface cross;           module procedure collocatedCross_RF;        end interface
+       interface cross;           module procedure collocatedCross_SF;        end interface
+       interface cross;           module procedure collocatedCross_VF;        end interface
 
        public :: lap
-       interface lap;       module procedure lapUniformCoeff_SF;       end interface
-       interface lap;       module procedure lapUniformCoeff_VF;       end interface
-       interface lap;       module procedure lapVarCoeff_SF;           end interface
-       interface lap;       module procedure lapVarCoeff_VF;           end interface
+       interface lap;             module procedure lapUniformCoeff_SF;        end interface
+       interface lap;             module procedure lapUniformCoeff_VF;        end interface
+       interface lap;             module procedure lapVarCoeff_SF;            end interface
+       interface lap;             module procedure lapVarCoeff_VF;            end interface
 
        public :: div
-       interface div;       module procedure div_SF;                   end interface
-       interface div;       module procedure div_VF;                   end interface
+       interface div;             module procedure div_SF;                    end interface
+       interface div;             module procedure div_VF;                    end interface
 
        public :: grad
-       interface grad;      module procedure grad_SF;                  end interface
-       interface grad;      module procedure grad_VF;                  end interface
+       interface grad;            module procedure grad_SF;                   end interface
+       interface grad;            module procedure grad_VF;                   end interface
 
        public :: curl
-       interface curl;      module procedure curl_SF;                  end interface
-       interface curl;      module procedure curl_VF;                  end interface
-       interface curl;      module procedure curl_TF;                  end interface
+       interface curl;            module procedure curl_SF;                   end interface
+       interface curl;            module procedure curl_VF;                   end interface
+       interface curl;            module procedure curl_TF;                   end interface
+       
+       public :: curl_parallel
+       interface curl_parallel;   module procedure curl_TF_Parallel;          end interface
 
        public :: curlcurl
-       interface curlcurl;  module procedure curlcurlCoeff_VF;         end interface
-       interface curlcurl;  module procedure curlcurlUniform_VF;       end interface
+       interface curlcurl;        module procedure curlcurlCoeff_VF;          end interface
+       interface curlcurl;        module procedure curlcurlUniform_VF;        end interface
 
        public :: mixed
-       interface mixed;     module procedure mixed_uniformCoeff_SF;    end interface
-       interface mixed;     module procedure mixed_uniformCoeff_VF;    end interface
-       interface mixed;     module procedure mixed_variableCoeff_SF;   end interface
-       interface mixed;     module procedure mixed_variableCoeff_VF;   end interface
+       interface mixed;           module procedure mixed_uniformCoeff_SF;     end interface
+       interface mixed;           module procedure mixed_uniformCoeff_VF;     end interface
+       interface mixed;           module procedure mixed_variableCoeff_SF;    end interface
+       interface mixed;           module procedure mixed_variableCoeff_VF;    end interface
 
        contains
 
@@ -334,7 +337,15 @@
          call curl(curlU%z,U%x,U%y,U%z,m,3)
        end subroutine
 
-       subroutine curl_TF(curlU,U,m)
+       subroutine curl_TF_Parallel(curlU,U,m)
+         ! For a staggered implementation, this curl performs:
+         !           U  = {CC}
+         !      curl(U) = {F}
+         ! Or
+         !           U  = {F}
+         !      curl(U) = {CC}
+         ! In other words, the curl lands PARALLEL TO
+         ! the plane of the cell face
          implicit none
          type(VF),intent(inout) :: curlU
          type(TF),intent(in) :: U
@@ -344,7 +355,15 @@
          call curl(curlU%z,U%x%y,U%y%x,U%z%z,m,3) ! Note the diagonal input does not matter
        end subroutine
 
-       subroutine curl_TF_version2(curlU,U,m)
+       subroutine curl_TF(curlU,U,m)
+         ! For a staggered implementation, this curl performs:
+         !           U  = {E}
+         !      curl(U) = {F}
+         ! Or
+         !           U  = {F}
+         !      curl(U) = {E}
+         ! In other words, the curl lands NORMAL TO
+         ! the plane of the cell face
          implicit none
          type(VF),intent(inout) :: curlU
          type(TF),intent(in) :: U

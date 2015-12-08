@@ -46,10 +46,6 @@
       interface export_transpose; module procedure export_transpose_SF; end interface
       interface export_transpose; module procedure export_transpose_VF; end interface
 
-      interface zeroSecondIndex;  module procedure zeroSecondIndex_RF;  end interface
-      interface zeroSecondIndex;  module procedure zeroSecondIndex_SF;  end interface
-      interface zeroSecondIndex;  module procedure zeroSecondIndex_VF;  end interface
-
       contains
 
       ! *********************************************************************
@@ -123,10 +119,9 @@
       ! ********************** EXPORTING GIVEN MATRIX ***********************
       ! *********************************************************************
 
-      subroutine export_matrix_SF(D,m,dir,name)
+      subroutine export_matrix_SF(D,dir,name)
         implicit none
         type(SF),intent(in) :: D
-        type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         type(SF) :: un
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
@@ -148,10 +143,9 @@
         write(*,*) ' ---------------------------------------------- '
       end subroutine
 
-      subroutine export_matrix_VF(D,m,dir,name)
+      subroutine export_matrix_VF(D,dir,name)
         implicit none
         type(VF),intent(in) :: D
-        type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         type(VF) :: un
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
@@ -436,30 +430,6 @@
                   D%z%RF(t)%f(i,j,k) = Aun%z%RF(t)%f(i,j,k)
         case default; stop 'Error: dir must = 1,2,3 in define_ith_diag_VF in matrix.f90'
         end select
-      end subroutine
-
-      subroutine zeroSecondIndex_RF(f,s)
-        implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: f
-        integer,dimension(3),intent(in) :: s
-        f(2,:,:) = 0.0_cp; f(s(1)-1,:,:) = 0.0_cp
-        f(:,2,:) = 0.0_cp; f(:,s(2)-1,:) = 0.0_cp
-        f(:,:,2) = 0.0_cp; f(:,:,s(3)-1) = 0.0_cp
-      end subroutine
-
-      subroutine zeroSecondIndex_SF(f)
-        implicit none
-        type(SF),intent(inout) :: f
-        integer :: i
-        do i=1,f%s
-          call zeroSecondIndex(f%RF(i)%f,f%RF(i)%s)
-        enddo
-      end subroutine
-
-      subroutine zeroSecondIndex_VF(f)
-        implicit none
-        type(VF),intent(inout) :: f
-        call zeroSecondIndex(f%x); call zeroSecondIndex(f%y); call zeroSecondIndex(f%z)
       end subroutine
 
       end module

@@ -40,11 +40,11 @@
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b
         type(mesh),intent(in) :: m
-        integer,intent(inout) :: n_iter
+        integer,intent(in) :: n_iter
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
         logical :: continueLoop,TF
-        integer :: i_MG,maxIterations
+        integer :: i_MG
 
         call assign(mg(1)%smooth%b,b)
         call assign(mg(1)%smooth%x,x)

@@ -26,7 +26,7 @@
        !                                       1 : Subdomain dependent
        !                                       2 : Cylinder (2D)
 
-       real(cp) :: sigmaStarWall = 1.00_cp ! sigma* = sigma_wall/sigma_l
+       real(cp) :: sigmaStarWall = 0.001_cp ! sigma* = sigma_wall/sigma_l
 
        contains
 

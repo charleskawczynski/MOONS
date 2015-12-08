@@ -84,16 +84,15 @@
          write(*,*) ''
        end subroutine
 
-       subroutine solve_momentum(mom,F,norm_PPE,compute_norms)
+       subroutine solve_momentum(mom,F,compute_norms)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
          logical,intent(in) :: compute_norms
-         type(norm),intent(inout) :: norm_PPE
          
          call Euler_SOR_Donor(mom%SOR_p,mom%U,mom%p,F,mom%U_CC,&
          mom%m,mom%Re,mom%dTime,mom%N_PPE,mom%Ustar,mom%temp_F,&
-         mom%temp_CC,mom%temp_E1,mom%temp_E2,norm_PPE,compute_norms)
+         mom%temp_CC,mom%temp_E1,mom%temp_E2,compute_norms)
 
          mom%t = mom%t + mom%dTime
          mom%nstep = mom%nstep + 1

@@ -7,10 +7,11 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use IO_tools_mod
 
       use matrix_mod
       use CG_solver_mod
-      use CG_operators_mod
+      use matrix_free_operators_mod
       implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -35,17 +36,19 @@
         type(VF) :: r,p,tempx,Ax
         type(VF) :: vol
         type(VF) :: tempk,k
+        type(norms) :: norm
+        integer,dimension(3) :: un
       end type
 
       contains
 
-      subroutine init_CG_VF(CG,m,x,k)
+      subroutine init_CG_VF(CG,m,x,k,dir,name)
         implicit none
         type(CG_solver),intent(inout) :: CG
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k
+        character(len=*),intent(in) :: dir,name
         logical :: analyzeA
-        real(cp) :: dt,Rem
         call init(CG%r,x)
         call init(CG%p,x)
         call init(CG%tempx,x)
@@ -56,35 +59,38 @@
         call init(CG%k,k)
         call init(CG%tempk,k)
 
+        call init(CG%norm)
+        CG%un(1) = newAndOpen(dir,'norm_CG_x_'//name)
+        CG%un(2) = newAndOpen(dir,'norm_CG_y_'//name)
+        CG%un(3) = newAndOpen(dir,'norm_CG_z_'//name)
+
         call assign(CG%k,k)
 
         call volume(CG%vol,m)
         analyzeA = .false.
         if (analyzeA) then
-          dt = 0.01_cp; Rem = 1.0_cp
           write(*,*) '     Starting symmetry test'
           ! call test_symmetry_VF(operator,name,x,vol,m,tempk,c,k)
-          call test_symmetry(B_diff_nat_stag,'CG_VF',x,CG%vol,m,CG%tempk,dt/Rem,CG%k)
+          call test_symmetry(B_diff_nat_stag,'CG_VF',x,CG%vol,m,CG%tempk,0.01_cp,CG%k)
           write(*,*) '     Finished symmetry test'
           ! call export_operator_VF(operator,name,dir,x,vol,m,tempk,c,k)
-          call export_operator(B_diff_nat_stag,'CG_VF','out/LDC/',x,CG%vol,m,CG%tempk,dt/Rem,CG%k)
+          call export_operator(B_diff_nat_stag,'CG_VF','out/LDC/',x,CG%vol,m,CG%tempk,0.01_cp,CG%k)
           write(*,*) '     Finished exporting operator'
           stop 'Done'
         endif
       end subroutine
 
-      subroutine solve_CG_VF(CG,x,b,dt,Rem,m,n,norm,compute_norms)
+      subroutine solve_CG_VF(CG,x,b,dt,Rem,m,n,compute_norms)
         implicit none
         type(CG_solver),intent(inout) :: CG
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: dt,Rem
-        type(norms),dimension(3),intent(inout) :: norm
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_CG(B_diff_nat_stag,x,b,CG%vol,dt/Rem,CG%k,m,n,norm,&
-        compute_norms,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p)
+        call solve_CG(B_diff_nat_stag,x,b,CG%vol,dt/Rem,CG%k,m,n,CG%norm,&
+        compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p)
       end subroutine
 
       subroutine delete_CG(CG)

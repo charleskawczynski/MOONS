@@ -87,7 +87,6 @@
          ! Errors
          type(norms) :: err_divB,err_DivJ
          type(norms) :: err_cleanB,err_residual
-         type(norms),dimension(3) :: norm_B
          type(myTime) :: time_CP
 
          type(SORSolver) :: SOR_B, SOR_cleanB
@@ -110,6 +109,7 @@
          real(cp) :: Ha               ! Time
          real(cp) :: Rem              ! Magnetic Reynolds number
          real(cp) :: omega            ! Intensity of time changing magnetic field
+         real(cp) :: theta
        end type
 
        interface init;                 module procedure initInduction;                 end interface
@@ -206,8 +206,8 @@
          write(*,*) '     Interface treated'
 
          ! init(CG,m,x,k)
-         call init(ind%CG_B,ind%m,ind%B_face,ind%sigmaInv_edge)
-         call init(ind%PCG_B,ind%m,ind%B_face,ind%sigmaInv_edge,ind%dTime,ind%Rem)
+         call init(ind%CG_B,ind%m,ind%B_face,ind%sigmaInv_edge,dir//'Bfield/','B')
+         call init(ind%PCG_B,ind%m,ind%B_face,ind%sigmaInv_edge,ind%dTime,ind%Rem,dir//'Bfield/','B')
 
          call init(ind%probe_Bx,dir//'Bfield/','transient_Bx',&
          .not.restartB,ind%B%x%RF(1)%s,(ind%B%x%RF(1)%s+1)/2*2/3,m)
@@ -242,9 +242,6 @@
          call init(ind%err_DivJ)
          call init(ind%err_cleanB)
          call init(ind%err_residual)
-         call init(ind%norm_B(1))
-         call init(ind%norm_B(2))
-         call init(ind%norm_B(3))
 
          call init(ind%SOR_B,ind%B%x,ind%m)
 
@@ -264,6 +261,18 @@
 
          ! Initialize multigrid
          call inductionInfo(ind,newAndOpen(dir//'parameters/','info_ind'))
+
+         ! ind%theta = 1.0_cp - ind%m%dhmin_min*ind%Rem*(1.0_cp/max(ind%sigmaInv))
+         ind%theta = 0.75_cp
+         if ((ind%theta.le.0.0_cp).or.(ind%theta.ge.1.0_cp)) then
+           stop 'Error: 0 < theta < 1 violated in inductionSolver.f90'
+         endif
+
+         ! write(*,*) 'dhmin = ',ind%m%dhmin_min
+         ! write(*,*) 'Rem = ',ind%Rem
+         ! write(*,*) 'min(sigma) = ',1.0_cp/max(ind%sigmaInv)
+         ! write(*,*) 'theta = ',ind%theta
+         ! stop 'done'
 
          if (restartB) then
          call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
@@ -535,15 +544,14 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine inductionSolver(ind,U,g_mom,ss_MHD,dir)
+       subroutine inductionSolver(ind,U,ss_MHD,dir)
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
-         type(mesh),intent(in) :: g_mom
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
-         logical :: exportNow,lowRem
+         logical :: exportNow,lowRem,finiteRem,semi_implicit
          ! ********************** LOCAL VARIABLES ***********************
          ! ind%B0%x = exp(-ind%omega*ind%t)
          ! ind%B0%y = exp(-ind%omega*ind%t)
@@ -585,31 +593,9 @@
          ! call export_3D_1C(ind%m,ind%curlUCrossB%y,'out/LDC/','curlUCrossB_y',0)
          ! call export_3D_1C(ind%m,ind%curlUCrossB%z,'out/LDC/','curlUCrossB_z',0)
 
-         ! {d/dt + Rem^-1 curl(sigInv curl())}B = curl(uxB0)
-         ! B^n+1-B^n + dt*diff(B^n+1) = dt*advect
-         ! B^n+1 + dt*diff(B^n+1) = B^n + dt*advect
-         ! 
-
-         ! call cross(ind%temp_CC,ind%U_cct,ind%B0) ! Low Rem
-
-         ! call add(ind%Bstar,ind%B,ind%B0) ! Finite Rem
-         ! call cross(ind%temp_CC,ind%U_cct,ind%Bstar)
-
-         ! call curl(ind%curlUCrossB,ind%temp_CC,ind%m)
-         ! call multiply(ind%curlUCrossB,ind%dTime)
-         ! call add(ind%curlUCrossB,ind%Bnm1)
-         ! call CG_ind(ind%B,&
-         !             ind%curlUCrossB,&
-         !             ind%sigmaInv,&
-         !             ind%dTime,&
-         !             ind%Rem,&
-         !             ind%m,&
-         !             10,&
-         !             ind%norm_B,&
-         !             getExportErrors(ss_MHD))
-         ! stop 'Done'
-
-         lowRem = .true.
+         lowRem = .false.
+         finiteRem = .false.
+         semi_implicit = .true.
          if (lowRem) then
            call cellCenter2Face(ind%temp_F,ind%B0,ind%m)
 
@@ -619,23 +605,46 @@
 
            call add(ind%curlUCrossB,ind%B_face)
            call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,&
-           ind%dTime,1.0_cp,ind%m,5,ind%norm_B,getExportErrors(ss_MHD))
+           ind%dTime,1.0_cp,ind%m,5,getExportErrors(ss_MHD))
 
            call face2cellCenter(ind%B,ind%B_face,ind%m)
-         else
+         endif
+         if (finiteRem) then
            call add(ind%Bstar,ind%B0,ind%B) ! Finite Rem
            call cellCenter2Face(ind%temp_F,ind%Bstar,ind%m)
 
            call faceCurlCross_F(ind%curlUCrossB,ind%U_Ft,ind%temp_F,&
                                 ind%m,ind%temp_E1,ind%temp_E2,ind%temp_F2)
-           call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative
+           call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative (in divergence form)
 
            call add(ind%curlUCrossB,ind%B_face)
            call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,&
-           ind%dTime,ind%Rem,ind%m,5,ind%norm_B,getExportErrors(ss_MHD))
+           ind%dTime,ind%Rem,ind%m,5,getExportErrors(ss_MHD))
 
            call face2cellCenter(ind%B,ind%B_face,ind%m)
          endif
+         if (semi_implicit) then
+           call add(ind%Bstar,ind%B0,ind%B) ! Finite Rem
+           call cellCenter2Face(ind%temp_F,ind%Bstar,ind%m)
+
+           call faceCurlCross_F(ind%curlUCrossB,ind%U_Ft,ind%temp_F,&
+                                ind%m,ind%temp_E1,ind%temp_E2,ind%temp_F2)
+           call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative (in divergence form)
+
+           call add(ind%curlUCrossB,ind%B_face)
+
+           call curl(ind%temp_E,ind%B_face,ind%m)
+           call multiply(ind%temp_E,ind%sigmaInv_edge)
+           call curl(ind%temp_F,ind%temp_E,ind%m)
+           call multiply(ind%temp_F,ind%dTime/ind%Rem*(1.0_cp-ind%theta))
+           call add(ind%curlUCrossB,ind%temp_F)
+
+           call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,&
+           ind%dTime*ind%theta,ind%Rem,ind%m,5,getExportErrors(ss_MHD))
+
+           call face2cellCenter(ind%B,ind%B_face,ind%m)
+         endif
+
 
          ! call cross(ind%temp_CC,ind%U_cct,ind%B0)
          ! call curl(ind%curlUCrossB,ind%temp_CC,ind%m)
@@ -667,7 +676,7 @@
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
 
          if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%m)
-         if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
 
          if (getPrintParams(ss_MHD)) then
            call inductionInfo(ind,6)
@@ -803,7 +812,7 @@
          type(induction),intent(inout) :: ind
          real(cp),intent(in) :: Ha,Re,Rem
          select case (solveBMethod)
-         case (5) ! Finite Rem
+         case (5,6) ! Finite Rem
            call add(ind%Bstar,ind%B,ind%B0)
            call curl(ind%J_cc,ind%B,ind%m)
            call cross(ind%temp_CC,ind%J_cc,ind%Bstar)

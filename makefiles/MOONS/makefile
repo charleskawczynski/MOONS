@@ -28,8 +28,11 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -45,6 +48,7 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
 FCFLAGS += -D_DOUBLE_PRECISION_
+# FCFLAGS += -D_O2_BOUNDARIES_ # not compatible with CG
 # FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT Methods
@@ -90,12 +94,12 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_ADI_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -131,35 +135,23 @@ VPATH =\
 	$(SRC_DIR)$(PS)computations \
 	$(SRC_DIR)$(PS)solvers \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
+	$(SRC_DIR)$(PS)solvers$(PS)GS \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR \
 	$(SRC_DIR)$(PS)solvers$(PS)MG \
 	$(SRC_DIR)$(PS)solvers$(PS)CG \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE \
-	$(SRC_DIR)$(PS)solvers$(PS)ADI \
 	$(SRC_DIR)$(PS)solvers$(PS)energy \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum \
 	$(SRC_DIR)$(PS)solvers$(PS)induction
-
-# $(SRC_DIR)$(PS)fields$(PS)RF \
-# $(SRC_DIR)$(PS)fields$(PS)SF \
-# $(SRC_DIR)$(PS)fields$(PS)VF \
-# $(SRC_DIR)$(PS)fields$(PS)TF \
 
 
 # **************** SOURCE FILES *********************
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
 # $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
 
-# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)PseudoTime.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)steadyState$(PS)jacobi.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)ADI.f90 \
-
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
 # $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
-
-# $(SRC_DIR)$(PS)IO$(PS)IO_tecplotHeaders.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_ind.f90 \
 
 # $(SRC_DIR)$(PS)fields$(PS)RF.f90 \
 # $(SRC_DIR)$(PS)fields$(PS)SF.f90 \
@@ -223,24 +215,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign_negative.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_add.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_subtract.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_multiply.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_divide.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_square.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_sum.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_aux.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)SF$(PS)SF.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_obj.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign_negative.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_add.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_subtract.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF.f90 \
-	$(SRC_DIR)$(PS)fields$(PS)TF$(PS)TF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90 \
@@ -283,15 +261,14 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)static$(PS)monitor.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)ADI$(PS)triSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)JAC_ops.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_operators.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_operators.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
@@ -303,6 +280,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \

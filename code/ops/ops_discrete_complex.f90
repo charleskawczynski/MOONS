@@ -134,11 +134,18 @@
        end subroutine
 
        subroutine faceCurlCross_F(div,U,B,m,temp_E1,temp_E2,temp_F)
+         ! The name of this routine should be fixed since this is 
+         ! technically not correct. The divergence of uj Bi - ui Bj
+         ! is computed, which is minus curl(uxB).
+         ! 
          ! Computes
          ! 
-         !                                           d
-         !  div_i = {∇ x (u_face x B_face)}_face = --- (uj Bi - ui Bj)
-         !                                          dxj
+         !                                                d
+         !  div_i = {∇ x (u_face x B_face)}_face =   -   --- (uj Bi - ui Bj)
+         !                                           ^   dxj
+         !                                           |
+         !                                           |
+         !                                          minus
          ! 
          ! While minimizing interpolations.
          !           div_i, U, B           --> cell face.

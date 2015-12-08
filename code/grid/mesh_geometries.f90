@@ -22,7 +22,7 @@
 
        public :: BC_sim_mom,BC_sim_ind
        public :: cube_uniform,extend_cube_uniform
-       public :: cube
+       public :: cube,extend_cube
        public :: ins_elbow
        public :: ins_u_bend
        public :: ins_sudden_Expansion
@@ -150,6 +150,25 @@
          call delete(g)
        end subroutine
 
+       subroutine extend_cube(m,m_in)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(mesh),intent(in) :: m_in
+         type(grid) :: g
+         integer,dimension(3) :: N
+         real(cp),dimension(3) :: L
+         call delete(m)
+         call init(g,m_in%g(1))
+         N = 3; L = 1.0_cp
+         call ext_Roberts_near_IO(g,L(1),N(1),1)
+         call ext_Roberts_near_IO(g,L(2),N(2),2)
+         call ext_Roberts_near_IO(g,L(3),N(3),3)
+         call init(m,g)
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
        subroutine cube(m)
          implicit none
          type(mesh),intent(inout) :: m
@@ -159,7 +178,7 @@
          real(cp) :: Ha,Re
          Ha = 10.0_cp; Re = 100.0_cp
          call delete(m)
-         N = (/3,4,5/); hmin = 0.0_cp; hmax = 1.0_cp
+         N = (/3,3,3/); hmin = 0.0_cp; hmax = 1.0_cp
          beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 

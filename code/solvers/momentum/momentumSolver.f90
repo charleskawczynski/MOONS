@@ -469,7 +469,7 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          ! call computeMomentumStability(mom,ss_MHD)
          if (getExportErrors(ss_MHD)) call computeDivergence(mom,mom%m)
-         if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%m,dir)
+         ! if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%m,dir)
          if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
 
          if (getPrintParams(ss_MHD)) then
