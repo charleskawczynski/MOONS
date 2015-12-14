@@ -26,8 +26,8 @@
          integer,intent(inout) :: NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re = 400.0d0
-         Ha = 20.0d0
+         Re = 100.0d0
+         Ha = 10.0d0
          Gr = 0.0_cp
          Fr = 0.0d0
          Pr = 0.71d0
@@ -35,9 +35,9 @@
          Al = 0.0d0
          Rem = 100.0d0
          t = 1000000.0
-         dt_eng = 1.0d-3
-         dt_mom = 1.0d-3
-         dt_ind = 1.0d-3
+         dt_eng = 1.0d-2
+         dt_mom = 1.0d-2
+         dt_ind = 1.0d-2
          NmaxMHD = ceiling(t/dt_mom)
          ! NmaxMHD = 40000
          NmaxPPE    = 5 ! Number of PPE steps

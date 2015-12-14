@@ -112,6 +112,8 @@
        interface face2Edge;           module procedure face2Edge_SF_3;        end interface
        interface face2Edge;           module procedure face2Edge_SF_1_alloc;  end interface
        interface face2Edge;           module procedure face2Edge_TF;          end interface
+       interface face2Edge;           module procedure face2Edge_TF_no_diag;  end interface
+
 
        ! interface face2Edge;           module procedure face2Edge_SF_1;        end interface
        ! interface face2Edge;           module procedure face2Edge_SF_13;       end interface
@@ -476,7 +478,7 @@
          call cellCenter2Face(faceAve,tempCC,m,aveLoc)
        end subroutine
 
-       subroutine face2Node_SF(node,face,m,tempE,faceDir)
+       subroutine face2Node_SF(node,face,m,faceDir,tempE)
          implicit none
          type(SF),intent(inout) :: node
          type(SF),intent(in) :: face
@@ -683,6 +685,21 @@
          call face2Edge(edge%z%z,face%z,m,tempCC,tempF%x,3,3)
        end subroutine
 
+       subroutine face2Edge_TF_no_diag(edge,face,m)
+         ! [U_ave,V_ave,W_ave] = interp(U)
+         implicit none
+         type(TF),intent(inout) :: edge
+         type(VF),intent(in) :: face
+         type(mesh),intent(in) :: m
+         ! tempF = (y,x,x) for edgeDir = (1,2,3) tempCC,tempF
+         call face2Edge(edge%x%y,face%x,m,1,2)
+         call face2Edge(edge%x%z,face%x,m,1,3)
+         call face2Edge(edge%y%x,face%y,m,2,1)
+         call face2Edge(edge%y%z,face%y,m,2,3)
+         call face2Edge(edge%z%x,face%z,m,3,1)
+         call face2Edge(edge%z%y,face%z,m,3,2)
+       end subroutine
+
        subroutine face2CellCenter_VF(cellCenter,face,m)
          implicit none
          type(VF),intent(inout) :: cellCenter
@@ -698,9 +715,9 @@
          type(VF),intent(inout) :: node,tempE
          type(VF),intent(in) :: face
          type(mesh),intent(in) :: m
-         call face2Node(node%x,face%x,m,tempE%y,1)
-         call face2Node(node%y,face%y,m,tempE%x,2)
-         call face2Node(node%z,face%z,m,tempE%x,3)
+         call face2Node(node%x,face%x,m,1,tempE%y)
+         call face2Node(node%y,face%y,m,2,tempE%x)
+         call face2Node(node%z,face%z,m,3,tempE%x)
        end subroutine
 
        ! ****************************************************************************************

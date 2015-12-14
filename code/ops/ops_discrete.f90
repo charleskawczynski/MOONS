@@ -56,6 +56,7 @@
        interface cross;           module procedure collocatedCross_RF;        end interface
        interface cross;           module procedure collocatedCross_SF;        end interface
        interface cross;           module procedure collocatedCross_VF;        end interface
+       interface cross;           module procedure collocatedCross_TF;        end interface
 
        public :: lap
        interface lap;             module procedure lapUniformCoeff_SF;        end interface
@@ -289,6 +290,23 @@
          call cross(AcrossB%z,A%x,A%y,A%z,B%x,B%y,B%z,3)
        end subroutine
 
+       subroutine collocatedCross_TF(AcrossB,A,B)
+         ! First index refers to vector direction.
+         ! Second index refers to vector location.
+         !      For example, in A%x%y, the direction of the vector
+         !      will be in x, and it will be located on whatever 
+         !      location is defined by the y-component (y-face for face data
+         !      or y-edge for edge data).
+         ! Since this is a collocated operation, the second
+         ! index should be the same (data should be collocated).
+         implicit none
+         type(VF),intent(inout) :: AcrossB
+         type(TF),intent(in) :: A,B
+         call cross(AcrossB%x,A%x%x,A%y%x,A%z%x,B%x%x,B%y%x,B%z%x,1)
+         call cross(AcrossB%y,A%x%y,A%y%y,A%z%y,B%x%y,B%y%y,B%z%y,2)
+         call cross(AcrossB%z,A%x%z,A%y%z,A%z%z,B%x%z,B%y%z,B%z%z,3)
+       end subroutine
+
        subroutine lapUniformCoeff_VF(lapU,u,m)
          implicit none
          type(VF),intent(inout) :: lapU
@@ -375,7 +393,7 @@
 
        subroutine curlcurlCoeff_VF(curlcurlU,U,k,temp,m)
          ! Computes
-         !     curl( k curl(U) )
+         !     ∇x(k∇x)
          ! 
          ! NOTE: curl(U) will live at the same location as k
          ! 
@@ -391,7 +409,7 @@
 
        subroutine curlcurlUniform_VF(curlcurlU,U,temp,m)
          ! Computes
-         !     curl( curl(U) )
+         !     ∇x∇x
          ! 
          ! NOTE: curl(U) will live at the same location as k
          ! 

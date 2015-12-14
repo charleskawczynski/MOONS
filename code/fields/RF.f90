@@ -54,6 +54,7 @@
         public :: assign,assign_negative
         public :: add,subtract
         public :: multiply,divide
+        public :: add_product
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
@@ -83,6 +84,7 @@
         interface init_Edge;                module procedure init_RF_Edge;           end interface
         interface init_Node;                module procedure init_RF_Node;           end interface
 
+        interface init_BCs;                 module procedure init_BC_val;            end interface
         interface init_BCs;                 module procedure init_BC_vals;           end interface
 
         interface delete;                   module procedure delete_RF;              end interface
@@ -98,8 +100,11 @@
         interface add;                      module procedure add_RF_S;               end interface
         interface add;                      module procedure add_S_RF;               end interface
 
+        interface add_product;              module procedure add_product_RF_RF_S;    end interface
+
         interface multiply;                 module procedure multiply_RF_RF;         end interface
         interface multiply;                 module procedure multiply_RF_RF_RF;      end interface
+        interface multiply;                 module procedure multiply_RF_RF_S;       end interface
         interface multiply;                 module procedure multiply_RF_S;          end interface
         interface multiply;                 module procedure multiply_S_RF;          end interface
 
@@ -312,6 +317,29 @@
 #endif
         end subroutine
 
+      ! ------------------- ADD PRODUCT ------------------------
+
+        subroutine add_product_RF_RF_S(a,b,c)
+          implicit none
+          type(realField),intent(inout) :: a
+          type(realField),intent(in) :: b
+          real(cp),intent(in) :: c
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3)
+            do j=1,a%s(2)
+              do i=1,a%s(1)
+                a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = a%f + b%f*c
+#endif
+        end subroutine
+
       ! ------------------- SUBTRACT ------------------------
 
         subroutine subtract_RF_RF(a,b)
@@ -473,6 +501,27 @@
           !$OMP END PARALLEL DO
 #else
           a%f = b%f * c%f
+#endif
+        end subroutine
+
+        subroutine multiply_RF_RF_S(a,b,c)
+          implicit none
+          type(realField),intent(inout) :: a
+          type(realField),intent(in) :: b
+          real(cp),intent(in) :: c
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3)
+            do j=1,a%s(2)
+              do i=1,a%s(1)
+                a%f(i,j,k) = b%f(i,j,k) * c
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = b%f * c
 #endif
         end subroutine
 
@@ -737,16 +786,8 @@
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))
           f1%s = shape(f1%f)
+          if (f2%b%defined) call init(f1%b,f2%b)
         end subroutine
-
-        ! subroutine init_RF_3(a,s)
-        !   implicit none
-        !   type(realField),intent(inout) :: a
-        !   integer,dimension(3),intent(in) :: s
-        !   if (allocated(a%f)) deallocate(a%f)
-        !   allocate(a%f(s(1),s(2),s(3)))
-        !   a%s = shape(a%f)
-        ! end subroutine
 
       ! ------------------- LOCATION-BASED ALLOCATE / DEALLOCATE --------------------
 
@@ -788,6 +829,13 @@
           type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
+        end subroutine
+
+        subroutine init_BC_val(f,val)
+          implicit none
+          type(realField),intent(inout) :: f
+          real(cp),intent(in) :: val
+          call init(f%b,val)
         end subroutine
 
         subroutine init_BC_vals(f,is_CC,is_Node)

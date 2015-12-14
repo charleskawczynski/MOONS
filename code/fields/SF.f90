@@ -43,7 +43,7 @@
         public :: init_Edge
         public :: CC_along,Node_along
 
-        public :: init_BCs,init_BC_props
+        public :: init_BCs,init_BC_props,init_BC_mesh
         public :: dot_product
 
         ! Monitoring
@@ -56,6 +56,7 @@
         public :: add,subtract
         public :: multiply,divide
         public :: invert
+        public :: add_product
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
@@ -88,10 +89,17 @@
         interface init_Face;           module procedure init_SF_Face;           end interface
         interface init_Edge;           module procedure init_SF_Edge;           end interface
 
+        interface init_CC;             module procedure init_SF_CC_assign;      end interface
+        interface init_Node;           module procedure init_SF_Node_assign;    end interface
+        interface init_Face;           module procedure init_SF_Face_assign;    end interface
+        interface init_Edge;           module procedure init_SF_Edge_assign;    end interface
+
         interface dot_product;         module procedure dot_product_SF;         end interface
 
-        interface init_BCs;            module procedure init_BCs_SF;            end interface
+        interface init_BCs;            module procedure init_BC_vals_SF;        end interface
+        interface init_BCs;            module procedure init_BC_val_SF;         end interface
         interface init_BC_props;       module procedure init_BC_props_SF;       end interface
+        interface init_BC_mesh;        module procedure init_BC_mesh_SF;        end interface
 
         interface delete;              module procedure delete_SF;              end interface
         interface print;               module procedure print_SF;               end interface
@@ -107,8 +115,11 @@
         interface add;                 module procedure add_SF_S;               end interface
         interface add;                 module procedure add_S_SF;               end interface
 
+        interface add_product;         module procedure add_product_SF_SF_S;    end interface
+
         interface multiply;            module procedure multiply_SF_SF;         end interface
         interface multiply;            module procedure multiply_SF_SF_SF;      end interface
+        interface multiply;            module procedure multiply_SF_SF_S;       end interface
         interface multiply;            module procedure multiply_SF_S;          end interface
         interface multiply;            module procedure multiply_S_SF;          end interface
 
@@ -198,6 +209,17 @@
           do i=1,f%s; call add(g2,f%RF(i)); enddo
         end subroutine
 
+      ! ------------------- ADD PRODUCT ------------------------
+
+        subroutine add_product_SF_SF_S(f,g,r)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: g
+          real(cp),intent(in) :: r
+          integer :: i
+          do i=1,f%s; call add_product(f%RF(i),g%RF(i),r); enddo
+        end subroutine
+
       ! ------------------- SUBTRACT ------------------------
 
         subroutine subtract_SF_SF(f,g)
@@ -248,6 +270,15 @@
           type(SF),intent(in) :: g,q
           integer :: i
           do i=1,f%s; call multiply(f%RF(i),g%RF(i),q%RF(i)); enddo
+        end subroutine
+
+        subroutine multiply_SF_SF_S(f,g,q)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: g
+          real(cp),intent(in) :: q
+          integer :: i
+          do i=1,f%s; call multiply(f%RF(i),g%RF(i),q); enddo
         end subroutine
 
         subroutine multiply_SF_S(f,g)
@@ -518,6 +549,14 @@
           f%is_CC = .true.
         end subroutine
 
+        subroutine init_SF_CC_assign(f,m,val)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_CC(f,m); call assign(f,val)
+        end subroutine
+
         subroutine init_SF_Face(f,m,dir)
           implicit none
           type(SF),intent(inout) :: f
@@ -531,6 +570,15 @@
           call computeNumEl(f)
           f%is_face = .true.
           f%face = dir
+        end subroutine
+
+        subroutine init_SF_Face_assign(f,m,dir,val)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          real(cp),intent(in) :: val
+          call init_Face(f,m,dir); call assign(f,val)
         end subroutine
 
         subroutine init_SF_Edge(f,m,dir)
@@ -547,6 +595,15 @@
           f%edge = dir
         end subroutine
 
+        subroutine init_SF_Edge_assign(f,m,dir,val)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          real(cp),intent(in) :: val
+          call init_Edge(f,m,dir); call assign(f,val)
+        end subroutine
+
         subroutine init_SF_Node(f,m)
           implicit none
           type(SF),intent(inout) :: f
@@ -557,6 +614,14 @@
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_node = .true.
+        end subroutine
+
+        subroutine init_SF_Node_assign(f,m,val)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Node(f,m); call assign(f,val)
         end subroutine
 
         function CC_along_SF(f,dir) result(TF)
@@ -575,7 +640,7 @@
           TF = any((/f%is_Node,f%is_Face.and.(f%face.eq.dir),f%is_Edge.and.(f%edge.ne.dir)/))
         end function
 
-        subroutine init_BCs_SF(f)
+        subroutine init_BC_vals_SF(f)
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
@@ -584,10 +649,28 @@
           elseif (f%is_Node) then
             do i=1,f%s; call init_BCs(f%RF(i),.false.,.true.); enddo
           else
-            stop 'Error: no datatype found in init_BCs_SF in SF.f90'
+            stop 'Error: no datatype found in init_BC_vals_SF in SF.f90'
           endif
           f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
+        end subroutine
+
+        subroutine init_BC_val_SF(f,val)
+          implicit none
+          type(SF),intent(inout) :: f
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,f%s; call init_BCs(f%RF(i),val); enddo
+          f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1,f%s)/))
+          call init_BC_props(f)
+        end subroutine
+
+        subroutine init_BC_mesh_SF(f,m)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer :: i
+          do i=1,f%s; call init(f%RF(i)%b,m%g(i),f%RF(i)%s); enddo
         end subroutine
 
         subroutine init_BC_props_SF(f)

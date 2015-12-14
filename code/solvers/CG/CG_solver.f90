@@ -8,6 +8,7 @@
       use BCs_mod
       use SF_mod
       use VF_mod
+      use matrix_free_params_mod
       implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -21,30 +22,31 @@
 #endif
 
       private
-
       public :: solve_CG
       interface solve_CG;       module procedure solve_CG_SF;    end interface
       interface solve_CG;       module procedure solve_CG_VF;    end interface
 
+      real(cp) :: tol = 10.0_cp**(-15.0_cp)
+
       contains
 
-      subroutine solve_CG_SF(operator,x,b,vol,c,k,m,n,norm,compute_norms,un,tempx,tempk,Ax,r,p)
+      subroutine solve_CG_SF(operator,x,b,vol,k,m,MFP,n,norm,compute_norms,un,tempx,tempk,Ax,r,p)
         implicit none
         external :: operator
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol
-        real(cp),intent(in) :: c
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n,un
         logical,intent(in) :: compute_norms
+        type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p
         integer :: i
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call apply_BCs(x,m)
-        call operator(Ax,x,vol,m,tempk,c,k)
+        call operator(Ax,x,k,vol,m,MFP,tempk)
         call multiply(r,b,vol)
         call subtract(r,Ax)
         call zeroGhostPoints(r)
@@ -52,7 +54,7 @@
         call assign(p,r)
         rsold = dot_product(r,r,m,x,tempx)
         do i=1,n
-          call operator(Ax,p,vol,m,tempk,c,k)
+          call operator(Ax,p,k,vol,m,MFP,tempk)
           alpha_temp = dot_product(p,Ax,m,x,tempx)
           alpha = rsold/alpha_temp
           call assign(tempx,p)
@@ -65,7 +67,7 @@
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           rsnew = dot_product(r,r,m,x,tempx)
-          if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
+          if (rsnew.lt.tol) then; exit; endif
 #ifdef _EXPORT_CG_CONVERGENCE_
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
@@ -82,7 +84,7 @@
         call apply_BCs(x,m)
 #ifndef _EXPORT_CG_CONVERGENCE_
         if (compute_norms) then
-          call operator(Ax,x,vol,m,tempk,c,k)
+          call operator(Ax,x,k,vol,m,MFP,tempk)
           call multiply(r,b,vol)
           call subtract(r,Ax)
           call zeroGhostPoints(r)
@@ -94,15 +96,15 @@
 #endif
       end subroutine
       
-      subroutine solve_CG_VF(operator,x,b,vol,c,k,m,n,norm,compute_norms,un,tempx,tempk,Ax,r,p)
+      subroutine solve_CG_VF(operator,x,b,vol,k,m,MFP,n,norm,compute_norms,un,tempx,tempk,Ax,r,p)
         implicit none
         external :: operator
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol
-        real(cp),intent(in) :: c
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n
         integer,dimension(3),intent(in) :: un
@@ -111,7 +113,7 @@
         integer :: i
         real(cp) :: alpha,rsold,rsnew,alpha_temp
         call apply_BCs(x,m)
-        call operator(Ax,x,vol,m,tempk,c,k)
+        call operator(Ax,x,k,vol,m,MFP,tempk)
         call multiply(r,b,vol)
         call subtract(r,Ax)
         call zeroGhostPoints(r)
@@ -119,7 +121,7 @@
         call assign(p,r)
         rsold = dot_product(r,r,m,x,tempx)
         do i=1,n
-          call operator(Ax,p,vol,m,tempk,c,k)
+          call operator(Ax,p,k,vol,m,MFP,tempk)
           alpha_temp = dot_product(p,Ax,m,x,tempx)
           alpha = rsold/alpha_temp
           call assign(tempx,p)
@@ -131,8 +133,8 @@
           call subtract(r,tempx)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          rsnew = dot_product(r,r,m,x,tempx)   
-          if (sqrt(rsnew).lt.10.0_cp**(-10.0_cp)) then; exit; endif
+          rsnew = dot_product(r,r,m,x,tempx)
+          if (rsnew.lt.tol) then; exit; endif
 #ifdef _EXPORT_CG_CONVERGENCE_
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
@@ -150,7 +152,7 @@
         call apply_BCs(x,m)
 #ifndef _EXPORT_CG_CONVERGENCE_
         if (compute_norms) then
-          call operator(Ax,x,vol,m,tempk,c,k)
+          call operator(Ax,x,k,vol,m,MFP,tempk)
           call multiply(r,b,vol)
           call subtract(r,Ax)
           call zeroGhostPoints(r)

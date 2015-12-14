@@ -1,10 +1,8 @@
       module GS_poisson_mod
-      ! call GS_solver(GS,u,f,u_bcs,m,ss,norm,compute_norm)
+      ! call GS_solver(GS,u,f,m,n,compute_norm)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
-      ! for a given f, boundary conditions for u (u_bcs), mesh (m)
-      ! and solver settings (ss) using the iterative Successive Over 
-      ! Realxation (GS) method
+      ! for a given f, mesh (m) using the Gauss-Seidel (GS) method
       ! 
       ! Note that the variant of Gauss-Seidel/GS called
       ! "red-black" Gauss-Seidel is used, where the fields are 
@@ -13,10 +11,7 @@
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
-      !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
       !     m            = contains mesh information (dhc,dhn)
-      !     ss           = solver settings (specifies max iterations, tolerance etc.)
-      !     norm         = Ln norms of residual
       !     compute_norm    = print residuals to screen (T,F)
       ! 
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_CONVERGENCE_)
@@ -50,7 +45,6 @@
       type GS_solver
         type(mesh) :: p,d         ! Primary / Dual grids
         type(SF) :: lapu,res,Dinv ! laplacian, residual, Diagonal inverse
-        real(cp) :: omega
         integer,dimension(3) :: gt,s
         logical :: setCoeff
         integer :: un
@@ -166,18 +160,17 @@
           call redBlack(u%RF(i)%f,f%RF(i)%f,Dinv%RF(i)%f,u%RF(i)%s,&
           GS%p%g(i)%c(1)%dhn,GS%p%g(i)%c(2)%dhn,GS%p%g(i)%c(3)%dhn,&
           GS%d%g(i)%c(1)%dhn,GS%d%g(i)%c(2)%dhn,GS%d%g(i)%c(3)%dhn,&
-          GS%omega,GS%gt,odd)
+          GS%gt,odd)
           ! call apply_stitches(u,m)
         enddo
       end subroutine
 
-      subroutine redBlack(u,f,Dinv,s,dxp,dyp,dzp,dxd,dyd,dzd,omega,gt,odd)
+      subroutine redBlack(u,f,Dinv,s,dxp,dyp,dzp,dxd,dyd,dzd,gt,odd)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: u
         real(cp),dimension(:,:,:),intent(in) :: f,Dinv
         integer,dimension(3),intent(in) :: s,odd
         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
-        real(cp),intent(in) :: omega
         integer,dimension(3),intent(in) :: gt
         integer :: i,j,k
         !$OMP DO

@@ -106,6 +106,7 @@
        end subroutine
 
        subroutine apply_face_SF2(U,m,dir,f,B)
+         ! Used when B BCs on U (use in case U doesn't have BCs)
          implicit none
          type(SF),intent(inout) :: U
          type(SF),intent(in) :: B
@@ -155,9 +156,9 @@
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          !
          select case (face) ! face
-         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),v,dh,b)
-         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-1,:),f(:,s(2)-2,:),v,dh,b)
-         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-1),f(:,:,s(3)-2),v,dh,b)
+         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),v,-dh,b)
+         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-1,:),f(:,s(2)-2,:),v,-dh,b)
+         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-1),f(:,:,s(3)-2),v,-dh,b)
          case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(2,:,:),f(3,:,:),v,dh,b)
          case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,2,:),f(:,3,:),v,dh,b)
          case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,2),f(:,:,3),v,dh,b)
@@ -177,9 +178,9 @@
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          !
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,dh,b)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,dh,b)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,dh,b)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,-dh,b)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,-dh,b)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,-dh,b)
          case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dh,b)
          case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dh,b)
          case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dh,b)
@@ -207,8 +208,7 @@
          real(cp),intent(in) :: dh
          type(bctype),intent(in) :: b
          if     (b%Dirichlet) then; ub = bvals; ug = 2.0_cp*bvals - ui
-         ! elseif (b%Neumann) then;   ub = ui; ug = ui
-         elseif (b%Neumann) then;   ug = ui - 2.0_cp*bvals*dh
+         elseif (b%Neumann) then;   ug = ui + 2.0_cp*bvals*dh
          elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'
          endif

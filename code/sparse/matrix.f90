@@ -8,6 +8,7 @@
       use SF_mod
       use VF_mod
       use ops_interp_mod
+      use matrix_free_params_mod
       implicit none
 
       private
@@ -52,14 +53,14 @@
       ! ******************* TEST MATRIX OPERATOR SYMMETRY *******************
       ! *********************************************************************
 
-      subroutine test_symmetry_SF(operator,name,x,vol,m,tempk,c,k)
+      subroutine test_symmetry_SF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(SF),intent(in) :: x,vol
         type(VF),intent(in) :: k
-        real(cp),intent(in) :: c
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: name
         type(SF) :: u,v,Au,Av,temp
         real(cp) :: dot_vAu,dot_uAv
@@ -70,8 +71,8 @@
         write(*,*) 'System size = ',x%numEl
         call noise(u); call zeroGhostPoints(u) ! ; call zeroSecondIndex(u)
         call noise(v); call zeroGhostPoints(v) ! ; call zeroSecondIndex(v)
-        call operator(Au,u,vol,m,tempk,c,k)
-        call operator(Av,v,vol,m,tempk,c,k)
+        call operator(Au,u,k,vol,m,MFP,tempk)
+        call operator(Av,v,k,vol,m,MFP,tempk)
         dot_vAu = dot_product(v,Au,m,x,temp)
         dot_uAv = dot_product(u,Av,m,x,temp)
         write(*,*) '(v,Au) = ',dot_vAu
@@ -84,13 +85,13 @@
         call delete(temp)
       end subroutine
 
-      subroutine test_symmetry_VF(operator,name,x,vol,m,tempk,c,k)
+      subroutine test_symmetry_VF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(VF),intent(in) :: x,k,vol
-        real(cp),intent(in) :: c
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: name
         type(VF) :: u,v,Au,Av,temp
         real(cp) :: dot_vAu,dot_uAv
@@ -101,8 +102,8 @@
         write(*,*) 'System size = ',x%x%numEl+x%y%numEl+x%z%numEl
         call noise(u); call zeroGhostPoints(u) ! ; call zeroSecondIndex(u)
         call noise(v); call zeroGhostPoints(v) ! ; call zeroSecondIndex(v)
-        call operator(Au,u,vol,m,tempk,c,k)
-        call operator(Av,v,vol,m,tempk,c,k)
+        call operator(Au,u,k,vol,m,MFP,tempk) ! Ax,x,k,vol,m,MFP,tempk
+        call operator(Av,v,k,vol,m,MFP,tempk)
         dot_vAu = dot_product(v,Au,m,x,temp)
         dot_uAv = dot_product(u,Av,m,x,temp)
         write(*,*) '(v,Au) = ',dot_vAu
@@ -194,14 +195,14 @@
       ! ******************** EXPORTING MATRIX OPERATOR **********************
       ! *********************************************************************
 
-      subroutine export_operator_SF(operator,name,dir,x,vol,m,tempk,c,k)
+      subroutine export_operator_SF(operator,name,dir,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(SF),intent(in) :: x,vol
         type(VF),intent(in) :: k
-        real(cp),intent(in) :: c
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: dir,name
         type(SF) :: un,Aun
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
@@ -215,7 +216,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3))) cycle
           call unitVector(un,i)
-          call operator(Aun,un,vol,m,tempk,c,k)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call export_transpose_SF(Aun,newU) ! Export rows of A
           call deleteUnitVector(un,i)
         enddo
@@ -223,14 +224,14 @@
         close(newU)
       end subroutine
 
-      subroutine export_operator_VF(operator,name,dir,x,vol,m,tempk,c,k)
+      subroutine export_operator_VF(operator,name,dir,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(VF),intent(in) :: x,vol
         type(VF),intent(in) :: k
-        real(cp),intent(in) :: c
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: dir,name
         type(VF) :: un,Aun
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
@@ -245,7 +246,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3))) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,vol,m,tempk,c,k)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call export_transpose(Aun,newU) ! Export rows of A
           call deleteUnitVector(un%x,i)
         enddo
@@ -256,7 +257,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3))) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,vol,m,tempk,c,k)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call export_transpose(Aun,newU) ! Export rows of A
           call deleteUnitVector(un%y,i)
         enddo
@@ -267,7 +268,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3))) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,vol,m,tempk,c,k)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call export_transpose(Aun,newU) ! Export rows of A
           call deleteUnitVector(un%z,i)
         enddo
@@ -311,15 +312,15 @@
       ! ********************* OBTAINING MATRIX DIAGONAL *********************
       ! *********************************************************************
 
-      subroutine get_diagonal_SF(operator,D,vol,m,tempk,c,k)
+      subroutine get_diagonal_SF(operator,D,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(SF),intent(inout) :: D
         type(SF),intent(in) :: vol
         type(VF),intent(in) :: k
-        real(cp),intent(in) :: c
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         type(SF) :: un,Aun
         integer :: i,n,nmax,nwrite,i_3D,j_3D,k_3D,t_3D
         call init(un,D); call init(Aun,D)
@@ -332,7 +333,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3))) cycle
           call unitVector(un,i)
-          call operator(Aun,un,vol,m,tempk,c,k,i)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call define_ith_diag(D,Aun,i)
           call deleteUnitVector(un,i)
           n = n + 1
@@ -353,14 +354,14 @@
         D%RF(t)%f(i,j,k) = Aun%RF(t)%f(i,j,k)
       end subroutine
 
-      subroutine get_diagonal_VF(operator,D,vol,m,tempk,c,k)
+      subroutine get_diagonal_VF(operator,D,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(VF),intent(inout) :: D
         type(VF),intent(in) :: k,vol
-        real(cp),intent(in) :: c
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
         type(VF) :: un,Aun
         integer :: i,n,nmax,nwrite,i_3D,j_3D,k_3D,t_3D
         call init(un,D); call init(Aun,D)
@@ -374,7 +375,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3))) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,vol,m,tempk,c,k,i)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call define_ith_diag(D,Aun,i,1)
           call deleteUnitVector(un%x,i)
           n = n + 1
@@ -389,7 +390,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3))) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,vol,m,tempk,c,k,i)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call define_ith_diag(D,Aun,i,2)
           call deleteUnitVector(un%y,i)
           n = n + 1
@@ -404,7 +405,7 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3))) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,vol,m,tempk,c,k,i)
+          call operator(Aun,un,k,vol,m,MFP,tempk,i)
           call define_ith_diag(D,Aun,i,3)
           call deleteUnitVector(un%z,i)
           n = n + 1

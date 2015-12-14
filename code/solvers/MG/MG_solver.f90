@@ -1,7 +1,7 @@
       module MG_solver_mod
       ! type(mg),dimension(n_levels) :: mg
       ! 
-      ! call solve(operator,mg,x,b,m,n_levels,n_iter,norm,displayTF)
+      ! call solve(operator,mg,x,b,m,n_levels,n,norm,compute_norms)
       ! solves Ax = b using multigrid method.
       ! 
       ! A is described by matrix-free 
@@ -33,33 +33,32 @@
 
       contains
 
-      subroutine solve_SF(operator,mg,x,b,m,n_levels,n_iter,norm,displayTF)
+      subroutine solve_SF(mg,x,b,m,n,compute_norms,norm,n_levels)
         implicit none
-        external :: operator
         type(multiGrid),dimension(n_levels),intent(inout) :: mg
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b
         type(mesh),intent(in) :: m
-        integer,intent(in) :: n_iter
+        integer,intent(in) :: n,n_levels
+        logical,intent(in) :: compute_norms
         type(norms),intent(inout) :: norm
-        logical,intent(in) :: displayTF
         logical :: continueLoop,TF
         integer :: i_MG
 
         call assign(mg(1)%smooth%b,b)
         call assign(mg(1)%smooth%x,x)
 
-        do i_MG = 1,n_iter
+        do i_MG = 1,n
 
           ! 1) Smooth on finest level
           ! Improvement on efficiency: Pass back residual from smooth:
-          ! call solve(operator,x,b,Dinv,D,m,n,norm,displayTF,Au,res)
-          call solve(operator,mg(1)%smooth%x,mg(1)%smooth%b,mg(1)%smooth%Dinv,&
-          mg(1)%smooth%D,mg(1)%smooth%m,n_iter,mg(1)%smooth%norm,mg(1)%displayTF,&
+          ! call solve(operator,x,b,Dinv,D,m,n,norm,compute_norms,Au,res)
+          call solve(mg(1)%smooth%operator,mg(1)%smooth%x,mg(1)%smooth%b,mg(1)%smooth%Dinv,&
+          mg(1)%smooth%D,mg(1)%smooth%m,n,mg(1)%smooth%norm,mg(1)%compute_norms,&
           mg(1)%smooth%Ax,mg(1)%smooth%res)
 
           ! 2) Get residual on finest level
-          call operator(mg(1)%smooth%Ax,mg(1)%smooth%x,mg(1)%smooth%m)
+          call mg(1)%smooth%operator(mg(1)%smooth%Ax,mg(1)%smooth%x,mg(1)%smooth%m)
           call subtract(mg(1)%smooth%res,mg(1)%smooth%b,mg(1)%smooth%Ax)
 
           ! Zero boundary values
@@ -69,27 +68,25 @@
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, find, "exactly" the error
           ! on level 2.
-          call Vcycle(operator,mg,1,n_levels)
+          call Vcycle(mg(1)%smooth%operator,mg,1,n_levels)
 
           ! 4) Prolong correction back to mesh level 1
           call prolongate(mg(1)%e,mg(2)%e,mg(1)%m,mg(1)%temp_rxy,mg(1)%temp_rx)
           call add(mg(1)%x,mg(1)%e)
 
           ! 5) Final smoothing sweeps
-          call solve(operator,mg(1)%smooth%x,mg(1)%smooth%b,mg(1)%smooth%Dinv,&
-          mg(1)%smooth%D,mg(1)%smooth%m,n_iter,mg(1)%smooth%norm,mg(1)%displayTF,&
+          call solve(mg(1)%smooth%operator,mg(1)%smooth%x,mg(1)%smooth%b,mg(1)%smooth%Dinv,&
+          mg(1)%smooth%D,mg(1)%smooth%m,n,mg(1)%smooth%norm,mg(1)%compute_norms,&
           mg(1)%smooth%Ax,mg(1)%smooth%res)
 
         enddo
         call assign(x,mg(1)%smooth%x)
         call init(norm,mg(1)%smooth%norm)
 
-        if (displayTF) then
+        if (compute_norms) then
           write(*,*) 'Number of V-Cycles = ',i_MG-1
-          call operator(mg(1)%smooth%Ax,mg(1)%smooth%x,mg(1)%smooth%m)
-          call subtract(mg(1)%smooth%res,mg(1)%smooth%b,mg(1)%smooth%Ax)
-          call zeroGhostPoints(mg(1)%smooth%res)
-          call compute(norm,mg(1)%smooth%res,mg(1)%smooth%m)
+          call mg(1)%smooth%operator(mg(1)%smooth%Ax,mg(1)%smooth%x,mg(1)%smooth%m)
+          call init(norm,mg(1)%smooth%norm)
         endif
       end subroutine
 
@@ -115,7 +112,7 @@
 
           ! 2) Smooth
           call solve(operator,mg(j+1)%smooth%x,mg(j+1)%smooth%b,mg(j+1)%smooth%Dinv,&
-          mg(j+1)%smooth%D,mg(j+1)%smooth%m,n_iter,mg(j+1)%smooth%norm,mg(j+1)%displayTF,&
+          mg(j+1)%smooth%D,mg(j+1)%smooth%m,n,mg(j+1)%smooth%norm,mg(j+1)%compute_norms,&
           mg(j+1)%smooth%Ax,mg(j+1)%smooth%res)
 
 
@@ -138,7 +135,7 @@
 
           ! 6) Final smoothing sweeps
           call solve(operator,mg(j+1)%smooth%x,mg(j+1)%smooth%b,mg(j+1)%smooth%Dinv,&
-          mg(j+1)%smooth%D,mg(j+1)%smooth%m,n_iter,mg(j+1)%smooth%norm,mg(j+1)%displayTF,&
+          mg(j+1)%smooth%D,mg(j+1)%smooth%m,n,mg(j+1)%smooth%norm,mg(j+1)%compute_norms,&
           mg(j+1)%smooth%Ax,mg(j+1)%smooth%res)
 
           ! The solution on any mesh above the 
@@ -149,7 +146,7 @@
 
           ! call setMaxIterations(mg(j+1)%ss,5) ! Fixed
           call solve(operator,mg(j+1)%direct%x,mg(j+1)%direct%b,mg(j+1)%direct%Dinv,&
-          mg(j+1)%direct%D,mg(j+1)%direct%m,n_iter,mg(j+1)%direct%norm,mg(j+1)%displayTF,&
+          mg(j+1)%direct%D,mg(j+1)%direct%m,n,mg(j+1)%direct%norm,mg(j+1)%compute_norms,&
           mg(j+1)%direct%Ax,mg(j+1)%direct%res)
 
           ! The solution on a given mesh is the correction on the finer mesh

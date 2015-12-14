@@ -4,6 +4,7 @@
        use IO_Auxiliary_mod
        use IO_SF_mod
        use IO_VF_mod
+       use export_raw_processed_mod
        use myTime_mod
        use SF_mod
        use VF_mod
@@ -33,7 +34,7 @@
 
        public :: setDTime,setNmaxT,setPiGroups
        public :: computeAddBuoyancy,computeAddGravity
-       public :: export,exportRaw,exportTransient
+       public :: export,exportTransient
        public :: printExportBCs
        public :: computeDivergence
        public :: embedVelocityEnergy
@@ -87,8 +88,7 @@
        interface delete;             module procedure deleteenergy;            end interface
        interface solve;              module procedure solveEnergyEquation;     end interface
        interface printExportBCs;     module procedure printExportenergyBCs;    end interface
-       interface export;             module procedure energyExport;            end interface
-       interface exportRaw;          module procedure energyExportRaw;         end interface
+       interface export;             module procedure export_energy;           end interface
        interface exportTransient;    module procedure energyExportTransient;   end interface
        interface computeDivergence;  module procedure computeDivergenceEnergy; end interface
        interface embedVelocity;      module procedure embedVelocityEnergy;     end interface
@@ -110,22 +110,17 @@
          call init(nrg%m,m)
          call init(nrg%D,D)
 
-         call init_CC(nrg%T,m)
-         call init_CC(nrg%Tstar,m)
-         call init_CC(nrg%Ttemp,m)
-         call init_CC(nrg%k_cc,m)
-
-         call init_Face(nrg%temp_F,m)
-         call init_Face(nrg%k,m)
-         call init_Face(nrg%U_ft,m)
-
-         call init_CC(nrg%U_cct,m)
-         call init_CC(nrg%temp_CC,m)
-         call init_CC(nrg%gravity,m)
-         call init_CC(nrg%buoyancy,m)
-
-         call assign(nrg%gravity,0.0_cp)
-         call assign(nrg%buoyancy,0.0_cp)
+         call init_CC(nrg%T,m,0.0_cp)
+         call init_CC(nrg%Tstar,m,0.0_cp)
+         call init_CC(nrg%Ttemp,m,0.0_cp)
+         call init_CC(nrg%k_cc,m,0.0_cp)
+         call init_Face(nrg%temp_F,m,0.0_cp)
+         call init_Face(nrg%k,m,0.0_cp)
+         call init_Face(nrg%U_ft,m,0.0_cp)
+         call init_CC(nrg%U_cct,m,0.0_cp)
+         call init_CC(nrg%temp_CC,m,0.0_cp)
+         call init_CC(nrg%gravity,m,0.0_cp)
+         call init_CC(nrg%buoyancy,m,0.0_cp)
 
          ! --- Scalar Fields ---
          call init_CC(nrg%divQ,m)
@@ -251,43 +246,21 @@
          endif
        end subroutine
 
-       subroutine energyExportRaw(nrg,m,dir)
-         implicit none
-         type(energy),intent(in) :: nrg
-         type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
-         if (restartT.and.(.not.solveEnergy)) then
-           ! This preserves the initial data
-         else
-           write(*,*) 'Exporting RAW Solutions for T'
-           call export_3D_3C(m,nrg%U_cct,dir//'Tfield/','U_cct',0)
-           call export_3D_1C(m,nrg%T,dir//'Tfield/','Tct',0)
-           call export_3D_1C(m,nrg%U_ft%x,dir//'Tfield/','U_ft',0)
-           call export_3D_1C(m,nrg%U_ft%y,dir//'Tfield/','V_ft',0)
-           call export_3D_1C(m,nrg%U_ft%z,dir//'Tfield/','W_ft',0)
-           call export_3D_1C(m,nrg%divQ,dir//'Tfield/','divQct',0)
-           call export_3D_1C(m,nrg%k_cc,dir//'Tfield/','kct',0)
-           write(*,*) '     finished'
-         endif
-       end subroutine
-
-       subroutine energyExport(nrg,m,dir)
+       subroutine export_energy(nrg,m,dir)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
          type(SF) :: tempN,tempE
          if (solveEnergy) then
-           write(*,*) 'Exporting PROCESSED Solutions for T'
-           call init_Node(tempN,m)
-           call init_Edge(tempE,m,3)
-           call cellCenter2Node(tempN,nrg%T,m,nrg%temp_F%x,tempE)
-           call export_3D_1C(m,tempN,dir//'Tfield/','Tnt',0)
-         ! ----------------------- MATERIAL PROPERTIES AT NODES ------------------------
-           call cellCenter2Node(tempN,nrg%k_cc,m,nrg%temp_F%x,tempE)
-           call export_3D_1C(m,tempN,dir//'material/','knt',0)
-           call delete(tempN)
-           call delete(tempE)
+           write(*,*) 'Exporting Solutions for T'
+           call export_raw(m,nrg%U_cct,dir//'Tfield/','U',0)
+           call export_raw(m,nrg%T,dir//'Tfield/','T',0)
+           call export_raw(m,nrg%U_ft,dir//'Tfield/','U',0)
+           call export_raw(m,nrg%divQ,dir//'Tfield/','divQ',0)
+           call export_raw(m,nrg%k_cc,dir//'Tfield/','k',0)
+
+           call export_processed(m,nrg%T,dir//'Tfield/','T',0)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -349,10 +322,6 @@
          else; exportNow = .false.
          endif
 
-         if (getExportRawSolution(ss_MHD).or.exportNow) then
-           call exportRaw(nrg,nrg%m,dir)
-           call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
-         endif
          if (getExportSolution(ss_MHD).or.exportNow) then
            call export(nrg,nrg%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')

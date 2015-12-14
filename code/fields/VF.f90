@@ -39,6 +39,7 @@
         public :: assign,assign_negative
         public :: add,subtract
         public :: multiply,divide
+        public :: add_product
         public :: square,invert
         public :: mean,max
         ! public :: sum
@@ -66,6 +67,11 @@
         interface init_Edge;         module procedure init_VF_Edge;             end interface
         interface init_Node;         module procedure init_VF_Node;             end interface
 
+        interface init_CC;           module procedure init_VF_CC_assign;        end interface
+        interface init_Face;         module procedure init_VF_Face_assign;      end interface
+        interface init_Edge;         module procedure init_VF_Edge_assign;      end interface
+        interface init_Node;         module procedure init_VF_Node_assign;      end interface
+
         interface dot_product;       module procedure dot_product_VF;           end interface
 
         interface delete;            module procedure delete_VF;                end interface
@@ -92,6 +98,8 @@
         interface add;               module procedure add_VF_S;                 end interface
         interface add;               module procedure add_S_VF;                 end interface
 
+        interface add_product;       module procedure add_product_VF_VF_S;      end interface
+
         interface subtract;          module procedure subtract_VF_VF;           end interface
         interface subtract;          module procedure subtract_VF_VF_VF;        end interface
         interface subtract;          module procedure subtract_VF_SF;           end interface
@@ -101,6 +109,7 @@
         interface multiply;          module procedure multiply_VF_VF;           end interface
         interface multiply;          module procedure multiply_VF_VF_VF;        end interface
         interface multiply;          module procedure multiply_VF_VF_SF;        end interface
+        interface multiply;          module procedure multiply_VF_VF_S;         end interface
         interface multiply;          module procedure multiply_VF_SF;           end interface
         interface multiply;          module procedure multiply_SF_VF;           end interface
         interface multiply;          module procedure multiply_VF_S;            end interface
@@ -238,6 +247,16 @@
           call add(f%x,g2); call add(f%y,g2); call add(f%z,g2)
         end subroutine
 
+      ! ------------------- ADD PRODUCT ------------------------
+
+        subroutine add_product_VF_VF_S(f,g,r)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          real(cp),intent(in) :: r
+          call add_product(f%x,g%x,r); call add_product(f%y,g%y,r); call add_product(f%z,g%z,r)
+        end subroutine
+
       ! ------------------- SUBTRACT ------------------------
 
         subroutine subtract_VF_VF(f,g)
@@ -296,6 +315,14 @@
           type(VF),intent(inout) :: f
           type(VF),intent(in) :: g
           type(SF),intent(in) :: q
+          call multiply(f%x,g%x,q); call multiply(f%y,g%y,q); call multiply(f%z,g%z,q)
+        end subroutine
+
+        subroutine multiply_VF_VF_S(f,g,q)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          real(cp),intent(in) :: q
           call multiply(f%x,g%x,q); call multiply(f%y,g%y,q); call multiply(f%z,g%z,q)
         end subroutine
 
@@ -449,6 +476,38 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
+        end subroutine
+
+        subroutine init_VF_CC_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
+        end subroutine
+
+        subroutine init_VF_Edge_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Edge(f%x,m,1,val); call init_Edge(f%y,m,2,val); call init_Edge(f%z,m,3,val)
+        end subroutine
+
+        subroutine init_VF_Face_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Face(f%x,m,1,val); call init_Face(f%y,m,2,val); call init_Face(f%z,m,3,val)
+        end subroutine
+
+        subroutine init_VF_Node_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Node(f%x,m,val); call init_Node(f%y,m,val); call init_Node(f%z,m,val)
         end subroutine
 
         function dot_product_VF(A,B,temp) result(dot)

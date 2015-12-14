@@ -178,7 +178,7 @@
          real(cp) :: Ha,Re
          Ha = 10.0_cp; Re = 100.0_cp
          call delete(m)
-         N = (/3,3,3/); hmin = 0.0_cp; hmax = 1.0_cp
+         N = 50; hmin = 0.0_cp; hmax = 1.0_cp
          beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 

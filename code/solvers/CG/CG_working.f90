@@ -40,25 +40,23 @@
 
       type CG_solver_SF
         type(matrix_free_params) :: MFP
+        type(SF) :: r,p,tempx,Ax,vol
         type(VF) :: tempk,k
         type(norms) :: norm
-        type(SF) :: r,p,tempx,Ax,vol
         integer :: un
-        procedure(),pointer,nopass :: operator
       end type
 
       type CG_solver_VF
         type(matrix_free_params) :: MFP
+        type(VF) :: r,p,tempx,Ax,vol
         type(VF) :: tempk,k
         type(norms) :: norm
-        type(VF) :: r,p,tempx,Ax,vol
         integer,dimension(3) :: un
-        procedure(),pointer,nopass :: operator
       end type
 
       contains
 
-      subroutine init_CG_SF(CG,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
+      subroutine init_CG_SF(CG,operator,m,MFP,x,k,dir,name,testSymmetry,vizualizeOperator)
         implicit none
         external :: operator
         type(CG_solver_SF),intent(inout) :: CG
@@ -66,7 +64,7 @@
         type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
-        logical,intent(in) :: testSymmetry,exportOperator
+        logical,intent(in) :: testSymmetry,vizualizeOperator
         type(matrix_free_params),intent(in) :: MFP
         call init(CG%r,x)
         call init(CG%p,x)
@@ -80,23 +78,22 @@
         call init(CG%MFP,MFP)
         call volume(CG%vol,m)
         CG%un = newAndOpen(dir,'norm_CG_'//name)
-        CG%operator => operator
         if (testSymmetry) then
           call test_symmetry(operator,'CG_SF_'//name,x,CG%k,CG%vol,m,MFP,CG%tempk)
         endif
-        if (exportOperator) then
+        if (vizualizeOperator) then
           call export_operator(operator,'CG_SF_'//name,dir,x,CG%k,CG%vol,m,MFP,CG%tempk)
         endif
       end subroutine
 
-      subroutine init_CG_VF(CG,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
+      subroutine init_CG_VF(CG,operator,m,MFP,x,k,dir,name,testSymmetry,vizualizeOperator)
         implicit none
         external :: operator
         type(CG_solver_VF),intent(inout) :: CG
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k
         character(len=*),intent(in) :: dir,name
-        logical,intent(in) :: testSymmetry,exportOperator
+        logical,intent(in) :: testSymmetry,vizualizeOperator
         type(matrix_free_params),intent(in) :: MFP
         call init(CG%r,x)
         call init(CG%p,x)
@@ -112,36 +109,37 @@
         CG%un(1) = newAndOpen(dir,'norm_CG_x_'//name)
         CG%un(2) = newAndOpen(dir,'norm_CG_y_'//name)
         CG%un(3) = newAndOpen(dir,'norm_CG_z_'//name)
-        CG%operator => operator
         if (testSymmetry) then
           call test_symmetry(operator,'CG_VF_'//name,x,CG%k,CG%vol,m,MFP,CG%tempk)
         endif
-        if (exportOperator) then
+        if (vizualizeOperator) then
           call export_operator(operator,'CG_VF_'//name,dir,x,CG%k,CG%vol,m,MFP,CG%tempk)
         endif
       end subroutine
 
-      subroutine solve_CG_SF(CG,x,b,m,n,compute_norms)
+      subroutine solve_CG_SF(CG,operator,x,b,m,n,compute_norms)
         implicit none
+        external :: operator
         type(CG_solver_SF),intent(inout) :: CG
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_CG(CG%operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
+        call solve_CG(operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
         compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p)
       end subroutine
 
-      subroutine solve_CG_VF(CG,x,b,m,n,compute_norms)
+      subroutine solve_CG_VF(CG,operator,x,b,m,n,compute_norms)
         implicit none
+        external :: operator
         type(CG_solver_VF),intent(inout) :: CG
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_CG(CG%operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
+        call solve_CG(operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
         compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p)
       end subroutine
 

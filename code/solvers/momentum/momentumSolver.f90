@@ -41,6 +41,7 @@
        use probe_base_mod
        use probe_transient_mod
        use probe_derived_mod
+       use export_raw_processed_mod
        
        implicit none
        private
@@ -48,7 +49,7 @@
        public :: momentum,init,delete,solve
        public :: setDTime,setNmaxPPE
        public :: setPiGroups
-       public :: export,exportRaw,exportTransient
+       public :: export,exportTransient
        public :: printExportBCs
        public :: computeDivergence
        ! public :: computeKineticEnergy
@@ -127,8 +128,7 @@
        interface setPiGroups;         module procedure setPiGroupsMomentum;        end interface
        interface delete;              module procedure deleteMomentum;             end interface
        interface solve;               module procedure solveMomentumEquation;      end interface
-       interface export;              module procedure momentumExport;             end interface
-       interface exportRaw;           module procedure momentumExportRaw;          end interface
+       interface export;              module procedure export_momentum;            end interface
        interface exportTransient;     module procedure momentumExportTransient;    end interface
        interface exportTransientFull; module procedure momentumExportTransientFull;end interface
        interface printExportBCs;      module procedure printExportMomentumBCs;     end interface
@@ -149,35 +149,27 @@
 
          call init(mom%m,m)
 
-         ! Tensor Fields
-         call init_Edge(mom%U_E,m);        call assign(mom%U_E,0.0_cp)
-
-         ! Vector Fields
-         call init_Face(mom%U,m);          call assign(mom%U,0.0_cp)
-
-         call init_Face(mom%Ustar,m);      call assign(mom%Ustar,0.0_cp)
-         call init_Face(mom%Unm1,m);       call assign(mom%Unm1,0.0_cp)
-         call init_Face(mom%temp_F,m);     call assign(mom%temp_F,0.0_cp)
-
-         call init_Edge(mom%temp_E1,m);    call assign(mom%temp_E1,0.0_cp)
-         call init_Edge(mom%temp_E2,m);    call assign(mom%temp_E2,0.0_cp)
-
-         ! Scalar Fields
-         call init_CC(mom%p,m);            call assign(mom%p,0.0_cp)
-         call init_CC(mom%divU,m);         call assign(mom%divU,0.0_cp)
-         call init_CC(mom%U_CC,m);         call assign(mom%U_CC,0.0_cp)
-         call init_CC(mom%temp_CC,m);      call assign(mom%temp_CC,0.0_cp)
-         call init_CC(mom%temp_CC2,m);     call assign(mom%temp_CC2,0.0_cp)
-         call init_CC(mom%temp_CC3,m);     call assign(mom%temp_CC3,0.0_cp)
-         call init_CC(mom%Fo_grid,m);      call assign(mom%Fo_grid,0.0_cp)
-         call init_CC(mom%Co_grid,m);      call assign(mom%Co_grid,0.0_cp)
-         call init_CC(mom%Re_grid,m);      call assign(mom%Re_grid,0.0_cp)
-
-         call init_CC(mom%KE_adv,m);       call assign(mom%KE_adv,0.0_cp)
-         call init_CC(mom%KE_diff,m);      call assign(mom%KE_diff,0.0_cp)
-         call init_CC(mom%KE_pres,m);      call assign(mom%KE_pres,0.0_cp)
-         call init_CC(mom%KE_transient,m); call assign(mom%KE_transient,0.0_cp)
-         call init_CC(mom%KE_jCrossB,m);   call assign(mom%KE_jCrossB,0.0_cp)
+         call init_Edge(mom%U_E,m,0.0_cp)
+         call init_Face(mom%U,m,0.0_cp)
+         call init_Face(mom%Ustar,m,0.0_cp)
+         call init_Face(mom%Unm1,m,0.0_cp)
+         call init_Face(mom%temp_F,m,0.0_cp)
+         call init_Edge(mom%temp_E1,m,0.0_cp)
+         call init_Edge(mom%temp_E2,m,0.0_cp)
+         call init_CC(mom%p,m,0.0_cp)
+         call init_CC(mom%divU,m,0.0_cp)
+         call init_CC(mom%U_CC,m,0.0_cp)
+         call init_CC(mom%temp_CC,m,0.0_cp)
+         call init_CC(mom%temp_CC2,m,0.0_cp)
+         call init_CC(mom%temp_CC3,m,0.0_cp)
+         call init_CC(mom%Fo_grid,m,0.0_cp)
+         call init_CC(mom%Co_grid,m,0.0_cp)
+         call init_CC(mom%Re_grid,m,0.0_cp)
+         call init_CC(mom%KE_adv,m,0.0_cp)
+         call init_CC(mom%KE_diff,m,0.0_cp)
+         call init_CC(mom%KE_pres,m,0.0_cp)
+         call init_CC(mom%KE_transient,m,0.0_cp)
+         call init_CC(mom%KE_jCrossB,m,0.0_cp)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -360,7 +352,7 @@
          endif
        end subroutine
 
-       subroutine momentumExportRaw(mom,m,F,dir)
+       subroutine export_momentum(mom,m,F,dir)
          implicit none
          type(momentum),intent(in) :: mom
          type(mesh),intent(in) :: m
@@ -369,34 +361,15 @@
          if (restartU.and.(.not.solveMomentum)) then
            ! This preserves the initial data
          else
-           write(*,*) 'Exporting RAW Solutions for U'
-           call export_3D_1C(m,mom%U%x,dir//'Ufield/','ufi',0)
-           call export_3D_1C(m,mom%U%y,dir//'Ufield/','vfi',0)
-           call export_3D_1C(m,mom%U%z,dir//'Ufield/','wfi',0)
-           call export_3D_1C(m,mom%p,dir//'Ufield/','pci',0)
-           call export_3D_1C(m,F%x,dir//'Ufield/','jCrossB_x',0)
-           call export_3D_1C(m,F%y,dir//'Ufield/','jCrossB_y',0)
-           call export_3D_1C(m,F%z,dir//'Ufield/','jCrossB_z',0)
-           call export_3D_1C(m,mom%divU,dir//'Ufield/','divUci',0)
+           write(*,*) 'Exporting Solutions for U'
+           call export_raw(m,mom%U,dir//'Ufield/','U',0)
+           call export_raw(m,mom%p,dir//'Ufield/','p',0)
+           call export_raw(m,F,dir//'Ufield/','jCrossB',0)
+           call export_raw(m,mom%divU,dir//'Ufield/','divU',0)
+           call export_processed(m,mom%U,dir//'Ufield/','U',1)
+           call export_processed(m,mom%p,dir//'Ufield/','p',1)
            write(*,*) '     finished'
          endif
-       end subroutine
-
-       subroutine momentumExport(mom,m,dir)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
-         type(VF) :: tempNVF
-         write(*,*) 'Exporting PROCESSED Solutions for U'
-         ! ********************** EXPORT IN NODES ***************************
-         call init_Node(tempNVF,m)
-         call face2Node(tempNVF,mom%u,m,mom%temp_E1)
-         call export_3D_3C(m,tempNVF ,dir//'Ufield/','Uni',0)
-         call export_3D_1C(m,mom%p,dir//'Ufield/','pci_phys',1)
-         call export_3D_3C(m,tempNVF ,dir//'Ufield/','Uni_phys',1)
-         call delete(tempNVF)
-         write(*,*) '     finished'
        end subroutine
 
        subroutine momentumInfo(mom,un)
@@ -478,12 +451,8 @@
          else; exportNow = .false.
          endif
 
-         if (getExportRawSolution(ss_MHD).or.exportNow) then
-           call exportRaw(mom,mom%m,F,dir)
-           call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
-         endif
          if (getExportSolution(ss_MHD).or.exportNow) then
-           call export(mom,mom%m,dir)
+           call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
        end subroutine

@@ -29,31 +29,31 @@
 
        contains
 
-       subroutine clean_B_SOR(SOR,B_F,phi,m,n,TF,tmp_F,tmp_CC)
+       subroutine clean_B_SOR(SOR,B_F,phi,m,n,compute_norms,tmp_F,tmp_CC)
          implicit none
          type(SORSolver),intent(inout) :: SOR
          type(VF),intent(inout) :: B_F,tmp_F
          type(SF),intent(inout) :: phi,tmp_CC
          type(grid),intent(in) :: m
          integer,intent(in) :: n
-         logical,intent(in) :: TF
+         logical,intent(in) :: compute_norms
          call div(tmp_CC,B_F,m)
-         call solve(SOR,phi,tmp_CC,m,n,TF)
+         call solve(SOR,phi,tmp_CC,m,n,compute_norms)
          call grad(tmp_F,phi,m)
          call subtract(B_F,tmp_F)
          call applyAllBCs(B_F,m)
        end subroutine
 
-       subroutine clean_B_CG(CG,B,phi,m,n,TF,tmp_F,tmp_CC,tmp_CC_VF)
+       subroutine clean_B_CG(CG,B,phi,m,n,compute_norms,tmp_F,tmp_CC,tmp_CC_VF)
          implicit none
          type(CGSolver),intent(inout) :: CG
          type(VF),intent(inout) :: B,tmp_F,tmp_CC_VF
          type(SF),intent(inout) :: phi,tmp_CC
          type(grid),intent(in) :: m
          integer,intent(in) :: n
-         logical,intent(in) :: TF
+         logical,intent(in) :: compute_norms
          call div(tmp_CC,B,m)
-         call solve(CG,phi,tmp_CC,m,n,TF)
+         call solve(CG,phi,tmp_CC,m,n,compute_norms)
          call grad(tmp_F,phi,m)
          call face2CellCenter(tmp_CC_VF,tmp_F,m)
          call subtract(B,tmp_CC_VF)

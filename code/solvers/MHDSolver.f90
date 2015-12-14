@@ -96,12 +96,9 @@
          if (solveMomentum)  call exportTransient(mom,ss_MHD,dir)
          if (solveInduction) call exportTransient(ind,ss_MHD)
 
-         if (solveEnergy)    call exportRaw(nrg,nrg%m,dir)
-         if (solveInduction) call exportRaw(ind,ind%m,dir)
-         if (solveMomentum)  call exportRaw(mom,mom%m,F,dir)
          if (solveEnergy)    call export(nrg,nrg%m,dir)
          if (solveInduction) call export(ind,ind%m,dir)
-         if (solveMomentum)  call export(mom,mom%m,dir)
+         if (solveMomentum)  call export(mom,mom%m,F,dir)
 
          call delete(F)
          call computationComplete(time)
