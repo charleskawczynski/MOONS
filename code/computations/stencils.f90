@@ -50,7 +50,7 @@
 
       contains
 
-      function staggered_O2(f,T,s,sdfdh,gt) result(dfdh)
+      function staggered_O2(f,T,s,sdfdh,CC) result(dfdh)
         ! This routine computes the 1st derivative of f on the primary
         ! grid. The result lives on the dual grid. gt indicates 
         ! whether f lives on the cell center or node of the grid.
@@ -65,15 +65,21 @@
         implicit none
         real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
-        integer,intent(in) :: s,sdfdh,gt
+        integer,intent(in) :: s,sdfdh
+        logical,intent(in) :: CC
         real(cp),dimension(sdfdh) :: dfdh
         integer :: i
-        ! Interior
-        do i=1,s-1
-          dfdh(i+gt) = f(i)*T%D(i) + f(i+1)*T%U(i)
-        enddo
-        ! Boundaries
-        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
+        if (CC) then
+          do i=1,s-1
+            dfdh(i+1) = f(i)*T%D(i) + f(i+1)*T%U(i)
+          enddo
+          dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
+        else
+          do i=1,s-1
+            dfdh(i) = f(i)*T%D(i) + f(i+1)*T%U(i)
+          enddo
+          dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
+        endif
       end function
 
       function collocated_O2_interior_O1_boundary(f,T,s,CC,pad1,pad2) result(dfdh)
@@ -149,20 +155,19 @@
       !   dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp ! Ghost points
       ! end function
 
-      function collocatedD2fDh2_conservative(f,k,T1,T2,s,stemp,gt) result(dfdh)
+      function collocatedD2fDh2_conservative(f,k,T1,T2,s,stemp,CC) result(dfdh)
         implicit none
         real(cp),intent(in),dimension(s) :: f
         real(cp),dimension(stemp),intent(in) :: k
         type(triDiag),intent(in) :: T1,T2
-        integer,intent(in) :: s,stemp,gt
+        integer,intent(in) :: s,stemp
+        logical,intent(in) :: CC
         real(cp),dimension(s) :: dfdh
         real(cp),dimension(stemp) :: dfdh_temp
         ! First derivative
-        dfdh_temp = staggered(f,T1,s,stemp,gt)
+        dfdh_temp = staggered(f,T1,s,stemp,CC)
         ! Second derivative
-        if (gt.eq.1) then; dfdh = staggered(k*dfdh_temp,T2,stemp,s,0)
-        else;              dfdh = staggered(k*dfdh_temp,T2,stemp,s,1)
-        endif
+        dfdh = staggered(k*dfdh_temp,T2,stemp,s,.not.CC)
       end function
 
 

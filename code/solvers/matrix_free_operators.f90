@@ -17,6 +17,7 @@
 
       use mesh_mod
       use ops_discrete_mod
+      use ops_discrete_implicit_mod
       use ops_discrete_local_mod
       use ops_aux_mod
       use SF_mod
@@ -47,7 +48,7 @@
 
       subroutine Laplacian_uniform_props(Ax,x,k,vol,m,MFP,tempk)
         ! COMPUTES:
-        !        A = ∇²
+        !        A = V ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax
         type(SF),intent(in) :: x,vol
@@ -59,13 +60,12 @@
         suppress_warning = MFP%suppress_warning
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
-        call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine Laplacian_nonuniform_props(Ax,x,k,vol,m,MFP,tempk)
         ! COMPUTES:
-        !        A = ∇•(k∇)
+        !        A = V ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax
         type(SF),intent(in) :: x,vol
@@ -75,7 +75,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        call grad(tempk,x,m)
+        call grad_imp(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
         call multiply(Ax,vol)
@@ -92,7 +92,7 @@
         type(mesh),intent(in) :: m
         type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
-        call curl(tempk,x,m)
+        call curl_imp(tempk,x,m)
         call multiply(tempk,k)
         call curl(Ax,tempk,m)
         call multiply(Ax,MFP%c_ind)

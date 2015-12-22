@@ -35,9 +35,6 @@
         type(triDiag) :: stagCC2N,stagN2CC
         type(triDiag) :: lapCC,lapN
         type(triDiag) :: colCC,colN
-        ! Stencils for splitting methods (jacobi/SOR)
-        type(triDiag) :: D_CC2N,U_CC2N
-        type(triDiag) :: D_N2CC,U_N2CC
          ! Properties
         real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
         integer :: N                                    ! Number of cells
@@ -82,8 +79,6 @@
         call delete(c%stagCC2N); call delete(c%stagN2CC)
         call delete(c%lapCC); call delete(c%lapN)
         call delete(c%colCC); call delete(c%colN)
-        call delete(c%D_CC2N); call delete(c%U_CC2N)
-        call delete(c%D_N2CC); call delete(c%U_N2CC)
         c%defined = .false.
         c%stencils_defined = .false.
       end subroutine
@@ -107,10 +102,6 @@
         call init(c%lapN,d%lapN)
         call init(c%colCC,d%colCC)
         call init(c%colN,d%colN)
-        call init(c%D_CC2N,d%D_CC2N)
-        call init(c%U_CC2N,d%U_CC2N)
-        call init(c%D_N2CC,d%D_N2CC)
-        call init(c%U_N2CC,d%U_N2CC)
 
         c%sn = d%sn
         c%sc = d%sc
@@ -533,57 +524,6 @@
 
 
       ! *****************************************************************
-      ! ************************ SPLIT STENCILS *************************
-      ! *****************************************************************
-
-      subroutine init_D_CC2N(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        call init(c%D_CC2N,c%stagCC2N); c%D_CC2N%L = 0.0_cp; c%D_CC2N%U = 0.0_cp
-      end subroutine
-
-      subroutine init_D_N2CC(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        call init(c%D_N2CC,c%stagN2CC); c%D_N2CC%L = 0.0_cp; c%D_N2CC%U = 0.0_cp
-      end subroutine
-
-      subroutine init_U_CC2N(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        call init(c%U_CC2N,c%stagCC2N); c%U_CC2N%L = 0.0_cp; c%U_CC2N%D = 0.0_cp
-      end subroutine
-
-      subroutine init_U_N2CC(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        call init(c%U_N2CC,c%stagN2CC); c%U_N2CC%L = 0.0_cp; c%U_N2CC%D = 0.0_cp
-      end subroutine
-
-      ! *****************************************************************
-      ! ********** NEUMANN BOUNDARY CONDITION COEFFICIENTS **************
-      ! *****************************************************************
-
-      ! subroutine BC_N(c)
-      !   implicit none
-      !   type(coordinates),intent(inout) :: c
-      !   real(cp) :: L,D,U
-      !   integer :: i,s
-      !   s = c%sn
-      !   i = 1 ! Front
-      !   L = 1.0_cp/c%colN%L(i)       ! Coefficient of f'_{boundary}
-      !   D =-c%colN%D(i)/c%colN%L(i)  ! Coefficient of f_{first interior}
-      !   U =-c%colN%U(i)/c%colN%L(i)  ! Coefficient of f_{second interior}
-      !   call init(c%F_N,L,D,U)
-      !   i = s-2 ! Back
-      !   L = 1.0_cp/c%colN%U(i)       ! Coefficient of f'_{boundary}
-      !   D =-c%colN%D(i)/c%colN%U(i)  ! Coefficient of f_{first interior}
-      !   U =-c%colN%L(i)/c%colN%U(i)  ! Coefficient of f_{second interior}
-      !   call init(c%B_N,L,D,U)
-      ! end subroutine
-
-
-      ! *****************************************************************
       ! ****************** INTERPOLATION COEFFICIENTS *******************
       ! *****************************************************************
 
@@ -643,12 +583,6 @@
           call stencil_stagN2CC(c)
           call stencil_colCC(c)
           call stencil_colN(c)
-
-          ! Splitting method stencils:
-          call init_D_CC2N(c)
-          call init_D_N2CC(c)
-          call init_U_CC2N(c)
-          call init_U_N2CC(c)
           
           ! call check(c%lapCC)
           ! call check(c%lapN)

@@ -8,6 +8,7 @@
       use SF_mod
       use VF_mod
       use IO_tools_mod
+      use export_raw_processed_mod
 
       use matrix_mod
       use CG_solver_mod
@@ -43,7 +44,7 @@
         type(VF) :: tempk,k
         type(norms) :: norm
         type(SF) :: r,p,tempx,Ax,vol
-        integer :: un
+        integer :: un,N_iter
         procedure(),pointer,nopass :: operator
       end type
 
@@ -53,6 +54,7 @@
         type(norms) :: norm
         type(VF) :: r,p,tempx,Ax,vol
         integer,dimension(3) :: un
+        integer :: N_iter
         procedure(),pointer,nopass :: operator
       end type
 
@@ -79,7 +81,10 @@
         call assign(CG%k,k)
         call init(CG%MFP,MFP)
         call volume(CG%vol,m)
+        call export_raw(m,CG%vol,dir,'CG_volume',0)
         CG%un = newAndOpen(dir,'norm_CG_'//name)
+        call tecHeader(name,CG%un,.false.)
+        CG%N_iter = 1
         CG%operator => operator
         if (testSymmetry) then
           call test_symmetry(operator,'CG_SF_'//name,x,CG%k,CG%vol,m,MFP,CG%tempk)
@@ -112,6 +117,10 @@
         CG%un(1) = newAndOpen(dir,'norm_CG_x_'//name)
         CG%un(2) = newAndOpen(dir,'norm_CG_y_'//name)
         CG%un(3) = newAndOpen(dir,'norm_CG_z_'//name)
+        call tecHeader(name,CG%un(1),.true.)
+        call tecHeader(name,CG%un(2),.true.)
+        call tecHeader(name,CG%un(3),.true.)
+        CG%N_iter = 1
         CG%operator => operator
         if (testSymmetry) then
           call test_symmetry(operator,'CG_VF_'//name,x,CG%k,CG%vol,m,MFP,CG%tempk)
@@ -130,7 +139,7 @@
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
         call solve_CG(CG%operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
-        compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p)
+        compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p,CG%N_iter)
       end subroutine
 
       subroutine solve_CG_VF(CG,x,b,m,n,compute_norms)
@@ -142,7 +151,7 @@
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
         call solve_CG(CG%operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
-        compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p)
+        compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p,CG%N_iter)
       end subroutine
 
       subroutine delete_CG_SF(CG)
@@ -156,6 +165,7 @@
         call delete(CG%k)
         call delete(CG%tempk)
         call delete(CG%MFP)
+        CG%N_iter = 1
       end subroutine
 
       subroutine delete_CG_VF(CG)
@@ -169,6 +179,19 @@
         call delete(CG%k)
         call delete(CG%tempk)
         call delete(CG%MFP)
+        CG%N_iter = 1
+      end subroutine
+
+      subroutine tecHeader(name,un,VF)
+        implicit none
+        character(len=*),intent(in) :: name
+        integer,intent(in) :: un
+        logical,intent(in) :: VF
+        if (VF) then; write(un,*) 'TITLE = "CG_VF residuals for '//name//'"'
+        else;         write(un,*) 'TITLE = "CG_SF residuals for '//name//'"'
+        endif
+        write(un,*) 'VARIABLES = N,L1,L2,Linf'
+        write(un,*) 'ZONE DATAPACKING = POINT'
       end subroutine
 
       end module

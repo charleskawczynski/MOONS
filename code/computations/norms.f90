@@ -2,8 +2,8 @@
        ! Computes L_1,L_2,L_inf norms of a scalar field.
        !
        ! Input / Output:
-       !        u  = scalar field
-       !        m  = mesh
+       !        u    = scalar field
+       !        m    = mesh
        !        norm = {L_1,L_2,L_inf}
        ! 
        ! L-n norm computations:
@@ -47,7 +47,7 @@
        public :: export,exportList
 
        type norms
-         real(cp) :: L1,L2,Linf ! Absolute errors:
+         real(cp) :: L1,L2,Linf
        end type
 
        interface init;            module procedure initError;              end interface
@@ -59,6 +59,8 @@
        interface exportList;      module procedure exportNormsList2;       end interface
        interface print;           module procedure printNorms;             end interface
 
+
+       interface compute;         module procedure compute_norms_mesh;     end interface
        interface compute;         module procedure compute_norms;          end interface
        interface compute_MPI;     module procedure compute_Ln_tot;         end interface
 
@@ -157,17 +159,17 @@
            write(temp,'(6'//arrfmt//')') e%L1, e%L2, e%Linf
        end subroutine
 
-       subroutine writeNormsToFileOrScreen(err,name,newU)
+       subroutine writeNormsToFileOrScreen(norm,name,newU)
          implicit none
-         type(norms),intent(in) :: err
+         type(norms),intent(in) :: norm
          integer,intent(in) :: newU
          character(len=*),intent(in) :: name
          write(newU,*) ''
          write(newU,*) '++++++++++++++ '//trim(adjustl(name))//&
                    ' +++++++++++++++'
-         write(newU,*) 'L1 = ',err%L1
-         write(newU,*) 'L2 = ',err%L2
-         write(newU,*) 'Linf = ',err%Linf
+         write(newU,*) 'L1 = ',norm%L1
+         write(newU,*) 'L2 = ',norm%L2
+         write(newU,*) 'Linf = ',norm%Linf
          write(newU,*) '++++++++++++++++++++++++++++',&
                     '++++++++++++++++++++++++++++'
          write(newU,*) ''
@@ -176,6 +178,82 @@
        ! **************************************************************
        ! **************************************************************
        ! ************************ COMPUTATIONS ************************
+       ! **************************************************************
+       ! **************************************************************
+
+       subroutine compute_Ln_mesh(e,u,m,n) ! Open-MP friendly
+         ! Computes
+         ! 
+         !          1
+         !   e = -------- ( ∫∫∫ | u(i,j,k)ⁿ | )⁻ⁿ dx dy dz
+         !        volume
+         ! 
+         ! Where x,y,z lives in the cell center.
+         implicit none
+         real(cp),intent(inout) :: e
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: n
+         real(cp) :: eTemp
+         integer :: i,j,k,t
+         eTemp = 0.0_cp ! temp is necessary for reduction
+         !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
+         do t=1,u%s
+           do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             eTemp = eTemp + abs(u%RF(t)%f(i,j,k)**n)*m%g(t)%c(1)%dhn(i)*&
+                                                      m%g(t)%c(2)%dhn(j)*&
+                                                      m%g(t)%c(3)%dhn(k)
+           enddo; enddo; enddo
+         enddo
+         !$OMP END PARALLEL DO
+         e = eTemp**(1.0_cp/n)/m%volume
+       end subroutine
+
+       subroutine compute_Ln(e,u,n) ! Open-MP friendly
+         ! Computes
+         ! 
+         !   e = ( ∫∫∫ | u(i,j,k)ⁿ | )⁻ⁿ
+         ! 
+         ! Where x,y,z lives in the cell center.
+         implicit none
+         real(cp),intent(inout) :: e
+         type(SF),intent(in) :: u
+         real(cp),intent(in) :: n
+         real(cp) :: eTemp
+         integer :: i,j,k,t
+         eTemp = 0.0_cp ! temp is necessary for reduction
+         !$OMP PARALLEL DO REDUCTION(+:eTemp)
+         do t=1,u%s
+           do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             eTemp = eTemp + abs(u%RF(t)%f(i,j,k)**n)
+           enddo; enddo; enddo
+         enddo
+         !$OMP END PARALLEL DO
+         e = eTemp**(1.0_cp/n)
+       end subroutine
+
+       subroutine compute_norms_mesh(e,u,m)
+         implicit none
+         type(norms),intent(inout) :: e
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: u
+         call compute_Ln_mesh(e%L1,u,m,1.0_cp)
+         call compute_Ln_mesh(e%L2,u,m,2.0_cp)
+         e%Linf = maxabs(u)
+       end subroutine
+
+       subroutine compute_norms(e,u)
+         implicit none
+         type(norms),intent(inout) :: e
+         type(SF),intent(in) :: u
+         call compute_Ln(e%L1,u,1.0_cp)
+         call compute_Ln(e%L2,u,2.0_cp)
+         e%Linf = maxabs(u)
+       end subroutine
+
+       ! **************************************************************
+       ! **************************************************************
+       ! ************************ MPI FRIENDLY ************************
        ! **************************************************************
        ! **************************************************************
 
@@ -219,46 +297,6 @@
            e = e + eTemp
          enddo
          e = e**(1.0_cp/n)/m%volume
-       end subroutine
-
-       subroutine compute_Ln(e,u,m,n) ! Open-MP friendly
-         ! Computes
-         ! 
-         !          1
-         !   e = -------- { ∫∫∫ | u(i,j,k)^n | }^(1/n) dx dy dz
-         !        volume
-         ! 
-         ! Where x,y,z lives in the cell center.
-         implicit none
-         type(SF),intent(in) :: u
-         real(cp),intent(inout) :: e
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: n
-         real(cp) :: eTemp
-         integer :: i,j,k,t
-         eTemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
-         do t=1,u%s
-           do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             eTemp = eTemp + abs(u%RF(t)%f(i,j,k)**n)*m%g(t)%c(1)%dhn(i)*&
-                                                      m%g(t)%c(2)%dhn(j)*&
-                                                      m%g(t)%c(3)%dhn(k)
-           enddo; enddo; enddo
-         enddo
-         !$OMP END PARALLEL DO
-         e = eTemp**(1.0_cp/n)/m%volume
-       end subroutine
-
-       subroutine compute_norms(e,u,m)
-         implicit none
-         type(norms),intent(inout) :: e
-         type(mesh),intent(in) :: m
-         type(SF),intent(in) :: u
-         real(cp) :: n
-         call initError(e)
-         n = 1.0_cp; call compute_Ln(e%L1,u,m,n)
-         n = 2.0_cp; call compute_Ln(e%L2,u,m,n)
-         e%Linf = maxabs(u)
        end subroutine
 
        end module

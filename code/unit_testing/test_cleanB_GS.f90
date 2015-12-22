@@ -11,7 +11,6 @@
        use ops_aux_mod
        use CG_mod
        use PCG_mod
-       use ops_discrete_implicit_mod
        use matrix_free_operators_mod
        use matrix_free_params_mod
        use export_raw_processed_mod
@@ -33,25 +32,23 @@
          implicit none
          character(len=*),intent(in) :: dir ! directory
          type(mesh) :: m
-         type(SF) :: phi,divB,phi_ghost
-         type(VF) :: B,temp_F,Btemp
+         type(SF) :: phi,divB
+         type(VF) :: B,temp_F
 
          type(matrix_free_params) :: MFP
-         type(CG_solver_SF) :: CG
+         type(GS_Poisson) :: GS
          integer :: i
 
          ! call cube(m) ! in mesh_generate.f90
          call cube_uniform(m) ! in mesh_generate.f90
 
          call init_Face(B,m)
-         call init_Face(Btemp,m)
          call init_Face(temp_F,m)
          call init_CC(divB,m)
          call init_CC(phi,m)
-         call init_CC(phi_ghost,m)
 
          call init_BC_mesh(phi,m)
-         call init_Dirichlet(phi%RF(1)%b)
+         call init_Neumann(phi%RF(1)%b)
          call init(phi%RF(1)%b,0.0_cp)
 
          call init_BC_mesh(B%x,m)
@@ -66,43 +63,22 @@
          call init_Neumann(B%z%RF(1)%b,5); call init_Neumann(B%z%RF(1)%b,6)
 
          call noise(B)
+         call add(B,0.5_cp)
          call zeroGhostPoints(B)
-         B%x%RF(1)%f(2,:,:) = 0.0_cp; B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:) = 0.0_cp
-         B%y%RF(1)%f(:,2,:) = 0.0_cp; B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:) = 0.0_cp
-         B%z%RF(1)%f(:,:,2) = 0.0_cp; B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1) = 0.0_cp
          call apply_BCs(B,m)
          call div(divB,B,m)
          write(*,*) 'sum(divB) = ',sum(divB)
 
          call zeroGhostPoints(divB)
-         phi%all_Neumann = .true.
          write(*,*) 'allNeumann = ',phi%all_Neumann
-
-         call init(phi%RF(1)%b,B%x%RF(1)%f(2,:,:),1)
-         call init(phi%RF(1)%b,B%y%RF(1)%f(:,2,:),3)
-         call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,2),5)
-         call init(phi%RF(1)%b,B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:),2)
-         call init(phi%RF(1)%b,B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:),4)
-         call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1),6)
-
-         ! call assign(phi_ghost,0.0_cp)
-         ! call assign_gradGhost(phi_ghost,B); call printGlobalMinMax(phi_ghost,'phi_ghost')
-         ! ! call zeroInterior(phi_ghost);       call printGlobalMinMax(phi_ghost,'phi_ghost')
-         ! call grad(temp_F,phi_ghost,m);      call printGlobalMinMax(temp_F,'gradphi_ghost')
-         ! call div(phi_ghost,temp_F,m);       call printGlobalMinMax(phi_ghost,'divphi_ghost')
-         ! call subtract(divB,phi_ghost)
-         ! ! stop 'Done'
 
          call export(m,dir,'mesh')
          call export_raw(m,B,dir,'Bstar',0)
          call export_raw(m,divB,dir,'divB',0)
 
-         call init(CG,Laplacian_uniform_props,m,MFP,phi,temp_F,dir,'phi',.false.,.false.)
-         do i=1,200
-         call solve(CG,phi,divB,m,10,.false.)
-         enddo
-         call solve(CG,phi,divB,m,1,.true.)
-         ! call subtract_physical_mean(phi)
+         call init(GS,phi,m,dir,'phi')
+         call solve(GS,phi,divB,m,2000,.true.)
+         call subtract_physical_mean(phi)
          write(*,*) 'sum(phi) = ',sum(phi)
          call apply_BCs(phi,m)
          call grad(temp_F,phi,m)
@@ -120,13 +96,11 @@
          call export_processed(m,phi,dir,'phi',0)
          call export_raw(m,B,dir,'B_clean',0)
 
+         call delete(GS)
          call delete(m)
-         call delete(CG)
          call delete(B)
-         call delete(Btemp)
          call delete(temp_F)
          call delete(phi)
-         call delete(phi_ghost)
          call delete(divB)
        end subroutine
 

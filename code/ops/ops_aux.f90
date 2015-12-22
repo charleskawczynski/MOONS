@@ -66,9 +66,8 @@
        interface totalEnergy;             module procedure totalEnergy_VF;            end interface
        interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
 
-       public :: volume
-       interface volume;                  module procedure volume_SF;                 end interface
-       interface volume;                  module procedure volume_VF;                 end interface
+       public :: subtract_physical_mean
+       interface subtract_physical_mean;  module procedure subtract_physical_mean_SF; end interface
 
        public :: stabilityTerms
        interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
@@ -95,6 +94,10 @@
        interface zeroInterior;            module procedure zeroInterior_RF;           end interface
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
        interface zeroInterior;            module procedure zeroInterior_SF;           end interface
+
+       public :: assign_gradGhost
+       interface assign_gradGhost;        module procedure assign_gradGhost_SF;       end interface
+       interface assign_gradGhost;        module procedure assign_gradGhost_RF;       end interface
 
        public :: treatInterface
        interface treatInterface;          module procedure treatInterface_RF;         end interface
@@ -213,88 +216,19 @@
          e = etemp/m%volume
        end subroutine
 
-       subroutine volume_SF(u,m)
-         ! Computes
+       subroutine subtract_physical_mean_SF(u)
+         ! Subtracts the physical mean from scalar field u
          ! 
-         !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+         !      u = u - mean(u)
+         ! 
+         ! Where this mean operation is only in the interior domain
          implicit none
          type(SF),intent(inout) :: u
-         type(mesh),intent(in) :: m
-         integer :: i,j,k,t
-         if (u%is_CC) then
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         elseif (u%is_Node) then
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         elseif (u%is_Face) then
-         select case (u%face)
-         case (1);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (2);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (3);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
-         end select
-         elseif (u%is_Edge) then
-         select case (u%edge)
-         case (1);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (2);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (3);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
-         end select
-         else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
-         endif
+         real(cp) :: meanU
+         call zeroGhostPoints(u)
+         meanU = sum(u)/real(u%numPhysEl,cp)
+         call subtract(u,meanU)
+         call zeroGhostPoints(u)
        end subroutine
 
        subroutine zeroGhostPoints_RF(f,s)
@@ -338,6 +272,26 @@
          f(2:s(1)-1,:,:) = 0.0_cp
          f(:,2:s(2)-1,:) = 0.0_cp
          f(:,:,2:s(3)-1) = 0.0_cp
+       end subroutine
+
+       subroutine assign_gradGhost_SF(CC,F)
+         implicit none
+         type(SF),intent(inout) :: CC
+         type(VF),intent(in) :: F
+         integer :: i
+         do i=1,CC%s
+         call assign_gradGhost_RF(CC%RF(i)%f,F%x%RF(i)%f,F%y%RF(i)%f,F%z%RF(i)%f,CC%RF(i)%s)
+         enddo
+       end subroutine
+
+       subroutine assign_gradGhost_RF(CC,Fx,Fy,Fz,s)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: CC
+         real(cp),dimension(:,:,:),intent(in) :: Fx,Fy,Fz
+         integer,dimension(3),intent(in) :: s
+         CC(1,:,:) = Fx(2,:,:); CC(s(1),:,:) = Fx(s(1),:,:)
+         CC(:,1,:) = Fy(:,2,:); CC(:,s(2),:) = Fy(:,s(2),:)
+         CC(:,:,1) = Fz(:,:,2); CC(:,:,s(3)) = Fz(:,:,s(3))
        end subroutine
 
        subroutine treatInterface_RF(f,s)
@@ -596,13 +550,6 @@
          if (un.gt.U%numEl) stop 'Error: un must < U%numEl in unitVector_consecutive_SF in ops_aux.f90'
          call get_3D_index(i,j,k,t,U,un)
          U%RF(t)%f(i,j,k) = 0.0_cp
-       end subroutine
-
-       subroutine volume_VF(u,m)
-         implicit none
-         type(VF),intent(inout) :: u
-         type(mesh),intent(in) :: m
-         call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
        end subroutine
 
        subroutine stabilityTerms_SF(fo,fi,m,n,dir)

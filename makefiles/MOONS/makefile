@@ -67,6 +67,7 @@ FCFLAGS += -fopenmp
 # ****************** DEBUGGING **********************
 FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
 FC_DEBUG += -D_DEBUG_DEL_
+FC_DEBUG += -D_DEBUG_DEL_IMPLICIT_
 FC_DEBUG += -D_DEBUG_INTERP_
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 FC_DEBUG += -D_DEBUG_APPLYBCS_
@@ -77,9 +78,14 @@ FC_DEBUG += -D_DEBUG_APPLYBCS_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -g -O3
+FC_OPTIMIZE += -D_PARALLELIZE_RF_
+FC_OPTIMIZE += -D_PARALLELIZE_SF_
+# FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
+FC_OPTIMIZE += -D_PARALLELIZE_DEL_
+# FC_OPTIMIZE += -D_PARALLELIZE_DEL_IMPLICIT_
+
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
-FC_OPTIMIZE += -D_PARALLELIZE_RF_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
 # FC_OPTIMIZE += mpif90
 # FC_OPTIMIZE += mpirun -np 4
@@ -93,8 +99,9 @@ FC_PROFILE += -pg
 
 # Code verification
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
+FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
@@ -244,13 +251,15 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
+	$(SRC_DIR)$(PS)computations$(PS)stencils_BC_implicit.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_del_implicit.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del_local.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_split.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_implicit.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_local.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
@@ -268,7 +277,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)JAC_ops.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90 \

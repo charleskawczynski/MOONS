@@ -53,15 +53,15 @@
         select case(genType)
         case (1) ;select case (diffType) ! Assign
                   case (1); dfdh = collocated(f,T,s,CC,pad1,pad2)         ! Collocated derivative
-                  case (2); dfdh = staggered(f,T,s,sdfdh,gt)              ! Staggered derivative
+                  case (2); dfdh = staggered(f,T,s,sdfdh,CC)              ! Staggered derivative
                   end select
         case (2) ;select case (diffType) ! add
                   case (1); dfdh = dfdh + collocated(f,T,s,CC,pad1,pad2)  ! Collocated derivative
-                  case (2); dfdh = dfdh + staggered(f,T,s,sdfdh,gt)       ! Staggered derivative
+                  case (2); dfdh = dfdh + staggered(f,T,s,sdfdh,CC)       ! Staggered derivative
                   end select
         case (3) ;select case (diffType) ! subtract
                   case (1); dfdh = dfdh - collocated(f,T,s,CC,pad1,pad2)  ! Collocated derivative
-                  case (2); dfdh = dfdh - staggered(f,T,s,sdfdh,gt)       ! Staggered derivative
+                  case (2); dfdh = dfdh - staggered(f,T,s,sdfdh,CC)       ! Staggered derivative
                   end select
         case default
           stop 'Error: genType must = 1,2,3 in diff in del.f90'

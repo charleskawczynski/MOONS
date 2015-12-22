@@ -26,7 +26,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp) :: tol = 10.0_cp**(-15.0_cp)
+      real(cp) :: tol = 10.0_cp**(-30.0_cp)
 
       contains
 
@@ -48,6 +48,7 @@
         call apply_BCs(x,m)
         call operator(Ax,x,k,vol,m,MFP,tempk)
         call multiply(r,b,vol)
+        if (x%all_Neumann) call subtract_physical_mean(r)
         call subtract(r,Ax)
         call zeroGhostPoints(r)
         call zeroWall_conditional(r,m,x)
@@ -57,13 +58,9 @@
         do i=1,n
           call operator(Ax,p,k,vol,m,MFP,tempk)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
-          call assign(tempx,p) ! x = x + alpha p
-          call multiply(tempx,alpha)
-          call add(x,tempx)
+          call add_product(x,p,alpha) ! x = x + alpha p
           call apply_BCs(x,m)
-          call assign(tempx,Ax) ! r = r - alpha Ap
-          call multiply(tempx,alpha)
-          call subtract(r,tempx)
+          call add_product(r,Ax,-alpha) ! x = x - alpha Ap
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           res_norm = dot_product(r,r,m,x,tempx)
@@ -72,30 +69,29 @@
 #ifdef _EXPORT_PCG_CONVERGENCE_
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r,m); write(un,*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,r); write(un,*) norm%L1,norm%L2,norm%Linf
 #endif
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
-          call assign(tempx,p) ! p = z + beta p
-          call multiply(tempx,rhokp1/rhok)
-          call add(p,z,tempx)
+          call multiply(p,rhokp1/rhok) ! p = z + beta p
+          call add(p,z)
           call zeroGhostPoints(p)
           rhok = rhokp1
         enddo
         
         call apply_BCs(x,m)
-#ifndef _EXPORT_PCG_CONVERGENCE_
         if (compute_norms) then
           call operator(Ax,x,k,vol,m,MFP,tempk)
           call multiply(r,b,vol)
           call subtract(r,Ax)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r,m); call print(norm,'PCG Residuals')
+          call compute(norm,r); call print(norm,'PCG Residuals')
+#ifndef _EXPORT_PCG_CONVERGENCE_
           write(un,*) norm%L1,norm%L2,norm%Linf
+#endif
           write(*,*) 'PCG iterations (executed/max) = ',i-1,n
         endif
-#endif
       end subroutine
 
       subroutine solve_PCG_VF(operator,x,b,vol,k,m,MFP,n,norm,compute_norms,un,tempx,tempk,Ax,r,p,z,Minv)
@@ -126,13 +122,9 @@
         do i=1,n
           call operator(Ax,p,k,vol,m,MFP,tempk)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
-          call assign(tempx,p) ! x = x + alpha p
-          call multiply(tempx,alpha)
-          call add(x,tempx)
+          call add_product(x,p,alpha) ! x = x + alpha p
           call apply_BCs(x,m)
-          call assign(tempx,Ax) ! r = r - alpha Ap
-          call multiply(tempx,alpha)
-          call subtract(r,tempx)
+          call add_product(r,Ax,-alpha) ! x = x - alpha Ap
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           res_norm = dot_product(r,r,m,x,tempx)
@@ -141,36 +133,39 @@
 #ifdef _EXPORT_PCG_CONVERGENCE_
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r%x,m); write(un(1),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%y,m); write(un(2),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%z,m); write(un(3),*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,r%x); write(un(1),*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,r%y); write(un(2),*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,r%z); write(un(3),*) norm%L1,norm%L2,norm%Linf
 #endif
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
-          call assign(tempx,p) ! p = z + beta p
-          call multiply(tempx,rhokp1/rhok)
-          call add(p,z,tempx)
+          call multiply(p,rhokp1/rhok) ! p = z + beta p
+          call add(p,z)
           call zeroGhostPoints(p)
           rhok = rhokp1
         enddo
         
         call apply_BCs(x,m)
-#ifndef _EXPORT_PCG_CONVERGENCE_
         if (compute_norms) then
           call operator(Ax,x,k,vol,m,MFP,tempk)
           call multiply(r,b,vol)
           call subtract(r,Ax)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r%x,m); call print(norm,'PCG Residuals (x)')
+          call compute(norm,r%x); call print(norm,'PCG Residuals (x)')
+#ifndef _EXPORT_PCG_CONVERGENCE_
           write(un(1),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%y,m); call print(norm,'PCG Residuals (y)')
+#endif
+          call compute(norm,r%y); call print(norm,'PCG Residuals (y)')
+#ifndef _EXPORT_PCG_CONVERGENCE_
           write(un(2),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%z,m); call print(norm,'PCG Residuals (z)')
+#endif
+          call compute(norm,r%z); call print(norm,'PCG Residuals (z)')
+#ifndef _EXPORT_PCG_CONVERGENCE_
           write(un(3),*) norm%L1,norm%L2,norm%Linf
+#endif
           write(*,*) 'PCG iterations (executed/max) = ',i-1,n
         endif
-#endif
       end subroutine
 
       end module

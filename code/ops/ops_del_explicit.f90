@@ -30,12 +30,12 @@
       use mesh_mod
       use SF_mod
       use triDiag_mod
-      use stencils_mod
+      use stencils_BC_explicit_mod
       use apply_stitches_mod
       implicit none
 
       private
-      public :: del 
+      public :: del
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -49,7 +49,7 @@
 
       interface delGen;    module procedure delGen_given_g; end interface
 
-      type del
+      type del_implicit
         contains
         generic,public :: assign => assignDel
         generic,public :: add => addDel
@@ -74,16 +74,16 @@
         logical,intent(in) :: CC
         select case(genType)
         case (1) ;select case (diffType) ! Assign
-                  case (1); dfdh = collocated(f,T,s,CC,pad1,pad2)         ! Collocated derivative
-                  case (2); dfdh = staggered(f,T,s,sdfdh,CC)              ! Staggered derivative
+                  case (1); dfdh = collocated_centered(f,T,s,CC,pad1,pad2)         ! Collocated derivative
+                  case (2); dfdh = staggered_explicit(f,T,s,sdfdh,gt)              ! Staggered derivative
                   end select
         case (2) ;select case (diffType) ! add
-                  case (1); dfdh = dfdh + collocated(f,T,s,CC,pad1,pad2)  ! Collocated derivative
-                  case (2); dfdh = dfdh + staggered(f,T,s,sdfdh,CC)       ! Staggered derivative
+                  case (1); dfdh = dfdh + collocated_centered(f,T,s,CC,pad1,pad2)  ! Collocated derivative
+                  case (2); dfdh = dfdh + staggered_explicit(f,T,s,sdfdh,gt)       ! Staggered derivative
                   end select
         case (3) ;select case (diffType) ! subtract
-                  case (1); dfdh = dfdh - collocated(f,T,s,CC,pad1,pad2)  ! Collocated derivative
-                  case (2); dfdh = dfdh - staggered(f,T,s,sdfdh,CC)       ! Staggered derivative
+                  case (1); dfdh = dfdh - collocated_centered(f,T,s,CC,pad1,pad2)  ! Collocated derivative
+                  case (2); dfdh = dfdh - staggered_explicit(f,T,s,sdfdh,gt)       ! Staggered derivative
                   end select
         case default
           stop 'Error: genType must = 1,2,3 in diff in del.f90'

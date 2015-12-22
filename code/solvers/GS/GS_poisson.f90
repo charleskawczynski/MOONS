@@ -1,5 +1,5 @@
       module GS_poisson_mod
-      ! call GS_solver(GS,u,f,m,n,compute_norm)
+      ! call GS_poisson(GS,u,f,m,n,compute_norm)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, mesh (m) using the Gauss-Seidel (GS) method
@@ -29,7 +29,7 @@
       implicit none
 
       private
-      public :: GS_solver,solve
+      public :: GS_poisson,solve
       public :: init,delete
 
 #ifdef _SINGLE_PRECISION_
@@ -42,7 +42,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      type GS_solver
+      type GS_poisson
         type(mesh) :: p,d         ! Primary / Dual grids
         type(SF) :: lapu,res,Dinv ! laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gt,s
@@ -62,7 +62,7 @@
 
       subroutine init_GS(GS,u,m,dir,name)
         implicit none
-        type(GS_solver),intent(inout) :: GS
+        type(GS_poisson),intent(inout) :: GS
         type(SF),intent(in) :: u
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
@@ -96,7 +96,7 @@
 
       subroutine delete_GS(GS)
         implicit none
-        type(GS_solver),intent(inout) :: GS
+        type(GS_poisson),intent(inout) :: GS
         call delete(GS%p)
         call delete(GS%d)
         call delete(GS%lapu)
@@ -106,7 +106,7 @@
 
       subroutine solve_GS(GS,u,f,m,n,compute_norm)
         implicit none
-        type(GS_solver),intent(inout) :: GS
+        type(GS_poisson),intent(inout) :: GS
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
@@ -134,7 +134,7 @@
             call subtract(GS%res,GS%lapu,f)
             call zeroGhostPoints(GS%res)
             call compute(GS%norm,GS%res,m)
-            write(GS%un,*) norm%L1,norm%L2,norm%Linf
+            write(GS%un,*) i,GS%norm%L1,GS%norm%L2,GS%norm%Linf
 #endif
         enddo
         if (u%all_Neumann) call subtract(u,mean(u))
@@ -153,7 +153,7 @@
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f,Dinv
         type(mesh),intent(in) :: m
-        type(GS_solver),intent(in) :: GS
+        type(GS_poisson),intent(in) :: GS
         integer,dimension(3),intent(in) :: odd
         integer :: i
         do i=1,m%s

@@ -27,6 +27,7 @@
         public :: init_Face
         public :: init_Edge
         public :: init_Node
+        public :: volume
 
         public :: dot_product
 
@@ -71,6 +72,7 @@
         interface init_Face;         module procedure init_VF_Face_assign;      end interface
         interface init_Edge;         module procedure init_VF_Edge_assign;      end interface
         interface init_Node;         module procedure init_VF_Node_assign;      end interface
+        interface volume;            module procedure volume_VF;                end interface
 
         interface dot_product;       module procedure dot_product_VF;           end interface
 
@@ -435,6 +437,13 @@
         ! end subroutine
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
+
+        subroutine volume_VF(u,m)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
+        end subroutine
 
         subroutine init_VF_copy_VF(f1,f2)
           implicit none

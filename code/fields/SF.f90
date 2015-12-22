@@ -42,12 +42,13 @@
         public :: init_Face
         public :: init_Edge
         public :: CC_along,Node_along
+        public :: volume
 
         public :: init_BCs,init_BC_props,init_BC_mesh
         public :: dot_product
 
         ! Monitoring
-        public :: print
+        public :: print,print_physical
         public :: print_BCs
         public :: export_BCs
 
@@ -80,7 +81,8 @@
           logical :: all_neumann ! If necessary to subtract mean
           integer :: face = 0 ! Direction of face data
           integer :: edge = 0 ! Direction of edge data
-          integer :: numEl
+          integer :: numEl,numPhysEl ! Number of physical elements, number of physical elements
+          real(cp) :: vol
         end type
 
         interface init;                module procedure init_SF_copy;           end interface
@@ -93,6 +95,7 @@
         interface init_Node;           module procedure init_SF_Node_assign;    end interface
         interface init_Face;           module procedure init_SF_Face_assign;    end interface
         interface init_Edge;           module procedure init_SF_Edge_assign;    end interface
+        interface volume;              module procedure volume_SF;              end interface
 
         interface dot_product;         module procedure dot_product_SF;         end interface
 
@@ -103,6 +106,7 @@
 
         interface delete;              module procedure delete_SF;              end interface
         interface print;               module procedure print_SF;               end interface
+        interface print_physical;      module procedure print_physical_SF;      end interface
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
 
@@ -513,8 +517,10 @@
           type(SF),intent(inout) :: f
           integer :: i
           f%numEl = 0
+          f%numPhysEl = 0
           do i=1,f%s
           f%numEl = f%numEl + f%RF(i)%s(1)*f%RF(i)%s(2)*f%RF(i)%s(3)
+          f%numPhysEl = f%numPhysEl + (f%RF(i)%s(1)-2)*(f%RF(i)%s(2)-2)*(f%RF(i)%s(3)-2)
           enddo
         end subroutine
 
@@ -527,6 +533,7 @@
           allocate(f1%RF(f2%s)); f1%s = f2%s
           do i=1,f1%s; call init(f1%RF(i),f2%RF(i)); enddo
           f1%numEl = f2%numEl
+          f1%numPhysEl = f2%numPhysEl
           f1%is_CC = f2%is_CC
           f1%is_node = f2%is_node
           f1%is_face = f2%is_face
@@ -680,6 +687,140 @@
           f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1,f%s)/))
         end subroutine
 
+       subroutine volume_SF(u,m)
+         ! Computes
+         ! 
+         !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+         implicit none
+         type(SF),intent(inout) :: u
+         type(mesh),intent(in) :: m
+         integer :: i,j,k,t
+         call assign(u,0.0_cp)
+         if (u%is_CC) then
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         elseif (u%is_Node) then
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         elseif (u%is_Face) then
+         select case (u%face)
+         case (1);
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         case (2);
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         case (3);
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
+         end select
+         elseif (u%is_Edge) then
+         select case (u%edge)
+         case (1);
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         case (2);
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhn(j))*&
+                                (m%g(t)%c(3)%dhc(k-1))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         case (3);
+#ifdef _PARALLELIZE_SF_
+         !$OMP PARALLEL DO SHARED(m)
+
+#endif
+         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                (m%g(t)%c(2)%dhc(j-1))*&
+                                (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+#ifdef _PARALLELIZE_SF_
+         !$OMP END PARALLEL DO
+
+#endif
+         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
+         end select
+         else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
+         endif
+         u%vol = sum(u)
+       end subroutine
+
         subroutine delete_SF(f)
           implicit none
           type(SF),intent(inout) :: f
@@ -690,6 +831,7 @@
           endif
           f%s = 0
           f%numEl = 0
+          f%numPhysEl = 0
         end subroutine
 
         subroutine print_SF(f)
@@ -697,6 +839,13 @@
           type(SF),intent(in) :: f
           integer :: i
           do i=1,f%s; call print(f%RF(i)); enddo
+        end subroutine
+
+        subroutine print_physical_SF(f)
+          implicit none
+          type(SF),intent(in) :: f
+          integer :: i
+          do i=1,f%s; call print_physical(f%RF(i)); enddo
         end subroutine
 
         subroutine print_BCs_SF(f,name)

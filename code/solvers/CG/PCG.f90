@@ -82,6 +82,7 @@
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
         PCG%un = newAndOpen(dir,'norm_PCG_'//name)
+        call tecHeader(name,PCG%un,.false.)
         PCG%operator => operator
         if (precondition) then
           call get_diagonal(operator,PCG%Minv,PCG%k,PCG%vol,m,MFP,PCG%tempk)
@@ -124,6 +125,9 @@
         PCG%un(1) = newAndOpen(dir,'norm_PCG_x_'//name)
         PCG%un(2) = newAndOpen(dir,'norm_PCG_y_'//name)
         PCG%un(3) = newAndOpen(dir,'norm_PCG_z_'//name)
+        call tecHeader(name,PCG%un(1),.true.)
+        call tecHeader(name,PCG%un(2),.true.)
+        call tecHeader(name,PCG%un(3),.true.)
         PCG%operator => operator
         if (precondition) then
           call get_diagonal(operator,PCG%Minv,PCG%k,PCG%vol,m,MFP,PCG%tempk)
@@ -193,6 +197,18 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
+      end subroutine
+
+      subroutine tecHeader(name,un,VF)
+        implicit none
+        character(len=*),intent(in) :: name
+        integer,intent(in) :: un
+        logical,intent(in) :: VF
+        if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
+        else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
+        endif
+        write(un,*) 'VARIABLES = L1,L2,Linf'
+        write(un,*) 'ZONE DATAPACKING = POINT'
       end subroutine
 
       end module

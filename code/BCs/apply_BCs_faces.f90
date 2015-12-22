@@ -195,7 +195,7 @@
          real(cp),intent(in) :: dh
          type(bctype),intent(in) :: b
          if     (b%Dirichlet) then; ug = 2.0_cp*bvals - ui
-         elseif (b%Neumann) then;   ug = ui + dh*bvals
+         elseif (b%Neumann) then;   ug = ui - dh*bvals
          elseif (b%Periodic) then;  ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_CC in apply_BCs_faces.f90'
          endif

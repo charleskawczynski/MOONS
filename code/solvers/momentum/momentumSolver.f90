@@ -34,7 +34,6 @@
        use FFT_poisson_mod
        use PSE_mod
        use SOR_mod
-       use JAC_mod
        ! use ADI_mod
        ! use MG_mod
 
@@ -102,7 +101,6 @@
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          ! type(multiGrid),dimension(3) :: MG
          type(SORSolver) :: SOR_p
-         type(JACSolver) :: JAC_p
          type(FFTSolver) :: FFT_p
          ! type(myADI) :: ADI_p,ADI_u
          type(probe) :: KU_energy
@@ -221,7 +219,6 @@
 
          ! Initialize interior solvers
          call init(mom%SOR_p,mom%p,mom%m)
-         call init(mom%JAC_p,mom%p,mom%m)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings
@@ -287,7 +284,6 @@
          call delete(mom%m)
 
          call delete(mom%SOR_p)
-         call delete(mom%JAC_p)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -529,8 +525,6 @@
          ! Solve lap(p) = div(U)/dt
          call solve(mom%SOR_p,mom%p,mom%temp_CC,m,&
           mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
-         ! call solve(mom%JAC_p,mom%p,mom%temp_CC,m,&
-         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
          ! call solve_PSE(mom%p,mom%temp_CC,m,5,0.00005_cp,&
          !  mom%err_PPE,getExportErrors(ss_MHD),mom%temp_CC2,mom%temp_CC3)
          ! call solve(mom%FFT_p,mom%p,mom%temp_CC,m,&

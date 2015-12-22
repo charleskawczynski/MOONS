@@ -48,7 +48,7 @@
         public :: init_BCs
 
         ! Monitoring
-        public :: print
+        public :: print,print_physical
 
         ! Operators
         public :: assign,assign_negative
@@ -123,6 +123,7 @@
 
         interface square;                   module procedure square_RF;              end interface
         interface print;                    module procedure print_RF;               end interface
+        interface print_physical;           module procedure print_physical_RF;      end interface
         interface min;                      module procedure min_RF;                 end interface
         interface max;                      module procedure max_RF;                 end interface
         interface min;                      module procedure min_pad_RF;             end interface
@@ -878,12 +879,28 @@
           implicit none
           type(realField),intent(in) :: a
           integer :: i,j,k
-          if (allocated(a%f))   then
+          if (allocated(a%f)) then
             write(*,*) 'shape(f) = ',a%s
             do i=1,a%s(1)
               do j=1,a%s(2)
                 do k=1,a%s(3)
                   write(*,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
+                enddo
+              enddo
+            enddo
+          endif
+        end subroutine
+
+        subroutine print_physical_RF(a)
+          implicit none
+          type(realField),intent(in) :: a
+          integer :: i,j,k
+          if (allocated(a%f)) then
+            write(*,*) 'shape(f) = ',a%s
+            do i=2,a%s(1)-1
+              do j=2,a%s(2)-1
+                do k=2,a%s(3)-1
+                  write(*,'(A4,I1,A,I1,A,I1,A4,1F20.10)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
                 enddo
               enddo
             enddo

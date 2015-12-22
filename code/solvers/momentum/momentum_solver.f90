@@ -125,7 +125,7 @@
        subroutine Euler_GS_Donor_mpg(GS,U,p,F,U_CC,mpg,m,Re,dt,n,&
          Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
          implicit none
-         type(GS_solver),intent(inout) :: GS
+         type(GS_poisson),intent(inout) :: GS
          type(SF),intent(inout) :: p
          type(VF),intent(inout) :: U,U_CC
          type(VF),intent(in) :: F,mpg
@@ -158,7 +158,7 @@
        subroutine Euler_GS_Donor(GS,U,p,F,U_CC,m,Re,dt,n,&
          Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
          implicit none
-         type(GS_solver),intent(inout) :: GS
+         type(GS_poisson),intent(inout) :: GS
          type(SF),intent(inout) :: p
          type(VF),intent(inout) :: U,U_CC
          type(VF),intent(in) :: F
