@@ -58,7 +58,7 @@
          if (n.gt.1) then
            call faceAdvectDonor(temp_F,Unm1,Unm1,temp_E1,temp_E2,U_CC,m)
            call faceAdvectDonor(Ustar,U,U,temp_E1,temp_E2,U_CC,m)
-           call AB2(Ustar,temp_F,m)
+           call AB2_overwrite(Ustar,temp_F,m)
            call lap(temp_F,U,m)
            call multiply(temp_F,0.5_cp/Re)
          else
@@ -69,9 +69,7 @@
          endif
          call add(Ustar,temp_F)
 
-         call multiply(temp_F,F,1.5_cp)
-         call add(Ustar,temp_F)
-         call multiply(temp_F,Fnm1,-0.5_cp)
+         call AB2(temp_F,F,Fnm1,m)
          call add(Ustar,temp_F)
 
          call zeroWall_conditional(Ustar,m,U)

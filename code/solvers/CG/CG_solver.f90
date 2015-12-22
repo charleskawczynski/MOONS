@@ -74,7 +74,6 @@
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           call compute(norm,r); write(un,*) N_iter,norm%L1,norm%L2,norm%Linf
-          ! call print(norm,'CG Residuals')
 
 #endif
           call multiply(p,rsnew/rsold)
@@ -82,24 +81,15 @@
           call zeroGhostPoints(p)
           rsold = rsnew
           N_iter = N_iter + 1
-          ! write(*,*) 'r2 = ',dot_product(r,r,m,x,tempx)
         enddo
-        ! if (x%all_Neumann) call subtract_physical_mean(x)
-        call apply_BCs(x,m)
 
         if (compute_norms) then
-          call export_raw(m,r,'out/','r',0)
-          write(*,*) 'sum(x) = ',sum(x)
           call operator(Ax,x,k,vol,m,MFP,tempk)
-          write(*,*) 'sum(Ax) = ',sum(Ax)
           call multiply(Ax,vol)
           call multiply(r,b,vol)
           if (x%all_Neumann) call subtract_physical_mean(r)
-          write(*,*) 'sum(Vb) = ',sum(r)
           call subtract(r,Ax)
           call zeroGhostPoints(r)
-          ! write(*,*) 'myr2 = ',dot_product(r,r,m,x,tempx)
-          call export_raw(m,r,'out/','myres',0)
           call zeroWall_conditional(r,m,x)
           call compute(norm,r); call print(norm,'CG Residuals')
           write(un,*) N_iter,norm%L1,norm%L2,norm%Linf
@@ -124,7 +114,9 @@
         type(VF),intent(inout) :: tempx,Ax,r,p
         integer :: i
         real(cp) :: alpha,rsold,rsnew
+        call apply_BCs(x,m)
         call operator(Ax,x,k,vol,m,MFP,tempk)
+        call multiply(Ax,vol)
         call multiply(r,b,vol)
         call subtract(r,Ax)
         call zeroGhostPoints(r)
@@ -132,14 +124,18 @@
         call assign(p,r)
         rsold = dot_product(r,r,m,x,tempx)
         do i=1,n
+          call apply_BCs(p,m,x)
           call operator(Ax,p,k,vol,m,MFP,tempk)
+          call multiply(Ax,vol)
           alpha = rsold/dot_product(p,Ax,m,x,tempx)
           call add_product(x,p,alpha)
+          call apply_BCs(x,m)
           call add_product(r,Ax,-alpha)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           rsnew = dot_product(r,r,m,x,tempx)
-          if (rsnew.lt.tol) then; exit; endif
+          ! if (rsnew.lt.tol) then; exit; endif
+
 #ifdef _EXPORT_CG_CONVERGENCE_
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
@@ -156,6 +152,7 @@
 
         if (compute_norms) then
           call operator(Ax,x,k,vol,m,MFP,tempk)
+          call multiply(Ax,vol)
           call multiply(r,b,vol)
           call subtract(r,Ax)
           call zeroGhostPoints(r)

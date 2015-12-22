@@ -17,7 +17,6 @@
 
       use mesh_mod
       use ops_discrete_mod
-      use ops_discrete_implicit_mod
       use ops_discrete_local_mod
       use ops_aux_mod
       use SF_mod
@@ -75,10 +74,9 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        call grad_imp(tempk,x,m)
+        call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
-        call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
       end subroutine
 
@@ -92,12 +90,11 @@
         type(mesh),intent(in) :: m
         type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
-        call curl_imp(tempk,x,m)
+        call curl(tempk,x,m)
         call multiply(tempk,k)
         call curl(Ax,tempk,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
-        call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
       end subroutine
 
@@ -136,7 +133,6 @@
         call div(Ax,tempk,m)
         call multiply(Ax,MFP%c_eng)
         call add(Ax,x)
-        call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
       end subroutine
 
@@ -155,7 +151,6 @@
         call div(Ax,tempk,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
-        call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
       end subroutine
 

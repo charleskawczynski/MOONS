@@ -54,8 +54,8 @@
 
        public :: computeDivergence
 
-       logical :: lowRem = .true.
-       logical :: finiteRem = .false.
+       logical :: lowRem = .false.
+       logical :: finiteRem = .true.
        logical :: semi_implicit = .false.
 
 
@@ -280,7 +280,7 @@
          write(*,*) '     CG Solver initialized'
 
          call init_BC_mesh(ind%phi,ind%m)
-         call init_Neumann(ind%phi%RF(1)%b)
+         call init_Dirichlet(ind%phi%RF(1)%b)
          call init_BCs(ind%phi,0.0_cp)
 
          call init(ind%CG_cleanB,Laplacian_uniform_props,ind%m,ind%MFP_B,ind%phi,&
@@ -486,21 +486,21 @@
 
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
-           call init_Node(tempVFn,m)
-           call init_Node(tempVFn2,m)
+           ! call init_Node(tempVFn,m)
+           ! call init_Node(tempVFn2,m)
 
            ! call cellCenter2Node(tempVFn,ind%B,m)
 
-           call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
-           call cellCenter2Node(tempVFn2,ind%B0,m,ind%temp_F,ind%temp_E)
-           call add(tempVFn,tempVFn2)
+           ! call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
+           ! call cellCenter2Node(tempVFn2,ind%B0,m,ind%temp_F,ind%temp_E)
+           ! call add(tempVFn,tempVFn2)
 
            ! call cellCenter2Node(tempVFn,ind%J_cc,m)
 
            ! call cellCenter2Node(tempVFn,ind%J_cc,m)
 
-           call delete(tempVFn)
-           call delete(tempVFn2)
+           ! call delete(tempVFn)
+           ! call delete(tempVFn2)
          endif
        end subroutine
 
@@ -579,7 +579,7 @@
            call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative (in divergence form)
 
            call add(ind%curlUCrossB,ind%B_face)
-           call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,ind%m,5,getExportErrors(ss_MHD))
+           call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,ind%m,10,getExportErrors(ss_MHD))
 
            ! Clean B
            call div(ind%divB,ind%B_face,ind%m)

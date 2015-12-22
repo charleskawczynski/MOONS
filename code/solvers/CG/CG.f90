@@ -81,7 +81,6 @@
         call assign(CG%k,k)
         call init(CG%MFP,MFP)
         call volume(CG%vol,m)
-        call export_raw(m,CG%vol,dir,'CG_volume',0)
         CG%un = newAndOpen(dir,'norm_CG_'//name)
         call tecHeader(name,CG%un,.false.)
         CG%N_iter = 1

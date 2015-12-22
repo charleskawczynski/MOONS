@@ -28,11 +28,11 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
@@ -99,9 +99,9 @@ FC_PROFILE += -pg
 
 # Code verification
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
-FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
@@ -114,7 +114,7 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
+# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 

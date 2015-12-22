@@ -56,6 +56,7 @@
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx)
         do i=1,n
+          call apply_BCs(p,m,x)
           call operator(Ax,p,k,vol,m,MFP,tempk)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
           call add_product(x,p,alpha) ! x = x + alpha p
@@ -79,7 +80,6 @@
           rhok = rhokp1
         enddo
         
-        call apply_BCs(x,m)
         if (compute_norms) then
           call operator(Ax,x,k,vol,m,MFP,tempk)
           call multiply(r,b,vol)
@@ -120,6 +120,7 @@
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx)
         do i=1,n
+          call apply_BCs(p,m,x)
           call operator(Ax,p,k,vol,m,MFP,tempk)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
           call add_product(x,p,alpha) ! x = x + alpha p
@@ -145,7 +146,6 @@
           rhok = rhokp1
         enddo
         
-        call apply_BCs(x,m)
         if (compute_norms) then
           call operator(Ax,x,k,vol,m,MFP,tempk)
           call multiply(r,b,vol)

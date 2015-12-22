@@ -11,6 +11,8 @@
        use init_UBCs_mod
        use init_UField_mod
        use init_PField_mod
+       use matrix_free_params_mod
+       use matrix_free_operators_mod
 
        use IO_tools_mod
        use IO_auxiliary_mod
@@ -34,6 +36,7 @@
        use FFT_poisson_mod
        use PSE_mod
        use SOR_mod
+       use CG_mod
        ! use ADI_mod
        ! use MG_mod
 
@@ -101,7 +104,9 @@
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          ! type(multiGrid),dimension(3) :: MG
          type(SORSolver) :: SOR_p
+         type(CG_Solver_SF) :: CG_P
          type(FFTSolver) :: FFT_p
+         type(matrix_free_params) :: MFP
          ! type(myADI) :: ADI_p,ADI_u
          type(probe) :: KU_energy
 
@@ -219,6 +224,9 @@
 
          ! Initialize interior solvers
          call init(mom%SOR_p,mom%p,mom%m)
+         ! call init(CG,Laplacian_uniform_props,m,MFP,phi,temp_F,dir,'phi',.false.,.false.)
+         call init(mom%CG_P,Laplacian_uniform_props,mom%m,&
+         mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings
@@ -284,6 +292,7 @@
          call delete(mom%m)
 
          call delete(mom%SOR_p)
+         call delete(mom%CG_P)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -523,8 +532,12 @@
          ! if (TF) call export_3D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_before',0)
 
          ! Solve lap(p) = div(U)/dt
-         call solve(mom%SOR_p,mom%p,mom%temp_CC,m,&
-          mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+         ! call solve(mom%SOR_p,mom%p,mom%temp_CC,m,&
+         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
+
+         call solve(mom%CG_p,mom%p,mom%temp_CC,m,&
+         mom%NmaxPPE,getExportErrors(ss_MHD))
+
          ! call solve_PSE(mom%p,mom%temp_CC,m,5,0.00005_cp,&
          !  mom%err_PPE,getExportErrors(ss_MHD),mom%temp_CC2,mom%temp_CC3)
          ! call solve(mom%FFT_p,mom%p,mom%temp_CC,m,&

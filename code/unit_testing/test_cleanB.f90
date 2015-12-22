@@ -33,22 +33,21 @@
          implicit none
          character(len=*),intent(in) :: dir ! directory
          type(mesh) :: m
-         type(SF) :: phi,divB,phi_ghost
+         type(SF) :: phi,divB
          type(VF) :: B,temp_F,Btemp
 
          type(matrix_free_params) :: MFP
          type(CG_solver_SF) :: CG
          integer :: i
 
-         ! call cube(m) ! in mesh_generate.f90
-         call cube_uniform(m) ! in mesh_generate.f90
+         call cube(m) ! in mesh_generate.f90
+         ! call cube_uniform(m) ! in mesh_generate.f90
 
          call init_Face(B,m)
          call init_Face(Btemp,m)
          call init_Face(temp_F,m)
          call init_CC(divB,m)
          call init_CC(phi,m)
-         call init_CC(phi_ghost,m)
 
          call init_BC_mesh(phi,m)
          call init_Dirichlet(phi%RF(1)%b)
@@ -85,14 +84,6 @@
          call init(phi%RF(1)%b,B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:),4)
          call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1),6)
 
-         ! call assign(phi_ghost,0.0_cp)
-         ! call assign_gradGhost(phi_ghost,B); call printGlobalMinMax(phi_ghost,'phi_ghost')
-         ! ! call zeroInterior(phi_ghost);       call printGlobalMinMax(phi_ghost,'phi_ghost')
-         ! call grad(temp_F,phi_ghost,m);      call printGlobalMinMax(temp_F,'gradphi_ghost')
-         ! call div(phi_ghost,temp_F,m);       call printGlobalMinMax(phi_ghost,'divphi_ghost')
-         ! call subtract(divB,phi_ghost)
-         ! ! stop 'Done'
-
          call export(m,dir,'mesh')
          call export_raw(m,B,dir,'Bstar',0)
          call export_raw(m,divB,dir,'divB',0)
@@ -126,7 +117,6 @@
          call delete(Btemp)
          call delete(temp_F)
          call delete(phi)
-         call delete(phi_ghost)
          call delete(divB)
        end subroutine
 

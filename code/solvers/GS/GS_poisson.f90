@@ -102,6 +102,8 @@
         call delete(GS%lapu)
         call delete(GS%res)
         call delete(GS%Dinv)
+        close(GS%un)
+        GS%un = 0
       end subroutine
 
       subroutine solve_GS(GS,u,f,m,n,compute_norm)
@@ -173,7 +175,7 @@
         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
         integer,dimension(3),intent(in) :: gt
         integer :: i,j,k
-        !$OMP DO
+        !$OMP PARALLEL DO
         do k=2+odd(3),s(3)-1,2; do j=2+odd(2),s(2)-1,2; do i=2+odd(1),s(1)-1,2
         u(i,j,k) = ( u(i-1,j,k)/(dxp(i-1) * dxd(i-1+gt(1))) + &
                      u(i+1,j,k)/(dxp( i ) * dxd(i-1+gt(1))) + &
@@ -183,7 +185,7 @@
                      u(i,j,k+1)/(dzp( k ) * dzd(k-1+gt(3))) &
                    - f(i,j,k) )*Dinv(i,j,k)
         enddo; enddo; enddo
-        !$OMP END DO
+        !$OMP END PARALLEL DO
       end subroutine
 
       subroutine init_Dinv_SF(Dinv,p,d,gt)
@@ -206,13 +208,13 @@
         real(cp),dimension(:),intent(in) :: dxp,dyp,dzp,dxd,dyd,dzd
         integer,dimension(3),intent(in) :: gt
         integer :: i,j,k
-        !$OMP DO
+        !$OMP PARALLEL DO
         do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
         Dinv(i,j,k) = 1.0_cp/(1.0_cp/dxd(i-1+gt(1))*(1.0_cp/dxp(i) + 1.0_cp/dxp(i-1)) + & 
                               1.0_cp/dyd(j-1+gt(2))*(1.0_cp/dyp(j) + 1.0_cp/dyp(j-1)) + & 
                               1.0_cp/dzd(k-1+gt(3))*(1.0_cp/dzp(k) + 1.0_cp/dzp(k-1)))
         enddo; enddo; enddo
-        !$OMP END DO
+        !$OMP END PARALLEL DO
       end subroutine
 
       end module

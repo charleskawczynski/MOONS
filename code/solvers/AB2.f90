@@ -5,11 +5,11 @@
        implicit none
 
        private
-       public :: AB2,AB2_pure
-       interface AB2;         module procedure AB2_SF;        end interface
-       interface AB2;         module procedure AB2_VF;        end interface
-       interface AB2_pure;    module procedure AB2_SF_pure;   end interface
-       interface AB2_pure;    module procedure AB2_VF_pure;   end interface
+       public :: AB2,AB2_overwrite
+       interface AB2_overwrite;   module procedure AB2_overwrite_SF;   end interface
+       interface AB2_overwrite;   module procedure AB2_overwrite_VF;   end interface
+       interface AB2;                 module procedure AB2_SF;                 end interface
+       interface AB2;                 module procedure AB2_VF;                 end interface
 
 
 #ifdef _SINGLE_PRECISION_
@@ -24,7 +24,7 @@
 
        contains
 
-       subroutine AB2_SF(Fn,Fnm1,m)
+       subroutine AB2_overwrite_SF(Fn,Fnm1,m)
          ! Computes
          ! 
          !    Fn = 0.5 (3 Fn - Fnm1)
@@ -37,7 +37,7 @@
          call add_product(Fn,Fnm1,-1.5_cp)
        end subroutine
 
-       subroutine AB2_VF(Fn,Fnm1,m)
+       subroutine AB2_overwrite_VF(Fn,Fnm1,m)
          ! Computes
          ! 
          !    Fn = 0.5 (3 Fn - Fnm1)
@@ -50,7 +50,7 @@
          call add_product(Fn,Fnm1,-1.5_cp)
        end subroutine
 
-       subroutine AB2_SF_pure(AB2,Fn,Fnm1,m)
+       subroutine AB2_SF(AB2,Fn,Fnm1,m)
          ! Computes
          ! 
          !    AB2 = 0.5 (3 Fn - Fnm1)
@@ -63,7 +63,7 @@
          call add_product(AB2,Fnm1,-1.5_cp)
        end subroutine
 
-       subroutine AB2_VF_pure(AB2,Fn,Fnm1,m)
+       subroutine AB2_VF(AB2,Fn,Fnm1,m)
          ! Computes
          ! 
          !    AB2 = 0.5 (3 Fn - Fnm1)

@@ -26,6 +26,7 @@
        ! Diffusion implicit methods
        public :: Finite_Rem_CG_semi
        public :: Finite_Rem_CG_implicit ! not yet developed...
+       public :: Finite_Rem_CN_AB2_CG
 
        ! Uniform σ methods: ∇x∇x = ∇(∇•) - ∇² = - ∇²
        public :: Low_Rem_SOR
@@ -130,6 +131,40 @@
          type(VF),intent(inout) :: B
          type(VF),intent(in) :: B0,sigmaInv
          type(TF),intent(in) :: U
+         type(VF),intent(inout) :: tmp_F1,tmp_E_VF
+         type(TF),intent(inout) :: tmp_E_TF
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: n
+         logical,intent(in) :: compute_norms
+         call add(tmp_F1,B0,B)
+         call face2Edge(tmp_E_TF,tmp_F1,m)
+         call cross(tmp_E_VF,U,tmp_E_TF)
+         call curl(tmp_F1,tmp_E_VF,m)
+         call add(tmp_F1,B)
+
+         call solve(CG,B,tmp_F1,m,n,compute_norms)
+         call applyAllBCs(B,m)
+       end subroutine
+
+       subroutine Finite_Rem_CN_AB2_CG(B,B0,Bnm1,B0nm1,U,Unm1,sigmaInv,m,n,compute_norms,&
+         tmp_F1,tmp_E_TF,tmp_E_VF)
+         ! Solves:
+         !             ∂B/∂t = -∇xE , E = j/σ - uxB⁰ , j = Rem⁻¹∇xB
+         ! or
+         !             ∂B/∂t = ∇x(uxB⁰) - Rem⁻¹∇x(σ⁻¹∇xB)
+         ! Computes:
+         !             B,J,E
+         ! Method:
+         !             Diffusion-implicit with Conjugate Gradient method (CG)
+         ! Info:
+         !             cell face => B
+         !             cell edge => J,E,sigmaInv,U
+         !             Finite Rem
+         implicit none
+         type(CG_solver_VF),intent(inout) :: CG
+         type(VF),intent(inout) :: B
+         type(VF),intent(in) :: B0,sigmaInv
+         type(TF),intent(in) :: U,Unm1
          type(VF),intent(inout) :: tmp_F1,tmp_E_VF
          type(TF),intent(inout) :: tmp_E_TF
          type(mesh),intent(in) :: m
