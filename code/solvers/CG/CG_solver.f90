@@ -173,24 +173,4 @@
         endif
       end subroutine
 
-      subroutine half_first_interior(u)
-        implicit none
-        type(SF),intent(inout) :: u
-        integer :: i
-        do i=1,u%s; call half_first_interior_RF(u%RF(i)%f,u%RF(i)%s,u%RF(i)%b); enddo
-      end subroutine
-
-      subroutine half_first_interior_RF(u,s,BC)
-        implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: u
-        integer,dimension(3),intent(in) :: s
-        type(BCs),intent(in) :: BC
-        if (BC%f(1)%b%Neumann) u(2,:,:) = u(2,:,:)/2.0_cp
-        if (BC%f(3)%b%Neumann) u(:,2,:) = u(:,2,:)/2.0_cp
-        if (BC%f(5)%b%Neumann) u(:,:,2) = u(:,:,2)/2.0_cp
-        if (BC%f(2)%b%Neumann) u(s(1)-1,:,:) = u(s(1)-1,:,:)/2.0_cp
-        if (BC%f(4)%b%Neumann) u(:,s(2)-1,:) = u(:,s(2)-1,:)/2.0_cp
-        if (BC%f(6)%b%Neumann) u(:,:,s(3)-1) = u(:,:,s(3)-1)/2.0_cp
-      end subroutine
-
       end module

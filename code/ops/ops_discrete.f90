@@ -64,6 +64,10 @@
        interface lap;             module procedure lapVarCoeff_SF;            end interface
        interface lap;             module procedure lapVarCoeff_VF;            end interface
 
+       public :: lap_centered
+       interface lap_centered;    module procedure lap_centered_SF;           end interface
+       interface lap_centered;    module procedure lap_centered_VF;           end interface
+
        public :: div
        interface div;             module procedure div_SF;                    end interface
        interface div;             module procedure div_VF;                    end interface
@@ -162,6 +166,27 @@
          call d%assign(lapU,u,m,2,1,1) ! Padding avoids calcs on fictive cells
             call d%add(lapU,u,m,2,2,1) ! Padding avoids calcs on fictive cells
             call d%add(lapU,u,m,2,3,1) ! Padding avoids calcs on fictive cells
+       end subroutine
+
+       subroutine lap_centered_SF(lapU,u,m,tempk,dir)
+         implicit none
+         type(SF),intent(inout) :: lapU,tempk
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         type(del) :: d
+         call d%assign(tempk,u,m,1,dir,1)
+         call d%assign(lapU,tempk,m,1,dir,1)
+       end subroutine
+
+       subroutine lap_centered_VF(lapU,u,m,tempk)
+         implicit none
+         type(VF),intent(inout) :: lapU,tempk
+         type(VF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call lap_centered(lapU%x,u%x,m,tempk%x,1)
+         call lap_centered(lapU%y,u%y,m,tempk%y,2)
+         call lap_centered(lapU%z,u%z,m,tempk%z,3)
        end subroutine
 
        subroutine lapVarCoeff_SF(lapU,u,k,m,temp,dir)

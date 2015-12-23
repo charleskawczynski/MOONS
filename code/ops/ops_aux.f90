@@ -51,6 +51,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
+       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
 
@@ -95,6 +96,9 @@
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
        interface zeroInterior;            module procedure zeroInterior_SF;           end interface
 
+       public :: sineWaves
+       interface sineWaves;               module procedure sineWaves_SF;              end interface
+
        public :: assign_gradGhost
        interface assign_gradGhost;        module procedure assign_gradGhost_SF;       end interface
        interface assign_gradGhost;        module procedure assign_gradGhost_RF;       end interface
@@ -125,10 +129,6 @@
 
        ! public :: get_multi_index
        ! interface get_multi_index;         module procedure get_multi_index_SF;        end interface
-
-       ! public :: perturb
-       ! interface perturb;       module procedure perturb_SF;      end interface
-       ! interface perturb;       module procedure perturb_VF;      end interface
 
        contains
 
@@ -330,65 +330,87 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-!        subroutine perturbAll(f,m)
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          type(mesh),intent(in) :: m
-!          real(cp),dimension(3) :: wavenum,eps
-!          integer,dimension(3) :: s
-!          integer :: i,j,k
-!          s = shape(f)
-!          wavenum = 0.1_cp
-!          eps = 0.01_cp
-!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hn(i)) +&
-!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(1)*sin(wavenum(1)*PI*m%c(1)%hc(i)) +&
-!                                            eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          else
-!           stop 'Error: unmatched case in perturbAll in inductionSolver.f90'
-!          endif
-!        end subroutine
-
-!        subroutine perturb(f,m)
-!          implicit none
-!          real(cp),dimension(:,:,:),intent(inout) :: f
-!          type(mesh),intent(in) :: m
-!          real(cp),dimension(3) :: wavenum,eps
-!          integer,dimension(3) :: s
-!          integer :: i,j,k
-!          s = shape(f)
-!          wavenum = 10.0_cp
-!          eps = 0.1_cp
-!          if (all((/(s(i).eq.m%c(i)%sn,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hn(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hn(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          elseif (all((/(s(i).eq.m%c(i)%sc,i=1,3)/))) then
-!            !$OMP PARALLEL DO
-!            do k=1,s(3); do j=1,s(2); do i=1,s(1)
-!              f(i,j,k) = f(i,j,k)*(1.0_cp + eps(2)*sin(wavenum(2)*PI*m%c(2)%hc(j)) +&
-!                                            eps(3)*sin(wavenum(3)*PI*m%c(3)%hc(k)) )
-!            enddo; enddo; enddo
-!            !$OMP END PARALLEL DO
-!          else
-!           stop 'Error: unmatched case in perturb in inductionSolver.f90'
-!          endif
-!        end subroutine
+       subroutine sineWaves_SF(f,m,wavenum)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         real(cp),dimension(3),intent(in) :: wavenum
+         integer :: i,j,k,t
+         if (f%is_CC) then
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         elseif (f%is_Node) then
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         elseif (f%is_Face) then
+         select case (f%face)
+         case (1)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (2)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (3)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         end select
+         elseif (f%is_Edge) then
+         select case (f%face)
+         case (1)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (2)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (3)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                sin(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         end select
+         else; stop 'Error: bad input to sineWaves_RF in ops_aux.f90'
+         endif
+       end subroutine
 
       function dot_product_VF(A,B,m,x,temp) result(dot)
         implicit none

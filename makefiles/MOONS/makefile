@@ -25,16 +25,12 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 
 # Output directory
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)MOONS_unitTest
 TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Desktop$(PS)CHARLIE$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
@@ -59,18 +55,24 @@ FCFLAGS += -D_FFT_RADIX2_
 # Order of accuracy of finite difference stencil
 # FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_STENCILS_O4_
+
 FCFLAGS += -fopenmp
 
 # ******************** LIBRARIES ********************
 # FLIBS = $(LIB_DIR)$(PS)tecio.lib
 
 # ****************** DEBUGGING **********************
-FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
+# FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
+# FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+# FC_DEBUG += -Wall -fbacktrace -O0 -Og
+FC_DEBUG += -fbacktrace -O0 -Og
 FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_DEL_IMPLICIT_
 FC_DEBUG += -D_DEBUG_INTERP_
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 FC_DEBUG += -D_DEBUG_APPLYBCS_
+FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
+
 # FC_DEBUG += -D_DEBUG_RF_
 # FC_DEBUG += -D_DEBUG_SF_
 # FC_DEBUG += -D_DEBUG_VF_
@@ -80,13 +82,14 @@ FC_DEBUG += -D_DEBUG_APPLYBCS_
 FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_RF_
 FC_OPTIMIZE += -D_PARALLELIZE_SF_
-# FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
+FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 # FC_OPTIMIZE += -D_PARALLELIZE_DEL_IMPLICIT_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
+
 # FC_OPTIMIZE += mpif90
 # FC_OPTIMIZE += mpirun -np 4
 
@@ -100,7 +103,7 @@ FC_PROFILE += -pg
 # Code verification
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
@@ -114,7 +117,7 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
+UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
@@ -251,16 +254,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)stencils_BC_implicit.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_del_implicit.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_del_local.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_implicit.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_local.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \

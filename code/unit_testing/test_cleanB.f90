@@ -11,7 +11,6 @@
        use ops_aux_mod
        use CG_mod
        use PCG_mod
-       use ops_discrete_implicit_mod
        use matrix_free_operators_mod
        use matrix_free_params_mod
        use export_raw_processed_mod
@@ -40,8 +39,8 @@
          type(CG_solver_SF) :: CG
          integer :: i
 
-         call cube(m) ! in mesh_generate.f90
-         ! call cube_uniform(m) ! in mesh_generate.f90
+         ! call cube(m) ! in mesh_generate.f90
+         call cube_uniform(m) ! in mesh_generate.f90
 
          call init_Face(B,m)
          call init_Face(Btemp,m)
@@ -65,6 +64,10 @@
          call init_Neumann(B%z%RF(1)%b,5); call init_Neumann(B%z%RF(1)%b,6)
 
          call noise(B)
+         ! call sineWaves(B%x,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
+         ! call sineWaves(B%y,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
+         ! call sineWaves(B%z,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
+
          call zeroGhostPoints(B)
          B%x%RF(1)%f(2,:,:) = 0.0_cp; B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:) = 0.0_cp
          B%y%RF(1)%f(:,2,:) = 0.0_cp; B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:) = 0.0_cp

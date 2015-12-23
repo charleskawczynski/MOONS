@@ -24,7 +24,7 @@
 
        contains
 
-       subroutine AB2_overwrite_SF(Fn,Fnm1,m)
+       subroutine AB2_overwrite_SF(Fn,Fnm1)
          ! Computes
          ! 
          !    Fn = 0.5 (3 Fn - Fnm1)
@@ -32,12 +32,11 @@
          implicit none
          type(SF),intent(inout) :: Fn
          type(SF),intent(in) :: Fnm1
-         type(mesh),intent(in) :: m
          call multiply(Fn,1.5_cp)
          call add_product(Fn,Fnm1,-1.5_cp)
        end subroutine
 
-       subroutine AB2_overwrite_VF(Fn,Fnm1,m)
+       subroutine AB2_overwrite_VF(Fn,Fnm1)
          ! Computes
          ! 
          !    Fn = 0.5 (3 Fn - Fnm1)
@@ -45,12 +44,11 @@
          implicit none
          type(VF),intent(inout) :: Fn
          type(VF),intent(in) :: Fnm1
-         type(mesh),intent(in) :: m
          call multiply(Fn,1.5_cp)
          call add_product(Fn,Fnm1,-1.5_cp)
        end subroutine
 
-       subroutine AB2_SF(AB2,Fn,Fnm1,m)
+       subroutine AB2_SF(AB2,Fn,Fnm1)
          ! Computes
          ! 
          !    AB2 = 0.5 (3 Fn - Fnm1)
@@ -58,12 +56,11 @@
          implicit none
          type(SF),intent(inout) :: AB2
          type(SF),intent(in) :: Fn,Fnm1
-         type(mesh),intent(in) :: m
          call multiply(AB2,Fn,1.5_cp)
          call add_product(AB2,Fnm1,-1.5_cp)
        end subroutine
 
-       subroutine AB2_VF(AB2,Fn,Fnm1,m)
+       subroutine AB2_VF(AB2,Fn,Fnm1)
          ! Computes
          ! 
          !    AB2 = 0.5 (3 Fn - Fnm1)
@@ -71,7 +68,6 @@
          implicit none
          type(VF),intent(inout) :: AB2
          type(VF),intent(in) :: Fn,Fnm1
-         type(mesh),intent(in) :: m
          call multiply(AB2,Fn,1.5_cp)
          call add_product(AB2,Fnm1,-1.5_cp)
        end subroutine

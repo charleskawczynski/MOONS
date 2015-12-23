@@ -13,6 +13,7 @@
        use SOR_mod
        use CG_mod
        use GS_poisson_mod
+       use matrix_free_operators_mod
        
        implicit none
        private
@@ -42,7 +43,7 @@
        contains
 
        subroutine CN_AB2_PPE_CG_mom_CG(mom_CG,PPE_CG,U,Unm1,p,F,Fnm1,U_CC,m,&
-         Re,dt,n,Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
+         Re,dt,Nmax_PPE,Nmax_mom,Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms,nstep)
          implicit none
          type(CG_solver_VF),intent(inout) :: mom_CG
          type(CG_solver_SF),intent(inout) :: PPE_CG
@@ -51,41 +52,41 @@
          type(VF),intent(in) :: F,Fnm1,Unm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n
+         integer,intent(in) :: Nmax_PPE,Nmax_mom,nstep
          type(VF),intent(inout) :: Ustar,temp_F,temp_E1,temp_E2
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         if (n.gt.1) then
+         if (nstep.gt.1) then
            call faceAdvectDonor(temp_F,Unm1,Unm1,temp_E1,temp_E2,U_CC,m)
            call faceAdvectDonor(Ustar,U,U,temp_E1,temp_E2,U_CC,m)
-           call AB2_overwrite(Ustar,temp_F,m)
+           call AB2_overwrite(Ustar,temp_F)
+           call multiply(Ustar,-1.0_cp) ! Because faceAdvectDonor gives positive
+
            call lap(temp_F,U,m)
            call multiply(temp_F,0.5_cp/Re)
+           call add(Ustar,temp_F)
+
+           call AB2(temp_F,F,Fnm1)
+           call add(Ustar,temp_F)
+
+           call zeroWall_conditional(Ustar,m,U)
+           call multiply(Ustar,dt)
+           call add(Ustar,U)
+
+           call solve(mom_CG,U,Ustar,m,Nmax_mom,compute_norms)
+
+           call div(temp_CC,U,m)
+           call divide(temp_CC,dt)
+           call zeroGhostPoints(temp_CC)
+           call solve(PPE_CG,p,temp_CC,m,Nmax_PPE,compute_norms)
+           call grad(temp_F,p,m)
+           call multiply(temp_F,dt)
+           call subtract(U,temp_F)
+           call apply_BCs(U,m)
          else
-           call faceAdvectDonor(Ustar,U,U,temp_E1,temp_E2,U_CC,m)
-           call multiply(Ustar,-1.0_cp)
-           call lap(temp_F,U,m)
-           call multiply(temp_F,1.0_cp/Re)
+           call Euler_CG_Donor(PPE_CG,U,p,F,U_CC,m,Re,dt,Nmax_PPE,&
+           Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
          endif
-         call add(Ustar,temp_F)
-
-         call AB2(temp_F,F,Fnm1,m)
-         call add(Ustar,temp_F)
-
-         call zeroWall_conditional(Ustar,m,U)
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
-
-         call solve(mom_CG,U,Ustar,m,n,compute_norms)
-
-         call div(temp_CC,U,m)
-         call divide(temp_CC,dt)
-         call zeroGhostPoints(temp_CC)
-         call solve(PPE_CG,p,temp_CC,m,n,compute_norms)
-         call grad(temp_F,p,m)
-         call multiply(temp_F,dt)
-         call subtract(U,temp_F)
-         call apply_BCs(U,m)
        end subroutine
 
        subroutine Euler_CG_Donor(CG,U,p,F,U_CC,m,Re,dt,n,&
@@ -104,7 +105,7 @@
          call faceAdvectDonor(temp_F,U,U,temp_E1,temp_E2,U_CC,m)
          call assign_negative(Ustar,temp_F)
          call lap(temp_F,U,m)
-         call divide(temp_F,Re)
+         call multiply(temp_F,1.0_cp/Re)
          call add(Ustar,temp_F)
          call add(Ustar,F)
          call zeroWall_conditional(Ustar,m,U)

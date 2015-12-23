@@ -95,7 +95,6 @@
       subroutine delete_Jacobi(JAC)
         implicit none
         type(Jacobi),intent(inout) :: JAC
-        type(mesh) :: m
         call delete(JAC%m)
         call delete(JAC%vol)
         call delete(JAC%Ax)

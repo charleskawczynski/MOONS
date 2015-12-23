@@ -17,7 +17,6 @@
 
       use mesh_mod
       use ops_discrete_mod
-      use ops_discrete_local_mod
       use ops_aux_mod
       use SF_mod
       use VF_mod
@@ -39,7 +38,6 @@
       public :: Laplacian_uniform_props
       public :: Laplacian_nonuniform_props
       public :: ind_diffusion
-      public :: ind_diffusion_diag
       public :: eng_diffusion
       public :: mom_diffusion
 
@@ -47,7 +45,7 @@
 
       subroutine Laplacian_uniform_props(Ax,x,k,vol,m,MFP,tempk)
         ! COMPUTES:
-        !        A = V ∇•(∇)
+        !        A = ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax
         type(SF),intent(in) :: x,vol
@@ -64,7 +62,7 @@
 
       subroutine Laplacian_nonuniform_props(Ax,x,k,vol,m,MFP,tempk)
         ! COMPUTES:
-        !        A = V ∇•(k∇)
+        !        A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax
         type(SF),intent(in) :: x,vol
@@ -82,7 +80,7 @@
 
       subroutine ind_diffusion(Ax,x,k,vol,m,MFP,tempk)
         ! COMPUTES:
-        !        A = V {I + c_ind ∇x(k∇x)}
+        !        A = {I + c_ind ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax
         type(VF),intent(in) :: x,vol
@@ -98,29 +96,9 @@
         call zeroGhostPoints(Ax)
       end subroutine
 
-      subroutine ind_diffusion_diag(Ax,x,k,vol,m,MFP,tempk,local_index) ! (For preconditioning)
-        ! COMPUTES:
-        !        A = V {I + c_ind ∇x(k∇x)}
-        ! NOTES:
-        !        Tries the diagonal only
-        implicit none
-        type(VF),intent(inout) :: Ax
-        type(VF),intent(in) :: x,vol
-        type(VF),intent(in) :: k
-        type(mesh),intent(in) :: m
-        type(matrix_free_params),intent(in) :: MFP
-        type(VF),intent(inout) :: tempk
-        integer,intent(in) :: local_index
-        logical :: suppress_warning
-        suppress_warning = MFP%suppress_warning
-        call curl(tempk,x,m,local_index)
-        call multiply(tempk,k)
-        call curl(Ax,tempk,m,local_index)
-      end subroutine
-
       subroutine eng_diffusion(Ax,x,k,vol,m,MFP,tempk)
         ! Computes:
-        !        A = V {I + c_eng ∇•(k∇)}
+        !        A = {I + c_eng ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax
         type(SF),intent(in) :: x,vol
@@ -138,17 +116,15 @@
 
       subroutine mom_diffusion(Ax,x,k,vol,m,MFP,tempk)
         ! Computes:
-        !        A = V {I + c_mom ∇•(k∇)}
+        !        A = {I + c_mom ∇•(k∇)}
         implicit none
-        type(SF),intent(inout) :: Ax
-        type(SF),intent(in) :: x,vol
+        type(VF),intent(inout) :: Ax
+        type(VF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call lap_centered(Ax,x,m,tempk)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)

@@ -98,28 +98,28 @@
            select case (x%face)
            case (1); call init_Edge(temp_1,m,2); call init_Node(temp_N,m); 
                      call face2Node(temp_N,x,m,x%face,temp_1)
-                     call export_3D_1C(m,x,dir,name//'np_x',pad)
+                     call export_3D_1C(m,temp_N,dir,name//'np_x',pad)
                      call delete(temp_1); call delete(temp_N)
            case (2); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
                      call face2Node(temp_N,x,m,x%face,temp_1)
-                     call export_3D_1C(m,x,dir,name//'np_y',pad)
+                     call export_3D_1C(m,temp_N,dir,name//'np_y',pad)
                      call delete(temp_1); call delete(temp_N)
            case (3); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
                      call face2Node(temp_N,x,m,x%face,temp_1)
-                     call export_3D_1C(m,x,dir,name//'np_z',pad)
+                     call export_3D_1C(m,temp_N,dir,name//'np_z',pad)
                      call delete(temp_1); call delete(temp_N)
            case default; stop 'Error: face must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
            end select
          elseif (x%is_Edge) then
            select case (x%edge)
            case (1); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                     call export_3D_1C(m,x,dir,name//'ep_x',pad)
+                     call export_3D_1C(m,temp_N,dir,name//'ep_x',pad)
                      call delete(temp_N)
            case (2); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                     call export_3D_1C(m,x,dir,name//'ep_y',pad)
+                     call export_3D_1C(m,temp_N,dir,name//'ep_y',pad)
                      call delete(temp_N)
            case (3); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                     call export_3D_1C(m,x,dir,name//'ep_z',pad)
+                     call export_3D_1C(m,temp_N,dir,name//'ep_z',pad)
                      call delete(temp_N)
            case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
            end select
@@ -139,15 +139,15 @@
            call export_3D_3C(m,temp_N,dir,name//'np',pad)
            call delete(temp_1); call delete(temp_2); call delete(temp_N)
          elseif (x%x%is_Node) then
-           call export_3D_3C(m,x,dir,name//'np',pad)
+           call export_3D_3C(m,temp_N,dir,name//'np',pad)
          elseif (x%x%is_Face) then
            call init_Edge(temp_1,m); call init_Node(temp_N,m); 
            call face2Node(temp_N,x,m,temp_1)
-           call export_3D_3C(m,x,dir,name//'np',pad)
+           call export_3D_3C(m,temp_N,dir,name//'np',pad)
            call delete(temp_1); call delete(temp_N)
          elseif (x%x%is_Edge) then
            call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-           call export_3D_3C(m,x,dir,name//'np',pad)
+           call export_3D_3C(m,temp_N,dir,name//'np',pad)
            call delete(temp_N)
          endif
        end subroutine
