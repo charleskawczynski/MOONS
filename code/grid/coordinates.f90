@@ -33,8 +33,7 @@
       type coordinates
         ! Stencils for del (ops_del.f90)
         type(triDiag) :: stagCC2N,stagN2CC
-        type(triDiag) :: lapCC,lapN
-        type(triDiag) :: colCC,colN
+        type(triDiag),dimension(2) :: colCC,colN
          ! Properties
         real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
         integer :: N                                    ! Number of cells
@@ -77,8 +76,8 @@
         if (allocated(c%alpha)) deallocate(c%alpha)
         if (allocated(c%beta)) deallocate(c%beta)
         call delete(c%stagCC2N); call delete(c%stagN2CC)
-        call delete(c%lapCC); call delete(c%lapN)
-        call delete(c%colCC); call delete(c%colN)
+        call delete(c%colCC(1)); call delete(c%colN(1))
+        call delete(c%colCC(2)); call delete(c%colN(2))
         c%defined = .false.
         c%stencils_defined = .false.
       end subroutine
@@ -98,10 +97,10 @@
 
         call init(c%stagCC2N,d%stagCC2N)
         call init(c%stagN2CC,d%stagN2CC)
-        call init(c%lapCC,d%lapCC)
-        call init(c%lapN,d%lapN)
-        call init(c%colCC,d%colCC)
-        call init(c%colN,d%colN)
+        call init(c%colCC(1),d%colCC(1))
+        call init(c%colCC(2),d%colCC(2))
+        call init(c%colN(1),d%colN(1))
+        call init(c%colN(2),d%colN(2))
 
         c%sn = d%sn
         c%sc = d%sc
@@ -206,8 +205,8 @@
         ! write(un,*) 'alpha = ',c%alpha
         ! write(un,*) 'beta = ',c%beta
         ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
-        ! write(*,*) 'lapCC: '; call print(c%lapCC); write(*,*) 'lapN:';call print(c%lapN)
-        ! write(*,*) 'colCC: '; call print(c%colCC); write(*,*) 'colN:';call print(c%colN)
+        ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
+        ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
         ! write(*,*) 'D_CC2N: '; call print(c%D_CC2N); write(*,*) 'U_CC2N:';call print(c%U_CC2N)
         ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
       end subroutine
@@ -235,7 +234,7 @@
         deallocate(D,U,dh)
       end subroutine
 
-      subroutine stencil_colN(c)
+      subroutine stencil_colN_1_O2_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,dh
@@ -256,11 +255,11 @@
         L(s-2) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
         D(s-2) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
         U(s-2) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
-        call init(c%colN,L,D,U)
+        call init(c%colN(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
 
-      subroutine stencil_lapN(c)
+      subroutine stencil_colN_2_O2_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,dh
@@ -283,7 +282,7 @@
         L(s-2) =  2.0_cp/(dh(i-2)*(dh(i-1)+dh(i-2)))
         D(s-2) = -2.0_cp/(dh(i-1)*dh(i-2))
         U(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i-2)))
-        call init(c%lapN,L,D,U)
+        call init(c%colN(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
 
@@ -306,18 +305,7 @@
         deallocate(D,U,dh)
       end subroutine
 
-      subroutine stencil_colCC(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-#ifdef _O2_BOUNDARIES_
-        call stencil_colCC_2nd_order_boundaries(c)
-#else
-        call stencil_colCC_1st_order_boundaries(c)
-#endif
-      end subroutine
-
-#ifdef _O2_BOUNDARIES_
-      subroutine stencil_colCC_2nd_order_boundaries(c)
+      subroutine stencil_colCC_1_O2_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -341,11 +329,11 @@
         L(s-2) = (-0.5_cp*dh(i)/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i)))))
         D(s-2) = ((-dh(i-1)+(0.5_cp*dh(i)))/(dh(i-1)*(0.5_cp*dh(i))))
         U(s-2) = (dh(i-1)/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i)))))
-        call init(c%colCC,L,D,U)
+        call init(c%colCC(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#else
-      subroutine stencil_colCC_1st_order_boundaries(c)
+
+      subroutine stencil_colCC_1_O1_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -359,23 +347,11 @@
         L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
         D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
         U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
-        call init(c%colCC,L,D,U)
+        call init(c%colCC(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#endif
 
-      subroutine stencil_lapCC(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-#ifdef _O2_BOUNDARIES_
-        call stencil_lapCC_2nd_order_boundaries(c)
-#else
-        call stencil_lapCC_1st_order_boundaries(c)
-#endif
-      end subroutine
-
-#ifdef _O2_BOUNDARIES_
-      subroutine stencil_lapCC_2nd_order_boundaries(c)
+      subroutine stencil_colCC_2_O2_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -399,11 +375,11 @@
         L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i))))
         D(s-2) = -2.0_cp/(dh(i-1)*(0.5_cp*dh(i)))
         U(s-2) =  2.0_cp/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i))))
-        call init(c%lapCC,L,D,U)
+        call init(c%colCC(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#else
-      subroutine stencil_lapCC_1st_order_boundaries(c)
+
+      subroutine stencil_colCC_2_O1_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -417,10 +393,9 @@
         L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
         D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
         U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-        call init(c%lapCC,L,D,U)
+        call init(c%colCC(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#endif
 
       ! *****************************************************************
       ! ************************ STITCH STENCILS ************************
@@ -436,13 +411,13 @@
         if (.not.c%stencils_defined) then
           stop 'Error: coordinate stencils not defined in stitch_stencils_c in coordinates.f90'
         endif
-        call stitch_lapCC(c,hmin,hmax)
-        call stitch_colCC(c,hmin,hmax)
-        call stitch_lapN(c,hmin,hmax)
-        call stitch_colN(c,hmin,hmax)
+        call stitch_colCC_1(c,hmin,hmax)
+        call stitch_colCC_2(c,hmin,hmax)
+        call stitch_colN_1(c,hmin,hmax)
+        call stitch_colN_2(c,hmin,hmax)
       end subroutine
 
-      subroutine stitch_lapCC(c,hmin,hmax)
+      subroutine stitch_colCC_2(c,hmin,hmax)
         implicit none
         type(coordinates),intent(inout) :: c
         logical,intent(in) :: hmin,hmax
@@ -450,19 +425,19 @@
         integer :: i,s
         s = c%sc; allocate(dh(s-1)); dh = c%dhc
         if (hmin) then; i = 2
-          c%lapCC%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-          c%lapCC%D(1) = -2.0_cp/(dh(i-1)*dh(i))
-          c%lapCC%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+          c%colCC(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colCC(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colCC(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
         endif
         if (hmax) then; i = s-1
-          c%lapCC%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-          c%lapCC%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
-          c%lapCC%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+          c%colCC(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colCC(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colCC(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
         endif
         deallocate(dh)
       end subroutine
 
-      subroutine stitch_colCC(c,hmin,hmax)
+      subroutine stitch_colCC_1(c,hmin,hmax)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: dh
@@ -470,19 +445,19 @@
         integer :: i,s
         s = c%sc; allocate(dh(s-1)); dh = c%dhc
         if (hmin) then; i = 2
-          c%colCC%L(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-          c%colCC%D(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-          c%colCC%U(1) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
+          c%colCC(1)%L(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colCC(1)%D(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colCC(1)%U(1) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
         endif
         if (hmax) then; i = s-1
-          c%colCC%L(s-2) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-          c%colCC%D(s-2) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-          c%colCC%U(s-2) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
+          c%colCC(1)%L(s-2) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colCC(1)%D(s-2) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colCC(1)%U(s-2) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
         endif
         deallocate(dh)
       end subroutine
 
-      subroutine stitch_lapN(c,hmin,hmax)
+      subroutine stitch_colN_2(c,hmin,hmax)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: dh
@@ -490,19 +465,19 @@
         integer :: i,s
         s = c%sn; allocate(dh(s-1)); dh = c%dhn
         if (hmin) then; i = 2
-          c%lapN%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-          c%lapN%D(1) = -2.0_cp/(dh(i-1)*dh(i))
-          c%lapN%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+          c%colN(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colN(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colN(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
         endif
         if (hmax) then; i = s-1
-          c%lapN%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-          c%lapN%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
-          c%lapN%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+          c%colN(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colN(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colN(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
         endif
         deallocate(dh)
       end subroutine
 
-      subroutine stitch_colN(c,hmin,hmax)
+      subroutine stitch_colN_1(c,hmin,hmax)
         implicit none
         type(coordinates),intent(inout) :: c
         logical,intent(in) :: hmin,hmax
@@ -510,14 +485,14 @@
         integer :: i,s
         s = c%sn; allocate(dh(s-1)); dh = c%dhn
         if (hmin) then; i = 2
-          c%colN%L(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-          c%colN%D(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-          c%colN%U(1) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
+          c%colN(1)%L(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colN(1)%D(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colN(1)%U(1) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
         endif
         if (hmax) then; i = s-1
-          c%colN%L(s-2) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-          c%colN%D(s-2) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-          c%colN%U(s-2) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
+          c%colN(1)%L(s-2) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colN(1)%D(s-2) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colN(1)%U(s-2) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
         endif
         deallocate(dh)
       end subroutine
@@ -577,12 +552,16 @@
           call init_interpStencil(c)
 
           ! Derivative stencils
-          call stencil_lapCC(c)
-          call stencil_lapN(c)
+          call stencil_colCC_1_O1_boundaries(c)
+          ! call stencil_colCC_1_O2_boundaries(c)
+          call stencil_colCC_2_O1_boundaries(c)
+          ! call stencil_colCC_2_O2_boundaries(c)
+
+          call stencil_colN_1_O2_boundaries(c)
+          call stencil_colN_2_O2_boundaries(c)
+
           call stencil_stagCC2N(c)
           call stencil_stagN2CC(c)
-          call stencil_colCC(c)
-          call stencil_colN(c)
           
           ! call check(c%lapCC)
           ! call check(c%lapN)
@@ -607,19 +586,17 @@
         implicit none
         type(coordinates),intent(in) :: c
         write(*,*) 'Starting to check coordinates'
-        call check(c%lapCC)
-        call check(c%lapN)
+        call check(c%colCC(1)); call check(c%colN(1))
+        call check(c%colCC(2)); call check(c%colN(2))
         call check(c%stagCC2N)
         call check(c%stagN2CC)
-        call check(c%colCC)
-        call check(c%colN)
         write(*,*) 'step 0'; call check_consecutive(c)
         write(*,*) 'step 1'; call check_stencilSymmetry(c,c%stagCC2N,'stagCC2N')
         write(*,*) 'step 2'; call check_stencilSymmetry(c,c%stagN2CC,'stagN2CC')
-        write(*,*) 'step 3'; call check_stencilSymmetry(c,c%lapCC,'lapCC')
-        write(*,*) 'step 4'; call check_stencilSymmetry(c,c%lapN,'lapN')
-        write(*,*) 'step 5'; call check_stencilSymmetry(c,c%colCC,'colCC')
-        write(*,*) 'step 6'; call check_stencilSymmetry(c,c%colN,'colN')
+        write(*,*) 'step 3'; call check_stencilSymmetry(c,c%colCC(2),'colCC(2)')
+        write(*,*) 'step 4'; call check_stencilSymmetry(c,c%colN(2),'colN(2)')
+        write(*,*) 'step 5'; call check_stencilSymmetry(c,c%colCC,'colCC(1)')
+        write(*,*) 'step 6'; call check_stencilSymmetry(c,c%colN,'colN(1)')
         write(*,*) 'Done checking coordinates'
         ! stop 'Done'
       end subroutine

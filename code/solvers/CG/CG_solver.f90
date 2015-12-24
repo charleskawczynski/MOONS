@@ -68,7 +68,7 @@
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           rsnew = dot_product(r,r,m,x,tempx)
-          ! if (rsnew.lt.tol) then; exit; endif
+          if (rsnew.lt.tol) then; exit; endif
 
 #ifdef _EXPORT_CG_CONVERGENCE_
           call zeroGhostPoints(r)
@@ -134,7 +134,7 @@
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
           rsnew = dot_product(r,r,m,x,tempx)
-          ! if (rsnew.lt.tol) then; exit; endif
+          if (rsnew.lt.tol) then; exit; endif
 
 #ifdef _EXPORT_CG_CONVERGENCE_
           call zeroGhostPoints(r)

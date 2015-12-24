@@ -447,7 +447,7 @@
          ! Re,dt,n,Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
 
          ! call CN_AB2_PPE_CG_mom_CG(mom%CG_U,mom%CG_p,mom%U,mom%Unm1,&
-         ! mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,1000,mom%Ustar,&
+         ! mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,5,mom%Ustar,&
          ! mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
 
          ! case (2); call semi_implicit_ADI(mom,F,mom%m,ss_MHD)

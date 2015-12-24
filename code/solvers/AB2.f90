@@ -33,7 +33,7 @@
          type(SF),intent(inout) :: Fn
          type(SF),intent(in) :: Fnm1
          call multiply(Fn,1.5_cp)
-         call add_product(Fn,Fnm1,-1.5_cp)
+         call add_product(Fn,Fnm1,-0.5_cp)
        end subroutine
 
        subroutine AB2_overwrite_VF(Fn,Fnm1)
@@ -45,7 +45,7 @@
          type(VF),intent(inout) :: Fn
          type(VF),intent(in) :: Fnm1
          call multiply(Fn,1.5_cp)
-         call add_product(Fn,Fnm1,-1.5_cp)
+         call add_product(Fn,Fnm1,-0.5_cp)
        end subroutine
 
        subroutine AB2_SF(AB2,Fn,Fnm1)
@@ -57,7 +57,7 @@
          type(SF),intent(inout) :: AB2
          type(SF),intent(in) :: Fn,Fnm1
          call multiply(AB2,Fn,1.5_cp)
-         call add_product(AB2,Fnm1,-1.5_cp)
+         call add_product(AB2,Fnm1,-0.5_cp)
        end subroutine
 
        subroutine AB2_VF(AB2,Fn,Fnm1)
@@ -69,7 +69,7 @@
          type(VF),intent(inout) :: AB2
          type(VF),intent(in) :: Fn,Fnm1
          call multiply(AB2,Fn,1.5_cp)
-         call add_product(AB2,Fnm1,-1.5_cp)
+         call add_product(AB2,Fnm1,-0.5_cp)
        end subroutine
 
        end module

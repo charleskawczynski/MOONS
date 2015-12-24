@@ -62,10 +62,10 @@ FCFLAGS += -fopenmp
 # FLIBS = $(LIB_DIR)$(PS)tecio.lib
 
 # ****************** DEBUGGING **********************
-# FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
+FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
 # FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 # FC_DEBUG += -Wall -fbacktrace -O0 -Og
-FC_DEBUG += -fbacktrace -O0 -Og
+# FC_DEBUG += -fbacktrace -O0 -Og
 FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_DEL_IMPLICIT_
 FC_DEBUG += -D_DEBUG_INTERP_
@@ -103,7 +103,7 @@ FC_PROFILE += -pg
 # Code verification
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
@@ -117,7 +117,7 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
+# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 

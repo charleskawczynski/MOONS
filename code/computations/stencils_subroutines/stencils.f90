@@ -127,7 +127,7 @@
         real(cp),dimension(s),intent(inout) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,sdfdh
-        integer,intent(in) :: CC
+        integer,intent(in) :: gt
         integer :: i
         do i=1,s-1
           dfdh(i+gt) = dfdh(i+gt) - (f(i)*T%D(i) + f(i+1)*T%U(i))

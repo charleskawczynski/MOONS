@@ -47,8 +47,6 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      interface delGen;    module procedure delGen_given_g; end interface
-
       type del
         contains
         generic,public :: assign => assignDel
@@ -65,83 +63,70 @@
       ! *********************** LOW LEVEL ***********************
       ! *********************************************************
 
-      subroutine diff(dfdh,f,T,diffType,s,sdfdh,genType,gt,CC,pad1,pad2)
+      subroutine diff_stag(operator,dfdh,f,T,dir,pad,gt,s,sdfdh)
         implicit none
-        real(cp),dimension(s),intent(in) :: f
-        type(triDiag),intent(in) :: T
-        integer,intent(in) :: diffType,s,sdfdh,genType,gt,pad1,pad2
-        real(cp),dimension(sdfdh),intent(inout) :: dfdh
-        logical,intent(in) :: CC
-        select case(genType)
-        case (1) ;select case (diffType) ! Assign
-                  case (1); dfdh = collocated(f,T,s,CC,pad1,pad2)         ! Collocated derivative
-                  case (2); dfdh = staggered(f,T,s,sdfdh,CC)              ! Staggered derivative
-                  end select
-        case (2) ;select case (diffType) ! add
-                  case (1); dfdh = dfdh + collocated(f,T,s,CC,pad1,pad2)  ! Collocated derivative
-                  case (2); dfdh = dfdh + staggered(f,T,s,sdfdh,CC)       ! Staggered derivative
-                  end select
-        case (3) ;select case (diffType) ! subtract
-                  case (1); dfdh = dfdh - collocated(f,T,s,CC,pad1,pad2)  ! Collocated derivative
-                  case (2); dfdh = dfdh - staggered(f,T,s,sdfdh,CC)       ! Staggered derivative
-                  end select
-        case default
-          stop 'Error: genType must = 1,2,3 in diff in del.f90'
-        end select
-      end subroutine
-
-      subroutine delGen_T(dfdh,f,T,dir,pad,genType,diffType,gt,s,sdfdh,CC,pad1,pad2)
-        implicit none
+        external :: operator
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
         real(cp),dimension(:,:,:),intent(in) :: f
         type(triDiag),intent(in) :: T
-        integer,intent(in) :: dir,pad,genType,diffType,gt,pad1,pad2
+        integer,intent(in) :: dir,pad,gt
         integer,dimension(3),intent(in) :: s,sdfdh
-        logical,intent(in) :: CC
         integer :: i,j,k
-#ifdef _DEBUG_DEL_
-        call checkSideDimensions(s,sdfdh,dir)
-#endif
-
-        ! if (genType.eq.1) dfdh = 0.0_cp
-
         select case (dir)
         case (1); 
         !$OMP PARALLEL DO
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-          call diff(dfdh(:,j,k),(/(f(i,j,k),i=1,s(1))/),T,diffType,s(1),sdfdh(1),genType,gt,CC,pad1,pad2)
+          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),sdfdh(1),gt)
         enddo; enddo
         !$OMP END PARALLEL DO
         case (2); 
         !$OMP PARALLEL DO
         do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-          call diff(dfdh(i,:,k),(/(f(i,j,k),j=1,s(2))/),T,diffType,s(2),sdfdh(2),genType,gt,CC,pad1,pad2)
+          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt)
         enddo; enddo
         !$OMP END PARALLEL DO
         case (3); 
         !$OMP PARALLEL DO
         do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-          call diff(dfdh(i,j,:),(/(f(i,j,k),k=1,s(3))/),T,diffType,s(3),sdfdh(3),genType,gt,CC,pad1,pad2)
+          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt)
         enddo; enddo
         !$OMP END PARALLEL DO
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
+      end subroutine
 
-        if (genType.eq.1) then
-          if (pad.gt.0) then
-            select case (dir)
-          case (1); dfdh(:,:,1) = 0.0_cp; dfdh(:,:,s(3)) = 0.0_cp
-                    dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
-          case (2); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
-                    dfdh(:,:,1) = 0.0_cp; dfdh(:,:,s(3)) = 0.0_cp
-          case (3); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
-                    dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
-          case default
-            stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
-            end select
-          endif
-        endif
+      subroutine diff_col(operator,dfdh,f,T,dir,pad,s,pad1,pad2)
+        implicit none
+        external :: operator
+        real(cp),dimension(:,:,:),intent(inout) :: dfdh
+        real(cp),dimension(:,:,:),intent(in) :: f
+        type(triDiag),intent(in) :: T
+        integer,intent(in) :: dir,pad,pad1,pad2
+        integer,dimension(3),intent(in) :: s
+        integer :: i,j,k
+        select case (dir)
+        case (1); 
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
+          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),pad1,pad2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case (2); 
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case (3); 
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
+        case default
+        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
+        end select
       end subroutine
 
 
@@ -149,49 +134,57 @@
       ! *********************** MED LEVEL ***********************
       ! *********************************************************
 
-      subroutine delGen_RF_given_g(dfdh,f,g,n,dir,pad,genType,s,sdfdh,CC,pad1,pad2)
+      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,s,sdfdh,pad1,pad2)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
         real(cp),dimension(:,:,:),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType,pad1,pad2
         integer,dimension(3),intent(in) :: s,sdfdh
-        logical,intent(in) :: CC
-        integer :: diffType,gt
+        integer :: diffType
         diffType = getDiffType(s,sdfdh,g%c(dir)%sn,g%c(dir)%sc,dir)
-        select case (diffType)
-        case (1); gt = 1
-                  select case (n)
-                  case (1); call delGen_T(dfdh,f,g%c(dir)%colCC,dir,pad,genType,1,gt,s,sdfdh,CC,pad1,pad2)
-                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapCC,dir,pad,genType,1,gt,s,sdfdh,CC,pad1,pad2)
+        select case (genType)
+        case (1); select case (diffType)
+                  case (1); call diff_col(col_CC_assign,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
+                  case (2); call diff_col(col_N_assign ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
+                  case (3); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
+                  case (4); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
                   end select
-        case (2); gt = 0
-                  select case (n)
-                  case (1); call delGen_T(dfdh,f,g%c(dir)%colN,dir,pad,genType,1,gt,s,sdfdh,CC,pad1,pad2)
-                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapN,dir,pad,genType,1,gt,s,sdfdh,CC,pad1,pad2)
+        case (2); select case (diffType)
+                  case (1); call diff_col(col_CC_add,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
+                  case (2); call diff_col(col_N_add ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
+                  case (3); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
+                  case (4); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
                   end select
-        case (3); gt = 1; call delGen_T(dfdh,f,g%c(dir)%stagCC2N,dir,pad,genType,2,gt,s,sdfdh,CC,pad1,pad2)
-        case (4); gt = 0; call delGen_T(dfdh,f,g%c(dir)%stagN2CC,dir,pad,genType,2,gt,s,sdfdh,CC,pad1,pad2)
+        case (3); select case (diffType)
+                  case (1); call diff_col(col_CC_subtract,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
+                  case (2); call diff_col(col_N_subtract ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
+                  case (3); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
+                  case (4); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
+                  end select
+        case default
+        stop 'Error: genType must = 1,2,3 in ops_del.f90'
         end select
+
+#ifdef _DEBUG_DEL_
+        call checkSideDimensions(s,sdfdh,dir)
+#endif
       end subroutine
 
-      subroutine delGen_given_g(dfdh,f,m,n,dir,pad,genType)
+      subroutine diff(dfdh,f,m,n,dir,pad,genType)
         implicit none
         type(SF),intent(inout) :: dfdh
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad,genType
         integer :: i,pad1,pad2
-        logical :: CC
-        CC = CC_along(f,dir)
-        ! Node = any((/ f%is_Node , f%is_Face.and.(f%face.ne.dir) , f%is_Edge.and.(f%edge.eq.dir) /))
         do i=1,m%s
           if (m%g(i)%st_face%hmin(dir)) then; pad1 = 1;
           else; pad1 = 0; endif
           if (m%g(i)%st_face%hmax(dir)) then; pad2 = 1;
           else; pad2 = 0; endif
-          call delGen_RF_given_g(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
-            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,CC,pad1,pad2)
+          call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
+            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
         enddo
         ! call applyStitches(dfdh,m)
       end subroutine
@@ -206,7 +199,7 @@
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,m,n,dir,pad,1)
+        call diff(dfdh,f,m,n,dir,pad,1)
       end subroutine
 
       subroutine addDel(dfdh,f,m,n,dir,pad)
@@ -215,7 +208,7 @@
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,m,n,dir,pad,2)
+        call diff(dfdh,f,m,n,dir,pad,2)
       end subroutine
 
       subroutine subtractDel(dfdh,f,m,n,dir,pad)
@@ -224,7 +217,7 @@
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad
-        call delGen(dfdh,f,m,n,dir,pad,3)
+        call diff(dfdh,f,m,n,dir,pad,3)
       end subroutine
 
       ! *********************************************************

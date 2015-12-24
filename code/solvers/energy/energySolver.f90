@@ -251,7 +251,6 @@
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
-         type(SF) :: tempN,tempE
          if (solveEnergy) then
            write(*,*) 'Exporting Solutions for T'
            call export_raw(m,nrg%U_cct,dir//'Tfield/','U',0)
