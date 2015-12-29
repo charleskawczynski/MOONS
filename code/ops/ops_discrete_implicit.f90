@@ -30,6 +30,7 @@
        !                        -------> edgeDir
        ! 
        ! 
+       use ops_del_mod
        use ops_del_implicit_mod
        use ops_discrete_mod
        use mesh_mod
@@ -54,30 +55,34 @@
 #endif
 
        public :: lap_imp
-       interface lap_imp;             module procedure lapUniformCoeff_SF;        end interface
-       interface lap_imp;             module procedure lapUniformCoeff_VF;        end interface
-       interface lap_imp;             module procedure lapVarCoeff_SF;            end interface
-       interface lap_imp;             module procedure lapVarCoeff_VF;            end interface
+       interface lap_imp;                module procedure lapUniformCoeff_SF;        end interface
+       interface lap_imp;                module procedure lapUniformCoeff_VF;        end interface
+       interface lap_imp;                module procedure lapVarCoeff_SF;            end interface
+       interface lap_imp;                module procedure lapVarCoeff_VF;            end interface
+
+       public :: lap_centered_implicit
+       interface lap_centered_implicit;  module procedure lap_centered_SF;           end interface
+       interface lap_centered_implicit;  module procedure lap_centered_VF;           end interface
 
        public :: div_imp
-       interface div_imp;             module procedure div_SF;                    end interface
-       interface div_imp;             module procedure div_VF;                    end interface
+       interface div_imp;                module procedure div_SF;                    end interface
+       interface div_imp;                module procedure div_VF;                    end interface
 
        public :: grad_imp
-       interface grad_imp;            module procedure grad_SF;                   end interface
-       interface grad_imp;            module procedure grad_VF;                   end interface
+       interface grad_imp;               module procedure grad_SF;                   end interface
+       interface grad_imp;               module procedure grad_VF;                   end interface
 
        public :: curl_imp
-       interface curl_imp;            module procedure curl_SF;                   end interface
-       interface curl_imp;            module procedure curl_VF;                   end interface
-       interface curl_imp;            module procedure curl_TF;                   end interface
+       interface curl_imp;               module procedure curl_SF;                   end interface
+       interface curl_imp;               module procedure curl_VF;                   end interface
+       interface curl_imp;               module procedure curl_TF;                   end interface
        
        public :: curl_parallel_imp
-       interface curl_parallel_imp;   module procedure curl_TF_Parallel;          end interface
+       interface curl_parallel_imp;      module procedure curl_TF_Parallel;          end interface
 
        public :: curlcurl_imp
-       interface curlcurl_imp;        module procedure curlcurlCoeff_VF;          end interface
-       interface curlcurl_imp;        module procedure curlcurlUniform_VF;        end interface
+       interface curlcurl_imp;           module procedure curlcurlCoeff_VF;          end interface
+       interface curlcurl_imp;           module procedure curlcurlUniform_VF;        end interface
 
        contains
 
@@ -184,6 +189,53 @@
          call grad_imp(temp,u,m)
          call multiply(temp,k)
          call div(lapU,temp,m)
+       end subroutine
+
+       subroutine lap_centered_SF(lapU,u,m,dir)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         type(SF) :: temp
+         type(del_implicit) :: di
+         type(del) :: d
+         if (u%is_Face) then
+         select case (u%face)
+         case (1); select case (dir)
+                   case (1); call init_CC(temp,m)
+                   case (2); call init_Edge(temp,m,3)
+                   case (3); call init_Edge(temp,m,2)
+                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
+                   end select
+         case (2); select case (dir)
+                   case (1); call init_Edge(temp,m,3)
+                   case (2); call init_CC(temp,m)
+                   case (3); call init_Edge(temp,m,1)
+                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
+                   end select
+         case (3); select case (dir)
+                   case (1); call init_Edge(temp,m,2)
+                   case (2); call init_Edge(temp,m,1)
+                   case (3); call init_CC(temp,m)
+                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
+                   end select
+         case default; stop 'Error: Bad case in lap_centered_SF in ops_discrete.f90'
+         end select
+         else; stop 'Error: non-face input to lap_centered in ops_discrete.f90'
+         endif
+         call di%assign(temp,u,m,1,dir,1)
+         call d%assign(lapU,temp,m,1,dir,1)
+       end subroutine
+
+       subroutine lap_centered_VF(lapU,u,m)
+         implicit none
+         type(VF),intent(inout) :: lapU
+         type(VF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call lap_centered_implicit(lapU%x,u%x,m,1)
+         call lap_centered_implicit(lapU%y,u%y,m,2)
+         call lap_centered_implicit(lapU%z,u%z,m,3)
        end subroutine
 
        subroutine div_VF(divU,U,m)

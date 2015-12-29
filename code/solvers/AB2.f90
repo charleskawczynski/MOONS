@@ -6,8 +6,8 @@
 
        private
        public :: AB2,AB2_overwrite
-       interface AB2_overwrite;   module procedure AB2_overwrite_SF;   end interface
-       interface AB2_overwrite;   module procedure AB2_overwrite_VF;   end interface
+       interface AB2_overwrite;       module procedure AB2_overwrite_SF;       end interface
+       interface AB2_overwrite;       module procedure AB2_overwrite_VF;       end interface
        interface AB2;                 module procedure AB2_SF;                 end interface
        interface AB2;                 module procedure AB2_VF;                 end interface
 

@@ -275,7 +275,7 @@
          ! init(CG,m,x,k)
 
          ! CG,operator,m,MFP,x,k,dir,name,testSymmetry,vizualizeOperator
-         call init(ind%CG_B,ind_diffusion,ind%m,ind%MFP_B,ind%B_face,&
+         call init(ind%CG_B,ind_diffusion,ind_diffusion_explicit,ind%m,ind%MFP_B,ind%B_face,&
          ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
          write(*,*) '     CG Solver initialized'
 
@@ -283,8 +283,8 @@
          call init_Dirichlet(ind%phi%RF(1)%b)
          call init_BCs(ind%phi,0.0_cp)
 
-         call init(ind%CG_cleanB,Laplacian_uniform_props,ind%m,ind%MFP_B,ind%phi,&
-         ind%temp_F,dir//'Bfield/','phi',.false.,.false.)
+         call init(ind%CG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,ind%m,&
+         ind%MFP_B,ind%phi,ind%temp_F,dir//'Bfield/','phi',.false.,.false.)
          write(*,*) '     PCG Solver initialized for phi'
 
          ! write(*,*) 'dhmin = ',ind%m%dhmin_min
@@ -450,7 +450,6 @@
          implicit none
          type(induction),intent(inout) :: ind
          character(len=*),intent(in) :: dir
-         type(SF) :: tempN
          if (solveInduction) then
              call export_raw(ind%m,ind%sigma,dir//'material/','sigma',0)
              call export_processed(ind%m,ind%sigma,dir//'material/','sigma',1)
@@ -482,8 +481,6 @@
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
-         type(VF) :: tempVFn,tempVFn2
-
          ! -------------------------- B/J FIELD AT NODES --------------------------
          if (solveInduction) then
            ! call init_Node(tempVFn,m)

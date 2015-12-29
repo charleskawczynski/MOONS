@@ -101,6 +101,7 @@
 
         interface init_BCs;            module procedure init_BC_vals_SF;        end interface
         interface init_BCs;            module procedure init_BC_val_SF;         end interface
+        interface init_BCs;            module procedure init_BCs_SF_SF;         end interface
         interface init_BC_props;       module procedure init_BC_props_SF;       end interface
         interface init_BC_mesh;        module procedure init_BC_mesh_SF;        end interface
 
@@ -647,6 +648,14 @@
           TF = any((/f%is_Node,f%is_Face.and.(f%face.eq.dir),f%is_Edge.and.(f%edge.ne.dir)/))
         end function
 
+        subroutine init_BCs_SF_SF(f,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: g
+          integer :: i
+          do i=1,f%s; call init(f%RF(i)%b,g%RF(i)%b); enddo
+        end subroutine
+
         subroutine init_BC_vals_SF(f)
           implicit none
           type(SF),intent(inout) :: f
@@ -697,123 +706,75 @@
          integer :: i,j,k,t
          call assign(u,0.0_cp)
          if (u%is_CC) then
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
                                 (m%g(t)%c(2)%dhn(j))*&
                                 (m%g(t)%c(3)%dhn(k))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          elseif (u%is_Node) then
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
                                 (m%g(t)%c(2)%dhc(j-1))*&
                                 (m%g(t)%c(3)%dhc(k-1))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          elseif (u%is_Face) then
          select case (u%face)
          case (1);
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
                                 (m%g(t)%c(2)%dhn(j))*&
                                 (m%g(t)%c(3)%dhn(k))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          case (2);
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
                                 (m%g(t)%c(2)%dhc(j-1))*&
                                 (m%g(t)%c(3)%dhn(k))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          case (3);
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
                                 (m%g(t)%c(2)%dhn(j))*&
                                 (m%g(t)%c(3)%dhc(k-1))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
          end select
          elseif (u%is_Edge) then
          select case (u%edge)
          case (1);
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
                                 (m%g(t)%c(2)%dhc(j-1))*&
                                 (m%g(t)%c(3)%dhc(k-1))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          case (2);
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
                                 (m%g(t)%c(2)%dhn(j))*&
                                 (m%g(t)%c(3)%dhc(k-1))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          case (3);
-#ifdef _PARALLELIZE_SF_
          !$OMP PARALLEL DO SHARED(m)
-
-#endif
          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
                                 (m%g(t)%c(2)%dhc(j-1))*&
                                 (m%g(t)%c(3)%dhn(k))
          enddo; enddo; enddo; enddo
-#ifdef _PARALLELIZE_SF_
          !$OMP END PARALLEL DO
-
-#endif
          case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
          end select
          else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'

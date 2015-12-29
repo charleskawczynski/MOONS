@@ -1,11 +1,11 @@
-      module ops_del_mod
+      module ops_del_implicit_mod
       ! Returns an n-derivative of the scalar field, f, 
       ! along direction dir (1,2,3) which corresponds to (x,y,z).
       ! 
-      ! Flags: (fopenmp,_DEBUG_DEL_)
+      ! Flags: (fopenmp,_DEBUG_DEL_IMPLICIT_)
       ! 
       ! Implementation:
-      !      type(del) :: d
+      !      type(del_implicit) :: d
       !      type(SF) :: f,dfdh
       !      type(mesh) :: m
       !      integer :: n,dir,pad
@@ -30,12 +30,13 @@
       use mesh_mod
       use SF_mod
       use triDiag_mod
-      use stencils_mod
+      use stencils_BC_implicit_mod
+      use bctype_mod
       use apply_stitches_mod
       implicit none
 
       private
-      public :: del 
+      public :: del_implicit
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -47,7 +48,7 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-      type del
+      type del_implicit
         contains
         generic,public :: assign => assignDel
         generic,public :: add => addDel
@@ -63,7 +64,7 @@
       ! *********************** LOW LEVEL ***********************
       ! *********************************************************
 
-      subroutine diff_stag(operator,dfdh,f,T,dir,pad,gt,s,sdfdh)
+      subroutine diff_stag(operator,dfdh,f,T,dir,pad,gt,s,sdfdh,BCT1,BCT2)
         implicit none
         external :: operator
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
@@ -71,32 +72,33 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: dir,pad,gt
         integer,dimension(3),intent(in) :: s,sdfdh
+        type(bctype),intent(in) :: BCT1,BCT2
         integer :: i,j,k
         select case (dir)
         case (1)
         !$OMP PARALLEL DO
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),sdfdh(1),gt)
+          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),sdfdh(1),gt,BCT1,BCT2)
         enddo; enddo
         !$OMP END PARALLEL DO
         case (2)
-        ! !$OMP PARALLEL DO
-        ! do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt,BCT1,BCT2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case (3)
-        ! !$OMP PARALLEL DO
-        ! do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt,BCT1,BCT2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case default
-        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
+        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del_implicit.f90.'
         end select
       end subroutine
 
-      subroutine diff_col(operator,dfdh,f,T,dir,pad,s,pad1,pad2)
+      subroutine diff_col(operator,dfdh,f,T,dir,pad,s,pad1,pad2,BCT1,BCT2)
         implicit none
         external :: operator
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
@@ -104,28 +106,29 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: dir,pad,pad1,pad2
         integer,dimension(3),intent(in) :: s
+        type(bctype),intent(in) :: BCT1,BCT2
         integer :: i,j,k
         select case (dir)
         case (1)
         !$OMP PARALLEL DO
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),pad1,pad2)
+          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),pad1,pad2,BCT1,BCT2)
         enddo; enddo
         !$OMP END PARALLEL DO
         case (2)
-        ! !$OMP PARALLEL DO
-        ! do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2,BCT1,BCT2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case (3)
-        ! !$OMP PARALLEL DO
-        ! do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2,BCT1,BCT2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case default
-        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
+        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del_implicit.f90.'
         end select
       end subroutine
 
@@ -134,38 +137,41 @@
       ! *********************** MED LEVEL ***********************
       ! *********************************************************
 
-      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,s,sdfdh,pad1,pad2)
+      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,s,sdfdh,pad1,pad2,BCT1,BCT2)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
         real(cp),dimension(:,:,:),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType,pad1,pad2
         integer,dimension(3),intent(in) :: s,sdfdh
+        type(bctype),intent(in) :: BCT1,BCT2
         integer :: diffType
         diffType = getDiffType(s,sdfdh,g%c(dir)%sn,g%c(dir)%sc,dir)
+        ! stag_CC2N_imp
+        ! stag_N2CC_imp
         select case (genType)
         case (1); select case (diffType)
-                  case (1); call diff_col(col_CC_assign,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
-                  case (2); call diff_col(col_N_assign ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
-                  case (3); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
-                  case (4); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
+                  case (1); call diff_col(col_CC_assign,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2,BCT1,BCT2)
+                  case (2); call diff_col(col_N_assign ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2,BCT1,BCT2)
+                  case (3); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh,BCT1,BCT2)
+                  case (4); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh,BCT1,BCT2)
                   end select
         case (2); select case (diffType)
-                  case (1); call diff_col(col_CC_add,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
-                  case (2); call diff_col(col_N_add ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
-                  case (3); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
-                  case (4); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
+                  case (1); call diff_col(col_CC_add,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2,BCT1,BCT2)
+                  case (2); call diff_col(col_N_add ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2,BCT1,BCT2)
+                  case (3); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh,BCT1,BCT2)
+                  case (4); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh,BCT1,BCT2)
                   end select
         case (3); select case (diffType)
-                  case (1); call diff_col(col_CC_subtract,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
-                  case (2); call diff_col(col_N_subtract ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
-                  case (3); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
-                  case (4); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
+                  case (1); call diff_col(col_CC_subtract,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2,BCT1,BCT2)
+                  case (2); call diff_col(col_N_subtract ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2,BCT1,BCT2)
+                  case (3); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh,BCT1,BCT2)
+                  case (4); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh,BCT1,BCT2)
                   end select
         case default
-        stop 'Error: genType must = 1,2,3 in ops_del.f90'
+        stop 'Error: genType must = 1,2,3 in ops_del_implicit.f90'
         end select
-
+        
         if (genType.eq.1) then
           if (pad.gt.0) then
             select case (dir)
@@ -176,12 +182,12 @@
           case (3); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
                     dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
           case default
-            stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
+            stop 'Error: dir must = 1,2,3 in delGen_T in ops_del_implicit.f90.'
             end select
           endif
         endif
 
-#ifdef _DEBUG_DEL_
+#ifdef _DEBUG_DEL_IMPLICIT_
         call checkSideDimensions(s,sdfdh,dir)
 #endif
       end subroutine
@@ -193,13 +199,22 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad,genType
         integer :: i,pad1,pad2
+        integer,dimension(2) :: faces
+        select case (dir)
+        case (1); faces = (/1,2/)
+        case (2); faces = (/3,4/)
+        case (3); faces = (/5,6/)
+        case default; stop 'Error: dir must = 1,2,3 in delGen_given_g in ops_del_implicit.f90'
+        end select
         do i=1,m%s
           if (m%g(i)%st_face%hmin(dir)) then; pad1 = 1;
           else; pad1 = 0; endif
           if (m%g(i)%st_face%hmax(dir)) then; pad2 = 1;
           else; pad2 = 0; endif
           call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
-            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
+            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2,&
+            f%RF(i)%b%f(faces(1))%b,& ! BCT1
+            f%RF(i)%b%f(faces(2))%b)  ! BCT2
         enddo
         ! call applyStitches(dfdh,m)
       end subroutine
@@ -262,7 +277,7 @@
         endif
       end function
 
-#ifdef _DEBUG_DEL_
+#ifdef _DEBUG_DEL_IMPLICIT_
       subroutine checkSideDimensions(s1,s2,dir)
         ! This routine makes sure that the shapes s1 and s2 
         ! are equal for orthogonal directions to dir, which

@@ -27,6 +27,7 @@
         public :: init_Face
         public :: init_Edge
         public :: init_Node
+        public :: init_BCs
         public :: volume
 
         public :: dot_product
@@ -79,6 +80,7 @@
         interface delete;            module procedure delete_VF;                end interface
         interface print;             module procedure print_VF;                 end interface
         interface print_BCs;         module procedure print_BCs_VF;             end interface
+        interface init_BCs;          module procedure init_BCs_VF_VF;           end interface
         interface export_BCs;        module procedure export_BCs_VF;            end interface
 
         interface assignX;           module procedure assign_VF_VF_X;          end interface
@@ -547,6 +549,15 @@
           call print_BCs(f%x,name//'_x')
           call print_BCs(f%y,name//'_y')
           call print_BCs(f%z,name//'_z')
+        end subroutine
+
+        subroutine init_BCs_VF_VF(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          call init_BCs(f%x,g%x)
+          call init_BCs(f%y,g%y)
+          call init_BCs(f%z,g%z)
         end subroutine
 
         subroutine export_BCs_VF(f,dir,name)

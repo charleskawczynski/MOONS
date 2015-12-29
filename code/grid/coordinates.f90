@@ -305,6 +305,7 @@
         deallocate(D,U,dh)
       end subroutine
 
+#ifdef _COORDINATES_O2_STENCILS_BOUNDARIES_
       subroutine stencil_colCC_1_O2_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -332,7 +333,9 @@
         call init(c%colCC(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
+#endif
 
+#ifndef _COORDINATES_O2_STENCILS_BOUNDARIES_
       subroutine stencil_colCC_1_O1_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -350,7 +353,9 @@
         call init(c%colCC(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
+#endif
 
+#ifdef _COORDINATES_O2_STENCILS_BOUNDARIES_
       subroutine stencil_colCC_2_O2_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -378,7 +383,9 @@
         call init(c%colCC(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
+#endif
 
+#ifndef _COORDINATES_O2_STENCILS_BOUNDARIES_
       subroutine stencil_colCC_2_O1_boundaries(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -396,6 +403,7 @@
         call init(c%colCC(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
+#endif
 
       ! *****************************************************************
       ! ************************ STITCH STENCILS ************************
@@ -552,13 +560,18 @@
           call init_interpStencil(c)
 
           ! Derivative stencils
+
+#ifdef _COORDINATES_O2_STENCILS_BOUNDARIES_
+          call stencil_colCC_1_O2_boundaries(c)
+          call stencil_colCC_2_O2_boundaries(c)
+#else
           call stencil_colCC_1_O1_boundaries(c)
-          ! call stencil_colCC_1_O2_boundaries(c)
           call stencil_colCC_2_O1_boundaries(c)
-          ! call stencil_colCC_2_O2_boundaries(c)
+#endif
 
           call stencil_colN_1_O2_boundaries(c)
           call stencil_colN_2_O2_boundaries(c)
+
 
           call stencil_stagCC2N(c)
           call stencil_stagN2CC(c)

@@ -99,6 +99,9 @@
        public :: sineWaves
        interface sineWaves;               module procedure sineWaves_SF;              end interface
 
+       public :: cosineWaves
+       interface cosineWaves;             module procedure cosineWaves_SF;            end interface
+
        public :: assign_gradGhost
        interface assign_gradGhost;        module procedure assign_gradGhost_SF;       end interface
        interface assign_gradGhost;        module procedure assign_gradGhost_RF;       end interface
@@ -265,13 +268,17 @@
          end select
        end subroutine
 
-       subroutine zeroInterior_RF(f,s)
+       subroutine zeroInterior_RF(f,s,px,py,pz)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
-         f(2:s(1)-1,:,:) = 0.0_cp
-         f(:,2:s(2)-1,:) = 0.0_cp
-         f(:,:,2:s(3)-1) = 0.0_cp
+         integer,intent(in) :: px,py,pz
+         integer :: i,j,k
+         ! $OMP PARALLEL DO
+         do k=2+px,s(1)-1-px; do j=2+py,s(2)-1-py; do i=2+pz,s(3)-1-pz
+         f(i,j,k) = 0.0_cp
+         enddo; enddo; enddo
+         ! $OMP END PARALLEL DO
        end subroutine
 
        subroutine assign_gradGhost_SF(CC,F)
@@ -412,6 +419,88 @@
          endif
        end subroutine
 
+       subroutine cosineWaves_SF(f,m,wavenum)
+         implicit none
+         type(SF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         real(cp),dimension(3),intent(in) :: wavenum
+         integer :: i,j,k,t
+         if (f%is_CC) then
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         elseif (f%is_Node) then
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         elseif (f%is_Face) then
+         select case (f%face)
+         case (1)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (2)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (3)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         end select
+         elseif (f%is_Edge) then
+         select case (f%face)
+         case (1)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (2)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case (3)
+           !$OMP PARALLEL DO
+           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+                                cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
+                                cos(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+           enddo; enddo; enddo; enddo
+           !$OMP END PARALLEL DO
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         end select
+         else; stop 'Error: bad input to sineWaves_RF in ops_aux.f90'
+         endif
+       end subroutine
+
       function dot_product_VF(A,B,m,x,temp) result(dot)
         implicit none
         type(mesh),intent(in) :: m
@@ -454,14 +543,24 @@
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
          integer :: i
-         do i=1,m%s
-           call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-           call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
-           call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-           call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
-           call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-           call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
-         enddo
+         if (Node_along(f,1)) then
+           do i=1,m%s
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+           enddo
+         endif
+         if (Node_along(f,2)) then
+           do i=1,m%s
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+           enddo
+         endif
+         if (Node_along(f,3)) then
+           do i=1,m%s
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+           enddo
+         endif
        end subroutine
 
        subroutine zeroWall_conditional_SF(f,m)
@@ -472,22 +571,30 @@
          type(mesh),intent(in) :: m
          logical :: TF
          integer :: i
-         do i=1,m%s
-           TF = (.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1)).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-           TF = (.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1)).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
-
-           TF = (.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2)).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-           TF = (.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2)).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
-
-           TF = (.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3)).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-           TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
-         enddo
+         if (Node_along(f,1)) then
+           do i=1,m%s
+             TF = (.not.m%g(i)%st_face%hmin(1)).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+             TF = (.not.m%g(i)%st_face%hmax(1)).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+           enddo
+         endif
+         if (Node_along(f,2)) then
+           do i=1,m%s
+             TF = (.not.m%g(i)%st_face%hmin(2)).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+             TF = (.not.m%g(i)%st_face%hmax(2)).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+           enddo
+         endif
+         if (Node_along(f,3)) then
+           do i=1,m%s
+             TF = (.not.m%g(i)%st_face%hmin(3)).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+             TF = (.not.m%g(i)%st_face%hmax(3)).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+           enddo
+         endif
        end subroutine
 
        subroutine zeroWall_conditional_SF2(f,m,u)
@@ -499,29 +606,56 @@
          type(mesh),intent(in) :: m
          logical :: TF
          integer :: i
-         do i=1,m%s
-           TF = (.not.m%g(i)%st_face%hmin(1)).and.(Node_along(f,1)).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-           TF = (.not.m%g(i)%st_face%hmax(1)).and.(Node_along(f,1)).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
-
-           TF = (.not.m%g(i)%st_face%hmin(2)).and.(Node_along(f,2)).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-           TF = (.not.m%g(i)%st_face%hmax(2)).and.(Node_along(f,2)).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
-
-           TF = (.not.m%g(i)%st_face%hmin(3)).and.(Node_along(f,3)).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-           TF = (.not.m%g(i)%st_face%hmax(3)).and.(Node_along(f,3)).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
-           if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
-         enddo
+         if (Node_along(f,1)) then
+           do i=1,m%s
+             TF = (.not.m%g(i)%st_face%hmin(1)).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
+             TF = (.not.m%g(i)%st_face%hmax(1)).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+           enddo
+         endif
+         if (Node_along(f,2)) then
+           do i=1,m%s
+             TF = (.not.m%g(i)%st_face%hmin(2)).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
+             TF = (.not.m%g(i)%st_face%hmax(2)).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+           enddo
+         endif
+         if (Node_along(f,3)) then
+           do i=1,m%s
+             TF = (.not.m%g(i)%st_face%hmin(3)).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
+             TF = (.not.m%g(i)%st_face%hmax(3)).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+           enddo
+         endif
        end subroutine
 
        subroutine zeroInterior_SF(f)
          implicit none
          type(SF),intent(inout) :: f
          integer :: i
-         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s); enddo
+         if (f%is_CC) then
+         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,0,0); enddo
+         elseif (f%is_Node) then
+         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,1,1); enddo
+         elseif (f%is_Face) then
+         select case (f%face)
+         case (1); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,0,0); enddo
+         case (2); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,1,0); enddo
+         case (3); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,0,1); enddo
+         case default; stop 'Eror: face must = 1,2,3 in zeroInterior_SF in ops_aux.f90'
+         end select
+         elseif (f%is_Edge) then
+         select case (f%edge)
+         case (1); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,1,1); enddo
+         case (2); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,0,1); enddo
+         case (3); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,1,0); enddo
+         case default; stop 'Eror: face must = 1,2,3 in zeroInterior_SF in ops_aux.f90'
+         end select
+         else; stop 'Error: bad data input to zeroInterior_SF in ops_aux.f90'
+         endif
        end subroutine
 
        subroutine treatInterface_SF(f)

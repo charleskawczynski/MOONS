@@ -88,9 +88,7 @@
          ! **************************************************************
          call computationInProgress(time)
 
-#ifdef fopenmp
          call omp_set_num_threads(12) ! Set number of openMP threads
-#endif
 
          call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
          dt_eng,dt_mom,dt_ind,NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB)

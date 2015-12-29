@@ -38,6 +38,7 @@
        use PSE_mod
        use SOR_mod
        use CG_mod
+       use GS_Poisson_mod
        ! use ADI_mod
        ! use MG_mod
 
@@ -105,6 +106,7 @@
          type(solverSettings) :: ss_mom,ss_ppe,ss_ADI
          ! type(multiGrid),dimension(3) :: MG
          type(SORSolver) :: SOR_p
+         type(GS_Poisson) :: GS_p
          type(CG_Solver_SF) :: CG_P
          type(CG_Solver_VF) :: CG_U
          type(FFTSolver) :: FFT_p
@@ -226,13 +228,15 @@
 
          ! Initialize interior solvers
          call init(mom%SOR_p,mom%p,mom%m)
-         ! call init(CG,Laplacian_uniform_props,m,MFP,phi,temp_F,dir,'phi',.false.,.false.)
-         call init(mom%CG_P,Laplacian_uniform_props,mom%m,&
+
+         call init(mom%GS_p,mom%p,mom%m,dir//'Ufield/','p')
+
+         call init(mom%CG_P,Lap_uniform_props,Lap_uniform_props_explicit,mom%m,&
          mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
 
-         mom%MFP%c_mom = -mom%dTime/mom%Re*0.5_cp
+         mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
-         call init(mom%CG_U,mom_diffusion,mom%m,&
+         call init(mom%CG_U,mom_diffusion,mom_diffusion_explicit,mom%m,&
          mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.false.,.false.)
          write(*,*) '     momentum SOR initialized'
 
@@ -301,6 +305,7 @@
          call delete(mom%SOR_p)
          call delete(mom%CG_P)
          call delete(mom%CG_U)
+         call delete(mom%GS_p)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -379,8 +384,8 @@
            call export_raw(m,mom%p,dir//'Ufield/','p',0)
            call export_raw(m,F,dir//'Ufield/','jCrossB',0)
            call export_raw(m,mom%divU,dir//'Ufield/','divU',0)
-           call export_processed(m,mom%U,dir//'Ufield/','U',0)
-           call export_processed(m,mom%p,dir//'Ufield/','p',0)
+           call export_processed(m,mom%U,dir//'Ufield/','U',1)
+           call export_processed(m,mom%p,dir//'Ufield/','p',1)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -435,20 +440,23 @@
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
          logical :: exportNow
-         type(VF) :: Fnm1
          select case(solveUMethod)
          case (1); call explicitEuler(mom,F,mom%m,ss_MHD)
          case (2); 
 
-         call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
-         mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
+         ! call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
+         ! mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
 
          ! call CN_AB2_PPE_CG_mom_CG(mom_CG,PPE_CG,U,Unm1,p,F,Fnm1,U_CC,m,&
          ! Re,dt,n,Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
 
          ! call CN_AB2_PPE_CG_mom_CG(mom%CG_U,mom%CG_p,mom%U,mom%Unm1,&
-         ! mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,5,mom%Ustar,&
+         ! mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,1000,100,mom%Ustar,&
          ! mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
+
+         call CN_AB2_PPE_GS_mom_CG(mom%CG_U,mom%GS_p,mom%U,mom%Unm1,&
+         mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,5,100,mom%Ustar,&
+         mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
 
          ! case (2); call semi_implicit_ADI(mom,F,mom%m,ss_MHD)
          case default

@@ -70,6 +70,9 @@
 
         if (BCT1%Dirichlet) dfdh(1) = (2.0_cp*f(2)-f(3))*T%D(1) + f(2)*T%U(1)               ! Checked
         if (BCT2%Dirichlet) dfdh(sdfdh) = f(s-1)*T%D(s-1) + (2.0_cp*f(s-1)-f(s-2))*T%U(s-1) ! Checked
+
+        ! if (BCT1%Dirichlet) dfdh(2) = f(3)*T%U(2)
+        ! if (BCT2%Dirichlet) dfdh(s-2) = f(s-2)*T%D(s-2)
       end function
 
       end module

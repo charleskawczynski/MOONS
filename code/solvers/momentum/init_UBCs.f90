@@ -17,7 +17,7 @@
        private
        public :: init_UBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer,dimension(3),parameter :: periodic_dir = (/0,0,1/) ! 1 = true, else false
 
        integer,parameter :: preDefinedU_BCs = 1
        !                                      0 : User-defined case in initUserUBCs() (no override)

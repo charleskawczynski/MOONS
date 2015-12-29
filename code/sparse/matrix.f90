@@ -73,10 +73,14 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%numEl
-        call noise(u); call zeroGhostPoints(u) ! ; call zeroSecondIndex(u)
-        call noise(v); call zeroGhostPoints(v) ! ; call zeroSecondIndex(v)
-        call operator(Au,u,k,vol,m,MFP,tempk)
-        call operator(Av,v,k,vol,m,MFP,tempk)
+        call noise(u); call zeroGhostPoints(u)
+        call noise(v); call zeroGhostPoints(v)
+        call init_BCs(u,x)
+        call init_BCs(v,x)
+        call operator(Au,u,k,m,MFP,tempk)
+        call multiply(Au,vol)
+        call operator(Av,v,k,m,MFP,tempk)
+        call multiply(Av,vol)
         dot_vAu = dot_product(v,Au,m,x,temp)
         dot_uAv = dot_product(u,Av,m,x,temp)
         write(*,*) '(v,Au) = ',dot_vAu
@@ -104,10 +108,14 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%x%numEl+x%y%numEl+x%z%numEl
-        call noise(u); call zeroGhostPoints(u) ! ; call zeroSecondIndex(u)
-        call noise(v); call zeroGhostPoints(v) ! ; call zeroSecondIndex(v)
-        call operator(Au,u,k,vol,m,MFP,tempk) ! Ax,x,k,vol,m,MFP,tempk
-        call operator(Av,v,k,vol,m,MFP,tempk)
+        call noise(u); call zeroGhostPoints(u)
+        call noise(v); call zeroGhostPoints(v)
+        call init_BCs(u,x)
+        call init_BCs(v,x)
+        call operator(Au,u,k,m,MFP,tempk)
+        call multiply(Au,vol)
+        call operator(Av,v,k,m,MFP,tempk)
+        call multiply(Av,vol)
         dot_vAu = dot_product(v,Au,m,x,temp)
         dot_uAv = dot_product(u,Av,m,x,temp)
         write(*,*) '(v,Au) = ',dot_vAu
@@ -214,13 +222,15 @@
         newU = newAndOpen(dir,name)
         write(*,*) ' ------------ EXPORTING SF OPERATOR ----------- '//name
         call assign(un,0.0_cp)
+        call init_BCs(un,x)
         do i=1,un%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un,i)
           if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%RF(t_3D)%s(1)))) cycle
           if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2)))) cycle
           if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3)))) cycle
           call unitVector(un,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk)
+          call operator(Aun,un,k,m,MFP,tempk)
+          call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un,i)
         enddo
@@ -244,13 +254,15 @@
         write(*,*) ' ------------ EXPORTING VF OPERATOR ----------- '//name
         write(*,*) 'System size = ',un%x%numEl + un%y%numEl + un%z%numEl
         call assign(un,0.0_cp)
+        call init_BCs(un,x)
         do i=1,un%x%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
           if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%x%RF(t_3D)%s(1)))) cycle
           if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2)))) cycle
           if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3)))) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%x,i)
         enddo
@@ -261,7 +273,8 @@
           if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2)))) cycle
           if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3)))) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%y,i)
         enddo
@@ -272,7 +285,8 @@
           if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2)))) cycle
           if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3)))) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%z,i)
         enddo
@@ -316,11 +330,11 @@
       ! ********************* OBTAINING MATRIX DIAGONAL *********************
       ! *********************************************************************
 
-      subroutine get_diagonal_SF(operator,D,k,vol,m,MFP,tempk)
+      subroutine get_diagonal_SF(operator,D,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(SF),intent(inout) :: D
-        type(SF),intent(in) :: vol
+        type(SF),intent(in) :: vol,x
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
@@ -331,13 +345,15 @@
         call assign(un,0.0_cp); call assign(D,0.0_cp)
         n = 0; nmax = un%numEl
         nwrite = 100
+        call init_BCs(un,x)
         do i=1,un%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un,i)
           if ((i_3D.eq.1).or.(i_3D.eq.un%RF(t_3D)%s(1))) cycle
           if ((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3))) cycle
           call unitVector(un,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i)
           call deleteUnitVector(un,i)
           n = n + 1
@@ -358,11 +374,11 @@
         D%RF(t)%f(i,j,k) = Aun%RF(t)%f(i,j,k)
       end subroutine
 
-      subroutine get_diagonal_VF(operator,D,k,vol,m,MFP,tempk)
+      subroutine get_diagonal_VF(operator,D,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(VF),intent(inout) :: D
-        type(VF),intent(in) :: k,vol
+        type(VF),intent(in) :: k,vol,x
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
@@ -373,13 +389,15 @@
         n = 0; nmax = un%x%numEl + un%y%numEl + un%z%numEl
         nwrite = 500
         write(*,*) 'Computing matrix diagonal...'
+        call init_BCs(un,x)
         do i=1,un%x%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
           if ((i_3D.eq.1).or.(i_3D.eq.un%x%RF(t_3D)%s(1))) cycle
           if ((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3))) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,1)
           call deleteUnitVector(un%x,i)
           n = n + 1
@@ -394,7 +412,8 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3))) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,2)
           call deleteUnitVector(un%y,i)
           n = n + 1
@@ -409,7 +428,8 @@
           if ((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2))) cycle
           if ((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3))) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,k,vol,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk,i)
+          call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,3)
           call deleteUnitVector(un%z,i)
           n = n + 1

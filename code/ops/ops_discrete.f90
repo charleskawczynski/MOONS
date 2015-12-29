@@ -75,6 +75,10 @@
        public :: grad
        interface grad;            module procedure grad_SF;                   end interface
        interface grad;            module procedure grad_VF;                   end interface
+       interface grad;            module procedure grad_TF;                   end interface
+
+       public :: divGrad
+       interface divGrad;         module procedure divGrad_VF;                end interface
 
        public :: curl
        interface curl;            module procedure curl_SF;                   end interface
@@ -168,25 +172,62 @@
             call d%add(lapU,u,m,2,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine lap_centered_SF(lapU,u,m,tempk,dir)
+       subroutine lap_centered_SF(lapU,u,m,dir,addTo)
          implicit none
-         type(SF),intent(inout) :: lapU,tempk
+         type(SF),intent(inout) :: lapU
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
+         logical,intent(in) :: addTo
+         type(SF) :: temp
          type(del) :: d
-         call d%assign(tempk,u,m,1,dir,1)
-         call d%assign(lapU,tempk,m,1,dir,1)
+         if (u%is_Face) then
+         select case (u%face)
+         case (1); select case (dir)
+                   case (1); call init_CC(temp,m)
+                   case (2); call init_Edge(temp,m,3)
+                   case (3); call init_Edge(temp,m,2)
+                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
+                   end select
+         case (2); select case (dir)
+                   case (1); call init_Edge(temp,m,3)
+                   case (2); call init_CC(temp,m)
+                   case (3); call init_Edge(temp,m,1)
+                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
+                   end select
+         case (3); select case (dir)
+                   case (1); call init_Edge(temp,m,2)
+                   case (2); call init_Edge(temp,m,1)
+                   case (3); call init_CC(temp,m)
+                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
+                   end select
+         case default; stop 'Error: Bad case in lap_centered_SF in ops_discrete.f90'
+         end select
+         else; stop 'Error: non-face input to lap_centered in ops_discrete.f90'
+         endif
+         call d%assign(temp,u,m,1,dir,1)
+         if (addTo) then; call d%add(lapU,temp,m,1,dir,1)
+         else;            call d%assign(lapU,temp,m,1,dir,1)
+         endif
+         call delete(temp)
        end subroutine
 
-       subroutine lap_centered_VF(lapU,u,m,tempk)
+       subroutine lap_centered_VF(lapU,u,m)
          implicit none
-         type(VF),intent(inout) :: lapU,tempk
+         type(VF),intent(inout) :: lapU
          type(VF),intent(in) :: u
          type(mesh),intent(in) :: m
-         call lap_centered(lapU%x,u%x,m,tempk%x,1)
-         call lap_centered(lapU%y,u%y,m,tempk%y,2)
-         call lap_centered(lapU%z,u%z,m,tempk%z,3)
+         call lap_centered(lapU%x,u%x,m,1,.false.)
+         call lap_centered(lapU%x,u%x,m,2,.true.)
+         call lap_centered(lapU%x,u%x,m,3,.true.)
+
+         call lap_centered(lapU%y,u%y,m,1,.false.)
+         call lap_centered(lapU%y,u%y,m,2,.true.)
+         call lap_centered(lapU%y,u%y,m,3,.true.)
+
+         call lap_centered(lapU%z,u%z,m,1,.false.)
+         call lap_centered(lapU%z,u%z,m,2,.true.)
+         call lap_centered(lapU%z,u%z,m,3,.true.)
        end subroutine
 
        subroutine lapVarCoeff_SF(lapU,u,k,m,temp,dir)
@@ -368,6 +409,36 @@
          type(SF),intent(in) :: U
          type(mesh),intent(in) :: m
          call grad(gradU%x,gradU%y,gradU%z,U,m)
+       end subroutine
+
+       subroutine grad_TF(gradU,U,m)
+         implicit none
+         type(TF),intent(inout) :: gradU
+         type(VF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         call grad(gradU%x,U%x,m)
+         call grad(gradU%y,U%y,m)
+         call grad(gradU%z,U%z,m)
+       end subroutine
+
+       subroutine divGrad_VF(divGradU,U,m,temp_TF)
+         ! This routine achieves consecutive staggered derivatives
+         ! to compute lap(U). If U lives on the cell face, then
+         ! 
+         !            _          _
+         !           |  CC E  E   |
+         ! temp_TF = |  E  CC E   |
+         !           |_ E  E  CC _|
+         ! 
+         implicit none
+         type(VF),intent(inout) :: divGradU
+         type(VF),intent(in) :: U
+         type(TF),intent(inout) :: temp_TF
+         type(mesh),intent(in) :: m
+         call grad(temp_TF,U,m)
+         call div(divGradU%x,temp_TF%x,m)
+         call div(divGradU%y,temp_TF%y,m)
+         call div(divGradU%z,temp_TF%z,m)
        end subroutine
 
        subroutine curl_VF(curlU,U,m)

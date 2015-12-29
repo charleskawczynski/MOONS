@@ -165,14 +165,8 @@
         integer :: diffType,gt
         diffType = getDiffType(s,sdfdh,g%c(dir)%sn,g%c(dir)%sc,dir)
         select case (diffType)
-        case (1); select case (n)
-                  case (1); call delGen_T(dfdh,f,g%c(dir)%colCC,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
-                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapCC,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
-                  end select
-        case (2); select case (n)
-                  case (1); call delGen_T(dfdh,f,g%c(dir)%colN,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
-                  case (2); call delGen_T(dfdh,f,g%c(dir)%LapN,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
-                  end select
+        case (1); call delGen_T(dfdh,f,g%c(dir)%colCC(n),dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
+        case (2); call delGen_T(dfdh,f,g%c(dir)%colN(n) ,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
         case (3); call delGen_T(dfdh,f,g%c(dir)%stagCC2N,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
         case (4); call delGen_T(dfdh,f,g%c(dir)%stagN2CC,dir,pad,genType,s,sdfdh,CC,BCT1,BCT2)
         end select

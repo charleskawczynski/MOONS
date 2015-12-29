@@ -39,14 +39,14 @@
          type(CG_solver_SF) :: CG
          integer :: i
 
-         ! call cube(m) ! in mesh_generate.f90
-         call cube_uniform(m) ! in mesh_generate.f90
+         call cube(m) ! in mesh_generate.f90
+         ! call cube_uniform(m) ! in mesh_generate.f90
 
-         call init_Face(B,m)
-         call init_Face(Btemp,m)
-         call init_Face(temp_F,m)
-         call init_CC(divB,m)
-         call init_CC(phi,m)
+         call init_Edge(B,m)
+         call init_Edge(Btemp,m)
+         call init_Edge(temp_F,m)
+         call init_Node(divB,m)
+         call init_Node(phi,m)
 
          call init_BC_mesh(phi,m)
          call init_Dirichlet(phi%RF(1)%b)
@@ -67,6 +67,9 @@
          ! call sineWaves(B%x,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
          ! call sineWaves(B%y,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
          ! call sineWaves(B%z,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
+         ! call cosineWaves(B%x,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
+         ! call cosineWaves(B%y,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
+         ! call cosineWaves(B%z,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
 
          call zeroGhostPoints(B)
          B%x%RF(1)%f(2,:,:) = 0.0_cp; B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:) = 0.0_cp
@@ -77,28 +80,25 @@
          write(*,*) 'sum(divB) = ',sum(divB)
 
          call zeroGhostPoints(divB)
-         phi%all_Neumann = .true.
+         ! phi%all_Neumann = .true.
          write(*,*) 'allNeumann = ',phi%all_Neumann
 
-         call init(phi%RF(1)%b,B%x%RF(1)%f(2,:,:),1)
-         call init(phi%RF(1)%b,B%y%RF(1)%f(:,2,:),3)
-         call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,2),5)
-         call init(phi%RF(1)%b,B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:),2)
-         call init(phi%RF(1)%b,B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:),4)
-         call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1),6)
+         ! call init(phi%RF(1)%b,B%x%RF(1)%f(2,:,:),1)
+         ! call init(phi%RF(1)%b,B%y%RF(1)%f(:,2,:),3)
+         ! call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,2),5)
+         ! call init(phi%RF(1)%b,B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:),2)
+         ! call init(phi%RF(1)%b,B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:),4)
+         ! call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1),6)
 
          call export(m,dir,'mesh')
          call export_raw(m,B,dir,'Bstar',0)
          call export_raw(m,divB,dir,'divB',0)
 
-         call init(CG,Laplacian_uniform_props,m,MFP,phi,temp_F,dir,'phi',.false.,.false.)
-         do i=1,200
-         call solve(CG,phi,divB,m,10,.false.)
-         enddo
-         call solve(CG,phi,divB,m,1,.true.)
-         ! call subtract_physical_mean(phi)
+         call init(CG,Lap_uniform_props,Lap_uniform_props_explicit,&
+         m,MFP,phi,temp_F,dir,'phi',.true.,.false.)
+
+         call solve(CG,phi,divB,m,phi%numEl,.true.)
          write(*,*) 'sum(phi) = ',sum(phi)
-         call apply_BCs(phi,m)
          call grad(temp_F,phi,m)
          write(*,*) 'sum(gradPhi_x) = ',sum(temp_F%x)
          write(*,*) 'sum(gradPhi_y) = ',sum(temp_F%y)

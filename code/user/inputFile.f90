@@ -34,12 +34,12 @@
          Ec = 0.0d0
          Al = 0.0d0
          Rem = 100.0d0
-         t = 1000000.0
-         dt_eng = 1.0d-3
-         dt_mom = 1.0d-3
-         dt_ind = 1.0d-3
+         t = 10000.0
+         dt_eng = 5.0d-5
+         dt_mom = 5.0d-5
+         dt_ind = 5.0d-5
          NmaxMHD = ceiling(t/dt_mom)
-         NmaxMHD = 400000
+         ! NmaxMHD = 80000
          NmaxPPE    = 5 ! Number of PPE steps
          NmaxB      = 5 ! Number of Steps for Low Rem approx to solve B
          NmaxCleanB = 5 ! Number of Steps to clean B

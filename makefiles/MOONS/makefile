@@ -25,8 +25,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 
 # Output directory
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
@@ -45,7 +45,6 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
 FCFLAGS += -D_DOUBLE_PRECISION_
-# FCFLAGS += -D_O2_BOUNDARIES_ # not compatible with CG
 # FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT Methods
@@ -54,24 +53,37 @@ FCFLAGS += -D_FFT_RADIX2_
 
 # Order of accuracy of finite difference stencil
 # FCFLAGS += -D_STENCILS_O2_
+# FCFLAGS += -D_COORDINATES_O2_STENCILS_BOUNDARIES_ # not compatible with CG
 # FCFLAGS += -D_STENCILS_O4_
 
 FCFLAGS += -fopenmp
+
+# FCFLAGS += -D_DEL_PERIODIC_X_
+# FCFLAGS += -D_DEL_PERIODIC_Y_
+# FCFLAGS += -D_DEL_PERIODIC_Z_
 
 # ******************** LIBRARIES ********************
 # FLIBS = $(LIB_DIR)$(PS)tecio.lib
 
 # ****************** DEBUGGING **********************
-FC_DEBUG += -Wall -Wextra -fbacktrace -fcheck=all -O0 -Og
+FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+# fcheck=all includes -fcheck-array-temporaries, 
+# which triggers tons of warning in stencils.f90
+# So include all but this one:
+FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 # FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 # FC_DEBUG += -Wall -fbacktrace -O0 -Og
 # FC_DEBUG += -fbacktrace -O0 -Og
 FC_DEBUG += -D_DEBUG_DEL_
-FC_DEBUG += -D_DEBUG_DEL_IMPLICIT_
+
+# FC_DEBUG += -D_DEBUG_DEL_IMPLICIT_
 FC_DEBUG += -D_DEBUG_INTERP_
 # FC_DEBUG += -D_DEBUG_COORDINATES_
-FC_DEBUG += -D_DEBUG_APPLYBCS_
+FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
+
+# Suppress temporrary array warning:
+FC_DEBUG += -Wno-array-temporaries
 
 # FC_DEBUG += -D_DEBUG_RF_
 # FC_DEBUG += -D_DEBUG_SF_
@@ -83,8 +95,6 @@ FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_RF_
 FC_OPTIMIZE += -D_PARALLELIZE_SF_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
-FC_OPTIMIZE += -D_PARALLELIZE_DEL_
-# FC_OPTIMIZE += -D_PARALLELIZE_DEL_IMPLICIT_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
@@ -103,21 +113,22 @@ FC_PROFILE += -pg
 # Code verification
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
+FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
+# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG_node.f90
+UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
@@ -263,9 +274,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \

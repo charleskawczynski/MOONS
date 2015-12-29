@@ -68,7 +68,7 @@
         JAC%operator => operator
         call init(JAC%norm)
 
-        call get_diagonal(operator,JAC%D,JAC%k,JAC%vol,m,MFP,JAC%tempk)
+        call get_diagonal(operator,JAC%D,x,JAC%k,JAC%vol,m,MFP,JAC%tempk)
 
         if (vizualizeOperator) then
           call export_operator(operator,'JAC_VF_'//name,dir,x,JAC%k,JAC%vol,m,MFP,JAC%tempk)

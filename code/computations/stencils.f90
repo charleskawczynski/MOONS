@@ -30,20 +30,20 @@
       subroutine stag_assign(dfdh,f,T,s,sdfdh,gt)
         implicit none
         real(cp),dimension(sdfdh),intent(inout) :: dfdh
-        real(cp),dimension(s),intent(inout) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,sdfdh
         integer,intent(in) :: gt
         integer :: i
+        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp ! Intentially overwritten for gt = 0
         do i=1,s-1
           dfdh(i+gt) = f(i)*T%D(i) + f(i+1)*T%U(i)
         enddo
-        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
       end subroutine
       subroutine col_CC_assign(dfdh,f,T,s,pad1,pad2)
         implicit none
         real(cp),dimension(s),intent(inout) :: dfdh
-        real(cp),intent(in),dimension(s) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
@@ -58,7 +58,7 @@
       subroutine col_N_assign(dfdh,f,T,s,pad1,pad2)
         implicit none
         real(cp),dimension(s),intent(inout) :: dfdh
-        real(cp),intent(in),dimension(s) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
@@ -77,20 +77,20 @@
       subroutine stag_add(dfdh,f,T,s,sdfdh,gt)
         implicit none
         real(cp),dimension(sdfdh),intent(inout) :: dfdh
-        real(cp),dimension(s),intent(inout) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,sdfdh
         integer,intent(in) :: gt
         integer :: i
+        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp ! Intentially overwritten for gt = 0
         do i=1,s-1
           dfdh(i+gt) = dfdh(i+gt) + f(i)*T%D(i) + f(i+1)*T%U(i)
         enddo
-        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
       end subroutine
       subroutine col_CC_add(dfdh,f,T,s,pad1,pad2)
         implicit none
         real(cp),dimension(s),intent(inout) :: dfdh
-        real(cp),intent(in),dimension(s) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
@@ -105,7 +105,7 @@
       subroutine col_N_add(dfdh,f,T,s,pad1,pad2)
         implicit none
         real(cp),dimension(s),intent(inout) :: dfdh
-        real(cp),intent(in),dimension(s) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
@@ -124,20 +124,20 @@
       subroutine stag_subtract(dfdh,f,T,s,sdfdh,gt)
         implicit none
         real(cp),dimension(sdfdh),intent(inout) :: dfdh
-        real(cp),dimension(s),intent(inout) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,sdfdh
         integer,intent(in) :: gt
         integer :: i
+        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp ! Intentially overwritten for gt = 0
         do i=1,s-1
           dfdh(i+gt) = dfdh(i+gt) - (f(i)*T%D(i) + f(i+1)*T%U(i))
         enddo
-        dfdh(1) = 0.0_cp; dfdh(sdfdh) = 0.0_cp
       end subroutine
       subroutine col_CC_subtract(dfdh,f,T,s,pad1,pad2)
         implicit none
         real(cp),dimension(s),intent(inout) :: dfdh
-        real(cp),intent(in),dimension(s) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
@@ -152,7 +152,7 @@
       subroutine col_N_subtract(dfdh,f,T,s,pad1,pad2)
         implicit none
         real(cp),dimension(s),intent(inout) :: dfdh
-        real(cp),intent(in),dimension(s) :: f
+        real(cp),dimension(s),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i

@@ -47,7 +47,7 @@
         type(SF) :: lapu,res,Dinv ! laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gt,s
         logical :: setCoeff
-        integer :: un
+        integer :: un,N_iter
         type(norms) :: norm
       end type
       
@@ -92,6 +92,7 @@
         call init(GS%res,u)
         call init(GS%Dinv,u)
         call init_Dinv(GS%Dinv,GS%p,GS%d,GS%gt)
+        GS%N_iter = 1
       end subroutine
 
       subroutine delete_GS(GS)
@@ -104,6 +105,7 @@
         call delete(GS%Dinv)
         close(GS%un)
         GS%un = 0
+        GS%N_iter = 1
       end subroutine
 
       subroutine solve_GS(GS,u,f,m,n,compute_norm)
@@ -130,13 +132,14 @@
           call innerLoop(u,f,m,GS%Dinv,GS,(/1,1,0/)) ! Odd in even plane
           !$OMP END PARALLEL
           call apply_BCs(u,m)
+          GS%N_iter = GS%N_iter + 1
 
 #ifdef _EXPORT_GS_CONVERGENCE_
             call lap(GS%lapu,u,m)
             call subtract(GS%res,GS%lapu,f)
             call zeroGhostPoints(GS%res)
             call compute(GS%norm,GS%res,m)
-            write(GS%un,*) i,GS%norm%L1,GS%norm%L2,GS%norm%Linf
+            write(GS%un,*) GS%N_iter,GS%norm%L1,GS%norm%L2,GS%norm%Linf
 #endif
         enddo
         if (u%all_Neumann) call subtract(u,mean(u))

@@ -85,7 +85,7 @@
         call tecHeader(name,PCG%un,.false.)
         PCG%operator => operator
         if (precondition) then
-          call get_diagonal(operator,PCG%Minv,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call get_diagonal(operator,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         else
           call assign(PCG%Minv,1.0_cp)
         endif
@@ -130,7 +130,7 @@
         call tecHeader(name,PCG%un(3),.true.)
         PCG%operator => operator
         if (precondition) then
-          call get_diagonal(operator,PCG%Minv,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call get_diagonal(operator,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         else
           call assign(PCG%Minv,1.0_cp)
         endif

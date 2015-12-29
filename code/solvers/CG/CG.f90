@@ -46,6 +46,7 @@
         type(SF) :: r,p,tempx,Ax,vol
         integer :: un,N_iter
         procedure(),pointer,nopass :: operator
+        procedure(),pointer,nopass :: operator_explicit
       end type
 
       type CG_solver_VF
@@ -56,13 +57,14 @@
         integer,dimension(3) :: un
         integer :: N_iter
         procedure(),pointer,nopass :: operator
+        procedure(),pointer,nopass :: operator_explicit
       end type
 
       contains
 
-      subroutine init_CG_SF(CG,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
+      subroutine init_CG_SF(CG,operator,operator_explicit,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator
+        external :: operator,operator_explicit
         type(CG_solver_SF),intent(inout) :: CG
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
@@ -72,6 +74,7 @@
         type(matrix_free_params),intent(in) :: MFP
         call init(CG%r,x)
         call init(CG%p,x)
+        call init_BCs(CG%p,x)
         call init(CG%tempx,x)
         call init(CG%Ax,x)
         call init(CG%vol,x)
@@ -85,6 +88,7 @@
         call tecHeader(name,CG%un,.false.)
         CG%N_iter = 1
         CG%operator => operator
+        CG%operator_explicit => operator_explicit
         if (testSymmetry) then
           call test_symmetry(operator,'CG_SF_'//name,x,CG%k,CG%vol,m,MFP,CG%tempk)
         endif
@@ -93,9 +97,9 @@
         endif
       end subroutine
 
-      subroutine init_CG_VF(CG,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
+      subroutine init_CG_VF(CG,operator,operator_explicit,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator
+        external :: operator,operator_explicit
         type(CG_solver_VF),intent(inout) :: CG
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k
@@ -104,6 +108,7 @@
         type(matrix_free_params),intent(in) :: MFP
         call init(CG%r,x)
         call init(CG%p,x)
+        call init_BCs(CG%p,x)
         call init(CG%tempx,x)
         call init(CG%Ax,x)
         call init(CG%vol,x)
@@ -121,6 +126,7 @@
         call tecHeader(name,CG%un(3),.true.)
         CG%N_iter = 1
         CG%operator => operator
+        CG%operator_explicit => operator_explicit
         if (testSymmetry) then
           call test_symmetry(operator,'CG_VF_'//name,x,CG%k,CG%vol,m,MFP,CG%tempk)
         endif
@@ -137,7 +143,7 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_CG(CG%operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
+        call solve_CG(CG%operator,CG%operator_explicit,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
         compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p,CG%N_iter)
       end subroutine
 
@@ -149,7 +155,7 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_CG(CG%operator,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
+        call solve_CG(CG%operator,CG%operator_explicit,x,b,CG%vol,CG%k,m,CG%MFP,n,CG%norm,&
         compute_norms,CG%un,CG%tempx,CG%tempk,CG%Ax,CG%r,CG%p,CG%N_iter)
       end subroutine
 
