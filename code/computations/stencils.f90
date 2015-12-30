@@ -1,5 +1,4 @@
       module stencils_mod
-      ! Compiler directives: (_STENCILS_SUPPRESS_WARNING_)
       use triDiag_mod
       implicit none
       private
@@ -47,13 +46,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        do i=2,s-1
+        dfdh(2) = 0.5*(f(1)+f(2))*T%L(1) + &
+                             f(2)*T%D(1) + &
+                             f(3)*T%U(1)
+        dfdh(s-1) =        f(s-2)*T%L(s-2) + &
+                           f(s-1)*T%D(s-2) + &
+                0.5*(f(s-1)+f(s))*T%U(s-2)
+        do i=3-pad1,s-2+pad2
           dfdh(i) = f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
         enddo
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
-#ifdef _STENCILS_SUPPRESS_WARNING_
-        i = pad1; i = pad2
-#endif
       end subroutine
       subroutine col_N_assign(dfdh,f,T,s,pad1,pad2)
         implicit none
@@ -94,13 +96,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        do i=2,s-1
+        dfdh(2) = dfdh(2) + 0.5*(f(1)+f(2))*T%L(1) + &
+                                       f(2)*T%D(1) + &
+                                       f(3)*T%U(1)
+        dfdh(s-1) = dfdh(s-1) +      f(s-2)*T%L(s-2) + &
+                                     f(s-1)*T%D(s-2) + &
+                          0.5*(f(s-1)+f(s))*T%U(s-2)
+        do i=3-pad1,s-2+pad2
           dfdh(i) = dfdh(i) + f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
         enddo
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
-#ifdef _STENCILS_SUPPRESS_WARNING_
-        i = pad1; i = pad2
-#endif
       end subroutine
       subroutine col_N_add(dfdh,f,T,s,pad1,pad2)
         implicit none
@@ -141,13 +146,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        do i=2,s-1
-          dfdh(i) = dfdh(i) + f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
+        dfdh(2) = dfdh(2) - (0.5*(f(1)+f(2))*T%L(1) + &
+                                        f(2)*T%D(1) + &
+                                        f(3)*T%U(1))
+        dfdh(s-1) = dfdh(s-1) -      (f(s-2)*T%L(s-2) + &
+                                      f(s-1)*T%D(s-2) + &
+                           0.5*(f(s-1)+f(s))*T%U(s-2))
+        do i=3-pad1,s-2+pad2
+          dfdh(i) = dfdh(i) - (f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1))
         enddo
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
-#ifdef _STENCILS_SUPPRESS_WARNING_
-        i = pad1; i = pad2
-#endif
       end subroutine
       subroutine col_N_subtract(dfdh,f,T,s,pad1,pad2)
         implicit none

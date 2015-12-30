@@ -20,10 +20,8 @@
       private
       public :: export_3D_3C
       public :: export_2D_2C
+      public :: export_2D_2C_transient
       public :: import_3D_3C
-
-      interface export_2D_2C;    module procedure export_2D_2C_SS;           end interface
-      interface export_2D_2C;    module procedure export_2D_2C_transient;    end interface
 
       contains
 
@@ -51,7 +49,7 @@
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine export_2D_2C_SS(m,U,dir,name,pad)
+      subroutine export_2D_2C(m,U,dir,name,pad)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(mesh),intent(in) :: m

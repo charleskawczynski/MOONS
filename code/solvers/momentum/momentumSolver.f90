@@ -231,13 +231,14 @@
 
          call init(mom%GS_p,mom%p,mom%m,dir//'Ufield/','p')
 
-         call init(mom%CG_P,Lap_uniform_props,Lap_uniform_props_explicit,mom%m,&
-         mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
-
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
+         call init(mom%CG_P,Lap_uniform_props,Lap_uniform_props_explicit,mom%m,&
+         mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.true.,.false.)
+
+
          call init(mom%CG_U,mom_diffusion,mom_diffusion_explicit,mom%m,&
-         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.false.,.false.)
+         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.false.)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings
@@ -426,7 +427,7 @@
 
          call init_Node(tempNVF,m)
          call face2Node(tempNVF,mom%U,m,mom%temp_E1)
-         call export_2D_2C(mom%m,tempNVF,dir//'Ufield/transient/','Uni_phys',1,mom%nstep)
+         call export_2D_2C_transient(mom%m,tempNVF,dir//'Ufield/transient/','Uni_phys',1,mom%nstep)
          call delete(tempNVF)
        end subroutine
 
@@ -441,24 +442,13 @@
          character(len=*),intent(in) :: dir
          logical :: exportNow
          select case(solveUMethod)
-         case (1); call explicitEuler(mom,F,mom%m,ss_MHD)
-         case (2); 
-
-         ! call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
-         ! mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
-
-         ! call CN_AB2_PPE_CG_mom_CG(mom_CG,PPE_CG,U,Unm1,p,F,Fnm1,U_CC,m,&
-         ! Re,dt,n,Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
-
-         ! call CN_AB2_PPE_CG_mom_CG(mom%CG_U,mom%CG_p,mom%U,mom%Unm1,&
-         ! mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,1000,100,mom%Ustar,&
-         ! mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
-
-         call CN_AB2_PPE_GS_mom_CG(mom%CG_U,mom%GS_p,mom%U,mom%Unm1,&
-         mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,5,100,mom%Ustar,&
-         mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
-
-         ! case (2); call semi_implicit_ADI(mom,F,mom%m,ss_MHD)
+         case (1)
+           call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
+           mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
+         case (2)
+           call CN_AB2_PPE_CG_mom_CG(mom%CG_U,mom%CG_p,mom%U,mom%Unm1,&
+           mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,5,100,mom%Ustar,&
+           mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
          case default
          stop 'Error: solveUMethod must = 1,2 in solveMomentumEquation.'
          end select
@@ -488,109 +478,6 @@
            call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
-       end subroutine
-
-       subroutine explicitEuler(mom,F,m,ss_MHD)
-         implicit none
-         ! ********************** INPUT / OUTPUT ************************
-         type(momentum),intent(inout) :: mom
-         type(VF),intent(in) :: F
-         type(mesh),intent(in) :: m
-         type(solverSettings),intent(in) :: ss_MHD
-         ! ********************** LOCAL VARIABLES ***********************
-         real(cp) :: Re,dt
-         logical :: TF
-         TF = mom%nstep.lt.1
-         dt = mom%dTime
-         Re = mom%Re
-
-         ! Advection Terms -----------------------------------------
-         select case (advectiveUFormulation) ! Explicit Euler
-         case (1); call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,m)
-         case (2); call faceAdvectNew(mom%temp_F,mom%U,mom%U,m)
-         end select
-
-         ! Ustar = -TempVF
-         ! call multiply(mom%Ustar,mom%temp_F,-1.0_cp)
-         call assign(mom%Ustar,mom%temp_F)
-         call multiply(mom%Ustar,-1.0_cp)
-         ! call printPhysicalMinMax(mom%temp_F,'advect')
-         ! if (TF) call export_2D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','advect_x',0,3)
-         ! if (TF) call export_2D_1C(mom%m,mom%Ustar%y,'out/LDC/Ufield/','advect_y',0,3)
-
-         ! Laplacian Terms -----------------------------------------
-         call lap(mom%temp_F,mom%U,m)
-         call multiply(mom%temp_F,1.0_cp/Re)
-         ! call printPhysicalMinMax(mom%temp_F,'diff')
-         ! if (TF) call export_3D_1C(mom%m,mom%temp_F%x,'out/LDC/Ufield/','diffuse_x',0)
-         ! if (TF) call export_2D_1C(mom%m,mom%temp_F%y,'out/LDC/Ufield/','diffuse_y',0,3)
-         call add(mom%Ustar,mom%temp_F)
-
-         ! Source Terms (e.m. N j x B) -----------------------------
-         call add(mom%Ustar,F)
-         ! call printPhysicalMinMax(F,'jcrossB')
-
-         ! Zero wall coincident forcing (may be bad for neumann BCs)
-         ! if (TF) call export_3D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','U_before_ZWC',0)
-         call zeroWall_conditional(mom%Ustar,m,mom%U)
-
-         ! if (TF) call export_3D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','U_after_ZWC',0)
-         ! Solve with explicit Euler --------------------
-         ! Ustar = U + dt*Ustar
-         call multiply(mom%Ustar,dt)
-         call add(mom%Ustar,mom%U)
-         ! call printPhysicalMinMax(mom%Ustar,'Unm1')
-
-         ! Apply intermediate BCs and stitching
-         call apply_stitches(mom%Ustar,m)
-         call apply_BCs(mom%Ustar,m,mom%U)
-         ! if (TF) call export_3D_1C(mom%m,mom%Ustar%x,'out/LDC/Ufield/','U_before_div',0)
-
-         ! Pressure Correction -------------------------------------
-         call div(mom%temp_CC,mom%Ustar,m)
-         ! Temp = Temp/dt
-         call multiply(mom%temp_CC,1.0_cp/dt) ! O(dt) pressure treatment
-         ! call apply_BCs(mom%p_bcs,mom%temp_CC,m)
-         call zeroGhostPoints(mom%temp_CC)
-         ! call printPhysicalMinMax(mom%temp_CC,'PPE_input')
-
-         call apply_stitches(mom%temp_CC,m)
-         ! if (TF) call export_3D_1C(mom%m,mom%temp_CC,'out/LDC/Ufield/','PPE_input',0)
-         ! if (TF) call export_3D_1C(mom%m,mom%temp_CC,'out/LDC/Ufield/','PPE_input_full',0)
-         ! if (TF) call export_3D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_before',0)
-
-         ! Solve lap(p) = div(U)/dt
-         ! call solve(mom%SOR_p,mom%p,mom%temp_CC,m,&
-         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD))
-
-         call solve(mom%CG_p,mom%p,mom%temp_CC,m,&
-         mom%NmaxPPE,getExportErrors(ss_MHD))
-
-         ! call solve_PSE(mom%p,mom%temp_CC,m,5,0.00005_cp,&
-         !  mom%err_PPE,getExportErrors(ss_MHD),mom%temp_CC2,mom%temp_CC3)
-         ! call solve(mom%FFT_p,mom%p,mom%temp_CC,m,&
-         !  mom%ss_ppe,mom%err_PPE,getExportErrors(ss_MHD),3)
-         ! if (TF) call export_2D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_solution',0,3)
-         ! if (TF) call export_3D_1C(mom%m,mom%p,'out/LDC/Ufield/','p_solution',0)
-         ! if (TF) stop 'DONE'
-
-         call grad(mom%temp_F,mom%p,m)
-         ! if (TF) call export_2D_1C(mom%m,mom%temp_F%x,'out/LDC/Ufield/','gradP_x',0,3)
-         ! call addMeanPressureGrad(mom%temp_F,real(52.0833,cp),1) ! Shercliff Flow
-         ! call addMeanPressureGrad(mom%temp_F,real(1.0,cp),1) ! Bandaru
-         ! call printPhysicalMinMax(mom%temp_F,'grad(p)')
-         
-         ! write(*,*) 'nstep = ',mom%nstep
-         ! if (mom%nstep.eq.2) stop 'Done'
-         ! U = Ustar - dt*dp/dx
-         call multiply(mom%temp_F,dt)
-         call subtract(mom%U,mom%Ustar,mom%temp_F)
-
-         ! call applyAllGhostBCs(mom%U,m)
-         ! call apply_stitches(mom%U,m) ! Needed? or ruining things?
-         call apply_BCs(mom%U,m)
-         ! if (TF) call export_2D_1C(mom%m,mom%U%x,'out/LDC/Ufield/','unp1_x',0,3)
-         ! if (TF) stop 'Done'
        end subroutine
 
        ! ********************* COMPUTE **************************

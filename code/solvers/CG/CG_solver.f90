@@ -60,7 +60,10 @@
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        if (.not.x%is_CC) call modify_forcing1(r,m,x)
+        if (.not.x%is_CC) then
+          call assign(tempx,r)
+          call modify_forcing1(r,tempx,m,x)
+        endif
         call assign(tempx,0.0_cp)
         call apply_BCs(tempx,m,x)
         call zeroGhostPoints_conditional(tempx)
@@ -139,7 +142,8 @@
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        call modify_forcing1(r,m,x)
+        call assign(tempx,r)
+        call modify_forcing1(r,tempx,m,x)
         call assign(tempx,0.0_cp)
         call apply_BCs(tempx,m,x)
         call zeroGhostPoints_conditional(tempx)
@@ -204,9 +208,10 @@
         endif
       end subroutine
 
-      subroutine modify_forcing1_SF(f,m,x)
+      subroutine modify_forcing1_SF(f_mod,f,m,x)
         implicit none
-        type(SF),intent(inout) :: f
+        type(SF),intent(inout) :: f_mod
+        type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
         integer :: i
@@ -214,14 +219,14 @@
           do i=1,f%s
             if (m%g(i)%c(1)%N.gt.1) then
               if (x%RF(i)%b%f(1)%b%Neumann) then
-                f%RF(i)%f(2,:,:) = f%RF(i)%f(2,:,:)/2.0_cp
+                f_mod%RF(i)%f(2,:,:) = f%RF(i)%f(2,:,:)/2.0_cp
               elseif (x%RF(i)%b%f(1)%b%Dirichlet) then
-                f%RF(i)%f(2,:,:) = 0.0_cp
+                f_mod%RF(i)%f(2,:,:) = 0.0_cp
               endif
               if (x%RF(i)%b%f(2)%b%Neumann) then
-                f%RF(i)%f(f%RF(i)%s(1)-1,:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:)/2.0_cp
+                f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:)/2.0_cp
               elseif (x%RF(i)%b%f(2)%b%Dirichlet) then
-                f%RF(i)%f(f%RF(i)%s(1)-1,:,:) = 0.0_cp
+                f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = 0.0_cp
               endif
             endif
           enddo
@@ -230,14 +235,14 @@
           do i=1,f%s
             if (m%g(i)%c(2)%N.gt.1) then
               if (x%RF(i)%b%f(3)%b%Neumann) then
-                f%RF(i)%f(:,2,:) = f%RF(i)%f(:,2,:)/2.0_cp
+                f_mod%RF(i)%f(:,2,:) = f%RF(i)%f(:,2,:)/2.0_cp
               elseif (x%RF(i)%b%f(3)%b%Dirichlet) then
-                f%RF(i)%f(:,2,:) = 0.0_cp
+                f_mod%RF(i)%f(:,2,:) = 0.0_cp
               endif
               if (x%RF(i)%b%f(4)%b%Neumann) then
-                f%RF(i)%f(:,f%RF(i)%s(2)-1,:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:)/2.0_cp
+                f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:)/2.0_cp
               elseif (x%RF(i)%b%f(4)%b%Dirichlet) then
-                f%RF(i)%f(:,f%RF(i)%s(2)-1,:) = 0.0_cp
+                f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = 0.0_cp
               endif
             endif
           enddo
@@ -246,28 +251,29 @@
           do i=1,f%s
             if (m%g(i)%c(3)%N.gt.1) then
               if (x%RF(i)%b%f(5)%b%Neumann) then
-                f%RF(i)%f(:,:,2) = f%RF(i)%f(:,:,2)/2.0_cp
+                f_mod%RF(i)%f(:,:,2) = f%RF(i)%f(:,:,2)/2.0_cp
               elseif (x%RF(i)%b%f(5)%b%Dirichlet) then
-                f%RF(i)%f(:,:,2) = 0.0_cp
+                f_mod%RF(i)%f(:,:,2) = 0.0_cp
               endif
               if (x%RF(i)%b%f(6)%b%Neumann) then
-                f%RF(i)%f(:,:,f%RF(i)%s(3)-1) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1)/2.0_cp
+                f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1)/2.0_cp
               elseif (x%RF(i)%b%f(6)%b%Dirichlet) then
-                f%RF(i)%f(:,:,f%RF(i)%s(3)-1) = 0.0_cp
+                f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = 0.0_cp
               endif
             endif
           enddo
         endif
       end subroutine
 
-      subroutine modify_forcing1_VF(f,m,x)
+      subroutine modify_forcing1_VF(f_mod,f,m,x)
         implicit none
-        type(VF),intent(inout) :: f
+        type(VF),intent(inout) :: f_mod
+        type(VF),intent(in) :: f
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x
-        call modify_forcing1_SF(f%x,m,x%x)
-        call modify_forcing1_SF(f%y,m,x%y)
-        call modify_forcing1_SF(f%z,m,x%z)
+        call modify_forcing1_SF(f_mod%x,f%x,m,x%x)
+        call modify_forcing1_SF(f_mod%y,f%y,m,x%y)
+        call modify_forcing1_SF(f_mod%z,f%z,m,x%z)
       end subroutine
 
       subroutine zeroGhostPoints_conditional_SF(x)

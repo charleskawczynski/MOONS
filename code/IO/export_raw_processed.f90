@@ -15,6 +15,8 @@
        public :: export_raw       ! call export_raw(m,x,dir,name,pad)
        public :: export_processed ! call export_processed(m,x,dir,name,pad)
 
+       logical :: export_planar = .false.
+
        interface export_raw;       module procedure export_raw_SF;        end interface
        interface export_raw;       module procedure export_raw_VF;        end interface
        interface export_processed; module procedure export_processed_SF;  end interface
@@ -38,24 +40,58 @@
          type(SF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (x%is_CC) then
-           call export_3D_1C(m,x,dir,name//'c',pad)
-         elseif (x%is_Node) then
-           call export_3D_1C(m,x,dir,name//'n',pad)
-         elseif (x%is_Face) then
-           select case (x%face)
-           case (1); call export_3D_1C(m,x,dir,name//'f_x',pad)
-           case (2); call export_3D_1C(m,x,dir,name//'f_y',pad)
-           case (3); call export_3D_1C(m,x,dir,name//'f_z',pad)
-           case default; stop 'Error: face must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
-           end select
-         elseif (x%is_Edge) then
-           select case (x%edge)
-           case (1); call export_3D_1C(m,x,dir,name//'e_x',pad)
-           case (2); call export_3D_1C(m,x,dir,name//'e_y',pad)
-           case (3); call export_3D_1C(m,x,dir,name//'e_z',pad)
-           case default; stop 'Error: edge must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
-           end select
+         if (.not.export_planar) then; call export_raw_SF_func(export_3D_1C,m,x,dir,name,pad,0)
+         else; if (m%plane_x) then;    call export_raw_SF_func(export_2D_1C,m,x,dir,name,pad,1)
+         elseif   (m%plane_y) then;    call export_raw_SF_func(export_2D_1C,m,x,dir,name,pad,2)
+         elseif   (m%plane_z) then;    call export_raw_SF_func(export_2D_1C,m,x,dir,name,pad,3)
+         else; stop 'Error: attempted plane export of 3D geometry in export_raw_SF in export_raw_processed.f90'
+         endif
+         endif
+       end subroutine
+
+       subroutine export_raw_SF_func(func,m,x,dir,name,pad,direction)
+         implicit none
+         external :: func
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: pad,direction
+         if (.not.export_planar) then
+           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad)
+           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad)
+           elseif (x%is_Face) then
+             select case (x%face)
+             case (1); call func(m,x,dir,name//'f_x',pad)
+             case (2); call func(m,x,dir,name//'f_y',pad)
+             case (3); call func(m,x,dir,name//'f_z',pad)
+             case default; stop 'Error: face must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
+             end select
+           elseif (x%is_Edge) then
+             select case (x%edge)
+             case (1); call func(m,x,dir,name//'e_x',pad)
+             case (2); call func(m,x,dir,name//'e_y',pad)
+             case (3); call func(m,x,dir,name//'e_z',pad)
+             case default; stop 'Error: edge must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
+             end select
+           endif
+         else
+           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad,direction)
+           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad,direction)
+           elseif (x%is_Face) then
+             select case (x%face)
+             case (1); call func(m,x,dir,name//'f_x',pad,direction)
+             case (2); call func(m,x,dir,name//'f_y',pad,direction)
+             case (3); call func(m,x,dir,name//'f_z',pad,direction)
+             case default; stop 'Error: face must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
+             end select
+           elseif (x%is_Edge) then
+             select case (x%edge)
+             case (1); call func(m,x,dir,name//'e_x',pad,direction)
+             case (2); call func(m,x,dir,name//'e_y',pad,direction)
+             case (3); call func(m,x,dir,name//'e_z',pad,direction)
+             case default; stop 'Error: edge must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
+             end select
+           endif
          endif
        end subroutine
 
@@ -65,18 +101,46 @@
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (x%x%is_CC) then
-           call export_3D_3C(m,x,dir,name//'c',pad)
-         elseif (x%x%is_Node) then
-           call export_3D_3C(m,x,dir,name//'n',pad)
-         elseif (x%x%is_Face) then
-           call export_3D_1C(m,x%x,dir,name//'f_x',pad)
-           call export_3D_1C(m,x%y,dir,name//'f_y',pad)
-           call export_3D_1C(m,x%z,dir,name//'f_z',pad)
-         elseif (x%x%is_Edge) then
-           call export_3D_1C(m,x%x,dir,name//'e_x',pad)
-           call export_3D_1C(m,x%y,dir,name//'e_y',pad)
-           call export_3D_1C(m,x%z,dir,name//'e_z',pad)
+         if (.not.export_planar) then; call export_raw_VF_func(export_3D_1C,m,x,dir,name,pad,0)
+         else; if (m%plane_x) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,1)
+         elseif   (m%plane_y) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,2)
+         elseif   (m%plane_z) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,3)
+         else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
+         endif
+         endif
+       end subroutine
+
+       subroutine export_raw_VF_func(func,m,x,dir,name,pad,direction)
+         implicit none
+         external :: func
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: pad,direction
+         if (.not.export_planar) then
+           if (x%x%is_CC) then;       call func(m,x,dir,name//'c',pad)
+           elseif (x%x%is_Node) then; call func(m,x,dir,name//'n',pad)
+           elseif (x%x%is_Face) then
+             call func(m,x%x,dir,name//'f_x',pad)
+             call func(m,x%y,dir,name//'f_y',pad)
+             call func(m,x%z,dir,name//'f_z',pad)
+           elseif (x%x%is_Edge) then
+             call func(m,x%x,dir,name//'e_x',pad)
+             call func(m,x%y,dir,name//'e_y',pad)
+             call func(m,x%z,dir,name//'e_z',pad)
+           endif
+         else
+           if (x%x%is_CC) then;       call func(m,x,dir,name//'c',pad,direction)
+           elseif (x%x%is_Node) then; call func(m,x,dir,name//'n',pad,direction)
+           elseif (x%x%is_Face) then
+             call func(m,x%x,dir,name//'f_x',pad,direction)
+             call func(m,x%y,dir,name//'f_y',pad,direction)
+             call func(m,x%z,dir,name//'f_z',pad,direction)
+           elseif (x%x%is_Edge) then
+             call func(m,x%x,dir,name//'e_x',pad,direction)
+             call func(m,x%y,dir,name//'e_y',pad,direction)
+             call func(m,x%z,dir,name//'e_z',pad,direction)
+           endif
          endif
        end subroutine
 
@@ -86,43 +150,99 @@
          type(SF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
+         if (.not.export_planar) then; call export_processed_SF_func(export_3D_1C,m,x,dir,name,pad,0)
+         else; if (m%plane_x) then;    call export_processed_SF_func(export_2D_1C,m,x,dir,name,pad,1)
+         elseif   (m%plane_y) then;    call export_processed_SF_func(export_2D_1C,m,x,dir,name,pad,2)
+         elseif   (m%plane_z) then;    call export_processed_SF_func(export_2D_1C,m,x,dir,name,pad,3)
+         else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
+         endif
+         endif
+       end subroutine
+
+       subroutine export_processed_SF_func(func,m,x,dir,name,pad,direction)
+         implicit none
+         external :: func
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: pad,direction
          type(SF) :: temp_1,temp_2,temp_N
-         if (x%is_CC) then
-           call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
-           call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-           call export_3D_1C(m,temp_N,dir,name//'np',pad)
-           call delete(temp_1); call delete(temp_2); call delete(temp_N)
-         elseif (x%is_Node) then
-           call export_3D_1C(m,x,dir,name//'np',pad)
-         elseif (x%is_Face) then
-           select case (x%face)
-           case (1); call init_Edge(temp_1,m,2); call init_Node(temp_N,m); 
-                     call face2Node(temp_N,x,m,x%face,temp_1)
-                     call export_3D_1C(m,temp_N,dir,name//'np_x',pad)
-                     call delete(temp_1); call delete(temp_N)
-           case (2); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
-                     call face2Node(temp_N,x,m,x%face,temp_1)
-                     call export_3D_1C(m,temp_N,dir,name//'np_y',pad)
-                     call delete(temp_1); call delete(temp_N)
-           case (3); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
-                     call face2Node(temp_N,x,m,x%face,temp_1)
-                     call export_3D_1C(m,temp_N,dir,name//'np_z',pad)
-                     call delete(temp_1); call delete(temp_N)
-           case default; stop 'Error: face must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
-           end select
-         elseif (x%is_Edge) then
-           select case (x%edge)
-           case (1); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                     call export_3D_1C(m,temp_N,dir,name//'ep_x',pad)
-                     call delete(temp_N)
-           case (2); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                     call export_3D_1C(m,temp_N,dir,name//'ep_y',pad)
-                     call delete(temp_N)
-           case (3); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                     call export_3D_1C(m,temp_N,dir,name//'ep_z',pad)
-                     call delete(temp_N)
-           case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
-           end select
+         if (.not.export_planar) then
+           if (x%is_CC) then
+             call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
+             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
+             call func(m,temp_N,dir,name//'np',pad)
+             call delete(temp_1); call delete(temp_2); call delete(temp_N)
+           elseif (x%is_Node) then
+             call func(m,x,dir,name//'np',pad)
+           elseif (x%is_Face) then
+             select case (x%face)
+             case (1); call init_Edge(temp_1,m,2); call init_Node(temp_N,m); 
+                       call face2Node(temp_N,x,m,x%face,temp_1)
+                       call func(m,temp_N,dir,name//'np_x',pad)
+                       call delete(temp_1); call delete(temp_N)
+             case (2); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
+                       call face2Node(temp_N,x,m,x%face,temp_1)
+                       call func(m,temp_N,dir,name//'np_y',pad)
+                       call delete(temp_1); call delete(temp_N)
+             case (3); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
+                       call face2Node(temp_N,x,m,x%face,temp_1)
+                       call func(m,temp_N,dir,name//'np_z',pad)
+                       call delete(temp_1); call delete(temp_N)
+             case default; stop 'Error: face must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
+             end select
+           elseif (x%is_Edge) then
+             select case (x%edge)
+             case (1); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+                       call func(m,temp_N,dir,name//'ep_x',pad)
+                       call delete(temp_N)
+             case (2); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+                       call func(m,temp_N,dir,name//'ep_y',pad)
+                       call delete(temp_N)
+             case (3); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+                       call func(m,temp_N,dir,name//'ep_z',pad)
+                       call delete(temp_N)
+             case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
+             end select
+           endif
+         else
+           if (x%is_CC) then
+             call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
+             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
+             call func(m,temp_N,dir,name//'np',pad,direction)
+             call delete(temp_1); call delete(temp_2); call delete(temp_N)
+           elseif (x%is_Node) then
+             call func(m,x,dir,name//'np',pad,direction)
+           elseif (x%is_Face) then
+             select case (x%face)
+             case (1); call init_Edge(temp_1,m,2); call init_Node(temp_N,m); 
+                       call face2Node(temp_N,x,m,x%face,temp_1)
+                       call func(m,temp_N,dir,name//'np_x',pad,direction)
+                       call delete(temp_1); call delete(temp_N)
+             case (2); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
+                       call face2Node(temp_N,x,m,x%face,temp_1)
+                       call func(m,temp_N,dir,name//'np_y',pad,direction)
+                       call delete(temp_1); call delete(temp_N)
+             case (3); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
+                       call face2Node(temp_N,x,m,x%face,temp_1)
+                       call func(m,temp_N,dir,name//'np_z',pad,direction)
+                       call delete(temp_1); call delete(temp_N)
+             case default; stop 'Error: face must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
+             end select
+           elseif (x%is_Edge) then
+             select case (x%edge)
+             case (1); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+                       call func(m,temp_N,dir,name//'ep_x',pad,direction)
+                       call delete(temp_N)
+             case (2); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+                       call func(m,temp_N,dir,name//'ep_y',pad,direction)
+                       call delete(temp_N)
+             case (3); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+                       call func(m,temp_N,dir,name//'ep_z',pad,direction)
+                       call delete(temp_N)
+             case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
+             end select
+           endif
          endif
        end subroutine
 
@@ -132,23 +252,59 @@
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
+         if (.not.export_planar) then; call export_processed_VF_func(export_3D_3C,m,x,dir,name,pad,0)
+         else; if (m%plane_x) then;    call export_processed_VF_func(export_2D_2C,m,x,dir,name,pad,1)
+         elseif   (m%plane_y) then;    call export_processed_VF_func(export_2D_2C,m,x,dir,name,pad,2)
+         elseif   (m%plane_z) then;    call export_processed_VF_func(export_2D_2C,m,x,dir,name,pad,3)
+         else; stop 'Error: attempted plane export of 3D geometry in export_processed_VF in export_raw_processed.f90'
+         endif
+         endif
+       end subroutine
+
+       subroutine export_processed_VF_func(func,m,x,dir,name,pad,direction)
+         implicit none
+         external :: func
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: pad,direction
          type(VF) :: temp_1,temp_2,temp_N
-         if (x%x%is_CC) then
-           call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
-           call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-           call export_3D_3C(m,temp_N,dir,name//'np',pad)
-           call delete(temp_1); call delete(temp_2); call delete(temp_N)
-         elseif (x%x%is_Node) then
-           call export_3D_3C(m,temp_N,dir,name//'np',pad)
-         elseif (x%x%is_Face) then
-           call init_Edge(temp_1,m); call init_Node(temp_N,m); 
-           call face2Node(temp_N,x,m,temp_1)
-           call export_3D_3C(m,temp_N,dir,name//'np',pad)
-           call delete(temp_1); call delete(temp_N)
-         elseif (x%x%is_Edge) then
-           call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-           call export_3D_3C(m,temp_N,dir,name//'np',pad)
-           call delete(temp_N)
+         if (.not.export_planar) then
+           if (x%x%is_CC) then
+             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
+             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
+             call func(m,temp_N,dir,name//'np',pad)
+             call delete(temp_1); call delete(temp_2); call delete(temp_N)
+           elseif (x%x%is_Node) then
+             call func(m,temp_N,dir,name//'np',pad)
+           elseif (x%x%is_Face) then
+             call init_Edge(temp_1,m); call init_Node(temp_N,m); 
+             call face2Node(temp_N,x,m,temp_1)
+             call func(m,temp_N,dir,name//'np',pad)
+             call delete(temp_1); call delete(temp_N)
+           elseif (x%x%is_Edge) then
+             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
+             call func(m,temp_N,dir,name//'np',pad)
+             call delete(temp_N)
+           endif
+         else
+           if (x%x%is_CC) then
+             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
+             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
+             call func(m,temp_N,dir,name//'np',pad,direction)
+             call delete(temp_1); call delete(temp_2); call delete(temp_N)
+           elseif (x%x%is_Node) then
+             call func(m,temp_N,dir,name//'np',pad,direction)
+           elseif (x%x%is_Face) then
+             call init_Edge(temp_1,m); call init_Node(temp_N,m); 
+             call face2Node(temp_N,x,m,temp_1)
+             call func(m,temp_N,dir,name//'np',pad,direction)
+             call delete(temp_1); call delete(temp_N)
+           elseif (x%x%is_Edge) then
+             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
+             call func(m,temp_N,dir,name//'np',pad,direction)
+             call delete(temp_N)
+           endif
          endif
        end subroutine
 

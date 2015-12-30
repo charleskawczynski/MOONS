@@ -42,14 +42,14 @@
          call cube(m) ! in mesh_generate.f90
          ! call cube_uniform(m) ! in mesh_generate.f90
 
-         call init_Edge(B,m)
-         call init_Edge(Btemp,m)
-         call init_Edge(temp_F,m)
-         call init_Node(divB,m)
-         call init_Node(phi,m)
+         call init_Face(B,m)
+         call init_Face(Btemp,m)
+         call init_Face(temp_F,m)
+         call init_CC(divB,m)
+         call init_CC(phi,m)
 
          call init_BC_mesh(phi,m)
-         call init_Dirichlet(phi%RF(1)%b)
+         call init_Neumann(phi%RF(1)%b)
          call init(phi%RF(1)%b,0.0_cp)
 
          call init_BC_mesh(B%x,m)
@@ -107,6 +107,7 @@
          call apply_BCs(B,m)
          call div(divB,B,m)
          call zeroGhostPoints(divB)
+         write(*,*) 'max(divB_clean) = ',max(divB)
 
          call export_raw(m,temp_F,dir,'gradPhi',0)
          call export_raw(m,divB,dir,'divB_clean_CG',0)

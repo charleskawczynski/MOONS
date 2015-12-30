@@ -5,6 +5,7 @@
        use TF_mod
        use norms_mod
        use AB2_mod
+       use export_raw_processed_mod
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
@@ -26,7 +27,6 @@
 
        public :: CN_AB2_PPE_CG_mom_CG
        public :: CN_AB2_PPE_GS_mom_CG
-       public :: AB2_AB2_PPE_CG_mom_CG
        public :: Euler_CG_Donor
        public :: Euler_GS_Donor_mpg
        public :: Euler_GS_Donor
@@ -58,39 +58,33 @@
          type(VF),intent(inout) :: Ustar,temp_F,temp_E1,temp_E2
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         if (nstep.gt.1) then
-           call faceAdvectDonor(temp_F,Unm1,Unm1,temp_E1,temp_E2,U_CC,m)
-           call faceAdvectDonor(Ustar,U,U,temp_E1,temp_E2,U_CC,m)
-           call AB2_overwrite(Ustar,temp_F)
-           call multiply(Ustar,-1.0_cp) ! Because faceAdvectDonor gives positive
+         call faceAdvectDonor(temp_F,Unm1,Unm1,temp_E1,temp_E2,U_CC,m)
+         call faceAdvectDonor(Ustar,U,U,temp_E1,temp_E2,U_CC,m)
+         call AB2_overwrite(Ustar,temp_F)
+         call multiply(Ustar,-1.0_cp) ! Because faceAdvectDonor gives positive
 
-           call lap(temp_F,U,m)
-           call multiply(temp_F,0.5_cp/Re)
-           call add(Ustar,temp_F)
+         call lap(temp_F,U,m)
+         call multiply(temp_F,0.5_cp/Re)
+         call add(Ustar,temp_F)
 
-           call AB2(temp_F,F,Fnm1)
-           call add(Ustar,temp_F)
+         call AB2(temp_F,F,Fnm1)
+         call add(Ustar,temp_F)
 
-           call multiply(Ustar,dt)
-           call add(Ustar,U)
-           call zeroWall_conditional(Ustar,m,U)
-           call assign(Unm1,U)
+         call multiply(Ustar,dt)
+         call add(Ustar,U)
+         call assign(Unm1,U)
 
-           call solve(mom_CG,U,Ustar,m,Nmax_mom,compute_norms)
+         call solve(mom_CG,U,Ustar,m,Nmax_mom,compute_norms) ! Solve for Ustar
 
-           call div(temp_CC,U,m)
-           call divide(temp_CC,dt)
-           call zeroGhostPoints(temp_CC)
-           call solve(PPE_CG,p,temp_CC,m,Nmax_PPE,compute_norms)
-           call grad(temp_F,p,m)
-           call multiply(temp_F,dt)
-           call subtract(U,Ustar,temp_F)
-           call apply_BCs(U,m)
-         else
-           call Euler_CG_Donor(PPE_CG,U,p,F,U_CC,m,Re,dt,Nmax_PPE,&
-           Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
-           call assign(Unm1,U)
-         endif
+         call zeroWall_conditional(U,m)
+         call div(temp_CC,U,m)
+         call multiply(temp_CC,1.0_cp/dt)
+         call zeroGhostPoints(temp_CC)
+         call solve(PPE_CG,p,temp_CC,m,Nmax_PPE,compute_norms)
+         call grad(temp_F,p,m)
+         call multiply(temp_F,dt)
+         call subtract(U,temp_F) ! U = Ustar - grad(p)
+         call apply_BCs(U,m)
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_CG(mom_CG,PPE_GS,U,Unm1,p,F,Fnm1,U_CC,m,&
@@ -147,57 +141,6 @@
        ! *********************** EXPLICIT TIME MARCHING ***********************
        ! **********************************************************************
        ! **********************************************************************
-
-       subroutine AB2_AB2_PPE_CG_mom_CG(PPE_CG,U,Unm1,p,F,Fnm1,U_CC,m,&
-         Re,dt,Nmax_PPE,Ustar,temp_F,temp_F2,temp_CC,temp_E1,temp_E2,compute_norms,nstep)
-         implicit none
-         type(CG_solver_SF),intent(inout) :: PPE_CG
-         type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,U_CC,Unm1,temp_F2
-         type(VF),intent(in) :: F,Fnm1
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: Nmax_PPE,nstep
-         type(VF),intent(inout) :: Ustar,temp_F,temp_E1,temp_E2
-         type(SF),intent(inout) :: temp_CC
-         logical,intent(in) :: compute_norms
-         if (nstep.gt.1) then
-           call faceAdvectDonor(temp_F,Unm1,Unm1,temp_E1,temp_E2,U_CC,m)
-           call faceAdvectDonor(Ustar,U,U,temp_E1,temp_E2,U_CC,m)
-           call AB2_overwrite(Ustar,temp_F)
-           call multiply(Ustar,-1.0_cp) ! Because faceAdvectDonor computes positive ∇•(uu)
-
-           call lap(temp_F,U,m)
-           call lap(temp_F2,Unm1,m)
-           call AB2_overwrite(temp_F,temp_F2)
-           call add(Ustar,temp_F)
-
-           call AB2(temp_F,F,Fnm1)
-           call add(Ustar,temp_F)
-
-           call zeroWall_conditional(Ustar,m,U)
-           call multiply(Ustar,dt)
-           call add(Ustar,U)
-           call assign(Unm1,U)
-
-           call multiply(Ustar,dt)
-           call add(Ustar,U)
-
-           call div(temp_CC,Ustar,m)
-           call divide(temp_CC,dt)
-           call zeroGhostPoints(temp_CC)
-           call solve(PPE_CG,p,temp_CC,m,Nmax_PPE,compute_norms)
-           call grad(temp_F,p,m)
-           call multiply(temp_F,dt)
-           call subtract(U,Ustar,temp_F)
-           call apply_BCs(U,m)
-
-         else
-           call Euler_CG_Donor(PPE_CG,U,p,F,U_CC,m,Re,dt,Nmax_PPE,&
-           Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)
-           call assign(Unm1,U)
-         endif
-       end subroutine
 
        subroutine Euler_CG_Donor(CG,U,p,F,U_CC,m,Re,dt,n,&
          Ustar,temp_F,temp_CC,temp_E1,temp_E2,compute_norms)

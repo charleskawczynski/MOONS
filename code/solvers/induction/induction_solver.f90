@@ -1,4 +1,4 @@
-       module ind_methods_mod
+       module ind_solver_mod
        ! Constrained Transport (CT) Method reference:
        ! "Tóth, G. The divergence Constraint in Shock-Capturing 
        ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."

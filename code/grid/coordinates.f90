@@ -34,6 +34,7 @@
         ! Stencils for del (ops_del.f90)
         type(triDiag) :: stagCC2N,stagN2CC
         type(triDiag),dimension(2) :: colCC,colN
+        type(triDiag),dimension(2) :: colCC_centered
          ! Properties
         real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
         integer :: N                                    ! Number of cells
@@ -101,6 +102,8 @@
         call init(c%colCC(2),d%colCC(2))
         call init(c%colN(1),d%colN(1))
         call init(c%colN(2),d%colN(2))
+        call init(c%colCC_centered(1),d%colCC_centered(1))
+        call init(c%colCC_centered(2),d%colCC_centered(2))
 
         c%sn = d%sn
         c%sc = d%sc
@@ -234,7 +237,7 @@
         deallocate(D,U,dh)
       end subroutine
 
-      subroutine stencil_colN_1_O2_boundaries(c)
+      subroutine stencil_colN_1(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,dh
@@ -259,7 +262,7 @@
         deallocate(L,D,U,dh)
       end subroutine
 
-      subroutine stencil_colN_2_O2_boundaries(c)
+      subroutine stencil_colN_2(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,dh
@@ -305,8 +308,7 @@
         deallocate(D,U,dh)
       end subroutine
 
-#ifdef _COORDINATES_O2_STENCILS_BOUNDARIES_
-      subroutine stencil_colCC_1_O2_boundaries(c)
+      subroutine stencil_colCC_1(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -333,10 +335,8 @@
         call init(c%colCC(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#endif
 
-#ifndef _COORDINATES_O2_STENCILS_BOUNDARIES_
-      subroutine stencil_colCC_1_O1_boundaries(c)
+      subroutine stencil_colCC_1_centered(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -350,13 +350,11 @@
         L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
         D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
         U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
-        call init(c%colCC(1),L,D,U)
+        call init(c%colCC_centered(1),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#endif
 
-#ifdef _COORDINATES_O2_STENCILS_BOUNDARIES_
-      subroutine stencil_colCC_2_O2_boundaries(c)
+      subroutine stencil_colCC_2(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -383,10 +381,8 @@
         call init(c%colCC(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#endif
 
-#ifndef _COORDINATES_O2_STENCILS_BOUNDARIES_
-      subroutine stencil_colCC_2_O1_boundaries(c)
+      subroutine stencil_colCC_2_centered(c)
         implicit none
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U
@@ -400,10 +396,9 @@
         L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
         D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
         U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-        call init(c%colCC(2),L,D,U)
+        call init(c%colCC_centered(2),L,D,U)
         deallocate(L,D,U,dh)
       end subroutine
-#endif
 
       ! *****************************************************************
       ! ************************ STITCH STENCILS ************************
@@ -560,19 +555,12 @@
           call init_interpStencil(c)
 
           ! Derivative stencils
-
-#ifdef _COORDINATES_O2_STENCILS_BOUNDARIES_
-          call stencil_colCC_1_O2_boundaries(c)
-          call stencil_colCC_2_O2_boundaries(c)
-#else
-          call stencil_colCC_1_O1_boundaries(c)
-          call stencil_colCC_2_O1_boundaries(c)
-#endif
-
-          call stencil_colN_1_O2_boundaries(c)
-          call stencil_colN_2_O2_boundaries(c)
-
-
+          call stencil_colCC_1(c)
+          call stencil_colCC_2(c)
+          call stencil_colCC_1_centered(c)
+          call stencil_colCC_2_centered(c)
+          call stencil_colN_1(c)
+          call stencil_colN_2(c)
           call stencil_stagCC2N(c)
           call stencil_stagN2CC(c)
           
@@ -599,17 +587,23 @@
         implicit none
         type(coordinates),intent(in) :: c
         write(*,*) 'Starting to check coordinates'
-        call check(c%colCC(1)); call check(c%colN(1))
-        call check(c%colCC(2)); call check(c%colN(2))
+        call check(c%colCC(1))
+        call check(c%colCC(2))
+        call check(c%colCC_centered(1))
+        call check(c%colCC_centered(2))
+        call check(c%colN(1))
+        call check(c%colN(2))
         call check(c%stagCC2N)
         call check(c%stagN2CC)
         write(*,*) 'step 0'; call check_consecutive(c)
         write(*,*) 'step 1'; call check_stencilSymmetry(c,c%stagCC2N,'stagCC2N')
         write(*,*) 'step 2'; call check_stencilSymmetry(c,c%stagN2CC,'stagN2CC')
-        write(*,*) 'step 3'; call check_stencilSymmetry(c,c%colCC(2),'colCC(2)')
-        write(*,*) 'step 4'; call check_stencilSymmetry(c,c%colN(2),'colN(2)')
-        write(*,*) 'step 5'; call check_stencilSymmetry(c,c%colCC,'colCC(1)')
-        write(*,*) 'step 6'; call check_stencilSymmetry(c,c%colN,'colN(1)')
+        write(*,*) 'step 3'; call check_stencilSymmetry(c,c%colCC(1),'colCC(1)')
+        write(*,*) 'step 4'; call check_stencilSymmetry(c,c%colCC(2),'colCC(2)')
+        write(*,*) 'step 5'; call check_stencilSymmetry(c,c%colCC_centered(1),'colCC_centered(1)')
+        write(*,*) 'step 6'; call check_stencilSymmetry(c,c%colCC_centered(2),'colCC_centered(2)')
+        write(*,*) 'step 7'; call check_stencilSymmetry(c,c%colN(1),'colN(1)')
+        write(*,*) 'step 8'; call check_stencilSymmetry(c,c%colN(2),'colN(2)')
         write(*,*) 'Done checking coordinates'
         ! stop 'Done'
       end subroutine

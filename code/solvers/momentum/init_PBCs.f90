@@ -8,7 +8,7 @@
        private
        public :: init_PBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,1/) ! 1 = true, else false
+       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
 
        integer,parameter :: preDefinedP_BCs = 1
        !                                      0 : User-defined case in initUserPBCs() (no override)
@@ -46,6 +46,8 @@
            endif
            call init(p%RF(i)%b,0.0_cp)
          enddo
+         p%all_Neumann = .true. ! Needs to be adjusted manually
+         call init_BC_mesh(p,m)
          ! call define_Edges(p%RF(i)%b)
          ! call init_Neumann(p%RF(1)%b,6)
          ! call init_Dirichlet(p%RF(m%s)%b,1) ! Not suree if 1 or 2

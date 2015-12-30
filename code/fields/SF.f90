@@ -690,6 +690,11 @@
         end subroutine
 
         subroutine init_BC_props_SF(f)
+          ! THIS IS BROKEN. Technically, all_Neumann should be true for
+          ! periodic 1-cell cases, but this fix is not even enough. If 
+          ! any boundaries are Dirichlet but stitched together, then 
+          ! all_Neumann should also be true. The mesh, after stitching
+          ! is required to make a fully comprehensive init_BC_props_SF.
           implicit none
           type(SF),intent(inout) :: f
           integer :: i

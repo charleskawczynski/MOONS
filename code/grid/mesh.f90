@@ -37,6 +37,7 @@
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
+         logical :: plane_x,plane_y,plane_z
        end type
 
        interface init;           module procedure init_grid;           end interface
@@ -173,6 +174,10 @@
          enddo
          m%dhmin_min = minval((/m%dhmin(1),m%dhmin(2),m%dhmin(3)/))
          m%dhmax_max = maxval((/m%dhmax(1),m%dhmax(2),m%dhmax(3)/))
+
+         m%plane_x = all((/(m%g(i)%c(1)%N.eq.1,i=1,m%s)/))
+         m%plane_y = all((/(m%g(i)%c(2)%N.eq.1,i=1,m%s)/))
+         m%plane_z = all((/(m%g(i)%c(3)%N.eq.1,i=1,m%s)/))
        end subroutine
 
        subroutine patch_grids(m)

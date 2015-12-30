@@ -80,17 +80,17 @@
         enddo; enddo
         !$OMP END PARALLEL DO
         case (2)
-        ! !$OMP PARALLEL DO
-        ! do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case (3)
-        ! !$OMP PARALLEL DO
-        ! do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
@@ -113,17 +113,17 @@
         enddo; enddo
         !$OMP END PARALLEL DO
         case (2)
-        ! !$OMP PARALLEL DO
-        ! do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case (3)
-        ! !$OMP PARALLEL DO
-        ! do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-        !   call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2)
-        ! enddo; enddo
-        ! !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO
+        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
+          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2)
+        enddo; enddo
+        !$OMP END PARALLEL DO
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select

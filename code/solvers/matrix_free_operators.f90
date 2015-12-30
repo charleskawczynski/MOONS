@@ -1,4 +1,8 @@
       module matrix_free_operators_mod
+      ! NOTE:
+      ! ONLY CENTERED DERIVATIVES SHOULD BE USED IN THIS 
+      ! FILE SINCE IMPLICIT SOLVERS IN MOONS DEPEND ON BC
+      ! IMPLICIT DERIVATIVES.
       use mesh_mod
       use SF_mod
       use VF_mod
@@ -33,7 +37,8 @@
         ! COMPUTES:
         !        A = ∇•(∇)
         implicit none
-        type(SF),intent(inout) :: Ax,x
+        type(SF),intent(inout) :: Ax
+        type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(VF),intent(inout) :: tempk
@@ -65,7 +70,8 @@
         ! COMPUTES:
         !        A = ∇•(k∇)
         implicit none
-        type(SF),intent(inout) :: Ax,x
+        type(SF),intent(inout) :: Ax
+        type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(VF),intent(inout) :: tempk
@@ -99,7 +105,8 @@
         ! COMPUTES:
         !        A = {I + c_ind ∇x(k∇x)}
         implicit none
-        type(VF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: Ax
+        type(VF),intent(in) :: x
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(VF),intent(inout) :: tempk
@@ -133,7 +140,8 @@
         ! Computes:
         !        A = {I + c_eng ∇•(k∇)}
         implicit none
-        type(SF),intent(inout) :: Ax,x
+        type(SF),intent(inout) :: Ax
+        type(SF),intent(inout) :: x
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
@@ -167,7 +175,8 @@
         ! Computes:
         !        A = {I + c_mom ∇•(k∇)}
         implicit none
-        type(VF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: Ax
+        type(VF),intent(in) :: x
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP

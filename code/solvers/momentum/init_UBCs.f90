@@ -17,7 +17,7 @@
        private
        public :: init_UBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,1/) ! 1 = true, else false
+       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
 
        integer,parameter :: preDefinedU_BCs = 1
        !                                      0 : User-defined case in initUserUBCs() (no override)
@@ -83,6 +83,9 @@
              call initUserUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b)
            endif
          enddo
+         call init_BC_mesh(U%x,m)
+         call init_BC_mesh(U%y,m)
+         call init_BC_mesh(U%z,m)
          ! call init(U%x%RF(1)%b%e(5),0.4_cp)
          ! call init(U%x%RF(1)%b%e(6),0.5_cp)
          ! call init(U%x%RF(1)%b%e(7),0.6_cp)

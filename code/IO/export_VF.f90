@@ -24,6 +24,7 @@
       private
       public :: exp_3D_3C
       public :: exp_2D_2C
+      ! public :: exp_2D_1C ! Not developed yet, good for current coming out of page, e.g.
 
       contains
 
