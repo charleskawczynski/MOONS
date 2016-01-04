@@ -105,6 +105,7 @@
          type(PCG_solver_VF) :: PCG_B
 
          type(CG_solver_SF) :: CG_cleanB
+         type(PCG_solver_SF) :: PCG_cleanB
 
          type(indexProbe) :: probe_Bx,probe_By,probe_Bz
          type(indexProbe) :: probe_J
@@ -209,8 +210,8 @@
          call cellCenter2Face(ind%sigmaInv_face,ind%sigmaInv,m)
          write(*,*) '     Sigma face defined'
 
-         ! call treatInterface(ind%sigmaInv_edge)
-         ! call treatInterface(ind%sigmaInv_face)
+         call treatInterface(ind%sigmaInv_edge)
+         call treatInterface(ind%sigmaInv_face)
          write(*,*) '     Interface treated'
 
          call init(ind%probe_Bx,dir//'Bfield/','transient_Bx',&
@@ -277,23 +278,22 @@
 
          ! init(CG,m,x,k)
 
-         call export_raw(m,ind%sigmaInv_edge,'out/LDC/','sigmaInv_edge',0)
+         ! call export_raw(m,ind%sigmaInv_edge,'out/LDC/','sigmaInv_edge',0)
 
          ! CG,operator,m,MFP,x,k,dir,name,testSymmetry,vizualizeOperator
          call init(ind%CG_B,ind_diffusion,ind_diffusion_explicit,ind%m,ind%MFP_B,ind%B_face,&
          ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
 
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_curl_curl_VF,ind%m,&
-         ind%MFP_B,ind%B_face,ind%sigmaInv_edge,dir//'Bfield/','B',.true.,.true.,.true.)
+         ind%MFP_B,ind%B_face,ind%sigmaInv_edge,dir//'Bfield/','B',.true.,.false.)
          write(*,*) '     CG Solver initialized'
-         stop 'done'
 
          call init_BC_mesh(ind%phi,ind%m)
          call init_Dirichlet(ind%phi%RF(1)%b)
          call init_BCs(ind%phi,0.0_cp)
 
-         call init(ind%CG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,ind%m,&
-         ind%MFP_B,ind%phi,ind%temp_F,dir//'Bfield/','phi',.false.,.false.)
+         call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_Lap_SF,ind%m,&
+         ind%MFP_B,ind%phi,ind%temp_F,dir//'Bfield/','phi',.true.,.false.)
          write(*,*) '     PCG Solver initialized for phi'
 
          ! write(*,*) 'dhmin = ',ind%m%dhmin_min
@@ -366,6 +366,7 @@
          call delete(ind%D_sigma)
          call delete(ind%CG_B)
          call delete(ind%CG_cleanB)
+         call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
 
          write(*,*) 'Induction object deleted'
@@ -584,11 +585,13 @@
            call multiply(ind%curlUCrossB,-ind%dTime) ! Must be negative (in divergence form)
 
            call add(ind%curlUCrossB,ind%B_face)
-           call solve(ind%CG_B,ind%B_face,ind%curlUCrossB,ind%m,10,getExportErrors(ss_MHD))
+           call solve(ind%PCG_B,ind%B_face,ind%curlUCrossB,ind%m,1000,getExportErrors(ss_MHD))
+           ! call solve(ind%PCG_B,ind%B_face,ind%curlUCrossB,ind%m,&
+           ! ind%B%x%numEl+ind%B%y%numEl+ind%B%z%numEl,getExportErrors(ss_MHD))
 
            ! Clean B
            call div(ind%divB,ind%B_face,ind%m)
-           call solve(ind%CG_cleanB,ind%phi,ind%divB,ind%m,5,getExportErrors(ss_MHD))
+           call solve(ind%PCG_cleanB,ind%phi,ind%divB,ind%m,5,getExportErrors(ss_MHD))
            call grad(ind%temp_F,ind%phi,ind%m)
            call subtract(ind%B_face,ind%temp_F)
            call apply_BCs(ind%B_face,ind%m)

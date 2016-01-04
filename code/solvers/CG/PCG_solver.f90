@@ -28,7 +28,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp) :: tol = 10.0_cp**(-15.0_cp)
+      real(cp) :: tol = 10.0_cp**(-8.0_cp)
 
       contains
 

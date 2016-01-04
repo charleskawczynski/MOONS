@@ -90,7 +90,7 @@
         !$OMP END PARALLEL DO
 
         call multiply(Minv,vol)
-        ! call invert(Minv)
+        call invert(Minv)
         call zeroGhostPoints(Minv)
       end subroutine
 
@@ -180,7 +180,7 @@
         !$OMP END PARALLEL DO
 
         call multiply(Minv,vol)
-        ! call invert(Minv)
+        call invert(Minv)
         call zeroGhostPoints(Minv)
       end subroutine
 

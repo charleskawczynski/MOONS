@@ -246,7 +246,7 @@
         !   x,k,dir,name,testSymmetry,exportOperator,getDiagonal)
 
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_lap_VF,mom%m,&
-         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.true.,.true.)
+         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.false.)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings

@@ -60,6 +60,7 @@
         type VF
           integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
+          logical :: is_CC,is_Node,is_Face,is_Edge
         end type
 
         interface init;              module procedure init_VF_copy_VF;          end interface
@@ -452,6 +453,10 @@
           type(VF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine init_VF_copy_SF(f1,f2)
@@ -459,6 +464,10 @@
           type(VF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine init_VF_CC(f,m)
@@ -466,6 +475,7 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
+          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_VF_Edge(f,m)
@@ -473,6 +483,7 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
+          call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
         subroutine init_VF_Face(f,m)
@@ -480,6 +491,7 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
+          call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
         subroutine init_VF_Node(f,m)
@@ -487,6 +499,7 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
+          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         subroutine init_VF_CC_assign(f,m,val)
@@ -495,6 +508,7 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
+          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_VF_Edge_assign(f,m,val)
@@ -503,6 +517,7 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Edge(f%x,m,1,val); call init_Edge(f%y,m,2,val); call init_Edge(f%z,m,3,val)
+          call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
         subroutine init_VF_Face_assign(f,m,val)
@@ -511,6 +526,7 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Face(f%x,m,1,val); call init_Face(f%y,m,2,val); call init_Face(f%z,m,3,val)
+          call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
         subroutine init_VF_Node_assign(f,m,val)
@@ -519,6 +535,7 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Node(f%x,m,val); call init_Node(f%y,m,val); call init_Node(f%z,m,val)
+          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         function dot_product_VF(A,B,temp) result(dot)
@@ -534,6 +551,16 @@
           implicit none
           type(VF),intent(inout) :: f
           call delete(f%x); call delete(f%y); call delete(f%z)
+          call delete_logicals(f)
+        end subroutine
+
+        subroutine delete_logicals(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          f%is_CC = .false.
+          f%is_Node = .false.
+          f%is_Face = .false.
+          f%is_Edge = .false.
         end subroutine
 
         subroutine print_VF(f)

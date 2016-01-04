@@ -1,8 +1,8 @@
        module simParams_mod
        implicit none
-       logical :: exportGrids               = .true.   ! Export all Grids before starting simulation
+       logical :: exportGrids               = .false.   ! Export all Grids before starting simulation
        logical :: exportRawICs              = .false.   ! Export Raw ICs before starting simulation
-       logical :: exportICs                 = .true.   ! Export Post-Processed ICs before starting simulation
+       logical :: exportICs                 = .false.   ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.   ! Just export ICs, do not run simulation
        logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
        logical :: nonUniformGridFluid       = .true.   ! (T/F)
@@ -18,7 +18,7 @@
        logical :: computeKBi                = .true.    ! Compute Induced magnetic energy at each time step
        logical :: computeKB0                = .true.   ! Compute Applied magnetic energy at each time step
 
-       logical :: addJCrossB                = .false.
+       logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 
@@ -27,7 +27,7 @@
 
        integer :: advectiveUFormulation     = 1 ! (1,2) = (Central difference, Advective)
        integer :: solveTMethod              = 1 ! (1) = (Explicit Euler)
-       integer :: solveUMethod              = 2 ! (1) = (Explicit Euler)
+       integer :: solveUMethod              = 1 ! (1) = (Explicit Euler)
        integer :: solveBMethod              = 6
        !                                      1 : Low Rem (GS, uniform properties)
        !                                      2 : Low Rem (PTS uniform properties)

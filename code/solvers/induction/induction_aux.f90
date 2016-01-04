@@ -19,8 +19,8 @@
        public :: compute_JCrossB
        public :: compute_divB
        public :: compute_J
-       public :: compute_KB_Fluid
-       public :: compute_KB
+       public :: compute_TME_Fluid
+       public :: compute_TME
        public :: embedVelocity_E
        public :: embedVelocity_F
        public :: embedVelocity_CC
@@ -86,50 +86,16 @@
          endif
        end subroutine
 
-       subroutine compute_JCrossB(jcrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,Bstar,temp_CC,jCrossB_F)
-         ! computes
-         ! 
-         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
-         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
-         ! 
-         implicit none
-         type(VF),intent(inout) :: jcrossB
-         type(VF),intent(in) :: B,B0
-         type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: Ha,Re,Rem
-         logical,intent(in) :: finite_Rem
-         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,jCrossB_F
-         if (finite_Rem) then
-           ! Magnetic Pressure (not yet done)
-           call add(Bstar,B,B0)
-           call square(Bstar)
-           call multiply(Bstar,0.5_cp)
-           call grad(jCrossB_F,Bstar,m)
-
-           ! Magnetic Stress (not yet done)
-
-           call extractFace(jcrossB,jCrossB_F,D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
-         else
-
-           call extractFace(jcrossB,jCrossB_F,D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
-         endif
-       end subroutine
-
        subroutine compute_divB(divB,divJ,B,J,m)
          implicit none
-         type(VF),intent(inout) :: divB,divJ
+         type(SF),intent(inout) :: divB,divJ
          type(VF),intent(in) :: B,J
          type(mesh),intent(in) :: m
          call div(divB,B,m)
          call div(divJ,J,m)
        end subroutine
 
-       subroutine compute_J(J,B,Rem,m,temp_B,finite_Rem)
+       subroutine compute_J(J,B,B0,Rem,m,temp_B,finite_Rem)
          implicit none
          type(VF),intent(in) :: B,B0
          type(VF),intent(inout) :: J,temp_B
@@ -141,68 +107,59 @@
          if (finite_Rem) call divide(J,Rem)
        end subroutine
 
-       subroutine compute_KB_Fluid(B,B0,Bstar,KB_energy,KBi_energy,KB0_energy,D_fluid)
+       subroutine compute_TME_Fluid(KB_energy,B,nstep,compute_ME,D_fluid)
          implicit none
-         type(VF),intent(in) :: B,B0
-         type(VF),intent(inout) :: Bstar
-         type(probe),intent(inout) :: KB_energy,KBi_energy,KB0_energy
+         type(probe),intent(inout) :: KB_energy
+         type(VF),intent(in) :: B
+         integer,intent(in) :: nstep
+         logical,intent(in) :: compute_ME
          type(domain),intent(in) :: D_fluid
          real(cp) :: K_energy
-         call add(Bstar,B0,B)
-         call totalEnergy(K_energy,Bstar,D_fluid)
-         call set(KB_f_energy,nstep,K_energy)
-         call apply(KB_f_energy)
-
-         call totalEnergy(K_energy,B,D_fluid)
-         call set(KBi_f_energy,nstep,K_energy)
-         call apply(KBi_f_energy)
-
-         call totalEnergy(K_energy,B0,D_fluid)
-         call set(KB0_f_energy,nstep,K_energy)
-         call apply(KB0_f_energy)
+         if (compute_ME) then
+          call totalEnergy(K_energy,B,D_fluid)
+          call set(KB_energy,nstep,K_energy)
+          call apply(KB_energy)
+         endif
        end subroutine
 
-       subroutine compute_KB(B,B0,Bstar,KB_energy,KBi_energy,KB0_energy)
+       subroutine compute_TME(KB_energy,B,nstep,compute_ME,m)
          implicit none
-         type(VF),intent(in) :: B,B0
-         type(VF),intent(inout) :: Bstar
-         type(probe),intent(inout) :: KB_energy,KBi_energy,KB0_energy
+         type(probe),intent(inout) :: KB_energy
+         type(VF),intent(in) :: B
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: nstep
+         logical,intent(in) :: compute_ME
          real(cp) :: K_energy
-         call assign(Bstar,B)
-         call add(Bstar,B0)
-         call totalEnergy(K_energy,Bstar,m)
-         call set(KB_energy,nstep,K_energy)
-         call apply(KB_energy)
-
-         call totalEnergy(K_energy,B,m)
-         call set(KBi_energy,nstep,K_energy)
-         call apply(KBi_energy)
-
-         call totalEnergy(K_energy,B0,m)
-         call set(KB0_energy,nstep,K_energy)
-         call apply(KB0_energy)
+         if (compute_ME) then
+          call totalEnergy(K_energy,B,m)
+          call set(KB_energy,nstep,K_energy)
+          call apply(KB_energy)
+         endif
        end subroutine
 
-       subroutine embedVelocity_E(ind,U_E)
+       subroutine embedVelocity_E(U_E_tot,U_E_in,D_fluid)
          implicit none
-         type(induction),intent(inout) :: ind
-         type(TF),intent(in) :: U_E ! Momentum edge velocity
-         call embedEdge(U_E%x,U_E%x,D_fluid)
-         call embedEdge(U_E%y,U_E%y,D_fluid)
-         call embedEdge(U_E%z,U_E%z,D_fluid)
+         type(TF),intent(inout) :: U_E_tot
+         type(TF),intent(in) :: U_E_in ! Momentum edge velocity
+         type(domain),intent(in) :: D_fluid
+         call embedEdge(U_E_tot%x,U_E_in%x,D_fluid)
+         call embedEdge(U_E_tot%y,U_E_in%y,D_fluid)
+         call embedEdge(U_E_tot%z,U_E_in%z,D_fluid)
        end subroutine
 
-       subroutine embedVelocity_F(ind,U_F)
+       subroutine embedVelocity_F(U_Ft,U_F,D_fluid)
          implicit none
-         type(induction),intent(inout) :: ind
+         type(VF),intent(inout) :: U_Ft
          type(VF),intent(in) :: U_F ! Momentum edge velocity
+         type(domain),intent(in) :: D_fluid
          call embedFace(U_Ft,U_F,D_fluid)
        end subroutine
 
-       subroutine embedVelocity_CC(ind,U_CC)
+       subroutine embedVelocity_CC(U_cct,U_CC,D_fluid)
          implicit none
-         type(induction),intent(inout) :: ind
+         type(VF),intent(inout) :: U_cct
          type(VF),intent(in) :: U_CC ! Momentum edge velocity
+         type(domain),intent(in) :: D_fluid
          call embedCC(U_cct,U_CC,D_fluid)
        end subroutine
 

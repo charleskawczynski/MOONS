@@ -67,6 +67,9 @@
          ! call init_Antisymmetry(B%x%RF(1)%b,6)
          ! call init_Antisymmetry(B%y%RF(1)%b,6)
          ! call init_Neumann(B%z%RF(1)%b,6)
+         call init_BC_mesh(B%x,m)
+         call init_BC_mesh(B%y,m)
+         call init_BC_mesh(B%z,m)
          call delete(B_bcs)
        end subroutine
 

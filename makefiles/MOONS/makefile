@@ -118,9 +118,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -314,6 +314,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Pfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energySolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)inductionSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90 \

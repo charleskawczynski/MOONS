@@ -101,7 +101,11 @@
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (.not.export_planar) then; call export_raw_VF_func(export_3D_1C,m,x,dir,name,pad,0)
+         if (.not.export_planar) then;
+           if (x%is_CC.or.x%is_Node) then;       call export_raw_VF_func(export_3D_3C,m,x,dir,name,pad,0)
+           elseif (x%is_Face.or.x%is_Edge) then; call export_raw_VF_func(export_3D_1C,m,x,dir,name,pad,0)
+           else; stop 'Error: bad input to export_raw_VF in export_processed.f90'
+           endif
          else; if (m%plane_x) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,1)
          elseif   (m%plane_y) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,2)
          elseif   (m%plane_z) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,3)
@@ -118,28 +122,30 @@
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad,direction
          if (.not.export_planar) then
-           if (x%x%is_CC) then;       call func(m,x,dir,name//'c',pad)
-           elseif (x%x%is_Node) then; call func(m,x,dir,name//'n',pad)
-           elseif (x%x%is_Face) then
+           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad)
+           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad)
+           elseif (x%is_Face) then
              call func(m,x%x,dir,name//'f_x',pad)
              call func(m,x%y,dir,name//'f_y',pad)
              call func(m,x%z,dir,name//'f_z',pad)
-           elseif (x%x%is_Edge) then
+           elseif (x%is_Edge) then
              call func(m,x%x,dir,name//'e_x',pad)
              call func(m,x%y,dir,name//'e_y',pad)
              call func(m,x%z,dir,name//'e_z',pad)
+           else; stop 'Error: bad input to export_raw_VF_func (1) in export_processed.f90'
            endif
          else
-           if (x%x%is_CC) then;       call func(m,x,dir,name//'c',pad,direction)
-           elseif (x%x%is_Node) then; call func(m,x,dir,name//'n',pad,direction)
-           elseif (x%x%is_Face) then
+           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad,direction)
+           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad,direction)
+           elseif (x%is_Face) then
              call func(m,x%x,dir,name//'f_x',pad,direction)
              call func(m,x%y,dir,name//'f_y',pad,direction)
              call func(m,x%z,dir,name//'f_z',pad,direction)
-           elseif (x%x%is_Edge) then
+           elseif (x%is_Edge) then
              call func(m,x%x,dir,name//'e_x',pad,direction)
              call func(m,x%y,dir,name//'e_y',pad,direction)
              call func(m,x%z,dir,name//'e_z',pad,direction)
+           else; stop 'Error: bad input to export_raw_VF_func (2) in export_processed.f90'
            endif
          endif
        end subroutine
@@ -204,6 +210,7 @@
                        call delete(temp_N)
              case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
              end select
+           else; stop 'Error: bad input to export_processed_SF_func (1) in export_processed.f90'
            endif
          else
            if (x%is_CC) then
@@ -242,6 +249,7 @@
                        call delete(temp_N)
              case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
              end select
+           else; stop 'Error: bad input to export_processed_SF_func (2) in export_processed.f90'
            endif
          endif
        end subroutine
@@ -270,40 +278,42 @@
          integer,intent(in) :: pad,direction
          type(VF) :: temp_1,temp_2,temp_N
          if (.not.export_planar) then
-           if (x%x%is_CC) then
+           if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
              call func(m,temp_N,dir,name//'np',pad)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%x%is_Node) then
+           elseif (x%is_Node) then
              call func(m,temp_N,dir,name//'np',pad)
-           elseif (x%x%is_Face) then
+           elseif (x%is_Face) then
              call init_Edge(temp_1,m); call init_Node(temp_N,m); 
              call face2Node(temp_N,x,m,temp_1)
              call func(m,temp_N,dir,name//'np',pad)
              call delete(temp_1); call delete(temp_N)
-           elseif (x%x%is_Edge) then
+           elseif (x%is_Edge) then
              call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
              call func(m,temp_N,dir,name//'np',pad)
              call delete(temp_N)
+           else; stop 'Error: bad input to export_processed_VF_func (1) in export_processed.f90'
            endif
          else
-           if (x%x%is_CC) then
+           if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
              call func(m,temp_N,dir,name//'np',pad,direction)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%x%is_Node) then
+           elseif (x%is_Node) then
              call func(m,temp_N,dir,name//'np',pad,direction)
-           elseif (x%x%is_Face) then
+           elseif (x%is_Face) then
              call init_Edge(temp_1,m); call init_Node(temp_N,m); 
              call face2Node(temp_N,x,m,temp_1)
              call func(m,temp_N,dir,name//'np',pad,direction)
              call delete(temp_1); call delete(temp_N)
-           elseif (x%x%is_Edge) then
+           elseif (x%is_Edge) then
              call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
              call func(m,temp_N,dir,name//'np',pad,direction)
              call delete(temp_N)
+           else; stop 'Error: bad input to export_processed_VF_func (2) in export_processed.f90'
            endif
          endif
        end subroutine
