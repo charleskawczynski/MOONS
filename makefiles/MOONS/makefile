@@ -114,13 +114,13 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -129,6 +129,7 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG_node.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
+# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_PCG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
@@ -285,6 +286,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)monitor.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90 \
@@ -293,6 +295,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
@@ -305,6 +308,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)induction_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \

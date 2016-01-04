@@ -2,6 +2,7 @@
        use ops_del_mod
        use mesh_mod
        use VF_mod
+       use TF_mod
        use ops_interp_mod
        use ops_aux_mod
        use ops_discrete_mod
@@ -20,10 +21,14 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       public :: faceCrossFace_E
-       public :: faceCrossCC_E
-       public :: edgeCrossCC_E
-       public :: faceCurlCross_F
+       public :: advect_B        ! ∇x(uxB)
+
+       public :: faceCrossFace_E ! Assumes B lives on cell face
+       public :: faceCurlCross_F ! Assumes B lives on cell face
+
+       ! Not recommended since B is assumed to live on cell center..
+       public :: faceCrossCC_E   ! Assumes B lives on cell center
+       public :: edgeCrossCC_E   ! Assumes B lives on cell center
 
        contains
 
@@ -32,6 +37,23 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
+
+       subroutine advect_B(adv,U_E,B_F,m,temp_E_TF,temp_E_VF)
+         ! Computes
+         ! 
+         !      (∇ x ( u_edge x B_face )_edge)_face
+         ! 
+         ! While minimizing interpolations.
+         implicit none
+         type(VF),intent(inout) :: adv,temp_E_VF
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
+         type(VF),intent(in) :: B_F
+         type(mesh),intent(in) :: m
+         call face2Edge(temp_E_TF,B_F,m)
+         call cross(temp_E_VF,U_E,temp_E_TF) ! Diagonals not needed
+         call curl(adv,temp_E_VF,m)
+       end subroutine
 
        subroutine faceCrossFace_E(AcrossB,A,B,m)
          ! Computes
@@ -62,74 +84,6 @@
          call face2Edge(tempB%y,B%y,m,2,3)
          call cross(AcrossB%z,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,3)
          call delete(tempA)
-         call delete(tempB)
-       end subroutine
-
-       subroutine faceCrossCC_E(AcrossB,A,B,m,tempF)
-         ! Computes
-         ! 
-         !      ( u_face x B_CC )_edge
-         ! 
-         ! While minimizing interpolations.
-         implicit none
-         type(VF),intent(inout) :: AcrossB,tempF
-         type(VF),intent(in) :: A,B
-         type(mesh),intent(in) :: m
-         type(VF) :: tempA,tempB
-         call init(tempA,AcrossB%x)
-         call init(tempB,tempA)
-         call face2Edge(tempA%y,A%y,m,2,1)
-         call face2Edge(tempA%z,A%z,m,3,1)
-         call cellCenter2Edge(tempB%y,B%y,m,tempF%y,1)
-         call cellCenter2Edge(tempB%z,B%z,m,tempF%y,1)
-         call cross(AcrossB%x,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,1)
-         call delete(tempA)
-         call delete(tempB)
-         call init(tempA,AcrossB%y)
-         call init(tempB,tempA)
-         call face2Edge(tempA%x,A%x,m,1,2)
-         call face2Edge(tempA%z,A%z,m,3,2)
-         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,2)
-         call cellCenter2Edge(tempB%z,B%z,m,tempF%x,2)
-         call cross(AcrossB%y,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,2)
-         call delete(tempA)
-         call delete(tempB)
-         call init(tempA,AcrossB%z)
-         call init(tempB,tempA)
-         call face2Edge(tempA%x,A%x,m,1,3)
-         call face2Edge(tempA%y,A%y,m,2,3)
-         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,3)
-         call cellCenter2Edge(tempB%y,B%y,m,tempF%x,3)
-         call cross(AcrossB%z,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,3)
-         call delete(tempA)
-         call delete(tempB)
-       end subroutine
-
-       subroutine edgeCrossCC_E(UcrossB,U,V,W,B,m,tempF)
-         ! Computes
-         ! 
-         !      ( u_edge x B_CC )_edge
-         ! 
-         ! While minimizing interpolations.
-         implicit none
-         type(VF),intent(inout) :: UcrossB,tempF
-         type(VF),intent(in) :: U,V,W,B
-         type(mesh),intent(in) :: m
-         type(VF) :: tempB
-         call init(tempB,UcrossB%x)
-         call cellCenter2Edge(tempB%y,B%y,m,tempF%y,1)
-         call cellCenter2Edge(tempB%z,B%z,m,tempF%y,1)
-         call cross(UcrossB%x,U%x,V%x,W%x,tempB%x,tempB%y,tempB%z,1)
-         call delete(tempB)
-         call init(tempB,UcrossB%y)
-         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,2)
-         call cellCenter2Edge(tempB%z,B%z,m,tempF%x,2)
-         call cross(UcrossB%y,U%y,V%y,W%y,tempB%x,tempB%y,tempB%z,2)
-         call delete(tempB)
-         call init(tempB,UcrossB%z)
-         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,3)
-         call cellCenter2Edge(tempB%y,B%y,m,tempF%x,3)
-         call cross(UcrossB%z,U%z,V%z,W%z,tempB%x,tempB%y,tempB%z,3)
          call delete(tempB)
        end subroutine
 
@@ -215,5 +169,81 @@
          call d%add(div%z,temp_E1%y,m,1,1,pad)
        end subroutine
 
+       ! **********************************************************
+       ! **********************************************************
+       ! ************************ OUTDATED ************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine faceCrossCC_E(AcrossB,A,B,m,tempF)
+         ! Computes
+         ! 
+         !      ( u_face x B_CC )_edge
+         ! 
+         ! While minimizing interpolations.
+         implicit none
+         type(VF),intent(inout) :: AcrossB,tempF
+         type(VF),intent(in) :: A,B
+         type(mesh),intent(in) :: m
+         type(VF) :: tempA,tempB
+         call init(tempA,AcrossB%x)
+         call init(tempB,tempA)
+         call face2Edge(tempA%y,A%y,m,2,1)
+         call face2Edge(tempA%z,A%z,m,3,1)
+         call cellCenter2Edge(tempB%y,B%y,m,tempF%y,1)
+         call cellCenter2Edge(tempB%z,B%z,m,tempF%y,1)
+         call cross(AcrossB%x,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,1)
+         call delete(tempA)
+         call delete(tempB)
+         call init(tempA,AcrossB%y)
+         call init(tempB,tempA)
+         call face2Edge(tempA%x,A%x,m,1,2)
+         call face2Edge(tempA%z,A%z,m,3,2)
+         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,2)
+         call cellCenter2Edge(tempB%z,B%z,m,tempF%x,2)
+         call cross(AcrossB%y,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,2)
+         call delete(tempA)
+         call delete(tempB)
+         call init(tempA,AcrossB%z)
+         call init(tempB,tempA)
+         call face2Edge(tempA%x,A%x,m,1,3)
+         call face2Edge(tempA%y,A%y,m,2,3)
+         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,3)
+         call cellCenter2Edge(tempB%y,B%y,m,tempF%x,3)
+         call cross(AcrossB%z,tempA%x,tempA%y,tempA%z,tempB%x,tempB%y,tempB%z,3)
+         call delete(tempA)
+         call delete(tempB)
+       end subroutine
+
+       subroutine edgeCrossCC_E(UcrossB,U,V,W,B,m,tempF)
+         ! This routine is essentially outdated 
+         ! since B should live on the cell face...
+         ! 
+         ! Computes
+         ! 
+         !      ( u_edge x B_CC )_edge
+         ! 
+         ! While minimizing interpolations.
+         implicit none
+         type(VF),intent(inout) :: UcrossB,tempF
+         type(VF),intent(in) :: U,V,W,B
+         type(mesh),intent(in) :: m
+         type(VF) :: tempB
+         call init(tempB,UcrossB%x)
+         call cellCenter2Edge(tempB%y,B%y,m,tempF%y,1)
+         call cellCenter2Edge(tempB%z,B%z,m,tempF%y,1)
+         call cross(UcrossB%x,U%x,V%x,W%x,tempB%x,tempB%y,tempB%z,1)
+         call delete(tempB)
+         call init(tempB,UcrossB%y)
+         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,2)
+         call cellCenter2Edge(tempB%z,B%z,m,tempF%x,2)
+         call cross(UcrossB%y,U%y,V%y,W%y,tempB%x,tempB%y,tempB%z,2)
+         call delete(tempB)
+         call init(tempB,UcrossB%z)
+         call cellCenter2Edge(tempB%x,B%x,m,tempF%x,3)
+         call cellCenter2Edge(tempB%y,B%y,m,tempF%x,3)
+         call cross(UcrossB%z,U%z,V%z,W%z,tempB%x,tempB%y,tempB%z,3)
+         call delete(tempB)
+       end subroutine
 
        end module

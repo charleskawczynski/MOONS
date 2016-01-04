@@ -32,6 +32,7 @@
        use solverSettings_mod
        use SOR_mod
        use CG_mod
+       use preconditioners_mod
        use PCG_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
@@ -101,6 +102,8 @@
 
          type(SORSolver) :: SOR_B, SOR_cleanB
          type(CG_solver_VF) :: CG_B
+         type(PCG_solver_VF) :: PCG_B
+
          type(CG_solver_SF) :: CG_cleanB
 
          type(indexProbe) :: probe_Bx,probe_By,probe_Bz
@@ -206,8 +209,8 @@
          call cellCenter2Face(ind%sigmaInv_face,ind%sigmaInv,m)
          write(*,*) '     Sigma face defined'
 
-         call treatInterface(ind%sigmaInv_edge)
-         call treatInterface(ind%sigmaInv_face)
+         ! call treatInterface(ind%sigmaInv_edge)
+         ! call treatInterface(ind%sigmaInv_face)
          write(*,*) '     Interface treated'
 
          call init(ind%probe_Bx,dir//'Bfield/','transient_Bx',&
@@ -274,10 +277,16 @@
 
          ! init(CG,m,x,k)
 
+         call export_raw(m,ind%sigmaInv_edge,'out/LDC/','sigmaInv_edge',0)
+
          ! CG,operator,m,MFP,x,k,dir,name,testSymmetry,vizualizeOperator
          call init(ind%CG_B,ind_diffusion,ind_diffusion_explicit,ind%m,ind%MFP_B,ind%B_face,&
          ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+
+         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_curl_curl_VF,ind%m,&
+         ind%MFP_B,ind%B_face,ind%sigmaInv_edge,dir//'Bfield/','B',.true.,.true.,.true.)
          write(*,*) '     CG Solver initialized'
+         stop 'done'
 
          call init_BC_mesh(ind%phi,ind%m)
          call init_Dirichlet(ind%phi%RF(1)%b)
@@ -291,7 +300,6 @@
          ! write(*,*) 'Rem = ',ind%Rem
          ! write(*,*) 'min(sigma) = ',1.0_cp/max(ind%sigmaInv)
          ! write(*,*) 'theta = ',ind%theta
-         ! stop 'done'
 
          if (restartB) then
          call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
@@ -358,7 +366,7 @@
          call delete(ind%D_sigma)
          call delete(ind%CG_B)
          call delete(ind%CG_cleanB)
-         ! call delete(ind%PCG_B)
+         call delete(ind%PCG_B)
 
          write(*,*) 'Induction object deleted'
        end subroutine

@@ -8,7 +8,9 @@
       use SF_mod
       use VF_mod
       use IO_tools_mod
+      use export_raw_processed_mod
 
+      use preconditioners_mod
       use matrix_mod
       use PCG_solver_mod
       use matrix_free_params_mod
@@ -43,8 +45,8 @@
         type(VF) :: tempk,k
         type(norms) :: norm
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
-        integer :: un
-        procedure(),pointer,nopass :: operator
+        integer :: un,N_iter
+        procedure(),pointer,nopass :: operator,operator_explicit
       end type
 
       type PCG_solver_VF
@@ -53,20 +55,22 @@
         type(norms) :: norm
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
         integer,dimension(3) :: un
-        procedure(),pointer,nopass :: operator
+        procedure(),pointer,nopass :: operator,operator_explicit
+        integer :: N_iter
       end type
 
       contains
 
-      subroutine init_PCG_SF(PCG,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator,precondition)
+      subroutine init_PCG_SF(PCG,operator,operator_explicit,preconditioner,m,MFP,&
+        x,k,dir,name,testSymmetry,exportOperator,getDiagonal)
         implicit none
-        external :: operator
+        external :: operator,operator_explicit,preconditioner
         type(PCG_solver_SF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
-        logical,intent(in) :: precondition,testSymmetry,exportOperator
+        logical,intent(in) :: getDiagonal,testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         call init(PCG%r,x)
         call init(PCG%p,x)
@@ -84,11 +88,13 @@
         PCG%un = newAndOpen(dir,'norm_PCG_'//name)
         call tecHeader(name,PCG%un,.false.)
         PCG%operator => operator
-        if (precondition) then
+        PCG%operator_explicit => operator_explicit
+        call preconditioner(PCG%Minv,m,k,PCG%vol)
+
+        if (getDiagonal) then
           call get_diagonal(operator,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-        else
-          call assign(PCG%Minv,1.0_cp)
         endif
+
         if (testSymmetry) then
           call test_symmetry(operator,'PCG_SF_'//name,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
@@ -96,18 +102,18 @@
           call export_operator(operator,'PCG_SF_'//name,dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
           call export_matrix(PCG%Minv,dir,'PCG_SF_diag_'//name)
         endif
-        call invert(PCG%Minv)
-        call zeroGhostPoints(PCG%Minv)
+        PCG%N_iter = 1
       end subroutine
 
-      subroutine init_PCG_VF(PCG,operator,m,MFP,x,k,dir,name,precondition,testSymmetry,exportOperator)
+      subroutine init_PCG_VF(PCG,operator,operator_explicit,preconditioner,m,MFP,&
+        x,k,dir,name,testSymmetry,exportOperator,getDiagonal)
         implicit none
-        external :: operator
+        external :: operator,operator_explicit,preconditioner
         type(PCG_solver_VF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k
         character(len=*),intent(in) :: dir,name
-        logical,intent(in) :: precondition,testSymmetry,exportOperator
+        logical,intent(in) :: getDiagonal,testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         call init(PCG%r,x)
         call init(PCG%p,x)
@@ -129,20 +135,26 @@
         call tecHeader(name,PCG%un(2),.true.)
         call tecHeader(name,PCG%un(3),.true.)
         PCG%operator => operator
-        if (precondition) then
-          call get_diagonal(operator,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-        else
-          call assign(PCG%Minv,1.0_cp)
+        PCG%operator_explicit => operator_explicit
+
+        call preconditioner(PCG%Minv,m,k,PCG%vol)
+        call export_raw(m,PCG%Minv,dir,'PCG_VF_prec_tec_'//name,0)
+        call export_matrix(PCG%Minv,dir,'PCG_VF_prec_mat_'//name)
+
+        if (getDiagonal) then
+          call get_diagonal(operator_explicit,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
+        call export_raw(m,PCG%Minv,dir,'PCG_VF_op_tec_diag_'//name,0)
+        call export_matrix(PCG%Minv,dir,'PCG_VF_op_mat_diag_'//name)
+
         if (testSymmetry) then
           call test_symmetry(operator,'PCG_VF_'//name,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PCG_VF_'//name,dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-          call export_matrix(PCG%Minv,dir,'PCG_VF_diag_'//name)
+          call export_operator(operator_explicit,'PCG_VF_op_mat_'//name,dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          ! call export_matrix(PCG%Minv,dir,'PCG_VF_diag_'//name)
         endif
-        call invert(PCG%Minv)
-        call zeroGhostPoints(PCG%Minv)
+        PCG%N_iter = 1
       end subroutine
 
       subroutine solve_PCG_SF(PCG,x,b,m,n,compute_norms)
@@ -153,8 +165,8 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%norm,&
-        compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%z,PCG%Minv)
+        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%norm,&
+        compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 
       subroutine solve_PCG_VF(PCG,x,b,m,n,compute_norms)
@@ -165,8 +177,8 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%norm,&
-        compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%z,PCG%Minv)
+        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%norm,&
+        compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 
       subroutine delete_PCG_SF(PCG)
@@ -182,6 +194,7 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
+        PCG%N_iter = 1
       end subroutine
 
       subroutine delete_PCG_VF(PCG)
@@ -197,6 +210,7 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
+        PCG%N_iter = 1
       end subroutine
 
       subroutine tecHeader(name,un,VF)
@@ -207,7 +221,7 @@
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        write(un,*) 'VARIABLES = L1,L2,Linf'
+        write(un,*) 'VARIABLES = N,L1,L2,Linf'
         write(un,*) 'ZONE DATAPACKING = POINT'
       end subroutine
 

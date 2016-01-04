@@ -27,8 +27,9 @@
        !                                       2 : Cylinder (2D)
 
        ! real(cp) :: sigmaStarWall = 1.0_cp ! sigma* = sigma_wall/sigma_l
-       ! real(cp) :: sigmaStarWall = 0.001_cp ! sigma* = sigma_wall/sigma_l
-       real(cp) :: sigmaStarWall = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
+       real(cp) :: sigmaStarWall = 0.01_cp ! sigma* = sigma_wall/sigma_l
+       ! real(cp) :: sigmaStarWall = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
+       ! real(cp) :: sigmaStarWall = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
 
        contains
 

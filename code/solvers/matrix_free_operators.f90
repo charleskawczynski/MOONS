@@ -114,8 +114,8 @@
         call curl(tempk,x,m)
         call multiply(tempk,k)
         call curl(Ax,tempk,m)
-        call multiply(Ax,MFP%c_ind)
-        call add(Ax,x)
+        ! call multiply(Ax,MFP%c_ind)
+        ! call add(Ax,x)
         call zeroGhostPoints(Ax)
       end subroutine
       subroutine ind_diffusion(Ax,x,k,m,MFP,tempk)

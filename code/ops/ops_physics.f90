@@ -55,13 +55,8 @@
 
        public :: orthogonalDirection
 
-       ! public :: advect_advectionForm
-       ! public :: advect_divergenceForm
-
        public :: faceAdvectNew
-       public :: faceAdvectDonor
-       public :: neg_div_UU
-       ! public :: fluidDiffusion
+       public :: advect_div
 
        contains
 
@@ -150,7 +145,7 @@
          call delete(W_ave)
        end subroutine
 
-       subroutine faceAdvectDonor(div,U,Ui,temp_E1,temp_E2,temp_CC,m)
+       subroutine advect_div(div,U,Ui,temp_E1,temp_E2,temp_CC,m)
          ! Computes
          ! 
          !           d
@@ -213,71 +208,5 @@
          call d%add(div%z,temp_E1%x,m,1,2,pad)
          call d%add(div%z,temp_E1%y,m,1,1,pad)
        end subroutine
-
-       subroutine neg_div_UU(div,U,Ui,temp_E1,temp_E2,temp_CC,m)
-         ! Computes
-         ! 
-         !             d
-         !  div_i = - --- (u_j u_i)
-         !            dx_j
-         ! 
-         ! While minimizing interpolations.
-         !           div_i, U, Ui          --> cell face.
-         !           tempE1 and temp_E2    --> cell edge.
-         !           temp_CC               --> cell center.
-         ! 
-         implicit none
-         type(VF),intent(inout) :: div
-         type(VF),intent(in) :: U,ui
-         type(VF),intent(inout) :: temp_E1,temp_E2
-         type(VF),intent(inout) :: temp_CC
-         type(mesh),intent(in) :: m
-         type(del) ::d
-         integer :: pad
-         pad = 1
-
-         call zeroGhostPoints(div)
-         
-         ! d/dxj (uj ui) for i=j
-         call face2CellCenter(temp_CC,U,m)
-         call square(temp_CC)
-
-         call d%assign(div%x,temp_CC%x,m,1,1,pad)
-         call d%assign(div%y,temp_CC%y,m,1,2,pad)
-         call d%assign(div%z,temp_CC%z,m,1,3,pad)
-
-         ! d/dxj (uj ui) for i≠j,  note that Ui must be included
-         ! x (y,z edges)
-         call face2Edge(temp_E1%y,Ui%x,m,1,2)
-         call face2Edge(temp_E2%y, U%z,m,3,2)
-         call face2Edge(temp_E1%z,Ui%x,m,1,3)
-         call face2Edge(temp_E2%z, U%y,m,2,3)
-         call multiply(temp_E1%y,temp_E2%y)
-         call multiply(temp_E1%z,temp_E2%z)
-         call d%add(div%x,temp_E1%y,m,1,3,pad)
-         call d%add(div%x,temp_E1%z,m,1,2,pad)
-
-         ! y (x,z edges)
-         call face2Edge(temp_E1%z,Ui%y,m,2,3)
-         call face2Edge(temp_E2%z, U%x,m,1,3)
-         call face2Edge(temp_E1%x,Ui%y,m,2,1)
-         call face2Edge(temp_E2%x, U%z,m,3,1)
-         call multiply(temp_E1%x,temp_E2%x)
-         call multiply(temp_E1%z,temp_E2%z)
-         call d%add(div%y,temp_E1%x,m,1,3,pad)
-         call d%add(div%y,temp_E1%z,m,1,1,pad)
-
-         ! z (x,y edges)
-         call face2Edge(temp_E1%y,Ui%z,m,3,2)
-         call face2Edge(temp_E2%y, U%x,m,1,2)
-         call face2Edge(temp_E1%x,Ui%z,m,3,1)
-         call face2Edge(temp_E2%x, U%y,m,2,1)
-         call multiply(temp_E1%x,temp_E2%x)
-         call multiply(temp_E1%y,temp_E2%y)
-         call d%add(div%z,temp_E1%x,m,1,2,pad)
-         call d%add(div%z,temp_E1%y,m,1,1,pad)
-         call multiply(div,-1.0_cp)
-       end subroutine
-
 
        end module

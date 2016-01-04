@@ -143,7 +143,7 @@
          real(cp) :: Ha,Re
          Ha = 10.0_cp; Re = 100.0_cp
          call delete(m)
-         N = (/45,45,45/); hmin = -0.5_cp; hmax = 0.5_cp
+         N = (/3,3,3/); hmin = -0.5_cp; hmax = 0.5_cp
          beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 
@@ -169,10 +169,10 @@
          integer,dimension(3) :: N
          call delete(m)
          call init(g,m_in%g(1))
-         N = 11
+         N = 2
          call ext_uniform_IO(g,N(1),1)
-         call ext_uniform_IO(g,N(2),2)
-         call ext_uniform_IO(g,N(3),3)
+         ! call ext_uniform_IO(g,N(2),2)
+         ! call ext_uniform_IO(g,N(3),3)
          call init(m,g)
          call initProps(m)
          call patch(m)
@@ -188,7 +188,7 @@
          real(cp),dimension(3) :: L
          call delete(m)
          call init(g,m_in%g(1))
-         N = 3; L = 1.0_cp
+         N = 2; L = 1.0_cp
          call ext_Roberts_near_IO(g,L(1),N(1),1)
          call ext_Roberts_near_IO(g,L(2),N(2),2)
          call ext_Roberts_near_IO(g,L(3),N(3),3)

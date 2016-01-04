@@ -38,6 +38,8 @@
        use PSE_mod
        use SOR_mod
        use CG_mod
+       use PCG_mod
+       use preconditioners_mod
        use GS_Poisson_mod
        ! use ADI_mod
        ! use MG_mod
@@ -109,6 +111,7 @@
          type(GS_Poisson) :: GS_p
          type(CG_Solver_SF) :: CG_P
          type(CG_Solver_VF) :: CG_U
+         type(PCG_Solver_VF) :: PCG_U
          type(FFTSolver) :: FFT_p
          type(matrix_free_params) :: MFP
          ! type(myADI) :: ADI_p,ADI_u
@@ -236,9 +239,14 @@
          call init(mom%CG_P,Lap_uniform_props,Lap_uniform_props_explicit,mom%m,&
          mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.true.,.false.)
 
-
          call init(mom%CG_U,mom_diffusion,mom_diffusion_explicit,mom%m,&
          mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.false.)
+
+        ! call init(PCG,operator,operator_explicit,preconditioner,m,MFP,&
+        !   x,k,dir,name,testSymmetry,exportOperator,getDiagonal)
+
+         call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_lap_VF,mom%m,&
+         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.true.,.true.)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings
@@ -306,6 +314,7 @@
          call delete(mom%SOR_p)
          call delete(mom%CG_P)
          call delete(mom%CG_U)
+         call delete(mom%PCG_U)
          call delete(mom%GS_p)
          ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
@@ -446,9 +455,16 @@
            call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
          case (2)
-           call CN_AB2_PPE_CG_mom_CG(mom%CG_U,mom%CG_p,mom%U,mom%Unm1,&
+           ! call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
+           ! mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
+
+           ! call CN_AB2_PPE_CG_mom_CG(mom%CG_U,mom%CG_p,mom%U,mom%Unm1,&
+           ! mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,5,100,mom%Ustar,&
+           ! mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
+
+           call CN_AB2_PPE_CG_mom_PCG(mom%PCG_U,mom%CG_p,mom%U,mom%Unm1,&
            mom%p,F,F,mom%U_CC,mom%m,mom%Re,mom%dTime,5,100,mom%Ustar,&
-           mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD),mom%nstep)
+           mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
          case default
          stop 'Error: solveUMethod must = 1,2 in solveMomentumEquation.'
          end select
@@ -493,7 +509,7 @@
 
 !          ! Advection Terms -----------------------------------------
 !          select case (advectiveUFormulation)
-!          case (1);call faceAdvectDonor(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,m)
+!          case (1);call advect_div(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,m)
 !          case (2);call faceAdvect(mom%temp_F,mom%U,mom%U,m)
 !          case (3);call faceAdvectHybrid(mom%temp_F,mom%U,mom%U,mom%temp_E1,mom%temp_E2,mom%U_CC,m)
 !          end select

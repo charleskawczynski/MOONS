@@ -25,7 +25,7 @@
 #endif
 
       integer,parameter :: un_max = 10**5 ! Largest allowable matrix to EXPORT
-      integer :: px = 0  ! Include/Exclude ghost points along x = (0,1)
+      integer :: px = 1  ! Include/Exclude ghost points along x = (0,1)
       integer :: py = 1  ! Include/Exclude ghost points along y = (0,1)
       integer :: pz = 1  ! Include/Exclude ghost points along z = (0,1)
 
