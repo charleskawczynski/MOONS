@@ -8,6 +8,7 @@
        use energySolver_mod
        use momentumSolver_mod
        use inductionSolver_mod
+       use induction_aux_mod
        implicit none
        
 #ifdef _SINGLE_PRECISION_
@@ -58,12 +59,18 @@
            call setIteration(ss_MHD,n_mhd)
            if (solveEnergy)    call solve(nrg,mom%U,mom%m,ss_MHD,dir)
            if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
-           ! if (solveInduction) call solve(ind,mom%U_E,mom%m,ss_MHD,dir)
-           if (solveInduction) call solve(ind,mom%U,ss_MHD,dir)
+           if (solveInduction) call solve(ind,mom%U_E,ss_MHD,dir)
+           ! if (solveInduction) call solve(ind,mom%U,ss_MHD,dir)
            ! if (solveInduction) call solve(ind,mom%U_CC,ss_MHD,dir)
 
            call assign(F,0.0_cp)
-           if (addJCrossB)  call computeAddJCrossB(F,ind,ind%Ha,mom%Re,ind%Rem)
+           if (addJCrossB) then
+             call compute_AddJCrossB(F,ind%B,ind%B0,ind%J_cc,ind%m,&
+                                     ind%D_fluid,ind%Ha,mom%Re,ind%Rem,&
+                                     ind%finite_Rem,mom%temp_F,ind%Bstar,&
+                                     ind%temp_CC,ind%jCrossB_F)
+           endif
+
            if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%Gr,mom%Re)
            if (addGravity)  call computeAddGravity(F,nrg,mom%Fr)
 

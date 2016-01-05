@@ -19,8 +19,8 @@
 
        private
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer,parameter :: preDefinedB_BCs = 2
+       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer :: preDefinedB_BCs = 1
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0

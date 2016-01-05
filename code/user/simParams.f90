@@ -28,7 +28,7 @@
        integer :: advectiveUFormulation     = 1 ! (1,2) = (Central difference, Advective)
        integer :: solveTMethod              = 1 ! (1) = (Explicit Euler)
        integer :: solveUMethod              = 1 ! (1) = (Explicit Euler)
-       integer :: solveBMethod              = 6
+       integer :: solveBMethod              = 4
        !                                      1 : Low Rem (GS, uniform properties)
        !                                      2 : Low Rem (PTS uniform properties)
        !                                      3 : Low Rem (PTS)

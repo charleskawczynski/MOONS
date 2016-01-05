@@ -24,6 +24,7 @@
        use energySolver_mod
        use momentumSolver_mod
        use inductionSolver_mod
+       use induction_aux_mod
        use inputFile_mod
 
        use MHDSolver_mod
@@ -169,7 +170,7 @@
 
 
          if (solveMomentum)  call computeDivergence(mom,mom%m)
-         if (solveInduction) call computeDivergence(ind,ind%m)
+         if (solveInduction) call compute_divBJ(ind%divB,ind%divJ,ind%B_face,ind%J_cc,ind%m)
 
          ! if (exportRawICs) then
          !   if (solveMomentum)  call exportRaw(mom,mom%m,dir)

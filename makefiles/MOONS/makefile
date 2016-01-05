@@ -26,10 +26,11 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -308,13 +309,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)induction_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Pfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energySolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)inductionSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentumSolver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90 \

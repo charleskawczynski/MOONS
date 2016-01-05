@@ -30,8 +30,8 @@
        public :: CN_AB2_PPE_CG_mom_PCG ! Tested on 12/30/2015
        public :: CN_AB2_PPE_GS_mom_CG
        public :: Euler_CG_Donor
-       public :: Euler_GS_Donor_mpg
        public :: Euler_GS_Donor
+       public :: Euler_GS_Donor_mpg
 
 
 #ifdef _SINGLE_PRECISION_

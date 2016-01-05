@@ -36,6 +36,7 @@
        use PCG_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
+       use induction_aux_mod
        ! use ADI_mod
        ! use MG_mod
        use probe_base_mod
@@ -51,12 +52,9 @@
 
        public :: export,exportTransient
        public :: printExportBCs,exportMaterial
-       public :: computeAddJCrossB,computeJCrossB
-
-       public :: computeDivergence
 
        logical :: lowRem = .false.
-       logical :: finiteRem = .true.
+       logical :: finiteRem = .false.
        logical :: semi_implicit = .false.
 
 
@@ -127,6 +125,7 @@
          real(cp) :: Rem              ! Magnetic Reynolds number
          real(cp) :: omega            ! Intensity of time changing magnetic field
          real(cp) :: theta
+         logical :: finite_Rem
        end type
 
        interface init;                 module procedure initInduction;                 end interface
@@ -137,7 +136,6 @@
        interface export;               module procedure export_induction;              end interface
        interface exportTransient;      module procedure inductionExportTransient;      end interface
        interface exportTransientFull;  module procedure inductionExportTransientFull;  end interface
-       interface computeDivergence;    module procedure computeDivergenceInduction;    end interface
        interface exportMaterial;       module procedure inductionExportMaterial;       end interface
 
        interface setDTime;             module procedure setDTimeInduction;             end interface
@@ -275,6 +273,8 @@
          if (lowRem) ind%MFP_B%c_ind = ind%dTime
          if (finiteRem) ind%MFP_B%c_ind = ind%dTime/ind%Rem
          if (semi_implicit) ind%MFP_B%c_ind = ind%dTime/ind%Rem*ind%theta
+
+         ind%finite_Rem = finiteRem
 
          ! init(CG,m,x,k)
 
@@ -446,6 +446,7 @@
              call export_raw(m,ind%U_E%z%z ,dir//'Bfield/','W',0)
              call export_raw(m,ind%divB,dir//'Bfield/','divB',0)
              call export_raw(m,ind%divJ,dir//'Jfield/','divJ',0)
+             call export_raw(m,ind%sigma,dir//'material/','sigma',0)
 
              call export_processed(m,ind%B0   ,dir//'Bfield/','B0',1)
              call export_processed(m,ind%B    ,dir//'Bfield/','B',1)
@@ -516,10 +517,10 @@
          implicit none
          ! ********************** INPUT / OUTPUT ************************
          type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U
+         type(TF),intent(in) :: U
          type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir
-         logical :: exportNow
+         logical :: exportNow,compute_ME
          ! ********************** LOCAL VARIABLES ***********************
          ! ind%B0%x = exp(-ind%omega*ind%t)
          ! ind%B0%y = exp(-ind%omega*ind%t)
@@ -533,10 +534,10 @@
          ! ind%B0%y = 0.0_cp
          ! ind%B0%z = exp(-ind%omega*ind%t)
 
+         call embedVelocity_E(ind%U_E,U,ind%D_fluid)
 
-         ! call embedVelocity_E(ind,U)
-         call embedVelocity_F(ind,U)
-         ! call embedVelocity_CC(ind,U)
+         ! call embedVelocity_F(ind%U_Ft,U,ind%D_fluid)
+         ! call embedVelocity_CC(ind%U_cct,U,ind%D_fluid)
 
          ! call assign(ind%dB0dt,0.0_cp)
          ! call assignZ(ind%dB0dt,ind%omega*exp(-ind%omega*ind%t))
@@ -573,7 +574,7 @@
 
            call face2cellCenter(ind%B,ind%B_face,ind%m)
          endif
-         if (finiteRem) then
+         if (ind%finite_Rem) then
            ! call Finite_Rem_CG_implicit(ind%B,ind%B0,ind%U_E,ind%sigmaInv_edge,&
            ! ind%m,5,getExportErrors(ss_MHD),ind%temp_F,ind%temp_E_TF,ind%temp_E)
 
@@ -643,18 +644,25 @@
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
-         call computeCurrent(ind)
+         call compute_J(ind%temp_E,ind%B_face,ind%Rem,ind%m,ind%finite_Rem)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         call computeTotalMagneticEnergy(ind,ss_MHD)
-         call computeTotalMagneticEnergyFluid(ind,ss_MHD)
+         compute_ME = (computeKB.and.getExportErrors(ss_MHD).or.(ind%nstep.eq.0))
+         call add(ind%temp_CC,ind%B,ind%B0)
+         call compute_TME(ind%KBi_energy,ind%B,ind%nstep,compute_ME,ind%m)
+         call compute_TME(ind%KB0_energy,ind%B0,ind%nstep,compute_ME,ind%m)
+         call compute_TME(ind%KB_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+
+         call compute_TME_Fluid(ind%KBi_f_energy,ind%B,ind%nstep,compute_ME,ind%D_fluid)
+         call compute_TME_Fluid(ind%KB0_f_energy,ind%B0,ind%nstep,compute_ME,ind%D_fluid)
+         call compute_TME_Fluid(ind%KB_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
          call exportTransient(ind,ss_MHD)
 
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
 
-         if (getExportErrors(ss_MHD)) call computeDivergence(ind,ind%m)
+         if (getExportErrors(ss_MHD)) call compute_divBJ(ind%divB,ind%divJ,ind%B_face,ind%J_cc,ind%m)
          ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
 
          if (getPrintParams(ss_MHD)) then
@@ -757,263 +765,5 @@
          ! Impose BCs:
          call apply_BCs(ind%B,m)
        end subroutine
-
-       ! ********************* COMPUTE *****************************
-
-       subroutine computeAddJCrossB(jcrossB,ind,Ha,Re,Rem)
-         ! addJCrossB computes the ith component of Ha^2/Re j x B
-         ! where j is the total current and B is the applied or total mangetic
-         ! field, depending on the solveBMethod.
-         implicit none
-         type(VF),intent(inout) :: jcrossB
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Ha,Re,Rem
-         type(VF) :: temp
-         call init(temp,jcrossB)
-         call assign(temp,0.0_cp)
-         call computeJCrossB(temp,ind,Ha,Re,Rem)
-         call add(jcrossB,temp)
-         call delete(temp)
-       end subroutine
-
-       subroutine computeJCrossB(jcrossB,ind,Ha,Re,Rem)
-         ! computes
-         ! 
-         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
-         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
-         ! 
-         implicit none
-         type(VF),intent(inout) :: jcrossB
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Ha,Re,Rem
-         select case (solveBMethod)
-         case (5,6) ! Finite Rem
-           call add(ind%Bstar,ind%B,ind%B0)
-           call curl(ind%J_cc,ind%B,ind%m)
-           call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
-         case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%m)
-           call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
-         end select
-       end subroutine
-
-       subroutine computeJCrossB_functional(jcrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,Bstar,temp_CC,jCrossB_F)
-         ! computes
-         ! 
-         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
-         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
-         ! 
-         implicit none
-         type(VF),intent(inout) :: jcrossB
-         type(VF),intent(in) :: B,B0
-         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,jCrossB_F
-         type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: Ha,Re,Rem
-         select case (solveBMethod)
-         case (5,6) ! Finite Rem
-           call add(Bstar,B,B0)
-           call curl(J_cc,B,m)
-           call cross(temp_CC,J_cc,Bstar)
-           call cellCenter2Face(jCrossB_F,temp_CC,m)
-           call extractFace(jcrossB,jCrossB_F,D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
-         case default ! Low Rem
-           call curl(J_cc,B,m)
-           call cross(temp_CC,J_cc,B0)
-           call cellCenter2Face(jCrossB_F,temp_CC,m)
-           call extractFace(jcrossB,jCrossB_F,D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
-         end select
-       end subroutine
-
-       subroutine computeJCrossB_Bface(jcrossB,ind,Ha,Re,Rem)
-         ! computes
-         ! 
-         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
-         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
-         ! 
-         implicit none
-         type(VF),intent(inout) :: jcrossB
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Ha,Re,Rem
-         select case (solveBMethod)
-         case (5,6) ! Finite Rem
-           call add(ind%Bstar,ind%B,ind%B0)
-           call curl(ind%J,ind%B,ind%m)
-           ! call edge2Face(ind%temp_F,ind%J,ind%m)
-
-           call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
-         case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%m)
-           call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
-         end select
-       end subroutine
-
-       subroutine computeJCrossB_new(jcrossB,ind,Ha,Re,Rem)
-         ! computes
-         ! 
-         !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
-         !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
-         ! 
-         implicit none
-         type(VF),intent(inout) :: jcrossB
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Ha,Re,Rem
-
-         ! Magnetic Pressure (not yet done)
-         select case (solveBMethod)
-         case (5,6) ! Finite Rem
-           call add(ind%Bstar,ind%B,ind%B0)
-           call square(ind%Bstar)
-           call divide(ind%Bstar,2.0_cp)
-           ! call grad(ind%jCrossB_F,ind%Bstar,ind%m)
-           call multiply(ind%jCrossB_F,-1.0_cp)
-         case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%m)
-           call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
-         end select
-
-         ! Magnetic Stress (not yet done)
-         select case (solveBMethod)
-         case (5,6) ! Finite Rem
-           call add(ind%Bstar,ind%B,ind%B0)
-           call curl(ind%J_cc,ind%B,ind%m)
-           call cross(ind%temp_CC,ind%J_cc,ind%Bstar)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
-         case default ! Low Rem
-           call curl(ind%J_cc,ind%B,ind%m)
-           call cross(ind%temp_CC,ind%J_cc,ind%B0)
-           call cellCenter2Face(ind%jCrossB_F,ind%temp_CC,ind%m)
-           call extractFace(jcrossB,ind%jCrossB_F,ind%D_fluid)
-           call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
-         end select
-       end subroutine
-
-       subroutine computeDivergenceInduction(ind,m)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(mesh),intent(in) :: m
-         if (solveInduction) then
-           select case (solveBMethod)
-           case (4:5)
-             ! CT method enforces div(b) = 0, (result is in CC), 
-             ! when computed from FACE-centered data:
-             call div(ind%divB,ind%temp_F,m)
-           case (6)
-             call div(ind%divB,ind%B_face,m)
-           case default
-             call div(ind%divB,ind%B,m)
-           end select
-         endif
-         call div(ind%divJ,ind%J_cc,m)
-       end subroutine
-
-       subroutine computeCurrent(ind)
-         implicit none
-         type(induction),intent(inout) :: ind
-         call add(ind%Bstar,ind%B0,ind%B)
-         call curl(ind%J_cc,ind%Bstar,ind%m)
-       end subroutine
-
-       subroutine computeTotalMagneticEnergyFluid(ind,ss_MHD)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(solverSettings),intent(in) :: ss_MHD
-         real(cp) :: K_energy
-          if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call assign(ind%Bstar,ind%B)
-           call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,ind%Bstar,ind%D_fluid)
-           call set(ind%KB_f_energy,ind%nstep,K_energy)
-           call apply(ind%KB_f_energy)
-          endif
-          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call assign(ind%Bstar,ind%B)
-           call totalEnergy(K_energy,ind%Bstar,ind%D_fluid)
-           call set(ind%KBi_f_energy,ind%nstep,K_energy)
-           call apply(ind%KBi_f_energy)
-          endif
-          if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%Bstar,ind%D_fluid)
-           call set(ind%KB0_f_energy,ind%nstep,K_energy)
-           call apply(ind%KB0_f_energy)
-          endif
-       end subroutine
-
-       subroutine computeTotalMagneticEnergy(ind,ss_MHD)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(solverSettings),intent(in) :: ss_MHD
-         real(cp) :: K_energy
-          if (computeKB.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call assign(ind%Bstar,ind%B)
-           call add(ind%Bstar,ind%B0)
-           call totalEnergy(K_energy,ind%Bstar,ind%m)
-           call set(ind%KB_energy,ind%nstep,K_energy)
-           call apply(ind%KB_energy)
-          endif
-          if (computeKBi.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%B,ind%m)
-           call set(ind%KBi_energy,ind%nstep,K_energy)
-           call apply(ind%KBi_energy)
-          endif
-          if (computeKB0.and.getExportTransient(ss_MHD).or.ind%nstep.eq.0) then
-           call totalEnergy(K_energy,ind%B0,ind%m)
-           call set(ind%KB0_energy,ind%nstep,K_energy)
-           call apply(ind%KB0_energy)
-          endif
-       end subroutine
-
-       ! ********************* AUX *****************************
-
-       subroutine embedVelocity_E(ind,U_E)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(TF),intent(in) :: U_E ! Momentum edge velocity
-         call embedEdge(ind%U_E%x,U_E%x,ind%D_fluid)
-         call embedEdge(ind%U_E%y,U_E%y,ind%D_fluid)
-         call embedEdge(ind%U_E%z,U_E%z,ind%D_fluid)
-       end subroutine
-
-       subroutine embedVelocity_F(ind,U_F)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U_F ! Momentum edge velocity
-         call embedFace(ind%U_Ft,U_F,ind%D_fluid)
-       end subroutine
-
-       subroutine embedVelocity_CC(ind,U_CC)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U_CC ! Momentum edge velocity
-         call embedCC(ind%U_cct,U_CC,ind%D_fluid)
-       end subroutine
-
 
        end module

@@ -452,7 +452,10 @@
          logical :: exportNow
          select case(solveUMethod)
          case (1)
-           call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
+           ! call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
+           ! mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
+
+           call Euler_GS_Donor(mom%GS_p,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E1,mom%temp_E2,getExportErrors(ss_MHD))
          case (2)
            ! call Euler_CG_Donor(mom%CG_P,mom%U,mom%p,F,mom%U_CC,mom%m,mom%Re,mom%dTime,mom%NmaxPPE,&

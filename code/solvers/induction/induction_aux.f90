@@ -17,7 +17,7 @@
        private
        public :: compute_AddJCrossB
        public :: compute_JCrossB
-       public :: compute_divB
+       public :: compute_divBJ
        public :: compute_J
        public :: compute_TME_Fluid
        public :: compute_TME
@@ -49,7 +49,9 @@
          real(cp),intent(in) :: Ha,Re,Rem
          logical,intent(in) :: finite_Rem
          type(VF),intent(inout) :: J_cc,Bstar,temp_CC,jCrossB_F
-         call zeroGhostPoints(temp)
+         ! call zeroGhostPoints(temp)
+         ! call zeroWall(temp,m)
+         call assign(temp,0.0_cp)
          call compute_JCrossB(temp,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,Bstar,temp_CC,jCrossB_F)
          call add(jcrossB,temp)
        end subroutine
@@ -86,7 +88,7 @@
          endif
        end subroutine
 
-       subroutine compute_divB(divB,divJ,B,J,m)
+       subroutine compute_divBJ(divB,divJ,B,J,m)
          implicit none
          type(SF),intent(inout) :: divB,divJ
          type(VF),intent(in) :: B,J
@@ -95,15 +97,14 @@
          call div(divJ,J,m)
        end subroutine
 
-       subroutine compute_J(J,B,B0,Rem,m,temp_B,finite_Rem)
+       subroutine compute_J(J,B,Rem,m,finite_Rem)
          implicit none
-         type(VF),intent(in) :: B,B0
-         type(VF),intent(inout) :: J,temp_B
+         type(VF),intent(in) :: B
+         type(VF),intent(inout) :: J
          real(cp),intent(in) :: Rem
          type(mesh),intent(in) :: m
          logical,intent(in) :: finite_Rem
-         call add(temp_B,B0,B)
-         call curl(J,temp_B,m)
+         call curl(J,B,m)
          if (finite_Rem) call divide(J,Rem)
        end subroutine
 
