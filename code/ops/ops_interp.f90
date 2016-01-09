@@ -442,8 +442,7 @@
          case (1); edgeDir = 2
          case (2); edgeDir = 1
          case (3); edgeDir = 1
-         case default
-           stop 'Error: faceDir must = 1,2,3 in face2Node.'
+         case default; stop 'Error: faceDir must = 1,2,3 in face2Node_SF in ops_interp.f90'
          end select
          call face2Edge(tempE,face,m,faceDir,edgeDir)
          call edge2Node(node,tempE,m,edgeDir)
@@ -486,8 +485,7 @@
                   call face2Edge(edge,tempF,m,1,2)
          case(3); call cellCenter2Face(tempF,cellCenter,m,1)
                   call face2Edge(edge,tempF,m,1,3)
-         case default
-           stop 'Error: edgeDir must = 1,2,3 in cellCenter2Edge.'
+         case default; stop 'Error: edgeDir must = 1,2,3 in cellCenter2Edge_SF in ops_interp.f90'
          end select
        end subroutine
 
@@ -508,8 +506,7 @@
                    call edge2Face(face,tempEyxx,m,1,faceDir)
          case (3); call node2Edge(tempEyxx,node,m,1)
                    call edge2Face(face,tempEyxx,m,1,faceDir)
-         case default
-           stop 'Error: faceDir must = 1,2,3 in node2Face.'
+         case default; stop 'Error: faceDir must = 1,2,3 in node2Face_SF in ops_interp.f90'
          end select
        end subroutine
 
@@ -553,8 +550,7 @@
          case (1); faceDir = 2
          case (2); faceDir = 3
          case (3); faceDir = 1
-         case default
-         stop 'Error: edgeDir must = 1,2,3 in edge2CellCenter_RF in interpOps.f90'
+         case default; stop 'Error: edgeDir must = 1,2,3 in edge2CellCenter_RF in interpOps.f90'
          end select
          call edge2Face(tempF,edge,m,edgeDir,faceDir)
          call face2CellCenter(cellCenter,tempF,m,faceDir)
@@ -847,29 +843,22 @@
          integer,intent(in) :: dir1,dir2
          integer :: orthDir
          select case (dir1)
-           case (1);
-             select case (dir2)
-             case (2); orthDir = 3
-             case (3); orthDir = 2
-             case default
-               stop 'Error: bad input to orthogonalDirection'
-             end select
-           case (2);
-             select case (dir2)
-             case (1); orthDir = 3
-             case (3); orthDir = 1
-             case default
-               stop 'Error: bad input to orthogonalDirection'
-             end select
-           case (3);
-             select case (dir2)
-             case (1); orthDir = 2
-             case (2); orthDir = 1
-             case default
-               stop 'Error: bad input to orthogonalDirection'
-             end select
-           case default
-             stop 'Error: bad input to orthogonalDirection'
+         case (1); select case (dir2)
+                   case (2); orthDir = 3
+                   case (3); orthDir = 2
+                   case default; stop 'Error: bad input to orthogonalDirection'
+                   end select
+         case (2); select case (dir2)
+                   case (1); orthDir = 3
+                   case (3); orthDir = 1
+                   case default; stop 'Error: bad input to orthogonalDirection'
+                   end select
+         case (3); select case (dir2)
+                   case (1); orthDir = 2
+                   case (2); orthDir = 1
+                   case default; stop 'Error: bad input to orthogonalDirection'
+                   end select
+         case default; stop 'Error: bad input to orthogonalDirection'
          end select
        end function
 

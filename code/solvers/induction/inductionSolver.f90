@@ -160,7 +160,6 @@
          call init_Face(ind%temp_F,m,0.0_cp)
          call init_Face(ind%temp_F2,m,0.0_cp)
          call init_Face(ind%temp_F3,m,0.0_cp)
-         call init_Face(ind%temp_F2,m,0.0_cp)
          call init_Face(ind%jCrossB_F,m,0.0_cp)
          call init_CC(ind%phi,m,0.0_cp)
          call init_CC(ind%temp_CC_SF,m,0.0_cp)

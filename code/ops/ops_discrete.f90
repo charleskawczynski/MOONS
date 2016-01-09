@@ -106,13 +106,13 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedCross_RF(AcrossB,Ax,Ay,Az,Bx,By,Bz,s,dir)
+       subroutine collocatedCross_RF(AcrossB,Ax,Ay,Az,Bx,By,Bz,sx,sy,sz,dir)
          ! This routine computes the ith component of A x B on a collocated mesh
          ! dir = (1,2,3)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: AcrossB
          real(cp),dimension(:,:,:),intent(in) :: Ax,Ay,Az,Bx,By,Bz
-         integer,dimension(3),intent(in) :: s
+         integer,dimension(3),intent(in) :: sx,sy,sz
          integer,intent(in) :: dir
          integer :: i,j,k
 #ifdef _DEBUG_DISCRETE_OPS_
@@ -134,24 +134,23 @@
          select case (dir)
          case (1)
            !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           do k=1,sy(3); do j=1,sy(2); do i=1,sy(1)
              AcrossB(i,j,k) = Ay(i,j,k)*Bz(i,j,k) - Az(i,j,k)*By(i,j,k)
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           do k=1,sz(3); do j=1,sz(2); do i=1,sz(1)
              AcrossB(i,j,k) = -(Ax(i,j,k)*Bz(i,j,k) - Az(i,j,k)*Bx(i,j,k))
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
-           do k=1,s(3); do j=1,s(2); do i=1,s(1)
+           do k=1,sx(3); do j=1,sx(2); do i=1,sx(1)
              AcrossB(i,j,k) = Ax(i,j,k)*By(i,j,k) - Ay(i,j,k)*Bx(i,j,k)
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default
-           stop 'Error: dir must = 1,2,3 in cross_RF.'
+         case default; stop 'Error: dir must = 1,2,3 in collocatedCross_RF in ops_discrete.f90.'
          end select
        end subroutine
 
@@ -173,7 +172,7 @@
            call cross(AcrossB%RF(i)%f,&
            Ax%RF(i)%f,Ay%RF(i)%f,Az%RF(i)%f,&
            Bx%RF(i)%f,By%RF(i)%f,Bz%RF(i)%f,&
-           Ax%RF(i)%s,dir)
+           Ax%RF(i)%s,Ay%RF(i)%s,Az%RF(i)%s,dir)
          enddo
        end subroutine
 
@@ -301,8 +300,7 @@
                  call d%subtract(curlU,w,m,1,1,0)
          case (3); call d%assign(curlU,v,m,1,1,0)
                  call d%subtract(curlU,u,m,1,2,0)
-         case default
-           stop 'Error: dir must = 1,2,3 in curl_RF.'
+         case default; stop 'Error: dir must = 1,2,3 in curl_SF in ops_discrete.f90'
          end select
        end subroutine
 
@@ -364,6 +362,10 @@
        ! *********************************************************************************
 
        subroutine collocatedCross_VF(AcrossB,A,B)
+         ! NOTE: The diagonal are not used. The diagonal is:
+         !       Ax,Bx for dir = 1
+         !       Ay,By for dir = 2
+         !       Az,Bz for dir = 3
          implicit none
          type(VF),intent(inout) :: AcrossB
          type(VF),intent(in) :: A,B
@@ -400,16 +402,16 @@
          call lap(lapU%z,U%z,m)
        end subroutine
 
-       subroutine lapVarCoeff_VF(lapU,u,k,m,temp)
+       subroutine lapVarCoeff_VF(lapU,u,k,m,tempk)
          implicit none
          type(SF),intent(inout) :: lapU
          type(SF),intent(in) :: u
          type(VF),intent(in) :: k
          type(mesh),intent(in) :: m
-         type(VF),intent(inout) :: temp ! same shape as k
-         call grad(temp,u,m)
-         call multiply(temp,k)
-         call div(lapU,temp,m)
+         type(VF),intent(inout) :: tempk
+         call grad(tempk,u,m)
+         call multiply(tempk,k)
+         call div(lapU,tempk,m)
        end subroutine
 
        subroutine div_VF(divU,U,m)

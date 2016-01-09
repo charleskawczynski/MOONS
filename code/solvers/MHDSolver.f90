@@ -66,15 +66,16 @@
            call assign(F,0.0_cp)
            if (addJCrossB) then
 
-             call compute_AddJCrossB(F,ind%B_CC,ind%B0_CC,ind%J_cc,ind%m,&
-                                     ind%D_fluid,ind%Ha,mom%Re,ind%Rem,&
-                                     ind%finite_Rem,mom%temp_F,ind%Bstar_CC,&
-                                     ind%temp_CC,ind%temp_F2)
-             ! call compute_AddJCrossB_new(F,ind%B,ind%B0,ind%J,ind%m,&
-             !                             ind%D_fluid,ind%Ha,mom%Re,&
-             !                             ind%finite_Rem,ind%temp_CC_SF,&
-             !                             ind%temp_F,ind%temp_F1_TF,&
-             !                             ind%temp_F2_TF,mom%temp_F)
+             ! call compute_AddJCrossB(F,ind%B_CC,ind%B0_CC,ind%J_cc,ind%m,&
+             !                         ind%D_fluid,ind%Ha,mom%Re,ind%Rem,&
+             !                         ind%finite_Rem,mom%temp_F,ind%Bstar_CC,&
+             !                         ind%temp_CC,ind%temp_F2)
+       
+             call compute_AddJCrossB_new(F,ind%B,ind%B0,ind%J,ind%m,&
+                                         ind%D_fluid,ind%Ha,mom%Re,&
+                                         ind%finite_Rem,ind%temp_CC_SF,&
+                                         ind%temp_F,ind%temp_F1_TF,&
+                                         ind%temp_F2_TF,mom%temp_F)
            endif
 
            if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%Gr,mom%Re)
