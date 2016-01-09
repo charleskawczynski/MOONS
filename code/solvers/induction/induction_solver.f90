@@ -26,9 +26,7 @@
        public :: CT_Low_Rem
 
        ! Implicit time marching methods (diffusion implicit)
-       public :: ind_CG_BE_EE_cleanB_CG
-       public :: ind_CG_CN_AB2_cleanB_CG
-       public :: ind_CG_theta_AB2_cleanB_CG
+       public :: ind_PCG_BE_EE_cleanB_PCG
 
 
 #ifdef _SINGLE_PRECISION_
@@ -43,198 +41,104 @@
 
        contains
 
-       subroutine CT_Finite_Rem(B,B0,U_F,J,E,sigmaInv,m,dt,Rem,tmp_F,tmp_E)
+       subroutine CT_Finite_Rem(B,B0,U_E,J,sigmaInv_E,m,Rem,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
          ! Solves:
-         !             ∂B/∂t = -∇xE , E = j/σ - uxB⁰ , j = Rem⁻¹∇xB
-         ! or
-         !             ∂B/∂t = ∇x(uxB⁰) - Rem⁻¹∇x(σ⁻¹∇xB)
+         !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:
-         !             B,J,E
+         !             B (above)
+         !             J = Rem⁻¹∇xB
          ! Method:
          !             Constrained Transport (CT)
          ! Info:
-         !             cell face => B
-         !             cell edge => J,E,sigmaInv,U
+         !             cell face => B,B0
+         !             cell edge => J,sigmaInv_E,U_E
          !             Finite Rem
          implicit none
-         type(VF),intent(inout) :: B,J,E
-         type(VF),intent(in) :: B0,sigmaInv,U_F
-         type(VF),intent(inout) :: tmp_E,tmp_F
+         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0,sigmaInv_E
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt,Rem
-         call faceCrossFace_E(tmp_E,U_F,B0,m)
-         call multiply(E,tmp_E,-1.0_cp)
+         call add(temp_F2,B,B0) ! Since finite Rem
+         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
          call curl(J,B,m)
          call multiply(J,1.0_cp/Rem)
-         call multiply(tmp_E,J,sigmaInv)
-         call add(E,tmp_E)
-         call curl(tmp_F,E,m)
-         call multiply(tmp_F,-dt)
-         call add(B,tmp_F)
+         call multiply(temp_E,J,sigmaInv_E)
+         call curl(temp_F2,temp_E,m)
+         call subtract(temp_F1,temp_F2)
+         call multiply(temp_F1,dt)
+         call add(B,temp_F1)
          call apply_BCs(B,m)
        end subroutine
 
-       subroutine CT_Low_Rem(B,B0,U_F,J,E,sigmaInv,m,dt,N_induction,temp_F,temp_E)
+       subroutine CT_Low_Rem(B,B0,U_E,J,sigmaInv_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
          ! Solves:
-         !             ∂B/∂t = -∇xE , E = j/σ - uxB⁰ , j = ∇xB
-         ! or
          !             ∂B/∂t = ∇x(uxB⁰) - ∇x(σ⁻¹∇xB)
          ! Computes:
-         !             B,J,E
+         !             B (above)
+         !             J = ∇xB
          ! Method:
          !             Constrained Transport (CT)
          ! Info:
-         !             cell face => B
-         !             cell edge => J,E,sigmaInv,U
-         !             Low Rem
-         !             Quasi-static B
+         !             cell face => B,B0
+         !             cell edge => J,sigmaInv,U_E
+         !             Finite Rem
          implicit none
-         type(VF),intent(inout) :: B,J,E
-         type(VF),intent(in) :: B0,sigmaInv,U_F
-         type(VF),intent(inout) :: temp_F,temp_E
+         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0,sigmaInv_E
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_induction
          integer :: i
          do i=1,N_induction
-           call faceCrossFace_E(temp_E,U_F,B0,m)
-           call multiply(E,temp_E,-1.0_cp)
+           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
            call curl(J,B,m)
-           call multiply(temp_E,J,sigmaInv)
-           call add(E,temp_E)
-           call curl(temp_F,E,m)
-           call multiply(temp_F,-dt)
-           call add(B,temp_F)
+           call multiply(temp_E,J,sigmaInv_E)
+           call curl(temp_F2,temp_E,m)
+           call subtract(temp_F1,temp_F2)
+           call multiply(temp_F1,dt)
+           call add(B,temp_F1)
            call apply_BCs(B,m)
          enddo
        end subroutine
 
-       subroutine ind_CG_BE_EE_cleanB_CG(CG_B,CG_cleanB,B,B0,U_Ft,m,dt,N_induction,&
-         N_cleanB,compute_norms,temp_F,temp_F2,temp_E1,temp_E2,curlUCrossB,temp_CC,phi)
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,N_induction,&
+         N_cleanB,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
          ! Solves:
-         !             ∂B/∂t = -∇xE , E = j/σ - uxB⁰ , j = Rem⁻¹∇xB
-         ! or
-         !             ∂B/∂t = ∇x(uxB⁰) - Rem⁻¹∇x(σ⁻¹∇xB)
+         !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:
-         !             B,J,E
+         !             B (above)
          ! Method:
-         !             Diffusion-implicit with Conjugate Gradient method (CG)
+         !             Preconditioned Conjugate Gradient Method (induction equation)
+         !             Preconditioned Conjugate Gradient Method (elliptic cleaning procedure)
          ! Info:
-         !             cell face => B
-         !             cell edge => J,E,sigmaInv,U
+         !             cell face => B,B0
+         !             cell edge => sigmaInv_E,U_E
          !             Finite Rem
          implicit none
-         type(CG_solver_VF),intent(inout) :: CG_B
-         type(CG_solver_SF),intent(inout) :: CG_cleanB
+         type(PCG_solver_VF),intent(inout) :: PCG_B
+         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
          type(VF),intent(inout) :: B
-         type(VF),intent(in) :: B0,U_Ft
+         type(VF),intent(in) :: B0
+         type(TF),intent(in) :: U_E
          type(SF),intent(inout) :: temp_CC,phi
-         type(VF),intent(inout) :: temp_F,temp_F2,temp_E1,temp_E2,curlUCrossB
+         type(TF),intent(inout) :: temp_E_TF
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(mesh),intent(in) :: m
          integer,intent(in) :: N_induction,N_cleanB
          logical,intent(in) :: compute_norms
-         real(cp),intent(in) :: dt
-         call add(temp_F,B0,B) ! Finite Rem
-         call faceCurlCross_F(curlUCrossB,U_Ft,temp_F,m,temp_E1,temp_E2,temp_F2)
-         call multiply(curlUCrossB,-dt) ! Must be negative (in divergence form)
-         call add(curlUCrossB,B)
-         call solve(CG_B,B,curlUCrossB,m,N_induction,compute_norms)
+         ! Induction
+         call add(temp_F2,B,B0) ! Since finite Rem
+         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+         call solve(PCG_B,B,temp_F1,m,N_induction,compute_norms)
          ! Clean B
          call div(temp_CC,B,m)
-         call solve(CG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
-         call grad(temp_F,phi,m)
-         call subtract(B,temp_F)
-         call apply_BCs(B,m)
-       end subroutine
-
-       subroutine ind_CG_CN_AB2_cleanB_CG(CG_B,CG_cleanB,B,Bnm1,B0,B0nm1,U_Ft,m,dt,N_induction,&
-         N_cleanB,compute_norms,temp_F,temp_F2,temp_F3,temp_E1,temp_E2,curlUCrossB,temp_CC,phi)
-         ! Solves:
-         !             ∂B/∂t = -∇xE , E = j/σ - uxB⁰ , j = Rem⁻¹∇xB
-         ! or
-         !             ∂B/∂t = ∇x(uxB⁰) - Rem⁻¹∇x(σ⁻¹∇xB)
-         ! Computes:
-         !             B,J,E
-         ! Method:
-         !             Diffusion-implicit with Conjugate Gradient method (CG)
-         ! Info:
-         !             cell face => B
-         !             cell edge => J,E,sigmaInv,U
-         !             Finite Rem
-         implicit none
-         type(CG_solver_VF),intent(inout) :: CG_B
-         type(CG_solver_SF),intent(inout) :: CG_cleanB
-         type(VF),intent(inout) :: B,Bnm1
-         type(VF),intent(in) :: B0,B0nm1,U_Ft
-         type(SF),intent(inout) :: temp_CC,phi
-         type(VF),intent(inout) :: temp_F,temp_F2,temp_F3,temp_E1,temp_E2,curlUCrossB
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: N_induction,N_cleanB
-         logical,intent(in) :: compute_norms
-         real(cp),intent(in) :: dt
-         call add(temp_F,B0,B) ! Finite Rem
-         call faceCurlCross_F(temp_F3,U_Ft,temp_F,m,temp_E1,temp_E2,temp_F2)
-         call add(temp_F,B0nm1,Bnm1) ! Finite Rem
-         call faceCurlCross_F(curlUCrossB,U_Ft,temp_F,m,temp_E1,temp_E2,temp_F3)
-         call AB2_overwrite(curlUCrossB,temp_F3)
-         call multiply(curlUCrossB,-dt) ! Must be negative (in divergence form)
-         call add(curlUCrossB,B)
-         call assign(Bnm1,B)
-         call solve(CG_B,B,curlUCrossB,m,N_induction,compute_norms)
-         ! Clean B
-         call div(temp_CC,B,m)
-         call solve(CG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
-         call grad(temp_F,phi,m)
-         call subtract(B,temp_F)
-         call apply_BCs(B,m)
-       end subroutine
-
-       subroutine ind_CG_theta_AB2_cleanB_CG(CG_B,CG_cleanB,B,B0,U_Ft,m,&
-         sigmaInv_edge,dt,Rem,theta,N_induction,N_cleanB,compute_norms,&
-         temp_F,temp_F2,temp_E1,temp_E2,curlUCrossB,temp_CC,phi)
-         ! Solves:
-         !             ∂B/∂t = -∇xE , E = j/σ - uxB⁰ , j = Rem⁻¹∇xB
-         ! or
-         !             ∂B/∂t = ∇x(uxB⁰) - Rem⁻¹∇x(σ⁻¹∇xB)
-         ! Computes:
-         !             B,J,E
-         ! Method:
-         !             Diffusion-implicit with Conjugate Gradient method (CG)
-         ! Info:
-         !             cell face => B
-         !             cell edge => J,E,sigmaInv,U
-         !             Finite Rem
-         implicit none
-         type(CG_solver_VF),intent(inout) :: CG_B
-         type(CG_solver_SF),intent(inout) :: CG_cleanB
-         type(VF),intent(inout) :: B
-         type(VF),intent(in) :: B0,U_Ft,sigmaInv_edge
-         type(SF),intent(inout) :: temp_CC,phi
-         type(VF),intent(inout) :: temp_F,temp_F2,temp_E1,temp_E2,curlUCrossB
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: N_induction,N_cleanB
-         logical,intent(in) :: compute_norms
-         real(cp),intent(in) :: dt,Rem,theta
-
-         call add(temp_F,B0,B) ! Finite Rem
-         call faceCurlCross_F(curlUCrossB,U_Ft,temp_F,m,temp_E1,temp_E2,temp_F2)
-         call multiply(curlUCrossB,-dt) ! Must be negative (in divergence form)
-
-         call add(curlUCrossB,B)
-
-         call curl(temp_E1,B,m)
-         call multiply(temp_E1,sigmaInv_edge)
-         call curl(temp_F,temp_E1,m)
-         call multiply(temp_F,dt/Rem*(1.0_cp-theta))
-         call add(curlUCrossB,temp_F)
-
-         call solve(CG_B,B,curlUCrossB,m,N_induction,compute_norms)
-
-         ! Clean B
-         call div(temp_CC,B,m)
-         call solve(CG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
-         call grad(temp_F,phi,m)
-         call subtract(B,temp_F)
+         call solve(PCG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
+         call grad(temp_F1,phi,m)
+         call subtract(B,temp_F1)
          call apply_BCs(B,m)
        end subroutine
 

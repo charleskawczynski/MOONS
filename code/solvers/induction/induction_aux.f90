@@ -16,7 +16,9 @@
 
        private
        public :: compute_AddJCrossB
+       public :: compute_AddJCrossB_new
        public :: compute_JCrossB
+       public :: compute_JCrossB_new
        public :: compute_divBJ
        public :: compute_J
        public :: compute_TME_Fluid
@@ -37,55 +39,102 @@
 
        contains
 
-       subroutine compute_AddJCrossB(jcrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,temp,Bstar,temp_CC,jCrossB_F)
+       subroutine compute_AddJCrossB(jCrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,temp,Bstar,temp_CC,temp_F)
          ! addJCrossB computes the ith component of Ha^2/Re j x B
          ! where j is the total current and B is the applied or total mangetic
          ! field, depending on the solveBMethod.
          implicit none
-         type(VF),intent(inout) :: jcrossB,temp
+         type(VF),intent(inout) :: jCrossB,temp
          type(VF),intent(in) :: B,B0
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D_fluid
          real(cp),intent(in) :: Ha,Re,Rem
          logical,intent(in) :: finite_Rem
-         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,jCrossB_F
+         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,temp_F
          ! call zeroGhostPoints(temp)
          ! call zeroWall(temp,m)
          call assign(temp,0.0_cp)
-         call compute_JCrossB(temp,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,Bstar,temp_CC,jCrossB_F)
-         call add(jcrossB,temp)
+         call compute_JCrossB(temp,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,Bstar,temp_CC,temp_F)
+         call add(jCrossB,temp)
        end subroutine
 
-       subroutine compute_JCrossB(jcrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,Bstar,temp_CC,jCrossB_F)
+       subroutine compute_JCrossB(jCrossB,B,B0,J_cc,m,D_fluid,Ha,Re,Rem,finite_Rem,Bstar,temp_CC,temp_F)
          ! computes
          ! 
          !     finite Rem:  Ha^2/(Re x Rem) curl(B_induced) x (B0 + B_induced)
          !     low Rem:     Ha^2/(Re)       curl(B_induced) x (B0)
          ! 
          implicit none
-         type(VF),intent(inout) :: jcrossB
+         type(VF),intent(inout) :: jCrossB
          type(VF),intent(in) :: B,B0
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D_fluid
          real(cp),intent(in) :: Ha,Re,Rem
          logical,intent(in) :: finite_Rem
-         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,jCrossB_F
+         type(VF),intent(inout) :: J_cc,Bstar,temp_CC,temp_F
          if (finite_Rem) then
            call add(Bstar,B,B0)
            call curl(J_cc,B,m)
            call cross(temp_CC,J_cc,Bstar)
-           call cellCenter2Face(jCrossB_F,temp_CC,m)
-           call extractFace(jcrossB,jCrossB_F,D_fluid)
+           call cellCenter2Face(temp_F,temp_CC,m)
+           call extractFace(jCrossB,temp_F,D_fluid)
            call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/(Re*Rem))
+           call multiply(jCrossB,Ha**2.0_cp/(Re*Rem))
          else
            call curl(J_cc,B,m)
            call cross(temp_CC,J_cc,B0)
-           call cellCenter2Face(jCrossB_F,temp_CC,m)
-           call extractFace(jcrossB,jCrossB_F,D_fluid)
+           call cellCenter2Face(temp_F,temp_CC,m)
+           call extractFace(jCrossB,temp_F,D_fluid)
            call zeroGhostPoints(jCrossB)
-           call multiply(jcrossB,Ha**2.0_cp/Re)
+           call multiply(jCrossB,Ha**2.0_cp/Re)
          endif
+       end subroutine
+
+       subroutine compute_AddJCrossB_new(jcrossB,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
+         temp_CC,temp_F,temp_F1_TF,temp_F2_TF,temp)
+         implicit none
+         type(VF),intent(inout) :: jcrossB,temp
+         type(VF),intent(in) :: B,B0
+         type(VF),intent(in) :: J
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D_fluid
+         real(cp),intent(in) :: Ha,Re
+         logical,intent(in) :: finite_Rem
+         type(SF),intent(inout) :: temp_CC
+         type(VF),intent(inout) :: temp_F
+         type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
+         call compute_JCrossB_new(jCrossB,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
+         temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
+         call add(jcrossB,temp)
+       end subroutine
+
+       subroutine compute_JCrossB_new(jCrossB,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
+         temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
+         ! computes
+         ! 
+         !     finite Rem:  Ha^2/Re J x (B0 + B_induced)
+         !     low Rem:     Ha^2/Re J x (B0)
+         ! 
+         implicit none
+         type(VF),intent(inout) :: jCrossB
+         type(VF),intent(in) :: B,B0
+         type(VF),intent(in) :: J
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D_fluid
+         real(cp),intent(in) :: Ha,Re
+         logical,intent(in) :: finite_Rem
+         type(SF),intent(inout) :: temp_CC
+         type(VF),intent(inout) :: temp_F
+         type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
+         call edge2Face_no_diag(temp_F1_TF,J,m)
+         if (finite_Rem) then; call add(temp_F,B0,B)
+                               call face2Face_no_diag(temp_F2_TF,temp_F,m,temp_CC)
+         else;                 call face2Face_no_diag(temp_F2_TF,B0,m,temp_CC)
+         endif
+         call cross(temp_F,temp_F1_TF,temp_F2_TF)
+         call extractFace(jCrossB,temp_F,D_fluid)
+         call zeroGhostPoints(jCrossB)
+         call multiply(jCrossB,Ha**2.0_cp/Re)
        end subroutine
 
        subroutine compute_divBJ(divB,divJ,B,J,m)
@@ -105,7 +154,7 @@
          type(mesh),intent(in) :: m
          logical,intent(in) :: finite_Rem
          call curl(J,B,m)
-         if (finite_Rem) call divide(J,Rem)
+         if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
        subroutine compute_TME_Fluid(KB_energy,B,nstep,compute_ME,D_fluid)

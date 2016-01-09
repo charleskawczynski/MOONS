@@ -72,15 +72,14 @@
          type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
 
          ! --- Vector fields ---
-         type(VF) :: B,B0                             ! CC data
-         type(VF) :: J,J_cc,temp_E                    ! Edge data
+         type(VF) :: B,B0,Bstar                       ! CC data
+         type(VF) :: J,temp_E                         ! Edge data
          type(VF) :: B_face
          type(VF) :: temp_E1,temp_E2                  ! Edge data
          type(VF) :: temp_F,temp_F2,temp_F3
          type(VF) :: jCrossB_F                        ! Face data
-         type(VF) :: temp_CC,Bstar_CC                 ! CC data
+         type(VF) :: temp_CC,J_cc                     ! CC data
          type(VF) :: sigmaInv_edge
-         type(VF) :: B_CC,B0_CC
 
          ! --- Scalar fields ---
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
@@ -144,11 +143,9 @@
          call init_Edge(ind%temp_E_TF,m,0.0_cp)
          call init_Face(ind%temp_F1_TF,m,0.0_cp)
          call init_Face(ind%temp_F2_TF,m,0.0_cp)
-         call init_Face(ind%B,m,0.0_cp)
-         call init_Face(ind%B0,m,0.0_cp)
-         call init_CC(ind%B_CC,m,0.0_cp)
-         call init_CC(ind%B0_CC,m,0.0_cp)
-         call init_CC(ind%Bstar_CC,m,0.0_cp)
+         call init_CC(ind%B,m,0.0_cp)
+         call init_CC(ind%B0,m,0.0_cp)
+         call init_CC(ind%Bstar,m,0.0_cp)
          call init_CC(ind%temp_CC,m,0.0_cp)
          call init_CC(ind%J_cc,m,0.0_cp)
          call init_Edge(ind%J,m,0.0_cp)
@@ -257,17 +254,14 @@
          type(induction),intent(inout) :: ind
          call delete(ind%B)
          call delete(ind%B0)
-         call delete(ind%Bstar_CC)
 
          call delete(ind%U_E)
 
          call delete(ind%J)
-         call delete(ind%J_cc)
-         call delete(ind%B_CC)
-         call delete(ind%B0_CC)
 
          call delete(ind%temp_CC)
          call delete(ind%temp_E)
+         call delete(ind%Bstar)
          call delete(ind%temp_E1)
          call delete(ind%temp_E2)
          call delete(ind%temp_F)
@@ -278,6 +272,7 @@
          call delete(ind%temp_F2)
          call delete(ind%jCrossB_F)
          call delete(ind%temp_CC_SF)
+         call delete(ind%J_cc)
 
          call delete(ind%temp_F1_TF)
          call delete(ind%temp_F2_TF)
@@ -435,19 +430,26 @@
          select case (solveBMethod)
          case (1)
 
-         call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
+         call cellCenter2Face(ind%B_face,ind%B,ind%m)
+         call cellCenter2Face(ind%temp_F,ind%B0,ind%m)
+         call CT_Low_Rem(ind%B_face,ind%temp_F,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
          ind%NmaxB,ind%dTime,ind%temp_F2,ind%temp_F3,ind%temp_E,ind%temp_E_TF)
+         call div(ind%divB,ind%B_face,ind%m)
+         call face2cellCenter(ind%B,ind%B_face,ind%m)
 
          case (2)
 
-         call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
+         call CT_Finite_Rem(ind%B,ind%temp_F,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
          ind%Rem,ind%dTime,ind%temp_F2,ind%temp_F3,ind%temp_E,ind%temp_E_TF)
 
          case (3)
 
+         ! call cellCenter2Face(ind%temp_F,ind%B0,ind%m)
          ! call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,&
          ! ind%NmaxB,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ! ind%temp_E_TF,ind%temp_CC,ind%phi)
+         ! call face2cellCenter(ind%B,ind%B_face,ind%m)
+
 
          case default
          stop 'Error: bad solveBMethod input inductionSolver in inductionSolver.f90'
@@ -456,34 +458,30 @@
          ind%nstep = ind%nstep + 1
          ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
 
-         call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
-
-         call edge2CellCenter(ind%J_cc,ind%J,ind%m,ind%temp_F)
-         call face2CellCenter(ind%B0_CC,ind%B0,ind%m)
-         call face2CellCenter(ind%B_CC,ind%B,ind%m)
+         ! call compute_J(ind%J,ind%B_face,ind%Rem,ind%m,ind%finite_Rem)
+         ! call edge2Cellcenter(ind%J_cc,ind%J,ind%m,ind%temp_F)
+         call curl(ind%J_cc,ind%B,ind%m)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          compute_ME = (computeKB.and.getExportErrors(ss_MHD).or.(ind%nstep.eq.0))
 
-         call add(ind%temp_F,ind%B,ind%B0)
-         call face2cellCenter(ind%temp_CC,ind%temp_F,ind%m)
-         call compute_TME(ind%KB_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KB_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
-
-         call face2cellCenter(ind%B_CC,ind%B,ind%m)
-         call compute_TME(ind%KBi_energy,ind%B_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KBi_f_energy,ind%B_CC,ind%nstep,compute_ME,ind%D_fluid)
-
-         call face2cellCenter(ind%B0_CC,ind%B0,ind%m)
-         call compute_TME(ind%KB0_energy,ind%B0_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KB0_f_energy,ind%B0_CC,ind%nstep,compute_ME,ind%D_fluid)
+         ! call add(ind%temp_F,ind%B,ind%B0)
+         ! call face2cellCenter(ind%temp_CC,ind%temp_F,ind%m)
+         ! call compute_TME(ind%KB_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         ! call compute_TME_fluid(ind%KB_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
+         ! call face2cellCenter(ind%temp_CC,ind%B,ind%m)
+         ! call compute_TME(ind%KBi_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         ! call compute_TME_fluid(ind%KBi_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
+         ! call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+         ! call compute_TME(ind%KB0_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         ! call compute_TME_fluid(ind%KB0_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
          call exportTransient(ind,ss_MHD)
 
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
 
-         if (getExportErrors(ss_MHD)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
+         if (getExportErrors(ss_MHD)) call compute_divBJ(ind%divB,ind%divJ,ind%B_face,ind%J,ind%m)
          ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
 
          if (getPrintParams(ss_MHD)) then
@@ -497,5 +495,6 @@
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
        end subroutine
+
 
        end module

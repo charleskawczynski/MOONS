@@ -168,9 +168,8 @@
          call print(mom%m)
          ! call print(ind%m)
 
-
-         if (solveMomentum)  call computeDivergence(mom,mom%m)
-         if (solveInduction) call compute_divBJ(ind%divB,ind%divJ,ind%B_face,ind%J_cc,ind%m)
+         ! if (solveMomentum)  call computeDivergence(mom,mom%m)
+         ! if (solveInduction) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
 
          ! if (exportRawICs) then
          !   if (solveMomentum)  call exportRaw(mom,mom%m,dir)
@@ -186,7 +185,7 @@
          ! endif
 
          if (stopAfterExportICs) then
-           stop 'Finished exporting ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
+           stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          endif
 
          ! call checkGrid(gd)

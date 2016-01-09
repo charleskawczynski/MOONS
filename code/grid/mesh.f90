@@ -140,7 +140,7 @@
          call delete(m_out)
          m_out%s = m_in%s
          allocate(m_out%g(m_in%s))
-         do i = 1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
+         do i=1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
          call initProps(m_out)
        end subroutine
 

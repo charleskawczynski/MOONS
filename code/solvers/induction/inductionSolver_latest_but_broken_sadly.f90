@@ -73,14 +73,13 @@
 
          ! --- Vector fields ---
          type(VF) :: B,B0                             ! CC data
-         type(VF) :: J,J_cc,temp_E                    ! Edge data
+         type(VF) :: J,temp_E                    ! Edge data
          type(VF) :: B_face
          type(VF) :: temp_E1,temp_E2                  ! Edge data
          type(VF) :: temp_F,temp_F2,temp_F3
          type(VF) :: jCrossB_F                        ! Face data
-         type(VF) :: temp_CC,Bstar_CC                 ! CC data
+         type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
-         type(VF) :: B_CC,B0_CC
 
          ! --- Scalar fields ---
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
@@ -146,11 +145,7 @@
          call init_Face(ind%temp_F2_TF,m,0.0_cp)
          call init_Face(ind%B,m,0.0_cp)
          call init_Face(ind%B0,m,0.0_cp)
-         call init_CC(ind%B_CC,m,0.0_cp)
-         call init_CC(ind%B0_CC,m,0.0_cp)
-         call init_CC(ind%Bstar_CC,m,0.0_cp)
          call init_CC(ind%temp_CC,m,0.0_cp)
-         call init_CC(ind%J_cc,m,0.0_cp)
          call init_Edge(ind%J,m,0.0_cp)
          call init_Edge(ind%temp_E,m,0.0_cp)
          call init_Edge(ind%temp_E1,m,0.0_cp)
@@ -257,14 +252,10 @@
          type(induction),intent(inout) :: ind
          call delete(ind%B)
          call delete(ind%B0)
-         call delete(ind%Bstar_CC)
 
          call delete(ind%U_E)
 
          call delete(ind%J)
-         call delete(ind%J_cc)
-         call delete(ind%B_CC)
-         call delete(ind%B0_CC)
 
          call delete(ind%temp_CC)
          call delete(ind%temp_E)
@@ -445,9 +436,12 @@
 
          case (3)
 
+         ! call cellCenter2Face(ind%temp_F,ind%B0,ind%m)
          ! call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,&
          ! ind%NmaxB,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ! ind%temp_E_TF,ind%temp_CC,ind%phi)
+         ! call face2cellCenter(ind%B,ind%B_face,ind%m)
+
 
          case default
          stop 'Error: bad solveBMethod input inductionSolver in inductionSolver.f90'
@@ -458,10 +452,6 @@
 
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call edge2CellCenter(ind%J_cc,ind%J,ind%m,ind%temp_F)
-         call face2CellCenter(ind%B0_CC,ind%B0,ind%m)
-         call face2CellCenter(ind%B_CC,ind%B,ind%m)
-
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          compute_ME = (computeKB.and.getExportErrors(ss_MHD).or.(ind%nstep.eq.0))
@@ -471,13 +461,13 @@
          call compute_TME(ind%KB_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
          call compute_TME_fluid(ind%KB_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
-         call face2cellCenter(ind%B_CC,ind%B,ind%m)
-         call compute_TME(ind%KBi_energy,ind%B_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KBi_f_energy,ind%B_CC,ind%nstep,compute_ME,ind%D_fluid)
+         call face2cellCenter(ind%temp_CC,ind%B,ind%m)
+         call compute_TME(ind%KBi_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         call compute_TME_fluid(ind%KBi_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
-         call face2cellCenter(ind%B0_CC,ind%B0,ind%m)
-         call compute_TME(ind%KB0_energy,ind%B0_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KB0_f_energy,ind%B0_CC,ind%nstep,compute_ME,ind%D_fluid)
+         call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+         call compute_TME(ind%KB0_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         call compute_TME_fluid(ind%KB0_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
          call exportTransient(ind,ss_MHD)
 
@@ -497,5 +487,6 @@
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
        end subroutine
+
 
        end module

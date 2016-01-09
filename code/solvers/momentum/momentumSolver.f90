@@ -237,16 +237,16 @@
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
          call init(mom%CG_P,Lap_uniform_props,Lap_uniform_props_explicit,mom%m,&
-         mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.true.,.false.)
+         mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
 
          call init(mom%CG_U,mom_diffusion,mom_diffusion_explicit,mom%m,&
-         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.false.)
+         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.false.,.false.)
 
         ! call init(PCG,operator,operator_explicit,preconditioner,m,MFP,&
         !   x,k,dir,name,testSymmetry,exportOperator,getDiagonal)
 
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_lap_VF,mom%m,&
-         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.true.,.false.)
+         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.false.,.false.)
          write(*,*) '     momentum SOR initialized'
 
          ! Initialize solver settings
@@ -477,6 +477,7 @@
          ! ********************* POST SOLUTION COMPUTATIONS *********************
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge(mom%U_E,mom%U,mom%m,mom%temp_CC,mom%temp_F)
+         ! call face2edge_no_diag(mom%U_E,mom%U,mom%m)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
          call computeTotalKineticEnergy(mom,ss_MHD)

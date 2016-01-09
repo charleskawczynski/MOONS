@@ -38,21 +38,40 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine advect_B(adv,U_E,B_F,m,temp_E_TF,temp_E_VF)
+       subroutine advect_B(adv,U_E,B_F,m,temp_E_TF,temp_E)
          ! Computes
          ! 
          !      (∇ x ( u_edge x B_face )_edge)_face
          ! 
          ! While minimizing interpolations.
          implicit none
-         type(VF),intent(inout) :: adv,temp_E_VF
+         type(VF),intent(inout) :: adv,temp_E
          type(TF),intent(inout) :: temp_E_TF
          type(TF),intent(in) :: U_E
          type(VF),intent(in) :: B_F
          type(mesh),intent(in) :: m
-         call face2Edge(temp_E_TF,B_F,m)
-         call cross(temp_E_VF,U_E,temp_E_TF) ! Diagonals not needed
-         call curl(adv,temp_E_VF,m)
+         call edgeCrossFace_E(temp_E,U_E,B_F,m,temp_E_TF)
+         call curl(adv,temp_E,m)
+       end subroutine
+
+       subroutine edgeCrossFace_E(AcrossB_E,A_E,B_F,m,temp_B_E)
+         ! Computes
+         ! 
+         !      ( u_edge x B_face )_edge
+         ! 
+         ! While minimizing interpolations.
+         ! There is some memory abuse here however, 
+         ! since the diagonals are not used..
+         implicit none
+         type(VF),intent(inout) :: AcrossB_E
+         type(TF),intent(in) :: A_E
+         type(VF),intent(in) :: B_F
+         type(mesh),intent(in) :: m
+         type(TF),intent(inout) :: temp_B_E
+         call face2Edge_no_diag(temp_B_E,B_F,m)
+         call cross(AcrossB_E%x,A_E%x%x,A_E%y%x,A_E%z%x,temp_B_E%x%x,temp_B_E%y%x,temp_B_E%z%x,1)
+         call cross(AcrossB_E%y,A_E%x%y,A_E%y%y,A_E%z%y,temp_B_E%x%y,temp_B_E%y%y,temp_B_E%z%y,2)
+         call cross(AcrossB_E%z,A_E%x%z,A_E%y%z,A_E%z%z,temp_B_E%x%z,temp_B_E%y%z,temp_B_E%z%z,3)
        end subroutine
 
        subroutine faceCrossFace_E(AcrossB,A,B,m)

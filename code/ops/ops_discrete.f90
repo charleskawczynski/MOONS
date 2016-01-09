@@ -115,6 +115,22 @@
          integer,dimension(3),intent(in) :: s
          integer,intent(in) :: dir
          integer :: i,j,k
+#ifdef _DEBUG_DISCRETE_OPS_
+         integer,dimension(3) :: sAx,sAy,sAz,sBx,sBy,sBz
+         sAx = shape(Ax); sAy = shape(Ay); sAz = shape(Az)
+         sBx = shape(Bx); sBy = shape(By); sBz = shape(Bz)
+         if (sAx(1).ne.sBx(1)) stop 'Error: sAx(1).ne.sBx(1) in collocatedCross_RF in ops_discrete.f90'
+         if (sAx(2).ne.sBx(2)) stop 'Error: sAx(2).ne.sBx(2) in collocatedCross_RF in ops_discrete.f90'
+         if (sAx(3).ne.sBx(3)) stop 'Error: sAx(3).ne.sBx(3) in collocatedCross_RF in ops_discrete.f90'
+
+         if (sAy(1).ne.sBy(1)) stop 'Error: sAy(1).ne.sBy(1) in collocatedCross_RF in ops_discrete.f90'
+         if (sAy(2).ne.sBy(2)) stop 'Error: sAy(2).ne.sBy(2) in collocatedCross_RF in ops_discrete.f90'
+         if (sAy(3).ne.sBy(3)) stop 'Error: sAy(3).ne.sBy(3) in collocatedCross_RF in ops_discrete.f90'
+
+         if (sAz(1).ne.sBz(1)) stop 'Error: sAz(1).ne.sBz(1) in collocatedCross_RF in ops_discrete.f90'
+         if (sAz(2).ne.sBz(2)) stop 'Error: sAz(2).ne.sBz(2) in collocatedCross_RF in ops_discrete.f90'
+         if (sAz(3).ne.sBz(3)) stop 'Error: sAz(3).ne.sBz(3) in collocatedCross_RF in ops_discrete.f90'
+#endif
          select case (dir)
          case (1)
            !$OMP PARALLEL DO
@@ -365,6 +381,7 @@
          !      or y-edge for edge data).
          ! Since this is a collocated operation, the second
          ! index should be the same (data should be collocated).
+         ! NOTE: The diagonal, xx,yy,zz are not used.
          implicit none
          type(VF),intent(inout) :: AcrossB
          type(TF),intent(in) :: A,B

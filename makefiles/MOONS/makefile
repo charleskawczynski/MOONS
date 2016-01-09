@@ -23,7 +23,6 @@ USER = charl
 SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # SRC_DIR = C:$(PS)Users$(PS)LM_MHD$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 
-
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
@@ -54,7 +53,6 @@ FCFLAGS += -D_FFT_RADIX2_
 
 # Order of accuracy of finite difference stencil
 # FCFLAGS += -D_STENCILS_O2_
-# FCFLAGS += -D_COORDINATES_O2_STENCILS_BOUNDARIES_ # not compatible with CG
 # FCFLAGS += -D_STENCILS_O4_
 
 FCFLAGS += -fopenmp
@@ -67,29 +65,28 @@ FCFLAGS += -fopenmp
 # FLIBS = $(LIB_DIR)$(PS)tecio.lib
 
 # ****************** DEBUGGING **********************
-FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 # fcheck=all includes -fcheck-array-temporaries, 
 # which triggers tons of warning in stencils.f90
 # So include all but this one:
+FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
-# FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
-# FC_DEBUG += -Wall -fbacktrace -O0 -Og
-# FC_DEBUG += -fbacktrace -O0 -Og
-FC_DEBUG += -D_DEBUG_DEL_
 
-# FC_DEBUG += -D_DEBUG_DEL_IMPLICIT_
-FC_DEBUG += -D_DEBUG_INTERP_
+FC_DEBUG += -D_DEBUG_RF_
+FC_DEBUG += -D_DEBUG_SF_
+FC_DEBUG += -D_DEBUG_VF_
+FC_DEBUG += -D_DEBUG_TF_
+
+# _DEBUG_COORDINATES_ is for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
+
+FC_DEBUG += -D_DEBUG_DEL_
+FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
+FC_DEBUG += -D_DEBUG_INTERP_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 
 # Suppress temporrary array warning:
 FC_DEBUG += -Wno-array-temporaries
-
-# FC_DEBUG += -D_DEBUG_RF_
-# FC_DEBUG += -D_DEBUG_SF_
-# FC_DEBUG += -D_DEBUG_VF_
-# FC_DEBUG += -D_DEBUG_TF_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -g -O3
@@ -119,9 +116,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -133,7 +130,6 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_PCG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
-
 
 TARGET = $(TARGET_DIR)$(PS)MOONS
 # TARGET = $(TARGET_DIR)$(PS)unitTest
