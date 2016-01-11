@@ -63,17 +63,19 @@
 
       contains
 
-      subroutine init_PCG_SF(PCG,operator,operator_explicit,preconditioner,m,MFP,&
+      subroutine init_PCG_SF(PCG,operator,operator_explicit,Minv,m,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator,operator_explicit,preconditioner
+        external :: operator,operator_explicit
         type(PCG_solver_SF),intent(inout) :: PCG
+        type(SF),intent(in) :: Minv
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
+        type(SF) :: temp_Minv
         call init(PCG%r,x)
         call init(PCG%p,x)
         call init(PCG%tempx,x)
@@ -85,6 +87,7 @@
         call init(PCG%Minv,x)
         call init(PCG%norm)
         call assign(PCG%k,k)
+        call assign(PCG%Minv,Minv)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
         PCG%un = newAndOpen(dir,'norm_PCG_'//name)
@@ -92,7 +95,8 @@
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
 
-        call preconditioner(PCG%Minv,m,k,PCG%vol)
+        call init(temp_Minv,Minv)
+        call assign(temp_Minv,PCG%Minv)
         if (verifyPreconditioner) then
           call export_raw(m,PCG%Minv,dir,'PCG_SF_prec_tec_'//name,0)
           call export_matrix(PCG%Minv,dir,'PCG_SF_prec_mat_'//name)
@@ -100,7 +104,8 @@
           call export_raw(m,PCG%Minv,dir,'PCG_SF_op_tec_diag_'//name,0)
           call export_matrix(PCG%Minv,dir,'PCG_SF_op_mat_diag_'//name)
         endif
-        call preconditioner(PCG%Minv,m,k,PCG%vol)
+        call assign(PCG%Minv,temp_Minv)
+        call delete(temp_Minv)
 
         if (testSymmetry) then
           call test_symmetry(operator,'PCG_SF_'//name,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
@@ -112,16 +117,18 @@
         PCG%N_iter = 1
       end subroutine
 
-      subroutine init_PCG_VF(PCG,operator,operator_explicit,preconditioner,m,MFP,&
+      subroutine init_PCG_VF(PCG,operator,operator_explicit,Minv,m,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator,operator_explicit,preconditioner
+        external :: operator,operator_explicit
         type(PCG_solver_VF),intent(inout) :: PCG
+        type(VF),intent(in) :: Minv
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
+        type(VF) :: temp_Minv
         call init(PCG%r,x)
         call init(PCG%p,x)
         call init(PCG%tempx,x)
@@ -133,6 +140,7 @@
         call init(PCG%Minv,x)
         call init(PCG%norm)
         call assign(PCG%k,k)
+        call assign(PCG%Minv,Minv)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
         PCG%un(1) = newAndOpen(dir,'norm_PCG_x_'//name)
@@ -144,7 +152,8 @@
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
 
-        call preconditioner(PCG%Minv,m,k,PCG%vol)
+        call init(temp_Minv,Minv)
+        call assign(temp_Minv,PCG%Minv)
         if (verifyPreconditioner) then
           call export_raw(m,PCG%Minv,dir,'PCG_VF_prec_tec_'//name,0)
           call export_matrix(PCG%Minv,dir,'PCG_VF_prec_mat_'//name)
@@ -152,7 +161,8 @@
           call export_raw(m,PCG%Minv,dir,'PCG_VF_op_tec_diag_'//name,0)
           call export_matrix(PCG%Minv,dir,'PCG_VF_op_mat_diag_'//name)
         endif
-        call preconditioner(PCG%Minv,m,k,PCG%vol)
+        call assign(PCG%Minv,temp_Minv)
+        call delete(temp_Minv)
 
         if (testSymmetry) then
           call test_symmetry(operator,'PCG_VF_'//name,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)

@@ -181,6 +181,12 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
+        ! lap_centered is a very bad and expensive routine. It needs
+        ! to be updated (a VF is allocated and deallocated inside).
+        ! The reason this is not as simple as the laplacian operator
+        ! is because U is staggered, and so k (the intermediate location), 
+        ! is staggered AND different for each component, which cannot be
+        ! achieved by a scalar field.
         call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
@@ -196,6 +202,12 @@
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
         call apply_BCs_implicit(x,m)
+        ! lap_centered is a very bad and expensive routine. It needs
+        ! to be updated (a VF is allocated and deallocated inside).
+        ! The reason this is not as simple as the laplacian operator
+        ! is because U is staggered, and so k (the intermediate location), 
+        ! is staggered AND different for each component, which cannot be
+        ! achieved by a scalar field.
         call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)

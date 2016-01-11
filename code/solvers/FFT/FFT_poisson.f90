@@ -1,10 +1,9 @@
       module FFT_poisson_mod
-      ! call FFT_poisson(u,f,u_bcs,g,ss,gridType,displayTF)
+      ! call FFT_poisson(u,f,u_bcs,g,gridType,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), grid (g)
-      ! and solver settings (ss) using a Fast Fourier Transform (FFT) 
-      ! method.
+      ! and using a Fast Fourier Transform (FFT) method.
       ! 
       ! Although grids may have different spacing in each direction,
       ! grid sizes along each direction are assumed uniform.
@@ -20,7 +19,6 @@
       use mesh_mod
       use apply_BCs_mod
       use norms_mod
-      use solversettings_mod
       use SF_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -82,13 +80,12 @@
         call delete(FFT%f)
       end subroutine
 
-      subroutine solveFFT_SF(FFT,u,f,m,ss,norm,displayTF,dir)
+      subroutine solveFFT_SF(FFT,u,f,m,norm,displayTF,dir)
         implicit none
         type(FFTSolver),intent(inout) :: FFT
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
-        type(solverSettings),intent(inout) :: ss
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
         integer,intent(in) :: dir
@@ -175,7 +172,7 @@
             call subtract(FFT%res,f)
             call zeroGhostPoints(FFT%res)
             call compute(norm,FFT%res,m)
-            call print(norm,FFT%name//' Residuals for '//trim(adjustl(getName(ss))))
+            call print(norm,'FFT Residuals')
           endif
           call delete(FFT)
         enddo

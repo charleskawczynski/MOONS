@@ -175,8 +175,7 @@
          case (1); x=1;y=0;z=0
          case (2); x=0;y=1;z=0
          case (3); x=0;y=0;z=1
-         case default
-           stop 'Error: dir must = 1,2,3 in stabilityTerms_RF in ops_aux.f90'
+         case default; stop 'Error: dir must = 1,2,3 in stabilityTerms_RF in ops_aux.f90'
          end select
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
@@ -716,10 +715,8 @@
          integer,intent(in) :: n,dir
          integer :: i
          call assign(fo,0.0_cp)
-         do i=1,fi%s
-           call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,m%g(i),n,fi%RF(i)%s,dir)
-           call zeroGhostPoints(fo%RF(i)%f,fo%RF(i)%s)
-         enddo
+         do i=1,fi%s; call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,m%g(i),n,fi%RF(i)%s,dir); enddo
+         call zeroGhostPoints(fo)
        end subroutine
 
        ! *********************************************************************************

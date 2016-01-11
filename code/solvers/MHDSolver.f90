@@ -5,9 +5,10 @@
        use myTime_mod
        use solverSettings_mod
 
-       use energySolver_mod
-       use momentumSolver_mod
-       use inductionSolver_mod
+       use energy_mod
+       use momentum_mod
+       use induction_mod
+       use energy_aux_mod
        use induction_aux_mod
        implicit none
        
@@ -57,29 +58,28 @@
          do while (continueLoop)
            call startTime(time)
            call setIteration(ss_MHD,n_mhd)
-           if (solveEnergy)    call solve(nrg,mom%U,mom%m,ss_MHD,dir)
+           if (solveEnergy)    call solve(nrg,mom%U  ,ss_MHD,dir)
            if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
            if (solveInduction) call solve(ind,mom%U_E,ss_MHD,dir)
-           ! if (solveInduction) call solve(ind,mom%U,ss_MHD,dir)
-           ! if (solveInduction) call solve(ind,mom%U_CC,ss_MHD,dir)
 
            call assign(F,0.0_cp)
            if (addJCrossB) then
-
-             ! call compute_AddJCrossB(F,ind%B_CC,ind%B0_CC,ind%J_cc,ind%m,&
-             !                         ind%D_fluid,ind%Ha,mom%Re,ind%Rem,&
-             !                         ind%finite_Rem,mom%temp_F,ind%Bstar_CC,&
-             !                         ind%temp_CC,ind%temp_F2)
-       
-             call compute_AddJCrossB_new(F,ind%B,ind%B0,ind%J,ind%m,&
-                                         ind%D_fluid,ind%Ha,mom%Re,&
-                                         ind%finite_Rem,ind%temp_CC_SF,&
-                                         ind%temp_F,ind%temp_F1_TF,&
-                                         ind%temp_F2_TF,mom%temp_F)
+             call compute_AddJCrossB(F,ind%B,ind%B0,ind%J,ind%m,&
+                                     ind%D_fluid,mom%Ha,mom%Re,&
+                                     ind%finite_Rem,ind%temp_CC_SF,&
+                                     ind%temp_F1,ind%temp_F1_TF,&
+                                     ind%temp_F2_TF,mom%temp_F)
            endif
-
-           if (addBuoyancy) call computeAddBuoyancy(F,nrg,mom%Gr,mom%Re)
-           if (addGravity)  call computeAddGravity(F,nrg,mom%Fr)
+           if (addBuoyancy) then
+             call compute_AddBuoyancy(F,nrg%T,nrg%gravity,&
+                                      mom%Gr,mom%Re,nrg%m,nrg%D,&
+                                      nrg%temp_F,nrg%temp_CC1_VF)
+           endif
+           if (addGravity) then
+             call compute_AddGravity(F,nrg%gravity,mom%Fr,nrg%m,&
+                                     nrg%D,nrg%temp_F,nrg%temp_CC1_VF,&
+                                     nrg%temp_CC2_VF)
+           endif
 
            call checkCondition(ss_MHD,continueLoop) ! Check to leave loop
            if (.not.continueLoop) exit

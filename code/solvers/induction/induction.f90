@@ -1,4 +1,4 @@
-       module inductionSolver_mod
+       module induction_mod
        use simParams_mod
        use IO_tools_mod
        use IO_auxiliary_mod
@@ -24,8 +24,6 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
-       use ops_discrete_complex_mod
-       use ops_physics_mod
        use BCs_mod
        use apply_BCs_mod
        use solverSettings_mod
@@ -43,12 +41,7 @@
 
        private
        public :: induction,init,delete,solve
-
-       public :: setDTime,setNmaxB,setNmaxCleanB
-       public :: setPiGroups
-
        public :: export,exportTransient
-       public :: printExportBCs,exportMaterial
 
        logical :: lowRem = .false.
        logical :: finiteRem = .false.
@@ -72,15 +65,10 @@
          type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
 
          ! --- Vector fields ---
-         type(VF) :: B,B0                             ! CC data
-         type(VF) :: J,J_cc,temp_E                    ! Edge data
-         type(VF) :: B_face
-         type(VF) :: temp_E1,temp_E2                  ! Edge data
-         type(VF) :: temp_F,temp_F2,temp_F3
-         type(VF) :: jCrossB_F                        ! Face data
-         type(VF) :: temp_CC,Bstar_CC                 ! CC data
+         type(VF) :: J,temp_E                         ! Edge data
+         type(VF) :: B,B0,temp_F1,temp_F2             ! Face data
+         type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
-         type(VF) :: B_CC,B0_CC
 
          ! --- Scalar fields ---
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
@@ -98,43 +86,41 @@
          type(mesh) :: m
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
 
-
          integer :: nstep             ! Nth time step
-         integer :: NmaxB             ! Maximum number iterations in solving B (if iterative)
-         integer :: NmaxCleanB        ! Maximum number iterations to clean B
+         integer :: N_induction       ! Maximum number iterations in solving B (if iterative)
+         integer :: N_cleanB          ! Maximum number iterations to clean B
          real(cp) :: dTime            ! Time step
          real(cp) :: t                ! Time
-         real(cp) :: Ha               ! Time
          real(cp) :: Rem              ! Magnetic Reynolds number
-         real(cp) :: omega            ! Intensity of time changing magnetic field
          real(cp) :: theta
          logical :: finite_Rem
        end type
 
-       interface init;                 module procedure initInduction;                 end interface
-       interface setPiGroups;          module procedure setPiGroupsInduction;          end interface
-       interface delete;               module procedure deleteInduction;               end interface
-       interface solve;                module procedure inductionSolver;               end interface
-       interface printExportBCs;       module procedure inductionPrintExportBCs;       end interface
+       interface init;                 module procedure init_induction;                end interface
+       interface delete;               module procedure delete_induction;              end interface
+       interface solve;                module procedure solve_induction;               end interface
        interface export;               module procedure export_induction;              end interface
        interface exportTransient;      module procedure inductionExportTransient;      end interface
-       interface exportTransientFull;  module procedure inductionExportTransientFull;  end interface
-       interface exportMaterial;       module procedure inductionExportMaterial;       end interface
-
-       interface setDTime;             module procedure setDTimeInduction;             end interface
 
        contains
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initInduction(ind,m,D_fluid,D_sigma,dir)
+       subroutine init_induction(ind,m,D_fluid,D_sigma,Rem,dt,N_induction,N_cleanB,dir)
          implicit none
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D_fluid,D_sigma
+         integer,intent(in) :: N_induction,N_cleanB
+         real(cp),intent(in) :: Rem,dt
          character(len=*),intent(in) :: dir
-         type(SF) :: sigma,sigmaInv
+         type(SF) :: sigma,sigmaInv,prec_cleanB
+         type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
+         ind%dTime = dt
+         ind%N_cleanB = N_cleanB
+         ind%N_induction = N_induction
+         ind%Rem = Rem
 
          call init(ind%m,m)
          call init(ind%D_fluid,D_fluid)
@@ -146,21 +132,12 @@
          call init_Face(ind%temp_F2_TF,m,0.0_cp)
          call init_Face(ind%B,m,0.0_cp)
          call init_Face(ind%B0,m,0.0_cp)
-         call init_CC(ind%B_CC,m,0.0_cp)
-         call init_CC(ind%B0_CC,m,0.0_cp)
-         call init_CC(ind%Bstar_CC,m,0.0_cp)
          call init_CC(ind%temp_CC,m,0.0_cp)
-         call init_CC(ind%J_cc,m,0.0_cp)
          call init_Edge(ind%J,m,0.0_cp)
          call init_Edge(ind%temp_E,m,0.0_cp)
-         call init_Edge(ind%temp_E1,m,0.0_cp)
-         call init_Edge(ind%temp_E2,m,0.0_cp)
          call init_Edge(ind%sigmaInv_edge,m,0.0_cp)
-         call init_Face(ind%B_face,m,0.0_cp)
-         call init_Face(ind%temp_F,m,0.0_cp)
+         call init_Face(ind%temp_F1,m,0.0_cp)
          call init_Face(ind%temp_F2,m,0.0_cp)
-         call init_Face(ind%temp_F3,m,0.0_cp)
-         call init_Face(ind%jCrossB_F,m,0.0_cp)
          call init_CC(ind%phi,m,0.0_cp)
          call init_CC(ind%temp_CC_SF,m,0.0_cp)
          call init_CC(ind%divB,m,0.0_cp)
@@ -169,7 +146,7 @@
 
          ! --- Initialize Fields ---
          call initBBCs(ind%B,m)
-         call initBBCs(ind%B_face,m)
+         if (solveInduction) call print_BCs(ind%B,'B')
          write(*,*) '     BCs initialized'
 
          call initBfield(ind%B,ind%B0,m,dir)
@@ -185,7 +162,7 @@
          write(*,*) '     Materials initialized'
          call export_raw(m,sigma,dir//'material/','sigma',0)
          call divide(sigmaInv,1.0_cp,sigma)
-         call cellCenter2Edge(ind%sigmaInv_edge,sigmaInv,m,ind%temp_F)
+         call cellCenter2Edge(ind%sigmaInv_edge,sigmaInv,m,ind%temp_F1)
          call treatInterface(ind%sigmaInv_edge)
          ! call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
          call delete(sigma)
@@ -223,70 +200,53 @@
 
          ind%finite_Rem = finiteRem
 
-         ! call export_raw(m,ind%sigmaInv_edge,'out/LDC/','sigmaInv_edge',0)
-
-         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_curl_curl_VF,ind%m,&
-         ind%MFP_B,ind%B_face,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+         call init(prec_induction,ind%B)
+         call prec_curl_curl_VF(prec_induction,ind%m,ind%sigmaInv_edge)
+         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
+         ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+         call delete(prec_induction)
          write(*,*) '     PCG Solver initialized'
 
          call init_BC_mesh(ind%phi,ind%m)
          call init_Dirichlet(ind%phi%RF(1)%b)
          call init_BCs(ind%phi,0.0_cp)
 
-         call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_Lap_SF,ind%m,&
-         ind%MFP_B,ind%phi,ind%temp_F,dir//'Bfield/','phi',.false.,.false.)
+         call init(prec_cleanB,ind%phi)
+         call prec_lap_SF(prec_cleanB,ind%m)
+         call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_cleanB,&
+         ind%m,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','phi',.false.,.false.)
+         call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
-
-         ! write(*,*) 'dhmin = ',ind%m%dhmin_min
-         ! write(*,*) 'Rem = ',ind%Rem
-         ! write(*,*) 'min(sigma) = ',1.0_cp/max(sigmaInv)
-         ! write(*,*) 'theta = ',ind%theta
 
          if (restartB) then
          call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
          else; ind%nstep = 0
          endif
          ind%t = 0.0_cp
-         ind%omega = 1.0_cp
          write(*,*) '     Finished'
        end subroutine
 
-       subroutine deleteInduction(ind)
+       subroutine delete_induction(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         call delete(ind%B)
-         call delete(ind%B0)
-         call delete(ind%Bstar_CC)
-
-         call delete(ind%U_E)
-
-         call delete(ind%J)
-         call delete(ind%J_cc)
-         call delete(ind%B_CC)
-         call delete(ind%B0_CC)
-
-         call delete(ind%temp_CC)
-         call delete(ind%temp_E)
-         call delete(ind%temp_E1)
-         call delete(ind%temp_E2)
-         call delete(ind%temp_F)
-         call delete(ind%temp_F2)
-         call delete(ind%temp_F3)
          call delete(ind%temp_E_TF)
-         call delete(ind%B_face)
-         call delete(ind%temp_F2)
-         call delete(ind%jCrossB_F)
-         call delete(ind%temp_CC_SF)
-
          call delete(ind%temp_F1_TF)
          call delete(ind%temp_F2_TF)
+         call delete(ind%U_E)
 
+         call delete(ind%B)
+         call delete(ind%B0)
+         call delete(ind%J)
+         call delete(ind%temp_CC)
+         call delete(ind%temp_E)
+         call delete(ind%temp_F1)
+         call delete(ind%temp_F2)
          call delete(ind%sigmaInv_edge)
 
          call delete(ind%divB)
          call delete(ind%divJ)
-
          call delete(ind%phi)
+         call delete(ind%temp_CC_SF)
 
          call delete(ind%m)
          call delete(ind%D_fluid)
@@ -307,43 +267,7 @@
          write(*,*) 'Induction object deleted'
        end subroutine
 
-       subroutine setDTimeInduction(ind,dt)
-         implicit none
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: dt
-         ind%dTime = dt
-       end subroutine
-
-       subroutine setNmaxB(ind,NmaxB)
-         implicit none
-         type(induction),intent(inout) :: ind
-         integer,intent(in) :: NmaxB
-         ind%NmaxB = NmaxB
-       end subroutine
-
-       subroutine setNmaxCleanB(ind,NmaxCleanB)
-         implicit none
-         type(induction),intent(inout) :: ind
-         integer,intent(in) :: NmaxCleanB
-         ind%NmaxCleanB = NmaxCleanB
-       end subroutine
-
-       subroutine setPiGroupsInduction(ind,Ha,Rem)
-         implicit none
-         type(induction),intent(inout) :: ind
-         real(cp),intent(in) :: Ha,Rem
-         ind%Ha = Ha
-         ind%Rem = Rem
-       end subroutine
-
        ! ******************* EXPORT ****************************
-
-       subroutine inductionPrintExportBCs(ind,dir)
-         implicit none
-         type(induction),intent(in) :: ind
-         character(len=*),intent(in) :: dir
-         if (solveInduction) call print_BCs(ind%B,'B')
-       end subroutine
 
        subroutine inductionExportTransient(ind,ss_MHD)
          implicit none
@@ -382,12 +306,6 @@
          endif
        end subroutine
 
-       subroutine inductionExportMaterial(ind,dir)
-         implicit none
-         type(induction),intent(inout) :: ind
-         character(len=*),intent(in) :: dir
-       end subroutine
-
        subroutine inductionInfo(ind,un)
          ! Use un = 6 to print to screen
          implicit none
@@ -408,20 +326,9 @@
          call printPhysicalMinMax(ind%divJ,'divJ')
        end subroutine
 
-       subroutine inductionExportTransientFull(ind,m,dir)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
-         if (solveInduction) then
-           ! call cellCenter2Node(tempVFn,ind%B,m,ind%temp_F,ind%temp_E)
-           ! call cellCenter2Node(tempVFn2,ind%B0,m,ind%temp_F,ind%temp_E)
-         endif
-       end subroutine
-
        ! ******************* SOLVER ****************************
 
-       subroutine inductionSolver(ind,U,ss_MHD,dir)
+       subroutine solve_induction(ind,U,ss_MHD,dir)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
@@ -433,23 +340,19 @@
 
          select case (solveBMethod)
          case (1)
-
          call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%NmaxB,ind%dTime,ind%temp_F2,ind%temp_F3,ind%temp_E,ind%temp_E_TF)
+         ind%N_induction,ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
 
          case (2)
-
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%Rem,ind%dTime,ind%temp_F2,ind%temp_F3,ind%temp_E,ind%temp_E_TF)
+         ind%Rem,ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
 
          case (3)
-
          ! call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,&
-         ! ind%NmaxB,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         ! ind%N_induction,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ! ind%temp_E_TF,ind%temp_CC,ind%phi)
 
-         case default
-         stop 'Error: bad solveBMethod input inductionSolver in inductionSolver.f90'
+         case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
 
          ind%nstep = ind%nstep + 1
@@ -457,26 +360,22 @@
 
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call edge2CellCenter(ind%J_cc,ind%J,ind%m,ind%temp_F)
-         call face2CellCenter(ind%B0_CC,ind%B0,ind%m)
-         call face2CellCenter(ind%B_CC,ind%B,ind%m)
-
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          compute_ME = (computeKB.and.getExportErrors(ss_MHD).or.(ind%nstep.eq.0))
 
-         call add(ind%temp_F,ind%B,ind%B0)
-         call face2cellCenter(ind%temp_CC,ind%temp_F,ind%m)
+         call add(ind%temp_F1,ind%B,ind%B0)
+         call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
          call compute_TME(ind%KB_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
          call compute_TME_fluid(ind%KB_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
-         call face2cellCenter(ind%B_CC,ind%B,ind%m)
-         call compute_TME(ind%KBi_energy,ind%B_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KBi_f_energy,ind%B_CC,ind%nstep,compute_ME,ind%D_fluid)
+         call face2cellCenter(ind%temp_CC,ind%B,ind%m)
+         call compute_TME(ind%KBi_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         call compute_TME_fluid(ind%KBi_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
-         call face2cellCenter(ind%B0_CC,ind%B0,ind%m)
-         call compute_TME(ind%KB0_energy,ind%B0_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KB0_f_energy,ind%B0_CC,ind%nstep,compute_ME,ind%D_fluid)
+         call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+         call compute_TME(ind%KB0_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
+         call compute_TME_fluid(ind%KB0_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
 
          call exportTransient(ind,ss_MHD)
 

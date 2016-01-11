@@ -1,4 +1,4 @@
-       module energySolver_mod
+       module energy_mod
        use simParams_mod
        use IO_tools_mod
        use IO_Auxiliary_mod

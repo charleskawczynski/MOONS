@@ -171,9 +171,6 @@ VPATH =\
 # $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
 # $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
 
-# $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_methods.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)transient$(PS)induction$(PS)ind_CTM.f90 \
-
 # $(SRC_DIR)$(PS)fields$(PS)RF.f90 \
 # $(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 # $(SRC_DIR)$(PS)fields$(PS)VF.f90 \
@@ -268,8 +265,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_physics.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_discrete_complex.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90 \
@@ -300,20 +296,23 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Pfield.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energySolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)inductionSolver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentumSolver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)inputFile.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
