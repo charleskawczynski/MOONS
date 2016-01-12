@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Energy}
+
+\subsection{Kinetic}
+Consider an infinitesimal measure of kinetic energy $KE$
+\begin{equation}
+	d(KE) = \frac{1}{2} \mathbf{u}^2 dm
+\end{equation}
+Where $m=\rho V$ is the mass, $V$ is the volume, $u$ is velocity and $\rho$ is density.
+\begin{equation}
+	d(KE) = \frac{1}{2} \rho \mathbf{u}^2 dV
+\end{equation}
+Integrating this we have
+\begin{equation}
+	KE = \frac{1}{2} \int_V \rho \mathbf{u}^2 dV
+\end{equation}
+For uniform density we have
+\begin{equation}
+	KE = \frac{1}{2} \rho \int_V \mathbf{u}^2 dV
+\end{equation}
+This is the dimensional form of the kinetic energy. Using the following non-dimensionalization
+\begin{equation}
+	u^* = \frac{u}{U},
+	\qquad
+	\rho^* = \frac{\rho}{\rho_c},
+	\qquad
+	V^* = \frac{V}{L^3}
+\end{equation}
+We have
+\begin{equation}
+	\boxed{
+	KE = \rho_c U^2 L^3 \left( \frac{1}{2} \rho^* \int_V {\mathbf{u}^*}^2 dV^* \right)
+	}
+\end{equation}
+\subsection{Magnetic}
+Consider an infinitesimal measure of magnetic energy $ME$
+\begin{equation}
+	d(ME) = \frac{1}{2} \frac{\mathbf{B}^2}{\mu} dV
+\end{equation}
+Where $V$ is the volume and $\mu$ is magnetic permeability.
+\begin{equation}
+	d(ME) = \frac{1}{2} \frac{\mathbf{B}^2}{\mu} dV
+\end{equation}
+The total magnetic energy is
+\begin{equation}
+	ME = \frac{1}{2} \int_V \frac{\mathbf{B}^2}{\mu} dV
+\end{equation}
+For uniform $\mu$, we have
+\begin{equation}
+	ME = \frac{1}{2} \mu^{-1} \int_V \mathbf{B}^2 dV
+\end{equation}
+This is the dimensional form of the magnetic energy. Using the following non-dimensionalization
+\begin{equation}
+	B^* = \frac{B}{B_c},
+	\qquad
+	\mu^* = \frac{\mu}{\mu_c},
+	\qquad
+	V^* = \frac{V}{L^3}
+\end{equation}
+We have
+\begin{equation}
+	\boxed{
+	ME = \mu_c^{-1} B_c^2 L^3 \left( \frac{1}{2} {\mu^*}^{-1} \int_V {\mathbf{B}^*}^2 dV^* \right)
+	}
+\end{equation}
+
+\end{document}

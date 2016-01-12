@@ -198,10 +198,10 @@ The coefficient of the Joule heating term, we have
 	\frac{B_c^2}{\mu_c \rho_c U_c^2}
 	\mu_c \sigma_c L_c U_c
 	=
-	Ec Al Re_m
+	Ec Al Re_m = Ec \frac{Ha^2}{Re}
 \end{equation}
 
-Where $Re_m,Ec,Al,$ are the magnetic Reynolds, Eckert and Alfen number, respectively. 
+Where $Ec,Ha,Re$ are the Eckert, Hartmann and Reynolds numbers respectively.
 
 \subsection{Coefficient of the viscous dissipation term}
 The coefficient of the viscous dissipation term, we have
@@ -266,7 +266,7 @@ Putting this all together, we have
 	\left( 
 	k^* \frac{\partial T^*}{\partial x_j^*}
 	\right) + 
-	Re_m Ec Al
+	Ec \frac{Ha^2}{Re}
 	\frac{{j^*}^2}{\sigma^*} +
 	\frac{Ec}{Re}
 	\left(
@@ -289,7 +289,7 @@ Removing the asterisks for simplicity, we have
 	\left( 
 	k \frac{\partial T}{\partial x_j}
 	\right) + 
-	Re_m Ec Al
+	Ec \frac{Ha^2}{Re}
 	\frac{{j}^2}{\sigma} +
 	\frac{Ec}{Re}
 	\left(

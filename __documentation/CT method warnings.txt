@@ -1,0 +1,17 @@
+CT method warnings
+
+A.B. Iskakov 'An integro-differential formulation for magnetic induction in bounded domains: boundary element–finite volume method'
+
+When the magnetic Reynolds number Rm is moderate, the inductive part of the electric field hat{E} could be evaluated by simply interpolating uxB on the edges.
+
+If Rm is large, a proper treatment of the inductive part hat{E} is needed. Particularly, in the full MHD simu-lations, hat{E} can be calculated through the fluxes obtained from a higher order MHD Godunov scheme (see [11,12]).
+
+Toth 'The ∇· B = 0 Constraint in Shock-Capturing Magnetohydrodynamics Codes'
+
+A small amount of resistivity typically only makes the simulation easier to do. Resistivity dominated problems, on the other hand, should not probably be solved by the shock-capturing schemes discussed in this paper. Obtaining converged steady state solutions can be rather time consuming as well as difficult, and such problems will be investigated in another paper.
+
+Ilmenau group
+http://www.tu-ilmenau.de/tsm/publikationen/
+
+Oldschool MIT article on MHD
+http://web.mit.edu/hml/ncfmf/21MH.pdf

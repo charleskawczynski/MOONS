@@ -1,0 +1,178 @@
+\documentclass[landscape]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+% \setlength{\oddsidemargin}{0.1in}
+% \setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+% \setlength{\headsep}{0in}        
+\setlength{\textheight}{525pt}   %\textheight: height of main text
+\setlength{\textwidth}{10in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+% \setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Necessity of symmetrizing to achieve SPD for non-uniform grids}
+
+\subsection{Finite difference scheme construction}
+
+The results in this document are generated from a linear system solver, using Python, in stencilMaker.py. The file is run from stencils.py. The linear system is a set of Taylor expansions about a point in space and is of the form of a Vandermonde matrix:
+
+\begin{equation}
+  f_{i+k}
+  =
+  \sum_{j=0}^n
+  \frac{\alpha_{i+k} f_{i}^{(j)}}{(j)!}
+  \qquad \qquad
+  k = n_{left} \dots n_{right}
+\end{equation}
+
+Where the unknowns are the derivatives $f_i^{(j)}$. The input arguments, $n_{left}$ and $n_{right}$, are the number of points to the left and right of $i$ respectively. $f_{i+k}\forall k$ is assumed to be known. The distance between $f_{i}$ and $f_{i+k}$ is
+\begin{equation}
+  \alpha_{i+k} 
+  =
+  h_{i+k} - h_{i}
+\end{equation}
+Since, in MOONS, $\Delta h_1 = h_2 - h_1$, we can relate $\Delta h$ and $\alpha$ as follows
+
+\begin{equation}
+  \Delta h_{i} = h_{i+1} - h_{i} = \alpha_{i+1}
+  ,\qquad \qquad
+  \Delta h_{i} + \Delta h_{i+1} = h_{i+2} - h_{i} = \alpha_{i+2}
+\end{equation}
+
+In general, we may write this as
+
+\begin{equation}
+  \alpha_{i+k} = h_{i+k} - h_{i}
+  ,\qquad \qquad
+  \alpha_{i+k} = \sum_{j=0}^{k-1} \Delta h_{i+j}
+\end{equation}
+
+Again, to reiterate, the indexing convention is:
+
+\begin{equation}
+  \boxed{
+  \Delta h_{i}
+  =
+  h_{i+1} - h_{i}
+  }
+\end{equation}
+
+
+\subsection{Cell centered finite difference schemes}
+
+The following finite difference schemes are the result of the above analysis.
+
+\subsubsection{1st Derivative}
+\begin{equation} 
+f^{{(1)}}_{i} = \left(- \frac{\Delta h_{{i}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(\frac{- \Delta h_{{i-1}} + \Delta h_{{i}}}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
+  , \qquad
+  i \in (3,s-2)
+ \end{equation} 
+
+\subsubsection{2nd Derivative}
+\begin{equation} 
+f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(- \frac{2}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{2}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
+, \qquad
+  i \in (3,s-2)
+ \end{equation} 
+
+\subsection{Symmetrizing}
+
+\subsubsection{Laplacian}
+To symmetrize the Laplacian, we ask: What can we multiply row $i$ by to ensure that $L_i=U_{i-1}$. Note that the Laplacian in a 2-step process, this is actually
+\begin{equation}
+   D 
+   = \frac{\Delta h_{i-1} + \Delta h_{i-1}}{2} = \Delta h_{d,i}
+\end{equation}
+Where $\Delta h_{d,i}$ lives on the dual grid. This just turns out to be the cell volume in 3D for CC data.
+
+\subsubsection{1st Derivative}
+The same applies to the 1st derivative:
+\begin{equation}
+   D = - \frac{\Delta h_{i}}{\Delta h_{i-1}} \Delta h_{d,i}
+\end{equation}
+
+
+\subsection{Necessity of symmetrizing}
+
+Clearly, e.g., the Laplacian stencil is a series of 2nd derivatives in different directions, and for symmetry we need
+
+\begin{equation}
+  L_{i} = U_{i-1}
+\end{equation}
+In which case we have
+\begin{equation}
+  L_{i} = \frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}
+\end{equation}
+and
+\begin{equation}
+  U_{i} = \frac{2}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}
+  \qquad \rightarrow
+  \qquad
+  U_{i-1} = \frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-2}} + \Delta h_{{i-1}}\right)}
+\end{equation}
+Clearly, this is not symmetric.
+
+The coefficient to multiply will be
+
+\begin{equation}
+  c_i L_{i} = c_{i-1} U_{i-1}
+\end{equation}
+or
+\begin{equation}
+  c_i \frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)} =
+  c_{i-1} \frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-2}} + \Delta h_{{i-1}}\right)}
+\end{equation}
+Which yields
+\begin{equation}
+  c_i (\Delta h_{{i-2}} + \Delta h_{{i-1}}) = 
+  c_{i-1} (\Delta h_{{i-1}} + \Delta h_{{i}}) 
+\end{equation}
+
+\section{Matrix diagonal}
+\begin{equation}
+  D = I + \frac{\Delta t}{Re_m} \nabla \times \sigma^{-1} \nabla \times
+\end{equation}
+
+For uniform grids, I think we have
+\begin{equation}
+  D = I + \frac{\Delta t}{Re_m \sigma \Delta h^2}
+\end{equation}
+
+
+
+
+\end{document}

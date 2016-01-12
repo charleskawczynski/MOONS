@@ -1,0 +1,130 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+% \maketitle
+
+\section{CG preconditioners}
+
+\subsection{Laplacian (uniform properties)}
+Consider the 1-D Laplacian operator
+
+\begin{equation}
+  \nabla^2 = D_2(D_1 + U_1) + U_2(D_1 + U_1)
+  = D_2D_1 + D_2U_1 + U_2D_1 + U_2U_1
+\end{equation}
+
+Where the number subscript indicates cell center or cell corner data. It is clear from the above equation that the diagonal is
+
+\begin{equation}
+  diag(\nabla^2) = D_2U_1 + U_2D_1
+\end{equation}
+
+The 3D operator will be the sum of the three 1-D operators.
+
+\subsection{Laplacian (variable properties)}
+Consider the 1-D Laplacian operator
+
+\begin{equation}
+  \nabla (k\nabla) = D_2 [k(D_1 + U_1)] + U_2 [k(D_1 + U_1)]
+  = D_2(kD_1) + D_2(kU_1) + U_2(kD_1) + U_2(kU_1)
+\end{equation}
+
+Where the number subscript indicates cell center or cell corner data. It is clear from the above equation that the diagonal is
+
+\begin{equation}
+  diag(\nabla (k\nabla)) = D_2(kU_1) + U_2(kD_1)
+\end{equation}
+
+The 3D operator will be the sum of the three 1-D operators.
+
+\subsection{Curl-curl operator (variable properties)}
+
+Consider the curl-curl operator
+\begin{multline}
+  \nabla \times (k \nabla \times) \mathbf{B} = \\
+  \nabla \times (
+  \hat{x} k_x (\partial_y B_z - \partial_z B_y) \\
+  - \hat{y} k_y (\partial_x B_z - \partial_z B_x) \\
+  + \hat{z} k_z (\partial_x B_y - \partial_y B_x) ) \\  = 
+   \hat{x} \left\{ \partial_y \left[ k_z (\partial_x B_y - \partial_y B_x) \right] +
+    \partial_z \left[ k_y (\partial_x B_z - \partial_z B_x) \right] \right\} \\
+  -\hat{y} \left\{ \partial_x \left[ k_z (\partial_x B_y - \partial_y B_x) \right] -
+   \partial_z \left[ k_x (\partial_y B_z - \partial_z B_y) \right]  \right\} \\
+  +\hat{z} \left\{ -\partial_x \left[ k_y (\partial_x B_z - \partial_z B_x) \right] -
+   \partial_y \left[ k_x (\partial_y B_z - \partial_z B_y) \right]  \right\} \\
+\end{multline}
+Substituting the $\partial$ operator with the discrete derivative operator, $D$, we have
+\begin{multline}
+  \nabla \times (k \nabla \times) \mathbf{B} = \\
+   \hat{x} \left\{ D_y \left[ k_z (D_x B_y - D_y B_x) \right] +
+    D_z \left[ k_y (D_x B_z - D_z B_x) \right] \right\} \\
+  -\hat{y} \left\{ D_x \left[ k_z (D_x B_y - D_y B_x) \right] -
+   D_z \left[ k_x (D_y B_z - D_z B_y) \right]  \right\} \\
+  +\hat{z} \left\{ -D_x \left[ k_y (D_x B_z - D_z B_x) \right] -
+   D_y \left[ k_x (D_y B_z - D_z B_y) \right]  \right\} \\
+\end{multline}
+Distributing the terms we have
+\begin{multline}
+  \nabla \times (k \nabla \times) \mathbf{B} = \\
+   \hat{x} \left\{   (D_y k_z D_x B_y - D_y k_z D_y B_x)   +  (D_z k_y D_x B_z - D_z k_y D_z B_x) \right\} \\
+  -\hat{y} \left\{   (D_x k_z D_x B_y - D_x k_z D_y B_x)   -  (D_z k_x D_y B_z - D_z k_x D_z B_y) \right\} \\
+  +\hat{z} \left\{ - (D_x k_y D_x B_z - D_x k_y D_z B_x)   -  (D_y k_x D_y B_z - D_y k_x D_z B_y) \right\} \\
+\end{multline}
+Distributing the signs we finally get
+\begin{multline}
+  \nabla \times (k \nabla \times) \mathbf{B} = \\
+  +\hat{x} \left\{ +D_y k_z D_x B_y - D_y k_z D_y B_x +  D_z k_y D_x B_z - D_z k_y D_z B_x \right\} \\
+  +\hat{y} \left\{ -D_x k_z D_x B_y + D_x k_z D_y B_x +  D_z k_x D_y B_z - D_z k_x D_z B_y \right\} \\
+  +\hat{z} \left\{ -D_x k_y D_x B_z + D_x k_y D_z B_x -  D_y k_x D_y B_z + D_y k_x D_z B_y \right\} \\
+\end{multline}
+Now the question is: what is the diagonal of this operator? Considering the vector identity, $\nabla \times \nabla \times = \nabla (\nabla \bullet ) - \nabla^2$, it's natural to compare this with the Laplacian diagonal (derived above) which should have some of the same terms for uniform properties. It is obvious that 2 derivatives along the same direction will result in collocated data, which will lead to a diagonal component, these terms have been bolded below
+\begin{multline}
+  \nabla \times (k \nabla \times) \mathbf{B} = \\
+  +\hat{x} \left\{ +D_y k_z D_x B_y - \mathbf{D_y k_z D_y B_x} + D_z k_y D_x B_z - \mathbf{D_z k_y D_z B_x} \right\} \\
+  +\hat{y} \left\{ -\mathbf{D_x k_z D_x B_y} + D_x k_z D_y B_x + D_z k_x D_y B_z - \mathbf{D_z k_x D_z B_y} \right\} \\
+  +\hat{z} \left\{ -\mathbf{D_x k_y D_x B_z} + D_x k_y D_z B_x - \mathbf{D_y k_x D_y B_z} + D_y k_x D_z B_y \right\} \\
+\end{multline}
+It is clear that part of the diagonal is $diag(\nabla \times \nabla \times) = -\nabla \bullet (k \nabla)$ except along the component direction and where $k$ is orthogonal to the derivative direction and the component of $\nabla \times \nabla \times$. The other part will not contribute to the diagonal...?
+
+This turns out to be the case!
+
+\end{document}

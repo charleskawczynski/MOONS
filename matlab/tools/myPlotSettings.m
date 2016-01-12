@@ -2,8 +2,8 @@ function myPlot = myPlotSettings()
 
 % work = 1; loc = 1; % For work (right screen)
 % work = 1; loc = 2; % For work (left screen)
-work = 2; loc = 2; % For home (??)
-% work = 2; loc = 1; % For home (good)
+% work = 2; loc = 2; % For home (??)
+work = 2; loc = 1; % For home (good)
 
 % figure([x-position y-position x-size y-size]
 
