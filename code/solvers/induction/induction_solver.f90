@@ -14,7 +14,6 @@
        use norms_mod
        use AB2_mod
        use GS_Poisson_mod
-       use CG_mod
        use PCG_mod
 
        implicit none

@@ -12,12 +12,12 @@ PS1 = $(strip \)
 extf90 = $(strip .f90)
 
 # ************* MAKE CONFIGURATION ******************
-# MKE = gmake
-MKE = make
+MKE = gmake
+# MKE = make
 # ************* DIRECTORY SETTINGS ******************
-# USER = Charlie
+USER = Charlie
 # USER = LM_MHD
-USER = charl
+# USER = charl
 
 # Code directory
 SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
@@ -27,10 +27,10 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
@@ -159,7 +159,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)solvers$(PS)GS \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR \
 	$(SRC_DIR)$(PS)solvers$(PS)MG \
-	$(SRC_DIR)$(PS)solvers$(PS)CG \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE \
 	$(SRC_DIR)$(PS)solvers$(PS)energy \
@@ -289,8 +289,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_aux.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \

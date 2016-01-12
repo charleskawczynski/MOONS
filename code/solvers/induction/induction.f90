@@ -380,9 +380,9 @@
          call exportTransient(ind,ss_MHD)
 
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
-         if (mod(ind%nstep,100000).eq.1) then
-           call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
-         endif
+         ! if (mod(ind%nstep,100000).eq.1) then
+         !   call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
+         ! endif
 
          if (getExportErrors(ss_MHD)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)

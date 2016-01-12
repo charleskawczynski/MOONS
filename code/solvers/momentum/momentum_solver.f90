@@ -11,7 +11,6 @@
        use ops_discrete_mod
        use ops_advect_mod
        use apply_BCs_mod
-       use CG_mod
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
@@ -91,7 +90,7 @@
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Unm1,U_E,p,F,Fnm1,m,&
          Re,dt,Nmax_PPE,Nmax_mom,Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
-         type(CG_solver_VF),intent(inout) :: mom_PCG
+         type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(GS_poisson),intent(inout) :: PPE_GS
          type(SF),intent(inout) :: p
          type(VF),intent(inout) :: U,Unm1

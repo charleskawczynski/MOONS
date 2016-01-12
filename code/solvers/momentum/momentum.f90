@@ -34,7 +34,6 @@
        use solverSettings_mod
 
        ! use jacobi_mod
-       use CG_mod
        use PCG_mod
        use preconditioners_mod
        use GS_Poisson_mod

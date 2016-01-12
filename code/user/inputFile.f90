@@ -36,15 +36,16 @@
          t = 80.0
          dt_eng = 1.0d-4
          dt_mom = 1.0d-2
-         dt_ind = 1.0d-6
+         dt_ind = 1.0d-4
 
          ! NmaxMHD     = ceiling(t/dt_eng)
          ! NmaxMHD     = ceiling(t/dt_mom)
-         NmaxMHD     = ceiling(t/dt_ind)
+         ! NmaxMHD     = ceiling(t/dt_ind)
          ! NmaxMHD     = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
+         NmaxMHD     = 4000
          N_energy    = 1000 ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom       = 1000 ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_induction = 1000 ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_induction = 5    ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE       = 5    ! Number of iterations to solve PPE steps
          N_cleanB    = 5    ! Number of iterations to solve Poisson equation to clean B
        end subroutine
