@@ -24,13 +24,13 @@
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(domain),intent(inout) :: D_sigma
-         call cube_uniform(m_mom)
-         call extend_cube_uniform(m_ind,m_mom)
-         call init(D_sigma,m_mom,m_ind)
-
          ! call cube_uniform(m_mom)
-         ! call init(m_ind,m_mom)
+         ! call extend_cube_uniform(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
+
+         call cube_uniform(m_mom)
+         call init(m_ind,m_mom)
+         call init(D_sigma,m_mom,m_ind)
 
          ! call cube(m_mom)
          ! call init(m_ind,m_mom)

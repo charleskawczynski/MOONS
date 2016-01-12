@@ -37,27 +37,27 @@
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine export_2D_2C_transient(m,U,dir,name,pad,nstep)
+      subroutine export_2D_2C_transient(m,U,dir,name,pad,direction,nstep)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(mesh),intent(in) :: m
-        integer,intent(in) :: pad,nstep
+        integer,intent(in) :: pad,direction,nstep
         type(VF),intent(in) :: U
         integer :: un
         un = newAndOpen(dir,trim(adjustl(name//int2str(nstep))))
-        call exp_2D_2C(m,pad,un,arrfmt,trim(adjustl(name)),U,3)
+        call exp_2D_2C(m,pad,un,arrfmt,trim(adjustl(name)),U,direction)
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 
-      subroutine export_2D_2C(m,U,dir,name,pad)
+      subroutine export_2D_2C(m,U,dir,name,pad,direction)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(mesh),intent(in) :: m
-        integer,intent(in) :: pad
+        integer,intent(in) :: pad,direction
         type(VF),intent(in) :: U
         integer :: un
         un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_2D_2C(m,pad,un,arrfmt,trim(adjustl(name)),U,3)
+        call exp_2D_2C(m,pad,un,arrfmt,trim(adjustl(name)),U,direction)
         call closeAndMessage(un,trim(adjustl(name)),dir)
       end subroutine
 

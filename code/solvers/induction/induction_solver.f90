@@ -105,7 +105,7 @@
          enddo
        end subroutine
 
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,N_induction,&
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,dt,N_induction,&
          N_cleanB,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
          ! Solves:
          !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
@@ -128,11 +128,14 @@
          type(TF),intent(inout) :: temp_E_TF
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
          integer,intent(in) :: N_induction,N_cleanB
          logical,intent(in) :: compute_norms
          ! Induction
          call add(temp_F2,B,B0) ! Since finite Rem
          call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+         call multiply(temp_F1,dt)
+         call add(temp_F1,B)
          call solve(PCG_B,B,temp_F1,m,N_induction,compute_norms)
          ! Clean B
          call div(temp_CC,B,m)

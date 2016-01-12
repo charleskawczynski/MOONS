@@ -33,17 +33,20 @@
          Fr = 0.0d0
          Pr = 0.71d0
          Ec = 0.0d0
-         t = 10000.0
+         t = 80.0
          dt_eng = 1.0d-4
          dt_mom = 1.0d-2
-         dt_ind = 1.0d-4
-         NmaxMHD = ceiling(t/dt_mom)
-         NmaxMHD = 4000
-         N_energy = 5
-         N_mom      = 1000
-         N_PPE    = 5 ! Number of PPE steps
-         N_induction      = 5 ! Number of Steps for Low Rem approx to solve B
-         N_cleanB = 5 ! Number of Steps to clean B
+         dt_ind = 1.0d-6
+
+         ! NmaxMHD     = ceiling(t/dt_eng)
+         ! NmaxMHD     = ceiling(t/dt_mom)
+         NmaxMHD     = ceiling(t/dt_ind)
+         ! NmaxMHD     = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
+         N_energy    = 1000 ! Number of iterations to solve energy    equation (if iterative solver is used)
+         N_mom       = 1000 ! Number of iterations to solve momentum  equation (if iterative solver is used)
+         N_induction = 1000 ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_PPE       = 5    ! Number of iterations to solve PPE steps
+         N_cleanB    = 5    ! Number of iterations to solve Poisson equation to clean B
        end subroutine
 
        end module

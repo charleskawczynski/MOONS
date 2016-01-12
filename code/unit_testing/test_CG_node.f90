@@ -38,7 +38,6 @@
          type(VF) :: temp_F
          type(matrix_free_params) :: MFP
          type(CG_solver_SF) :: CG
-         ! type(GS_poisson) :: GS
          integer :: i
 
          ! call cube(m) ! in mesh_generate.f90

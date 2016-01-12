@@ -28,7 +28,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp) :: tol = 10.0_cp**(-8.0_cp)
+      real(cp) :: tol = 10.0_cp**(-15.0_cp)
 
       contains
 
@@ -73,7 +73,7 @@
 
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx)
+        rhok = dot_product(r,z,m,x,tempx); res_norm = rhok
         do i=1,n
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -112,6 +112,7 @@
           write(un,*) N_iter,norm%L1,norm%L2,norm%Linf
 #endif
           write(*,*) 'PCG iterations (executed/max) = ',i-1,n
+          write(*,*) 'PCG sqrt(res_norm) = ',sqrt(res_norm)
         endif
       end subroutine
 
@@ -154,7 +155,7 @@
         call subtract(r,Ax)
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx)
+        rhok = dot_product(r,z,m,x,tempx); res_norm = rhok
         do i=1,n
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -203,6 +204,7 @@
           write(un(3),*) N_iter,norm%L1,norm%L2,norm%Linf
 #endif
           write(*,*) 'PCG iterations (executed/max) = ',i-1,n
+          write(*,*) 'PCG sqrt(res_norm) = ',sqrt(res_norm)
         endif
       end subroutine
 

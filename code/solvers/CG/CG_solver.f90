@@ -75,7 +75,7 @@
         call subtract(r,Ax)
         call zeroGhostPoints(r)
         call assign(p,r)
-        rsold = dot_product(r,r,m,x,tempx)
+        rsold = dot_product(r,r,m,x,tempx); rsnew = rsold
         do i=1,n
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -113,6 +113,7 @@
           write(un,*) N_iter,norm%L1,norm%L2,norm%Linf
 #endif
           write(*,*) 'CG iterations (executed/max) = ',i-1,n
+          write(*,*) 'CG sqrt(rsnew) = ',sqrt(rsnew)
         endif
       end subroutine
       
@@ -156,7 +157,7 @@
         call subtract(r,Ax)
         call zeroGhostPoints(r)
         call assign(p,r)
-        rsold = dot_product(r,r,m,x,tempx)
+        rsold = dot_product(r,r,m,x,tempx); rsnew = rsold
         do i=1,n
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -201,6 +202,7 @@
           write(un(3),*) N_iter,norm%L1,norm%L2,norm%Linf
 #endif
           write(*,*) 'CG iterations (executed/max) = ',i-1,n
+          write(*,*) 'CG sqrt(rsnew) = ',sqrt(rsnew)
         endif
       end subroutine
 

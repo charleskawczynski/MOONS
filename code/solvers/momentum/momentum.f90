@@ -48,7 +48,6 @@
        
        public :: momentum,init,delete,solve
        public :: export,exportTransient
-       public :: exportTransientFull
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -96,7 +95,6 @@
        interface solve;               module procedure solve_momentum;             end interface
        interface export;              module procedure export_momentum;            end interface
        interface exportTransient;     module procedure momentumExportTransient;    end interface
-       interface exportTransientFull; module procedure momentumExportTransientFull;end interface
 
        contains
 
@@ -301,19 +299,6 @@
          write(*,*) ''
        end subroutine
 
-       subroutine momentumExportTransientFull(mom,m,dir)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
-         type(VF) :: tempNVF
-
-         call init_Node(tempNVF,m)
-         call face2Node(tempNVF,mom%U,m,mom%temp_E)
-         call export_2D_2C_transient(mom%m,tempNVF,dir//'Ufield/transient/','Uni_phys',1,mom%nstep)
-         call delete(tempNVF)
-       end subroutine
-
        ! ******************* SOLVER ****************************
 
        subroutine solve_momentum(mom,F,ss_MHD,dir)
@@ -353,7 +338,10 @@
 
          ! call computeKineticEnergy(mom,mom%m,F)
          if (getExportErrors(ss_MHD)) call compute_divU(mom%divU,mom%U,mom%m)
-         ! if (getExportErrors(ss_MHD)) call exportTransientFull(mom,mom%m,dir)
+         ! if (getExportErrors(ss_MHD)) then
+         ! call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
+         ! endif
+
          if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
 
          if (getPrintParams(ss_MHD)) then

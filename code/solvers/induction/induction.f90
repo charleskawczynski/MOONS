@@ -44,7 +44,7 @@
        public :: export,exportTransient
 
        logical :: lowRem = .false.
-       logical :: finiteRem = .false.
+       logical :: finiteRem = .true.
        logical :: semi_implicit = .false.
 
 
@@ -348,9 +348,9 @@
          ind%Rem,ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
 
          case (3)
-         ! call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,&
-         ! ind%N_induction,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
-         ! ind%temp_E_TF,ind%temp_CC,ind%phi)
+         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,ind%dTime,&
+         ind%N_induction,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
@@ -380,6 +380,9 @@
          call exportTransient(ind,ss_MHD)
 
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
+         if (mod(ind%nstep,100000).eq.1) then
+           call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
+         endif
 
          if (getExportErrors(ss_MHD)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
