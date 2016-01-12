@@ -43,7 +43,7 @@
         public :: multiply,divide
         public :: add_product
         public :: square,invert
-        public :: mean,max
+        public :: mean,max,maxabs
         ! public :: sum
         public :: assignX,assignY,assignZ
 
@@ -130,6 +130,7 @@
         interface invert;            module procedure invert_VF;                end interface
         interface mean;              module procedure mean_VF;                  end interface
         interface max;               module procedure max_VF;                   end interface
+        interface maxabs;            module procedure maxabs_VF;                end interface
 
         interface square;            module procedure square_VF;                end interface
         ! interface sum;               module procedure vectorSum;             end interface
@@ -424,6 +425,13 @@
           type(VF),intent(in) :: f
           real(cp) :: m
           m = maxval((/max(f%x),max(f%y),max(f%z)/))
+        end function
+
+        function maxabs_VF(f) result (m)
+          implicit none
+          type(VF),intent(in) :: f
+          real(cp) :: m
+          m = maxval((/abs(maxabs(f%x)),abs(maxabs(f%y)),abs(maxabs(f%z))/))
         end function
 
         subroutine square_VF(f)
