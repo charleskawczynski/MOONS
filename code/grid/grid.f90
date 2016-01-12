@@ -201,15 +201,15 @@
          write(un,*) 'stitches_face (hmin) = ',(/(g%st_face%hmin(i),i=1,3)/)
          write(un,*) 'stitches_face (hmax) = ',(/(g%st_face%hmax(i),i=1,3)/)
          
-         write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
-         write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)
-         write(un,*) 'stitches_edge (maxmin) = ',(/(g%st_edge%maxmin(i),i=1,3)/)
-         write(un,*) 'stitches_edge (maxmax) = ',(/(g%st_edge%maxmax(i),i=1,3)/)
+         ! write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
+         ! write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)
+         ! write(un,*) 'stitches_edge (maxmin) = ',(/(g%st_edge%maxmin(i),i=1,3)/)
+         ! write(un,*) 'stitches_edge (maxmax) = ',(/(g%st_edge%maxmax(i),i=1,3)/)
 
-         write(un,*) 'stitches_corner (minmin) = ',g%st_corner%minmin
-         write(un,*) 'stitches_corner (minmax) = ',(/(g%st_corner%minmax(i),i=1,3)/)
-         write(un,*) 'stitches_corner (maxmin) = ',(/(g%st_corner%maxmin(i),i=1,3)/)
-         write(un,*) 'stitches_corner (maxmax) = ',g%st_corner%maxmax
+         ! write(un,*) 'stitches_corner (minmin) = ',g%st_corner%minmin
+         ! write(un,*) 'stitches_corner (minmax) = ',(/(g%st_corner%minmax(i),i=1,3)/)
+         ! write(un,*) 'stitches_corner (maxmin) = ',(/(g%st_corner%maxmin(i),i=1,3)/)
+         ! write(un,*) 'stitches_corner (maxmax) = ',g%st_corner%maxmax
        end subroutine
 
        subroutine print_Grid(g)

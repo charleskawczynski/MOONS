@@ -3,52 +3,37 @@
        logical :: exportGrids               = .true.   ! Export all Grids before starting simulation
        logical :: exportRawICs              = .true.   ! Export Raw ICs before starting simulation
        logical :: exportICs                 = .true.   ! Export Post-Processed ICs before starting simulation
-       logical :: stopAfterExportICs        = .false.   ! Just export ICs, do not run simulation
-       logical :: autoMatchBetas            = .true.    ! Auto match stretching at wall
-       logical :: nonUniformGridFluid       = .true.   ! (T/F)
-       logical :: nonUniformGridWall        = .true.    ! (T/F, F-> overrides wall thickness)
-       logical :: overrideGeometryWarnings  = .false.
+       logical :: stopAfterExportICs        = .false.  ! Just export ICs, do not run simulation
 
        logical :: solveEnergy               = .false.
-       logical :: solveMomentum             = .true.
+       logical :: solveMomentum             = .false.
        logical :: solveInduction            = .true.
+
+       integer :: solveTMethod              = 1 ! Refer to energy.f90
+       integer :: solveUMethod              = 1 ! Refer to momentum.f90
+       integer :: solveBMethod              = 2 ! Refer to induction.f90
+
+       logical :: addJCrossB                = .false.
+       logical :: addBuoyancy               = .false.
+       logical :: addGravity                = .false.
 
        logical :: computeKU                 = .true.    ! Compute kinetic energy at each time step
        logical :: computeKB                 = .true.    ! Compute Total   magnetic energy at each time step
        logical :: computeKBi                = .true.    ! Compute Induced magnetic energy at each time step
-       logical :: computeKB0                = .false.   ! Compute Applied magnetic energy at each time step
-
-       logical :: addJCrossB                = .true.
-       logical :: addBuoyancy               = .false.
-       logical :: addGravity                = .false.
-
-       logical :: cleanB                    = .false.
-       logical :: multiMaterials            = .false.
-
-       integer :: advectiveUFormulation     = 1 ! (1,2) = (Central difference, Advective)
-       integer :: solveTMethod              = 1 ! (1) = (Explicit Euler)
-       integer :: solveUMethod              = 1 ! (1) = (Explicit Euler)
-       integer :: solveBMethod              = 5
-       !                                      1 : Low Rem (GS, uniform properties)
-       !                                      2 : Low Rem (PTS uniform properties)
-       !                                      3 : Low Rem (PTS)
-       !                                      4 : Low Rem (CT) Method
-       !                                      5 : Finite Rem (CT) Method
-       !                                      6 : Low Rem ADI
-       !                                      7 : Low Rem Multigrid
+       logical :: computeKB0                = .true.   ! Compute Applied magnetic energy at each time step
 
        integer :: nskip_exportRaw            = 100000 ! Raw solution for restart (very expensive)
        integer :: nskip_export               = 100000 ! Processed solution for visualization (very expensive)
        integer :: nskip_exportTransientFull  = 1000  ! Transient solution (very expensive)
-       integer :: nskip_exportErrors         = 1000  ! Divergences / Residuals (expensive)
-       integer :: nskip_exportTransient      = 100  ! Probed data (cheap)
-       integer :: nskip_print                = 100  ! Printed data (cheap)
+       integer :: nskip_exportErrors         = 10  ! Divergences / Residuals (expensive)
+       integer :: nskip_exportTransient      = 10  ! Probed data (cheap)
+       integer :: nskip_print                = 10  ! Printed data (cheap)
 
        ! integer :: n_points_exportTransientFull  = 200   ! Transient solution (very expensive)
        ! integer :: n_points_exportErrors         = 200   ! Divergences / Residuals (expensive)
        ! integer :: n_points_exportTransient      = 500   ! Probed data (cheap)
 
-       integer,parameter :: benchmarkCase = 1010
+       integer,parameter :: benchmarkCase = 102
        
          ! Eventually this should be shortened...
          ! 1000+ (Other test cases)

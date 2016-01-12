@@ -48,12 +48,13 @@
         public :: init_BCs
 
         ! Monitoring
-        public :: print
+        public :: print,print_physical
 
         ! Operators
-        public :: assign,assignMinus
+        public :: assign,assign_negative
         public :: add,subtract
         public :: multiply,divide
+        public :: add_product
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
@@ -75,57 +76,63 @@
           type(BCs) :: b
         end type
 
-        interface init;       module procedure init_RF_size;           end interface
-        interface init;       module procedure init_RF_copy;           end interface
+        interface init;                     module procedure init_RF_size;           end interface
+        interface init;                     module procedure init_RF_copy;           end interface
 
-        interface init_CC;    module procedure init_RF_CC;             end interface
-        interface init_Face;  module procedure init_RF_Face;           end interface
-        interface init_Edge;  module procedure init_RF_Edge;           end interface
-        interface init_Node;  module procedure init_RF_Node;           end interface
+        interface init_CC;                  module procedure init_RF_CC;             end interface
+        interface init_Face;                module procedure init_RF_Face;           end interface
+        interface init_Edge;                module procedure init_RF_Edge;           end interface
+        interface init_Node;                module procedure init_RF_Node;           end interface
 
-        interface init_BCs;   module procedure init_BC_vals;           end interface
+        interface init_BCs;                 module procedure init_BC_val;            end interface
+        interface init_BCs;                 module procedure init_BC_vals;           end interface
 
-        interface delete;     module procedure delete_RF;              end interface
+        interface delete;                   module procedure delete_RF;              end interface
 
-        interface assign;     module procedure assign_RF_S;            end interface
-        interface assign;     module procedure assign_RF_RF;           end interface
-        interface assign;     module procedure assign_RF_R;            end interface
-        interface assignMinus;module procedure assignMinus_RF_RF;      end interface
+        interface assign;                   module procedure assign_RF_S;            end interface
+        interface assign;                   module procedure assign_RF_RF;           end interface
+        interface assign;                   module procedure assign_RF_R;            end interface
+        interface assign_negative;          module procedure assign_negative_RF_RF;  end interface
 
-        interface add;        module procedure add_RF_RF;              end interface
-        interface add;        module procedure add_RF_RF_RF;           end interface
-        interface add;        module procedure add_RF_R;               end interface
-        interface add;        module procedure add_RF_S;               end interface
-        interface add;        module procedure add_S_RF;               end interface
+        interface add;                      module procedure add_RF_RF;              end interface
+        interface add;                      module procedure add_RF_RF_RF;           end interface
+        interface add;                      module procedure add_RF_R;               end interface
+        interface add;                      module procedure add_RF_S;               end interface
+        interface add;                      module procedure add_S_RF;               end interface
 
-        interface multiply;   module procedure multiply_RF_RF;         end interface
-        interface multiply;   module procedure multiply_RF_RF_RF;      end interface
-        interface multiply;   module procedure multiply_RF_S;          end interface
-        interface multiply;   module procedure multiply_S_RF;          end interface
+        interface add_product;              module procedure add_product_RF_RF_S;    end interface
 
-        interface subtract;   module procedure subtract_RF_RF;         end interface
-        interface subtract;   module procedure subtract_RF_RF_RF;      end interface
-        interface subtract;   module procedure subtract_RF_R_R;        end interface
-        interface subtract;   module procedure subtract_RF_R;          end interface
-        interface subtract;   module procedure subtract_RF_S;          end interface
-        interface subtract;   module procedure subtract_S_RF;          end interface
+        interface multiply;                 module procedure multiply_RF_RF;         end interface
+        interface multiply;                 module procedure multiply_RF_RF_RF;      end interface
+        interface multiply;                 module procedure multiply_RF_RF_S;       end interface
+        interface multiply;                 module procedure multiply_RF_S;          end interface
+        interface multiply;                 module procedure multiply_S_RF;          end interface
 
-        interface divide;     module procedure divide_RF_RF;           end interface
-        interface divide;     module procedure divide_RF_RF_RF;        end interface
-        interface divide;     module procedure divide_RF_S;            end interface
-        interface divide;     module procedure divide_S_RF;            end interface
+        interface subtract;                 module procedure subtract_RF_RF;         end interface
+        interface subtract;                 module procedure subtract_RF_RF_RF;      end interface
+        interface subtract;                 module procedure subtract_RF_R_R;        end interface
+        interface subtract;                 module procedure subtract_RF_R;          end interface
+        interface subtract;                 module procedure subtract_RF_S;          end interface
+        interface subtract;                 module procedure subtract_S_RF;          end interface
 
-        interface square;     module procedure square_RF;              end interface
-        interface print;      module procedure print_RF;               end interface
-        interface min;        module procedure min_RF;                 end interface
-        interface max;        module procedure max_RF;                 end interface
-        interface min;        module procedure min_pad_RF;             end interface
-        interface max;        module procedure max_pad_RF;             end interface
-        interface maxabs;     module procedure maxabs_RF;              end interface
-        interface maxabsdiff; module procedure maxabsdiff_RF;          end interface
-        interface mean;       module procedure mean_RF;                end interface
-        interface sum;        module procedure sum_RF;                 end interface
-        interface size;       module procedure size_RF;                end interface
+        interface divide;                   module procedure divide_RF_RF;           end interface
+        interface divide;                   module procedure divide_RF_RF_RF;        end interface
+        interface divide;                   module procedure divide_RF_S_RF;         end interface
+        interface divide;                   module procedure divide_RF_S;            end interface
+        interface divide;                   module procedure divide_S_RF;            end interface
+
+        interface square;                   module procedure square_RF;              end interface
+        interface print;                    module procedure print_RF;               end interface
+        interface print_physical;           module procedure print_physical_RF;      end interface
+        interface min;                      module procedure min_RF;                 end interface
+        interface max;                      module procedure max_RF;                 end interface
+        interface min;                      module procedure min_pad_RF;             end interface
+        interface max;                      module procedure max_pad_RF;             end interface
+        interface maxabs;                   module procedure maxabs_RF;              end interface
+        interface maxabsdiff;               module procedure maxabsdiff_RF;          end interface
+        interface mean;                     module procedure mean_RF;                end interface
+        interface sum;                      module procedure sum_RF;                 end interface
+        interface size;                     module procedure size_RF;                end interface
 
       contains
 
@@ -189,7 +196,7 @@
 #endif
         end subroutine
 
-        subroutine assignMinus_RF_RF(a,b)
+        subroutine assign_negative_RF_RF(a,b)
           implicit none
           type(realField),intent(inout) :: a
           type(realField),intent(in) :: b
@@ -308,6 +315,29 @@
           !$OMP END PARALLEL DO
 #else
           a%f = a%f + g2
+#endif
+        end subroutine
+
+      ! ------------------- ADD PRODUCT ------------------------
+
+        subroutine add_product_RF_RF_S(a,b,c)
+          implicit none
+          type(realField),intent(inout) :: a
+          type(realField),intent(in) :: b
+          real(cp),intent(in) :: c
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3)
+            do j=1,a%s(2)
+              do i=1,a%s(1)
+                a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = a%f + b%f*c
 #endif
         end subroutine
 
@@ -475,6 +505,27 @@
 #endif
         end subroutine
 
+        subroutine multiply_RF_RF_S(a,b,c)
+          implicit none
+          type(realField),intent(inout) :: a
+          type(realField),intent(in) :: b
+          real(cp),intent(in) :: c
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3)
+            do j=1,a%s(2)
+              do i=1,a%s(1)
+                a%f(i,j,k) = b%f(i,j,k) * c
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = b%f * c
+#endif
+        end subroutine
+
         subroutine multiply_RF_S(a,b)
           implicit none
           type(realField),intent(inout) :: a
@@ -554,6 +605,27 @@
           !$OMP END PARALLEL DO
 #else
           a%f = b%f / c%f
+#endif
+        end subroutine
+
+        subroutine divide_RF_S_RF(a,b,c)
+          implicit none
+          type(realField),intent(inout) :: a
+          type(realField),intent(in) :: c
+          real(cp),intent(in) :: b
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3)
+            do j=1,a%s(2)
+              do i=1,a%s(1)
+                a%f(i,j,k) = b / c%f(i,j,k)
+              enddo
+            enddo
+          enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = b / c%f
 #endif
         end subroutine
 
@@ -715,16 +787,8 @@
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))
           f1%s = shape(f1%f)
+          if (f2%b%defined) call init(f1%b,f2%b)
         end subroutine
-
-        ! subroutine init_RF_3(a,s)
-        !   implicit none
-        !   type(realField),intent(inout) :: a
-        !   integer,dimension(3),intent(in) :: s
-        !   if (allocated(a%f)) deallocate(a%f)
-        !   allocate(a%f(s(1),s(2),s(3)))
-        !   a%s = shape(a%f)
-        ! end subroutine
 
       ! ------------------- LOCATION-BASED ALLOCATE / DEALLOCATE --------------------
 
@@ -768,6 +832,13 @@
           call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
         end subroutine
 
+        subroutine init_BC_val(f,val)
+          implicit none
+          type(realField),intent(inout) :: f
+          real(cp),intent(in) :: val
+          call init(f%b,val)
+        end subroutine
+
         subroutine init_BC_vals(f,is_CC,is_Node)
           implicit none
           type(realField),intent(inout) :: f
@@ -808,12 +879,28 @@
           implicit none
           type(realField),intent(in) :: a
           integer :: i,j,k
-          if (allocated(a%f))   then
+          if (allocated(a%f)) then
             write(*,*) 'shape(f) = ',a%s
             do i=1,a%s(1)
               do j=1,a%s(2)
                 do k=1,a%s(3)
                   write(*,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
+                enddo
+              enddo
+            enddo
+          endif
+        end subroutine
+
+        subroutine print_physical_RF(a)
+          implicit none
+          type(realField),intent(in) :: a
+          integer :: i,j,k
+          if (allocated(a%f)) then
+            write(*,*) 'shape(f) = ',a%s
+            do i=2,a%s(1)-1
+              do j=2,a%s(2)-1
+                do k=2,a%s(3)-1
+                  write(*,'(A4,I1,A,I1,A,I1,A4,1F20.10)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
                 enddo
               enddo
             enddo

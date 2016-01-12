@@ -16,6 +16,7 @@
        public :: init_Dirichlet,init_Neumann,init_Periodic,init_symmetric,init_antisymmetric
        public :: init,delete
        public :: print,export
+       public :: export_type,export_meanVal
 
        type bctype
          logical :: Dirichlet
@@ -42,6 +43,9 @@
        interface delete;              module procedure delete_bctype;         end interface
        interface print;               module procedure print_bctype;          end interface
        interface export;              module procedure export_bctype;         end interface
+
+       interface export_type;         module procedure export_bctype_T_only;  end interface
+       interface export_meanVal;      module procedure export_bctype_MV_only; end interface
 
        contains
 
@@ -166,8 +170,29 @@
            if (b%antisymmetric) write(newU,'(A,T1)',advance='no') 'A'
          endif
 
-         write(newU,*) 'meanVal = ',b%meanVal
+         write(newU,'(F5.2)',advance='no') b%meanVal
+         ! write(newU,*) 'meanVal = ',b%meanVal
          ! write(newU,*) 'defined = ',b%defined
+       end subroutine
+
+       subroutine export_bctype_T_only(b,NewU)
+         implicit none
+         type(bctype),intent(in) :: b
+         integer,intent(in) :: NewU
+         if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined'
+         if (b%Dirichlet)     write(newU,'(A6,T1)',advance='no') '     D'
+         if (b%Neumann)       write(newU,'(A6,T1)',advance='no') '     N'
+         if (b%Periodic)      write(newU,'(A6,T1)',advance='no') '     P'
+         if (b%symmetric)     write(newU,'(A6,T1)',advance='no') '     S'
+         if (b%antisymmetric) write(newU,'(A6,T1)',advance='no') '     A'
+       end subroutine
+
+       subroutine export_bctype_MV_only(b,NewU)
+         implicit none
+         type(bctype),intent(in) :: b
+         integer,intent(in) :: NewU
+         if (.not.b%defined) stop 'Error: trying to export bctype (MV only) before fully defined'
+         write(newU,'(F5.2)',advance='no') b%meanVal
        end subroutine
 
        end module

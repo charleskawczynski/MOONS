@@ -29,18 +29,22 @@
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_stitches(U%x,m)
-         call apply_stitches(U%y,m)
-         call apply_stitches(U%z,m)
+         if (m%s.gt.1) then
+           call apply_stitches(U%x,m)
+           call apply_stitches(U%y,m)
+           call apply_stitches(U%z,m)
+         endif
        end subroutine
 
        subroutine apply_stitches_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_stitches_faces(U,m)
-         call apply_stitches_edges(U,m)
-         call apply_stitches_corners(U,m)
+         if (m%s.gt.1) then
+           call apply_stitches_faces(U,m)
+           ! call apply_stitches_edges(U,m)
+           ! call apply_stitches_corners(U,m)
+         endif
        end subroutine
 
        end module

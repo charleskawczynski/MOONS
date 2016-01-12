@@ -21,9 +21,11 @@
 
        use solverSettings_mod
 
-       use energySolver_mod
-       use momentumSolver_mod
-       use inductionSolver_mod
+       use energy_mod
+       use momentum_mod
+       use induction_mod
+       use induction_aux_mod
+       use inputFile_mod
 
        use MHDSolver_mod
        use omp_lib
@@ -79,19 +81,18 @@
          type(solverSettings) :: ss_MHD
          type(myTime) :: time
          type(domain) :: D_fluid,D_sigma
-         type(VF) :: U,B
          ! ********************** SMALL VARIABLES ***********************
-         real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
+         real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
          real(cp) :: dt_eng,dt_mom,dt_ind
-         integer :: NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB
+         integer :: NmaxMHD,N_mom,N_PPE,N_induction,N_cleanB,N_energy
          integer :: n_mhd
          ! **************************************************************
          call computationInProgress(time)
 
          call omp_set_num_threads(12) ! Set number of openMP threads
 
-         call readInputFile(dir,Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB)
+         call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,&
+         dt_eng,dt_mom,dt_ind,NmaxMHD,N_energy,N_mom,N_PPE,N_induction,N_cleanB)
 
          call create_directory(dir)
 
@@ -101,7 +102,7 @@
          if (solveInduction) then
            select case(solveBMethod)
            case(1:4)
-             if (NmaxB.lt.1) stop 'Error: NmaxB must be larger than 1 for low Rem cases'
+             if (N_induction.lt.1) stop 'Error: N_induction must be larger than 1 for low Rem cases'
            case default
            end select
          endif
@@ -119,34 +120,19 @@
          if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)
          if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
 
-         ! Initialize Energy grid/fields/parameters
-         call setDTime(nrg,dt_eng)
-         call setPiGroups(nrg,Re,Pr,Ec,Al,Rem)
-         if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,dir)
-
-         ! Initialize Momentum grid/fields/parameters
-         call setDTime(mom,dt_mom)
-         call setNMaxPPE(mom,NmaxPPE)
-         call setPiGroups(mom,Re,Ha,Gr,Fr)
-         call init(mom,mesh_mom,dir)
-
-         ! Initialize Induction grid/fields/parameters
-         call setDTime(ind,dt_ind)
-         call setNmaxB(ind,NmaxB)
-         call setNmaxCleanB(ind,NmaxCleanB)
-         call setPiGroups(ind,Ha,Rem)
-         if (solveInduction) call init(ind,mesh_ind,D_fluid,D_sigma,dir)
+         ! Initialize energy,momentum,induction
+         if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,N_energy,dt_eng,Re,Pr,Ec,Ha,dir)
+         call init(mom,mesh_mom,N_mom,N_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
+         if (solveInduction) call init(ind,mesh_ind,D_fluid,D_sigma,Rem,dt_ind,N_induction,N_cleanB,dir)
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
-         ! if (exportRawICs) call exportRaw(mom,mom%m,dir)
+         if (exportRawICs) call export(mom,mom%m,mom%temp_F,dir)
          ! if (exportRawICs) call exportRaw(ind,ind%m,dir)
 
          ! ********************* EXPORT ICs *****************************
          ! if (exportICs) call export(mom,mom%m,dir)
          ! if (exportICs) call export(nrg,nrg%m,dir)
-         ! if (exportICs) call embedVelocity(ind,mom%U,mom%m)
-         if (exportICs) call exportMaterial(ind,dir)
          ! if (exportICs) call export(ind,ind%m,dir)
 
          ! ****************** INITIALIZE RUNDATA ************************
@@ -162,12 +148,8 @@
          ! *************** CHECK IF CONDITIONS ARE OK *******************
          call printRundata(rd)
          call exportRundata(rd,dir)
-         call printExportBCs(ind,dir)
-         call printExportBCs(mom,dir)
-
-
-         if (solveMomentum)  call computeDivergence(mom,mom%m)
-         if (solveInduction) call computeDivergence(ind,ind%m)
+         call print(mom%m)
+         ! call print(ind%m)
 
          ! if (exportRawICs) then
          !   if (solveMomentum)  call exportRaw(mom,mom%m,dir)
@@ -183,7 +165,7 @@
          ! endif
 
          if (stopAfterExportICs) then
-           stop 'Finished exporting ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
+           stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          endif
 
          ! call checkGrid(gd)
@@ -229,67 +211,15 @@
          ! call export(mom,mom%m,dir)
          ! call export(ind,ind%m,dir)
 
-         if (solveMomentum) call init_Node(U,mom%m)
-         if (solveMomentum) call face2Node(U,mom%U,mom%m,mom%temp_E1)
-         if (solveInduction) call init_Node(B,ind%m)
-         if (solveInduction) call cellCenter2Node(B,ind%B,ind%m,ind%temp_F,ind%temp_E)
-
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
          call delete(ind)
          call delete(mom)
 
-         call delete(U)
-         call delete(B)
          call delete(mesh_mom)
          call delete(mesh_ind)
 
          call computationComplete(time)
-       end subroutine
-
-       subroutine readInputFile(dir,Re,Ha,Gr,Fr,Pr,Ec,Al,Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB)
-         implicit none
-         character(len=*),intent(in) :: dir
-         real(cp),intent(inout) :: Re,Ha,Gr,Fr,Pr,Ec,Al,Rem
-         real(cp),intent(inout) :: dt_eng,dt_mom,dt_ind
-         integer,intent(inout) :: NmaxMHD,NmaxPPE,NmaxB,NmaxCleanB
-         integer :: un
-         ! ***************** DEFAULT VALUES *****************
-         Re = 1000.0d0
-         Ha = 100.0d0
-         Gr = 0.0_cp
-         Fr = 0.0d0
-         Pr = 0.71d0
-         Ec = 0.0d0
-         Al = 0.0d0
-         Rem = 1.0d0
-         dt_eng = 1.0d-4
-         dt_mom = 1.0d-4
-         dt_ind = 1.0d-4
-         NmaxMHD = 1000000 ! One million steps
-         NmaxPPE    = 5 ! Number of PPE steps
-         NmaxB      = 5 ! Number of Steps for Low Rem approx to solve B
-         NmaxCleanB = 5 ! Number of Steps to clean B
-
-         un = newUnit()
-         open(unit=un,file = dir//'input.ini',status='unknown')
-         read(un,*) Re
-         read(un,*) Ha
-         read(un,*) Gr
-         read(un,*) Fr
-         read(un,*) Pr
-         read(un,*) Ec
-         read(un,*) Al
-         read(un,*) Rem
-         read(un,*) dt_mom
-         read(un,*) dt_ind
-         read(un,*) dt_eng
-         read(un,*) NmaxMHD
-         read(un,*) NmaxPPE
-         read(un,*) NmaxB
-         read(un,*) NmaxCleanB
-         close(un)
        end subroutine
 
        end module

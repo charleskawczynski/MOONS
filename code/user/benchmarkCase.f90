@@ -13,7 +13,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979_cp
+       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
        contains
 
@@ -137,7 +137,11 @@
          ! FORMAT CONVENTION:
          !     TITLE: AUTHORS, FLOW CONFIGURATION, SOME KEY PARAMETERS, ADDITIONAL INFO
          select case (BMC)
+<<<<<<< HEAD
          case (1) ! TITLE: Weiss, single eddy flow (finite Rem), Re=10, Ha=500, magnetic reconnection
+=======
+         case (1) ! TITLE: Weiss, eddy flow (finite Rem), Re=10, Ha=500, magnetic reconnection
+>>>>>>> 97b0bbf1f0665107a0c28c22821097efeb12e8e8
            ! PROBLEM DESCRIPTION: 
            ! REFERENCE: 
            Re = 100.0_cp
@@ -161,6 +165,7 @@
            NmaxMHD = 4000
            NmaxPPE = 5
 
+<<<<<<< HEAD
          case (4) ! TITLE: Iwatsu, LDC, Re=1000, Gr=100, Pr=0.71, mixed convection
            ! PROBLEM DESCRIPTION: 
            ! REFERENCE: 
@@ -168,6 +173,12 @@
            Gr = 100.0_cp
            Pr = 0.71_cp
            dt_eng = 1.0d-4
+=======
+         case (4) ! TITLE: Iwatsu, LDC, Re=100, Gr=100, Pr=0.71, mixed convection
+           ! PROBLEM DESCRIPTION: 
+           ! REFERENCE: 
+           Re = 100.0_cp
+>>>>>>> 97b0bbf1f0665107a0c28c22821097efeb12e8e8
            dt_mom = 1.0d-4
            NmaxMHD = 4000
            NmaxPPE = 5
@@ -175,10 +186,14 @@
          case (5) ! TITLE: Iwatsu, LDC, Re=1000, Gr=10^6, Pr=0.71, mixed convection
            ! PROBLEM DESCRIPTION: 
            ! REFERENCE: 
+<<<<<<< HEAD
            Re = 1000.0_cp
            Gr = 10.0_cp**(6.0_cp)
            Pr = 0.71_cp
            dt_eng = 1.0d-4
+=======
+           Re = 100.0_cp
+>>>>>>> 97b0bbf1f0665107a0c28c22821097efeb12e8e8
            dt_mom = 1.0d-4
            NmaxMHD = 4000
            NmaxPPE = 5

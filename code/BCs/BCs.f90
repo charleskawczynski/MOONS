@@ -67,6 +67,10 @@
        public :: getAllNeumann
        public :: getDirichlet
 
+       ! For apply_BCs_edges
+       public :: adjacent_faces
+       public :: define_Edges
+
        type BCs
          type(face),dimension(6) :: f   ! xmin,xmax,ymin,ymax,zmin,zmax
          type(edge),dimension(12) :: e  ! {1:12} = {x,y,z: minmin,minmax,maxmin,maxmax}
@@ -245,6 +249,70 @@
        end subroutine
 
        ! *******************************************************************************
+       ! ********************************* INIT EDGES **********************************
+       ! *******************************************************************************
+
+       ! subroutine init_Edges(BC) ! Finished, "goal" version
+       !   implicit none
+       !   type(BCs),intent(inout) :: BC
+       !   integer,dimension(2) :: a ! index of adjacent faces
+       !   integer :: i
+       !   do i=1,12
+       !     a = adjacent_faces(i)
+       !         if ((BC%f(a(1))%b%Dirichlet).and.(BC%f(a(2))%b%Dirichlet)) then
+       !         call init_Dirichlet(BC%e(i)%b); call setEdgeBy2Faces(BC%e(i),BC%f(a(1)),BC%f(a(2)),i)
+       !     elseif (BC%f(a(1))%b%Dirichlet) then
+       !         call init_Dirichlet(BC%e(i)%b); call setEdgeBy1Face(BC%e(i),BC%f(a(1)),i)
+       !     elseif (BC%f(a(2))%b%Dirichlet) then
+       !         call init_Dirichlet(BC%e(i)%b); call setEdgeByFaces(BC%e(i),BC%f(a(2)),i)
+       !     elseif ((BC%f(a(1))%b%Neumann).and.(BC%f(a(2))%b%Neumann)) then
+       !         call init_Neumann(BC%e(i)%b); call setEdgeBy2Faces(BC%e(i),BC%f(a(1)),BC%f(a(2)),i)
+       !     else; stop 'Error: edge definition case not defined in init_Edges in BCs.f90'
+       !     endif
+       !   enddo
+       ! end subroutine
+
+       subroutine define_Edges(BC) ! For now...
+         implicit none
+         type(BCs),intent(inout) :: BC
+         integer,dimension(2) :: a ! index of adjacent faces
+         integer :: i
+         do i=1,12
+           a = adjacent_faces(i)
+               if ((BC%f(a(1))%b%Dirichlet).and.(BC%f(a(2))%b%Dirichlet)) then
+               call init_Dirichlet(BC%e(i)%b)
+           elseif (BC%f(a(1))%b%Dirichlet) then
+               call init_Dirichlet(BC%e(i)%b)
+           elseif (BC%f(a(2))%b%Dirichlet) then
+               call init_Dirichlet(BC%e(i)%b)
+           elseif ((BC%f(a(1))%b%Neumann).and.(BC%f(a(2))%b%Neumann)) then
+               call init_Neumann(BC%e(i)%b)
+           ! else; stop 'Error: edge definition case not defined in init_Edges in BCs.f90'
+           endif
+         enddo
+       end subroutine
+
+       function adjacent_faces(i_edge) result (i_faces)
+         implicit none
+         integer,intent(in) :: i_edge
+         integer,dimension(2) :: i_faces
+         select case (i_edge)
+         case (1);  i_faces = (/3,5/) ! x (ymin,zmin)
+         case (2);  i_faces = (/3,6/) ! x (ymin,zmax)
+         case (3);  i_faces = (/4,5/) ! x (ymax,zmin)
+         case (4);  i_faces = (/4,6/) ! x (ymax,zmax)
+         case (5);  i_faces = (/1,5/) ! y (xmin,zmin)
+         case (6);  i_faces = (/1,6/) ! y (xmin,zmax)
+         case (7);  i_faces = (/2,5/) ! y (xmax,zmin)
+         case (8);  i_faces = (/2,6/) ! y (xmax,zmax)
+         case (9);  i_faces = (/1,3/) ! z (xmin,ymin)
+         case (10); i_faces = (/1,4/) ! z (xmin,ymax)
+         case (11); i_faces = (/2,3/) ! z (xmax,ymin)
+         case (12); i_faces = (/2,4/) ! z (xmax,ymax)
+         end select
+       end function
+
+       ! *******************************************************************************
        ! ******************************** COPY / DELETE ********************************
        ! *******************************************************************************
 
@@ -299,18 +367,21 @@
          ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
          ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
          if (BC%defined) then
-             write(newU,*) ' -------------- FACES -------------- '
-           do i=1,6
-             ! write(newU,*) 'Face ',i
-             write(newU,'(I1,T1,I1,T1,I1,T1,I1,T1,I1,T1,I1,T1)') i
-             call export(BC%f(i),newU)
-           enddo
+             write(newU,'(A7,6(I5))') 'Faces: ',(/(i,i=1,6)/)
+             write(newU,'(A6)',advance='no') 'Type: '
+             do i=1,6; call export_type(BC%f(i)%b,newU); enddo
+             write(newU,*) ''
+             write(newU,'(A9)',advance='no') 'meanVal: '
+             do i=1,6; call export_meanVal(BC%f(i)%b,newU); enddo
+             write(newU,*) ''
 
-             write(newU,*) ' -------------- EDGES -------------- '
-           do i=1,12
-             write(newU,*) 'Edge ',i
-             call export(BC%e(i),newU)
-           enddo
+             write(newU,'(A7,12(I5))') 'Edges: ',(/(i,i=1,12)/)
+             write(newU,'(A6)',advance='no') 'Type: '
+             do i=1,12; call export_type(BC%e(i)%b,newU); enddo
+             write(newU,*) ''
+             write(newU,'(A9)',advance='no') 'meanVal: '
+             do i=1,12; call export_meanVal(BC%e(i)%b,newU); enddo
+             write(newU,*) ''
 
            !   write(newU,*) ' ------------- CORNERS ------------- '
            ! do i=1,8

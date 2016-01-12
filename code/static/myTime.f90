@@ -60,6 +60,7 @@
         integer :: countRate
         real(cp) :: runTimeAve
         integer :: iterPerSec
+        integer :: iterPerMin
         integer :: iterPerHour
         integer :: iterPerDay
         ! Estimated Quantities
@@ -91,6 +92,7 @@
         this%estimatedRemaining = 0.0_cp
         this%estimatedTotal = 0.0_cp
         this%iterPerSec = 0
+        this%iterPerMin = 0
         this%iterPerHour = 0
         this%iterPerDay = 0
         this%N = 0
@@ -141,8 +143,9 @@
           this%runTimeAve = this%runTimeCumulative/real(this%N,cp)
         ! endif
         this%iterPerSec = floor(1.0_cp/this%runTimeAve)
+        this%iterPerMin = floor(1.0_cp/this%runTimeAve*60.0_cp)
         this%iterPerHour = floor(1.0_cp/this%runTimeAve*3600.0_cp)
-        this%iterPerDay = floor(1.0_cp/this%runTimeAve*3600.0_cp*24.0_cp)
+        this%iterPerDay = floor(1.0_cp/this%runTimeAve*86400.0_cp) ! 3600*24 = 86400
       end subroutine
 
       subroutine estimateRemainingNoSS(this,Nmax)
@@ -244,7 +247,7 @@
         temp = this%runTimeAve; call getTimeWithUnits(temp,u)
         write(newU,*) 'Time (average/iteration) = ',temp,' (', u,')'
 
-        write(newU,*) 'Iterations per (s,h,d) = ',this%iterPerSec,this%iterPerHour,this%iterPerDay
+        write(newU,*) 'Iterations per (s,m,h,d) = ',this%iterPerSec,this%iterPerMin,this%iterPerHour,this%iterPerDay
 
         temp = this%runTimeCumulative; call getTimeWithUnits(temp,u)
         write(newU,*) 'Time (Total passed) = ',temp,' (', u,')'

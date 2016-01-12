@@ -1,10 +1,29 @@
        module edge_mod
        ! Edges are organized as follows
-       !        minmin(i) {(y,z),(x,z),(x,y)}
-       !        minmax(i) {(y,z),(x,z),(x,y)}
-       !        maxmin(i) {(y,z),(x,z),(x,y)}
-       !        maxmax(i) {(y,z),(x,z),(x,y)}
+       !        minmin(i)
+       !        minmax(i)
+       !        maxmin(i)
+       !        maxmax(i)
        ! for direction i, covering all 12 edge.
+       ! 
+       ! To be more explicit:
+       ! 
+       ! x:  (i=1)   minmin(1):  ymin,zmin ! Right hand rule
+       !             minmax(2):  ymin,zmax ! Right hand rule
+       !             maxmin(3):  ymax,zmin ! Right hand rule
+       !             maxmax(4):  ymax,zmax ! Right hand rule
+       ! 
+       ! y:  (i=2)   minmin(5):  xmin,zmin ! LEFT hand rule
+       !             minmax(6):  xmin,zmax ! LEFT hand rule
+       !             maxmin(7):  xmax,zmin ! LEFT hand rule
+       !             maxmax(8):  xmax,zmax ! LEFT hand rule
+       ! 
+       ! z:  (i=3)   minmin(9):  xmin,ymin ! Right hand rule
+       !             minmax(10): xmin,ymax ! Right hand rule
+       !             maxmin(11): xmax,ymin ! Right hand rule
+       !             maxmax(12): xmax,ymax ! Right hand rule
+       ! 
+       ! 
        use IO_tools_mod
        use bctype_mod
        implicit none
