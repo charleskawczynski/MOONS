@@ -28,7 +28,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp) :: tol = 10.0_cp**(-15.0_cp)
+      real(cp) :: tol = 10.0_cp**(-6.0_cp)
 
       contains
 
@@ -46,6 +46,7 @@
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p,z
+        type(norms) :: norm_b
         integer :: i
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call multiply(r,b,vol)
@@ -65,6 +66,7 @@
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
+        call compute(norm_b,r)
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
@@ -81,16 +83,15 @@
           call add_product(x,p,alpha) ! x = x + alpha p
           call apply_BCs(x,m) ! Needed for PPE
           N_iter = N_iter + 1
-          call add_product(r,Ax,-alpha) ! x = x - alpha Ap
+          call add_product(r,Ax,-alpha) ! r = r - alpha Ap
           call zeroGhostPoints(r)
           res_norm = dot_product(r,r,m,x,tempx)
-          if (sqrt(res_norm).lt.tol) then; exit; endif
 
 #ifdef _EXPORT_PCG_CONVERGENCE_
-          call zeroGhostPoints(r)
           call compute(norm,r)
-          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
 #endif
+          if (sqrt(res_norm)/norm_b%L2.lt.tol) then; exit; endif
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
           call multiply(p,rhokp1/rhok) ! p = z + beta p
@@ -107,12 +108,10 @@
           call subtract(r,Ax)
           call zeroWall_conditional(r,m,x)
           call zeroGhostPoints(r)
-          call compute(norm,r); call print(norm,'PCG Residuals')
-#ifndef _EXPORT_PCG_CONVERGENCE_
-          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf
-#endif
-          write(*,*) 'PCG iterations (executed/max) = ',i-1,n
-          write(*,*) 'PCG sqrt(res_norm) = ',sqrt(res_norm)
+          call compute(norm,r); call print(norm,'PCG_SF Residuals')
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
+          write(*,*) 'PCG_SF iterations (executed/max) = ',i-1,n
+          write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_b%L2
         endif
       end subroutine
 
@@ -127,11 +126,12 @@
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n
         integer,intent(inout) :: N_iter
-        integer,dimension(3),intent(in) :: un
+        integer,intent(in) :: un
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p,z
         integer :: i
+        type(norms) :: norm_b
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call multiply(r,b,vol)
         ! ----------------------- MODIFY RHS -----------------------
@@ -148,6 +148,7 @@
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
+        call compute(norm_b,r)
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
@@ -166,14 +167,12 @@
           call add_product(r,Ax,-alpha) ! x = x - alpha Ap
           call zeroGhostPoints(r)
           res_norm = dot_product(r,r,m,x,tempx)
-          if (sqrt(res_norm).lt.tol) then; exit; endif
 
 #ifdef _EXPORT_PCG_CONVERGENCE_
           call zeroGhostPoints(r)
-          call compute(norm,r%x); write(un(1),*) N_iter,norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%y); write(un(2),*) N_iter,norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%z); write(un(3),*) N_iter,norm%L1,norm%L2,norm%Linf
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
 #endif
+          if (sqrt(res_norm)/norm_b%L2.lt.tol) then; exit; endif
 
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
@@ -191,20 +190,10 @@
           call subtract(r,Ax)
           call zeroWall_conditional(r,m,x)
           call zeroGhostPoints(r)
-          call compute(norm,r%x); call print(norm,'PCG Residuals (x)')
-#ifndef _EXPORT_PCG_CONVERGENCE_
-          write(un(1),*) N_iter,norm%L1,norm%L2,norm%Linf
-#endif
-          call compute(norm,r%y); call print(norm,'PCG Residuals (y)')
-#ifndef _EXPORT_PCG_CONVERGENCE_
-          write(un(2),*) N_iter,norm%L1,norm%L2,norm%Linf
-#endif
-          call compute(norm,r%z); call print(norm,'PCG Residuals (z)')
-#ifndef _EXPORT_PCG_CONVERGENCE_
-          write(un(3),*) N_iter,norm%L1,norm%L2,norm%Linf
-#endif
-          write(*,*) 'PCG iterations (executed/max) = ',i-1,n
-          write(*,*) 'PCG sqrt(res_norm) = ',sqrt(res_norm)
+          call compute(norm,r); call print(norm,'PCG_VF Residuals')
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
+          write(*,*) 'PCG_VF iterations (executed/max) = ',i-1,n
+          write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_b%L2
         endif
       end subroutine
 

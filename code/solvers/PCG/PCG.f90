@@ -56,7 +56,7 @@
         type(VF) :: tempk,k
         type(norms) :: norm
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
-        integer,dimension(3) :: un
+        integer :: un
         procedure(),pointer,nopass :: operator,operator_explicit
         integer :: N_iter
       end type
@@ -143,12 +143,8 @@
         call assign(PCG%Minv,Minv)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
-        PCG%un(1) = newAndOpen(dir,'norm_PCG_x_'//name)
-        PCG%un(2) = newAndOpen(dir,'norm_PCG_y_'//name)
-        PCG%un(3) = newAndOpen(dir,'norm_PCG_z_'//name)
-        call tecHeader(name,PCG%un(1),.true.)
-        call tecHeader(name,PCG%un(2),.true.)
-        call tecHeader(name,PCG%un(3),.true.)
+        PCG%un = newAndOpen(dir,'norm_PCG_VF_'//name)
+        call tecHeader(name,PCG%un,.true.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
 
@@ -237,7 +233,7 @@
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        write(un,*) 'VARIABLES = N,L1,L2,Linf'
+        write(un,*) 'VARIABLES = N,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf'
         write(un,*) 'ZONE DATAPACKING = POINT'
       end subroutine
 

@@ -44,8 +44,8 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=f95
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
-FCFLAGS += -D_DOUBLE_PRECISION_
-# FCFLAGS += -D_QUAD_PRECISION_
+# FCFLAGS += -D_DOUBLE_PRECISION_
+FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT Methods
 # FCFLAGS += -D_FFT_FULL_
@@ -112,13 +112,13 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
+FCFLAGS += -D_EXPORT_PCG_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -126,7 +126,7 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG_node.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
+UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_PCG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90

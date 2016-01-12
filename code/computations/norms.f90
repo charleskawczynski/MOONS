@@ -93,14 +93,6 @@
          eCopy%L1 = e%L1; eCopy%L2 = e%L2; eCopy%Linf = e%Linf
        end subroutine
 
-       subroutine add_L1L2(e,e_add)
-         implicit none
-         type(norms),intent(inout) :: e
-         type(norms),intent(in) :: e_add
-         e%L1 = e%L1+e_add%L1
-         e%L2 = e%L2+e_add%L2
-       end subroutine
-
        ! **************************************************************
        ! **************************************************************
        ! *********************** PRINT / EXPORT ***********************
