@@ -12,13 +12,10 @@
        use mesh_generate_mod
        use ops_embedExtract_mod
        use ops_interp_mod
-       use rundata_mod
        use VF_mod
 
        use init_Bfield_mod ! For restart
        use init_Ufield_mod ! For restart
-
-       use solverSettings_mod
 
        use energy_mod
        use momentum_mod
@@ -76,22 +73,20 @@
          type(energy) :: nrg
          type(mesh) :: mesh_mom,mesh_ind
          ! ********************** MEDIUM VARIABLES **********************
-         type(rundata) :: rd
-         type(solverSettings) :: ss_MHD
          type(domain) :: D_fluid,D_sigma
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
-         real(cp) :: tol_mom,tol_PPE,tol_induction,tol_cleanB
+         real(cp) :: tol_nrg,tol_mom,tol_PPE,tol_induction,tol_cleanB
          logical :: finite_Rem
          real(cp) :: dt_eng,dt_mom,dt_ind
-         integer :: NmaxMHD,N_mom,N_PPE,N_induction,N_cleanB,N_energy
+         integer :: NmaxMHD,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
          integer :: n_mhd
          ! **************************************************************
 
          call omp_set_num_threads(12) ! Set number of openMP threads
 
          call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,N_energy,N_mom,tol_mom,&
+         dt_eng,dt_mom,dt_ind,NmaxMHD,N_nrg,tol_nrg,N_mom,tol_mom,&
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
          call create_directory(dir)
@@ -121,7 +116,7 @@
          if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
 
          ! Initialize energy,momentum,induction
-         if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,N_energy,dt_eng,Re,Pr,Ec,Ha,dir)
+         if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,dir)
          call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
          if (solveInduction) then
            call init(ind,mesh_ind,D_fluid,D_sigma,finite_Rem,Rem,dt_ind,&
@@ -138,16 +133,7 @@
          ! if (exportICs) call export(nrg,nrg%m,dir)
          ! if (exportICs) call export(ind,ind%m,dir)
 
-         ! ****************** INITIALIZE RUNDATA ************************
-         ! rundata is severely outdated and does not exist in the solver.
-         ! It's only use now is to export solveBMethod and addJCrossB and that's it.
-         call setRunData(rd,dt_mom,dt_ind,Re,Ha,Rem,&
-          mom%U%x%RF(1)%f,mom%U%y%RF(1)%f,mom%U%z%RF(1)%f,&
-          mesh_mom%g(1),mesh_ind%g(1),addJCrossB,solveBMethod)
-
          ! *************** CHECK IF CONDITIONS ARE OK *******************
-         call printRundata(rd)
-         call exportRundata(rd,dir)
          call print(mom%m)
          ! call print(ind%m)
 
@@ -195,21 +181,12 @@
          call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
 
          ! ******************* SET MHD SOLVER SETTINGS *******************
-         call init(ss_MHD)
-
-         call setMaxIterations(ss_MHD,n_mhd+NmaxMHD)
-         call setIteration(ss_MHD,n_mhd)
-
          if (restartU.or.restartB) then
          call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
          else; n_mhd = 0
          endif
-
          ! ********************* SET B SOLVER SETTINGS *******************
-
-         call MHDSolver(nrg,mom,ind,ss_MHD,dir)
-         ! call export(mom,mom%m,dir)
-         ! call export(ind,ind%m,dir)
+         call MHDSolver(nrg,mom,ind,dir,n_mhd+NmaxMHD)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 

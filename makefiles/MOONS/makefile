@@ -30,8 +30,10 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
@@ -249,10 +251,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_VF.f90 \
 	$(SRC_DIR)$(PS)static$(PS)version.f90 \
-	$(SRC_DIR)$(PS)static$(PS)solverSettings.f90 \
-	$(SRC_DIR)$(PS)static$(PS)myTime.f90 \
+	$(SRC_DIR)$(PS)static$(PS)clock.f90 \
+	$(SRC_DIR)$(PS)static$(PS)stop_clock.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
-	$(SRC_DIR)$(PS)user$(PS)rundata.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_faces.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_edges.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_corners.f90 \

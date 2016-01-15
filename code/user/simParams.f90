@@ -4,17 +4,17 @@
        logical :: exportRawICs              = .true.   ! Export Raw ICs before starting simulation
        logical :: exportICs                 = .true.   ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.  ! Just export ICs, do not run simulation
-       logical :: export_planar             = .false.   ! Export 2D data when N_cell = 1 along given direction
+       logical :: export_planar             = .true.   ! Export 2D data when N_cell = 1 along given direction
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .true.
+       logical :: solveInduction            = .false.
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
-       integer :: solveUMethod              = 1 ! Refer to momentum.f90
+       integer :: solveUMethod              = 3 ! Refer to momentum.f90
        integer :: solveBMethod              = 3 ! Refer to induction.f90
 
-       logical :: addJCrossB                = .true.
+       logical :: addJCrossB                = .false.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 

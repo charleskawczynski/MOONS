@@ -2,8 +2,7 @@
        use simParams_mod
        use VF_mod
        use IO_auxiliary_mod
-       use myTime_mod
-       use solverSettings_mod
+       use stop_clock_mod
 
        use energy_mod
        use momentum_mod
@@ -27,25 +26,22 @@
 
        contains
 
-       subroutine MHDSolver(nrg,mom,ind,ss_MHD,dir)
+       subroutine MHDSolver(nrg,mom,ind,dir,N_timesteps)
          implicit none
          type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
-         type(solverSettings),intent(inout) :: ss_MHD
          character(len=*),intent(in) :: dir ! Output directory
-         ! *********************** LOCAL VARIABLES **********************
-         type(myTime) :: time
+         integer,intent(in) :: N_timesteps
+         type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
-         integer :: n_mhd
+         integer :: n_step,i
          logical :: continueLoop
+         logical,dimension(6) :: print_export
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
-
-         ! ********************** PREP LOOP ******************************
          continueLoop = .true.
-         n_mhd = getIteration(ss_MHD)
 
          call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
@@ -54,14 +50,14 @@
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
-         call init(time)
-         call computationInProgress(time)
-         do while (continueLoop)
-           call startTime(time)
-           call setIteration(ss_MHD,n_mhd)
-           if (solveEnergy)    call solve(nrg,mom%U  ,ss_MHD,dir)
-           if (solveMomentum)  call solve(mom,F,ss_MHD,dir)
-           if (solveInduction) call solve(ind,mom%U_E,ss_MHD,dir)
+         call init(sc,N_timesteps)
+         do n_step=1,N_timesteps
+           print_export = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/) ! .ne. 1 avoids initial export
+
+           call tic(sc)
+           if (solveEnergy)    call solve(nrg,mom%U,  print_export,dir)
+           if (solveMomentum)  call solve(mom,F,      print_export,dir)
+           if (solveInduction) call solve(ind,mom%U_E,print_export,dir)
 
            call assign(F,0.0_cp)
            if (addJCrossB) then
@@ -82,33 +78,27 @@
                                      nrg%temp_CC2_VF)
            endif
 
-           call checkCondition(ss_MHD,continueLoop) ! Check to leave loop
-           if (.not.continueLoop) exit
-           call stopTime(time,ss_MHD)               ! Get iteration time
-           call estimateRemaining(time,getMaxIterations(ss_MHD))
-           if (getPrintParams(ss_MHD)) then
-             call print(time,'MHD solver')
-           endif
-           n_mhd = n_mhd + 1
-           if (getPrintParams(ss_MHD)) then
+           if (print_export(1)) then
+             call print(sc)
              continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
+             if (.not.continueLoop) exit
            endif
+           call toc(sc)
          enddo
-         call stopTime(time,ss_MHD)
-         call print(time,'MHD solver')
-         call writeTime(time,dir,'MHD solver')
-         call computationComplete(time)
+         call toc(sc)
+         call print(sc)
+         call export(sc,dir)
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-         call writeLastStepToFile(n_mhd,dir//'parameters/','n_mhd')
+         call writeLastStepToFile(n_step,dir//'parameters/','n_step')
          call writeLastStepToFile(nrg%nstep,dir//'parameters/','n_nrg')
          call writeLastStepToFile(mom%nstep,dir//'parameters/','n_mom')
          call writeLastStepToFile(ind%nstep,dir//'parameters/','n_ind')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
-         if (solveMomentum)  call exportTransient(mom,ss_MHD,dir)
-         if (solveInduction) call exportTransient(ind,ss_MHD)
+         if (solveMomentum)  call exportTransient(mom,dir)
+         if (solveInduction) call exportTransient(ind)
 
          if (solveEnergy)    call export(nrg,nrg%m,dir)
          if (solveInduction) call export(ind,ind%m,dir)

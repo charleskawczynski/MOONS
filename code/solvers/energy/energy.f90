@@ -23,7 +23,6 @@
        use ops_discrete_mod
        use BCs_mod
        use apply_BCs_mod
-       use solverSettings_mod
        use probe_base_mod
 
        implicit none
@@ -59,9 +58,10 @@
          type(domain) :: D
 
          integer :: nstep             ! Nth time step
-         integer :: N_energy             ! Maximum number iterations in solving T (if iterative)
+         integer :: N_nrg             ! Maximum number iterations in solving T (if iterative)
          real(cp) :: dTime            ! Time step
          real(cp) :: time             ! Time
+         real(cp) :: tol_nrg             ! Time
 
          real(cp) :: Re,Pr,Ec,Ha  ! Reynolds, Prandtl, Eckert, Hartmann
        end type
@@ -76,18 +76,19 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine init_energy(nrg,m,D,N_energy,dt,Re,Pr,Ec,Ha,dir)
+       subroutine init_energy(nrg,m,D,N_nrg,tol_nrg,dt,Re,Pr,Ec,Ha,dir)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
-         real(cp),intent(in) :: dt,Re,Pr,Ec,Ha
-         integer,intent(in) :: N_energy
+         real(cp),intent(in) :: tol_nrg,dt,Re,Pr,Ec,Ha
+         integer,intent(in) :: N_nrg
          character(len=*),intent(in) :: dir
          type(SF) :: k_cc
          write(*,*) 'Initializing energy:'
          nrg%dTime = dt
-         nrg%N_energy = N_energy
+         nrg%N_nrg = N_nrg
+         nrg%tol_nrg = tol_nrg
          nrg%Re = Re
          nrg%Pr = Pr
          nrg%Ec = Ec
@@ -165,13 +166,10 @@
 
        ! ******************* EXPORT ****************************
 
-       subroutine energyExportTransient(nrg,ss_MHD)
+       subroutine energyExportTransient(nrg)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(solverSettings),intent(in) :: ss_MHD
-         if (getExportErrors(ss_MHD)) then
-           ! call apply(nrg%probe_divQ,nrg%nstep,nrg%divQ)
-         endif
+         ! call apply(nrg%probe_divQ,nrg%nstep,nrg%divQ)
        end subroutine
 
        subroutine export_energy(nrg,m,dir)
@@ -191,33 +189,32 @@
          endif
        end subroutine
 
-       subroutine energyInfo(nrg,ss_MHD,un)
+       subroutine energyInfo(nrg,un)
          implicit none
          type(energy),intent(in) :: nrg
-         type(solverSettings),intent(in) :: ss_MHD
          integer,intent(in) :: un
-         if (getPrintParams(ss_MHD)) then
-           write(un,*) '**************************************************************'
-           write(un,*) '*************************** ENERGY ***************************'
-           write(un,*) '**************************************************************'
-           write(un,*) '(Re,Pr) = ',nrg%Re,nrg%Pr
-           write(un,*) '(Ec,Ha) = ',nrg%Ec,nrg%Ha
-           write(un,*) '(t,dt) = ',nrg%time,nrg%dTime
-           write(un,*) ''
-           call print(nrg%m)
-           write(un,*) ''
-           call printPhysicalMinMax(nrg%T,'T')
-           call printPhysicalMinMax(nrg%divQ,'divQ')
-         endif
+         write(un,*) '**************************************************************'
+         write(un,*) '*************************** ENERGY ***************************'
+         write(un,*) '**************************************************************'
+         write(un,*) '(Re,Pr) = ',nrg%Re,nrg%Pr
+         write(un,*) '(Ec,Ha) = ',nrg%Ec,nrg%Ha
+         write(un,*) '(t,dt) = ',nrg%time,nrg%dTime
+         write(un,*) '(solveTMethod,N_nrg) = ',solveTMethod,nrg%N_nrg
+         write(un,*) '(tol_nrg) = ',nrg%tol_nrg
+         call printPhysicalMinMax(nrg%T,'T')
+         call printPhysicalMinMax(nrg%divQ,'divQ')
+         write(un,*) ''
+         call print(nrg%m)
+         write(un,*) ''
        end subroutine
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_energy(nrg,U,ss_MHD,dir)
+       subroutine solve_energy(nrg,U,print_export,dir)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
-         type(solverSettings),intent(inout) :: ss_MHD
+         logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
          logical :: exportNow
 
@@ -229,6 +226,11 @@
          case (1)
          call explicitEuler(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         
+         case (2) ! O2 time marching
+         call explicitEuler(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
          nrg%nstep = nrg%nstep + 1
@@ -238,25 +240,25 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         call exportTransient(nrg,ss_MHD)
-         if (getExportErrors(ss_MHD)) then
+         call exportTransient(nrg)
+         if (print_export(2)) then
            call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
            call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
          endif
-         ! if (getExportErrors(ss_MHD)) call exportTransientFull(nrg,nrg%m,dir)
+         ! if (print_export(6)) call exportTransientFull(nrg,nrg%m,dir)
 
-         ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,m_mom,ss_MHD) ! Maybe thermal energy?
+         ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,m_mom) ! Maybe thermal energy?
 
-         if (getPrintParams(ss_MHD)) then
+         if (print_export(1)) then
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowT')
          else; exportNow = .false.
          endif
 
-         if (getExportSolution(ss_MHD).or.exportNow) then
+         if (print_export(6).or.exportNow) then
            call export(nrg,nrg%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
          endif
-         call energyInfo(nrg,ss_MHD,6)
+         call energyInfo(nrg,6)
        end subroutine
 
        end module

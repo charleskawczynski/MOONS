@@ -1,7 +1,6 @@
        module rundata_mod
        use simParams_mod
        use grid_mod
-       use myTime_mod
        use IO_tools_mod
        implicit none
 

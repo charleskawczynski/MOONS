@@ -101,34 +101,28 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_TME_Fluid(KB_energy,B,nstep,compute_ME,D_fluid)
+       subroutine compute_TME_Fluid(K_energy,KB_energy,B,nstep,D_fluid)
          implicit none
+         real(cp),intent(inout) :: K_energy
          type(probe),intent(inout) :: KB_energy
          type(VF),intent(in) :: B
          integer,intent(in) :: nstep
-         logical,intent(in) :: compute_ME
          type(domain),intent(in) :: D_fluid
-         real(cp) :: K_energy
-         if (compute_ME) then
-          call totalEnergy(K_energy,B,D_fluid)
-          call set(KB_energy,nstep,K_energy)
-          call apply(KB_energy)
-         endif
+         call totalEnergy(K_energy,B,D_fluid)
+         call set(KB_energy,nstep,K_energy)
+         call apply(KB_energy)
        end subroutine
 
-       subroutine compute_TME(KB_energy,B,nstep,compute_ME,m)
+       subroutine compute_TME(K_energy,KB_energy,B,nstep,m)
          implicit none
+         real(cp),intent(inout) :: K_energy
          type(probe),intent(inout) :: KB_energy
          type(VF),intent(in) :: B
          type(mesh),intent(in) :: m
          integer,intent(in) :: nstep
-         logical,intent(in) :: compute_ME
-         real(cp) :: K_energy
-         if (compute_ME) then
-          call totalEnergy(K_energy,B,m)
-          call set(KB_energy,nstep,K_energy)
-          call apply(KB_energy)
-         endif
+         call totalEnergy(K_energy,B,m)
+         call set(KB_energy,nstep,K_energy)
+         call apply(KB_energy)
        end subroutine
 
        subroutine embedVelocity_E(U_E_tot,U_E_in,D_fluid)

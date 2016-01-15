@@ -31,8 +31,6 @@
        use apply_BCs_mod
        use apply_stitches_mod
 
-       use solverSettings_mod
-
        ! use jacobi_mod
        use PCG_mod
        use preconditioners_mod
@@ -182,8 +180,8 @@
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
          call init(prec_mom,mom%U)
-         call prec_lap_VF(prec_mom,mom%m,mom%MFP%c_mom)
-         ! call prec_identity_VF(prec_mom) ! For ordinary CG
+         ! call prec_lap_VF(prec_mom,mom%m,mom%MFP%c_mom)
+         call prec_identity_VF(prec_mom) ! For ordinary CG
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
          mom%tol_mom,mom%MFP,mom%U,mom%temp_E,dir//'Ufield/','U',.false.,.false.)
          call delete(prec_mom)
@@ -244,19 +242,16 @@
 
        ! ******************* EXPORT ****************************
 
-       subroutine momentumExportTransient(mom,ss_MHD,dir)
+       subroutine momentumExportTransient(mom,dir)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
-         if (solveMomentum.and.getExportErrors(ss_MHD)) then
-           call compute_TKE(mom%KE,mom%U_CC,mom%m)
-           call set(mom%transient_KE,mom%nstep,mom%KE)
-           call apply(mom%transient_KE)
-           call compute(mom%norm_divU,mom%divU,mom%m)
-           call set(mom%transient_divU,mom%nstep,mom%norm_divU%L2)
-           call apply(mom%transient_divU)
-         endif
+         call compute_TKE(mom%KE,mom%U_CC,mom%m)
+         call set(mom%transient_KE,mom%nstep,mom%KE)
+         call apply(mom%transient_KE)
+         call compute(mom%norm_divU,mom%divU,mom%m)
+         call set(mom%transient_divU,mom%nstep,mom%norm_divU%L2)
+         call apply(mom%transient_divU)
        end subroutine
 
        subroutine export_momentum(mom,m,F,dir)
@@ -291,41 +286,42 @@
          write(un,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
          write(un,*) '(t,dt) = ',mom%t,mom%dTime
          write(un,*) '(solveUMethod,N_mom,N_PPE) = ',solveUMethod,mom%N_mom,mom%N_PPE
+         write(un,*) '(tol_mom,tol_PPE) = ',mom%tol_mom,mom%tol_PPE
          write(un,*) 'nstep = ',mom%nstep
-         write(un,*) 'Kolmogorov Length = ',mom%L_eta
-         write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
-         write(un,*) 'Kolmogorov Time = ',mom%t_eta
+         write(un,*) 'KE = ',mom%KE
+         call printPhysicalMinMax(mom%divU,'divU')
+         ! write(un,*) 'Kolmogorov Length = ',mom%L_eta
+         ! write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
+         ! write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
          call export(mom%m,un)
-         write(un,*) 'KE = ',mom%KE
          ! call printPhysicalMinMax(mom%U,'u')
          ! call printPhysicalMinMax(mom%p,'p')
-         call printPhysicalMinMax(mom%divU,'divU')
          write(*,*) ''
        end subroutine
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,ss_MHD,dir)
+       subroutine solve_momentum(mom,F,print_export,dir)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
-         type(solverSettings),intent(in) :: ss_MHD
+         logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
          logical :: exportNow
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,getExportErrors(ss_MHD))
+           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(2))
 
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,getExportErrors(ss_MHD))
+           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(2))
 
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%dTime,mom%N_PPE,mom%N_mom,mom%Ustar,&
-           mom%temp_F,mom%temp_CC,mom%temp_E,getExportErrors(ss_MHD))
+           mom%temp_F,mom%temp_CC,mom%temp_E,print_export(2))
 
          case default; stop 'Error: solveUMethod must = 1,2 in momentum.f90.'
          end select
@@ -342,20 +338,19 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeKineticEnergy(mom,mom%m,F)
-         if (getExportErrors(ss_MHD)) call compute_divU(mom%divU,mom%U,mom%m)
-         ! if (getExportErrors(ss_MHD)) then
+         if (print_export(2)) call compute_divU(mom%divU,mom%U,mom%m)
+         if (print_export(2)) call exportTransient(mom,dir)
+         ! if (print_export(6)) then
          ! call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
          ! endif
 
-         if (getExportTransient(ss_MHD)) call exportTransient(mom,ss_MHD,dir)
-
-         if (getPrintParams(ss_MHD)) then
+         if (print_export(1)) then
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
          else; exportNow = .false.
          endif
 
-         if (getExportSolution(ss_MHD).or.exportNow) then
+         if (print_export(6).or.exportNow) then
            call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif

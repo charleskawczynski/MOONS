@@ -26,7 +26,6 @@
        use ops_discrete_mod
        use BCs_mod
        use apply_BCs_mod
-       use solverSettings_mod
        use induction_solver_mod
        use preconditioners_mod
        use PCG_mod
@@ -76,6 +75,7 @@
          type(matrix_free_params) :: MFP_cleanB
 
          type(errorProbe) :: probe_divB,probe_divJ
+         real(cp) :: ME_tot
          type(probe) :: KB_energy,KB0_energy,KBi_energy
          type(probe) :: KB_f_energy,KB0_f_energy,KBi_f_energy
          type(mesh) :: m
@@ -90,6 +90,7 @@
          real(cp) :: t                ! Time
          real(cp) :: Rem              ! Magnetic Reynolds number
          logical :: finite_Rem
+         real(cp),dimension(0:2) :: ME
        end type
 
        interface init;                 module procedure init_induction;                end interface
@@ -265,14 +266,11 @@
 
        ! ******************* EXPORT ****************************
 
-       subroutine inductionExportTransient(ind,ss_MHD)
+       subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         type(solverSettings),intent(in) :: ss_MHD
-         if (getExportErrors(ss_MHD)) then
-           call apply(ind%probe_divB,ind%nstep,ind%divB,ind%m)
-           call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%m)
-         endif
+         call apply(ind%probe_divB,ind%nstep,ind%divB,ind%m)
+         call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%m)
        end subroutine
 
        subroutine export_induction(ind,m,dir)
@@ -312,23 +310,26 @@
          write(un,*) '**************************************************************'
          write(un,*) '(Rem,finite_Rem) = ',ind%Rem,ind%finite_Rem
          write(un,*) '(t,dt) = ',ind%t,ind%dTime
+         write(un,*) '(solveBMethod,N_ind,N_cleanB) = ',solveBMethod,ind%N_induction,ind%N_cleanB
+         write(un,*) '(tol_ind,tol_cleanB) = ',solveBMethod,ind%tol_induction,ind%tol_cleanB
          write(un,*) '(nstep) = ',ind%nstep
-         write(un,*) ''
-         call export(ind%m,un)
-         write(un,*) ''
+         write(un,*) '(ME) = ',ind%ME
          call printPhysicalMinMax(ind%B,'B')
          call printPhysicalMinMax(ind%B0,'B0')
          call printPhysicalMinMax(ind%divB,'divB')
          call printPhysicalMinMax(ind%divJ,'divJ')
+         write(un,*) ''
+         call export(ind%m,un)
+         write(un,*) ''
        end subroutine
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_induction(ind,U,ss_MHD,dir)
+       subroutine solve_induction(ind,U,print_export,dir)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
-         type(solverSettings),intent(inout) :: ss_MHD
+         logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
          logical :: exportNow,compute_ME
 
@@ -345,7 +346,7 @@
 
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,ind%dTime,&
-         ind%N_induction,ind%N_cleanB,getExportErrors(ss_MHD),ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         ind%N_induction,ind%N_cleanB,print_export(2),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
@@ -358,38 +359,40 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         compute_ME = (computeKB.and.getExportErrors(ss_MHD).or.(ind%nstep.eq.0))
+         compute_ME = (computeKB.and.print_export(2).or.(ind%nstep.eq.0))
 
-         call add(ind%temp_F1,ind%B,ind%B0)
-         call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-         call compute_TME(ind%KB_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KB_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
+         if (compute_ME) then
+           call add(ind%temp_F1,ind%B,ind%B0)
+           call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
+           call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%m)
+           call compute_TME_fluid(ind%ME(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
 
-         call face2cellCenter(ind%temp_CC,ind%B,ind%m)
-         call compute_TME(ind%KBi_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KBi_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
+           call face2cellCenter(ind%temp_CC,ind%B,ind%m)
+           call compute_TME(ind%ME(1),ind%KBi_energy,ind%temp_CC,ind%nstep,ind%m)
+           call compute_TME_fluid(ind%ME(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
 
-         call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-         call compute_TME(ind%KB0_energy,ind%temp_CC,ind%nstep,compute_ME,ind%m)
-         call compute_TME_fluid(ind%KB0_f_energy,ind%temp_CC,ind%nstep,compute_ME,ind%D_fluid)
+           call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+           call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%m)
+           call compute_TME_fluid(ind%ME(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+         endif
 
-         call exportTransient(ind,ss_MHD)
+         if (print_export(6)) call exportTransient(ind)
 
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
          ! if (mod(ind%nstep,100000).eq.1) then
          !   call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
          ! endif
 
-         if (getExportErrors(ss_MHD)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-         ! if (getExportErrors(ss_MHD)) call exportTransientFull(ind,ind%m,dir)
+         if (print_export(2)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
+         ! if (print_export(2)) call exportTransientFull(ind,ind%m,dir)
 
-         if (getPrintParams(ss_MHD)) then
+         if (print_export(1)) then
            call inductionInfo(ind,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowB')
          else; exportNow = .false.
          endif
 
-         if (getExportSolution(ss_MHD).or.exportNow) then
+         if (print_export(6).or.exportNow) then
            call export(ind,ind%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif

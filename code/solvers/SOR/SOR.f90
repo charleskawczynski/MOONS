@@ -1,9 +1,9 @@
       module SOR_mod
-      ! call SORSolver(SOR,u,f,u_bcs,m,ss,norm,displayTF)
+      ! call SORSolver(SOR,u,f,u_bcs,m,n,norm,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), mesh (m)
-      ! and solver settings (ss) using the iterative Successive Over 
+      ! and a number of iterations (n) using the iterative Successive Over 
       ! Realxation (SOR) method
       ! 
       ! Note that the variant of Gauss-Seidel/SOR called
@@ -15,7 +15,6 @@
       !     f            = RHS of above equation
       !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
       !     m            = contains mesh information (dhc,dhn)
-      !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     norm         = Ln norms of residual
       !     displayTF    = print residuals to screen (T,F)
       ! 
@@ -32,7 +31,6 @@
       use SF_mod
       use VF_mod
 
-      use solverSettings_mod
 #ifdef _EXPORT_SOR_CONVERGENCE_
       use IO_tools_mod
 #endif
@@ -129,42 +127,29 @@
       end subroutine
 
 
-      subroutine solveSOR(SOR,u,f,m,ss,norm,displayTF)
+      subroutine solveSOR(SOR,u,f,m,n,norm,displayTF)
         implicit none
         type(SORSolver),intent(inout) :: SOR
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
-        type(solverSettings),intent(inout) :: ss
+        integer,intent(in) :: n
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
         ! Locals
-        integer :: ijk
-        logical :: TF,continueLoop
-        integer :: maxIterations
+        integer :: i
 #ifdef _EXPORT_SOR_CONVERGENCE_
         integer :: NU
 #endif
 
-        call solverSettingsSet(ss)
-        ijk = 0
-
         ! Boundaries
         call apply_BCs(u,m) ! Necessary with ghost nodes
-
-        if (getMaxIterationsTF(ss)) then
-          maxIterations = getMaxIterations(ss)
-          TF = (maxIterations.ge.1)
-        else; TF = .true.
-        endif
-        continueLoop = .true.
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
         NU = newAndOpen('out\','norm_SOR')
 #endif
 
-        do while (continueLoop.and.TF)
-          ijk = ijk + 1
+        do i = 1,n
 
           ! THE ORDER OF THESE ROUTINE CALLS IS IMPORTANT. DO NOT CHANGE.
 
@@ -203,14 +188,6 @@
 
           call apply_BCs(u,m)
 
-          if (getMinToleranceTF(ss)) then
-            call lap(SOR%lapu,u,m)
-            call subtract(SOR%res,SOR%lapu,f)
-            call zeroGhostPoints(SOR%res)
-            call compute(norm,SOR%res,m)
-            call setTolerance(ss,norm%L2)
-          endif
-
 #ifdef _EXPORT_SOR_CONVERGENCE_
             call lap(SOR%lapu,u,m)
             call subtract(SOR%res,SOR%lapu,f)
@@ -219,12 +196,6 @@
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
-          call setIteration(ss,ijk)
-
-          ! ********************************* CHECK TO EXIT ************************************
-          call checkCondition(ss,continueLoop)
-          if (.not.continueLoop) exit
-          ! ************************************************************************************
         enddo
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
@@ -237,13 +208,13 @@
         if (u%all_Neumann) call subtract(u,mean(u))
         if (displayTF) then
           write(*,*) 'SOR parameter = ',SOR%omega
-          write(*,*) '(Final,max) '//SOR%name//' iteration = ',ijk,maxIterations
+          write(*,*) '(Final,max) SOR iterations = ',i-1,n
 
           call lap(SOR%lapu,u,m)
           call subtract(SOR%res,SOR%lapu,f)
           call zeroGhostPoints(SOR%res)
           call compute(norm,SOR%res,m)
-          call print(norm,SOR%name//' Residuals for '//trim(adjustl(getName(ss))))
+          call print(norm,'SOR Residuals')
         endif
 
       end subroutine

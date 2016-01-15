@@ -59,11 +59,13 @@
          p%dir = dir
          p%name = name
          p%TF_freshStart = TF_freshStart
-         if (p%TF_freshStart) then;          p%un_d = newAndOpen(dir,name)
-         write(p%un_d,*) 'TITLE = "probe for '//name//'"'
-         write(p%un_d,*) 'VARIABLES = N,'//name
-         write(p%un_d,*) 'ZONE DATAPACKING = POINT'
-         elseif (.not.p%TF_freshStart) then; p%un_d = openToAppend(dir,name)
+         if (p%TF_freshStart) then
+           p%un_d = newAndOpen(dir,name)
+           write(p%un_d,*) 'TITLE = "probe for '//name//'"'
+           write(p%un_d,*) 'VARIABLES = N,'//name
+           write(p%un_d,*) 'ZONE DATAPACKING = POINT'
+         elseif (.not.p%TF_freshStart) then
+           p%un_d = openToAppend(dir,name)
          else; stop 'Error: no case found in initProbe in probe_transient.f90'
          endif
        end subroutine
