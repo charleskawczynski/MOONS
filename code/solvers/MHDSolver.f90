@@ -81,11 +81,10 @@
            if (print_export(1)) then
              call print(sc)
              continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
-             if (.not.continueLoop) exit
+             if (.not.continueLoop) then; call toc(sc); exit; endif
            endif
            call toc(sc)
          enddo
-         call toc(sc)
          call print(sc)
          call export(sc,dir)
          ! ***************************************************************

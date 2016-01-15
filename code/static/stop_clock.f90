@@ -193,7 +193,7 @@
          u = 'm'; t = t/60.0_cp
         elseif ((t.ge.3600.0_cp).and.(t.lt.86400.0_cp)) then
          u = 'h'; t = t/3600.0_cp ! 60*60 = 3600
-        elseif ((t.ge.86400.0_cp).and.(t.lt.86400.0_cp)) then
+        elseif ((t.ge.86400.0_cp).and.(t.lt.31557600.0_cp)) then
          u = 'd'; t = t/86400.0_cp ! 60*60*24 = 86400
         elseif (t.ge.31557600.0_cp) then
          u = 'y'; t = t/31557600.0_cp ! 60*60*24*365.24 = 31557600
