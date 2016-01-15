@@ -178,7 +178,6 @@
          implicit none
          type(grid), intent(in) :: g
          integer,intent(in) :: un
-         write(un,*) ' ---------------- grid'
          write(un,*) 'N_cells = ',(/g%c(1)%N,g%c(2)%N,g%c(3)%N/)
          write(un,*) 'volume = ',g%volume
          write(un,*) 'min/max(h)_x = ',(/g%c(1)%hmin,g%c(1)%hmax/)

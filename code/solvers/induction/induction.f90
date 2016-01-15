@@ -43,11 +43,6 @@
        public :: induction,init,delete,solve
        public :: export,exportTransient
 
-       logical :: lowRem = .false.
-       logical :: finiteRem = .true.
-       logical :: semi_implicit = .false.
-
-
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
 #endif
@@ -89,10 +84,11 @@
          integer :: nstep             ! Nth time step
          integer :: N_induction       ! Maximum number iterations in solving B (if iterative)
          integer :: N_cleanB          ! Maximum number iterations to clean B
+         real(cp) :: tol_cleanB       ! Tolerance for iteratively solvd cleanB equation
+         real(cp) :: tol_induction    ! Tolerance for iteratively solvd induction equation
          real(cp) :: dTime            ! Time step
          real(cp) :: t                ! Time
          real(cp) :: Rem              ! Magnetic Reynolds number
-         real(cp) :: theta
          logical :: finite_Rem
        end type
 
@@ -106,12 +102,15 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine init_induction(ind,m,D_fluid,D_sigma,Rem,dt,N_induction,N_cleanB,dir)
+       subroutine init_induction(ind,m,D_fluid,D_sigma,finite_Rem,Rem,dt,&
+         N_induction,tol_induction,N_cleanB,tol_cleanB,dir)
          implicit none
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D_fluid,D_sigma
+         logical,intent(in) :: finite_Rem
          integer,intent(in) :: N_induction,N_cleanB
+         real(cp),intent(in) :: tol_induction,tol_cleanB
          real(cp),intent(in) :: Rem,dt
          character(len=*),intent(in) :: dir
          type(SF) :: sigma,sigmaInv,prec_cleanB
@@ -120,6 +119,8 @@
          ind%dTime = dt
          ind%N_cleanB = N_cleanB
          ind%N_induction = N_induction
+         ind%tol_cleanB = tol_cleanB
+         ind%tol_induction = tol_induction
          ind%Rem = Rem
 
          call init(ind%m,m)
@@ -188,22 +189,16 @@
          ! Initialize multigrid
          call inductionInfo(ind,newAndOpen(dir//'parameters/','info_ind'))
 
-         ! ind%theta = 1.0_cp - ind%m%dhmin_min*ind%Rem*(1.0_cp/max(sigmaInv))
-         ind%theta = 0.9_cp
-         if ((ind%theta.le.0.0_cp).or.(ind%theta.ge.1.0_cp)) then
-           stop 'Error: 0 < theta < 1 violated in inductionSolver.f90'
+         ind%finite_Rem = finite_Rem
+
+         if (finite_Rem) then; ind%MFP_B%c_ind = ind%dTime/ind%Rem
+         else;                 ind%MFP_B%c_ind = ind%dTime
          endif
 
-         if (lowRem) ind%MFP_B%c_ind = ind%dTime
-         if (finiteRem) ind%MFP_B%c_ind = ind%dTime/ind%Rem
-         if (semi_implicit) ind%MFP_B%c_ind = ind%dTime/ind%Rem*ind%theta
-
-         ind%finite_Rem = finiteRem
-
          call init(prec_induction,ind%B)
-         call prec_curl_curl_VF(prec_induction,ind%m,ind%sigmaInv_edge)
+         call prec_curl_curl_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
-         ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
          call delete(prec_induction)
          write(*,*) '     PCG Solver initialized'
 
@@ -212,9 +207,10 @@
          call init_BCs(ind%phi,0.0_cp)
 
          call init(prec_cleanB,ind%phi)
-         call prec_lap_SF(prec_cleanB,ind%m)
+         call prec_lap_SF(prec_cleanB,ind%m,1.0_cp)
+
          call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_cleanB,&
-         ind%m,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','phi',.false.,.false.)
+         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','phi',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
@@ -314,7 +310,7 @@
          write(un,*) '**************************************************************'
          write(un,*) '************************** MAGNETIC **************************'
          write(un,*) '**************************************************************'
-         write(un,*) '(Rem) = ',ind%Rem
+         write(un,*) '(Rem,finite_Rem) = ',ind%Rem,ind%finite_Rem
          write(un,*) '(t,dt) = ',ind%t,ind%dTime
          write(un,*) '(nstep) = ',ind%nstep
          write(un,*) ''

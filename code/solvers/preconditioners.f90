@@ -40,15 +40,16 @@
         call assign(Minv,1.0_cp)
       end subroutine
 
-      subroutine prec_lap_SF(Minv,m)
+      subroutine prec_lap_SF(Minv,m,c)
         ! Computes Laplacian diagonal preconditioner
         ! 
-        !               1
-        !   Minv = -----------
-        !          diag(∇•(∇))
+        !                   1
+        !   Minv = --------------------
+        !          diag( I + c∇•(∇) )
         implicit none
         type(SF),intent(inout) :: Minv
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: c
         type(SF) :: vol
         integer :: i,j,k,t,pnx,pny,pnz
         integer,dimension(3) :: p
@@ -65,16 +66,17 @@
         enddo; enddo; enddo; enddo
         !$OMP END PARALLEL DO
 
+        call multiply(Minv,c)
+        call add(Minv,1.0_cp)
         call init(vol,Minv)
         call volume(vol,m)
         call multiply(Minv,vol)
         call delete(vol)
-
         call invert(Minv)
         call zeroGhostPoints(Minv)
       end subroutine
 
-      subroutine prec_lap_VF(Minv,m)
+      subroutine prec_lap_VF(Minv,m,c)
         ! Computes Laplacian diagonal preconditioner
         ! 
         !               1
@@ -83,21 +85,23 @@
         implicit none
         type(VF),intent(inout) :: Minv
         type(mesh),intent(in) :: m
-        call prec_lap_SF(Minv%x,m)
-        call prec_lap_SF(Minv%y,m)
-        call prec_lap_SF(Minv%z,m)
+        real(cp),intent(in) :: c
+        call prec_lap_SF(Minv%x,m,c)
+        call prec_lap_SF(Minv%y,m,c)
+        call prec_lap_SF(Minv%z,m,c)
       end subroutine
 
-      subroutine prec_curl_curl_VF(Minv,m,sig) ! Verified 1/3/2016
+      subroutine prec_curl_curl_VF(Minv,m,sig,c) ! Verified 1/3/2016
         ! Computes curl-curl diagonal preconditioner
         ! 
-        !                1
-        !   Minv = -------------
-        !          diag(∇x(σ∇x))
+        !                     1
+        !   Minv = ----------------------
+        !          diag( I + c∇x(σ∇x) )
         implicit none
         type(VF),intent(inout) :: Minv
         type(VF),intent(in) :: sig
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: c
         type(VF) :: vol
         integer :: i,j,k,t
         call assign(Minv,0.0_cp)
@@ -127,11 +131,12 @@
         enddo; enddo; enddo; enddo
         !$OMP END PARALLEL DO
 
+        call multiply(Minv,c)
+        call add(Minv,1.0_cp)
         call init(vol,Minv)
         call volume(vol,m)
         call multiply(Minv,vol)
         call delete(vol)
-
         call invert(Minv)
         call zeroGhostPoints(Minv)
       end subroutine

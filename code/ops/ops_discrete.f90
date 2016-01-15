@@ -187,9 +187,9 @@
             call d%add(lapU,u,m,2,3,1) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine lap_centered_SF(lapU,u,m,dir,addTo)
+       subroutine lap_centered_SF(lapU,u,m,temp_E,dir,addTo)
          implicit none
-         type(SF),intent(inout) :: lapU
+         type(SF),intent(inout) :: lapU,temp_E
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
@@ -197,52 +197,40 @@
          type(SF) :: temp
          type(del) :: d
          if (u%is_Face) then
-         select case (u%face)
-         case (1); select case (dir)
-                   case (1); call init_CC(temp,m)
-                   case (2); call init_Edge(temp,m,3)
-                   case (3); call init_Edge(temp,m,2)
-                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
-                   end select
-         case (2); select case (dir)
-                   case (1); call init_Edge(temp,m,3)
-                   case (2); call init_CC(temp,m)
-                   case (3); call init_Edge(temp,m,1)
-                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
-                   end select
-         case (3); select case (dir)
-                   case (1); call init_Edge(temp,m,2)
-                   case (2); call init_Edge(temp,m,1)
-                   case (3); call init_CC(temp,m)
-                   case default; stop 'Error: dir must = 1,2,3 in lap_centered_SF in ops_discrete.f90'
-                   end select
-         case default; stop 'Error: Bad case in lap_centered_SF in ops_discrete.f90'
-         end select
+           if (u%face.eq.dir) then
+             call init_CC(temp,m)
+             call d%assign(temp,u,m,1,dir,1)
+             if (addTo) then; call d%add(lapU,temp,m,1,dir,1)
+             else;            call d%assign(lapU,temp,m,1,dir,1)
+             endif
+             call delete(temp)
+           else
+             call d%assign(temp_E,u,m,1,dir,1)
+             if (addTo) then; call d%add(lapU,temp_E,m,1,dir,1)
+             else;            call d%assign(lapU,temp_E,m,1,dir,1)
+             endif
+           endif
          else; stop 'Error: non-face input to lap_centered in ops_discrete.f90'
          endif
-         call d%assign(temp,u,m,1,dir,1)
-         if (addTo) then; call d%add(lapU,temp,m,1,dir,1)
-         else;            call d%assign(lapU,temp,m,1,dir,1)
-         endif
-         call delete(temp)
        end subroutine
 
-       subroutine lap_centered_VF(lapU,u,m)
+       subroutine lap_centered_VF(lapU,u,m,temp_E)
          implicit none
          type(VF),intent(inout) :: lapU
+         type(VF),intent(inout) :: temp_E
          type(VF),intent(in) :: u
          type(mesh),intent(in) :: m
-         call lap_centered(lapU%x,u%x,m,1,.false.)
-         call lap_centered(lapU%x,u%x,m,2,.true.)
-         call lap_centered(lapU%x,u%x,m,3,.true.)
+         call lap_centered(lapU%x,u%x,m,temp_E%x,1,.false.)
+         call lap_centered(lapU%x,u%x,m,temp_E%z,2,.true.)
+         call lap_centered(lapU%x,u%x,m,temp_E%y,3,.true.)
 
-         call lap_centered(lapU%y,u%y,m,1,.false.)
-         call lap_centered(lapU%y,u%y,m,2,.true.)
-         call lap_centered(lapU%y,u%y,m,3,.true.)
+         call lap_centered(lapU%y,u%y,m,temp_E%z,1,.false.)
+         call lap_centered(lapU%y,u%y,m,temp_E%y,2,.true.)
+         call lap_centered(lapU%y,u%y,m,temp_E%x,3,.true.)
 
-         call lap_centered(lapU%z,u%z,m,1,.false.)
-         call lap_centered(lapU%z,u%z,m,2,.true.)
-         call lap_centered(lapU%z,u%z,m,3,.true.)
+         call lap_centered(lapU%z,u%z,m,temp_E%y,1,.false.)
+         call lap_centered(lapU%z,u%z,m,temp_E%x,2,.true.)
+         call lap_centered(lapU%z,u%z,m,temp_E%z,3,.true.)
        end subroutine
 
        subroutine lapVarCoeff_SF(lapU,u,k,m,temp,dir)

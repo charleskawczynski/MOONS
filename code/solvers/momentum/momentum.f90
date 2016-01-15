@@ -79,14 +79,17 @@
 
          ! Time step, Reynolds number, grid
          type(mesh) :: m
-         integer :: nstep,N_PPE,N_mom
+         integer :: N_PPE,N_mom
+         real(cp) :: tol_PPE,tol_mom
+         integer :: nstep
          real(cp) :: dTime,t
          real(cp) :: Re,Ha,Gr,Fr
          real(cp) :: L_eta,U_eta,t_eta ! Kolmogorov Scales
 
          ! Transient probes
-         type(probe) :: KU_energy
-         type(errorProbe) :: transient_divU
+         real(cp) :: KE
+         type(norms) :: norm_divU
+         type(probe) :: transient_KE,transient_divU
        end type
 
        interface init;                module procedure initMomentum;               end interface
@@ -99,11 +102,12 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initMomentum(mom,m,N_mom,N_PPE,dt,Re,Ha,Gr,Fr,dir)
+       subroutine initMomentum(mom,m,N_mom,tol_mom,N_PPE,tol_PPE,dt,Re,Ha,Gr,Fr,dir)
          implicit none
          type(momentum),intent(inout) :: mom
          type(mesh),intent(in) :: m
          integer,intent(in) :: N_mom,N_PPE
+         real(cp),intent(in) :: tol_mom,tol_PPE
          real(cp),intent(in) :: dt,Re,Ha,Gr,Fr
          character(len=*),intent(in) :: dir
          type(SF) :: prec_PPE
@@ -113,6 +117,8 @@
          mom%dTime = dt
          mom%N_mom = N_mom
          mom%N_PPE = N_PPE
+         mom%tol_mom = tol_mom
+         mom%tol_PPE = tol_PPE
          mom%Re = Re
          mom%Ha = Ha
          mom%Gr = Gr
@@ -120,6 +126,7 @@
          mom%L_eta = Re**(-3.0_cp/4.0_cp)
          mom%U_eta = Re**(-1.0_cp/4.0_cp)
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
+         mom%KE = 0.0_cp
 
          call init(mom%m,m)
          call init_Edge(mom%U_E,m,0.0_cp)
@@ -174,25 +181,26 @@
 
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
-         call init(prec_PPE,mom%p)
-         call prec_lap_SF(prec_PPE,mom%m)
-         call init(mom%PCG_P,Lap_uniform_props,Lap_uniform_props_explicit,prec_PPE,mom%m,&
-         mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
-         call delete(prec_PPE)
-         write(*,*) '     momentum PCG_P'
-
          call init(prec_mom,mom%U)
-         call prec_lap_VF(prec_mom,mom%m)
+         call prec_lap_VF(prec_mom,mom%m,mom%MFP%c_mom)
+         ! call prec_identity_VF(prec_mom) ! For ordinary CG
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
-         mom%MFP,mom%U,mom%U_CC,dir//'Ufield/','U',.false.,.false.)
+         mom%tol_mom,mom%MFP,mom%U,mom%temp_E,dir//'Ufield/','U',.false.,.false.)
          call delete(prec_mom)
          write(*,*) '     momentum PCG_U'
+
+         call init(prec_PPE,mom%p)
+         call prec_lap_SF(prec_PPE,mom%m,1.0_cp)
+         call init(mom%PCG_P,Lap_uniform_props,Lap_uniform_props_explicit,prec_PPE,mom%m,&
+         mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
+         call delete(prec_PPE)
+         write(*,*) '     momentum PCG_P'
 
          if (restartU) then
          call readLastStepFromFile(mom%nstep,dir//'parameters/','n_mom')
          else; mom%nstep = 0
          endif
-         call init(mom%KU_energy,dir//'Ufield\','KU',.not.restartU)
+         call init(mom%transient_KE,dir//'Ufield\','KU',.not.restartU)
 
          call momentumInfo(mom,newAndOpen(dir//'parameters/','info_mom'))
          mom%t = 0.0_cp
@@ -231,7 +239,6 @@
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
          call delete(mom%GS_p)
-         ! call delete(mom%MG)
          write(*,*) 'Momentum object deleted'
        end subroutine
 
@@ -242,12 +249,13 @@
          type(momentum),intent(inout) :: mom
          type(solverSettings),intent(in) :: ss_MHD
          character(len=*),intent(in) :: dir
-         real(cp) :: K_energy
          if (solveMomentum.and.getExportErrors(ss_MHD)) then
-           call compute_TKE(K_energy,mom%U_CC,mom%m)
-           call set(mom%KU_energy,mom%nstep,K_energy)
-           call apply(mom%KU_energy)
-           call apply(mom%transient_divU,mom%nstep,mom%divU,mom%m)
+           call compute_TKE(mom%KE,mom%U_CC,mom%m)
+           call set(mom%transient_KE,mom%nstep,mom%KE)
+           call apply(mom%transient_KE)
+           call compute(mom%norm_divU,mom%divU,mom%m)
+           call set(mom%transient_divU,mom%nstep,mom%norm_divU%L2)
+           call apply(mom%transient_divU)
          endif
        end subroutine
 
@@ -282,19 +290,17 @@
          write(un,*) '(Re,Ha) = ',mom%Re,mom%Ha
          write(un,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
          write(un,*) '(t,dt) = ',mom%t,mom%dTime
-         write(un,*) '(nstep) = ',mom%nstep
+         write(un,*) '(solveUMethod,N_mom,N_PPE) = ',solveUMethod,mom%N_mom,mom%N_PPE
+         write(un,*) 'nstep = ',mom%nstep
          write(un,*) 'Kolmogorov Length = ',mom%L_eta
          write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
          write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
          call export(mom%m,un)
-         write(un,*) ''
-         call printPhysicalMinMax(mom%U,'u')
-         call printPhysicalMinMax(mom%p,'p')
+         write(un,*) 'KE = ',mom%KE
+         ! call printPhysicalMinMax(mom%U,'u')
+         ! call printPhysicalMinMax(mom%p,'p')
          call printPhysicalMinMax(mom%divU,'divU')
-         ! call printPhysicalMinMax(mom%Fo_grid,'Fo_grid')
-         ! call printPhysicalMinMax(mom%Co_grid,'Co_grid')
-         ! call printPhysicalMinMax(mom%Re_grid,'Re_grid')
          write(*,*) ''
        end subroutine
 

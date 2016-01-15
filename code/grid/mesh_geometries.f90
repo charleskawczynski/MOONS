@@ -58,14 +58,11 @@
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
          call delete(m)
-         ! N = (/30,30,15/); hmin = -1.0_cp; hmax = 1.0_cp ! For symmetry
-         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp ! For full 3D
-         ! hmax(3) = 0.0_cp ! Symmetric w.r.t z ! For symmetry
+         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp
          beta = hartmannBL(20.0_cp,hmin,hmax)
          call grid_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
          call grid_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
-         ! call grid_Roberts_L(g,hmin(3),hmax(3),N(3),beta(3),3) ! For symmetry
-         call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3) ! For full 3D
+         call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
          call add(m,g)
 
          call initProps(m)
@@ -88,8 +85,7 @@
          N = 8; tw = 0.5_cp
          ! N = 5; tw = 0.05_cp;
          call ext_Roberts_B_IO(g,tw,N,1)
-         ! call ext_prep_Roberts_B_IO(g,tw,N,3) ! For symmetry
-         call ext_Roberts_B_IO(g,tw,N,3) ! For full 3D
+         call ext_Roberts_B_IO(g,tw,N,3)
          call ext_prep_Roberts_B_IO(g,tw,N,2)
 
          ! Define domain for electrical conductivity
@@ -101,8 +97,7 @@
          tv = 5.0_cp - tw ! Vacuum extends to 6 (hmax = 1 + 5 + tw)
          N = 10
          call ext_Roberts_near_IO(g,tv,N,1)
-         call ext_Roberts_near_IO(g,tv,N,3) ! For full 3D
-         ! call ext_prep_Roberts_R_IO(g,tv,N,3) ! For symmetry
+         call ext_Roberts_near_IO(g,tv,N,3)
          call ext_prep_Roberts_R_IO(g,tv,N,2)
          call ext_app_Roberts_L_IO (g,5.0_cp,N+6,2)
 
@@ -143,7 +138,7 @@
          real(cp) :: Ha,Re
          Ha = 10.0_cp; Re = 100.0_cp
          call delete(m)
-         N = (/3,3,3/); hmin = -0.5_cp; hmax = 0.5_cp
+         N = (/45,45,1/); hmin = -0.5_cp; hmax = 0.5_cp
          beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 
@@ -153,8 +148,8 @@
 
          call grid_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
          call grid_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
-         ! call grid_uniform(g,hmin(3),hmax(3),N(3),3)
-         call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
+         call grid_uniform(g,hmin(3),hmax(3),N(3),3)
+         ! call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
          call add(m,g)
          call initProps(m)
          call patch(m)

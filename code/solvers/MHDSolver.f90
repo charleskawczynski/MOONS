@@ -27,20 +27,19 @@
 
        contains
 
-       subroutine MHDSolver(nrg,mom,ind,ss_MHD,time,dir)
+       subroutine MHDSolver(nrg,mom,ind,ss_MHD,dir)
          implicit none
          type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
          type(solverSettings),intent(inout) :: ss_MHD
-         type(myTime),intent(inout) :: time
          character(len=*),intent(in) :: dir ! Output directory
          ! *********************** LOCAL VARIABLES **********************
+         type(myTime) :: time
          type(VF) :: F ! Forces added to momentum equation
          integer :: n_mhd
          logical :: continueLoop
 
-         call computationInProgress(time)
          call init(F,mom%U)
          call assign(F,0.0_cp)
 
@@ -55,6 +54,8 @@
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
+         call init(time)
+         call computationInProgress(time)
          do while (continueLoop)
            call startTime(time)
            call setIteration(ss_MHD,n_mhd)
@@ -84,8 +85,8 @@
            call checkCondition(ss_MHD,continueLoop) ! Check to leave loop
            if (.not.continueLoop) exit
            call stopTime(time,ss_MHD)               ! Get iteration time
+           call estimateRemaining(time,getMaxIterations(ss_MHD))
            if (getPrintParams(ss_MHD)) then
-             call estimateRemaining(time,ss_MHD)
              call print(time,'MHD solver')
            endif
            n_mhd = n_mhd + 1
@@ -93,18 +94,17 @@
              continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
            endif
          enddo
+         call stopTime(time,ss_MHD)
+         call print(time,'MHD solver')
+         call writeTime(time,dir,'MHD solver')
+         call computationComplete(time)
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-
-         call stopTime(time,ss_MHD)
-         call print(time,'MHD solver')
          call writeLastStepToFile(n_mhd,dir//'parameters/','n_mhd')
          call writeLastStepToFile(nrg%nstep,dir//'parameters/','n_nrg')
          call writeLastStepToFile(mom%nstep,dir//'parameters/','n_mom')
          call writeLastStepToFile(ind%nstep,dir//'parameters/','n_ind')
-
-         call writeTime(time,dir,'MHD solver')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (solveMomentum)  call exportTransient(mom,ss_MHD,dir)
@@ -115,7 +115,6 @@
          if (solveMomentum)  call export(mom,mom%m,F,dir)
 
          call delete(F)
-         call computationComplete(time)
        end subroutine
 
        end module

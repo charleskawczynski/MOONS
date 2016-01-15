@@ -1,4 +1,5 @@
        module export_raw_processed_mod
+       use simParams_mod
        use mesh_mod
        use SF_mod
        use VF_mod
@@ -15,8 +16,6 @@
        public :: export_raw                 ! call export_raw(m,x,dir,name,pad)
        public :: export_processed           ! call export_processed(m,x,dir,name,pad)
        public :: export_processed_transient ! call export_processed_transient(m,x,dir,name,pad,nstep)
-
-       logical :: export_planar = .false.
 
        interface export_raw;                 module procedure export_raw_SF;                  end interface
        interface export_raw;                 module procedure export_raw_VF;                  end interface

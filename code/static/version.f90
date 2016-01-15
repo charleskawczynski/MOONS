@@ -26,7 +26,7 @@
          write(u,*) ' University of California Los Angeles'
          write(u,*) '              (UCLA)                 '
          write(u,*) ' Magnetohydrodynamic Object-Oriented '
-         write(u,*) '    Numberical Solver (MOONS)        '
+         write(u,*) '    Numerical Solver (MOONS)         '
          write(u,*) '-------------------------------------'
          write(u,*) 'Charliekawczynski@gmail.com          '
          write(u,*) '-------------------------------------'

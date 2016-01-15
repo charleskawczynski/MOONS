@@ -28,11 +28,10 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp) :: tol = 10.0_cp**(-6.0_cp)
-
       contains
 
-      subroutine solve_PCG_SF(operator,operator_explicit,x,b,vol,k,m,MFP,n,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
+      subroutine solve_PCG_SF(operator,operator_explicit,x,b,vol,k,m,&
+        MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         external :: operator,operator_explicit
         type(SF),intent(inout) :: x
@@ -42,6 +41,7 @@
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n,un
+        real(cp),intent(in) :: tol
         integer,intent(inout) :: N_iter
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
@@ -115,7 +115,8 @@
         endif
       end subroutine
 
-      subroutine solve_PCG_VF(operator,operator_explicit,x,b,vol,k,m,MFP,n,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
+      subroutine solve_PCG_VF(operator,operator_explicit,x,b,vol,k,m,&
+        MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         external :: operator,operator_explicit
         type(VF),intent(inout) :: x
@@ -125,6 +126,7 @@
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n
+        real(cp),intent(in) :: tol
         integer,intent(inout) :: N_iter
         integer,intent(in) :: un
         logical,intent(in) :: compute_norms

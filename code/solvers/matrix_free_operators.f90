@@ -177,7 +177,7 @@
         implicit none
         type(VF),intent(inout) :: Ax
         type(VF),intent(in) :: x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: k
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
@@ -187,7 +187,7 @@
         ! is because U is staggered, and so k (the intermediate location), 
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
-        call lap_centered(Ax,x,m)
+        call lap_centered(Ax,x,m,k)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)
@@ -197,7 +197,7 @@
         !        A = {I + c_mom ∇•(k∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: k
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
@@ -208,7 +208,7 @@
         ! is because U is staggered, and so k (the intermediate location), 
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
-        call lap_centered(Ax,x,m)
+        call lap_centered(Ax,x,m,k)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)

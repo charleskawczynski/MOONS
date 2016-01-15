@@ -64,10 +64,6 @@
          call init_Neumann(B%y%RF(1)%b,3); call init_Neumann(B%y%RF(1)%b,4)
          call init_Neumann(B%z%RF(1)%b,5); call init_Neumann(B%z%RF(1)%b,6)
 
-         call init_Neumann(B%x%RF(1)%b,5); call init_Neumann(B%x%RF(1)%b,6)
-         call init_Neumann(B%y%RF(1)%b,5); call init_Neumann(B%y%RF(1)%b,6)
-         call init_Neumann(B%z%RF(1)%b,5); call init_Neumann(B%z%RF(1)%b,6)
-
          call noise(B)
          ! call sineWaves(B%x,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
          ! call sineWaves(B%y,m,(/2.0_cp,2.0_cp,2.0_cp/)) ! For Serial vs Parallel test
@@ -82,12 +78,15 @@
            B%x%RF(1)%f(2,:,:) = 0.0_cp; B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:) = 0.0_cp
            B%y%RF(1)%f(:,2,:) = 0.0_cp; B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:) = 0.0_cp
            B%z%RF(1)%f(:,:,2) = 0.0_cp; B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1) = 0.0_cp
-         elseif (B%is_Edge) then
-           ! Set Bn = 0 on boundaries
-           B%x%RF(1)%f(2,:,:) = 0.0_cp; B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:) = 0.0_cp
-           B%y%RF(1)%f(:,2,:) = 0.0_cp; B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:) = 0.0_cp
-           B%z%RF(1)%f(:,:,2) = 0.0_cp; B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1) = 0.0_cp
-           else; stop 'Error: B should be located on cell face or edge in test_cleanB.f90'
+
+           call init(phi%RF(1)%b,B%x%RF(1)%f(2,:,:),1)
+           call init(phi%RF(1)%b,B%y%RF(1)%f(:,2,:),3)
+           call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,2),5)
+           call init(phi%RF(1)%b,B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:),2)
+           call init(phi%RF(1)%b,B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:),4)
+           call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1),6)
+
+         else; stop 'Error: B should be located on cell face or edge in test_cleanB.f90'
          endif
          call apply_BCs(B,m)
          call div(divB,B,m)
@@ -96,13 +95,6 @@
          call zeroGhostPoints(divB)
          ! phi%all_Neumann = .true.
          write(*,*) 'allNeumann = ',phi%all_Neumann
-
-         ! call init(phi%RF(1)%b,B%x%RF(1)%f(2,:,:),1)
-         ! call init(phi%RF(1)%b,B%y%RF(1)%f(:,2,:),3)
-         ! call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,2),5)
-         ! call init(phi%RF(1)%b,B%x%RF(1)%f(B%x%RF(1)%s(1)-1,:,:),2)
-         ! call init(phi%RF(1)%b,B%y%RF(1)%f(:,B%y%RF(1)%s(2)-1,:),4)
-         ! call init(phi%RF(1)%b,B%z%RF(1)%f(:,:,B%z%RF(1)%s(3)-1),6)
 
          call export(m,dir,'mesh')
          call export_raw(m,B,dir,'Bstar',0)

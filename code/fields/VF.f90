@@ -29,6 +29,7 @@
         public :: init_Node
         public :: init_BCs
         public :: volume
+        public :: multiply_volume
 
         public :: dot_product
 
@@ -75,6 +76,7 @@
         interface init_Edge;         module procedure init_VF_Edge_assign;      end interface
         interface init_Node;         module procedure init_VF_Node_assign;      end interface
         interface volume;            module procedure volume_VF;                end interface
+        interface multiply_volume;   module procedure multiply_volume_VF;       end interface
 
         interface dot_product;       module procedure dot_product_VF;           end interface
 
@@ -454,6 +456,13 @@
           type(VF),intent(inout) :: u
           type(mesh),intent(in) :: m
           call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
+        end subroutine
+
+        subroutine multiply_volume_VF(u,m)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          call multiply_volume(u%x,m); call multiply_volume(u%y,m); call multiply_volume(u%z,m)
         end subroutine
 
         subroutine init_VF_copy_VF(f1,f2)

@@ -59,7 +59,7 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call advect_U(Ustar,U,U_E,m,.false.,temp_E,temp_CC)
-         call advect_U(temp_F,U,U_E,m,.true.,temp_E,temp_CC)
+         call advect_U(temp_F,Unm1,U_E,m,.true.,temp_E,temp_CC)
          call AB2_overwrite(Ustar,temp_F)
          call multiply(Ustar,-1.0_cp) ! Because advect_div gives positive
 
@@ -103,8 +103,7 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call advect_U(Ustar,U,U_E,m,.false.,temp_E,temp_CC)
-         call advect_U(temp_F,U,U_E,m,.true.,temp_E,temp_CC)
-
+         call advect_U(temp_F,Unm1,U_E,m,.true.,temp_E,temp_CC)
          call AB2_overwrite(Ustar,temp_F)
          call multiply(Ustar,-1.0_cp) ! Because advect_div gives positive
 

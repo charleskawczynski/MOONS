@@ -5,7 +5,6 @@
        use IO_VF_mod
        use IO_auxiliary_mod
        use version_mod
-       use myTime_mod
        use grid_mod
        use mesh_mod
        use domain_mod
@@ -79,20 +78,21 @@
          ! ********************** MEDIUM VARIABLES **********************
          type(rundata) :: rd
          type(solverSettings) :: ss_MHD
-         type(myTime) :: time
          type(domain) :: D_fluid,D_sigma
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
+         real(cp) :: tol_mom,tol_PPE,tol_induction,tol_cleanB
+         logical :: finite_Rem
          real(cp) :: dt_eng,dt_mom,dt_ind
          integer :: NmaxMHD,N_mom,N_PPE,N_induction,N_cleanB,N_energy
          integer :: n_mhd
          ! **************************************************************
-         call computationInProgress(time)
 
          call omp_set_num_threads(12) ! Set number of openMP threads
 
-         call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,N_energy,N_mom,N_PPE,N_induction,N_cleanB)
+         call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
+         dt_eng,dt_mom,dt_ind,NmaxMHD,N_energy,N_mom,tol_mom,&
+         N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
          call create_directory(dir)
 
@@ -122,8 +122,11 @@
 
          ! Initialize energy,momentum,induction
          if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,N_energy,dt_eng,Re,Pr,Ec,Ha,dir)
-         call init(mom,mesh_mom,N_mom,N_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
-         if (solveInduction) call init(ind,mesh_ind,D_fluid,D_sigma,Rem,dt_ind,N_induction,N_cleanB,dir)
+         call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
+         if (solveInduction) then
+           call init(ind,mesh_ind,D_fluid,D_sigma,finite_Rem,Rem,dt_ind,&
+           N_induction,tol_induction,N_cleanB,tol_cleanB,dir)
+         endif
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
@@ -141,9 +144,6 @@
          call setRunData(rd,dt_mom,dt_ind,Re,Ha,Rem,&
           mom%U%x%RF(1)%f,mom%U%y%RF(1)%f,mom%U%z%RF(1)%f,&
           mesh_mom%g(1),mesh_ind%g(1),addJCrossB,solveBMethod)
-
-         ! ****************** INITIALIZE TIME ***************************
-         call init(time)
 
          ! *************** CHECK IF CONDITIONS ARE OK *******************
          call printRundata(rd)
@@ -207,7 +207,7 @@
 
          ! ********************* SET B SOLVER SETTINGS *******************
 
-         call MHDSolver(nrg,mom,ind,ss_MHD,time,dir)
+         call MHDSolver(nrg,mom,ind,ss_MHD,dir)
          ! call export(mom,mom%m,dir)
          ! call export(ind,ind%m,dir)
 
@@ -218,8 +218,6 @@
 
          call delete(mesh_mom)
          call delete(mesh_ind)
-
-         call computationComplete(time)
        end subroutine
 
        end module

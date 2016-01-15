@@ -432,15 +432,14 @@
          integer :: i
          write(un,*) ' ************* mesh ************* '
          do i = 1,m%s
-           write(un,*) 'grid ID = ',i
+           write(un,*) ' -------------------------------- grid ID = ',i
            call export(m%g(i),un)
            if (m%s.gt.1) call export_stitches(m%g(i),un)
            write(un,*) ' -------------------------------- '
          enddo
          if (m%s.gt.1) then
-           write(un,*) 's = ',m%s
+           write(un,*) 's,volume = ',m%s,m%volume
            write(un,*) 'N_cells = ',m%N_cells
-           write(un,*) 'volume = ',m%volume
            write(un,*) 'min/max(h)_x = ',(/m%hmin(1),m%hmax(1)/)
            write(un,*) 'min/max(h)_y = ',(/m%hmin(2),m%hmax(2)/)
            write(un,*) 'min/max(h)_z = ',(/m%hmin(3),m%hmax(3)/)

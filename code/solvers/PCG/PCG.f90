@@ -48,6 +48,7 @@
         type(norms) :: norm
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
         integer :: un,N_iter
+        real(cp) :: tol
         procedure(),pointer,nopass :: operator,operator_explicit
       end type
 
@@ -57,19 +58,21 @@
         type(norms) :: norm
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
         integer :: un
+        real(cp) :: tol
         procedure(),pointer,nopass :: operator,operator_explicit
         integer :: N_iter
       end type
 
       contains
 
-      subroutine init_PCG_SF(PCG,operator,operator_explicit,Minv,m,MFP,&
+      subroutine init_PCG_SF(PCG,operator,operator_explicit,Minv,m,tol,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
         external :: operator,operator_explicit
         type(PCG_solver_SF),intent(inout) :: PCG
         type(SF),intent(in) :: Minv
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: tol
         type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
@@ -90,10 +93,11 @@
         call assign(PCG%Minv,Minv)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
-        PCG%un = newAndOpen(dir,'norm_PCG_'//name)
+        PCG%un = newAndOpen(dir,'norm_PCG_SF_'//name)
         call tecHeader(name,PCG%un,.false.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
+        PCG%tol = tol
 
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
@@ -117,13 +121,14 @@
         PCG%N_iter = 1
       end subroutine
 
-      subroutine init_PCG_VF(PCG,operator,operator_explicit,Minv,m,MFP,&
+      subroutine init_PCG_VF(PCG,operator,operator_explicit,Minv,m,tol,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
         external :: operator,operator_explicit
         type(PCG_solver_VF),intent(inout) :: PCG
         type(VF),intent(in) :: Minv
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: tol
         type(VF),intent(in) :: x,k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
@@ -147,6 +152,7 @@
         call tecHeader(name,PCG%un,.true.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
+        PCG%tol = tol
 
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
@@ -177,7 +183,7 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%norm,&
+        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,&
         compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 
@@ -189,7 +195,7 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%norm,&
+        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,&
         compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 

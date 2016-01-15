@@ -43,6 +43,7 @@
         public :: init_Edge
         public :: CC_along,Node_along
         public :: volume
+        public :: multiply_volume
 
         public :: init_BCs,init_BC_props,init_BC_mesh
         public :: dot_product
@@ -96,6 +97,7 @@
         interface init_Face;           module procedure init_SF_Face_assign;    end interface
         interface init_Edge;           module procedure init_SF_Edge_assign;    end interface
         interface volume;              module procedure volume_SF;              end interface
+        interface multiply_volume;     module procedure multiply_volume_SF;     end interface
 
         interface dot_product;         module procedure dot_product_SF;         end interface
 
@@ -786,6 +788,17 @@
          endif
          u%vol = sum(u)
        end subroutine
+
+        subroutine multiply_volume_SF(f,m)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(SF) :: vol
+          call init(vol,f)
+          call volume(vol,m)
+          call multiply(f,vol)
+          call delete(vol)
+        end subroutine
 
         subroutine delete_SF(f)
           implicit none
