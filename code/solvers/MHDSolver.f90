@@ -78,12 +78,12 @@
                                      nrg%temp_CC2_VF)
            endif
 
+           call toc(sc)
            if (print_export(1)) then
              call print(sc)
              continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
              if (.not.continueLoop) then; call toc(sc); exit; endif
            endif
-           call toc(sc)
          enddo
          call print(sc)
          call export(sc,dir)
