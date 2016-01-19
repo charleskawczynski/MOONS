@@ -1,9 +1,6 @@
        module inputFile_mod
-
        implicit none
-
        private
-
        public :: readInputFile
 
 #ifdef _SINGLE_PRECISION_
@@ -29,35 +26,43 @@
          integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 10.0d0
+         Re         = 400.0d0
          Ha         = 20.0d0
          Rem        = 100.0d0
          Gr         = 0.0_cp
          Fr         = 0.0d0
          Pr         = 0.71d0
          Ec         = 0.0d0
-         t          = 800.0
-         dt_eng     = 5.0d-3
+         t          = 200.0
+         dt_eng     = 1.0d-3
          dt_mom     = 1.0d-3
-         dt_ind     = 5.0d-3
+         dt_ind     = 1.0d-3
          finite_Rem = .true.
 
          ! NmaxMHD       = ceiling(t/dt_eng)
          NmaxMHD       = ceiling(t/dt_mom)
          ! NmaxMHD       = ceiling(t/dt_ind)
          ! NmaxMHD       = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
-         ! NmaxMHD       = 4000
+         ! NmaxMHD       = 500
 
          N_nrg         = 1000     ! Number of iterations to solve energy    equation (if iterative solver is used)
-         N_mom         = 5000     ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_ind         = 9000     ! Number of iterations to solve induction equation (if iterative solver is used)
-         N_PPE         = 5        ! Number of iterations to solve PPE steps
+         N_mom         = 5        ! Number of iterations to solve momentum  equation (if iterative solver is used)
+         N_ind         = 10       ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_PPE         = 500      ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
-         tol_nrg       = 10.0_cp**(-15.0_cp)
-         tol_mom       = 10.0_cp**(-15.0_cp)
-         tol_induction = 10.0_cp**(-6.0_cp)
-         tol_PPE       = 10.0_cp**(-15.0_cp)
-         tol_cleanB    = 10.0_cp**(-15.0_cp)
+
+         ! Stopping criteria for iterative solvers:
+         !         ||Ax - b||
+         !         ----------- < tol
+         !         ||Ax⁰ - b||
+         ! NOTE: tol must be > 10^(-10)
+         ! For the PPE, div(u) -> 0 as t-> infinity.
+         ! Which means b and r⁰ -> 0 as t-> infinity.
+         tol_nrg       = 10.0_cp**(-10.0_cp)
+         tol_mom       = 10.0_cp**(-10.0_cp)
+         tol_induction = 10.0_cp**(-10.0_cp)
+         tol_PPE       = 10.0_cp**(-10.0_cp)
+         tol_cleanB    = 10.0_cp**(-10.0_cp)
        end subroutine
 
        end module

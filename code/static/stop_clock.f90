@@ -119,7 +119,7 @@
         sc%estimatedTotal = sc%secPerIter*sc%NMaxr
         sc%estimatedRemaining = sc%estimatedTotal - sc%t_passed
         sc%percentageComplete = sc%Nr/sc%NMaxr*100.0_cp
-        sc%NRemaining = sc%NMax - sc%N
+        sc%NRemaining = sc%NMax - sc%N + 1
         sc%iterPerSec = floor(1.0_cp/sc%secPerIter)
         sc%iterPerMin = floor(60.0_cp/sc%secPerIter)
         sc%iterPerHour = floor(3600.0_cp/sc%secPerIter)
@@ -186,7 +186,9 @@
         implicit none
         real(cp),intent(inout) :: t
         character(len=1),intent(inout) :: u
-        if (t.lt.0.0_cp) stop 'Error: negative time estimate in stop_clock.f90'
+        if (t.lt.0.0_cp) then
+          write(*,*) 'WARNING: negative time estimate in stop_clock.f90'
+        endif
         if (t.lt.60.0_cp) then
          u = 's'; t = t
         elseif ((t.ge.60.0_cp).and.(t.lt.3600.0_cp)) then

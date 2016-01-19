@@ -28,12 +28,15 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
+      real(cp),parameter :: tol_abs = epsilon(1.0_cp)*10.0_cp**(2.0_cp)
+
       contains
 
-      subroutine solve_PCG_SF(operator,operator_explicit,x,b,vol,k,m,&
+      subroutine solve_PCG_SF(operator,operator_explicit,name,x,b,vol,k,m,&
         MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         external :: operator,operator_explicit
+        character(len=1),intent(in) :: name
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol,Minv
         type(VF),intent(in) :: k
@@ -46,7 +49,7 @@
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p,z
-        type(norms) :: norm_b
+        type(norms) :: norm_res0
         integer :: i
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call multiply(r,b,vol)
@@ -66,12 +69,18 @@
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
-        call compute(norm_b,r)
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
         if (x%all_Neumann) call subtract_physical_mean(r)
         call subtract(r,Ax)
+        call compute(norm_res0,r)
+#ifdef _EXPORT_PCG_SF_CONVERGENCE_
+          call compute(norm,r)
+          res_norm = dot_product(r,r,m,x,tempx)
+          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,0
+#endif
 
         call multiply(z,Minv,r)
         call assign(p,z)
@@ -87,11 +96,12 @@
           call zeroGhostPoints(r)
           res_norm = dot_product(r,r,m,x,tempx)
 
-#ifdef _EXPORT_PCG_CONVERGENCE_
+#ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
-          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
+          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-          if (sqrt(res_norm)/norm_b%L2.lt.tol) then; exit; endif
+          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; exit; endif
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
           call multiply(p,rhokp1/rhok) ! p = z + beta p
@@ -108,17 +118,19 @@
           call subtract(r,Ax)
           call zeroWall_conditional(r,m,x)
           call zeroGhostPoints(r)
-          call compute(norm,r); call print(norm,'PCG_SF Residuals')
-          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
+          call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
+          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
           write(*,*) 'PCG_SF iterations (executed/max) = ',i-1,n
-          write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_b%L2
+          write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
         endif
       end subroutine
 
-      subroutine solve_PCG_VF(operator,operator_explicit,x,b,vol,k,m,&
+      subroutine solve_PCG_VF(operator,operator_explicit,name,x,b,vol,k,m,&
         MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         external :: operator,operator_explicit
+        character(len=1),intent(in) :: name
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol,Minv
         type(VF),intent(in) :: k
@@ -133,7 +145,7 @@
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p,z
         integer :: i
-        type(norms) :: norm_b
+        type(norms) :: norm_res0
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call multiply(r,b,vol)
         ! ----------------------- MODIFY RHS -----------------------
@@ -150,12 +162,19 @@
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
-        call compute(norm_b,r)
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
         ! if (x%all_Neumann) call subtract_physical_mean(r)
         call subtract(r,Ax)
+        call compute(norm_res0,r)
+#ifdef _EXPORT_PCG_VF_CONVERGENCE_
+          call compute(norm,r)
+          res_norm = dot_product(r,r,m,x,tempx)
+          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,0
+#endif
+
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok
@@ -170,11 +189,12 @@
           call zeroGhostPoints(r)
           res_norm = dot_product(r,r,m,x,tempx)
 
-#ifdef _EXPORT_PCG_CONVERGENCE_
-          call zeroGhostPoints(r)
-          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
+#ifdef _EXPORT_PCG_VF_CONVERGENCE_
+          call compute(norm,r)
+          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-          if (sqrt(res_norm)/norm_b%L2.lt.tol) then; exit; endif
+          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; exit; endif
 
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
@@ -192,10 +212,11 @@
           call subtract(r,Ax)
           call zeroWall_conditional(r,m,x)
           call zeroGhostPoints(r)
-          call compute(norm,r); call print(norm,'PCG_VF Residuals')
-          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,norm_b%L1,norm_b%L2,norm_b%Linf
+          call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
+          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
           write(*,*) 'PCG_VF iterations (executed/max) = ',i-1,n
-          write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_b%L2
+          write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
         endif
       end subroutine
 

@@ -175,7 +175,7 @@
 
          ! Initialize interior solvers
          call init(mom%GS_p,mom%p,mom%m,dir//'Ufield/','p')
-         write(*,*) '     momentum GS_p'
+         write(*,*) '     GS solver initialized for p'
 
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
@@ -185,17 +185,17 @@
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
          mom%tol_mom,mom%MFP,mom%U,mom%temp_E,dir//'Ufield/','U',.false.,.false.)
          call delete(prec_mom)
-         write(*,*) '     momentum PCG_U'
+         write(*,*) '     PCG solver initialized for U'
 
          call init(prec_PPE,mom%p)
          call prec_lap_SF(prec_PPE,mom%m,1.0_cp)
          call init(mom%PCG_P,Lap_uniform_props,Lap_uniform_props_explicit,prec_PPE,mom%m,&
          mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
          call delete(prec_PPE)
-         write(*,*) '     momentum PCG_P'
+         write(*,*) '     PCG solver initialized for p'
 
          if (restartU) then
-         call readLastStepFromFile(mom%nstep,dir//'parameters/','n_mom')
+         call readLastStepFromFile(mom%nstep,dir//'parameters/','nstep_mom')
          else; mom%nstep = 0
          endif
          call init(mom%transient_KE,dir//'Ufield\','KU',.not.restartU)
@@ -282,11 +282,11 @@
          write(un,*) '**************************************************************'
          write(un,*) '************************** MOMENTUM **************************'
          write(un,*) '**************************************************************'
-         write(un,*) '(Re,Ha) = ',mom%Re,mom%Ha
-         write(un,*) '(Gr,Fr) = ',mom%Gr,mom%Fr
-         write(un,*) '(t,dt) = ',mom%t,mom%dTime
-         write(un,*) '(solveUMethod,N_mom,N_PPE) = ',solveUMethod,mom%N_mom,mom%N_PPE
-         write(un,*) '(tol_mom,tol_PPE) = ',mom%tol_mom,mom%tol_PPE
+         write(un,*) 'Re,Ha = ',mom%Re,mom%Ha
+         write(un,*) 'Gr,Fr = ',mom%Gr,mom%Fr
+         write(un,*) 't,dt = ',mom%t,mom%dTime
+         write(un,*) 'solveUMethod,N_mom,N_PPE = ',solveUMethod,mom%N_mom,mom%N_PPE
+         write(un,*) 'tol_mom,tol_PPE = ',mom%tol_mom,mom%tol_PPE
          write(un,*) 'nstep = ',mom%nstep
          write(un,*) 'KE = ',mom%KE
          call printPhysicalMinMax(mom%divU,'divU')
@@ -312,16 +312,16 @@
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(2))
+           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
 
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(2))
+           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
 
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%dTime,mom%N_PPE,mom%N_mom,mom%Ustar,&
-           mom%temp_F,mom%temp_CC,mom%temp_E,print_export(2))
+           mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
 
          case default; stop 'Error: solveUMethod must = 1,2 in momentum.f90.'
          end select
@@ -338,8 +338,8 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeKineticEnergy(mom,mom%m,F)
-         if (print_export(2)) call compute_divU(mom%divU,mom%U,mom%m)
-         if (print_export(2)) call exportTransient(mom,dir)
+         if (print_export(1)) call compute_divU(mom%divU,mom%U,mom%m)
+         if (print_export(1)) call exportTransient(mom,dir)
          ! if (print_export(6)) then
          ! call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
          ! endif
@@ -347,6 +347,7 @@
          if (print_export(1)) then
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
+           ! mom%N_mom = readIntegerFromFile(dir//'parameters/','N_mom')
          else; exportNow = .false.
          endif
 

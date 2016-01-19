@@ -96,10 +96,11 @@
          ! Vacuum
          tv = 5.0_cp - tw ! Vacuum extends to 6 (hmax = 1 + 5 + tw)
          N = 10
-         call ext_Roberts_near_IO(g,tv,N,1)
-         call ext_Roberts_near_IO(g,tv,N,3)
-         call ext_prep_Roberts_R_IO(g,tv,N,2)
-         call ext_app_Roberts_L_IO (g,5.0_cp,N+6,2)
+         ! Remove the following 4 lines for vacuum-absent case
+         ! call ext_Roberts_near_IO(g,tv,N,1)
+         ! call ext_Roberts_near_IO(g,tv,N,3)
+         ! call ext_prep_Roberts_R_IO(g,tv,N,2)
+         ! call ext_app_Roberts_L_IO (g,5.0_cp,N+6,2)
 
          call add(m_ind,g)
          call initProps(m_ind)

@@ -91,6 +91,7 @@
          real(cp) :: Rem              ! Magnetic Reynolds number
          logical :: finite_Rem
          real(cp),dimension(0:2) :: ME
+         real(cp),dimension(0:2) :: ME_fluid
        end type
 
        interface init;                 module procedure init_induction;                end interface
@@ -201,7 +202,7 @@
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
          ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
          call delete(prec_induction)
-         write(*,*) '     PCG Solver initialized'
+         write(*,*) '     PCG Solver initialized for B'
 
          call init_BC_mesh(ind%phi,ind%m)
          call init_Dirichlet(ind%phi%RF(1)%b)
@@ -211,15 +212,17 @@
          call prec_lap_SF(prec_cleanB,ind%m,1.0_cp)
 
          call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_cleanB,&
-         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','phi',.false.,.false.)
+         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','φ',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
          if (restartB) then
-         call readLastStepFromFile(ind%nstep,dir//'parameters/','n_ind')
+         call readLastStepFromFile(ind%nstep,dir//'parameters/','nstep_ind')
          else; ind%nstep = 0
          endif
          ind%t = 0.0_cp
+         ind%ME = 0.0_cp
+         ind%ME_fluid = 0.0_cp
          write(*,*) '     Finished'
        end subroutine
 
@@ -308,12 +311,13 @@
          write(un,*) '**************************************************************'
          write(un,*) '************************** MAGNETIC **************************'
          write(un,*) '**************************************************************'
-         write(un,*) '(Rem,finite_Rem) = ',ind%Rem,ind%finite_Rem
-         write(un,*) '(t,dt) = ',ind%t,ind%dTime
-         write(un,*) '(solveBMethod,N_ind,N_cleanB) = ',solveBMethod,ind%N_induction,ind%N_cleanB
-         write(un,*) '(tol_ind,tol_cleanB) = ',solveBMethod,ind%tol_induction,ind%tol_cleanB
-         write(un,*) '(nstep) = ',ind%nstep
-         write(un,*) '(ME) = ',ind%ME
+         write(un,*) 'Rem,finite_Rem = ',ind%Rem,ind%finite_Rem
+         write(un,*) 't,dt = ',ind%t,ind%dTime
+         write(un,*) 'solveBMethod,N_ind,N_cleanB = ',solveBMethod,ind%N_induction,ind%N_cleanB
+         write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
+         write(un,*) 'nstep = ',ind%nstep
+         write(un,*) 'ME = ',ind%ME
+         write(un,*) 'ME_fluid = ',ind%ME_fluid
          call printPhysicalMinMax(ind%B,'B')
          call printPhysicalMinMax(ind%B0,'B0')
          call printPhysicalMinMax(ind%divB,'divB')
@@ -346,7 +350,7 @@
 
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,ind%dTime,&
-         ind%N_induction,ind%N_cleanB,print_export(2),ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         ind%N_induction,ind%N_cleanB,print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
@@ -359,21 +363,21 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         compute_ME = (computeKB.and.print_export(2).or.(ind%nstep.eq.0))
+         compute_ME = (computeKB.and.print_export(1).or.(ind%nstep.eq.0))
 
          if (compute_ME) then
-           call add(ind%temp_F1,ind%B,ind%B0)
-           call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-           call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_fluid(ind%ME(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+           call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%m)
+           call compute_TME_fluid(ind%ME_fluid(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
 
            call face2cellCenter(ind%temp_CC,ind%B,ind%m)
            call compute_TME(ind%ME(1),ind%KBi_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_fluid(ind%ME(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_fluid(ind%ME_fluid(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
 
-           call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-           call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_fluid(ind%ME(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call add(ind%temp_F1,ind%B,ind%B0)
+           call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
+           call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%m)
+           call compute_TME_fluid(ind%ME_fluid(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
          endif
 
          if (print_export(6)) call exportTransient(ind)
@@ -383,7 +387,7 @@
          !   call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
          ! endif
 
-         if (print_export(2)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
+         if (print_export(1)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          ! if (print_export(2)) call exportTransientFull(ind,ind%m,dir)
 
          if (print_export(1)) then

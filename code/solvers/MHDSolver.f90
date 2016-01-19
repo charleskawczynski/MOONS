@@ -91,9 +91,9 @@
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
          call writeLastStepToFile(n_step,dir//'parameters/','n_step')
-         call writeLastStepToFile(nrg%nstep,dir//'parameters/','n_nrg')
-         call writeLastStepToFile(mom%nstep,dir//'parameters/','n_mom')
-         call writeLastStepToFile(ind%nstep,dir//'parameters/','n_ind')
+         call writeLastStepToFile(nrg%nstep,dir//'parameters/','nstep_nrg')
+         call writeLastStepToFile(mom%nstep,dir//'parameters/','nstep_mom')
+         call writeLastStepToFile(ind%nstep,dir//'parameters/','nstep_ind')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (solveMomentum)  call exportTransient(mom,dir)

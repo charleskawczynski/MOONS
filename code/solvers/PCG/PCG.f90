@@ -49,6 +49,7 @@
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
         integer :: un,N_iter
         real(cp) :: tol
+        character(len=1) :: name
         procedure(),pointer,nopass :: operator,operator_explicit
       end type
 
@@ -57,10 +58,10 @@
         type(VF) :: tempk,k
         type(norms) :: norm
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
-        integer :: un
+        integer :: un,N_iter
         real(cp) :: tol
+        character(len=1) :: name
         procedure(),pointer,nopass :: operator,operator_explicit
-        integer :: N_iter
       end type
 
       contains
@@ -75,7 +76,8 @@
         real(cp),intent(in) :: tol
         type(SF),intent(in) :: x
         type(VF),intent(in) :: k
-        character(len=*),intent(in) :: dir,name
+        character(len=*),intent(in) :: dir
+        character(len=1),intent(in) :: name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(SF) :: temp_Minv
@@ -98,6 +100,7 @@
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
         PCG%tol = tol
+        PCG%name = name
 
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
@@ -130,7 +133,8 @@
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: tol
         type(VF),intent(in) :: x,k
-        character(len=*),intent(in) :: dir,name
+        character(len=*),intent(in) :: dir
+        character(len=1),intent(in) :: name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(VF) :: temp_Minv
@@ -153,6 +157,7 @@
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
         PCG%tol = tol
+        PCG%name = name
 
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
@@ -183,7 +188,7 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,&
+        call solve_PCG(PCG%operator,PCG%operator_explicit,PCG%name,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,&
         compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 
@@ -195,7 +200,7 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,PCG%operator_explicit,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,&
+        call solve_PCG(PCG%operator,PCG%operator_explicit,PCG%name,x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,&
         compute_norms,PCG%un,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 
@@ -239,7 +244,7 @@
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        write(un,*) 'VARIABLES = N,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf'
+        write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf,i'
         write(un,*) 'ZONE DATAPACKING = POINT'
       end subroutine
 

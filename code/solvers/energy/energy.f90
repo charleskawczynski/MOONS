@@ -135,7 +135,7 @@
          write(*,*) '     probes initialized'
 
          if (restartT) then
-         call readLastStepFromFile(nrg%nstep,dir//'parameters/','n_nrg')
+         call readLastStepFromFile(nrg%nstep,dir//'parameters/','nstep_nrg')
          else; nrg%nstep = 0
          endif
          nrg%time = 0.0_cp
@@ -196,11 +196,11 @@
          write(un,*) '**************************************************************'
          write(un,*) '*************************** ENERGY ***************************'
          write(un,*) '**************************************************************'
-         write(un,*) '(Re,Pr) = ',nrg%Re,nrg%Pr
-         write(un,*) '(Ec,Ha) = ',nrg%Ec,nrg%Ha
-         write(un,*) '(t,dt) = ',nrg%time,nrg%dTime
-         write(un,*) '(solveTMethod,N_nrg) = ',solveTMethod,nrg%N_nrg
-         write(un,*) '(tol_nrg) = ',nrg%tol_nrg
+         write(un,*) 'Re,Pr = ',nrg%Re,nrg%Pr
+         write(un,*) 'Ec,Ha = ',nrg%Ec,nrg%Ha
+         write(un,*) 't,dt = ',nrg%time,nrg%dTime
+         write(un,*) 'solveTMethod,N_nrg = ',solveTMethod,nrg%N_nrg
+         write(un,*) 'tol_nrg = ',nrg%tol_nrg
          call printPhysicalMinMax(nrg%T,'T')
          call printPhysicalMinMax(nrg%divQ,'divQ')
          write(un,*) ''

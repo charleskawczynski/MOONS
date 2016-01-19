@@ -22,6 +22,7 @@
       public :: readSwitchFromFile
       public :: readLastStepFromFile
       public :: writeLastStepToFile
+      public :: readIntegerFromFile
 
       logical,parameter :: headerTecplot = .true.
 
@@ -69,6 +70,15 @@
         integer :: un
         un = openToRead(dir,name)
         read(un,'('//logfmt//')') ks
+        call closeExisting(un,name,dir)
+      end function
+
+      function readIntegerFromFile(dir,name) result(val)
+        character(len=*),intent(in) :: dir,name
+        integer :: val
+        integer :: un
+        un = openToRead(dir,name)
+        read(un,*) val
         call closeExisting(un,name,dir)
       end function
 
