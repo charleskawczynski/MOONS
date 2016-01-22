@@ -10,6 +10,8 @@
       use export_raw_processed_mod
       use SF_mod
       use VF_mod
+      use omp_lib
+
       use matrix_free_params_mod
       implicit none
 
@@ -28,7 +30,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp),parameter :: tol_abs = epsilon(1.0_cp)*10.0_cp**(2.0_cp)
+      real(cp),parameter :: tol_abs = 10.0_cp**(-10.0_cp)
 
       contains
 

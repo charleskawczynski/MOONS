@@ -2,6 +2,7 @@
       ! Pre-processor directives: (_DEBUG_MESH_)
        use IO_tools_mod
        use grid_mod
+       use grid_genHelper_mod
        use coordinates_mod
        implicit none
 
@@ -22,6 +23,7 @@
        public :: patch
        public :: restrict,restrict_x,restrict_xy
        public :: initProps
+       public :: init_boundary
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkmesh
@@ -74,6 +76,24 @@
            call delete(m%g(i)%st_edge)
            call delete(m%g(i)%st_corner)
          enddo
+       end subroutine
+
+       subroutine init_boundary(m,m_in)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(mesh),intent(in) :: m_in
+         type(gridGenerator) :: gg
+         integer :: i,face
+         call delete(m)
+         do i=1,m_in%s; do face=1,6
+           call init(gg%g,m_in%g(i))
+           call get_boundary_face(gg,face)
+           if ((i.eq.1).and.(face.eq.1)) then; call init(m,gg%g)
+           else;                               call add(m,gg%g)
+           endif
+         enddo; enddo
+         call delete(gg)
+         call initProps(m)
        end subroutine
 
        subroutine addGrid(m,g)

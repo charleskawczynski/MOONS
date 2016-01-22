@@ -26,6 +26,7 @@
        public :: prepGhost,appGhost
        public :: applyGhost
        public :: pop,snip
+       public :: get_boundary_face
 
        interface init;        module procedure initGridGen;        end interface
        interface delete;      module procedure deleteGridGen;      end interface
@@ -208,6 +209,28 @@
          enddo
          call init(gg%g,temp,dir)
          deallocate(temp)
+       end subroutine
+
+       subroutine get_boundary_face(gg,face)
+         ! Removes all cells except for prescribed face
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         integer,intent(in) :: face
+         integer :: i,dir,s
+         select case (face)
+         case (1,4); dir = 1
+         case (2,5); dir = 2
+         case (3,6); dir = 3
+         case default; stop 'Error: face (1) must = 1:6 in get_boundary_face in grid_genHelper.f90'
+         end select
+         ! The number of times that snip / pop are called
+         ! must be chosen carefully, this is just a test...
+         s = gg%g%c(dir)%N - 1
+         select case (face)
+         case (1,3,5); do i=1,s; call snip(gg,dir); enddo
+         case (2,4,6); do i=1,s; call  pop(gg,dir); enddo
+         case default; stop 'Error: face (2) must = 1:6 in get_boundary_face in grid_genHelper.f90'
+         end select
        end subroutine
 
        end module

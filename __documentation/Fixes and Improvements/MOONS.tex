@@ -1,5 +1,4 @@
-% \documentclass[11pt]{article}
-\documentclass[3p,twocolumn,10pt]{elsarticle}
+\documentclass[11pt]{article}
 \usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
 \usepackage{epstopdf}
 \usepackage{amsmath}
@@ -75,6 +74,18 @@ In order to keep this document organized
 
 \section{Today}
 
+- FIX TRANSIENT DATA EXPORT. THIS IS A HUGE HINDERANCE.
+
+- Remove "parameter" from init files to allow re-run without compilation
+
+- Work on paper.
+
+- Try to incorporate anti-symmetric BCs again...
+
+- Try re-incorporating better parallelization for collocated / staggered VF / TF fields
+
+- Consider MG with Jacobi method, need to restrict $\sigma$...
+
 - Look into why SS CG is not the same between 5 and 10 iterations per time step.
 
 - Write up slides for Sergey for his trip to Germany. 3-5 compact slides of work in progress and conclusions (some of which mentioned in latest progress report PPT). Sergey's trip is February 6th (need the slides at least one week prior for review). Include 3D LDC finite $Re_m$ magnetic field lines.
@@ -85,21 +96,19 @@ In order to keep this document organized
 
 - Ask Sergey again about how to show cleaning procedure benchmark with LDC problem with random seed field
 
-- Clean up momentumSolver.f90 and inductionSolver.f90
-
-- Clean up ops\_interp.f90
-
 - Re-run BC sim
 
 - Read Moreau book about energy transfer
 
 - Search the literature on EM boundary conditions
 
-- Slides for Gautam for 237D - Parker sims, $Re_m=10^{-3}, 1, 100$ (Movies)
+- Slides for Gautam for 237D
 
 - Eventually, the lap\_centered routine should be replaced by a allocation-less one. This will be complicated though because this may require changing the matrix-free operators interface. A better, more general solution may be needed.
 
 - Eventually, checks of face/node/CC/edge data could be made in routines like advect\_B and advect\_U, which could help prevent searching for what is a incorrectly located variable into a subroutine that results in a interpolation or del failure.
+
+- Re-consider HDF5
 
 \section{Tomorrow}
 

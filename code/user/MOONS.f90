@@ -90,17 +90,8 @@
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
          call create_directory(dir)
-
          call printVersion()
          call exportVersion(dir)
-
-         if (solveInduction) then
-           select case(solveBMethod)
-           case(1:4)
-             if (N_induction.lt.1) stop 'Error: N_induction must be larger than 1 for low Rem cases'
-           case default
-           end select
-         endif
 
          ! **************************************************************
          ! Initialize all grids
@@ -116,8 +107,8 @@
          if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
 
          ! Initialize energy,momentum,induction
-         if (solveEnergy)  call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,dir)
          call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
+         if (solveEnergy) call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,dir)
          if (solveInduction) then
            call init(ind,mesh_ind,D_fluid,D_sigma,finite_Rem,Rem,dt_ind,&
            N_induction,tol_induction,N_cleanB,tol_cleanB,dir)
@@ -134,8 +125,8 @@
          ! if (exportICs) call export(ind,ind%m,dir)
 
          ! *************** CHECK IF CONDITIONS ARE OK *******************
-         call print(mom%m)
-         ! call print(ind%m)
+         call print(mesh_mom)
+         call print(mesh_ind)
 
          ! if (exportRawICs) then
          !   if (solveMomentum)  call exportRaw(mom,mom%m,dir)
@@ -153,8 +144,6 @@
          if (stopAfterExportICs) then
            stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          endif
-
-         ! call checkGrid(gd)
 
          write(*,*) ''
          write(*,*) 'Press enter if these parameters are okay.'
@@ -190,8 +179,9 @@
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
-         call delete(ind)
+         call delete(nrg)
          call delete(mom)
+         call delete(ind)
 
          call delete(mesh_mom)
          call delete(mesh_ind)

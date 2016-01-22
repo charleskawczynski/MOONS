@@ -77,6 +77,7 @@
 
          ! Time step, Reynolds number, grid
          type(mesh) :: m
+         type(mesh) :: boundary
          integer :: N_PPE,N_mom
          real(cp) :: tol_PPE,tol_mom
          integer :: nstep
@@ -108,7 +109,7 @@
          real(cp),intent(in) :: tol_mom,tol_PPE
          real(cp),intent(in) :: dt,Re,Ha,Gr,Fr
          character(len=*),intent(in) :: dir
-         type(SF) :: prec_PPE
+         type(SF) :: prec_PPE,temp
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
 
@@ -127,6 +128,12 @@
          mom%KE = 0.0_cp
 
          call init(mom%m,m)
+         call init_boundary(mom%boundary,mom%m)
+         call print(mom%boundary)
+         call init_Node(temp,mom%boundary,0.0_cp)
+         call export_raw(mom%boundary,temp,dir//'Ufield/','mesh_boundary',0)
+         call delete(temp)
+
          call init_Edge(mom%U_E,m,0.0_cp)
          call init_Face(mom%U,m,0.0_cp)
          call init_Face(mom%Ustar,m,0.0_cp)
