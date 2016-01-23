@@ -21,7 +21,7 @@ USER = Charlie
 
 # Code directory
 SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
-# SRC_DIR = C:$(PS)Users$(PS)LM_MHD$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 
 # Output directory
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
@@ -58,7 +58,7 @@ FCFLAGS += -D_FFT_RADIX2_
 # FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_STENCILS_O4_
 
-# FCFLAGS += -fopenmp
+FCFLAGS += -fopenmp
 
 # FCFLAGS += -D_DEL_PLANAR_X_
 # FCFLAGS += -D_DEL_PLANAR_Y_

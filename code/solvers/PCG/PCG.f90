@@ -246,6 +246,7 @@
         endif
         write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf,i'
         write(un,*) 'ZONE DATAPACKING = POINT'
+        flush(un)
       end subroutine
 
       end module

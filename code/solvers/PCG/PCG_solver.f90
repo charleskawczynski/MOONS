@@ -111,6 +111,10 @@
           call zeroGhostPoints(p)
           rhok = rhokp1
         enddo
+
+#ifdef _EXPORT_PCG_SF_CONVERGENCE_
+        flush(un)
+#endif
         
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
@@ -123,6 +127,7 @@
           call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
           write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
+          flush(un)
           write(*,*) 'PCG_SF iterations (executed/max) = ',i-1,n
           write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
         endif
@@ -205,6 +210,10 @@
           call zeroGhostPoints(p)
           rhok = rhokp1
         enddo
+
+#ifdef _EXPORT_PCG_SF_CONVERGENCE_
+        flush(un)
+#endif
         
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
@@ -217,6 +226,7 @@
           call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
           write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
+          flush(un)
           write(*,*) 'PCG_VF iterations (executed/max) = ',i-1,n
           write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
         endif

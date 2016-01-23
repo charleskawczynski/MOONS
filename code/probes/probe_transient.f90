@@ -64,10 +64,12 @@
            write(p%un_d,*) 'TITLE = "probe for '//name//'"'
            write(p%un_d,*) 'VARIABLES = N,'//name
            write(p%un_d,*) 'ZONE DATAPACKING = POINT'
+           flush(p%un_d)
          elseif (.not.p%TF_freshStart) then
            p%un_d = openToAppend(dir,name)
          else; stop 'Error: no case found in initProbe in probe_transient.f90'
          endif
+         p%TF_freshStart = .false.
        end subroutine
 
        subroutine setProbeData(p,n,d)
@@ -82,7 +84,7 @@
          implicit none
          type(probe),intent(inout) :: p
          write(p%un_d,'(2'//arrfmt//')') real(p%n,cp),p%d
-         p%TF_freshStart = .false.
+         flush(p%un_d)
        end subroutine
 
        subroutine deleteProbe(p)
