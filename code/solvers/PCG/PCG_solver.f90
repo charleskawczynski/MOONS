@@ -211,7 +211,7 @@
           rhok = rhokp1
         enddo
 
-#ifdef _EXPORT_PCG_SF_CONVERGENCE_
+#ifdef _EXPORT_PCG_VF_CONVERGENCE_
         flush(un)
 #endif
         
