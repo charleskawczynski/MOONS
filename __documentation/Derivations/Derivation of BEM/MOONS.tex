@@ -115,7 +115,7 @@ With the resulting solution
 This can be computed once at the beginning of the sim. Returning to \ref{eq:phi}, and $G(\mathbf{x}_i,\mathbf{y}) = \frac{-1}{4\pi |\mathbf{x} - \mathbf{y}|}$ we may write the discrete form as
 \begin{equation}
 \begin{split}
-\phi_i & = -2 \sum_j \phi_j \int_{S_j} \frac{\partial G(\mathbf{x}_i,\mathbf{y})}{\partial n} ds(\mathbf{y})
+\phi(\mathbf{x}_i) & = -2 \sum_j \phi_j \int_{S_j} \frac{\partial G(\mathbf{x}_i,\mathbf{y})}{\partial n} ds(\mathbf{y})
            -2 \sum_j B_{nj} \int_{S_j} G(\mathbf{x}_i,\mathbf{y}) ds(\mathbf{y}) \\
        & = \frac{1}{2 \pi} 
        \left[

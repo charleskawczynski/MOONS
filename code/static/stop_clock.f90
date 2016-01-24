@@ -151,35 +151,33 @@
         real(cp) :: temp
         character(len=1) :: u
         write(un,*) ''
-        write(un,*) ' ***************** WALL CLOCK TIME INFO ******************* '
-        write(un,*) ' ------------------- KNOWN QUANTITIES --------------------- '
-        write(un,*) ''
+        write(un,*) ' ***************** KNOWN WALL CLOCK TIME INFO ******************* '
 
-        write(un,*) 'Iterations (complete) = ',sc%N
+        write(un,*) ' Iterations (complete) = ',sc%N
 
         temp = sc%secPerIter; call getTimeWithUnits(temp,u)
-        write(un,*) 'Time (seconds/iteration) = ',temp,' (', u,')'
+        write(un,*) ' Time (seconds/iteration) = ',temp,' (', u,')'
 
-        write(un,*) 'Iterations per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
+        write(un,*) ' Iterations per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
 
         temp = sc%t_passed; call getTimeWithUnits(temp,u)
-        write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
+        write(un,*) ' Time (Total passed) = ',temp,' (', u,')'
 
         write(un,*) ''
-        write(un,*) ' ---------------- ESTIMATED QUANTITIES -------------------- '
+        write(un,*) ' *************** ESTIMATED WALL CLOCK TIME INFO ***************** '
 
-        write(un,*) 'Iterations (remaining/max) = ',sc%NRemaining,sc%NMax
+        write(un,*) ' Iterations (remaining/max) = ',sc%NRemaining,sc%NMax
 
         temp = sc%estimatedTotal; call getTimeWithUnits(temp,u)
-        write(un,*) 'Time (total) = ',temp,' (', u,')'
+        write(un,*) ' Time (total) = ',temp,' (', u,')'
 
         temp = sc%estimatedRemaining; call getTimeWithUnits(temp,u)
-        write(un,*) 'Time (remaining) = ',temp,' (', u,')'
+        write(un,*) ' Time (remaining) = ',temp,' (', u,')'
 
-        write(un,*) 'Percentage complete = ',sc%percentageComplete
+        write(un,*) ' Percentage complete = ',sc%percentageComplete
 
         write(un,*) ''
-        write(un,*) ' ********************************************************** '
+        write(un,*) ' **************************************************************** '
       end subroutine
 
       subroutine getTimeWithUnits(t,u)

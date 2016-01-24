@@ -47,6 +47,7 @@
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
+         call writeIntegerToFile(mom%N_mom,dir//'parameters/','N_mom')
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************

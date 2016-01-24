@@ -354,7 +354,7 @@
          if (print_export(1)) then
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
-           ! mom%N_mom = readIntegerFromFile(dir//'parameters/','N_mom')
+           mom%N_mom = readIntegerFromFile(dir//'parameters/','N_mom')
          else; exportNow = .false.
          endif
 

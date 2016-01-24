@@ -22,6 +22,7 @@
       public :: readSwitchFromFile
       public :: readLastStepFromFile
       public :: writeLastStepToFile
+      public :: writeIntegerToFile
       public :: readIntegerFromFile
 
       logical,parameter :: headerTecplot = .true.
@@ -72,6 +73,15 @@
         read(un,'('//logfmt//')') ks
         call closeExisting(un,name,dir)
       end function
+
+      subroutine writeIntegerToFile(i,dir,name)
+        character(len=*),intent(in) :: dir,name
+        integer,intent(in) :: i
+        integer :: un
+        un = newAndOpen(dir,name)
+        write(un,'('//intfmt//')') i
+        call closeAndMessage(un,name,dir)
+      end subroutine
 
       function readIntegerFromFile(dir,name) result(val)
         character(len=*),intent(in) :: dir,name

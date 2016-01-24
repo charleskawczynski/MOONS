@@ -33,12 +33,12 @@
          Fr         = 0.0d0
          Pr         = 0.71d0
          Ec         = 0.0d0
-         t          = 200.0
+
+         finite_Rem = .true.
          dt_eng     = 1.0d-3
          dt_mom     = 1.0d-3
          dt_ind     = 1.0d-3
-         finite_Rem = .true.
-
+         t          = 10000.0
          ! NmaxMHD       = ceiling(t/dt_eng)
          NmaxMHD       = ceiling(t/dt_mom)
          ! NmaxMHD       = ceiling(t/dt_ind)
@@ -46,7 +46,7 @@
          ! NmaxMHD       = 1500
 
          N_nrg         = 1000     ! Number of iterations to solve energy    equation (if iterative solver is used)
-         N_mom         = 5        ! Number of iterations to solve momentum  equation (if iterative solver is used)
+         N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
          N_ind         = 10       ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 500      ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B

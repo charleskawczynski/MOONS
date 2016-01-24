@@ -800,6 +800,34 @@
           call delete(vol)
         end subroutine
 
+        ! subroutine distance_from_i_SF(u,m,index_1D)
+        !   implicit none
+        !   type(SF),intent(inout) :: u
+        !   type(mesh),intent(in) :: m
+        !   integer,intent(in) :: index_1D
+        !   integer :: i_3D,j_3D,k_3D,t_3D,i,j,k,dir
+        !   real(cp) :: dx,dy,dz,hx,hy,hz
+        !   if (index_1D.gt.1).and.(index_1D.lt.f%numEl) then
+        !   else; stop 'Error: bad input to distance_from_i_SF in SF.f90'
+        !   endif
+        !   call get_3D_index(i_3D,j_3D,k_3D,t_3D,f,index_1D)
+        !   do dir=1,3
+        !   if (m%c(dir)%N.eq.1) then;  hx = m(t_3D)%c(dir)%hc(i_3D)
+        !   else;                       hx = m(t_3D)%c(dir)%hn(i_3D)
+        !   endif
+        !   enddo
+        !   hy = m(t_3D)%c(2)%hc(j_3D)
+        !   hz = m(t_3D)%c(3)%hc(k_3D)
+        !   !$OMP PARALLEL DO SHARED(m) PRIVATE(dx,dy,dz)
+        !   do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+        !   dx = hx - m(t)%c(1)%hc(i)
+        !   dy = hy - m(t)%c(2)%hc(j)
+        !   dz = hz - m(t)%c(3)%hc(k)
+        !   u%RF(t)%f(i,j,k) = sqrt(dx**2.0_cp+dx**2.0_cp+dz**2.0_cp)
+        !   enddo; enddo; enddo; enddo
+        !  !$OMP END PARALLEL DO
+        ! end subroutine
+
         subroutine delete_SF(f)
           implicit none
           type(SF),intent(inout) :: f

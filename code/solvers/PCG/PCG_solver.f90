@@ -130,6 +130,7 @@
           flush(un)
           write(*,*) 'PCG_SF iterations (executed/max) = ',i-1,n
           write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
+          write(*,*) ''
         endif
       end subroutine
 
@@ -229,6 +230,7 @@
           flush(un)
           write(*,*) 'PCG_VF iterations (executed/max) = ',i-1,n
           write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
+          write(*,*) ''
         endif
       end subroutine
 
