@@ -172,7 +172,6 @@
          type(norms),intent(in) :: norm
          integer,intent(in) :: newU
          character(len=*),intent(in) :: name
-         write(newU,*) ''
          write(newU,*) '++++++++++++++ '//trim(adjustl(name))//&
                    ' +++++++++++++++'
          write(newU,*) 'L1 = ',norm%L1

@@ -1,20 +1,21 @@
        module simParams_mod
        implicit none
-       logical :: exportGrids               = .true.   ! Export all Grids before starting simulation
-       logical :: exportRawICs              = .true.   ! Export Raw ICs before starting simulation
-       logical :: exportICs                 = .true.   ! Export Post-Processed ICs before starting simulation
-       logical :: stopAfterExportICs        = .false.  ! Just export ICs, do not run simulation
-       logical :: export_planar             = .true.   ! Export 2D data when N_cell = 1 along given direction
+       character(len=8) :: out_dir          = 'out/LDC/' ! output directory
+       logical :: exportGrids               = .true.     ! Export all Grids before starting simulation
+       logical :: exportRawICs              = .true.     ! Export Raw ICs before starting simulation
+       logical :: exportICs                 = .true.     ! Export Post-Processed ICs before starting simulation
+       logical :: stopAfterExportICs        = .false.    ! Just export ICs, do not run simulation
+       logical :: export_planar             = .false.    ! Export 2D data when N_cell = 1 along given direction
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .false.
+       logical :: solveInduction            = .true.
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
-       integer :: solveUMethod              = 3 ! Refer to momentum.f90
+       integer :: solveUMethod              = 1 ! Refer to momentum.f90
        integer :: solveBMethod              = 3 ! Refer to induction.f90
 
-       logical :: addJCrossB                = .false.
+       logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 

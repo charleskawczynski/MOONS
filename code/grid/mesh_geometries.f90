@@ -77,16 +77,29 @@
          type(domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
-         real(cp) :: tw,tv
-         integer :: N
+         real(cp) :: tw,tv,tf
+         real(cp) :: Gamma_f,Gamma_w,Gamma_v
+         integer :: N_w,N_v,N_extra
          call delete(m_ind)
          call init(g,m_mom%g(1))
+
+         Gamma_f = 1.0_cp
+         Gamma_w = Gamma_f + tw
+         Gamma_v = 7.0_cp
+         ! Gamma_v = 6.0_cp
+         tw = 0.5_cp
+         ! tw = 0.05_cp
+         tf = 1.0_cp
+         N_w = 8
+         ! N_w = 5
+         N_v = 12
+         ! N_v = 10
+         N_extra = 6 ! since no wall domain above lid
+
          ! Wall
-         N = 8; tw = 0.5_cp
-         ! N = 5; tw = 0.05_cp;
-         call ext_Roberts_B_IO(g,tw,N,1)
-         call ext_Roberts_B_IO(g,tw,N,3)
-         call ext_prep_Roberts_B_IO(g,tw,N,2)
+         call ext_Roberts_B_IO(g,tw,N_w,1)
+         call ext_Roberts_B_IO(g,tw,N_w,3)
+         call ext_prep_Roberts_B_IO(g,tw,N_w,2)
 
          ! Define domain for electrical conductivity
          call add(m_sigma,g)
@@ -94,13 +107,12 @@
          call patch(m_sigma)
 
          ! Vacuum
-         tv = 5.0_cp - tw ! Vacuum extends to 6 (hmax = 1 + 5 + tw)
-         N = 10
          ! Remove the following 4 lines for vacuum-absent case
-         ! call ext_Roberts_near_IO(g,tv,N,1)
-         ! call ext_Roberts_near_IO(g,tv,N,3)
-         ! call ext_prep_Roberts_R_IO(g,tv,N,2)
-         ! call ext_app_Roberts_L_IO (g,5.0_cp,N+6,2)
+         call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,1)
+         call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3)
+         ! y-direction:
+         call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2)
+         call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2)
 
          call add(m_ind,g)
          call initProps(m_ind)

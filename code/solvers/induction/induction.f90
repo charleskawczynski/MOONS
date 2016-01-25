@@ -317,7 +317,7 @@
          write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
          write(un,*) 'nstep = ',ind%nstep
          write(un,*) 'ME = ',ind%ME
-         write(un,*) 'ME_fluid = ',ind%ME_fluid
+         write(un,*) 'ME_f = ',ind%ME_fluid
          call printPhysicalMinMax(ind%B,'B')
          call printPhysicalMinMax(ind%B0,'B0')
          call printPhysicalMinMax(ind%divB,'divB')

@@ -52,7 +52,7 @@
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p,z
         type(norms) :: norm_res0
-        integer :: i
+        integer :: i,i_earlyExit
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call multiply(r,b,vol)
         ! ----------------------- MODIFY RHS -----------------------
@@ -86,7 +86,7 @@
 
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx); res_norm = rhok
+        rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         do i=1,n
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -103,7 +103,7 @@
           write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; exit; endif
+          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
           call multiply(p,rhokp1/rhok) ! p = z + beta p
@@ -126,9 +126,9 @@
           call zeroGhostPoints(r)
           call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
           write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
-                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
           flush(un)
-          write(*,*) 'PCG_SF iterations (executed/max) = ',i-1,n
+          write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,n
           write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
           write(*,*) ''
         endif
@@ -152,7 +152,7 @@
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p,z
-        integer :: i
+        integer :: i,i_earlyExit
         type(norms) :: norm_res0
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
         call multiply(r,b,vol)
@@ -185,7 +185,7 @@
 
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx); res_norm = rhok
+        rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         do i=1,n
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -202,7 +202,7 @@
           write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; exit; endif
+          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
 
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
@@ -226,9 +226,9 @@
           call zeroGhostPoints(r)
           call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
           write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
-                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
+                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
           flush(un)
-          write(*,*) 'PCG_VF iterations (executed/max) = ',i-1,n
+          write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n
           write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
           write(*,*) ''
         endif

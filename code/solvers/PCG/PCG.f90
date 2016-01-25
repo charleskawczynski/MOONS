@@ -244,7 +244,7 @@
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf,i'
+        write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf,iter_used'
         write(un,*) 'ZONE DATAPACKING = POINT'
         flush(un)
       end subroutine
