@@ -17,9 +17,9 @@
        private
        public :: init_UBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
 
-       integer,parameter :: preDefinedU_BCs = 1
+       integer :: preDefinedU_BCs = 3
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -33,9 +33,9 @@
        !                                      10 : Periodic Duct (Bandaru)
 
        ! Lid Driven Cavity parameters:
-       integer,parameter :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
+       integer :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
 
-       ! integer,parameter :: drivenFace      = 4 
+       ! integer :: drivenFace      = 4 
        !                                      1 {x_min}
        !                                      2 {x_max}
        !                                      3 {y_min}
@@ -43,16 +43,16 @@
        !                                      5 {z_min}
        !                                      6 {z_max}
 
-       integer,parameter :: drivenDirection = 1 ! (1,2,3) = (x,y,z)
-       integer,parameter :: drivenSign      = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+       integer :: drivenDirection = 1 ! (1,2,3) = (x,y,z)
+       integer :: drivenSign      = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
        ! Duct Flow parameters: 
-       integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
+       integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
        ! ductSign may or may not work. Look into implementation
-       integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+       integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
        ! Cylinder Driven Cavity parameters: 
        ! (not yet developed/used)
-       integer,parameter :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
-       integer,parameter :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
+       integer :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
+       integer :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
 
 
 #ifdef _SINGLE_PRECISION_
@@ -222,15 +222,22 @@
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
          integer,intent(in) :: ductDir,IO
-         real(cp) :: bval
          integer :: face
          face = getFace(ductDir,IO)
-         bval = sign(1.0_cp,real(IO,cp))
-         select case (ductDir)
-         case (1); call init_Dirichlet(u_bcs,face); call init(u_bcs,bval,face)
-         case (2); call init_Dirichlet(v_bcs,face); call init(v_bcs,bval,face)
-         case (3); call init_Dirichlet(w_bcs,face); call init(w_bcs,bval,face)
-         case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_Uniform_IO'
+         select case (IO)
+         case (-1); select case (ductDir)
+                    case (1); call init_Dirichlet(u_bcs,face); call init(u_bcs,1.0_cp,face)
+                    case (2); call init_Dirichlet(v_bcs,face); call init(v_bcs,1.0_cp,face)
+                    case (3); call init_Dirichlet(w_bcs,face); call init(w_bcs,1.0_cp,face)
+                    case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_Uniform_IO'
+                    end select
+         case (1);  select case (ductDir)
+                    case (1); call init_Dirichlet(u_bcs,face); call init(u_bcs,-1.0_cp,face)
+                    case (2); call init_Dirichlet(v_bcs,face); call init(v_bcs,-1.0_cp,face)
+                    case (3); call init_Dirichlet(w_bcs,face); call init(w_bcs,-1.0_cp,face)
+                    case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_Uniform_IO'
+                    end select
+         case default; stop 'Error: IO must = -1,1 in ductFlow_Uniform_IO in init_UBCs.f90'
          end select
        end subroutine
 
@@ -319,18 +326,19 @@
          case (1); select case (IO)
                    case (-1); face = 1
                    case (1);  face = 2
-                   case default; stop 'IO must = 1,-1 in ductFlow_neumann_IO'
+                   case default; stop 'IO must = 1,-1 in getFace in init_UBCs.f90'
                    end select
          case (2); select case (IO)
                    case (-1); face = 3
                    case (1);  face = 4
-                   case default; stop 'IO must = 1,-1 in ductFlow_neumann_IO'
+                   case default; stop 'IO must = 1,-1 in getFace in init_UBCs.f90'
                    end select
          case (3); select case (IO)
                    case (-1); face = 5
                    case (1);  face = 6
-                   case default; stop 'IO must = 1,-1 in ductFlow_neumann_IO'
+                   case default; stop 'IO must = 1,-1 in getFace in init_UBCs.f90'
                    end select
+         case default; stop 'Error: ductDir must = 1,2,3 in getFace in init_UBCs.f90'
          end select
        end function
 

@@ -23,6 +23,8 @@
        public :: BC_sim_mom,BC_sim_ind
        public :: cube_uniform,extend_cube_uniform
        public :: cube,extend_cube
+       public :: straight_duct_fluid
+       public :: straight_duct_magnetic
        public :: ins_elbow
        public :: ins_u_bend
        public :: ins_sudden_Expansion
@@ -203,6 +205,59 @@
          call init(m,g)
          call initProps(m)
          call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine straight_duct_fluid(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         real(cp) :: Ha,Re
+         Ha = 500.0_cp; Re = 100.0_cp
+         call delete(m)
+         N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = 0.0_cp; hmax(1) = 40.0_cp
+         beta = reynoldsBL(Re,hmin,hmax)
+         beta = hartmannBL(Ha,hmin,hmax)
+
+         call grid_uniform(g,hmin(1),hmax(1),N(1),1)
+         call grid_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
+         call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
+
+         call add(m,g)
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine straight_duct_magnetic(m_ind,m_mom,D_sigma)
+         implicit none
+         type(mesh),intent(inout) :: m_ind
+         type(mesh),intent(in) :: m_mom
+         type(domain),intent(inout) :: D_sigma
+         type(mesh) :: m_sigma
+         type(grid) :: g
+         real(cp) :: tw
+         integer :: N_w
+         call delete(m_ind)
+         call init(g,m_mom%g(1))
+         tw = 0.01_cp
+         N_w = 3
+         ! Wall
+         ! call ext_Roberts_near_IO(g,tw,N_w,2) ! Comment / uncomment for Shercliff / Hunt flow
+         ! Define domain for electrical conductivity
+         call add(m_sigma,g)
+         call initProps(m_sigma)
+         call patch(m_sigma)
+         ! Define domain for magnetic field domain
+         call add(m_ind,g)
+         call initProps(m_ind)
+         call patch(m_ind)
+
+         call init(D_sigma,m_sigma,m_ind)
+         call delete(m_sigma)
          call delete(g)
        end subroutine
 

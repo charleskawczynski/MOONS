@@ -9,36 +9,36 @@
        public :: initBfield
        public :: restartB
 
-       logical,parameter :: restartB  = .false. ! (induced field)
-       logical,parameter :: restartB0 = .false. ! (applied field)
+       logical :: restartB  = .false. ! (induced field)
+       logical :: restartB0 = .false. ! (applied field)
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB0_ICs is used to define the applied field
 
-       integer,parameter :: preDefinedB0_ICs = 1 ! NOTE: All cases use B_induced = 0
+       integer :: preDefinedB0_ICs = 2 ! NOTE: All cases use B_induced = 0
        !                                       0 : User-defined case (no override)
        !                                       1 : Uniform applied (set applied_B_dir)
        !                                       2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
        !                                       3 : Fringing Magnetic field (ALEX experiments)
        !                                       4 : Fringing in (x,z) (Bandaru)
 
-       integer,parameter :: fringe_dir = 1 ! Direction along which to fringe
+       integer :: fringe_dir = 1 ! Direction along which to fringe
        !                                 1 : B0(x,:,:)
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer,parameter :: applied_B_dir = 3
+       integer :: applied_B_dir = 2
        !                                    0 : No applied field: B0 = (0,0,0)
        !                                    1 :    Applied field: B0 = (B0x,0,0)
        !                                    2 :    Applied field: B0 = (0,B0y,0)
        !                                    3 :    Applied field: B0 = (0,0,B0z)
        !                                    4 :    Applied field: B0 = (B0x,B0y,B0z)
 
-       integer,parameter :: current_B_dir = 2 ! (For Bandaru)
+       integer :: current_B_dir = 2 ! (For Bandaru)
        !                                    1 : Applied field: B0 = (0,B0y,B0z)
        !                                    2 : Applied field: B0 = (B0x,0,B0z)
        !                                    3 : Applied field: B0 = (B0x,B0y,0)
 
-       integer,parameter :: Bsign = 1 ! Change sign of B0 for predefined cases
+       integer :: Bsign = 1 ! Change sign of B0 for predefined cases
        !                            1 : B0 = B0
        !                           -1 : B0 = -B0
 
@@ -176,7 +176,7 @@
          allocate(Btemp(s(dir)))
          ! Sergey's fringe:
          Bstretch = 0.2_cp   ! stretching parameter
-         Bshift = 1.5_cp     ! shift parameter
+         Bshift = 5.0_cp     ! shift parameter
 
          do i=1,s(dir)
            d = dble((g%c(dir)%hc(i)-Bshift)/Bstretch)

@@ -44,8 +44,11 @@
          ! call flow_past_square(m_ind)
          ! call init(D_sigma,m_mom,m_ind)
 
-         call BC_sim_mom(m_mom)
-         call BC_sim_ind(m_ind,m_mom,D_sigma)
+         ! call BC_sim_mom(m_mom)
+         ! call BC_sim_ind(m_ind,m_mom,D_sigma)
+
+         call straight_duct_fluid(m_mom)
+         call straight_duct_magnetic(m_ind,m_mom,D_sigma)
        end subroutine
 
 

@@ -129,7 +129,7 @@
 
          call init(mom%m,m)
          call init_boundary(mom%boundary,mom%m)
-         call print(mom%boundary)
+         ! call print(mom%boundary)
          call init_Node(temp,mom%boundary,0.0_cp)
          call export_raw(mom%boundary,temp,dir//'Ufield/','mesh_boundary',0)
          call delete(temp)
@@ -302,8 +302,6 @@
          ! write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
          call export(mom%m,un)
-         ! call printPhysicalMinMax(mom%U,'u')
-         ! call printPhysicalMinMax(mom%p,'p')
          write(*,*) ''
        end subroutine
 

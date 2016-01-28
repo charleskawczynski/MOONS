@@ -11,22 +11,22 @@
        private
        public :: init_Ufield,restartU
 
-       logical,parameter :: restartU      = .false.
-       integer,parameter :: preDefinedU_ICs = 1
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Rest (u,v,w = 0)
-       !                                      2 : Parabolic Duct Flow (in x)
-       !                                      3 : Vortex
-       !                                      4 : Isolated Eddy (Weiss)
-       !                                      5 : Single Eddy (Weiss)
-       !                                      6 : Cylinder (Parker)
-       !                                      7 : Parabolic (1D) (Bandaru)
+       logical,parameter :: restartU        = .false.
+       integer :: preDefinedU_ICs = 1
+       !                            0 : User-defined case (no override)
+       !                            1 : Rest (u,v,w = 0)
+       !                            2 : Parabolic Duct Flow (in x)
+       !                            3 : Vortex
+       !                            4 : Isolated Eddy (Weiss)
+       !                            5 : Single Eddy (Weiss)
+       !                            6 : Cylinder (Parker)
+       !                            7 : Parabolic (1D) (Bandaru)
        ! 
-       integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
-       integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+       integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
+       integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
        ! 
-       integer,parameter :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
-       integer,parameter :: vortexSign =      1 ! (-1,1) = {clockwise from +, clockwise from -}
+       integer :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
+       integer :: vortexSign      = 1 ! (-1,1) = {clockwise from +, clockwise from -}
 
 
 #ifdef _SINGLE_PRECISION_

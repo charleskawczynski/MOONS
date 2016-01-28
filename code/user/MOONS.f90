@@ -116,8 +116,8 @@
 
          ! ********************* EXPORT RAW ICs *************************
          ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
+         if (exportRawICs) call export(ind,ind%m,dir)
          if (exportRawICs) call export(mom,mom%m,mom%temp_F,dir)
-         ! if (exportRawICs) call exportRaw(ind,ind%m,dir)
 
          ! ********************* EXPORT ICs *****************************
          ! if (exportICs) call export(mom,mom%m,dir)

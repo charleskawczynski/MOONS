@@ -26,9 +26,9 @@
        !                                       1 : Subdomain dependent
        !                                       2 : Cylinder (2D)
 
-       ! real(cp) :: sigmaStarWall = 1.0_cp             ! sigma* = sigma_wall/sigma_l
+       real(cp) :: sigmaStarWall = 1.0_cp             ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
-       real(cp) :: sigmaStarWall = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
+       ! real(cp) :: sigmaStarWall = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l

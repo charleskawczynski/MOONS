@@ -8,17 +8,17 @@
        private
        public :: init_PBCs
 
-       integer,dimension(3),parameter :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
 
-       integer,parameter :: preDefinedP_BCs = 1
+       integer :: preDefinedP_BCs = 1
        !                                      0 : User-defined case in initUserPBCs() (no override)
        !                                      1 : All Neumann
        !                                      2 : Duct Flow (Neumann with dirichlet at exit)
 
        ! Duct Flow parameters: 
-       integer,parameter :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
+       integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
        ! ductSign may or may not work. Look into implementation
-       integer,parameter :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
+       integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
 
 
 #ifdef _SINGLE_PRECISION_
@@ -47,6 +47,9 @@
            call init(p%RF(i)%b,0.0_cp)
          enddo
          p%all_Neumann = .true. ! Needs to be adjusted manually
+         p%all_Neumann = .false. ! Needs to be adjusted manually
+
+         call init_Dirichlet(p%RF(1)%b,2)
          call init_BC_mesh(p,m)
          ! call define_Edges(p%RF(i)%b)
          ! call init_Neumann(p%RF(1)%b,6)

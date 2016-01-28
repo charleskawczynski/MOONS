@@ -10,7 +10,7 @@
        private
        public :: init_Pfield,restartP
 
-       integer,parameter :: preDefinedP_ICs = 1
+       integer :: preDefinedP_ICs = 1
        logical,parameter :: restartP = restartU
 
 #ifdef _SINGLE_PRECISION_

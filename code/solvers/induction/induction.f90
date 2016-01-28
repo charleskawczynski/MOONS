@@ -287,15 +287,15 @@
            if (solveInduction) then
              write(*,*) 'Exporting Solutions for B'
              ! call export_raw(m,ind%B0,dir//'Bfield/','B0',0)
-             ! call export_raw(m,ind%B ,dir//'Bfield/','B',0)
-             ! call export_raw(m,ind%J ,dir//'Jfield/','J',0)
-             ! call export_raw(m,ind%U_E%x%x ,dir//'Bfield/','U',0)
-             ! call export_raw(m,ind%U_E%y%y ,dir//'Bfield/','V',0)
-             ! call export_raw(m,ind%U_E%z%z ,dir//'Bfield/','W',0)
+             call export_raw(m,ind%B ,dir//'Bfield/','B',0)
+             call export_raw(m,ind%J ,dir//'Jfield/','J',0)
+             call export_raw(m,ind%U_E%x%x ,dir//'Bfield/','U',0)
+             call export_raw(m,ind%U_E%y%y ,dir//'Bfield/','V',0)
+             call export_raw(m,ind%U_E%z%z ,dir//'Bfield/','W',0)
              call export_raw(m,ind%divB,dir//'Bfield/','divB',0)
              call export_raw(m,ind%divJ,dir//'Jfield/','divJ',0)
 
-             ! call export_processed(m,ind%B0,dir//'Bfield/','B0',1)
+             call export_processed(m,ind%B0,dir//'Bfield/','B0',1)
              call export_processed(m,ind%B ,dir//'Bfield/','B',1)
              call export_processed(m,ind%J ,dir//'Jfield/','J',1)
              write(*,*) '     finished'
@@ -316,10 +316,8 @@
          write(un,*) 'solveBMethod,N_ind,N_cleanB = ',solveBMethod,ind%N_induction,ind%N_cleanB
          write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
          write(un,*) 'nstep = ',ind%nstep
-         write(un,*) 'ME = ',ind%ME
-         write(un,*) 'ME_f = ',ind%ME_fluid
-         call printPhysicalMinMax(ind%B,'B')
-         call printPhysicalMinMax(ind%B0,'B0')
+         write(un,*) 'ME=',ind%ME
+         write(un,*) 'MEf=',ind%ME_fluid
          call printPhysicalMinMax(ind%divB,'divB')
          call printPhysicalMinMax(ind%divJ,'divJ')
          write(un,*) ''
