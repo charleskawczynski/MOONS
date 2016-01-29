@@ -253,7 +253,7 @@
          type(mesh),intent(in) :: m ! mesh for e
          character(len=*),intent(in) :: dir,name
          logical,intent(in) :: plotTF
-         type(SF) :: e
+         type(SF) :: e,vol
          type(norms) :: n
          integer :: i,j,k,i1,j1,k1,i2,j2,k2,t
 
@@ -273,7 +273,10 @@
          call zeroGhostPoints(e)
          if (plotTF) call export_3D_1C(m,e,dir,'MG_Error_'//name,0)
 
-         call compute(n,e,m)
+         call init(vol,e)
+         call volume(vol,m)
+         call compute(n,e,vol)
+         call delete(vol)
          call delete(e)
        end function
 

@@ -66,6 +66,7 @@
 
          ! --- Scalar fields ---
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
+         type(SF) :: vol_CC
 
          ! --- Solvers ---
          type(PCG_solver_VF) :: PCG_B
@@ -75,9 +76,10 @@
          type(matrix_free_params) :: MFP_cleanB
 
          type(errorProbe) :: probe_divB,probe_divJ
-         real(cp) :: ME_tot
+
          type(probe) :: KB_energy,KB0_energy,KBi_energy
          type(probe) :: KB_f_energy,KB0_f_energy,KBi_f_energy
+         type(probe) :: KB_c_energy,KB0_c_energy,KBi_c_energy
          type(mesh) :: m
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
 
@@ -92,6 +94,7 @@
          logical :: finite_Rem
          real(cp),dimension(0:2) :: ME
          real(cp),dimension(0:2) :: ME_fluid
+         real(cp),dimension(0:2) :: ME_conductor
        end type
 
        interface init;                 module procedure init_induction;                end interface
@@ -118,6 +121,15 @@
          type(SF) :: sigma,sigmaInv,prec_cleanB
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
+
+         ! call makeDir(dir,'Bfield')
+         ! call makeDir(dir,'Bfield','\transient')
+         ! call makeDir(dir,'Bfield','\energy')
+         ! call makeDir(dir,'Jfield')
+         ! call makeDir(dir,'Jfield','\transient')
+         ! call makeDir(dir,'Jfield','\energy')
+         ! call makeDir(dir,'material')
+
          ind%dTime = dt
          ind%N_cleanB = N_cleanB
          ind%N_induction = N_induction
@@ -145,6 +157,8 @@
          call init_CC(ind%temp_CC_SF,m,0.0_cp)
          call init_CC(ind%divB,m,0.0_cp)
          call init_Node(ind%divJ,m,0.0_cp)
+         call init_CC(ind%vol_CC,m)
+         call volume(ind%vol_CC,m)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -184,6 +198,9 @@
          call init(ind%KB_f_energy,dir//'Bfield\','KB_f',.not.restartB)
          call init(ind%KBi_f_energy,dir//'Bfield\','KBi_f',.not.restartB)
          call init(ind%KB0_f_energy,dir//'Bfield\','KB0_f',.not.restartB)
+         call init(ind%KB_c_energy,dir//'Bfield\','KB_c',.not.restartB)
+         call init(ind%KBi_c_energy,dir//'Bfield\','KBi_c',.not.restartB)
+         call init(ind%KB0_c_energy,dir//'Bfield\','KB0_c',.not.restartB)
          write(*,*) '     B/J probes initialized'
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
@@ -223,6 +240,7 @@
          ind%t = 0.0_cp
          ind%ME = 0.0_cp
          ind%ME_fluid = 0.0_cp
+         ind%ME_conductor = 0.0_cp
          write(*,*) '     Finished'
        end subroutine
 
@@ -242,6 +260,7 @@
          call delete(ind%temp_F1)
          call delete(ind%temp_F2)
          call delete(ind%sigmaInv_edge)
+         call delete(ind%vol_CC)
 
          call delete(ind%divB)
          call delete(ind%divJ)
@@ -260,6 +279,9 @@
          call delete(ind%KB_f_energy)
          call delete(ind%KBi_f_energy)
          call delete(ind%KB0_f_energy)
+         call delete(ind%KB_c_energy)
+         call delete(ind%KBi_c_energy)
+         call delete(ind%KB0_c_energy)
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
@@ -272,8 +294,8 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         call apply(ind%probe_divB,ind%nstep,ind%divB,ind%m)
-         call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%m)
+         call apply(ind%probe_divB,ind%nstep,ind%divB,ind%vol_CC)
+         call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%vol_CC)
        end subroutine
 
        subroutine export_induction(ind,m,dir)
@@ -318,6 +340,7 @@
          write(un,*) 'nstep = ',ind%nstep
          write(un,*) 'ME=',ind%ME
          write(un,*) 'MEf=',ind%ME_fluid
+         write(un,*) 'MEc=',ind%ME_conductor
          call printPhysicalMinMax(ind%divB,'divB')
          call printPhysicalMinMax(ind%divJ,'divJ')
          write(un,*) ''
@@ -366,16 +389,19 @@
          if (compute_ME) then
            call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
            call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_fluid(ind%ME_fluid(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_fluid(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_conductor(0),ind%KB0_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
 
            call face2cellCenter(ind%temp_CC,ind%B,ind%m)
            call compute_TME(ind%ME(1),ind%KBi_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_fluid(ind%ME_fluid(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_fluid(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_conductor(1),ind%KBi_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
 
            call add(ind%temp_F1,ind%B,ind%B0)
            call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
            call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_fluid(ind%ME_fluid(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_fluid(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_conductor(2),ind%KB_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
          endif
 
          if (print_export(6)) call exportTransient(ind)

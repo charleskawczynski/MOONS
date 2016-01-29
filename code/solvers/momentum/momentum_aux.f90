@@ -5,6 +5,7 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
+       use ops_norms_mod
        
        implicit none
        private
@@ -26,12 +27,12 @@
 
        contains
 
-       subroutine compute_TKE(K_energy,U_CC,m)
+       subroutine compute_TKE(K_energy,U_CC,vol)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(VF),intent(in) :: U_CC
-         type(mesh),intent(in) :: m
-         call totalEnergy(K_energy,U_CC,m)
+         type(SF),intent(in) :: vol
+         call Ln(K_energy,U_CC,2.0_cp,vol)
        end subroutine
 
        subroutine compute_CoFoRe_grid(Co_grid,Fo_grid,Re_grid,U_CC,m,dt,Re)

@@ -90,6 +90,7 @@
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
          call create_directory(dir)
+         ! call makeDir(dir,'parameters')
          call printVersion()
          call exportVersion(dir)
 
@@ -101,6 +102,11 @@
          call initProps(mesh_ind);     call patch(mesh_ind)
 
          call init(D_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
+
+         call initProps(D_fluid%m_in);     call patch(D_fluid%m_in)
+         call initProps(D_fluid%m_tot);    call patch(D_fluid%m_tot)
+         call initProps(D_sigma%m_in);     call patch(D_sigma%m_in)
+         call initProps(D_sigma%m_tot);    call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS ****************************
          if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)

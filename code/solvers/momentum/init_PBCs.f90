@@ -17,7 +17,6 @@
 
        ! Duct Flow parameters: 
        integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
-       ! ductSign may or may not work. Look into implementation
        integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
 
 
@@ -47,9 +46,9 @@
            call init(p%RF(i)%b,0.0_cp)
          enddo
          p%all_Neumann = .true. ! Needs to be adjusted manually
-         p%all_Neumann = .false. ! Needs to be adjusted manually
+         ! p%all_Neumann = .false. ! Needs to be adjusted manually
 
-         call init_Dirichlet(p%RF(1)%b,2)
+         ! call init_Dirichlet(p%RF(1)%b,2)
          call init_BC_mesh(p,m)
          ! call define_Edges(p%RF(i)%b)
          ! call init_Neumann(p%RF(1)%b,6)
@@ -65,7 +64,7 @@
 
          select case (preDefinedP_BCs)
          case (1); 
-         case (2); call ductFlow_dirichletP_IO(p_bcs,ductDirection,1)
+         case (2); call ductFlow_dirichletP_IO(p_bcs,ductDirection,ductSign)
          case (3); call ductFlow_periodicP_IO(p_bcs,ductDirection,-1)
          case default
            stop 'Error: preDefinedP_BCs must = 1:5 in initPredefinedPBCs.'

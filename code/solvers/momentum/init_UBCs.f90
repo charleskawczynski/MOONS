@@ -19,7 +19,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
 
-       integer :: preDefinedU_BCs = 3
+       integer :: preDefinedU_BCs = 1
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -51,8 +51,8 @@
        integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
        ! Cylinder Driven Cavity parameters: 
        ! (not yet developed/used)
-       integer :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
-       integer :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
+       ! integer :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
+       ! integer :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
 
 
 #ifdef _SINGLE_PRECISION_

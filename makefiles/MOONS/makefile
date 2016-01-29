@@ -31,8 +31,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -225,12 +225,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_generate.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh.f90 \
-	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh_geometries.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh_generate.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)corner.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)edge.f90 \
@@ -238,6 +232,12 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)mesh.f90 \
+	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)mesh_geometries.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)mesh_generate.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
@@ -254,6 +254,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)version.f90 \
 	$(SRC_DIR)$(PS)static$(PS)clock.f90 \
 	$(SRC_DIR)$(PS)static$(PS)stop_clock.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_faces.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_edges.f90 \

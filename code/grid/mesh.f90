@@ -4,6 +4,7 @@
        use grid_mod
        use grid_genHelper_mod
        use coordinates_mod
+       use RF_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -40,11 +41,12 @@
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
          logical :: plane_x,plane_y,plane_z
+         type(realField),dimension(:),allocatable :: vol
        end type
 
        interface init;           module procedure init_grid;           end interface
-       interface add;            module procedure addGrid;             end interface
        interface init;           module procedure initmeshCopy;        end interface
+       interface add;            module procedure addGrid;             end interface
        interface delete;         module procedure deletemesh;          end interface
        interface initProps;      module procedure initProps_mesh;      end interface
 
@@ -58,7 +60,6 @@
        interface print;          module procedure print_mesh;          end interface
        interface export;         module procedure export_mesh;         end interface
        interface export;         module procedure exportmesh_all;      end interface
-
 
        contains
 
@@ -126,6 +127,10 @@
            m%s = 0; deallocate(m%g)
          else; m%s = 0
          endif
+         if (allocated(m%vol)) then
+           do i=1,m%s; call delete(m%vol(i)); enddo
+           deallocate(m%vol)
+         endif
          call remove_stitches(m)
        end subroutine
 
@@ -164,6 +169,25 @@
          call initProps(m_out)
        end subroutine
 
+       subroutine init_volume(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         integer :: i,j,k,t
+         if (allocated(m%vol)) then
+           do t=1,m%s; call delete(m%vol(t)); enddo
+           deallocate(m%vol)
+         endif
+         allocate(m%vol(m%s))
+         do t=1,m%s; call init_CC(m%vol(t),m%g(t)); enddo
+         !$OMP PARALLEL DO SHARED(m)
+         do t=1,m%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
+           m%vol(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                               (m%g(t)%c(2)%dhn(j))*&
+                               (m%g(t)%c(3)%dhn(k))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
        subroutine initProps_mesh(m)
          implicit none
          type(mesh),intent(inout) :: m
@@ -198,6 +222,7 @@
          m%plane_x = all((/(m%g(i)%c(1)%N.eq.1,i=1,m%s)/))
          m%plane_y = all((/(m%g(i)%c(2)%N.eq.1,i=1,m%s)/))
          m%plane_z = all((/(m%g(i)%c(3)%N.eq.1,i=1,m%s)/))
+         call init_volume(m)
        end subroutine
 
        subroutine patch_grids(m)

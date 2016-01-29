@@ -24,7 +24,8 @@
        public :: cube_uniform,extend_cube_uniform
        public :: cube,extend_cube
        public :: straight_duct_fluid
-       public :: straight_duct_magnetic
+       public :: Hunt_duct_magnetic
+       public :: Shercliff_duct_magnetic
        public :: ins_elbow
        public :: ins_u_bend
        public :: ins_sudden_Expansion
@@ -79,7 +80,7 @@
          type(domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
-         real(cp) :: tw,tv,tf
+         real(cp) :: tw,tf
          real(cp) :: Gamma_f,Gamma_w,Gamma_v
          integer :: N_w,N_v,N_extra
          call delete(m_ind)
@@ -232,7 +233,7 @@
          call delete(g)
        end subroutine
 
-       subroutine straight_duct_magnetic(m_ind,m_mom,D_sigma)
+       subroutine Hunt_duct_magnetic(m_ind,m_mom,D_sigma)
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
@@ -246,7 +247,32 @@
          tw = 0.01_cp
          N_w = 3
          ! Wall
-         ! call ext_Roberts_near_IO(g,tw,N_w,2) ! Comment / uncomment for Shercliff / Hunt flow
+         call ext_Roberts_near_IO(g,tw,N_w,2) ! Comment / uncomment for Shercliff / Hunt flow
+         ! Define domain for electrical conductivity
+         call add(m_sigma,g)
+         call initProps(m_sigma)
+         call patch(m_sigma)
+         ! Define domain for magnetic field domain
+         call add(m_ind,g)
+         call initProps(m_ind)
+         call patch(m_ind)
+
+         call init(D_sigma,m_sigma,m_ind)
+         call delete(m_sigma)
+         call delete(g)
+       end subroutine
+
+       subroutine Shercliff_duct_magnetic(m_ind,m_mom,D_sigma)
+         implicit none
+         type(mesh),intent(inout) :: m_ind
+         type(mesh),intent(in) :: m_mom
+         type(domain),intent(inout) :: D_sigma
+         type(mesh) :: m_sigma
+         type(grid) :: g
+         integer :: N_w
+         call delete(m_ind)
+         call init(g,m_mom%g(1))
+         N_w = 3
          ! Define domain for electrical conductivity
          call add(m_sigma,g)
          call initProps(m_sigma)

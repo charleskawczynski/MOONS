@@ -68,6 +68,7 @@
          type(SF) :: p,divU,temp_CC
          type(SF) :: Fo_grid,Co_grid,Re_grid
          type(SF) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
+         type(SF) :: vol_CC
 
          type(GS_Poisson) :: GS_p
 
@@ -113,6 +114,10 @@
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
 
+         ! call makeDir(dir,'Ufield')
+         ! call makeDir(dir,'Ufield','\transient')
+         ! call makeDir(dir,'Ufield','\energy')
+
          mom%dTime = dt
          mom%N_mom = N_mom
          mom%N_PPE = N_PPE
@@ -152,6 +157,9 @@
          call init_CC(mom%KE_pres,m,0.0_cp)
          call init_CC(mom%KE_transient,m,0.0_cp)
          call init_CC(mom%KE_jCrossB,m,0.0_cp)
+
+         call init_CC(mom%vol_CC,m)
+         call volume(mom%vol_CC,m)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -240,6 +248,7 @@
          call delete(mom%transient_divU);
          call delete(mom%temp_E)
          call delete(mom%m)
+         call delete(mom%vol_CC)
 
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
@@ -253,10 +262,10 @@
          implicit none
          type(momentum),intent(inout) :: mom
          character(len=*),intent(in) :: dir
-         call compute_TKE(mom%KE,mom%U_CC,mom%m)
+         call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
          call set(mom%transient_KE,mom%nstep,mom%KE)
          call apply(mom%transient_KE)
-         call compute(mom%norm_divU,mom%divU,mom%m)
+         call compute(mom%norm_divU,mom%divU,mom%vol_CC)
          call set(mom%transient_divU,mom%nstep,mom%norm_divU%L2)
          call apply(mom%transient_divU)
        end subroutine

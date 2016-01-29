@@ -48,6 +48,7 @@
         integer,dimension(3) :: gt,s
         logical :: setCoeff
         integer :: un,N_iter
+        type(SF) :: vol
         type(norms) :: norm
       end type
       
@@ -72,6 +73,8 @@
         call init(GS%d,m)
         GS%un = newAndOpen(dir,'norm_GS_'//name)
         call init(GS%norm)
+        call init(GS%vol,u)
+        call volume(GS%vol,m)
 
         if (u%is_CC) then
           do t=1,u%s; do i=1,3
@@ -103,6 +106,7 @@
         call delete(GS%lapu)
         call delete(GS%res)
         call delete(GS%Dinv)
+        call delete(GS%vol)
         close(GS%un)
         GS%un = 0
         GS%N_iter = 1
@@ -138,7 +142,7 @@
             call lap(GS%lapu,u,m)
             call subtract(GS%res,GS%lapu,f)
             call zeroGhostPoints(GS%res)
-            call compute(GS%norm,GS%res,m)
+            call compute(GS%norm,GS%res,GS%vol)
             write(GS%un,*) GS%N_iter,GS%norm%L1,GS%norm%L2,GS%norm%Linf
 #endif
         enddo
@@ -147,7 +151,7 @@
           call lap(GS%lapu,u,m)
           call subtract(GS%res,GS%lapu,f)
           call zeroGhostPoints(GS%res)
-          call compute(GS%norm,GS%res,m)
+          call compute(GS%norm,GS%res,GS%vol)
           call print(GS%norm,'GS Residuals')
           write(*,*) 'GS iterations = ',i-1
         endif

@@ -149,13 +149,12 @@
           call set(ep%p,n,d)
         end subroutine
 
-        subroutine setErrorData_SF(ep,n,u,m)
+        subroutine setErrorData_SF(ep,n,u,vol)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          type(SF),intent(in) :: u
-          type(mesh),intent(in) :: m
-          call compute(ep%e,u,m)
+          type(SF),intent(in) :: u,vol
+          call compute(ep%e,u,vol)
           call set(ep%p,n,ep%e%L2)
         end subroutine
 
@@ -180,13 +179,12 @@
           call apply(ep%p)
         end subroutine
 
-        subroutine setApplyErrorProbe(ep,n,u,m)
+        subroutine setApplyErrorProbe(ep,n,u,vol)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          type(SF),intent(in) :: u
-          type(mesh),intent(in) :: m
-          call set(ep,n,u,m)
+          type(SF),intent(in) :: u,vol
+          call set(ep,n,u,vol)
           call apply(ep%p)
         end subroutine
 

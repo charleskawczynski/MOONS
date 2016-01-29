@@ -80,11 +80,11 @@
         call delete(FFT%f)
       end subroutine
 
-      subroutine solveFFT_SF(FFT,u,f,m,norm,displayTF,dir)
+      subroutine solveFFT_SF(FFT,u,f,vol,m,norm,displayTF,dir)
         implicit none
         type(FFTSolver),intent(inout) :: FFT
         type(SF),intent(inout) :: u
-        type(SF),intent(in) :: f
+        type(SF),intent(in) :: f,vol
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         logical,intent(in) :: displayTF
@@ -171,7 +171,7 @@
             call lap(FFT%res,u,m)
             call subtract(FFT%res,f)
             call zeroGhostPoints(FFT%res)
-            call compute(norm,FFT%res,m)
+            call compute(norm,FFT%res,vol)
             call print(norm,'FFT Residuals')
           endif
           call delete(FFT)

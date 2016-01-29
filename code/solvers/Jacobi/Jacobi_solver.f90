@@ -54,7 +54,7 @@
           call apply_BCs(x,m)
 #ifdef _EXPORT_JAC_CONVERGENCE
           call zeroGhostPoints(res)
-          call compute(norm,res,m)
+          call compute(norm,res,vol)
           write(un,*) norm%L1,norm%L2,norm%Linf
 #endif
         enddo
@@ -65,7 +65,7 @@
           write(*,*) 'Jacobi iterations = ',n
           call subtract(res,Ax,f)
           call zeroGhostPoints(res)
-          call compute(norm,res,m)
+          call compute(norm,res,vol)
           call print(norm,'Jacobi residuals')
           write(un,*) norm%L1,norm%L2,norm%Linf
         endif
@@ -80,8 +80,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        integer,intent(in) :: n
-        integer,dimension(3),intent(in) :: un
+        integer,intent(in) :: n,un
         type(norms),intent(inout) :: norm
         logical,intent(in) :: compute_norm
         type(VF),intent(inout) :: Ax,res
@@ -96,9 +95,7 @@
           call apply_BCs(x,m)
 #ifdef _EXPORT_JAC_CONVERGENCE_
           call zeroGhostPoints(res)
-          call compute(norm,res%x,m); write(un(1),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,res%y,m); write(un(2),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,res%z,m); write(un(3),*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,res,vol); write(un,*) norm%L1,norm%L2,norm%Linf
 #endif
         enddo
 
@@ -108,12 +105,8 @@
           write(*,*) 'Jacobi iterations = ',n
           call subtract(res,Ax,f)
           call zeroGhostPoints(res)
-          call compute(norm,res%x,m); call print(norm,'Jacobi residuals (x)')
-          write(un(1),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,res%y,m); call print(norm,'Jacobi residuals (y)')
-          write(un(2),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,res%z,m); call print(norm,'Jacobi residuals (z)')
-          write(un(3),*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,res,vol); call print(norm,'Jacobi residuals')
+          write(un,*) norm%L1,norm%L2,norm%Linf
         endif
 #endif
       end subroutine

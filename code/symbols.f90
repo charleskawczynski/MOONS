@@ -9,8 +9,11 @@ Nabla                       ∇
 Divergence 					•
 Cross						x
 Integral                    ∫
+Summation					Σ
+Infinity					∞
 
 Superscript / Subscript
+Superscript beta			ᵝ
 Superscript minus           ⁻
 Superscript plus            ⁺
 Superscript zero			⁰

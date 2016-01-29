@@ -26,10 +26,10 @@
 
       contains
 
-      subroutine solve_PSE(u,f,m,n,ds,norm,displayTF,res,lapu)
+      subroutine solve_PSE(u,f,vol,m,n,ds,norm,displayTF,res,lapu)
         implicit none
         type(SF),intent(inout) :: u
-        type(SF),intent(in) :: f
+        type(SF),intent(in) :: f,vol
         type(mesh),intent(in) :: m
         integer,intent(in) :: n
         real(cp),intent(in) :: ds
@@ -53,7 +53,7 @@
           call subtract(res,lapu,f)
           call zeroGhostPoints(res)
           call zeroWall(res,m)
-          call compute(norm,res,m)
+          call compute(norm,res,vol)
           write(*,*) 'Number of PSE iterations = ',n
           write(*,*) 'Iterations (input/max) = ',(/n,m%N_cells_tot/)
           call print(norm,'PSE Residuals')

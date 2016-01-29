@@ -58,6 +58,7 @@
         type(mesh) :: p,d ! Primary / Dual grids
         type(SF) :: lapu,res,r ! laplacian, residual, coefficient
         real(cp) :: omega
+        type(SF) :: vol
         integer,dimension(3) :: gt,s
         logical :: setCoeff
       end type
@@ -83,6 +84,8 @@
         SOR%s = s
         call init(SOR%p,m)
         call init(SOR%d,m)
+        call init(SOR%vol,u)
+        call volume(SOR%vol,m)
 
         if (u%is_CC) then
           do t=1,u%s; do i=1,3
@@ -124,8 +127,8 @@
         call delete(SOR%lapu)
         call delete(SOR%res)
         call delete(SOR%r)
+        call delete(SOR%vol)
       end subroutine
-
 
       subroutine solveSOR(SOR,u,f,m,n,norm,displayTF)
         implicit none
@@ -192,7 +195,7 @@
             call lap(SOR%lapu,u,m)
             call subtract(SOR%res,SOR%lapu,f)
             call zeroGhostPoints(SOR%res)
-            call compute(norm,SOR%res,m)
+            call compute(norm,SOR%res,SOR%vol)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
@@ -213,7 +216,7 @@
           call lap(SOR%lapu,u,m)
           call subtract(SOR%res,SOR%lapu,f)
           call zeroGhostPoints(SOR%res)
-          call compute(norm,SOR%res,m)
+          call compute(norm,SOR%res,SOR%vol)
           call print(norm,'SOR Residuals')
         endif
 

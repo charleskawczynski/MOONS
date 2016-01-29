@@ -11,6 +11,7 @@
        use ops_discrete_mod
        use probe_base_mod
        use probe_transient_mod
+       use ops_norms_mod
 
        implicit none
 
@@ -19,7 +20,7 @@
        public :: compute_JCrossB
        public :: compute_divBJ
        public :: compute_J
-       public :: compute_TME_Fluid
+       public :: compute_TME_Domain
        public :: compute_TME
        public :: embedVelocity_E
        public :: embedVelocity_F
@@ -101,14 +102,18 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_TME_Fluid(K_energy,KB_energy,B,nstep,D_fluid)
+       subroutine compute_TME_Domain(K_energy,KB_energy,B,nstep,D)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(probe),intent(inout) :: KB_energy
          type(VF),intent(in) :: B
          integer,intent(in) :: nstep
-         type(domain),intent(in) :: D_fluid
-         call totalEnergy(K_energy,B,D_fluid)
+         type(domain),intent(in) :: D
+         type(VF) :: temp
+         call init_CC(temp,D%m_in)
+         call extractCC(temp,B,D)
+         call Ln(K_energy,temp,2.0_cp,D%m_in)
+         call delete(temp)
          call set(KB_energy,nstep,K_energy)
          call apply(KB_energy)
        end subroutine
@@ -118,9 +123,9 @@
          real(cp),intent(inout) :: K_energy
          type(probe),intent(inout) :: KB_energy
          type(VF),intent(in) :: B
-         type(mesh),intent(in) :: m
          integer,intent(in) :: nstep
-         call totalEnergy(K_energy,B,m)
+         type(mesh),intent(in) :: m
+         call Ln(K_energy,B,2.0_cp,m)
          call set(KB_energy,nstep,K_energy)
          call apply(KB_energy)
        end subroutine

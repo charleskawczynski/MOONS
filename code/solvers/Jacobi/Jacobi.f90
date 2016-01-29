@@ -32,7 +32,7 @@
         type(mesh) :: m
         type(VF) :: Ax,res,Dinv,D,k,tempk,vol
         type(norms) :: norm
-        integer,dimension(3) :: un ! unit to export norm
+        integer :: un ! unit to export norm
         procedure(),pointer,nopass :: operator
       end type
       
@@ -62,9 +62,7 @@
         call assign(JAC%k,k)
         call init(JAC%vol,x)
         call volume(JAC%vol,m)
-        JAC%un(1) = newAndOpen(dir,'norm_JAC_x_'//name)
-        JAC%un(2) = newAndOpen(dir,'norm_JAC_y_'//name)
-        JAC%un(3) = newAndOpen(dir,'norm_JAC_z_'//name)
+        JAC%un = newAndOpen(dir,'norm_JAC_'//name)
         JAC%operator => operator
         call init(JAC%norm)
 

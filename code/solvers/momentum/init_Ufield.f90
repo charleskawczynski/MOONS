@@ -25,8 +25,8 @@
        integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
        integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
        ! 
-       integer :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
-       integer :: vortexSign      = 1 ! (-1,1) = {clockwise from +, clockwise from -}
+       ! integer :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
+       ! integer :: vortexSign      = 1 ! (-1,1) = {clockwise from +, clockwise from -}
 
 
 #ifdef _SINGLE_PRECISION_

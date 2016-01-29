@@ -63,9 +63,9 @@
        interface collocatedMagnitude;     module procedure collocatedMagnitude_RF;    end interface
        interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
 
-       public :: totalEnergy
-       interface totalEnergy;             module procedure totalEnergy_VF;            end interface
-       interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
+       ! public :: totalEnergy
+       ! interface totalEnergy;             module procedure totalEnergy_VF;            end interface
+       ! interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
 
        public :: boundaryFlux
        interface boundaryFlux;            module procedure boundaryFlux_VF;           end interface

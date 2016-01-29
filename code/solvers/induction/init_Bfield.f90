@@ -14,7 +14,7 @@
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB0_ICs is used to define the applied field
 
-       integer :: preDefinedB0_ICs = 2 ! NOTE: All cases use B_induced = 0
+       integer :: preDefinedB0_ICs = 1 ! NOTE: All cases use B_induced = 0
        !                                       0 : User-defined case (no override)
        !                                       1 : Uniform applied (set applied_B_dir)
        !                                       2 : Fringing Magnetic field (Sergey's fringe, up, const, down)
@@ -26,7 +26,7 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer :: applied_B_dir = 2
+       integer :: applied_B_dir = 3
        !                                    0 : No applied field: B0 = (0,0,0)
        !                                    1 :    Applied field: B0 = (B0x,0,0)
        !                                    2 :    Applied field: B0 = (0,B0y,0)
