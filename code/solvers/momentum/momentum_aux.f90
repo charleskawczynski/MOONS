@@ -33,6 +33,7 @@
          type(VF),intent(in) :: U_CC
          type(SF),intent(in) :: vol
          call Ln(K_energy,U_CC,2.0_cp,vol)
+         K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 
        subroutine compute_CoFoRe_grid(Co_grid,Fo_grid,Re_grid,U_CC,m,dt,Re)

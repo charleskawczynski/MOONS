@@ -152,11 +152,11 @@
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
          real(cp) :: Ha,Re
-         Ha = 10.0_cp; Re = 100.0_cp
+         Ha = 10.0_cp; Re = 1000.0_cp
          call delete(m)
-         N = (/100,100,100/); hmin = -1.0_cp; hmax = 1.0_cp
-         beta = reynoldsBL(Re,hmin,hmax)
+         N = (/50,50,1/); hmin = -0.5_cp; hmax = 0.5_cp
          beta = hartmannBL(Ha,hmin,hmax)
+         beta = reynoldsBL(Re,hmin,hmax)
 
          ! call grid_uniform(g,hmin(1),hmax(1),N(1),1)
          ! call grid_uniform(g,hmin(2),hmax(2),N(2),2)

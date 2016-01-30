@@ -27,7 +27,7 @@
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
          !Re         = 100.0d0
-         Re         = 12000.0d0
+         Re         = 1000.0d0
          Ha         = 10.0d0
          Rem        = 100.0d0
          Gr         = 0.0_cp
@@ -39,9 +39,9 @@
          dt_eng     = 5.0d-3
          ! dt_mom     = 3.0d-7
          ! dt_ind     = 4.0d-8
-         dt_mom     = 2.0d-4
+         dt_mom     = 1.0d-3
          ! dt_mom     = 2.0d-3
-         dt_ind     = 1.0d-4
+         dt_ind     = 1.0d-3
          t          = 80.0
          ! t          = 1.0_cp
          ! NmaxMHD       = ceiling(t/dt_eng)
