@@ -19,8 +19,8 @@
       public :: prec_Identity_SF
       public :: prec_Identity_VF
       public :: prec_Lap_SF
-      public :: prec_Lap_VF
-      public :: prec_curl_curl_VF
+      public :: prec_mom_VF
+      public :: prec_ind_VF
 
       contains
 
@@ -40,7 +40,40 @@
         call assign(Minv,1.0_cp)
       end subroutine
 
-      subroutine prec_lap_SF(Minv,m,c)
+      subroutine prec_lap_SF(Minv,m)
+        ! Computes Laplacian diagonal preconditioner
+        ! 
+        !                   1
+        !   Minv = --------------------
+        !          diag( ∇•(∇) )
+        implicit none
+        type(SF),intent(inout) :: Minv
+        type(mesh),intent(in) :: m
+        type(SF) :: vol
+        integer :: i,j,k,t,pnx,pny,pnz
+        integer,dimension(3) :: p
+        call assign(Minv,0.0_cp)
+        p = getPad(Minv); pnx = p(1); pny = p(2); pnz = p(3)
+        !$OMP PARALLEL DO
+        do t=1,m%s; do k=2,Minv%RF(t)%s(3)-1; do j=2,Minv%RF(t)%s(2)-1; do i=2,Minv%RF(t)%s(1)-1
+        Minv%RF(t)%f(i,j,k) = m%g(t)%c(1)%stagN2CC%D(  i  )*m%g(t)%c(1)%stagCC2N%U( i-1 ) + &
+                              m%g(t)%c(1)%stagN2CC%U(i-pnx)*m%g(t)%c(1)%stagCC2N%D(i-pnx) + &
+                              m%g(t)%c(2)%stagN2CC%D(  j  )*m%g(t)%c(2)%stagCC2N%U( j-1 ) + &
+                              m%g(t)%c(2)%stagN2CC%U(j-pny)*m%g(t)%c(2)%stagCC2N%D(j-pny) + &
+                              m%g(t)%c(3)%stagN2CC%D(  k  )*m%g(t)%c(3)%stagCC2N%U( k-1 ) + &
+                              m%g(t)%c(3)%stagN2CC%U(k-pnz)*m%g(t)%c(3)%stagCC2N%D(k-pnz)
+        enddo; enddo; enddo; enddo
+        !$OMP END PARALLEL DO
+
+        call init(vol,Minv)
+        call volume(vol,m)
+        call multiply(Minv,vol)
+        call delete(vol)
+        call invert(Minv)
+        call zeroGhostPoints(Minv)
+      end subroutine
+
+      subroutine prec_mom_SF(Minv,m,c)
         ! Computes Laplacian diagonal preconditioner
         ! 
         !                   1
@@ -76,22 +109,22 @@
         call zeroGhostPoints(Minv)
       end subroutine
 
-      subroutine prec_lap_VF(Minv,m,c)
+      subroutine prec_mom_VF(Minv,m,c)
         ! Computes Laplacian diagonal preconditioner
         ! 
         !               1
         !   Minv = -----------
-        !          diag(∇•(∇))
+        !          diag( I + c∇•(∇) )
         implicit none
         type(VF),intent(inout) :: Minv
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: c
-        call prec_lap_SF(Minv%x,m,c)
-        call prec_lap_SF(Minv%y,m,c)
-        call prec_lap_SF(Minv%z,m,c)
+        call prec_mom_SF(Minv%x,m,c)
+        call prec_mom_SF(Minv%y,m,c)
+        call prec_mom_SF(Minv%z,m,c)
       end subroutine
 
-      subroutine prec_curl_curl_VF(Minv,m,sig,c) ! Verified 1/3/2016
+      subroutine prec_ind_VF(Minv,m,sig,c) ! Verified 1/3/2016
         ! Computes curl-curl diagonal preconditioner
         ! 
         !                     1

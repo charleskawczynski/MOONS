@@ -26,7 +26,8 @@
          integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 100.0d0
+         !Re         = 100.0d0
+         Re         = 12000.0d0
          Ha         = 10.0d0
          Rem        = 100.0d0
          Gr         = 0.0_cp
@@ -38,7 +39,8 @@
          dt_eng     = 5.0d-3
          ! dt_mom     = 3.0d-7
          ! dt_ind     = 4.0d-8
-         dt_mom     = 1.0d-2
+         dt_mom     = 2.0d-4
+         ! dt_mom     = 2.0d-3
          dt_ind     = 1.0d-4
          t          = 80.0
          ! t          = 1.0_cp
@@ -51,7 +53,7 @@
          N_nrg         = 1000     ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
          N_ind         = 5        ! Number of iterations to solve induction equation (if iterative solver is used)
-         N_PPE         = 5        ! Number of iterations to solve PPE steps
+         N_PPE         = 10       ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 
          ! Stopping criteria for iterative solvers:

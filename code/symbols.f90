@@ -11,6 +11,7 @@ Cross						x
 Integral                    ∫
 Summation					Σ
 Infinity					∞
+One half					½
 
 Superscript / Subscript
 Superscript beta			ᵝ

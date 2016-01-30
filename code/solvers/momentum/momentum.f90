@@ -86,6 +86,9 @@
          real(cp) :: Re,Ha,Gr,Fr
          real(cp) :: L_eta,U_eta,t_eta ! Kolmogorov Scales
 
+         real(cp),dimension(5) :: terms
+         integer :: unit_terms
+
          ! Transient probes
          real(cp) :: KE
          type(norms) :: norm_divU
@@ -131,6 +134,7 @@
          mom%U_eta = Re**(-1.0_cp/4.0_cp)
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
          mom%KE = 0.0_cp
+         mom%terms = 0.0_cp
 
          call init(mom%m,m)
          call init_boundary(mom%boundary,mom%m)
@@ -185,8 +189,13 @@
 
          call init(mom%transient_divU,dir//'Ufield/','transient_divU',.not.restartU)
          call export(mom%transient_divU)
-
          write(*,*) '     momentum probes initialized'
+
+         mom%unit_terms = newAndOpen(dir//'Ufield/','terms')
+         ! {error} = {dudt} + {adv} - {diff} + {pres} - {external}
+         write(mom%unit_terms,*) ' TITLE = "momentum terms"'
+         write(mom%unit_terms,*) ' VARIABLES = N,dudt,adv,pres,diff,external'
+         write(mom%unit_terms,*) ' ZONE DATAPACKING = POINT'
 
          ! Initialize interior solvers
          call init(mom%GS_p,mom%p,mom%m,dir//'Ufield/','p')
@@ -195,7 +204,7 @@
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
          call init(prec_mom,mom%U)
-         ! call prec_lap_VF(prec_mom,mom%m,mom%MFP%c_mom)
+         ! call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)
          call prec_identity_VF(prec_mom) ! For ordinary CG
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
          mom%tol_mom,mom%MFP,mom%U,mom%temp_E,dir//'Ufield/','U',.false.,.false.)
@@ -203,7 +212,7 @@
          write(*,*) '     PCG solver initialized for U'
 
          call init(prec_PPE,mom%p)
-         call prec_lap_SF(prec_PPE,mom%m,1.0_cp)
+         call prec_lap_SF(prec_PPE,mom%m)
          call init(mom%PCG_P,Lap_uniform_props,Lap_uniform_props_explicit,prec_PPE,mom%m,&
          mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
          call delete(prec_PPE)
@@ -262,6 +271,8 @@
          implicit none
          type(momentum),intent(inout) :: mom
          character(len=*),intent(in) :: dir
+         write(mom%unit_terms,*) mom%nstep,mom%terms
+         flush(mom%unit_terms)
          call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
          call set(mom%transient_KE,mom%nstep,mom%KE)
          call apply(mom%transient_KE)
@@ -326,7 +337,8 @@
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
+           mom%N_PPE,mom%terms,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
+           print_export(1))
 
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&

@@ -9,13 +9,13 @@
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .true.
+       logical :: solveInduction            = .false.
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
        integer :: solveUMethod              = 1 ! Refer to momentum.f90
        integer :: solveBMethod              = 1 ! Refer to induction.f90
 
-       logical :: addJCrossB                = .true.
+       logical :: addJCrossB                = .false.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 

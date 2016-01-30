@@ -188,6 +188,8 @@
          call delete(nrg)
          call delete(mom)
          call delete(ind)
+         call delete(D_fluid)
+         call delete(D_sigma)
 
          call delete(mesh_mom)
          call delete(mesh_ind)

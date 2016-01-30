@@ -215,7 +215,7 @@
          endif
 
          call init(prec_induction,ind%B)
-         call prec_curl_curl_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
+         call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
          ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
          call delete(prec_induction)
@@ -226,7 +226,7 @@
          call init_BCs(ind%phi,0.0_cp)
 
          call init(prec_cleanB,ind%phi)
-         call prec_lap_SF(prec_cleanB,ind%m,1.0_cp)
+         call prec_lap_SF(prec_cleanB,ind%m)
 
          call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_cleanB,&
          ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','φ',.false.,.false.)

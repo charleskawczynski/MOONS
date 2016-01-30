@@ -10,6 +10,7 @@
        use ops_interp_mod
        use ops_discrete_mod
        use ops_advect_mod
+       use ops_norms_mod
        use apply_BCs_mod
        use PCG_mod
        use GS_poisson_mod
@@ -137,8 +138,8 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,&
-         Ustar,temp_F,temp_CC,temp_E,compute_norms)
+       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,terms,&
+         Ustar,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
          type(SF),intent(inout) :: p
@@ -148,25 +149,36 @@
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
          integer,intent(in) :: n
-         type(VF),intent(inout) :: Ustar,temp_F,temp_E
+         type(VF),intent(inout) :: Ustar,temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call advect_U(temp_F,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F,U,m)
-         call multiply(temp_F,1.0_cp/Re)
-         call add(Ustar,temp_F)
+         real(cp),dimension(5),intent(inout) :: terms ! dudt,adv,pres,diff,external
+         call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
+              call compute_energy(terms(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+         call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
+         call lap(temp_F1,U,m)
+         call multiply(temp_F1,1.0_cp/Re)
+              call compute_energy(terms(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+         call add(Ustar,temp_F1)
          call add(Ustar,F)
+              call compute_energy(terms(5),U,F,m,temp_F2,temp_CC,compute_norms)
          call zeroWall_conditional(Ustar,m,U)
          call multiply(Ustar,dt)
          call add(Ustar,U)
-         call div(temp_CC,Ustar,m)
+              call assign(temp_F1,U)
+              call assign(U,Ustar)
+              call assign(Ustar,temp_F1)
+         call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
-         call grad(temp_F,p,m)
-         call multiply(temp_F,dt)
-         call subtract(U,Ustar,temp_F)
+         call grad(temp_F1,p,m)
+              call compute_energy(terms(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
+         call multiply(temp_F1,dt)
+         call subtract(U,temp_F1)
+              call subtract(temp_F1,U,Ustar)
+              call multiply(temp_F1,1.0_cp/dt)
+              call compute_energy(terms(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call apply_BCs(U,m)
        end subroutine
 
@@ -235,6 +247,28 @@
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
          call apply_BCs(U,m)
+       end subroutine
+
+       subroutine compute_energy(e,F,F_term,m,temp_F,temp_CC,compute_norms)
+         ! Computes  0.5 ∫∫∫ F•F_term dV
+         implicit none
+         real(cp),intent(inout) :: e
+         type(VF),intent(in) :: F,F_term
+         type(VF),intent(inout) :: temp_F
+         type(mesh),intent(in) :: m
+         type(SF),intent(inout) :: temp_CC
+         logical,intent(in) :: compute_norms
+         real(cp) :: temp
+         if (compute_norms) then
+           call multiply(temp_F,F,F_term)
+           e = 0.0_cp
+           call face2CellCenter(temp_CC,temp_F%x,m,1)
+           call Ln(temp,temp_CC,1.0_cp,m); e = temp
+           call face2CellCenter(temp_CC,temp_F%y,m,2)
+           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
+           call face2CellCenter(temp_CC,temp_F%z,m,3)
+           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
+         endif
        end subroutine
 
        end module

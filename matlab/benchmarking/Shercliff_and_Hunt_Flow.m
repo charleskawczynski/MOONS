@@ -11,7 +11,7 @@ clc; clear all; close all;
 % dpdx = (-4145.63+4093.93)/(5.49968 - 4.50127); % Uniform grid near wall @
 % 300,000 time steps
 % dpdx = (-4150.24+4099.21)/(5.50194 - 4.49875); % Uniform grid near wall @ ~1M time steps
-dpdx = (2528.36-2678.23)/(20.8939-19.1109); % has not reached SS
+dpdx = (1795.06-1886.78)/(20.8871-19.1091); % has not reached SS
 % dpdx = -50.8; % Uniform grid near wall
 Q_MOONS = -4/(10*dpdx);
 Q_a = 7.68*10^-3;
@@ -29,7 +29,7 @@ disp(' ')
 %% Hunt's Flow
 % dpdx = (-4391.95+3834.16)/(5.9982-3.99609); % old
 % dpdx = (5242.89-5747.66)/(20.8907-19.1119);
-dpdx = (5295.2-5801)/(20.8941-19.1116);
+dpdx = (5304.08-5808.47)/(20.8906-19.113);
 Q_MOONS = -4/(10*dpdx);
 Q_a = 1.405*10^-3;
 dpdx_exact = -4/(10*Q_a);
