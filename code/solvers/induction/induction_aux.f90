@@ -113,6 +113,7 @@
          call init_CC(temp,D%m_in)
          call extractCC(temp,B,D)
          call Ln(K_energy,temp,2.0_cp,D%m_in)
+         K_energy = 0.5_cp*K_energy
          call delete(temp)
          call set(KB_energy,nstep,K_energy)
          call apply(KB_energy)
@@ -126,6 +127,7 @@
          integer,intent(in) :: nstep
          type(mesh),intent(in) :: m
          call Ln(K_energy,B,2.0_cp,m)
+         K_energy = 0.5_cp*K_energy
          call set(KB_energy,nstep,K_energy)
          call apply(KB_energy)
        end subroutine
