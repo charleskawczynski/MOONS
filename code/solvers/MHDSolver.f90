@@ -102,7 +102,7 @@
 
          if (solveEnergy)    call export(nrg,nrg%m,dir)
          if (solveInduction) call export(ind,ind%m,dir)
-         if (solveMomentum)  call export(mom,mom%m,F,dir)
+         call export(mom,mom%m,F,dir)
 
          call delete(F)
        end subroutine

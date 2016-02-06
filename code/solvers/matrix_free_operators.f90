@@ -25,7 +25,8 @@
 #endif
 
       private
-      public :: Lap_uniform_props_explicit,Lap_uniform_props
+      public :: Lap_uniform_SF_explicit,Lap_uniform_SF
+      public :: Lap_uniform_VF_explicit,Lap_uniform_VF
       public :: Lap_nonuniform_props_explicit,Lap_nonuniform_props
       public :: ind_diffusion_explicit,ind_diffusion
       public :: eng_diffusion_explicit,eng_diffusion
@@ -33,7 +34,7 @@
 
       contains
 
-      subroutine Lap_uniform_props_explicit(Ax,x,k,m,MFP,tempk)
+      subroutine Lap_uniform_SF_explicit(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
         !        A = ∇•(∇)
         implicit none
@@ -49,7 +50,7 @@
         call div(Ax,tempk,m)
         call zeroGhostPoints(Ax)
       end subroutine
-      subroutine Lap_uniform_props(Ax,x,k,m,MFP,tempk)
+      subroutine Lap_uniform_SF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
         !        A = ∇•(∇)
         implicit none
@@ -63,6 +64,35 @@
         call apply_BCs_implicit(x,m)
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
+        call zeroGhostPoints(Ax)
+      end subroutine
+
+      subroutine Lap_uniform_VF_explicit(Ax,x,k,m,MFP,tempk)
+        ! COMPUTES:
+        !        A = ∇•(∇)
+        implicit none
+        type(VF),intent(inout) :: Ax,k
+        type(VF),intent(in) :: x
+        type(mesh),intent(in) :: m
+        type(VF),intent(inout) :: tempk
+        type(matrix_free_params),intent(in) :: MFP
+        logical :: suppress_warning
+        suppress_warning = MFP%suppress_warning
+        call lap_centered(Ax,x,m,k)
+        call zeroGhostPoints(Ax)
+      end subroutine
+      subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
+        ! COMPUTES:
+        !        A = ∇•(∇)
+        implicit none
+        type(VF),intent(inout) :: Ax,x,k
+        type(mesh),intent(in) :: m
+        type(VF),intent(inout) :: tempk
+        type(matrix_free_params),intent(in) :: MFP
+        logical :: suppress_warning
+        suppress_warning = MFP%suppress_warning
+        call apply_BCs_implicit(x,m)
+        call lap_centered(Ax,x,m,k)
         call zeroGhostPoints(Ax)
       end subroutine
 

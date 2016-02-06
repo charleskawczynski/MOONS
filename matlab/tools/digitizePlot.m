@@ -21,13 +21,19 @@ dir = struct; name = struct;
 % name.ext = '.png';
 
 
-dir.working = 'C:\Users\Charlie\Documents\comparison\Ghia_2D_LDC\processed\'
-name.file = 'Patil_compared_with_Ghia';
+% dir.working = 'C:\Users\Charlie\Documents\comparison\Ghia_2D_LDC\processed\'
+% name.file = 'Patil_compared_with_Ghia';
+% name.ext = '.png';
+% gd.xmin = -0.495; gd.xmax = 1; gd.ymin = -0.015;gd.ymax = 1;
+
+
+dir.working = 'C:\Users\Charlie\Documents\comparison\Weiss\'
+name.file = 'Weiss_energy_vs_time_Rem1000';
 name.ext = '.png';
-gd.xmin = -0.495; gd.xmax = 1; gd.ymin = -0.015;gd.ymax = 1;
+gd.xmin = 0; gd.xmax = 4; gd.ymin = 0; gd.ymax = 24;
 
 smoothness = 1;
-direction = 2;
+direction = 1;
 darknessTol = 0.9;
 [x y] = graphDigitizer(dir,name,gd,smoothness,direction,darknessTol);
 

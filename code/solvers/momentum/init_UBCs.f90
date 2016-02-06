@@ -19,7 +19,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,1/) ! 1 = true, else false
 
-       integer :: preDefinedU_BCs = 1
+       integer :: preDefinedU_BCs = 2
        !                                      0 : User-defined case in initUserUBCs() (no override)
        !                                      1 : Lid Driven Cavity (3D)
        !                                      2 : No Slip Cavity
@@ -86,6 +86,7 @@
          call init_BC_mesh(U%x,m)
          call init_BC_mesh(U%y,m)
          call init_BC_mesh(U%z,m)
+
          ! call init(U%x%RF(1)%b%e(5),0.4_cp)
          ! call init(U%x%RF(1)%b%e(6),0.5_cp)
          ! call init(U%x%RF(1)%b%e(7),0.6_cp)
@@ -106,6 +107,19 @@
          ! call init_Neumann(U%x%RF(7)%b,2);call init_Neumann(U%y%RF(7)%b,2);call init_Neumann(U%z%RF(7)%b,2) ! exit
          ! call init_Neumann(U%x%RF(8)%b,2);call init_Neumann(U%y%RF(8)%b,2);call init_Neumann(U%z%RF(8)%b,2) ! exit
 
+         call init(U%x%RF(1)%b,1.0_cp,4)
+         call init(U%x%RF(2)%b,1.0_cp,4)
+
+         ! Tyler's geometry
+         ! do i=4,6
+         ! call init_Neumann(U%x%RF(i)%b,2)
+         ! call init_Neumann(U%y%RF(i)%b,2)
+         ! call init_Neumann(U%z%RF(i)%b,2)
+         ! enddo
+         ! call init_Neumann(U%x%RF(10)%b,2); call init_Neumann(U%x%RF(14)%b,2)
+         ! call init_Neumann(U%y%RF(10)%b,2); call init_Neumann(U%y%RF(14)%b,2)
+         ! call init_Neumann(U%z%RF(10)%b,2); call init_Neumann(U%z%RF(14)%b,2)
+         ! call init(U%x%RF(1)%b,1.0_cp,1)
 
          ! call init_Neumann(U%x%RF(1)%b,6)
          ! call init_Neumann(U%y%RF(1)%b,6)

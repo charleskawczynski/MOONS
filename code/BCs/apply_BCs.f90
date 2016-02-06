@@ -58,8 +58,8 @@
        interface apply_BCs;    module procedure apply_BCs_VF;                 end interface
        interface apply_BCs;    module procedure apply_BCs_SF;                 end interface
 
-       interface apply_BCs;    module procedure apply_BCs_VF_given_BC;        end interface
-       interface apply_BCs;    module procedure apply_BCs_SF_given_BC;        end interface
+       ! interface apply_BCs;    module procedure apply_BCs_VF_given_BC;        end interface
+       ! interface apply_BCs;    module procedure apply_BCs_SF_given_BC;        end interface
 
        contains
 
@@ -77,8 +77,8 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          call apply_BCs_faces(U,m)
-         ! call apply_BCs_edges(U,m)
-         ! call apply_BCs_corners(U,m)
+         if (m%s.gt.1) call apply_BCs_edges(U,m)
+         ! if (m%s.gt.1) call apply_BCs_corners(U,m)
        end subroutine
 
        subroutine apply_BCs_VF_given_BC(U,m,BC)
@@ -86,9 +86,10 @@
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: BC
-         call apply_BCs(U%x,m,BC%x)
-         call apply_BCs(U%y,m,BC%y)
-         call apply_BCs(U%z,m,BC%z)
+         stop 'Error: Trying to make apply_BCs_VF_given_BC obsolete'
+         ! call apply_BCs(U%x,m,BC%x)
+         ! call apply_BCs(U%y,m,BC%y)
+         ! call apply_BCs(U%z,m,BC%z)
        end subroutine
 
        subroutine apply_BCs_SF_given_BC(U,m,BC)
@@ -96,9 +97,10 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: BC
-         call apply_BCs_faces(U,m,BC)
-         ! call apply_BCs_edges(U,m)
-         ! call apply_BCs_corners(U,m)
+         stop 'Error: Trying to make apply_BCs_SF_given_BC obsolete'
+         ! call apply_BCs_faces(U,m,BC)
+         ! if (m%s.gt.1) call apply_BCs_edges(U,m,BC)
+         ! if (m%s.gt.1) call apply_BCs_corners(U,m,BC)
        end subroutine
 
        end module

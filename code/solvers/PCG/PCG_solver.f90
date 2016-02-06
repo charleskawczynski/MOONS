@@ -59,13 +59,14 @@
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
         if (.not.x%is_CC) then
-          call assign(tempx,r)
-          call modify_forcing1(r,tempx,m,x)
+          call assign(p,r)
+          call modify_forcing1(r,p,m,x)
         endif
-        call assign(tempx,0.0_cp)
-        call apply_BCs(tempx,m,x)
-        call zeroGhostPoints_conditional(tempx)
-        call operator_explicit(Ax,tempx,k,m,MFP,tempk)
+        call assign(p,0.0_cp)
+        call apply_BCs(p,m) ! p has BCs for x
+        call apply_stitches(p,m)
+        call zeroGhostPoints_conditional(p)
+        call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
         call zeroWall_conditional(Ax,m,x)
@@ -88,11 +89,13 @@
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         do i=1,n
+          call apply_stitches(p,m)
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
           call add_product(x,p,alpha) ! x = x + alpha p
           call apply_BCs(x,m) ! Needed for PPE
+          call apply_stitches(x,m)
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! r = r - alpha Ap
           call zeroGhostPoints(r)
@@ -159,12 +162,12 @@
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        call assign(tempx,r)
-        call modify_forcing1(r,tempx,m,x)
-        call assign(tempx,0.0_cp)
-        call apply_BCs(tempx,m,x)
-        call zeroGhostPoints_conditional(tempx)
-        call operator_explicit(Ax,tempx,k,m,MFP,tempk)
+        call assign(p,r)
+        call modify_forcing1(r,p,m,x)
+        call assign(p,0.0_cp)
+        call apply_BCs(p,m) ! p has BCs for x
+        call zeroGhostPoints_conditional(p)
+        call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
         call zeroWall_conditional(Ax,m,x)

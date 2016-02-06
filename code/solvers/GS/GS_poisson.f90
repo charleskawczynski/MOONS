@@ -170,7 +170,7 @@
           GS%p%g(i)%c(1)%dhn,GS%p%g(i)%c(2)%dhn,GS%p%g(i)%c(3)%dhn,&
           GS%d%g(i)%c(1)%dhn,GS%d%g(i)%c(2)%dhn,GS%d%g(i)%c(3)%dhn,&
           GS%gt,odd)
-          ! call apply_stitches(u,m)
+          call apply_stitches(u,m)
         enddo
       end subroutine
 

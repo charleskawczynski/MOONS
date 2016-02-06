@@ -19,7 +19,7 @@
        !             /
        !           Here
        ! 
-       !       o Data locations that are potentiall defined (depending on 
+       !       o Data locations that are potentially defined (depending on 
        !         Dirichlet/Nuemann BCs) are illustrated below with asterisks
        ! 
        !        |       |       |     
@@ -176,7 +176,7 @@
            else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
                                                            .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
            endif
-           TF(1) = any(TF_prep)
+           TF(1) = all(TF_prep)
 
            a = adjacent_faces(e(2))
            fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
@@ -192,7 +192,7 @@
            else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
                                                            .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
            endif
-           TF(2) = any(TF_prep)
+           TF(2) = all(TF_prep)
 
            a = adjacent_faces(e(3))
            fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
@@ -208,7 +208,7 @@
            else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
                                                            .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
            endif
-           TF(3) = any(TF_prep)
+           TF(3) = all(TF_prep)
 
            a = adjacent_faces(e(4))
            fd(1) = direction_from_face(a(1)); fd(2) = direction_from_face(a(2))
@@ -224,7 +224,7 @@
            else; TF_prep(2) = U%RF(i)%b%f(a(2))%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(fd(2)))&
                                                            .and.(.not.(U%RF(i)%b%f(a(2))%b%Periodic))
            endif
-           TF(4) = any(TF_prep)
+           TF(4) = all(TF_prep)
 
            if (TF(1)) call app_minmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(1))%vals,&
            U%RF(i)%b%e(e(1))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmin

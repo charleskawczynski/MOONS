@@ -31,8 +31,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
@@ -236,7 +236,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh_geometries.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)mesh_simple_geometries.f90 \
+	$(SRC_DIR)$(PS)grid$(PS)mesh_complex_geometries.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)mesh_generate.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
@@ -267,6 +268,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90 \

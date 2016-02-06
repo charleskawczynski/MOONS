@@ -81,15 +81,21 @@
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(SF) :: temp_Minv
-        call init(PCG%r,x)
-        call init(PCG%p,x)
-        call init(PCG%tempx,x)
-        call init(PCG%Ax,x)
-        call init(PCG%vol,x)
+        if (x%is_CC) then;       call init_CC(PCG%tempx,m)   ! Does not copy BCs of x
+        elseif (x%is_Node) then; call init_Node(PCG%tempx,m) ! Does not copy BCs of x
+        elseif (x%is_Edge) then; call init_Edge(PCG%tempx,m,x%edge) ! Does not copy BCs of x
+        elseif (x%is_Face) then; call init_Face(PCG%tempx,m,x%face) ! Does not copy BCs of x
+        else; stop 'Error: bad input type into init_PCG_SF in PCG.f90'
+        endif
+        call init(PCG%p,x) ! Copies BCs for x
+        call init(PCG%r,PCG%tempx)
+        call init(PCG%Ax,PCG%tempx)
+        call init(PCG%vol,PCG%tempx)
         call init(PCG%k,k)
         call init(PCG%tempk,k)
-        call init(PCG%z,x)
-        call init(PCG%Minv,x)
+        call init(PCG%z,PCG%tempx)
+        call init(PCG%Minv,PCG%tempx)
+
         call init(PCG%norm)
         call assign(PCG%k,k)
         call assign(PCG%Minv,Minv)
@@ -138,15 +144,21 @@
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(VF) :: temp_Minv
-        call init(PCG%r,x)
-        call init(PCG%p,x)
-        call init(PCG%tempx,x)
-        call init(PCG%Ax,x)
-        call init(PCG%vol,x)
+        if (x%is_CC) then;       call init_CC(PCG%tempx,m)   ! Does not copy BCs of x
+        elseif (x%is_Node) then; call init_Node(PCG%tempx,m) ! Does not copy BCs of x
+        elseif (x%is_Edge) then; call init_Edge(PCG%tempx,m) ! Does not copy BCs of x
+        elseif (x%is_Face) then; call init_Face(PCG%tempx,m) ! Does not copy BCs of x
+        else; stop 'Error: bad input type into init_PCG_VF in PCG.f90'
+        endif
+        call init(PCG%p,x) ! Copies BCs for x
+        call init(PCG%r,PCG%tempx)
+        call init(PCG%Ax,PCG%tempx)
+        call init(PCG%vol,PCG%tempx)
         call init(PCG%k,k)
         call init(PCG%tempk,k)
-        call init(PCG%z,x)
-        call init(PCG%Minv,x)
+        call init(PCG%z,PCG%tempx)
+        call init(PCG%Minv,PCG%tempx)
+
         call init(PCG%norm)
         call assign(PCG%k,k)
         call assign(PCG%Minv,Minv)

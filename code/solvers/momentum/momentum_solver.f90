@@ -12,6 +12,7 @@
        use ops_advect_mod
        use ops_norms_mod
        use apply_BCs_mod
+       use apply_stitches_mod
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
@@ -138,7 +139,7 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,terms,&
+       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,energy_budget,&
          Ustar,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
@@ -152,37 +153,40 @@
          type(VF),intent(inout) :: Ustar,temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         real(cp),dimension(5),intent(inout) :: terms ! dudt,adv,pres,diff,external
+         real(cp),dimension(5),intent(inout) :: energy_budget ! dudt,adv,pres,diff,external
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-              call compute_energy(terms(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+              call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          call lap(temp_F1,U,m)
          call multiply(temp_F1,1.0_cp/Re)
-              call compute_energy(terms(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+              call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)
          call add(Ustar,F)
-              call compute_energy(terms(5),U,F,m,temp_F2,temp_CC,compute_norms)
+              call compute_energy(energy_budget(5),U,F,m,temp_F2,temp_CC,compute_norms)
          call zeroWall_conditional(Ustar,m,U)
          call multiply(Ustar,dt)
          call add(Ustar,U)
-              call assign(temp_F1,U)
-              call assign(U,Ustar)
-              call assign(Ustar,temp_F1)
+              if (compute_norms) call assign(temp_F1,U)
+         call assign(U,Ustar)
+              if (compute_norms) call assign(Ustar,temp_F1)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
          call grad(temp_F1,p,m)
-              call compute_energy(terms(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
+              call compute_energy(energy_budget(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(temp_F1,dt)
          call subtract(U,temp_F1)
-              call subtract(temp_F1,U,Ustar)
-              call multiply(temp_F1,1.0_cp/dt)
-              call compute_energy(terms(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+              if (compute_norms) then
+                call subtract(temp_F1,U,Ustar)
+                call multiply(temp_F1,1.0_cp/dt)
+              endif
+              call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call apply_BCs(U,m)
+         call apply_stitches(U,m)
        end subroutine
 
-       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&
+       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,nstep,&
          Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(GS_poisson),intent(inout) :: GS
@@ -192,7 +196,7 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n
+         integer,intent(in) :: n,nstep
          type(VF),intent(inout) :: Ustar,temp_F,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
@@ -213,6 +217,7 @@
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
          call apply_BCs(U,m)
+         call apply_stitches(U,m)
        end subroutine
 
        subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,n,&
@@ -250,7 +255,7 @@
        end subroutine
 
        subroutine compute_energy(e,F,F_term,m,temp_F,temp_CC,compute_norms)
-         ! Computes  0.5 ∫∫∫ F•F_term dV
+         ! Computes  ∫∫∫ F•F_term dV
          implicit none
          real(cp),intent(inout) :: e
          type(VF),intent(in) :: F,F_term

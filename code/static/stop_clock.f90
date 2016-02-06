@@ -150,6 +150,8 @@
         integer,intent(in) :: un
         real(cp) :: temp
         character(len=1) :: u
+        logical :: problem
+        problem = .false.
         write(un,*) ''
         write(un,*) '******************* KNOWN WALL CLOCK TIME INFO *********************'
 
@@ -157,11 +159,13 @@
 
         temp = sc%secPerIter; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (seconds/iteration) = ',temp,' (', u,')'
+        call debug_stop_clock(sc,temp,problem)
 
         write(un,*) 'Iterations per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
 
         temp = sc%t_passed; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
+        call debug_stop_clock(sc,temp,problem)
 
         write(un,*) ''
         write(un,*) '***************** ESTIMATED WALL CLOCK TIME INFO *******************'
@@ -170,9 +174,11 @@
 
         temp = sc%estimatedTotal; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (total) = ',temp,' (', u,')'
+        call debug_stop_clock(sc,temp,problem)
 
         temp = sc%estimatedRemaining; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (remaining) = ',temp,' (', u,')'
+        call debug_stop_clock(sc,temp,problem)
 
         write(un,*) 'Percentage complete = ',sc%percentageComplete
 
@@ -184,9 +190,6 @@
         implicit none
         real(cp),intent(inout) :: t
         character(len=1),intent(inout) :: u
-        if (t.lt.0.0_cp) then
-          write(*,*) 'WARNING: negative time estimate in stop_clock.f90'
-        endif
         if (t.lt.60.0_cp) then
          u = 's'; t = t
         elseif ((t.ge.60.0_cp).and.(t.lt.3600.0_cp)) then
@@ -197,6 +200,30 @@
          u = 'd'; t = t/86400.0_cp ! 60*60*24 = 86400
         elseif (t.ge.31557600.0_cp) then
          u = 'y'; t = t/31557600.0_cp ! 60*60*24*365.24 = 31557600
+        endif
+       end subroutine
+
+      subroutine debug_stop_clock(sc,t,problem)
+        implicit none
+        type(stop_clock),intent(in) :: sc
+        real(cp),intent(in) :: t
+        logical,intent(inout) :: problem
+        if (.not.problem) then ! check to see if there is a problem
+          if (t.lt.0.0_cp) then
+            write(*,*) 'WARNING: negative time estimate in stop_clock.f90'
+            write(*,*) 'debug info:'
+            write(*,*) 't_elapsed = ',sc%c%t_elapsed
+            write(*,*) 't_passed = ',sc%t_passed
+            write(*,*) 'N = ',sc%N
+            write(*,*) 'Nr = ',sc%Nr
+            write(*,*) 'secPerIter = ',sc%secPerIter
+            write(*,*) 'estimatedTotal = ',sc%estimatedTotal
+            write(*,*) 'estimatedRemaining = ',sc%estimatedRemaining
+            write(*,*) 'percentageComplete = ',sc%percentageComplete
+            write(*,*) 'NRemaining = ',sc%NRemaining
+            write(*,*) 'iterPerSec = ',sc%iterPerSec
+            problem = .true.
+          endif
         endif
        end subroutine
 

@@ -19,6 +19,7 @@
       public :: prec_Identity_SF
       public :: prec_Identity_VF
       public :: prec_Lap_SF
+      public :: prec_Lap_VF
       public :: prec_mom_VF
       public :: prec_ind_VF
 
@@ -40,7 +41,7 @@
         call assign(Minv,1.0_cp)
       end subroutine
 
-      subroutine prec_lap_SF(Minv,m)
+      subroutine prec_Lap_SF(Minv,m)
         ! Computes Laplacian diagonal preconditioner
         ! 
         !                   1
@@ -71,6 +72,20 @@
         call delete(vol)
         call invert(Minv)
         call zeroGhostPoints(Minv)
+      end subroutine
+
+      subroutine prec_Lap_VF(Minv,m)
+        ! Computes Laplacian diagonal preconditioner
+        ! 
+        !                   1
+        !   Minv = --------------------
+        !          diag( ∇•(∇) )
+        implicit none
+        type(VF),intent(inout) :: Minv
+        type(mesh),intent(in) :: m
+        call prec_Lap_SF(Minv%x,m)
+        call prec_Lap_SF(Minv%y,m)
+        call prec_Lap_SF(Minv%z,m)
       end subroutine
 
       subroutine prec_mom_SF(Minv,m,c)

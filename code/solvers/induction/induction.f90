@@ -69,7 +69,7 @@
          type(SF) :: vol_CC
 
          ! --- Solvers ---
-         type(PCG_solver_VF) :: PCG_B
+         type(PCG_solver_VF) :: PCG_B,PCG_B_vacuum
          type(PCG_solver_SF) :: PCG_cleanB
 
          type(matrix_free_params) :: MFP_B
@@ -92,6 +92,8 @@
          real(cp) :: t                ! Time
          real(cp) :: Rem              ! Magnetic Reynolds number
          logical :: finite_Rem
+         integer :: unit_nrg_budget
+         real(cp),dimension(3) :: nrg_budget
          real(cp),dimension(0:2) :: ME
          real(cp),dimension(0:2) :: ME_fluid
          real(cp),dimension(0:2) :: ME_conductor
@@ -136,6 +138,7 @@
          ind%tol_cleanB = tol_cleanB
          ind%tol_induction = tol_induction
          ind%Rem = Rem
+         ind%nrg_budget = 0.0_cp
 
          call init(ind%m,m)
          call init(ind%D_fluid,D_fluid)
@@ -187,6 +190,8 @@
          write(*,*) '     Interface treated'
          ! *************************************************************
 
+         call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
+
          call init(ind%probe_divB,dir//'Bfield/','transient_divB',.not.restartB)
          call init(ind%probe_divJ,dir//'Jfield/','transient_divJ',.not.restartB)
          call export(ind%probe_divB)
@@ -203,6 +208,13 @@
          call init(ind%KB0_c_energy,dir//'Bfield\','KB0_c',.not.restartB)
          write(*,*) '     B/J probes initialized'
 
+         ind%unit_nrg_budget = newAndOpen(dir//'Bfield/','energy_budget')
+         ! {error} = {dBdt} + {adv} - {diff}
+         write(ind%unit_nrg_budget,*) ' TITLE = "induction energy budget"'
+         write(ind%unit_nrg_budget,*) ' VARIABLES = N,dBdt,adv,diff'
+         write(ind%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
+         flush(ind%unit_nrg_budget)
+
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
          ! Initialize multigrid
@@ -214,10 +226,16 @@
          else;                 ind%MFP_B%c_ind = ind%dTime
          endif
 
+         ! call init(prec_induction,ind%B)
+         ! call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
+         ! call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
+         ! ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+         ! call delete(prec_induction)
+
          call init(prec_induction,ind%B)
-         call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
-         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
-         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+         call prec_lap_VF(prec_induction,ind%m)
+         call init(ind%PCG_B_vacuum,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_induction,ind%m,&
+         ind%tol_induction,ind%MFP_B,ind%B,ind%temp_E,dir//'Bfield/','B',.false.,.false.)
          call delete(prec_induction)
          write(*,*) '     PCG Solver initialized for B'
 
@@ -228,7 +246,7 @@
          call init(prec_cleanB,ind%phi)
          call prec_lap_SF(prec_cleanB,ind%m)
 
-         call init(ind%PCG_cleanB,Lap_uniform_props,Lap_uniform_props_explicit,prec_cleanB,&
+         call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
          ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','φ',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
@@ -285,6 +303,7 @@
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
+         call delete(ind%PCG_B_vacuum)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -294,6 +313,8 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
+         write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
+         flush(ind%unit_nrg_budget)
          call apply(ind%probe_divB,ind%nstep,ind%divB,ind%vol_CC)
          call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%vol_CC)
        end subroutine
@@ -358,7 +379,9 @@
          character(len=*),intent(in) :: dir
          logical :: exportNow,compute_ME
 
-         call embedVelocity_E(ind%U_E,U,ind%D_fluid)
+         if (solveMomentum) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
+         else;if (ind%nstep.le.1) call embedVelocity_E(ind%U_E,U,ind%D_fluid)
+         endif
 
          select case (solveBMethod)
          case (1)
@@ -367,12 +390,18 @@
 
          case (2)
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%Rem,ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
+         ind%dTime,ind%nrg_budget,print_export(1),ind%temp_CC_SF,ind%temp_F1,&
+         ind%temp_F2,ind%temp_F1_TF%x,ind%temp_F1_TF%y,ind%temp_E,ind%temp_E_TF)
 
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,ind%dTime,&
          ind%N_induction,ind%N_cleanB,print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
+
+         case (4)
+         call CT_Finite_Rem_perfect_vacuum(ind%PCG_B_vacuum,ind%PCG_cleanB,ind%B,ind%B0,&
+         ind%U_E,ind%J,ind%m,ind%D_sigma,ind%dTime,ind%N_induction,ind%N_cleanB,&
+         print_export(1),ind%temp_CC_SF,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
@@ -404,10 +433,10 @@
            call compute_TME_Domain(ind%ME_conductor(2),ind%KB_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
          endif
 
-         if (print_export(6)) call exportTransient(ind)
+         if (print_export(1)) call exportTransient(ind)
 
          ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
-         ! if (mod(ind%nstep,100000).eq.1) then
+         ! if (print_export(2)) then
          !   call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
          ! endif
 

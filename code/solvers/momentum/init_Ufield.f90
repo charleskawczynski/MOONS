@@ -333,7 +333,7 @@
          integer,dimension(3) :: sx,sy,sz
          real(cp) :: one,two,three,four
          one = 1.0_cp; two = 2.0_cp
-         three = real(3.0,cp); four = real(4.0,cp)
+         three = 3.0_cp; four = 4.0_cp
 
          sx = shape(u); sy = shape(v); sz = shape(w)
          select case (dir)

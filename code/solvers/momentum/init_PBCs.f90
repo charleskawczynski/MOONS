@@ -49,6 +49,14 @@
          ! p%all_Neumann = .false. ! Needs to be adjusted manually
 
          ! call init_Dirichlet(p%RF(1)%b,2)
+
+         ! For Tyler's geometry:
+         ! call init_Dirichlet(p%RF(4)%b,2)
+         ! call init_Dirichlet(p%RF(5)%b,2)
+         ! call init_Dirichlet(p%RF(6)%b,2)
+         ! call init_Dirichlet(p%RF(10)%b,2)
+         ! call init_Dirichlet(p%RF(14)%b,2)
+
          call init_BC_mesh(p,m)
          ! call define_Edges(p%RF(i)%b)
          ! call init_Neumann(p%RF(1)%b,6)

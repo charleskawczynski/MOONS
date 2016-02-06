@@ -20,7 +20,7 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 1
+       integer :: preDefinedB_BCs = 2
        !                                      0 : User-defined case (no override)
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : B = 0
@@ -160,8 +160,6 @@
          implicit none
          type(vectorBCs),intent(inout) :: B_bcs
          integer,intent(in) :: dir
-         integer :: periodic_i
-         periodic_i = 7 ! Wall incoincident
          select case (dir)
          case (1);call init_periodic(B_bcs%x,1)
                   call init_periodic(B_bcs%y,1)

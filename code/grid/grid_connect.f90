@@ -149,7 +149,7 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_Roberts_R in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
          hmax = g_in%c(dir)%hmax
-         beta = betaRobertsRight(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
+         beta = betaRobertsRight(hmax,hmax + L,N,g_in%c(dir)%dhn(1))
          call init(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
          call process(g,gg,dir)
        end subroutine

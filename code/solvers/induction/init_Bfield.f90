@@ -26,7 +26,7 @@
        !                                 2 : B0(:,y,:)
        !                                 3 : B0(:,:,z)
 
-       integer :: applied_B_dir = 3
+       integer :: applied_B_dir = 2
        !                                    0 : No applied field: B0 = (0,0,0)
        !                                    1 :    Applied field: B0 = (B0x,0,0)
        !                                    2 :    Applied field: B0 = (0,B0y,0)
@@ -175,17 +175,14 @@
          s = shape(B)
          allocate(Btemp(s(dir)))
          ! Sergey's fringe:
-         Bstretch = 0.2_cp   ! stretching parameter
-         Bshift = 5.0_cp     ! shift parameter
+         Bstretch = 0.2_cp   ! Fringe slope
+         Bshift = 10.0_cp    ! Fringe location
 
          do i=1,s(dir)
            d = dble((g%c(dir)%hc(i)-Bshift)/Bstretch)
            Btemp(i) = (1.0_cp+tanh(d))/2.0_cp
          enddo; i2 = 0
-         ! write(*,*) 's(dir) = ',s(dir)
          do i=1+(s(dir)-1)/2,s(dir)
-           ! write(*,*) 'i = ',i
-           ! write(*,*) 'iBtemp = ',1+(s(dir)-1)/2-i2
            Btemp(i) = Btemp(1+(s(dir)+1)/2-i2); i2 = i2+1
          enddo
 
@@ -296,7 +293,6 @@
          case default
          stop 'Error: dir must = 1,2,3 in initFringe.'
          end select
-         write(*,*) 'Hello!',maxval(Btemp)
          deallocate(Btemp)
        end subroutine
 

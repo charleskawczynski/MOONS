@@ -12,14 +12,10 @@
        use ops_advect_mod
        use ops_norms_mod
        use apply_BCs_mod
-       use apply_stitches_mod
        use norms_mod
        use AB2_mod
        use GS_Poisson_mod
        use PCG_mod
-       use export_raw_processed_mod
-       use domain_mod
-       use ops_embedExtract_mod
 
        implicit none
 
@@ -27,7 +23,6 @@
 
        ! Explicit time marching methods (CT methods)
        public :: CT_Finite_Rem
-       public :: CT_Finite_Rem_perfect_vacuum
        public :: CT_Low_Rem
 
        ! Implicit time marching methods (diffusion implicit)
@@ -46,14 +41,11 @@
 
        contains
 
-       subroutine CT_Finite_Rem(B,B0,U_E,J,sigmaInv_E,m,dt,energy_budget,&
-         compute_norms,temp_CC,temp_F1,temp_F2,temp_F3,temp_F4,temp_E,&
-         temp_E_TF)
+       subroutine CT_Finite_Rem(B,B0,U_E,J,sigmaInv_E,m,Rem,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
          ! Solves:
          !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:
          !             B (above)
-         ! Input:
          !             J = Rem⁻¹∇xB
          ! Method:
          !             Constrained Transport (CT)
@@ -62,86 +54,21 @@
          !             cell edge => J,sigmaInv_E,U_E
          !             Finite Rem
          implicit none
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3,temp_F4
-         type(SF),intent(inout) :: temp_CC
-         type(VF),intent(in) :: B0,sigmaInv_E,J
+         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0,sigmaInv_E
          type(TF),intent(inout) :: temp_E_TF
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         logical,intent(in) :: compute_norms
-         real(cp),dimension(3),intent(inout) :: energy_budget
+         real(cp),intent(in) :: dt,Rem
          call add(temp_F2,B,B0) ! Since finite Rem
          call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-              if (compute_norms) call compute_energy(energy_budget(2),temp_F2,temp_F1,m,temp_F3,temp_CC,compute_norms)
+         call curl(J,B,m)
+         call multiply(J,1.0_cp/Rem)
          call multiply(temp_E,J,sigmaInv_E)
          call curl(temp_F2,temp_E,m)
-              if (compute_norms) call add(temp_F3,B,B0) ! Since finite Rem
-              if (compute_norms) call compute_energy(energy_budget(3),temp_F2,temp_F3,m,temp_F4,temp_CC,compute_norms)
-         call subtract(temp_F1,temp_F2)
-              if (compute_norms) call assign(temp_F2,B)
-         call multiply(temp_F1,dt)
-         call add(B,temp_F1)
-         call apply_BCs(B,m)
-              if (compute_norms) then
-                call subtract(temp_F3,B,temp_F2)
-                call multiply(temp_F3,1.0_cp/dt)
-                call compute_energy(energy_budget(1),B,temp_F3,m,temp_F4,temp_CC,compute_norms)
-              endif
-       end subroutine
-
-       subroutine CT_Finite_Rem_perfect_vacuum(PCG_B,PCG_cleanB,B,B0,U_E,J,m,&
-         D_conductor,dt,N_induction,N_cleanB,compute_norms,temp_CC,temp_F1,&
-         temp_F2,temp_E,temp_E_TF,phi)
-         ! This has not yet been tested and is likely flawed currently.
-         ! 
-         ! Solves:
-         !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
-         ! Computes:
-         !             B (above)
-         ! Input:
-         !             J = Rem⁻¹∇xB
-         ! Method:
-         !             Constrained Transport (CT)
-         ! Info:
-         !             cell face => B,B0
-         !             cell edge => J,U_E
-         !             Finite Rem
-         implicit none
-         type(PCG_solver_VF),intent(inout) :: PCG_B
-         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2
-         type(SF),intent(inout) :: temp_CC,phi
-         type(VF),intent(in) :: B0,J
-         type(TF),intent(inout) :: temp_E_TF
-         type(TF),intent(in) :: U_E
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction,N_cleanB
-         type(domain),intent(in) :: D_conductor
-         logical,intent(in) :: compute_norms
-         type(VF) :: temp
-         call add(temp_F2,B,B0) ! Since finite Rem
-         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-         call assign(temp_E,J)
-         call curl(temp_F2,temp_E,m)
          call subtract(temp_F1,temp_F2)
          call multiply(temp_F1,dt)
          call add(B,temp_F1)
-         ! Solve for B in vacuum by Poisson equation:
-         call div(temp_CC,B,m)
-         call grad(temp_F1,temp_CC,m)
-         call assign(temp_F2,B)
-         call solve(PCG_B,B,temp_F1,m,N_induction,compute_norms)
-         call init_Face(temp,D_conductor%m_in)
-         call extractFace(temp,temp_F2,D_conductor)
-         call embedFace(B,temp,D_conductor)
-         call delete(temp)
-         ! Clean B
-         call div(temp_CC,B,m)
-         call solve(PCG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
-         call grad(temp_F1,phi,m)
-         call subtract(B,temp_F1)
          call apply_BCs(B,m)
        end subroutine
 

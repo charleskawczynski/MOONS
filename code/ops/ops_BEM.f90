@@ -20,8 +20,11 @@
 #endif
 
        public :: boundaryFlux
-       interface boundaryFlux;            module procedure boundaryFlux_VF;           end interface
-       interface boundaryFlux;            module procedure boundaryFlux_VF_SD;        end interface
+       interface boundaryFlux;   module procedure boundaryFlux_VF;          end interface
+       interface boundaryFlux;   module procedure boundaryFlux_VF_SD;       end interface
+
+       public :: distance
+       interface distance;       module procedure distance_from_surf_i_SF;  end interface
 
        contains
 
@@ -36,7 +39,6 @@
          type(mesh),intent(in) :: m
          real(cp) :: BFtemp
          integer :: i,j,k,t
-         logical :: TF
          BFtemp = 0.0_cp ! temp is necessary for reduction
          BF = 0.0_cp
          do t=1,m%s
@@ -130,5 +132,53 @@
        !   call boundaryFlux(BF,temp,m)
        !   call delete(temp)
        ! end subroutine
+
+        subroutine distance_from_surf_i_SF(u,m,index_1D)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: index_1D
+          integer :: i_3D,j_3D,k_3D,t_3D,i,j,k,t
+          real(cp) :: dx,dy,dz,hx,hy,hz
+
+          call assign(u,0.0_cp)
+          call get_3D_index(i_3D,j_3D,k_3D,t_3D,u,index_1D)
+
+          do t=1,m%s
+            if (m%g(t)%c(1)%N.eq.1) then; hx=m%g(t_3D)%c(1)%hn(i_3D); else; hx=m%g(t_3D)%c(1)%hc(i_3D); endif
+            if (m%g(t)%c(2)%N.eq.1) then; hy=m%g(t_3D)%c(2)%hn(j_3D); else; hy=m%g(t_3D)%c(2)%hc(j_3D); endif
+            if (m%g(t)%c(3)%N.eq.1) then; hz=m%g(t_3D)%c(3)%hn(k_3D); else; hz=m%g(t_3D)%c(3)%hc(k_3D); endif
+
+            if (m%g(t)%c(1)%N.eq.1) then
+              !$OMP PARALLEL DO SHARED(m) PRIVATE(dx,dy,dz)
+              do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              dx = hx - m%g(t)%c(1)%hn(i)
+              dy = hy - m%g(t)%c(2)%hc(j)
+              dz = hz - m%g(t)%c(3)%hc(k)
+              u%RF(t)%f(i,j,k) = sqrt(dx**2.0_cp+dx**2.0_cp+dz**2.0_cp)
+              enddo; enddo; enddo
+              !$OMP END PARALLEL DO
+            elseif (m%g(t)%c(2)%N.eq.1) then
+              !$OMP PARALLEL DO SHARED(m) PRIVATE(dx,dy,dz)
+              do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              dx = hx - m%g(t)%c(1)%hc(i)
+              dy = hy - m%g(t)%c(2)%hn(j)
+              dz = hz - m%g(t)%c(3)%hc(k)
+              u%RF(t)%f(i,j,k) = sqrt(dx**2.0_cp+dx**2.0_cp+dz**2.0_cp)
+              enddo; enddo; enddo
+              !$OMP END PARALLEL DO
+            elseif (m%g(t)%c(3)%N.eq.1) then
+              !$OMP PARALLEL DO SHARED(m) PRIVATE(dx,dy,dz)
+              do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              dx = hx - m%g(t)%c(1)%hc(i)
+              dy = hy - m%g(t)%c(2)%hc(j)
+              dz = hz - m%g(t)%c(3)%hn(k)
+              u%RF(t)%f(i,j,k) = sqrt(dx**2.0_cp+dx**2.0_cp+dz**2.0_cp)
+              enddo; enddo; enddo
+              !$OMP END PARALLEL DO
+            else; stop 'Error: N_cells must = 1 for each surface in BEM in ops_BEM.f90'
+            endif
+          enddo
+        end subroutine
 
        end module

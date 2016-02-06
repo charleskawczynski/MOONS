@@ -63,10 +63,6 @@
        interface collocatedMagnitude;     module procedure collocatedMagnitude_RF;    end interface
        interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
 
-       ! public :: totalEnergy
-       ! interface totalEnergy;             module procedure totalEnergy_VF;            end interface
-       ! interface totalEnergy;             module procedure totalEnergy_VF_SD;         end interface
-
        public :: boundaryFlux
        interface boundaryFlux;            module procedure boundaryFlux_VF;           end interface
        interface boundaryFlux;            module procedure boundaryFlux_VF_SD;        end interface
@@ -188,38 +184,6 @@
                                           abs(fi(i,j,k)/g%c(dir)%dhn(t)**real(n,cp))/))
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
-       end subroutine
-
-       subroutine totalEnergy_VF(e,u,m) ! Finished
-         ! Computes
-         ! 
-         !          1
-         !   e = -------- ∫∫∫ ( u_x² + u_y² + u_z² ) dx dy dz
-         !        volume
-         ! 
-         ! Where x,y,z lives in the cell center.
-         ! This will yields expected results ONLY
-         ! when fluid domains are completely contained
-         ! by the total domain (case 1 in define_CE in subdomain.f90).
-         implicit none
-         type(VF),intent(in) :: u
-         real(cp),intent(inout) :: e
-         type(mesh),intent(in) :: m
-         real(cp) :: eTemp
-         integer :: i,j,k,t
-         eTemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO SHARED(m), REDUCTION(+:eTemp)
-         do t=1,m%s
-           do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
-             eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**2.0_cp +&
-                              u%y%RF(t)%f(i,j,k)**2.0_cp +&
-                              u%z%RF(t)%f(i,j,k)**2.0_cp)*m%g(t)%c(1)%dhn(i)*&
-                                                          m%g(t)%c(2)%dhn(j)*&
-                                                          m%g(t)%c(3)%dhn(k)
-           enddo; enddo; enddo
-         enddo
-         !$OMP END PARALLEL DO
-         e = etemp/m%volume
        end subroutine
 
        subroutine boundaryFlux_VF(BF,u,m) ! Finished
@@ -815,19 +779,6 @@
          call stabilityTerms(fo,fi%x,m,n,1)
          call stabilityTerms(fo,fi%y,m,n,2)
          call stabilityTerms(fo,fi%z,m,n,3)
-       end subroutine
-
-       subroutine totalEnergy_VF_SD(e,f,D)
-         implicit none
-         type(VF),intent(in) :: f
-         real(cp),intent(inout) :: e
-         type(domain),intent(in) :: D
-         type(VF) :: temp
-         if (.not.f%is_CC) stop 'Error: Total energy must be computed on CC in totalEnergy_VF_SD in ops_aux.f90'
-         call init_CC(temp,D%m_in)
-         call extractCC(temp,f,D)
-         call totalEnergy(e,temp,D%m_in)
-         call delete(temp)
        end subroutine
 
        subroutine boundaryFlux_VF_SD(BF,f,D)
