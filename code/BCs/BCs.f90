@@ -69,7 +69,7 @@
 
        ! For apply_BCs_edges
        public :: adjacent_faces
-       public :: define_Edges
+       ! public :: define_Edges
 
        type BCs
          type(face),dimension(6) :: f   ! xmin,xmax,ymin,ymax,zmin,zmax

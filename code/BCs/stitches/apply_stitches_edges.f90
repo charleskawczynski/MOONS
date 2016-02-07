@@ -1,4 +1,81 @@
        module apply_stitches_edges_mod
+       ! Notes:
+       !       o Edge stitching is necessary in scenarios where two grids 
+       !         share an edge. Some examples are below
+       ! 
+       !       o Example 1) Here, g1 and g2 share an edge, and information 
+       !         between these two fields
+       ! 
+       !    ---------------------
+       !          |      |      |
+       !          |  g2  |      |
+       !          |      |      |
+       !    -------------|------|
+       !                 |      |
+       !                 |  g1  |
+       !                 |      |
+       !                 |------|
+       !                 |      |
+       !                 |      |
+       ! 
+       !       o Example 2) Here, g1 and g2 share an edge, and information 
+       !         between these two fields
+       ! 
+       !                |       |       |        
+       !                |       |       |   g2   
+       !                |       |       |        
+       !        -------- ------- ------- --------
+       !                |       |       |        
+       !                |   C   F   C   |        
+       !                |       |       |        
+       !        -------- ---F---N---F--- --------
+       !                |       |       |        
+       !                |   C   F   C   |        
+       !                |       |       |        
+       !        -------- ------- ------- --------
+       !                |       |       |        
+       !           g1   |       |       |        
+       !                |       |       |        
+       ! 
+       !       o Edge data is separated into 3 (edge) directions. This is 
+       !         listed and illustrated below
+       !         Edges are organized as follows
+       !                minmin(i)
+       !                minmax(i)
+       !                maxmin(i)
+       !                maxmax(i)
+       !         for direction i, covering all 12 edge.
+       !         
+       !         To be more explicit:
+       !         
+       !         x:  (i=1)   minmin(1):  ymin,zmin ! Right hand rule
+       !                     minmax(2):  ymin,zmax ! Right hand rule
+       !                     maxmin(3):  ymax,zmin ! Right hand rule
+       !                     maxmax(4):  ymax,zmax ! Right hand rule
+       !         
+       !         y:  (i=2)   minmin(5):  xmin,zmin ! LEFT hand rule
+       !                     minmax(6):  xmin,zmax ! LEFT hand rule
+       !                     maxmin(7):  xmax,zmin ! LEFT hand rule
+       !                     maxmax(8):  xmax,zmax ! LEFT hand rule
+       !         
+       !         z:  (i=3)   minmin(9):  xmin,ymin ! Right hand rule
+       !                     minmax(10): xmin,ymax ! Right hand rule
+       !                     maxmin(11): xmax,ymin ! Right hand rule
+       !                     maxmax(12): xmax,ymax ! Right hand rule
+       ! 
+       !          d2
+       !          ^
+       !          |
+       !          -------------------
+       ! minmax   |   |         |   | maxmax
+       !          |---|---------|---|
+       !          |   |         |   |
+       !          |   |         |   |
+       !          |   |         |   |
+       !          |---|---------|---|
+       ! minmin   |   |         |   | maxmin
+       !          ---------------------->d1
+       ! 
        use RF_mod
        use SF_mod
        use VF_mod
@@ -48,19 +125,19 @@
          elseif (U%is_Face) then
             select case (U%Face)
             case (1); do i=1,m%s
-                      if (m%g(i)%st_face%hmin(1)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,0,0)
+                      if (m%g(i)%st_face%hmin(1)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,0,0)
                       if (m%g(i)%st_face%hmin(2)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,1,0,0)
                       if (m%g(i)%st_face%hmin(3)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,1,0,0)
                       enddo
             case (2); do i=1,m%s
                       if (m%g(i)%st_face%hmin(1)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,1,0)
-                      if (m%g(i)%st_face%hmin(2)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,0,0,0)
+                      if (m%g(i)%st_face%hmin(2)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,0,0,0)
                       if (m%g(i)%st_face%hmin(3)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,0,1,0)
                       enddo
             case (3); do i=1,m%s
                       if (m%g(i)%st_face%hmin(1)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,0,1)
                       if (m%g(i)%st_face%hmin(2)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,0,0,1)
-                      if (m%g(i)%st_face%hmin(3)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,0,0,0)
+                      if (m%g(i)%st_face%hmin(3)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,0,0,0)
                       enddo
             case default; stop 'Error: face must = 1,2,3 in apply_stitches_edges.f90'
             end select
@@ -68,17 +145,17 @@
             select case (U%Edge)
             case (1); do i=1,m%s
                       if (m%g(i)%st_face%hmin(1)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,1,1)
-                      if (m%g(i)%st_face%hmin(2)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,0,0,1)
-                      if (m%g(i)%st_face%hmin(3)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,0,1,0)
+                      if (m%g(i)%st_face%hmin(2)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,0,0,1)
+                      if (m%g(i)%st_face%hmin(3)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,0,1,0)
                       enddo
             case (2); do i=1,m%s
-                      if (m%g(i)%st_face%hmin(1)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,0,1)
+                      if (m%g(i)%st_face%hmin(1)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,0,1)
                       if (m%g(i)%st_face%hmin(2)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,1,0,1)
-                      if (m%g(i)%st_face%hmin(3)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,1,0,0)
+                      if (m%g(i)%st_face%hmin(3)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,1,0,0)
                       enddo
             case (3); do i=1,m%s
-                      if (m%g(i)%st_face%hmin(1)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,1,0)
-                      if (m%g(i)%st_face%hmin(2)) call app_N(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,1,0,0)
+                      if (m%g(i)%st_face%hmin(1)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(1)),1,0,1,0)
+                      if (m%g(i)%st_face%hmin(2)) call app_N( U%RF(i),U%RF(m%g(i)%st_face%hmin_id(2)),2,1,0,0)
                       if (m%g(i)%st_face%hmin(3)) call app_CC(U%RF(i),U%RF(m%g(i)%st_face%hmin_id(3)),3,1,1,0)
                       enddo
             case default; stop 'Error: edge must = 1,2,3 in apply_stitches_edges.f90'
@@ -120,7 +197,7 @@
                    Umin%f(2+px:Umin%s(1)-1-px,2+py:Umin%s(2)-1-py,    1        ) = &
                    Umax%f(2+px:Umax%s(1)-1-px,2+py:Umin%s(2)-1-py,  Umax%s(3)-1)
          case default
-         stop 'Erorr: dir must = 1,2,3 in applyAllStitches_RF in apply_stitches_edges.f90'
+         stop 'Error: dir must = 1,2,3 in applyAllStitches_RF in apply_stitches_edges.f90'
          end select
        end subroutine
 
@@ -149,7 +226,7 @@
                    Umin%f(2+px:Umin%s(1)-1-px,2+py:Umin%s(2)-1-py,    1        ) = &
                    Umax%f(2+px:Umax%s(1)-1-px,2+py:Umin%s(2)-1-py,  Umax%s(3)-2)
          case default
-         stop 'Erorr: dir must = 1,2,3 in applyAllStitches_RF in apply_stitches_edges.f90'
+         stop 'Error: dir must = 1,2,3 in applyAllStitches_RF in apply_stitches_edges.f90'
          end select
        end subroutine
 

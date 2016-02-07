@@ -25,8 +25,8 @@
        interface apply_BCs_faces;       module procedure apply_BCs_faces_VF;     end interface
        interface apply_BCs_faces;       module procedure apply_BCs_faces_SF;     end interface
 
-       interface apply_BCs_faces;       module procedure apply_BCs_faces_VF2;     end interface
-       interface apply_BCs_faces;       module procedure apply_BCs_faces_SF2;     end interface
+       ! interface apply_BCs_faces;       module procedure apply_BCs_faces_VF2;     end interface
+       ! interface apply_BCs_faces;       module procedure apply_BCs_faces_SF2;     end interface
 
        contains
 
@@ -44,9 +44,9 @@
          type(VF),intent(inout) :: U
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         call apply_BCs_faces(U%x,m,B%x)
-         call apply_BCs_faces(U%y,m,B%y)
-         call apply_BCs_faces(U%z,m,B%z)
+         call apply_BCs_faces_SF2(U%x,m,B%x)
+         call apply_BCs_faces_SF2(U%y,m,B%y)
+         call apply_BCs_faces_SF2(U%z,m,B%z)
        end subroutine
 
        subroutine apply_BCs_faces_SF(U,m)
@@ -75,7 +75,6 @@
          integer,intent(in) :: dir
          integer,dimension(2) :: f
          integer :: i
-
          if (CC_along(U,dir)) then
            do i=1,m%s
 #ifdef _DEBUG_APPLY_BCS_

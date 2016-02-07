@@ -37,8 +37,8 @@
          type(SF),intent(inout) :: p
          type(mesh),intent(in) :: m
          integer :: i
+         call init_BC_mesh(p,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          do i=1,m%s
-           call init(p%RF(i)%b,m%g(i),p%RF(i)%s)
            if (preDefinedP_BCs.ne.0) then
                  call initPredefinedPBCs(p%RF(i)%b)
            else; call initUserPBCs(p%RF(i)%b)
@@ -57,7 +57,6 @@
          ! call init_Dirichlet(p%RF(10)%b,2)
          ! call init_Dirichlet(p%RF(14)%b,2)
 
-         call init_BC_mesh(p,m)
          ! call define_Edges(p%RF(i)%b)
          ! call init_Neumann(p%RF(1)%b,6)
          ! call init_Dirichlet(p%RF(m%s)%b,1) ! Not suree if 1 or 2

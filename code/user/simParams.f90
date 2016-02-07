@@ -12,7 +12,7 @@
        logical :: solveInduction            = .false.
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
-       integer :: solveUMethod              = 2 ! Refer to momentum.f90
+       integer :: solveUMethod              = 1 ! Refer to momentum.f90
        integer :: solveBMethod              = 2 ! Refer to induction.f90
 
        logical :: addJCrossB                = .false.

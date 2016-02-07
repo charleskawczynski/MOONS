@@ -146,6 +146,10 @@
 
            m%g(i)%st_edge%minmin(k) = .false.
            m%g(i)%st_edge%minmin_id(k) = 0
+           m%g(i)%st_edge%minmax(k) = .false.
+           m%g(i)%st_edge%minmax_id(k) = 0
+           m%g(i)%st_edge%maxmin(k) = .false.
+           m%g(i)%st_edge%maxmin_id(k) = 0
            m%g(i)%st_edge%maxmax(k) = .false.
            m%g(i)%st_edge%maxmax_id(k) = 0
 
@@ -354,7 +358,7 @@
              if (.not.TF) m%g(i)%st_edge%minmax(k) = .false.
 
              TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmin(a2))
-             if (.not.TF) m%g(i)%st_edge%minmax(k) = .false.
+             if (.not.TF) m%g(i)%st_edge%maxmin(k) = .false.
 
              TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmax(a2))
              if (.not.TF) m%g(i)%st_edge%maxmax(k) = .false.

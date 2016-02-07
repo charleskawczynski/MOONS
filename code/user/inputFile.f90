@@ -48,6 +48,7 @@
          dt_ind     = 5.0d-3
          ! t          = 4.0
          ! NmaxMHD       = ceiling(t/dt_eng)
+         ! NmaxMHD       = ceiling(t/dt_mom)
          NmaxMHD       = ceiling(t/dt_mom)
          ! NmaxMHD       = ceiling(t/dt_mom)
          ! NmaxMHD       = ceiling(t/dt_ind)

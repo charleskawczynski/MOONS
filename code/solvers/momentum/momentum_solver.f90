@@ -154,6 +154,7 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          real(cp),dimension(5),intent(inout) :: energy_budget ! dudt,adv,pres,diff,external
+         ! call export_raw(m,U,'out/LDC/','U_initial',0)
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
               call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
@@ -166,11 +167,13 @@
          call zeroWall_conditional(Ustar,m,U)
          call multiply(Ustar,dt)
          call add(Ustar,U)
+         ! call export_raw(m,Ustar,'out/LDC/','Ustar',0)
               if (compute_norms) call assign(temp_F1,U)
          call assign(U,Ustar)
               if (compute_norms) call assign(Ustar,temp_F1)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
+         ! call export_raw(m,Ustar,'out/LDC/','PPE_source',0)
          call zeroGhostPoints(temp_CC)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
          call grad(temp_F1,p,m)
@@ -182,11 +185,13 @@
                 call multiply(temp_F1,1.0_cp/dt)
               endif
               call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+         ! call export_raw(m,U,'out/LDC/','U',0)
          call apply_BCs(U,m)
          call apply_stitches(U,m)
+         ! stop 'Done'
        end subroutine
 
-       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,nstep,&
+       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&
          Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(GS_poisson),intent(inout) :: GS
@@ -196,7 +201,7 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n,nstep
+         integer,intent(in) :: n
          type(VF),intent(inout) :: Ustar,temp_F,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms

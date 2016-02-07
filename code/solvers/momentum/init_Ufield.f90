@@ -47,15 +47,21 @@
          type(VF),intent(inout) :: U
          character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
+         integer :: i
          if (restartU) then
-               call initRestartUfield(U,m,dir)
+           call initRestartUfield(U,m,dir)
          elseif (preDefinedU_ICs.ne.0) then
-               call initPreDefinedUfield(U%x%RF(1)%f,&
-                                         U%y%RF(1)%f,&
-                                         U%z%RF(1)%f,m%g(1))
-         else; call initUserUfield(U%x%RF(1)%f,&
-                                   U%y%RF(1)%f,&
-                                   U%z%RF(1)%f,m%g(1))
+           do i=1,m%s
+             call initPreDefinedUfield(U%x%RF(i)%f,&
+                                       U%y%RF(i)%f,&
+                                       U%z%RF(i)%f,m%g(i))
+           enddo
+         else
+           do i=1,m%s
+             call initUserUfield(U%x%RF(i)%f,&
+                                 U%y%RF(i)%f,&
+                                 U%z%RF(i)%f,m%g(i))
+           enddo
          endif
        end subroutine
 

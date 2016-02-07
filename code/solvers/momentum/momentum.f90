@@ -344,7 +344,7 @@
 
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%nstep,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
+           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
 
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&

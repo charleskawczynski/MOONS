@@ -227,13 +227,13 @@
            TF(4) = all(TF_prep)
 
            if (TF(1)) call app_minmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(1))%vals,&
-           U%RF(i)%b%e(e(1))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmin
+            U%RF(i)%b%e(e(1))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmin
            if (TF(2)) call app_minmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(2))%vals,&
-           U%RF(i)%b%e(e(2))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmax
+            U%RF(i)%b%e(e(2))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! minmax
            if (TF(3)) call app_maxmin(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(3))%vals,&
-           U%RF(i)%b%e(e(3))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmin
+            U%RF(i)%b%e(e(3))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmin
            if (TF(4)) call app_maxmax(U%RF(i)%f,m%g(i),U%RF(i)%b%e(e(4))%vals,&
-           U%RF(i)%b%e(e(4))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmax
+            U%RF(i)%b%e(e(4))%b,d1,d2,U%RF(i)%s,CCd1,CCd2,dir) ! maxmax
          enddo; endif
        end subroutine
 
@@ -455,6 +455,35 @@
            case (3); call a_F(bct,dhc(1),v,f(i1,i2,:),f(i1+m1,i2,:))
            end select
          else; stop 'Error: case not found in app_E in apply_BCs_edges.f90'
+         endif
+       end subroutine
+
+       subroutine debug_app_E(v,bct,s1,s2,CCd1,CCd2,dir,f,dhc,dhn,corner,m1,m2,i1,i2,name)
+         implicit none
+         real(cp),dimension(:,:,:),intent(in) :: f
+         real(cp),dimension(2),intent(in) :: dhc,dhn
+         real(cp),dimension(:),intent(in) :: v
+         type(bctype),intent(in) :: bct
+         integer,intent(in) :: dir,s1,s2,corner
+         integer,intent(in) :: m1,m2,i1,i2
+         logical,intent(in) :: CCd1,CCd2
+         character(len=*),intent(in) :: name
+         write(*,*) ' -------------------- ',name,' -------------------- '
+         write(*,*) 'maxval(f) = ',maxval(f)
+         if (maxval(abs(f)).gt.2.0_cp) then
+           write(*,*) 'maxval(f) = ',maxval(f)
+           write(*,*) 'dhc,dhn = ',dhc,dhn
+           write(*,*) 'CCd1,CCd2 = ',CCd1,CCd2
+           write(*,*) 'dir,corner = ',dir,corner
+           write(*,*) 'i1,i2,m1,m2 = ',i1,i2,m1,m2
+           write(*,*) 's1,s2 = ',s1,s2
+           write(*,*) 'v = ',v
+           select case (dir)
+           case (1); write(*,*) 'f(:,i1,i2),f(:,i1,i2+m2) = ',f(:,i1,i2),f(:,i1,i2+m2)
+           case (2); write(*,*) 'f(i1,:,i2),f(i1,:,i2+m2) = ',f(i1,:,i2),f(i1,:,i2+m2)
+           case (3); write(*,*) 'f(i1,i2,:),f(i1,i2+m2,:) = ',f(i1,i2,:),f(i1,i2+m2,:)
+           end select
+           stop 'Bad edge values in app_E in apply_BCs_edges.f90'
          endif
        end subroutine
 

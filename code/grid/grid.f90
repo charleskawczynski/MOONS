@@ -195,9 +195,21 @@
          type(grid), intent(in) :: g
          integer,intent(in) :: un
          integer :: i
-         write(un,*) 'stitches_face (hmin) = ',(/(g%st_face%hmin(i),i=1,3)/)
-         write(un,*) 'stitches_face (hmax) = ',(/(g%st_face%hmax(i),i=1,3)/)
+         write(un,*) 'stitches_face (hmin,hmax) = ',(/(g%st_face%hmin(i),i=1,3)/),(/(g%st_face%hmax(i),i=1,3)/)
          
+         write(un,*) 'stitches_edge (minmin,minmax,maxmin,maxmax) = ',(/(g%st_edge%minmin(i),i=1,3)/),&
+                                                                      (/(g%st_edge%minmax(i),i=1,3)/),&
+                                                                      (/(g%st_edge%maxmin(i),i=1,3)/),&
+                                                                      (/(g%st_edge%maxmax(i),i=1,3)/)
+         ! write(un,*) 'stitches_edge_id (minmin,minmax,maxmin,maxmax) = ',(/(g%st_edge%minmin_id(i),i=1,3)/),&
+         !                                                                 (/(g%st_edge%minmax_id(i),i=1,3)/),&
+         !                                                                 (/(g%st_edge%maxmin_id(i),i=1,3)/),&
+         !                                                                 (/(g%st_edge%maxmax_id(i),i=1,3)/)
+         do i=1,3;if (g%st_edge%minmin(i)) write(un,*) 'stitches_edge_id (i,minmin)=',i,g%st_edge%minmin_id(i);enddo
+         do i=1,3;if (g%st_edge%minmax(i)) write(un,*) 'stitches_edge_id (i,minmax)=',i,g%st_edge%minmax_id(i);enddo
+         do i=1,3;if (g%st_edge%maxmin(i)) write(un,*) 'stitches_edge_id (i,maxmin)=',i,g%st_edge%maxmin_id(i);enddo
+         do i=1,3;if (g%st_edge%maxmax(i)) write(un,*) 'stitches_edge_id (i,maxmax)=',i,g%st_edge%maxmax_id(i);enddo
+
          ! write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
          ! write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)
          ! write(un,*) 'stitches_edge (maxmin) = ',(/(g%st_edge%maxmin(i),i=1,3)/)

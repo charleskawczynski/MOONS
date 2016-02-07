@@ -49,11 +49,11 @@
          type(vectorBCs) :: B_bcs
          integer :: i
 
-         do i=1,m%s
-           call init(B_bcs%x,m%g(i),B%x%RF(i)%s)
-           call init(B_bcs%y,m%g(i),B%y%RF(i)%s)
-           call init(B_bcs%z,m%g(i),B%z%RF(i)%s)
+         call init_BC_mesh(B%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
+         call init_BC_mesh(B%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
+         call init_BC_mesh(B%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
+         do i=1,m%s
            if (preDefinedB_BCs.ne.0) then
              call initPreDefinedBCs(B_bcs)
            else
@@ -67,9 +67,6 @@
          ! call init_Antisymmetry(B%x%RF(1)%b,6)
          ! call init_Antisymmetry(B%y%RF(1)%b,6)
          ! call init_Neumann(B%z%RF(1)%b,6)
-         call init_BC_mesh(B%x,m)
-         call init_BC_mesh(B%y,m)
-         call init_BC_mesh(B%z,m)
          call delete(B_bcs)
        end subroutine
 

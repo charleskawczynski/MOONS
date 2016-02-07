@@ -71,21 +71,26 @@
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: i
+         integer :: i,face
+
+         call init_BC_mesh(U%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
+         call init_BC_mesh(U%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
+         call init_BC_mesh(U%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m%s
-           call init(U%x%RF(i)%b,m%g(i),U%x%RF(i)%s)
-           call init(U%y%RF(i)%b,m%g(i),U%y%RF(i)%s)
-           call init(U%z%RF(i)%b,m%g(i),U%z%RF(i)%s)
            if (preDefinedU_BCs.ne.0) then
              call initPredefinedUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b,m%g(i))
            else
              call initUserUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b)
            endif
          enddo
-         call init_BC_mesh(U%x,m)
-         call init_BC_mesh(U%y,m)
-         call init_BC_mesh(U%z,m)
+         do i=1,m%s
+           do face=1,6
+             call init(U%x%RF(i)%b,0.0_cp,face)
+             call init(U%y%RF(i)%b,0.0_cp,face)
+             call init(U%z%RF(i)%b,0.0_cp,face)
+           enddo
+         enddo
 
          ! call init(U%x%RF(1)%b%e(5),0.4_cp)
          ! call init(U%x%RF(1)%b%e(6),0.5_cp)
@@ -107,8 +112,8 @@
          ! call init_Neumann(U%x%RF(7)%b,2);call init_Neumann(U%y%RF(7)%b,2);call init_Neumann(U%z%RF(7)%b,2) ! exit
          ! call init_Neumann(U%x%RF(8)%b,2);call init_Neumann(U%y%RF(8)%b,2);call init_Neumann(U%z%RF(8)%b,2) ! exit
 
-         call init(U%x%RF(1)%b,1.0_cp,4)
-         call init(U%x%RF(2)%b,1.0_cp,4)
+         call init(U%x%RF(3)%b,1.0_cp,4)
+         call init(U%x%RF(4)%b,1.0_cp,4)
 
          ! Tyler's geometry
          ! do i=4,6

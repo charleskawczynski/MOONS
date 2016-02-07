@@ -52,7 +52,7 @@
          ! call init(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
-         call LDC_2D_2domains(m_mom)
+         call LDC_2D_4domains(m_mom)
          call init(m_ind,m_mom)
          call init(D_sigma,m_mom,m_ind)
 
