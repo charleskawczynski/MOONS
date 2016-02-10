@@ -783,6 +783,7 @@
           type(realField),intent(inout) :: f1
           type(realField),intent(in) :: f2
           integer,dimension(3) :: s
+          if (.not.allocated(f1%f)) stop 'Error: trying to copy unallocated RF in RF.f90'
           s = shape(f2%f)
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))

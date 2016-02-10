@@ -44,7 +44,7 @@
 
       type GS_poisson
         type(mesh) :: p,d         ! Primary / Dual grids
-        type(SF) :: lapu,res,Dinv ! laplacian, residual, Diagonal inverse
+        type(SF) :: lapu,res,f,Dinv ! laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gt,s
         logical :: setCoeff
         integer :: un,N_iter
@@ -92,6 +92,7 @@
         endif
 
         call init(GS%lapu,u)
+        call init(GS%f,u)
         call init(GS%res,u)
         call init(GS%Dinv,u)
         call init_Dinv(GS%Dinv,GS%p,GS%d,GS%gt)
@@ -103,6 +104,7 @@
         type(GS_poisson),intent(inout) :: GS
         call delete(GS%p)
         call delete(GS%d)
+        call delete(GS%f)
         call delete(GS%lapu)
         call delete(GS%res)
         call delete(GS%Dinv)
@@ -121,35 +123,38 @@
         integer,intent(in) :: n
         logical,intent(in) :: compute_norm
         integer :: i
+        call assign(GS%f,f)
+        if (u%all_Neumann) call subtract_physical_mean(GS%f)
+
         call apply_BCs(u,m)
         do i=1,n ! THE ORDER OF THESE ROUTINE CALLS IS IMPORTANT. DO NOT CHANGE.
           !$OMP PARALLEL
-          call innerLoop(u,f,m,GS%Dinv,GS,(/0,0,0/)) ! Even in odd plane
-          call innerLoop(u,f,m,GS%Dinv,GS,(/1,0,0/)) ! Even in even plane
-          call innerLoop(u,f,m,GS%Dinv,GS,(/0,1,0/)) ! Even in even plane
-          call innerLoop(u,f,m,GS%Dinv,GS,(/0,0,1/)) ! Even in even plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/0,0,0/)) ! Even in odd plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/1,0,0/)) ! Even in even plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/0,1,0/)) ! Even in even plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/0,0,1/)) ! Even in even plane
           !$OMP END PARALLEL
           !$OMP PARALLEL
-          call innerLoop(u,f,m,GS%Dinv,GS,(/1,1,1/)) ! Odd in odd plane
-          call innerLoop(u,f,m,GS%Dinv,GS,(/0,1,1/)) ! Odd in even plane
-          call innerLoop(u,f,m,GS%Dinv,GS,(/1,0,1/)) ! Odd in even plane
-          call innerLoop(u,f,m,GS%Dinv,GS,(/1,1,0/)) ! Odd in even plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/1,1,1/)) ! Odd in odd plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/0,1,1/)) ! Odd in even plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/1,0,1/)) ! Odd in even plane
+          call innerLoop(u,GS%f,m,GS%Dinv,GS,(/1,1,0/)) ! Odd in even plane
           !$OMP END PARALLEL
           call apply_BCs(u,m)
           GS%N_iter = GS%N_iter + 1
 
 #ifdef _EXPORT_GS_CONVERGENCE_
             call lap(GS%lapu,u,m)
-            call subtract(GS%res,GS%lapu,f)
+            call subtract(GS%res,GS%lapu,GS%f)
             call zeroGhostPoints(GS%res)
             call compute(GS%norm,GS%res,GS%vol)
             write(GS%un,*) GS%N_iter,GS%norm%L1,GS%norm%L2,GS%norm%Linf
 #endif
         enddo
-        if (u%all_Neumann) call subtract(u,mean(u))
+        ! if (u%all_Neumann) call subtract(u,mean(u))
         if (compute_norm) then
           call lap(GS%lapu,u,m)
-          call subtract(GS%res,GS%lapu,f)
+          call subtract(GS%res,GS%lapu,GS%f)
           call zeroGhostPoints(GS%res)
           call compute(GS%norm,GS%res,GS%vol)
           call print(GS%norm,'GS Residuals')
@@ -171,6 +176,7 @@
           GS%d%g(i)%c(1)%dhn,GS%d%g(i)%c(2)%dhn,GS%d%g(i)%c(3)%dhn,&
           GS%gt,odd)
           call apply_stitches(u,m)
+          call apply_BCs(u,m)
         enddo
       end subroutine
 

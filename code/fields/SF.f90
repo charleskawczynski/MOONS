@@ -44,6 +44,8 @@
         public :: CC_along,Node_along
         public :: volume
         public :: multiply_volume
+        public :: N0_C1_tensor
+        public :: C0_N1_tensor
 
         public :: init_BCs,init_BC_props,init_BC_mesh
         public :: dot_product
@@ -487,6 +489,72 @@
           km = U%RF(1)%s(3)
           m = i + im*( (j-1) + jm*(k-1) )
         end function
+
+        subroutine N0_C1_tensor(U,x,y,z)
+          implicit none
+          type(SF),intent(in) :: U
+          integer,intent(inout) :: x,y,z
+          if (U%is_CC) then
+            x = 1; y = 1; z = 1
+          elseif (U%is_Node) then
+            x = 0; y = 0; z = 0
+          elseif (U%is_Face) then
+            select case (U%face)
+            case (1); x = 0; y = 1; z = 1
+            case (2); x = 1; y = 0; z = 1
+            case (3); x = 1; y = 1; z = 0
+            case default; stop 'Error: face must = 1,2,3 in apply_stitches_faces.f90'
+            end select
+          elseif (U%is_Edge) then
+            select case (U%edge)
+            case (1); x = 1; y = 0; z = 0
+            case (2); x = 0; y = 1; z = 0
+            case (3); x = 0; y = 0; z = 1
+            case default; stop 'Error: edge must = 1,2,3 in apply_stitches_faces.f90'
+            end select
+          else
+           write(*,*) 'U%is_CC = ',U%is_CC
+           write(*,*) 'U%is_Node = ',U%is_Node
+           write(*,*) 'U%is_Face = ',U%is_Face
+           write(*,*) 'U%is_Edge = ',U%is_Edge
+           write(*,*) 'U%Face = ',U%Face
+           write(*,*) 'U%Edge = ',U%Edge
+           stop 'Error: data type not found in N0_C1_tensor in SF.f90'
+          endif
+        end subroutine
+
+        subroutine C0_N1_tensor(U,x,y,z)
+          implicit none
+          type(SF),intent(in) :: U
+          integer,intent(inout) :: x,y,z
+          if (U%is_CC) then
+            x = 0; y = 0; z = 0
+          elseif (U%is_Node) then
+            x = 1; y = 1; z = 1
+          elseif (U%is_Face) then
+            select case (U%face)
+            case (1); x = 1; y = 0; z = 0
+            case (2); x = 0; y = 1; z = 0
+            case (3); x = 0; y = 0; z = 1
+            case default; stop 'Error: face must = 1,2,3 in apply_stitches_faces.f90'
+            end select
+          elseif (U%is_Edge) then
+            select case (U%edge)
+            case (1); x = 0; y = 1; z = 1
+            case (2); x = 1; y = 0; z = 1
+            case (3); x = 1; y = 1; z = 0
+            case default; stop 'Error: edge must = 1,2,3 in apply_stitches_faces.f90'
+            end select
+          else
+           write(*,*) 'U%is_CC = ',U%is_CC
+           write(*,*) 'U%is_Node = ',U%is_Node
+           write(*,*) 'U%is_Face = ',U%is_Face
+           write(*,*) 'U%is_Edge = ',U%is_Edge
+           write(*,*) 'U%Face = ',U%Face
+           write(*,*) 'U%Edge = ',U%Edge
+           stop 'Error: data type not found in C0_N1_tensor in SF.f90'
+          endif
+        end subroutine
 
         subroutine get_3D_index(i_3D,j_3D,k_3D,t_3D,U,index_1D)
           implicit none

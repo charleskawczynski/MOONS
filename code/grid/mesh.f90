@@ -345,23 +345,23 @@
          integer :: i,k,a1,a2
          logical :: TF
          do k=1,3; do i=1,m%s
-             select case (k)
-             case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
-             case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
-             case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
-             case default; stop 'Error: k must = 1,2,3 in patch_Edges_adjoin_face in mesh.f90'
-             end select
-             TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmin(a2))
-             if (.not.TF) m%g(i)%st_edge%minmin(k) = .false.
+           select case (k)
+           case (1); a1 = 2; a2 = 3 ! orthogonal directions to edge direction
+           case (2); a1 = 1; a2 = 3 ! orthogonal directions to edge direction
+           case (3); a1 = 1; a2 = 2 ! orthogonal directions to edge direction
+           case default; stop 'Error: k must = 1,2,3 in patch_Edges_adjoin_face in mesh.f90'
+           end select
+           TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmin(a2))
+           if (.not.TF) m%g(i)%st_edge%minmin(k) = .false.
 
-             TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmax(a2))
-             if (.not.TF) m%g(i)%st_edge%minmax(k) = .false.
+           TF = (m%g(i)%st_face%hmin(a1)).and.(m%g(i)%st_face%hmax(a2))
+           if (.not.TF) m%g(i)%st_edge%minmax(k) = .false.
 
-             TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmin(a2))
-             if (.not.TF) m%g(i)%st_edge%maxmin(k) = .false.
+           TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmin(a2))
+           if (.not.TF) m%g(i)%st_edge%maxmin(k) = .false.
 
-             TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmax(a2))
-             if (.not.TF) m%g(i)%st_edge%maxmax(k) = .false.
+           TF = (m%g(i)%st_face%hmax(a1)).and.(m%g(i)%st_face%hmax(a2))
+           if (.not.TF) m%g(i)%st_edge%maxmax(k) = .false.
          enddo; enddo
        end subroutine
 

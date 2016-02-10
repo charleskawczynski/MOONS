@@ -49,6 +49,7 @@
          integer :: s
          logical,dimension(2) :: def = .false. ! (size,vals)
          logical :: defined = .false. ! = all(e%def)
+         integer :: ID
        end type
 
        interface init;       module procedure init_size;             end interface
@@ -66,14 +67,15 @@
        ! ********************************* INIT/DELETE *********************************
        ! *******************************************************************************
 
-       subroutine init_size(e,s)
+       subroutine init_size(e,s,ID)
          implicit none
          type(edge),intent(inout) :: e
-         integer,intent(in) :: s
+         integer,intent(in) :: s,ID
          if (s.lt.1) stop 'Error: edge size input less than 1 in edge.f90'
          e%s = s
          if (allocated(e%vals)) deallocate(e%vals)
          allocate(e%vals(s))
+         e%ID = ID
          e%def(1) = .true.
          e%defined = all(e%def)
        end subroutine
@@ -112,6 +114,7 @@
          type(edge),intent(in) :: e_in
          if (.not.e_in%defined) stop 'Error: trying to copy undefined edge in edge.f90'
          call init(e_out%b,e_in%b)
+         e_out%ID = e_in%ID
          e_out%vals = e_in%vals
          e_out%def = e_in%def
          e_out%defined = e_in%defined
@@ -124,6 +127,7 @@
          if (allocated(e%vals)) deallocate(e%vals)
          call delete(e%b)
          e%s = 0
+         e%ID = 0
          e%def = .false.
          e%defined = .false.
        end subroutine

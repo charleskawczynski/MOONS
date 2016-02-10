@@ -69,6 +69,7 @@
 
        ! For apply_BCs_edges
        public :: adjacent_faces
+       public :: adjacent_faces_new
        ! public :: define_Edges
 
        type BCs
@@ -116,16 +117,16 @@
          integer,dimension(3),intent(in) :: s
          integer :: i
          call init(BC%g,g); BC%s = s
-         call init(BC%f(1),(/s(2),s(3)/))
-         call init(BC%f(2),(/s(2),s(3)/))
-         call init(BC%f(3),(/s(1),s(3)/))
-         call init(BC%f(4),(/s(1),s(3)/))
-         call init(BC%f(5),(/s(1),s(2)/))
-         call init(BC%f(6),(/s(1),s(2)/))
+         call init(BC%f(1),(/s(2),s(3)/),1)
+         call init(BC%f(2),(/s(2),s(3)/),2)
+         call init(BC%f(3),(/s(1),s(3)/),3)
+         call init(BC%f(4),(/s(1),s(3)/),4)
+         call init(BC%f(5),(/s(1),s(2)/),5)
+         call init(BC%f(6),(/s(1),s(2)/),6)
 
-         do i=1,4;  call init(BC%e(i),s(1)); enddo
-         do i=5,8;  call init(BC%e(i),s(2)); enddo
-         do i=9,12; call init(BC%e(i),s(3)); enddo
+         do i=1,4;  call init(BC%e(i),s(1),i); enddo
+         do i=5,8;  call init(BC%e(i),s(2),i); enddo
+         do i=9,12; call init(BC%e(i),s(3),i); enddo
 
          BC%gridDefined = .true.
          call define_logicals(BC)
@@ -297,18 +298,38 @@
          integer,intent(in) :: i_edge
          integer,dimension(2) :: i_faces
          select case (i_edge)
-         case (1);  i_faces = (/3,5/) ! x (ymin,zmin)
-         case (2);  i_faces = (/3,6/) ! x (ymin,zmax)
-         case (3);  i_faces = (/4,5/) ! x (ymax,zmin)
-         case (4);  i_faces = (/4,6/) ! x (ymax,zmax)
-         case (5);  i_faces = (/1,5/) ! y (xmin,zmin)
-         case (6);  i_faces = (/1,6/) ! y (xmin,zmax)
-         case (7);  i_faces = (/2,5/) ! y (xmax,zmin)
-         case (8);  i_faces = (/2,6/) ! y (xmax,zmax)
-         case (9);  i_faces = (/1,3/) ! z (xmin,ymin)
-         case (10); i_faces = (/1,4/) ! z (xmin,ymax)
-         case (11); i_faces = (/2,3/) ! z (xmax,ymin)
-         case (12); i_faces = (/2,4/) ! z (xmax,ymax)
+         case (1);  i_faces = (/3,5/) ! x (ymin,zmin) (x)
+         case (2);  i_faces = (/3,6/) ! x (ymin,zmax) (x)
+         case (3);  i_faces = (/4,5/) ! x (ymax,zmin) (x)
+         case (4);  i_faces = (/4,6/) ! x (ymax,zmax) (x)
+         case (5);  i_faces = (/1,5/) ! y (xmin,zmin) (y)
+         case (6);  i_faces = (/1,6/) ! y (xmin,zmax) (y)
+         case (7);  i_faces = (/2,5/) ! y (xmax,zmin) (y)
+         case (8);  i_faces = (/2,6/) ! y (xmax,zmax) (y)
+         case (9);  i_faces = (/1,3/) ! z (xmin,ymin) (z)
+         case (10); i_faces = (/1,4/) ! z (xmin,ymax) (z)
+         case (11); i_faces = (/2,3/) ! z (xmax,ymin) (z)
+         case (12); i_faces = (/2,4/) ! z (xmax,ymax) (z)
+         end select
+       end function
+
+       function adjacent_faces_new(i_edge) result (i_faces)
+         implicit none
+         integer,intent(in) :: i_edge
+         integer,dimension(2) :: i_faces
+         select case (i_edge)
+         case (1);  i_faces = (/3,5/) ! x (ymin,zmin) (x)
+         case (2);  i_faces = (/3,6/) ! x (ymin,zmax) (x)
+         case (3);  i_faces = (/4,5/) ! x (ymax,zmin) (x)
+         case (4);  i_faces = (/4,6/) ! x (ymax,zmax) (x)
+         case (5);  i_faces = (/1,5/) ! y (xmin,zmin) (y)
+         case (6);  i_faces = (/2,5/) ! y (xmin,zmax) (y)
+         case (7);  i_faces = (/1,6/) ! y (xmax,zmin) (y)
+         case (8);  i_faces = (/2,6/) ! y (xmax,zmax) (y)
+         case (9);  i_faces = (/1,3/) ! z (xmin,ymin) (z)
+         case (10); i_faces = (/1,4/) ! z (xmin,ymax) (z)
+         case (11); i_faces = (/2,3/) ! z (xmax,ymin) (z)
+         case (12); i_faces = (/2,4/) ! z (xmax,ymax) (z)
          end select
        end function
 

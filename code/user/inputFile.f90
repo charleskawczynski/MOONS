@@ -43,7 +43,8 @@
          ! t          = 10.0_cp
          ! t          = 80.00_cp
          t          = 80.00_cp
-         dt_mom     = 1.0d-3
+         ! dt_mom     = 1.0d-3
+         dt_mom     = 2.0d-3
          ! dt_mom     = 2.0d-3
          dt_ind     = 5.0d-3
          ! t          = 4.0
@@ -58,7 +59,7 @@
          N_nrg         = 1000     ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
          N_ind         = 5        ! Number of iterations to solve induction equation (if iterative solver is used)
-         N_PPE         = 5       ! Number of iterations to solve PPE steps
+         N_PPE         = 5        ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 
          ! Stopping criteria for iterative solvers:

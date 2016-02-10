@@ -314,7 +314,7 @@
          do i=1,m%s
            call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
          enddo
-         ! call applyStitches(f,m)
+         ! call apply_stitches(f,m)
        end subroutine
 
 #ifdef _DEBUG_INTERP_
@@ -386,22 +386,12 @@
          type(SF),intent(in)    :: face
          type(mesh),intent(in) :: m
          integer,intent(in) :: edgeDir,faceDir
-         type(SF) :: tempF,tempCC
          integer :: orthDir
          if (edgeDir.ne.faceDir) then ! Requires 1 interpolation (no allocations)
            orthDir = orthogonalDirection(edgeDir,faceDir)
            call interp(edge,face,m,orthDir)
          else ! Requires 3 interpolations ()
-           stop 'Error: old interp being used which requires allocation in face2Edge_SF_1 in ops_interp.f90'
-           select case (faceDir)
-           case (1); orthDir = 2 ! Corresponds to tempF in cellCenter2Edge
-           case (2); orthDir = 1 ! Corresponds to tempF in cellCenter2Edge
-           case (3); orthDir = 1 ! Corresponds to tempF in cellCenter2Edge
-           end select
-           call init_CC(tempCC,m); call init_Face(tempF,m,orthDir)
-           call face2CellCenter(tempCC,face,m,faceDir)
-           call cellCenter2Edge(edge,tempCC,m,tempF,edgeDir)
-           call delete(tempCC); call delete(tempF)
+           stop 'Error: use face2Edge_SF_3 for edgeDir = faceDir in face2Edge_SF_1 in ops_interp.f90'
          endif
        end subroutine
 

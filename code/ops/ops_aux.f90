@@ -342,26 +342,26 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine sineWaves_SF(f,m,wavenum)
+       subroutine sineWaves_SF(f,m,wavenum,phi)
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         real(cp),dimension(3),intent(in) :: wavenum
+         real(cp),dimension(3),intent(in) :: wavenum,phi
          integer :: i,j,k,t
          if (f%is_CC) then
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (f%is_Node) then
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (f%is_Face) then
@@ -369,25 +369,25 @@
          case (1)
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hc(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hc(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hc(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hc(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
@@ -397,25 +397,25 @@
          case (1)
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hc(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
            do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
-                                sin(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
-                                sin(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
+             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+                                sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
+                                sin(wavenum(3)*PI*(m%g(t)%c(3)%hc(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'

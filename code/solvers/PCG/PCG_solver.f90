@@ -10,6 +10,7 @@
       use export_raw_processed_mod
       use SF_mod
       use VF_mod
+      use ops_norms_mod
       use omp_lib
 
       use matrix_free_params_mod
@@ -53,25 +54,28 @@
         type(SF),intent(inout) :: tempx,Ax,r,p,z
         type(norms) :: norm_res0
         integer :: i,i_earlyExit
+        real(cp) :: temp_Ln
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
+        ! call Ln(temp_Ln,b,1.0_cp); write(*,*) 'L1(b) input = ',temp_Ln
         call multiply(r,b,vol)
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
-        ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
+        ! RHS MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
         if (.not.x%is_CC) then
           call assign(p,r)
           call modify_forcing1(r,p,m,x)
         endif
+        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) post modify = ',temp_Ln
         call assign(p,0.0_cp)
         call apply_BCs(p,m) ! p has BCs for x
-        call apply_stitches(p,m)
-        call zeroGhostPoints_conditional(p)
+        call zeroGhostPoints_conditional(p,m)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
+        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) post modify RHS = ',temp_Ln
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
@@ -88,6 +92,8 @@
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
+        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) before loop = ',temp_Ln
+        ! call Ln(temp_Ln,x,1.0_cp); write(*,*) 'L1(x) before loop = ',temp_Ln
         do i=1,n
           call apply_stitches(p,m)
           call operator(Ax,p,k,m,MFP,tempk)
@@ -95,11 +101,11 @@
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
           call add_product(x,p,alpha) ! x = x + alpha p
           call apply_BCs(x,m) ! Needed for PPE
-          call apply_stitches(x,m)
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! r = r - alpha Ap
           call zeroGhostPoints(r)
           res_norm = dot_product(r,r,m,x,tempx)
+          ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) in loop = ',temp_Ln
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
@@ -114,11 +120,14 @@
           call zeroGhostPoints(p)
           rhok = rhokp1
         enddo
+        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) after loop = ',temp_Ln
+        ! call Ln(temp_Ln,x,1.0_cp); write(*,*) 'L1(x) after loop = ',temp_Ln
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
         flush(un)
 #endif
-        
+        ! call export_processed(m,x,'out/LDC/','x_solution',1)
+
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
           call multiply(Ax,vol)
@@ -166,8 +175,7 @@
         call modify_forcing1(r,p,m,x)
         call assign(p,0.0_cp)
         call apply_BCs(p,m) ! p has BCs for x
-        call apply_stitches(p,m)
-        call zeroGhostPoints_conditional(p)
+        call zeroGhostPoints_conditional(p,m)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
         call zeroGhostPoints(Ax)
@@ -191,15 +199,14 @@
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         do i=1,n
+          call apply_stitches(p,m)
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
           call add_product(x,p,alpha) ! x = x + alpha p
           call apply_BCs(x,m) ! Needed for PPE
-          call apply_stitches(x,m)
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! x = x - alpha Ap
-          call zeroGhostPoints(r)
           res_norm = dot_product(r,r,m,x,tempx)
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_

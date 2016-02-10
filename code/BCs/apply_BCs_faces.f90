@@ -25,9 +25,6 @@
        interface apply_BCs_faces;       module procedure apply_BCs_faces_VF;     end interface
        interface apply_BCs_faces;       module procedure apply_BCs_faces_SF;     end interface
 
-       ! interface apply_BCs_faces;       module procedure apply_BCs_faces_VF2;     end interface
-       ! interface apply_BCs_faces;       module procedure apply_BCs_faces_SF2;     end interface
-
        contains
 
        subroutine apply_BCs_faces_VF(U,m)
@@ -39,33 +36,13 @@
          call apply_BCs_faces(U%z,m)
        end subroutine
 
-       subroutine apply_BCs_faces_VF2(U,m,B)
-         implicit none
-         type(VF),intent(inout) :: U
-         type(VF),intent(inout) :: B
-         type(mesh),intent(in) :: m
-         call apply_BCs_faces_SF2(U%x,m,B%x)
-         call apply_BCs_faces_SF2(U%y,m,B%y)
-         call apply_BCs_faces_SF2(U%z,m,B%z)
-       end subroutine
-
        subroutine apply_BCs_faces_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_face_SF(U,m,1,(/1,2/)) ! SF, mesh, direction, faces along dir
          call apply_face_SF(U,m,2,(/3,4/)) ! SF, mesh, direction, faces along dir
+         call apply_face_SF(U,m,1,(/1,2/)) ! SF, mesh, direction, faces along dir
          call apply_face_SF(U,m,3,(/5,6/)) ! SF, mesh, direction, faces along dir
-       end subroutine
-
-       subroutine apply_BCs_faces_SF2(U,m,B)
-         implicit none
-         type(SF),intent(inout) :: U
-         type(SF),intent(in) :: B
-         type(mesh),intent(in) :: m
-         call apply_face_SF2(U,m,1,(/1,2/),B) ! SF, mesh, direction, faces along dir
-         call apply_face_SF2(U,m,2,(/3,4/),B) ! SF, mesh, direction, faces along dir
-         call apply_face_SF2(U,m,3,(/5,6/),B) ! SF, mesh, direction, faces along dir
        end subroutine
 
        subroutine apply_face_SF(U,m,dir,f)
@@ -75,12 +52,13 @@
          integer,intent(in) :: dir
          integer,dimension(2) :: f
          integer :: i
+
+#ifdef _DEBUG_APPLY_BCS_
+       call checkBCs(U,f,m)
+#endif
+
          if (CC_along(U,dir)) then
            do i=1,m%s
-#ifdef _DEBUG_APPLY_BCS_
-             if (.not.U%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
-             if (.not.U%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
-#endif
              if (.not.m%g(i)%st_face%hmin(dir)) then
              call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
                             U%RF(i)%b%f(f(1))%vals,&
@@ -96,10 +74,6 @@
            enddo
          elseif (Node_along(U,dir)) then
            do i=1,m%s
-#ifdef _DEBUG_APPLY_BCS_
-             if (.not.U%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
-             if (.not.U%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF in apply_BCs_faces.f90'
-#endif
              if (.not.m%g(i)%st_face%hmin(dir)) then
              call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
                            U%RF(i)%b%f(f(1))%vals,&
@@ -111,57 +85,6 @@
                            U%RF(i)%b%f(f(2))%vals,&
                            U%RF(i)%b%f(f(2))%b,&
                            m%g(i)%c(dir)%dhn(m%g(i)%c(dir)%sn-1))
-             endif
-           enddo
-         else; stop 'Error: datatype not found in apply_BCs_faces.f90'
-         endif
-       end subroutine
-
-       subroutine apply_face_SF2(U,m,dir,f,B)
-         ! Used when B BCs on U (use in case U doesn't have BCs)
-         implicit none
-         type(SF),intent(inout) :: U
-         type(SF),intent(in) :: B
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: dir
-         integer,dimension(2) :: f
-         integer :: i
-         if (CC_along(U,dir)) then
-           do i=1,m%s
-#ifdef _DEBUG_APPLY_BCS_
-             if (.not.B%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
-             if (.not.B%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
-#endif
-             if (.not.m%g(i)%st_face%hmin(dir)) then
-               call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
-                                B%RF(i)%b%f(f(1))%vals,&
-                                B%RF(i)%b%f(f(1))%b,&
-                                m%g(i)%c(dir)%dhc(1))
-             endif
-             if (.not.m%g(i)%st_face%hmax(dir)) then
-               call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(2),&
-                                B%RF(i)%b%f(f(2))%vals,&
-                                B%RF(i)%b%f(f(2))%b,&
-                                m%g(i)%c(dir)%dhc(m%g(i)%c(dir)%sc-1))
-             endif
-           enddo
-         elseif (Node_along(U,dir)) then
-           do i=1,m%s
-#ifdef _DEBUG_APPLY_BCS_
-             if (.not.B%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
-             if (.not.B%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in apply_face_SF2 in apply_BCs_faces.f90'
-#endif
-             if (.not.m%g(i)%st_face%hmin(dir)) then
-               call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(1),&
-                               B%RF(i)%b%f(f(1))%vals,&
-                               B%RF(i)%b%f(f(1))%b,&
-                               m%g(i)%c(dir)%dhn(1))
-             endif
-             if (.not.m%g(i)%st_face%hmax(dir)) then
-               call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(2),&
-                               B%RF(i)%b%f(f(2))%vals,&
-                               B%RF(i)%b%f(f(2))%b,&
-                               m%g(i)%c(dir)%dhn(m%g(i)%c(dir)%sn-1))
              endif
            enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
@@ -215,6 +138,10 @@
          real(cp),dimension(:,:),intent(in) :: ui,ui_opp,bvals
          real(cp),intent(in) :: dh
          type(bctype),intent(in) :: b
+#ifdef _DEBUG_APPLY_BCS_
+         call check_dimensions(ug,bvals)
+         call check_dimensions(ui,bvals)
+#endif
          if     (b%Dirichlet) then; ug = 2.0_cp*bvals - ui
          elseif (b%Neumann) then;   ug = ui - dh*bvals
          elseif (b%Periodic) then;  ug = ui_opp
@@ -228,11 +155,41 @@
          real(cp),dimension(:,:),intent(in) :: ui,ub_opp,ui_opp,bvals
          real(cp),intent(in) :: dh
          type(bctype),intent(in) :: b
+#ifdef _DEBUG_APPLY_BCS_
+         call check_dimensions(ub,bvals)
+         call check_dimensions(ui,bvals)
+#endif
          if     (b%Dirichlet) then; ub = bvals; ug = 2.0_cp*ub - ui
          elseif (b%Neumann) then;   ug = ui + 2.0_cp*bvals*dh
          elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'
          endif
        end subroutine
+
+#ifdef _DEBUG_APPLY_BCS_
+       subroutine checkBCs(U,f,m)
+         implicit none
+         type(SF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         integer,dimension(2) :: f
+         integer :: i
+         do i=1,m%s
+           if (.not.U%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in checkBCs in apply_BCs_faces_imp.f90'
+           if (.not.U%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in checkBCs in apply_BCs_faces_imp.f90'
+         enddo
+       end subroutine
+
+       subroutine check_dimensions(f,g)
+         implicit none
+         real(cp),dimension(:,:),intent(in) :: f,g
+         integer,dimension(2) :: sf,sg
+         sf = shape(f); sg = shape(g)
+         if ((sf(1).ne.sg(1)).or.(sf(2).ne.sg(2))) then
+           write(*,*) 'sf = ',sf
+           write(*,*) 'sg = ',sg
+           stop 'Error: shapes do not match in check_dimensions in apply_BCs_faces.f90'
+         endif
+       end subroutine
+#endif
 
        end module

@@ -84,6 +84,10 @@
              call initUserUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b)
            endif
          enddo
+
+
+
+         
          do i=1,m%s
            do face=1,6
              call init(U%x%RF(i)%b,0.0_cp,face)
@@ -112,8 +116,34 @@
          ! call init_Neumann(U%x%RF(7)%b,2);call init_Neumann(U%y%RF(7)%b,2);call init_Neumann(U%z%RF(7)%b,2) ! exit
          ! call init_Neumann(U%x%RF(8)%b,2);call init_Neumann(U%y%RF(8)%b,2);call init_Neumann(U%z%RF(8)%b,2) ! exit
 
-         call init(U%x%RF(3)%b,1.0_cp,4)
-         call init(U%x%RF(4)%b,1.0_cp,4)
+
+         ! 2 VERTICAL DOMAINS
+         ! LDC, 2 vertical domains, rotated 0 (normal orientation)
+         ! call init(U%x%RF(1)%b,1.0_cp,4)
+         ! call init(U%x%RF(2)%b,1.0_cp,4)
+         ! LDC, 2 vertical domains, rotated 90
+         ! call init(U%y%RF(2)%b,-1.0_cp,2)
+         ! LDC, 2 vertical domains, rotated 180 (upside down)
+         ! call init(U%y%RF(1)%b,-1.0_cp,3)
+         ! call init(U%y%RF(2)%b,-1.0_cp,3)
+         ! LDC, 2 vertical domains, rotated 270
+         ! call init(U%y%RF(1)%b,1.0_cp,1)
+
+         ! 2 HORIZONTAL DOMAINS
+         ! LDC, 2 horizontal domains, rotated 0 (normal orientation)
+         ! call init(U%x%RF(2)%b,1.0_cp,4)
+         ! LDC, 2 horizontal domains, rotated 90
+         call init(U%y%RF(1)%b,-1.0_cp,2)
+         call init(U%y%RF(2)%b,-1.0_cp,2)
+         ! LDC, 2 horizontal domains, rotated 180 (upside down)
+         ! call init(U%x%RF(1)%b,-1.0_cp,3)
+         ! LDC, 2 horizontal domains, rotated 270
+         ! call init(U%y%RF(1)%b,1.0_cp,1)
+         ! call init(U%y%RF(2)%b,1.0_cp,1)
+
+         ! LDC, 4 domains
+         ! call init(U%x%RF(3)%b,1.0_cp,4)
+         ! call init(U%x%RF(4)%b,1.0_cp,4)
 
          ! Tyler's geometry
          ! do i=4,6

@@ -38,6 +38,9 @@
        use apply_BCs_faces_mod
        use apply_BCs_edges_mod
        use apply_BCs_corners_mod
+       use apply_stitches_faces_mod
+       use apply_stitches_edges_mod
+       use apply_stitches_corners_mod
        use mesh_mod
        implicit none
 
@@ -58,9 +61,6 @@
        interface apply_BCs;    module procedure apply_BCs_VF;                 end interface
        interface apply_BCs;    module procedure apply_BCs_SF;                 end interface
 
-       ! interface apply_BCs;    module procedure apply_BCs_VF_given_BC;        end interface
-       ! interface apply_BCs;    module procedure apply_BCs_SF_given_BC;        end interface
-
        contains
 
        subroutine apply_BCs_VF(U,m)
@@ -77,30 +77,13 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          call apply_BCs_faces(U,m)
-         if (m%s.gt.1) call apply_BCs_edges(U,m)
-         ! if (m%s.gt.1) call apply_BCs_corners(U,m)
-       end subroutine
-
-       subroutine apply_BCs_VF_given_BC(U,m,BC)
-         implicit none
-         type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
-         type(VF),intent(in) :: BC
-         stop 'Error: Trying to make apply_BCs_VF_given_BC obsolete'
-         ! call apply_BCs(U%x,m,BC%x)
-         ! call apply_BCs(U%y,m,BC%y)
-         ! call apply_BCs(U%z,m,BC%z)
-       end subroutine
-
-       subroutine apply_BCs_SF_given_BC(U,m,BC)
-         implicit none
-         type(SF),intent(inout) :: U
-         type(mesh),intent(in) :: m
-         type(SF),intent(in) :: BC
-         stop 'Error: Trying to make apply_BCs_SF_given_BC obsolete'
-         ! call apply_BCs_faces(U,m,BC)
-         ! if (m%s.gt.1) call apply_BCs_edges(U,m,BC)
-         ! if (m%s.gt.1) call apply_BCs_corners(U,m,BC)
+         call apply_stitches_faces(U,m)
+         if (m%s.gt.1) then
+           ! call apply_BCs_edges(U,m)
+           ! call apply_stitches_edges(U,m)
+           ! call apply_BCs_corners(U,m)
+           ! call apply_stitches_corners(U,m)
+         endif
        end subroutine
 
        end module

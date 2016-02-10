@@ -6,6 +6,8 @@
        use SF_mod
        use VF_mod
        use BCs_mod
+       use ops_aux_mod
+       use export_raw_processed_mod
        implicit none
 
        private
@@ -38,7 +40,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979_cp
+       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 
@@ -63,6 +65,9 @@
                                  U%z%RF(i)%f,m%g(i))
            enddo
          endif
+         ! call sineWaves(U%x,m,(/2.0_cp,2.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
+         ! call sineWaves(U%y,m,(/2.0_cp,2.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
+         ! call sineWaves(U%z,m,(/2.0_cp,2.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
        end subroutine
 
        subroutine initRestartUfield(U,m,dir)

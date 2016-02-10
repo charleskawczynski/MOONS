@@ -34,49 +34,61 @@
         type(SF),intent(in) :: x
         integer :: i
         if (Node_along(f,1)) then
-          do i=1,f%s
+          do i=1,m%s
             if (m%g(i)%c(1)%N.gt.1) then
-              if (x%RF(i)%b%f(1)%b%Neumann.and.(.not.m%g(i)%st_face%hmin(1))) then
-                f_mod%RF(i)%f(2,:,:) = f%RF(i)%f(2,:,:)/2.0_cp
-              elseif (x%RF(i)%b%f(1)%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(1))) then
-                f_mod%RF(i)%f(2,:,:) = 0.0_cp
+              if (.not.m%g(i)%st_face%hmin(1)) then
+                if (x%RF(i)%b%f(1)%b%Neumann) then
+                  f_mod%RF(i)%f(2,:,:) = f%RF(i)%f(2,:,:)/2.0_cp
+                elseif (x%RF(i)%b%f(1)%b%Dirichlet) then
+                  f_mod%RF(i)%f(2,:,:) = 0.0_cp
+                endif
               endif
-              if (x%RF(i)%b%f(2)%b%Neumann.and.(.not.m%g(i)%st_face%hmin(2))) then
-                f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:)/2.0_cp
-              elseif (x%RF(i)%b%f(2)%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(1))) then
-                f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = 0.0_cp
+              if (.not.m%g(i)%st_face%hmax(1)) then
+                if (x%RF(i)%b%f(2)%b%Neumann) then
+                  f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:)/2.0_cp
+                elseif (x%RF(i)%b%f(2)%b%Dirichlet) then
+                  f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = 0.0_cp
+                endif
               endif
             endif
           enddo
         endif
         if (Node_along(f,2)) then
-          do i=1,f%s
+          do i=1,m%s
             if (m%g(i)%c(2)%N.gt.1) then
-              if (x%RF(i)%b%f(3)%b%Neumann.and.(.not.m%g(i)%st_face%hmin(2))) then
-                f_mod%RF(i)%f(:,2,:) = f%RF(i)%f(:,2,:)/2.0_cp
-              elseif (x%RF(i)%b%f(3)%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(2))) then
-                f_mod%RF(i)%f(:,2,:) = 0.0_cp
+              if (.not.m%g(i)%st_face%hmin(2)) then
+                if (x%RF(i)%b%f(3)%b%Neumann) then
+                  f_mod%RF(i)%f(:,2,:) = f%RF(i)%f(:,2,:)/2.0_cp
+                elseif (x%RF(i)%b%f(3)%b%Dirichlet) then
+                  f_mod%RF(i)%f(:,2,:) = 0.0_cp
+                endif
               endif
-              if (x%RF(i)%b%f(4)%b%Neumann.and.(.not.m%g(i)%st_face%hmax(2))) then
-                f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:)/2.0_cp
-              elseif (x%RF(i)%b%f(4)%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(2))) then
-                f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = 0.0_cp
+              if (.not.m%g(i)%st_face%hmax(2)) then
+                if (x%RF(i)%b%f(4)%b%Neumann) then
+                  f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:)/2.0_cp
+                elseif (x%RF(i)%b%f(4)%b%Dirichlet) then
+                  f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = 0.0_cp
+                endif
               endif
             endif
           enddo
         endif
         if (Node_along(f,3)) then
-          do i=1,f%s
+          do i=1,m%s
             if (m%g(i)%c(3)%N.gt.1) then
-              if (x%RF(i)%b%f(5)%b%Neumann.and.(.not.m%g(i)%st_face%hmin(3))) then
-                f_mod%RF(i)%f(:,:,2) = f%RF(i)%f(:,:,2)/2.0_cp
-              elseif (x%RF(i)%b%f(5)%b%Dirichlet.and.(.not.m%g(i)%st_face%hmin(3))) then
-                f_mod%RF(i)%f(:,:,2) = 0.0_cp
+              if (.not.m%g(i)%st_face%hmin(3)) then
+                if (x%RF(i)%b%f(5)%b%Neumann) then
+                  f_mod%RF(i)%f(:,:,2) = f%RF(i)%f(:,:,2)/2.0_cp
+                elseif (x%RF(i)%b%f(5)%b%Dirichlet) then
+                  f_mod%RF(i)%f(:,:,2) = 0.0_cp
+                endif
               endif
-              if (x%RF(i)%b%f(6)%b%Neumann.and.(.not.m%g(i)%st_face%hmax(3))) then
-                f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1)/2.0_cp
-              elseif (x%RF(i)%b%f(6)%b%Dirichlet.and.(.not.m%g(i)%st_face%hmax(3))) then
-                f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = 0.0_cp
+              if (.not.m%g(i)%st_face%hmax(3)) then
+                if (x%RF(i)%b%f(6)%b%Neumann) then
+                  f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1)/2.0_cp
+                elseif (x%RF(i)%b%f(6)%b%Dirichlet) then
+                  f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = 0.0_cp
+                endif
               endif
             endif
           enddo
@@ -94,33 +106,38 @@
         call modify_forcing1_SF(f_mod%z,f%z,m,x%z)
       end subroutine
 
-      subroutine zeroGhostPoints_conditional_SF(x)
+      subroutine zeroGhostPoints_conditional_SF(x,m)
         implicit none
         type(SF),intent(inout) :: x
+        type(mesh),intent(in) :: m
         integer :: i
         if (Node_along(x,1)) then
-          do i=1,x%s
-            x%RF(i)%f(1,:,:) = 0.0_cp; x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
+          do i=1,m%s
+            if (.not.m%g(i)%st_face%hmin(1)) x%RF(i)%f(1,:,:) = 0.0_cp
+            if (.not.m%g(i)%st_face%hmax(1)) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
           enddo
         endif
         if (Node_along(x,2)) then
-          do i=1,x%s
-            x%RF(i)%f(:,1,:) = 0.0_cp; x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
+          do i=1,m%s
+            if (.not.m%g(i)%st_face%hmin(2)) x%RF(i)%f(:,1,:) = 0.0_cp
+            if (.not.m%g(i)%st_face%hmax(2)) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
           enddo
         endif
         if (Node_along(x,3)) then
-          do i=1,x%s
-            x%RF(i)%f(:,:,1) = 0.0_cp; x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
+          do i=1,m%s
+            if (.not.m%g(i)%st_face%hmin(3)) x%RF(i)%f(:,:,1) = 0.0_cp
+            if (.not.m%g(i)%st_face%hmax(3)) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
           enddo
         endif
       end subroutine
 
-      subroutine zeroGhostPoints_conditional_VF(x)
+      subroutine zeroGhostPoints_conditional_VF(x,m)
         implicit none
         type(VF),intent(inout) :: x
-        call zeroGhostPoints_conditional_SF(x%x)
-        call zeroGhostPoints_conditional_SF(x%y)
-        call zeroGhostPoints_conditional_SF(x%z)
+        type(mesh),intent(in) :: m
+        call zeroGhostPoints_conditional_SF(x%x,m)
+        call zeroGhostPoints_conditional_SF(x%y,m)
+        call zeroGhostPoints_conditional_SF(x%z,m)
       end subroutine
 
       end module

@@ -36,19 +36,77 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: i,k,x,y,z
+         integer :: i,k
          ! The second if statement is commented because in app_E, 
          ! both minmin and maxmax, e.g., are assigned, and so calling
          ! maxmax would be redundant and is uneccesary.
          ! These if statements were left here for readability purposes.
-         call C0_N1_tensor(U,x,y,z)
-         do i=1,m%s; do k=1,3
-         if (m%g(i)%st_edge%minmin(k)) call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,x,y,z)
-         if (m%g(i)%st_edge%minmax(k)) call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,x,y,z)
-         if (m%g(i)%st_edge%maxmin(k)) call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,x,y,z)
-         if (m%g(i)%st_edge%maxmax(k)) call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,x,y,z)
-         enddo; enddo
-
+         if (U%is_CC) then
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,0,0,0);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,0,0,0);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,0,0,0);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,0,0,0);endif
+           enddo; enddo
+         elseif (U%is_Node) then
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,1,1,1);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,1,1,1);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,1,1,1);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,1,1,1);endif
+           enddo; enddo
+         elseif (U%is_Face) then
+           select case (U%face)
+           case (1)
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,1,0,0);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,1,0,0);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,1,0,0);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,1,0,0);endif
+           enddo; enddo
+           case (2)
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,0,1,0);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,0,1,0);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,0,1,0);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,0,1,0);endif
+           enddo; enddo
+           case (3)
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,0,0,1);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,0,0,1);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,0,0,1);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,0,0,1);endif
+           enddo; enddo
+           case default; stop 'Error: face data has no direction in apply_stitches_edges.f90'
+           end select
+         elseif (U%is_Edge) then
+           select case (U%edge)
+           case (1)
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,0,1,1);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,0,1,1);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,0,1,1);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,0,1,1);endif
+           enddo; enddo
+           case (2)
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,1,0,1);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,1,0,1);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,1,0,1);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,1,0,1);endif
+           enddo; enddo
+           case (3)
+           do i=1,m%s; do k=1,3
+           if (m%g(i)%st_edge%minmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmin_id(k)),1,k,1,1,0);endif
+           if (m%g(i)%st_edge%minmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%minmax_id(k)),2,k,1,1,0);endif
+           ! if (m%g(i)%st_edge%maxmin(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmin_id(k)),3,k,1,1,0);endif
+           ! if (m%g(i)%st_edge%maxmax(k)) then;call app_E(U%RF(i),U%RF(m%g(i)%st_edge%maxmax_id(k)),4,k,1,1,0);endif
+           enddo; enddo
+           case default; stop 'Error: edge data has no direction in apply_stitches_edges.f90'
+           end select
+         else; stop 'Error: bad input data to apply_stitches_edges_SF in apply_stitches_edges.f90'
+         endif
        end subroutine
 
        subroutine app_E(U,V,edge,dir,px,py,pz)

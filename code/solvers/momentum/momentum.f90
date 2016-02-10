@@ -215,6 +215,7 @@
 
          call init(prec_PPE,mom%p)
          call prec_lap_SF(prec_PPE,mom%m)
+         ! call prec_identity_SF(prec_PPE) ! For ordinary CG
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_PPE,mom%m,&
          mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
          call delete(prec_PPE)
@@ -323,7 +324,7 @@
          ! write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
          ! write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
-         if (mom%m%s.eq.1) call export(mom%m,un)
+         call export(mom%m,un)
          write(*,*) ''
        end subroutine
 
@@ -339,7 +340,7 @@
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
+           mom%N_PPE,mom%nstep,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
            print_export(1))
 
          case (2)

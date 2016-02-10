@@ -5,6 +5,7 @@
        use TF_mod
        use norms_mod
        use AB2_mod
+       use compute_energy_mod
        use export_raw_processed_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -139,7 +140,7 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,energy_budget,&
+       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,nstep,energy_budget,&
          Ustar,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
@@ -149,16 +150,22 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n
+         integer,intent(in) :: n,nstep
          type(VF),intent(inout) :: Ustar,temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          real(cp),dimension(5),intent(inout) :: energy_budget ! dudt,adv,pres,diff,external
-         ! call export_raw(m,U,'out/LDC/','U_initial',0)
+         integer :: i_stop
+         character(len=1) :: n_domains
+         n_domains = '2'
+         i_stop = 10**8
+         if (nstep.eq.i_stop) call export_processed(m,U,'out/LDC/','U_initial_'//n_domains,1)
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
+         if (nstep.eq.i_stop) call export_processed(m,temp_F1,'out/LDC/','advect_'//n_domains,1)
               call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          call lap(temp_F1,U,m)
+         if (nstep.eq.i_stop) call export_processed(m,temp_F1,'out/LDC/','lap_'//n_domains,1)
          call multiply(temp_F1,1.0_cp/Re)
               call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)
@@ -167,15 +174,17 @@
          call zeroWall_conditional(Ustar,m,U)
          call multiply(Ustar,dt)
          call add(Ustar,U)
-         ! call export_raw(m,Ustar,'out/LDC/','Ustar',0)
+         if (nstep.eq.i_stop) call export_processed(m,Ustar,'out/LDC/','Ustar_'//n_domains,1)
               if (compute_norms) call assign(temp_F1,U)
          call assign(U,Ustar)
               if (compute_norms) call assign(Ustar,temp_F1)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
-         ! call export_raw(m,Ustar,'out/LDC/','PPE_source',0)
          call zeroGhostPoints(temp_CC)
+         ! call apply_stitches(temp_CC,m)
+         if (nstep.eq.i_stop) call export_processed(m,temp_CC,'out/LDC/','PPE_source_'//n_domains,1)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
+         if (nstep.eq.i_stop) call export_processed(m,p,'out/LDC/','p_solution_'//n_domains,1)
          call grad(temp_F1,p,m)
               call compute_energy(energy_budget(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(temp_F1,dt)
@@ -185,10 +194,11 @@
                 call multiply(temp_F1,1.0_cp/dt)
               endif
               call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
-         ! call export_raw(m,U,'out/LDC/','U',0)
          call apply_BCs(U,m)
-         call apply_stitches(U,m)
-         ! stop 'Done'
+         if (nstep.eq.i_stop) call div(temp_CC,U,m)
+         if (nstep.eq.i_stop) call export_raw(m,temp_CC,'out/LDC/','divU_'//n_domains,0)
+         if (nstep.eq.i_stop) call export_processed(m,U,'out/LDC/','Unp1_'//n_domains,1)
+         if (nstep.eq.i_stop) stop 'Done'
        end subroutine
 
        subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&
@@ -222,7 +232,7 @@
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
          call apply_BCs(U,m)
-         call apply_stitches(U,m)
+         ! call apply_stitches(U,m)
        end subroutine
 
        subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,n,&
@@ -257,28 +267,6 @@
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
          call apply_BCs(U,m)
-       end subroutine
-
-       subroutine compute_energy(e,F,F_term,m,temp_F,temp_CC,compute_norms)
-         ! Computes  ∫∫∫ F•F_term dV
-         implicit none
-         real(cp),intent(inout) :: e
-         type(VF),intent(in) :: F,F_term
-         type(VF),intent(inout) :: temp_F
-         type(mesh),intent(in) :: m
-         type(SF),intent(inout) :: temp_CC
-         logical,intent(in) :: compute_norms
-         real(cp) :: temp
-         if (compute_norms) then
-           call multiply(temp_F,F,F_term)
-           e = 0.0_cp
-           call face2CellCenter(temp_CC,temp_F%x,m,1)
-           call Ln(temp,temp_CC,1.0_cp,m); e = temp
-           call face2CellCenter(temp_CC,temp_F%y,m,2)
-           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
-           call face2CellCenter(temp_CC,temp_F%z,m,3)
-           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
-         endif
        end subroutine
 
        end module

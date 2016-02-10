@@ -15,6 +15,7 @@
        use apply_stitches_mod
        use norms_mod
        use AB2_mod
+       use compute_energy_mod
        use GS_Poisson_mod
        use PCG_mod
        use export_raw_processed_mod
@@ -216,28 +217,6 @@
          call grad(temp_F1,phi,m)
          call subtract(B,temp_F1)
          call apply_BCs(B,m)
-       end subroutine
-
-       subroutine compute_energy(e,F,F_term,m,temp_F,temp_CC,compute_norms)
-         ! Computes  ∫∫∫ F•F_term dV
-         implicit none
-         real(cp),intent(inout) :: e
-         type(VF),intent(in) :: F,F_term
-         type(VF),intent(inout) :: temp_F
-         type(mesh),intent(in) :: m
-         type(SF),intent(inout) :: temp_CC
-         logical,intent(in) :: compute_norms
-         real(cp) :: temp
-         if (compute_norms) then
-           call multiply(temp_F,F,F_term)
-           e = 0.0_cp
-           call face2CellCenter(temp_CC,temp_F%x,m,1)
-           call Ln(temp,temp_CC,1.0_cp,m); e = temp
-           call face2CellCenter(temp_CC,temp_F%y,m,2)
-           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
-           call face2CellCenter(temp_CC,temp_F%z,m,3)
-           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
-         endif
        end subroutine
 
        end module
