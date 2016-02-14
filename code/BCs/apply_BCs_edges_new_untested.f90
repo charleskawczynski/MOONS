@@ -231,7 +231,7 @@
          if (TFd2_min) then; TF_prep(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_face%hmin(d(2)))
          else;               TF_prep(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_face%hmax(d(2)))
          endif
-         TF(1) = all(TF_prep)
+         TF = all(TF_prep)
        end function
 
        subroutine apply_edges_SF(U,m,dir,d1,d2,e)
