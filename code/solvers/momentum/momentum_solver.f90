@@ -140,7 +140,7 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,nstep,energy_budget,&
+       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,energy_budget,&
          Ustar,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
@@ -150,22 +150,20 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n,nstep
+         integer,intent(in) :: n
          type(VF),intent(inout) :: Ustar,temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          real(cp),dimension(5),intent(inout) :: energy_budget ! dudt,adv,pres,diff,external
-         integer :: i_stop
-         character(len=1) :: n_domains
-         n_domains = '2'
-         i_stop = 10**8
-         if (nstep.eq.i_stop) call export_processed(m,U,'out/LDC/','U_initial_'//n_domains,1)
+         real(cp) :: temp_Ln
+
+         call Ln(temp_Ln,U,2.0_cp); write(*,*) 'L2(U_initial) = ',temp_Ln
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-         if (nstep.eq.i_stop) call export_processed(m,temp_F1,'out/LDC/','advect_'//n_domains,1)
+         call Ln(temp_Ln,temp_F1,2.0_cp); write(*,*) 'L2(advect) = ',temp_Ln
               call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          call lap(temp_F1,U,m)
-         if (nstep.eq.i_stop) call export_processed(m,temp_F1,'out/LDC/','lap_'//n_domains,1)
+         call Ln(temp_Ln,temp_F1,2.0_cp); write(*,*) 'L2(lap) = ',temp_Ln
          call multiply(temp_F1,1.0_cp/Re)
               call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)
@@ -174,31 +172,33 @@
          call zeroWall_conditional(Ustar,m,U)
          call multiply(Ustar,dt)
          call add(Ustar,U)
-         if (nstep.eq.i_stop) call export_processed(m,Ustar,'out/LDC/','Ustar_'//n_domains,1)
               if (compute_norms) call assign(temp_F1,U)
          call assign(U,Ustar)
               if (compute_norms) call assign(Ustar,temp_F1)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
-         ! call apply_stitches(temp_CC,m)
-         if (nstep.eq.i_stop) call export_processed(m,temp_CC,'out/LDC/','PPE_source_'//n_domains,1)
+         call Ln(temp_Ln,temp_CC,2.0_cp); write(*,*) 'L2(PPE_source) = ',temp_Ln
          call solve(PCG,p,temp_CC,m,n,compute_norms)
-         if (nstep.eq.i_stop) call export_processed(m,p,'out/LDC/','p_solution_'//n_domains,1)
+         call Ln(temp_Ln,p,2.0_cp); write(*,*) 'L2(p_solution) = ',temp_Ln
          call grad(temp_F1,p,m)
+         call Ln(temp_Ln,temp_F1,2.0_cp); write(*,*) 'L2(gradP) = ',temp_Ln
               call compute_energy(energy_budget(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(temp_F1,dt)
          call subtract(U,temp_F1)
+         call Ln(temp_Ln,temp_F1,2.0_cp); write(*,*) 'L2(U_corrected) = ',temp_Ln
               if (compute_norms) then
                 call subtract(temp_F1,U,Ustar)
                 call multiply(temp_F1,1.0_cp/dt)
               endif
               call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call apply_BCs(U,m)
-         if (nstep.eq.i_stop) call div(temp_CC,U,m)
-         if (nstep.eq.i_stop) call export_raw(m,temp_CC,'out/LDC/','divU_'//n_domains,0)
-         if (nstep.eq.i_stop) call export_processed(m,U,'out/LDC/','Unp1_'//n_domains,1)
-         if (nstep.eq.i_stop) stop 'Done'
+         call apply_stitches(U,m)
+              call div(temp_CC,U,m)
+              call export_raw(m,temp_CC,'out/LDC/','div(U)',0)
+         call Ln(temp_Ln,temp_CC,2.0_cp); write(*,*) 'L2(divU) = ',temp_Ln
+         call export_processed(m,U,'out/LDC/','U',0)
+         call Ln(temp_Ln,U,2.0_cp); write(*,*) 'L2(Unp1) = ',temp_Ln
+         stop 'Done'
        end subroutine
 
        subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&

@@ -2,7 +2,7 @@
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use IO_tools_mod
        use coordinates_mod
-       ! use stitch_mod
+       use stitch_mod
        use stitch_face_mod
        use stitch_edge_mod
        use stitch_corner_mod
@@ -32,10 +32,13 @@
 
        type grid
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
-         ! type(stitch),dimension(3) :: st
          type(stitch_face)   :: st_face   ! Face-stitch
          type(stitch_edge)   :: st_edge   ! Edge-stitch
          type(stitch_corner) :: st_corner ! Corner-stitch
+
+         type(stitch),dimension(6)   :: st_faces   ! Face-stitches
+         type(stitch),dimension(12)   :: st_edges   ! Edge-stitch
+         type(stitch),dimension(8)   :: st_corners   ! Corner-stitch
          ! Properties
          real(cp) :: dhMin,dhMax,maxRange,volume
          integer :: N_cells

@@ -84,6 +84,7 @@
          real(cp),intent(in) :: tol_nrg,dt,Re,Pr,Ec,Ha
          integer,intent(in) :: N_nrg
          character(len=*),intent(in) :: dir
+         integer :: temp_unit
          type(SF) :: k_cc
          write(*,*) 'Initializing energy:'
          nrg%dTime = dt
@@ -130,6 +131,11 @@
          write(*,*) '     Materials initialized'
 
          call init(nrg%probe_divQ,dir//'Tfield/','transient_divQ',.not.restartT)
+
+
+         temp_unit = newAndOpen(dir//'parameters/','info_nrg')
+         call energyInfo(nrg,temp_unit)
+         close(temp_unit)
 
          call export(nrg%probe_divQ)
          write(*,*) '     probes initialized'

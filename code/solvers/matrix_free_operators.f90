@@ -46,6 +46,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
+        suppress_warning = k%is_CC
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
         call zeroGhostPoints(Ax)
@@ -61,6 +62,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
+        suppress_warning = k%is_CC
         call apply_BCs_implicit(x,m)
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
@@ -78,6 +80,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
+        suppress_warning = tempk%is_CC
         call lap_centered(Ax,x,m,k)
         call zeroGhostPoints(Ax)
       end subroutine
@@ -91,6 +94,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
+        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
         call lap_centered(Ax,x,m,k)
         call zeroGhostPoints(Ax)
@@ -211,6 +215,8 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
+        logical :: suppress_warning
+        suppress_warning = tempk%is_CC
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).
         ! The reason this is not as simple as the laplacian operator
@@ -231,6 +237,8 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempk
+        logical :: suppress_warning
+        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).

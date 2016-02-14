@@ -69,7 +69,9 @@
 
        ! For apply_BCs_edges
        public :: adjacent_faces
+       public :: edges_given_dir
        public :: adjacent_faces_new
+       public :: adjacent_directions
        ! public :: define_Edges
 
        type BCs
@@ -117,16 +119,16 @@
          integer,dimension(3),intent(in) :: s
          integer :: i
          call init(BC%g,g); BC%s = s
-         call init(BC%f(1),(/s(2),s(3)/),1)
-         call init(BC%f(2),(/s(2),s(3)/),2)
-         call init(BC%f(3),(/s(1),s(3)/),3)
-         call init(BC%f(4),(/s(1),s(3)/),4)
-         call init(BC%f(5),(/s(1),s(2)/),5)
-         call init(BC%f(6),(/s(1),s(2)/),6)
+         call init(BC%f(1),(/s(2),s(3)/))
+         call init(BC%f(2),(/s(2),s(3)/))
+         call init(BC%f(3),(/s(1),s(3)/))
+         call init(BC%f(4),(/s(1),s(3)/))
+         call init(BC%f(5),(/s(1),s(2)/))
+         call init(BC%f(6),(/s(1),s(2)/))
 
-         do i=1,4;  call init(BC%e(i),s(1),i); enddo
-         do i=5,8;  call init(BC%e(i),s(2),i); enddo
-         do i=9,12; call init(BC%e(i),s(3),i); enddo
+         do i=1,4;  call init(BC%e(i),s(1)); enddo
+         do i=5,8;  call init(BC%e(i),s(2)); enddo
+         do i=9,12; call init(BC%e(i),s(3)); enddo
 
          BC%gridDefined = .true.
          call define_logicals(BC)
@@ -273,25 +275,25 @@
        !   enddo
        ! end subroutine
 
-       subroutine define_Edges(BC) ! For now...
-         implicit none
-         type(BCs),intent(inout) :: BC
-         integer,dimension(2) :: a ! index of adjacent faces
-         integer :: i
-         do i=1,12
-           a = adjacent_faces(i)
-               if ((BC%f(a(1))%b%Dirichlet).and.(BC%f(a(2))%b%Dirichlet)) then
-               call init_Dirichlet(BC%e(i)%b)
-           elseif (BC%f(a(1))%b%Dirichlet) then
-               call init_Dirichlet(BC%e(i)%b)
-           elseif (BC%f(a(2))%b%Dirichlet) then
-               call init_Dirichlet(BC%e(i)%b)
-           elseif ((BC%f(a(1))%b%Neumann).and.(BC%f(a(2))%b%Neumann)) then
-               call init_Neumann(BC%e(i)%b)
-           ! else; stop 'Error: edge definition case not defined in init_Edges in BCs.f90'
-           endif
-         enddo
-       end subroutine
+       ! subroutine define_Edges(BC) ! For now...
+       !   implicit none
+       !   type(BCs),intent(inout) :: BC
+       !   integer,dimension(2) :: a ! index of adjacent faces
+       !   integer :: i
+       !   do i=1,12
+       !     a = adjacent_faces(i)
+       !         if ((BC%f(a(1))%b%Dirichlet).and.(BC%f(a(2))%b%Dirichlet)) then
+       !         call init_Dirichlet(BC%e(i)%b)
+       !     elseif (BC%f(a(1))%b%Dirichlet) then
+       !         call init_Dirichlet(BC%e(i)%b)
+       !     elseif (BC%f(a(2))%b%Dirichlet) then
+       !         call init_Dirichlet(BC%e(i)%b)
+       !     elseif ((BC%f(a(1))%b%Neumann).and.(BC%f(a(2))%b%Neumann)) then
+       !         call init_Neumann(BC%e(i)%b)
+       !     ! else; stop 'Error: edge definition case not defined in init_Edges in BCs.f90'
+       !     endif
+       !   enddo
+       ! end subroutine
 
        function adjacent_faces(i_edge) result (i_faces)
          implicit none
@@ -310,6 +312,36 @@
          case (10); i_faces = (/1,4/) ! z (xmin,ymax) (z)
          case (11); i_faces = (/2,3/) ! z (xmax,ymin) (z)
          case (12); i_faces = (/2,4/) ! z (xmax,ymax) (z)
+         end select
+       end function
+
+       function edges_given_dir(dir) result (edges)
+         implicit none
+         integer,intent(in) :: dir
+         integer,dimension(4) :: edges
+         select case (dir)
+         case (1); edges = (/1,2,3,4/)
+         case (2); edges = (/5,6,7,8/)
+         case (3); edges = (/9,10,11,12/)
+         case default; stop 'Error: dir must = 1,2,3 in edges_given_dir in BCs.f90'
+         end select
+       end function
+
+       function adjacent_directions(dir) result (a)
+         !        z                      x                      y                   
+         !        ^                      ^                      ^                   
+         !        |-----                 |-----                 |-----              
+         !        |     |     dir = 1    |     |     dir = 2    |     |     dir = 3
+         !        |     |                |     |                |     |             
+         !         -------> y             -------> z             -------> x         
+         implicit none
+         integer,intent(in) :: dir
+         integer,dimension(2) :: a
+         select case (dir)
+         case (1); a = (/2,3/)
+         case (2); a = (/3,1/)
+         case (3); a = (/1,2/)
+         case default; stop 'Error: dir must = 1,2,3 in adjacent_directions in BCs.f90'
          end select
        end function
 

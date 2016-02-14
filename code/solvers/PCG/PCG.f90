@@ -101,6 +101,7 @@
         call assign(PCG%Minv,Minv)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
+        call export_raw(m,PCG%vol,dir,'PCG_volume',0)
         PCG%un = newAndOpen(dir,'norm_PCG_SF_'//name)
         call tecHeader(name,PCG%un,.false.)
         PCG%operator => operator
@@ -256,7 +257,7 @@
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_b_L1,norm_b_L2,norm_b_Linf,iter_used'
+        write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_r0_L1,norm_r0_L2,norm_r0_Linf,iter_used'
         write(un,*) 'ZONE DATAPACKING = POINT'
         flush(un)
       end subroutine

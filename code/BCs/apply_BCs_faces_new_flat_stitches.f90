@@ -36,61 +36,58 @@
          call apply_BCs_faces(U%z,m)
        end subroutine
 
-       subroutine apply_BCs_faces_SF(U,m)
+       function get_dir_from_face(face) result(dir)
          implicit none
-         type(SF),intent(inout) :: U
-         type(mesh),intent(in) :: m
-         call apply_face_SF(U,m,2,(/3,4/)) ! SF, mesh, direction, faces along dir
-         call apply_face_SF(U,m,1,(/1,2/)) ! SF, mesh, direction, faces along dir
-         call apply_face_SF(U,m,3,(/5,6/)) ! SF, mesh, direction, faces along dir
-       end subroutine
+         integer,intent(in) :: face
+         integer :: dir
+         select case (face)
+         case (1,2); dir = 1
+         case (3,4); dir = 2
+         case (5,6); dir = 3
+         case default; stop 'Error: face must = 1:6 in get_dir_from_face in apply_BCs_faces.f90'
+         end select
+       end function
 
-       subroutine apply_face_SF(U,m,k,f)
+       subroutine apply_face_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer,intent(in) :: k ! direction
-         integer,dimension(2),intent(in) :: f
-         integer :: i
+         integer :: i,k,f
 
 #ifdef _DEBUG_APPLY_BCS_
        call checkBCs(U,f,m)
 #endif
-
+         do f=1,6
+         k = get_dir_from_face(f)
          if (CC_along(U,k)) then
-         do i=1,m%s
-         if (.not.m%g(i)%st_face%hmin(k)) call a_CC(U%RF(i),f(1),m%g(i)%c(k)%dhc(1))
-         if (.not.m%g(i)%st_face%hmax(k)) call a_CC(U%RF(i),f(2),m%g(i)%c(k)%dhc_e)
-         enddo
+         do i=1,m%s; if (.not.m%g(i)%st_faces(f)) call a_CC(U%RF(i),f,m%g(i)%c(k)%dhc(1),m%g(i)%c(k)%dhc_e); enddo
          elseif (Node_along(U,k)) then
-         do i=1,m%s
-         if (.not.m%g(i)%st_face%hmin(k)) call a_N(U%RF(i),f(1),m%g(i)%c(k)%dhn(1))
-         if (.not.m%g(i)%st_face%hmax(k)) call a_N(U%RF(i),f(2),m%g(i)%c(k)%dhn_e)
-         enddo
+         do i=1,m%s; if (.not.m%g(i)%st_faces(f)) call a_N(U%RF(i),f,m%g(i)%c(k)%dhn(1),m%g(i)%c(k)%dhn_e); enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif
+         enddo
        end subroutine
 
-       subroutine a_N(RF,face,dh)
+       subroutine a_N(RF,face,dh1,dhe)
          implicit none
          type(RealField),intent(inout) :: RF
          integer,intent(in) :: face
-         real(cp),intent(in) :: dh
-         call app_N_RF(RF%f,RF%s,face,RF%b%f(face)%vals,RF%b%f(face)%b,dh)
+         real(cp),intent(in) :: dh1,dhe
+         call app_N_RF(RF%f,RF%s,face,RF%b%f(face)%vals,RF%b%f(face)%b,dh1,dhe)
        end subroutine
 
-       subroutine a_CC(RF,face,dh)
+       subroutine a_CC(RF,face,dh1,dhe)
          implicit none
          type(RealField),intent(inout) :: RF
          integer,intent(in) :: face
-         real(cp),intent(in) :: dh
-         call app_CC_RF(RF%f,RF%s,face,RF%b%f(face)%vals,RF%b%f(face)%b,dh)
+         real(cp),intent(in) :: dh1,dhe
+         call app_CC_RF(RF%f,RF%s,face,RF%b%f(face)%vals,RF%b%f(face)%b,dh1,dhe)
        end subroutine
 
-       subroutine app_N_RF(f,s,face,v,b,dh)
+       subroutine app_N_RF(f,s,face,v,b,dh1,dhe)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),intent(in) :: dh
+         real(cp),intent(in) :: dh1,dhe
          real(cp),dimension(:,:),intent(in) :: v
          type(bctype),intent(in) :: b
          integer,dimension(3),intent(in) :: s ! shape
@@ -98,19 +95,19 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),v,-dh,b)
-         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-1,:),f(:,s(2)-2,:),v,-dh,b)
-         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-1),f(:,:,s(3)-2),v,-dh,b)
-         case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(2,:,:),f(3,:,:),v,dh,b)
-         case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,2,:),f(:,3,:),v,dh,b)
-         case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,2),f(:,:,3),v,dh,b)
+         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),v,-dh1,b)
+         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-1,:),f(:,s(2)-2,:),v,-dh1,b)
+         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-1),f(:,:,s(3)-2),v,-dh1,b)
+         case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(2,:,:),f(3,:,:),v,dhe,b)
+         case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,2,:),f(:,3,:),v,dhe,b)
+         case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,2),f(:,:,3),v,dhe,b)
          end select
        end subroutine
 
-       subroutine app_CC_RF(f,s,face,v,b,dh)
+       subroutine app_CC_RF(f,s,face,v,b,dh1,dhe)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),intent(in) :: dh
+         real(cp),intent(in) :: dh1,dhe
          real(cp),dimension(:,:),intent(in) :: v
          integer,dimension(3),intent(in) :: s ! shape
          integer,intent(in) :: face
@@ -118,12 +115,12 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,-dh,b)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,-dh,b)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,-dh,b)
-         case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dh,b)
-         case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dh,b)
-         case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dh,b)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,-dh1,b)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,-dh1,b)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,-dh1,b)
+         case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dhe,b)
+         case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dhe,b)
+         case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dhe,b)
          end select
        end subroutine
 

@@ -273,16 +273,16 @@
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
          case (1); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
+                              (/g%c(d1)%dhc(1),g%c(d2)%dhc_e/),&
+                              (/g%c(d1)%dhn(1),g%c(d2)%dhn_e/),&
                               2,1,-1)
          case (2); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
+                              (/g%c(d1)%dhc(1),g%c(d2)%dhc_e/),&
+                              (/g%c(d1)%dhn(1),g%c(d2)%dhn_e/),&
                               2,1,-1)
          case (3); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
+                              (/g%c(d1)%dhc(1),g%c(d2)%dhc_e/),&
+                              (/g%c(d1)%dhn(1),g%c(d2)%dhn_e/),&
                               2,1,-1)
          end select
        end subroutine
@@ -298,16 +298,16 @@
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
          case (1); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(1)/),&
+                              (/g%c(d1)%dhc_e,g%c(d2)%dhc(1)/),&
+                              (/g%c(d1)%dhn_e,g%c(d2)%dhn(1)/),&
                               3,-1,1)
          case (2); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(1)/),&
+                              (/g%c(d1)%dhc_e,g%c(d2)%dhc(1)/),&
+                              (/g%c(d1)%dhn_e,g%c(d2)%dhn(1)/),&
                               3,-1,1)
          case (3); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(1)/),&
+                              (/g%c(d1)%dhc_e,g%c(d2)%dhc(1)/),&
+                              (/g%c(d1)%dhn_e,g%c(d2)%dhn(1)/),&
                               3,-1,1)
          end select
        end subroutine
@@ -323,16 +323,16 @@
          logical,intent(in) :: CCd1,CCd2
          select case (dir)
          case (1); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
+                              (/g%c(d1)%dhc_e,g%c(d2)%dhc_e/),&
+                              (/g%c(d1)%dhn_e,g%c(d2)%dhn_e/),&
                               4,-1,-1)
          case (2); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
+                              (/g%c(d1)%dhc_e,g%c(d2)%dhc_e/),&
+                              (/g%c(d1)%dhn_e,g%c(d2)%dhn_e/),&
                               4,-1,-1)
          case (3); call app_E(v,bct,s(d1),s(d2),CCd1,CCd2,dir,f,&
-                              (/g%c(d1)%dhc(g%c(d1)%sc-1),g%c(d2)%dhc(g%c(d2)%sc-1)/),&
-                              (/g%c(d1)%dhn(g%c(d1)%sn-1),g%c(d2)%dhn(g%c(d2)%sn-1)/),&
+                              (/g%c(d1)%dhc_e,g%c(d2)%dhc_e/),&
+                              (/g%c(d1)%dhn_e,g%c(d2)%dhn_e/),&
                               4,-1,-1)
          end select
        end subroutine
@@ -455,35 +455,6 @@
            case (3); call a_F(bct,dhc(1),v,f(i1,i2,:),f(i1+m1,i2,:))
            end select
          else; stop 'Error: case not found in app_E in apply_BCs_edges.f90'
-         endif
-       end subroutine
-
-       subroutine debug_app_E(v,bct,s1,s2,CCd1,CCd2,dir,f,dhc,dhn,corner,m1,m2,i1,i2,name)
-         implicit none
-         real(cp),dimension(:,:,:),intent(in) :: f
-         real(cp),dimension(2),intent(in) :: dhc,dhn
-         real(cp),dimension(:),intent(in) :: v
-         type(bctype),intent(in) :: bct
-         integer,intent(in) :: dir,s1,s2,corner
-         integer,intent(in) :: m1,m2,i1,i2
-         logical,intent(in) :: CCd1,CCd2
-         character(len=*),intent(in) :: name
-         write(*,*) ' -------------------- ',name,' -------------------- '
-         write(*,*) 'maxval(f) = ',maxval(f)
-         if (maxval(abs(f)).gt.2.0_cp) then
-           write(*,*) 'maxval(f) = ',maxval(f)
-           write(*,*) 'dhc,dhn = ',dhc,dhn
-           write(*,*) 'CCd1,CCd2 = ',CCd1,CCd2
-           write(*,*) 'dir,corner = ',dir,corner
-           write(*,*) 'i1,i2,m1,m2 = ',i1,i2,m1,m2
-           write(*,*) 's1,s2 = ',s1,s2
-           write(*,*) 'v = ',v
-           select case (dir)
-           case (1); write(*,*) 'f(:,i1,i2),f(:,i1,i2+m2) = ',f(:,i1,i2),f(:,i1,i2+m2)
-           case (2); write(*,*) 'f(i1,:,i2),f(i1,:,i2+m2) = ',f(i1,:,i2),f(i1,:,i2+m2)
-           case (3); write(*,*) 'f(i1,i2,:),f(i1,i2+m2,:) = ',f(i1,i2,:),f(i1,i2+m2,:)
-           end select
-           stop 'Bad edge values in app_E in apply_BCs_edges.f90'
          endif
        end subroutine
 

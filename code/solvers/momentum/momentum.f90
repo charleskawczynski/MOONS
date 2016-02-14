@@ -113,6 +113,7 @@
          real(cp),intent(in) :: tol_mom,tol_PPE
          real(cp),intent(in) :: dt,Re,Ha,Gr,Fr
          character(len=*),intent(in) :: dir
+         integer :: temp_unit
          type(SF) :: prec_PPE,temp
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
@@ -227,7 +228,9 @@
          endif
          call init(mom%transient_KE,dir//'Ufield\','KU',.not.restartU)
 
-         call momentumInfo(mom,newAndOpen(dir//'parameters/','info_mom'))
+         temp_unit = newAndOpen(dir//'parameters/','info_mom')
+         call momentumInfo(mom,temp_unit)
+         close(temp_unit)
          mom%t = 0.0_cp
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
@@ -340,7 +343,7 @@
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%nstep,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
+           mom%N_PPE,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
            print_export(1))
 
          case (2)
@@ -377,6 +380,7 @@
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
            ! mom%N_mom = readIntegerFromFile(dir//'parameters/','N_mom')
+           mom%N_PPE = readIntegerFromFile(dir//'parameters/','N_PPE')
            write(*,*) ''
          else; exportNow = .false.
          endif

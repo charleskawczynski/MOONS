@@ -65,9 +65,9 @@
                                  U%z%RF(i)%f,m%g(i))
            enddo
          endif
-         ! call sineWaves(U%x,m,(/2.0_cp,2.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
-         ! call sineWaves(U%y,m,(/2.0_cp,2.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
-         ! call sineWaves(U%z,m,(/2.0_cp,2.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
+         ! call sineWaves(U%x,m,(/100.0_cp,100.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
+         ! call sineWaves(U%y,m,(/100.0_cp,100.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
+         ! call sineWaves(U%z,m,(/100.0_cp,100.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))
        end subroutine
 
        subroutine initRestartUfield(U,m,dir)

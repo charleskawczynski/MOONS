@@ -47,8 +47,8 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=f95
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
-FCFLAGS += -D_DOUBLE_PRECISION_
-# FCFLAGS += -D_QUAD_PRECISION_
+# FCFLAGS += -D_DOUBLE_PRECISION_
+FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT Methods
 # FCFLAGS += -D_FFT_FULL_
@@ -115,7 +115,7 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-# FCFLAGS += -D_EXPORT_PCG_SF_CONVERGENCE_
+FCFLAGS += -D_EXPORT_PCG_SF_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_VF_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
@@ -144,10 +144,13 @@ VPATH =\
 	$(SRC_DIR)$(PS)lib \
 	$(SRC_DIR)$(PS)user \
 	$(SRC_DIR)$(PS)BCs \
+	$(SRC_DIR)$(PS)stitches \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches \
 	$(SRC_DIR)$(PS)unit_testing \
 	$(SRC_DIR)$(PS)IO \
+	$(SRC_DIR)$(PS)coordinates \
 	$(SRC_DIR)$(PS)grid \
+	$(SRC_DIR)$(PS)mesh \
 	$(SRC_DIR)$(PS)probes \
 	$(SRC_DIR)$(PS)fields \
 	$(SRC_DIR)$(PS)fields$(PS)RF \
@@ -213,6 +216,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)array.f90 \
 	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_face.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_edge.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_corner.f90 \

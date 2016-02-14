@@ -31,7 +31,8 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp),parameter :: tol_abs = 10.0_cp**(-10.0_cp)
+      real(cp),parameter :: tol_abs = 10.0_cp**(-28.0_cp)
+      character(len=19) :: norm_fmt = '(I10,7E40.28E3,I10)'
 
       contains
 
@@ -54,10 +55,9 @@
         type(SF),intent(inout) :: tempx,Ax,r,p,z
         type(norms) :: norm_res0
         integer :: i,i_earlyExit
-        real(cp) :: temp_Ln
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
-        ! call Ln(temp_Ln,b,1.0_cp); write(*,*) 'L1(b) input = ',temp_Ln
         call multiply(r,b,vol)
+        call apply_stitches(r,m)
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! RHS MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
@@ -65,18 +65,16 @@
           call assign(p,r)
           call modify_forcing1(r,p,m,x)
         endif
-        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) post modify = ',temp_Ln
         call assign(p,0.0_cp)
         call apply_BCs(p,m) ! p has BCs for x
         call zeroGhostPoints_conditional(p,m)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
-        call zeroGhostPoints(Ax)
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
-        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) post modify RHS = ',temp_Ln
 
+        call apply_stitches(x,m) ! Necessary: BC_implicit reaches to interior, which stitching affects
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
         if (x%all_Neumann) call subtract_physical_mean(r)
@@ -85,31 +83,32 @@
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
           res_norm = dot_product(r,r,m,x,tempx)
-          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,0
 #endif
 
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
-        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) before loop = ',temp_Ln
-        ! call Ln(temp_Ln,x,1.0_cp); write(*,*) 'L1(x) before loop = ',temp_Ln
         do i=1,n
+          ! if (x%all_Neumann) call subtract_physical_mean(p,vol,tempx,compute_norms)
           call apply_stitches(p,m)
           call operator(Ax,p,k,m,MFP,tempk)
           call multiply(Ax,vol)
+          ! if (x%all_Neumann) call subtract_physical_mean(Ax)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
+          call zeroGhostPoints(p)
           call add_product(x,p,alpha) ! x = x + alpha p
+          call apply_stitches(x,m)
           call apply_BCs(x,m) ! Needed for PPE
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! r = r - alpha Ap
-          call zeroGhostPoints(r)
+          ! if (x%all_Neumann) call subtract_physical_mean(r)
           res_norm = dot_product(r,r,m,x,tempx)
-          ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) in loop = ',temp_Ln
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
-          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
           if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
@@ -117,16 +116,15 @@
           rhokp1 = dot_product(z,r,m,x,tempx)
           call multiply(p,rhokp1/rhok) ! p = z + beta p
           call add(p,z)
-          call zeroGhostPoints(p)
           rhok = rhokp1
         enddo
-        ! call Ln(temp_Ln,r,1.0_cp); write(*,*) 'L1(r) after loop = ',temp_Ln
-        ! call Ln(temp_Ln,x,1.0_cp); write(*,*) 'L1(x) after loop = ',temp_Ln
+        if (x%all_Neumann) call subtract_physical_mean(x)
+        call apply_stitches(x,m)
+        call apply_BCs(x,m) ! Needed for PPE
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
         flush(un)
 #endif
-        ! call export_processed(m,x,'out/LDC/','x_solution',1)
 
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
@@ -137,7 +135,7 @@
           call zeroWall_conditional(r,m,x)
           call zeroGhostPoints(r)
           call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
-          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
           flush(un)
           write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,n
@@ -191,7 +189,7 @@
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
           call compute(norm,r)
           res_norm = dot_product(r,r,m,x,tempx)
-          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,0
 #endif
 
@@ -211,7 +209,7 @@
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
           call compute(norm,r)
-          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
           if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
@@ -237,7 +235,7 @@
           call zeroWall_conditional(r,m,x)
           call zeroGhostPoints(r)
           call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
-          write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
           flush(un)
           write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n

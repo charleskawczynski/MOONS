@@ -1,0 +1,196 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage[french]{babel}
+\usepackage{fullpage}
+
+\usepackage{tikz-uml}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+\sloppy
+\hyphenpenalty 10000000
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\}
+\maketitle
+\section{UML diagram}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlpackage}{p}
+\begin{umlpackage}{sp1}
+\umlclass[template=T]{A}{
+  n : uint \\ t : float
+}{}
+\umlclass[y=-3]{B}{
+  d : double
+}{
+  \umlvirt{setB(b : B) : void} \\ getB() : B}
+\end{umlpackage}
+\begin{umlpackage}[x=10,y=-6]{sp2}
+\umlinterface{C}{
+  n : uint \\ s : string
+}{}
+\end{umlpackage}
+\umlclass[x=2,y=-10]{D}{
+  n : uint
+  }{}
+\end{umlpackage}
+
+\umlassoc[geometry=-|-, arg1=tata, mult1=*, pos1=0.3, arg2=toto, mult2=1, pos2=2.9, align2=left]{C}{B}
+\umlunicompo[geometry=-|, arg=titi, mult=*, pos=1.7, stereo=vector]{D}{C}
+\umlimport[geometry=|-, anchors=90 and 50, name=import]{sp2}{sp1}
+\umlaggreg[arg=tutu, mult=1, pos=0.8, angle1=30, angle2=60, loopsize=2cm]{D}{D}
+\umlinherit[geometry=-|]{D}{B}
+\umlnote[x=2.5,y=-6, width=3cm]{B}{Je suis une note qui concerne la classe B}
+\umlnote[x=7.5,y=-2]{import-2}{Je suis une note qui concerne la relation d'import}
+\end{tikzpicture}
+\end{center}
+
+\section{Sequence Diagram}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlseqdiag}
+\umlactor[class=A]{a}
+\umldatabase[class=B, fill=blue!20]{b}
+\umlmulti[class=C]{c}
+\umlobject[class=D]{d}
+\begin{umlcall}[op=opa(), type=synchron, return=0]{a}{b}
+\begin{umlfragment}
+\begin{umlcall}[op=opb(), type=synchron, return=1]{b}{c}
+\begin{umlfragment}[type=alt, label=condition, inner xsep=8, fill=green!10]
+\begin{umlcall}[op=opc(), type=asynchron, fill=red!10]{c}{d}
+\end{umlcall}
+\begin{umlcall}[type=return]{c}{b}
+\end{umlcall}
+\umlfpart[default]
+\begin{umlcall}[op=opd(), type=synchron, return=3]{c}{d}
+\end{umlcall}
+\end{umlfragment}
+\end{umlcall}
+\end{umlfragment}
+\begin{umlfragment}
+\begin{umlcallself}[op=ope(), type=synchron, return=4]{b}
+\begin{umlfragment}[type=assert]
+\begin{umlcall}[op=opf(), type=synchron, return=5]{b}{c}
+\end{umlcall}
+\end{umlfragment}
+\end{umlcallself}
+\end{umlfragment}
+\end{umlcall}
+\umlcreatecall[class=E, x=8]{a}{e}
+\begin{umlfragment}
+\begin{umlcall}[op=opg(), name=test, type=synchron, return=6, dt=7, fill=red!10]{a}{e}
+\umlcreatecall[class=F, stereo=boundary, x=12]{e}{f}
+\end{umlcall}
+\begin{umlcall}[op=oph(), type=synchron, return=7]{a}{e}
+\end{umlcall}
+\end{umlfragment}
+\end{umlseqdiag}
+\end{tikzpicture}
+\end{center}
+
+\section{State Diagram}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlstate}[name=Amain]{Etat global de l'objet A}
+\begin{umlstate}[name=Bgraph, fill=red!20]{graphe B}
+\umlstateinitial[name=Binit]
+\umlbasicstate[y=-4, name=test1, fill=white]{test1}
+\umltrans{Binit}{test1}
+\umltrans[recursive=20|60|2.5cm, recursive direction=right to top, arg={op1}, pos=1.5]{test1}{test1}
+\umltrans[recursive=160|120|2.5cm, recursive direction=left to top, arg={op2}, pos=1.5]{test1}{test1}
+\umltrans[recursive=-160|-120|2.5cm, recursive direction=left to bottom, arg={op3}, pos=1.5]{test1}{test1}
+\umltrans[recursive=-20|-60|2.5cm, recursive direction=right to bottom, arg={op4}, pos=1.5]{test1}{test1}
+\umlbasicstate[y=-8, name=test2, fill=white]{test2}
+\umltrans[recursive=-160|-120|2.5cm, recursive direction=left to bottom, arg={op5}, pos=1.5]{test2}{test2}
+\umltrans{test1}{test2}
+\umlstatefinal[x=3, y=-7.75, name=Bfinal]
+\umltrans{test2}{Bfinal}
+\end{umlstate}
+\umlstateinitial[x=6, y=1, name=Ainit]
+\umlVHtrans[anchor2=40]{Ainit}{Bgraph}
+\umlstatefinal[x=6, y=-3.5, name=Afinal]
+\umlHVtrans[anchor1=30]{Bgraph}{Afinal}
+\umlbasicstate[x=6, y=-6, name=visu, fill=green!20]{Visualisation}
+\umlHVtrans{Bfinal}{visu}
+\umltrans{visu}{Afinal}
+\umltrans[recursive=-20|-60|2.5cm, recursive direction=right to bottom, arg=a, pos=1.5]{visu}{visu}
+\end{umlstate}
+\end{tikzpicture}
+\end{center}
+
+\section{Component Diagram}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{umlcomponent}{A}
+\umlbasiccomponent{B}
+\umlbasiccomponent[y=-2]{C}
+
+\umlrequiredinterface[interface=C-interface]{C}
+\umlprovidedinterface[interface=B-interface, with port, distance=3cm, padding=2.5cm]{B}
+\end{umlcomponent}
+\umlbasiccomponent[x=-10,y=1]{D}
+\umlbasiccomponent[x=3,y=-7.5]{E}
+\umlbasiccomponent[x=-2, y=-9]{F}
+\umlbasiccomponent[x=-7,y=-8]{G}
+\umlbasiccomponent[x=-7,y=-11]{H}
+
+\umlassemblyconnector[interface=DA, with port, name=toto]{D}{A}
+\umldelegateconnector{A-west-port}{B-west-interface}
+\umlVHVassemblyconnector[interface=AE, with port]{A}{E}
+\umlHVHassemblyconnector[interface=EF, with port, first arm]{E}{F}
+\umlHVHassemblyconnector[interface=GHF, with port, arm2=-2cm, last arm]{G}{F}
+\umlHVHassemblyconnector[with port, arm2=-2cm, last arm]{H}{F}
+
+\umlnote[x=-4, y=4, width=3.4cm]{B-west-interface}{I am the node named B-west-interface}
+\umlnote[x=2, y=4, width=3.4cm]{C-east-interface}{I am the node named C-east-interface}
+\umlnote[x=-8.5, y=-2, width=3.4cm]{toto-interface}{I am the node named toto-interface}
+\umlnote[x=-5.5, y=-4.5, width=3.4cm]{A-south-port}{I am the node named A-south-port}
+\umlnote[x=-1, y=-6, width=3.4cm]{AE-interface}{I am the node named AE-interface}
+\umlnote[x=2, y=-11, width=3.4cm]{F-east-port}{I am the node named F-east-port}
+\end{tikzpicture}
+\end{center}
+
+
+\end{document}

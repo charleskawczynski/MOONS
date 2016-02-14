@@ -68,7 +68,8 @@
        interface boundaryFlux;            module procedure boundaryFlux_VF_SD;        end interface
 
        public :: subtract_physical_mean
-       interface subtract_physical_mean;  module procedure subtract_physical_mean_SF; end interface
+       interface subtract_physical_mean;  module procedure subtract_phys_mean_SF;     end interface
+       interface subtract_physical_mean;  module procedure subtract_phys_mean_vol_SF; end interface
 
        public :: stabilityTerms
        interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
@@ -224,7 +225,7 @@
          BF = BF + BFtemp
        end subroutine
 
-       subroutine subtract_physical_mean_SF(u)
+       subroutine subtract_phys_mean_SF(u)
          ! Subtracts the physical mean from scalar field u
          ! 
          !      u = u - mean(u)
@@ -235,6 +236,25 @@
          real(cp) :: meanU
          call zeroGhostPoints(u)
          meanU = sum(u)/real(u%numPhysEl,cp)
+         call subtract(u,meanU)
+         call zeroGhostPoints(u)
+       end subroutine
+
+       subroutine subtract_phys_mean_vol_SF(u,vol,temp,TF)
+         ! Subtracts the physical mean from scalar field u
+         ! 
+         !      u = u - mean(u)
+         ! 
+         ! Where this mean operation is only in the interior domain
+         implicit none
+         type(SF),intent(inout) :: u,temp
+         type(SF),intent(in) :: vol
+         real(cp) :: meanU
+         logical,intent(in) :: TF
+         call multiply(temp,u,vol)
+         meanU = sum(temp)/real(u%numPhysEl,cp)
+         if (TF) write(*,*) 'meanU = ',meanU
+         if (TF) write(*,*) 'u%numPhysEl = ',u%numPhysEl
          call subtract(u,meanU)
          call zeroGhostPoints(u)
        end subroutine

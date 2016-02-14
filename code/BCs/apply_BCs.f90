@@ -77,13 +77,11 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          call apply_BCs_faces(U,m)
-         call apply_stitches_faces(U,m)
-         if (m%s.gt.1) then
-           ! call apply_BCs_edges(U,m)
-           ! call apply_stitches_edges(U,m)
-           ! call apply_BCs_corners(U,m)
-           ! call apply_stitches_corners(U,m)
-         endif
+         ! if (m%s.gt.1) call apply_stitches_faces(U,m)
+         ! call apply_BCs_edges(U,m)
+         ! if (m%s.gt.1) call apply_stitches_edges(U,m)
+         ! call apply_BCs_coners(U,m)
+         ! if (m%s.gt.1) call apply_stitches_corners(U,m)
        end subroutine
 
        end module

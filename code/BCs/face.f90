@@ -22,7 +22,6 @@
          type(bctype) :: b
          real(cp),dimension(:,:),allocatable :: vals
          integer,dimension(2) :: s
-         integer :: ID ! index / ID
          logical,dimension(2) :: def = .false. ! (shape,vals)
          logical :: defined = .false. ! = all(def)
        end type
@@ -42,16 +41,14 @@
        ! ********************************* INIT/DELETE *********************************
        ! *******************************************************************************
 
-       subroutine init_shape(f,s,ID)
+       subroutine init_shape(f,s)
          implicit none
          type(face),intent(inout) :: f
          integer,dimension(2),intent(in) :: s
-         integer,intent(in) :: ID
          if ((s(1).lt.1).or.(s(2).lt.1)) stop 'Error: shape input in init_shape < 1 in face.f90'
          if (allocated(f%vals)) deallocate(f%vals)
          allocate(f%vals(s(1),s(2)))
          f%s = s
-         f%ID = ID
          f%def(1) = .true.
          f%defined = all(f%def)
        end subroutine
@@ -89,7 +86,6 @@
          type(face),intent(in) :: b_in
          if (.not.b_in%defined) stop 'Error: trying to copy undefined face in face.f90'
          call init(b_out%b,b_in%b)
-         b_out%ID = b_in%ID
          b_out%vals = b_in%vals
          b_out%def = b_in%def
          b_out%defined = b_in%defined
@@ -101,7 +97,6 @@
          type(face),intent(inout) :: f
          if (allocated(f%vals)) deallocate(f%vals)
          call delete(f%b)
-         f%ID = 0
          f%s = 0
          f%def = .false.
          f%defined = .false.

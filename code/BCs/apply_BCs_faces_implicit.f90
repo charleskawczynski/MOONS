@@ -38,8 +38,8 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_face_SF(U,m,1,(/1,2/)) ! SF, mesh, direction, faces along dir
          call apply_face_SF(U,m,2,(/3,4/)) ! SF, mesh, direction, faces along dir
+         call apply_face_SF(U,m,1,(/1,2/)) ! SF, mesh, direction, faces along dir
          call apply_face_SF(U,m,3,(/5,6/)) ! SF, mesh, direction, faces along dir
        end subroutine
 

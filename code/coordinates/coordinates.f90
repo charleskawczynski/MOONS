@@ -45,6 +45,7 @@
         real(cp),dimension(:),allocatable :: hc         ! Cell center coordinates
         real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
         real(cp),dimension(:),allocatable :: dhc        ! Difference in cell center coordinates
+        real(cp) :: dhn_e,dhc_e                         ! dhn(end),dhc(end)
         logical :: defined = .false.
         logical :: stencils_defined = .false.
       end type
@@ -79,6 +80,8 @@
         call delete(c%stagCC2N); call delete(c%stagN2CC)
         call delete(c%colCC(1)); call delete(c%colN(1))
         call delete(c%colCC(2)); call delete(c%colN(2))
+        c%dhc_e = 0.0_cp
+        c%dhn_e = 0.0_cp
         c%defined = .false.
         c%stencils_defined = .false.
       end subroutine
@@ -105,6 +108,8 @@
         call init(c%colCC_centered(1),d%colCC_centered(1))
         call init(c%colCC_centered(2),d%colCC_centered(2))
 
+        c%dhc_e = d%dhc_e
+        c%dhn_e = d%dhn_e
         c%sn = d%sn
         c%sc = d%sc
         c%defined = d%defined
@@ -152,6 +157,10 @@
          c%hmax = c%hn(c%sn-1) ! To account for ghost node
          c%maxRange = c%hmax-c%hmin
          c%N = size(c%hc)-2
+         if (c%sc.gt.1) c%dhc_e = c%dhc(c%sc-1)
+         if (c%sn.gt.1) c%dhn_e = c%dhn(c%sn-1)
+         if (.not.(c%sc.gt.1)) c%defined = .false.
+         if (.not.(c%sn.gt.1)) c%defined = .false.
       end subroutine
 
       ! *****************************************************************

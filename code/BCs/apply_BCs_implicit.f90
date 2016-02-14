@@ -1,6 +1,9 @@
        module apply_BCs_implicit_mod
        use SF_mod
        use VF_mod
+       use apply_stitches_faces_mod
+       use apply_stitches_edges_mod
+       use apply_stitches_corners_mod
        use apply_BCs_faces_implicit_mod
        ! use apply_BCs_edges_implicit_mod
        ! use apply_BCs_corners_implicit_mod
@@ -20,12 +23,12 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       interface apply_BCs_implicit;  module procedure apply_BCs_VF;             end interface
-       interface apply_BCs_implicit;  module procedure apply_BCs_SF;             end interface
+       interface apply_BCs_implicit;  module procedure apply_BCs_implicit_VF;   end interface
+       interface apply_BCs_implicit;  module procedure apply_BCs_implicit_SF;   end interface
 
        contains
 
-       subroutine apply_BCs_VF(U,m)
+       subroutine apply_BCs_implicit_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
@@ -34,13 +37,21 @@
          call apply_BCs_implicit(U%z,m)
        end subroutine
 
-       subroutine apply_BCs_SF(U,m)
+       subroutine apply_BCs_implicit_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_BCs_faces_implicit(U,m)
+         ! call apply_BCs_faces_implicit(U,m)
          ! call apply_BCs_edges_implicit(U,m)
          ! call apply_BCs_corners_implicit(U,m)
+
+         ! if (m%s.gt.1) call apply_stitches_faces(U,m)
+         call apply_BCs_faces_implicit(U,m)
+         ! call apply_BCs_edges_implicit(U,m)
+         ! if (m%s.gt.1) call apply_stitches_edges(U,m)
+         ! call apply_BCs_coners_implicit(U,m)
+         ! if (m%s.gt.1) call apply_stitches_corners(U,m)
+
        end subroutine
 
        end module 

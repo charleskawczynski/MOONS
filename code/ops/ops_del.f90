@@ -201,7 +201,7 @@
           call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
             n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
         enddo
-        ! call apply_stitches(dfdh,m)
+        call apply_stitches(dfdh,m)
       end subroutine
 
       ! *********************************************************

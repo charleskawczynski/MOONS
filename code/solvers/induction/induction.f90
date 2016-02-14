@@ -120,6 +120,7 @@
          real(cp),intent(in) :: tol_induction,tol_cleanB
          real(cp),intent(in) :: Rem,dt
          character(len=*),intent(in) :: dir
+         integer :: temp_unit
          type(SF) :: sigma,sigmaInv,prec_cleanB
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
@@ -218,7 +219,9 @@
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
          ! Initialize multigrid
-         call inductionInfo(ind,newAndOpen(dir//'parameters/','info_ind'))
+         temp_unit = newAndOpen(dir//'parameters/','info_ind')
+         call inductionInfo(ind,temp_unit)
+         close(temp_unit)
 
          ind%finite_Rem = finite_Rem
 
