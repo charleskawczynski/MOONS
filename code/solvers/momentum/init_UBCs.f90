@@ -142,16 +142,16 @@
          ! LDC, 2 horizontal domains, rotated 0 (normal orientation)
          ! call init(U%x%RF(2)%b,1.0_cp,4)
          ! LDC, 2 horizontal domains, rotated 90
-         call init(U%y%RF(1)%b,-1.0_cp,2) ! ******************** current test
-         call init(U%y%RF(2)%b,-1.0_cp,2) ! ******************** current test
-         call init(U%y%RF(1)%b%e(4+2),-1.0_cp)
-         call init(U%y%RF(1)%b%e(4+4),-1.0_cp)
-         call init(U%y%RF(2)%b%e(4+2),-1.0_cp)
-         call init(U%y%RF(2)%b%e(4+4),-1.0_cp)
-         call init(U%y%RF(1)%b%e(8+3),-1.0_cp)
-         call init(U%y%RF(1)%b%e(8+4),-1.0_cp)
-         call init(U%y%RF(2)%b%e(8+3),-1.0_cp)
-         call init(U%y%RF(2)%b%e(8+4),-1.0_cp)
+         ! call init(U%y%RF(1)%b,-1.0_cp,2) ! ******************** current test
+         ! call init(U%y%RF(2)%b,-1.0_cp,2) ! ******************** current test
+         ! call init(U%y%RF(1)%b%e(4+2),-1.0_cp)
+         ! call init(U%y%RF(1)%b%e(4+4),-1.0_cp)
+         ! call init(U%y%RF(2)%b%e(4+2),-1.0_cp)
+         ! call init(U%y%RF(2)%b%e(4+4),-1.0_cp)
+         ! call init(U%y%RF(1)%b%e(8+3),-1.0_cp)
+         ! call init(U%y%RF(1)%b%e(8+4),-1.0_cp)
+         ! call init(U%y%RF(2)%b%e(8+3),-1.0_cp)
+         ! call init(U%y%RF(2)%b%e(8+4),-1.0_cp)
 
          ! LDC, 2 horizontal domains, rotated 180 (upside down)
          ! call init(U%x%RF(1)%b,-1.0_cp,3)
@@ -162,8 +162,8 @@
          ! ***********************************************************************
 
          ! LDC, 4 domains
-         ! call init(U%x%RF(3)%b,1.0_cp,4)
-         ! call init(U%x%RF(4)%b,1.0_cp,4)
+         call init(U%x%RF(3)%b,1.0_cp,4)
+         call init(U%x%RF(4)%b,1.0_cp,4)
 
          ! Tyler's geometry
          ! do i=4,6

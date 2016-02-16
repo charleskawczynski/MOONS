@@ -55,7 +55,6 @@
          call init(sc,N_timesteps)
          do n_step=1,N_timesteps
            print_export = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/) ! .ne. 1 avoids initial export
-           ! print_export(1) = .true.
 
            call tic(sc)
            if (solveEnergy)    call solve(nrg,mom%U,  print_export,dir)

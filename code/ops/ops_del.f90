@@ -235,12 +235,6 @@
           faces = normal_faces_given_dir(dir)
           if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
           if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
-
-          ! if (n.eq.2) then
-          !   write(*,*) 'dir,pad,pad1,pad2 = ',dir,pad,pad1,pad2
-          !   write(*,*) 'g(',i,')%c(dir)%stencils_modified = ',m%g(i)%c(dir)%stencils_modified
-          ! endif
-
           call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
             n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
         enddo

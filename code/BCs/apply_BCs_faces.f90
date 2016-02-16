@@ -169,7 +169,6 @@
          call check_dimensions(ug,bvals)
          call check_dimensions(ui,bvals)
 #endif
-         ! write(*,*) 'max(abs(bvals)) = ',maxval(abs(bvals))
          if     (b%Dirichlet) then; ug = 2.0_cp*bvals - ui
          elseif (b%Neumann) then;   ug = ui - dh*bvals
          elseif (b%Periodic) then;  ug = ui_opp
