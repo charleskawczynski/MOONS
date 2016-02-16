@@ -82,10 +82,10 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # _DEBUG_COORDINATES_ is for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 
-FC_DEBUG += -D_DEBUG_DEL_
-FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
-FC_DEBUG += -D_DEBUG_INTERP_
-FC_DEBUG += -D_DEBUG_APPLY_BCS_
+# FC_DEBUG += -D_DEBUG_DEL_
+# FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
+# FC_DEBUG += -D_DEBUG_INTERP_
+# FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 
 # Suppress temporrary array warning:

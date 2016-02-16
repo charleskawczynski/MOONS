@@ -4,6 +4,7 @@
        use SF_mod
        use VF_mod
        use TF_mod
+       use apply_stitches_mod
        use ops_interp_mod
        use ops_discrete_mod
        use ops_aux_mod

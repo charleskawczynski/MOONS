@@ -314,7 +314,7 @@
          do i=1,m%s
            call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
          enddo
-         ! call apply_stitches(f,m) ! cuases visualization problems that conflict with BCs
+         call apply_stitches(f,m)
        end subroutine
 
 #ifdef _DEBUG_INTERP_
