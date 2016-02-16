@@ -74,18 +74,18 @@ FCFLAGS += -fopenmp
 FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
-FC_DEBUG += -D_DEBUG_RF_
-FC_DEBUG += -D_DEBUG_SF_
-FC_DEBUG += -D_DEBUG_VF_
-FC_DEBUG += -D_DEBUG_TF_
+# FC_DEBUG += -D_DEBUG_RF_
+# FC_DEBUG += -D_DEBUG_SF_
+# FC_DEBUG += -D_DEBUG_VF_
+# FC_DEBUG += -D_DEBUG_TF_
 
 # _DEBUG_COORDINATES_ is for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 
-FC_DEBUG += -D_DEBUG_DEL_
-FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
-FC_DEBUG += -D_DEBUG_INTERP_
-FC_DEBUG += -D_DEBUG_APPLY_BCS_
+# FC_DEBUG += -D_DEBUG_DEL_
+# FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
+# FC_DEBUG += -D_DEBUG_INTERP_
+# FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 
 # Suppress temporrary array warning:

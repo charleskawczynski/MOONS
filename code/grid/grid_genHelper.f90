@@ -22,6 +22,7 @@
        
        public :: gridGenerator,init,delete
        public :: prep,app
+       public :: mirror,shift
        public :: preMirror,appMirror
        public :: prepGhost,appGhost
        public :: applyGhost
@@ -34,6 +35,8 @@
        interface app;         module procedure appGrid;            end interface
        interface applyGhost;  module procedure applyGhost_dir;     end interface
        interface applyGhost;  module procedure applyGhost_all;     end interface
+       interface mirror;      module procedure mirror_grid;        end interface
+       interface shift;       module procedure shift_grid;         end interface
        interface preMirror;   module procedure prepMirrorGrid;     end interface
        interface appMirror;   module procedure appMirrorGrid;      end interface
 
@@ -83,6 +86,37 @@
          allocate(temp(s))
          temp = gg%g%c(dir)%hn
          call init(gg%g,(/temp,h/),dir)
+         deallocate(temp)
+       end subroutine
+
+       subroutine shift_grid(gg,h0,dir)
+         ! shift hn to grid along dir
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         integer,intent(in) :: dir
+         real(cp),intent(in) :: h0
+         real(cp),dimension(:),allocatable :: temp
+         integer :: s
+         s = gg%g%c(dir)%sn
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
+         allocate(temp(s))
+         temp = gg%g%c(dir)%hn + h0
+         call init(gg%g,temp,dir)
+         deallocate(temp)
+       end subroutine
+
+       subroutine mirror_grid(gg,dir)
+         ! mirror hn to grid along dir
+         implicit none
+         type(gridGenerator),intent(inout) :: gg
+         integer,intent(in) :: dir
+         real(cp),dimension(:),allocatable :: temp
+         integer :: s
+         s = gg%g%c(dir)%sn
+         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
+         allocate(temp(s))
+         temp = gg%g%c(dir)%hn(s:1:-1)
+         call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
 

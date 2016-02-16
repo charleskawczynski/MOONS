@@ -216,8 +216,8 @@
          write(*,*) '     PCG solver initialized for U'
 
          call init(prec_PPE,mom%p)
-         ! call prec_lap_SF(prec_PPE,mom%m)
-         call prec_identity_SF(prec_PPE) ! For ordinary CG
+         call prec_lap_SF(prec_PPE,mom%m)
+         ! call prec_identity_SF(prec_PPE) ! For ordinary CG
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_PPE,mom%m,&
          mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
          call delete(prec_PPE)
@@ -377,9 +377,9 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          if (print_export(1)) call div(mom%divU,mom%U,mom%m)
          if (print_export(1)) call exportTransient(mom,dir)
-         ! if (print_export(6)) then
-         ! call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
-         ! endif
+         if (print_export(3).or.mom%nstep.eq.1) then
+         call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
+         endif
 
          if (print_export(1)) then
            call momentumInfo(mom,6)

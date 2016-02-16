@@ -406,12 +406,26 @@
          integer,intent(in) :: un
          integer :: i
          write(un,*) ' ************* mesh ************* '
-         do i = 1,m%s
-           write(un,*) ' -------------------------------- grid ID = ',i
-           call export(m%g(i),un)
-           if (m%s.gt.1) call export_stitches(m%g(i),un)
-           write(un,*) ' -------------------------------- '
-         enddo
+         if (un.ne.6) then
+           do i = 1,m%s
+             write(un,*) ' -------------------------------- grid ID = ',i
+             call export(m%g(i),un)
+             if (m%s.gt.1) call export_stitches(m%g(i),un)
+             write(un,*) ' -------------------------------- '
+           enddo
+         else
+           if (m%s.lt.5) then
+             do i = 1,m%s
+               write(un,*) ' -------------------------------- grid ID = ',i
+                 call export(m%g(i),un)
+               if (m%s.gt.1) call export_stitches(m%g(i),un)
+               write(un,*) ' -------------------------------- '
+             enddo
+           else
+           write(un,*) 'Many grids exist, to see details, see exported file or change the limits in mesh.f90'
+           endif
+         endif
+
          if (m%s.gt.1) then
            write(un,*) 's,volume = ',m%s,m%volume
            write(un,*) 'N_cells_tot,N_cells = ',m%N_cells_tot,m%N_cells

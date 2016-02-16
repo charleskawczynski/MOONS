@@ -4,6 +4,7 @@
        use grid_connect_mod
        use grid_distribution_funcs_mod
        use grid_mod
+       use grid_genHelper_mod
        use domain_mod
        use mesh_mod
        implicit none
@@ -25,7 +26,7 @@
        public :: LDC_2D_2domains_vertical_x
        public :: LDC_2D_2domains_horizontal_z
        public :: LDC_2D_4domains
-       public :: LDC_2D_9domains
+       public :: LDC_2D_9domains,LDC_2D_9domains_uniform
        public :: ins_elbow
        public :: ins_u_bend
        public :: ins_sudden_Expansion
@@ -223,6 +224,49 @@
          call delete(g3)
        end subroutine
 
+       subroutine LDC_2D_9domains_uniform(m)
+         ! Setup:
+         !         -------------
+         !         | 5 | 8 | 9 |
+         !         -------------
+         !         | 4 | 6 | 7 |
+         !         -------------
+         !         | 1 | 2 | 3 |
+         !         -------------
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g1,g2,g3
+         real(cp),dimension(3) :: hmin,hmax
+         integer,dimension(3) :: N
+         call delete(m)
+         N = (/20,20,1/)
+         hmin = -0.5_cp
+         hmax = -0.5_cp + 1.0_cp/3.0_cp
+         hmin(3) = -0.5_cp
+         hmax(3) = 0.5_cp
+
+         call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
+         call grid_uniform(g1,hmin(2),hmax(2),N(2),2)
+         call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
+         call add(m,g1) ! 1
+
+         call con_app_uniform(g2,g1,N(1),1); call add(m,g2) ! 2
+         call con_app_uniform(g3,g2,N(1),1); call add(m,g3) ! 3
+         call con_app_uniform(g2,g1,N(2),2); call add(m,g2) ! 4
+         call con_app_uniform(g3,g2,N(2),2); call add(m,g3) ! 5
+
+         call con_app_uniform(g1,g2,N(1),1); call add(m,g1) ! 6
+         call con_app_uniform(g3,g1,N(1),1); call add(m,g3) ! 7
+         call con_app_uniform(g3,g1,N(2),2); call add(m,g3) ! 8
+         call con_app_uniform(g2,g3,N(1),1); call add(m,g2) ! 9
+         
+         call initProps(m)
+         call patch(m)
+         call delete(g1)
+         call delete(g2)
+         call delete(g3)
+       end subroutine
+
        subroutine ins_elbow(m)
          implicit none
          type(mesh),intent(inout) :: m
@@ -385,22 +429,31 @@
        end subroutine
 
        subroutine flow_past_square(m)
+         ! Setup:
+         !         ----------------------------------------
+         !         | 2 | 4 |               5              |
+         !  inlet  ---------------------------------------- outlet
+         !   -->   | 1 |   |               8              | -->
+         !         ----------------------------------------
+         !         | 3 | 6 |               7              |
+         !         ----------------------------------------
          implicit none
          type(mesh),intent(inout) :: m
          type(grid) :: g1,g2,g3
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
          call delete(m)
-         N = 30
+         N = (/30,20,1/)
          hmin = -0.5_cp; hmax = 0.5_cp; beta = 1.1_cp
          hmin(1) = 0.0_cp; hmax(1) = 2.0_cp
+         beta = reynoldsBL(400.0_cp,(/-0.5_cp,-0.5_cp,-0.5_cp/),(/0.5_cp,0.5_cp,0.5_cp/))
          call grid_Roberts_R(g2,hmin(1),hmax(1),N(1),beta(1),1) ! Central entrance
          call grid_Roberts_B(g2,hmin(2),hmax(2),N(2),beta(2),2)
          call grid_Roberts_B(g2,hmin(3),hmax(3),1,beta(3),3)
          call add(m,g2)
 
-         call con_app_Roberts_B (g1,g2,1.0_cp,N(2),2); call add(m,g1) ! left entrance
-         call con_prep_Roberts_B(g3,g2,1.0_cp,N(2),2); call add(m,g3) ! right entrance
+         call con_app_Roberts_L (g1,g2,2.0_cp,N(2),2); call add(m,g1) ! left entrance
+         call con_prep_Roberts_R(g3,g2,2.0_cp,N(2),2); call add(m,g3) ! right entrance
 
          call con_app_Roberts_B(g2,g1,1.0_cp,N(1),1); call add(m,g2) ! left side
          call con_app_Roberts_L(g1,g2,10.0_cp,60,1); call add(m,g1) ! left side exit

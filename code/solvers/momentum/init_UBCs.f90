@@ -162,8 +162,32 @@
          ! ***********************************************************************
 
          ! LDC, 4 domains
-         call init(U%x%RF(3)%b,1.0_cp,4)
-         call init(U%x%RF(4)%b,1.0_cp,4)
+         ! call init(U%x%RF(3)%b,1.0_cp,4)
+         ! call init(U%x%RF(4)%b,1.0_cp,4)
+
+         ! LDC 9 domains
+         ! call init(U%x%RF(5)%b,1.0_cp,4)
+         ! call init(U%x%RF(8)%b,1.0_cp,4)
+         ! call init(U%x%RF(9)%b,1.0_cp,4)
+
+         ! LDC 9 domains
+         ! Inlet
+         call init(U%x%RF(1)%b,1.0_cp,1) ! Uniform inflow
+         call init(U%x%RF(2)%b,1.0_cp,1) ! Uniform inflow
+         call init(U%x%RF(3)%b,1.0_cp,1) ! Uniform inflow
+         call init_Neumann(U%x%RF(2)%b,4); call init_Neumann(U%x%RF(3)%b,3) ! Slip, no penetration
+         call init_Neumann(U%x%RF(4)%b,4); call init_Neumann(U%x%RF(6)%b,3) ! Slip, no penetration
+         call init_Neumann(U%x%RF(5)%b,4); call init_Neumann(U%x%RF(7)%b,3) ! Slip, no penetration
+         ! Outlet
+         call init_Neumann(U%x%RF(5)%b,2)
+         call init_Neumann(U%x%RF(7)%b,2)
+         call init_Neumann(U%x%RF(8)%b,2)
+         call init_Neumann(U%y%RF(5)%b,2)
+         call init_Neumann(U%y%RF(7)%b,2)
+         call init_Neumann(U%y%RF(8)%b,2)
+         call init_Neumann(U%z%RF(5)%b,2)
+         call init_Neumann(U%z%RF(7)%b,2)
+         call init_Neumann(U%z%RF(8)%b,2)
 
          ! Tyler's geometry
          ! do i=4,6
