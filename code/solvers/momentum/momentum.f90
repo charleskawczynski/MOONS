@@ -377,9 +377,9 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          if (print_export(1)) call div(mom%divU,mom%U,mom%m)
          if (print_export(1)) call exportTransient(mom,dir)
-         if (print_export(3).or.mom%nstep.eq.1) then
-         call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
-         endif
+         ! if (print_export(3).or.mom%nstep.eq.1) then
+         ! call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
+         ! endif
 
          if (print_export(1)) then
            call momentumInfo(mom,6)

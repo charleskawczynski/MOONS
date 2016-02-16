@@ -120,7 +120,7 @@
          if (m%s.gt.1) call apply_edge_SF(U,m)
        end subroutine
 
-       function stitch_TF(RF,g,f) result(TF)
+       function BC_TF(RF,g,f,e) result(TF)
          !
          !        z                          x                          y                        
          !        ^    6                     ^    2                     ^    4                   
@@ -134,11 +134,38 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,dimension(2),intent(in) :: f
-         logical,dimension(2) :: TF_prep
+         integer,intent(in) :: e
+         logical,dimension(2) :: TF1,TF2
          logical :: TF
-         TF_prep(1) = RF%b%f(f(1))%b%Dirichlet.and.(.not.g%st_faces(f(1))%TF)
-         TF_prep(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_faces(f(2))%TF)
-         TF = all(TF_prep)
+         TF1(1) = RF%b%f(f(1))%b%Dirichlet.and.(.not.g%st_faces(f(1))%TF).and.(.not.RF%b%f(f(2))%b%periodic)
+         TF1(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_faces(f(2))%TF).and.(.not.RF%b%f(f(1))%b%periodic)
+         TF2(1) = g%st_faces(f(1))%TF.and.g%st_faces(f(2))%TF
+         TF2(2) = .not.g%st_edges(e)%TF
+         TF = any(TF1).or.all(TF2)
+       end function
+
+       function BC_TF2(RF,g,f,e,i) result(TF)
+         !
+         !        z                          x                          y                        
+         !        ^    6                     ^    2                     ^    4                   
+         !        2---------4                2---------4                2---------4              
+         !        |         |                |         |                |         |              
+         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2            
+         !        |         |                |         |                |         |              
+         !        1---------3-> y            1---------3-> z            1---------3-> x          
+         !             5                          1                          3                   
+         implicit none
+         type(realField),intent(inout) :: RF
+         type(grid),intent(in) :: g
+         integer,dimension(2),intent(in) :: f
+         integer,intent(in) :: e,i
+         logical,dimension(2) :: TF1,TF2
+         logical :: TF
+         TF1(1) = RF%b%f(f(1))%b%Dirichlet.and.(.not.g%st_faces(f(1))%TF).and.(.not.RF%b%f(f(1))%b%periodic)
+         TF1(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_faces(f(2))%TF).and.(.not.RF%b%f(f(2))%b%periodic)
+         TF2(1) = g%st_faces(f(1))%TF.and.g%st_faces(f(2))%TF
+         TF2(2) = .not.g%st_edges(e)%TF
+         TF = any(TF1).or.all(TF2)
        end function
 
        subroutine apply_edge_SF(U,m)
@@ -150,59 +177,59 @@
          integer :: i,k
          if (U%is_CC) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
-           f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
-           f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
-           f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
-           f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
+           e = edges_given_dir(k); a = adj_dir_given_dir(k)
+           f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_CC(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+           f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_CC(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+           f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_CC(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+           f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_CC(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            enddo; enddo
          elseif (U%is_Node) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
-           f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
-           f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
-           f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
-           f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
+           e = edges_given_dir(k); a = adj_dir_given_dir(k)
+           f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_N(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+           f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_N(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+           f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_N(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+           f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_N(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            enddo; enddo
          elseif (U%is_Face) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
+           e = edges_given_dir(k); a = adj_dir_given_dir(k)
            if (U%face.eq.k) then
-             f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
-             f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
-             f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
-             f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_CC(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_CC(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_CC(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_CC(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            elseif (U%face.eq.a(1)) then
-             f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(1),a(2),k,1)
-             f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(2),a(2),k,2)
-             f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(3),a(2),k,3)
-             f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(4),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_F1(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_F1(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_F1(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_F1(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            elseif (U%face.eq.a(2)) then
-             f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(1),a(1),k,1)
-             f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(2),a(1),k,2)
-             f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(3),a(1),k,3)
-             f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(4),a(1),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_F2(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_F2(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_F2(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_F2(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            else; stop 'Error: unhandled exception (1) in apply_BCs_edges.f90'
            endif
            enddo; enddo
          elseif (U%is_Edge) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
+           e = edges_given_dir(k); a = adj_dir_given_dir(k)
            if (U%edge.eq.k) then
-             f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
-             f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
-             f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
-             f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_N(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_N(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_N(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_N(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            elseif (U%edge.eq.a(1)) then
-             f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(1),a(1),k,1)
-             f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(2),a(1),k,2)
-             f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(3),a(1),k,3)
-             f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F2(U%RF(i),m%g(i),e(4),a(1),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_F2(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_F2(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_F2(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_F2(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            elseif (U%edge.eq.a(2)) then
-             f = adjacent_faces_given_edge(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(1),a(2),k,1)
-             f = adjacent_faces_given_edge(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(2),a(2),k,2)
-             f = adjacent_faces_given_edge(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(3),a(2),k,3)
-             f = adjacent_faces_given_edge(e(4)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_F1(U%RF(i),m%g(i),e(4),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%RF(i),m%g(i),f,e(1))) call a_F1(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%RF(i),m%g(i),f,e(2))) call a_F1(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%RF(i),m%g(i),f,e(3))) call a_F1(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%RF(i),m%g(i),f,e(4))) call a_F1(U%RF(i),m%g(i),e(4),a(1),a(2),k,4)
            else; stop 'Error: unhandled exception (2) in apply_BCs_edges.f90'
            endif
            enddo; enddo
@@ -215,6 +242,10 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,d1,d2,corner,e
+#ifdef _DEBUG_APPLY_BCS_
+         if (RF%s(d1).ne.g%c(d1)%sc) stop 'Error: bad input to a_CC (1) in apply_BCs_edge.f90'
+         if (RF%s(d2).ne.g%c(d2)%sc) stop 'Error: bad input to a_CC (2) in apply_BCs_edge.f90'
+#endif
          call app_CC_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),g%c(d2),corner)
        end subroutine
 
@@ -223,22 +254,34 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,d1,d2,corner,e
+#ifdef _DEBUG_APPLY_BCS_
+         if (RF%s(d1).ne.g%c(d1)%sn) stop 'Error: bad input to a_N (1) in apply_BCs_edge.f90'
+         if (RF%s(d2).ne.g%c(d2)%sn) stop 'Error: bad input to a_N (2) in apply_BCs_edge.f90'
+#endif
          call app_N_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),g%c(d2),corner)
        end subroutine
 
-       subroutine a_F1(RF,g,e,d2,dir,corner)
+       subroutine a_F1(RF,g,e,d1,d2,dir,corner)
          implicit none
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
-         integer,intent(in) :: dir,d2,corner,e
+         integer,intent(in) :: dir,d1,d2,corner,e
+#ifdef _DEBUG_APPLY_BCS_
+         if (RF%s(d1).ne.g%c(d1)%sn) stop 'Error: bad input to a_F1 (1) in apply_BCs_edge.f90'
+         if (RF%s(d2).ne.g%c(d2)%sc) stop 'Error: bad input to a_F1 (2) in apply_BCs_edge.f90'
+#endif
          call app_F1_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d2),corner)
        end subroutine
 
-       subroutine a_F2(RF,g,e,d1,dir,corner)
+       subroutine a_F2(RF,g,e,d1,d2,dir,corner)
          implicit none
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
-         integer,intent(in) :: dir,d1,corner,e
+         integer,intent(in) :: dir,d1,d2,corner,e
+#ifdef _DEBUG_APPLY_BCS_
+         if (RF%s(d1).ne.g%c(d1)%sc) stop 'Error: bad input to a_F2 (1) in apply_BCs_edge.f90'
+         if (RF%s(d2).ne.g%c(d2)%sn) stop 'Error: bad input to a_F2 (2) in apply_BCs_edge.f90'
+#endif
          call app_F2_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),corner)
        end subroutine
 

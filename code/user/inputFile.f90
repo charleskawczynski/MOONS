@@ -44,7 +44,7 @@
          ! t          = 80.00_cp
          t          = 80.00_cp
          ! dt_mom     = 1.0d-3
-         dt_mom     = 3.0d-4
+         dt_mom     = 1.0d-3
          ! dt_mom     = 2.0d-3
          dt_ind     = 5.0d-3
          ! t          = 4.0

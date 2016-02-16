@@ -58,7 +58,7 @@
          integer,dimension(4) :: a
 
          k = dir_given_face(f)
-         a = adjacent_faces_given_dir(k)
+         a = adj_faces_given_dir(k)
          if (CC_along(U,k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...

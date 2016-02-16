@@ -244,7 +244,7 @@
          do k=1,3; do i=1,m%s; do j=1,m%s
            if (i.ne.j) then
              TF_face(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
-             a = adjacent_dir_given_dir(k)
+             a = adj_dir_given_dir(k)
              TF_face(2) = abs(m%g(i)%c(a(1))%hmin-m%g(j)%c(a(1))%hmin).lt.tol*m%dhmin(a(1)) ! Adjacent face 1 hmin
              TF_face(3) = abs(m%g(i)%c(a(1))%hmax-m%g(j)%c(a(1))%hmax).lt.tol*m%dhmin(a(1)) ! Adjacent face 1 hmax
              TF_face(4) = abs(m%g(i)%c(a(2))%hmin-m%g(j)%c(a(2))%hmin).lt.tol*m%dhmin(a(2)) ! Adjacent face 2 hmin
@@ -284,7 +284,7 @@
            if (i.ne.j) then
              TF_edge(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (min)
              TF_edge(2) = abs(m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (max)
-             a = adjacent_dir_given_dir(k)
+             a = adj_dir_given_dir(k)
              TF_edge(3) = abs(m%g(i)%c(a(1))%hmin-m%g(j)%c(a(1))%hmax).lt.tol*m%dhmin(a(1)) ! min/max (a(1))
              TF_edge(4) = abs(m%g(i)%c(a(1))%hmax-m%g(j)%c(a(1))%hmin).lt.tol*m%dhmin(a(1)) ! max/min (a(1))
              TF_edge(5) = abs(m%g(i)%c(a(2))%hmin-m%g(j)%c(a(2))%hmax).lt.tol*m%dhmin(a(2)) ! min/max (a(2))
@@ -315,7 +315,7 @@
          integer,dimension(2) :: a,f1,f2
          integer,dimension(4) :: e
          do k=1,3; do i=1,m%s
-           a = adjacent_dir_given_dir(k)
+           a = adj_dir_given_dir(k)
            f1 = normal_faces_given_dir(a(1)); f2 = normal_faces_given_dir(a(2)); e = edges_given_dir(k)
            if (.not.(m%g(i)%st_faces(f1(1))%TF.and.(m%g(i)%st_faces(f2(1))%TF))) call delete(m%g(i)%st_edges(e(1)))
            if (.not.(m%g(i)%st_faces(f1(1))%TF.and.(m%g(i)%st_faces(f2(2))%TF))) call delete(m%g(i)%st_edges(e(2)))

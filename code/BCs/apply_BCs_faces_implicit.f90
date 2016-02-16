@@ -56,7 +56,7 @@
          integer :: i,j,k,p
 
          k = dir_given_face(f)
-         a = adjacent_faces_given_dir(k)
+         a = adj_faces_given_dir(k)
          if (CC_along(U,k)) then
            do i=1,m%s
              ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif

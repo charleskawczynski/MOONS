@@ -33,11 +33,11 @@
 #endif
 
        private
-       public :: adjacent_faces_given_edge
+       public :: adj_faces_given_edge
        public :: edges_given_dir
        public :: normal_faces_given_dir
-       public :: adjacent_faces_given_dir
-       public :: adjacent_dir_given_dir
+       public :: adj_faces_given_dir
+       public :: adj_dir_given_dir
        public :: dir_given_face
 
        contains
@@ -54,7 +54,7 @@
          end select
        end function
 
-       function adjacent_faces_given_edge(edge) result (faces)
+       function adj_faces_given_edge(edge) result (faces)
          implicit none
          integer,intent(in) :: edge
          integer,dimension(2) :: faces
@@ -71,7 +71,7 @@
          case (10); faces = (/1,4/) ! z (xmin,ymax) (z)
          case (11); faces = (/2,3/) ! z (xmax,ymin) (z)
          case (12); faces = (/2,4/) ! z (xmax,ymax) (z)
-         case default; stop 'Error: edge must = 1:12 in adjacent_faces_given_edge in face_edge_corner_indexing.f90'
+         case default; stop 'Error: edge must = 1:12 in adj_faces_given_edge in face_edge_corner_indexing.f90'
          end select
        end function
 
@@ -87,7 +87,7 @@
          end select
        end function
 
-       function adjacent_dir_given_dir(dir) result (a)
+       function adj_dir_given_dir(dir) result (a)
          implicit none
          integer,intent(in) :: dir
          integer,dimension(2) :: a
@@ -95,7 +95,7 @@
          case (1); a = (/2,3/)
          case (2); a = (/3,1/)
          case (3); a = (/1,2/)
-         case default; stop 'Error: dir must = 1,2,3 in adjacent_faces_given_dir in face_edge_corner_indexing.f90'
+         case default; stop 'Error: dir must = 1,2,3 in adj_faces_given_dir in face_edge_corner_indexing.f90'
          end select
        end function
 
@@ -111,7 +111,7 @@
          end select
        end function
 
-       function adjacent_faces_given_dir(dir) result (f)
+       function adj_faces_given_dir(dir) result (f)
          implicit none
          integer,intent(in) :: dir
          integer,dimension(4) :: f
