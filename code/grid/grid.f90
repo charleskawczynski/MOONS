@@ -32,10 +32,6 @@
 
        type grid
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
-         type(stitch_face)   :: st_face   ! Face-stitch
-         type(stitch_edge)   :: st_edge   ! Edge-stitch
-         type(stitch_corner) :: st_corner ! Corner-stitch
-
          type(stitch),dimension(6)   :: st_faces   ! Face-stitches
          type(stitch),dimension(12)   :: st_edges   ! Edge-stitch
          type(stitch),dimension(8)   :: st_corners   ! Corner-stitch
@@ -68,11 +64,10 @@
          implicit none
          type(grid),intent(inout) :: g
          integer :: i
-         do i = 1,3; call delete(g%c(i)) ;enddo
-         ! do i = 1,3; call delete(g%st(i)) ;enddo
-         call delete(g%st_face)
-         call delete(g%st_edge)
-         call delete(g%st_corner)
+         do i=1,3;  call delete(g%c(i));          enddo
+         do i=1,6;  call delete(g%st_faces(i));   enddo
+         do i=1,12; call delete(g%st_edges(i));   enddo
+         do i=1,8;  call delete(g%st_corners(i)); enddo
          call initProps(g)
          ! write(*,*) 'Grid deleted'
        end subroutine
@@ -82,11 +77,10 @@
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: f
          integer :: i
-         do i = 1,3; call init(g%c(i),f%c(i)) ;enddo
-         ! do i = 1,3; call init(g%st(i),f%st(i)) ;enddo
-         call init(g%st_face,f%st_face)
-         call init(g%st_edge,f%st_edge)
-         call init(g%st_corner,f%st_corner)
+         do i=1,3;  call init(g%c(i),f%c(i));                   enddo
+         do i=1,6;  call init(g%st_faces(i),f%st_faces(i));     enddo
+         do i=1,12; call init(g%st_edges(i),f%st_edges(i));     enddo
+         do i=1,8;  call init(g%st_corners(i),f%st_corners(i)); enddo
          call initProps(g)
          if (.not.g%defined) stop 'Error: tried copying grid that was not fully defined'
        end subroutine
@@ -198,20 +192,17 @@
          type(grid), intent(in) :: g
          integer,intent(in) :: un
          integer :: i
-         write(un,*) 'stitches_face (hmin,hmax) = ',(/(g%st_face%hmin(i),i=1,3)/),(/(g%st_face%hmax(i),i=1,3)/)
+         write(un,*) 'st_faces = ',(/(g%st_faces(i)%TF,i=1,6)/)
+         write(un,*) 'st_edges = ',(/(g%st_edges(i)%TF,i=1,12)/)
+         write(un,*) 'st_corners = ',(/(g%st_edges(i)%TF,i=1,8)/)
          
-         write(un,*) 'stitches_edge (minmin,minmax,maxmin,maxmax) = ',(/(g%st_edge%minmin(i),i=1,3)/),&
-                                                                      (/(g%st_edge%minmax(i),i=1,3)/),&
-                                                                      (/(g%st_edge%maxmin(i),i=1,3)/),&
-                                                                      (/(g%st_edge%maxmax(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge_id (minmin,minmax,maxmin,maxmax) = ',(/(g%st_edge%minmin_id(i),i=1,3)/),&
-         !                                                                 (/(g%st_edge%minmax_id(i),i=1,3)/),&
-         !                                                                 (/(g%st_edge%maxmin_id(i),i=1,3)/),&
-         !                                                                 (/(g%st_edge%maxmax_id(i),i=1,3)/)
-         do i=1,3;if (g%st_edge%minmin(i)) write(un,*) 'stitches_edge_id (i,minmin)=',i,g%st_edge%minmin_id(i);enddo
-         do i=1,3;if (g%st_edge%minmax(i)) write(un,*) 'stitches_edge_id (i,minmax)=',i,g%st_edge%minmax_id(i);enddo
-         do i=1,3;if (g%st_edge%maxmin(i)) write(un,*) 'stitches_edge_id (i,maxmin)=',i,g%st_edge%maxmin_id(i);enddo
-         do i=1,3;if (g%st_edge%maxmax(i)) write(un,*) 'stitches_edge_id (i,maxmax)=',i,g%st_edge%maxmax_id(i);enddo
+         ! do i=1,6
+         !   if (g%st_faces(i)%TF) write(un,*) 'st_face_id (i,ID)=',i,g%st_faces(i)%ID
+         ! enddo
+
+         do i=1,12
+           if (g%st_edges(i)%TF) write(un,*) 'st_edge_id (i,ID)=',i,g%st_edges(i)%ID
+         enddo
 
          ! write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
          ! write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)

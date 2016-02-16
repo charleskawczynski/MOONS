@@ -182,9 +182,9 @@
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
          type(del) :: d
-         call d%assign(lapU,u,m,2,1,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapU,u,m,2,2,1) ! Padding avoids calcs on fictive cells
-            call d%add(lapU,u,m,2,3,1) ! Padding avoids calcs on fictive cells
+         call d%assign(lapU,u,m,2,1,0) ! Padding avoids calcs on fictive cells
+            call d%add(lapU,u,m,2,2,0) ! Padding avoids calcs on fictive cells
+            call d%add(lapU,u,m,2,3,0) ! Padding avoids calcs on fictive cells
        end subroutine
 
        subroutine lap_centered_SF(lapU,u,m,temp_E,dir,addTo)

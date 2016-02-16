@@ -46,12 +46,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        dfdh(2) = 0.5*(f(1)+f(2))*T%L(1) + &
-                             f(2)*T%D(1) + &
-                             f(3)*T%U(1)
-        dfdh(s-1) =        f(s-2)*T%L(s-2) + &
-                           f(s-1)*T%D(s-2) + &
-                0.5*(f(s-1)+f(s))*T%U(s-2)
+        if (pad1.eq.0) then
+          dfdh(2) = 0.5*(f(1)+f(2))*T%L(1) + &
+                               f(2)*T%D(1) + &
+                               f(3)*T%U(1)
+        endif
+        if (pad2.eq.0) then
+          dfdh(s-1) =        f(s-2)*T%L(s-2) + &
+                             f(s-1)*T%D(s-2) + &
+                  0.5*(f(s-1)+f(s))*T%U(s-2)
+        endif
         do i=3-pad1,s-2+pad2
           dfdh(i) = f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
         enddo
@@ -64,12 +68,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        dfdh(2) = f(2)*T%L(1) + &
-                  f(3)*T%D(1) + &
-                  f(4)*T%U(1)
-        dfdh(s-1) = f(s-3)*T%L(s-2) + &
-                    f(s-2)*T%D(s-2) + &
-                    f(s-1)*T%U(s-2)
+        if (pad1.eq.0) then
+          dfdh(2) = f(2)*T%L(1) + &
+                    f(3)*T%D(1) + &
+                    f(4)*T%U(1)
+        endif
+        if (pad2.eq.0) then
+          dfdh(s-1) = f(s-3)*T%L(s-2) + &
+                      f(s-2)*T%D(s-2) + &
+                      f(s-1)*T%U(s-2)
+        endif
         do i=3-pad1,s-2+pad2
           dfdh(i) = f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
         enddo
@@ -96,12 +104,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        dfdh(2) = dfdh(2) + 0.5*(f(1)+f(2))*T%L(1) + &
-                                       f(2)*T%D(1) + &
-                                       f(3)*T%U(1)
-        dfdh(s-1) = dfdh(s-1) +      f(s-2)*T%L(s-2) + &
-                                     f(s-1)*T%D(s-2) + &
-                          0.5*(f(s-1)+f(s))*T%U(s-2)
+        if (pad1.eq.0) then
+          dfdh(2) = dfdh(2) + 0.5*(f(1)+f(2))*T%L(1) + &
+                                         f(2)*T%D(1) + &
+                                         f(3)*T%U(1)
+        endif
+        if (pad2.eq.0) then
+          dfdh(s-1) = dfdh(s-1) +      f(s-2)*T%L(s-2) + &
+                                       f(s-1)*T%D(s-2) + &
+                            0.5*(f(s-1)+f(s))*T%U(s-2)
+        endif
         do i=3-pad1,s-2+pad2
           dfdh(i) = dfdh(i) + f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
         enddo
@@ -114,12 +126,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        dfdh(2) = dfdh(2) + f(2)*T%L(1) + &
-                            f(3)*T%D(1) + &
-                            f(4)*T%U(1)
-        dfdh(s-1) = dfdh(s-1) + f(s-3)*T%L(s-2) + &
-                                f(s-2)*T%D(s-2) + &
-                                f(s-1)*T%U(s-2)
+        if (pad1.eq.0) then
+          dfdh(2) = dfdh(2) + f(2)*T%L(1) + &
+                              f(3)*T%D(1) + &
+                              f(4)*T%U(1)
+        endif
+        if (pad2.eq.0) then
+          dfdh(s-1) = dfdh(s-1) + f(s-3)*T%L(s-2) + &
+                                  f(s-2)*T%D(s-2) + &
+                                  f(s-1)*T%U(s-2)
+        endif
         do i=3-pad1,s-2+pad2
           dfdh(i) = dfdh(i) + f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1)
         enddo
@@ -146,12 +162,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        dfdh(2) = dfdh(2) - (0.5*(f(1)+f(2))*T%L(1) + &
-                                        f(2)*T%D(1) + &
-                                        f(3)*T%U(1))
-        dfdh(s-1) = dfdh(s-1) -      (f(s-2)*T%L(s-2) + &
-                                      f(s-1)*T%D(s-2) + &
-                           0.5*(f(s-1)+f(s))*T%U(s-2))
+        if (pad1.eq.0) then
+          dfdh(2) = dfdh(2) - (0.5*(f(1)+f(2))*T%L(1) + &
+                                          f(2)*T%D(1) + &
+                                          f(3)*T%U(1))
+        endif
+        if (pad2.eq.0) then
+          dfdh(s-1) = dfdh(s-1) -      (f(s-2)*T%L(s-2) + &
+                                        f(s-1)*T%D(s-2) + &
+                             0.5*(f(s-1)+f(s))*T%U(s-2))
+        endif
         do i=3-pad1,s-2+pad2
           dfdh(i) = dfdh(i) - (f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1))
         enddo
@@ -164,12 +184,16 @@
         type(triDiag),intent(in) :: T
         integer,intent(in) :: s,pad1,pad2
         integer :: i
-        dfdh(2) = dfdh(2) - (f(2)*T%L(1) + &
-                             f(3)*T%D(1) + &
-                             f(4)*T%U(1))
-        dfdh(s-1) = dfdh(s-1) - (f(s-3)*T%L(s-2) + &
-                                 f(s-2)*T%D(s-2) + &
-                                 f(s-1)*T%U(s-2))
+        if (pad1.eq.0) then
+          dfdh(2) = dfdh(2) - (f(2)*T%L(1) + &
+                               f(3)*T%D(1) + &
+                               f(4)*T%U(1))
+        endif
+        if (pad2.eq.0) then
+          dfdh(s-1) = dfdh(s-1) - (f(s-3)*T%L(s-2) + &
+                                   f(s-2)*T%D(s-2) + &
+                                   f(s-1)*T%U(s-2))
+        endif
         do i=3-pad1,s-2+pad2
           dfdh(i) = dfdh(i) - (f(i-1)*T%L(i-1) + f(i)*T%D(i-1) + f(i+1)*T%U(i-1))
         enddo

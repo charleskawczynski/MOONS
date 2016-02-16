@@ -1,4 +1,4 @@
-       module apply_BCs_edges_mod
+       module apply_BCs_edges_implicit_mod
        ! Notes:
        !       o Edge BCs ARE NOT USED FOR PERIODIC BCs. It was decided that
        !         periodic BCs are typically used for simple geometries, not to
@@ -86,7 +86,7 @@
        implicit none
 
        private
-       public :: apply_BCs_edges
+       public :: apply_BCs_edges_implicit
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -99,8 +99,8 @@
 #endif
 
 
-       interface apply_BCs_edges;       module procedure apply_BCs_edges_VF;     end interface
-       interface apply_BCs_edges;       module procedure apply_BCs_edges_SF;     end interface
+       interface apply_BCs_edges_implicit;   module procedure apply_BCs_edges_VF;     end interface
+       interface apply_BCs_edges_implicit;   module procedure apply_BCs_edges_SF;     end interface
 
        contains
 
@@ -215,7 +215,7 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,d1,d2,corner,e
-         call app_CC_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),g%c(d2),corner)
+         call app_CC_RF(RF%f,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),g%c(d2),corner)
        end subroutine
 
        subroutine a_N(RF,g,e,d1,d2,dir,corner)
@@ -223,7 +223,7 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,d1,d2,corner,e
-         call app_N_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),g%c(d2),corner)
+         call app_N_RF(RF%f,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),g%c(d2),corner)
        end subroutine
 
        subroutine a_F1(RF,g,e,d2,dir,corner)
@@ -231,7 +231,7 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,d2,corner,e
-         call app_F1_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d2),corner)
+         call app_F1_RF(RF%f,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d2),corner)
        end subroutine
 
        subroutine a_F2(RF,g,e,d1,dir,corner)
@@ -239,10 +239,10 @@
          type(realField),intent(inout) :: RF
          type(grid),intent(in) :: g
          integer,intent(in) :: dir,d1,corner,e
-         call app_F2_RF(RF%f,RF%b%e(e)%vals,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),corner)
+         call app_F2_RF(RF%f,RF%b%e(e)%b,RF%s(1),RF%s(2),RF%s(3),dir,g%c(d1),corner)
        end subroutine
 
-       subroutine app_CC_RF(f,v,bct,x,y,z,dir,c1,c2,corner)
+       subroutine app_CC_RF(f,bct,x,y,z,dir,c1,c2,corner)
          ! At this point, data should be sent in a convention so that the 
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
@@ -288,7 +288,6 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),dimension(:),intent(in) :: v
          type(bctype),intent(in) :: bct
          type(coordinates),intent(in) :: c1,c2
          integer,intent(in) :: dir,corner
@@ -296,37 +295,37 @@
          select case (corner)
          case (1)
          select case (dir) !                           ug         ui      ug1       ug2
-         case (1); call app_CC(bct,(/c1%dhc(1),c2%dhc(1)/),v,f(:,1,1),f(:,2,2),f(:,2,1),f(:,1,2))
-         case (2); call app_CC(bct,(/c1%dhc(1),c2%dhc(1)/),v,f(1,:,1),f(2,:,2),f(1,:,2),f(2,:,1))
-         case (3); call app_CC(bct,(/c1%dhc(1),c2%dhc(1)/),v,f(1,1,:),f(2,2,:),f(2,1,:),f(1,2,:))
+         case (1); call app_CC(bct,(/c1%dhc(1),c2%dhc(1)/),f(:,1,1),f(:,2,2),f(:,2,1),f(:,1,2))
+         case (2); call app_CC(bct,(/c1%dhc(1),c2%dhc(1)/),f(1,:,1),f(2,:,2),f(1,:,2),f(2,:,1))
+         case (3); call app_CC(bct,(/c1%dhc(1),c2%dhc(1)/),f(1,1,:),f(2,2,:),f(2,1,:),f(1,2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (2)
          select case (dir) !                           ug         ui        ug1        ug2
-         case (1); call app_CC(bct,(/c1%dhc(1),c2%dhc_e/),v,f(:,1,z),f(:,2,z-1),f(:,2,z),f(:,1,z-1))
-         case (2); call app_CC(bct,(/c1%dhc(1),c2%dhc_e/),v,f(x,:,1),f(x-1,:,2),f(x,:,2),f(x-1,:,1))
-         case (3); call app_CC(bct,(/c1%dhc(1),c2%dhc_e/),v,f(1,y,:),f(2,y-1,:),f(2,y,:),f(1,y-1,:))
+         case (1); call app_CC(bct,(/c1%dhc(1),c2%dhc_e/),f(:,1,z),f(:,2,z-1),f(:,2,z),f(:,1,z-1))
+         case (2); call app_CC(bct,(/c1%dhc(1),c2%dhc_e/),f(x,:,1),f(x-1,:,2),f(x,:,2),f(x-1,:,1))
+         case (3); call app_CC(bct,(/c1%dhc(1),c2%dhc_e/),f(1,y,:),f(2,y-1,:),f(2,y,:),f(1,y-1,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (3)
          select case (dir) !                           ug         ui        ug1        ug2
-         case (1); call app_CC(bct,(/c1%dhc_e,c2%dhc(1)/),v,f(:,y,1),f(:,y-1,2),f(:,y-1,1),f(:,y,2))
-         case (2); call app_CC(bct,(/c1%dhc_e,c2%dhc(1)/),v,f(1,:,z),f(2,:,z-1),f(1,:,z-1),f(2,:,z))
-         case (3); call app_CC(bct,(/c1%dhc_e,c2%dhc(1)/),v,f(x,1,:),f(x-1,2,:),f(x-1,1,:),f(x,2,:))
+         case (1); call app_CC(bct,(/c1%dhc_e,c2%dhc(1)/),f(:,y,1),f(:,y-1,2),f(:,y-1,1),f(:,y,2))
+         case (2); call app_CC(bct,(/c1%dhc_e,c2%dhc(1)/),f(1,:,z),f(2,:,z-1),f(1,:,z-1),f(2,:,z))
+         case (3); call app_CC(bct,(/c1%dhc_e,c2%dhc(1)/),f(x,1,:),f(x-1,2,:),f(x-1,1,:),f(x,2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (4)
          select case (dir) !                           ug         ui           ug1        ug2
-         case (1); call app_CC(bct,(/c1%dhc_e,c2%dhc_e/),v,f(:,y,z),f(:,y-1,z-1),f(:,y-1,z),f(:,y,z-1))
-         case (2); call app_CC(bct,(/c1%dhc_e,c2%dhc_e/),v,f(x,:,z),f(x-1,:,z-1),f(x,:,z-1),f(x-1,:,z))
-         case (3); call app_CC(bct,(/c1%dhc_e,c2%dhc_e/),v,f(x,y,:),f(x-1,y-1,:),f(x-1,y,:),f(x,y-1,:))
+         case (1); call app_CC(bct,(/c1%dhc_e,c2%dhc_e/),f(:,y,z),f(:,y-1,z-1),f(:,y-1,z),f(:,y,z-1))
+         case (2); call app_CC(bct,(/c1%dhc_e,c2%dhc_e/),f(x,:,z),f(x-1,:,z-1),f(x,:,z-1),f(x-1,:,z))
+         case (3); call app_CC(bct,(/c1%dhc_e,c2%dhc_e/),f(x,y,:),f(x-1,y-1,:),f(x-1,y,:),f(x,y-1,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case default; stop 'Error: corner must = 1,2,3,4 in app_E_SF in apply_BCs_edges.f90'
          end select
        end subroutine
 
-       subroutine app_N_RF(f,v,bct,x,y,z,dir,c1,c2,corner)
+       subroutine app_N_RF(f,bct,x,y,z,dir,c1,c2,corner)
          ! At this point, data should be sent in a convention so that the 
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
@@ -373,7 +372,6 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),dimension(:),intent(in) :: v
          type(bctype),intent(in) :: bct
          type(coordinates),intent(in) :: c1,c2
          integer,intent(in) :: dir,corner
@@ -381,37 +379,37 @@
          select case (corner)
          case (1)
          select case (dir) !                           ub       ug1        ug2      ui1      ui2
-         case (1); call app_N(bct,(/c1%dhn(1),c2%dhn(1)/),v,f(:,2,2),f(:,1,2),f(:,2,1),f(:,3,2),f(:,2,3))
-         case (2); call app_N(bct,(/c1%dhn(1),c2%dhn(1)/),v,f(2,:,2),f(2,:,1),f(1,:,2),f(2,:,3),f(3,:,2))
-         case (3); call app_N(bct,(/c1%dhn(1),c2%dhn(1)/),v,f(2,2,:),f(1,2,:),f(2,1,:),f(3,2,:),f(2,3,:))
+         case (1); call app_N(bct,(/c1%dhn(1),c2%dhn(1)/),f(:,2,2),f(:,1,2),f(:,2,1),f(:,3,2),f(:,2,3))
+         case (2); call app_N(bct,(/c1%dhn(1),c2%dhn(1)/),f(2,:,2),f(2,:,1),f(1,:,2),f(2,:,3),f(3,:,2))
+         case (3); call app_N(bct,(/c1%dhn(1),c2%dhn(1)/),f(2,2,:),f(1,2,:),f(2,1,:),f(3,2,:),f(2,3,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (2)
          select case (dir) !                            ub        ug1       ug2         ui1         ui2
-         case (1); call app_N(bct,(/c1%dhn(1),c2%dhn_e/),v,f(:,2,z-1),f(:,1,z-1),f(:,2,z),f(:,3,z-1),f(:,2,z-2))
-         case (2); call app_N(bct,(/c1%dhn(1),c2%dhn_e/),v,f(x-1,:,2),f(x-1,:,1),f(x,:,2),f(x-1,:,3),f(x-2,:,2))
-         case (3); call app_N(bct,(/c1%dhn(1),c2%dhn_e/),v,f(2,y-1,:),f(1,y-1,:),f(2,y,:),f(3,y-1,:),f(2,y-2,:))
+         case (1); call app_N(bct,(/c1%dhn(1),c2%dhn_e/),f(:,2,z-1),f(:,1,z-1),f(:,2,z),f(:,3,z-1),f(:,2,z-2))
+         case (2); call app_N(bct,(/c1%dhn(1),c2%dhn_e/),f(x-1,:,2),f(x-1,:,1),f(x,:,2),f(x-1,:,3),f(x-2,:,2))
+         case (3); call app_N(bct,(/c1%dhn(1),c2%dhn_e/),f(2,y-1,:),f(1,y-1,:),f(2,y,:),f(3,y-1,:),f(2,y-2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (3)
          select case (dir) !                           ub         ug1        ug2        ui1        ui2
-         case (1); call app_N(bct,(/c1%dhn_e,c2%dhn(1)/),v,f(:,y-1,2),f(:,y,2),f(:,y-1,1),f(:,y-2,2),f(:,y-1,3))
-         case (2); call app_N(bct,(/c1%dhn_e,c2%dhn(1)/),v,f(2,:,z-1),f(2,:,z),f(1,:,z-1),f(2,:,z-2),f(3,:,z-1))
-         case (3); call app_N(bct,(/c1%dhn_e,c2%dhn(1)/),v,f(x-1,2,:),f(x,2,:),f(x-1,1,:),f(x-2,2,:),f(x-1,3,:))
+         case (1); call app_N(bct,(/c1%dhn_e,c2%dhn(1)/),f(:,y-1,2),f(:,y,2),f(:,y-1,1),f(:,y-2,2),f(:,y-1,3))
+         case (2); call app_N(bct,(/c1%dhn_e,c2%dhn(1)/),f(2,:,z-1),f(2,:,z),f(1,:,z-1),f(2,:,z-2),f(3,:,z-1))
+         case (3); call app_N(bct,(/c1%dhn_e,c2%dhn(1)/),f(x-1,2,:),f(x,2,:),f(x-1,1,:),f(x-2,2,:),f(x-1,3,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (4)
          select case (dir) !                           ub       ug1        ug2         ui1         ui2
-         case (1); call app_N(bct,(/c1%dhn_e,c2%dhn_e/),v,f(:,y-1,z-1),f(:,y,z-1),f(:,y-1,z),f(:,y-2,z-1),f(:,y-1,z-2))
-         case (2); call app_N(bct,(/c1%dhn_e,c2%dhn_e/),v,f(x-1,:,z-1),f(x-1,:,z),f(x,:,z-1),f(x-1,:,z-2),f(x-2,:,z-1))
-         case (3); call app_N(bct,(/c1%dhn_e,c2%dhn_e/),v,f(x-1,y-1,:),f(x,y-1,:),f(x-1,y,:),f(x-2,y-1,:),f(x-1,y-2,:))
+         case (1); call app_N(bct,(/c1%dhn_e,c2%dhn_e/),f(:,y-1,z-1),f(:,y,z-1),f(:,y-1,z),f(:,y-2,z-1),f(:,y-1,z-2))
+         case (2); call app_N(bct,(/c1%dhn_e,c2%dhn_e/),f(x-1,:,z-1),f(x-1,:,z),f(x,:,z-1),f(x-1,:,z-2),f(x-2,:,z-1))
+         case (3); call app_N(bct,(/c1%dhn_e,c2%dhn_e/),f(x-1,y-1,:),f(x,y-1,:),f(x-1,y,:),f(x-2,y-1,:),f(x-1,y-2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case default; stop 'Error: corner must = 1,2,3,4 in app_E_SF in apply_BCs_edges.f90'
          end select
        end subroutine
 
-       subroutine app_F1_RF(f,v,bct,x,y,z,dir,c2,corner)
+       subroutine app_F1_RF(f,bct,x,y,z,dir,c2,corner)
          ! At this point, data should be sent in a convention so that the 
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
@@ -457,7 +455,6 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),dimension(:),intent(in) :: v
          type(bctype),intent(in) :: bct
          type(coordinates),intent(in) :: c2
          integer,intent(in) :: dir,corner
@@ -465,37 +462,37 @@
          select case (corner)
          case (1)
          select case (dir) !                            ug        ui
-         case (1); call app_F(bct,c2%dhc(1),v,f(:,2,1),f(:,2,2))
-         case (2); call app_F(bct,c2%dhc(1),v,f(1,:,2),f(2,:,2))
-         case (3); call app_F(bct,c2%dhc(1),v,f(2,1,:),f(2,2,:))
+         case (1); call app_F(bct,c2%dhc(1),f(:,2,1),f(:,2,2))
+         case (2); call app_F(bct,c2%dhc(1),f(1,:,2),f(2,:,2))
+         case (3); call app_F(bct,c2%dhc(1),f(2,1,:),f(2,2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (2)
          select case (dir) !                           ug        ui
-         case (1); call app_F(bct,c2%dhc_e,v,f(:,2,z),f(:,2,z-1))
-         case (2); call app_F(bct,c2%dhc_e,v,f(x,:,2),f(x-1,:,2))
-         case (3); call app_F(bct,c2%dhc_e,v,f(2,y,:),f(2,y-1,:))
+         case (1); call app_F(bct,c2%dhc_e,f(:,2,z),f(:,2,z-1))
+         case (2); call app_F(bct,c2%dhc_e,f(x,:,2),f(x-1,:,2))
+         case (3); call app_F(bct,c2%dhc_e,f(2,y,:),f(2,y-1,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (3)
          select case (dir) !                           ug        ui
-         case (1); call app_F(bct,c2%dhc(1),v,f(:,y-1,1),f(:,y-1,2))
-         case (2); call app_F(bct,c2%dhc(1),v,f(1,:,z-1),f(2,:,z-1))
-         case (3); call app_F(bct,c2%dhc(1),v,f(x-1,1,:),f(x-1,2,:))
+         case (1); call app_F(bct,c2%dhc(1),f(:,y-1,1),f(:,y-1,2))
+         case (2); call app_F(bct,c2%dhc(1),f(1,:,z-1),f(2,:,z-1))
+         case (3); call app_F(bct,c2%dhc(1),f(x-1,1,:),f(x-1,2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (4)
          select case (dir) !                           ug        ui
-         case (1); call app_F(bct,c2%dhc_e,v,f(:,y-1,z),f(:,y-1,z-1))
-         case (2); call app_F(bct,c2%dhc_e,v,f(x,:,z-1),f(x-1,:,z-1))
-         case (3); call app_F(bct,c2%dhc_e,v,f(x-1,y,:),f(x-1,y-1,:))
+         case (1); call app_F(bct,c2%dhc_e,f(:,y-1,z),f(:,y-1,z-1))
+         case (2); call app_F(bct,c2%dhc_e,f(x,:,z-1),f(x-1,:,z-1))
+         case (3); call app_F(bct,c2%dhc_e,f(x-1,y,:),f(x-1,y-1,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case default; stop 'Error: corner must = 1,2,3,4 in app_E_SF in apply_BCs_edges.f90'
          end select
        end subroutine
 
-       subroutine app_F2_RF(f,v,bct,x,y,z,dir,c1,corner)
+       subroutine app_F2_RF(f,bct,x,y,z,dir,c1,corner)
          ! At this point, data should be sent in a convention so that the 
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
@@ -541,7 +538,6 @@
          ! 
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),dimension(:),intent(in) :: v
          type(bctype),intent(in) :: bct
          type(coordinates),intent(in) :: c1
          integer,intent(in) :: dir,corner
@@ -549,74 +545,77 @@
          select case (corner)
          case (1)
          select case (dir) !                            ug        ui
-         case (1); call app_F(bct,c1%dhc(1),v,f(:,1,2),f(:,2,2))
-         case (2); call app_F(bct,c1%dhc(1),v,f(2,:,1),f(2,:,2))
-         case (3); call app_F(bct,c1%dhc(1),v,f(1,2,:),f(2,2,:))
+         case (1); call app_F(bct,c1%dhc(1),f(:,1,2),f(:,2,2))
+         case (2); call app_F(bct,c1%dhc(1),f(2,:,1),f(2,:,2))
+         case (3); call app_F(bct,c1%dhc(1),f(1,2,:),f(2,2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (2)
          select case (dir) !                           ug        ui
-         case (1); call app_F(bct,c1%dhc(1),v,f(:,1,z-1),f(:,2,z-1))
-         case (2); call app_F(bct,c1%dhc(1),v,f(x-1,:,1),f(x-1,:,2))
-         case (3); call app_F(bct,c1%dhc(1),v,f(1,y-1,:),f(2,y-1,:))
+         case (1); call app_F(bct,c1%dhc(1),f(:,1,z-1),f(:,2,z-1))
+         case (2); call app_F(bct,c1%dhc(1),f(x-1,:,1),f(x-1,:,2))
+         case (3); call app_F(bct,c1%dhc(1),f(1,y-1,:),f(2,y-1,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (3)
          select case (dir) !                           ug        ui
-         case (1); call app_F(bct,c1%dhc_e,v,f(:,y,2),f(:,y-1,2))
-         case (2); call app_F(bct,c1%dhc_e,v,f(2,:,z),f(2,:,z-1))
-         case (3); call app_F(bct,c1%dhc_e,v,f(x,2,:),f(x-1,2,:))
+         case (1); call app_F(bct,c1%dhc_e,f(:,y,2),f(:,y-1,2))
+         case (2); call app_F(bct,c1%dhc_e,f(2,:,z),f(2,:,z-1))
+         case (3); call app_F(bct,c1%dhc_e,f(x,2,:),f(x-1,2,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case (4)
          select case (dir) !                           ug        ui
-         case (1); call app_F(bct,c1%dhc_e,v,f(:,y,z-1),f(:,y-1,z-1))
-         case (2); call app_F(bct,c1%dhc_e,v,f(x-1,:,z),f(x-1,:,z-1))
-         case (3); call app_F(bct,c1%dhc_e,v,f(x,y-1,:),f(x-1,y-1,:))
+         case (1); call app_F(bct,c1%dhc_e,f(:,y,z-1),f(:,y-1,z-1))
+         case (2); call app_F(bct,c1%dhc_e,f(x-1,:,z),f(x-1,:,z-1))
+         case (3); call app_F(bct,c1%dhc_e,f(x,y-1,:),f(x-1,y-1,:))
          case default; stop 'Error: dir must = 1,2,3 in app_E_SF in apply_BCs_edges.f90'
          end select
          case default; stop 'Error: corner must = 1,2,3,4 in app_E_SF in apply_BCs_edges.f90'
          end select
        end subroutine
 
-       subroutine app_CC(bct,dh,bvals,ug,ui,ug1,ug2)
+       subroutine app_CC(bct,dh,ug,ui,ug1,ug2)
          !     CC:    ug, ui  , ug1 , ug2
          implicit none
          real(cp),dimension(:),intent(inout) :: ug
-         real(cp),dimension(:),intent(in) :: bvals,ui,ug1,ug2
+         real(cp),dimension(:),intent(in) :: ui,ug1,ug2
          real(cp),dimension(2),intent(in) :: dh
          type(bctype),intent(in) :: bct
-         if (bct%Dirichlet) then;   ug = 4.0_cp*bvals - (ui + ug1 + ug2)
+         if (bct%Dirichlet) then;   ug = - (ui + ug1 + ug2)
          elseif (bct%Neumann) then; 
          ug = (ug1*dh(1) + ug2*dh(2))/(dh(1)+dh(2)) ! (hard coded zero)
          else; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
          endif
        end subroutine
 
-       subroutine app_N(bct,dh,bvals,ub,ug1,ug2,ui1,ui2)
+       subroutine app_N(bct,dh,ub,ug1,ug2,ui1,ui2)
          !     N :    ub, ug1 , ug2 , ui1 , ui2
          implicit none
          real(cp),dimension(:),intent(inout) :: ub,ug1,ug2
-         real(cp),dimension(:),intent(in) :: bvals,ui1,ui2
+         real(cp),dimension(:),intent(in) :: ui1,ui2
          real(cp),dimension(2),intent(in) :: dh ! needed for non-zero Neumann
          type(bctype),intent(in) :: bct
-         if (bct%Dirichlet) then;   ub = bvals
+         real(cp) :: suppress_warning
+         suppress_warning = dh(1)
+         if (bct%Dirichlet) then;   ub = 0.0_cp
          elseif (bct%Neumann) then; 
-           ug1 = ui1 - 2.0_cp*dh(1)*bvals
-           ug2 = ui2 - 2.0_cp*dh(2)*bvals
+           ug1 = ui1; ug2 = ui2
          else; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'
          endif
        end subroutine
 
-       subroutine app_F(bct,dh,bvals,ug,ui)
+       subroutine app_F(bct,dh,ug,ui)
          !     F :    ug, ui
          implicit none
          real(cp),dimension(:),intent(inout) :: ug
-         real(cp),dimension(:),intent(in) :: ui,bvals
+         real(cp),dimension(:),intent(in) :: ui
          real(cp),intent(in) :: dh
          type(bctype),intent(in) :: bct
-         if (bct%Dirichlet) then;   ug = 2.0_cp*bvals - ui
-         elseif (bct%Neumann) then; ug = ui + dh*bvals
+         real(cp) :: suppress_warning
+         suppress_warning = dh
+         if (bct%Dirichlet) then;   ug = - ui
+         elseif (bct%Neumann) then; ug = ui
          else; stop 'Error: Bad bctype! Caught in a_F in apply_BCs_edges.f90'
          endif
        end subroutine

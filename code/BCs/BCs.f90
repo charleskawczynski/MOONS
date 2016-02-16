@@ -68,10 +68,6 @@
        public :: getDirichlet
 
        ! For apply_BCs_edges
-       public :: adjacent_faces
-       public :: edges_given_dir
-       public :: adjacent_faces_new
-       public :: adjacent_directions
        ! public :: define_Edges
 
        type BCs
@@ -294,76 +290,6 @@
        !     endif
        !   enddo
        ! end subroutine
-
-       function adjacent_faces(i_edge) result (i_faces)
-         implicit none
-         integer,intent(in) :: i_edge
-         integer,dimension(2) :: i_faces
-         select case (i_edge)
-         case (1);  i_faces = (/3,5/) ! x (ymin,zmin) (x)
-         case (2);  i_faces = (/3,6/) ! x (ymin,zmax) (x)
-         case (3);  i_faces = (/4,5/) ! x (ymax,zmin) (x)
-         case (4);  i_faces = (/4,6/) ! x (ymax,zmax) (x)
-         case (5);  i_faces = (/1,5/) ! y (xmin,zmin) (y)
-         case (6);  i_faces = (/1,6/) ! y (xmin,zmax) (y)
-         case (7);  i_faces = (/2,5/) ! y (xmax,zmin) (y)
-         case (8);  i_faces = (/2,6/) ! y (xmax,zmax) (y)
-         case (9);  i_faces = (/1,3/) ! z (xmin,ymin) (z)
-         case (10); i_faces = (/1,4/) ! z (xmin,ymax) (z)
-         case (11); i_faces = (/2,3/) ! z (xmax,ymin) (z)
-         case (12); i_faces = (/2,4/) ! z (xmax,ymax) (z)
-         end select
-       end function
-
-       function edges_given_dir(dir) result (edges)
-         implicit none
-         integer,intent(in) :: dir
-         integer,dimension(4) :: edges
-         select case (dir)
-         case (1); edges = (/1,2,3,4/)
-         case (2); edges = (/5,6,7,8/)
-         case (3); edges = (/9,10,11,12/)
-         case default; stop 'Error: dir must = 1,2,3 in edges_given_dir in BCs.f90'
-         end select
-       end function
-
-       function adjacent_directions(dir) result (a)
-         !        z                      x                      y                   
-         !        ^                      ^                      ^                   
-         !        |-----                 |-----                 |-----              
-         !        |     |     dir = 1    |     |     dir = 2    |     |     dir = 3
-         !        |     |                |     |                |     |             
-         !         -------> y             -------> z             -------> x         
-         implicit none
-         integer,intent(in) :: dir
-         integer,dimension(2) :: a
-         select case (dir)
-         case (1); a = (/2,3/)
-         case (2); a = (/3,1/)
-         case (3); a = (/1,2/)
-         case default; stop 'Error: dir must = 1,2,3 in adjacent_directions in BCs.f90'
-         end select
-       end function
-
-       function adjacent_faces_new(i_edge) result (i_faces)
-         implicit none
-         integer,intent(in) :: i_edge
-         integer,dimension(2) :: i_faces
-         select case (i_edge)
-         case (1);  i_faces = (/3,5/) ! x (ymin,zmin) (x)
-         case (2);  i_faces = (/3,6/) ! x (ymin,zmax) (x)
-         case (3);  i_faces = (/4,5/) ! x (ymax,zmin) (x)
-         case (4);  i_faces = (/4,6/) ! x (ymax,zmax) (x)
-         case (5);  i_faces = (/1,5/) ! y (xmin,zmin) (y)
-         case (6);  i_faces = (/2,5/) ! y (xmin,zmax) (y)
-         case (7);  i_faces = (/1,6/) ! y (xmax,zmin) (y)
-         case (8);  i_faces = (/2,6/) ! y (xmax,zmax) (y)
-         case (9);  i_faces = (/1,3/) ! z (xmin,ymin) (z)
-         case (10); i_faces = (/1,4/) ! z (xmin,ymax) (z)
-         case (11); i_faces = (/2,3/) ! z (xmax,ymin) (z)
-         case (12); i_faces = (/2,4/) ! z (xmax,ymax) (z)
-         end select
-       end function
 
        ! *******************************************************************************
        ! ******************************** COPY / DELETE ********************************

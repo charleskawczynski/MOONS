@@ -42,7 +42,7 @@
          type(mesh),intent(in) :: m
          if (m%s.gt.1) then
            call apply_stitches_faces(U,m)
-           ! call apply_stitches_edges(U,m)
+           call apply_stitches_edges(U,m)
            ! call apply_stitches_corners(U,m)
          endif
        end subroutine

@@ -147,7 +147,7 @@
          integer :: i,k
          if (U%is_CC) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_directions(k)
+           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
            f = adjacent_faces(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
            f = adjacent_faces(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
            f = adjacent_faces(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
@@ -155,7 +155,7 @@
            enddo; enddo
          elseif (U%is_Node) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_directions(k)
+           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
            f = adjacent_faces(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
            f = adjacent_faces(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
            f = adjacent_faces(e(3)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(3),a(1),a(2),k,3)
@@ -163,7 +163,7 @@
            enddo; enddo
          elseif (U%is_Face) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_directions(k)
+           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
            if (U%face.eq.k) then
              f = adjacent_faces(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
              f = adjacent_faces(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_CC(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)
@@ -178,7 +178,7 @@
            enddo; enddo
          elseif (U%is_Edge) then
            do i=1,m%s; do k = 1,3
-           e = edges_given_dir(k); a = adjacent_directions(k)
+           e = edges_given_dir(k); a = adjacent_dir_given_dir(k)
            if (U%edge.eq.k) then
              f = adjacent_faces(e(1)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(1),a(1),a(2),k,1)
              f = adjacent_faces(e(2)); if (stitch_TF(U%RF(i),m%g(i),f)) call a_N(U%RF(i),m%g(i),e(2),a(1),a(2),k,2)

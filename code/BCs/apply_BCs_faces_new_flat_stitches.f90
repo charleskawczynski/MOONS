@@ -36,19 +36,7 @@
          call apply_BCs_faces(U%z,m)
        end subroutine
 
-       function get_dir_from_face(face) result(dir)
-         implicit none
-         integer,intent(in) :: face
-         integer :: dir
-         select case (face)
-         case (1,2); dir = 1
-         case (3,4); dir = 2
-         case (5,6); dir = 3
-         case default; stop 'Error: face must = 1:6 in get_dir_from_face in apply_BCs_faces.f90'
-         end select
-       end function
-
-       subroutine apply_face_SF(U,m)
+       subroutine apply_BCs_faces_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
@@ -58,7 +46,7 @@
        call checkBCs(U,f,m)
 #endif
          do f=1,6
-         k = get_dir_from_face(f)
+         k = dir_from_face(f)
          if (CC_along(U,k)) then
          do i=1,m%s; if (.not.m%g(i)%st_faces(f)) call a_CC(U%RF(i),f,m%g(i)%c(k)%dhc(1),m%g(i)%c(k)%dhc_e); enddo
          elseif (Node_along(U,k)) then

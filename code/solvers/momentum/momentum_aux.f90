@@ -11,7 +11,6 @@
        private
        
        public :: compute_TKE
-       public :: compute_divU
        public :: compute_CoFoRe_grid
        public :: addMeanPressureGrad
 
@@ -48,14 +47,6 @@
          call multiply(Fo_grid,dt)
          call stabilityTerms(Re_grid,U_CC,m,-1)
          call multiply(Re_grid,Re)
-       end subroutine
-
-       subroutine compute_divU(divU,U,m)
-         implicit none
-         type(SF),intent(inout) :: divU
-         type(VF),intent(in) :: U
-         type(mesh),intent(in) :: m
-         call div(divU,U,m)
        end subroutine
 
        subroutine addMeanPressureGrad(f,mpg,dir)

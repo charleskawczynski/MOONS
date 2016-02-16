@@ -48,6 +48,7 @@
         real(cp) :: dhn_e,dhc_e                         ! dhn(end),dhc(end)
         logical :: defined = .false.
         logical :: stencils_defined = .false.
+        logical,dimension(2) :: stencils_modified = .false.
       end type
 
       interface init;              module procedure initCoordinates;        end interface
@@ -114,6 +115,7 @@
         c%sc = d%sc
         c%defined = d%defined
         c%stencils_defined = d%stencils_defined
+        c%stencils_modified = d%stencils_modified
         call initProps(c)
       end subroutine
 
@@ -144,6 +146,7 @@
         ! Additional information
         call initProps(c)
         call init_stencils(c)
+        c%stencils_modified = .false.
         c%defined = .true.
       end subroutine
 
@@ -269,6 +272,7 @@
         U(s-2) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
         call init(c%colN(1),L,D,U)
         deallocate(L,D,U,dh)
+        c%stencils_modified = .false.
       end subroutine
 
       subroutine stencil_colN_2(c)
@@ -296,6 +300,7 @@
         U(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i-2)))
         call init(c%colN(2),L,D,U)
         deallocate(L,D,U,dh)
+        c%stencils_modified = .false.
       end subroutine
 
       ! *********************** CC DATA STENCILS ************************
@@ -343,6 +348,7 @@
         U(s-2) = (dh(i-1)/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i)))))
         call init(c%colCC(1),L,D,U)
         deallocate(L,D,U,dh)
+        c%stencils_modified = .false.
       end subroutine
 
       subroutine stencil_colCC_1_centered(c)
@@ -389,6 +395,7 @@
         U(s-2) =  2.0_cp/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i))))
         call init(c%colCC(2),L,D,U)
         deallocate(L,D,U,dh)
+        c%stencils_modified = .false.
       end subroutine
 
       subroutine stencil_colCC_2_centered(c)
@@ -423,6 +430,8 @@
         if (.not.c%stencils_defined) then
           stop 'Error: coordinate stencils not defined in stitch_stencils_c in coordinates.f90'
         endif
+        c%stencils_modified(1) = hmin
+        c%stencils_modified(2) = hmax
         call stitch_colCC_1(c,hmin,hmax)
         call stitch_colCC_2(c,hmin,hmax)
         call stitch_colN_1(c,hmin,hmax)

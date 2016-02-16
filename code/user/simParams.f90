@@ -5,7 +5,7 @@
        logical :: exportRawICs              = .false.    ! Export Raw ICs before starting simulation
        logical :: exportICs                 = .false.    ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.    ! Just export ICs, do not run simulation
-       logical :: export_planar             = .true.    ! Export 2D data when N_cell = 1 along given direction
+       logical :: export_planar             = .false.    ! Export 2D data when N_cell = 1 along given direction
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.

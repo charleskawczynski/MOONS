@@ -5,6 +5,8 @@
        use bctype_mod
        use BCs_mod
        use mesh_mod
+       use check_BCs_mod
+       use face_edge_corner_indexing_mod
        implicit none
 
        private
@@ -38,74 +40,109 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_face_SF(U,m,2,(/3,4/)) ! SF, mesh, direction, faces along dir
-         call apply_face_SF(U,m,1,(/1,2/)) ! SF, mesh, direction, faces along dir
-         call apply_face_SF(U,m,3,(/5,6/)) ! SF, mesh, direction, faces along dir
+         integer :: k
+#ifdef _DEBUG_APPLY_BCS_
+       call check_defined(U,m)
+#endif
+         do k = 1,6; call apply_face(U,m,k); enddo
        end subroutine
 
-       subroutine apply_face_SF(U,m,dir,f)
+       subroutine apply_face(U,m,f)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer,intent(in) :: dir
-         integer,dimension(2) :: f
-         integer :: i
+         integer,intent(in) :: f
+         integer,dimension(4) :: a
+         integer :: i,j,k,p
 
-#ifdef _DEBUG_APPLY_BCS_
-       call checkBCs(U,f,m)
-#endif
-
-         if (CC_along(U,dir)) then
-         do i=1,m%s
-         if (.not.m%g(i)%st_face%hmin(dir)) call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(1),U%RF(i)%b%f(f(1))%b)
-         if (.not.m%g(i)%st_face%hmax(dir)) call app_CC_RF(U%RF(i)%f,U%RF(i)%s,f(2),U%RF(i)%b%f(f(2))%b)
-         enddo
-         elseif (Node_along(U,dir)) then
-         do i=1,m%s
-         if (.not.m%g(i)%st_face%hmin(dir)) call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(1),U%RF(i)%b%f(f(1))%b)
-         if (.not.m%g(i)%st_face%hmax(dir)) call app_N_RF(U%RF(i)%f,U%RF(i)%s,f(2),U%RF(i)%b%f(f(2))%b)
-         enddo
-         else; stop 'Error: datatype not found in apply_BCs_faces_imp.f90'
+         k = dir_given_face(f)
+         a = adjacent_faces_given_dir(k)
+         if (CC_along(U,k)) then
+           do i=1,m%s
+             ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             p = 0
+             if (.not.m%g(i)%st_faces(f)%TF) call app_CC_SF(U%RF(i),f,p)
+           enddo
+         elseif (Node_along(U,k)) then
+           do i=1,m%s
+             ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             p = 0
+             if (.not.m%g(i)%st_faces(f)%TF) call app_N_SF(U%RF(i),f,p)
+           enddo
+         else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif
        end subroutine
 
-       subroutine app_N_RF(f,s,face,b)
+       subroutine app_N_SF(RF,face,p)
+         implicit none
+         type(RealField),intent(inout) :: RF
+         integer,intent(in) :: face,p
+         call app_N_RF(RF%f,RF%s,face,RF%b%f(face)%b,1+p,RF%s(1)-p,RF%s(2)-p,RF%s(3)-p)
+       end subroutine
+
+       subroutine app_CC_SF(RF,face,p)
+         implicit none
+         type(RealField),intent(inout) :: RF
+         integer,intent(in) :: face,p
+         call app_CC_RF(RF%f,RF%s,face,RF%b%f(face)%b,1+p,RF%s(1)-p,RF%s(2)-p,RF%s(3)-p)
+       end subroutine
+
+       subroutine app_N_RF(f,s,face,b,p,x,y,z)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          type(bctype),intent(in) :: b
          integer,dimension(3),intent(in) :: s ! shape
-         integer,intent(in) :: face
+         integer,intent(in) :: face,p,x,y,z
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-2,:,:),b)
-         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-2,:),b)
-         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-2),b)
-         case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(3,:,:),b)
-         case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,3,:),b)
-         case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,3),b)
+         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-2,:,:),b,p,y,z)
+         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-2,:),b,p,x,z)
+         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-2),b,p,x,y)
+         case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(3,:,:),b,p,y,z)
+         case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,3,:),b,p,x,z)
+         case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,3),b,p,x,y)
          end select
        end subroutine
 
-       subroutine app_CC_RF(f,s,face,b)
+       subroutine app_CC_RF(f,s,face,b,p,x,y,z)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s ! shape
          integer,intent(in) :: face
          type(bctype),intent(in) :: b
+         integer,intent(in) :: p,x,y,z
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),b)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),b)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),b)
-         case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),b)
-         case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),b)
-         case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),b)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),b,p,y,z)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),b,p,x,z)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),b,p,x,y)
+         case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),b,p,y,z)
+         case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),b,p,x,z)
+         case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),b,p,x,y)
          end select
        end subroutine
 
-       subroutine app_CC(ug,ui,ui_opp,b)
+       subroutine app_CC(ug,ui,ui_opp,b,p,x,y)
+         implicit none
+         real(cp),dimension(:,:),intent(inout) :: ug
+         real(cp),dimension(:,:),intent(in) :: ui,ui_opp
+         type(bctype),intent(in) :: b
+         integer,intent(in) :: p,x,y
+         call a_CC(ug(p:x,p:y),ui(p:x,p:y),ui_opp(p:x,p:y),b)
+       end subroutine
+
+       subroutine app_N(ug,ub,ui,ui_opp,b,p,x,y)
+         implicit none
+         real(cp),dimension(:,:),intent(inout) :: ug,ub
+         real(cp),dimension(:,:),intent(in) :: ui,ui_opp
+         type(bctype),intent(in) :: b
+         integer,intent(in) :: p,x,y
+         call a_N(ug(p:x,p:y),ub(p:x,p:y),ui(p:x,p:y),ui_opp(p:x,p:y),b)
+       end subroutine
+
+       subroutine a_CC(ug,ui,ui_opp,b)
          ! interpolated - (wall incoincident)
          implicit none
          real(cp),dimension(:,:),intent(inout) :: ug
@@ -118,7 +155,7 @@
          endif
        end subroutine
 
-       subroutine app_N(ug,ub,ui,ui_opp,b)
+       subroutine a_N(ug,ub,ui,ui_opp,b)
          implicit none
          real(cp),dimension(:,:),intent(inout) :: ug,ub
          real(cp),dimension(:,:),intent(in) :: ui,ui_opp
@@ -129,19 +166,5 @@
          else; stop 'Error: Bad bctype! Caught in app_N_imp in apply_BCs_faces_imp.f90'
          endif
        end subroutine
-
-#ifdef _DEBUG_APPLY_BCS_
-       subroutine checkBCs(U,f,m)
-         implicit none
-         type(SF),intent(in) :: U
-         integer,dimension(2) :: f
-         type(mesh),intent(in) :: m
-         integer :: i
-         do i=1,m%s
-           if (.not.U%RF(i)%b%f(f(1))%b%defined) stop 'Error: bad bctype in checkBCs in apply_BCs_faces_imp.f90'
-           if (.not.U%RF(i)%b%f(f(2))%b%defined) stop 'Error: bad bctype in checkBCs in apply_BCs_faces_imp.f90'
-         enddo
-       end subroutine
-#endif
 
        end module

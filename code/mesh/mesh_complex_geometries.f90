@@ -44,21 +44,43 @@
          real(cp) :: Ha,Re
          Ha = 10.0_cp; Re = 1000.0_cp
          call delete(m)
-         N = (/25,50,1/)
-         hmin = -0.5_cp
-         hmax = 0.5_cp
-         hmin(1) = -0.5_cp
-         hmax(1) = 0.0_cp
-         beta = reynoldsBL(Re,hmin,hmax)
-         beta = hartmannBL(Ha,hmin,hmax)
+         N = (/15,30,1/)
+         hmin = -0.5_cp; hmax = 0.5_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.0_cp
+         beta = reynoldsBL(Re,hmin,hmax); beta = hartmannBL(Ha,hmin,hmax)
 
-         call grid_Roberts_L(g1,hmin(1),hmax(1),N(1),beta(1),1)
-         call grid_Roberts_B(g1,hmin(2),hmax(2),N(2),beta(2),2)
+         call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
+         call grid_uniform(g1,hmin(2),hmax(2),N(2),2)
          call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
          call add(m,g1)
 
-         call con_app_Roberts_R(g2,g1,0.5_cp,N(1),1)
-         call add(m,g2)
+         call con_app_uniform(g2,g1,N(1),1); call add(m,g2)
+         call initProps(m)
+         call patch(m)
+         call delete(g1)
+         call delete(g2)
+       end subroutine
+
+       subroutine LDC_2D_2domains_horizontal_z(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g1,g2
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         real(cp) :: Ha,Re
+         Ha = 10.0_cp; Re = 1000.0_cp
+         call delete(m)
+         N = (/30,15,1/)
+         hmin = -0.5_cp; hmax = 0.5_cp
+         hmin(2) = -0.5_cp; hmax(2) = 0.0_cp
+         beta = reynoldsBL(Re,hmin,hmax); beta = hartmannBL(Ha,hmin,hmax)
+
+         call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
+         call grid_uniform(g1,hmin(2),hmax(2),N(2),2)
+         call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
+         call add(m,g1)
+
+         call con_app_uniform(g2,g1,N(2),2); call add(m,g2)
          call initProps(m)
          call patch(m)
          call delete(g1)
@@ -105,46 +127,13 @@
          Ha = 10.0_cp; Re = 1000.0_cp
          call delete(m)
          N = (/1,25,50/)
-         hmin = -0.5_cp
-         hmax = 0.5_cp
-         hmin(2) = -0.5_cp
-         hmax(2) = 0.0_cp
-         beta = reynoldsBL(Re,hmin,hmax)
-         beta = hartmannBL(Ha,hmin,hmax)
+         hmin = -0.5_cp; hmax = 0.5_cp
+         hmin(2) = -0.5_cp; hmax(2) = 0.0_cp
+         beta = reynoldsBL(Re,hmin,hmax); beta = hartmannBL(Ha,hmin,hmax)
 
          call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
          call grid_Roberts_L(g1,hmin(2),hmax(2),N(2),beta(2),2)
          call grid_Roberts_B(g1,hmin(3),hmax(3),N(3),beta(3),3)
-         call add(m,g1)
-
-         call con_app_Roberts_R(g2,g1,0.5_cp,N(2),2)
-         call add(m,g2)
-         call initProps(m)
-         call patch(m)
-         call delete(g1)
-         call delete(g2)
-       end subroutine
-
-       subroutine LDC_2D_2domains_horizontal_z(m)
-         implicit none
-         type(mesh),intent(inout) :: m
-         type(grid) :: g1,g2
-         real(cp),dimension(3) :: hmin,hmax,beta
-         integer,dimension(3) :: N
-         real(cp) :: Ha,Re
-         Ha = 10.0_cp; Re = 1000.0_cp
-         call delete(m)
-         N = (/50,25,1/)
-         hmin = -0.5_cp
-         hmax = 0.5_cp
-         hmin(2) = -0.5_cp
-         hmax(2) = 0.0_cp
-         beta = reynoldsBL(Re,hmin,hmax)
-         beta = hartmannBL(Ha,hmin,hmax)
-
-         call grid_Roberts_B(g1,hmin(1),hmax(1),N(1),beta(1),1)
-         call grid_Roberts_L(g1,hmin(2),hmax(2),N(2),beta(2),2)
-         call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
          call add(m,g1)
 
          call con_app_Roberts_R(g2,g1,0.5_cp,N(2),2)

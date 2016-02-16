@@ -71,6 +71,10 @@
        interface subtract_physical_mean;  module procedure subtract_phys_mean_SF;     end interface
        interface subtract_physical_mean;  module procedure subtract_phys_mean_vol_SF; end interface
 
+       public :: physical_mean
+       interface physical_mean;           module procedure phys_mean_vol_SF;          end interface
+       interface physical_mean;           module procedure phys_mean_SF;              end interface
+
        public :: stabilityTerms
        interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
        interface stabilityTerms;          module procedure stabilityTerms_SF;         end interface
@@ -143,8 +147,6 @@
        ! *********************************************************************************
 
        subroutine collocatedMagnitude_RF(mag,x,y,z,s) ! Finished
-         ! This routine was made in order to compare norm(B) with
-         ! results from Salah
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: x,y,z
          real(cp),dimension(:,:,:),intent(inout) :: mag
@@ -234,8 +236,7 @@
          implicit none
          type(SF),intent(inout) :: u
          real(cp) :: meanU
-         call zeroGhostPoints(u)
-         meanU = sum(u)/real(u%numPhysEl,cp)
+         meanU = physical_mean(u)
          call subtract(u,meanU)
          call zeroGhostPoints(u)
        end subroutine
@@ -251,13 +252,30 @@
          type(SF),intent(in) :: vol
          real(cp) :: meanU
          logical,intent(in) :: TF
-         call multiply(temp,u,vol)
-         meanU = sum(temp)/real(u%numPhysEl,cp)
-         if (TF) write(*,*) 'meanU = ',meanU
-         if (TF) write(*,*) 'u%numPhysEl = ',u%numPhysEl
+         meanU = physical_mean(u,vol,temp)
          call subtract(u,meanU)
          call zeroGhostPoints(u)
        end subroutine
+
+       function phys_mean_vol_SF(u,vol,temp) result(meanU)
+         ! Computes physical mean from scalar field u
+         !      mean(u*volume)
+         implicit none
+         type(SF),intent(inout) :: u,temp
+         type(SF),intent(in) :: vol
+         real(cp) :: meanU
+         call multiply(temp,u,vol)
+         meanU = sum(temp,1)/real(u%numPhysEl,cp)
+       end function
+
+       function phys_mean_SF(u) result(meanU)
+         ! Computes physical mean from scalar field u
+         !      mean(u)
+         implicit none
+         type(SF),intent(in) :: u
+         real(cp) :: meanU
+         meanU = sum(u,1)/real(u%numPhysEl,cp)
+       end function
 
        subroutine zeroGhostPoints_RF(f,s)
          implicit none
@@ -268,28 +286,19 @@
          f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
        end subroutine
 
-       subroutine zeroWall_RF(f,s,dir,face)
+       subroutine zeroWall_RF(f,s,face)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: dir,face
-         select case (dir)
-         case (1); select case (face)
-                   case (1); f(2,:,:) = 0.0_cp
-                   case (2); f(s(1)-1,:,:) = 0.0_cp
-                   case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
-                   end select
-         case (2); select case (face)
-                   case (3); f(:,2,:) = 0.0_cp
-                   case (4); f(:,s(2)-1,:) = 0.0_cp
-                   case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
-                   end select
-         case (3); select case (face)
-                   case (5); f(:,:,2) = 0.0_cp
-                   case (6); f(:,:,s(3)-1) = 0.0_cp
-                   case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
-                   end select
-         case default; stop 'Error: dir must = 1,2,3 in zeroWall_RF in ops_aux.f90'
+         integer,intent(in) :: face
+         select case (face)
+         case (1); f(2,:,:) = 0.0_cp
+         case (3); f(:,2,:) = 0.0_cp
+         case (5); f(:,:,2) = 0.0_cp
+         case (2); f(s(1)-1,:,:) = 0.0_cp
+         case (4); f(:,s(2)-1,:) = 0.0_cp
+         case (6); f(:,:,s(3)-1) = 0.0_cp
+         case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
          end select
        end subroutine
 
@@ -533,9 +542,8 @@
         type(VF),intent(inout) :: temp
         real(cp) :: dot
         call multiply(temp,A,B)
-        call zeroGhostPoints(temp)
         call zeroWall_conditional(temp,m,x)
-        dot = sum(temp%x) + sum(temp%y) + sum(temp%z)
+        dot = sum(temp%x,1) + sum(temp%y,1) + sum(temp%z,1)
       end function
 
       function dot_product_SF(A,B,m,x,temp) result(dot)
@@ -545,9 +553,8 @@
         type(SF),intent(inout) :: temp
         real(cp) :: dot
         call multiply(temp,A,B)
-        call zeroGhostPoints(temp)
         call zeroWall_conditional(temp,m,x)
-        dot = sum(temp)
+        dot = sum(temp,1)
       end function
 
        ! *********************************************************************************
@@ -570,20 +577,20 @@
          integer :: i
          if (Node_along(f,1)) then
            do i=1,m%s
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
          if (Node_along(f,2)) then
            do i=1,m%s
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
          if (Node_along(f,3)) then
            do i=1,m%s
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
+             call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -598,26 +605,26 @@
          integer :: i
          if (Node_along(f,1)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_face%hmin(1)).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-             TF = (.not.m%g(i)%st_face%hmax(1)).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
+             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
          if (Node_along(f,2)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_face%hmin(2)).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-             TF = (.not.m%g(i)%st_face%hmax(2)).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
+             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
          if (Node_along(f,3)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_face%hmin(3)).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-             TF = (.not.m%g(i)%st_face%hmax(3)).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
+             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -633,26 +640,26 @@
          integer :: i
          if (Node_along(f,1)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_face%hmin(1)).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,1)
-             TF = (.not.m%g(i)%st_face%hmax(1)).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1,2)
+             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
+             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
          if (Node_along(f,2)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_face%hmin(2)).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,3)
-             TF = (.not.m%g(i)%st_face%hmax(2)).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2,4)
+             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
+             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
          if (Node_along(f,3)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_face%hmin(3)).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,5)
-             TF = (.not.m%g(i)%st_face%hmax(3)).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3,6)
+             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
+             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
+             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -660,27 +667,9 @@
        subroutine zeroInterior_SF(f)
          implicit none
          type(SF),intent(inout) :: f
-         integer :: i
-         if (f%is_CC) then
-         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,0,0); enddo
-         elseif (f%is_Node) then
-         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,1,1); enddo
-         elseif (f%is_Face) then
-         select case (f%face)
-         case (1); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,0,0); enddo
-         case (2); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,1,0); enddo
-         case (3); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,0,1); enddo
-         case default; stop 'Eror: face must = 1,2,3 in zeroInterior_SF in ops_aux.f90'
-         end select
-         elseif (f%is_Edge) then
-         select case (f%edge)
-         case (1); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,0,1,1); enddo
-         case (2); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,0,1); enddo
-         case (3); do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,1,1,0); enddo
-         case default; stop 'Eror: face must = 1,2,3 in zeroInterior_SF in ops_aux.f90'
-         end select
-         else; stop 'Error: bad data input to zeroInterior_SF in ops_aux.f90'
-         endif
+         integer :: i,x,y,z
+         call C0_N1_tensor(f,x,y,z)
+         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,x,y,z); enddo
        end subroutine
 
        subroutine treatInterface_SF(f)

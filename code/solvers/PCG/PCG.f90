@@ -112,13 +112,12 @@
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
         if (verifyPreconditioner) then
-          call export_raw(m,PCG%Minv,dir,'PCG_SF_prec_tec_'//name,0)
-          call export_matrix(PCG%Minv,dir,'PCG_SF_prec_mat_'//name)
-          call get_diagonal(operator_explicit,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-          call export_raw(m,PCG%Minv,dir,'PCG_SF_op_tec_diag_'//name,0)
-          call export_matrix(PCG%Minv,dir,'PCG_SF_op_mat_diag_'//name)
+          call export_raw(m,temp_Minv,dir,'PCG_SF_prec_tec_'//name,0)
+          call export_matrix(temp_Minv,dir,'PCG_SF_prec_mat_'//name)
+          call get_diagonal(operator_explicit,temp_Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call export_raw(m,temp_Minv,dir,'PCG_SF_op_tec_diag_'//name,0)
+          call export_matrix(temp_Minv,dir,'PCG_SF_op_mat_diag_'//name)
         endif
-        call assign(PCG%Minv,temp_Minv)
         call delete(temp_Minv)
 
         if (testSymmetry) then
@@ -175,13 +174,12 @@
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
         if (verifyPreconditioner) then
-          call export_raw(m,PCG%Minv,dir,'PCG_VF_prec_tec_'//name,0)
-          call export_matrix(PCG%Minv,dir,'PCG_VF_prec_mat_'//name)
-          call get_diagonal(operator_explicit,PCG%Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-          call export_raw(m,PCG%Minv,dir,'PCG_VF_op_tec_diag_'//name,0)
-          call export_matrix(PCG%Minv,dir,'PCG_VF_op_mat_diag_'//name)
+          call export_raw(m,temp_Minv,dir,'PCG_VF_prec_tec_'//name,0)
+          call export_matrix(temp_Minv,dir,'PCG_VF_prec_mat_'//name)
+          call get_diagonal(operator_explicit,temp_Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call export_raw(m,temp_Minv,dir,'PCG_VF_op_tec_diag_'//name,0)
+          call export_matrix(temp_Minv,dir,'PCG_VF_op_mat_diag_'//name)
         endif
-        call assign(PCG%Minv,temp_Minv)
         call delete(temp_Minv)
 
         if (testSymmetry) then

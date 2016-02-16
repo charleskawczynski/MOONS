@@ -132,6 +132,7 @@
         interface maxabsdiff;               module procedure maxabsdiff_RF;          end interface
         interface mean;                     module procedure mean_RF;                end interface
         interface sum;                      module procedure sum_RF;                 end interface
+        interface sum;                      module procedure sum_RF_pad;             end interface
         interface size;                     module procedure size_RF;                end interface
 
       contains
@@ -757,6 +758,26 @@
           m = mTemp
 #else
           m = sum(a%f)
+#endif
+        end function
+
+        function sum_RF_pad(a,pad) result(m)
+          implicit none
+          type(realField),intent(in) :: a
+          integer,intent(in) :: pad
+          real(cp) :: m
+#ifdef _PARALLELIZE_RF_
+          integer :: i,j,k
+          real(cp) :: mTemp
+          mTemp = 0.0_cp
+          !$OMP PARALLEL DO REDUCTION(+:mTemp)
+          do k=1+pad,a%s(3)-pad; do j=1+pad,a%s(2)-pad; do i=1+pad,a%s(1)-pad
+            mTemp = mTemp + a%f(i,j,k)
+          enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          m = mTemp
+#else
+          m = sum(a%f(1+pad:a%s(1)-1,1+pad:a%s(2)-1,1+pad:a%s(3)-1))
 #endif
         end function
 

@@ -47,8 +47,8 @@ FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=f95
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
-# FCFLAGS += -D_DOUBLE_PRECISION_
-FCFLAGS += -D_QUAD_PRECISION_
+FCFLAGS += -D_DOUBLE_PRECISION_
+# FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT Methods
 # FCFLAGS += -D_FFT_FULL_
@@ -95,6 +95,7 @@ FC_DEBUG += -Wno-array-temporaries
 FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_RF_
 FC_OPTIMIZE += -D_PARALLELIZE_SF_
+FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
@@ -115,7 +116,7 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_JAC_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_SOR_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_CG_CONVERGENCE_
-FCFLAGS += -D_EXPORT_PCG_SF_CONVERGENCE_
+# FCFLAGS += -D_EXPORT_PCG_SF_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_PCG_VF_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
@@ -216,6 +217,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)array.f90 \
 	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_face.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_edge.f90 \
@@ -277,8 +279,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90 \
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_implicit.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90 \

@@ -27,6 +27,7 @@
       ! 5/15/2014
 
       use grid_mod
+      use face_edge_corner_indexing_mod
       use mesh_mod
       use SF_mod
       use triDiag_mod
@@ -74,23 +75,41 @@
         integer :: i,j,k
         select case (dir)
         case (1)
-        !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_DEL_
+        !$OMP PARALLEL DO SHARED(T,s,sdfdh,gt)
+
+#endif
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
           call operator(dfdh(:,j,k),f(:,j,k),T,s(1),sdfdh(1),gt)
         enddo; enddo
+#ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
+
+#endif
         case (2)
-        !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_DEL_
+        !$OMP PARALLEL DO SHARED(T,s,sdfdh,gt)
+
+#endif
         do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
           call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt)
         enddo; enddo
+#ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
+
+#endif
         case (3)
-        !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_DEL_
+        !$OMP PARALLEL DO SHARED(T,s,sdfdh,gt)
+
+#endif
         do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
           call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt)
         enddo; enddo
+#ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
+
+#endif
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
@@ -107,23 +126,41 @@
         integer :: i,j,k
         select case (dir)
         case (1)
-        !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_DEL_
+        !$OMP PARALLEL DO SHARED(T,s,pad1,pad2)
+
+#endif
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
           call operator(dfdh(:,j,k),f(:,j,k),T,s(1),pad1,pad2)
         enddo; enddo
+#ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
+
+#endif
         case (2)
-        !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_DEL_
+        !$OMP PARALLEL DO SHARED(T,s,pad1,pad2)
+
+#endif
         do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
           call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2)
         enddo; enddo
+#ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
+
+#endif
         case (3)
-        !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_DEL_
+        !$OMP PARALLEL DO SHARED(T,s,pad1,pad2)
+
+#endif
         do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
           call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2)
         enddo; enddo
+#ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
+
+#endif
         case default
         stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
@@ -193,11 +230,17 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad,genType
         integer :: i,pad1,pad2
+        integer,dimension(2) :: faces
         do i=1,m%s
-          if (m%g(i)%st_face%hmin(dir)) then; pad1 = 1;
-          else; pad1 = 0; endif
-          if (m%g(i)%st_face%hmax(dir)) then; pad2 = 1;
-          else; pad2 = 0; endif
+          faces = normal_faces_given_dir(dir)
+          if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
+          if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
+
+          ! if (n.eq.2) then
+          !   write(*,*) 'dir,pad,pad1,pad2 = ',dir,pad,pad1,pad2
+          !   write(*,*) 'g(',i,')%c(dir)%stencils_modified = ',m%g(i)%c(dir)%stencils_modified
+          ! endif
+
           call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
             n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
         enddo

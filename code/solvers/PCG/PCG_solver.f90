@@ -11,6 +11,7 @@
       use SF_mod
       use VF_mod
       use ops_norms_mod
+      use IO_tools_mod
       use omp_lib
 
       use matrix_free_params_mod
@@ -56,9 +57,19 @@
         type(norms) :: norm_res0
         integer :: i,i_earlyExit
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
-        call multiply(r,b,vol)
-        call apply_stitches(r,m)
+        real(cp) :: temp_Ln
+        integer :: i_debug
+        logical :: i_stop
+        i_stop = .false.
+        ! if (i_stop) i_debug = newAndOpen('out/LDC/','PPE_out')
+        if (i_stop) i_debug = 6
+
+        if (i_stop) write(*,*) ' ************************* START PPE ************************* '
         ! ----------------------- MODIFY RHS -----------------------
+        call multiply(r,b,vol)
+        ! if (i_stop) then; call Ln(temp_Ln,b,2.0_cp); write(i_debug,*) 'L2(b) = ',temp_Ln; endif
+        ! call apply_stitches(r,m)
+        ! if (i_stop) then; call Ln(temp_Ln,r,2.0_cp); write(i_debug,*) 'L2(vol*b) = ',temp_Ln; endif
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! RHS MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
         if (.not.x%is_CC) then
@@ -69,16 +80,23 @@
         call apply_BCs(p,m) ! p has BCs for x
         call zeroGhostPoints_conditional(p,m)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
+        if (i_stop) then; write(i_debug,*) 'mean(Ap_explicit) = ',physical_mean(Ax); endif
         call multiply(Ax,vol)
-        call zeroWall_conditional(Ax,m,x)
+        call zeroWall_conditional(Ax,m,x) ! Does nothing in PPE
         call subtract(r,Ax)
+        if (i_stop) then; write(i_debug,*) 'mean(r_pre_subtract_mean) = ',physical_mean(r); endif
+        if (x%all_Neumann) call subtract_physical_mean(r)
         ! ----------------------------------------------------------
+        if (i_stop) then; call Ln(temp_Ln,p,2.0_cp); write(i_debug,*) 'L2(p_post_modify_RHS) = ',temp_Ln; endif
+        if (i_stop) then; write(i_debug,*) 'mean(r_post_subtract_mean) = ',physical_mean(r); endif
 
-        call apply_stitches(x,m) ! Necessary: BC_implicit reaches to interior, which stitching affects
+        ! call apply_stitches(x,m) ! Necessary: BC_implicit reaches to interior, which stitching affects
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
-        if (x%all_Neumann) call subtract_physical_mean(r)
+        if (i_stop) then; write(i_debug,*) 'mean(Ax_before_loop) = ',physical_mean(Ax); endif
+        ! if (i_stop) then; call Ln(temp_Ln,Ax,2.0_cp); write(i_debug,*) 'L2(Ax_before_loop) = ',temp_Ln; endif
         call subtract(r,Ax)
+        ! if (i_stop) then; call Ln(temp_Ln,r,2.0_cp); write(i_debug,*) 'L2(r_post_subtract_mean) = ',temp_Ln; endif
         call compute(norm_res0,r)
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
@@ -88,21 +106,29 @@
 #endif
 
         call multiply(z,Minv,r)
+        ! if (i_stop) then; call Ln(temp_Ln,Minv,2.0_cp); write(i_debug,*) 'L2(Minv) = ',temp_Ln; endif
+        ! if (i_stop) then; call Ln(temp_Ln,z,2.0_cp); write(i_debug,*) 'L2(z_before_loop) = ',temp_Ln; endif
         call assign(p,z)
+        ! if (i_stop) then; call Ln(temp_Ln,p,2.0_cp); write(i_debug,*) 'L2(p_before_loop) = ',temp_Ln; endif
+        ! if (i_stop) then; call Ln(temp_Ln,r,2.0_cp); write(i_debug,*) 'L2(r_before_loop) = ',temp_Ln; endif
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         do i=1,n
           ! if (x%all_Neumann) call subtract_physical_mean(p,vol,tempx,compute_norms)
-          call apply_stitches(p,m)
+          ! call apply_stitches(p,m)
           call operator(Ax,p,k,m,MFP,tempk)
+          if (i_stop) then; write(i_debug,*) 'mean(p_in_loop) = ',physical_mean(p); endif
+          if (i_stop) then; write(i_debug,*) 'mean(Ap_in_loop) = ',physical_mean(Ax); endif
+          ! if (i_stop) then; call Ln(temp_Ln,Ax,2.0_cp); write(i_debug,*) 'L2(Ax) = ',temp_Ln; endif
           call multiply(Ax,vol)
           ! if (x%all_Neumann) call subtract_physical_mean(Ax)
           alpha = rhok/dot_product(p,Ax,m,x,tempx)
           call zeroGhostPoints(p)
           call add_product(x,p,alpha) ! x = x + alpha p
-          call apply_stitches(x,m)
           call apply_BCs(x,m) ! Needed for PPE
+          ! if (i_stop) then; call Ln(temp_Ln,x,2.0_cp); write(i_debug,*) 'L2(x_updated) = ',temp_Ln; endif
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! r = r - alpha Ap
+          ! if (i_stop) then; call Ln(temp_Ln,r,2.0_cp); write(i_debug,*) 'L2(r_updated) = ',temp_Ln; endif
           ! if (x%all_Neumann) call subtract_physical_mean(r)
           res_norm = dot_product(r,r,m,x,tempx)
 
@@ -115,24 +141,24 @@
           call multiply(z,Minv,r)
           rhokp1 = dot_product(z,r,m,x,tempx)
           call multiply(p,rhokp1/rhok) ! p = z + beta p
+          ! if (i_stop) then; call Ln(temp_Ln,p,2.0_cp); write(i_debug,*) 'L2(p_updated) = ',temp_Ln; endif
           call add(p,z)
           rhok = rhokp1
         enddo
-        if (x%all_Neumann) call subtract_physical_mean(x)
-        call apply_stitches(x,m)
-        call apply_BCs(x,m) ! Needed for PPE
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
         flush(un)
 #endif
+        ! if (i_stop) close(i_debug)
 
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
+          if (i_stop) then; write(i_debug,*) 'mean(Ax_explicit) = ',physical_mean(Ax); endif
           call multiply(Ax,vol)
           call multiply(r,b,vol)
           if (x%all_Neumann) call subtract_physical_mean(r)
           call subtract(r,Ax)
-          call zeroWall_conditional(r,m,x)
+          call zeroWall_conditional(r,m,x) ! Does nothing in PPE
           call zeroGhostPoints(r)
           call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
           write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
@@ -142,6 +168,7 @@
           write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
           write(*,*) ''
         endif
+        if (i_stop) write(i_debug,*) ' ************************* END PPE ************************* '
       end subroutine
 
       subroutine solve_PCG_VF(operator,operator_explicit,name,x,b,vol,k,m,&

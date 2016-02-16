@@ -23,6 +23,7 @@
        use export_raw_processed_mod
 
        use norms_mod
+       use ops_norms_mod
        use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -215,8 +216,8 @@
          write(*,*) '     PCG solver initialized for U'
 
          call init(prec_PPE,mom%p)
-         call prec_lap_SF(prec_PPE,mom%m)
-         ! call prec_identity_SF(prec_PPE) ! For ordinary CG
+         ! call prec_lap_SF(prec_PPE,mom%m)
+         call prec_identity_SF(prec_PPE) ! For ordinary CG
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_PPE,mom%m,&
          mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
          call delete(prec_PPE)
@@ -277,11 +278,14 @@
          implicit none
          type(momentum),intent(inout) :: mom
          character(len=*),intent(in) :: dir
+         ! real(cp) :: temp_Ln
          write(mom%unit_nrg_budget,*) mom%nstep,mom%nrg_budget
          flush(mom%unit_nrg_budget)
          call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
          call set(mom%transient_KE,mom%nstep,mom%KE)
          call apply(mom%transient_KE)
+         ! call Ln(temp_Ln,mom%divU,2.0_cp)
+         ! call set(mom%transient_divU,mom%nstep,temp_Ln)
          call compute(mom%norm_divU,mom%divU,mom%vol_CC)
          call set(mom%transient_divU,mom%nstep,mom%norm_divU%L2)
          call apply(mom%transient_divU)
@@ -322,6 +326,7 @@
          write(un,*) 'tol_mom,tol_PPE = ',mom%tol_mom,mom%tol_PPE
          write(un,*) 'nstep = ',mom%nstep
          write(un,*) 'KE = ',mom%KE
+         ! call printPhysicalMinMax(mom%U,'U')
          call printPhysicalMinMax(mom%divU,'divU')
          ! write(un,*) 'Kolmogorov Length = ',mom%L_eta
          ! write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
@@ -343,7 +348,7 @@
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
+           mom%N_PPE,mom%nstep,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
            print_export(1))
 
          case (2)
@@ -370,7 +375,7 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeKineticEnergy(mom,mom%m,F)
-         if (print_export(1)) call compute_divU(mom%divU,mom%U,mom%m)
+         if (print_export(1)) call div(mom%divU,mom%U,mom%m)
          if (print_export(1)) call exportTransient(mom,dir)
          ! if (print_export(6)) then
          ! call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)

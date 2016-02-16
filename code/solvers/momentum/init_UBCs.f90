@@ -71,7 +71,7 @@
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: i,face
+         integer :: i
 
          call init_BC_mesh(U%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
@@ -85,14 +85,10 @@
            endif
          enddo
 
-
-         
          do i=1,m%s
-           do face=1,6
-             call init(U%x%RF(i)%b,0.0_cp,face)
-             call init(U%y%RF(i)%b,0.0_cp,face)
-             call init(U%z%RF(i)%b,0.0_cp,face)
-           enddo
+           call init(U%x%RF(i)%b,0.0_cp)
+           call init(U%y%RF(i)%b,0.0_cp)
+           call init(U%z%RF(i)%b,0.0_cp)
          enddo
 
          ! call init(U%x%RF(1)%b%e(5),0.4_cp)
@@ -123,8 +119,17 @@
          ! ***********************************************************************
          ! 2 VERTICAL DOMAINS
          ! LDC, 2 vertical domains, rotated 0 (normal orientation)
-         ! call init(U%x%RF(1)%b,1.0_cp,4)
-         ! call init(U%x%RF(2)%b,1.0_cp,4)
+         ! call init(U%x%RF(1)%b,1.0_cp,4) ! ******************** current test
+         ! call init(U%x%RF(2)%b,1.0_cp,4) ! ******************** current test
+         ! call init(U%x%RF(1)%b%e(0+2),1.0_cp)
+         ! call init(U%x%RF(1)%b%e(0+4),1.0_cp)
+         ! call init(U%x%RF(2)%b%e(0+2),1.0_cp)
+         ! call init(U%x%RF(2)%b%e(0+4),1.0_cp)
+         ! call init(U%x%RF(1)%b%e(8+2),1.0_cp)
+         ! call init(U%x%RF(1)%b%e(8+4),1.0_cp)
+         ! call init(U%x%RF(2)%b%e(8+2),1.0_cp)
+         ! call init(U%x%RF(2)%b%e(8+4),1.0_cp)
+
          ! LDC, 2 vertical domains, rotated 90
          ! call init(U%y%RF(2)%b,-1.0_cp,2)
          ! LDC, 2 vertical domains, rotated 180 (upside down)
@@ -137,8 +142,17 @@
          ! LDC, 2 horizontal domains, rotated 0 (normal orientation)
          ! call init(U%x%RF(2)%b,1.0_cp,4)
          ! LDC, 2 horizontal domains, rotated 90
-         call init(U%y%RF(1)%b,1.0_cp,2)
-         call init(U%y%RF(2)%b,1.0_cp,2)
+         call init(U%y%RF(1)%b,-1.0_cp,2) ! ******************** current test
+         call init(U%y%RF(2)%b,-1.0_cp,2) ! ******************** current test
+         call init(U%y%RF(1)%b%e(4+2),-1.0_cp)
+         call init(U%y%RF(1)%b%e(4+4),-1.0_cp)
+         call init(U%y%RF(2)%b%e(4+2),-1.0_cp)
+         call init(U%y%RF(2)%b%e(4+4),-1.0_cp)
+         call init(U%y%RF(1)%b%e(8+3),-1.0_cp)
+         call init(U%y%RF(1)%b%e(8+4),-1.0_cp)
+         call init(U%y%RF(2)%b%e(8+3),-1.0_cp)
+         call init(U%y%RF(2)%b%e(8+4),-1.0_cp)
+
          ! LDC, 2 horizontal domains, rotated 180 (upside down)
          ! call init(U%x%RF(1)%b,-1.0_cp,3)
          ! LDC, 2 horizontal domains, rotated 270

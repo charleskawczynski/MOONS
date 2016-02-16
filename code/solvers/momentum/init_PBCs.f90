@@ -43,6 +43,9 @@
                  call initPredefinedPBCs(p%RF(i)%b)
            else; call initUserPBCs(p%RF(i)%b)
            endif
+         enddo
+
+         do i=1,m%s
            call init(p%RF(i)%b,0.0_cp)
          enddo
          p%all_Neumann = .true. ! Needs to be adjusted manually

@@ -36,14 +36,14 @@
         if (Node_along(f,1)) then
           do i=1,m%s
             if (m%g(i)%c(1)%N.gt.1) then
-              if (.not.m%g(i)%st_face%hmin(1)) then
+              if (.not.m%g(i)%st_faces(1)%TF) then
                 if (x%RF(i)%b%f(1)%b%Neumann) then
                   f_mod%RF(i)%f(2,:,:) = f%RF(i)%f(2,:,:)/2.0_cp
                 elseif (x%RF(i)%b%f(1)%b%Dirichlet) then
                   f_mod%RF(i)%f(2,:,:) = 0.0_cp
                 endif
               endif
-              if (.not.m%g(i)%st_face%hmax(1)) then
+              if (.not.m%g(i)%st_faces(2)%TF) then
                 if (x%RF(i)%b%f(2)%b%Neumann) then
                   f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:)/2.0_cp
                 elseif (x%RF(i)%b%f(2)%b%Dirichlet) then
@@ -56,14 +56,14 @@
         if (Node_along(f,2)) then
           do i=1,m%s
             if (m%g(i)%c(2)%N.gt.1) then
-              if (.not.m%g(i)%st_face%hmin(2)) then
+              if (.not.m%g(i)%st_faces(3)%TF) then
                 if (x%RF(i)%b%f(3)%b%Neumann) then
                   f_mod%RF(i)%f(:,2,:) = f%RF(i)%f(:,2,:)/2.0_cp
                 elseif (x%RF(i)%b%f(3)%b%Dirichlet) then
                   f_mod%RF(i)%f(:,2,:) = 0.0_cp
                 endif
               endif
-              if (.not.m%g(i)%st_face%hmax(2)) then
+              if (.not.m%g(i)%st_faces(4)%TF) then
                 if (x%RF(i)%b%f(4)%b%Neumann) then
                   f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:)/2.0_cp
                 elseif (x%RF(i)%b%f(4)%b%Dirichlet) then
@@ -76,14 +76,14 @@
         if (Node_along(f,3)) then
           do i=1,m%s
             if (m%g(i)%c(3)%N.gt.1) then
-              if (.not.m%g(i)%st_face%hmin(3)) then
+              if (.not.m%g(i)%st_faces(5)%TF) then
                 if (x%RF(i)%b%f(5)%b%Neumann) then
                   f_mod%RF(i)%f(:,:,2) = f%RF(i)%f(:,:,2)/2.0_cp
                 elseif (x%RF(i)%b%f(5)%b%Dirichlet) then
                   f_mod%RF(i)%f(:,:,2) = 0.0_cp
                 endif
               endif
-              if (.not.m%g(i)%st_face%hmax(3)) then
+              if (.not.m%g(i)%st_faces(6)%TF) then
                 if (x%RF(i)%b%f(6)%b%Neumann) then
                   f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1)/2.0_cp
                 elseif (x%RF(i)%b%f(6)%b%Dirichlet) then
@@ -113,20 +113,20 @@
         integer :: i
         if (Node_along(x,1)) then
           do i=1,m%s
-            if (.not.m%g(i)%st_face%hmin(1)) x%RF(i)%f(1,:,:) = 0.0_cp
-            if (.not.m%g(i)%st_face%hmax(1)) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
+            if (.not.m%g(i)%st_faces(1)%TF) x%RF(i)%f(1,:,:) = 0.0_cp
+            if (.not.m%g(i)%st_faces(2)%TF) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
           enddo
         endif
         if (Node_along(x,2)) then
           do i=1,m%s
-            if (.not.m%g(i)%st_face%hmin(2)) x%RF(i)%f(:,1,:) = 0.0_cp
-            if (.not.m%g(i)%st_face%hmax(2)) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
+            if (.not.m%g(i)%st_faces(3)%TF) x%RF(i)%f(:,1,:) = 0.0_cp
+            if (.not.m%g(i)%st_faces(4)%TF) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
           enddo
         endif
         if (Node_along(x,3)) then
           do i=1,m%s
-            if (.not.m%g(i)%st_face%hmin(3)) x%RF(i)%f(:,:,1) = 0.0_cp
-            if (.not.m%g(i)%st_face%hmax(3)) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
+            if (.not.m%g(i)%st_faces(5)%TF) x%RF(i)%f(:,:,1) = 0.0_cp
+            if (.not.m%g(i)%st_faces(6)%TF) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
           enddo
         endif
       end subroutine

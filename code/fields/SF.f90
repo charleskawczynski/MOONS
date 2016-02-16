@@ -154,6 +154,7 @@
         interface maxabsdiff;          module procedure maxabsdiff_SF;          end interface
         interface mean;                module procedure mean_SF;                end interface
         interface sum;                 module procedure sum_SF;                 end interface
+        interface sum;                 module procedure sum_SF_pad;             end interface
 
         interface CC_along;            module procedure CC_along_SF;            end interface
         interface Node_along;          module procedure Node_along_SF;          end interface
@@ -454,6 +455,18 @@
           m = 0.0_cp
           do i=1,a%s
             m = m + sum(a%RF(i))
+          enddo
+        end function
+
+        function sum_SF_pad(a,pad) result(m)
+          implicit none
+          type(SF),intent(in) :: a
+          integer,intent(in) :: pad
+          real(cp) :: m
+          integer :: i
+          m = 0.0_cp
+          do i=1,a%s
+            m = m + sum(a%RF(i),pad)
           enddo
         end function
 

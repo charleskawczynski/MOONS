@@ -5,7 +5,7 @@
        use apply_stitches_edges_mod
        use apply_stitches_corners_mod
        use apply_BCs_faces_implicit_mod
-       ! use apply_BCs_edges_implicit_mod
+       use apply_BCs_edges_implicit_mod
        ! use apply_BCs_corners_implicit_mod
        use mesh_mod
        implicit none
@@ -45,10 +45,10 @@
          ! call apply_BCs_edges_implicit(U,m)
          ! call apply_BCs_corners_implicit(U,m)
 
-         ! if (m%s.gt.1) call apply_stitches_faces(U,m)
+         if (m%s.gt.1) call apply_stitches_faces(U,m)
+         if (m%s.gt.1) call apply_stitches_edges(U,m)
          call apply_BCs_faces_implicit(U,m)
-         ! call apply_BCs_edges_implicit(U,m)
-         ! if (m%s.gt.1) call apply_stitches_edges(U,m)
+         call apply_BCs_edges_implicit(U,m)
          ! call apply_BCs_coners_implicit(U,m)
          ! if (m%s.gt.1) call apply_stitches_corners(U,m)
 
