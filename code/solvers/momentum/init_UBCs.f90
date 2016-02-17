@@ -182,12 +182,12 @@
          call init_Neumann(U%x%RF(5)%b,2)
          call init_Neumann(U%x%RF(7)%b,2)
          call init_Neumann(U%x%RF(8)%b,2)
-         call init_Neumann(U%y%RF(5)%b,2)
-         call init_Neumann(U%y%RF(7)%b,2)
-         call init_Neumann(U%y%RF(8)%b,2)
-         call init_Neumann(U%z%RF(5)%b,2)
-         call init_Neumann(U%z%RF(7)%b,2)
-         call init_Neumann(U%z%RF(8)%b,2)
+         ! call init_Neumann(U%y%RF(5)%b,2)
+         ! call init_Neumann(U%y%RF(7)%b,2)
+         ! call init_Neumann(U%y%RF(8)%b,2)
+         ! call init_Neumann(U%z%RF(5)%b,2)
+         ! call init_Neumann(U%z%RF(7)%b,2)
+         ! call init_Neumann(U%z%RF(8)%b,2)
 
          ! Tyler's geometry
          ! do i=4,6

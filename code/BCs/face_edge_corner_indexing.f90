@@ -95,7 +95,7 @@
          case (1); a = (/2,3/)
          case (2); a = (/3,1/)
          case (3); a = (/1,2/)
-         case default; stop 'Error: dir must = 1,2,3 in adj_faces_given_dir in face_edge_corner_indexing.f90'
+         case default; stop 'Error: dir must = 1,2,3 in adj_dir_given_dir in face_edge_corner_indexing.f90'
          end select
        end function
 

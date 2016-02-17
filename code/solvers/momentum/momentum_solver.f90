@@ -159,7 +159,8 @@
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
               call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F1,U,m)
+         ! call lap(temp_F1,U,m)
+         call lap_centered(temp_F1,U,m,temp_E)
          call multiply(temp_F1,1.0_cp/Re)
               call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)
@@ -170,7 +171,7 @@
          call add(Ustar,U)
               if (compute_norms) call assign(temp_F1,U)
          call assign(U,Ustar)
-              if (compute_norms) call assign(Ustar,temp_F1)
+              if (compute_norms) call assign(Ustar,temp_F1) ! Now Ustar = Un and U = U* (to be corrected)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,n,compute_norms)

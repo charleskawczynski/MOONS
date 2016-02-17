@@ -32,7 +32,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp),parameter :: tol_abs = 10.0_cp**(-28.0_cp)
+      real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
       character(len=19) :: norm_fmt = '(I10,7E40.28E3,I10)'
 
       contains

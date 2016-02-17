@@ -452,14 +452,14 @@
          call grid_Roberts_B(g2,hmin(3),hmax(3),1,beta(3),3)
          call add(m,g2)
 
-         call con_app_Roberts_L (g1,g2,2.0_cp,N(2),2); call add(m,g1) ! left entrance
-         call con_prep_Roberts_R(g3,g2,2.0_cp,N(2),2); call add(m,g3) ! right entrance
+         call con_app_Roberts_L (g1,g2,5.0_cp,N(2),2); call add(m,g1) ! left entrance
+         call con_prep_Roberts_R(g3,g2,5.0_cp,N(2),2); call add(m,g3) ! right entrance
 
          call con_app_Roberts_B(g2,g1,1.0_cp,N(1),1); call add(m,g2) ! left side
-         call con_app_Roberts_L(g1,g2,10.0_cp,60,1); call add(m,g1) ! left side exit
+         call con_app_Roberts_L(g1,g2,40.0_cp,140,1); call add(m,g1) ! left side exit
 
          call con_app_Roberts_B(g2,g3,1.0_cp,N(1),1); call add(m,g2) ! right side
-         call con_app_Roberts_L(g3,g2,10.0_cp,60,1); call add(m,g3) ! right side exit
+         call con_app_Roberts_L(g3,g2,40.0_cp,140,1); call add(m,g3) ! right side exit
 
          call con_app_Roberts_B(g2,g3,1.0_cp,N(2),2); call add(m,g2) ! trailing cube
 

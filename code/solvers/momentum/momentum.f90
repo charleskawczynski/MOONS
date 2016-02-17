@@ -345,10 +345,15 @@
          logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
          logical :: exportNow
+         integer :: N_PPE
+         if (mom%nstep.lt.1000) then; N_PPE = 10*mom%N_PPE
+         else;                        N_PPE = mom%N_PPE
+         endif
+
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
+           N_PPE,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
            print_export(1))
 
          case (2)
@@ -377,7 +382,7 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          if (print_export(1)) call div(mom%divU,mom%U,mom%m)
          if (print_export(1)) call exportTransient(mom,dir)
-         if (print_export(2).or.mom%nstep.eq.1) then
+         if (print_export(3).or.mom%nstep.eq.1) then
          call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
          endif
 
