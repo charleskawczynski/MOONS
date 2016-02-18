@@ -311,14 +311,14 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
          integer :: i
-         ! type(SF) :: temp
-         ! call init(temp,g); call assign(temp,g)
-         ! call apply_stitches(temp,m)
+         type(SF) :: temp
+         call init(temp,g); call assign(temp,g)
+         call apply_stitches(temp,m)
          do i=1,m%s
            call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
          enddo
          call apply_stitches(f,m)
-         ! call delete(temp)
+         call delete(temp)
        end subroutine
 
 #ifdef _DEBUG_INTERP_

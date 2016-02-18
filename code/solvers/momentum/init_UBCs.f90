@@ -111,103 +111,104 @@
          ! call init_Neumann(U%x%RF(7)%b,2);call init_Neumann(U%y%RF(7)%b,2);call init_Neumann(U%z%RF(7)%b,2) ! exit
          ! call init_Neumann(U%x%RF(8)%b,2);call init_Neumann(U%y%RF(8)%b,2);call init_Neumann(U%z%RF(8)%b,2) ! exit
 
-         ! 1 DOMAIN
-         ! call init(U%x%RF(1)%b,1.0_cp,4)
-         ! call init(U%y%RF(1)%b,1.0_cp,2)
+         ! call LDC_1_domain(U)
+         ! call LDC_4_domains(U)
+         call LDC_9_domains(U)
+         ! call flow_over_2D_square(U)
+         ! call Tylers_geometry(U)
+       end subroutine
 
-         ! ***********************************************************************
-         ! ***********************************************************************
-         ! 2 VERTICAL DOMAINS
-         ! LDC, 2 vertical domains, rotated 0 (normal orientation)
-         ! call init(U%x%RF(1)%b,1.0_cp,4) ! ******************** current test
-         ! call init(U%x%RF(2)%b,1.0_cp,4) ! ******************** current test
-         ! call init(U%x%RF(1)%b%e(0+2),1.0_cp)
-         ! call init(U%x%RF(1)%b%e(0+4),1.0_cp)
-         ! call init(U%x%RF(2)%b%e(0+2),1.0_cp)
-         ! call init(U%x%RF(2)%b%e(0+4),1.0_cp)
-         ! call init(U%x%RF(1)%b%e(8+2),1.0_cp)
-         ! call init(U%x%RF(1)%b%e(8+4),1.0_cp)
-         ! call init(U%x%RF(2)%b%e(8+2),1.0_cp)
-         ! call init(U%x%RF(2)%b%e(8+4),1.0_cp)
+       subroutine LDC_1_domain(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         call init(U%x%RF(1)%b,1.0_cp,4)
+       end subroutine
 
-         ! LDC, 2 vertical domains, rotated 90
-         ! call init(U%y%RF(2)%b,-1.0_cp,2)
-         ! LDC, 2 vertical domains, rotated 180 (upside down)
-         ! call init(U%y%RF(1)%b,-1.0_cp,3)
-         ! call init(U%y%RF(2)%b,-1.0_cp,3)
-         ! LDC, 2 vertical domains, rotated 270
-         ! call init(U%y%RF(1)%b,1.0_cp,1)
+       subroutine LDC_4_domains(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         call init(U%x%RF(3)%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%RF(4)%b,1.0_cp,4) ! periodic in z, driven at ymax
+       end subroutine
 
-         ! 2 HORIZONTAL DOMAINS
-         ! LDC, 2 horizontal domains, rotated 0 (normal orientation)
-         ! call init(U%x%RF(2)%b,1.0_cp,4)
-         ! LDC, 2 horizontal domains, rotated 90
-         ! call init(U%y%RF(1)%b,-1.0_cp,2) ! ******************** current test
-         ! call init(U%y%RF(2)%b,-1.0_cp,2) ! ******************** current test
-         ! call init(U%y%RF(1)%b%e(4+2),-1.0_cp)
-         ! call init(U%y%RF(1)%b%e(4+4),-1.0_cp)
-         ! call init(U%y%RF(2)%b%e(4+2),-1.0_cp)
-         ! call init(U%y%RF(2)%b%e(4+4),-1.0_cp)
-         ! call init(U%y%RF(1)%b%e(8+3),-1.0_cp)
-         ! call init(U%y%RF(1)%b%e(8+4),-1.0_cp)
-         ! call init(U%y%RF(2)%b%e(8+3),-1.0_cp)
-         ! call init(U%y%RF(2)%b%e(8+4),-1.0_cp)
+       subroutine LDC_9_domains(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         call init(U%x%RF(5)%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%RF(8)%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%RF(9)%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%RF(5)%b%e(8+4),1.0_cp)
+         call init(U%x%RF(8)%b%e(8+2),1.0_cp)
+         call init(U%x%RF(8)%b%e(8+4),1.0_cp)
+         call init(U%x%RF(9)%b%e(8+2),1.0_cp)
+       end subroutine
 
-         ! LDC, 2 horizontal domains, rotated 180 (upside down)
-         ! call init(U%x%RF(1)%b,-1.0_cp,3)
-         ! LDC, 2 horizontal domains, rotated 270
-         ! call init(U%y%RF(1)%b,1.0_cp,1)
-         ! call init(U%y%RF(2)%b,1.0_cp,1)
-         ! ***********************************************************************
-         ! ***********************************************************************
+       subroutine duct_flow(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         ! Inlet (uniform)
+         call init(U%x%RF(1)%b,1.0_cp,1)
+         ! Outlet (fully developed)
+         call init_Neumann(U%x%RF(1)%b,2)
+         call init_Neumann(U%y%RF(1)%b,2)
+         call init_Neumann(U%z%RF(1)%b,2)
+       end subroutine
 
-         ! LDC, 4 domains
-         ! call init(U%x%RF(3)%b,1.0_cp,4)
-         ! call init(U%x%RF(4)%b,1.0_cp,4)
+       subroutine channel_flow(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         ! Inlet (uniform)
+         call init(U%x%RF(1)%b,1.0_cp,1)
+         ! Outlet (fully developed)
+         call init_Neumann(U%x%RF(1)%b,2)
+         call init_Neumann(U%y%RF(1)%b,2)
+       end subroutine
 
-         ! LDC 9 domains
-         ! call init(U%x%RF(5)%b,1.0_cp,4)
-         ! call init(U%x%RF(8)%b,1.0_cp,4)
-         ! call init(U%x%RF(9)%b,1.0_cp,4)
-
-         ! LDC 9 domains
-         ! Inlet
-         call init(U%x%RF(1)%b,1.0_cp,1) ! Uniform inflow
-         call init(U%x%RF(2)%b,1.0_cp,1) ! Uniform inflow
-         call init(U%x%RF(3)%b,1.0_cp,1) ! Uniform inflow
-         call init_Neumann(U%x%RF(2)%b,4); call init_Neumann(U%x%RF(3)%b,3) ! Slip, no penetration
-         call init_Neumann(U%x%RF(4)%b,4); call init_Neumann(U%x%RF(6)%b,3) ! Slip, no penetration
-         call init_Neumann(U%x%RF(5)%b,4); call init_Neumann(U%x%RF(7)%b,3) ! Slip, no penetration
-         ! Outlet
+       subroutine flow_over_2D_square(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         ! Inlet (uniform)
+         call init(U%x%RF(1)%b,1.0_cp,1)
+         call init(U%x%RF(2)%b,1.0_cp,1)
+         call init(U%x%RF(3)%b,1.0_cp,1)
+         ! Sides (free-stream)
+         call init(U%x%RF(2)%b,1.0_cp,4); call init(U%x%RF(3)%b,1.0_cp,3)
+         call init(U%x%RF(4)%b,1.0_cp,4); call init(U%x%RF(6)%b,1.0_cp,3)
+         call init(U%x%RF(5)%b,1.0_cp,4); call init(U%x%RF(7)%b,1.0_cp,3)
+         ! Edges
+         call init(U%x%RF(2)%b%e(8+4),1.0_cp); call init(U%x%RF(3)%b%e(8+4),1.0_cp)
+         call init(U%x%RF(4)%b%e(8+2),1.0_cp); call init(U%x%RF(6)%b%e(8+2),1.0_cp)
+         call init(U%x%RF(4)%b%e(8+4),1.0_cp); call init(U%x%RF(6)%b%e(8+4),1.0_cp)
+         call init(U%x%RF(5)%b%e(8+2),1.0_cp); call init(U%x%RF(8)%b%e(8+2),1.0_cp)
+         ! Outlet (fully developed and v=0)
          call init_Neumann(U%x%RF(5)%b,2)
          call init_Neumann(U%x%RF(7)%b,2)
          call init_Neumann(U%x%RF(8)%b,2)
-         ! call init_Neumann(U%y%RF(5)%b,2)
-         ! call init_Neumann(U%y%RF(7)%b,2)
-         ! call init_Neumann(U%y%RF(8)%b,2)
-         ! call init_Neumann(U%z%RF(5)%b,2)
-         ! call init_Neumann(U%z%RF(7)%b,2)
-         ! call init_Neumann(U%z%RF(8)%b,2)
+       end subroutine
 
-         ! Tyler's geometry
-         ! do i=4,6
-         ! call init_Neumann(U%x%RF(i)%b,2)
-         ! call init_Neumann(U%y%RF(i)%b,2)
-         ! call init_Neumann(U%z%RF(i)%b,2)
-         ! enddo
-         ! call init_Neumann(U%x%RF(10)%b,2); call init_Neumann(U%x%RF(14)%b,2)
-         ! call init_Neumann(U%y%RF(10)%b,2); call init_Neumann(U%y%RF(14)%b,2)
-         ! call init_Neumann(U%z%RF(10)%b,2); call init_Neumann(U%z%RF(14)%b,2)
-         ! call init(U%x%RF(1)%b,1.0_cp,1)
+       subroutine Tylers_geometry(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         integer :: i
+         ! THIS NEEDS TO BE FIXED
+         do i=4,6
+           call init_Neumann(U%x%RF(i)%b,2)
+           call init_Neumann(U%y%RF(i)%b,2)
+           call init_Neumann(U%z%RF(i)%b,2)
+         enddo
+         call init_Neumann(U%x%RF(10)%b,2); call init_Neumann(U%x%RF(14)%b,2)
+         call init_Neumann(U%y%RF(10)%b,2); call init_Neumann(U%y%RF(14)%b,2)
+         call init_Neumann(U%z%RF(10)%b,2); call init_Neumann(U%z%RF(14)%b,2)
+         call init(U%x%RF(1)%b,1.0_cp,1)
 
-         ! call init_Neumann(U%x%RF(1)%b,6)
-         ! call init_Neumann(U%y%RF(1)%b,6)
-         ! call init_Neumann(U%z%RF(1)%b,6)
+         call init_Neumann(U%x%RF(1)%b,6)
+         call init_Neumann(U%y%RF(1)%b,6)
+         call init_Neumann(U%z%RF(1)%b,6)
 
-         ! call init(U%x%RF(1)%b,1.0_cp,1)
-         ! call init_Neumann(U%x%RF(m%s)%b,1)
-         ! call init_Neumann(U%y%RF(m%s)%b,1)
-         ! call init_Neumann(U%z%RF(m%s)%b,1)
+         call init(U%x%RF(1)%b,1.0_cp,1)
+         call init_Neumann(U%x%RF(14)%b,1)
+         call init_Neumann(U%y%RF(14)%b,1)
+         call init_Neumann(U%z%RF(14)%b,1)
        end subroutine
 
        subroutine initPredefinedUBCs(u_bcs,v_bcs,w_bcs,g)

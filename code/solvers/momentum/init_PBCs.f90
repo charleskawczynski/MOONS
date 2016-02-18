@@ -48,12 +48,12 @@
          do i=1,m%s
            call init(p%RF(i)%b,0.0_cp)
          enddo
-         ! p%all_Neumann = .true. ! Needs to be adjusted manually
-         p%all_Neumann = .false. ! Needs to be adjusted manually
+         p%all_Neumann = .true. ! Needs to be adjusted manually
+         ! p%all_Neumann = .false. ! Needs to be adjusted manually
 
-         call init_Dirichlet(p%RF(5)%b,2)
-         call init_Dirichlet(p%RF(7)%b,2)
-         call init_Dirichlet(p%RF(8)%b,2)
+         ! call init_Dirichlet(p%RF(5)%b,2)
+         ! call init_Dirichlet(p%RF(7)%b,2)
+         ! call init_Dirichlet(p%RF(8)%b,2)
 
          ! For Tyler's geometry:
          ! call init_Dirichlet(p%RF(4)%b,2)

@@ -49,7 +49,6 @@
         suppress_warning = k%is_CC
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
-        call zeroGhostPoints(Ax)
       end subroutine
       subroutine Lap_uniform_SF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -66,7 +65,6 @@
         call apply_BCs_implicit(x,m)
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
-        call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine Lap_uniform_VF_explicit(Ax,x,k,m,MFP,tempk)
@@ -115,7 +113,6 @@
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
-        call zeroGhostPoints(Ax)
       end subroutine
       subroutine Lap_nonuniform_props(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -132,7 +129,6 @@
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
-        call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine ind_diffusion_explicit(Ax,x,k,m,MFP,tempk)

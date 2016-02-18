@@ -86,7 +86,6 @@
           write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,0
 #endif
-
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0

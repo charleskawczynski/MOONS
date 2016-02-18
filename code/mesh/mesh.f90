@@ -422,7 +422,7 @@
                write(un,*) ' -------------------------------- '
              enddo
            else
-           write(un,*) 'Many grids exist, to see details, see exported file or change the limits in mesh.f90'
+           write(un,*) 'Many grids. To see details, see info file or change limits in mesh.f90'
            endif
          endif
 

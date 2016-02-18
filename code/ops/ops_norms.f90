@@ -162,7 +162,7 @@
          endif
        end subroutine
 
-       subroutine Ln_no_vol_SF(e,u,n)
+       subroutine Ln_no_vol_SF_include_ghost(e,u,n)
          ! Computes
          ! 
          !   L(n) = ΣΣΣ | u(i,j,k)ⁿ |
@@ -182,7 +182,7 @@
          e = eTemp
        end subroutine
 
-       subroutine Ln_no_vol_SF_interior(e,u,n)
+       subroutine Ln_no_vol_SF(e,u,n)
          ! Computes
          ! 
          !   L(n) = ΣΣΣ | u(i,j,k)ⁿ |
@@ -202,7 +202,7 @@
          e = eTemp
        end subroutine
 
-       subroutine Ln_no_vol_VF(e,u,n)
+       subroutine Ln_no_vol_VF_include_ghost(e,u,n)
          ! Computes
          ! 
          !   L(n) = ΣΣΣ | u(i,j,k)ⁿ |
@@ -246,7 +246,7 @@
          endif
        end subroutine
 
-       subroutine Ln_no_vol_VF_interior(e,u,n)
+       subroutine Ln_no_vol_VF(e,u,n)
          ! Computes
          ! 
          !   L(n) = ΣΣΣ | u(i,j,k)ⁿ |

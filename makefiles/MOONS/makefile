@@ -30,8 +30,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
 
@@ -82,11 +82,11 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # _DEBUG_COORDINATES_ is for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 
-FC_DEBUG += -D_DEBUG_DEL_
-FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
-FC_DEBUG += -D_DEBUG_INTERP_
-FC_DEBUG += -D_DEBUG_APPLY_STITCHES
-FC_DEBUG += -D_DEBUG_APPLY_BCS_
+# FC_DEBUG += -D_DEBUG_DEL_
+# FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
+# FC_DEBUG += -D_DEBUG_INTERP_
+# FC_DEBUG += -D_DEBUG_APPLY_STITCHES
+# FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 
 # Suppress temporrary array warning:

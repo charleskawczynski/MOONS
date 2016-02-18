@@ -56,8 +56,8 @@
          ! call LDC_2D_2domains_vertical_z(m_mom)
          ! call LDC_2D_2domains_horizontal_z(m_mom)
          ! call LDC_2D_4domains(m_mom)
-         ! call LDC_2D_9domains_uniform(m_mom)
-         call flow_past_square(m_mom)
+         call LDC_2D_9domains_uniform(m_mom)
+         ! call flow_past_square(m_mom)
          call init(m_ind,m_mom)
          call init(D_sigma,m_mom,m_ind)
 
