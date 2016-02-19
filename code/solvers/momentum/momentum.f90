@@ -346,7 +346,7 @@
          character(len=*),intent(in) :: dir
          logical :: exportNow
          integer :: N_PPE
-         if (mom%nstep.lt.1000) then; N_PPE = 1*mom%N_PPE
+         if (mom%nstep.lt.1000) then; N_PPE = 2*mom%N_PPE
          else;                        N_PPE = mom%N_PPE
          endif
 

@@ -30,8 +30,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
 
@@ -94,10 +94,10 @@ FC_DEBUG += -Wno-array-temporaries
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -g -O3
-FC_OPTIMIZE += -D_PARALLELIZE_RF_
-FC_OPTIMIZE += -D_PARALLELIZE_SF_
-FC_OPTIMIZE += -D_PARALLELIZE_DEL_
-FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
+# FC_OPTIMIZE += -D_PARALLELIZE_RF_
+# FC_OPTIMIZE += -D_PARALLELIZE_SF_
+# FC_OPTIMIZE += -D_PARALLELIZE_DEL_
+# FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
@@ -122,9 +122,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -273,13 +273,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90 \
-	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90 \
@@ -288,6 +283,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
+	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90 \
+	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \

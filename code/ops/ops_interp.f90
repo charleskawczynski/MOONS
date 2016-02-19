@@ -31,6 +31,7 @@
        use grid_mod
        use mesh_mod
        use apply_stitches_mod
+       use apply_BCs_mod
        use SF_mod
        use VF_mod
        use TF_mod

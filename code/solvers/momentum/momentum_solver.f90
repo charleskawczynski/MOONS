@@ -159,8 +159,8 @@
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
               call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F1,U,m)
-         ! call lap_centered(temp_F1,U,m,temp_E)
+         ! call lap(temp_F1,U,m)
+         call lap_centered(temp_F1,U,m,temp_E)
          call multiply(temp_F1,1.0_cp/Re)
               call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)

@@ -113,8 +113,8 @@
 
          ! call LDC_1_domain(U)
          ! call LDC_4_domains(U)
-         call LDC_9_domains(U)
-         ! call flow_over_2D_square(U)
+         ! call LDC_9_domains(U)
+         call flow_over_2D_square(U)
          ! call Tylers_geometry(U)
        end subroutine
 
@@ -167,19 +167,25 @@
        subroutine flow_over_2D_square(U)
          implicit none
          type(VF),intent(inout) :: U
+         ! 16 edges total must be defined here with velocity of 1
          ! Inlet (uniform)
          call init(U%x%RF(1)%b,1.0_cp,1)
          call init(U%x%RF(2)%b,1.0_cp,1)
          call init(U%x%RF(3)%b,1.0_cp,1)
+              ! Edges
+              call init(U%x%RF(1)%b%e(8+1),1.0_cp); call init(U%x%RF(1)%b%e(8+2),1.0_cp)
+              call init(U%x%RF(2)%b%e(8+1),1.0_cp); call init(U%x%RF(2)%b%e(8+2),1.0_cp)
+              call init(U%x%RF(3)%b%e(8+1),1.0_cp); call init(U%x%RF(3)%b%e(8+2),1.0_cp)
          ! Sides (free-stream)
          call init(U%x%RF(2)%b,1.0_cp,4); call init(U%x%RF(3)%b,1.0_cp,3)
          call init(U%x%RF(4)%b,1.0_cp,4); call init(U%x%RF(6)%b,1.0_cp,3)
          call init(U%x%RF(5)%b,1.0_cp,4); call init(U%x%RF(7)%b,1.0_cp,3)
-         ! Edges
-         call init(U%x%RF(2)%b%e(8+4),1.0_cp); call init(U%x%RF(3)%b%e(8+4),1.0_cp)
-         call init(U%x%RF(4)%b%e(8+2),1.0_cp); call init(U%x%RF(6)%b%e(8+2),1.0_cp)
-         call init(U%x%RF(4)%b%e(8+4),1.0_cp); call init(U%x%RF(6)%b%e(8+4),1.0_cp)
-         call init(U%x%RF(5)%b%e(8+2),1.0_cp); call init(U%x%RF(8)%b%e(8+2),1.0_cp)
+              ! Edges
+              call init(U%x%RF(2)%b%e(8+4),1.0_cp); call init(U%x%RF(3)%b%e(8+3),1.0_cp)
+              call init(U%x%RF(4)%b%e(8+2),1.0_cp); call init(U%x%RF(6)%b%e(8+1),1.0_cp)
+              call init(U%x%RF(4)%b%e(8+4),1.0_cp); call init(U%x%RF(6)%b%e(8+3),1.0_cp)
+              call init(U%x%RF(5)%b%e(8+2),1.0_cp); call init(U%x%RF(7)%b%e(8+1),1.0_cp)
+              call init(U%x%RF(5)%b%e(8+4),1.0_cp); call init(U%x%RF(7)%b%e(8+3),1.0_cp)
          ! Outlet (fully developed and v=0)
          call init_Neumann(U%x%RF(5)%b,2)
          call init_Neumann(U%x%RF(7)%b,2)

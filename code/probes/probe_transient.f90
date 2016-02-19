@@ -38,6 +38,7 @@
          integer :: un_d                      ! file unit number for data
          integer :: un_i                      ! file unit number for info file
          logical :: TF_freshStart             ! simulation starts from t=0
+         real(cp) :: NaN,infinity
        end type
 
        interface init;        module procedure initProbe;            end interface
@@ -70,6 +71,7 @@
          else; stop 'Error: no case found in initProbe in probe_transient.f90'
          endif
          p%TF_freshStart = .false.
+         p%infinity = huge(1.0_cp)
        end subroutine
 
        subroutine setProbeData(p,n,d)
@@ -83,6 +85,14 @@
        subroutine applyProbe(p)
          implicit none
          type(probe),intent(inout) :: p
+         if (p%d.gt.p%infinity) then
+         write(*,*) 'Error: data>infinity in probe: ',p%name
+         stop 'Divergence error. Sorry!'
+         endif
+         if (p%d.ne.p%d) then
+         write(*,*) 'Error: NaN in data in probe: ',p%name
+         stop 'Divergence error. Sorry!'
+         endif
          write(p%un_d,'(2'//arrfmt//')') real(p%n,cp),p%d
          flush(p%un_d)
        end subroutine
