@@ -231,9 +231,6 @@
         integer,intent(in) :: n,dir,pad,genType
         integer :: i,pad1,pad2
         integer,dimension(2) :: faces
-        type(SF) :: temp
-        call init(temp,f); call assign(temp,f)
-        call apply_stitches(temp,m)
         do i=1,m%s
           faces = normal_faces_given_dir(dir)
           if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
@@ -242,7 +239,6 @@
             n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
         enddo
         call apply_stitches(dfdh,m)
-        call delete(temp)
       end subroutine
 
       ! *********************************************************

@@ -98,7 +98,7 @@
          call writeLastStepToFile(ind%nstep,dir//'parameters/','nstep_ind')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
-         if (solveMomentum)  call exportTransient(mom,dir)
+         if (solveMomentum)  call exportTransient(mom)
          if (solveInduction) call exportTransient(ind)
 
          if (solveEnergy)    call export(nrg,nrg%m,dir)

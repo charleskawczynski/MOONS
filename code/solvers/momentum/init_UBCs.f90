@@ -7,53 +7,6 @@
        use vectorBCs_mod
        use profile_funcs_mod
        implicit none
-       ! From applyBCs.f90:
-       ! bctype = 1 ! Dirichlet - direct - wall coincident
-       ! bctype = 2 ! Dirichlet - interpolated - wall incoincident
-       ! bctype = 3 ! Neumann - direct - wall coincident ~O(dh^2)
-       ! bctype = 4 ! Neumann - direct - wall coincident ~O(dh)
-       ! bctype = 5 ! Neumann - interpolated - wall incoincident ~O(dh)
-
-       private
-       public :: init_UBCs
-
-       integer,dimension(3) :: periodic_dir = (/0,0,1/) ! 1 = true, else false
-
-       integer :: preDefinedU_BCs = 2
-       !                                      0 : User-defined case in initUserUBCs() (no override)
-       !                                      1 : Lid Driven Cavity (3D)
-       !                                      2 : No Slip Cavity
-       !                                      3 : Duct Flow (Uniform Inlet)
-       !                                      4 : Duct Flow (Fully Developed Inlet)
-       !                                      5 : Duct Flow (Neumann Inlet/Outlet)
-       !                                      6 : Duct Flow (Neumann Inlet / Periodic Outlet)
-       !                                      7 : Cylinder Driven Cavity Flow (tornado)
-       !                                      8 : Lid Driven Cavity (2D)
-       !                                      9 : ??..
-       !                                      10 : Periodic Duct (Bandaru)
-
-       ! Lid Driven Cavity parameters:
-       integer :: drivenFace      = 4 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
-
-       ! integer :: drivenFace      = 4 
-       !                                      1 {x_min}
-       !                                      2 {x_max}
-       !                                      3 {y_min}
-       !                                      4 {y_max}
-       !                                      5 {z_min}
-       !                                      6 {z_max}
-
-       integer :: drivenDirection = 1 ! (1,2,3) = (x,y,z)
-       integer :: drivenSign      = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
-       ! Duct Flow parameters: 
-       integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
-       ! ductSign may or may not work. Look into implementation
-       integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
-       ! Cylinder Driven Cavity parameters: 
-       ! (not yet developed/used)
-       ! integer :: cylinderFace    = 1 ! (1,2,3,4,5,6) = (x_min,x_max,y_min,y_max,z_min,z_max)
-       ! integer :: cylinderSign    = 1 ! (-1,1) = {clockwise from +, clockwise from -}
-
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -65,57 +18,53 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+       private
+       public :: init_UBCs
+       integer,dimension(3) :: periodic_dir = (/0,0,1/) ! 1 = true, else false
+       ! Default = no-slip
+       integer :: preDefinedU_BCs = 4 ! See init_UBCs for details
+       ! integer :: preDefinedU_BCs = 7
+
        contains
 
        subroutine init_UBCs(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: i
+         integer :: i,k,pd
 
          call init_BC_mesh(U%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m%s
-           if (preDefinedU_BCs.ne.0) then
-             call initPredefinedUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b,m%g(i))
-           else
-             call initUserUBCs(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b)
-           endif
-         enddo
-
-         do i=1,m%s
+           call init_Dirichlet(U%x%RF(i)%b)
+           call init_Dirichlet(U%y%RF(i)%b)
+           call init_Dirichlet(U%z%RF(i)%b)
            call init(U%x%RF(i)%b,0.0_cp)
            call init(U%y%RF(i)%b,0.0_cp)
            call init(U%z%RF(i)%b,0.0_cp)
+           do k=1,3
+             pd = periodic_dir(k)
+             if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_UBCs in init_UBCs.f90'
+             if (pd.eq.1) call makePeriodic(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b,k)
+           enddo
          enddo
 
-         ! call init(U%x%RF(1)%b%e(5),0.4_cp)
-         ! call init(U%x%RF(1)%b%e(6),0.5_cp)
-         ! call init(U%x%RF(1)%b%e(7),0.6_cp)
-         ! call init(U%x%RF(1)%b%e(8),0.7_cp)
-
-         ! call init(U%x%RF(1)%b,1.0_cp,1) ! Inlet (Dirichlet 0 by default)
-         ! call init(U%x%RF(2)%b,1.0_cp,1) ! Inlet (Dirichlet 0 by default)
-         ! call init(U%x%RF(3)%b,1.0_cp,1) ! Inlet (Dirichlet 0 by default)
-
-         ! call init_Neumann(U%x%RF(2)%b,4) ! L1
-         ! call init_Neumann(U%x%RF(3)%b,3) ! R1
-         ! call init_Neumann(U%x%RF(4)%b,4) ! L2
-         ! call init_Neumann(U%x%RF(5)%b,3) ! R2
-         ! call init_Neumann(U%x%RF(6)%b,4) ! L3
-         ! call init_Neumann(U%x%RF(7)%b,3) ! R3
-
-         ! call init_Neumann(U%x%RF(6)%b,2);call init_Neumann(U%y%RF(6)%b,2);call init_Neumann(U%z%RF(6)%b,2) ! exit
-         ! call init_Neumann(U%x%RF(7)%b,2);call init_Neumann(U%y%RF(7)%b,2);call init_Neumann(U%z%RF(7)%b,2) ! exit
-         ! call init_Neumann(U%x%RF(8)%b,2);call init_Neumann(U%y%RF(8)%b,2);call init_Neumann(U%z%RF(8)%b,2) ! exit
-
-         ! call LDC_1_domain(U)
-         ! call LDC_4_domains(U)
-         ! call LDC_9_domains(U)
-         call flow_over_2D_square(U)
-         ! call Tylers_geometry(U)
+         select case (preDefinedU_BCs)
+         case (0); 
+         case (1); call LDC_1_domain(U)
+         case (2); call LDC_4_domains(U)
+         case (3); call LDC_9_domains(U)
+         case (4); call flow_over_2D_square(U)
+         case (5); call duct_flow_2D_2domains(U)
+         case (6); call Tylers_geometry(U)
+         case (7); call duct_flow(U)
+         case (8); call channel_flow_1domain(U)
+         case (9); call cylinder_driven_cavity(U,m)
+         case (10); call fully_developed_duct_flow(U,m)
+         case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
+         end select
        end subroutine
 
        subroutine LDC_1_domain(U)
@@ -154,7 +103,20 @@
          call init_Neumann(U%z%RF(1)%b,2)
        end subroutine
 
-       subroutine channel_flow(U)
+       subroutine duct_flow_2D_2domains(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         ! Inlet (uniform)
+         call init(U%x%RF(1)%b,1.0_cp,1)
+         call init(U%x%RF(2)%b,1.0_cp,1)
+         call init(U%x%RF(1)%b%e(8+2),1.0_cp)
+         call init(U%x%RF(2)%b%e(8+1),1.0_cp)
+         ! Outlet (fully developed)
+         call init_Neumann(U%x%RF(1)%b,2)
+         call init_Neumann(U%x%RF(2)%b,2)
+       end subroutine
+
+       subroutine channel_flow_1domain(U)
          implicit none
          type(VF),intent(inout) :: U
          ! Inlet (uniform)
@@ -217,86 +179,6 @@
          call init_Neumann(U%z%RF(14)%b,1)
        end subroutine
 
-       subroutine initPredefinedUBCs(u_bcs,v_bcs,w_bcs,g)
-         implicit none
-         type(grid),intent(in) :: g
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer :: i
-
-         ! Default U-Field BCs = no slip
-         call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs)
-
-         select case (preDefinedU_BCs)
-         case (1); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,drivenFace,drivenDirection,drivenSign)
-
-         case (2); ! Leave default
-
-         case (3); call ductFlow_Uniform_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
-                   call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
-
-         case (4); call ductFlow_FD_Profile(u_bcs,v_bcs,w_bcs,g,ductDirection,ductSign)
-
-         case (5); call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
-                   call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
-
-         case (6); ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
-                   ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
-
-                   call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
-                   call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
-
-         ! call ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
-         ! call ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,g,ductDirection,1)
-
-         case (7); call cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,1)
-         case (8); call lidDrivenBCs(u_bcs,v_bcs,w_bcs,drivenFace,drivenDirection,drivenSign)
-         case (9); 
-         case (10)
-                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,-1)
-                   ! call ductFlow_periodic_IO(u_bcs,v_bcs,w_bcs,ductDirection,1)
-         case default
-           stop 'Error: preDefinedU_BCs must = 1:5 in initPredefinedUBCs.'
-         end select
-
-         do i=1,3
-           select case (periodic_dir(i))
-           case (0)
-           case (1); call makePeriodic(u_bcs,v_bcs,w_bcs,i)
-           case default
-           stop 'Error: periodic_dir must = 1,0 in initPredefinedUBCs in initializeUBCs.f90'
-           end select
-         enddo
-       end subroutine
-
-       subroutine initUserUBCs(u_bcs,v_bcs,w_bcs)
-         implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         call noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs)
-         call lidDrivenBCs(u_bcs,v_bcs,w_bcs,&
-          drivenFace,drivenDirection,drivenSign)
-       end subroutine
-
-       subroutine lidDrivenBCs(u_bcs,v_bcs,w_bcs,face,dir,posNeg)
-         implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer,intent(in) :: face,dir,posNeg
-         real(cp) :: bval
-         select case (face)
-         case (1); if (dir.eq.1) stop 'Lid driven BCs is violating flow through.'
-         case (2); if (dir.eq.1) stop 'Lid driven BCs is violating flow through.'
-         case (3); if (dir.eq.2) stop 'Lid driven BCs is violating flow through.'
-         case (4); if (dir.eq.2) stop 'Lid driven BCs is violating flow through.'
-         case (5); if (dir.eq.3) stop 'Lid driven BCs is violating flow through.'
-         case (6); if (dir.eq.3) stop 'Lid driven BCs is violating flow through.'
-         end select
-         bval = sign(1.0_cp,real(posNeg,cp));
-         select case (dir)
-         case (1); call init(u_bcs,bval,face)
-         case (2); call init(v_bcs,bval,face)
-         case (3); call init(w_bcs,bval,face)
-         end select
-       end subroutine
-
        subroutine makePeriodic(u_bcs,v_bcs,w_bcs,dir)
          implicit none
          type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
@@ -318,66 +200,18 @@
          call init_periodic(w_bcs,face2); call init(w_bcs,0.0_cp,face2)
        end subroutine
 
-       subroutine ductFlow_Uniform_IO(u_bcs,v_bcs,w_bcs,ductDir,IO)
+       subroutine cylinder_driven_cavity(U,m)
          implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer,intent(in) :: ductDir,IO
-         integer :: face
-         face = getFace(ductDir,IO)
-         select case (IO)
-         case (-1); select case (ductDir)
-                    case (1); call init_Dirichlet(u_bcs,face); call init(u_bcs,1.0_cp,face)
-                    case (2); call init_Dirichlet(v_bcs,face); call init(v_bcs,1.0_cp,face)
-                    case (3); call init_Dirichlet(w_bcs,face); call init(w_bcs,1.0_cp,face)
-                    case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_Uniform_IO'
-                    end select
-         case (1);  select case (ductDir)
-                    case (1); call init_Dirichlet(u_bcs,face); call init(u_bcs,-1.0_cp,face)
-                    case (2); call init_Dirichlet(v_bcs,face); call init(v_bcs,-1.0_cp,face)
-                    case (3); call init_Dirichlet(w_bcs,face); call init(w_bcs,-1.0_cp,face)
-                    case default; stop 'Error: ductDir must = 1,2,3 in ductFlow_Uniform_IO'
-                    end select
-         case default; stop 'Error: IO must = -1,1 in ductFlow_Uniform_IO in init_UBCs.f90'
-         end select
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         call cylinderDrivenBCs(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,m%g(1),3)
        end subroutine
 
-       subroutine ductFlow_neumann_IO(u_bcs,v_bcs,w_bcs,ductDir,IO)
+       subroutine fully_developed_duct_flow(U,m)
          implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer,intent(in) :: ductDir,IO
-         integer :: face
-         face = getFace(ductDir,IO)
-         call init_Neumann(u_bcs,face)
-         call init_Neumann(v_bcs,face)
-         call init_Neumann(w_bcs,face)
-         call init(u_bcs,0.0_cp,face)
-         call init(v_bcs,0.0_cp,face)
-         call init(w_bcs,0.0_cp,face)
-       end subroutine
-
-       subroutine ductFlow_Periodic_IO(u_bcs,v_bcs,w_bcs,ductDir,IO)
-         implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer,intent(in) :: ductDir,IO
-         integer :: face
-         face = getFace(ductDir,IO)
-         call init_periodic(u_bcs,face)
-         call init_periodic(v_bcs,face)
-         call init_periodic(w_bcs,face)
-         call init(u_bcs,0.0_cp,face)
-         call init(v_bcs,0.0_cp,face)
-         call init(w_bcs,0.0_cp,face)
-       end subroutine
-
-       subroutine noSlipNoFlowThroughBCs(u_bcs,v_bcs,w_bcs)
-         implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         call init_Dirichlet(u_bcs)
-         call init_Dirichlet(v_bcs)
-         call init_Dirichlet(w_bcs)
-         call init(u_bcs,0.0_cp)
-         call init(v_bcs,0.0_cp)
-         call init(w_bcs,0.0_cp)
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         call ductFlow_FD_Profile(U%x%RF(1)%b,U%y%RF(1)%b,U%z%RF(1)%b,m%g(1),1,1)
        end subroutine
 
        subroutine cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,dir)

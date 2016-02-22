@@ -53,7 +53,7 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: f
          integer,dimension(4) :: a
-         integer :: i,j,k,p
+         integer :: i,k,p
 
          k = dir_given_face(f)
          a = adj_faces_given_dir(k)

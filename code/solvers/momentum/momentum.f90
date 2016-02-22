@@ -24,6 +24,7 @@
 
        use norms_mod
        use ops_norms_mod
+       use ops_discrete_mod
        use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -32,7 +33,6 @@
        use apply_BCs_mod
        use apply_stitches_mod
 
-       ! use jacobi_mod
        use PCG_mod
        use preconditioners_mod
        use GS_Poisson_mod
@@ -274,10 +274,9 @@
 
        ! ******************* EXPORT ****************************
 
-       subroutine momentumExportTransient(mom,dir)
+       subroutine momentumExportTransient(mom)
          implicit none
          type(momentum),intent(inout) :: mom
-         character(len=*),intent(in) :: dir
          ! real(cp) :: temp_Ln
          write(mom%unit_nrg_budget,*) mom%nstep,mom%nrg_budget
          flush(mom%unit_nrg_budget)
@@ -302,9 +301,11 @@
          else
            write(*,*) 'Exporting Solutions for U'
            call export_raw(m,mom%U,dir//'Ufield/','U',0)
+           call export_raw(m,mom%U,dir//'Ufield/','U',0)
            call export_raw(m,mom%p,dir//'Ufield/','p',0)
            if (solveEnergy.or.solveInduction) call export_raw(m,F,dir//'Ufield/','jCrossB',0)
            call export_raw(m,mom%divU,dir//'Ufield/','divU',0)
+           ! call export_processed(m,mom%temp_E,dir//'Ufield/','vorticity',1)
            call export_processed(m,mom%U,dir//'Ufield/','U',1)
            call export_processed(m,mom%p,dir//'Ufield/','p',1)
            write(*,*) '     finished'
@@ -381,7 +382,7 @@
 
          ! call computeKineticEnergy(mom,mom%m,F)
          if (print_export(1)) call div(mom%divU,mom%U,mom%m)
-         if (print_export(1)) call exportTransient(mom,dir)
+         if (print_export(1)) call exportTransient(mom)
          if (print_export(3).or.mom%nstep.eq.1) then
          call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
          endif
@@ -396,6 +397,7 @@
          endif
 
          if (print_export(6).or.exportNow) then
+           ! call curl(mom%temp_E,mom%U,m)
            call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif

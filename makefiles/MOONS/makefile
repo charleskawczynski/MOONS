@@ -82,11 +82,11 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # _DEBUG_COORDINATES_ is for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 
-# FC_DEBUG += -D_DEBUG_DEL_
-# FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
-# FC_DEBUG += -D_DEBUG_INTERP_
-# FC_DEBUG += -D_DEBUG_APPLY_STITCHES
-# FC_DEBUG += -D_DEBUG_APPLY_BCS_
+FC_DEBUG += -D_DEBUG_DEL_
+FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
+FC_DEBUG += -D_DEBUG_INTERP_
+FC_DEBUG += -D_DEBUG_APPLY_STITCHES
+FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 
 # Suppress temporrary array warning:
@@ -122,9 +122,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90

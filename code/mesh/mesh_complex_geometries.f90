@@ -27,6 +27,7 @@
        public :: LDC_2D_2domains_horizontal_z
        public :: LDC_2D_4domains
        public :: LDC_2D_9domains,LDC_2D_9domains_uniform
+       public :: duct_2D_2domains,duct_2D_1domain
        public :: ins_elbow
        public :: ins_u_bend
        public :: ins_sudden_Expansion
@@ -265,6 +266,62 @@
          call delete(g1)
          call delete(g2)
          call delete(g3)
+       end subroutine
+
+       subroutine duct_2D_2domains(m)
+         ! Setup:
+         !         -----------------------
+         !         |         2           |
+         !         -----------------------
+         !         |         1           |
+         !         -----------------------
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g1,g2
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         call delete(m)
+         N = (/50,30,1/)
+         hmin = (/0.0_cp,-0.5_cp,-0.5_cp/)
+         hmax = (/30.0_cp,0.0_cp,0.5_cp/)
+         beta = reynoldsBL(100.0_cp,hmin,hmax)
+
+         call grid_Roberts_L(g1,hmin(1),hmax(1),N(1),beta(1),1)
+         call grid_Roberts_L(g1,hmin(2),hmax(2),N(2),beta(2),2)
+         call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
+         call add(m,g1) ! 1
+
+         call con_app_Roberts_R(g2,g1,0.5_cp,N(2),2); call add(m,g2) ! 2
+         
+         call initProps(m)
+         call patch(m)
+         call delete(g1)
+         call delete(g2)
+       end subroutine
+
+       subroutine duct_2D_1domain(m)
+         ! Setup:
+         !         -----------------------
+         !         |         1           |
+         !         -----------------------
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g1,g2
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         call delete(m)
+         N = (/50,30,1/)
+         hmin = (/0.0_cp,-0.5_cp,-0.5_cp/)
+         hmax = (/30.0_cp,0.5_cp,0.5_cp/)
+         beta = reynoldsBL(100.0_cp,hmin,hmax)
+         call grid_Roberts_L(g1,hmin(1),hmax(1),N(1),beta(1),1)
+         call grid_Roberts_B(g1,hmin(2),hmax(2),N(2),beta(2),2)
+         call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
+         call add(m,g1) ! 1
+         call initProps(m)
+         call patch(m)
+         call delete(g1)
+         call delete(g2)
        end subroutine
 
        subroutine ins_elbow(m)

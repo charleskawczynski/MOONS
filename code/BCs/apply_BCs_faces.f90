@@ -54,7 +54,7 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
          integer,intent(in) :: f
-         integer :: i,j,k,p
+         integer :: i,k,p
          integer,dimension(4) :: a
 
          k = dir_given_face(f)

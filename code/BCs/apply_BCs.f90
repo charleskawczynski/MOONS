@@ -94,7 +94,7 @@
          if (m%s.gt.1) call apply_stitches_edges(U,m)
          ! if (m%s.gt.1) call apply_stitches_corners(U,m)
          call apply_BCs_faces(U,m)
-         call apply_BCs_edges(U,m)
+         if (m%s.gt.1) call apply_BCs_edges(U,m)
          ! call apply_BCs_coners(U,m)
        end subroutine
 

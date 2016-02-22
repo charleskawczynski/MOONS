@@ -162,26 +162,6 @@
          endif
        end subroutine
 
-       subroutine Ln_no_vol_SF_include_ghost(e,u,n)
-         ! Computes
-         ! 
-         !   L(n) = ΣΣΣ | u(i,j,k)ⁿ |
-         ! 
-         implicit none
-         real(cp),intent(inout) :: e
-         type(SF),intent(in) :: u
-         real(cp),intent(in) :: n
-         real(cp) :: eTemp
-         integer :: i,j,k,t
-         eTemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,u%s; do k=1,u%RF(t)%s(3); do j=1,u%RF(t)%s(2); do i=1,u%RF(t)%s(1)
-           eTemp = eTemp + (u%RF(t)%f(i,j,k)**n)
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         e = eTemp
-       end subroutine
-
        subroutine Ln_no_vol_SF(e,u,n)
          ! Computes
          ! 
@@ -200,50 +180,6 @@
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
-       end subroutine
-
-       subroutine Ln_no_vol_VF_include_ghost(e,u,n)
-         ! Computes
-         ! 
-         !   L(n) = ΣΣΣ | u(i,j,k)ⁿ |
-         ! 
-         implicit none
-         real(cp),intent(inout) :: e
-         type(VF),intent(in) :: u
-         real(cp),intent(in) :: n
-         real(cp) :: eTemp
-         integer :: i,j,k,t
-         if (u%is_CC.or.u%is_Node) then
-           eTemp = 0.0_cp ! temp is necessary for reduction
-           !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%x%s; do k=1,u%x%RF(t)%s(3); do j=1,u%x%RF(t)%s(2); do i=1,u%x%RF(t)%s(1)
-             eTemp = eTemp + u%x%RF(t)%f(i,j,k)**n+&
-                             u%y%RF(t)%f(i,j,k)**n+&
-                             u%z%RF(t)%f(i,j,k)**n
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-           e = eTemp
-         else
-           eTemp = 0.0_cp ! temp is necessary for reduction
-           !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%x%s; do k=1,u%x%RF(t)%s(3); do j=1,u%x%RF(t)%s(2); do i=1,u%x%RF(t)%s(1)
-             eTemp = eTemp + u%x%RF(t)%f(i,j,k)**n
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-           e = eTemp; eTemp = 0.0_cp
-           !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%y%s; do k=1,u%y%RF(t)%s(3); do j=1,u%y%RF(t)%s(2); do i=1,u%y%RF(t)%s(1)
-             eTemp = eTemp + u%y%RF(t)%f(i,j,k)**n
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-           e = e+eTemp; eTemp = 0.0_cp
-           !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%z%s; do k=1,u%z%RF(t)%s(3); do j=1,u%z%RF(t)%s(2); do i=1,u%z%RF(t)%s(1)
-             eTemp = eTemp + u%z%RF(t)%f(i,j,k)**n
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-           e = e+eTemp
-         endif
        end subroutine
 
        subroutine Ln_no_vol_VF(e,u,n)

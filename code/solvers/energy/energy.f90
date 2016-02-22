@@ -52,10 +52,12 @@
          type(VF) :: temp_CC2_VF           ! CC data
          ! --- Scalar fields ---
          type(SF) :: divQ                  ! CC data
+         type(SF) :: vol_CC
 
-         type(errorProbe) :: probe_divQ
+         type(errorProbe) :: transient_divQ
          type(mesh) :: m
          type(domain) :: D
+         type(norms) :: norm_divQ
 
          integer :: nstep             ! Nth time step
          integer :: N_nrg             ! Maximum number iterations in solving T (if iterative)
@@ -110,6 +112,8 @@
 
          ! --- Scalar Fields ---
          call init_CC(nrg%divQ,m)
+         call init_CC(nrg%vol_CC,m)
+         call volume(nrg%vol_CC,m)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -130,14 +134,14 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%probe_divQ,dir//'Tfield/','transient_divQ',.not.restartT)
+         call init(nrg%transient_divQ,dir//'Tfield/','transient_divQ',.not.restartT)
+         call export(nrg%transient_divQ)
 
 
          temp_unit = newAndOpen(dir//'parameters/','info_nrg')
          call energyInfo(nrg,temp_unit)
          close(temp_unit)
 
-         call export(nrg%probe_divQ)
          write(*,*) '     probes initialized'
 
          if (restartT) then
@@ -164,7 +168,7 @@
 
          call delete(nrg%divQ)
 
-         call delete(nrg%probe_divQ)
+         call delete(nrg%transient_divQ)
          call delete(nrg%m)
 
          write(*,*) 'energy object deleted'
@@ -175,7 +179,9 @@
        subroutine energyExportTransient(nrg)
          implicit none
          type(energy),intent(inout) :: nrg
-         ! call apply(nrg%probe_divQ,nrg%nstep,nrg%divQ)
+         call compute(nrg%norm_divQ,nrg%divQ,nrg%vol_CC)
+         call set(nrg%transient_divQ,nrg%nstep,nrg%norm_divQ%L2)
+         call apply(nrg%transient_divQ)
        end subroutine
 
        subroutine export_energy(nrg,m,dir)
@@ -246,10 +252,10 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         call exportTransient(nrg)
          if (print_export(2)) then
            call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
            call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
+           call exportTransient(nrg)
          endif
          ! if (print_export(6)) call exportTransientFull(nrg,nrg%m,dir)
 

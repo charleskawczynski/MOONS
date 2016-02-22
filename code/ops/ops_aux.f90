@@ -241,7 +241,7 @@
          call zeroGhostPoints(u)
        end subroutine
 
-       subroutine subtract_phys_mean_vol_SF(u,vol,temp,TF)
+       subroutine subtract_phys_mean_vol_SF(u,vol,temp)
          ! Subtracts the physical mean from scalar field u
          ! 
          !      u = u - mean(u)
@@ -251,7 +251,6 @@
          type(SF),intent(inout) :: u,temp
          type(SF),intent(in) :: vol
          real(cp) :: meanU
-         logical,intent(in) :: TF
          meanU = physical_mean(u,vol,temp)
          call subtract(u,meanU)
          call zeroGhostPoints(u)

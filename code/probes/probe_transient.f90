@@ -89,7 +89,8 @@
          write(*,*) 'Error: data>infinity in probe: ',p%name
          stop 'Divergence error. Sorry!'
          endif
-         if (p%d.ne.p%d) then
+         ! if (p%d.ne.p%d) then ! Works, but causes compiler warning
+         if (isnan(p%d)) then
          write(*,*) 'Error: NaN in data in probe: ',p%name
          stop 'Divergence error. Sorry!'
          endif
