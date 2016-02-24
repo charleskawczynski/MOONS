@@ -64,9 +64,10 @@
          call makeDir(dir,'parameters')
       end subroutine
 
-       subroutine MOONS(dir)
+       subroutine MOONS(dir,dir_full)
          implicit none
          character(len=*),intent(in) :: dir ! Output directory
+         character(len=*),intent(in) :: dir_full
          ! ********************** BIG VARIABLES *************************
          type(momentum) :: mom
          type(induction) :: ind
@@ -181,7 +182,7 @@
          else; n_mhd = 0
          endif
          ! ********************* SET B SOLVER SETTINGS *******************
-         call MHDSolver(nrg,mom,ind,dir,n_mhd+NmaxMHD)
+         call MHDSolver(nrg,mom,ind,dir,dir_full,n_mhd+NmaxMHD)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 

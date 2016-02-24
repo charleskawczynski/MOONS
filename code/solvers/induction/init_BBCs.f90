@@ -2,30 +2,17 @@
        use grid_mod
        use mesh_mod
        use BCs_mod
-       use vectorBCs_mod
        use SF_mod
        use VF_mod
        implicit none
-       ! Make some of these integers, neumann_i, neumann_c, etc. 
-       ! global within this file.
-       ! 
-       ! 
-       ! From applyBCs.f90:
-       ! bctype = 1 ! Dirichlet - direct - wall coincident
-       ! bctype = 2 ! Dirichlet - interpolated - wall incoincident
-       ! bctype = 3 ! Neumann - direct - wall coincident ~O(dh^2)
-       ! bctype = 4 ! Neumann - direct - wall coincident ~O(dh)
-       ! bctype = 5 ! Neumann - interpolated - wall incoincident ~O(dh)
 
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 2
-       !                                      0 : User-defined case (no override)
+       integer :: preDefinedB_BCs = 0
+       !                                      0 : B = 0
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
-       !                                      2 : B = 0
-       !                                      3 : Bandaru
-       !                                      4 : B = 0 AND dBn/dn = 0
+       !                                      2 : Bandaru
 
 
 #ifdef _SINGLE_PRECISION_
@@ -38,146 +25,90 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
-       public :: initBBCs
+       public :: init_BBCs
 
        contains
 
-       subroutine initBBCs(B,m)
+       subroutine init_BBCs(B,m)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         type(vectorBCs) :: B_bcs
-         integer :: i
+         integer :: i,k,pd
 
          call init_BC_mesh(B%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(B%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(B%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m%s
-           if (preDefinedB_BCs.ne.0) then
-             call initPreDefinedBCs(B_bcs)
-           else
-             call initUserBBCs(B_bcs)
-           endif
-
-           call init(B%x%RF(i)%b,B_bcs%x) ! Copy vector BCs to field
-           call init(B%y%RF(i)%b,B_bcs%y) ! Copy vector BCs to field
-           call init(B%z%RF(i)%b,B_bcs%z) ! Copy vector BCs to field
+           call init_Dirichlet(B%x%RF(i)%b)
+           call init_Dirichlet(B%y%RF(i)%b)
+           call init_Dirichlet(B%z%RF(i)%b)
+           call init(B%x%RF(i)%b,0.0_cp)
+           call init(B%y%RF(i)%b,0.0_cp)
+           call init(B%z%RF(i)%b,0.0_cp)
+           do k=1,3
+             pd = periodic_dir(k)
+             if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_BBCs in init_BBCs.f90'
+             if (pd.eq.1) call makePeriodic(B%x%RF(i)%b,B%y%RF(i)%b,B%z%RF(i)%b,k)
+           enddo
          enddo
-         ! call init_Antisymmetry(B%x%RF(1)%b,6)
-         ! call init_Antisymmetry(B%y%RF(1)%b,6)
-         ! call init_Neumann(B%z%RF(1)%b,6)
-         call delete(B_bcs)
-       end subroutine
 
-       subroutine initPreDefinedBCs(B_bcs)
-         implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         integer :: i
-         
-         call initPseudoVacuumBCs(B_bcs) ! Pseudo Vaccuum
          select case (preDefinedB_BCs)
-         case (1) ! Default
-         case (2); call initBeqZeroBCs(B_bcs)      ! B = 0
-         case (3); call initBeqZeroBCs(B_bcs)
-                   call initBandaru(B_bcs)
-         case (4); call initBeqZeroBCs(B_bcs)
-                   call initBandaru(B_bcs)
-         case default
-           write(*,*) 'Incorrect preDefinedB_BCs in initPreDefinedBfield';stop
+         case (0); 
+         case (1); call pseudo_vacuum(B,m)
+         case (2); call initBandaru(B)
+         case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
+       end subroutine
 
-         do i=1,3
-           select case (periodic_dir(i))
-           case (0)
-           case (1); call makePeriodic(B_bcs,i)
-           case default
-           stop 'Error: periodic_dir must = 1,0 in initPreDefinedBCs in initializeBBCs.f90'
-           end select
+       subroutine pseudo_vacuum(B,m)
+         implicit none
+         type(VF),intent(inout) :: B
+         type(mesh),intent(in) :: m
+         integer :: i
+         do i=1,m%s
+           call init_Neumann(B%x%RF(i)%b,1)
+           call init_Neumann(B%x%RF(i)%b,2)
+           call init_Neumann(B%y%RF(i)%b,3)
+           call init_Neumann(B%y%RF(i)%b,4)
+           call init_Neumann(B%z%RF(i)%b,5)
+           call init_Neumann(B%z%RF(i)%b,6)
          enddo
        end subroutine
 
-       subroutine initPseudoVacuumBCs(B_bcs)
+       subroutine initBandaru(B)
          implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         call init_Dirichlet(B_bcs%x)
-         call init_Neumann(B_bcs%x,1)
-         call init_Neumann(B_bcs%x,2)
-
-         call init_Dirichlet(B_bcs%y)
-         call init_Neumann(B_bcs%y,3)
-         call init_Neumann(B_bcs%y,4)
-
-         call init_Dirichlet(B_bcs%z)
-         call init_Neumann(B_bcs%z,5)
-         call init_Neumann(B_bcs%z,6)
-
-         call init(B_bcs%x,0.0_cp)
-         call init(B_bcs%y,0.0_cp)
-         call init(B_bcs%z,0.0_cp)
+         type(VF),intent(inout) :: B
+         call init_Neumann(B%x%RF(1)%b,5)
+         call init_Neumann(B%x%RF(1)%b,6)
+         call init(B%x%RF(1)%b,0.0_cp,5)
+         call init(B%x%RF(1)%b,0.0_cp,6)
        end subroutine
 
-       subroutine initBandaru(B_bcs)
+       subroutine makePeriodic(Bx_BCs,By_BCs,Bz_BCs,dir)
          implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         call init_Neumann(B_bcs%x,5)
-         call init_Neumann(B_bcs%x,6)
-
-         call init(B_bcs%x,0.0_cp,5)
-         call init(B_bcs%x,0.0_cp,6)
-       end subroutine
-
-       subroutine initBeqZeroBCs(B_bcs)
-         implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         call init_Dirichlet(B_bcs%x)
-         call init_Dirichlet(B_bcs%y)
-         call init_Dirichlet(B_bcs%z)
-
-         call init(B_bcs%x,0.0_cp)
-         call init(B_bcs%y,0.0_cp)
-         call init(B_bcs%z,0.0_cp)
-       end subroutine
-
-       subroutine initUserBBCs(B_bcs)
-         implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
-         call initPseudoVacuumBCs(B_bcs)
-
-         call init_periodic(B_bcs%x,1)
-         call init_periodic(B_bcs%y,1)
-         call init_periodic(B_bcs%z,1)
-
-         call init_periodic(B_bcs%x,2)
-         call init_periodic(B_bcs%y,2)
-         call init_periodic(B_bcs%z,2)
-       end subroutine
-
-       subroutine makePeriodic(B_bcs,dir)
-         implicit none
-         type(vectorBCs),intent(inout) :: B_bcs
+         type(BCs),intent(inout) :: Bx_BCs,By_BCs,Bz_BCs
          integer,intent(in) :: dir
          select case (dir)
-         case (1);call init_periodic(B_bcs%x,1)
-                  call init_periodic(B_bcs%y,1)
-                  call init_periodic(B_bcs%z,1)
-                  call init_periodic(B_bcs%x,2)
-                  call init_periodic(B_bcs%y,2)
-                  call init_periodic(B_bcs%z,2)
-         case (2);call init_periodic(B_bcs%x,3)
-                  call init_periodic(B_bcs%y,3)
-                  call init_periodic(B_bcs%z,3)
-                  call init_periodic(B_bcs%x,4)
-                  call init_periodic(B_bcs%y,4)
-                  call init_periodic(B_bcs%z,4)
-         case (3);call init_periodic(B_bcs%x,5)
-                  call init_periodic(B_bcs%y,5)
-                  call init_periodic(B_bcs%z,5)
-                  call init_periodic(B_bcs%x,6)
-                  call init_periodic(B_bcs%y,6)
-                  call init_periodic(B_bcs%z,6)
-         case default
-         stop 'Error: dir must = 1,2,3 in makePeriodic in initializeBBCs.f90'
+         case (1);call init_periodic(Bx_BCs,1)
+                  call init_periodic(By_BCs,1)
+                  call init_periodic(Bz_BCs,1)
+                  call init_periodic(Bx_BCs,2)
+                  call init_periodic(By_BCs,2)
+                  call init_periodic(Bz_BCs,2)
+         case (2);call init_periodic(Bx_BCs,3)
+                  call init_periodic(By_BCs,3)
+                  call init_periodic(Bz_BCs,3)
+                  call init_periodic(Bx_BCs,4)
+                  call init_periodic(By_BCs,4)
+                  call init_periodic(Bz_BCs,4)
+         case (3);call init_periodic(Bx_BCs,5)
+                  call init_periodic(By_BCs,5)
+                  call init_periodic(Bz_BCs,5)
+                  call init_periodic(Bx_BCs,6)
+                  call init_periodic(By_BCs,6)
+                  call init_periodic(Bz_BCs,6)
+         case default; stop 'Error: dir must = 1,2,3 in makePeriodic in ini_BBCs.f90'
          end select
        end subroutine
 

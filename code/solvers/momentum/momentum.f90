@@ -172,9 +172,9 @@
          call init_UBCs(mom%U,m)
          call init_PBCs(mom%p,m)
          write(*,*) '     BCs initialized'
-         ! if (solveMomentum) call print_BCs(mom%U,'U')
+         if (solveMomentum) call print_BCs(mom%U,'U')
          if (solveMomentum) call export_BCs(mom%U,dir//'parameters/','U')
-         ! if (solveMomentum) call print_BCs(mom%p,'p')
+         if (solveMomentum) call print_BCs(mom%p,'p')
          if (solveMomentum) call export_BCs(mom%p,dir//'parameters/','p')
 
          ! Use mom%m later, for no just m
@@ -208,8 +208,8 @@
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
 
          call init(prec_mom,mom%U)
-         ! call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)
-         call prec_identity_VF(prec_mom) ! For ordinary CG
+         call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)
+         ! call prec_identity_VF(prec_mom) ! For ordinary CG
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
          mom%tol_mom,mom%MFP,mom%U,mom%temp_E,dir//'Ufield/','U',.false.,.false.)
          call delete(prec_mom)
@@ -383,7 +383,7 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          if (print_export(1)) call div(mom%divU,mom%U,mom%m)
          if (print_export(1)) call exportTransient(mom)
-         if (print_export(3).or.mom%nstep.eq.1) then
+         if (export_planar.and.(print_export(3).or.mom%nstep.eq.1)) then
          call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
          endif
 

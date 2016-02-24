@@ -12,6 +12,7 @@
        use export_raw_processed_mod
 
        use init_BBCs_mod
+       use init_phiBCs_mod
        use init_Bfield_mod
        use init_Sigma_mod
        use ops_embedExtract_mod
@@ -69,7 +70,7 @@
          type(SF) :: vol_CC
 
          ! --- Solvers ---
-         type(PCG_solver_VF) :: PCG_B,PCG_B_vacuum
+         type(PCG_solver_VF) :: PCG_B
          type(PCG_solver_SF) :: PCG_cleanB
 
          type(matrix_free_params) :: MFP_B
@@ -166,9 +167,15 @@
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call initBBCs(ind%B,m)
+         call init_BBCs(ind%B,m)
+         write(*,*) '     B BCs initialized'
+         call init_phiBCs(ind%phi,m)
+         write(*,*) '     phi BCs initialized'
+
          if (solveInduction) call print_BCs(ind%B,'B')
-         write(*,*) '     BCs initialized'
+         if (solveInduction) call export_BCs(ind%B,dir//'parameters/','B')
+         if (solveInduction) call print_BCs(ind%phi,'phi')
+         if (solveInduction) call export_BCs(ind%phi,dir//'parameters/','phi')
 
          call initBfield(ind%B,ind%B0,m,dir)
          write(*,*) '     B-field initialized'
@@ -185,7 +192,7 @@
          call divide(sigmaInv,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,sigmaInv,m,ind%temp_F1)
          call treatInterface(ind%sigmaInv_edge)
-         ! call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
+         call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
          call delete(sigma)
          call delete(sigmaInv)
          write(*,*) '     Interface treated'
@@ -229,26 +236,16 @@
          else;                 ind%MFP_B%c_ind = ind%dTime
          endif
 
-         ! call init(prec_induction,ind%B)
-         ! call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
-         ! call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
-         ! ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
-         ! call delete(prec_induction)
-
          call init(prec_induction,ind%B)
-         call prec_lap_VF(prec_induction,ind%m)
-         call init(ind%PCG_B_vacuum,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_induction,ind%m,&
-         ind%tol_induction,ind%MFP_B,ind%B,ind%temp_E,dir//'Bfield/','B',.false.,.false.)
+         call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
+         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
+         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
          call delete(prec_induction)
-         write(*,*) '     PCG Solver initialized for B'
 
-         call init_BC_mesh(ind%phi,ind%m)
-         call init_Dirichlet(ind%phi%RF(1)%b)
-         call init_BCs(ind%phi,0.0_cp)
+         write(*,*) '     PCG Solver initialized for B'
 
          call init(prec_cleanB,ind%phi)
          call prec_lap_SF(prec_cleanB,ind%m)
-
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
          ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','φ',.false.,.false.)
          call delete(prec_cleanB)
@@ -306,7 +303,6 @@
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
-         call delete(ind%PCG_B_vacuum)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -397,14 +393,10 @@
          ind%temp_F2,ind%temp_F1_TF%x,ind%temp_F1_TF%y,ind%temp_E,ind%temp_E_TF)
 
          case (3)
-         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%m,ind%dTime,&
-         ind%N_induction,ind%N_cleanB,print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%J,&
+         ind%sigmaInv_edge,ind%m,ind%dTime,ind%N_induction,ind%N_cleanB,ind%nrg_budget,&
+         print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_F1_TF%y,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
-
-         case (4)
-         call CT_Finite_Rem_perfect_vacuum(ind%PCG_B_vacuum,ind%PCG_cleanB,ind%B,ind%B0,&
-         ind%U_E,ind%J,ind%m,ind%D_sigma,ind%dTime,ind%N_induction,ind%N_cleanB,&
-         print_export(1),ind%temp_CC_SF,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select

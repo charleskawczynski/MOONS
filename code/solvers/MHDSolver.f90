@@ -26,12 +26,12 @@
 
        contains
 
-       subroutine MHDSolver(nrg,mom,ind,dir,N_timesteps)
+       subroutine MHDSolver(nrg,mom,ind,dir,dir_full,N_timesteps)
          implicit none
          type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
-         character(len=*),intent(in) :: dir ! Output directory
+         character(len=*),intent(in) :: dir,dir_full ! Output directory
          integer,intent(in) :: N_timesteps
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
@@ -49,12 +49,15 @@
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
          call writeIntegerToFile(mom%N_mom,dir//'parameters/','N_mom')
          call writeIntegerToFile(mom%N_PPE,dir//'parameters/','N_PPE')
+         write(*,*) 'Working directory = ',dir_full
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
          call init(sc,N_timesteps)
          do n_step=1,N_timesteps
-           print_export = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/) ! .ne. 1 avoids initial export
+           if (n_step.lt.3) then; print_export(1:3) = .true.
+           else; print_export = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
+           endif
 
            call tic(sc)
            if (solveEnergy)    call solve(nrg,mom%U,  print_export,dir)
@@ -84,6 +87,7 @@
            if (print_export(1)) then
              call print(sc)
              continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
+             write(*,*) 'Working directory = ',dir_full
              if (.not.continueLoop) then; call toc(sc); exit; endif
            endif
          enddo

@@ -159,8 +159,8 @@
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
               call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         ! call lap(temp_F1,U,m)
-         call lap_centered(temp_F1,U,m,temp_E)
+         call lap(temp_F1,U,m)
+         ! call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F1,1.0_cp/Re)
               call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)
@@ -179,10 +179,12 @@
               call compute_energy(energy_budget(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(temp_F1,dt)
          call subtract(U,temp_F1)
-              call subtract(temp_F1,U,Ustar)
-              call multiply(temp_F1,1.0_cp/dt)
-              call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call apply_BCs(U,m)
+              if (compute_norms) then
+                call subtract(temp_F1,U,Ustar)
+                call multiply(temp_F1,1.0_cp/dt)
+                call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
+              endif
        end subroutine
 
        subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&

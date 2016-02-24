@@ -12,28 +12,27 @@ PS1 = $(strip \)
 extf90 = $(strip .f90)
 
 # ************* MAKE CONFIGURATION ******************
-MKE = gmake
-# MKE = make
+# MKE = gmake
+MKE = make
 # ************* DIRECTORY SETTINGS ******************
-USER = Charlie
+# USER = Charlie
 # USER = LM_MHD
-# USER = charl
+USER = charl
 
 # Code directory
 SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 
 # Output directory
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest2
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest3
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest4
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest5
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS_unitTest6
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS1
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS5
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS6
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS7
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
@@ -94,10 +93,10 @@ FC_DEBUG += -Wno-array-temporaries
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -g -O3
-# FC_OPTIMIZE += -D_PARALLELIZE_RF_
-# FC_OPTIMIZE += -D_PARALLELIZE_SF_
-# FC_OPTIMIZE += -D_PARALLELIZE_DEL_
-# FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
+FC_OPTIMIZE += -D_PARALLELIZE_RF_
+FC_OPTIMIZE += -D_PARALLELIZE_SF_
+FC_OPTIMIZE += -D_PARALLELIZE_DEL_
+FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
@@ -122,9 +121,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -321,6 +320,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phiBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90 \

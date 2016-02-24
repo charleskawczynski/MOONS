@@ -94,7 +94,7 @@
          implicit none
          type(bctype),intent(inout) :: b_out
          type(bctype),intent(in) :: b_in
-         if (.not.b_in%defined) stop 'Error: trying to copy BC that has not been fully defined'
+         if (.not.b_in%defined) stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
          b_out%meanVal = b_in%meanVal
          b_out%Dirichlet = b_in%Dirichlet
          b_out%Neumann = b_in%Neumann
@@ -148,7 +148,7 @@
 
          if (.not.b%defined) then 
            write(newU,*) 'defined = ',b%defined
-           stop 'Error: trying to export bctype before fully defined'
+           stop 'Error: trying to export bctype before fully defined in bctype.f90'
          endif
          if (TF) then
            write(newU,*) 'Dirichlet = ',b%Dirichlet
@@ -179,7 +179,7 @@
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
-         if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined'
+         if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined in bctype.f90'
          if (b%Dirichlet)     write(newU,'(A6,T1)',advance='no') '     D'
          if (b%Neumann)       write(newU,'(A6,T1)',advance='no') '     N'
          if (b%Periodic)      write(newU,'(A6,T1)',advance='no') '     P'
@@ -191,7 +191,7 @@
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
-         if (.not.b%defined) stop 'Error: trying to export bctype (MV only) before fully defined'
+         if (.not.b%defined) stop 'Error: trying to export bctype (MV only) before fully defined in bctype.f90'
          write(newU,'(F5.2)',advance='no') b%meanVal
        end subroutine
 

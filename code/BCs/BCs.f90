@@ -377,7 +377,7 @@
        subroutine check_prereq(BC)
          implicit none
          type(BCs),intent(in) :: BC
-         if (.not.BC%gridDefined) stop 'Error: BC grid must be defined before type is defined'
+         if (.not.BC%gridDefined) stop 'Error: BC grid must be defined before type is defined in BCs.f90'
        end subroutine
 
        subroutine define_logicals(BC)
