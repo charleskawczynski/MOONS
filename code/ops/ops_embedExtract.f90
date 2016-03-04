@@ -28,27 +28,10 @@
        public :: embedFace
        public :: embedEdge
        public :: embedCC
-       ! blic :: embedN
 
-       logical,parameter :: includeTF = .false.
-       integer,parameter :: includeDir = 0 ! (does nothing if includeTF = .false.)
-                                       ! 0 (include all directions)
-                                       ! 
-                                       ! 1 (include x direction)
-                                       ! 2 (include y direction)
-                                       ! 3 (include z direction)
-                                       ! 
-                                       ! -1 (include all but x direction), not yet implemented
-                                       ! -2 (include all but y direction), not yet implemented
-                                       ! -3 (include all but z direction), not yet implemented
-
-       ! integer,dimension(3),parameter :: includeDir = (/1,1,1/) ! include directions (x,y,z)
-
-       interface embedCC;            module procedure embedCC_SF;            end interface
-       interface embedCC;            module procedure embedCC_VF;            end interface
-
-       interface EE;                 module procedure embedExtract_RF;       end interface
-
+       interface embedCC;    module procedure embedCC_SF;        end interface
+       interface embedCC;    module procedure embedCC_VF;        end interface
+       interface EE;         module procedure embedExtract_RF;   end interface
 
        contains
 
@@ -84,7 +67,7 @@
        ! *************************** CASE SPECIFIC ROUTINES ******************************
        ! *********************************************************************************
 
-       subroutine extractFace(face_i,face_t,D) ! Used for velocity into induction
+       subroutine extractFace(face_i,face_t,D) ! Extracts Lorentz force into momentum
          implicit none
          type(VF),intent(inout) :: face_i
          type(VF),intent(in) :: face_t
@@ -109,8 +92,7 @@
          enddo
        end subroutine
 
-       subroutine embedEdge(Edge_t,Edge_i,D)
-         ! Including ghost nodes / ghost cells / boundary values
+       subroutine embedEdge(Edge_t,Edge_i,D) ! Embeds velocity into induction
          implicit none
          type(VF),intent(inout) :: Edge_t
          type(VF),intent(in) :: Edge_i
@@ -150,7 +132,7 @@
          enddo
        end subroutine
 
-       subroutine embedFace(Face_t,Face_i,D) ! Used for jCrossB into momentum
+       subroutine embedFace(Face_t,Face_i,D)
          implicit none
          type(VF),intent(inout) :: Face_t
          type(VF),intent(in) :: Face_i
@@ -169,9 +151,9 @@
             (/D%sd(i)%TCE2(1),D%sd(i)%TNB2(2),D%sd(i)%TCE2(3)/))
            call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),&
             (/D%sd(i)% CE1(1),D%sd(i)% CE1(2),D%sd(i)% NB1(3)/),&
-            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% NE2(3)/),&
+            (/D%sd(i)% CE2(1),D%sd(i)% CE2(2),D%sd(i)% NB2(3)/),&
             (/D%sd(i)%TCE1(1),D%sd(i)%TCE1(2),D%sd(i)%TNB1(3)/),&
-            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNE2(3)/))
+            (/D%sd(i)%TCE2(1),D%sd(i)%TCE2(2),D%sd(i)%TNB2(3)/))
          enddo
        end subroutine
 

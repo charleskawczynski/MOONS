@@ -2,7 +2,6 @@
        implicit none
 
        private
-
        public :: clock
        public :: init,delete
        public :: tic,toc

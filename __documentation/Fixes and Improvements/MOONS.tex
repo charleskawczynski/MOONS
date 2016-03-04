@@ -57,22 +57,18 @@ In order to keep this document organized
 \item Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
 	\begin{itemize}
 	\item Read papers on coupling fluid and vacuum domains
-	\item Develop Jacobi-solver for curl-curl operator
-	\item Develop CG-solver
 	\item Read papers / start writing
 	\end{itemize}
 \item Finite $Re_m$ Shercliff/Hunt flows
-	\begin{itemize}
-	\item Read papers
-	\end{itemize}
 \item Mimicking plasma disruption
-	\begin{itemize}
-	\item Read papers
-	\end{itemize}
 \end{itemize}
 
 
 \section{Today}
+
+- Read Moreau book about energy transfer, write up some documentation for new implementation
+
+- Figure out compilation error for debug mode. This is becoming a more pressing issue.
 
 - There are some gaps in the mesh generation and grid stretch-parameter matching. This needs to be generalized in a simple and easy to use way.
 
@@ -80,33 +76,21 @@ In order to keep this document organized
 
 - Organize scanned notes from gmail to folders.
 
-- Brainstorm sims to start (only running Shercliff flow on my comp and only 1 sigma comparison on workstation).
-
 - Baby steps towards BEM.
 
 - Complex geometry - do some more testing.
 
-- Read Bandaru paper, get a better idea of BC paper for JCP.
-
 - Develop organization of prospectus document
-
-- Brainstorm parameters to use for BC sim.
 
 - Plot KB in vacuum in BC sim, see if that differs more / less then KBi\_f.
 
 - Run prelim cases
 
-- Re-run BC sim
-
 - Work on paper.
-
-- Meet with Sergey about slides
 
 - Need to re-develop restart capability... This will require some thought.
 
 - Move the makeDir to the initialization routines (mom,ind,nrg)
-
-- Remove "parameter" from init files to allow re-run without compilation
 
 - Try to incorporate anti-symmetric BCs again...
 
@@ -116,7 +100,6 @@ In order to keep this document organized
 
 - Try cleaning procedure with $\mathbf{B}_{tangent}=0$ and $\frac{\partial \phi}{\partial n} = \nabla \bullet \mathbf{B}^*$ and see if cleaning works. This might be equivalent to Pseudo vacuum. Also, look into paper / source that discussed this.
 
-- Read Moreau book about energy transfer
 
 - Eventually, the lap\_centered routine should be replaced by a allocation-less one. This will be complicated though because this may require changing the matrix-free operators interface. A better, more general solution may be needed.
 

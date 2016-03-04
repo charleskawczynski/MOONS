@@ -331,9 +331,9 @@
              ! call export_raw(m,ind%B0,dir//'Bfield/','B0',0)
              call export_raw(m,ind%B ,dir//'Bfield/','B',0)
              call export_raw(m,ind%J ,dir//'Jfield/','J',0)
-             call export_raw(m,ind%U_E%x%x ,dir//'Bfield/','U',0)
-             call export_raw(m,ind%U_E%y%y ,dir//'Bfield/','V',0)
-             call export_raw(m,ind%U_E%z%z ,dir//'Bfield/','W',0)
+             call export_raw(m,ind%U_E%x ,dir//'Bfield/','Uex',0)
+             call export_raw(m,ind%U_E%y ,dir//'Bfield/','Vey',0)
+             call export_raw(m,ind%U_E%z ,dir//'Bfield/','Wez',0)
              call export_raw(m,ind%divB,dir//'Bfield/','divB',0)
              call export_raw(m,ind%divJ,dir//'Jfield/','divJ',0)
 
