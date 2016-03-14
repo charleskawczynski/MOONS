@@ -48,7 +48,7 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
       type sparseMatrix
        real(cp),dimension(:),allocatable :: loDiag,diag,upDiag
@@ -94,11 +94,11 @@
 
         if (s(dir).eq.g%c(dir)%sc) then
           gt = 1
-          call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
+          call setUpSystem(loDiag,diag,upDiag,-0.5_cp*ADI%dt*ADI%alpha,&
            g%c(dir)%dhc,g%c(dir)%dhn,s(dir),gt)
         elseif (s(dir).eq.g%c(dir)%sn) then
           gt = 0
-          call setUpSystem(loDiag,diag,upDiag,real(-0.5,cp)*ADI%dt*ADI%alpha,&
+          call setUpSystem(loDiag,diag,upDiag,-0.5_cp*ADI%dt*ADI%alpha,&
            g%c(dir)%dhn,g%c(dir)%dhc,s(dir),gt)
         else
           stop 'Error: shape mismatch in initSystem in myADI.f90'
@@ -130,11 +130,11 @@
 
         h0 = g%dhMin ! Smallest spatial step on grid
         if (allocated(ADI%dtj)) deallocate(ADI%dtj)
-        ADI%nTimeLevels = floor(log(real(smean))/log(real(2.0,cp)))
+        ADI%nTimeLevels = floor(log(real(smean))/log(2.0_cp))
         allocate(ADI%dtj(ADI%nTimeLevels))
         do j = 1,ADI%nTimeLevels
-          hj = (real(2.0,cp)**real(j-1,cp))*h0
-          ADI%dtj(j) = real(4.0,cp)*(hj**(real(2.0,cp)))/(ADI%alpha*PI**real(2.0,cp))
+          hj = (2.0_cp**real(j-1,cp))*h0
+          ADI%dtj(j) = real(4.0,cp)*(hj**(2.0_cp))/(ADI%alpha*PI**2.0_cp)
         enddo
 
         ! Set up tridiagonal systems:
@@ -176,7 +176,7 @@
         allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
+        fstar = 0.0_cp; temp1 = 0.0_cp; temp2 = 0.0_cp; temp3 = 0.0_cp
 
         u_in = u
         call zeroGhostPoints(u_in)
@@ -184,15 +184,15 @@
         ! Apply BCs along x
         call applyAllBCs(u_bcs,u,g)
         u_bc = u
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
 
         ! Compute (0.5 dt d^2/dh^2) u^* for h = x,y,z
         call d%assign(temp1,u,g,2,1,1) ! Must use ghost points on RHS operator
         call d%assign(temp2,u,g,2,2,1) ! Must use ghost points on RHS operator
         call d%assign(temp3,u,g,2,3,1) ! Must use ghost points on RHS operator
-        temp1 = temp1*real(0.5,cp)*ADI%dt*ADI%alpha
-        temp2 = temp2*real(0.5,cp)*ADI%dt*ADI%alpha
-        temp3 = temp3*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp1 = temp1*0.5_cp*ADI%dt*ADI%alpha
+        temp2 = temp2*0.5_cp*ADI%dt*ADI%alpha
+        temp3 = temp3*0.5_cp*ADI%dt*ADI%alpha
 
         ! ---------- Step in x ----------------
         ! Compute RHS:
@@ -200,8 +200,8 @@
 
         fstar = u_in ! fstar includes ghost points on RHS
         fstar = fstar + temp1
-        fstar = fstar + real(2.0,cp)*temp2
-        fstar = fstar + real(2.0,cp)*temp3
+        fstar = fstar + 2.0_cp*temp2
+        fstar = fstar + 2.0_cp*temp3
 
         ftemp = f ! let f be only interior and boundary values:
         call zeroGhostPoints(ftemp)
@@ -209,7 +209,7 @@
         fstar = fstar - ADI%dt*ftemp
 
         call d%assign(lapUbc,u_bc,g,2,1,1)
-        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+        fstar = fstar + 0.5_cp*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_xx) u^* = fstar
         call apply(ADI%triSolver(1),temp1,fstar,1,1)
@@ -222,7 +222,7 @@
 
         fstar = temp1 - temp2
         call d%assign(lapUbc,u_bc,g,2,2,1)
-        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+        fstar = fstar + 0.5_cp*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_yy) u^* = fstar
         call apply(ADI%triSolver(2),temp1,fstar,2,1)
@@ -234,7 +234,7 @@
         ! Apply BCs along y
         fstar = temp1 - temp3
         call d%assign(lapUbc,u_bc,g,2,3,1)
-        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+        fstar = fstar + 0.5_cp*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_zz) u^* = fstar
         call apply(ADI%triSolver(3),u,fstar,3,1)
@@ -264,7 +264,7 @@
         allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(ftemp(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
+        fstar = 0.0_cp; temp1 = 0.0_cp; temp2 = 0.0_cp; temp3 = 0.0_cp
 
         u_in = u
         call zeroGhostPoints(u_in)
@@ -276,9 +276,9 @@
         call d%assign(temp1,u,g,2,1,1) ! Must use ghost points on RHS operator
         call d%assign(temp2,u,g,2,2,1) ! Must use ghost points on RHS operator
         call d%assign(temp3,u,g,2,3,1) ! Must use ghost points on RHS operator
-        temp1 = temp1*real(0.5,cp)*ADI%dt*ADI%alpha
-        temp2 = temp2*real(0.5,cp)*ADI%dt*ADI%alpha
-        temp3 = temp3*real(0.5,cp)*ADI%dt*ADI%alpha
+        temp1 = temp1*0.5_cp*ADI%dt*ADI%alpha
+        temp2 = temp2*0.5_cp*ADI%dt*ADI%alpha
+        temp3 = temp3*0.5_cp*ADI%dt*ADI%alpha
 
         ! ---------- Step in x ----------------
         ! Compute RHS:
@@ -286,8 +286,8 @@
 
         fstar = u_in ! fstar includes ghost points on RHS
         fstar = fstar + temp1
-        fstar = fstar + real(2.0,cp)*temp2
-        fstar = fstar + real(2.0,cp)*temp3
+        fstar = fstar + 2.0_cp*temp2
+        fstar = fstar + 2.0_cp*temp3
 
         ftemp = f ! let f be only interior and boundary values:
         call zeroGhostPoints(ftemp)
@@ -295,9 +295,9 @@
         fstar = fstar - ADI%dt*ftemp
 
         u_bc = u
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
         call d%assign(lapUbc,u_bc,g,2,1,1)
-        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+        fstar = fstar + 0.5_cp*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_xx) u^* = fstar
         call apply(ADI%triSolver(1),temp1,fstar,1,1)
@@ -310,9 +310,9 @@
 
         fstar = temp1 - temp2
         u_bc = temp1
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
         call d%assign(lapUbc,u_bc,g,2,2,1)
-        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+        fstar = fstar + 0.5_cp*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_yy) u^* = fstar
         call apply(ADI%triSolver(2),temp1,fstar,2,1)
@@ -324,9 +324,9 @@
         ! Apply BCs along y
         fstar = temp1 - temp3
         u_bc = temp1
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
         call d%assign(lapUbc,u_bc,g,2,3,1)
-        fstar = fstar + real(0.5,cp)*ADI%dt*ADI%alpha*lapUbc
+        fstar = fstar + 0.5_cp*ADI%dt*ADI%alpha*lapUbc
 
         ! Solve (I - 0.5 dt d_zz) u^* = fstar
         call apply(ADI%triSolver(3),u,fstar,3,1)
@@ -417,7 +417,7 @@
             call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
-            call compute(norm,real(0.0,cp),ADI%r)
+            call compute(norm,0.0_cp,ADI%r)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
             maxIt = maxIt + 1
@@ -434,7 +434,7 @@
             call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
-            call compute(norm,real(0.0,cp),ADI%r)
+            call compute(norm,0.0_cp,ADI%r)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
             maxIt = maxIt + 1
@@ -464,7 +464,7 @@
           call lap(ADI%lapu,u,g)
           ADI%r = ADI%lapu - ADI%ftemp
           call zeroGhostPoints(ADI%r)
-          call compute(norm,real(0.0,cp),ADI%r)
+          call compute(norm,0.0_cp,ADI%r)
           call print(norm,'ADI Residuals for '//trim(adjustl(getName(ss))))
         endif
 
@@ -493,15 +493,15 @@
         ! write(*,*) 'dhd = ',dhd
         ! stop 'printed'
 
-        diag(1) = real(0.0,cp)
-        upDiag(1) = real(0.0,cp)
+        diag(1) = 0.0_cp
+        upDiag(1) = 0.0_cp
         do i=2,s-1
           loDiag(i-1) = alpha/(dhp(i-1)*dhd(i-1+gt))
           diag(i) = -(alpha/dhp(i-1)+alpha/dhp(i))/dhd(i-1+gt)
           upDiag(i) = alpha/(dhp(i)*dhd(i-1+gt))
         enddo
-        diag(s) = real(0.0,cp)
-        loDiag(s-1) = real(0.0,cp)
+        diag(s) = 0.0_cp
+        loDiag(s-1) = 0.0_cp
       end subroutine
 
       subroutine setDt(ADI,dt)

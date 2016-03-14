@@ -48,11 +48,11 @@
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32)
 #endif
-       real(cp),parameter :: PI = 3.14159265358979
+       real(cp),parameter :: PI = 3.14159265358979_cp
 
-       real(cp),parameter :: thetaX = real(0.5,cp)
-       real(cp),parameter :: thetaY = real(0.5,cp)
-       real(cp),parameter :: thetaZ = real(0.5,cp)
+       real(cp),parameter :: thetaX = 0.5_cp
+       real(cp),parameter :: thetaY = 0.5_cp
+       real(cp),parameter :: thetaZ = 0.5_cp
 
       type myADI
         type(trisolver),dimension(3) :: T
@@ -130,11 +130,11 @@
 
         h0 = g%dhMin ! Smallest spatial step on grid
         if (allocated(ADI%dtj)) deallocate(ADI%dtj)
-        ADI%nTimeLevels = floor(log(real(smean))/log(real(2.0,cp)))
+        ADI%nTimeLevels = floor(log(real(smean))/log(2.0_cp))
         allocate(ADI%dtj(ADI%nTimeLevels))
         do j = 1,ADI%nTimeLevels
-          hj = (real(2.0,cp)**real(j-1,cp))*h0
-          ADI%dtj(j) = real(4.0,cp)*(hj**(real(2.0,cp)))/(ADI%alpha*PI**real(2.0,cp))
+          hj = (2.0_cp**real(j-1,cp))*h0
+          ADI%dtj(j) = real(4.0,cp)*(hj**(2.0_cp))/(ADI%alpha*PI**2.0_cp)
         enddo
 
         ! Set up tridiagonal systems:
@@ -173,7 +173,7 @@
         allocate(fstar(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(u_bc(ADI%s(1),ADI%s(2),ADI%s(3)))
         allocate(lapUbc(ADI%s(1),ADI%s(2),ADI%s(3)))
-        fstar = real(0.0,cp); temp1 = real(0.0,cp); temp2 = real(0.0,cp); temp3 = real(0.0,cp)
+        fstar = 0.0_cp; temp1 = 0.0_cp; temp2 = 0.0_cp; temp3 = 0.0_cp
 
         ! Apply BCs along x
         call applyAllBCs(u_bcs,u,g)
@@ -201,7 +201,7 @@
         fstar = fstar - ADI%dt*ADI%f
 
         u_bc = u
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
         call d%assign(lapUbc,u_bc,g,2,1,1)
         fstar = fstar + thetaX*ADI%dt*ADI%alpha*lapUbc
 
@@ -216,7 +216,7 @@
 
         fstar = ADI%temp(1)%phi - ADI%temp(2)%phi
         u_bc = ADI%temp(1)%phi
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
         call d%assign(lapUbc,u_bc,g,2,2,1)
         fstar = fstar + thetaY*ADI%dt*ADI%alpha*lapUbc
 
@@ -230,7 +230,7 @@
         ! Apply BCs along y
         fstar = ADI%temp(1)%phi - ADI%temp(3)%phi
         u_bc = ADI%temp(1)%phi
-        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = real(0.0,cp)
+        u_bc(2:s(1)-1,2:s(2)-1,2:s(3)-1) = 0.0_cp
         call d%assign(lapUbc,u_bc,g,2,3,1)
         fstar = fstar + thetaZ*ADI%dt*ADI%alpha*lapUbc
 
@@ -322,7 +322,7 @@
             call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
-            call compute(norm,real(0.0,cp),ADI%r)
+            call compute(norm,0.0_cp,ADI%r)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
             maxIt = maxIt + 1
@@ -339,7 +339,7 @@
             call lap(ADI%lapu,u,g)
             ADI%r = ADI%lapu - ADI%ftemp
             call zeroGhostPoints(ADI%r)
-            call compute(norm,real(0.0,cp),ADI%r)
+            call compute(norm,0.0_cp,ADI%r)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
             maxIt = maxIt + 1
@@ -369,7 +369,7 @@
           call lap(ADI%lapu,u,g)
           ADI%r = ADI%lapu - ADI%ftemp
           call zeroGhostPoints(ADI%r)
-          call compute(norm,real(0.0,cp),ADI%r)
+          call compute(norm,0.0_cp,ADI%r)
           call print(norm,'ADI Residuals for '//trim(adjustl(getName(ss))))
         endif
 
@@ -398,15 +398,15 @@
         ! write(*,*) 'dhd = ',dhd
         ! stop 'printed'
 
-        diag(1) = real(0.0,cp)
-        upDiag(1) = real(0.0,cp)
+        diag(1) = 0.0_cp
+        upDiag(1) = 0.0_cp
         do i=2,s-1
           loDiag(i-1) = alpha/(dhp(i-1)*dhd(i-1+gt))
           diag(i) = -(alpha/dhp(i-1)+alpha/dhp(i))/dhd(i-1+gt)
           upDiag(i) = alpha/(dhp(i)*dhd(i-1+gt))
         enddo
-        diag(s) = real(0.0,cp)
-        loDiag(s-1) = real(0.0,cp)
+        diag(s) = 0.0_cp
+        loDiag(s-1) = 0.0_cp
       end subroutine
 
       subroutine setDt(ADI,dt)

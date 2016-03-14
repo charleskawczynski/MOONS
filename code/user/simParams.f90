@@ -7,6 +7,8 @@
        logical :: stopAfterExportICs        = .false.    ! Just export ICs, do not run simulation
        logical :: export_planar             = .false.    ! Export 2D data when N_cell = 1 along given direction
 
+       logical :: post_process_only         = .true.     ! Skip solver loop and just post-process results
+
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
        logical :: solveInduction            = .true.

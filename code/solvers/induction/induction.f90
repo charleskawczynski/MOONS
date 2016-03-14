@@ -33,6 +33,7 @@
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use induction_aux_mod
+       use E_M_Budget_mod
 
        use probe_base_mod
        use probe_transient_mod
@@ -42,6 +43,7 @@
        private
        public :: induction,init,delete,solve
        public :: export,exportTransient
+       public :: compute_E_M_budget
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -64,6 +66,7 @@
          type(VF) :: B,B0,temp_F1,temp_F2             ! Face data
          type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
+         type(SF) :: sigmaInv_CC
 
          ! --- Scalar fields ---
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
@@ -122,7 +125,7 @@
          real(cp),intent(in) :: Rem,dt
          character(len=*),intent(in) :: dir
          integer :: temp_unit
-         type(SF) :: sigma,sigmaInv,prec_cleanB
+         type(SF) :: sigma,prec_cleanB
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
 
@@ -162,6 +165,8 @@
          call init_CC(ind%temp_CC_SF,m,0.0_cp)
          call init_CC(ind%divB,m,0.0_cp)
          call init_Node(ind%divJ,m,0.0_cp)
+
+         call init_CC(ind%sigmaInv_CC,m,0.0_cp)
          call init_CC(ind%vol_CC,m)
          call volume(ind%vol_CC,m)
          write(*,*) '     Fields allocated'
@@ -185,16 +190,14 @@
 
          ! ******************** MATERIAL PROPERTIES ********************
          call init_CC(sigma,m,0.0_cp)
-         call init_CC(sigmaInv,m,0.0_cp)
          call initSigma(sigma,ind%D_sigma,m) ! If sigma changes across wall
          write(*,*) '     Materials initialized'
          call export_raw(m,sigma,dir//'material/','sigma',0)
-         call divide(sigmaInv,1.0_cp,sigma)
-         call cellCenter2Edge(ind%sigmaInv_edge,sigmaInv,m,ind%temp_F1)
+         call divide(ind%sigmaInv_CC,1.0_cp,sigma)
+         call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
          call treatInterface(ind%sigmaInv_edge)
          call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
          call delete(sigma)
-         call delete(sigmaInv)
          write(*,*) '     Interface treated'
          ! *************************************************************
 
@@ -219,7 +222,7 @@
          ind%unit_nrg_budget = newAndOpen(dir//'Bfield/','energy_budget')
          ! {error} = {dBdt} + {adv} - {diff}
          write(ind%unit_nrg_budget,*) ' TITLE = "induction energy budget"'
-         write(ind%unit_nrg_budget,*) ' VARIABLES = N,dBdt,adv,diff'
+         write(ind%unit_nrg_budget,*) ' VARIABLES = N,unsteady,Lorentz,Joule_Dissipation,Poynting'
          write(ind%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
          flush(ind%unit_nrg_budget)
 
@@ -389,13 +392,12 @@
 
          case (2)
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%dTime,ind%nrg_budget,print_export(1),ind%temp_CC_SF,ind%temp_F1,&
-         ind%temp_F2,ind%temp_F1_TF%x,ind%temp_F1_TF%y,ind%temp_E,ind%temp_E_TF)
+         ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
 
          case (3)
-         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,ind%J,&
-         ind%sigmaInv_edge,ind%m,ind%dTime,ind%N_induction,ind%N_cleanB,ind%nrg_budget,&
-         print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_F1_TF%y,ind%temp_E,&
+         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
+         ind%m,ind%dTime,ind%N_induction,ind%N_cleanB,&
+         print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
@@ -448,6 +450,51 @@
            call export(ind,ind%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
+       end subroutine
+
+       subroutine compute_E_M_budget(ind,U,U_CC,D_fluid)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(VF),intent(in) :: U,U_CC
+         type(domain),intent(in) :: D_fluid
+         real(cp),dimension(4) :: e_budget
+         type(TF) :: temp_CC_TF,temp_F1_TF,temp_F2_TF,temp_F3_TF
+         type(VF) :: temp_F1,temp_F2,temp_U,temp_U_CC,sigmaInv_Face
+
+         call init_CC(temp_CC_TF,ind%m)
+         call init_Face(temp_F1,ind%m)
+         call init_Face(temp_F2,ind%m)
+         call init_Face(temp_F1_TF,ind%m)
+         call init_Face(temp_F2_TF,ind%m)
+         call init_Face(temp_F3_TF,ind%m)
+         call init_Face(temp_U,ind%m)
+         call init_CC(temp_U_CC,ind%m)
+         call init_Face(sigmaInv_Face,ind%m)
+
+         call embedCC(temp_U_CC,U_CC,D_fluid)
+         call embedFace(temp_U,U,D_fluid)
+
+         call cellCenter2Face(sigmaInv_Face,ind%sigmaInv_CC,ind%m)
+         call treatInterface(sigmaInv_Face)
+
+         call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
+
+         call E_M_Budget(e_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
+         sigmaInv_Face,ind%sigmaInv_CC,temp_U,temp_U_CC,&
+         ind%m,ind%dTime,temp_CC_TF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
+
+         write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
+         flush(ind%unit_nrg_budget)
+
+         call delete(temp_CC_TF)
+         call delete(temp_F1)
+         call delete(temp_F2)
+         call delete(temp_F1_TF)
+         call delete(temp_F2_TF)
+         call delete(temp_F3_TF)
+         call delete(temp_U)
+         call delete(temp_U_CC)
+         call delete(sigmaInv_Face)
        end subroutine
 
        end module

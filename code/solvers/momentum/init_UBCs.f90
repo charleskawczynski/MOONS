@@ -4,7 +4,6 @@
        use BCs_mod
        use VF_mod
        use SF_mod
-       use vectorBCs_mod
        use profile_funcs_mod
        implicit none
 

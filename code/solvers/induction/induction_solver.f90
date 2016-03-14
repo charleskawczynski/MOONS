@@ -47,9 +47,8 @@
 
        contains
 
-       subroutine CT_Finite_Rem(B,B0,U_E,J,sigmaInv_E,m,dt,energy_budget,&
-         compute_norms,temp_CC,temp_F1,temp_F2,temp_F3,temp_F4,temp_E,&
-         temp_E_TF)
+       subroutine CT_Finite_Rem(B,B0,U_E,J,sigmaInv_E,m,dt,&
+         temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
          ! Solves:
          !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:
@@ -63,31 +62,20 @@
          !             cell edge => J,sigmaInv_E,U_E
          !             Finite Rem
          implicit none
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3,temp_F4
-         type(SF),intent(inout) :: temp_CC
+         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3
          type(VF),intent(in) :: B0,sigmaInv_E,J
          type(TF),intent(inout) :: temp_E_TF
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         logical,intent(in) :: compute_norms
-         real(cp),dimension(3),intent(inout) :: energy_budget ! dBdt,adv,diff
          call add(temp_F2,B,B0) ! Since finite Rem
          call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-              if (compute_norms) call compute_energy(energy_budget(2),temp_F2,temp_F1,m,temp_F3,temp_CC,compute_norms)
          call multiply(temp_E,J,sigmaInv_E)
          call curl(temp_F3,temp_E,m)
-              if (compute_norms) call compute_energy(energy_budget(3),temp_F2,temp_F3,m,temp_F4,temp_CC,compute_norms)
          call subtract(temp_F1,temp_F3)
          call multiply(temp_F1,dt)
-              if (compute_norms) call assign(temp_F2,B)
          call add(B,temp_F1)
          call apply_BCs(B,m)
-              if (compute_norms) then
-                call subtract(temp_F3,B,temp_F2)
-                call multiply(temp_F3,1.0_cp/dt)
-                call compute_energy(energy_budget(1),B,temp_F3,m,temp_F4,temp_CC,compute_norms)
-              endif
        end subroutine
 
        subroutine CT_Finite_Rem_perfect_vacuum(PCG_B,PCG_cleanB,B,B0,U_E,J,m,&
@@ -178,9 +166,9 @@
          enddo
        end subroutine
 
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,J,sigmaInv_E,m,&
-         dt,N_induction,N_cleanB,energy_budget,compute_norms,temp_F1,temp_F2,temp_F3,&
-         temp_F4,temp_E,temp_E_TF,temp_CC,phi)
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,&
+         dt,N_induction,N_cleanB,compute_norms,temp_F1,temp_F2,temp_E,&
+         temp_E_TF,temp_CC,phi)
          ! Solves:
          !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:
@@ -196,26 +184,18 @@
          type(PCG_solver_VF),intent(inout) :: PCG_B
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
          type(VF),intent(inout) :: B
-         type(VF),intent(in) :: B0,J,sigmaInv_E ! NOTE: J = Rem⁻¹∇x(∇xB)
+         type(VF),intent(in) :: B0
          type(TF),intent(in) :: U_E
          type(SF),intent(inout) :: temp_CC,phi
          type(TF),intent(inout) :: temp_E_TF
-         type(VF),intent(inout) :: temp_F1,temp_F2,temp_F3,temp_F4,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_induction,N_cleanB
          logical,intent(in) :: compute_norms
-         real(cp),dimension(3),intent(inout) :: energy_budget ! dBdt,adv,diff
          ! Induction
          call add(temp_F2,B,B0) ! Since finite Rem
          call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-              if (compute_norms) then
-                call compute_energy(energy_budget(2),temp_F2,temp_F1,m,temp_F3,temp_CC,compute_norms)
-                call multiply(temp_E,J,sigmaInv_E)
-                call curl(temp_F3,temp_E,m)
-                call compute_energy(energy_budget(3),temp_F2,temp_F3,m,temp_F4,temp_CC,compute_norms)
-                call assign(temp_F2,B)
-              endif
          call multiply(temp_F1,dt)
          call add(temp_F1,B)
          call solve(PCG_B,B,temp_F1,m,N_induction,compute_norms)
@@ -225,11 +205,6 @@
          call grad(temp_F1,phi,m)
          call subtract(B,temp_F1)
          call apply_BCs(B,m)
-              if (compute_norms) then
-                call subtract(temp_F3,B,temp_F2)
-                call multiply(temp_F3,1.0_cp/dt)
-                call compute_energy(energy_budget(1),B,temp_F3,m,temp_F4,temp_CC,compute_norms)
-              endif
        end subroutine
 
        end module

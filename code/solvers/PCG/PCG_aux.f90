@@ -1,4 +1,4 @@
-      module CG_aux_mod
+      module PCG_aux_mod
       use mesh_mod
       use SF_mod
       use VF_mod

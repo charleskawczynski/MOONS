@@ -2,23 +2,27 @@
        use IO_tools_mod
        implicit none
 
+       private
+       public :: export_version
+       public :: print_version
+
        contains
 
-       subroutine exportVersion(dir)
+       subroutine export_version(dir)
          implicit none
          character(len=*),intent(in) :: dir
          integer :: NewU
          NewU = newAndOpen(dir,'version')
-         call writeVersionToFileOrScreen(newU)
+         call export_version_no_dir(newU)
          call closeAndMessage(newU,'version',dir)
        end subroutine
 
-       subroutine printVersion()
+       subroutine print_version()
          implicit none
-         call writeVersionToFileOrScreen(6)
+         call export_version_no_dir(6)
        end subroutine
 
-       subroutine writeVersionToFileOrScreen(u)
+       subroutine export_version_no_dir(u)
          implicit none
          integer,intent(in) :: u
          integer*4 today(3), now(3)
@@ -48,22 +52,5 @@
 
          write(u,*) '-------------------------------------'
        end subroutine
-
-       ! Source: http://stackoverflow.com/questions/8324326/date-format-in-ddmonyy-in-fortran
-
-       SUBROUTINE get_DDMonYY(date)
-         CHARACTER(len=7), INTENT(out) :: date
-         CHARACTER(len=2) :: dd
-         CHARACTER(len=3) :: mons(12)
-         CHARACTER(len=4) :: yyyy
-         INTEGER :: values(8)
-         mons = ['Jan','Feb','Mar','Apr','May','Jun',&
-           'Jul','Aug','Sep','Oct','Nov','Dec']
-         CALL DATE_AND_TIME(VALUES=values)
-         WRITE(  dd,'(i2)') values(3)
-         WRITE(yyyy,'(i4)') values(1)
-         date = dd//mons(values(2))//yyyy(3:4)
-       END SUBROUTINE get_DDMonYY
-
 
        end module

@@ -6,6 +6,7 @@
        use SF_mod
        use VF_mod
        use TF_mod
+       use domain_mod
 
        use momentum_solver_mod
        use momentum_aux_mod
@@ -29,6 +30,7 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
+       use ops_embedExtract_mod
 
        use apply_BCs_mod
        use apply_stitches_mod
@@ -36,6 +38,7 @@
        use PCG_mod
        use preconditioners_mod
        use GS_Poisson_mod
+       use E_K_Budget_mod
 
        use probe_base_mod
        use probe_transient_mod
@@ -46,6 +49,7 @@
        
        public :: momentum,init,delete,solve
        public :: export,exportTransient
+       public :: compute_E_K_Budget
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -198,9 +202,8 @@
          mom%unit_nrg_budget = newAndOpen(dir//'Ufield/','energy_budget')
          ! {error} = {dudt} + {adv} - {diff} + {pres} - {external}
          write(mom%unit_nrg_budget,*) ' TITLE = "momentum energy budget"'
-         write(mom%unit_nrg_budget,*) ' VARIABLES = N,dudt,adv,pres,diff,external'
+         write(mom%unit_nrg_budget,*) ' VARIABLES = N,unsteady,convection,transport,Lorentz,Viscous_Dissipation'
          write(mom%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
-
          ! Initialize interior solvers
          call init(mom%GS_p,mom%p,mom%m,dir//'Ufield/','p')
          write(*,*) '     GS solver initialized for p'
@@ -354,7 +357,7 @@
          select case(solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           N_PPE,mom%nrg_budget,mom%Ustar,mom%temp_F,mom%Unm1,mom%temp_CC,mom%temp_E,&
+           N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,&
            print_export(1))
 
          case (2)
@@ -401,6 +404,48 @@
            call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          endif
+       end subroutine
+
+       subroutine compute_E_K_Budget(mom,B,B0,J,D_fluid)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(domain),intent(in) :: D_fluid
+         type(VF),intent(in) :: B,B0,J
+         real(cp),dimension(5) :: e_budget
+         type(TF) :: temp_F_TF,temp_CC1_TF,temp_CC2_TF
+         type(VF) :: temp_F1,temp_F2,temp_B,temp_B0,temp_J
+         call face2CellCenter(mom%U_CC,mom%U,mom%m)
+         call face2edge_no_diag(mom%U_E,mom%U,mom%m)
+         
+         call init_Face(temp_F_TF,mom%m)
+         call init_CC(temp_CC1_TF,mom%m)
+         call init_CC(temp_CC2_TF,mom%m)
+         call init_Face(temp_F1,mom%m)
+         call init_Face(temp_F2,mom%m)
+
+         call init_Face(temp_B,mom%m)
+         call init_Face(temp_B0,mom%m)
+         call init_Edge(temp_J,mom%m)
+
+         call extractFace(temp_B,B,D_fluid)
+         call extractFace(temp_B0,B0,D_fluid)
+         call extractEdge(temp_J,J,D_fluid)
+
+         call E_K_Budget(e_budget,mom%U,mom%Unm1,mom%U_CC,&
+         temp_B,temp_B0,temp_J,mom%p,mom%m,mom%dTime,&
+         temp_F1,temp_F2,temp_F_TF,temp_CC1_TF,temp_CC2_TF)
+
+         write(mom%unit_nrg_budget,*) mom%nstep,mom%nrg_budget
+         flush(mom%unit_nrg_budget)
+
+         call delete(temp_B)
+         call delete(temp_B0)
+         call delete(temp_J)
+         call delete(temp_F1)
+         call delete(temp_F2)
+         call delete(temp_F_TF)
+         call delete(temp_CC1_TF)
+         call delete(temp_CC2_TF)
        end subroutine
 
        end module

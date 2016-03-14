@@ -142,26 +142,18 @@ TARGET = $(TARGET_DIR)$(PS)MOONS
 # **************** INCLUDE PATHS ********************
 VPATH =\
 	$(TARGET_DIR) \
-	$(SRC_DIR)$(PS)lib \
-	$(SRC_DIR)$(PS)user \
 	$(SRC_DIR)$(PS)BCs \
-	$(SRC_DIR)$(PS)stitches \
-	$(SRC_DIR)$(PS)BCs$(PS)stitches \
-	$(SRC_DIR)$(PS)unit_testing \
-	$(SRC_DIR)$(PS)IO \
+	$(SRC_DIR)$(PS)clock \
+	$(SRC_DIR)$(PS)convergence_rate \
 	$(SRC_DIR)$(PS)coordinates \
-	$(SRC_DIR)$(PS)grid \
-	$(SRC_DIR)$(PS)mesh \
-	$(SRC_DIR)$(PS)probes \
 	$(SRC_DIR)$(PS)fields \
-	$(SRC_DIR)$(PS)fields$(PS)RF \
-	$(SRC_DIR)$(PS)fields$(PS)SF \
-	$(SRC_DIR)$(PS)fields$(PS)VF \
-	$(SRC_DIR)$(PS)fields$(PS)TF \
+	$(SRC_DIR)$(PS)grid \
+	$(SRC_DIR)$(PS)IO \
+	$(SRC_DIR)$(PS)lib \
+	$(SRC_DIR)$(PS)mesh \
+	$(SRC_DIR)$(PS)norms \
 	$(SRC_DIR)$(PS)ops \
-	$(SRC_DIR)$(PS)static \
-	$(SRC_DIR)$(PS)sparse \
-	$(SRC_DIR)$(PS)computations \
+	$(SRC_DIR)$(PS)probes \
 	$(SRC_DIR)$(PS)solvers \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
 	$(SRC_DIR)$(PS)solvers$(PS)GS \
@@ -172,51 +164,24 @@ VPATH =\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE \
 	$(SRC_DIR)$(PS)solvers$(PS)energy \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum \
-	$(SRC_DIR)$(PS)solvers$(PS)induction
+	$(SRC_DIR)$(PS)solvers$(PS)induction \
+	$(SRC_DIR)$(PS)sparse \
+	$(SRC_DIR)$(PS)stencils \
+	$(SRC_DIR)$(PS)stitches \
+	$(SRC_DIR)$(PS)unit_testing \
+	$(SRC_DIR)$(PS)user \
+	$(SRC_DIR)$(PS)version
 
 
 # **************** SOURCE FILES *********************
-# $(SRC_DIR)$(PS)static$(PS)dataSet.f90 \
-# $(SRC_DIR)$(PS)static$(PS)varStr.f90 \
-
-# $(SRC_DIR)$(PS)fields$(PS)RF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)SF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)TF.f90 \
-
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_assign_negative.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_add.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_subtract.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_multiply.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_divide.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_square.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_sum.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)RF$(PS)RF_aux.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)SF$(PS)SF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)TF$(PS)TF.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_assign_negative.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_add.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_subtract.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_multiply.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_divide.f90 \
-# $(SRC_DIR)$(PS)fields$(PS)VF$(PS)VF_aux.f90 \
-
-# $(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG_tools.f90 \
-# $(SRC_DIR)$(PS)solvers$(PS)MG$(PS)MG.f90 \
-
-
 SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
-	$(SRC_DIR)$(PS)static$(PS)array.f90 \
-	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
-	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
+	$(SRC_DIR)$(PS)sparse$(PS)array.f90 \
+	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90 \
+	$(SRC_DIR)$(PS)sparse$(PS)triDiag.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_face.f90 \
@@ -236,7 +201,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)edge.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90 \
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
@@ -258,11 +222,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)import_VF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_VF.f90 \
-	$(SRC_DIR)$(PS)static$(PS)version.f90 \
-	$(SRC_DIR)$(PS)static$(PS)clock.f90 \
-	$(SRC_DIR)$(PS)static$(PS)stop_clock.f90 \
+	$(SRC_DIR)$(PS)version$(PS)version.f90 \
+	$(SRC_DIR)$(PS)clock$(PS)clock.f90 \
+	$(SRC_DIR)$(PS)clock$(PS)stop_clock.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
+	$(SRC_DIR)$(PS)norms$(PS)norms.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_faces.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_edges.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_corners.f90 \
@@ -270,7 +234,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
-	$(SRC_DIR)$(PS)computations$(PS)stencils.f90 \
+	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90 \
@@ -290,7 +254,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)probes$(PS)probe_transient.f90 \
 	$(SRC_DIR)$(PS)probes$(PS)probe_base.f90 \
 	$(SRC_DIR)$(PS)probes$(PS)probe_derived.f90 \
-	$(SRC_DIR)$(PS)static$(PS)monitor.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90 \
@@ -302,8 +265,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)CG_aux.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
@@ -334,8 +298,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90 \
 	$(SRC_DIR)$(PS)user$(PS)inputFile.f90 \
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90 \
-	$(SRC_DIR)$(PS)static$(PS)richardsonExtrapolation.f90 \
-	$(SRC_DIR)$(PS)user$(PS)convergenceRate.f90
+	$(SRC_DIR)$(PS)convergence_rate$(PS)richardsonExtrapolation.f90 \
+	$(SRC_DIR)$(PS)convergence_rate$(PS)convergenceRate.f90
 
 SRCS_F += $(UNIT_TEST)
 

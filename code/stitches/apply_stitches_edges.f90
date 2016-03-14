@@ -89,7 +89,6 @@
                      V%f(:,  1   ,  1   ) = U%f(:,U%s(2)-1-py,U%s(3)-1-pz)
            case default; stop 'Error: edge must = 1:4 in app_CC in apply_stitches_edges.f90'
            end select
-           stop 'Error: no stitches should occur here (1) in apply_stitches_edges.f90'
          case (2)
            select case (edge) ! LHS are ghost points, RHS are physical points
            case (1); U%f(  1   ,:,  1   ) = V%f(V%s(1)-1-px,:,V%s(3)-1-pz)
@@ -102,7 +101,6 @@
                      V%f(  1   ,:,  1   ) = U%f(U%s(1)-1-px,:,U%s(3)-1-pz)
            case default; stop 'Error: edge must = 1:4 in app_CC in apply_stitches_edges.f90'
            end select
-           stop 'Error: no stitches should occur here (2) in apply_stitches_edges.f90'
          case (3)
            select case (edge) ! LHS are ghost points, RHS are physical points
            case (1); U%f(  1   ,  1   ,:) = V%f(V%s(1)-1-px,V%s(2)-1-py,:)

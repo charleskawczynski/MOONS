@@ -22,26 +22,6 @@
          enddo
        end subroutine
 
-       function adjacent_faces(i_edge) result (i_faces)
-         implicit none
-         integer,intent(in) :: i_edge
-         integer,dimension(2) :: i_faces
-         select case (i_edge)
-         case (1);  i_faces = (/3,5/) ! x (ymin,zmin)
-         case (2);  i_faces = (/3,6/) ! x (ymin,zmax)
-         case (3);  i_faces = (/4,5/) ! x (ymax,zmin)
-         case (4);  i_faces = (/4,6/) ! x (ymax,zmax)
-         case (5);  i_faces = (/1,5/) ! y (xmin,zmin)
-         case (6);  i_faces = (/1,6/) ! y (xmin,zmax)
-         case (7);  i_faces = (/2,5/) ! y (xmax,zmin)
-         case (8);  i_faces = (/2,6/) ! y (xmax,zmax)
-         case (9);  i_faces = (/1,3/) ! z (xmin,ymin)
-         case (10); i_faces = (/1,4/) ! z (xmin,ymax)
-         case (11); i_faces = (/2,3/) ! z (xmax,ymin)
-         case (12); i_faces = (/2,4/) ! z (xmax,ymax)
-         end select
-       end function
-
        subroutine setEdgeBy1Face(e,f,i_e)
          implicit none
          type(edge),intent(inout) :: e

@@ -141,8 +141,8 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,energy_budget,&
-         Ustar,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
+       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,&
+         Ustar,temp_F1,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
          type(SF),intent(inout) :: p
@@ -152,39 +152,26 @@
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
          integer,intent(in) :: n
-         type(VF),intent(inout) :: Ustar,temp_F1,temp_F2,temp_E
+         type(VF),intent(inout) :: Ustar,temp_F1,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         real(cp),dimension(5),intent(inout) :: energy_budget ! dudt,adv,pres,diff,external
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-              call compute_energy(energy_budget(2),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          call lap(temp_F1,U,m)
          ! call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F1,1.0_cp/Re)
-              call compute_energy(energy_budget(4),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call add(Ustar,temp_F1)
          call add(Ustar,F)
-              call compute_energy(energy_budget(5),U,F,m,temp_F2,temp_CC,compute_norms)
          call zeroWall_conditional(Ustar,m,U)
          call multiply(Ustar,dt)
          call add(Ustar,U)
-              if (compute_norms) call assign(temp_F1,U)
-         call assign(U,Ustar)
-              if (compute_norms) call assign(Ustar,temp_F1) ! Now Ustar = Un and U = U* (to be corrected)
-         call div(temp_CC,U,m)
+         call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
          call grad(temp_F1,p,m)
-              call compute_energy(energy_budget(3),Ustar,temp_F1,m,temp_F2,temp_CC,compute_norms)
          call multiply(temp_F1,dt)
-         call subtract(U,temp_F1)
+         call subtract(U,Ustar,temp_F1)
          call apply_BCs(U,m)
-              if (compute_norms) then
-                call subtract(temp_F1,U,Ustar)
-                call multiply(temp_F1,1.0_cp/dt)
-                call compute_energy(energy_budget(1),U,temp_F1,m,temp_F2,temp_CC,compute_norms)
-              endif
        end subroutine
 
        subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&

@@ -6,7 +6,7 @@
       use ops_discrete_mod
       use ops_aux_mod
       use BCs_mod
-      use CG_aux_mod
+      use PCG_aux_mod
       use export_raw_processed_mod
       use SF_mod
       use VF_mod

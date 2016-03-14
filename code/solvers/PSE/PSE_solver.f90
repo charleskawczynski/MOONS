@@ -1,13 +1,15 @@
       module PSE_solver_mod
+      ! Compiler flags: (_EXPORT_PSE_CONVERGENCE_)
       use mesh_mod
+      use SF_mod
+      use VF_mod
+      use BCs_mod
       use apply_BCs_mod
       use apply_Stitches_mod
       use norms_mod
+      use ops_norms_mod
       use ops_discrete_mod
       use ops_aux_mod
-      use BCs_mod
-      use SF_mod
-      use VF_mod
       use matrix_free_params_mod
       implicit none
 
@@ -26,11 +28,14 @@
       interface solve_PSE;       module procedure solve_PSE_SF;    end interface
       interface solve_PSE;       module procedure solve_PSE_VF;    end interface
 
-      real(cp),parameter :: tol = 10.0_cp**(-15.0_cp)
+#ifdef _EXPORT_PSE_CONVERGENCE_
+      real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
+      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
+#endif
 
       contains
 
-      subroutine solve_PSE_SF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r)
+      subroutine solve_PSE_SF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r,N_iter)
         implicit none
         external :: operator
         type(SF),intent(inout) :: x
@@ -40,10 +45,14 @@
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n,un
+        integer,intent(inout) :: N_iter
         real(cp),intent(in) :: ds
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: Ax,r
+#ifdef _EXPORT_PSE_CONVERGENCE_
+        type(norms) :: norm_res0
+#endif
         integer :: i
         call apply_BCs(x,m)
         do i=1,n
@@ -52,10 +61,12 @@
           call multiply(r,ds)
           call add(x,r)
           call apply_BCs(x,m)
+          N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          call zeroGhostPoints(r)
-          call zeroWall_conditional(r,m,x)
-          call compute(norm,r,m); write(un,*) norm%L1,norm%L2,norm%Linf
+          if (n.eq.1) call compute(norm_res0,r)
+          call compute(norm,r)
+          write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+                                    norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
         enddo
         if (x%all_Neumann) call subtract(x,mean(x))
@@ -65,14 +76,14 @@
           call subtract(r,Ax,b)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r,m); call print(norm,'PSE Residuals')
+          call compute(norm,r); call print(norm,'PSE Residuals SF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif
 #endif
       end subroutine
       
-      subroutine solve_PSE_VF(operator,x,b,vol,k,m,MFP,n,norm,compute_norms,un,tempk,Ax,r)
+      subroutine solve_PSE_VF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r,N_iter)
         implicit none
         external :: operator
         type(VF),intent(inout) :: x
@@ -82,10 +93,14 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(norms),intent(inout) :: norm
-        integer,intent(in) :: n
-        integer,dimension(3),intent(in) :: un
+        integer,intent(in) :: n,un
+        real(cp),intent(in) :: ds
+        integer,intent(inout) :: N_iter
         logical,intent(in) :: compute_norms
         type(VF),intent(inout) :: Ax,r
+#ifdef _EXPORT_PSE_CONVERGENCE_
+        type(norms) :: norm_res0
+#endif
         integer :: i
         call apply_BCs(x,m)
         do i=1,n
@@ -94,12 +109,12 @@
           call multiply(r,ds)
           call add(x,r)
           call apply_BCs(x,m)
+          N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          call zeroGhostPoints(r)
-          call zeroWall_conditional(r,m,x)
-          call compute(norm,r%x,m); write(un(1),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%y,m); write(un(2),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%z,m); write(un(3),*) norm%L1,norm%L2,norm%Linf
+          if (n.eq.1) call compute(norm_res0,r)
+          call compute(norm,r)
+          write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+                                    norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
         enddo
 
@@ -110,12 +125,8 @@
           call subtract(r,Ax,b)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r%x,m); call print(norm,'PSE Residuals (x)')
-          write(un(1),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%y,m); call print(norm,'PSE Residuals (y)')
-          write(un(2),*) norm%L1,norm%L2,norm%Linf
-          call compute(norm,r%z,m); call print(norm,'PSE Residuals (z)')
-          write(un(3),*) norm%L1,norm%L2,norm%Linf
+          call compute(norm,r); call print(norm,'PSE Residuals VF')
+          write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif
 #endif
