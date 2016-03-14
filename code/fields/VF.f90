@@ -31,7 +31,7 @@
         public :: volume
         public :: multiply_volume
 
-        public :: dot_product
+        public :: dot_product,dot
 
         ! Monitoring
         public :: print
@@ -79,6 +79,7 @@
         interface multiply_volume;   module procedure multiply_volume_VF;       end interface
 
         interface dot_product;       module procedure dot_product_VF;           end interface
+        interface dot;               module procedure dot_VF_SF;                end interface
 
         interface delete;            module procedure delete_VF;                end interface
         interface print;             module procedure print_VF;                 end interface
@@ -234,11 +235,11 @@
           call add(f%x,g); call add(f%y,g); call add(f%z,g)
         end subroutine
 
-        subroutine add_SF_VF(g2,f)
+        subroutine add_SF_VF(f,g)
           implicit none
-          type(VF),intent(inout) :: f
-          type(SF),intent(in) :: g2
-          call add(f%x,g2); call add(f%y,g2); call add(f%z,g2)
+          type(SF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          call add(f,g%x,g%y,g%z)
         end subroutine
 
         subroutine add_VF_S(f,g)
@@ -563,6 +564,15 @@
           call multiply(temp,A,B)
           dot = sum(temp%x) + sum(temp%y) + sum(temp%z)
         end function
+
+        subroutine dot_VF_SF(A,B,C,temp)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(VF),intent(in) :: B,C
+          type(VF),intent(inout) :: temp
+          call multiply(temp,B,C)
+          call add(A,temp%x,temp%y,temp%z)
+        end subroutine
 
         subroutine delete_VF(f)
           implicit none

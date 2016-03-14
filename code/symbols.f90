@@ -3,6 +3,10 @@ Partial 					∂
 Sigma						σ
 Theta                       θ
 Delta                       Δ
+mu                          μ
+rho                         ρ
+Phi                         Φ
+
 
 Math Operators
 Nabla                       ∇

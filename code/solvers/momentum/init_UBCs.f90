@@ -63,6 +63,8 @@
          case (8); call channel_flow_1domain(U)
          case (9); call cylinder_driven_cavity(U,m)
          case (10); call fully_developed_duct_flow(U,m)
+         case (11); call LDC_crisscross_driven_lid(U)
+         case (12); call LDC_double_crisscross_driven_lid(U)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
        end subroutine
@@ -71,6 +73,28 @@
          implicit none
          type(VF),intent(inout) :: U
          call init(U%x%RF(1)%b,1.0_cp,4)
+       end subroutine
+
+       subroutine LDC_crisscross_driven_lid(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         integer :: N
+         call init(U%x%RF(1)%b,1.0_cp,4)
+         N = U%x%RF(1)%b%f(4)%s(1)/2
+         U%x%RF(1)%b%f(4)%vals(2:N,:) = -1.0_cp
+       end subroutine
+
+       subroutine LDC_double_crisscross_driven_lid(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         integer :: N
+         call init(U%x%RF(1)%b,1.0_cp,4)
+         N = U%x%RF(1)%b%f(4)%s(1)/2
+         U%x%RF(1)%b%f(4)%vals(2:N,:) = -1.0_cp
+
+         call init(U%y%RF(1)%b,-1.0_cp,2)
+         N = U%y%RF(1)%b%f(2)%s(1)/2
+         U%y%RF(1)%b%f(2)%vals(2:N,:) = 1.0_cp
        end subroutine
 
        subroutine LDC_4_domains(U)

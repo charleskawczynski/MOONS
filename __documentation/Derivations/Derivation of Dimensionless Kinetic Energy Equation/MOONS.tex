@@ -12,7 +12,26 @@
 \usepackage{subfigure}
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{esint}
 
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\PD}{\partial}
+\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
+\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -44,463 +63,195 @@ University of California Los Angeles, USA\\
 \maketitle
 
 \section{Derivation of the Kinetic Energy Equation}
-The dimensionless momentum equation is
+The dimensional momentum equation is
 
 \begin{equation}
-	\frac{\partial u_i}{\partial t} + 
-	\frac{\partial (u_i u_j)}{\partial x_j}
+	\rho \left( 
+	\frac{\PD u_i}{\PD t} + 
+	u_j\frac{\PD u_i}{\PD x_j}
+	\right)
 	= 
-	- \frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	+ \frac{Ha^2}{Re}
-	(j \times B)_i
+	- \frac{\PD p}{\PD x_i}
+	+ \frac{\PD}{\PD x_j} \left( \mu \frac{\PD u_i}{\PD x_j} \right)
+	+ (j \times B)_i
 \end{equation}
 
-Or
-\begin{equation}
-	\frac{\partial u_i}{\partial t} + 
-	u_j\frac{\partial u_i}{\partial x_j}
-	= 
-	- \frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	+ \frac{Ha^2}{Re}
-	(j \times B)_i
-\end{equation}
-
-
-We must dot this with the velocity field $u_i$, which yields
+Dotting this with the velocity yields
 
 \begin{equation}
 	\boxed{
 	u_i
-	\frac{\partial u_i}{\partial t} + 
-	u_i
-	u_j\frac{\partial u_i}{\partial x_j}
+	\left(
+	\rho \left( 
+	\frac{\PD u_i}{\PD t} + 
+	u_j\frac{\PD u_i}{\PD x_j}
+	\right)
 	= 
-	- u_i
-	\frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	u_i
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	+ \frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
+	- \frac{\PD p}{\PD x_i}
+	+ \frac{\PD}{\PD x_j} \left( \mu \frac{\PD u_i}{\PD x_j} \right)
+	+ (j \times B)_i
+	\right)
 	}
 \end{equation}
 
-This equation works perfectly fine to compute each of the terms of the kinetic energy. In Professor Kim's class on turbulence, we went a step further.
-
-Let $K = \frac{1}{2} u_i u_i$
+Let's analyze each term, but first, let's define
+\begin{equation}
+	E_K = \frac{1}{2} \rho u_i u_i
+\end{equation}
 
 \subsection{Unsteady term}
 \begin{equation}
-	\frac{\partial u_i u_i}{\partial t}
-	=
-	2 u_i \frac{\partial u_i}{\partial t}
+	\frac{\PD u_i u_i}{\PD t} =
+	2 u_i \frac{\PD u_i}{\PD t}
 \end{equation}
-
-Therefore
-
-\begin{equation}
-	u_i \frac{\partial u_i}{\partial t}
-	=
-	\frac{1}{2} \frac{\partial u_i u_i}{\partial t}
-	=
-	\frac{\partial K}{\partial t}
-\end{equation}
-
-\subsection{Advection term}
-\begin{equation}
-	\frac{\partial u_i u_i}{\partial x_j}
-	=
-	2 u_i \frac{\partial u_i}{\partial x_j}
-\end{equation}
-
 Therefore
 \begin{equation}
-	u_j u_i \frac{\partial u_i}{\partial x_j}
-	=
-	\frac{1}{2} u_j \frac{\partial u_i u_i}{\partial x_j}
-	=
-	u_j \frac{\partial K}{\partial x_j}
+	\boxed{
+	u_i \rho \frac{\PD u_i}{\PD t} =
+	\frac{\PD}{\PD t} \left( \frac{1}{2} \rho u_i u_i \right) =
+	\frac{\PD E_K}{\PD t}
+	}
 \end{equation}
 
+\subsection{Convection term}
+\begin{equation}
+	u_j \rho \frac{\PD u_i u_i}{\PD x_j} =
+	2 \rho u_j u_i \frac{\PD u_i}{\PD x_j}
+\end{equation}
+Therefore
+\begin{equation}
+	\boxed{
+	\rho u_i u_j \frac{\PD u_i}{\PD x_j} =
+	\frac{1}{2} \rho u_j \frac{\PD u_i u_i}{\PD x_j}
+	= u_j \frac{\PD E_K}{\PD x_j}
+	}
+\end{equation}
 
 \subsection{Diffusion Term}
-
-\begin{equation}
-	\frac{\partial^2 K}{\partial x_j^2}
-	=
-	\frac{\partial}{\partial x_j}
-	\frac{\partial K}{\partial x_j}
-	=
-	\frac{\partial}{\partial x_j}
-	u_i
-	\frac{\partial u_i}{\partial x_j}
-	=
-	\left( \frac{\partial u_i}{\partial x_j} \right)^2
-	+
-	u_i
-	\frac{\partial^2 u_i}{\partial x_j^2}
+First, let
+\begin{equation} \label{eq:strainRate}
+	S_{ij} = \frac{1}{2}
+	\left(
+	\frac{\PD u_i}{\PD x_j} + 
+	\frac{\PD u_j}{\PD x_i}
+	\right)
 \end{equation}
-
-Therefore
-
+And note that
+\begin{equation} \label{eq:strainIdentity}
+	2 S_{ij} S_{ij} =
+	\frac{1}{2} \left( \frac{\PD u_i}{\PD x_j} + \frac{\PD u_j}{\PD x_i} \right)
+	\left( \frac{\PD u_i}{\PD x_j} + \frac{\PD u_j}{\PD x_i} \right)
+	= \frac{1}{2} \left( \frac{\PD u_i}{\PD x_j} \frac{\PD u_i}{\PD x_j}
+	+ 2 \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i} 
+	+ \frac{\PD u_j}{\PD x_i} \frac{\PD u_j}{\PD x_i} \right)
+	= \frac{\PD u_i}{\PD x_j} \frac{\PD u_i}{\PD x_j}
+	+ \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
+\end{equation}
+since no free indexes exist and indexes may be swapped. In addition, we may write
 \begin{equation}
-	\frac{1}{Re}
-	\left\{
-	u_i
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	\right\}
-	=
-	\frac{1}{Re}
-	\left\{
-	\frac{\partial^2 K}{\partial x_j^2}
-	-
-	\left( \frac{\partial u_i}{\partial x_j} \right)^2
-	\right\}
+	\frac{\PD}{\PD x_j} u_i \frac{\PD u_i}{\PD x_j} =
+	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} + 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2}
+\end{equation}
+Therefore
+\begin{equation}
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} \right] - 
+	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
+\end{equation}
+Adding and subtracting $\frac{\PD}{\PD x_j} u_i \frac{\PD u_j}{\PD x_i}$ on the RHS, we have
+\begin{equation}
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} + u_i \frac{\PD u_j}{\PD x_i} \right] - 
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_j}{\PD x_i} \right] - 
+	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
+\end{equation}
+Using \ref{eq:strainRate}, and expanding $\frac{\PD}{\PD x_j} u_i \frac{\PD u_j}{\PD x_i}$, we have
+\begin{equation}
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
+	\frac{\PD}{\PD x_j} \left[ u_i 2 S_{ij} \right] - 
+	\left( 
+	\underbrace{u_i \frac{\PD^2 u_j}{\PD x_j x_i}}_{=0 \text{ (swap ij, $\PD_i u_i =0$)}}
+	+
+	\frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
+	\right) - 
+	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
+\end{equation}
+Using \ref{eq:strainIdentity}, we have
+\begin{equation}
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
+	\frac{\PD}{\PD x_j} \left[ 2 u_i S_{ij} \right] - 
+	2 S_{ij} S_{ij}
+\end{equation}
+Swapping the index of the first term on the RHS, and using $S_{ij}=S_{ji}$, we have
+\begin{equation}
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
+	\frac{\PD}{\PD x_i} \left[ 2 u_j S_{ij} \right] - 
+	2 S_{ij} S_{ij}
+\end{equation}
+Finally, we have
+\begin{equation}
+	\boxed{
+	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} = 
+	\frac{\PD}{\PD x_i} \left[ 2 \mu u_j S_{ij} \right] - 
+	2 \mu S_{ij} S_{ij}
+	}
 \end{equation}
 
 
 \subsection{Pressure term}
 \begin{equation}
-	\frac{\partial p u_i}{\partial x_i}
+	\frac{\PD p u_i}{\PD x_i}
 	=
-	u_i \frac{\partial p}{\partial x_i}
+	u_i \frac{\PD p}{\PD x_i}
 	+
-	p \frac{\partial u_i}{\partial x_i}
+	p \frac{\PD u_i}{\PD x_i}
 	=
-	u_i \frac{\partial p}{\partial x_i}
+	u_i \frac{\PD p}{\PD x_i}
 \end{equation}
 
 Therefore
 
 \begin{equation}
-	u_i
-	\frac{\partial p}{\partial x_i}
-	=
-	\frac{\partial (u_i p)}{\partial x_i}
+	\boxed{
+	u_i \frac{\PD p}{\PD x_i} =
+	\frac{\PD (u_i p)}{\PD x_i}
+	}
 \end{equation}
 
 \subsection{Lorentz Force term}
-
-\subsection{Putting this all together}
-We have
-
-\begin{equation}
-	\frac{\partial K}{\partial t}
-	+
-	u_j \frac{\partial K}{\partial x_j}
-	= 
-	-
-	\frac{\partial (u_i p)}{\partial x_i}
-	+
-	\frac{1}{Re}
-	\left\{
-	\frac{\partial^2 K}{\partial x_j^2}
-	-
-	\left( \frac{\partial u_i}{\partial x_j} \right)^2
-	\right\}
-	+
-	\frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
-\end{equation}
-
-or
-
+We will simply leave the Lorentz force as is
 \begin{equation}
 	\boxed{
-	\frac{\partial K}{\partial t}
-	+
-	\frac{\partial (u_j K)}{\partial x_j}
-	= 
-	-
-	\frac{\partial (u_i p)}{\partial x_i}
-	+
-	\frac{1}{Re}
-	\left\{
-	\frac{\partial^2 K}{\partial x_j^2}
-	-
-	\left( \frac{\partial u_i}{\partial x_j} \right)^2
-	\right\}
-	+
-	\frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
+	u_i (j \times B)_i = u_i (j \times B)_i
 	}
 \end{equation}
 
-Note that sometimes the pressure term is written as $\frac{\partial (u_i p \delta_{ij})}{\partial x_j}$ and is grouped with the viscous terms.
-
-\section{Derivation of the Kinetic Energy Equation - using Prof Kim's notes}
-The dimensionless momentum equation is
-
-% \begin{equation}
-% 	\frac{\partial u_i}{\partial t} + 
-% 	\frac{\partial (u_i u_j)}{\partial x_j}
-% 	= 
-% 	- \frac{\partial p}{\partial x_i}
-% 	+ \frac{1}{Re}
-% 	\frac{\partial^2 u_i}{\partial x_j^2}
-% 	+ \frac{1}{Fr^2}
-% 	g_i
-% 	+ \frac{Gr}{Re^2}
-% 	T g_i
-% 	+ \frac{Ha^2}{Re}
-% 	(j \times B)_i
-% \end{equation}
+\section{Kinetic Energy Equation}
+Putting it all together, we have
 
 \begin{equation}
-	\frac{\partial u_i}{\partial t} + 
-	\frac{\partial (u_i u_j)}{\partial x_j}
-	= 
-	- \frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	+ \frac{Ha^2}{Re}
-	(j \times B)_i
+	\frac{\PD E_K}{\PD t} + 
+	u_j \frac{\PD E_K}{\PD x_j} = 
+	- \frac{\PD (u_i p)}{\PD x_i} + 
+	\frac{\PD}{\PD x_i} \left[ 2 \mu u_j S_{ij} \right] - 
+	2 \mu S_{ij} S_{ij}
 \end{equation}
-
-Or
-\begin{equation}
-	\frac{\partial u_i}{\partial t} + 
-	u_j\frac{\partial u_i}{\partial x_j}
-	= 
-	- \frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	+ \frac{Ha^2}{Re}
-	(j \times B)_i
-\end{equation}
-
-
-We must dot this with the velocity field $u_i$, which yields
-
+Combining the compressive viscous stress with pressure, we have
 \begin{equation}
 	\boxed{
-	u_i
-	\frac{\partial u_i}{\partial t} + 
-	u_i
-	u_j\frac{\partial u_i}{\partial x_j}
-	= 
-	- u_i
-	\frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	u_i
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	+ \frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
+	\underbrace{\frac{\PD E_K}{\PD t} + u_j \frac{\PD E_K}{\PD x_j}}_
+	{\substack{\text{Time rate of change of $E_K$}\\\text{following the mean flow}}} +
+	\underbrace{\frac{\PD}{\PD x_i} \left( u_i p - 2 \mu u_j S_{ij} \right)}_{\text{Transport}} = 
+	- \underbrace{2 \mu S_{ij} S_{ij}}_{\text{Dissipation } \varepsilon} + 
+	\underbrace{u_i (j \times B)_i}_{\text{Production } \mathcal P_{em}}
 	}
 \end{equation}
-
-This equation works perfectly fine to compute each of the terms of the kinetic energy. In Professor Kim's class on turbulence, we went a step further.
-
-Let $K = \frac{1}{2} u_i u_i$
-
-\subsection{Unsteady term}
+Where
 \begin{equation}
-	\frac{\partial u_i u_i}{\partial t}
-	=
-	2 u_i \frac{\partial u_i}{\partial t}
+	E_K = \frac{1}{2} \rho u_i u_i
 \end{equation}
 
-Therefore
-
-\begin{equation}
-	u_i \frac{\partial u_i}{\partial t}
-	=
-	\frac{1}{2} \frac{\partial u_i u_i}{\partial t}
-	=
-	\frac{\partial K}{\partial t}
-\end{equation}
-
-\subsection{Advection term}
-\begin{equation}
-	\frac{\partial u_i u_i}{\partial x_j}
-	=
-	2 u_i \frac{\partial u_i}{\partial x_j}
-\end{equation}
-
-Therefore
-\begin{equation}
-	u_j u_i \frac{\partial u_i}{\partial x_j}
-	=
-	\frac{1}{2} u_j \frac{\partial u_i u_i}{\partial x_j}
-	=
-	u_j \frac{\partial K}{\partial x_j}
-\end{equation}
-
-
-\subsection{Diffusion and Pressure Terms}
-Let
-\begin{equation}
-	S_{ij} 
-	=
-	\frac{1}{2}
-	\left(
-	\frac{\partial u_i}{\partial x_j}
-	+
-	\frac{\partial u_j}{\partial x_i}
-	\right)
-	\qquad \qquad
-	\Omega_{ij} 
-	=
-	\frac{1}{2}
-	\left(
-	\frac{\partial u_i}{\partial x_j}
-	-
-	\frac{\partial u_j}{\partial x_i}
-	\right)
-\end{equation}
-And
-\begin{equation}
-	T_{ij}
-	=
-	-p \delta_{ij}
-	+
-	2 Re^{-1}
-	S_{ij}
-\end{equation}
-
-Note that the total stress tensor, $T_{ij}$, and the mean strain-rate tensor, $S_{ij}$ are symmetric
-
-\begin{equation}
-	\frac{\partial u_i}{\partial x_j}
-	= S_{ij} + \Omega_{ij}
-\end{equation}
-
-We may then write the diffusion and pressure terms as
-
-\begin{equation}
-	-\frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	=
-	\frac{\partial}{\partial x_j} T_{ij}
-\end{equation}
-
-Now, multiplying this by $u_i$, we have
-
-\begin{equation}
-	u_i \frac{\partial}{\partial x_j} T_{ij}
-	=
-	\frac{\partial}{\partial x_j} (T_{ij} u_i)
-	-
-	T_{ij} \frac{\partial u_i}{\partial x_j}
-	=
-	\frac{\partial}{\partial x_j} (T_{ij} u_i)
-	- T_{ij} S_{ij}
-\end{equation}
-
-The last equality is due to the fact that $T_{ij} \Omega_{ij} = 0$.
-
-Also note that
-
-\begin{equation}
-	T_{ij} S_{ij}
-	=
-	-p \delta_{ij} S_{ij}
-	+ 2 Re^{-1} S_{ij} S_{ij}
-	=
-	-p S_{ii}
-	+ 2 Re^{-1} S_{ij} S_{ij}
-	=
-	2 Re^{-1} S_{ij} S_{ij}
-\end{equation}
-
-Finally, we have
-
-\begin{equation}
-	-u_i \frac{\partial p}{\partial x_i}
-	+ \frac{1}{Re}u_i
-	\frac{\partial^2 u_i}{\partial x_j^2}
-	=
-	u_i \frac{\partial}{\partial x_j} T_{ij}
-	=
-	\frac{\partial}{\partial x_j} (T_{ij} u_i)
-	-
-	T_{ij} \frac{\partial u_i}{\partial x_j}
-	=
-	\frac{\partial}{\partial x_j} (T_{ij} u_i)
-	- T_{ij} S_{ij}
-	=
-	\frac{\partial}{\partial x_j} (T_{ij} u_i)
-	-
-	2 Re^{-1} S_{ij} S_{ij}
-\end{equation}
-
-
-\subsection{Lorentz Force term}
-
-\subsection{Putting this all together}
-We have
-
-\begin{equation}
-	\frac{\partial K}{\partial t}
-	+
-	u_j \frac{\partial K}{\partial x_j}
-	= 
-	\frac{\partial}{\partial x_j} (T_{ij} u_i)
-	-
-	2 Re^{-1} S_{ij} S_{ij}
-	+
-	\frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
-\end{equation}
-\begin{equation}
-	\boxed{
-	\frac{\partial K}{\partial t}
-	+
-	u_j \frac{\partial K}{\partial x_j}
-	= 
-	\frac{\partial}{\partial x_j} 
-	(
-	-p \delta_{ij}
-	u_i
-	+
-	2 Re^{-1}
-	S_{ij}
-	u_i
-	)
-	-
-	2 Re^{-1} S_{ij} S_{ij}
-	+
-	\frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
-	}
-\end{equation}
-
-or
-
-\begin{equation}
-	\boxed{
-	\frac{\partial K}{\partial t}
-	+
-	\frac{\partial u_j K}{\partial x_j}
-	= 
-	\frac{\partial}{\partial x_j} 
-	(
-	-p \delta_{ij}
-	u_i
-	+
-	2 Re^{-1}
-	S_{ij}
-	u_i
-	)
-	-
-	2 Re^{-1} S_{ij} S_{ij}
-	+
-	\frac{Ha^2}{Re}
-	u_i
-	(j \times B)_i
-	}
-\end{equation}
-
+Note that there is no production term, $P$, since turbulent fluctuations were not accounted for.
 
 \end{document}

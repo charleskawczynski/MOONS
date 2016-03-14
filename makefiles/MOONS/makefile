@@ -218,10 +218,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)static$(PS)triDiag.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_face.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_edge.f90 \
-	$(SRC_DIR)$(PS)BCs$(PS)stitches$(PS)stitch_corner.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)stitch_face.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)stitch_edge.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)stitch_corner.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_distribution_funcs.f90 \
@@ -238,13 +238,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90 \
 	$(SRC_DIR)$(PS)BCs$(PS)vectorBCs.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)RF.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh.f90 \
+	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90 \
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)domain.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh_simple_geometries.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh_complex_geometries.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)mesh_generate.f90 \
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90 \
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90 \
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
@@ -263,10 +263,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)static$(PS)stop_clock.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90 \
 	$(SRC_DIR)$(PS)computations$(PS)norms.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_faces.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_edges.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)apply_stitches_corners.f90 \
-	$(SRC_DIR)$(PS)ops$(PS)apply_stitches.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_faces.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_edges.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_corners.f90 \
+	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90 \
@@ -287,9 +287,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90 \
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90 \
-	$(SRC_DIR)$(PS)static$(PS)probe_transient.f90 \
-	$(SRC_DIR)$(PS)static$(PS)probe_base.f90 \
-	$(SRC_DIR)$(PS)static$(PS)probe_derived.f90 \
+	$(SRC_DIR)$(PS)probes$(PS)probe_transient.f90 \
+	$(SRC_DIR)$(PS)probes$(PS)probe_base.f90 \
+	$(SRC_DIR)$(PS)probes$(PS)probe_derived.f90 \
 	$(SRC_DIR)$(PS)static$(PS)monitor.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90 \
@@ -317,9 +317,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Pfield.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_terms.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phiBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90 \

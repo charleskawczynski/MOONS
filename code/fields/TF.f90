@@ -35,6 +35,7 @@
         ! c = b / a => call divide(c,b,a)
 
         use mesh_mod
+        use SF_mod
         use VF_mod
         implicit none
         private
@@ -56,6 +57,7 @@
         public :: add,subtract
         public :: multiply,divide
         public :: square
+        public :: transpose
         ! public :: sum
         public :: assignX,assignY,assignZ
 
@@ -72,6 +74,7 @@
         type TF
           integer :: s = 3  ! number of components
           type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
+          logical :: is_CC,is_Node,is_Face,is_Edge
         end type
 
         interface init;          module procedure init_TF_copy_VF;          end interface
@@ -107,6 +110,7 @@
         interface add;           module procedure add_VF_TF;                end interface
         interface add;           module procedure add_TF_S;                 end interface
         interface add;           module procedure add_S_TF;                 end interface
+        interface add;           module procedure add_SF_TF;                end interface
 
         interface subtract;      module procedure subtract_TF_TF;           end interface
         interface subtract;      module procedure subtract_TF_VF;           end interface
@@ -125,6 +129,8 @@
         interface divide;        module procedure divide_S_TF;              end interface
 
         interface square;        module procedure square_TF;                end interface
+        interface transpose;     module procedure transpose_TF_TF;          end interface
+        interface transpose;     module procedure transpose_TF_SF;          end interface
         ! interface sum;           module procedure vectorSum;             end interface
 
         contains
@@ -238,6 +244,15 @@
           call add(f%x,g2); call add(f%y,g2); call add(f%z,g2)
         end subroutine
 
+        subroutine add_SF_TF(f,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(TF),intent(in) :: g
+          call add(f,g%x%x,g%y%x,g%z%x,&
+                     g%x%y,g%y%y,g%z%y,&
+                     g%x%z,g%y%z,g%z%z)
+        end subroutine
+
       ! ------------------- SUBTRACT ------------------------
 
         subroutine subtract_TF_TF(f,g)
@@ -343,6 +358,36 @@
           call square(f%x); call square(f%y); call square(f%z)
         end subroutine
 
+        subroutine transpose_TF_SF(f,g)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(SF),intent(inout) :: g
+          call swap(f%x%y,f%y%x,g)
+          call swap(f%y%x,f%x%y,g)
+          call swap(f%x%z,f%z%x,g)
+          call swap(f%z%x,f%x%z,g)
+          call swap(f%y%z,f%z%y,g)
+          call swap(f%z%y,f%y%z,g)
+        end subroutine
+
+        subroutine transpose_TF_TF(f,g)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(TF),intent(in) :: g
+          call assign(f%x%x,g%x%x) ! Diagonal (remains the same)
+          call assign(f%y%y,g%y%y) ! Diagonal (remains the same)
+          call assign(f%z%z,g%z%z) ! Diagonal (remains the same)
+
+          call assign(f%x%y,g%y%x) ! Off diag
+          call assign(f%y%x,g%x%y) ! Off diag
+
+          call assign(f%x%z,g%z%x) ! Off diag
+          call assign(f%z%x,g%x%z) ! Off diag
+
+          call assign(f%y%z,g%z%y) ! Off diag
+          call assign(f%z%y,g%y%z) ! Off diag
+        end subroutine
+
         ! subroutine vectorSum(f,g)
         !   implicit none
         !   type(VF),intent(inout) :: f
@@ -357,6 +402,10 @@
           type(TF),intent(inout) :: f1
           type(TF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine init_TF_copy_VF(f1,f2)
@@ -364,6 +413,10 @@
           type(TF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine init_TF_CC(f,m)
@@ -371,6 +424,7 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
+          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_TF_Edge(f,m)
@@ -378,6 +432,7 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m); call init_Edge(f%y,m); call init_Edge(f%z,m)
+          call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
         subroutine init_TF_Face(f,m)
@@ -385,6 +440,7 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m); call init_Face(f%y,m); call init_Face(f%z,m)
+          call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
         subroutine init_TF_Node(f,m)
@@ -392,6 +448,7 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
+          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         subroutine init_TF_CC_assign(f,m,val)
@@ -430,6 +487,16 @@
           implicit none
           type(TF),intent(inout) :: f
           call delete(f%x); call delete(f%y); call delete(f%z)
+          call delete_logicals(f)
+        end subroutine
+
+        subroutine delete_logicals(f)
+          implicit none
+          type(TF),intent(inout) :: f
+          f%is_CC = .false.
+          f%is_Node = .false.
+          f%is_Face = .false.
+          f%is_Edge = .false.
         end subroutine
 
         subroutine print_TF(f)

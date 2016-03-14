@@ -525,7 +525,7 @@
            orthDir = orthogonalDirection(edgeDir,faceDir)
            call interp(face,edge,m,orthDir)
          else ! Requires 3 interpolations ()
-           stop 'Error: old interp being used which requires allocation in edge2Face_SF in ops_interp.f90'
+           stop 'Error: edgeDir=faceDir, need more temps for this interp in edge2Face_SF in ops_interp.f90'
          endif
        end subroutine
 

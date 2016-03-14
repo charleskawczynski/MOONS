@@ -189,7 +189,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine boundaryFlux_VF(BF,u,m) ! Finished
+       subroutine boundaryFlux_VF(BF,u,m)
          ! Computes
          ! 
          !   BF = ∫∫ u•n dA
@@ -198,33 +198,64 @@
          type(VF),intent(in) :: u
          real(cp),intent(inout) :: BF
          type(mesh),intent(in) :: m
-         real(cp) :: BFtemp,dA
+         real(cp) :: BFtemp
          integer :: i,j,k,t
          BFtemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO SHARED(m),PRIVATE(dA), REDUCTION(+:BFtemp)
-         do t=1,m%s; do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
-           dA = m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
-           BFtemp = BFtemp + u%x%RF(t)%f(      2         ,j,k)*dA
-           BFtemp = BFtemp + u%x%RF(t)%f(u%x%RF(t)%s(1)-1,j,k)*dA
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         BF = BFtemp; BFtemp = 0.0_cp
-         !$OMP PARALLEL DO SHARED(m),PRIVATE(dA), REDUCTION(+:BFtemp)
-         do t=1,m%s; do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
-           dA = m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
-           BFtemp = BFtemp + u%y%RF(t)%f(i,      2         ,k)*dA
-           BFtemp = BFtemp + u%y%RF(t)%f(i,u%y%RF(t)%s(2)-1,k)*dA
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         BF = BF + BFtemp; BFtemp = 0.0_cp
-         !$OMP PARALLEL DO SHARED(m),PRIVATE(dA), REDUCTION(+:BFtemp)
-         do t=1,m%s; do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-           dA = m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
-           BFtemp = BFtemp + u%z%RF(t)%f(i,j,      2         )*dA
-           BFtemp = BFtemp + u%z%RF(t)%f(i,j,u%z%RF(t)%s(3)-1)*dA
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         BF = BF + BFtemp
+         BF = 0.0_cp
+         do t=1,m%s
+           if (.not.m%g(t)%st_faces(1)%TF) then
+             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
+             do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
+               BFtemp = BFtemp + u%x%RF(t)%f(2,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
+             enddo; enddo
+             !$OMP END PARALLEL DO
+             BF = BF + BFtemp; BFtemp = 0.0_cp
+           endif
+           if (.not.m%g(t)%st_faces(2)%TF) then
+             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
+             do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
+               BFtemp = BFtemp + u%x%RF(t)%f(u%x%RF(t)%s(1)-1,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
+             enddo; enddo
+             !$OMP END PARALLEL DO
+             BF = BF + BFtemp; BFtemp = 0.0_cp
+           endif
+         enddo
+         do t=1,m%s
+           if (.not.m%g(t)%st_faces(3)%TF) then
+             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
+             do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
+               BFtemp = BFtemp + u%y%RF(t)%f(i,2,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
+             enddo; enddo
+             !$OMP END PARALLEL DO
+             BF = BF + BFtemp; BFtemp = 0.0_cp
+           endif
+           if (.not.m%g(t)%st_faces(4)%TF) then
+             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
+             do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
+               BFtemp = BFtemp + u%y%RF(t)%f(i,u%y%RF(t)%s(2)-1,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
+             enddo; enddo
+             !$OMP END PARALLEL DO
+             BF = BF + BFtemp; BFtemp = 0.0_cp
+           endif
+         enddo
+         do t=1,m%s
+           if (.not.m%g(t)%st_faces(5)%TF) then
+             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
+             do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
+               BFtemp = BFtemp + u%z%RF(t)%f(i,j,2)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
+             enddo; enddo
+             !$OMP END PARALLEL DO
+             BF = BF + BFtemp; BFtemp = 0.0_cp
+           endif
+           if (.not.m%g(t)%st_faces(6)%TF) then
+             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
+             do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
+               BFtemp = BFtemp + u%z%RF(t)%f(i,j,u%z%RF(t)%s(3)-1)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
+             enddo; enddo
+             !$OMP END PARALLEL DO
+             BF = BF + BFtemp; BFtemp = 0.0_cp
+           endif
+         enddo
        end subroutine
 
        subroutine subtract_phys_mean_SF(u)

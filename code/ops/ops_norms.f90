@@ -2,6 +2,7 @@
        use mesh_mod
        use SF_mod
        use VF_mod
+       use TF_mod
        implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -29,6 +30,7 @@
        interface Ln;    module procedure Ln_vol_VF_collocated; end interface
        interface Ln;    module procedure Ln_mesh_SF;           end interface
        interface Ln;    module procedure Ln_mesh_VF;           end interface
+       interface Ln;    module procedure Ln_mesh_TF;           end interface
 
        interface Ln;    module procedure Ln_no_vol_SF;         end interface
        interface Ln;    module procedure Ln_no_vol_VF;         end interface
@@ -79,6 +81,36 @@
            eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**n+&
                             u%y%RF(t)%f(i,j,k)**n+&
                             u%z%RF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         e = eTemp
+       end subroutine
+
+       subroutine Ln_mesh_TF(e,u,n,m)
+         ! Computes
+         ! 
+         !   L(n) = ∫∫∫ | u(i,j,k)ⁿ | dx dy dz
+         ! 
+         implicit none
+         real(cp),intent(inout) :: e
+         type(TF),intent(in) :: u
+         real(cp),intent(in) :: n
+         type(mesh),intent(in) :: m
+         real(cp) :: eTemp
+         integer :: i,j,k,t
+         if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_TF in ops_Ln_norms.f90'
+         eTemp = 0.0_cp ! temp is necessary for reduction
+         !$OMP PARALLEL DO REDUCTION(+:eTemp)
+         do t=1,m%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
+           eTemp = eTemp + (u%x%x%RF(t)%f(i,j,k)**n+&
+                            u%x%y%RF(t)%f(i,j,k)**n+&
+                            u%x%z%RF(t)%f(i,j,k)**n+&
+                            u%y%x%RF(t)%f(i,j,k)**n+&
+                            u%y%y%RF(t)%f(i,j,k)**n+&
+                            u%y%z%RF(t)%f(i,j,k)**n+&
+                            u%z%x%RF(t)%f(i,j,k)**n+&
+                            u%z%y%RF(t)%f(i,j,k)**n+&
+                            u%z%z%RF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
