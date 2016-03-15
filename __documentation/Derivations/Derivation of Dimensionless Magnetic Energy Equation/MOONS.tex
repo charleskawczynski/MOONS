@@ -255,13 +255,38 @@ This may decomposed into "active power" and "reactive power", which is briefly d
 Finally, we have
 \begin{equation}
 	\boxed{
-	\frac{\PD }{\PD t} \frac{\B^2}{2 \MO}
+	\underbrace{\frac{\PD }{\PD t} \frac{\B^2}{2 \mu}}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
 	=
-	- \nabla \DOT \left(\varphi \J \right) 
-	+ \nabla \DOT \left( \frac{\PD \A}{\PD t} \times \BM \right) 
-	- \U \DOT (\J \times \B)
-	- \frac{\J^2}{\SO}
+	- \underbrace{\nabla \DOT \left(\varphi \J \right) }_
+	{\substack{\text{Power of}\\\text{Poynting 1 term $\mathcal P_{P_1}$}}}
+	+ \underbrace{\nabla \DOT \left( \frac{\PD \A}{\PD t} \times \BM \right)}_
+	{\substack{\text{Power of}\\\text{Poynting 2 term $\mathcal P_{P_2}$}}}
+	- \underbrace{\U \DOT (\J \times \B)}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
 	}
+\end{equation}
+Writing these as integrals, we have
+\begin{equation}
+	\boxed{
+	\underbrace{\int \frac{\PD }{\PD t} \frac{\B^2}{2 \mu} dV}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\oiint \left(\varphi \J \right) \DOT \N dA }_
+	{\substack{\text{Power of}\\\text{Poynting 1 term $\mathcal P_{P_1}$}}}
+	+ \underbrace{\oiint \left( \frac{\PD \A}{\PD t} \times \BM \right)\DOT \N dA }_
+	{\substack{\text{Power of}\\\text{Poynting 2 term $\mathcal P_{P_2}$}}}
+	- \underbrace{\int \U \DOT (\J \times \B) dV}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\int \JSS dV}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
+	}
+\end{equation}
+Where
+\begin{equation}
+	\B = \nabla \times \A
 \end{equation}
 
 
