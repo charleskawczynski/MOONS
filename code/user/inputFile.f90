@@ -26,9 +26,9 @@
          integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 100.0d0
-         Ha         = 10.0d0
-         Rem        = 0.01d0
+         Re         = 400.0d0
+         Ha         = 20.0d0
+         Rem        = 100.0d0
          Gr         = 0.0_cp
          Fr         = 0.0d0
          Pr         = 0.71d0
@@ -38,7 +38,8 @@
          dt_eng     = 1.0d-3
          dt_mom     = 1.0d-3
          dt_ind     = 1.0d-3
-         t          = 200.0
+         ! t          = 200.0
+         t          = 1.0_cp
          ! NmaxMHD       = ceiling(t/dt_eng)
          NmaxMHD       = ceiling(t/dt_mom)
          ! NmaxMHD       = ceiling(t/dt_ind)

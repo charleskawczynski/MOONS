@@ -13,7 +13,7 @@
        private
        public :: init_Ufield,restartU
 
-       logical,parameter :: restartU        = .false.
+       logical,parameter :: restartU        = .true.
        integer :: preDefinedU_ICs = 1
        !                            0 : User-defined case (no override)
        !                            1 : Rest (u,v,w = 0)
@@ -77,9 +77,9 @@
          type(VF),intent(inout) :: U
          type(mesh) :: temp
          call init(temp,m)
-         call import_3D_1C(temp,U%x,dir//'Ufield/','ufi',0)
-         call import_3D_1C(temp,U%y,dir//'Ufield/','vfi',0)
-         call import_3D_1C(temp,U%z,dir//'Ufield/','wfi',0)
+         call import_3D_1C(temp,U%x,dir//'Ufield/','Uf_x',0)
+         call import_3D_1C(temp,U%y,dir//'Ufield/','Uf_y',0)
+         call import_3D_1C(temp,U%z,dir//'Ufield/','Uf_z',0)
 
          ! call export_1C_SF(temp,U%x,dir//'Ufield/','ufi_imported',0)
          ! call export_1C_SF(temp,U%y,dir//'Ufield/','vfi_imported',0)

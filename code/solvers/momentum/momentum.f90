@@ -281,8 +281,6 @@
          implicit none
          type(momentum),intent(inout) :: mom
          ! real(cp) :: temp_Ln
-         write(mom%unit_nrg_budget,*) mom%nstep,mom%nrg_budget
-         flush(mom%unit_nrg_budget)
          call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
          call set(mom%transient_KE,mom%nstep,mom%KE)
          call apply(mom%transient_KE)
@@ -303,7 +301,6 @@
            ! This preserves the initial data
          else
            write(*,*) 'Exporting Solutions for U'
-           call export_raw(m,mom%U,dir//'Ufield/','U',0)
            call export_raw(m,mom%U,dir//'Ufield/','U',0)
            call export_raw(m,mom%p,dir//'Ufield/','p',0)
            if (solveEnergy.or.solveInduction) call export_raw(m,F,dir//'Ufield/','jCrossB',0)
@@ -411,13 +408,11 @@
          type(momentum),intent(inout) :: mom
          type(domain),intent(in) :: D_fluid
          type(VF),intent(in) :: B,B0,J
-         real(cp),dimension(5) :: e_budget
-         type(TF) :: temp_F_TF,temp_CC1_TF,temp_CC2_TF
+         type(TF) :: temp_CC1_TF,temp_CC2_TF
          type(VF) :: temp_F1,temp_F2,temp_B,temp_B0,temp_J
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
-         
-         call init_Face(temp_F_TF,mom%m)
+
          call init_CC(temp_CC1_TF,mom%m)
          call init_CC(temp_CC2_TF,mom%m)
          call init_Face(temp_F1,mom%m)
@@ -426,14 +421,17 @@
          call init_Face(temp_B,mom%m)
          call init_Face(temp_B0,mom%m)
          call init_Edge(temp_J,mom%m)
+         call assign(temp_B,B)
+         call assign(temp_B0,B0)
+         call assign(temp_J,J)
 
          call extractFace(temp_B,B,D_fluid)
          call extractFace(temp_B0,B0,D_fluid)
          call extractEdge(temp_J,J,D_fluid)
 
-         call E_K_Budget(e_budget,mom%U,mom%Unm1,mom%U_CC,&
+         call E_K_Budget(mom%nrg_budget,mom%U,mom%Unm1,mom%U_CC,&
          temp_B,temp_B0,temp_J,mom%p,mom%m,mom%dTime,&
-         temp_F1,temp_F2,temp_F_TF,temp_CC1_TF,temp_CC2_TF)
+         temp_F1,temp_F2,temp_CC1_TF,temp_CC2_TF)
 
          write(mom%unit_nrg_budget,*) mom%nstep,mom%nrg_budget
          flush(mom%unit_nrg_budget)
@@ -443,7 +441,6 @@
          call delete(temp_J)
          call delete(temp_F1)
          call delete(temp_F2)
-         call delete(temp_F_TF)
          call delete(temp_CC1_TF)
          call delete(temp_CC2_TF)
        end subroutine

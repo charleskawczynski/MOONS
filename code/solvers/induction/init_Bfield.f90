@@ -3,13 +3,14 @@
        use mesh_mod
        use VF_mod
        use IO_VF_mod
+       use IO_SF_mod
        implicit none
 
        private
        public :: initBfield
        public :: restartB
 
-       logical :: restartB  = .false. ! (induced field)
+       logical :: restartB  = .true. ! (induced field)
        logical :: restartB0 = .false. ! (applied field)
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB0_ICs is used to define the applied field
@@ -79,10 +80,9 @@
          type(VF),intent(inout) :: B
          type(mesh) :: temp
          call init(temp,m)
-         call import_3D_3C(temp,B,dir//'Bfield/','Bct',0)
-
-         ! call export_3C_VF(temp,B,dir//'Bfield/','Bct_imported',0)
-         ! stop 'Done'
+         call import_3D_1C(temp,B%x,dir//'Bfield/','Bf_x',0)
+         call import_3D_1C(temp,B%y,dir//'Bfield/','Bf_y',0)
+         call import_3D_1C(temp,B%z,dir//'Bfield/','Bf_z',0)
          call delete(temp)
        end subroutine
 

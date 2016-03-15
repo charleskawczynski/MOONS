@@ -176,20 +176,19 @@
          call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
 
-         ! ******************* SET MHD SOLVER SETTINGS *******************
-         if (restartU.or.restartB) then
-         call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
-         else; n_mhd = 0
-         endif
-         ! ********************* SOLVE MHD EQUATIONS ********************
          if (.not.post_process_only) then
+           if (restartU.or.restartB) then
+           call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
+           else; n_mhd = 0
+           endif
+           ! ********************* SOLVE MHD EQUATIONS ********************
            call MHDSolver(nrg,mom,ind,dir,dir_full,n_mhd+NmaxMHD)
-           call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
-           call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
-         else
-           call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
-           call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
          endif
+         write(*,*) ' *********************** POST PROCESSING ***********************'
+         write(*,*) ' *********************** POST PROCESSING ***********************'
+         write(*,*) ' *********************** POST PROCESSING ***********************'
+         call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
+         call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 

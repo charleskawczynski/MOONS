@@ -97,7 +97,7 @@
          real(cp) :: Rem              ! Magnetic Reynolds number
          logical :: finite_Rem
          integer :: unit_nrg_budget
-         real(cp),dimension(3) :: nrg_budget
+         real(cp),dimension(4) :: nrg_budget
          real(cp),dimension(0:2) :: ME
          real(cp),dimension(0:2) :: ME_fluid
          real(cp),dimension(0:2) :: ME_conductor
@@ -315,8 +315,6 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
-         flush(ind%unit_nrg_budget)
          call apply(ind%probe_divB,ind%nstep,ind%divB,ind%vol_CC)
          call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%vol_CC)
        end subroutine
@@ -457,7 +455,6 @@
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U,U_CC
          type(domain),intent(in) :: D_fluid
-         real(cp),dimension(4) :: e_budget
          type(TF) :: temp_CC_TF,temp_F1_TF,temp_F2_TF,temp_F3_TF
          type(VF) :: temp_F1,temp_F2,temp_U,temp_U_CC,sigmaInv_Face
 
@@ -467,24 +464,25 @@
          call init_Face(temp_F1_TF,ind%m)
          call init_Face(temp_F2_TF,ind%m)
          call init_Face(temp_F3_TF,ind%m)
+
          call init_Face(temp_U,ind%m)
          call init_CC(temp_U_CC,ind%m)
+
          call init_Face(sigmaInv_Face,ind%m)
-
-         call embedCC(temp_U_CC,U_CC,D_fluid)
-         call embedFace(temp_U,U,D_fluid)
-
          call cellCenter2Face(sigmaInv_Face,ind%sigmaInv_CC,ind%m)
          call treatInterface(sigmaInv_Face)
 
+         call embedCC(temp_U_CC,U_CC,D_fluid)
+         call embedFace(temp_U,U,D_fluid)
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call E_M_Budget(e_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
+         call E_M_Budget(ind%nrg_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
          sigmaInv_Face,ind%sigmaInv_CC,temp_U,temp_U_CC,&
          ind%m,ind%dTime,temp_CC_TF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
 
          write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
          flush(ind%unit_nrg_budget)
+         write(*,*) 'E_M_budget = ',ind%nrg_budget
 
          call delete(temp_CC_TF)
          call delete(temp_F1)

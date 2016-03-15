@@ -9,7 +9,7 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 0
+       integer :: preDefinedB_BCs = 1
        !                                      0 : B = 0
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : Bandaru

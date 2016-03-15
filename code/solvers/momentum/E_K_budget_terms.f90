@@ -68,30 +68,28 @@
          call Ln(e,temp_CC,1.0_cp,m)
        end subroutine
 
-       subroutine Transport(e,U,p,m,&
-         temp_CC,temp_F1,temp_F2,temp_F_TF)
+       subroutine Transport(e,U_CC,p,m,&
+         temp_CC1_TF,temp_CC2_TF)
          ! Computes
          ! 
          ! e = ∫ ∂_i ( u_i p - 2 μ u_j S_ij ) dV
          ! 
          ! Assumes μ is constant.
          implicit none
-         type(VF),intent(in) :: U
+         type(VF),intent(in) :: U_CC
          type(SF),intent(in) :: p
          type(mesh),intent(in) :: m
-         type(SF),intent(inout) :: temp_CC
-         type(VF),intent(inout) :: temp_F1,temp_F2
-         type(TF),intent(inout) :: temp_F_TF
+         type(TF),intent(inout) :: temp_CC1_TF,temp_CC2_TF
          real(cp),intent(inout) :: e
-         call cellCenter2Face(temp_F2,p,m)
-         call multiply(temp_F1,temp_F2,U)
-         call grad(temp_F_TF,U,m)
-         call multiply(temp_F_TF,U)
-         call add(temp_F2,temp_F_TF)
-         call multiply(temp_F2,2.0_cp)
-         call subtract(temp_F1,temp_F2)
-         call div(temp_CC,temp_F1,m)
-         call Ln(e,temp_CC,1.0_cp,m)
+         call grad(temp_CC1_TF,U_CC,m)
+         call transpose(temp_CC2_TF,temp_CC1_TF)
+         call add(temp_CC1_TF,temp_CC2_TF)
+         call multiply(temp_CC1_TF,U_CC)
+         call add(temp_CC2_TF%x,temp_CC1_TF)
+         call multiply(temp_CC1_TF%x,U_CC,p)
+         call subtract(temp_CC1_TF%x,temp_CC2_TF%x)
+         call div(temp_CC2_TF%x%x,temp_CC1_TF%x,m)
+         call Ln(e,temp_CC2_TF%x%x,1.0_cp,m)
        end subroutine
 
        subroutine Lorentz(e,J,B,U_CC,m,temp_CC1,temp_CC2,temp_CC3,temp_F)

@@ -15,7 +15,7 @@
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
        integer :: solveUMethod              = 1 ! Refer to momentum.f90
-       integer :: solveBMethod              = 3 ! Refer to induction.f90
+       integer :: solveBMethod              = 2 ! Refer to induction.f90
 
        logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.

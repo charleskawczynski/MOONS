@@ -171,15 +171,14 @@
       ! *********************** MED LEVEL ***********************
       ! *********************************************************
 
-      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,s,sdfdh,pad1,pad2)
+      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,s,sdfdh,diffType,pad1,pad2)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: dfdh
         real(cp),dimension(:,:,:),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType,pad1,pad2
         integer,dimension(3),intent(in) :: s,sdfdh
-        integer :: diffType
-        diffType = getDiffType(s,sdfdh,g%c(dir)%sn,g%c(dir)%sc,dir)
+        integer,intent(in) :: diffType
         select case (genType)
         case (1); select case (diffType)
                   case (1); call diff_col(col_CC_assign,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
@@ -206,12 +205,12 @@
         if (genType.eq.1) then
           if (pad.gt.0) then
             select case (dir)
-          case (1); dfdh(:,:,1) = 0.0_cp; dfdh(:,:,s(3)) = 0.0_cp
-                    dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
-          case (2); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
-                    dfdh(:,:,1) = 0.0_cp; dfdh(:,:,s(3)) = 0.0_cp
-          case (3); dfdh(1,:,:) = 0.0_cp; dfdh(s(1),:,:) = 0.0_cp
-                    dfdh(:,1,:) = 0.0_cp; dfdh(:,s(2),:) = 0.0_cp
+          case (1); dfdh(:,:,1) = 0.0_cp; dfdh(:,:,sdfdh(3)) = 0.0_cp
+                    dfdh(:,1,:) = 0.0_cp; dfdh(:,sdfdh(2),:) = 0.0_cp
+          case (2); dfdh(1,:,:) = 0.0_cp; dfdh(sdfdh(1),:,:) = 0.0_cp
+                    dfdh(:,:,1) = 0.0_cp; dfdh(:,:,sdfdh(3)) = 0.0_cp
+          case (3); dfdh(1,:,:) = 0.0_cp; dfdh(sdfdh(1),:,:) = 0.0_cp
+                    dfdh(:,1,:) = 0.0_cp; dfdh(:,sdfdh(2),:) = 0.0_cp
           case default
             stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
             end select
@@ -229,14 +228,16 @@
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad,genType
-        integer :: i,pad1,pad2
+        integer :: i,pad1,pad2,diffType
         integer,dimension(2) :: faces
+
+        diffType = getDiffType(f,dfdh,dir)
         do i=1,m%s
           faces = normal_faces_given_dir(dir)
           if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
           if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
           call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
-            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,pad1,pad2)
+            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,diffType,pad1,pad2)
         enddo
         call apply_stitches(dfdh,m)
       end subroutine
@@ -276,24 +277,24 @@
       ! *********************** AUX / DEBUG *********************
       ! *********************************************************
 
-      function getDiffType(sf,sdfdh,sn,sc,dir) result(diffType)
+      function getDiffType(f,dfdh,dir) result(diffType)
         implicit none
-        integer,dimension(3),intent(in) :: sf,sdfdh
-        integer,intent(in) :: sn,sc,dir
+        type(SF),intent(in) :: f,dfdh
+        integer,intent(in) :: dir
         integer :: diffType
-            if ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sc)) then
+            if (CC_along(f,dir).and.CC_along(dfdh,dir)) then
           diffType = 1 ! Collocated derivative (CC)
-        elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sn)) then
+        elseif (Node_along(f,dir).and.Node_along(dfdh,dir)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif ((sf(dir).eq.sc).and.(sdfdh(dir).eq.sn)) then
+        elseif (CC_along(f,dir).and.Node_along(dfdh,dir)) then
           diffType = 3 ! Staggered derivative (CC->N)
-        elseif ((sf(dir).eq.sn).and.(sdfdh(dir).eq.sc)) then
+        elseif (Node_along(f,dir).and.CC_along(dfdh,dir)) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
-          write(*,*) 'sf = ',sf
-          write(*,*) 'sdfdh = ',sdfdh
-          write(*,*) 'sn = ',sn
-          write(*,*) 'sc = ',sc
+          write(*,*) 'CC_along(f,dir) = ',CC_along(f,dir)
+          write(*,*) 'Node_along(f,dir) = ',Node_along(f,dir)
+          write(*,*) 'CC_along(dfdh,dir) = ',CC_along(dfdh,dir)
+          write(*,*) 'Node_along(dfdh,dir) = ',Node_along(dfdh,dir)
           write(*,*) 'dir = ',dir
           stop 'Error: diffType undetermined in ops_del.f90.'
         endif
