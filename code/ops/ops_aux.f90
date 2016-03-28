@@ -37,6 +37,7 @@
        use ops_embedExtract_mod
        use VF_mod
        use SF_mod
+       use index_mapping_mod
 
        implicit none
 

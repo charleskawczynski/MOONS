@@ -44,6 +44,7 @@
          continueLoop = .true.
 
          call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
+         call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
@@ -89,6 +90,7 @@
              continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
              write(*,*) 'Working directory = ',dir_full
              if (.not.continueLoop) then; call toc(sc); exit; endif
+             call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
            endif
          enddo
          call print(sc)

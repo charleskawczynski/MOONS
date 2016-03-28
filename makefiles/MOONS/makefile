@@ -12,11 +12,11 @@ PS1 = $(strip \)
 extf90 = $(strip .f90)
 
 # ************* MAKE CONFIGURATION ******************
-# MKE = gmake
-MKE = make
+MKE = gmake
+# MKE = make
 # ************* DIRECTORY SETTINGS ******************
-# USER = Charlie
-USER = charl
+USER = Charlie
+# USER = charl
 
 # Code directory
 SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
@@ -120,9 +120,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -211,6 +211,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)index_mapping.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90 \

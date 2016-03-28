@@ -81,7 +81,10 @@ Multiplying by $\B / \mu$, we have
 	\right)
 \end{equation}
 
-Let's analyze each term
+Let's analyze each term, but first, let's define
+\begin{equation}
+	E_m = \frac{\B^2}{2\mu}
+\end{equation}
 
 \subsection{Transient term}
 We have, for constant $\mu$, 
@@ -92,7 +95,7 @@ Therefore
 \begin{equation}
 	\boxed{
 	\BM \DOT \frac{\PD \B}{\PD t} =
-	\frac{\PD}{\PD t} \frac{\B^2}{2 \mu}
+	\frac{\PD E_m}{\PD t}
 	}
 \end{equation}
 \subsection{Diffusion term}
@@ -154,6 +157,52 @@ And separating the two last terms and swapping cross product orders, we have
 	}
 \end{equation}
 
+\section{Resulting Lorentz force term}
+The Lorentz force term that appears may be broken down into several terms. We can do this by decomposing the Lorentz force into magnetic pressure and maxwell stresses.
+\begin{equation}
+	\U \DOT (\J \times \B) = 
+	\U \DOT \left[(\B \DOT \nabla) \left( \BM \right) \right] 
+	- (\U \DOT \nabla) \frac{\B^2}{2\mu}
+\end{equation}
+Now, we can see that the magnetic pressure term looks like power associated with convection of the magnetic field. It would be nice to have a diffusion term. Let's try:
+\begin{align}
+	\frac{\PD}{\PD x_j} \frac{\PD}{\PD x_j} \frac{\B^2}{2 \mu}
+	& =
+	\frac{\PD}{\PD x_j} 
+	\left[
+	\frac{\B}{2\mu} \frac{\PD}{\PD x_j} \B +  
+	\frac{\B}{2} \frac{\PD}{\PD x_j} \BM
+	\right] \\
+	& =
+	\frac{\B}{2\mu} \frac{\PD^2 \B}{\PD x_jx_j} + 
+	\frac{\PD}{\PD x_j} \BM \frac{\PD}{\PD x_j} \frac{\B}{2} + 
+	\frac{\B}{2} \frac{\PD^2 }{\PD x_jx_j} \BM + 
+	\frac{\PD}{\PD x_j} \frac{\B}{2} \frac{\PD}{\PD x_j} \BM \\
+	& =
+	\frac{\B}{\mu} \frac{\PD^2 \B}{\PD x_jx_j} + 
+	\frac{\PD}{\PD x_j} \BM \frac{\PD}{\PD x_j} \B \qquad \text{for uniform $\mu$} \\
+	& = \BM \nabla^2 \B + \mu \left(\nabla \left( \BM \right) \right)^2
+\end{align}
+
+\begin{align}
+	\frac{\PD}{\PD x_j} \frac{\PD}{\PD x_j} \frac{B_i^2}{2 \mu}
+	& =
+	\frac{\PD}{\PD x_j} 
+	\left[
+	\frac{B_i}{2\mu} \frac{\PD}{\PD x_j} B_i +  
+	\frac{B_i}{2} \frac{\PD}{\PD x_j} \frac{B_i}{\mu}
+	\right] \\
+	& =
+	\frac{B_i}{2\mu} \frac{\PD^2 B_i}{\PD x_jx_j} + 
+	\frac{\PD}{\PD x_j} \frac{B_i}{\mu} \frac{\PD}{\PD x_j} \frac{B_i}{2} + 
+	\frac{B_i}{2} \frac{\PD^2 }{\PD x_jx_j} \frac{B_i}{\mu} + 
+	\frac{\PD}{\PD x_j} \frac{B_i}{2} \frac{\PD}{\PD x_j} \frac{B_i}{\mu} \\
+	& =
+	\frac{B_i}{\mu} \frac{\PD^2 B_i}{\PD x_jx_j} + 
+	\frac{\PD}{\PD x_j} \frac{B_i}{\mu} \frac{\PD}{\PD x_j} B_i \qquad \text{for uniform $\mu$} \\
+	& = \frac{B_i}{\mu} \nabla^2 B_i + \mu \left(\nabla \left( \frac{B_i}{\mu} \right) \right)^2
+\end{align}
+
 \section{Magnetic Energy Equation}
 Putting it all together, we have
 \begin{equation}
@@ -165,8 +214,15 @@ Putting it all together, we have
 \end{equation}
 And canceling like terms and ordering similar to Moreau gives us
 \begin{equation}
+	\frac{\PD E_m}{\PD t} =
+	- \nabla \DOT \left(\E \times \BM \right)
+	- \U \DOT (\J \times \B)
+	- \JSS
+\end{equation}
+
+\begin{equation}
 	\boxed{
-	\underbrace{\frac{\PD }{\PD t} \frac{\B^2}{2 \mu}}_
+	\underbrace{\frac{\PD E_m}{\PD t} }_
 	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
 	=
 	- \underbrace{\nabla \DOT \left(\E \times \BM \right)}_
@@ -255,7 +311,7 @@ This may decomposed into "active power" and "reactive power", which is briefly d
 Finally, we have
 \begin{equation}
 	\boxed{
-	\underbrace{\frac{\PD }{\PD t} \frac{\B^2}{2 \mu}}_
+	\underbrace{\frac{\PD E_m}{\PD t} }_
 	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
 	=
 	- \underbrace{\nabla \DOT \left(\varphi \J \right) }_
@@ -271,7 +327,7 @@ Finally, we have
 Writing these as integrals, we have
 \begin{equation}
 	\boxed{
-	\underbrace{\int \frac{\PD }{\PD t} \frac{\B^2}{2 \mu} dV}_
+	\underbrace{\int \frac{\PD E_m}{\PD t} dV}_
 	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
 	=
 	- \underbrace{\oiint \left(\varphi \J \right) \DOT \N dA }_
@@ -286,10 +342,35 @@ Writing these as integrals, we have
 \end{equation}
 Where
 \begin{equation}
-	\B = \nabla \times \A
+	\B = \nabla \times \A, \E = - \nabla \varphi - \frac{\PD \A}{\PD t}
+\end{equation}
+\section{Decomposition}
+\subsection{Applied in conductor and vacuum}
+Trivially $0 = 0$, since $\B^0$ is constant and uniform.
+\subsection{Vacuum}
+\begin{equation}
+	\underbrace{\int \frac{\PD }{\PD t} \frac{{\B^{ind}}^2}{2 \mu} dV}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	\underbrace{\oiint \left( \frac{\PD \A^{ind}}{\PD t} \times \frac{\B^{0} + \B^{ind}}{\mu} \right)\DOT \N dA }_
+	{\substack{\text{Power of second}\\\text{Poynting term $\mathcal P_{P_2}$}}}
+\end{equation}
+\subsection{Conductor}
+\begin{equation}
+	\underbrace{\int \frac{\PD }{\PD t} \frac{{\B^{ind}}^2}{2 \mu} dV}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	= 
+	\underbrace{\oiint \left( \frac{\PD \A^{ind}}{\PD t} \times \frac{\B^{0} + \B^{ind}}{\mu} \right)\DOT \N dA }_
+	{\substack{\text{Power of second}\\\text{Poynting term $\mathcal P_{P_2}$}}}
+	- \underbrace{\int \U \DOT (\J \times \left[ \B^0 + \B^{ind} \right]) dV}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\int \JSS dV}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
 \end{equation}
 
-
+\begin{equation}
+	\B = 0, \in \Gamma_v
+\end{equation}
 \section{Non-dimensionalization}
 Consider non-dimensionalization $t=t^*/(L/U), \MO = \mu^*/\mu, \SO = \sigma^*/\sigma, \nabla = L \nabla^*, \U = \U^*/U, \B = \B^*/B, \E = \E^* / (B/ \sigma \mu L), \J = \J^* / (B/\mu L)$, where the asterisk implies local values. Then we have
 \begin{equation}

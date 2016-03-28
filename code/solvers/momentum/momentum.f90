@@ -345,7 +345,7 @@
          type(VF),intent(in) :: F
          logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
-         logical :: exportNow
+         logical :: exportNow,exportNowU
          integer :: N_PPE
          if (mom%nstep.lt.1000) then; N_PPE = 2*mom%N_PPE
          else;                        N_PPE = mom%N_PPE
@@ -389,14 +389,15 @@
 
          if (print_export(1)) then
            call momentumInfo(mom,6)
-           exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
+           exportNow = readSwitchFromFile(dir//'parameters/','exportNow')
+           exportNowU = readSwitchFromFile(dir//'parameters/','exportNowU')
            ! mom%N_mom = readIntegerFromFile(dir//'parameters/','N_mom')
            mom%N_PPE = readIntegerFromFile(dir//'parameters/','N_PPE')
            write(*,*) ''
-         else; exportNow = .false.
+         else; exportNow = .false.; exportNowU = .false.
          endif
 
-         if (print_export(6).or.exportNow) then
+         if (print_export(6).or.exportNow.or.exportNowU) then
            ! call curl(mom%temp_E,mom%U,m)
            call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')

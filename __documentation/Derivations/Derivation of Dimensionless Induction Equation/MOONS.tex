@@ -13,6 +13,26 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\MC}{\mathcal}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\PD}{\partial}
+\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\ep}{\epsilon}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
+\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -45,40 +65,40 @@ University of California Los Angeles, USA\\
 
 \section{Maxwell's equations to Induction Equation}
 \begin{equation}
-	\pmb{j} = \nabla \times \frac{\pmb{B}}{\mu}
+	\J = \nabla \times \BM
 	\qquad
-	\frac{\partial \pmb{B}}{\partial t} = 
-	- \nabla \times \pmb{E}
+	\frac{\PD \B}{\PD t} = 
+	- \nabla \times \E
 	\qquad
-	\pmb{j} = \sigma (\pmb{E} + \pmb{u}\times \pmb{B})
+	\J = \sigma (\E + \U \times \B)
 \end{equation}
 \begin{equation}
-	\nabla \bullet \pmb{j} = \pmb{0}
+	\nabla \DOT \J = \mathbf{0}
 	\qquad
-	\nabla \bullet \pmb{B} = \pmb{0}
+	\nabla \DOT \B = \mathbf{0}
 	\qquad
-	\pmb{H} = \frac{\pmb{B}}{\mu}
+	\mathbf{H} = \BM
 \end{equation}
 Solving for the electric field of the current in Ohm's law yields
 \begin{equation}
-	\pmb{E} = \frac{\pmb{j}}{\sigma} - \pmb{u} \times \pmb{B}
+	\E = \frac{\J}{\sigma} - \U \times \B
 \end{equation}
 Plugging this into Faraday's law yields
 \begin{equation}
-	\frac{\partial \pmb{B}}{\partial t} = 
-	- \nabla \times \left[ \frac{\pmb{j}}{\sigma}
-	- \pmb{u} \times \pmb{B} \right]
+	\frac{\PD \B}{\PD t} = 
+	- \nabla \times \left[ \frac{\J}{\sigma}
+	- \U \times \B \right]
 \end{equation}
 Distributing we have the induction equation
 
 \section{Non-dimensionalizing by \texorpdfstring{$B_c$}{LG}}
 
 \begin{equation}
-	\frac{\partial \pmb{B}}{\partial t} = 
-	\nabla \times (\pmb{u} \times \pmb{B})
+	\frac{\PD \B}{\PD t} = 
+	\nabla \times (\U \times \B)
 	- \nabla \times 
-	\left[ \frac{1}{\sigma}
-	\nabla \times \frac{\pmb{B}}{\mu} \right]
+	\left[ \SII
+	\nabla \times \BM \right]
 \end{equation}
 
 Non-dimensionalizing this by
@@ -99,7 +119,7 @@ Yields
 
 \begin{equation}
 	\frac{B_c}{t_c} 
-	\frac{\partial B_i}{\partial t} 
+	\frac{\PD B_i}{\PD t} 
 	= 
 	\frac{U_c B_c}{L_c}
 	(\nabla \times u \times B)_i
@@ -107,7 +127,7 @@ Yields
 	\frac{B_c}{\sigma_c \mu_c L_c^2}
 	\left\{
 	\nabla \times 
-	\left[ \frac{1}{\sigma}
+	\left[ \SII
 	\nabla \times \frac{B}{\mu} \right]
 	\right\}_i
 \end{equation}
@@ -115,14 +135,14 @@ Yields
 Dividing by $\frac{B_c}{t_c}$ yields
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
+	\frac{\PD B_i}{\PD t} 
 	= 
 	(\nabla \times u \times B)_i
 	- 
 	\frac{1}{\sigma_c \mu_c L_c U_c}
 	\left\{
 	\nabla \times 
-	\left[ \frac{1}{\sigma}
+	\left[ \SII
 	\nabla \times \frac{B}{\mu} \right]
 	\right\}_i
 \end{equation}
@@ -131,13 +151,13 @@ And finally
 
 \begin{equation}
 	\boxed{
-	\frac{\partial \pmb{B}}{\partial t} = 
-	\nabla \times (\pmb{u} \times \pmb{B})
+	\frac{\PD \B}{\PD t} = 
+	\nabla \times (\U \times \B)
 	- 
 	\frac{1}{Re_m}
 	\nabla \times 
-	\left[ \frac{1}{\sigma}
-	\nabla \times \frac{\pmb{B}}{\mu} \right]
+	\left[ \SII
+	\nabla \times \BM \right]
 	}
 \end{equation}
 
@@ -153,60 +173,60 @@ Where
 Using the vector identity
 \begin{equation}
 	\nabla \times (A\times B) = 
-	A(\nabla \bullet B) 
-	- B(\nabla \bullet A)
-	+(B \bullet \nabla)A - (A \bullet \nabla)B
+	A(\nabla \DOT B) 
+	- B(\nabla \DOT A)
+	+(B \DOT \nabla)A - (A \DOT \nabla)B
 \end{equation}
 And noting that (index notation helps here)
 \begin{equation}
-	\partial_j (u_i B_j) = 
-	u_i \underbrace{\partial_j B_j}_\text{= 0} + B_j \partial_j u_i
-	= B_j \partial_j u_i
+	\PD_j (u_i B_j) = 
+	u_i \underbrace{\PD_j B_j}_\text{= 0} + B_j \PD_j u_i
+	= B_j \PD_j u_i
 \end{equation}
 \begin{equation}
-	\partial_j (u_j B_i) = 
-	u_j \partial_j B_i + B_i \underbrace{\partial_j u_j}_\text{=0}
-	= u_j \partial_j B_i
+	\PD_j (u_j B_i) = 
+	u_j \PD_j B_i + B_i \underbrace{\PD_j u_j}_\text{=0}
+	= u_j \PD_j B_i
 \end{equation}
 We can write our advective term as
 \begin{equation}
-	\nabla \times (u \times B) 
-	= u(\nabla \bullet B) 
-	- B(\nabla \bullet u)
-	+ (B \bullet \nabla)u
-	- (u \bullet \nabla)B
+	\nabla \times (\U \times B) 
+	= \U(\nabla \DOT B) 
+	- B(\nabla \DOT \U)
+	+ (B \DOT \nabla)\U
+	- (\U \DOT \nabla)B
 	=
-	\partial_j (u_i B_j) - \partial_j (u_j B_i)
+	\PD_j (u_i B_j) - \PD_j (u_j B_i)
 	=
-	-\partial_j (u_j B_i - u_i B_j)
+	-\PD_j (u_j B_i - u_i B_j)
 \end{equation}
 
 Using the kronecker delta identity, the diffusion term may be written as
 \begin{equation}
-	\nabla \times \left( \frac{1}{\sigma} \nabla \times \frac{B}{\mu} \right)
-	 = \varepsilon_{ijk} \partial_j \left( \frac{1}{\sigma} \varepsilon_{kmn} \partial_m \frac{B_n}{\mu} \right)
-	  = \varepsilon_{ijk} \varepsilon_{kmn} \partial_j \left( \frac{1}{\sigma} \partial_m \frac{B_n}{\mu} \right)
-	  = (\delta_{im}\delta_{jn} - \delta_{in}\delta_{jm}) \partial_j \left( \frac{1}{\sigma} \partial_m \frac{B_n}{\mu} \right)
+	\nabla \times \left( \SII \nabla \times \frac{B}{\mu} \right)
+	 = \varepsilon_{ijk} \PD_j \left( \SII \varepsilon_{kmn} \PD_m \frac{B_n}{\mu} \right)
+	  = \varepsilon_{ijk} \varepsilon_{kmn} \PD_j \left( \SII \PD_m \frac{B_n}{\mu} \right)
+	  = (\delta_{im}\delta_{jn} - \delta_{in}\delta_{jm}) \PD_j \left( \SII \PD_m \frac{B_n}{\mu} \right)
 \end{equation}
 
 \begin{equation}
-	  = \partial_j \left( \frac{1}{\sigma} \partial_i \frac{B_j}{\mu} \right) 
-	  - \partial_j \left( \frac{1}{\sigma} \partial_j \frac{B_i}{\mu} \right)
-	  = \partial_j \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_j}{\mu} - \partial_j \frac{B_i}{\mu} \right) \right]
+	  = \PD_j \left( \SII \PD_i \frac{B_j}{\mu} \right) 
+	  - \PD_j \left( \SII \PD_j \frac{B_i}{\mu} \right)
+	  = \PD_j \left[ \SII \left( \PD_i \frac{B_j}{\mu} - \PD_j \frac{B_i}{\mu} \right) \right]
 \end{equation}
 
 Finally, we may write our full induction equation as
 \begin{equation}
 	\boxed{
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD B_i}{\PD t} 
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
 	+ \frac{1}{Re_m}
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -226,16 +246,16 @@ This is the dimensionless induction equation written in divergence form. This is
 Sometimes it is helpful to look at the induction equation in a semi-expanded form. Expanding the dummy index $j$ yields the following equation for the $i$th component:
 
 \begin{multline}
-	\frac{\partial B_i}{\partial t} + 
-	\partial_x (u_x B_i - u_i B_x) + 
-	\partial_y (u_y B_i - u_i B_y) + 
-	\partial_z (u_z B_i - u_i B_z) + \\
+	\frac{\PD B_i}{\PD t} + 
+	\PD_x (u_x B_i - u_i B_x) + 
+	\PD_y (u_y B_i - u_i B_y) + 
+	\PD_z (u_z B_i - u_i B_z) + \\
 	\frac{1}{Re_m}
-	\partial_x \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_x}{\mu} - \partial_x \frac{B_i}{\mu} \right) \right] + 
+	\PD_x \left[ \SII \left( \PD_i \frac{B_x}{\mu} - \PD_x \frac{B_i}{\mu} \right) \right] + 
 	\frac{1}{Re_m}
-	\partial_y \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_y}{\mu} - \partial_y \frac{B_i}{\mu} \right) \right] + 
+	\PD_y \left[ \SII \left( \PD_i \frac{B_y}{\mu} - \PD_y \frac{B_i}{\mu} \right) \right] + 
 	\frac{1}{Re_m}
-	\partial_z \left[ \frac{1}{\sigma} \left( \partial_i \frac{B_z}{\mu} - \partial_z \frac{B_i}{\mu} \right) \right]  = \text{source terms}
+	\PD_z \left[ \SII \left( \PD_i \frac{B_z}{\mu} - \PD_z \frac{B_i}{\mu} \right) \right]  = \text{source terms}
 \end{multline}
 
 
@@ -244,15 +264,15 @@ Sometimes it is helpful to look at the induction equation in a semi-expanded for
 The applied magnetic field is non-dimensionalized by $B^0$, which means the equation for the applied magnetic field is
 
 \begin{equation}
-	\frac{\partial B_i^0}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i^0}{\PD t} 
+	+ \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	+ \frac{1}{Re_m}
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j^0}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i^0}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -262,15 +282,15 @@ The induced magnetic field is non-dimensionalized by $Re_m B^0$, which means the
 
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD B_i}{\PD t} 
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
 	+
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -279,28 +299,28 @@ The induced magnetic field is non-dimensionalized by $Re_m B^0$, which means the
 Since $B^{induced}$ scales with $Re_m B^0$, we may combine these equations by writing $induction^{induced}=Re_m \times induction^{applied}$
 
 \begin{multline}
-	\frac{\partial B_i^0}{\partial t} +
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
-	+ \frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i^0}{\PD t} +
+	\frac{\PD B_i}{\PD t} 
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
+	+ \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	+ \\
 	\frac{1}{Re_m}
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j^0}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i^0}{\mu} \right)
 	\right]
 	\right\} 
 	+
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
@@ -314,21 +334,21 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \subsection{Appendix A - Dimensional/Full}
 
 \begin{equation*}
-	\frac{\partial B_i^0}{\partial t}
+	\frac{\PD B_i^0}{\PD t}
 	+
-	\frac{\partial B_i}{\partial t} 
+	\frac{\PD B_i}{\PD t} 
 	+ 
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	+
-	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
 	+ 
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) 
 	- 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
@@ -340,23 +360,23 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \subsection{Appendix B - Dimensionless/ \texorpdfstring{$Re_m<1$}{LG}}
 
 \begin{equation*}
-	\frac{\partial B_i^0}{\partial t}
+	\frac{\PD B_i^0}{\PD t}
 	+
  	Re_m
-	\frac{\partial B_i}{\partial t} 
+	\frac{\PD B_i}{\PD t} 
 	+ 
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	+
  	Re_m
-	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
 	+ 
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) 
 	- 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
@@ -368,15 +388,15 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \subsection{Appendix C - Dimensionless/Quasi-static approximation for \texorpdfstring{$Re_m<<1$}{LG}}
 
 \begin{equation*}
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	+ 
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) 
 	- 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
@@ -387,9 +407,9 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \subsection{Appendix D - Dimensionless/Quasi-static approximation in with uniform \texorpdfstring{$\sigma$}{LG} for \texorpdfstring{$Re_m<<1$}{LG}}
 
 \begin{equation*}
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	- 
-	\frac{\partial^2}{\partial x_j^2} 
+	\frac{\PD^2}{\PD x_j^2} 
 	\left( \frac{B_j}{\mu} \right) 
 	= 
 	0
@@ -399,22 +419,22 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \subsection{Appendix E - Dimensionless/ \texorpdfstring{$Re_m \approx 1$ or $Re_m>1$}{LG}}
 
 \begin{equation*}
-	\frac{\partial B_i^0}{\partial t}
+	\frac{\PD B_i^0}{\PD t}
 	+
-	\frac{\partial B_i}{\partial t} 
+	\frac{\PD B_i}{\PD t} 
 	+ 
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
 	+
-	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
 	+ 
 	\frac{1}{Re_m}
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
+	\frac{\PD}{\PD x_j} 
+	\left\{ \SII 
 	\left[ 
-	\frac{\partial}{\partial x_i} 
+	\frac{\PD}{\PD x_i} 
 	\left( \frac{B_j}{\mu} \right) 
 	- 
-	\frac{\partial}{\partial x_j} 
+	\frac{\PD}{\PD x_j} 
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}

@@ -64,8 +64,6 @@
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
-        public :: get_3D_index
-        public :: get_1D_index
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -517,30 +515,6 @@
           dot = sum(temp)
         end function
 
-        function get_1D_index(i,j,k,t,U) result(m)
-          ! Notes:
-          !     For i=1,j=1,k=1 we have
-          !     m = 1 + im*(0 + 0) = 1
-          !     For i=im,j=jm,k=km we have
-          !     m = im + im*((jm-1) + jm*(km-1))
-          !       = im + im*jm - im + im*jm*(km-1)
-          !       =      im*jm      + im*jm*km-im*jm
-          !       =                 + im*jm*km
-          !     Which should equal
-          !     m = im*jm*km
-          implicit none
-          type(SF),intent(in) :: U
-          integer,intent(in) :: i,j,k,t
-          integer :: im,jm,km
-          real(cp) :: m
-          if (U%s.gt.1) stop 'Error: get_1D_index not developed for U%s>1 in SF.f90'
-          if (t.gt.1) stop 'Error: get_1D_index not developed for t>1 in SF.f90'
-          im = U%RF(1)%s(1)
-          jm = U%RF(1)%s(2)
-          km = U%RF(1)%s(3)
-          m = i + im*( (j-1) + jm*(k-1) )
-        end function
-
         subroutine N0_C1_tensor(U,x,y,z)
           implicit none
           type(SF),intent(in) :: U
@@ -605,22 +579,6 @@
            write(*,*) 'U%Edge = ',U%Edge
            stop 'Error: data type not found in C0_N1_tensor in SF.f90'
           endif
-        end subroutine
-
-        subroutine get_3D_index(i_3D,j_3D,k_3D,t_3D,U,index_1D)
-          implicit none
-          integer,intent(inout) :: i_3D,j_3D,k_3D,t_3D
-          type(SF),intent(in) :: U
-          integer,intent(in) :: index_1D
-          integer :: im,jm,km
-          if (U%s.gt.1) stop 'Error: get_1D_index not developed for U%s>1 in SF.f90'
-          im = U%RF(1)%s(1)
-          jm = U%RF(1)%s(2)
-          km = U%RF(1)%s(3)
-          t_3D = 1
-          k_3D = (index_1D-1)/(im*jm)+1
-          j_3D = ((index_1D-1) - ((k_3D-1)*im*jm))/im+1
-          i_3D = index_1D - (j_3D-1)*im - (k_3D-1)*im*jm
         end subroutine
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
@@ -822,91 +780,91 @@
           f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1,f%s)/))
         end subroutine
 
-       subroutine volume_SF(u,m)
-         ! Computes
-         ! 
-         !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
-         implicit none
-         type(SF),intent(inout) :: u
-         type(mesh),intent(in) :: m
-         integer :: i,j,k,t
-         call assign(u,0.0_cp)
-         if (u%is_CC) then
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         elseif (u%is_Node) then
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         elseif (u%is_Face) then
-         select case (u%face)
-         case (1);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (2);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (3);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
-         end select
-         elseif (u%is_Edge) then
-         select case (u%edge)
-         case (1);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (2);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhn(j))*&
-                                (m%g(t)%c(3)%dhc(k-1))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (3);
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-             u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                (m%g(t)%c(2)%dhc(j-1))*&
-                                (m%g(t)%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
-         end select
-         else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
-         endif
-         u%vol = sum(u)
-       end subroutine
+        subroutine volume_SF(u,m)
+          ! Computes
+          ! 
+          !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          integer :: i,j,k,t
+          call assign(u,0.0_cp)
+          if (u%is_CC) then
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                 (m%g(t)%c(2)%dhn(j))*&
+                                 (m%g(t)%c(3)%dhn(k))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          elseif (u%is_Node) then
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                 (m%g(t)%c(2)%dhc(j-1))*&
+                                 (m%g(t)%c(3)%dhc(k-1))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          elseif (u%is_Face) then
+          select case (u%face)
+          case (1);
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                 (m%g(t)%c(2)%dhn(j))*&
+                                 (m%g(t)%c(3)%dhn(k))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          case (2);
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                 (m%g(t)%c(2)%dhc(j-1))*&
+                                 (m%g(t)%c(3)%dhn(k))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          case (3);
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                 (m%g(t)%c(2)%dhn(j))*&
+                                 (m%g(t)%c(3)%dhc(k-1))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
+          end select
+          elseif (u%is_Edge) then
+          select case (u%edge)
+          case (1);
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
+                                 (m%g(t)%c(2)%dhc(j-1))*&
+                                 (m%g(t)%c(3)%dhc(k-1))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          case (2);
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                 (m%g(t)%c(2)%dhn(j))*&
+                                 (m%g(t)%c(3)%dhc(k-1))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          case (3);
+          !$OMP PARALLEL DO SHARED(m)
+          do t=1,m%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
+              u%RF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
+                                 (m%g(t)%c(2)%dhc(j-1))*&
+                                 (m%g(t)%c(3)%dhn(k))
+          enddo; enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+          case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
+          end select
+          else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
+          endif
+          u%vol = sum(u)
+        end subroutine
 
         subroutine multiply_volume_SF(f,m)
           implicit none

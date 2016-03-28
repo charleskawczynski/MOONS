@@ -377,7 +377,7 @@
          type(TF),intent(in) :: U
          logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
-         logical :: exportNow,compute_ME
+         logical :: exportNow,exportNowB,compute_ME
 
          if (solveMomentum) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
          else;if (ind%nstep.le.1) call embedVelocity_E(ind%U_E,U,ind%D_fluid)
@@ -440,11 +440,12 @@
 
          if (print_export(1)) then
            call inductionInfo(ind,6)
-           exportNow = readSwitchFromFile(dir//'parameters/','exportNowB')
-         else; exportNow = .false.
+           exportNow = readSwitchFromFile(dir//'parameters/','exportNow')
+           exportNowB = readSwitchFromFile(dir//'parameters/','exportNowB')
+         else; exportNow = .false.; exportNowB = .false.
          endif
 
-         if (print_export(6).or.exportNow) then
+         if (print_export(6).or.exportNow.or.exportNowB) then
            call export(ind,ind%m,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
          endif
@@ -482,7 +483,6 @@
 
          write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
          flush(ind%unit_nrg_budget)
-         write(*,*) 'E_M_budget = ',ind%nrg_budget
 
          call delete(temp_CC_TF)
          call delete(temp_F1)

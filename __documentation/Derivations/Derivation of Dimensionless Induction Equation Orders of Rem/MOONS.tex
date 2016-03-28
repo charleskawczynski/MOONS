@@ -14,6 +14,27 @@
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
 
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\MC}{\mathcal}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\PD}{\partial}
+\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\ep}{\epsilon}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
+\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
 
@@ -47,9 +68,9 @@ University of California Los Angeles, USA\\
 The dimensionless induction equation is
 \begin{equation}
   \label{eq:ind}
-  \frac{\partial \pmb{B}}{\partial t} 
+  \frac{\PD \B}{\PD t} 
   =
-  (\nabla \times \pmb{u} \times \pmb{B})
+  (\nabla \times \U \times \B)
   - \\
   \frac{1}{Re_m}
   \left(
@@ -57,18 +78,18 @@ The dimensionless induction equation is
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\pmb{B}}{\mu}
+  \frac{\B}{\mu}
   \right\}
   \right)
 \end{equation}
 Note that in the above equation, only $t,u,\nabla , \mu, \sigma$ have been non-dimensionalized and not $B$. Let
 
 \begin{equation}
-  G(\pmb{B})
+  G(\B)
   =
-  \frac{\partial \pmb{B}}{\partial t} 
+  \frac{\PD \B}{\PD t} 
   -
-  (\nabla \times \pmb{u} \times \pmb{B})
+  (\nabla \times \U \times \B)
   +
   \frac{1}{Re_m}
   \left(
@@ -76,7 +97,7 @@ Note that in the above equation, only $t,u,\nabla , \mu, \sigma$ have been non-d
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\pmb{B}}{\mu}
+  \frac{\B}{\mu}
   \right\}
   \right)
   =
@@ -86,16 +107,16 @@ Note that in the above equation, only $t,u,\nabla , \mu, \sigma$ have been non-d
 Since this equation applies to the external applied magnetic field as well as any induced magnetic fields, we may write (generally)
 
 \begin{equation}
-	\sum_{k=0}^{\infty} G(\pmb{B}^k)
+	\sum_{k=0}^{\infty} G(\B^k)
   Re_m^k
 	=
 	\pmb{0}
 \end{equation}
 Considering the first two terms we have
 \begin{equation}
-  G(\pmb{B}^0)
+  G(\B^0)
   +
-  G(\pmb{B}^{ind}) Re_m
+  G(\B^{ind}) Re_m
   =
   \pmb{0}
 \end{equation}
@@ -103,22 +124,22 @@ Considering the first two terms we have
 or
 \begin{equation}
   \frac{1}{Re_m}
-  G(\pmb{B}^0)
+  G(\B^0)
   +
-  G(\pmb{B}^{ind})
+  G(\B^{ind})
   =
   \pmb{0}
   \qquad \qquad
   Re_m \ne 0
 \end{equation}
 
-For a uniform and steady external field ($\pmb{B}^0$), this simplifies to
+For a uniform and steady external field ($\B^0$), this simplifies to
 
 
 \begin{equation}
-  \frac{\partial \pmb{B}^{ind}}{\partial t} 
+  \frac{\PD \B^{ind}}{\PD t} 
   -
-  (\nabla \times \pmb{u} \times \pmb{B}^{ind})
+  (\nabla \times \U \times \B^{ind})
   +
   \frac{1}{Re_m}
   \left(
@@ -126,12 +147,12 @@ For a uniform and steady external field ($\pmb{B}^0$), this simplifies to
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\pmb{B}^{ind}}{\mu}
+  \frac{\B^{ind}}{\mu}
   \right\}
   \right)
   -
   \frac{1}{Re_m}
-  (\nabla \times \pmb{u} \times \pmb{B}^0)
+  (\nabla \times \U \times \B^0)
   =
   \pmb{0}
 \end{equation}
@@ -142,17 +163,17 @@ It's clear from the above equation that in the limit of $Re_m \rightarrow 0$, th
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\pmb{B}^{ind}}{\mu}
+  \frac{\B^{ind}}{\mu}
   \right\}
   =
-  (\nabla \times \pmb{u} \times \pmb{B}^0)
+  (\nabla \times \U \times \B^0)
 \end{equation}
 For uniform $\sigma, \mu$, this is a well known
 \begin{equation}
-  \nabla^2 \pmb{B}^{ind}
+  \nabla^2 \B^{ind}
   =
   -
-  (\nabla \times \pmb{u} \times \pmb{B}^0)
+  (\nabla \times \U \times \B^0)
 \end{equation}
 
 

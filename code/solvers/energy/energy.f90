@@ -228,7 +228,7 @@
          type(VF),intent(in) :: U
          logical,dimension(6),intent(in) :: print_export
          character(len=*),intent(in) :: dir
-         logical :: exportNow
+         logical :: exportNow,exportNowT
 
          call assign(nrg%gravity%y,1.0_cp)
 
@@ -262,8 +262,9 @@
          ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,m_mom) ! Maybe thermal energy?
 
          if (print_export(1)) then
-           exportNow = readSwitchFromFile(dir//'parameters/','exportNowT')
-         else; exportNow = .false.
+           exportNow = readSwitchFromFile(dir//'parameters/','exportNow')
+           exportNowT = readSwitchFromFile(dir//'parameters/','exportNowT')
+         else; exportNow = .false.; exportNowT = .false.
          endif
 
          if (print_export(6).or.exportNow) then

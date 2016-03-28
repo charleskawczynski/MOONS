@@ -173,8 +173,6 @@
          ! endif
          ! n_mhd = 0
 
-         call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
-         call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
 
          if (.not.post_process_only) then
            if (restartU.or.restartB) then
