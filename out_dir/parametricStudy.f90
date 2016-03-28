@@ -1,5 +1,7 @@
        program parametricStudy
        use MOONS_mod
        implicit none
-       call MOONS('out\LDC\')
+       character(len=255) :: cwd
+       call getcwd(cwd)
+       call MOONS('out\LDC\',trim(cwd))
        end program
