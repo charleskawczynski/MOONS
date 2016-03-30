@@ -117,7 +117,15 @@ Note that in the above equation, only $t,u,\nabla , \mu, \sigma$ have been non-d
   =
   \mathbf{0}
 \end{equation}
-Since this equation applies to the external applied magnetic field as well as any induced magnetic fields, we may write (generally)
+Since this equation applies to the external $\B$ as well as any induced $\B$ fields, we may write (generally)
+
+\noindent
+\rule{\textwidth}{1pt}
+\begin{center}
+This is where the two formulations part ways.
+\end{center}
+\noindent
+\rule{\textwidth}{1pt}
 \begin{equation}
 	\sum_{k=0}^{\infty} G(\B^k)
   Re_m^k
@@ -128,56 +136,43 @@ Considering the first two terms we have
 \begin{equation}
   G(\B^0)
   +
-  G(\B^{ind}) Re_m
+  G(\B^{*}) Re_m
   =
   \mathbf{0}
-\end{equation}
-or
-\begin{equation}
-  \frac{1}{Re_m}
-  G(\B^0)
-  +
-  G(\B^{ind})
-  =
-  \mathbf{0}
-  \qquad \qquad
-  Re_m \ne 0
 \end{equation}
 For a uniform and steady external field ($\B^0$), this simplifies to
 \begin{equation}
-  \frac{\PD \B^{ind}}{\PD t} 
+  Re_m \frac{\PD \B^{*}}{\PD t} 
   -
-  (\nabla \times \U \times \B^{ind})
+  Re_m (\nabla \times \U \times \B^{*})
   +
-  \frac{1}{Re_m}
   \left(
   \nabla \times
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B^{ind}}{\mu}
+  \frac{\B^{*}}{\mu}
   \right\}
   \right)
   -
-  \frac{1}{Re_m}
   (\nabla \times \U \times \B^0)
   =
   \mathbf{0}
 \end{equation}
-It's clear from the above equation that in the limit of $Re_m \rightarrow 0$, the steady induced field can be computed from
+It's clear from the above equation that as $Re_m \rightarrow 0$, the steady induced field can be computed from
 \begin{equation}
   \nabla \times
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B^{ind}}{\mu}
+  \frac{\B^{*}}{\mu}
   \right\}
   =
   (\nabla \times \U \times \B^0)
 \end{equation}
 For uniform $\sigma, \mu$, this is a well known
 \begin{equation}
-  \nabla^2 \B^{ind}
+  \nabla^2 \B^{*}
   =
   -
   (\nabla \times \U \times \B^0)

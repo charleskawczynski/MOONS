@@ -62,7 +62,6 @@ Department of Mechanical and Aerospace Engineering \\
 University of California Los Angeles, USA\\
 }
 % \maketitle
-
 \section{Induction equation by orders of induced magnetic field}
 The dimensional induction equation is
 \begin{equation} \label{eq:ind_dim}
@@ -116,19 +115,21 @@ Note that in the above equation, only $t,u,\nabla , \mu, \sigma$ have been non-d
   =
   \mathbf{0}
 \end{equation}
-Since this equation applies to the external applied magnetic field as well as any induced magnetic fields, we may write (generally)
+Since this equation applies to the external $\B$ as well as any induced $\B$ fields, we may write (generally)
+
+\noindent
+\rule{\textwidth}{1pt}
+\begin{center}
+This is where the two formulations part ways.
+\end{center}
+\noindent
+\rule{\textwidth}{1pt}
 \begin{equation}
-	\sum_{k=0}^{\infty} G(\B^k)
-	=
-	\mathbf{0}
+	\sum_{k=0}^{\infty} G(\B^k) = \mathbf{0}
 \end{equation}
 Considering the first two terms we have
 \begin{equation}
-  G(\B^0)
-  +
-  G(\B^1)
-  =
-  \mathbf{0}
+  G(\B^0) + G(\B^1) = \mathbf{0}
 \end{equation}
 For a uniform and steady external field ($\B^0$), this simplifies to
 \begin{equation}
@@ -150,6 +151,6 @@ For a uniform and steady external field ($\B^0$), this simplifies to
   =
   \mathbf{0}
 \end{equation}
-This is similar to the formulation with normalization, but the strength of the induced magnetic field is $\B^1$.
+This is similar to the formulation with $Re_m$ normalization, but the strength of the induced magnetic field is $\B^1$.
 
 \end{document}

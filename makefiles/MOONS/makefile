@@ -305,20 +305,26 @@ SRCS_F += $(UNIT_TEST)
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
-# **************** DO NOT EDIT BELOW HERE *********************
-# **************** DO NOT EDIT BELOW HERE *********************
-# **************** DO NOT EDIT BELOW HERE *********************
 
+debug:
+	$(for v,$(SRCS_F), \
+	$(warning $v = $($v)))
+
+# **************** DO NOT EDIT BELOW HERE *********************
+# **************** DO NOT EDIT BELOW HERE *********************
+# **************** DO NOT EDIT BELOW HERE *********************
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
-all: $(TARGET)
+$(warning ABOUT TO START MAKE)
+
+all: $(TARGET) $(warning DURING ALL_CALL)
 
 $(TARGET): $(OBJS_F)
-	$(FC) -o $@ $(FCFLAGS) $(OBJS_F) $(FLIBS)
+	$(FC) -o $@ $(FCFLAGS) $(OBJS_F) $(FLIBS) $(warning DURING TARGET_CALL)
 
 $(OBJ_DIR)$(PS)%.o: %.f90
-	$(FC) $(FCFLAGS) -c -o $@ $<
+	$(FC) $(FCFLAGS) -c -o $@ $< $(warning DURING OBJECTS_CALL)
 
 clean:
 	$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)
