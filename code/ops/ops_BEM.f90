@@ -135,23 +135,23 @@
        !   call delete(temp)
        ! end subroutine
 
-        subroutine apply_B_tan(B,m,phi,temp_F,temp1,temp2)
-          ! Computes
-          !  B_tan from phi and Bn
-          implicit none
-          type(SF),intent(inout) :: phi,temp1,temp2
-          type(VF),intent(inout) :: B,temp_F
-          type(mesh),intent(in) :: m
-          integer :: k
-          call grad(temp_F,phi)
-          call multiply(temp_F,-1.0_cp)
-          do k=1,n
-            call multiply(temp1,phi,(1.0_cp - ds))
-            call compute_phi(phi,m,B,temp2)
-            call multiply(phi,ds)
-            call add(phi,temp1)
-          enddo
-        end subroutine
+        ! subroutine apply_B_tan(B,m,phi,temp_F,temp1,temp2)
+        !   ! Computes
+        !   !  B_tan from phi and Bn
+        !   implicit none
+        !   type(SF),intent(inout) :: phi,temp1,temp2
+        !   type(VF),intent(inout) :: B,temp_F
+        !   type(mesh),intent(in) :: m
+        !   integer :: k
+        !   call grad(temp_F,phi)
+        !   call multiply(temp_F,-1.0_cp)
+        !   do k=1,n
+        !     call multiply(temp1,phi,(1.0_cp - ds))
+        !     call compute_phi(phi,m,B,temp2)
+        !     call multiply(phi,ds)
+        !     call add(phi,temp1)
+        !   enddo
+        ! end subroutine
 
         subroutine compute_phi_pseudo_time_marching(phi,m,B,n,ds,temp1,temp2)
           ! Computes
