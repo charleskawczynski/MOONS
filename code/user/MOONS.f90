@@ -1,35 +1,31 @@
        module MOONS_mod
-       use simParams_mod
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
        use IO_auxiliary_mod
+
        use version_mod
-       use grid_mod
        use mesh_mod
        use domain_mod
-
        use mesh_generate_mod
-       use ops_embedExtract_mod
-       use ops_interp_mod
        use VF_mod
 
-       use init_Bfield_mod ! For restart
-       use init_Ufield_mod ! For restart
+       use init_Bfield_mod, only : restartB ! For restart
+       use init_Ufield_mod, only : restartU ! For restart
+
+       use simParams_mod
+       use inputFile_mod
 
        use energy_mod
        use momentum_mod
        use induction_mod
-       use induction_aux_mod
-       use inputFile_mod
-
        use MHDSolver_mod
+
        use omp_lib
 
        implicit none
 
        private
-
        public :: MOONS
 
 #ifdef _SINGLE_PRECISION_

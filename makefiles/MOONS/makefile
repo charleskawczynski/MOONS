@@ -23,6 +23,7 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 
 # Output directory
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS1
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
@@ -135,7 +136,7 @@ FCFLAGS += $(FC_DEBUG)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
-TARGET = $(TARGET_DIR)$(PS)MOONS
+TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 # TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** INCLUDE PATHS ********************
@@ -154,16 +155,16 @@ VPATH =\
 	$(SRC_DIR)$(PS)ops \
 	$(SRC_DIR)$(PS)probes \
 	$(SRC_DIR)$(PS)solvers \
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
-	$(SRC_DIR)$(PS)solvers$(PS)GS \
-	$(SRC_DIR)$(PS)solvers$(PS)SOR \
-	$(SRC_DIR)$(PS)solvers$(PS)MG \
-	$(SRC_DIR)$(PS)solvers$(PS)PCG \
-	$(SRC_DIR)$(PS)solvers$(PS)FFT \
-	$(SRC_DIR)$(PS)solvers$(PS)PSE \
 	$(SRC_DIR)$(PS)solvers$(PS)energy \
-	$(SRC_DIR)$(PS)solvers$(PS)momentum \
+	$(SRC_DIR)$(PS)solvers$(PS)FFT \
+	$(SRC_DIR)$(PS)solvers$(PS)GS \
 	$(SRC_DIR)$(PS)solvers$(PS)induction \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
+	$(SRC_DIR)$(PS)solvers$(PS)MG \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE \
+	$(SRC_DIR)$(PS)solvers$(PS)SOR \
 	$(SRC_DIR)$(PS)sparse \
 	$(SRC_DIR)$(PS)stencils \
 	$(SRC_DIR)$(PS)stitches \
@@ -186,7 +187,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_face.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_edge.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_corner.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_distribution_funcs.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_genHelper.f90 \
@@ -305,26 +306,23 @@ SRCS_F += $(UNIT_TEST)
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
-
-debug:
-	$(for v,$(SRCS_F), \
-	$(warning $v = $($v)))
-
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
-$(warning ABOUT TO START MAKE)
+$(warning ********** BUILDING MOONS **********)
+$(warning ********** BUILDING MOONS **********)
+$(warning ********** BUILDING MOONS **********)
 
-all: $(TARGET) $(warning DURING ALL_CALL)
+all: $(TARGET)
 
 $(TARGET): $(OBJS_F)
-	$(FC) -o $@ $(FCFLAGS) $(OBJS_F) $(FLIBS) $(warning DURING TARGET_CALL)
+	$(FC) -o $@ $(FCFLAGS) $(OBJS_F) $(FLIBS)
 
 $(OBJ_DIR)$(PS)%.o: %.f90
-	$(FC) $(FCFLAGS) -c -o $@ $< $(warning DURING OBJECTS_CALL)
+	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
 
 clean:
 	$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)
