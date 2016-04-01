@@ -28,8 +28,8 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS1
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS5
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS6
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS7
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8
@@ -121,9 +121,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -137,7 +137,7 @@ FCFLAGS += $(FC_DEBUG)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
-# TARGET = $(TARGET_DIR)$(PS)unitTest
+# TARGET = $(TARGET_DIR)$(PS)unitTest.exe
 
 # **************** INCLUDE PATHS ********************
 VPATH =\
@@ -312,9 +312,9 @@ SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
+$(warning ************************************)
 $(warning ********** BUILDING MOONS **********)
-$(warning ********** BUILDING MOONS **********)
-$(warning ********** BUILDING MOONS **********)
+$(warning ************************************)
 
 all: $(TARGET)
 

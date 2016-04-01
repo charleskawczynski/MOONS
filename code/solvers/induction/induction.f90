@@ -192,11 +192,11 @@
          call init_CC(sigma,m,0.0_cp)
          call initSigma(sigma,ind%D_sigma,m) ! If sigma changes across wall
          write(*,*) '     Materials initialized'
-         call export_raw(m,sigma,dir//'material/','sigma',0)
+         if (.not.quick_start) call export_raw(m,sigma,dir//'material/','sigma',0)
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
          call treatInterface(ind%sigmaInv_edge)
-         call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
+         if (.not.quick_start) call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
          ! *************************************************************

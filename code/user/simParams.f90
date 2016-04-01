@@ -6,8 +6,9 @@
        logical :: exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.    ! Just export ICs, do not run simulation
        logical :: export_planar             = .false.    ! Export 2D data when N_cell = 1 along given direction
+       logical :: quick_start               = .true.      ! Avoids exporting any large datasets before solve
 
-       logical :: post_process_only         = .true.     ! Skip solver loop and just post-process results
+       logical :: post_process_only         = .false.     ! Skip solver loop and just post-process results
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
@@ -15,7 +16,7 @@
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
        integer :: solveUMethod              = 1 ! Refer to momentum.f90
-       integer :: solveBMethod              = 2 ! Refer to induction.f90
+       integer :: solveBMethod              = 3 ! Refer to induction.f90
 
        logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.

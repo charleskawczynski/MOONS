@@ -300,7 +300,7 @@
          if (restartU.and.(.not.solveMomentum)) then
            ! This preserves the initial data
          else
-           write(*,*) 'Exporting Solutions for U'
+           write(*,*) 'Exporting Solutions for U at mom%nstep = ',mom%nstep
            call export_raw(m,mom%U,dir//'Ufield/','U',0)
            call export_raw(m,mom%p,dir//'Ufield/','p',0)
            if (solveEnergy.or.solveInduction) call export_raw(m,F,dir//'Ufield/','jCrossB',0)
@@ -350,6 +350,7 @@
          if (mom%nstep.lt.1000) then; N_PPE = 2*mom%N_PPE
          else;                        N_PPE = mom%N_PPE
          endif
+         N_PPE = mom%N_PPE
 
          select case(solveUMethod)
          case (1)
@@ -397,7 +398,7 @@
          else; exportNow = .false.; exportNowU = .false.
          endif
 
-         if (print_export(6).or.exportNow.or.exportNowU) then
+         if ((print_export(6).or.exportNow.or.exportNowU).and.(mom%nstep.gt.1)) then
            ! call curl(mom%temp_E,mom%U,m)
            call export(mom,mom%m,F,dir)
            call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')

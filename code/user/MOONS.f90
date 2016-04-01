@@ -106,8 +106,10 @@
          call initProps(D_sigma%m_tot);    call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS ****************************
-         if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)
-         if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
+         if (.not.quick_start) then
+           if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)
+           if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
+         endif
 
          ! Initialize energy,momentum,induction
          call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
@@ -118,9 +120,11 @@
          endif
 
          ! ********************* EXPORT RAW ICs *************************
-         ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
-         if (exportRawICs) call export(ind,ind%m,dir)
-         if (exportRawICs) call export(mom,mom%m,mom%temp_F,dir)
+         if (.not.quick_start) then
+           ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
+           if (exportRawICs) call export(ind,ind%m,dir)
+           if (exportRawICs) call export(mom,mom%m,mom%temp_F,dir)
+         endif
 
          ! ********************* EXPORT ICs *****************************
          ! if (exportICs) call export(mom,mom%m,dir)
@@ -181,8 +185,11 @@
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
+         write(*,*) ' COMPUTING ENERGY BUDGETS: '
          call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
+         write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
          call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
+         write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 

@@ -13,7 +13,7 @@
        private
        public :: init_Ufield,restartU
 
-       logical,parameter :: restartU        = .true.
+       logical,parameter :: restartU        = .false.
        integer :: preDefinedU_ICs = 1
        !                            0 : User-defined case (no override)
        !                            1 : Rest (u,v,w = 0)
