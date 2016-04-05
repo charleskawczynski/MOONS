@@ -65,6 +65,45 @@
          call Ln(e,temp_CC3,1.0_cp,m)
        end subroutine
 
+       subroutine E_M_Convection(e,B,U_CC,m,temp_CC1,temp_CC_SF)
+         ! Computes
+         ! 
+         ! e = ∫ (u•∇)E_m dV
+         ! 
+         implicit none
+         type(VF),intent(in) :: B,U_CC
+         type(mesh),intent(in) :: m
+         type(SF),intent(inout) :: temp_CC_SF
+         type(VF),intent(inout) :: temp_CC1
+         real(cp),intent(inout) :: e
+         call face2CellCenter(temp_CC1,B,m)
+         call square(temp_CC1)
+         call add(temp_CC_SF,temp_CC1)
+         call multiply(temp_CC_SF,0.5_cp)
+         call grad(temp_CC1,temp_CC_SF,m)
+         call multiply(temp_CC1,U_CC)
+         call Ln(e,temp_CC1,1.0_cp,m)
+       end subroutine
+
+       subroutine maxwell_stress(e,B,U_CC,m,temp_CC1,temp_CC_TF)
+         ! Computes
+         ! 
+         ! e = ∫ u•(B•∇H) dV
+         ! 
+         implicit none
+         type(VF),intent(in) :: B,U_CC
+         type(mesh),intent(in) :: m
+         type(VF),intent(inout) :: temp_CC1
+         type(TF),intent(inout) :: temp_CC_TF
+         real(cp),intent(inout) :: e
+         call face2CellCenter(temp_CC1,B,m)
+         call grad(temp_CC_TF,temp_CC1,m)
+         call multiply(temp_CC_TF,temp_CC1)
+         call add(temp_CC1,temp_CC_TF)
+         call multiply(temp_CC_TF%x,temp_CC1,U_CC)
+         call Ln(e,temp_CC_TF%x,1.0_cp,m)
+       end subroutine
+
        subroutine Joule_Dissipation(e,J,sigmaInv_CC,m,temp_CC,temp_F)
          ! Computes
          !       j²

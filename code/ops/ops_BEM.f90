@@ -219,8 +219,8 @@
             x = get_x_m(m,i)
             y = get_x_m(m,j)
             dA = get_dA(m,j)
-            phij = get_val(m,phi,j)
-            Bj = get_val(m,B,j)
+            phij = get_val(phi,j)
+            Bj = get_val(B,j)
             temp = temp + G_ij**(3.0_cp)*dot_n(m,t_3D,x-y)*dA*phij
             temp = temp + G_ij*dA*dot_n(m,t_3D,Bj)
           enddo
@@ -250,8 +250,8 @@
             x = get_x_m(m,i)
             y = get_x_m(m,j)
             dA = get_dA(m,j)
-            phij = get_val(m,phi,j)
-            Bj = get_val(m,B,j)
+            phij = get_val(phi,j)
+            Bj = get_val(B,j)
             temp = temp + G_ij**(3.0_cp)*dot_n(m,t_3D,x-y)*dA*phij
             temp = temp + G_ij*dA*dot_n(m,t_3D,Bj)
           enddo

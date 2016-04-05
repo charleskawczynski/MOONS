@@ -127,9 +127,8 @@
         endif
       end function
 
-      function get_val_SF(m,u,index_1D) result(val)
+      function get_val_SF(u,index_1D) result(val)
         implicit none
-        type(mesh),intent(in) :: m
         type(SF),intent(in) :: u
         integer,intent(in) :: index_1D
         real(cp) :: val
@@ -137,15 +136,14 @@
         call get_3D_index(i_3D,j_3D,k_3D,t_3D,u,index_1D); val = u%RF(t_3D)%f(i_3D,j_3D,k_3D)
       end function
 
-      function get_val_VF(m,u,index_1D) result(val)
+      function get_val_VF(u,index_1D) result(val)
         implicit none
-        type(mesh),intent(in) :: m
         type(VF),intent(in) :: u
         integer,intent(in) :: index_1D
         real(cp),dimension(3) :: val
-        val(1) = get_val(m,u%x,index_1D)
-        val(2) = get_val(m,u%y,index_1D)
-        val(3) = get_val(m,u%z,index_1D)
+        val(1) = get_val(u%x,index_1D)
+        val(2) = get_val(u%y,index_1D)
+        val(3) = get_val(u%z,index_1D)
       end function
 
       end module

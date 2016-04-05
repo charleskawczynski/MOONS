@@ -325,10 +325,10 @@ $(OBJ_DIR)$(PS)%.o: %.f90
 	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
 
 clean:
-	$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)
-	$(RM) $(subst $(PS),$(PS1),$(OBJ_DIR)$(PS)*.o)
-	$(RM) $(subst $(PS),$(PS1),$(TARGET).exe)
-	$(RM) $(subst $(PS),$(PS1),$(TARGET))
+	-$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)
+	-$(RM) $(subst $(PS),$(PS1),$(OBJ_DIR)$(PS)*.o)
+	-$(RM) $(subst $(PS),$(PS1),$(TARGET).exe)
+	-$(RM) $(subst $(PS),$(PS1),$(TARGET))
 
 run: myRun
 myRun: $(TARGET)
