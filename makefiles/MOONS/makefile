@@ -58,6 +58,11 @@ FCFLAGS += -D_FFT_RADIX2_
 # FCFLAGS += -D_STENCILS_O4_
 
 FCFLAGS += -fopenmp
+ifdef SystemRoot
+	FCFLAGS += -D_OS_WINDOWS_
+else
+	FCFLAGS += -D_OS_LINUX_
+endif
 
 # FCFLAGS += -D_DEL_PLANAR_X_
 # FCFLAGS += -D_DEL_PLANAR_Y_
@@ -146,6 +151,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)clock \
 	$(SRC_DIR)$(PS)convergence_rate \
 	$(SRC_DIR)$(PS)coordinates \
+	$(SRC_DIR)$(PS)directory \
 	$(SRC_DIR)$(PS)fields \
 	$(SRC_DIR)$(PS)grid \
 	$(SRC_DIR)$(PS)IO \
@@ -168,6 +174,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)sparse \
 	$(SRC_DIR)$(PS)stencils \
 	$(SRC_DIR)$(PS)stitches \
+	$(SRC_DIR)$(PS)string \
 	$(SRC_DIR)$(PS)unit_testing \
 	$(SRC_DIR)$(PS)user \
 	$(SRC_DIR)$(PS)version
@@ -175,6 +182,8 @@ VPATH =\
 
 # **************** SOURCE FILES *********************
 SRCS_F =\
+	$(SRC_DIR)$(PS)string$(PS)string.f90 \
+	$(SRC_DIR)$(PS)string$(PS)dir_tree.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \

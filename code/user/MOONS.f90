@@ -9,6 +9,8 @@
        use domain_mod
        use mesh_generate_mod
        use VF_mod
+       use string_mod
+       use dir_tree_mod
 
        use init_Bfield_mod, only : restartB ! For restart
        use init_Ufield_mod, only : restartU ! For restart
@@ -25,9 +27,6 @@
 
        implicit none
 
-       private
-       public :: MOONS
-
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
 #endif
@@ -38,32 +37,14 @@
        integer,parameter :: cp = selected_real_kind(32)
 #endif
 
+       private
+       public :: MOONS
+
        contains
 
-       subroutine create_directory(dir)
+       subroutine MOONS(dir_target)
          implicit none
-         character(len=*),intent(in) :: dir
-         write(*,*) 'MOONS output directory = ',dir
-         call rmDir(dir) ! Delete directory (does not work yet...)
-         call makeDir(dir)
-         call makeDir(dir,'Tfield')
-         call makeDir(dir,'Ufield')
-         call makeDir(dir,'Ufield','\transient')
-         call makeDir(dir,'Ufield','\energy')
-         call makeDir(dir,'Bfield')
-         call makeDir(dir,'Bfield','\transient')
-         call makeDir(dir,'Bfield','\energy')
-         call makeDir(dir,'Jfield')
-         call makeDir(dir,'Jfield','\transient')
-         call makeDir(dir,'Jfield','\energy')
-         call makeDir(dir,'material')
-         call makeDir(dir,'parameters')
-      end subroutine
-
-       subroutine MOONS(dir,dir_full)
-         implicit none
-         character(len=*),intent(in) :: dir ! Output directory
-         character(len=*),intent(in) :: dir_full
+         character(len=*),intent(in) :: dir_target
          ! ********************** BIG VARIABLES *************************
          type(momentum) :: mom
          type(induction) :: ind
@@ -71,6 +52,7 @@
          type(mesh) :: mesh_mom,mesh_ind
          ! ********************** MEDIUM VARIABLES **********************
          type(domain) :: D_fluid,D_sigma
+         type(dir_tree) :: DT
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
          real(cp) :: tol_nrg,tol_mom,tol_PPE,tol_induction,tol_cleanB
@@ -82,14 +64,15 @@
 
          call omp_set_num_threads(12) ! Set number of openMP threads
 
+         call init(DT,dir_target)  ! Initialize directory tree
+         call make_dir_tree(DT)            ! Make directory tree
+
          call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
          dt_eng,dt_mom,dt_ind,NmaxMHD,N_nrg,tol_nrg,N_mom,tol_mom,&
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
-         call create_directory(dir)
-         ! call makeDir(dir,'parameters')
          call print_version()
-         call export_version(dir)
+         call export_version(str(DT%root))
 
          ! **************************************************************
          ! Initialize all grids
@@ -107,45 +90,45 @@
 
          ! ******************** EXPORT GRIDS ****************************
          if (.not.quick_start) then
-           if (exportGrids) call export_mesh(mesh_mom,dir//'Ufield/','mesh_mom',1)
-           if (exportGrids) call export_mesh(mesh_ind,dir//'Bfield/','mesh_ind',1)
+           if (exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
+           if (exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
          endif
 
          ! Initialize energy,momentum,induction
-         call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,dir)
-         if (solveEnergy) call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,dir)
+         call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,DT)
+         if (solveEnergy) call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,DT)
          if (solveInduction) then
            call init(ind,mesh_ind,D_fluid,D_sigma,finite_Rem,Rem,dt_ind,&
-           N_induction,tol_induction,N_cleanB,tol_cleanB,dir)
+           N_induction,tol_induction,N_cleanB,tol_cleanB,DT)
          endif
 
          ! ********************* EXPORT RAW ICs *************************
          if (.not.quick_start) then
-           ! if (exportRawICs) call exportRaw(nrg,nrg%m,dir)
-           if (exportRawICs) call export(ind,ind%m,dir)
-           if (exportRawICs) call export(mom,mom%m,mom%temp_F,dir)
+           ! if (exportRawICs) call exportRaw(nrg,nrg%m,DT)
+           if (exportRawICs) call export(ind,ind%m,DT)
+           if (exportRawICs) call export(mom,mom%m,mom%temp_F,DT)
          endif
 
          ! ********************* EXPORT ICs *****************************
-         ! if (exportICs) call export(mom,mom%m,dir)
-         ! if (exportICs) call export(nrg,nrg%m,dir)
-         ! if (exportICs) call export(ind,ind%m,dir)
+         ! if (exportICs) call export(mom,mom%m,DT)
+         ! if (exportICs) call export(nrg,nrg%m,DT)
+         ! if (exportICs) call export(ind,ind%m,DT)
 
          ! *************** CHECK IF CONDITIONS ARE OK *******************
          call print(mesh_mom)
          call print(mesh_ind)
 
          ! if (exportRawICs) then
-         !   if (solveMomentum)  call exportRaw(mom,mom%m,dir)
-         !   if (solveEnergy)    call exportRaw(nrg,nrg%m,dir)
+         !   if (solveMomentum)  call exportRaw(mom,mom%m,DT)
+         !   if (solveEnergy)    call exportRaw(nrg,nrg%m,DT)
          !   if (solveInduction) call embedVelocity(ind,mom%U,mom%m)
-         !   if (solveInduction) call exportRaw(ind,ind%m,dir)
+         !   if (solveInduction) call exportRaw(ind,ind%m,DT)
          ! endif
          ! if (exportICs) then
-         !   if (solveMomentum)  call export(mom,mom%m,dir)
-         !   if (solveEnergy)    call export(nrg,nrg%m,dir)
+         !   if (solveMomentum)  call export(mom,mom%m,DT)
+         !   if (solveEnergy)    call export(nrg,nrg%m,DT)
          !   if (solveInduction) call embedVelocity(ind,mom%U,mom%m)
-         !   if (solveInduction) call export(ind,ind%m,dir)
+         !   if (solveInduction) call export(ind,ind%m,DT)
          ! endif
 
          if (stopAfterExportICs) then
@@ -167,7 +150,7 @@
 
          ! n_mhd = maxval(/mom%nstep,ind%nstep,nrg%nstep/)
          ! if (restartU.or.restartB) then
-         !   call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
+         !   call readLastStepFromFile(n_mhd,str(DT%params),'n_mhd')
          !   n_mhd = n_mhd + 1
          ! else; n_mhd = 0
          ! endif
@@ -176,11 +159,11 @@
 
          if (.not.post_process_only) then
            if (restartU.or.restartB) then
-           call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
+           call readLastStepFromFile(n_mhd,str(DT%params),'n_mhd')
            else; n_mhd = 0
            endif
            ! ********************* SOLVE MHD EQUATIONS ********************
-           call MHDSolver(nrg,mom,ind,dir,dir_full,n_mhd+NmaxMHD)
+           call MHDSolver(nrg,mom,ind,DT,n_mhd+NmaxMHD)
          endif
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'

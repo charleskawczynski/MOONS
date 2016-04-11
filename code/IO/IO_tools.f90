@@ -42,12 +42,14 @@
 
       contains
 
-      subroutine makeDir(d1,d2,d3)
+      subroutine makeDir(d1,d2,d3,d4)
         character(len=*),intent(in) :: d1
-        character(len=*),intent(in),optional :: d2,d3
+        character(len=*),intent(in),optional :: d2,d3,d4
         character(len=30) :: d
         logical :: ex
-        if (present(d2).and.present(d3)) then
+        if (present(d2).and.present(d3).and.present(d4)) then
+          d = adjustl(trim(d1)) // adjustl(trim(d2)) // adjustl(trim(d3)) // adjustl(trim(d4))
+        elseif (present(d3)) then
           d = adjustl(trim(d1)) // adjustl(trim(d2)) // adjustl(trim(d3))
         elseif (present(d2)) then
           d = adjustl(trim(d1)) // adjustl(trim(d2))
@@ -66,8 +68,8 @@
 
       subroutine rmDir(d)
         character(len=*),intent(in) :: d
-          call system('rm /' // adjustl(trim(d)) )
-          write(*,*) 'Directory ' // adjustl(trim(d)) // ' removed.'
+        call system('rm /' // adjustl(trim(d)) )
+        write(*,*) 'Directory ' // adjustl(trim(d)) // ' removed.'
       end subroutine
 
       function newAndOpen(dir,name) result(NU)

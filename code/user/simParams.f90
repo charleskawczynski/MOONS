@@ -8,7 +8,7 @@
        logical :: export_planar             = .false.    ! Export 2D data when N_cell = 1 along given direction
        logical :: quick_start               = .true.      ! Avoids exporting any large datasets before solve
 
-       logical :: post_process_only         = .false.     ! Skip solver loop and just post-process results
+       logical :: post_process_only         = .true.     ! Skip solver loop and just post-process results
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.

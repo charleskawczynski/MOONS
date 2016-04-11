@@ -17,6 +17,8 @@
        public :: Joule_Dissipation
        public :: Poynting
        public :: Flux
+       public :: E_M_Convection
+       public :: maxwell_stress
 
 #ifdef _SINGLE_PRECISION_
        integer,parameter :: cp = selected_real_kind(8)
@@ -88,8 +90,9 @@
        subroutine maxwell_stress(e,B,U_CC,m,temp_CC1,temp_CC_TF)
          ! Computes
          ! 
-         ! e = ∫ u•(B•∇H) dV
+         ! e = ∫ u•(B•∇(B/μ)) dV
          ! 
+         ! Assumes μ is constant.
          implicit none
          type(VF),intent(in) :: B,U_CC
          type(mesh),intent(in) :: m

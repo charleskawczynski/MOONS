@@ -10,7 +10,7 @@
        public :: initBfield
        public :: restartB
 
-       logical :: restartB  = .false. ! (induced field)
+       logical :: restartB  = .true. ! (induced field)
        logical :: restartB0 = .false. ! (applied field)
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB0_ICs is used to define the applied field
@@ -80,9 +80,9 @@
          type(VF),intent(inout) :: B
          type(mesh) :: temp
          call init(temp,m)
-         call import_3D_1C(temp,B%x,dir//'Bfield/','Bf_x',0)
-         call import_3D_1C(temp,B%y,dir//'Bfield/','Bf_y',0)
-         call import_3D_1C(temp,B%z,dir//'Bfield/','Bf_z',0)
+         call import_3D_1C(temp,B%x,dir,'Bf_x',0)
+         call import_3D_1C(temp,B%y,dir,'Bf_y',0)
+         call import_3D_1C(temp,B%z,dir,'Bf_z',0)
          call delete(temp)
        end subroutine
 
@@ -93,7 +93,7 @@
          type(VF),intent(inout) :: B
          type(mesh) :: temp
          call init(temp,m)
-         call import_3D_3C(temp,B,dir//'Bfield/','B0ct',0)
+         call import_3D_3C(temp,B,dir,'B0ct',0)
          call delete(temp)
        end subroutine
 

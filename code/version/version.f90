@@ -1,4 +1,5 @@
        module version_mod
+       use string_mod
        use IO_tools_mod
        implicit none
 

@@ -9,6 +9,8 @@
        use VF_mod
        use mesh_mod
        use domain_mod
+       use dir_tree_mod
+       use string_mod
 
        use energy_aux_mod
        use energy_solver_mod
@@ -42,7 +44,6 @@
 #endif
 
        type energy
-         character(len=6) :: name = 'energy'
          ! --- Vector fields ---
          type(SF) :: T,temp_CC1,temp_CC2   ! CC data
          type(VF) :: temp_F,k              ! Face data
@@ -78,18 +79,18 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine init_energy(nrg,m,D,N_nrg,tol_nrg,dt,Re,Pr,Ec,Ha,dir)
+       subroutine init_energy(nrg,m,D,N_nrg,tol_nrg,dTime,Re,Pr,Ec,Ha,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
-         real(cp),intent(in) :: tol_nrg,dt,Re,Pr,Ec,Ha
+         real(cp),intent(in) :: tol_nrg,dTime,Re,Pr,Ec,Ha
          integer,intent(in) :: N_nrg
-         character(len=*),intent(in) :: dir
+         type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: k_cc
          write(*,*) 'Initializing energy:'
-         nrg%dTime = dt
+         nrg%dTime = dTime
          nrg%N_nrg = N_nrg
          nrg%tol_nrg = tol_nrg
          nrg%Re = Re
@@ -119,10 +120,10 @@
          ! --- Initialize Fields ---
          call initTBCs(nrg%T,nrg%m)
          if (solveEnergy) call print_BCs(nrg%T,'T')
-         if (solveEnergy) call export_BCs(nrg%T,dir//'parameters/','T')
+         if (solveEnergy) call export_BCs(nrg%T,str(DT%params),'T')
          write(*,*) '     BCs initialized'
 
-         call initTfield(nrg%T,m,dir)
+         call initTfield(nrg%T,m,str(DT%T))
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T,m)
@@ -134,18 +135,18 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%transient_divQ,dir//'Tfield/','transient_divQ',.not.restartT)
+         call init(nrg%transient_divQ,str(DT%T),'transient_divQ',.not.restartT)
          call export(nrg%transient_divQ)
 
 
-         temp_unit = newAndOpen(dir//'parameters/','info_nrg')
+         temp_unit = newAndOpen(str(DT%params),'info_nrg')
          call energyInfo(nrg,temp_unit)
          close(temp_unit)
 
          write(*,*) '     probes initialized'
 
          if (restartT) then
-         call readLastStepFromFile(nrg%nstep,dir//'parameters/','nstep_nrg')
+         call readLastStepFromFile(nrg%nstep,str(DT%params),'nstep_nrg')
          else; nrg%nstep = 0
          endif
          nrg%time = 0.0_cp
@@ -184,19 +185,19 @@
          call apply(nrg%transient_divQ)
        end subroutine
 
-       subroutine export_energy(nrg,m,dir)
+       subroutine export_energy(nrg,m,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
+         type(dir_tree),intent(in) :: DT
          if (solveEnergy) then
            write(*,*) 'Exporting Solutions for T'
-           call export_raw(m,nrg%U_F,dir//'Tfield/','U',0)
-           call export_raw(m,nrg%T,dir//'Tfield/','T',0)
-           call export_raw(m,nrg%divQ,dir//'Tfield/','divQ',0)
-           call export_raw(m,nrg%k,dir//'Tfield/','k',0)
+           call export_raw(m,nrg%U_F,str(DT%T),'U',0)
+           call export_raw(m,nrg%T,str(DT%T),'T',0)
+           call export_raw(m,nrg%divQ,str(DT%T),'divQ',0)
+           call export_raw(m,nrg%k,str(DT%T),'k',0)
 
-           call export_processed(m,nrg%T,dir//'Tfield/','T',0)
+           call export_processed(m,nrg%T,str(DT%T),'T',0)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -222,12 +223,12 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_energy(nrg,U,print_export,dir)
+       subroutine solve_energy(nrg,U,print_export,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
          logical,dimension(6),intent(in) :: print_export
-         character(len=*),intent(in) :: dir
+         type(dir_tree),intent(in) :: DT
          logical :: exportNow,exportNowT
 
          call assign(nrg%gravity%y,1.0_cp)
@@ -257,19 +258,19 @@
            call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
            call exportTransient(nrg)
          endif
-         ! if (print_export(6)) call exportTransientFull(nrg,nrg%m,dir)
+         ! if (print_export(6)) call exportTransientFull(nrg,nrg%m,DT)
 
          ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,m_mom) ! Maybe thermal energy?
 
          if (print_export(1)) then
-           exportNow = readSwitchFromFile(dir//'parameters/','exportNow')
-           exportNowT = readSwitchFromFile(dir//'parameters/','exportNowT')
+           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
+           exportNowT = readSwitchFromFile(str(DT%params),'exportNowT')
          else; exportNow = .false.; exportNowT = .false.
          endif
 
          if (print_export(6).or.exportNow) then
-           call export(nrg,nrg%m,dir)
-           call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
+           call export(nrg,nrg%m,DT)
+           call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
          endif
          call energyInfo(nrg,6)
        end subroutine

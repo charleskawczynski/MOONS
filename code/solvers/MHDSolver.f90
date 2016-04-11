@@ -2,6 +2,8 @@
        use simParams_mod
        use VF_mod
        use IO_auxiliary_mod
+       use string_mod
+       use dir_tree_mod
        use stop_clock_mod
 
        use energy_mod
@@ -26,12 +28,12 @@
 
        contains
 
-       subroutine MHDSolver(nrg,mom,ind,dir,dir_full,N_timesteps)
+       subroutine MHDSolver(nrg,mom,ind,DT,N_timesteps)
          implicit none
          type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
-         character(len=*),intent(in) :: dir,dir_full ! Output directory
+         type(dir_tree),intent(in) :: DT ! Output directory
          integer,intent(in) :: N_timesteps
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
@@ -43,14 +45,15 @@
          call assign(F,0.0_cp)
          continueLoop = .true.
 
-         call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
-         call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
-         call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
-         call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
-         call writeSwitchToFile(.false.,dir//'parameters/','exportNowT')
-         call writeIntegerToFile(mom%N_mom,dir//'parameters/','N_mom')
-         call writeIntegerToFile(mom%N_PPE,dir//'parameters/','N_PPE')
-         write(*,*) 'Working directory = ',dir_full
+         call writeSwitchToFile(.true.,str(DT%params),'killSwitch')
+         call writeSwitchToFile(.false.,str(DT%params),'exportNow')
+         call writeSwitchToFile(.false.,str(DT%params),'exportNowU')
+         call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
+         call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
+         call writeIntegerToFile(mom%N_mom,str(DT%params),'N_mom')
+         call writeIntegerToFile(mom%N_PPE,str(DT%params),'N_PPE')
+
+         write(*,*) 'Working directory = ',str(DT%tar)
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
@@ -61,9 +64,9 @@
            endif
 
            call tic(sc)
-           if (solveEnergy)    call solve(nrg,mom%U,  print_export,dir)
-           if (solveMomentum)  call solve(mom,F,      print_export,dir)
-           if (solveInduction) call solve(ind,mom%U_E,print_export,dir)
+           if (solveEnergy)    call solve(nrg,mom%U,  print_export,DT)
+           if (solveMomentum)  call solve(mom,F,      print_export,DT)
+           if (solveInduction) call solve(ind,mom%U_E,print_export,DT)
 
            call assign(F,0.0_cp)
            if (addJCrossB) then
@@ -87,29 +90,29 @@
            call toc(sc)
            if (print_export(1)) then
              call print(sc)
-             continueLoop = readSwitchFromFile(dir//'parameters/','killSwitch')
-             write(*,*) 'Working directory = ',dir_full
+             continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
+             write(*,*) 'Working directory = ',str(DT%tar)
              if (.not.continueLoop) then; call toc(sc); exit; endif
-             call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
+             call writeSwitchToFile(.false.,str(DT%params),'exportNow')
            endif
          enddo
          call print(sc)
-         call export(sc,dir)
+         call export(sc,str(DT%root))
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-         call writeLastStepToFile(n_step,dir//'parameters/','n_step')
-         call writeLastStepToFile(nrg%nstep,dir//'parameters/','nstep_nrg')
-         call writeLastStepToFile(mom%nstep,dir//'parameters/','nstep_mom')
-         call writeLastStepToFile(ind%nstep,dir//'parameters/','nstep_ind')
+         call writeLastStepToFile(n_step,str(DT%params),'n_step')
+         call writeLastStepToFile(nrg%nstep,str(DT%params),'nstep_nrg')
+         call writeLastStepToFile(mom%nstep,str(DT%params),'nstep_mom')
+         call writeLastStepToFile(ind%nstep,str(DT%params),'nstep_ind')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (solveMomentum)  call exportTransient(mom)
          if (solveInduction) call exportTransient(ind)
 
-         if (solveEnergy)    call export(nrg,nrg%m,dir)
-         if (solveInduction) call export(ind,ind%m,dir)
-         call export(mom,mom%m,F,dir)
+         if (solveEnergy)    call export(nrg,nrg%m,DT)
+         if (solveInduction) call export(ind,ind%m,DT)
+         call export(mom,mom%m,F,DT)
 
          call delete(F)
        end subroutine

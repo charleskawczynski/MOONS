@@ -9,6 +9,8 @@
        use TF_mod
        use IO_SF_mod
        use IO_VF_mod
+       use dir_tree_mod
+       use string_mod
        use export_raw_processed_mod
 
        use init_BBCs_mod
@@ -56,7 +58,6 @@
 #endif
 
        type induction
-         character(len=9) :: name = 'induction'
          ! --- Tensor fields ---
          type(TF) :: U_E,temp_E_TF                    ! Edge data
          type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
@@ -97,7 +98,7 @@
          real(cp) :: Rem              ! Magnetic Reynolds number
          logical :: finite_Rem
          integer :: unit_nrg_budget
-         real(cp),dimension(4) :: nrg_budget
+         real(cp),dimension(5) :: nrg_budget
          real(cp),dimension(0:2) :: ME
          real(cp),dimension(0:2) :: ME_fluid
          real(cp),dimension(0:2) :: ME_conductor
@@ -113,8 +114,8 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine init_induction(ind,m,D_fluid,D_sigma,finite_Rem,Rem,dt,&
-         N_induction,tol_induction,N_cleanB,tol_cleanB,dir)
+       subroutine init_induction(ind,m,D_fluid,D_sigma,finite_Rem,Rem,dTime,&
+         N_induction,tol_induction,N_cleanB,tol_cleanB,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
@@ -122,22 +123,14 @@
          logical,intent(in) :: finite_Rem
          integer,intent(in) :: N_induction,N_cleanB
          real(cp),intent(in) :: tol_induction,tol_cleanB
-         real(cp),intent(in) :: Rem,dt
-         character(len=*),intent(in) :: dir
+         real(cp),intent(in) :: Rem,dTime
+         type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: sigma,prec_cleanB
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
 
-         ! call makeDir(dir,'Bfield')
-         ! call makeDir(dir,'Bfield','\transient')
-         ! call makeDir(dir,'Bfield','\energy')
-         ! call makeDir(dir,'Jfield')
-         ! call makeDir(dir,'Jfield','\transient')
-         ! call makeDir(dir,'Jfield','\energy')
-         ! call makeDir(dir,'material')
-
-         ind%dTime = dt
+         ind%dTime = dTime
          ind%N_cleanB = N_cleanB
          ind%N_induction = N_induction
          ind%tol_cleanB = tol_cleanB
@@ -178,11 +171,11 @@
          write(*,*) '     phi BCs initialized'
 
          if (solveInduction) call print_BCs(ind%B,'B')
-         if (solveInduction) call export_BCs(ind%B,dir//'parameters/','B')
+         if (solveInduction) call export_BCs(ind%B,str(DT%params),'B')
          if (solveInduction) call print_BCs(ind%phi,'phi')
-         if (solveInduction) call export_BCs(ind%phi,dir//'parameters/','phi')
+         if (solveInduction) call export_BCs(ind%phi,str(DT%params),'phi')
 
-         call initBfield(ind%B,ind%B0,m,dir)
+         call initBfield(ind%B,ind%B0,m,str(DT%B))
          write(*,*) '     B-field initialized'
 
          call apply_BCs(ind%B,m)
@@ -192,44 +185,46 @@
          call init_CC(sigma,m,0.0_cp)
          call initSigma(sigma,ind%D_sigma,m) ! If sigma changes across wall
          write(*,*) '     Materials initialized'
-         if (.not.quick_start) call export_raw(m,sigma,dir//'material/','sigma',0)
+         if (.not.quick_start) call export_raw(m,sigma,str(DT%mat),'sigma',0)
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
          call treatInterface(ind%sigmaInv_edge)
-         if (.not.quick_start) call export_raw(m,ind%sigmaInv_edge,dir//'material/','sigmaInv',0)
+         if (.not.quick_start) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
          ! *************************************************************
 
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call init(ind%probe_divB,dir//'Bfield/','transient_divB',.not.restartB)
-         call init(ind%probe_divJ,dir//'Jfield/','transient_divJ',.not.restartB)
+         call init(ind%probe_divB,str(DT%B),'transient_divB',.not.restartB)
+         call init(ind%probe_divJ,str(DT%J),'transient_divJ',.not.restartB)
          call export(ind%probe_divB)
          call export(ind%probe_divJ)
 
-         call init(ind%KB_energy,dir//'Bfield\','KB',.not.restartB)
-         call init(ind%KBi_energy,dir//'Bfield\','KBi',.not.restartB)
-         call init(ind%KB0_energy,dir//'Bfield\','KB0',.not.restartB)
-         call init(ind%KB_f_energy,dir//'Bfield\','KB_f',.not.restartB)
-         call init(ind%KBi_f_energy,dir//'Bfield\','KBi_f',.not.restartB)
-         call init(ind%KB0_f_energy,dir//'Bfield\','KB0_f',.not.restartB)
-         call init(ind%KB_c_energy,dir//'Bfield\','KB_c',.not.restartB)
-         call init(ind%KBi_c_energy,dir//'Bfield\','KBi_c',.not.restartB)
-         call init(ind%KB0_c_energy,dir//'Bfield\','KB0_c',.not.restartB)
+         call init(ind%KB_energy,str(DT%B),'KB',.not.restartB)
+         call init(ind%KBi_energy,str(DT%B),'KBi',.not.restartB)
+         call init(ind%KB0_energy,str(DT%B),'KB0',.not.restartB)
+         call init(ind%KB_f_energy,str(DT%B),'KB_f',.not.restartB)
+         call init(ind%KBi_f_energy,str(DT%B),'KBi_f',.not.restartB)
+         call init(ind%KB0_f_energy,str(DT%B),'KB0_f',.not.restartB)
+         call init(ind%KB_c_energy,str(DT%B),'KB_c',.not.restartB)
+         call init(ind%KBi_c_energy,str(DT%B),'KBi_c',.not.restartB)
+         call init(ind%KB0_c_energy,str(DT%B),'KB0_c',.not.restartB)
          write(*,*) '     B/J probes initialized'
 
-         ind%unit_nrg_budget = newAndOpen(dir//'Bfield/','energy_budget')
+         ind%unit_nrg_budget = newAndOpen(str(DT%B),'energy_budget')
          ! {error} = {dBdt} + {adv} - {diff}
          write(ind%unit_nrg_budget,*) ' TITLE = "induction energy budget"'
-         write(ind%unit_nrg_budget,*) ' VARIABLES = N,unsteady,Lorentz,Joule_Dissipation,Poynting'
+         write(ind%unit_nrg_budget,*) ' VARIABLES = N,unsteady,Poynting,Joule_Dissipation,maxwell_stress,E_M_Convection'
+         write(ind%unit_nrg_budget,*) ' VARIABLES = N,unsteady,Poynting,Joule_Dissipation,Lorentz'
+
          write(ind%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
          flush(ind%unit_nrg_budget)
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
          ! Initialize multigrid
-         temp_unit = newAndOpen(dir//'parameters/','info_ind')
+         temp_unit = newAndOpen(str(DT%params),'info_ind')
          call inductionInfo(ind,temp_unit)
          close(temp_unit)
 
@@ -242,7 +237,7 @@
          call init(prec_induction,ind%B)
          call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
-         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,dir//'Bfield/','B',.false.,.false.)
+         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B),'B',.false.,.false.)
          call delete(prec_induction)
 
          write(*,*) '     PCG Solver initialized for B'
@@ -250,12 +245,12 @@
          call init(prec_cleanB,ind%phi)
          call prec_lap_SF(prec_cleanB,ind%m)
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
-         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,dir//'Bfield/','p',.false.,.false.)
+         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B),'p',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
          if (restartB) then
-         call readLastStepFromFile(ind%nstep,dir//'parameters/','nstep_ind')
+         call readLastStepFromFile(ind%nstep,str(DT%params),'nstep_ind')
          else; ind%nstep = 0
          endif
          ind%t = 0.0_cp
@@ -319,28 +314,28 @@
          call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%vol_CC)
        end subroutine
 
-       subroutine export_induction(ind,m,dir)
+       subroutine export_induction(ind,m,DT)
          implicit none
          type(induction),intent(in) :: ind
          type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
+         type(dir_tree),intent(in) :: DT
          if (restartB.and.(.not.solveInduction)) then
            ! This preserves the initial data
          else
            if (solveInduction) then
              write(*,*) 'Exporting Solutions for B'
-             ! call export_raw(m,ind%B0,dir//'Bfield/','B0',0)
-             call export_raw(m,ind%B ,dir//'Bfield/','B',0)
-             call export_raw(m,ind%J ,dir//'Jfield/','J',0)
-             call export_raw(m,ind%U_E%x ,dir//'Bfield/','Uex',0)
-             call export_raw(m,ind%U_E%y ,dir//'Bfield/','Vey',0)
-             call export_raw(m,ind%U_E%z ,dir//'Bfield/','Wez',0)
-             call export_raw(m,ind%divB,dir//'Bfield/','divB',0)
-             call export_raw(m,ind%divJ,dir//'Jfield/','divJ',0)
+             ! call export_raw(m,ind%B0,str(DT%B),'B0',0)
+             call export_raw(m,ind%B ,str(DT%B),'B',0)
+             call export_raw(m,ind%J ,str(DT%J),'J',0)
+             call export_raw(m,ind%U_E%x ,str(DT%B),'Uex',0)
+             call export_raw(m,ind%U_E%y ,str(DT%B),'Vey',0)
+             call export_raw(m,ind%U_E%z ,str(DT%B),'Wez',0)
+             call export_raw(m,ind%divB,str(DT%B),'divB',0)
+             call export_raw(m,ind%divJ,str(DT%J),'divJ',0)
 
-             call export_processed(m,ind%B0,dir//'Bfield/','B0',1)
-             call export_processed(m,ind%B ,dir//'Bfield/','B',1)
-             call export_processed(m,ind%J ,dir//'Jfield/','J',1)
+             call export_processed(m,ind%B0,str(DT%B),'B0',1)
+             call export_processed(m,ind%B ,str(DT%B),'B',1)
+             call export_processed(m,ind%J ,str(DT%J),'J',1)
              write(*,*) '     finished'
            endif
          endif
@@ -371,12 +366,12 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_induction(ind,U,print_export,dir)
+       subroutine solve_induction(ind,U,print_export,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
          logical,dimension(6),intent(in) :: print_export
-         character(len=*),intent(in) :: dir
+         type(dir_tree),intent(in) :: DT
          logical :: exportNow,exportNowB,compute_ME
 
          if (solveMomentum) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
@@ -430,24 +425,24 @@
 
          if (print_export(1)) call exportTransient(ind)
 
-         ! call inductionExportTransientFull(ind,ind%m,dir) ! VERY Expensive
+         ! call inductionExportTransientFull(ind,ind%m,DT) ! VERY Expensive
          ! if (print_export(2)) then
-         !   call export_processed_transient(ind%m,ind%B,dir//'Bfield/transient/','B',1,ind%nstep)
+         !   call export_processed_transient(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
          ! endif
 
          if (print_export(1)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-         ! if (print_export(2)) call exportTransientFull(ind,ind%m,dir)
+         ! if (print_export(2)) call exportTransientFull(ind,ind%m,DT)
 
          if (print_export(1)) then
            call inductionInfo(ind,6)
-           exportNow = readSwitchFromFile(dir//'parameters/','exportNow')
-           exportNowB = readSwitchFromFile(dir//'parameters/','exportNowB')
+           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
+           exportNowB = readSwitchFromFile(str(DT%params),'exportNowB')
          else; exportNow = .false.; exportNowB = .false.
          endif
 
          if (print_export(6).or.exportNow.or.exportNowB) then
-           call export(ind,ind%m,dir)
-           call writeSwitchToFile(.false.,dir//'parameters/','exportNowB')
+           call export(ind,ind%m,DT)
+           call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
          endif
        end subroutine
 
@@ -457,9 +452,10 @@
          type(VF),intent(in) :: U,U_CC
          type(domain),intent(in) :: D_fluid
          type(TF) :: temp_CC_TF,temp_F1_TF,temp_F2_TF,temp_F3_TF
-         type(VF) :: temp_F1,temp_F2,temp_U,temp_U_CC,sigmaInv_Face
+         type(VF) :: temp_F1,temp_F2,temp_U,temp_U_CC,sigmaInv_Face,temp_CC_VF
 
          call init_CC(temp_CC_TF,ind%m)
+         call init_CC(temp_CC_VF,ind%m)
          call init_Face(temp_F1,ind%m)
          call init_Face(temp_F2,ind%m)
          call init_Face(temp_F1_TF,ind%m)
@@ -479,12 +475,13 @@
 
          call E_M_Budget(ind%nrg_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
          sigmaInv_Face,ind%sigmaInv_CC,temp_U,temp_U_CC,&
-         ind%m,ind%dTime,temp_CC_TF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
+         ind%m,ind%dTime,temp_CC_TF,temp_CC_VF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
 
          write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
          flush(ind%unit_nrg_budget)
 
          call delete(temp_CC_TF)
+         call delete(temp_CC_VF)
          call delete(temp_F1)
          call delete(temp_F2)
          call delete(temp_F1_TF)
