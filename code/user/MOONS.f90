@@ -23,8 +23,6 @@
        use induction_mod
        use MHDSolver_mod
 
-       use omp_lib
-
        implicit none
 
 #ifdef _SINGLE_PRECISION_

@@ -1,4 +1,5 @@
       module dir_tree_mod
+      use IO_tools_mod
       use string_mod
       implicit none
 
@@ -33,13 +34,11 @@
        character(len=1),parameter :: PS = '/'
 #endif
         call init(DT%PS,PS)
-
         call init(DT%tar,dir_tar)
-        call init(DT%root,dir_tar)
-        call append(DT%root,str(DT%PS)//'out'//str(DT%PS)//'LDC'//str(DT%PS)) ! out\LDC\
-
-        call compress(DT%root)
         call compress(DT%tar)
+
+        call init(DT%root,str(DT%tar))
+        call append(DT%root,str(DT%PS)//'out'//str(DT%PS)//'LDC'//str(DT%PS)) ! out\LDC\
 
         call init(DT%mat,DT%root);    call append(DT%mat,str(DT%PS)//'material'//str(DT%PS))
         call init(DT%params,DT%root); call append(DT%params,str(DT%PS)//'parameters'//str(DT%PS))
@@ -63,22 +62,22 @@
       subroutine make_dir_tree(DT)
         implicit none
         type(dir_tree),intent(in) :: DT
-        call make_dir(DT%root)
+        call make_dir(str(DT%root))
 
-        call make_dir(DT%U)
-        call make_dir(DT%B)
-        call make_dir(DT%J)
-        call make_dir(DT%T)
+        call make_dir(str(DT%U))
+        call make_dir(str(DT%B))
+        call make_dir(str(DT%J))
+        call make_dir(str(DT%T))
 
-        call make_dir(DT%U_t)
-        call make_dir(DT%B_t)
-        call make_dir(DT%J_t)
-        call make_dir(DT%T_t)
+        call make_dir(str(DT%U_t))
+        call make_dir(str(DT%B_t))
+        call make_dir(str(DT%J_t))
+        call make_dir(str(DT%T_t))
 
-        call make_dir(DT%U_e)
-        call make_dir(DT%B_e)
-        call make_dir(DT%J_e)
-        call make_dir(DT%T_e)
+        call make_dir(str(DT%U_e))
+        call make_dir(str(DT%B_e))
+        call make_dir(str(DT%J_e))
+        call make_dir(str(DT%T_e))
       end subroutine
 
       end module

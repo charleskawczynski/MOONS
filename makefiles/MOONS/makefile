@@ -1,3 +1,8 @@
+# ************* CLUSTER CONFIGURATION ******************
+CLUSTER = 'PC_CK'
+# CLUSTER = 'Workstation'
+# CLUSTER = 'Hoffman2'
+# CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
     PATHSEP2 = \\
@@ -9,37 +14,48 @@ endif
 PS = $(strip $(PATHSEP2))
 # PS1 is needed for gmake clean
 PS1 = $(strip \)
+
+ifeq ($(CLUSTER),'DOE')
+	PS1 = $(PS)
+endif
+
 extf90 = $(strip .f90)
 
 # ************* MAKE CONFIGURATION ******************
+
 MKE = gmake
 # MKE = make
 # ************* DIRECTORY SETTINGS ******************
-USER = Charlie
-# USER = charl
 
-# Code directory
-SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
+ifeq ($(CLUSTER),'PC_CK')
+SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS5
+endif
 
-# Output directory
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS1
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS5
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS6
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS7
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8
+ifeq ($(CLUSTER),'Workstation')
+SRC_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
+endif
+
+ifeq ($(CLUSTER),'DOE')
+SRC_DIR = $(PS)global$(PS)cscratch1$(PS)sd$(PS)cfusion$(PS)MOONS$(PS)code
+TARGET_DIR = $(PS)global$(PS)cscratch1$(PS)sd$(PS)cfusion$(PS)MOONS_out
+endif
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
 LIB_DIR = $(SRC_DIR)$(PS)lib
 
 # ************** COMPILER & STANDARD ****************
+ifeq ($(CLUSTER),'PC_CK')
+FC      = gcc
+endif
+ifeq ($(CLUSTER),'Hoffman2')
 FC      = gfortran
+endif
+ifeq ($(CLUSTER),'DOE')
+FC      = ftn
+endif
 
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
@@ -75,7 +91,8 @@ endif
 # fcheck=all includes -fcheck-array-temporaries, 
 # which triggers tons of warning in stencils.f90
 # So include all but this one:
-FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+# FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og # -O0 bad in cygwin generated gfortran
+FC_DEBUG += -Wall -Wextra -fbacktrace
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
 # FC_DEBUG += -D_DEBUG_RF_
@@ -126,9 +143,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 # ********** UNIT TEST / FULL SIMULATION *************
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
@@ -182,12 +199,12 @@ VPATH =\
 
 # **************** SOURCE FILES *********************
 SRCS_F =\
-	$(SRC_DIR)$(PS)string$(PS)string.f90 \
-	$(SRC_DIR)$(PS)string$(PS)dir_tree.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
+	$(SRC_DIR)$(PS)string$(PS)string.f90 \
+	$(SRC_DIR)$(PS)string$(PS)dir_tree.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)triDiag.f90 \
@@ -272,14 +289,14 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f03 \
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f03 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_aux.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f03 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90 \
@@ -311,6 +328,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)convergence_rate$(PS)richardsonExtrapolation.f90 \
 	$(SRC_DIR)$(PS)convergence_rate$(PS)convergenceRate.f90
 
+
+# $(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
+
 SRCS_F += $(UNIT_TEST)
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
@@ -320,6 +340,7 @@ SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 # **************** DO NOT EDIT BELOW HERE *********************
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
+OBJS_F += $(patsubst %.f03,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
 $(warning ************************************)
 $(warning ********** BUILDING MOONS **********)
@@ -332,6 +353,9 @@ $(TARGET): $(OBJS_F)
 
 $(OBJ_DIR)$(PS)%.o: %.f90
 	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
+
+# $(OBJ_DIR)$(PS)%.o: %.f03
+# 	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
 
 clean:
 	-$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)

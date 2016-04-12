@@ -12,7 +12,6 @@
       use VF_mod
       use ops_norms_mod
       use IO_tools_mod
-      use omp_lib
 
       use matrix_free_params_mod
       implicit none

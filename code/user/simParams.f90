@@ -1,6 +1,5 @@
        module simParams_mod
        implicit none
-       character(len=8) :: out_dir          = 'out/LDC/' ! output directory
        logical :: exportGrids               = .false.     ! Export all Grids before starting simulation
        logical :: exportRawICs              = .false.     ! Export Raw ICs before starting simulation
        logical :: exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation

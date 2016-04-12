@@ -19,7 +19,7 @@
 
       private
 
-      public :: makeDir,rmDir
+      public :: make_dir,rmDir
       public :: newUnit
       public :: getUnit,closeExisting
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
@@ -42,7 +42,7 @@
 
       contains
 
-      subroutine makeDir(d1,d2,d3,d4)
+      subroutine make_dir(d1,d2,d3,d4)
         character(len=*),intent(in) :: d1
         character(len=*),intent(in),optional :: d2,d3,d4
         character(len=30) :: d
