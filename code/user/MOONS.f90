@@ -81,7 +81,7 @@
          logical :: finite_Rem
          real(cp) :: dt_eng,dt_mom,dt_ind
          integer :: NmaxMHD,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
-         integer :: n_mhd
+         integer :: n_step
          ! **************************************************************
 
          call omp_set_num_threads(12) ! Set number of openMP threads
@@ -158,31 +158,31 @@
 
          ! ********************** PREP LOOP ******************************
          ! This is done in both MOONS and MHDSolver, need to fix this..
-         ! if (restartU.and.(.not.solveMomentum)) n_mhd = mom%nstep + ind%nstep
-         ! if (restartB.and.(.not.solveInduction)) n_mhd = mom%nstep + ind%nstep
+         ! if (restartU.and.(.not.solveMomentum)) n_step = mom%nstep + ind%nstep
+         ! if (restartB.and.(.not.solveInduction)) n_step = mom%nstep + ind%nstep
 
-         ! n_mhd = maxval(/mom%nstep,ind%nstep/) ! What if U = fixed, and B is being solved?
+         ! n_step = maxval(/mom%nstep,ind%nstep/) ! What if U = fixed, and B is being solved?
 
-         n_mhd = 0 ! Only counts MHD loop, no data is plotted vs MHD step, only n_mom,n_ind,n_nrg
+         n_step = 0 ! Only counts MHD loop, no data is plotted vs MHD step, only n_mom,n_ind,n_nrg
 
-         ! n_mhd = maxval(/mom%nstep,ind%nstep,nrg%nstep/)
+         ! n_step = maxval(/mom%nstep,ind%nstep,nrg%nstep/)
          ! if (restartU.or.restartB) then
-         !   call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
-         !   n_mhd = n_mhd + 1
-         ! else; n_mhd = 0
+         !   call readLastStepFromFile(n_step,dir//'parameters/','n_step')
+         !   n_step = n_step + 1
+         ! else; n_step = 0
          ! endif
-         ! n_mhd = 0
+         ! n_step = 0
 
          call writeSwitchToFile(.true.,dir//'parameters/','killSwitch')
          call writeSwitchToFile(.false.,dir//'parameters/','exportNow')
 
          if (.not.post_process_only) then
            if (restartU.or.restartB) then
-           call readLastStepFromFile(n_mhd,dir//'parameters/','n_mhd')
-           else; n_mhd = 0
+           call readLastStepFromFile(n_step,dir//'parameters/','n_step')
+           else; n_step = 0
            endif
            ! ********************* SOLVE MHD EQUATIONS ********************
-           call MHDSolver(nrg,mom,ind,dir,dir_full,n_mhd+NmaxMHD)
+           call MHDSolver(nrg,mom,ind,dir,dir_full,n_step+NmaxMHD)
          endif
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'

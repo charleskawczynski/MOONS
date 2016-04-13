@@ -482,7 +482,6 @@
 
          write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
          flush(ind%unit_nrg_budget)
-         write(*,*) 'E_M_budget = ',ind%nrg_budget
 
          call delete(temp_CC_TF)
          call delete(temp_F1)

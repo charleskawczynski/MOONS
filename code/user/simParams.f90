@@ -1,13 +1,13 @@
        module simParams_mod
        implicit none
        character(len=8) :: out_dir          = 'out/LDC/' ! output directory
-       logical :: exportGrids               = .false.     ! Export all Grids before starting simulation
-       logical :: exportRawICs              = .false.     ! Export Raw ICs before starting simulation
-       logical :: exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation
+       logical :: exportGrids               = .true.     ! Export all Grids before starting simulation
+       logical :: exportRawICs              = .true.     ! Export Raw ICs before starting simulation
+       logical :: exportICs                 = .true.     ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.    ! Just export ICs, do not run simulation
        logical :: export_planar             = .false.    ! Export 2D data when N_cell = 1 along given direction
 
-       logical :: post_process_only         = .true.     ! Skip solver loop and just post-process results
+       logical :: post_process_only         = .false.     ! Skip solver loop and just post-process results
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.

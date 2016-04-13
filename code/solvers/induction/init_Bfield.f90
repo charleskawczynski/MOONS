@@ -10,7 +10,7 @@
        public :: initBfield
        public :: restartB
 
-       logical :: restartB  = .true. ! (induced field)
+       logical :: restartB  = .false. ! (induced field)
        logical :: restartB0 = .false. ! (applied field)
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB0_ICs is used to define the applied field

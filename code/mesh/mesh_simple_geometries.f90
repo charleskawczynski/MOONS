@@ -36,10 +36,10 @@
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
          call delete(m)
-         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 20
-         ! N = (/32,32,32/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 100
-         beta = hartmannBL(20.0_cp,hmin,hmax)
-         ! beta = hartmannBL(100.0_cp,hmin,hmax)
+         ! N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 20
+         N = (/32,32,32/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 100
+         ! beta = hartmannBL(20.0_cp,hmin,hmax)
+         beta = hartmannBL(100.0_cp,hmin,hmax)
          call grid_Roberts_B(g,hmin(1),hmax(1),N(1),beta(1),1)
          call grid_Roberts_B(g,hmin(2),hmax(2),N(2),beta(2),2)
          call grid_Roberts_B(g,hmin(3),hmax(3),N(3),beta(3),3)
@@ -69,8 +69,8 @@
          tw = 0.5_cp
          ! tw = 0.05_cp
          tf = 1.0_cp
-         N_w = 8 ! For Ha = 20
-         ! N_w = 10 ! For Ha = 100
+         ! N_w = 8 ! For Ha = 20
+         N_w = 10 ! For Ha = 100
          N_v = 12
          N_extra = 6 ! since no wall domain above lid
 

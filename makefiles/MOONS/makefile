@@ -27,11 +27,12 @@ SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS1
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
+# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS5
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS6
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS7
 # TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8
+TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8_thickwall
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
@@ -42,7 +43,7 @@ FC      = gfortran
 
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
-# FCFLAGS += -std=f95
+# FCFLAGS += -std=gnu
 # Precision
 # FCFLAGS += -D_SINGLE_PRECISION_
 FCFLAGS += -D_DOUBLE_PRECISION_
@@ -135,7 +136,7 @@ FCFLAGS += $(FC_OPTIMIZE)
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
 # UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
 
-TARGET = $(TARGET_DIR)$(PS)MOONS
+TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 # TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** INCLUDE PATHS ********************
@@ -266,9 +267,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_aux.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90 \
