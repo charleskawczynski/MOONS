@@ -180,6 +180,7 @@
          if (solveMomentum) call export_BCs(mom%p,str(DT%params),'p')
 
          ! Use mom%m later, for no just m
+         write(*,*) 'str(DT%U) = ',str(DT%U)
          call init_Ufield(mom%U,m,str(DT%U))
          call init_Pfield(mom%p,m,str(DT%U))
          write(*,*) '     Field initialized'

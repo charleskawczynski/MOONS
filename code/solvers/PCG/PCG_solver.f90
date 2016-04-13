@@ -8,6 +8,7 @@
       use BCs_mod
       use PCG_aux_mod
       use export_raw_processed_mod
+      use isnan_mod
       use SF_mod
       use VF_mod
       use ops_norms_mod
@@ -98,7 +99,7 @@
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! r = r - alpha Ap
           res_norm = dot_product(r,r,m,x,tempx)
-          if (isnan(res_norm)) then; write(*,*) 'Error: NaN in PCG_SF for '//name; stop 'Done'; endif
+          if (my_isnan(res_norm)) then; write(*,*) 'Error: NaN in PCG_SF for '//name; stop 'Done'; endif
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
@@ -197,7 +198,7 @@
           N_iter = N_iter + 1
           call add_product(r,Ax,-alpha) ! x = x - alpha Ap
           res_norm = dot_product(r,r,m,x,tempx)
-          if (isnan(res_norm)) then; write(*,*) 'Error: NaN in PCG_VF for '//name; stop 'Done'; endif
+          if (my_isnan(res_norm)) then; write(*,*) 'Error: NaN in PCG_VF for '//name; stop 'Done'; endif
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
           call compute(norm,r)

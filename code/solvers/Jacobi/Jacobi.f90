@@ -8,6 +8,7 @@
       use IO_SF_mod
       use IO_tools_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       use Jacobi_solver_mod
       use matrix_mod
 
@@ -33,7 +34,7 @@
         type(VF) :: Ax,res,Dinv,D,k,tempk,vol
         type(norms) :: norm
         integer :: un ! unit to export norm
-        procedure(),pointer,nopass :: operator
+        procedure(op_VF),pointer,nopass :: operator
       end type
       
       interface init;        module procedure init_Jacobi;       end interface
@@ -44,7 +45,7 @@
 
       subroutine init_Jacobi(JAC,operator,x,k,m,MFP,dir,name,vizualizeOperator)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(Jacobi),intent(inout) :: JAC
         type(VF),intent(in) :: x
         type(VF),intent(in) :: k

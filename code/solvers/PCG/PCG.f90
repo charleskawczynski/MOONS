@@ -14,6 +14,7 @@
       use matrix_mod
       use PCG_solver_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -29,7 +30,8 @@
       private
       public :: PCG_solver_SF
       public :: PCG_solver_VF
-      public :: init,solve,delete
+      public :: init,delete
+      public :: solve
 
       logical :: verifyPreconditioner = .false.
       
@@ -50,7 +52,8 @@
         integer :: un,N_iter
         real(cp) :: tol
         character(len=1) :: name
-        procedure(),pointer,nopass :: operator,operator_explicit
+        procedure(op_SF),pointer,nopass :: operator
+        procedure(op_SF_explicit),pointer,nopass :: operator_explicit
       end type
 
       type PCG_solver_VF
@@ -61,7 +64,8 @@
         integer :: un,N_iter
         real(cp) :: tol
         character(len=1) :: name
-        procedure(),pointer,nopass :: operator,operator_explicit
+        procedure(op_VF),pointer,nopass :: operator
+        procedure(op_VF_explicit),pointer,nopass :: operator_explicit
       end type
 
       contains
@@ -69,7 +73,8 @@
       subroutine init_PCG_SF(PCG,operator,operator_explicit,Minv,m,tol,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator,operator_explicit
+        procedure(op_SF) :: operator
+        procedure(op_SF_explicit) :: operator_explicit
         type(PCG_solver_SF),intent(inout) :: PCG
         type(SF),intent(in) :: Minv
         type(mesh),intent(in) :: m
@@ -133,7 +138,8 @@
       subroutine init_PCG_VF(PCG,operator,operator_explicit,Minv,m,tol,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator,operator_explicit
+        procedure(op_VF) :: operator
+        procedure(op_VF_explicit) :: operator_explicit
         type(PCG_solver_VF),intent(inout) :: PCG
         type(VF),intent(in) :: Minv
         type(mesh),intent(in) :: m

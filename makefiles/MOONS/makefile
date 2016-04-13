@@ -5,21 +5,27 @@ CLUSTER = 'PC_CK'
 # CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
-    PATHSEP2 = \\
-	RM = del
+	OS_USED = 'OS_WINDOWS'
 else
-    PATHSEP2 = /
+	OS_USED = 'OS_LINUX'
+endif
+
+ifeq ($(OS_USED),'OS_WINDOWS')
+	RM = del
+	# RM = rm
+	PS = $(strip \\)
+else
+	PS = $(strip /)
 	RM = rm
 endif
-PS = $(strip $(PATHSEP2))
-# PS1 is needed for gmake clean
-PS1 = $(strip \)
 
-ifeq ($(CLUSTER),'DOE')
-	PS1 = $(PS)
+ifeq ($(CLUSTER),'PC_CK')
+	PS_clean = $(strip \)
 endif
 
-extf90 = $(strip .f90)
+$(info CLUSTER = $(CLUSTER))
+$(info PS = $(PS))
+$(info PS_clean = $(PS_clean))
 
 # ************* MAKE CONFIGURATION ******************
 
@@ -48,7 +54,7 @@ LIB_DIR = $(SRC_DIR)$(PS)lib
 
 # ************** COMPILER & STANDARD ****************
 ifeq ($(CLUSTER),'PC_CK')
-FC      = gcc
+FC      = gfortran
 endif
 ifeq ($(CLUSTER),'Hoffman2')
 FC      = gfortran
@@ -59,17 +65,27 @@ endif
 
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
+# FCFLAGS += -std=legacy
+FCFLAGS += -std=gnu
 # FCFLAGS += -std=f95
-# Precision
+# FCFLAGS += -std=f2003
+# FCFLAGS += -std=2008
+
+# Precision (most files contain this)
 # FCFLAGS += -D_SINGLE_PRECISION_
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
-# FFT Methods
+# FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
 FCFLAGS += -D_FFT_RADIX2_
 
+# isnan.f90:
+FCFLAGS += -D_ISNAN_USE_INTRINSIC_
+# FCFLAGS += -D_ISNAN_USE_HACK_
+
 # Order of accuracy of finite difference stencil
+# stencils.f90:
 # FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_STENCILS_O4_
 
@@ -91,8 +107,11 @@ endif
 # fcheck=all includes -fcheck-array-temporaries, 
 # which triggers tons of warning in stencils.f90
 # So include all but this one:
-# FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og # -O0 bad in cygwin generated gfortran
-FC_DEBUG += -Wall -Wextra -fbacktrace
+
+# -O0 bad in cygwin generated gfortran
+FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+
+# FC_DEBUG += -Wall -Wextra -fbacktrace
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
 # FC_DEBUG += -D_DEBUG_RF_
@@ -147,19 +166,7 @@ FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
 # FCFLAGS += $(FC_OPTIMIZE)
 
-# ********** UNIT TEST / FULL SIMULATION *************
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG_node.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_PCG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
-
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
-# TARGET = $(TARGET_DIR)$(PS)unitTest.exe
 
 # **************** INCLUDE PATHS ********************
 VPATH =\
@@ -173,6 +180,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)grid \
 	$(SRC_DIR)$(PS)IO \
 	$(SRC_DIR)$(PS)lib \
+	$(SRC_DIR)$(PS)math \
 	$(SRC_DIR)$(PS)mesh \
 	$(SRC_DIR)$(PS)norms \
 	$(SRC_DIR)$(PS)ops \
@@ -192,19 +200,20 @@ VPATH =\
 	$(SRC_DIR)$(PS)stencils \
 	$(SRC_DIR)$(PS)stitches \
 	$(SRC_DIR)$(PS)string \
-	$(SRC_DIR)$(PS)unit_testing \
 	$(SRC_DIR)$(PS)user \
 	$(SRC_DIR)$(PS)version
 
 
 # **************** SOURCE FILES *********************
 SRCS_F =\
+	$(SRC_DIR)$(PS)string$(PS)string.f90 \
+	$(SRC_DIR)$(PS)math$(PS)isnan.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
-	$(SRC_DIR)$(PS)string$(PS)string.f90 \
-	$(SRC_DIR)$(PS)string$(PS)dir_tree.f90 \
+	$(SRC_DIR)$(PS)directory$(PS)draw_DT.f90 \
+	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)triDiag.f90 \
@@ -289,14 +298,14 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f03 \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f03 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_aux.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG_solver.f90 \
-	$(SRC_DIR)$(PS)solvers$(PS)CG$(PS)PCG.f03 \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90 \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90 \
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90 \
@@ -329,10 +338,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)convergence_rate$(PS)convergenceRate.f90
 
 
-# $(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90 \
-
-SRCS_F += $(UNIT_TEST)
-
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
 # **************** DO NOT EDIT BELOW HERE *********************
@@ -340,7 +345,6 @@ SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 # **************** DO NOT EDIT BELOW HERE *********************
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
-OBJS_F += $(patsubst %.f03,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
 $(warning ************************************)
 $(warning ********** BUILDING MOONS **********)
@@ -354,14 +358,11 @@ $(TARGET): $(OBJS_F)
 $(OBJ_DIR)$(PS)%.o: %.f90
 	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
 
-# $(OBJ_DIR)$(PS)%.o: %.f03
-# 	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
-
 clean:
-	-$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)
-	-$(RM) $(subst $(PS),$(PS1),$(OBJ_DIR)$(PS)*.o)
-	-$(RM) $(subst $(PS),$(PS1),$(TARGET).exe)
-	-$(RM) $(subst $(PS),$(PS1),$(TARGET))
+	-$(RM) $(subst $(PS),$(PS_clean),$(MOD_DIR)$(PS)*.mod)
+	-$(RM) $(subst $(PS),$(PS_clean),$(OBJ_DIR)$(PS)*.o)
+	-$(RM) $(subst $(PS),$(PS_clean),$(TARGET).exe)
+	-$(RM) $(subst $(PS),$(PS_clean),$(TARGET))
 
 run: myRun
 myRun: $(TARGET)

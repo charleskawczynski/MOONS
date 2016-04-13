@@ -35,8 +35,8 @@
          ! NOTE: omega0 may be zero to allow for reverse rotation.
          ! component = (1,2) = (x,y)
          implicit none
-         real(cp),dimension(sx,sy) :: f
          integer,intent(in) :: sx,sy
+         real(cp),dimension(sx,sy) :: f
          type(coordinates),intent(in) :: cx,cy
          real(cp),intent(in) :: r0,omega0
          integer,intent(in) :: component
@@ -76,8 +76,8 @@
          !      the inductionless MHD problem using a stabilized finite 
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
-         real(cp),dimension(sx,sy) :: w
          integer,intent(in) :: sx,sy
+         real(cp),dimension(sx,sy) :: w
          type(coordinates),intent(in) :: cx,cy
          real(cp),intent(in) :: Ha,mu,dpdz
          real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,d_B,L,term,a,b
@@ -158,8 +158,8 @@
          !      the inductionless MHD problem using a stabilized finite 
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
-         real(cp),dimension(sx,sy) :: w
          integer,intent(in) :: sx,sy
+         real(cp),dimension(sx,sy) :: w
          type(coordinates),intent(in) :: cx,cy
          real(cp),intent(in) :: Ha,mu,dpdz
          real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,d_B,L,term,a,b
@@ -281,8 +281,8 @@
          ! 
          ! Component = (1,2) = (x,y)
          implicit none
-         real(cp),dimension(sx,sy) :: f
          integer,intent(in) :: sx,sy
+         real(cp),dimension(sx,sy) :: f
          type(coordinates),intent(in) :: cx,cy
          integer,intent(in) :: component
          integer :: i,j

@@ -17,6 +17,7 @@
       public :: string
       public :: init,delete
       public :: get_str,str ! str does not require length
+      public :: len
       public :: compress,append
       public :: print,export
 
@@ -26,6 +27,7 @@
       interface append;    module procedure app_string_char;      end interface
       interface append;    module procedure app_string_string;    end interface
       interface compress;  module procedure compress_string;      end interface
+      interface len;       module procedure str_len_string;       end interface
       interface str;       module procedure get_str_short;        end interface
       interface get_str;   module procedure get_str_string;       end interface
       interface delete;    module procedure delete_string;        end interface
@@ -160,6 +162,12 @@
         type(string),intent(in) :: st
         character(len=st%n) :: str
         str = get_str_string(st,st%n)
+      end function
+
+      function str_len_string(s) result(n)
+        type(string),intent(in) :: s
+        integer :: n
+        n = s%n
       end function
 
       function get_str_string(st,n) result(str)

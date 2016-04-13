@@ -35,28 +35,25 @@
         implicit none
         type(vec),intent(inout) :: v
         type(SF),intent(in) :: f
-        integer :: i,j,k,t
-        type(array) :: temp1,temp2
-        do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2)
-          call init(temp1,v%a)
-          call init(temp2,f%RF(t)%f(:,i,j))
-          call init(v%a,(/temp1,temp2/))
+        integer :: i,j,k,t,s
+        call init(v%a,f%numEl)
+        m = 1
+        do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+          call init(v%a,f%RF(t)%f(i,j,k),m) ! Essentially: v%a%f(m) = f%RF(t)%f(i,j,k)
+          m = m + 1
         enddo; enddo; enddo
-        call delete(temp1)
-        call delete(temp2)
       end subroutine
 
       subroutine init_SF_vec(f,v)
         implicit none
         type(SF),intent(inout) :: f
         type(vec),intent(in) :: v
-        integer :: i,j,k,t,m1,m2
+        integer :: i,j,k,t,m
         if (.not.allocated(f%RF(1)%f)) stop 'Error: f not allocated in init_SF_vec in vec.f90'
-        m1 = 1; m2 = f%RF(1)%s(1)
-        do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2)
-          f%RF(t)%f(:,i,j) = v%a(m1:m2)
-          m1 = m2+1
-          m2 = f%RF(t)%s(1)
+        m = 1
+        do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
+          f%RF(t)%f(i,j,k) = v%a(m)
+          m = m + 1
         enddo; enddo; enddo
       end subroutine
 
@@ -77,6 +74,7 @@
       subroutine print_vec(v)
         implicit none
         type(vec),intent(in) :: v
+        write(*,*) 'Vector = '
         call print(v%a)
       end subroutine
 
