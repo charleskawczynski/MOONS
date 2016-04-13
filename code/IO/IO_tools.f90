@@ -1,4 +1,5 @@
       module IO_tools_mod
+      use string_mod
       implicit none
 
      ! Fixes / Improvements:
@@ -19,13 +20,13 @@
 
       private
 
-      public :: makeDir,rmDir
+      public :: make_dir,rmDir
       public :: newUnit
       public :: getUnit,closeExisting
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
       public :: int2Str,int2Str2,num2Str,intLen
-      public :: arrfmt,rarrfmt,logfmt,intfmt,strcompress
+      public :: arrfmt,rarrfmt,logfmt,intfmt
 
        ! This website is a good reference for formatting:
        ! http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap05/format.html
@@ -42,49 +43,57 @@
 
       contains
 
-      subroutine makeDir(d1,d2,d3)
+      subroutine make_dir(d1,d2,d3,d4)
         character(len=*),intent(in) :: d1
-        character(len=*),intent(in),optional :: d2,d3
-        character(len=30) :: d
+        character(len=*),intent(in),optional :: d2,d3,d4
+        type(string) :: s
         logical :: ex
-        if (present(d2).and.present(d3)) then
-          d = adjustl(trim(d1)) // adjustl(trim(d2)) // adjustl(trim(d3))
+        if (present(d2).and.present(d3).and.present(d4)) then
+          call init(s,d1//d2//d3//d4)
+        elseif (present(d3)) then
+          call init(s,d1//d2//d3)
         elseif (present(d2)) then
-          d = adjustl(trim(d1)) // adjustl(trim(d2))
+          call init(s,d1//d2)
         else
-          d = adjustl(trim(d1))
+          call init(s,d1)
         endif
 
-        INQUIRE (file=adjustl(trim(d)), EXIST=ex)
+        INQUIRE (file=str(s), EXIST=ex)
         if (.not.ex) then
-          call system('mkdir ' // adjustl(trim(d)) )
-          write(*,*) 'Directory ' // adjustl(trim(d)) // ' created.'
+          call system('mkdir ' // str(s) )
+          write(*,*) 'Directory ' // str(s) // ' created.'
         else 
-          write(*,*) 'Directory ' // adjustl(trim(d)) // ' already exists.'
+          write(*,*) 'Directory ' // str(s) // ' already exists.'
         endif
+        call delete(s)
       end subroutine
 
       subroutine rmDir(d)
         character(len=*),intent(in) :: d
-          call system('rm /' // adjustl(trim(d)) )
-          write(*,*) 'Directory ' // adjustl(trim(d)) // ' removed.'
+        call system('rm -r /' // d )
+        write(*,*) 'Directory ' // d // ' removed.'
       end subroutine
 
       function newAndOpen(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: NU,n
+        type(string) :: s
+        call init(s,dir//name//fileType)
         NU = newUnit()
-        open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,pad='YES')
+        open(NU,file=str(s),pad='YES')
+        call delete(s)
       end function
 
       function newAndOpenBinary(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: NU,n
+        type(string) :: s
+        call init(s,dir//name//fileType)
         NU = newUnit()
-        open(NU,file=trim(strcompress(dir,n)) // trim(strcompress(name,n)) // fileType,&
-          form='unformatted')
+        open(NU,file=str(s),form='unformatted')
+        call delete(s)
       end function
 
       function getUnit(dir,name) result(NU)
@@ -100,22 +109,21 @@
         integer :: NU,ok
         logical :: ex,op
         character(len=9) :: act
+        type(string) :: s
         NU = newUnit()
-        inquire(file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType, &
-        number=NU,exist=ex,opened=op,action=act)
+        call init(s,dir//name//fileType)
+        inquire(file=str(s),number=NU,exist=ex,opened=op,action=act)
 
         NU = newUnit()
         if (.not.op) then
           if (ex) then
-            open(NU,file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType,&
+            open(NU,file=str(s),&
             status = 'old', action = 'readwrite',iostat=ok,position='append')
           else
-            write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-            // fileType // ' does not exist. Terminating execution.'; stop
+            write(*,*) 'The file ' // str(s) // ' does not exist. Terminating execution.'; stop
           endif
           if (ok.ne.0) then
-            write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-            // fileType // ' was not opened successfully.'; stop
+            write(*,*) 'The file ' // str(s) // ' was not opened successfully.'; stop
           endif
         else
           ! write(*,*) 'dir/name/ext = ',trim(adjustl(dir)) // trim(adjustl(name)) // fileType
@@ -125,6 +133,7 @@
           ! write(*,*) 'act = ',act
           ! stop 'Error: file is already open, no need to call, just write to file'
         endif
+        call delete(s)
       end function
 
       function openToRead(dir,name) result(NU)
@@ -133,24 +142,23 @@
         integer :: NU,ok
         logical :: ex,op
         character(len=9) :: act
+        type(string) :: s
+        call init(s,dir//name//fileType)
         NU = newUnit()
-        inquire(file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType, &
-        number=NU,exist=ex,opened=op,action=act)
+        inquire(file=str(s),number=NU,exist=ex,opened=op,action=act)
 
         if (.not.op) then
           NU = newUnit()
         endif
         if (ex) then
-          open(NU,file=trim(adjustl(dir)) // trim(adjustl(name)) // fileType,&
-          status = 'old', action = 'read',iostat=ok)
+          open(NU,file=str(s), status = 'old', action = 'read',iostat=ok)
         else
-          write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' does not exist. Terminating execution.'; stop
+          write(*,*) 'The file ' // str(s) // ' does not exist. Terminating execution.'; stop
         endif
         if (ok.ne.0) then
-          write(*,*) 'The file ' // trim(adjustl(dir)) // trim(adjustl(name)) &
-          // fileType // ' was not opened successfully.'; stop
+          write(*,*) 'The file ' // str(s) // ' was not opened successfully.'; stop
         endif
+        call delete(s)
       end function
 
       subroutine closeAndMessage(u,name,dir)
@@ -159,7 +167,7 @@
         integer,intent(in) :: u
         character(len=*),intent(in) :: name,dir
         close(u)
-        write(*,*) '+++ Data for ' // trim(adjustl(name)) // ' written to ' // trim(adjustl(dir)) //' +++'
+        write(*,*) '+++ Data for ' // name // ' written to ' // dir //' +++'
       end subroutine
 
       subroutine closeExisting(u,name,dir)
@@ -217,9 +225,10 @@
       function intLen(i) result(n)
         implicit none
         integer,intent(in) :: i
-        character(len=20) :: c
         integer :: n
-        c = strcompress(int2str(i),n)
+        type(string) :: s
+        call init(s,int2str(i))
+        n = len(s)
       end function
 
       FUNCTION strcompress( input_string, n ) RESULT ( output_string ) 

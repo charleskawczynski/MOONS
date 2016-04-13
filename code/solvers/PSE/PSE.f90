@@ -12,6 +12,7 @@
       use matrix_mod
       use PSE_solver_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
 
 #ifdef _SINGLE_PRECISION_
@@ -44,7 +45,7 @@
         type(norms) :: norm
         type(SF) :: r,Ax,vol
         integer :: un,N_iter
-        procedure(),pointer,nopass :: operator
+        procedure(op_SF),pointer,nopass :: operator
       end type
 
       type PSE_solver_VF
@@ -53,14 +54,14 @@
         type(norms) :: norm
         type(VF) :: r,Ax,vol
         integer :: un,N_iter
-        procedure(),pointer,nopass :: operator
+        procedure(op_VF),pointer,nopass :: operator
       end type
 
       contains
 
       subroutine init_PSE_SF(PSE,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator
+        procedure(op_SF) :: operator
         type(PSE_solver_SF),intent(inout) :: PSE
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
@@ -91,7 +92,7 @@
 
       subroutine init_PSE_VF(PSE,operator,m,MFP,x,k,dir,name,testSymmetry,exportOperator)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(PSE_solver_VF),intent(inout) :: PSE
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: x,k

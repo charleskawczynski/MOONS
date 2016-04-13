@@ -1,4 +1,5 @@
        module version_mod
+       use string_mod
        use IO_tools_mod
        implicit none
 
@@ -25,7 +26,7 @@
        subroutine export_version_no_dir(u)
          implicit none
          integer,intent(in) :: u
-         integer*4 today(3), now(3)
+         integer :: today(3), now(3)
          write(u,*) '-------------------------------------'
          write(u,*) ' University of California Los Angeles'
          write(u,*) '              (UCLA)                 '

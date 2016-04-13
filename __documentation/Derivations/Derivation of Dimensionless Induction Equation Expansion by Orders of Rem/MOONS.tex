@@ -1,0 +1,184 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\MC}{\mathcal}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\PD}{\partial}
+\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\ep}{\epsilon}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
+\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+% \maketitle
+
+\section{Induction equation by orders of induced magnetic field by orders of Rem}
+The dimensional induction equation is
+\begin{equation} \label{eq:ind_dim}
+  \frac{\PD \B}{\PD t} 
+  =
+  (\nabla \times \U \times \B)
+  - \\
+  \left(
+  \nabla \times
+  \left\{
+  \frac{1}{\sigma}
+  \nabla \times
+  \frac{\B}{\mu}
+  \right\}
+  \right)
+\end{equation}
+Non-dimensionalizing time, velocity, length, conductivity and magnetic permeability by $L/U,U,L,\sigma,\mu$, we have
+\begin{equation} \label{eq:ind}
+  \frac{\PD \B}{\PD t} 
+  =
+  (\nabla \times \U \times \B)
+  - \\
+  \frac{1}{Re_m}
+  \left(
+  \nabla \times
+  \left\{
+  \frac{1}{\sigma}
+  \nabla \times
+  \frac{\B}{\mu}
+  \right\}
+  \right)
+  ,\qquad Re_m = \sigma \mu LU
+\end{equation}
+Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
+\begin{equation}
+  G(\B)
+  =
+  \frac{\PD \B}{\PD t} 
+  -
+  (\nabla \times \U \times \B)
+  +
+  \frac{1}{Re_m}
+  \left(
+  \nabla \times
+  \left\{
+  \frac{1}{\sigma}
+  \nabla \times
+  \frac{\B}{\mu}
+  \right\}
+  \right)
+  =
+  \mathbf{0}
+\end{equation}
+Since this equation applies to the external $\B$ as well as any induced $\B$ fields, we may write (generally)
+
+\noindent
+\rule{\textwidth}{1pt}
+\begin{center}
+This is where the two formulations part ways.
+\end{center}
+\noindent
+\rule{\textwidth}{1pt}
+% \newpage
+% test
+% \newpage
+\begin{equation}
+	\sum_{k=0}^{\infty} G(\B^k)
+  Re_m^k
+	=
+	\mathbf{0}
+\end{equation}
+Considering the first two terms we have
+\begin{equation}
+  G(\B^0)
+  +
+  G(\B^{*}) Re_m
+  =
+  \mathbf{0}
+\end{equation}
+For a uniform and steady external field ($\B^0$), this simplifies to
+\begin{equation}
+  Re_m \frac{\PD \B^{*}}{\PD t} 
+  -
+  (\nabla \times \U \times (\B^0 + Re_m \B^*))
+  +
+  \left(
+  \nabla \times
+  \left\{
+  \frac{1}{\sigma}
+  \nabla \times
+  \frac{\B^{*}}{\mu}
+  \right\}
+  \right)
+  =
+  \mathbf{0}
+\end{equation}
+It's clear from the above equation that as $Re_m \rightarrow 0$, $\B^*$ can be computed from
+\begin{equation}
+  \nabla \times
+  \left\{
+  \frac{1}{\sigma}
+  \nabla \times
+  \frac{\B^{*}}{\mu}
+  \right\}
+  =
+  (\nabla \times \U \times \B^0)
+\end{equation}
+For uniform $\sigma, \mu$, this yields the Poisson equation for $\B^*$:
+\begin{equation}
+  \nabla^2 \B^{*}
+  =
+  -
+  (\nabla \times \U \times \B^0)
+\end{equation}
+
+
+\end{document}

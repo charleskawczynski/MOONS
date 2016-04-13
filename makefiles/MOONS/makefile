@@ -1,63 +1,103 @@
+# ************* CLUSTER CONFIGURATION ******************
+# CLUSTER = 'PC_CK'
+CLUSTER = 'Workstation_CK'
+# CLUSTER = 'Hoffman2'
+# CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
-    PATHSEP2 = \\
-	RM = del
+	OS_USED = 'OS_WINDOWS'
 else
-    PATHSEP2 = /
+	OS_USED = 'OS_LINUX'
+endif
+
+ifeq ($(OS_USED),'OS_WINDOWS')
+	RM = del
+	# RM = rm
+	PS = $(strip \\)
+else
+	PS = $(strip /)
 	RM = rm
 endif
-PS = $(strip $(PATHSEP2))
-# PS1 is needed for gmake clean
-PS1 = $(strip \)
-extf90 = $(strip .f90)
+
+ifeq ($(CLUSTER),'PC_CK')
+	PS_clean = $(strip \)
+endif
+
+$(info CLUSTER = $(CLUSTER))
+$(info PS = $(PS))
+$(info PS_clean = $(PS_clean))
 
 # ************* MAKE CONFIGURATION ******************
+
 # MKE = gmake
 MKE = make
 # ************* DIRECTORY SETTINGS ******************
-# USER = Charlie
-USER = charl
 
-# Code directory
-SRC_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)out_dir
+ifeq ($(CLUSTER),'PC_CK')
+SRC_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS5
+endif
 
-# Output directory
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS1
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS2
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS3
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS4
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS5
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS6
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS7
-# TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8
-TARGET_DIR = C:$(PS)Users$(PS)$(USER)$(PS)Documents$(PS)MOONS$(PS)MOONS8_thickwall
+ifeq ($(CLUSTER),'Workstation_CK')
+SRC_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)GitHub$(PS)MOONS$(PS)code
+TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS8_thickwall
+endif
+
+ifeq ($(CLUSTER),'DOE')
+SRC_DIR = $(PS)global$(PS)cscratch1$(PS)sd$(PS)cfusion$(PS)MOONS$(PS)code
+TARGET_DIR = $(PS)global$(PS)cscratch1$(PS)sd$(PS)cfusion$(PS)MOONS_out
+endif
 
 MOD_DIR = $(TARGET_DIR)$(PS)mod
 OBJ_DIR = $(TARGET_DIR)$(PS)obj
 LIB_DIR = $(SRC_DIR)$(PS)lib
 
 # ************** COMPILER & STANDARD ****************
+ifeq ($(CLUSTER),'PC_CK')
 FC      = gfortran
+endif
+ifeq ($(CLUSTER),'Workstation_CK')
+FC      = gfortran
+endif
+ifeq ($(CLUSTER),'Hoffman2')
+FC      = gfortran
+endif
+ifeq ($(CLUSTER),'DOE')
+FC      = ftn
+endif
 
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
+# FCFLAGS += -std=legacy
 # FCFLAGS += -std=gnu
-# Precision
+# FCFLAGS += -std=f95
+# FCFLAGS += -std=f2003
+# FCFLAGS += -std=2008
+
+# Precision (most files contain this)
 # FCFLAGS += -D_SINGLE_PRECISION_
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
-# FFT Methods
+# FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
 FCFLAGS += -D_FFT_RADIX2_
 
+# isnan.f90:
+FCFLAGS += -D_ISNAN_USE_INTRINSIC_
+# FCFLAGS += -D_ISNAN_USE_HACK_
+
 # Order of accuracy of finite difference stencil
+# stencils.f90:
 # FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_STENCILS_O4_
 
 FCFLAGS += -fopenmp
+ifdef SystemRoot
+	FCFLAGS += -D_OS_WINDOWS_
+else
+	FCFLAGS += -D_OS_LINUX_
+endif
 
 # FCFLAGS += -D_DEL_PLANAR_X_
 # FCFLAGS += -D_DEL_PLANAR_Y_
@@ -70,7 +110,11 @@ FCFLAGS += -fopenmp
 # fcheck=all includes -fcheck-array-temporaries, 
 # which triggers tons of warning in stencils.f90
 # So include all but this one:
+
+# -O0 bad in cygwin generated gfortran
 FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+
+# FC_DEBUG += -Wall -Wextra -fbacktrace
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
 # FC_DEBUG += -D_DEBUG_RF_
@@ -121,23 +165,11 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
-
-# ********** UNIT TEST / FULL SIMULATION *************
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_triSolver.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_SOR.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_complexG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_JAC.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG_node.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_cleanB.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_PCG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_CG.f90
-# UNIT_TEST = $(SRC_DIR)$(PS)unit_testing$(PS)test_MG.f90
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
-# TARGET = $(TARGET_DIR)$(PS)unitTest
 
 # **************** INCLUDE PATHS ********************
 VPATH =\
@@ -146,39 +178,45 @@ VPATH =\
 	$(SRC_DIR)$(PS)clock \
 	$(SRC_DIR)$(PS)convergence_rate \
 	$(SRC_DIR)$(PS)coordinates \
+	$(SRC_DIR)$(PS)directory \
 	$(SRC_DIR)$(PS)fields \
 	$(SRC_DIR)$(PS)grid \
 	$(SRC_DIR)$(PS)IO \
 	$(SRC_DIR)$(PS)lib \
+	$(SRC_DIR)$(PS)math \
 	$(SRC_DIR)$(PS)mesh \
 	$(SRC_DIR)$(PS)norms \
 	$(SRC_DIR)$(PS)ops \
 	$(SRC_DIR)$(PS)probes \
 	$(SRC_DIR)$(PS)solvers \
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
-	$(SRC_DIR)$(PS)solvers$(PS)GS \
-	$(SRC_DIR)$(PS)solvers$(PS)SOR \
-	$(SRC_DIR)$(PS)solvers$(PS)MG \
-	$(SRC_DIR)$(PS)solvers$(PS)PCG \
-	$(SRC_DIR)$(PS)solvers$(PS)FFT \
-	$(SRC_DIR)$(PS)solvers$(PS)PSE \
 	$(SRC_DIR)$(PS)solvers$(PS)energy \
-	$(SRC_DIR)$(PS)solvers$(PS)momentum \
+	$(SRC_DIR)$(PS)solvers$(PS)FFT \
+	$(SRC_DIR)$(PS)solvers$(PS)GS \
 	$(SRC_DIR)$(PS)solvers$(PS)induction \
+	$(SRC_DIR)$(PS)solvers$(PS)Jacobi \
+	$(SRC_DIR)$(PS)solvers$(PS)MG \
+	$(SRC_DIR)$(PS)solvers$(PS)momentum \
+	$(SRC_DIR)$(PS)solvers$(PS)PCG \
+	$(SRC_DIR)$(PS)solvers$(PS)PSE \
+	$(SRC_DIR)$(PS)solvers$(PS)SOR \
 	$(SRC_DIR)$(PS)sparse \
 	$(SRC_DIR)$(PS)stencils \
 	$(SRC_DIR)$(PS)stitches \
-	$(SRC_DIR)$(PS)unit_testing \
+	$(SRC_DIR)$(PS)string \
 	$(SRC_DIR)$(PS)user \
 	$(SRC_DIR)$(PS)version
 
 
 # **************** SOURCE FILES *********************
 SRCS_F =\
+	$(SRC_DIR)$(PS)string$(PS)string.f90 \
+	$(SRC_DIR)$(PS)math$(PS)isnan.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90 \
+	$(SRC_DIR)$(PS)directory$(PS)draw_DT.f90 \
+	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90 \
 	$(SRC_DIR)$(PS)sparse$(PS)triDiag.f90 \
@@ -187,7 +225,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_face.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_edge.f90 \
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_corner.f90 \
-	$(SRC_DIR)$(PS)grid$(PS)coordinates.f90 \
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_distribution_funcs.f90 \
 	$(SRC_DIR)$(PS)grid$(PS)grid_genHelper.f90 \
@@ -212,6 +250,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)SF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)VF.f90 \
 	$(SRC_DIR)$(PS)fields$(PS)TF.f90 \
+	$(SRC_DIR)$(PS)fields$(PS)index_mapping.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90 \
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90 \
@@ -301,7 +340,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)convergence_rate$(PS)richardsonExtrapolation.f90 \
 	$(SRC_DIR)$(PS)convergence_rate$(PS)convergenceRate.f90
 
-SRCS_F += $(UNIT_TEST)
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
@@ -309,8 +347,11 @@ SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************
 
-
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
+
+$(warning ************************************)
+$(warning ********** BUILDING MOONS **********)
+$(warning ************************************)
 
 all: $(TARGET)
 
@@ -318,13 +359,13 @@ $(TARGET): $(OBJS_F)
 	$(FC) -o $@ $(FCFLAGS) $(OBJS_F) $(FLIBS)
 
 $(OBJ_DIR)$(PS)%.o: %.f90
-	$(FC) $(FCFLAGS) -c -o $@ $<
+	$(FC) $(FCFLAGS) -c -o $@ $< $(info )
 
 clean:
-	$(RM) $(subst $(PS),$(PS1),$(MOD_DIR)$(PS)*.mod)
-	$(RM) $(subst $(PS),$(PS1),$(OBJ_DIR)$(PS)*.o)
-	$(RM) $(subst $(PS),$(PS1),$(TARGET).exe)
-	$(RM) $(subst $(PS),$(PS1),$(TARGET))
+	-$(RM) $(subst $(PS),$(PS_clean),$(MOD_DIR)$(PS)*.mod)
+	-$(RM) $(subst $(PS),$(PS_clean),$(OBJ_DIR)$(PS)*.o)
+	-$(RM) $(subst $(PS),$(PS_clean),$(TARGET).exe)
+	-$(RM) $(subst $(PS),$(PS_clean),$(TARGET))
 
 run: myRun
 myRun: $(TARGET)

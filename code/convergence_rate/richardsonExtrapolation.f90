@@ -67,9 +67,9 @@
 
        subroutine reportResults(RE,name,directory,Nsims,N)
          implicit none
+         integer,intent(in) :: Nsims
          type(richardsonExtrapolation),dimension(Nsims-2),intent(in) :: RE
          character(len=*),intent(in) :: name,directory
-         integer,intent(in) :: Nsims
          integer,dimension(Nsims),intent(in) :: N
          integer :: i
          type(norms),dimension(2*(Nsims-2)) :: etemp,GCItemp
@@ -144,10 +144,10 @@
 
        function computeRE_VF(f,m,n,r,dir,directory,name) result (RE)
          implicit none
+         integer,intent(in) :: n,dir
          type(VF),dimension(n),intent(in) :: f
          type(mesh),dimension(n),intent(in) :: m
          integer,dimension(3),intent(in) :: r
-         integer,intent(in) :: n,dir
          character(len=*),intent(in) :: directory,name
          type(richardsonExtrapolation),dimension(n-2) :: RE ! parametric results
          integer :: i

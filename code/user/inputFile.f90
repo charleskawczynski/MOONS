@@ -26,18 +26,18 @@
          integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 1000.0d0
-         Ha         = 100.0d0
-         Rem        = 1.0d0
+         Re         = 100.0d0
+         Ha         = 10.0d0
+         Rem        = 0.1d0
          Gr         = 0.0_cp
          Fr         = 0.0d0
          Pr         = 0.71d0
          Ec         = 0.0d0
 
          finite_Rem = .true.
-         dt_eng     = 1.0d-6
-         dt_mom     = 1.0d-6
-         dt_ind     = 1.0d-6
+         dt_eng     = 2.0d-2
+         dt_mom     = 5.0d-3
+         dt_ind     = 5.0d-3
          t          = 200.0
          ! t          = 1.0_cp
          ! NmaxMHD       = ceiling(t/dt_eng)
@@ -48,7 +48,7 @@
 
          N_nrg         = 1000     ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_ind         = 100000   ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_ind         = 1000        ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 5        ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 

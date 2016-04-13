@@ -45,7 +45,7 @@
          type(mesh),intent(in) :: m
          type(mesh) :: temp
          call init(temp,m)
-         call import_3D_1C(temp,p,dir//'Ufield/','pc',0)
+         call import_3D_1C(temp,p,dir,'pc',0)
          call delete(temp)
        end subroutine
        

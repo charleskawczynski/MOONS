@@ -28,7 +28,11 @@
 \setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
 \setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
 \setlength{\voffset}{0.5in}
-\newcommand{\myBullet}{\text{\textbullet}}
+\newcommand{\DOT}{\text{\textbullet}}
+\newcommand{\X}{\mathbf{x}}
+\newcommand{\Y}{\mathbf{y}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\PD}{\partial}
 
 % Useful commands:
 
@@ -46,13 +50,13 @@ University of California Los Angeles, USA\\
 \section{Boundary Element Method (BEM)}
 Here, I follow the work of \cite{Iskakov2004}. Consider boundary $\Gamma$. The tangential component of the electric field on the boundary is
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \myBullet (\mathbf{u} \times \mathbf{B})_{\Gamma} + 
-  Re_m^{-1} \mathbf{\tau} \myBullet (\nabla \times \mathbf{B})_{\Gamma}
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times \mathbf{B})_{\Gamma} + 
+  Re_m^{-1} \mathbf{\tau} \DOT (\nabla \times \mathbf{B})_{\Gamma}
 \end{equation}
-If we assume $\mathbf{u}_{\Gamma} \myBullet \mathbf{n} = 0$ then this simplifies to
+If we assume $\mathbf{u}_{\Gamma} \DOT \mathbf{n} = 0$ then this simplifies to
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \myBullet (\mathbf{u} \times (B_n \mathbf{n})_{\Gamma}) + 
-  Re_m^{-1} \mathbf{\tau} \myBullet (\nabla \times \mathbf{B})_{\Gamma}
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times (B_n \mathbf{n})_{\Gamma}) + 
+  Re_m^{-1} \mathbf{\tau} \DOT (\nabla \times \mathbf{B})_{\Gamma}
 \end{equation}
 % \begin{equation}
 %   (\nabla \times \mathbf{B})_{\Gamma} = \lim_{r \rightarrow \Gamma} (\nabla \times \mathbf{B}(\mathbf{r}))
@@ -71,36 +75,36 @@ Where $\phi: \Omega^c \rightarrow R$ is the potential function. At infinity, the
 \end{equation}
 The normal component of B is known, which implies a Neumann BC on the potential:
 \begin{equation}
-  \frac{\partial \phi}{\partial n}_{\Gamma} = - B_n \qquad (B_n: \Gamma \rightarrow R)
+  \frac{\PD \phi}{\PD n}_{\Gamma} = - B_n \qquad (B_n: \Gamma \rightarrow R)
 \end{equation}
-Expressing this as surface integrals over the fundamental solution $\Delta G = \delta(\mathbf{x},\mathbf{y})$
+Expressing this as surface integrals over the fundamental solution $\Delta G = \delta(\X,\Y)$
 \begin{equation}
-  G(\mathbf{x},\mathbf{y}) = \frac{-1}{4 \pi |\mathbf{x}-\mathbf{y}|}
+  G(\X,\Y) = \frac{-1}{4 \pi |\X-\Y|}
 \end{equation}
 
 Denoting an open ball, $B$, of radius $R$ such that $\overline{\Omega}\in B$, as a consequence of Green's theorem, the magnetic potential at the boundary satisfies
 \begin{equation}
-  \phi(\mathbf{x}) = 
-  -2 \int_{\Gamma} \left( \phi(\mathbf{y})
-  \frac{\partial G}{\partial n} + B_n(\mathbf{y}) G \right) ds(\mathbf{y})
-  +2 \int_{\partial B_R} \left( \phi(\mathbf{y})
-  \frac{\partial G}{\partial \tilde{n}} - \frac{\partial \phi(\mathbf{y}}{\partial \tilde{n}} G \right) ds(\mathbf{y})
+  \phi(\X) = 
+  -2 \int_{\Gamma} \left( \phi(\Y)
+  \frac{\PD G}{\PD n} + B_n(\Y) G \right) ds(\Y)
+  +2 \int_{\PD B_R} \left( \phi(\Y)
+  \frac{\PD G}{\PD \tilde{n}} - \frac{\PD \phi(\Y}{\PD \tilde{n}} G \right) ds(\Y)
 \end{equation}
 Where $n$ is the coordinate along the outward normal to $\Omega$ and $\tilde{n}$ is the coordinate along the outward normal to the ball. The second term vanishes when $R\rightarrow \infty$ (keeping the center of the ball fixed). So we may write
 \begin{equation} \label{eq:phi}
-  \phi(\mathbf{x}) = 
-  -2 \int_{\Gamma} \left( \phi(\mathbf{y})
-  \frac{\partial G}{\partial n} + B_n(\mathbf{y}) G \right) ds(\mathbf{y})
+  \phi(\X) = 
+  -2 \int_{\Gamma} \left( \phi(\Y)
+  \frac{\PD G}{\PD n} + B_n(\Y) G \right) ds(\Y)
 \end{equation}
 Consequently, the tangential component of the magnetic field on $\Gamma$ along the unit vector $\tau$ is 
 \begin{equation}
-  B_{\tau} = - \mathbf{\tau} \myBullet \nabla \phi(\mathbf{x}) = 
-  2 \mathbf{\tau} \myBullet
+  B_{\tau} = - \mathbf{\tau} \DOT \nabla \phi(\X) = 
+  2 \mathbf{\tau} \DOT
   \int_{\Gamma}
   \left(
-  \phi(\mathbf{y}) \frac{\partial G}{\partial n}
-  + B_n(\mathbf{y}) \nabla_x G
-  \right) ds(\mathbf{y})
+  \phi(\Y) \frac{\PD G(\X,\Y)}{\PD n}
+  + B_n(\Y) \nabla_x G(\X,\Y)
+  \right) ds(\Y)
 \end{equation}
 The discrete form of this may be assembeled as 
 \begin{equation}
@@ -112,19 +116,26 @@ With the resulting solution
   \rightarrow
   \Phi = \left(\frac{I}{2} - A\right)^{-1} C B_n
 \end{equation}
-This can be computed once at the beginning of the sim. Returning to \ref{eq:phi}, and $G(\mathbf{x}_i,\mathbf{y}) = \frac{-1}{4\pi |\mathbf{x} - \mathbf{y}|}$ we may write the discrete form as
+This can be computed once at the beginning of the sim. Returning to \ref{eq:phi}, and $G(\X_i,\Y) = \frac{-1}{4\pi |\X - \Y|}$ we may write the discrete form as
 \begin{equation}
 \begin{split}
-\phi(\mathbf{x}_i) & = -2 \sum_j \phi_j \int_{S_j} \frac{\partial G(\mathbf{x}_i,\mathbf{y})}{\partial n} ds(\mathbf{y})
-           -2 \sum_j B_{nj} \int_{S_j} G(\mathbf{x}_i,\mathbf{y}) ds(\mathbf{y}) \\
+\phi(\X_i) & = -2 \sum_j \phi_j \int_{S_j} \frac{\PD G(\X_i,\Y)}{\PD n} ds(\Y)
+           -2 \sum_j B_{nj} \int_{S_j} G(\X_i,\Y) ds(\Y) \\
        & = \frac{1}{2 \pi} 
        \left[
-       \sum_j \phi_j \int_{S_j} \frac{\partial}{\partial n} \frac{1}{|\mathbf{x}_i-\mathbf{y}|} ds(\mathbf{y})
-     + \sum_j B_{nj} \int_{S_j} \frac{1}{|\mathbf{x}_i-\mathbf{y}|} ds(\mathbf{y})
+       \sum_j \phi_j \int_{S_j} \frac{\PD}{\PD n} \frac{1}{|\X_i-\Y|} ds(\Y)
+     + \sum_j B_{nj} \int_{S_j} \frac{1}{|\X_i-\Y|} ds(\Y)
        \right] \\
 \end{split}
 \end{equation}
-
+The term $\frac{\PD}{\PD n} \frac{1}{|\X_i-\Y|} $ may be evaluated to give us
+\begin{equation}
+\phi(\X_i) = \frac{1}{2 \pi} 
+       \left[
+       \sum_j \phi_j \int_{S_j} \frac{\Y - \X_i}{| \Y - \X_i|^3} \DOT \N ds(\Y)
+     + \sum_j B_{nj} \int_{S_j} \frac{1}{|\X_i-\Y|} ds(\Y)
+       \right] \\
+\end{equation}
 
 \begin{thebibliography}{1}
 \bibitem{Iskakov2004} Iskakov, A. B., Descombes, S. and Dormy, E. An integro-differential formulation for magnetic induction in bounded domains: boundary element–finite volume method. J. Comput. Phys. 197, 540–554 (2004)..

@@ -6,6 +6,8 @@ Delta                       Δ
 mu                          μ
 rho                         ρ
 Phi                         Φ
+phi                         φ
+pi                          π
 
 
 Math Operators

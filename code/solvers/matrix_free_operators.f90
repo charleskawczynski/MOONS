@@ -1,8 +1,18 @@
       module matrix_free_operators_mod
-      ! NOTE:
-      ! ONLY CENTERED DERIVATIVES SHOULD BE USED IN THIS 
-      ! FILE SINCE IMPLICIT SOLVERS IN MOONS DEPEND ON BC
-      ! IMPLICIT DERIVATIVES.
+      ! NOTES:
+      !      ONLY CENTERED DERIVATIVES SHOULD BE USED IN THIS 
+      !      FILE SINCE IMPLICIT SOLVERS IN MOONS DEPEND ON BC
+      !      IMPLICIT DERIVATIVES.
+      !      
+      ! IMPORTANT:
+      !      The intent in some of the routines below
+      !      were specified only to match an interface.
+      !      Ideally, the intent would be "in", but this
+      !      would require multiple interfaces and a larger
+      !      argument list. Therefore, one must understand
+      !      that these intents are for code reusability
+      !      over safe programming.
+      !      
       use mesh_mod
       use SF_mod
       use VF_mod
@@ -32,17 +42,62 @@
       public :: eng_diffusion_explicit,eng_diffusion
       public :: mom_diffusion_explicit,mom_diffusion
 
+      public :: op_SF,op_SF_explicit
+      public :: op_VF,op_VF_explicit
+
+      abstract interface
+        subroutine op_SF(Ax,x,k,m,MFP,tempk)
+          import :: SF,VF,mesh,matrix_free_params
+          implicit none
+          type(SF),intent(inout) :: Ax,x
+          type(VF),intent(inout) :: k,tempk
+          type(mesh),intent(in) :: m
+          type(matrix_free_params),intent(in) :: MFP
+        end subroutine
+      end interface
+
+      abstract interface
+        subroutine op_SF_explicit(Ax,x,k,m,MFP,tempk)
+          import :: SF,VF,mesh,matrix_free_params
+          implicit none
+          type(SF),intent(inout) :: Ax,x
+          type(VF),intent(inout) :: k,tempk
+          type(mesh),intent(in) :: m
+          type(matrix_free_params),intent(in) :: MFP
+        end subroutine
+      end interface
+
+      abstract interface
+        subroutine op_VF(Ax,x,k,m,MFP,tempk)
+          import :: VF,mesh,matrix_free_params
+          implicit none
+          type(VF),intent(inout) :: Ax,x
+          type(VF),intent(inout) :: k,tempk
+          type(mesh),intent(in) :: m
+          type(matrix_free_params),intent(in) :: MFP
+        end subroutine
+      end interface
+
+      abstract interface
+        subroutine op_VF_explicit(Ax,x,k,m,MFP,tempk)
+          import :: VF,mesh,matrix_free_params
+          implicit none
+          type(VF),intent(inout) :: Ax,x
+          type(VF),intent(inout) :: k,tempk
+          type(mesh),intent(in) :: m
+          type(matrix_free_params),intent(in) :: MFP
+        end subroutine
+      end interface
+
       contains
 
       subroutine Lap_uniform_SF_explicit(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
         !        A = ∇•(∇)
         implicit none
-        type(SF),intent(inout) :: Ax
-        type(SF),intent(in) :: x
-        type(VF),intent(in) :: k
+        type(SF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
@@ -55,9 +110,8 @@
         !        A = ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
@@ -71,10 +125,9 @@
         ! COMPUTES:
         !        A = ∇•(∇)
         implicit none
-        type(VF),intent(inout) :: Ax,k
-        type(VF),intent(in) :: x
+        type(VF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
@@ -86,9 +139,9 @@
         ! COMPUTES:
         !        A = ∇•(∇)
         implicit none
-        type(VF),intent(inout) :: Ax,x,k
+        type(VF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
@@ -102,11 +155,9 @@
         ! COMPUTES:
         !        A = ∇•(k∇)
         implicit none
-        type(SF),intent(inout) :: Ax
-        type(SF),intent(in) :: x
-        type(VF),intent(in) :: k
+        type(SF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
@@ -119,9 +170,8 @@
         !        A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
@@ -135,11 +185,9 @@
         ! COMPUTES:
         !        A = {I + c_ind ∇x(k∇x)}
         implicit none
-        type(VF),intent(inout) :: Ax
-        type(VF),intent(in) :: x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         call curl(tempk,x,m)
         call multiply(tempk,k)
@@ -153,9 +201,8 @@
         !        A = {I + c_ind ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
-        type(VF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x,m)
         call curl(tempk,x,m)
@@ -170,12 +217,10 @@
         ! Computes:
         !        A = {I + c_eng ∇•(k∇)}
         implicit none
-        type(SF),intent(inout) :: Ax
-        type(SF),intent(inout) :: x
-        type(VF),intent(in) :: k
+        type(SF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        type(VF),intent(inout) :: tempk
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
@@ -188,10 +233,9 @@
         !        A = {I + c_eng ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        type(VF),intent(inout) :: tempk
         call apply_BCs_implicit(x,m)
         call grad(tempk,x,m)
         call multiply(tempk,k)
@@ -205,12 +249,10 @@
         ! Computes:
         !        A = {I + c_mom ∇•(k∇)}
         implicit none
-        type(VF),intent(inout) :: Ax
-        type(VF),intent(in) :: x
-        type(VF),intent(inout) :: k
+        type(VF),intent(inout) :: Ax,x
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        type(VF),intent(inout) :: tempk
         logical :: suppress_warning
         suppress_warning = tempk%is_CC
         ! lap_centered is a very bad and expensive routine. It needs
@@ -229,10 +271,9 @@
         !        A = {I + c_mom ∇•(k∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k
+        type(VF),intent(inout) :: k,tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        type(VF),intent(inout) :: tempk
         logical :: suppress_warning
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)

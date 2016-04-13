@@ -7,6 +7,8 @@
        use VF_mod
        use TF_mod
        use domain_mod
+       use string_mod
+       use dir_tree_mod
 
        use momentum_solver_mod
        use momentum_aux_mod
@@ -110,24 +112,20 @@
 
        ! ******************* INIT/DELETE ***********************
 
-       subroutine initMomentum(mom,m,N_mom,tol_mom,N_PPE,tol_PPE,dt,Re,Ha,Gr,Fr,dir)
+       subroutine initMomentum(mom,m,N_mom,tol_mom,N_PPE,tol_PPE,dTime,Re,Ha,Gr,Fr,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(mesh),intent(in) :: m
          integer,intent(in) :: N_mom,N_PPE
          real(cp),intent(in) :: tol_mom,tol_PPE
-         real(cp),intent(in) :: dt,Re,Ha,Gr,Fr
-         character(len=*),intent(in) :: dir
+         real(cp),intent(in) :: dTime,Re,Ha,Gr,Fr
+         type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: prec_PPE,temp
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
 
-         ! call makeDir(dir,'Ufield')
-         ! call makeDir(dir,'Ufield','\transient')
-         ! call makeDir(dir,'Ufield','\energy')
-
-         mom%dTime = dt
+         mom%dTime = dTime
          mom%N_mom = N_mom
          mom%N_PPE = N_PPE
          mom%tol_mom = tol_mom
@@ -146,7 +144,7 @@
          call init_boundary(mom%boundary,mom%m)
          ! call print(mom%boundary)
          call init_Node(temp,mom%boundary,0.0_cp)
-         call export_raw(mom%boundary,temp,dir//'Ufield/','mesh_boundary',0)
+         call export_raw(mom%boundary,temp,str(DT%U),'mesh_boundary',0)
          call delete(temp)
 
          call init_Edge(mom%U_E,m,0.0_cp)
@@ -177,13 +175,14 @@
          call init_PBCs(mom%p,m)
          write(*,*) '     BCs initialized'
          if (solveMomentum) call print_BCs(mom%U,'U')
-         if (solveMomentum) call export_BCs(mom%U,dir//'parameters/','U')
+         if (solveMomentum) call export_BCs(mom%U,str(DT%params),'U')
          if (solveMomentum) call print_BCs(mom%p,'p')
-         if (solveMomentum) call export_BCs(mom%p,dir//'parameters/','p')
+         if (solveMomentum) call export_BCs(mom%p,str(DT%params),'p')
 
          ! Use mom%m later, for no just m
-         call init_Ufield(mom%U,m,dir)
-         call init_Pfield(mom%p,m,dir)
+         write(*,*) 'str(DT%U) = ',str(DT%U)
+         call init_Ufield(mom%U,m,str(DT%U))
+         call init_Pfield(mom%p,m,str(DT%U))
          write(*,*) '     Field initialized'
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
@@ -195,17 +194,17 @@
          call apply_stitches(mom%p,m)
          write(*,*) '     P BCs applied'
 
-         call init(mom%transient_divU,dir//'Ufield/','transient_divU',.not.restartU)
+         call init(mom%transient_divU,str(DT%U),'transient_divU',.not.restartU)
          call export(mom%transient_divU)
          write(*,*) '     momentum probes initialized'
 
-         mom%unit_nrg_budget = newAndOpen(dir//'Ufield/','energy_budget')
+         mom%unit_nrg_budget = newAndOpen(str(DT%U),'energy_budget')
          ! {error} = {dudt} + {adv} - {diff} + {pres} - {external}
          write(mom%unit_nrg_budget,*) ' TITLE = "momentum energy budget"'
          write(mom%unit_nrg_budget,*) ' VARIABLES = N,unsteady,convection,transport,Lorentz,Viscous_Dissipation'
          write(mom%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
          ! Initialize interior solvers
-         call init(mom%GS_p,mom%p,mom%m,dir//'Ufield/','p')
+         call init(mom%GS_p,mom%p,mom%m,str(DT%U),'p')
          write(*,*) '     GS solver initialized for p'
 
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
@@ -214,7 +213,7 @@
          call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)
          ! call prec_identity_VF(prec_mom) ! For ordinary CG
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
-         mom%tol_mom,mom%MFP,mom%U,mom%temp_E,dir//'Ufield/','U',.false.,.false.)
+         mom%tol_mom,mom%MFP,mom%U,mom%temp_E,str(DT%U),'U',.false.,.false.)
          call delete(prec_mom)
          write(*,*) '     PCG solver initialized for U'
 
@@ -222,17 +221,17 @@
          call prec_lap_SF(prec_PPE,mom%m)
          ! call prec_identity_SF(prec_PPE) ! For ordinary CG
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_PPE,mom%m,&
-         mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,dir//'Ufield/','p',.false.,.false.)
+         mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,str(DT%U),'p',.false.,.false.)
          call delete(prec_PPE)
          write(*,*) '     PCG solver initialized for p'
 
          if (restartU) then
-         call readLastStepFromFile(mom%nstep,dir//'parameters/','nstep_mom')
+         call readLastStepFromFile(mom%nstep,str(DT%params),'nstep_mom')
          else; mom%nstep = 0
          endif
-         call init(mom%transient_KE,dir//'Ufield\','KU',.not.restartU)
+         call init(mom%transient_KE,str(DT%U),'KU',.not.restartU)
 
-         temp_unit = newAndOpen(dir//'parameters/','info_mom')
+         temp_unit = newAndOpen(str(DT%params),'info_mom')
          call momentumInfo(mom,temp_unit)
          close(temp_unit)
          mom%t = 0.0_cp
@@ -291,23 +290,23 @@
          call apply(mom%transient_divU)
        end subroutine
 
-       subroutine export_momentum(mom,m,F,dir)
+       subroutine export_momentum(mom,m,F,DT)
          implicit none
          type(momentum),intent(in) :: mom
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: F
-         character(len=*),intent(in) :: dir
+         type(dir_tree),intent(in) :: DT
          if (restartU.and.(.not.solveMomentum)) then
            ! This preserves the initial data
          else
-           write(*,*) 'Exporting Solutions for U'
-           call export_raw(m,mom%U,dir//'Ufield/','U',0)
-           call export_raw(m,mom%p,dir//'Ufield/','p',0)
-           if (solveEnergy.or.solveInduction) call export_raw(m,F,dir//'Ufield/','jCrossB',0)
-           call export_raw(m,mom%divU,dir//'Ufield/','divU',0)
-           ! call export_processed(m,mom%temp_E,dir//'Ufield/','vorticity',1)
-           call export_processed(m,mom%U,dir//'Ufield/','U',1)
-           call export_processed(m,mom%p,dir//'Ufield/','p',1)
+           write(*,*) 'Exporting Solutions for U at mom%nstep = ',mom%nstep
+           call export_raw(m,mom%U,str(DT%U),'U',0)
+           call export_raw(m,mom%p,str(DT%U),'p',0)
+           if (solveEnergy.or.solveInduction) call export_raw(m,F,str(DT%U),'jCrossB',0)
+           call export_raw(m,mom%divU,str(DT%U),'divU',0)
+           ! call export_processed(m,mom%temp_E,str(DT%U),'vorticity',1)
+           call export_processed(m,mom%U,str(DT%U),'U',1)
+           call export_processed(m,mom%p,str(DT%U),'p',1)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -339,17 +338,18 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,print_export,dir)
+       subroutine solve_momentum(mom,F,print_export,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
          logical,dimension(6),intent(in) :: print_export
-         character(len=*),intent(in) :: dir
-         logical :: exportNow
+         type(dir_tree),intent(in) :: DT
+         logical :: exportNow,exportNowU
          integer :: N_PPE
          if (mom%nstep.lt.1000) then; N_PPE = 2*mom%N_PPE
          else;                        N_PPE = mom%N_PPE
          endif
+         N_PPE = mom%N_PPE
 
          select case(solveUMethod)
          case (1)
@@ -384,22 +384,23 @@
          if (print_export(1)) call div(mom%divU,mom%U,mom%m)
          if (print_export(1)) call exportTransient(mom)
          if (export_planar.and.(print_export(3).or.mom%nstep.eq.1)) then
-         call export_processed_transient(mom%m,mom%U,dir//'Ufield/transient/','U',1,mom%nstep)
+         call export_processed_transient(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
          endif
 
          if (print_export(1)) then
            call momentumInfo(mom,6)
-           exportNow = readSwitchFromFile(dir//'parameters/','exportNowU')
-           ! mom%N_mom = readIntegerFromFile(dir//'parameters/','N_mom')
-           mom%N_PPE = readIntegerFromFile(dir//'parameters/','N_PPE')
+           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
+           exportNowU = readSwitchFromFile(str(DT%params),'exportNowU')
+           ! mom%N_mom = readIntegerFromFile(str(DT%params),'N_mom')
+           mom%N_PPE = readIntegerFromFile(str(DT%params),'N_PPE')
            write(*,*) ''
-         else; exportNow = .false.
+         else; exportNow = .false.; exportNowU = .false.
          endif
 
-         if (print_export(6).or.exportNow) then
+         if ((print_export(6).or.exportNow.or.exportNowU).and.(mom%nstep.gt.1)) then
            ! call curl(mom%temp_E,mom%U,m)
-           call export(mom,mom%m,F,dir)
-           call writeSwitchToFile(.false.,dir//'parameters/','exportNowU')
+           call export(mom,mom%m,F,DT)
+           call writeSwitchToFile(.false.,str(DT%params),'exportNowU')
          endif
        end subroutine
 
