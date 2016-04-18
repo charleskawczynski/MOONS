@@ -12,14 +12,14 @@
          implicit none
          real(cp),intent(in) :: f
          logical :: TF
-         TF = isnan(f)
+         TF = f.ne.f
        end function
 #else
        function my_isnan(f) result(TF)
          implicit none
          real(cp),intent(in) :: f
          logical :: TF
-         TF = f.ne.f
+         TF = isnan(f)
        end function
 #endif
 

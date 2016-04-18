@@ -32,7 +32,7 @@
         MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         external :: operator,operator_explicit
-        character(len=1),intent(in) :: name
+        character(len=*),intent(in) :: name
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol,Minv
         type(VF),intent(in) :: k
@@ -131,7 +131,7 @@
         MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         external :: operator,operator_explicit
-        character(len=1),intent(in) :: name
+        character(len=*),intent(in) :: name
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol,Minv
         type(VF),intent(in) :: k

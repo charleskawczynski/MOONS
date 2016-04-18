@@ -236,7 +236,7 @@
          call init(prec_cleanB,ind%phi)
          call prec_lap_SF(prec_cleanB,ind%m)
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
-         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B),'p',.false.,.false.)
+         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B),'phi',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 

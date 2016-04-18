@@ -1,6 +1,6 @@
 # ************* CLUSTER CONFIGURATION ******************
-# CLUSTER = 'PC_CK'
-CLUSTER = 'Workstation_CK'
+CLUSTER = 'PC_CK'
+# CLUSTER = 'Workstation_CK'
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
@@ -30,15 +30,15 @@ MKE = make
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS5
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS5
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS8_thickwall
+	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS8_thickwall
 endif
 
 ifeq ($(CLUSTER),'DOE')
-TARGET_DIR = $(PS)global$(PS)cscratch1$(PS)sd$(PS)cfusion$(PS)MOONS_out
+	TARGET_DIR = $(PS)global$(PS)cscratch1$(PS)sd$(PS)cfusion$(PS)MOONS_out
 endif
 
 MOD_DIR = .$(PS)mod$(PS)
@@ -47,10 +47,10 @@ LIB_DIR = $(SRC_DIR)$(PS)lib
 
 # ************** COMPILER & STANDARD ****************
 ifeq ($(CLUSTER),$(filter $(CLUSTER),'Workstation_CK' 'PC_CK' 'Hoffman2'))
-FC      = gfortran
+	FC = gfortran
 endif
 ifeq ($(CLUSTER),'DOE')
-FC      = ftn
+	FC = ftn
 endif
 
 $(info CLUSTER = $(CLUSTER))
@@ -60,8 +60,7 @@ $(info PS = $(PS))
 $(info PS_clean = $(PS_clean))
 
 # ****************** DEFAULT FLAGS ******************
-# FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
-FCFLAGS = -J"$(MOD_DIR)" -cpp
+FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=legacy
 FCFLAGS += -std=gnu
 # FCFLAGS += -std=f95
@@ -70,7 +69,7 @@ FCFLAGS += -std=gnu
 
 # Precision (most files contain this)
 # FCFLAGS += -D_SINGLE_PRECISION_
-# FCFLAGS += -D_DOUBLE_PRECISION_
+FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT_poisson.f90:
@@ -86,7 +85,8 @@ FCFLAGS += -std=gnu
 # FCFLAGS += -D_STENCILS_O4_
 
 FCFLAGS += -fopenmp
-ifdef SystemRoot
+
+ifeq ($(OS_USED),'OS_WINDOWS')
 	FCFLAGS += -D_OS_WINDOWS_
 else
 	FCFLAGS += -D_OS_LINUX_
@@ -105,10 +105,10 @@ endif
 # So include all but this one:
 
 # -O0 bad in cygwin generated gfortran
-# FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 
 # FC_DEBUG += -Wall -Wextra -fbacktrace
-# FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
+FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
 # FC_DEBUG += -D_DEBUG_RF_
 # FC_DEBUG += -D_DEBUG_SF_
