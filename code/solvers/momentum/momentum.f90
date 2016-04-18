@@ -25,6 +25,7 @@
        use IO_SF_mod
        use IO_VF_mod
        use export_raw_processed_mod
+       use print_export_mod
 
        use norms_mod
        use ops_norms_mod
@@ -329,11 +330,11 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,print_export,DT)
+       subroutine solve_momentum(mom,F,PE,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
-         logical,dimension(6),intent(in) :: print_export
+         type(print_export),intent(in) :: PE
          type(dir_tree),intent(in) :: DT
          logical :: exportNow,exportNowU
          integer :: N_PPE
@@ -346,16 +347,16 @@
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
            N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,&
-           print_export(1))
+           PE%transient_0D)
 
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
-           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
+           mom%N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
 
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%dTime,mom%N_PPE,mom%N_mom,mom%Ustar,&
-           mom%temp_F,mom%temp_CC,mom%temp_E,print_export(1))
+           mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
 
          case default; stop 'Error: solveUMethod must = 1,2 in momentum.f90.'
          end select
@@ -372,23 +373,21 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeKineticEnergy(mom,mom%m,F)
-         if (print_export(1)) call div(mom%divU,mom%U,mom%m)
-         if (print_export(1)) call exportTransient(mom)
-         if (export_planar.and.(print_export(3).or.mom%nstep.eq.1)) then
-         call export_processed_transient(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
+         if (PE%transient_0D) then
+           call div(mom%divU,mom%U,mom%m)
+           call exportTransient(mom)
          endif
+         if (PE%transient_2D) call export_processed_transient(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
 
-         if (print_export(1)) then
+         if (PE%info) then
            call momentumInfo(mom,6)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
            exportNowU = readSwitchFromFile(str(DT%params),'exportNowU')
-           ! mom%N_mom = readIntegerFromFile(str(DT%params),'N_mom')
-           mom%N_PPE = readIntegerFromFile(str(DT%params),'N_PPE')
            write(*,*) ''
          else; exportNow = .false.; exportNowU = .false.
          endif
 
-         if ((print_export(6).or.exportNow.or.exportNowU).and.(mom%nstep.gt.1)) then
+         if (PE%solution.or.exportNowU.or.exportNow) then
            ! call curl(mom%temp_E,mom%U,m)
            call export(mom,mom%m,F,DT)
            call writeSwitchToFile(.false.,str(DT%params),'exportNowU')

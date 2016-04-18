@@ -12,6 +12,7 @@
        use domain_mod
        use dir_tree_mod
        use string_mod
+       use print_export_mod
 
        use energy_aux_mod
        use energy_solver_mod
@@ -214,11 +215,11 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_energy(nrg,U,print_export,DT)
+       subroutine solve_energy(nrg,U,PE,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
-         logical,dimension(6),intent(in) :: print_export
+         type(print_export),intent(in) :: PE
          type(dir_tree),intent(in) :: DT
          logical :: exportNow,exportNowT
 
@@ -244,26 +245,23 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (print_export(2)) then
+         if (PE%transient_0D) then
            call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
            call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
            call exportTransient(nrg)
          endif
-         ! if (print_export(6)) call exportTransientFull(nrg,nrg%m,DT)
 
-         ! call computeMagneticEnergy(nrg,nrg%B,nrg%B0,m_mom) ! Maybe thermal energy?
-
-         if (print_export(1)) then
+         if (PE%info) then
+           call energyInfo(nrg,6)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
            exportNowT = readSwitchFromFile(str(DT%params),'exportNowT')
          else; exportNow = .false.; exportNowT = .false.
          endif
 
-         if (print_export(6).or.exportNow) then
+         if (PE%solution.or.exportNowT.or.exportNow) then
            call export(nrg,nrg%m,DT)
            call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
          endif
-         call energyInfo(nrg,6)
        end subroutine
 
        end module

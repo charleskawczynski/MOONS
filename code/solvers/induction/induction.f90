@@ -13,6 +13,7 @@
        use dir_tree_mod
        use string_mod
        use export_raw_processed_mod
+       use print_export_mod
 
        use init_BBCs_mod
        use init_phiBCs_mod
@@ -357,11 +358,11 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_induction(ind,U,print_export,DT)
+       subroutine solve_induction(ind,U,PE,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
-         logical,dimension(6),intent(in) :: print_export
+         type(print_export),intent(in) :: PE
          type(dir_tree),intent(in) :: DT
          logical :: exportNow,exportNowB,compute_ME
 
@@ -381,7 +382,7 @@
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
          ind%m,ind%dTime,ind%N_induction,ind%N_cleanB,&
-         print_export(1),ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
@@ -394,7 +395,7 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         compute_ME = (computeKB.and.print_export(1).or.(ind%nstep.eq.0))
+         compute_ME = (computeKB.and.PE%transient_0D.or.(ind%nstep.eq.0))
 
          if (compute_ME) then
            call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
@@ -414,24 +415,21 @@
            call compute_TME_Domain(ind%ME_conductor(2),ind%KB_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
          endif
 
-         if (print_export(1)) call exportTransient(ind)
+         if (PE%transient_0D) then 
+           call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
+           call exportTransient(ind)
+         endif
 
-         ! call inductionExportTransientFull(ind,ind%m,DT) ! VERY Expensive
-         ! if (print_export(2)) then
-         !   call export_processed_transient(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
-         ! endif
+         if (PE%transient_2D) call export_processed_transient(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
 
-         if (print_export(1)) call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-         ! if (print_export(2)) call exportTransientFull(ind,ind%m,DT)
-
-         if (print_export(1)) then
+         if (PE%info) then
            call inductionInfo(ind,6)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
            exportNowB = readSwitchFromFile(str(DT%params),'exportNowB')
          else; exportNow = .false.; exportNowB = .false.
          endif
 
-         if (print_export(6).or.exportNow.or.exportNowB) then
+         if (PE%solution.or.exportNowB.or.exportNow) then
            call export(ind,ind%m,DT)
            call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
          endif

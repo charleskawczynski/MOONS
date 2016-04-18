@@ -236,6 +236,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)RF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90\
+	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)grid$(PS)domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\

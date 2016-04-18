@@ -6,6 +6,7 @@
        use string_mod
        use dir_tree_mod
        use stop_clock_mod
+       use print_export_mod
 
        use energy_mod
        use momentum_mod
@@ -29,8 +30,8 @@
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
          integer :: n_step,i
-         logical :: continueLoop
-         logical,dimension(6) :: print_export
+         logical :: continueLoop,exportNow
+         type(print_export) :: PE
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
@@ -41,8 +42,6 @@
          call writeSwitchToFile(.false.,str(DT%params),'exportNowU')
          call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
          call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
-         call writeIntegerToFile(mom%N_mom,str(DT%params),'N_mom')
-         call writeIntegerToFile(mom%N_PPE,str(DT%params),'N_PPE')
 
          write(*,*) 'Working directory = ',str(DT%tar)
          ! ***************************************************************
@@ -50,14 +49,12 @@
          ! ***************************************************************
          call init(sc,N_timesteps)
          do n_step=1,N_timesteps
-           if (n_step.lt.3) then; print_export(1:3) = .true.
-           else; print_export = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
-           endif
+           call init(PE,n_step)
 
            call tic(sc)
-           if (solveEnergy)    call solve(nrg,mom%U,  print_export,DT)
-           if (solveMomentum)  call solve(mom,F,      print_export,DT)
-           if (solveInduction) call solve(ind,mom%U_E,print_export,DT)
+           if (solveEnergy)    call solve(nrg,mom%U,  PE,DT)
+           if (solveMomentum)  call solve(mom,F,      PE,DT)
+           if (solveInduction) call solve(ind,mom%U_E,PE,DT)
 
            call assign(F,0.0_cp)
            if (addJCrossB) then
@@ -79,7 +76,7 @@
            endif
 
            call toc(sc)
-           if (print_export(1)) then
+           if (PE%info) then
              call print(sc)
              continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
              write(*,*) 'Working directory = ',str(DT%tar)
