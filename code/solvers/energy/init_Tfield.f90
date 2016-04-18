@@ -1,4 +1,5 @@
        module init_Tfield_mod
+       use current_precision_mod
        use SF_mod
        use IO_SF_mod
        use mesh_mod
@@ -14,16 +15,6 @@
        !                                      0 : User-defined case (no override)
        !                                      1 : Uniform
 
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        contains
 

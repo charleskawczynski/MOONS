@@ -34,6 +34,7 @@
         ! c = a / b => call divide(c,a,b)
         ! c = b / a => call divide(c,b,a)
 
+        use current_precision_mod
         use mesh_mod
         use SF_mod
         use VF_mod
@@ -61,15 +62,7 @@
         ! public :: sum
         public :: assignX,assignY,assignZ
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
         type TF
           integer :: s = 3  ! number of components

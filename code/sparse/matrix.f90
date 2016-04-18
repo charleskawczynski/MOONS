@@ -1,4 +1,5 @@
       module matrix_mod
+      use current_precision_mod
       use IO_tools_mod
       use IO_SF_mod
       use IO_VF_mod
@@ -14,16 +15,6 @@
       implicit none
 
       private
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
       integer,parameter :: un_max = 10**5 ! Largest allowable matrix to EXPORT
       integer :: px = 1  ! Include/Exclude ghost points along x = (0,1)

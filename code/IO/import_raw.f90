@@ -1,15 +1,6 @@
       module import_raw_mod
+      use current_precision_mod
       implicit none
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
       private
       public :: imp_3D_3C,imp_3D_2C,imp_3D_1C ! 3D Fields

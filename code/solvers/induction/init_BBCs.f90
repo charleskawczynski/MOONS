@@ -1,4 +1,5 @@
        module init_BBCs_mod
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use BCs_mod
@@ -13,17 +14,6 @@
        !                                      0 : B = 0
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : Bandaru
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        public :: init_BBCs
 

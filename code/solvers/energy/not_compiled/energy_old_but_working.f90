@@ -1,4 +1,5 @@
        module energy_mod
+       use current_precision_mod
        use simParams_mod
        use IO_tools_mod
        use IO_Auxiliary_mod
@@ -38,16 +39,6 @@
        public :: printExportBCs
        public :: computeDivergence
        public :: embedVelocityEnergy
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        real(cp),parameter :: zero = 0.0_cp
 

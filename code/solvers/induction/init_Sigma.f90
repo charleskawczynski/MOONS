@@ -1,4 +1,5 @@
        module init_Sigma_mod
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use domain_mod
@@ -8,17 +9,6 @@
 
        private
        public :: initSigma
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        ! This gets overridden by benchmarkCase
        integer :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l

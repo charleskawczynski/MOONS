@@ -1,4 +1,5 @@
        module profile_funcs_mod
+       use current_precision_mod
        use grid_mod
        use coordinates_mod
        implicit none
@@ -13,16 +14,6 @@
        public :: isolatedEddy2D     ! Need to change to func
        public :: singleEddy2D       ! Need to change to func
        public :: cylinder2D         ! Need to change to func
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        real(cp),parameter :: PI = 3.141592653589793238460_cp
        

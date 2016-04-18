@@ -1,4 +1,5 @@
        module induction_aux_mod
+       use current_precision_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -25,16 +26,6 @@
        public :: embedVelocity_E
        public :: embedVelocity_F
        public :: embedVelocity_CC
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        contains
 

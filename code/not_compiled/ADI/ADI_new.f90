@@ -18,6 +18,7 @@
       ! 
       ! Flags: (_EXPORT_ADI_CONVERGENCE_)
       ! 
+      use current_precision_mod
       use BCs_mod
       use applyBCs_mod
       use grid_mod
@@ -39,15 +40,7 @@
       public :: setDt,setAlpha
       private :: init,delete
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
        real(cp),parameter :: PI = 3.14159265358979_cp
 
        real(cp),parameter :: thetaX = 0.5_cp

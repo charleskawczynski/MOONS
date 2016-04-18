@@ -1,4 +1,5 @@
        module apply_BCs_corners_mod
+       use current_precision_mod
        use RF_mod
        use SF_mod
        use VF_mod
@@ -11,15 +12,7 @@
        private
        public :: apply_BCs_corners
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
 
        interface apply_BCs_corners;       module procedure apply_BCs_corners_VF;     end interface

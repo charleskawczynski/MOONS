@@ -1,4 +1,5 @@
        module export_raw_processed_mod
+       use current_precision_mod
        use simParams_mod
        use mesh_mod
        use SF_mod
@@ -24,15 +25,7 @@
 
        interface export_processed_transient; module procedure export_processed_transient_VF;  end interface
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
        contains
 

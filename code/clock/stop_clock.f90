@@ -6,7 +6,7 @@
        ! - include parallel clock?
        ! - efficiency = runtime/step (optional)
        ! - efficiency = runtime*L2norm (think error vs run time ~ 1/t, we want closest to origin)
-
+       use current_precision_mod
        use IO_tools_mod
        use clock_mod
        implicit none
@@ -18,15 +18,7 @@
        public :: tic,toc
        public :: print,export
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
 
        type stop_clock

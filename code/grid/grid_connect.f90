@@ -1,4 +1,5 @@
        module grid_connect_mod
+       use current_precision_mod
        use grid_mod
        use grid_genHelper_mod
        use grid_distribution_funcs_mod
@@ -7,15 +8,7 @@
 
        private
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
        public :: con_prep_uniform      ! con_prep_uniform(g,g_in,N,dir)
        public :: con_prep_Roberts_L    ! con_prep_Roberts_L(g,g_in,L,N,dir)

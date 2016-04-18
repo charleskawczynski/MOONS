@@ -1,4 +1,5 @@
        module momentum_mod
+       use current_precision_mod
        use simParams_mod
        
        use BCs_mod
@@ -52,16 +53,6 @@
        public :: momentum,init,delete,solve
        public :: export,exportTransient
        public :: compute_E_K_Budget
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        type momentum
          ! Tensor fields

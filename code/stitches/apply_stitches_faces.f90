@@ -1,4 +1,5 @@
        module apply_stitches_faces_mod
+       use current_precision_mod
        use face_edge_corner_indexing_mod
        ! use export_raw_processed_mod
        use RF_mod
@@ -10,15 +11,7 @@
        private
        public :: apply_stitches_faces
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
        interface apply_stitches_faces;    module procedure apply_stitches_faces_VF;     end interface
        interface apply_stitches_faces;    module procedure apply_stitches_faces_SF;     end interface

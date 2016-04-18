@@ -1,4 +1,5 @@
        module init_Ufield_mod
+       use current_precision_mod
        use IO_SF_mod
        use IO_VF_mod
        use grid_mod
@@ -30,16 +31,6 @@
        ! integer :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
        ! integer :: vortexSign      = 1 ! (-1,1) = {clockwise from +, clockwise from -}
 
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
        real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains

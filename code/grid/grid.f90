@@ -1,5 +1,6 @@
        module grid_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
+       use current_precision_mod
        use IO_tools_mod
        use coordinates_mod
        use stitch_mod
@@ -7,16 +8,6 @@
        use stitch_edge_mod
        use stitch_corner_mod
        implicit none
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        private
        public :: grid

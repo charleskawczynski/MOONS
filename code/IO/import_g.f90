@@ -3,19 +3,10 @@
       ! pipeline routines to export data given inputs. The possible grid types
       ! can be checked in the getType_3D,getType_2D,getType_1D routines.
       ! 
+      use current_precision_mod
       use import_raw_mod
       use grid_mod
       implicit none
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
       private
 

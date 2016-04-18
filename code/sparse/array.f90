@@ -1,4 +1,5 @@
       module array_mod
+      use current_precision_mod
       ! A real array
       ! 
       ! type(array) :: a
@@ -11,16 +12,6 @@
       public :: array
       public :: init,delete
       public :: print
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif      
 
       type array
         real(cp),dimension(:),allocatable :: f

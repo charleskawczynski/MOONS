@@ -1,4 +1,5 @@
        module mesh_generate_mod
+       use current_precision_mod
        use mesh_mod
        use mesh_simple_geometries_mod
        use mesh_complex_geometries_mod
@@ -6,17 +7,6 @@
        implicit none
 
        private
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
        public :: mesh_generate
 
        contains

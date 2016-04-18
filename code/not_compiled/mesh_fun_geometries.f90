@@ -1,4 +1,5 @@
        module mesh_fun_geometries_mod
+       use current_precision_mod
        use grid_init_mod
        use grid_extend_mod
        use grid_connect_mod
@@ -10,17 +11,6 @@
        implicit none
 
        private
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
        public :: loop_2D
        public :: figure8_2D_cross_flow
        public :: figure8_3D

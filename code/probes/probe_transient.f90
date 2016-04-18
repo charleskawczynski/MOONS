@@ -11,6 +11,7 @@
        !         call apply(p)                                  ! exports transient data (n,d)
        !       enddo
        ! 
+       use current_precision_mod
        use IO_tools_mod
        use isnan_mod
 
@@ -20,16 +21,6 @@
        public :: probe
        public :: init,set,apply
        public :: export, printProbe,delete
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        type probe
          real(cp) :: d                        ! transient data

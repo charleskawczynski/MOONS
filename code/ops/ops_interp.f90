@@ -28,6 +28,7 @@
        !                      \|______|_____ x
        !                        -------> edgeDir
        ! 
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use apply_stitches_mod
@@ -56,16 +57,6 @@
        !        edge2CellCenter_VF(cellCenter,edge,m,tempF)       
 
        private
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        ! ------------------------------- POSSIBLE ALIASES ---------------------------------
        ! public :: F2F,F2N,F2CC,F2E,CC2F,CC2E,CC2N,E2F,E2N,E2CC,N2F,N2E

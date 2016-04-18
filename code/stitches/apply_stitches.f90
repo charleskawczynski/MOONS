@@ -1,4 +1,5 @@
        module apply_stitches_mod
+       use current_precision_mod
        use apply_stitches_faces_mod
        use apply_stitches_edges_mod
        use apply_stitches_corners_mod
@@ -9,16 +10,6 @@
 
        private
        public :: apply_stitches
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        interface apply_stitches;    module procedure apply_stitches_VF;     end interface
        interface apply_stitches;    module procedure apply_stitches_SF;     end interface

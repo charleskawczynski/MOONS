@@ -1,4 +1,5 @@
        module init_TBCs_mod
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use BCs_mod
@@ -34,17 +35,6 @@
        !                                      4 {y_max}
        !                                      5 {z_min}
        !                                      6 {z_max}
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        public :: initTBCs
 

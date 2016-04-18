@@ -1,22 +1,11 @@
       module IO_tools_mod
+      use current_precision_mod
       use string_mod
       implicit none
 
      ! Fixes / Improvements:
      ! Make a buildDirectory routine:
      ! http://homepages.wmich.edu/~korista/README-fortran.html
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
 
       private
 
@@ -77,7 +66,7 @@
       function newAndOpen(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name
-        integer :: NU,n
+        integer :: NU
         type(string) :: s
         call init(s,dir//name//fileType)
         NU = newUnit()
@@ -88,7 +77,7 @@
       function newAndOpenBinary(dir,name) result(NU)
         implicit none
         character(len=*),intent(in) :: dir,name
-        integer :: NU,n
+        integer :: NU
         type(string) :: s
         call init(s,dir//name//fileType)
         NU = newUnit()

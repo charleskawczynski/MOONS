@@ -1,4 +1,5 @@
        module modelProblem_mod
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use BCs_mod
@@ -12,16 +13,6 @@
        public :: get_ModelProblem,defineSig
 
        ! integer,parameter :: modelProblem = 1
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
@@ -182,15 +173,7 @@
        use modelProblem_mod
 
        implicit none
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
        contains
 

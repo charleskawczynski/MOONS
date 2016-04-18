@@ -1,4 +1,5 @@
        module init_Bfield_mod
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use VF_mod
@@ -42,17 +43,6 @@
        integer :: Bsign = 1 ! Change sign of B0 for predefined cases
        !                            1 : B0 = B0
        !                           -1 : B0 = -B0
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        contains
 

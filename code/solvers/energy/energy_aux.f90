@@ -1,4 +1,5 @@
        module energy_aux_mod
+       use current_precision_mod
        use SF_mod
        use VF_mod
 
@@ -19,16 +20,6 @@
        public :: compute_Q
        public :: compute_divQ
        public :: embed_velocity_F
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        contains
 

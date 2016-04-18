@@ -21,6 +21,7 @@
       ! CharlieKawczynski@gmail.com
       ! 7/12/2015
 
+      use current_precision_mod
       use grid_mod
       use ops_fft_mod
       implicit none
@@ -29,16 +30,6 @@
       public :: dct,dct1D
       interface dct;    module procedure applyDCT3D;    end interface
 
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
        ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 

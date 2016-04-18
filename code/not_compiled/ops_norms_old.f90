@@ -16,7 +16,7 @@
        !          1
        !   e = -------- { ∫∫∫ | u(i,j,k)^n | }^(1/n) dx dy dz
        !        volume
-
+       use current_precision_mod
        use IO_tools_mod
        use grid_mod
        use mesh_mod
@@ -25,18 +25,7 @@
        use VF_mod
        implicit none
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
        private
-
        public :: norms,init
        public :: print,export
        public :: compute

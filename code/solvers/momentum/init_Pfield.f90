@@ -1,4 +1,5 @@
        module init_Pfield_mod
+       use current_precision_mod
        use IO_SF_mod
        use grid_mod
        use mesh_mod
@@ -12,16 +13,6 @@
 
        integer :: preDefinedP_ICs = 1
        logical,parameter :: restartP = restartU
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        contains
 

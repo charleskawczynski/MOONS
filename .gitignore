@@ -9,3 +9,5 @@
 *.png
 *.eps
 *.gz
+*.mod
+*.o

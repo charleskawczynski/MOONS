@@ -1,4 +1,5 @@
        module AB2_mod
+       use current_precision_mod
        use mesh_mod
        use SF_mod
        use VF_mod
@@ -10,17 +11,6 @@
        interface AB2_overwrite;       module procedure AB2_overwrite_VF;       end interface
        interface AB2;                 module procedure AB2_SF;                 end interface
        interface AB2;                 module procedure AB2_VF;                 end interface
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        contains
 

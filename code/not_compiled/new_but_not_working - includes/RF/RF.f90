@@ -30,6 +30,7 @@
         ! c = b / a => call divide(c,b,a)
 
         !         
+        use current_precision_mod
         use grid_mod
         use BCs_mod
         implicit none
@@ -49,16 +50,6 @@
 
         ! Monitoring
         public :: print
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
         type realField
           integer,dimension(3) :: s                  ! Dimension

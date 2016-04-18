@@ -30,6 +30,7 @@
        !                        -------> edgeDir
        ! 
        ! 
+       use current_precision_mod
        use ops_del_mod
        use grid_mod
        use mesh_mod
@@ -43,15 +44,6 @@
 
        private
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------

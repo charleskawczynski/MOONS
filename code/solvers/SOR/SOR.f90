@@ -19,7 +19,7 @@
       !     displayTF    = print residuals to screen (T,F)
       ! 
       ! Flags: (_PARALLELIZE_SOR_,_EXPORT_SOR_CONVERGENCE_)
-
+      use current_precision_mod
       use grid_mod
       use mesh_mod
       use apply_BCs_mod
@@ -40,15 +40,7 @@
       public :: SORSolver,solve
       public :: init,delete
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
        real(cp),parameter :: PI = 3.14159265358979_cp
 
       logical, parameter :: useGaussSeidel = .true.

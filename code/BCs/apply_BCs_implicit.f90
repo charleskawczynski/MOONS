@@ -1,4 +1,5 @@
        module apply_BCs_implicit_mod
+       use current_precision_mod
        use SF_mod
        use VF_mod
        use apply_stitches_faces_mod
@@ -13,15 +14,7 @@
        private
        public :: apply_BCs_implicit
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
        interface apply_BCs_implicit;  module procedure apply_BCs_implicit_VF;   end interface
        interface apply_BCs_implicit;  module procedure apply_BCs_implicit_SF;   end interface

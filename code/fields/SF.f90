@@ -26,6 +26,7 @@
         ! c = a * b => call multiply(c,a,b)
         ! c = a / b => call divide(c,a,b)
         ! c = b / a => call divide(c,b,a)
+        use current_precision_mod
         use IO_tools_mod
         use mesh_mod
         use BCs_mod
@@ -65,15 +66,7 @@
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
         type SF
           integer :: s ! Number of subdomains in domain decomposition

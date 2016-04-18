@@ -18,7 +18,7 @@
       !      1) Number of V-Cycles - defined by maxIterations in ss
       !      2) Iterations per cycle - call setIterationsPerLevel()
       !      3) Iterations at the coarsest level - call setIterationsAtMaxLevel()
-
+      use current_precision_mod
       use coordinates_mod
       use grid_mod
       use BCs_mod
@@ -41,16 +41,6 @@
       public :: testRP
 
       logical,parameter :: exportMGGrids = .true.
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
       type multiGrid
         private

@@ -24,7 +24,7 @@
        !        inconsistencies with GCI_23 vs GCI_coarse. So I've adopted the
        !        approach from this example, and doing so seems to yield very good
        !        and sensible results.
-
+       use current_precision_mod
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
@@ -43,15 +43,7 @@
        public :: computeRE
        public :: loadData
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
       
        interface computeRE;    module procedure computeRE_VF;                 end interface
        ! interface computeRE;    module procedure computeRE_RealfromExisting;   end interface

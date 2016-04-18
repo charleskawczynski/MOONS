@@ -1,6 +1,7 @@
        module convergenceRate_mod
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
+       use current_precision_mod
        use simParams_mod
        use IO_tools_mod
        use IO_SF_mod
@@ -20,15 +21,7 @@
        private
        public :: computeCRFromExisting
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
       
        contains
 

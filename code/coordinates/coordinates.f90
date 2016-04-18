@@ -1,5 +1,6 @@
       module coordinates_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
+      use current_precision_mod
       use triDiag_mod
       use IO_tools_mod
       implicit none

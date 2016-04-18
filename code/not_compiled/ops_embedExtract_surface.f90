@@ -3,7 +3,7 @@
        ! the CT method only uses embedEdge, and not embedCC or embedFace.
        ! 
        ! Pre-processor directives: (_PARALLELIZE_EMBEDEXTRACT_)
-
+       use current_precision_mod
        use mesh_mod
        use domain_mod
        use RF_mod
@@ -13,17 +13,6 @@
        implicit none
 
        private
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
        public :: extractFace,extractEdge,extractCC
        public :: embedFace_interior
        public :: embedEdge

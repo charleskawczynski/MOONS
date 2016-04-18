@@ -1,4 +1,5 @@
        module clock_mod
+       use current_precision_mod
        implicit none
 
        private
@@ -6,15 +7,7 @@
        public :: init,delete
        public :: tic,toc
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
+
 
        interface init;         module procedure init_clock;          end interface
        interface tic;          module procedure tic_clock;           end interface

@@ -1,4 +1,5 @@
        module init_K_mod
+       use current_precision_mod
        use simParams_mod
        use mesh_mod
        use ops_embedExtract_mod
@@ -8,18 +9,6 @@
 
        private
        public :: initK
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
 
        ! This gets overridden by benchmarkCase
        integer,parameter :: preDefined_K = 1 ! k* = k_wall/k_l

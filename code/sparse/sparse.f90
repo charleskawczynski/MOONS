@@ -1,4 +1,5 @@
       module sparse_mod
+      use current_precision_mod
       ! Stores elements of a sparse matrix A
       ! 
       ! type(sparse) :: A ! Instantiate sparse matrix
@@ -16,16 +17,6 @@
       public :: sparse
       public :: init,delete
       public :: print,check
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif      
 
       type sparse
         type(array),dimension(:),allocatable :: A

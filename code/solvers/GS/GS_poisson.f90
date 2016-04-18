@@ -15,7 +15,7 @@
       !     compute_norm    = print residuals to screen (T,F)
       ! 
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_CONVERGENCE_)
-
+      use current_precision_mod
       use mesh_mod
       use apply_BCs_mod
       use apply_stitches_mod
@@ -31,16 +31,6 @@
       private
       public :: GS_poisson,solve
       public :: init,delete
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
       type GS_poisson
         type(mesh) :: p,d         ! Primary / Dual grids

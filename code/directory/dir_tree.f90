@@ -28,11 +28,10 @@
         implicit none
         type(dir_tree),intent(inout) :: DT
         character(len=*),intent(in) :: dir_tar
-#ifdef _OS_WINDOWS_
-       character(len=1),parameter :: PS = '\'
-#endif
 #ifdef _OS_LINUX_
        character(len=1),parameter :: PS = '/'
+#else
+       character(len=1),parameter :: PS = '\'
 #endif
         call init(DT%PS,PS)
         call init(DT%tar,dir_tar)
@@ -69,6 +68,8 @@
         implicit none
         type(dir_tree),intent(in) :: DT
         call make_dir(str(DT%root))
+        call make_dir(str(DT%params))
+        call make_dir(str(DT%mat))
 
         call make_dir(str(DT%U))
         call make_dir(str(DT%B))

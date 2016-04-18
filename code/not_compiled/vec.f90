@@ -1,5 +1,6 @@
       module vec_mod
       ! Stores elements of a scalar field (SF) in a 1D array.
+      use current_precision_mod
       use array_mod
       use SF_mod
       implicit none
@@ -8,16 +9,6 @@
       public :: vec
       public :: init,delete
       public :: print,check
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif      
 
       type vec
         type(array) :: a

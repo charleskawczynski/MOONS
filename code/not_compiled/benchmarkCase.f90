@@ -1,18 +1,10 @@
        module benchmarkCase_mod
+       use current_precision_mod
        use simParams_mod
        implicit none
        private
        public :: benchmarkCase
 
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
        contains

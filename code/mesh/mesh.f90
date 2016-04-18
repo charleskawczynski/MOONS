@@ -1,5 +1,6 @@
        module mesh_mod
       ! Pre-processor directives: (_DEBUG_MESH_)
+       use current_precision_mod
        use IO_tools_mod
        use grid_mod
        use grid_genHelper_mod
@@ -8,16 +9,6 @@
        use stitch_mod
        use RF_mod
        implicit none
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
 
        private
        public :: mesh

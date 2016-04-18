@@ -1,4 +1,5 @@
        module init_PBCs_mod
+       use current_precision_mod
        use grid_mod
        use mesh_mod
        use BCs_mod
@@ -11,17 +12,6 @@
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = pure Neumann on all sides
        integer :: preDefinedP_BCs = 1 ! see cases in init_PBCs
-
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
        
        contains
 

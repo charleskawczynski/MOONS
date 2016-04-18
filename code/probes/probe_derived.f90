@@ -59,6 +59,7 @@
        ! NOTE: init prints the index location if one exists.
        ! 
        ! use simParams_mod
+       use current_precision_mod
        use probe_transient_mod
        use probe_base_mod
        use IO_tools_mod
@@ -73,17 +74,6 @@
        public :: planeErrorProbe,avePlaneErrorProbe
        public :: init,apply
        public :: export, print, delete
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
-
 
        type centerProbe
          type(indexProbe) :: ip                       ! index probe

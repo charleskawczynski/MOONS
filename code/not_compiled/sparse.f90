@@ -35,6 +35,7 @@
       ! 
       ! call mult(v_out,A,v_in)
       ! 
+      use current_precision_mod
       use array_mod
       implicit none
 
@@ -44,16 +45,6 @@
       public :: print,check
 
       public :: staggered, collocated
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif      
 
       type sparse
         type(array),dimension(:),allocatable :: row ! row values

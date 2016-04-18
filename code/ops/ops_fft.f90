@@ -24,6 +24,7 @@
       ! 
       ! https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 
+      use current_precision_mod
       use grid_mod
       implicit none
 
@@ -32,60 +33,15 @@
       interface fft;      module procedure applyFFT3D;    end interface
 #ifdef _FFT_RADIX2_
       interface fft1D;    module procedure fft1D_Radix2;      end interface
-#endif
-#ifdef _FFT_FULL_
+#else
       interface fft1D;    module procedure fft1D_full;    end interface
 #endif
 
-
-#ifdef _SINGLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(8)
-#endif
-#ifdef _DOUBLE_PRECISION_
-       integer,parameter :: cp = selected_real_kind(14)
-#endif
-#ifdef _QUAD_PRECISION_
-       integer,parameter :: cp = selected_real_kind(32)
-#endif
        ! integer,parameter :: cip = selected_int_kind(64)
        ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       contains
-
-#ifdef _FFT_FULL_
-      subroutine fft1D_full(x) ! Full Discrete Fourier Transform
-        ! Computes
-        ! 
-        !                  N
-        !    X(k) =       sum  x(n)*exp(-j*2*PI*(k-1)*(n-1)/N), 1 <= k <= N.
-        !                 n=1
-        ! 
-        ! Notes: This routine computes the full FT (very slow), allowing for an
-        !        arbitrary number of cells. If the number of cells
-        !        is 2^N, where N>1, then use the Cooley-Tukey FFT below.
-        ! 
-        ! 
-        complex(cp), dimension(:), intent(inout)  :: x
-        complex(cp), dimension(:), allocatable    :: temp
-        complex(cp)                               :: S,j ! sum, sqrt(-1)
-        integer                                   :: N,i,k
-        N=size(x)
-        allocate(temp(N))
-        j = cmplx(0.0_cp,1.0_cp,cp)
-        S = cmplx(0.0_cp,0.0_cp,cp)
-        temp = cmplx(0.0_cp,0.0_cp,cp)
-        do i = 1,N
-          do k = 1,N
-            S = S + x(k)*exp(-2.0_cp*PI*j*real(k-1,cp)*real(i-1,cp)/real(N,cp))
-          enddo
-          temp(i) = S
-          S = cmplx(0.0_cp,0.0_cp,cp)
-        enddo
-        x = temp
-        deallocate(temp)
-      end subroutine
-#endif
 
 #ifdef _FFT_RADIX2_
       recursive subroutine fft1D_Radix2(x) ! In place Cooley-Tukey FFT
@@ -120,6 +76,38 @@
         end do
         deallocate(odd)
         deallocate(even)
+      end subroutine
+#else
+      subroutine fft1D_full(x) ! Full Discrete Fourier Transform
+        ! Computes
+        ! 
+        !                  N
+        !    X(k) =       sum  x(n)*exp(-j*2*PI*(k-1)*(n-1)/N), 1 <= k <= N.
+        !                 n=1
+        ! 
+        ! Notes: This routine computes the full FT (very slow), allowing for an
+        !        arbitrary number of cells. If the number of cells
+        !        is 2^N, where N>1, then use the Cooley-Tukey FFT below.
+        ! 
+        ! 
+        complex(cp), dimension(:), intent(inout)  :: x
+        complex(cp), dimension(:), allocatable    :: temp
+        complex(cp)                               :: S,j ! sum, sqrt(-1)
+        integer                                   :: N,i,k
+        N=size(x)
+        allocate(temp(N))
+        j = cmplx(0.0_cp,1.0_cp,cp)
+        S = cmplx(0.0_cp,0.0_cp,cp)
+        temp = cmplx(0.0_cp,0.0_cp,cp)
+        do i = 1,N
+          do k = 1,N
+            S = S + x(k)*exp(-2.0_cp*PI*j*real(k-1,cp)*real(i-1,cp)/real(N,cp))
+          enddo
+          temp(i) = S
+          S = cmplx(0.0_cp,0.0_cp,cp)
+        enddo
+        x = temp
+        deallocate(temp)
       end subroutine
 #endif
 
