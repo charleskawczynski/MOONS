@@ -15,7 +15,7 @@
        public :: singleEddy2D       ! Need to change to func
        public :: cylinder2D         ! Need to change to func
 
-       real(cp),parameter :: PI = 3.141592653589793238460_cp
+       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
        
        contains
 

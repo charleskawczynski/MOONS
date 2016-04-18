@@ -61,19 +61,15 @@
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
          call print_version()
-         write(*,*) 'Got here 0'
-         write(*,*) 'Got here str(DT%root) = ',str(DT%root)
          call export_version(str(DT%root))
 
          ! **************************************************************
          ! Initialize all grids
          call mesh_generate(mesh_mom,mesh_ind,D_sigma)
-         write(*,*) 'Got here 1'
 
          call initProps(mesh_mom);     call patch(mesh_mom)
          call initProps(mesh_ind);     call patch(mesh_ind)
 
-         write(*,*) 'Got here 2'
          call init(D_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
 
          call initProps(D_fluid%m_in);     call patch(D_fluid%m_in)
@@ -82,22 +78,18 @@
          call initProps(D_sigma%m_tot);    call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS ****************************
-         write(*,*) 'Got here 3'
          if (.not.quick_start) then
            if (exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
            if (exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
          endif
-         write(*,*) 'Got here 4'
 
          ! Initialize energy,momentum,induction
          call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,DT)
-         write(*,*) 'Got here 5'
          if (solveEnergy) call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,DT)
          if (solveInduction) then
            call init(ind,mesh_ind,D_fluid,D_sigma,finite_Rem,Rem,dt_ind,&
            N_induction,tol_induction,N_cleanB,tol_cleanB,DT)
          endif
-         write(*,*) 'Got here 6'
 
          ! ********************* EXPORT RAW ICs *************************
          if (.not.quick_start) then

@@ -30,6 +30,7 @@
        ! NOTE: init prints the index location if one exists.
        ! 
        use current_precision_mod
+       use string_mod
        use probe_transient_mod
        use IO_tools_mod
        use mesh_mod
@@ -222,7 +223,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-          newU = newAndOpen(ip%p%dir,ip%p%name//'_info')
+          newU = newAndOpen(str(ip%p%dir),str(ip%p%name)//'_info')
            write(newU,*) ' ---------------- INDEX PROBE -------------- '
          else; newU = u
          endif
@@ -230,7 +231,7 @@
          call export(ip%p,newU)
          call writeIndexProbeToFileOrScreen(ip,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,ip%p%name//'_info',ip%p%dir)
+           call closeAndMessage(newU,str(ip%p%name)//'_info',str(ip%p%dir))
          endif
        end subroutine
 
@@ -262,7 +263,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(ep%p%dir,ep%p%name//'_info')
+           newU = newAndOpen(str(ep%p%dir),str(ep%p%name)//'_info')
            write(newU,*) ' ---------------- ERROR PROBE -------------- '
          else; newU = u
          endif
@@ -270,7 +271,7 @@
          call export(ep%p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,ep%p%name//'_info',ep%p%dir)
+           call closeAndMessage(newU,str(ep%p%name)//'_info',str(ep%p%dir))
          endif
        end subroutine
 

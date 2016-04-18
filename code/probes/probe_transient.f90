@@ -12,6 +12,7 @@
        !       enddo
        ! 
        use current_precision_mod
+       use string_mod
        use IO_tools_mod
        use isnan_mod
 
@@ -25,8 +26,7 @@
        type probe
          real(cp) :: d                        ! transient data
          integer :: n                         ! n associated with data
-         character(len=25) :: dir             ! probe directory
-         character(len=25) :: name            ! probe name
+         type(string) :: dir,name             ! probe directory and name
          integer :: un_d                      ! file unit number for data
          integer :: un_i                      ! file unit number for info file
          logical :: TF_freshStart             ! simulation starts from t=0
@@ -49,8 +49,8 @@
          character(len=*),intent(in) :: dir
          character(len=*),intent(in) :: name
          logical,intent(in) :: TF_freshStart
-         p%dir = dir
-         p%name = name
+         call init(p%dir,dir)
+         call init(p%name,name)
          p%TF_freshStart = TF_freshStart
          if (p%TF_freshStart) then
            p%un_d = newAndOpen(dir,name)
@@ -78,11 +78,11 @@
          implicit none
          type(probe),intent(inout) :: p
          if (p%d.gt.p%infinity) then
-         write(*,*) 'Error: data>infinity in probe: ',p%name
+         write(*,*) 'Error: data>infinity in probe: ',str(p%name)
          stop 'Divergence error. Sorry!'
          endif
          if (my_isnan(p%d)) then
-         write(*,*) 'Error: NaN in data in probe: ',p%name
+         write(*,*) 'Error: NaN in data in probe: ',str(p%name)
          stop 'Divergence error. Sorry!'
          endif
          write(p%un_d,'(2'//arrfmt//')') real(p%n,cp),p%d
@@ -113,7 +113,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(p%dir,p%name//'_info')
+           newU = newAndOpen(str(p%dir),str(p%name)//'_info')
            write(newU,*) ' ---------------- PROBE -------------- '
          else; newU = u
          endif
@@ -121,7 +121,7 @@
          call writeProbeToFileOrScreen(p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,p%name//'_info',p%dir)
+           call closeAndMessage(newU,str(p%name)//'_info',str(p%dir))
          endif
        end subroutine
 
@@ -129,8 +129,8 @@
          implicit none
          type(probe), intent(in) :: p
          integer,intent(in) :: u
-         write(u,*) ' directory = ',p%dir
-         write(u,*) ' name = ',p%name
+         write(u,*) ' directory = ',str(p%dir)
+         write(u,*) ' name = ',str(p%name)
        end subroutine
 
        end module

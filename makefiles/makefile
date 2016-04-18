@@ -1,6 +1,6 @@
 # ************* CLUSTER CONFIGURATION ******************
-CLUSTER = 'PC_CK'
-# CLUSTER = 'Workstation_CK'
+# CLUSTER = 'PC_CK'
+CLUSTER = 'Workstation_CK'
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
@@ -158,9 +158,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 

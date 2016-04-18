@@ -60,6 +60,7 @@
        ! 
        ! use simParams_mod
        use current_precision_mod
+       use string_mod
        use probe_transient_mod
        use probe_base_mod
        use IO_tools_mod
@@ -302,7 +303,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(p%ip%p%dir,p%ip%p%name//'_info')
+           newU = newAndOpen(str(p%ip%p%dir),str(p%ip%p%name)//'_info')
            write(newU,*) ' ---------------- AVERAGE PROBE -------------- '
          else; newU = u
          endif
@@ -311,7 +312,7 @@
          call writeAveProbeToFileOrScreen(p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,p%ip%p%name//'_info',p%ip%p%dir)
+           call closeAndMessage(newU,str(p%ip%p%name)//'_info',str(p%ip%p%dir))
          endif
        end subroutine
 
@@ -339,14 +340,14 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(p%ep%p%dir,p%ep%p%name//'_info')
+           newU = newAndOpen(str(p%ep%p%dir),str(p%ep%p%name)//'_info')
            write(newU,*) ' ---------------- PLANE ERROR PROBE -------------- '
          else; newU = u
          endif
          call export(p%ep%p,newU)
          call writePlaneErrorProbeToFileOrScreen(p,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,p%ep%p%name//'_info',p%ep%p%dir)
+           call closeAndMessage(newU,str(p%ep%p%name)//'_info',str(p%ep%p%dir))
          endif
        end subroutine
 
@@ -374,7 +375,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(p%ep%p%dir,p%ep%p%name//'_info')
+           newU = newAndOpen(str(p%ep%p%dir),str(p%ep%p%name)//'_info')
            write(newU,*) ' ---------------- AVERAGE PLANE ERROR PROBE -------------- '
          else; newU = u
          endif
@@ -382,7 +383,7 @@
          call export(p%ep%p,newU)
          call writeAvePlaneErrorProbeToFileOrScreen(p,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,p%ep%p%name//'_info',p%ep%p%dir)
+           call closeAndMessage(newU,str(p%ep%p%name)//'_info',str(p%ep%p%dir))
          endif
        end subroutine
 

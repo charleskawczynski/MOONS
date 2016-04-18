@@ -13,8 +13,8 @@
 
       type dir_tree
         type(string) :: PS
-        type(string) :: root ! output root
         type(string) :: tar  ! target root (.exe location)
+        type(string) :: root ! output root
         type(string) :: U,B,J,T
         type(string) :: U_e,B_e,J_e,T_e ! energy data
         type(string) :: U_t,B_t,J_t,T_t ! transient data
@@ -41,7 +41,10 @@
         call init(DT%root,str(DT%tar))
         write(*,*) 'int DT: target = ',str(DT%tar)
 
-        call append(DT%root,str(DT%PS)//'out'//str(DT%PS)//'LDC'//str(DT%PS)) ! out\LDC\
+        call append(DT%root,str(DT%PS)//'out'//str(DT%PS))
+        call make_dir(str(DT%root))
+        call append(DT%root,'LDC'//str(DT%PS))
+        call make_dir(str(DT%root))
 
         write(*,*) 'int DT: root = ',str(DT%root)
 
@@ -62,12 +65,12 @@
         call init(DT%B_e,DT%B); call append(DT%B_e,'transient'//str(DT%PS))
         call init(DT%J_e,DT%J); call append(DT%J_e,'transient'//str(DT%PS))
         call init(DT%T_e,DT%T); call append(DT%T_e,'transient'//str(DT%PS))
+        call make_dir_tree(DT)
       end subroutine
 
       subroutine make_dir_tree(DT)
         implicit none
         type(dir_tree),intent(in) :: DT
-        call make_dir(str(DT%root))
         call make_dir(str(DT%params))
         call make_dir(str(DT%mat))
 
