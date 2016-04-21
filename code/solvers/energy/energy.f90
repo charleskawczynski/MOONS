@@ -183,7 +183,7 @@
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
          if (solveEnergy) then
-           write(*,*) 'Exporting Solutions for T'
+           write(*,*) 'Exporting Solutions for T at nrg%nstep = ',nrg%nstep
            call export_raw(m,nrg%U_F,str(DT%T),'U',0)
            call export_raw(m,nrg%T,str(DT%T),'T',0)
            call export_raw(m,nrg%divQ,str(DT%T),'divQ',0)

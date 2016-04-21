@@ -24,7 +24,7 @@
          temp = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
 
          PE%info = temp(1)
-         PE%transient_0D = temp(3)
+         PE%transient_0D = temp(2)
          ! PE%transient_2D = export_planar.and.(temp(6).or.n_step.eq.1)
          PE%transient_2D = .false.
          PE%solution = temp(6).and.(n_step.gt.1)

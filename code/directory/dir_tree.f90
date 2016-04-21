@@ -39,14 +39,11 @@
         call draw_DT()
 
         call init(DT%root,str(DT%tar))
-        write(*,*) 'int DT: target = ',str(DT%tar)
 
         call append(DT%root,str(DT%PS)//'out'//str(DT%PS))
         call make_dir(str(DT%root))
         call append(DT%root,'LDC'//str(DT%PS))
         call make_dir(str(DT%root))
-
-        write(*,*) 'int DT: root = ',str(DT%root)
 
         call init(DT%mat,DT%root);    call append(DT%mat,'material'//str(DT%PS))
         call init(DT%params,DT%root); call append(DT%params,'parameters'//str(DT%PS))

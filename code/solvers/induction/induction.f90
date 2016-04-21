@@ -315,7 +315,7 @@
            ! This preserves the initial data
          else
            if (solveInduction) then
-             write(*,*) 'Exporting Solutions for B'
+             write(*,*) 'Exporting Solutions for B at ind%nstep = ',ind%nstep
              ! call export_raw(m,ind%B0,str(DT%B),'B0',0)
              call export_raw(m,ind%B ,str(DT%B),'B',0)
              call export_raw(m,ind%J ,str(DT%J),'J',0)

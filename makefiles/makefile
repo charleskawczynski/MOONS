@@ -34,7 +34,7 @@ ifeq ($(CLUSTER),'PC_CK')
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS8_thickwall
+	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
 endif
 
 ifeq ($(CLUSTER),'DOE')

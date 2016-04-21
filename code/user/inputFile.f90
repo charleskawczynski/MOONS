@@ -17,18 +17,19 @@
          integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 1000.0_cp
+         Re         = 400.0_cp
          Ha         = 100.0_cp
-         Rem        = 1.0_cp
+
+         Rem        = 100.0_cp
          Gr         = 0.0_cp
          Fr         = 0.0_cp
          Pr         = 0.71_cp
          Ec         = 0.0_cp
 
          finite_Rem = .true.
-         dt_eng     = 1.0_cp*10.0_cp**(-6.0_cp)
-         dt_mom     = 1.0_cp*10.0_cp**(-6.0_cp)
-         dt_ind     = 1.0_cp*10.0_cp**(-6.0_cp)
+         dt_eng     = 5.0_cp*10.0_cp**(-4.0_cp)
+         dt_mom     = 5.0_cp*10.0_cp**(-4.0_cp)
+         dt_ind     = 5.0_cp*10.0_cp**(-4.0_cp)
          t          = 200.0_cp
          ! t          = 1.0_cp
          ! NmaxMHD       = ceiling(t/dt_eng)

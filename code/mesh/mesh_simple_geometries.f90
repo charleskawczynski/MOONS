@@ -56,11 +56,16 @@
          Gamma_f = 1.0_cp
          Gamma_w = Gamma_f + tw
          Gamma_v = 7.0_cp
-         tw = 0.5_cp
-         ! tw = 0.05_cp
          tf = 1.0_cp
+
+         ! tw = 0.5_cp
          ! N_w = 8 ! For Ha = 20
-         N_w = 10 ! For Ha = 100
+         ! N_w = 10 ! For Ha = 100
+
+         tw = 0.05_cp
+         ! N_w = 4 ! For Ha = 20
+         N_w = 6 ! For Ha = 100
+
          N_v = 12
          N_extra = 6 ! since no wall domain above lid
 
@@ -76,10 +81,10 @@
 
          ! Vacuum
          ! Remove the following 4 lines for vacuum-absent case
-         ! call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,1) ! x-direction
-         ! call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3) ! z-direction
-         ! call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2) ! y-direction
-         ! call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2) ! y-direction
+         call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,1) ! x-direction
+         call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3) ! z-direction
+         call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2) ! y-direction
+         call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2) ! y-direction
 
          call add(m_ind,g)
          call initProps(m_ind)
