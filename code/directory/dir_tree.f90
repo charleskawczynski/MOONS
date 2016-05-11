@@ -6,16 +6,17 @@
 
       private
       public :: dir_tree
-      public :: init
+      public :: init,delete
       public :: make_dir_tree
       
-      interface init;     module procedure init_DT;   end interface
+      interface init;     module procedure init_DT;     end interface
+      interface delete;   module procedure delete_DT;   end interface
 
       type dir_tree
         type(string) :: PS
         type(string) :: tar  ! target root (.exe location)
         type(string) :: root ! output root
-        type(string) :: U,B,J,T
+        type(string) :: U,B,J,T,BEM
         type(string) :: U_e,B_e,J_e,T_e ! energy data
         type(string) :: U_t,B_t,J_t,T_t ! transient data
         type(string) :: mat
@@ -47,21 +48,22 @@
 
         call init(DT%mat,DT%root);    call append(DT%mat,'material'//str(DT%PS))
         call init(DT%params,DT%root); call append(DT%params,'parameters'//str(DT%PS))
+        call init(DT%BEM,DT%root); call append(DT%BEM,'BEM'//str(DT%PS))
 
         call init(DT%U,DT%root); call append(DT%U,'Ufield'//str(DT%PS))
         call init(DT%B,DT%root); call append(DT%B,'Bfield'//str(DT%PS))
         call init(DT%J,DT%root); call append(DT%J,'Jfield'//str(DT%PS))
         call init(DT%T,DT%root); call append(DT%T,'Tfield'//str(DT%PS))
 
-        call init(DT%U_t,DT%U); call append(DT%U_t,'energy'//str(DT%PS))
-        call init(DT%B_t,DT%B); call append(DT%B_t,'energy'//str(DT%PS))
-        call init(DT%J_t,DT%J); call append(DT%J_t,'energy'//str(DT%PS))
-        call init(DT%T_t,DT%T); call append(DT%T_t,'energy'//str(DT%PS))
+        call init(DT%U_t,DT%U); call append(DT%U_t,'transient'//str(DT%PS))
+        call init(DT%B_t,DT%B); call append(DT%B_t,'transient'//str(DT%PS))
+        call init(DT%J_t,DT%J); call append(DT%J_t,'transient'//str(DT%PS))
+        call init(DT%T_t,DT%T); call append(DT%T_t,'transient'//str(DT%PS))
 
-        call init(DT%U_e,DT%U); call append(DT%U_e,'transient'//str(DT%PS))
-        call init(DT%B_e,DT%B); call append(DT%B_e,'transient'//str(DT%PS))
-        call init(DT%J_e,DT%J); call append(DT%J_e,'transient'//str(DT%PS))
-        call init(DT%T_e,DT%T); call append(DT%T_e,'transient'//str(DT%PS))
+        call init(DT%U_e,DT%U); call append(DT%U_e,'energy'//str(DT%PS))
+        call init(DT%B_e,DT%B); call append(DT%B_e,'energy'//str(DT%PS))
+        call init(DT%J_e,DT%J); call append(DT%J_e,'energy'//str(DT%PS))
+        call init(DT%T_e,DT%T); call append(DT%T_e,'energy'//str(DT%PS))
         call make_dir_tree(DT)
       end subroutine
 
@@ -70,6 +72,7 @@
         type(dir_tree),intent(in) :: DT
         call make_dir(str(DT%params))
         call make_dir(str(DT%mat))
+        call make_dir(str(DT%BEM))
 
         call make_dir(str(DT%U))
         call make_dir(str(DT%B))
@@ -85,6 +88,28 @@
         call make_dir(str(DT%B_e))
         call make_dir(str(DT%J_e))
         call make_dir(str(DT%T_e))
+      end subroutine
+
+      subroutine delete_DT(DT)
+        implicit none
+        type(dir_tree),intent(inout) :: DT
+        call delete(DT%params)
+        call delete(DT%mat)
+
+        call delete(DT%U)
+        call delete(DT%B)
+        call delete(DT%J)
+        call delete(DT%T)
+
+        call delete(DT%U_t)
+        call delete(DT%B_t)
+        call delete(DT%J_t)
+        call delete(DT%T_t)
+
+        call delete(DT%U_e)
+        call delete(DT%B_e)
+        call delete(DT%J_e)
+        call delete(DT%T_e)
       end subroutine
 
       end module

@@ -104,20 +104,20 @@
         integer :: i
         if (Node_along(x,1)) then
           do i=1,m%s
-            if (.not.m%g(i)%st_faces(1)%TF) x%RF(i)%f(1,:,:) = 0.0_cp
-            if (.not.m%g(i)%st_faces(2)%TF) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
+            if ((.not.m%g(i)%st_faces(1)%TF).and.(.not.x%RF(i)%b%f(1)%b%periodic)) x%RF(i)%f(1,:,:) = 0.0_cp
+            if ((.not.m%g(i)%st_faces(2)%TF).and.(.not.x%RF(i)%b%f(2)%b%periodic)) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
           enddo
         endif
         if (Node_along(x,2)) then
           do i=1,m%s
-            if (.not.m%g(i)%st_faces(3)%TF) x%RF(i)%f(:,1,:) = 0.0_cp
-            if (.not.m%g(i)%st_faces(4)%TF) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
+            if ((.not.m%g(i)%st_faces(3)%TF).and.(.not.x%RF(i)%b%f(3)%b%periodic)) x%RF(i)%f(:,1,:) = 0.0_cp
+            if ((.not.m%g(i)%st_faces(4)%TF).and.(.not.x%RF(i)%b%f(4)%b%periodic)) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
           enddo
         endif
         if (Node_along(x,3)) then
           do i=1,m%s
-            if (.not.m%g(i)%st_faces(5)%TF) x%RF(i)%f(:,:,1) = 0.0_cp
-            if (.not.m%g(i)%st_faces(6)%TF) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
+            if ((.not.m%g(i)%st_faces(5)%TF).and.(.not.x%RF(i)%b%f(5)%b%periodic)) x%RF(i)%f(:,:,1) = 0.0_cp
+            if ((.not.m%g(i)%st_faces(6)%TF).and.(.not.x%RF(i)%b%f(6)%b%periodic)) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
           enddo
         endif
       end subroutine

@@ -14,9 +14,6 @@
        private
        public :: apply_BCs_faces
 
-
-
-
        interface apply_BCs_faces;       module procedure apply_BCs_faces_VF;     end interface
        interface apply_BCs_faces;       module procedure apply_BCs_faces_SF;     end interface
 
@@ -39,7 +36,12 @@
 #ifdef _DEBUG_APPLY_BCS_
        call check_defined(U,m)
 #endif
-         do k = 1,6; call apply_face(U,m,k); enddo
+         ! do k = 1,6; call apply_face(U,m,k); enddo
+
+         ! For periodic in x:
+         do k = 3,6; call apply_face(U,m,k); enddo
+         call apply_face(U,m,1)
+         call apply_face(U,m,2)
        end subroutine
 
        subroutine apply_face(U,m,f)
@@ -122,9 +124,9 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,-dh1,b,p,y,z)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,-dh1,b,p,x,z)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,-dh1,b,p,x,y)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,dh1,b,p,y,z)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,dh1,b,p,x,z)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,dh1,b,p,x,y)
          case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dhe,b,p,y,z)
          case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dhe,b,p,x,z)
          case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dhe,b,p,x,y)
@@ -165,6 +167,9 @@
          if     (b%Dirichlet) then; ug = 2.0_cp*bvals - ui
          elseif (b%Neumann) then;   ug = ui - dh*bvals
          elseif (b%Periodic) then;  ug = ui_opp
+         elseif (b%Robin) then
+         ! NOTE: bvals is cw
+         ug = -ui*(1.0_cp + 2.0_cp*bvals/dh)/(1.0_cp - 2.0_cp*bvals/dh)
          else; stop 'Error: Bad bctype! Caught in app_CC in apply_BCs_faces.f90'
          endif
        end subroutine
@@ -181,7 +186,8 @@
 #endif
          if     (b%Dirichlet) then; ub = bvals; ug = 2.0_cp*ub - ui
          elseif (b%Neumann) then;   ug = ui + 2.0_cp*bvals*dh
-         elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp
+         ! elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp
+         elseif (b%Periodic) then;  ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'
          endif
        end subroutine

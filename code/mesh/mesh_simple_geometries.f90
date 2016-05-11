@@ -16,6 +16,9 @@
        public :: straight_duct_fluid
        public :: Hunt_duct_magnetic
        public :: Shercliff_duct_magnetic
+       public :: duct_with_vacuum
+
+       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 
@@ -85,6 +88,51 @@
          call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3) ! z-direction
          call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2) ! y-direction
          call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2) ! y-direction
+
+         call add(m_ind,g)
+         call initProps(m_ind)
+         call patch(m_ind)
+
+         call init(D_sigma,m_sigma,m_ind)
+         call delete(m_sigma)
+         call delete(g)
+       end subroutine
+
+       subroutine duct_with_vacuum(m_ind,m_mom,D_sigma)
+         implicit none
+         type(mesh),intent(inout) :: m_ind
+         type(mesh),intent(in) :: m_mom
+         type(domain),intent(inout) :: D_sigma
+         type(mesh) :: m_sigma
+         type(grid) :: g
+         real(cp) :: tw,tf
+         real(cp) :: Gamma_f,Gamma_w,Gamma_v
+         integer :: N_w,N_v
+         call delete(m_ind)
+         call init(g,m_mom%g(1))
+
+         Gamma_f = 1.0_cp
+         Gamma_w = Gamma_f + tw
+         Gamma_v = 7.0_cp
+         tf = 1.0_cp
+
+         tw = 0.5_cp
+         N_w = 20
+         N_v = 15
+
+         ! Wall
+         call ext_Roberts_B_IO(g,tw,N_w,2)
+         call ext_Roberts_B_IO(g,tw,N_w,3)
+
+         ! Define domain for electrical conductivity
+         call add(m_sigma,g)
+         call initProps(m_sigma)
+         call patch(m_sigma)
+
+         ! Vacuum
+         ! Remove the following 4 lines for vacuum-absent case
+         ! call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,2) ! y-direction
+         ! call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3) ! z-direction
 
          call add(m_ind,g)
          call initProps(m_ind)
@@ -187,11 +235,11 @@
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
          real(cp) :: Ha,Re
-         Ha = 500.0_cp; Re = 100.0_cp
+         Ha = 100.0_cp; Re = 10.0_cp**(7.0_cp)
          call delete(m)
-         N = (/68,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
-         beta = reynoldsBL(Re,hmin,hmax)
+         N = (/1,50,50/); hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         ! beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 
          call grid_uniform(g,hmin(1),hmax(1),N(1),1)

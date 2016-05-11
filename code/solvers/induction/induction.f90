@@ -20,6 +20,7 @@
        use init_Bfield_mod
        use init_Sigma_mod
        use ops_embedExtract_mod
+       use BEM_solver_mod
 
        use domain_mod
        use grid_mod
@@ -59,9 +60,9 @@
          type(VF) :: B,B0,temp_F1,temp_F2             ! Face data
          type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
-         type(SF) :: sigmaInv_CC
 
          ! --- Scalar fields ---
+         type(SF) :: sigmaInv_CC
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
          type(SF) :: vol_CC
 
@@ -77,8 +78,9 @@
          type(probe) :: KB_energy,KB0_energy,KBi_energy
          type(probe) :: KB_f_energy,KB0_f_energy,KBi_f_energy
          type(probe) :: KB_c_energy,KB0_c_energy,KBi_c_energy
-         type(mesh) :: m
+         type(mesh) :: m,m_surface
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
+         type(domain) :: D_surface
 
          integer :: nstep             ! Nth time step
          integer :: N_induction       ! Maximum number iterations in solving B (if iterative)
@@ -118,7 +120,7 @@
          real(cp),intent(in) :: Rem,dTime
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: sigma,prec_cleanB
+         type(SF) :: sigma,prec_cleanB,temp_surf,temp_domain
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
 
@@ -155,6 +157,8 @@
          call init_CC(ind%vol_CC,m)
          call volume(ind%vol_CC,m)
          write(*,*) '     Fields allocated'
+
+         ! call BEM_Poisson(m,DT)
 
          ! --- Initialize Fields ---
          call init_BBCs(ind%B,m)
@@ -316,6 +320,7 @@
          else
            if (solveInduction) then
              write(*,*) 'Exporting Solutions for B at ind%nstep = ',ind%nstep
+             call export_processed(m,ind%B ,str(DT%B),'B',1)
              ! call export_raw(m,ind%B0,str(DT%B),'B0',0)
              call export_raw(m,ind%B ,str(DT%B),'B',0)
              call export_raw(m,ind%J ,str(DT%J),'J',0)
@@ -326,7 +331,6 @@
              call export_raw(m,ind%divJ,str(DT%J),'divJ',0)
 
              call export_processed(m,ind%B0,str(DT%B),'B0',1)
-             call export_processed(m,ind%B ,str(DT%B),'B',1)
              call export_processed(m,ind%J ,str(DT%J),'J',1)
              write(*,*) '     finished'
            endif
@@ -420,7 +424,7 @@
            call exportTransient(ind)
          endif
 
-         if (PE%transient_2D) call export_processed_transient(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
+         if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
 
          if (PE%info) then
            call inductionInfo(ind,6)

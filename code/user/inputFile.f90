@@ -17,30 +17,33 @@
          integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 400.0_cp
+         ! Re         = 1000.0_cp
+         ! Re         = 1.0_cp*10.0_cp**(7.0_cp)
+         Re         = 10.0_cp
          Ha         = 100.0_cp
 
-         Rem        = 100.0_cp
+         Rem        = 1.0_cp
          Gr         = 0.0_cp
          Fr         = 0.0_cp
          Pr         = 0.71_cp
          Ec         = 0.0_cp
 
-         finite_Rem = .true.
-         dt_eng     = 5.0_cp*10.0_cp**(-4.0_cp)
-         dt_mom     = 5.0_cp*10.0_cp**(-4.0_cp)
-         dt_ind     = 5.0_cp*10.0_cp**(-4.0_cp)
+         finite_Rem = .false.
+         dt_eng     = 1.0_cp*10.0_cp**(-1.0_cp)
+         dt_mom     = 5.0_cp*10.0_cp**(-6.0_cp)
+         dt_ind     = 5.0_cp*10.0_cp**(-7.0_cp)
          t          = 200.0_cp
          ! t          = 1.0_cp
          ! NmaxMHD       = ceiling(t/dt_eng)
          NmaxMHD       = ceiling(t/dt_mom)
+         ! NmaxMHD       = 1
          ! NmaxMHD       = ceiling(t/dt_ind)
          ! NmaxMHD       = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
          ! NmaxMHD       = 1500
 
          N_nrg         = 1000     ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_ind         = 100000   ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_ind         = 20       ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 5        ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 
@@ -53,7 +56,7 @@
          ! Which means b and r⁰ -> 0 as t-> infinity.
          tol_nrg       = 10.0_cp**(-10.0_cp)
          tol_mom       = 10.0_cp**(-10.0_cp)
-         tol_ind       = 10.0_cp**(-6.0_cp)
+         tol_ind       = 10.0_cp**(-3.0_cp)
          tol_PPE       = 10.0_cp**(-10.0_cp)
          tol_cleanB    = 10.0_cp**(-10.0_cp)
        end subroutine

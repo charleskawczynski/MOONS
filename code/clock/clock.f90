@@ -7,8 +7,6 @@
        public :: init,delete
        public :: tic,toc
 
-
-
        interface init;         module procedure init_clock;          end interface
        interface tic;          module procedure tic_clock;           end interface
        interface toc;          module procedure toc_clock;           end interface

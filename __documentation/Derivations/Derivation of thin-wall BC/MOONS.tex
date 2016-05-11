@@ -1,0 +1,622 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+
+\newcommand{\B}{\mathbf{B}}
+\renewcommand{\H}{\mathbf{H}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\curl}{\nabla \times}
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\PD}{\partial}
+\newcommand{\MC}{\mathcal}
+\newcommand{\BM}{\frac{\B}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\J}{\sigma}}
+\newcommand{\JoS}{\frac{\J^1}{\sigma}}
+\newcommand{\JSS}{\frac{\J^2}{\sigma}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+% \setlength{\textfloatsep}{0.1cm}
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+% \renewcommand{\arraystretch}{0.0} % Removes vertical spaces before/after tabularx
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetic BCs: Real-vacuum, pseudo-vacuum, thin wall}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Document goal}
+The goal of this document is to describe, in a historical sense, how magnetic BCs developed and the assumptions that go along with each one.
+
+\section{Bullard (1955) - governing equations}
+In Bullard's "A discussion on MHD", he sets the stage by pointing out:
+\begin{itemize}
+\item Coupling between non-linear fluid motion and Maxwell's equations
+\item 4 types of MHD situations:
+\item a) Currents induced by fluid motion.
+\item b) EM forces acting back on fluid (dynamics).
+\item c) Additional body forces (buoyancy, gravitational, etc.).
+\item d) Equation of state for material and thermal properties as a function of pressure and temperature.
+\end{itemize}
+He then mentions characteristic phenomena in ordinary flows followed by new phenomena in MHD flows.
+
+"In a gas it is also adequate if the radius of curvature of the paths of the electrons or ions carrying the current is large enough compared to their mean free path". The condition for neglecting the atomic nature of the gas is
+
+\begin{equation}
+	H << m u N A / e
+\end{equation}
+
+He assumes macroscopic material properties are valid. "If the electrons and the atoms are in thermodynamic equilibrium, v and N may be expressed in terms of the pressure, p, the teperature, T, and the gas constant, k, giving:"
+\begin{equation}
+	H << \left( \frac{3m}{h} \right)^{1/2} \frac{Ap}{eT^{1/2}} \doteqdot 0.06 \frac{p}{T^{1/2}}
+\end{equation}
+An example of parameters is given using this condition.
+
+Here, the Hall effect, electron inertia effects and the difference in the electrical conductivity along and across magnetic field lines of force are neglected.
+
+The rate of Ohmic dissipation can be found from magnetic diffusion term, and the convection term will describe how the magnetic field moves.
+
+If there is no motion, then only Ohmic dissipation will dictate the timescale.
+
+"In using the time scale criterion, it is necessary to remember that the characteristic length concerned is the distance in which the field changes by a large fraction and not the size of the body. This distinction is important in turbulent motion and may invalidate the common belief that the sun's field can last without regeneration for periods of $10^9$ years." 
+
+"The stretching of lines of force transfers energy from the motion to the field. The growth of a turbulent magnetic field must therefore depend on the stretching by the motion outbalancing the shrinking." 
+
+\newpage
+
+\section{Shercliff (1956) - governing equations - first thin wall BC}
+
+Shercliff started Bullard's (1955) derivation of equations of motion, where he argued that displacement current and the "convection of charges" are negligible. Assuming that convection of charges is negligible is, by definition, the low magnetic Reynolds number approximation.
+
+\begin{equation}
+  \curl \E = \mu \frac{\PD \H}{\PD t}
+\end{equation}
+\begin{equation}
+	\curl \H = 4 \pi \J
+\end{equation}
+\begin{equation}
+	\J = \SI (\E + \mu \U \times \H)
+\end{equation}
+Dynamical equation is
+\begin{equation}
+	\mu \J \times \H + \eta \nabla^2 \U - \nabla p = \rho \left[ \frac{\PD \U}{\PD t} + \U \DOT \nabla \U \right]
+\end{equation}
+Shercliff then defines the geometry, and applied B-field, and deduces that no $y$ component of $\B$ and that $B_x$ is the applied field $B^0$. The assumption of neglecting $B_x$ implies low $Re_m$.
+
+Later, Shercliff neglects $\frac{\PD \B}{\PD t}$ (for liquid  metals). This assumption is redundant though because convection has already been neglected!
+
+These assumptions seem out of  order to me.
+
+
+Finally, Shercliff says "The role of $h$ is now limited to that of a current stream-function...", since [using Ampere's law when substituting some of the dimensionless parameters]
+
+\begin{equation}
+  j_y = -v_0 (\sigma \eta)^{1/2} \PD h/\PD x
+  , \qquad
+  j_x = -v_0 (\sigma \eta)^{1/2} \PD h/\PD y
+\end{equation}
+Here, $V$ is electric potential. This potential exists, because neglecting $\dot{h}$ implies that $\curl \E$ is negligible. Then $\E $ can be written as $ -\nabla V$, and from (3) it follows that
+
+\begin{equation}
+  \PD V / \PD y = \mu H_0 v_z - j_y/\sigma
+\end{equation}
+assuming no slip and no flow through, we have
+\begin{equation}
+  \PD V / \PD y = - j_y/\sigma
+\end{equation}
+Or more generally
+\begin{equation}
+  (\nabla V)_{\tau} = - \J_{\tau}/\sigma
+\end{equation}
+Writing this in terms of $\B$, we have
+\begin{equation}
+\begin{aligned}
+  \PD_{\tau_1} V = \sigma^{-1}(\PD_n B_{\tau_2} - \PD_{\tau_2} B_n) \hat{\tau_1} \\
+  \PD_{\tau_2} V = \sigma^{-1} (\PD_n B_{\tau_1} - \PD_{\tau_1} B_n) \hat{\tau_2} \\
+\end{aligned}
+\end{equation}
+Note that $B_n$ can be considered "known" on the boundary since it can be updated exlicitly from Faraday's law, where $B_n$ will be computed from $\curl \E$, which does not reach outside of the computational domain. This will not, in general, apply to implicit time marching.
+
+This equation, along with the divergence-free constraint:
+\begin{equation}
+  \PD_n B_n + \PD_{\tau_1} B_{\tau_1} + \PD_{\tau_2} B_{\tau_2} = 0
+\end{equation}
+We have a closed problem.
+
+
+\subsection{Boundary Conditions}
+"One obvious condition is that $v_z$ and v shal vanish at the wall." In the absence of any contact resistance between the fluid and the walls, the potential is everywhere continuous. Also, $H_z$ and $h$ must be continuous at the fluid-wall interface and zero at the exterior walls. This secures continuity of current flow between the fluid and the walls, and precludes the flow of current outside the walls. Any voltage measuring device would take a negligibly small current.
+
+If $as$ and $an$ indicate distances along the boundary and inward normal respectively, as shown in Fig. 2, and we assume that the wall has conductivity $\sigma_0$ and thickness $w (<<a)$, then $-j_0/w \sigma_0 = (\PD V/\PD s)/a$, $V$ being in the wall or in the fluid at the wall. At the wall, $v$ vanishes and $-\sigma \nabla V = \curl \H/(4 \pi)$ and hence $\PD V/\PD s = -(\eta/\sigma)^{1/2} v_0 \PD h/\PD n$. Eliminating $\PD V/\PD s$ and $j_0$, we see that at the fluid boundary
+
+\begin{equation}
+  h = \frac{w \sigma_0}{a \sigma} \frac{\PD h}{\PD n}
+\end{equation}
+the other spatial BC, if contact resistance is negligible.
+
+\section{Hunt (1965)}
+Shercliff was interested in 2 cases.
+
+\noindent
+Case 1) rectangular duct with walls BB (perpendicular to $\B^0$) perfectly conducting and walls AA of arbitrary conductivity.
+
+\noindent
+Case 2) rectangular duct with walls AA (parallel to $\B^0$) non-conducting and walls BB of arbitrary conductivity.
+
+\noindent
+The same BC assumption was adopted from shercliff
+\begin{equation}
+  \frac{\PD H}{\PD n} = \sigma a H / \sigma_w w
+\end{equation}
+Where $\sigma_w$ is the conductivity of the wall and $w$ its thickness ($w<<a$). Here, Hunt let $d = \sigma_w w/\sigma a$, to make the BC
+\begin{equation}
+  \frac{\PD H}{\PD n} = H / d
+\end{equation}
+
+\section{Alty (1971)}
+
+
+
+\newpage
+
+\section{Smolentsev (2010) - thin wall BC}
+
+To derive BCs for $\J$ at the interface with thin electrically conducting walls, consider a thin wall, the continuity equation for electric current between the fluid-wall interface ($\Gamma$) is
+\begin{equation}
+  \nabla \DOT \J =
+  \frac{\PD j_n}{\PD n} + 
+  \nabla_{\tau} \DOT \J_{\tau} = 0
+  \qquad
+  \rightarrow
+  \qquad
+  \frac{\PD j_n}{\PD n} = - 
+  \nabla_{\tau} \DOT \J_{\tau} 
+\end{equation}
+Integrating across the wall, while assuming constant current in the wall, we have
+\begin{equation}
+  j_n (\Gamma) - \underbrace{j_n (\text{wall-vacuum})}_{ = 0}
+  =
+  - (\nabla_{\tau} \DOT \J_{\tau w}) t_w
+\end{equation}
+Where $\J_{\tau w}$ is the current in the wall and $t_w$ is the wall thickness. Using current continuity
+\begin{equation}
+  \frac{\J_{\tau}}{\sigma} = \frac{\J_{\tau w}}{\sigma_w}
+\end{equation}
+And combining the last 3 equations and assuming uniform $\sigma_w,t_w$, we have
+\begin{equation}
+  j_n (\Gamma) =
+  - \frac{t_w \sigma_w}{\sigma} 
+  (\nabla_{\tau} \DOT \J_{\tau})
+  =
+  \frac{t_w \sigma_w}{\sigma} 
+  \frac{\PD j_n}{\PD n}
+\end{equation}
+Let $c_w = \frac{t_w \sigma_w}{\sigma}$ and we finally have
+\begin{equation}
+  j_n (\Gamma) =
+  c_w
+  \frac{\PD j_n}{\PD n}
+\end{equation}
+Or
+\begin{equation}
+  j_n (\Gamma) -
+  c_w
+  \left. \frac{\PD j_n}{\PD n} \right|_{\Gamma} = 0
+\end{equation}
+As for the BC for $\J_{\tau}$, it can be obtained by introducing the wall potential, $\phi_w$, such taht
+\begin{equation}
+  \J_{\tau w} = -\sigma \nabla_{\tau} \phi_w
+\end{equation}
+After substituting this into the second equation, we have
+\begin{equation}
+  \nabla_{\tau} \DOT (t_w \sigma_w \nabla_{\tau} \phi_w) = j_n(\Gamma)
+\end{equation}
+We may then solve for $\J_{\tau w}$ from the equation before last.
+
+\newpage
+
+\section{My generalization attempt}
+Consider a conducting and insulating domains $\Omega_c$,$\Omega_i$, fluid and solid domains $\Omega_f$,$\Omega_s$. With interfaces $\Gamma_{ci},\Gamma_{fs}$ with appropriate subscripts. Let the total domain be $\Omega$ with boundary $\Gamma_{vo}$. Conservation of charge states
+\begin{equation}
+  \nabla \DOT \J =
+  \frac{\PD j_n}{\PD n} + 
+  \nabla_{\tau} \DOT \J_{\tau} = 0
+  \qquad
+  \rightarrow
+  \qquad
+  \frac{\PD j_n}{\PD n} = - 
+  \nabla_{\tau} \DOT \J_{\tau} 
+\end{equation}
+Applying this 
+\begin{equation}
+  \underbrace{j_n (\Gamma_{cv})}_{=0} - j_n (\Gamma_{fs})
+  =
+  \int_{\Gamma_{fs}}^{\Gamma_{cv}} \nabla_{\tau} \DOT \J_{\tau}  dn
+\end{equation}
+Therefore
+\begin{equation}
+  j_n (\Gamma_{fs})
+  =
+  - \int_{\Gamma_{fs}}^{\Gamma_{cv}} \nabla_{\tau} \DOT \J_{\tau w}  dn
+\end{equation}
+Using current across the interface, we have
+\begin{equation}
+  \frac{\J_{\tau}}{\sigma} = \frac{\J_{\tau w}}{\sigma_w}
+\end{equation}
+
+\section{Second attempt}
+I will use the result from Sergey's paper to write a thin-wall BC for 3D flows. The equations we wish to convert are
+\begin{equation}
+  j_n (\Gamma) -
+  c_w
+  \left. \frac{\PD j_n}{\PD n} \right|_{\Gamma} = 0
+\end{equation}
+\begin{equation}
+  \J_{\tau w} = -\sigma \nabla_{\tau} \phi_w
+\end{equation}
+\begin{equation}
+  \nabla_{\tau} \DOT (t_w \sigma_w \nabla_{\tau} \phi_w) = j_n(\Gamma)
+\end{equation}
+Writing this in terms of $\B$, we have
+\begin{equation}
+  \frac{\PD B_{\tau_2}}{\PD \tau_1} - \frac{\PD B_{\tau_1}}{\PD \tau_2}
+  -
+  c_w
+  \frac{\PD}{\PD n}
+  \left[
+  \frac{\PD B_{\tau_2}}{\PD \tau_1} - \frac{\PD B_{\tau_1}}{\PD \tau_2}
+  \right] = 0
+\end{equation}
+% \begin{equation}
+%   \N \times (\curl \B) |_{\Gamma} = -\sigma \nabla_{\tau} \phi_w
+% \end{equation}
+\begin{equation}
+  \frac{\PD B_{\tau_2}}{\PD n} - \frac{\PD B_n}{\PD \tau_{2}} = -\sigma \frac{\PD \phi_w}{\PD \tau_1}
+\end{equation}
+\begin{equation}
+  \frac{\PD B_{\tau_1}}{\PD n} - \frac{\PD B_n}{\PD \tau_{1}} = -\sigma \frac{\PD \phi_w}{\PD \tau_2}
+\end{equation}
+Combining the above 3 equations yields
+\begin{equation}
+  \nabla_{\tau} \DOT (t_w \sigma_w \nabla_{\tau} \phi_w) = 
+  \frac{\PD B_{\tau_2}}{\PD \tau_1} - \frac{\PD B_{\tau_1}}{\PD \tau_2}
+\end{equation}
+
+Writing this in a more sussinct form
+\begin{equation}
+  \N \DOT (\curl \B) - c_w \frac{\PD }{\PD n} (\N \DOT (\curl \B))
+\end{equation}
+\begin{equation}
+  \N \times (\curl \B) = - \sigma \nabla_{\tau} \phi_w
+\end{equation}
+or
+\begin{equation}
+  \N \times (\curl \B) = \nabla (\N \DOT \B) - \B (\N \DOT \nabla)
+\end{equation}
+
+\begin{equation}
+  \nabla_{\tau} \DOT (t_w \sigma_w \nabla_{\tau} \phi_w) = \N \DOT (\curl \B)
+\end{equation}
+\begin{equation}
+  \nabla \DOT \B = 0
+\end{equation}
+
+\begin{equation}
+  \frac{\N \times (\curl \B)}{\sigma} = \frac{\N \times (\curl \B_w)}{\sigma_w}
+\end{equation}
+
+\newpage
+\section{Clever assumption}
+Assuming $\frac{\PD \B_{\tau}}{\PD t}$ is negligible, we may assume $\N \times (\curl \E) = \mathbf{0}$ and there for we may write $\E_{\tau}$ as $-\nabla V$, the gradient of scalar potential $V$, to get the BC [Iskakov, 2004]
+\begin{equation}
+  (\nabla V)_{\tau} = \tau \DOT (\U \times (B_n \N)_\Gamma) - \J_{\tau}/\sigma
+\end{equation}
+For simplicity, but without loss of generality, let's assume no-slip and no flow-through. Writing this in terms of $\B$, we have
+\begin{equation}
+\begin{aligned}
+  \PD_{\tau_1} V = \sigma^{-1}(\PD_n B_{\tau_2} - \PD_{\tau_2} B_n) \hat{\tau_1} \\
+  \PD_{\tau_2} V = \sigma^{-1} (\PD_n B_{\tau_1} - \PD_{\tau_1} B_n) \hat{\tau_2} \\
+\end{aligned}
+\end{equation}
+Note that $B_n$ can be considered "known" on the boundary since it can be updated exlicitly from Faraday's law, where $B_n$ will be computed from $\N \DOT \curl \E$, which does not reach outside of the computational domain ($\N \DOT \curl \E$ depends on $\E_{\tau}|_{\Gamma}$ only, which will be non-zero due to $\B_{\tau}$ on the interior cells). This will NOT, in general, apply to implicit time marching.
+
+This equation, along with the divergence-free constraint
+\begin{equation}
+  \PD_n B_n + \PD_{\tau_1} B_{\tau_1} + \PD_{\tau_2} B_{\tau_2} = 0
+\end{equation}
+closes the problem. We now have 3 equations and 3 unknowns ($V,B_{\tau_1},B_{\tau_2}$).
+
+
+\newpage
+
+\section{Sergey's derivation}
+Currents in the wall are
+\begin{equation} \begin{aligned}
+  j_{\tau_1} = \PD_{\tau_2} B_n - \PD_n B_{\tau_2} \\
+  j_{\tau_2} = \PD_n B_{\tau_1} - \PD_{\tau_1} B_n
+\end{aligned} \end{equation}
+Using $\frac{\PD}{\PD n} >> \frac{\PD}{\PD \tau_1},\frac{\PD}{\PD \tau_2}$, we have
+\begin{equation} \begin{aligned}
+  j_{\tau_1} =-\PD_n B_{\tau_2} \\
+  j_{\tau_2} = \PD_n B_{\tau_1}
+\end{aligned} \end{equation}
+Now applying continuity of $\E$, we have
+\begin{equation} \begin{aligned}
+  \frac{B_{\tau_1}^{wall-vac}-B_{\tau_1}^{wall-liq}}{t_w \sigma_w}=\left. \sigma_l^{-1}\frac{\PD B_{\tau_1}}{\PD n} \right|_{wall-liq} \\
+  \frac{B_{\tau_2}^{wall-vac}-B_{\tau_2}^{wall-liq}}{t_w \sigma_w}=\left. \sigma_l^{-1}\frac{\PD B_{\tau_2}}{\PD n} \right|_{wall-liq}
+\end{aligned} \end{equation}
+Now assuming the induced magnetic field in the vacuum is zero, we have
+\begin{equation} \begin{aligned}
+  \frac{-B_{\tau_1}^{wall-liq}}{t_w \sigma_w}= \left. \sigma_l^{-1}\frac{\PD B_{\tau_1}}{\PD n} \right|_{wall-liq} \\
+  \frac{-B_{\tau_2}^{wall-liq}}{t_w \sigma_w}= \left. \sigma_l^{-1}\frac{\PD B_{\tau_2}}{\PD n} \right|_{wall-liq}
+\end{aligned} \end{equation}
+Which yields the Robin BCs on the wall-liquid interface
+\begin{equation}
+\boxed{
+\begin{aligned}
+  B_{\tau_1} + \frac{t_w \sigma_w}{\sigma_l} \frac{\PD B_{\tau_1} }{\PD n} = 0 \\
+  B_{\tau_2} + \frac{t_w \sigma_w}{\sigma_l} \frac{\PD B_{\tau_2} }{\PD n} = 0
+\end{aligned}
+}
+\end{equation}
+
+\section{Domains}
+
+\subsection{Vacuum}
+\begin{equation}
+  \U = \mathbf{0}
+  , \qquad
+  \curl \B = \mathbf{0}
+  , \qquad
+  \nabla^2 \B = 0
+  , \qquad
+  \J = \mathbf{0}
+\end{equation}
+\subsection{Stationary wall domain}
+\begin{equation}
+  \U = \mathbf{0}
+  , \qquad
+  \frac{\PD \B}{\PD t} = Re_m^{-1} \nabla^2 \B
+  , \qquad
+  \frac{\PD \J}{\PD t} = Re_m^{-1} \nabla^2 \J
+\end{equation}
+
+\subsection{Fluid domain}
+\begin{equation}
+  \frac{\PD \U}{\PD t} + \nabla \DOT (\U \U)
+  = - \nabla p + \frac{1}{Re} \nabla^2 \U 
+  + \frac{Ha^2}{Re} \J \times \B
+\end{equation}
+
+\begin{equation}
+  \frac{\PD \B}{\PD t} - 
+  Re_m^{-1} \nabla^2 \B = 
+  \curl (\U \times \B)
+\end{equation}
+
+\begin{equation}
+  \frac{\PD \J}{\PD t} - Re_m^{-1} \nabla^2 \J = \curl \curl (\U \times \B)
+\end{equation}
+or
+\begin{equation}
+  \frac{\PD \J}{\PD t} - Re_m^{-1} \nabla^2 \J = \nabla (\nabla \DOT (\U \times \B)) - \nabla^2 (\U \times \B)
+\end{equation}
+
+\section{Magnetic field boundary/interface conditions}
+Reference: Electrodynamics - Jackson (3rd edition). Consider a small "pill box" across a surface. The $\B$ condition between domains 1 and 2 are
+\begin{equation}
+  (\B_2 - \B_1)\DOT \N = 0
+  , \qquad
+  \N \times (\B_2 - \B_1) = \J_{\tau}
+\end{equation}
+Where $\J_{\tau}$ is the electric current the surface. Using Gauss' law
+\begin{equation}
+    \nabla \DOT \B = 0
+    , \qquad
+    \frac{\PD B_n}{\PD n} = - \nabla_{\tau} \DOT \B_{\tau}
+\end{equation}
+
+\section{Surface charge density/surface current density}
+Reference: Electrodynamics - Jackson (3rd edition).
+
+"The physical reality is that the charge or current is confined to the immediate neighborhood of the surface. If this region has thickness small compared to the length scale of interest, we may approximate the reality by the idealization of a region of infinitesimal thickness and speak of a surface distribution. Two different limits need to be distinguished. 
+
+One is the limit in which the "surface" distribution is confined to a region near the surface that is macroscopically small, but microscopically large. An example is the penetration of time-varying fields into a very good, but not perfect, conductor, described in Section 8.1. It is found that the fields are confined to a thickness $\delta$, called the skin depth, and that for high enough frequencies and good enough conductivities $\delta$ can be macroscopically very small. It is then appropriate to integrate the current density $\J$ over the direction perpendicular to the surface to obtain an effective surface current density $\mathbf{K}_{eff}$.
+
+The other limit is truely microscopic and is set by quantum-mechanical effects in the atomic structure of materials. Consider, for instance, the distribution of excess charge of a conducting body in electrostatics. It is well known that this charge lies entirely on the surface of a conductor. We then speak of a surface charge density $\sigma$. There is no $\E$ inside the conductor, but there is, in accord with (I,17), a normal component of electric field just outside the surface. At the microscopic level the charge is not exactly at the surface and the field does not change discontinuiously. The most elementary considerations would indicate that the transition region is a few atomic diameters in extent. The ions in a metal can be thought of as a relatively immobile and localized to 1 angstrom or better; the lighter electrons are less constrained. The results of model calculations are shown in Fig I.5. The come from a solution of the quantum-mechanical many-electron problem in which the ions of the conductor are approximated by a continuous constant charge density for $x<0$. The electron density ($r_s=5$) is roughly appropriate to copper and heavier alkali metals.
+
+The excess electronic charge is seen to be confined to a region within $\pm 2$ angstroms of the "surface" of the ionic distribution. The elctric field arises smoothly over this region to its value of $\sigma$ "outside" the conductor. For macroscopic situations where $10^9$ m is a negligible distance, we can idealize the charge density and electric field behavio as $\rho = \sigma \delta(x)$ and $E_n(x) = \sigma \theta(x)/\epsilon_0$, corresponding to a truely surface density and step-function jump of the field.
+"
+
+\section{Electric current interface conditions}
+Reference: Electrodynamics - Jackson (3rd edition). Consider a small "pill box" across a surface. The $\J$ condition between domains 1 and 2 are
+\begin{equation}
+  \left( \frac{\J_2}{\sigma_2} - \frac{\J_1}{\sigma_1} \right) \DOT \N = \rho
+  , \qquad
+  \N \times \left( \frac{\J_2}{\sigma_2} - \frac{\J_1}{\sigma_1} \right) = 0
+\end{equation}
+Where $\J_{\tau}$ is the electric current the surface and $\rho$ is the surface charge density. Assuming $\sigma \ne 0$ and finite $\sigma$, taking the normal derivative across $\Gamma$ centered at $\Gamma$ implies
+\begin{equation}
+  \boxed{
+  \left. \frac{\PD}{\PD n} \left(\frac{j_n}{\sigma} \right) \right|_{\Gamma} = 0
+  }
+\end{equation}
+This may be applied to any differential surface. This also means that, using Gauss' law and continuity of the electric field
+\begin{equation}
+    \nabla \DOT \E = 0
+    , \qquad
+    \frac{\PD}{\PD n} \left(\frac{j_n}{\sigma} \right) = - \nabla_{\tau} \DOT \frac{\J_{\tau}}{\sigma}
+\end{equation}
+Therefore we have
+\begin{equation}
+  \boxed{
+  \left. \frac{\PD}{\PD \tau_1} \frac{j_{\tau_1}}{\sigma} \right|_{\Gamma} = - 
+  \left. \frac{\PD}{\PD \tau_2} \frac{j_{\tau_2}}{\sigma} \right|_{\Gamma}
+  }
+\end{equation}
+
+
+\section{Tangential magnetic field boundary/interface conditions}
+Reference: Electrodynamics - Jackson (3rd edition). Consider a small "pill box" across an \textit{interface} between domains 1 and 2. The $\J$ condition between domains are
+\begin{equation}
+    (\E_2 - \E_1) \DOT \N = \rho
+    , \qquad
+    \N \times (\E_2 - \E_1) = \mathbf{0}
+\end{equation}
+Where $\rho$ is the surface charge density. Writing this in terms of electric current, we have
+\begin{equation}
+    \left( \frac{\J_2}{\sigma_2} - \frac{\J_1}{\sigma_1} \right) \DOT \N = \rho
+    , \qquad
+    \frac{\J_{\tau_2}}{\sigma_2} = \frac{\J_{\tau_1}}{\sigma_1}
+\end{equation}
+Where $\sigma \ne 0$. Taking the normal derivative across $\Gamma$ centered at $\Gamma$ implies
+\begin{equation}
+  \left. \frac{\PD}{\PD n} \left( \frac{j_n}{\sigma} \right) \right|_{\Gamma} = 0
+\end{equation}
+
+
+\section{Electric current at interface/boundary conditions}
+Reference: Electrodynamics - Jackson (3rd edition). Consider a small "pill box" across an \textit{interface} between domains 1 and 2. The $\J$ condition between domains are
+\begin{equation}
+    (\E_2 - \E_1) \DOT \N = \rho
+    , \qquad
+    \N \times (\E_2 - \E_1) = \mathbf{0}
+\end{equation}
+Where $\rho$ is the surface charge density. Writing this in terms of electric current, we have
+\begin{equation}
+    \left( \frac{\J_2}{\sigma_2} - \frac{\J_1}{\sigma_1} \right) \DOT \N = \rho
+    , \qquad
+    \frac{\J_{\tau_2}}{\sigma_2} = \frac{\J_{\tau_1}}{\sigma_1}
+\end{equation}
+Where $\sigma \ne 0$.
+Converting this to $\B$, we have
+\begin{equation}
+    \left.
+    \frac{\PD_{\tau_1} B_{\tau_2} - \PD_{\tau_2} B_{\tau_1}}
+    {\sigma}
+    \right |_{2} - 
+    \left.
+    \frac{\PD_{\tau_1} B_{\tau_2} - \PD_{\tau_2} B_{\tau_1}}
+    {\sigma}
+    \right |_{1}
+    = \rho
+    , \qquad
+    \frac{\J_{\tau_2}}{\sigma_2} = \frac{\J_{\tau_1}}{\sigma_1}
+\end{equation}
+
+
+\subsection{Thin wall (approx)}
+Assuming the wall is thin, we may use $\frac{\PD}{\PD n} << \frac{\PD}{\PD \tau_1},\frac{\PD}{\PD \tau_2}$ to get
+
+\begin{equation}
+  \left. \frac{\PD }{\PD \tau_1} \left( 
+  \PD_{\tau_2} B_{n}
+  \right) \right|_{\Gamma} = -
+  \left. \frac{\PD }{\PD \tau_2} \left( 
+  \PD_{\tau_1} B_{n}
+  \right) \right|_{\Gamma}
+\end{equation}
+
+\subsection{Integrating divB (general)}
+Going back to
+\begin{equation}
+  \left. \frac{\PD B_{\tau_1}}{\PD \tau_1} \right|_{\Gamma} = - 
+  \left. \frac{\PD B_{\tau_2}}{\PD \tau_2} \right|_{\Gamma}
+\end{equation}
+Integrating this equation to solve for $B_{\tau_1}$, we have
+\begin{equation}
+  B_{\tau_1} = 
+  -\int_{\tau_1} \frac{\PD B_{\tau_2}}{\PD \tau_2} d{\tau_1} + C(\tau_1)
+\end{equation}
+
+\subsection{fluid-wall}
+Across a fluid-wall interface, we have
+\begin{equation}
+  \U = \U_w
+  , \qquad
+  \left. \frac{\PD B_n}{\PD n} \right|_{\Gamma} = 0
+  , \qquad
+  , \qquad
+  \left( \frac{\J_w}{\sigma_w} -\frac{\J_f}{\sigma_f} \right) \DOT \N = 0
+\end{equation}
+Since $B_n$ and $j_n$ at the fluid and wall match, this is equivalent to
+\begin{equation}
+  \frac{\PD B_n}{\PD n} = 0
+  , \qquad
+  \frac{\PD}{\PD n} \left( \frac{j_n}{\sigma} \right) = 0
+\end{equation}
+
+
+\subsection{solid conductor-vacuum}
+\begin{equation}
+  \U = \mathbf{0}
+  , \qquad
+  (\B_c -\B_v) \DOT \N = 0
+  , \qquad
+  \left( \frac{\J_c}{\sigma_c} -\frac{\J_v}{\sigma_v} \right) \DOT \N = 0
+\end{equation}
+
+Since $\J_v = \mathbf{0},\sigma_v = 0$, then we have
+
+\end{document}

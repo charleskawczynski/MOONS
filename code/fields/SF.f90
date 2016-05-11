@@ -667,6 +667,7 @@
           type(mesh),intent(in) :: m
           integer,intent(in) :: dir
           integer :: i
+          call delete(f)
           allocate(f%RF(m%s)); f%s = m%s
           do i=1,f%s; call init_Edge(f%RF(i),m%g(i),dir); enddo
           call deleteDataLocation(f)
@@ -689,6 +690,7 @@
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer :: i
+          call delete(f)
           allocate(f%RF(m%s)); f%s = m%s
           do i=1,f%s; call init_Node(f%RF(i),m%g(i)); enddo
           call deleteDataLocation(f)

@@ -4,7 +4,7 @@
 
        private
        public :: bctype
-       public :: init_Dirichlet,init_Neumann,init_Periodic,init_symmetric,init_antisymmetric
+       public :: init_Dirichlet,init_Neumann,init_Robin,init_Periodic,init_symmetric,init_antisymmetric
        public :: init,delete
        public :: print,export
        public :: export_type,export_meanVal
@@ -12,6 +12,7 @@
        type bctype
          logical :: Dirichlet
          logical :: Neumann
+         logical :: Robin
          logical :: Periodic
          logical :: symmetric
          logical :: antisymmetric
@@ -21,6 +22,7 @@
 
        interface init_Dirichlet;      module procedure init_Dirichlet_b;      end interface
        interface init_Neumann;        module procedure init_Neumann_b;        end interface
+       interface init_Robin;          module procedure init_Robin_b;          end interface
        interface init_Periodic;       module procedure init_Periodic_b;       end interface
        interface init_symmetric;      module procedure init_symmetric_b;      end interface
        interface init_antisymmetric;  module procedure init_antisymmetric_b;  end interface
@@ -49,6 +51,7 @@
          type(bctype),intent(inout) :: b
          b%Dirichlet = .false.
          b%Neumann = .false.
+         b%Robin = .false.
          b%Periodic = .false.
          b%symmetric = .false.
          b%antisymmetric = .false.
@@ -64,6 +67,11 @@
          implicit none
          type(bctype),intent(inout) :: b
          call delete(b); b%Neumann = .true.; b%defined = .true.
+       end subroutine
+       subroutine init_Robin_b(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         call delete(b); b%Robin = .true.; b%defined = .true.
        end subroutine
        subroutine init_Periodic_b(b)
          implicit none
@@ -89,6 +97,7 @@
          b_out%meanVal = b_in%meanVal
          b_out%Dirichlet = b_in%Dirichlet
          b_out%Neumann = b_in%Neumann
+         b_out%Robin = b_in%Robin
          b_out%Periodic = b_in%Periodic
          b_out%symmetric = b_in%symmetric
          b_out%antisymmetric = b_in%antisymmetric
@@ -144,6 +153,7 @@
          if (TF) then
            write(newU,*) 'Dirichlet = ',b%Dirichlet
            write(newU,*) 'Neumann = ',b%Neumann
+           write(newU,*) 'Robin = ',b%Robin
            write(newU,*) 'Periodic = ',b%Periodic
            write(newU,*) 'Symmetric = ',b%symmetric
            write(newU,*) 'Antisymmetric = ',b%antisymmetric
@@ -156,6 +166,7 @@
 
            if (b%Dirichlet)     write(newU,'(A,T1)',advance='no') 'D'
            if (b%Neumann)       write(newU,'(A,T1)',advance='no') 'N'
+           if (b%Robin)         write(newU,'(A,T1)',advance='no') 'R'
            if (b%Periodic)      write(newU,'(A,T1)',advance='no') 'P'
            if (b%symmetric)     write(newU,'(A,T1)',advance='no') 'S'
            if (b%antisymmetric) write(newU,'(A,T1)',advance='no') 'A'
@@ -173,6 +184,7 @@
          if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined in bctype.f90'
          if (b%Dirichlet)     write(newU,'(A6,T1)',advance='no') '     D'
          if (b%Neumann)       write(newU,'(A6,T1)',advance='no') '     N'
+         if (b%Robin)         write(newU,'(A6,T1)',advance='no') '     R'
          if (b%Periodic)      write(newU,'(A6,T1)',advance='no') '     P'
          if (b%symmetric)     write(newU,'(A6,T1)',advance='no') '     S'
          if (b%antisymmetric) write(newU,'(A6,T1)',advance='no') '     A'

@@ -250,7 +250,7 @@
          end select
          ! The number of times that snip / pop are called
          ! must be chosen carefully, this is just a test...
-         s = gg%g%c(dir)%N - 1
+         s = gg%g%c(dir)%N
          select case (face)
          case (1,3,5); do i=1,s; call snip(gg,dir); enddo
          case (2,4,6); do i=1,s; call  pop(gg,dir); enddo

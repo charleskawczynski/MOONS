@@ -1,6 +1,6 @@
 # ************* CLUSTER CONFIGURATION ******************
-# CLUSTER = 'PC_CK'
-CLUSTER = 'Workstation_CK'
+CLUSTER = 'PC_CK'
+# CLUSTER = 'Workstation_CK'
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
@@ -183,6 +183,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)ops\
 	$(SRC_DIR)$(PS)probes\
 	$(SRC_DIR)$(PS)solvers\
+	$(SRC_DIR)$(PS)solvers$(PS)BEM\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT\
 	$(SRC_DIR)$(PS)solvers$(PS)GS\
@@ -304,6 +305,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)BEM$(PS)BEM_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\
@@ -311,6 +313,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)export_analytic.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90\

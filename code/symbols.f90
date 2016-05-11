@@ -12,6 +12,7 @@ pi                          π
 
 Math Operators
 Nabla                       ∇
+Laplacian					∇²
 Divergence 					•
 Cross						x
 Integral                    ∫

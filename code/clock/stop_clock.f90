@@ -12,14 +12,10 @@
        implicit none
 
        private
-
        public :: stop_clock
        public :: init,delete
        public :: tic,toc
        public :: print,export
-
-
-
 
        type stop_clock
         ! Known Quantities

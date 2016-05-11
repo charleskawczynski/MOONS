@@ -3,29 +3,23 @@
        use IO_tools_mod
        use subdomain_mod
        use mesh_mod
-
        implicit none
 
        private
-
-
-
        public :: domain
        public :: init,delete
        public :: add,print,export
 
-       interface init;               module procedure init_domain;        end interface
-       interface add;                module procedure add_subdomain;      end interface
-       interface init;               module procedure init_domain_copy;   end interface
-       interface delete;             module procedure delete_domain;      end interface
-
-       interface print;              module procedure print_domain;       end interface
-       interface export;             module procedure export_domain;      end interface
+       interface init;        module procedure init_domain;        end interface
+       interface add;         module procedure add_subdomain;      end interface
+       interface init;        module procedure init_domain_copy;   end interface
+       interface delete;      module procedure delete_domain;      end interface
+       interface print;       module procedure print_domain;       end interface
+       interface export;      module procedure export_domain;      end interface
 
        type domain
          integer :: s ! Number of subdomains
          type(subdomain),dimension(:),allocatable :: sd
-         ! integer,dimension(:),allocatable :: g_in_id,g_tot_id
          type(mesh) :: m_in,m_tot
        end type
 

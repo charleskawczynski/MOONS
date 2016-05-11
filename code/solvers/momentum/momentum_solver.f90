@@ -148,8 +148,8 @@
          logical,intent(in) :: compute_norms
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F1,U,m)
-         ! call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         ! call lap(temp_F1,U,m)
+         call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
          call add(Ustar,F)
@@ -160,6 +160,7 @@
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
          call grad(temp_F1,p,m)
+         call subtract(temp_F1%x,1.0_cp) ! mpg
          call multiply(temp_F1,dt)
          call subtract(U,Ustar,temp_F1)
          call apply_BCs(U,m)
@@ -181,7 +182,8 @@
          logical,intent(in) :: compute_norms
          call advect_U(temp_F,U,U_E,m,.false.,temp_E,temp_CC)
          call multiply(Ustar,temp_F,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F,U,m)
+         ! call lap(temp_F,U,m)
+         call lap_centered(temp_F,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F,1.0_cp/Re)
          call add(Ustar,temp_F)
          call add(Ustar,F)
@@ -193,6 +195,7 @@
          call zeroGhostPoints(temp_CC)
          call solve(GS,p,temp_CC,m,n,compute_norms)
          call grad(temp_F,p,m)
+         call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
          call apply_BCs(U,m)

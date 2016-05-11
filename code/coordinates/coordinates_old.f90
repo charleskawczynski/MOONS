@@ -124,48 +124,23 @@
         real(cp),dimension(sn),intent(in) :: hn
         integer :: i
         call delete(c)
+        ! Node grid
         if (.not.(size(hn).gt.0)) stop 'Error: hn not allocated in initCoordinates in coordinates.f90'
         if (.not.(size(hn).eq.sn)) stop 'Error: sn.ne.size(hn) in initCoordinates in coordinates.f90'
-
-        ! Typical init
         c%sn = size(hn)
-        if (c%sn.gt.2) then
-          ! Node grid
-          allocate(c%hn(c%sn))
-          allocate(c%dhn(c%sn-1))
-          c%hn = hn
-          c%dhn = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
-          ! Cell center grid
-          c%sc = c%sn-1
-          allocate(c%hc(c%sc))
-          allocate(c%dhc(c%sc-1))
-          c%hc = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
-          c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
-        elseif (c%sn.eq.2) then
-          ! Node grid
-          allocate(c%hn(c%sn))
-          allocate(c%dhn(c%sn-1))
-          c%hn = hn
-          c%dhn = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
-          ! Cell center grid
-          c%sc = c%sn-1
-          allocate(c%hc(c%sc))
-          allocate(c%dhc(1))
-          c%hc = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
-          c%dhc = 0.0_cp
-        elseif (c%sn.eq.1) then
-          ! Node grid
-          allocate(c%hn(c%sn))
-          allocate(c%dhn(1))
-          c%hn = hn
-          c%dhn = 0.0_cp
-          ! Cell center grid
-          c%sc = 1
-          allocate(c%hc(c%sc))
-          allocate(c%dhc(1))
-          c%hc = c%hn
-          c%dhc = 0.0_cp
-        endif
+        allocate(c%hn(c%sn))
+        allocate(c%dhn(c%sn-1))
+        c%hn = hn
+        c%dhn = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
+
+        ! Cell center grid
+        c%sc = c%sn-1
+        allocate(c%hc(c%sc))
+        allocate(c%dhc(c%sc-1))
+
+        c%hc = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
+        c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
+
         ! Additional information
         call initProps(c)
         call init_stencils(c)
@@ -179,28 +154,14 @@
          ! Additional information
          c%dhMin = minval(c%dhn)
          c%dhMax = maxval(c%dhn)
-         if (c%sn.gt.2) then ! Typical init
-           c%hmin = c%hn(2)
-           c%hmax = c%hn(c%sn-1) ! To account for ghost node
-           c%maxRange = c%hmax-c%hmin
-           c%N = size(c%hc)-2
-           c%dhc_e = c%dhc(c%sc-1)
-           c%dhn_e = c%dhn(c%sn-1)
-         elseif (c%sn.eq.2) then
-           c%hmin = c%hn(1)
-           c%hmax = c%hn(2)
-           c%maxRange = c%hmax-c%hmin
-           c%N = 0
-           c%dhc_e = c%dhc(1)
-           c%dhn_e = c%dhn(1)
-         elseif (c%sn.eq.1) then
-           c%hmin = c%hn(1)
-           c%hmax = c%hn(1)
-           c%maxRange = 0.0_cp
-           c%N = 0
-           c%dhc_e = c%dhc(1)
-           c%dhn_e = c%dhn(1)
-         endif
+         c%hmin = c%hn(2)
+         c%hmax = c%hn(c%sn-1) ! To account for ghost node
+         c%maxRange = c%hmax-c%hmin
+         c%N = size(c%hc)-2
+         if (c%sc.gt.1) c%dhc_e = c%dhc(c%sc-1)
+         if (c%sn.gt.1) c%dhn_e = c%dhn(c%sn-1)
+         if (.not.(c%sc.gt.1)) c%defined = .false.
+         if (.not.(c%sn.gt.1)) c%defined = .false.
       end subroutine
 
       ! *****************************************************************
@@ -274,19 +235,16 @@
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: D,U,dh
         integer :: i,s
-        if (c%sc.gt.1) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(D(s-1)); allocate(U(s-1))
-          D = 0.0_cp; U = 0.0_cp
-          D = -(/(1.0_cp/dh(i),i=1,s-1)/)
-          U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call initD(c%stagCC2N,D)
-          call initU(c%stagCC2N,U)
-          call initL(c%stagCC2N,U*0.0_cp)
-          deallocate(D,U,dh)
-        else; call init(c%stagCC2N,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sc
+        allocate(dh(s-1)); dh = c%dhc
+        allocate(D(s-1)); allocate(U(s-1))
+        D = 0.0_cp; U = 0.0_cp
+        D = -(/(1.0_cp/dh(i),i=1,s-1)/)
+        U =  (/(1.0_cp/dh(i),i=1,s-1)/)
+        call initD(c%stagCC2N,D)
+        call initU(c%stagCC2N,U)
+        call initL(c%stagCC2N,U*0.0_cp)
+        deallocate(D,U,dh)
       end subroutine
 
       subroutine stencil_colN_1(c)
@@ -294,27 +252,24 @@
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,dh
         integer :: i,s
-        if (c%sn.gt.3) then
-          s = c%sn
-          allocate(dh(s-1)); dh = c%dhn
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          i = 2 ! Front
-          L(1) = -(dh(i+1)+2.0_cp*dh(i))/(dh(i)*(dh(i+1)+dh(i)))
-          D(1) = (dh(i+1)+dh(i))/(dh(i+1)*dh(i))
-          U(1) = -dh(i)/(dh(i+1)*(dh(i+1)+dh(i)))
-          ! Interior
-          L(2:s-3) = -(/( (dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=3,s-2 )/)
-          D(2:s-3) =  (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))  ,i=3,s-2 )/)
-          U(2:s-3) =  (/( (dh(i-1)/(dh( i )*(dh(i-1)+dh(i)))) ,i=3,s-2 )/)
-          i = s-1 ! Back
-          L(s-2) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
-          D(s-2) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
-          U(s-2) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
-          call init(c%colN(1),L,D,U)
-          deallocate(L,D,U,dh)
-        else; call init(c%colN(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sn
+        allocate(dh(s-1)); dh = c%dhn
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        i = 2 ! Front
+        L(1) = -(dh(i+1)+2.0_cp*dh(i))/(dh(i)*(dh(i+1)+dh(i)))
+        D(1) = (dh(i+1)+dh(i))/(dh(i+1)*dh(i))
+        U(1) = -dh(i)/(dh(i+1)*(dh(i+1)+dh(i)))
+        ! Interior
+        L(2:s-3) = -(/( (dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=3,s-2 )/)
+        D(2:s-3) =  (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))  ,i=3,s-2 )/)
+        U(2:s-3) =  (/( (dh(i-1)/(dh( i )*(dh(i-1)+dh(i)))) ,i=3,s-2 )/)
+        i = s-1 ! Back
+        L(s-2) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
+        D(s-2) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
+        U(s-2) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
+        call init(c%colN(1),L,D,U)
+        deallocate(L,D,U,dh)
         c%stencils_modified = .false.
       end subroutine
 
@@ -323,29 +278,26 @@
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: L,D,U,dh
         integer :: i,s
-        if (c%sn.gt.3) then
-          s = c%sn
-          allocate(dh(s-1)); dh = c%dhn
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Front
-          i = 2
-          L(1) =  2.0_cp/(dh( i )*(dh(i+1)+dh(i)))
-          D(1) = -2.0_cp/(dh(i+1)*dh(i))
-          U(1) =  2.0_cp/(dh(i+1)*(dh(i+1)+dh(i)))
-          ! Interior
-          L(2:s-3) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          D(2:s-3) =  (/(-2.0_cp/(dh(i-1)*dh(i))           ,i=3,s-2 )/)
-          U(2:s-3) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          ! Back
-          i = s-1
-          L(s-2) =  2.0_cp/(dh(i-2)*(dh(i-1)+dh(i-2)))
-          D(s-2) = -2.0_cp/(dh(i-1)*dh(i-2))
-          U(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i-2)))
-          call init(c%colN(2),L,D,U)
-          deallocate(L,D,U,dh)
-        else; call init(c%colN(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sn
+        allocate(dh(s-1)); dh = c%dhn
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        ! Front
+        i = 2
+        L(1) =  2.0_cp/(dh( i )*(dh(i+1)+dh(i)))
+        D(1) = -2.0_cp/(dh(i+1)*dh(i))
+        U(1) =  2.0_cp/(dh(i+1)*(dh(i+1)+dh(i)))
+        ! Interior
+        L(2:s-3) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
+        D(2:s-3) =  (/(-2.0_cp/(dh(i-1)*dh(i))           ,i=3,s-2 )/)
+        U(2:s-3) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
+        ! Back
+        i = s-1
+        L(s-2) =  2.0_cp/(dh(i-2)*(dh(i-1)+dh(i-2)))
+        D(s-2) = -2.0_cp/(dh(i-1)*dh(i-2))
+        U(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i-2)))
+        call init(c%colN(2),L,D,U)
+        deallocate(L,D,U,dh)
         c%stencils_modified = .false.
       end subroutine
 
@@ -356,19 +308,16 @@
         type(coordinates),intent(inout) :: c
         real(cp),dimension(:),allocatable :: D,U,dh
         integer :: i,s
-        if (c%sn.gt.1) then
-          s = c%sn
-          allocate(dh(s-1)); dh = c%dhn
-          allocate(D(s-1)); allocate(U(s-1))
-          D = 0.0_cp; U = 0.0_cp
-          D = -(/(1.0_cp/dh(i),i=1,s-1)/)
-          U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call initD(c%stagN2CC,D)
-          call initU(c%stagN2CC,U)
-          call initL(c%stagN2CC,U*0.0_cp)
-          deallocate(D,U,dh)
-        else; call init(c%stagN2CC,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sn
+        allocate(dh(s-1)); dh = c%dhn
+        allocate(D(s-1)); allocate(U(s-1))
+        D = 0.0_cp; U = 0.0_cp
+        D = -(/(1.0_cp/dh(i),i=1,s-1)/)
+        U =  (/(1.0_cp/dh(i),i=1,s-1)/)
+        call initD(c%stagN2CC,D)
+        call initU(c%stagN2CC,U)
+        call initL(c%stagN2CC,U*0.0_cp)
+        deallocate(D,U,dh)
       end subroutine
 
       subroutine stencil_colCC_1(c)
@@ -377,29 +326,26 @@
         real(cp),dimension(:),allocatable :: L,D,U
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Front, dh(i-1) => 0.5 dh(i-1)
-          i = 2
-          L(1) = (-(dh(i))/((0.5_cp*dh(i-1))*((0.5_cp*dh(i-1))+dh(i))))
-          D(1) = ((-(0.5_cp*dh(i-1))+dh(i))/((0.5_cp*dh(i-1))*dh(i)))
-          U(1) = ((0.5_cp*dh(i-1))/(dh(i)*((0.5_cp*dh(i-1))+dh(i))))
-          ! Interior
-          L(2:s-3) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=3,s-2 )/)
-          D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=3,s-2 )/)
-          U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=3,s-2 )/)
-          ! Back, dh(i) => 0.5 dh(i)
-          i = s-1
-          L(s-2) = (-0.5_cp*dh(i)/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i)))))
-          D(s-2) = ((-dh(i-1)+(0.5_cp*dh(i)))/(dh(i-1)*(0.5_cp*dh(i))))
-          U(s-2) = (dh(i-1)/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i)))))
-          call init(c%colCC(1),L,D,U)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sc
+        allocate(dh(s-1)); dh = c%dhc
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        ! Front, dh(i-1) => 0.5 dh(i-1)
+        i = 2
+        L(1) = (-(dh(i))/((0.5_cp*dh(i-1))*((0.5_cp*dh(i-1))+dh(i))))
+        D(1) = ((-(0.5_cp*dh(i-1))+dh(i))/((0.5_cp*dh(i-1))*dh(i)))
+        U(1) = ((0.5_cp*dh(i-1))/(dh(i)*((0.5_cp*dh(i-1))+dh(i))))
+        ! Interior
+        L(2:s-3) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=3,s-2 )/)
+        D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=3,s-2 )/)
+        U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=3,s-2 )/)
+        ! Back, dh(i) => 0.5 dh(i)
+        i = s-1
+        L(s-2) = (-0.5_cp*dh(i)/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i)))))
+        D(s-2) = ((-dh(i-1)+(0.5_cp*dh(i)))/(dh(i-1)*(0.5_cp*dh(i))))
+        U(s-2) = (dh(i-1)/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i)))))
+        call init(c%colCC(1),L,D,U)
+        deallocate(L,D,U,dh)
         c%stencils_modified = .false.
       end subroutine
 
@@ -409,19 +355,16 @@
         real(cp),dimension(:),allocatable :: L,D,U
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Interior
-          L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
-          D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
-          U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
-          call init(c%colCC_centered(1),L,D,U)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC_centered(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sc
+        allocate(dh(s-1)); dh = c%dhc
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        ! Interior
+        L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
+        D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
+        U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
+        call init(c%colCC_centered(1),L,D,U)
+        deallocate(L,D,U,dh)
       end subroutine
 
       subroutine stencil_colCC_2(c)
@@ -430,29 +373,26 @@
         real(cp),dimension(:),allocatable :: L,D,U
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Front, dh(i-1) => 0.5 dh(i-1)
-          i = 2
-          L(1) =  2.0_cp/((0.5_cp*dh(i-1))*((0.5_cp*dh(i-1))+dh(i)))
-          D(1) = -2.0_cp/((0.5_cp*dh(i-1))*dh(i))
-          U(1) =  2.0_cp/(dh(i)*((0.5_cp*dh(i-1))+dh(i)))
-          ! Interior
-          L(2:s-3) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          D(2:s-3) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=3,s-2 )/)
-          U(2:s-3) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          ! Back, dh(i) => 0.5 dh(i)
-          i = s-1
-          L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i))))
-          D(s-2) = -2.0_cp/(dh(i-1)*(0.5_cp*dh(i)))
-          U(s-2) =  2.0_cp/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i))))
-          call init(c%colCC(2),L,D,U)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sc
+        allocate(dh(s-1)); dh = c%dhc
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        ! Front, dh(i-1) => 0.5 dh(i-1)
+        i = 2
+        L(1) =  2.0_cp/((0.5_cp*dh(i-1))*((0.5_cp*dh(i-1))+dh(i)))
+        D(1) = -2.0_cp/((0.5_cp*dh(i-1))*dh(i))
+        U(1) =  2.0_cp/(dh(i)*((0.5_cp*dh(i-1))+dh(i)))
+        ! Interior
+        L(2:s-3) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
+        D(2:s-3) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=3,s-2 )/)
+        U(2:s-3) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
+        ! Back, dh(i) => 0.5 dh(i)
+        i = s-1
+        L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i))))
+        D(s-2) = -2.0_cp/(dh(i-1)*(0.5_cp*dh(i)))
+        U(s-2) =  2.0_cp/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i))))
+        call init(c%colCC(2),L,D,U)
+        deallocate(L,D,U,dh)
         c%stencils_modified = .false.
       end subroutine
 
@@ -462,19 +402,16 @@
         real(cp),dimension(:),allocatable :: L,D,U
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Interior
-          L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-          D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
-          U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-          call init(c%colCC_centered(2),L,D,U)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC_centered(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
-        endif
+        s = c%sc
+        allocate(dh(s-1)); dh = c%dhc
+        allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
+        L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
+        ! Interior
+        L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
+        D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
+        U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
+        call init(c%colCC_centered(2),L,D,U)
+        deallocate(L,D,U,dh)
       end subroutine
 
       ! *****************************************************************
@@ -505,23 +442,18 @@
         logical,intent(in) :: hmin,hmax
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc; allocate(dh(s-1)); dh = c%dhc
-          if (hmin) then; i = 2
-            c%colCC(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colCC(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colCC(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
-          endif
-          if (hmax) then; i = s-1
-            c%colCC(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colCC(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colCC(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
-          endif
-          deallocate(dh)
-        else
-          write(*,*) 'Error: cannot stitch domains with single point'
-          stop 'program stopped in coordinates.f90'
+        s = c%sc; allocate(dh(s-1)); dh = c%dhc
+        if (hmin) then; i = 2
+          c%colCC(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colCC(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colCC(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
         endif
+        if (hmax) then; i = s-1
+          c%colCC(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colCC(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colCC(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+        endif
+        deallocate(dh)
       end subroutine
 
       subroutine stitch_colCC_1(c,hmin,hmax)
@@ -530,23 +462,18 @@
         real(cp),dimension(:),allocatable :: dh
         logical,intent(in) :: hmin,hmax
         integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc; allocate(dh(s-1)); dh = c%dhc
-          if (hmin) then; i = 2
-            c%colCC(1)%L(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colCC(1)%D(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colCC(1)%U(1) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
-          endif
-          if (hmax) then; i = s-1
-            c%colCC(1)%L(s-2) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colCC(1)%D(s-2) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colCC(1)%U(s-2) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
-          endif
-          deallocate(dh)
-        else
-          write(*,*) 'Error: cannot stitch domains with single point'
-          stop 'program stopped in coordinates.f90'
+        s = c%sc; allocate(dh(s-1)); dh = c%dhc
+        if (hmin) then; i = 2
+          c%colCC(1)%L(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colCC(1)%D(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colCC(1)%U(1) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
         endif
+        if (hmax) then; i = s-1
+          c%colCC(1)%L(s-2) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colCC(1)%D(s-2) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colCC(1)%U(s-2) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
+        endif
+        deallocate(dh)
       end subroutine
 
       subroutine stitch_colN_2(c,hmin,hmax)
@@ -555,23 +482,18 @@
         real(cp),dimension(:),allocatable :: dh
         logical,intent(in) :: hmin,hmax
         integer :: i,s
-        if (c%sn.gt.2) then
-          s = c%sn; allocate(dh(s-1)); dh = c%dhn
-          if (hmin) then; i = 2
-            c%colN(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colN(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colN(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
-          endif
-          if (hmax) then; i = s-1
-            c%colN(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colN(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colN(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
-          endif
-          deallocate(dh)
-        else
-          write(*,*) 'Error: cannot stitch domains with single point'
-          stop 'program stopped in coordinates.f90'
+        s = c%sn; allocate(dh(s-1)); dh = c%dhn
+        if (hmin) then; i = 2
+          c%colN(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colN(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colN(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
         endif
+        if (hmax) then; i = s-1
+          c%colN(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+          c%colN(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
+          c%colN(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+        endif
+        deallocate(dh)
       end subroutine
 
       subroutine stitch_colN_1(c,hmin,hmax)
@@ -580,23 +502,18 @@
         logical,intent(in) :: hmin,hmax
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
-        if (c%sn.gt.2) then
-          s = c%sn; allocate(dh(s-1)); dh = c%dhn
-          if (hmin) then; i = 2
-            c%colN(1)%L(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colN(1)%D(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colN(1)%U(1) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
-          endif
-          if (hmax) then; i = s-1
-            c%colN(1)%L(s-2) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colN(1)%D(s-2) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colN(1)%U(s-2) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
-          endif
-          deallocate(dh)
-        else
-          write(*,*) 'Error: cannot stitch domains with single point'
-          stop 'program stopped in coordinates.f90'
+        s = c%sn; allocate(dh(s-1)); dh = c%dhn
+        if (hmin) then; i = 2
+          c%colN(1)%L(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colN(1)%D(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colN(1)%U(1) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
         endif
+        if (hmax) then; i = s-1
+          c%colN(1)%L(s-2) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+          c%colN(1)%D(s-2) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+          c%colN(1)%U(s-2) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
+        endif
+        deallocate(dh)
       end subroutine
 
 
@@ -608,22 +525,14 @@
         implicit none
         type(coordinates),intent(inout) :: c
         integer :: t
-        if (c%sc.gt.1) then
-          if (allocated(c%alpha)) deallocate(c%alpha)
-          if (allocated(c%beta)) deallocate(c%beta)
-          allocate(c%alpha(c%sc-1))
-          allocate(c%beta(c%sc-1))
-          do t=1,size(c%alpha)
-            c%alpha(t) = (c%hn(t+1) - c%hc(t))/(c%hc(t+1) - c%hc(t))
-            c%beta(t) = 1.0_cp - c%alpha(t)
-          enddo
-        elseif (c%sc.eq.1) then
-          if (allocated(c%alpha)) deallocate(c%alpha)
-          if (allocated(c%beta)) deallocate(c%beta)
-          allocate(c%alpha(1)); c%alpha(1) = 0.0_cp
-          allocate(c%beta(1)); c%beta(1) = 1.0_cp
-        else; stop 'Error: c%sc must > 1 in init_interpStencil in coordinates.f90'
-        endif
+        if (allocated(c%alpha)) deallocate(c%alpha)
+        if (allocated(c%beta)) deallocate(c%beta)
+        allocate(c%alpha(c%sc-1))
+        allocate(c%beta(c%sc-1))
+        do t=1,size(c%alpha)
+          c%alpha(t) = (c%hn(t+1) - c%hc(t))/(c%hc(t+1) - c%hc(t))
+          c%beta(t) = 1.0_cp - c%alpha(t)
+        enddo
       end subroutine
 
       ! *****************************************************************
@@ -685,12 +594,7 @@
       subroutine addGhostNodes(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        if (c%sn.gt.1) then
         call init(c,(/c%hn(1)-c%dhn(1),c%hn,c%hn(c%sn)+(c%dhn(c%sn-1))/),c%sn+2)
-        else
-          write(*,*) 'Trying to add ghost point to a single point'
-          stop 'program stopped in coordinates.f90'
-        endif
       end subroutine
 
 #ifdef _DEBUG_COORDINATES_
@@ -725,30 +629,25 @@
         type(coordinates),intent(in) :: c
         integer :: i
         real(cp) :: tol
-        if (c%sn.gt.1) then
-          ! Check if consectutive
-          do i=1,c%sn-1
-            if (c%hn(i+1)-c%hn(i).lt.c%dhMin/2.0_cp) then
-               write(*,*) 'i,dh',i,c%hn(i+1)-c%hn(i)
-               write(*,*) 'hn = ',c%hn
-               stop 'Error: coordinates are not consecutive.'
-            endif
-          enddo
-          ! Check if cell centeres are in cell center
-          tol = c%dhMin*1.0_cp**(-10.0_cp)
-          do i=1,c%sn-1
-            if (abs((c%hc(i)-c%hn(i))-(c%hn(i+1)-c%hc(i))).gt.tol) then
-               write(*,*) 'Cell centers are not centered'
-               write(*,*) 'i = ',i
-               write(*,*) 'hn = ',c%hn
-               write(*,*) 'hc = ',c%hc
-               stop 'Error: cell centeres are not in cell centers.'
-            endif
-          enddo
-        else
-          write(*,*) 'Warning: cannot check consecutive coordinates for a single point'
-          stop 'program stopped in coordinates.f90'
-        endif
+        ! Check if consectutive
+        do i=1,c%sn-1
+          if (c%hn(i+1)-c%hn(i).lt.c%dhMin/2.0_cp) then
+             write(*,*) 'i,dh',i,c%hn(i+1)-c%hn(i)
+             write(*,*) 'hn = ',c%hn
+             stop 'Error: coordinates are not consecutive.'
+          endif
+        enddo
+        ! Check if cell centeres are in cell center
+        tol = c%dhMin*1.0_cp**(-10.0_cp)
+        do i=1,c%sn-1
+          if (abs((c%hc(i)-c%hn(i))-(c%hn(i+1)-c%hc(i))).gt.tol) then
+             write(*,*) 'Cell centers are not centered'
+             write(*,*) 'i = ',i
+             write(*,*) 'hn = ',c%hn
+             write(*,*) 'hc = ',c%hc
+             stop 'Error: cell centeres are not in cell centers.'
+          endif
+        enddo
       end subroutine
 
       subroutine check_stencilSymmetry(c,T,name)

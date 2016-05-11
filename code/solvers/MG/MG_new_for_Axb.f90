@@ -1,9 +1,9 @@
       module MG_mod
-      ! call MGSolver(u,f,u_bcs,m,ss,displayTF)
+      ! call MGSolver(u,f,m,displayTF)
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), griddata (m)
-      ! and solver settings (ss) using the MultiGrid (MG) method
+      !  the MultiGrid (MG) method
       !
       ! Input:
       !     u            = initial guess for u

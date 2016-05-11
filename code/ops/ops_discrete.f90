@@ -58,6 +58,8 @@
        public :: lap_centered
        interface lap_centered;    module procedure lap_centered_SF;           end interface
        interface lap_centered;    module procedure lap_centered_VF;           end interface
+       interface lap_centered;    module procedure lap_centered_SF_dynamic;   end interface
+       interface lap_centered;    module procedure lap_centered_SF_dyn_full;  end interface
 
        public :: div
        interface div;             module procedure div_SF;                    end interface
@@ -190,19 +192,57 @@
          if (u%is_Face) then
            if (u%face.eq.dir) then
              call init_CC(temp,m)
-             call d%assign(temp,u,m,1,dir,1)
-             if (addTo) then; call d%add(lapU,temp,m,1,dir,1)
-             else;            call d%assign(lapU,temp,m,1,dir,1)
+             call d%assign(temp,u,m,1,dir,0)
+             if (addTo) then; call d%add(lapU,temp,m,1,dir,0)
+             else;            call d%assign(lapU,temp,m,1,dir,0)
              endif
              call delete(temp)
            else
-             call d%assign(temp_E,u,m,1,dir,1)
-             if (addTo) then; call d%add(lapU,temp_E,m,1,dir,1)
-             else;            call d%assign(lapU,temp_E,m,1,dir,1)
+             call d%assign(temp_E,u,m,1,dir,0)
+             if (addTo) then; call d%add(lapU,temp_E,m,1,dir,0)
+             else;            call d%assign(lapU,temp_E,m,1,dir,0)
              endif
            endif
-         else; stop 'Error: non-face input to lap_centered in ops_discrete.f90'
+         else; stop 'Error: non-face input to lap_centered_SF in ops_discrete.f90'
          endif
+       end subroutine
+
+       subroutine lap_centered_SF_dynamic(lapU,u,m,dir,addTo)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         logical,intent(in) :: addTo
+         type(SF) :: temp,temp_E
+         type(del) :: d
+         if (u%is_Face) then
+           if (u%face.eq.dir) then
+             call init_CC(temp,m)
+             call d%assign(temp,u,m,1,dir,0)
+             if (addTo) then; call d%add(lapU,temp,m,1,dir,0)
+             else;            call d%assign(lapU,temp,m,1,dir,0)
+             endif
+             call delete(temp)
+           else
+             call init_Edge(temp_E,m,orthogonalDirection(u%face,dir))
+             call d%assign(temp_E,u,m,1,dir,0)
+             if (addTo) then; call d%add(lapU,temp_E,m,1,dir,0)
+             else;            call d%assign(lapU,temp_E,m,1,dir,0)
+             endif
+           endif
+         else; stop 'Error: non-face input to lap_centered_SF_dynamic in ops_discrete.f90'
+         endif
+       end subroutine
+
+       subroutine lap_centered_SF_dyn_full(lapU,u,m)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call lap_centered(lapU,u,m,1,.false.)
+         call lap_centered(lapU,u,m,2,.true.)
+         call lap_centered(lapU,u,m,3,.true.)
        end subroutine
 
        subroutine lap_centered_VF(lapU,u,m,temp_E)

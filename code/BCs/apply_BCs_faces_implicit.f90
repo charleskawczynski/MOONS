@@ -37,7 +37,9 @@
 #ifdef _DEBUG_APPLY_BCS_
        call check_defined(U,m)
 #endif
-         do k = 1,6; call apply_face(U,m,k); enddo
+         do k = 3,6; call apply_face(U,m,k); enddo
+         call apply_face(U,m,1)
+         call apply_face(U,m,2)
        end subroutine
 
        subroutine apply_face(U,m,f)

@@ -12,6 +12,7 @@
        use VF_mod
        use string_mod
        use dir_tree_mod
+       use export_analytic_mod
 
        use init_Bfield_mod, only : restartB ! For restart
        use init_Ufield_mod, only : restartU ! For restart
@@ -78,10 +79,10 @@
          call initProps(D_sigma%m_tot);    call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS ****************************
-         if (.not.quick_start) then
+         ! if (.not.quick_start) then
            if (exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
            if (exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
-         endif
+         ! endif
 
          ! Initialize energy,momentum,induction
          call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,DT)
@@ -158,10 +159,12 @@
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' COMPUTING ENERGY BUDGETS: '
-         call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
+         if (solveMomentum.and.solveInduction) call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
          write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
-         call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
+         if (solveMomentum.and.solveInduction) call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
          write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
+
+         if (export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
 
@@ -170,6 +173,7 @@
          call delete(ind)
          call delete(D_fluid)
          call delete(D_sigma)
+         call delete(DT)
 
          call delete(mesh_mom)
          call delete(mesh_ind)

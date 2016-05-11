@@ -6,19 +6,15 @@
        implicit none
 
        private
-
-
-
        public :: subdomain
        public :: init,delete
        public :: print,export
 
-       interface init;               module procedure init_subdomain;        end interface
-       interface init;               module procedure init_subdomain_copy;   end interface
-       interface delete;             module procedure delete_subdomain;      end interface
-
-       interface print;              module procedure print_subdomain;       end interface
-       interface export;             module procedure export_subdomain;       end interface
+       interface init;       module procedure init_subdomain;        end interface
+       interface init;       module procedure init_subdomain_copy;   end interface
+       interface delete;     module procedure delete_subdomain;      end interface
+       interface print;      module procedure print_subdomain;       end interface
+       interface export;     module procedure export_subdomain;      end interface
 
        type subdomain
          ! Legend:

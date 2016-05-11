@@ -60,7 +60,7 @@ Consider the Laplace stencil,
 Where $u_g,u_1,u_2$ are the ghost, first interior and second interior cells. This Laplacian operator may be written in matrix form as
 
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-1  & 1     &           &           &           &           &           &         &    \\
+1  & 1     &           &           &           &           &           &         &  0 \\
 1  & -2    & 1         &           &           &           &           &         &    \\
    & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -91,7 +91,7 @@ This boundary point must be moved to the RHS to maintain a consistent matrix-vec
 \end{equation}
 Correspondingly, the matrix $A$ changes:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-1  & 1     &           &           &           &           &           &         &    \\
+1  & 1     &           &           &           &           &           &         &  0 \\
 1  & -2    & 1         &           &           &           &           &         &    \\
    & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -101,7 +101,7 @@ Correspondingly, the matrix $A$ changes:
 \end{array} \right]
 \rightarrow
 A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 0  & -3    & 1         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -132,7 +132,7 @@ This boundary information must be moved to the RHS to maintain a consistent matr
 \end{equation}
 Correspondingly, the matrix $A$ changes:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-1  & 1     &           &           &           &           &           &         &    \\
+1  & 1     &           &           &           &           &           &         &  0 \\
 1  & -2    & 1         &           &           &           &           &         &    \\
    & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -142,7 +142,7 @@ Correspondingly, the matrix $A$ changes:
 \end{array} \right]
 \rightarrow
 A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 0  & -1    & 1         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -164,7 +164,7 @@ Consider the Laplace stencil,
 \end{equation}
 Where $u_g,u_b,u_i$ are the ghost, boundary and first interior node points. This Laplacian operator may be written in matrix form as
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 1  & -2    & 1         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -207,7 +207,7 @@ And we may remove it from our system, BUT the matrix is no longer symmetric sinc
 
 This means that the ghost point SHOULD NOT ENTER THE COMPUTATIONS AT ALL. Correspondingly, the matrix $A$ is:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 1  & -2    & 1         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -217,7 +217,7 @@ This means that the ghost point SHOULD NOT ENTER THE COMPUTATIONS AT ALL. Corres
 \end{array} \right]
 \rightarrow
 A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 0  & 0     & 0         &           &           &           &           &         &    \\
 0  & \textcolor{red}{0}     & -2        & 1         &           &           &           &         &    \\
 0  & 0     & 1         & -2        &           &           &           &         &    \\
@@ -250,7 +250,7 @@ This boundary information must be moved to the RHS to maintain a consistent matr
 \end{equation}
 Correspondingly, the matrix $A$ changes:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 1  & -2    & 1         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -260,7 +260,7 @@ Correspondingly, the matrix $A$ changes:
 \end{array} \right]
 \rightarrow
 A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 0  & -2    & 2         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -271,7 +271,7 @@ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
 \]
 Two things to note here. One is that this matrix is singular (it has a non-zero nullspace). This can easily be confirmed by multiplying by $\mathbf{v} = (1,1,\dots,1,1)^T$. The second thing to note is that it is no longer symmetric. We can easily symmetrize this however by dividing the first and last equation by 2:
 \[A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-0  & 0     & 0         &           &           &           &           &         &    \\
+0  & 0     & 0         &           &           &           &           &         &  0 \\
 0  & -1    & 1         &           &           &           &           &         &    \\
 0  & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
@@ -295,6 +295,38 @@ Note that the mean must be subtracted from the RHS AFTER dividing by the factor 
    \qquad \rightarrow \qquad
    \frac{- u_b + u_i}{\Delta x^2} = \frac{f_b}{2} - \frac{- \theta \Delta x}{\Delta x^2}
 \end{equation}
+
+
+\subsection{Periodic}
+Consider periodic BCs, $u_g$ is the first interior node on the opposite side of the domain, which is known. Forcing on the wall-coincident nodes must match up naturally. The derivatives are computed using interior stencils on the boundary as:
+\begin{equation}
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} = 
+   \frac{u_g - 2 u_b + u_{i}}{\Delta x^2} = f_b
+\end{equation}
+Since the ghost node is part of the unknowns on the opposite side of the domain interior, the matrix $A$ becomes (a circulant one):
+\[ A = \frac{1}{\Delta x^2}
+\left[\begin{array}{ccccccccc}
+0  & 0     & 0         &           &           &           &           &         &  0 \\
+1  & -2    & 1         &           &           &           &           &         &    \\
+0  & 1     & -2        & 1         &           &           &           &         &    \\
+   &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
+   &       &           &           &           & 1         & -2        & 1       &  0 \\
+   &       &           &           &           &           &  1        & -2      &  1 \\
+0  &       &           &           &           &           &  0        & 0       &  0 \\
+\end{array} \right]
+\rightarrow
+\left[\begin{array}{ccccccccc}
+0  & 0     & 0         &           &           &           &  0        & 0       &  0 \\
+0  & -2    & 1         &           &           &           &  1        & 0       &  0 \\
+0  & 1     & -2        & 1         &           &           &           &         &    \\
+   &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
+   &       &           &           &           & 1         & -2        & 1       &  0 \\
+0  & 0     & 1         &           &           &           &  1        & -2      &  0 \\
+0  & 0     & 0         &           &           &           &  0        & 0       &  0 \\
+\end{array} \right]
+\]
+
+This matrix is symmetric and suitable for PCG so long both front and back BCs are periodic. If one is periodic and the other is, e.g. Neumann, CG cannot be used. NOTE: the first two 0's in the above equation refer to the ghost and boundary equations.
 
 \newpage
 

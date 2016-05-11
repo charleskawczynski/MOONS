@@ -77,7 +77,7 @@
 
          ! Time step, Reynolds number, grid
          type(mesh) :: m
-         type(mesh) :: boundary
+         type(mesh) :: m_surface
          integer :: N_PPE,N_mom
          real(cp) :: tol_PPE,tol_mom
          integer :: nstep
@@ -131,13 +131,13 @@
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
          mom%KE = 0.0_cp
          mom%nrg_budget = 0.0_cp
-
          call init(mom%m,m)
-         call init_boundary(mom%boundary,mom%m)
-         ! call print(mom%boundary)
-         call init_Node(temp,mom%boundary,0.0_cp)
-         call export_raw(mom%boundary,temp,str(DT%U),'mesh_boundary',0)
-         call delete(temp)
+
+         ! call init_surface(mom%m_surface,mom%m)
+         ! ! call print(mom%m_surface)
+         ! call init_Node(temp,mom%m_surface,0.0_cp)
+         ! call export_raw(mom%m_surface,temp,str(DT%U),'mesh_surface',0)
+         ! call delete(temp)
 
          call init_Edge(mom%U_E,m,0.0_cp)
          call init_Face(mom%U,m,0.0_cp)
@@ -163,7 +163,9 @@
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
+         write(*,*) 'about to define U_BCs'
          call init_UBCs(mom%U,m)
+         write(*,*) 'U_BCs defined'
          call init_PBCs(mom%p,m)
          write(*,*) '     BCs initialized'
          if (solveMomentum) call print_BCs(mom%U,'U')
@@ -292,12 +294,12 @@
            ! This preserves the initial data
          else
            write(*,*) 'Exporting Solutions for U at mom%nstep = ',mom%nstep
+           call export_processed(m,mom%U,str(DT%U),'U',1)
            call export_raw(m,mom%U,str(DT%U),'U',0)
            call export_raw(m,mom%p,str(DT%U),'p',0)
            if (solveEnergy.or.solveInduction) call export_raw(m,F,str(DT%U),'jCrossB',0)
            call export_raw(m,mom%divU,str(DT%U),'divU',0)
            ! call export_processed(m,mom%temp_E,str(DT%U),'vorticity',1)
-           call export_processed(m,mom%U,str(DT%U),'U',1)
            call export_processed(m,mom%p,str(DT%U),'p',1)
            write(*,*) '     finished'
          endif
@@ -377,7 +379,7 @@
            call div(mom%divU,mom%U,mom%m)
            call exportTransient(mom)
          endif
-         if (PE%transient_2D) call export_processed_transient(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
+         if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
 
          if (PE%info) then
            call momentumInfo(mom,6)

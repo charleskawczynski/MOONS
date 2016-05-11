@@ -14,6 +14,7 @@
        public :: isolatedEddy2D     ! Need to change to func
        public :: singleEddy2D       ! Need to change to func
        public :: cylinder2D         ! Need to change to func
+       public :: SH_profile
 
        real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
        
@@ -142,7 +143,7 @@
          V = A*B/C
        end function
 
-       function hunt_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
+       function hunt_profile(cx,cy,sx,sy,d_B,Ha,mu,dpdz) result(w)
          ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
          ! Reference:
          !      "Planas, R., Badia, S. & Codina, R. Approximation of 
@@ -152,8 +153,8 @@
          integer,intent(in) :: sx,sy
          real(cp),dimension(sx,sy) :: w
          type(coordinates),intent(in) :: cx,cy
-         real(cp),intent(in) :: Ha,mu,dpdz
-         real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,d_B,L,term,a,b
+         real(cp),intent(in) :: Ha,mu,dpdz,d_B
+         real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,L,term,a,b
          integer :: i,j,k,iter
          real(cp),dimension(:),allocatable :: x,y
 
@@ -171,7 +172,6 @@
          b = (cy%hmax - cy%hmin)/2.0_cp
          L = b/a
 
-         d_B = 0.0_cp
          iter = 100
          do k=0,iter
            do i=1,sx; do j=1,sy
@@ -189,6 +189,86 @@
          enddo
          w = w/mu*(-dpdz)*a**2.0_cp
          deallocate(x); deallocate(y)
+       end function
+
+       function SH_coeff(r1k,r2k,eta,d_B,N) result(V)
+         ! Computes the coefficient (V2,V3) in the Shercliff profile
+         ! expressions given in reference:
+         ! 
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      the inductionless MHD problem using a stabilized finite 
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
+         implicit none
+         real(cp),intent(in) :: r1k,r2k,eta,d_B,N
+         real(cp) :: A,B,C,D,V
+         A = d_B*r2k+(1.0_cp-exp(-2.0_cp*r2k))/(1.0_cp+exp(-2.0_cp*r2k))
+         B = (exp(-r1k*(1.0_cp-eta))+exp(-r1k*(1.0_cp+eta)))/2.0_cp
+         C = (1.0_cp+exp(-2.0_cp*r1k))/2.0_cp*d_B*N
+         D = (1.0_cp-exp(-2.0_cp*(r1k+r2k)))/(1.0_cp+exp(-2.0_cp*r2k))
+         V = A*B/(C+D)
+       end function
+
+       function SH_profile(cx,cy,sx,sy,d_B,Ha,mu,dpdz) result(w)
+         ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
+         ! Reference:
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
+         !      the inductionless MHD problem using a stabilized finite 
+         !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
+         ! 
+         ! 
+         ! Hunt flow configuration
+         ! 
+         !         conducting
+         !   B⁰   |----------|
+         !   ^    |          |
+         !   |    |          | - non-conducting
+         !   |    |          |
+         !        |----------|
+         !         conducting
+         ! 
+         implicit none
+         integer,intent(in) :: sx,sy
+         real(cp),dimension(sx,sy) :: w
+         type(coordinates),intent(in) :: cx,cy
+         real(cp),intent(in) :: Ha,mu,dpdz,d_B
+         real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,L,term,a,b
+         integer :: i,j,k,iter
+         real(cp),dimension(:),allocatable :: x,y,xi,eta
+
+         allocate(x(sx)); allocate(y(sy)); allocate(xi(sx)); allocate(eta(sy))
+             if (sx.eq.cx%sn) then; x = cx%hn
+         elseif (sx.eq.cx%sc) then; x = cx%hc
+           else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
+         endif
+             if (sy.eq.cy%sn) then; y = cy%hn
+         elseif (sy.eq.cy%sc) then; y = cy%hc
+           else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
+         endif
+
+         a = (cx%hmax - cx%hmin)/2.0_cp
+         b = (cy%hmax - cy%hmin)/2.0_cp
+         L = b/a
+         xi = x/a
+         eta = y/a
+
+         iter = 1000
+         w = 0.0_cp
+         do k=0,iter
+           do i=1,sx; do j=1,sy
+             alpha_k = (k+0.5_cp)*PI/L
+             N = (Ha**2.0_cp + 4.0_cp*alpha_k**2.0_cp)**(0.5_cp)
+             r1k = 0.5_cp*(Ha + N)
+             r2k = 0.5_cp*(-Ha + N)
+             V2 = SH_coeff(r1k,r2k,eta(j),d_B,N)
+             V3 = SH_coeff(r2k,r1k,eta(j),d_B,N)
+             
+             coeff = 2.0_cp*(-1.0_cp)**k*cos(alpha_k*xi(i))/(L*alpha_k**3.0_cp)
+             term = coeff*(1.0_cp - V2 - V3)
+             w(i,j) = w(i,j) + term
+           enddo; enddo
+         enddo
+         w = w/mu*(-dpdz)*a**2.0_cp
+         deallocate(x,y,xi,eta)
        end function
 
        function init_FD_DuctFlow(cx,cy,sx,sy) result(w)

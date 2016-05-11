@@ -65,6 +65,7 @@
        ! Base interpolation
        public :: interp               ! call interp(f,m,gd,dir)
        public :: extrap               ! call extrap(f,m,gd,dir)
+       public :: orthogonalDirection
 
        ! Derived interpolations (* = has vector interface)
        public :: face2Face            ! call face2Face(faceAve,f,m,dir,aveLoc)

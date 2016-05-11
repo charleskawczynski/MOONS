@@ -524,7 +524,7 @@
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         case default; stop 'Error: face must = 1,2,3 in cosineWaves_RF'
          end select
          elseif (f%is_Edge) then
          select case (f%face)
@@ -628,25 +628,25 @@
          integer :: i
          if (Node_along(f,1)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann).and.(.not.f%RF(i)%b%f(1)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%RF(i)%b%f(2)%b%Neumann).and.(.not.f%RF(i)%b%f(2)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
          if (Node_along(f,2)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann).and.(.not.f%RF(i)%b%f(3)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%RF(i)%b%f(4)%b%Neumann).and.(.not.f%RF(i)%b%f(4)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
          if (Node_along(f,3)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann).and.(.not.f%RF(i)%b%f(5)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%RF(i)%b%f(6)%b%Neumann).and.(.not.f%RF(i)%b%f(6)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif
@@ -663,25 +663,25 @@
          integer :: i
          if (Node_along(f,1)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann).and.(.not.u%RF(i)%b%f(1)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%RF(i)%b%f(2)%b%Neumann).and.(.not.u%RF(i)%b%f(2)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
          if (Node_along(f,2)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann).and.(.not.u%RF(i)%b%f(3)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%RF(i)%b%f(4)%b%Neumann).and.(.not.u%RF(i)%b%f(4)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
          if (Node_along(f,3)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann).and.(.not.u%RF(i)%b%f(5)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
+             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%RF(i)%b%f(6)%b%Neumann).and.(.not.u%RF(i)%b%f(6)%b%periodic)
              if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif

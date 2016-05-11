@@ -134,7 +134,7 @@
           GS%N_iter = GS%N_iter + 1
 
 #ifdef _EXPORT_GS_CONVERGENCE_
-            call lap(GS%lapu,u,m)
+            call lap_centered(GS%lapu,u,m)
             call subtract(GS%res,GS%lapu,GS%f)
             call zeroGhostPoints(GS%res)
             call compute(GS%norm,GS%res,GS%vol)
@@ -143,7 +143,7 @@
         enddo
         ! if (u%all_Neumann) call subtract(u,mean(u))
         if (compute_norm) then
-          call lap(GS%lapu,u,m)
+          call lap_centered(GS%lapu,u,m)
           call subtract(GS%res,GS%lapu,GS%f)
           call zeroGhostPoints(GS%res)
           call compute(GS%norm,GS%res,GS%vol)

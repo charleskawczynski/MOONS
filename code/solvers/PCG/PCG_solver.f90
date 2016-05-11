@@ -71,6 +71,8 @@
         call multiply(Ax,vol)
         call subtract(r,Ax)
         call compute(norm_res0,r)
+        call check_nans(norm_res0%L2,name//' PCG_SF norm_res0%L2')
+
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
           res_norm = dot_product(r,r,m,x,tempx)
@@ -80,34 +82,37 @@
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
-        do i=1,n
-          call operator(Ax,p,k,m,MFP,tempk)
-          call multiply(Ax,vol)
-          alpha = rhok/dot_product(p,Ax,m,x,tempx)
-          call zeroGhostPoints(p)
-          call add_product(x,p,alpha) ! x = x + alpha p
-          call apply_BCs(x,m) ! Needed for PPE
-          N_iter = N_iter + 1
-          call add_product(r,Ax,-alpha) ! r = r - alpha Ap
-          res_norm = dot_product(r,r,m,x,tempx)
-          if (my_isnan(res_norm)) then; write(*,*) 'Error: NaN in PCG_SF for '//name; stop 'Done'; endif
+        if (.not.sqrt(norm_res0%L2).lt.tol_abs) then ! Only do PCG if necessary!
+          do i=1,n
+            call operator(Ax,p,k,m,MFP,tempk)
+            call multiply(Ax,vol)
+            alpha = rhok/dot_product(p,Ax,m,x,tempx)
+            call zeroGhostPoints_conditional(p,m)
+            call add_product(x,p,alpha) ! x = x + alpha p
+            call apply_BCs(x,m) ! Needed for PPE
+            N_iter = N_iter + 1
+            call add_product(r,Ax,-alpha) ! r = r - alpha Ap
+            res_norm = dot_product(r,r,m,x,tempx)
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
-          call compute(norm,r)
-          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
-                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
+            call compute(norm,r)
+            write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                              norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
-          call multiply(z,Minv,r)
-          rhokp1 = dot_product(z,r,m,x,tempx)
-          call multiply(p,rhokp1/rhok) ! p = z + beta p
-          call add(p,z)
-          rhok = rhokp1
-        enddo
+            if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
+            call multiply(z,Minv,r)
+            rhokp1 = dot_product(z,r,m,x,tempx)
+            call multiply(p,rhokp1/rhok) ! p = z + beta p
+            call add(p,z)
+            rhok = rhokp1
+          enddo
+        else; i=1
+        endif
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
         flush(un)
 #endif
+        call check_nans(res_norm,name//' PCG_SF res_norm')
 
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
@@ -116,7 +121,7 @@
           if (x%all_Neumann) call subtract_physical_mean(r)
           call subtract(r,Ax)
           call zeroWall_conditional(r,m,x) ! Does nothing in PPE
-          call zeroGhostPoints(r)
+          call zeroGhostPoints_conditional(r,m)
           call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
           write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
@@ -148,8 +153,8 @@
         integer :: i,i_earlyExit
         type(norms) :: norm_res0
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
-        call multiply(r,b,vol)
         ! ----------------------- MODIFY RHS -----------------------
+        call multiply(r,b,vol)
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
         call assign(p,r)
@@ -159,56 +164,56 @@
         call zeroGhostPoints_conditional(p,m)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
-        call zeroGhostPoints(Ax)
         call zeroWall_conditional(Ax,m,x)
         call subtract(r,Ax)
         ! ----------------------------------------------------------
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(Ax,vol)
-        ! if (x%all_Neumann) call subtract_physical_mean(r)
         call subtract(r,Ax)
         call compute(norm_res0,r)
+        call check_nans(norm_res0%L2,name//' PCG_VF norm_res0%L2')
+
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
           call compute(norm,r)
           res_norm = dot_product(r,r,m,x,tempx)
           write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,0
 #endif
-
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
-        do i=1,n
-          call apply_stitches(p,m)
-          call operator(Ax,p,k,m,MFP,tempk)
-          call multiply(Ax,vol)
-          alpha = rhok/dot_product(p,Ax,m,x,tempx)
-          call add_product(x,p,alpha) ! x = x + alpha p
-          call apply_BCs(x,m) ! Needed for PPE
-          N_iter = N_iter + 1
-          call add_product(r,Ax,-alpha) ! x = x - alpha Ap
-          res_norm = dot_product(r,r,m,x,tempx)
-          if (my_isnan(res_norm)) then; write(*,*) 'Error: NaN in PCG_VF for '//name; stop 'Done'; endif
+        if (.not.sqrt(norm_res0%L2).lt.tol_abs) then ! Only do PCG if necessary!
+          do i=1,n
+            call operator(Ax,p,k,m,MFP,tempk)
+            call multiply(Ax,vol)
+            alpha = rhok/dot_product(p,Ax,m,x,tempx)
+            call zeroGhostPoints_conditional(p,m)
+            call add_product(x,p,alpha) ! x = x + alpha p
+            call apply_BCs(x,m) ! Needed for PPE
+            N_iter = N_iter + 1
+            call add_product(r,Ax,-alpha) ! r = r - alpha Ap
+            res_norm = dot_product(r,r,m,x,tempx)
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
-          call compute(norm,r)
-          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
-                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
+            call compute(norm,r)
+            write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                              norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-          if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
-
-          call multiply(z,Minv,r)
-          rhokp1 = dot_product(z,r,m,x,tempx)
-          call multiply(p,rhokp1/rhok) ! p = z + beta p
-          call add(p,z)
-          call zeroGhostPoints(p)
-          rhok = rhokp1
-        enddo
+            if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
+            call multiply(z,Minv,r)
+            rhokp1 = dot_product(z,r,m,x,tempx)
+            call multiply(p,rhokp1/rhok) ! p = z + beta p
+            call add(p,z)
+            rhok = rhokp1
+          enddo
+        else; i=1
+        endif
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
         flush(un)
 #endif
+        call check_nans(res_norm,name//' PCG_VF res_norm')
         
         if (compute_norms) then
           call operator_explicit(Ax,x,k,m,MFP,tempk)
@@ -217,7 +222,7 @@
           ! if (x%all_Neumann) call subtract_physical_mean(r)
           call subtract(r,Ax)
           call zeroWall_conditional(r,m,x)
-          call zeroGhostPoints(r)
+          call zeroGhostPoints_conditional(r,m)
           call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
           write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                             norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
@@ -225,6 +230,17 @@
           write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n
           write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
           write(*,*) ''
+        endif
+      end subroutine
+
+      subroutine check_nans(f,location)
+        implicit none
+        real(cp),intent(in) :: f
+        character(len=*),intent(in) :: location
+        if (my_isnan(f)) then
+          write(*,*) 'Error: NaN in ',location
+          write(*,*) 'f = ',f
+          stop 'Done';
         endif
       end subroutine
 

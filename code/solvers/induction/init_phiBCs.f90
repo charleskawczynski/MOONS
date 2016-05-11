@@ -11,7 +11,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = dirichlet on all sides
-       integer :: preDefinedphi_BCs = 1 ! see cases in init_phiBCs
+       integer :: preDefinedphi_BCs = 2 ! see cases in init_phiBCs
        
        contains
 
@@ -35,8 +35,16 @@
 
          select case (preDefinedphi_BCs)
          case (1)
+         case (2); call periodic_duct_flow(phi)
          case default; stop 'Error: preDefinedphi_BCs must = 1:5 in init_phiBCs in init_phiBCs.f90.'
          end select
+       end subroutine
+
+       subroutine periodic_duct_flow(phi)
+         implicit none
+         type(SF),intent(inout) :: phi
+         call init_periodic(phi%RF(1)%b,1)
+         call init_periodic(phi%RF(1)%b,2)
        end subroutine
 
        subroutine makePeriodic(phi_bcs,dir)

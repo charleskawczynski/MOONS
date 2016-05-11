@@ -17,7 +17,7 @@
        public :: patch
        public :: restrict,restrict_x,restrict_xy
        public :: initProps
-       public :: init_boundary
+       public :: init_surface
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkmesh
@@ -70,9 +70,10 @@
            do k=1,12; call delete(m%g(i)%st_edges(i)); enddo
            do k=1,8; call delete(m%g(i)%st_corners(i)); enddo
          enddo
+         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in init_grid in mesh.f90'
        end subroutine
 
-       subroutine init_boundary(m,m_in)
+       subroutine init_surface(m,m_in)
          implicit none
          type(mesh),intent(inout) :: m
          type(mesh),intent(in) :: m_in
@@ -88,6 +89,7 @@
          enddo; enddo
          call delete(gg)
          call initProps(m)
+         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in init_surface in mesh.f90'
        end subroutine
 
        subroutine addGrid(m,g)
@@ -97,6 +99,7 @@
          type(mesh) :: temp
          integer :: i
          if (allocated(m%g)) then
+           if (m%s.lt.1) stop 'Error: allocated mesh but size<1 in addGrid mesh.f90'
            call init(temp,m)
            call delete(m)
            m%s = temp%s + 1
@@ -109,22 +112,20 @@
            call init(m%g(1),g); m%s = 1
          endif
          call initProps(m)
+         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in addGrid in mesh.f90'
        end subroutine
 
        subroutine deletemesh(m)
          implicit none
          type(mesh),intent(inout) :: m
          integer :: i
-         if (allocated(m%g)) then
-           do i = 1,m%s; call delete(m%g(i)) ;enddo
-           m%s = 0; deallocate(m%g)
-         else; m%s = 0
-         endif
          if (allocated(m%vol)) then
-           do i=1,m%s; call delete(m%vol(i)); enddo
-           deallocate(m%vol)
+           do i=1,m%s; call delete(m%vol(i)); enddo; deallocate(m%vol)
          endif
-         call remove_stitches(m)
+         if (allocated(m%g)) then
+           do i=1,m%s; call delete(m%g(i)) ;enddo; deallocate(m%g)
+         endif
+         m%s = 0
        end subroutine
 
        subroutine remove_stitches(m)
@@ -144,7 +145,9 @@
          type(mesh),intent(in) :: m_in
          integer :: i
          if (.not.allocated(m_in%g)) stop 'Error: mesh not allocated in initmeshCopy in mesh.f90'
+         if (m_in%s.ne.size(m_in%g)) stop 'Error: size incorrect in addGrid in mesh.f90'
          call delete(m_out)
+         if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in initmeshCopy in mesh.f90'
          m_out%s = m_in%s
          allocate(m_out%g(m_in%s))
          do i=1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
@@ -175,6 +178,7 @@
          type(mesh),intent(inout) :: m
          integer :: i,j
          if (.not.allocated(m%g)) stop 'Error: mesh not allocated in initProps_mesh in mesh.f90'
+         m%s = size(m%g)
          if (m%s.gt.1) then
            do j=1,3
              m%hmin(j)  = minval( (/(m%g(i)%c(j)%hmin  , i=2,m%s)/) )

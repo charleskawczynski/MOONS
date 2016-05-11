@@ -54,11 +54,13 @@
        ! Setters for type
        public :: init_Dirichlet
        public :: init_Neumann
+       public :: init_Robin
        public :: init_periodic
        public :: init_antisymmetry
 
        public :: getAllNeumann
        public :: getDirichlet
+       public :: getAllRobin
 
        ! For apply_BCs_edges
        ! public :: define_Edges
@@ -71,7 +73,7 @@
          integer,dimension(3) :: s
          logical :: gridDefined = .false.
          logical :: defined = .false.
-         logical :: all_Dirichlet,all_Neumann
+         logical :: all_Dirichlet,all_Neumann,all_Robin
        end type
 
        interface init;                module procedure init_BCs_copy;           end interface
@@ -82,6 +84,8 @@
        interface init_Dirichlet;      module procedure init_Dirichlet_face;     end interface
        interface init_Neumann;        module procedure init_Neumann_all;        end interface
        interface init_Neumann;        module procedure init_Neumann_face;       end interface
+       interface init_Robin;          module procedure init_Robin_all;          end interface
+       interface init_Robin;          module procedure init_Robin_face;         end interface
        interface init_periodic;       module procedure init_periodic_all;       end interface
        interface init_periodic;       module procedure init_periodic_face;      end interface
        interface init_antisymmetry;   module procedure init_antisymmetry_all;   end interface
@@ -149,6 +153,17 @@
          call define_logicals(BC)
        end subroutine
 
+       subroutine init_Robin_all(BC)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         integer :: i
+         call check_prereq(BC)
+         do i=1,6;  call init_Robin(BC%f(i)%b); enddo
+         do i=1,12; call init_Robin(BC%e(i)%b); enddo
+         do i=1,8;  call init_Robin(BC%c(i)%b); enddo
+         call define_logicals(BC)
+       end subroutine
+
        subroutine init_Periodic_all(BC)
          implicit none
          type(BCs),intent(inout) :: BC
@@ -186,6 +201,15 @@
          integer,intent(in) :: face
          call check_prereq(BC)
          call init_Neumann(BC%f(face)%b)
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine init_Robin_face(BC,face)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         integer,intent(in) :: face
+         call check_prereq(BC)
+         call init_Robin(BC%f(face)%b)
          call define_logicals(BC)
        end subroutine
 
@@ -388,6 +412,11 @@
          TF(3) = all((/(BC%c(i)%b%Dirichlet,i=1,8)/))
          BC%all_Dirichlet = all(TF)
 
+         TF(1) = all((/(BC%f(i)%b%Robin,i=1,6)/))
+         TF(2) = all((/(BC%e(i)%b%Robin,i=1,12)/))
+         TF(3) = all((/(BC%c(i)%b%Robin,i=1,8)/))
+         BC%all_Robin = all(TF)
+
          TF(1) = all((/(BC%f(i)%b%Neumann,i=1,6)/))
          TF(2) = all((/(BC%e(i)%b%Neumann,i=1,12)/))
          TF(3) = all((/(BC%c(i)%b%Neumann,i=1,8)/))
@@ -406,6 +435,13 @@
          type(BCs),intent(inout) :: BC
          logical :: TF
          TF = BC%all_Dirichlet
+       end function
+
+       function getAllRobin(BC) result(TF)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         logical :: TF
+         TF = BC%all_Robin
        end function
 
        end module

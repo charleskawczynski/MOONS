@@ -10,10 +10,9 @@
 
        private
        public :: init_UBCs
-       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer,dimension(3) :: periodic_dir = (/1,0,0/) ! 1 = true, else false
        ! Default = no-slip
-       integer :: preDefinedU_BCs = 1 ! See init_UBCs for details
-       ! integer :: preDefinedU_BCs = 7
+       integer :: preDefinedU_BCs = 13 ! See init_UBCs for details
 
        contains
 
@@ -55,6 +54,7 @@
          case (10); call fully_developed_duct_flow(U,m)
          case (11); call LDC_crisscross_driven_lid(U)
          case (12); call LDC_double_crisscross_driven_lid(U)
+         case (13); call periodic_duct_flow(U)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
        end subroutine
@@ -115,6 +115,19 @@
          call init_Neumann(U%x%RF(1)%b,2)
          call init_Neumann(U%y%RF(1)%b,2)
          call init_Neumann(U%z%RF(1)%b,2)
+       end subroutine
+
+       subroutine periodic_duct_flow(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         ! Inlet (periodic)
+         call init_periodic(U%x%RF(1)%b,1)
+         call init_periodic(U%y%RF(1)%b,1)
+         call init_periodic(U%z%RF(1)%b,1)
+         ! Outlet (periodic)
+         call init_periodic(U%x%RF(1)%b,2)
+         call init_periodic(U%y%RF(1)%b,2)
+         call init_periodic(U%z%RF(1)%b,2)
        end subroutine
 
        subroutine duct_flow_2D_2domains(U)

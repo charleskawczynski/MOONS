@@ -9,9 +9,9 @@
        private
        public :: init_PBCs
 
-       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
+       integer,dimension(3) :: periodic_dir = (/1,0,0/) ! 1 = true, else false
        ! Default = pure Neumann on all sides
-       integer :: preDefinedP_BCs = 1 ! see cases in init_PBCs
+       integer :: preDefinedP_BCs = 5 ! see cases in init_PBCs
        
        contains
 
@@ -38,6 +38,7 @@
          case (2); call flow_past_2D_square(p)
          case (3); call duct_flow_2D(p)
          case (4); call duct_flow_2D_2domains(p)
+         case (5); call periodic_duct_flow(p)
          case default; stop 'Error: preDefinedP_BCs must = 1:5 in init_PBCs in init_PBCs.f90.'
          end select
        end subroutine
@@ -60,6 +61,14 @@
          type(SF),intent(inout) :: p
          p%all_Neumann = .false.
          call init_Dirichlet(p%RF(1)%b,2)
+       end subroutine
+
+       subroutine periodic_duct_flow(p)
+         implicit none
+         type(SF),intent(inout) :: p
+         p%all_Neumann = .true.
+         call init_periodic(p%RF(1)%b,1)
+         call init_periodic(p%RF(1)%b,2)
        end subroutine
 
        subroutine duct_flow_2D_2domains(p)
