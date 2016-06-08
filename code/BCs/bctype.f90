@@ -7,7 +7,7 @@
        public :: init_Dirichlet,init_Neumann,init_Robin,init_Periodic,init_symmetric,init_antisymmetric
        public :: init,delete
        public :: print,export
-       public :: export_type,export_meanVal
+       public :: export_type,export_meanVal,get_bctype
 
        type bctype
          logical :: Dirichlet
@@ -164,12 +164,7 @@
            ! if (b%symmetric)     write(newU,*) 'Symmetric'
            ! if (b%antisymmetric) write(newU,*) 'Antisymmetric'
 
-           if (b%Dirichlet)     write(newU,'(A,T1)',advance='no') 'D'
-           if (b%Neumann)       write(newU,'(A,T1)',advance='no') 'N'
-           if (b%Robin)         write(newU,'(A,T1)',advance='no') 'R'
-           if (b%Periodic)      write(newU,'(A,T1)',advance='no') 'P'
-           if (b%symmetric)     write(newU,'(A,T1)',advance='no') 'S'
-           if (b%antisymmetric) write(newU,'(A,T1)',advance='no') 'A'
+           write(newU,'(A,T1)',advance='no') get_bctype(b)
          endif
 
          write(newU,'(F5.2)',advance='no') b%meanVal
@@ -182,20 +177,29 @@
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
          if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined in bctype.f90'
-         if (b%Dirichlet)     write(newU,'(A6,T1)',advance='no') '     D'
-         if (b%Neumann)       write(newU,'(A6,T1)',advance='no') '     N'
-         if (b%Robin)         write(newU,'(A6,T1)',advance='no') '     R'
-         if (b%Periodic)      write(newU,'(A6,T1)',advance='no') '     P'
-         if (b%symmetric)     write(newU,'(A6,T1)',advance='no') '     S'
-         if (b%antisymmetric) write(newU,'(A6,T1)',advance='no') '     A'
+         write(newU,'(A,T1)',advance='no') get_bctype(b)
        end subroutine
+
+       function get_bctype(b) result(BCT)
+         implicit none
+         type(bctype),intent(in) :: b
+         character(len=1) :: BCT
+         if (.not.b%defined) stop 'Error: trying to get bctype before fully defined in bctype.f90'
+         BCT = 'X'
+         if (b%Dirichlet)     BCT = 'D'
+         if (b%Neumann)       BCT = 'N'
+         if (b%Robin)         BCT = 'R'
+         if (b%Periodic)      BCT = 'P'
+         if (b%symmetric)     BCT = 'S'
+         if (b%antisymmetric) BCT = 'A'
+       end function
 
        subroutine export_bctype_MV_only(b,NewU)
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
          if (.not.b%defined) stop 'Error: trying to export bctype (MV only) before fully defined in bctype.f90'
-         write(newU,'(F5.2)',advance='no') b%meanVal
+         write(newU,'(F19.10)',advance='no') b%meanVal
        end subroutine
 
        end module

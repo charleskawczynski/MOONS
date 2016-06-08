@@ -10,8 +10,8 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/1,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 4
-       real(cp) :: cw = 0.01_cp
+       integer :: preDefinedB_BCs = 1
+       real(cp) :: cw = 0.001_cp
        !                                      0 : B = 0
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : Bandaru
@@ -116,12 +116,12 @@
          !   |    |          |
          !        |----------|
          !         conducting
-         ! do i=1,m%s
-         !   call init_Robin(B%x%RF(i)%b,5); call init_Robin(B%x%RF(i)%b,6)
-         !   call init(B%x%RF(i)%b,cw,5);    call init(B%x%RF(i)%b,cw,6)
-         !   call init_Robin(B%y%RF(i)%b,5); call init_Robin(B%y%RF(i)%b,6)
-         !   call init(B%y%RF(i)%b,cw,5);    call init(B%y%RF(i)%b,cw,6)
-         ! enddo
+         do i=1,m%s
+           call init_Robin(B%x%RF(i)%b,5); call init_Robin(B%x%RF(i)%b,6)
+           call init(B%x%RF(i)%b,cw,5);    call init(B%x%RF(i)%b,cw,6)
+           call init_Robin(B%y%RF(i)%b,5); call init_Robin(B%y%RF(i)%b,6)
+           call init(B%y%RF(i)%b,cw,5);    call init(B%y%RF(i)%b,cw,6)
+         enddo
        end subroutine
 
        subroutine makePeriodic(Bx_BCs,By_BCs,Bz_BCs,dir)

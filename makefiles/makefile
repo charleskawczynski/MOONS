@@ -30,7 +30,7 @@ MKE = make
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS5
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS8
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -110,6 +110,7 @@ FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 # FC_DEBUG += -Wall -Wextra -fbacktrace
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
+# FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 # FC_DEBUG += -D_DEBUG_RF_
 # FC_DEBUG += -D_DEBUG_SF_
 # FC_DEBUG += -D_DEBUG_VF_
@@ -198,6 +199,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)stencils\
 	$(SRC_DIR)$(PS)stitches\
 	$(SRC_DIR)$(PS)string\
+	$(SRC_DIR)$(PS)table\
 	$(SRC_DIR)$(PS)user\
 	$(SRC_DIR)$(PS)version
 
@@ -205,11 +207,13 @@ VPATH =\
 SRCS_F =\
 	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
-	$(SRC_DIR)$(PS)math$(PS)isnan.f90\
+	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90\
+	$(SRC_DIR)$(PS)table$(PS)table.f90\
+	$(SRC_DIR)$(PS)directory$(PS)path.f90\
 	$(SRC_DIR)$(PS)directory$(PS)draw_DT.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
@@ -221,6 +225,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_edge.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_corner.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
+	$(SRC_DIR)$(PS)grid$(PS)overlap.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_distribution_funcs.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_genHelper.f90\

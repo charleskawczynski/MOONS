@@ -11,7 +11,7 @@
 
        integer,dimension(3) :: periodic_dir = (/1,0,0/) ! 1 = true, else false
        ! Default = pure Neumann on all sides
-       integer :: preDefinedP_BCs = 5 ! see cases in init_PBCs
+       integer :: preDefinedP_BCs = 1 ! see cases in init_PBCs
        
        contains
 

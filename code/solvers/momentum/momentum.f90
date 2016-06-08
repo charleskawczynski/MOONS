@@ -9,6 +9,7 @@
        use TF_mod
        use domain_mod
        use string_mod
+       use path_mod
        use dir_tree_mod
 
        use momentum_solver_mod
@@ -91,7 +92,7 @@
          ! Transient probes
          real(cp) :: KE
          type(norms) :: norm_divU
-         type(probe) :: transient_KE,transient_divU
+         type(probe) :: transient_KE,transient_KE_2C,transient_divU
        end type
 
        interface init;                module procedure initMomentum;               end interface
@@ -113,7 +114,7 @@
          real(cp),intent(in) :: dTime,Re,Ha,Gr,Fr
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: prec_PPE,temp
+         type(SF) :: prec_PPE
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
 
@@ -132,12 +133,6 @@
          mom%KE = 0.0_cp
          mom%nrg_budget = 0.0_cp
          call init(mom%m,m)
-
-         ! call init_surface(mom%m_surface,mom%m)
-         ! ! call print(mom%m_surface)
-         ! call init_Node(temp,mom%m_surface,0.0_cp)
-         ! call export_raw(mom%m_surface,temp,str(DT%U),'mesh_surface',0)
-         ! call delete(temp)
 
          call init_Edge(mom%U_E,m,0.0_cp)
          call init_Face(mom%U,m,0.0_cp)
@@ -224,6 +219,7 @@
          else; mom%nstep = 0
          endif
          call init(mom%transient_KE,str(DT%U),'KU',.not.restartU)
+         call init(mom%transient_KE_2C,str(DT%U),'KE_2C',.not.restartU)
 
          temp_unit = newAndOpen(str(DT%params),'info_mom')
          call momentumInfo(mom,temp_unit)
@@ -257,7 +253,9 @@
          call delete(mom%KE_transient)
          call delete(mom%KE_jCrossB)
 
-         call delete(mom%transient_divU);
+         call delete(mom%transient_divU)
+         call delete(mom%transient_KE)
+         call delete(mom%transient_KE_2C)
          call delete(mom%temp_E)
          call delete(mom%m)
          call delete(mom%vol_CC)
@@ -275,12 +273,16 @@
          type(momentum),intent(inout) :: mom
          ! real(cp) :: temp_Ln
          call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
-         call set(mom%transient_KE,mom%nstep,mom%KE)
+         call set(mom%transient_KE,mom%nstep,mom%t,mom%KE)
          call apply(mom%transient_KE)
+
+         call compute_TKE_2C(mom%KE,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
+         call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE)
+         call apply(mom%transient_KE_2C)
          ! call Ln(temp_Ln,mom%divU,2.0_cp)
          ! call set(mom%transient_divU,mom%nstep,temp_Ln)
          call compute(mom%norm_divU,mom%divU,mom%vol_CC)
-         call set(mom%transient_divU,mom%nstep,mom%norm_divU%L2)
+         call set(mom%transient_divU,mom%nstep,mom%t,mom%norm_divU%L2)
          call apply(mom%transient_divU)
        end subroutine
 
@@ -379,7 +381,8 @@
            call div(mom%divU,mom%U,mom%m)
            call exportTransient(mom)
          endif
-         if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
+         ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
+         if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
 
          if (PE%info) then
            call momentumInfo(mom,6)

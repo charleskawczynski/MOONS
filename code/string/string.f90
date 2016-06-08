@@ -19,20 +19,24 @@
       public :: get_str,str ! str does not require length
       public :: len
       public :: compress,append
+      public :: remove_leading_zeros
+      public :: remove_element
       public :: print,export
 
-      interface init;      module procedure init_size;            end interface
-      interface init;      module procedure init_string;          end interface
-      interface init;      module procedure init_copy;            end interface
-      interface append;    module procedure app_string_char;      end interface
-      interface append;    module procedure app_string_string;    end interface
-      interface compress;  module procedure compress_string;      end interface
-      interface len;       module procedure str_len_string;       end interface
-      interface str;       module procedure get_str_short;        end interface
-      interface get_str;   module procedure get_str_string;       end interface
-      interface delete;    module procedure delete_string;        end interface
-      interface print;     module procedure print_string;         end interface
-      interface export;    module procedure export_string;        end interface
+      interface init;                 module procedure init_size;                      end interface
+      interface init;                 module procedure init_string;                    end interface
+      interface init;                 module procedure init_copy;                      end interface
+      interface append;               module procedure app_string_char;                end interface
+      interface append;               module procedure app_string_string;              end interface
+      interface compress;             module procedure compress_string;                end interface
+      interface len;                  module procedure str_len_string;                 end interface
+      interface str;                  module procedure get_str_short;                  end interface
+      interface get_str;              module procedure get_str_string;                 end interface
+      interface delete;               module procedure delete_string;                  end interface
+      interface print;                module procedure print_string;                   end interface
+      interface export;               module procedure export_string;                  end interface
+      interface remove_element;       module procedure remove_element_string;          end interface
+      interface remove_leading_zeros; module procedure remove_leading_zeros_string;    end interface
 
       type char
         private
@@ -158,13 +162,51 @@
         call delete(temp)
       end subroutine
 
+      subroutine remove_element_string(st,i)
+        implicit none
+        type(string),intent(inout) :: st
+        integer,intent(in) :: i
+        type(string) :: temp
+        integer :: j,k
+        if (st%n.lt.1) stop 'Error: input string must be > 1 in remove_element_string in string.f90'
+        if ((i.lt.1).or.(i.gt.st%n)) stop 'Error: element out of bounds in remove_element_string in string.f90'
+        k = 0
+        call init(temp,st%n-1)
+        do j=1,st%n
+          if (i.ne.j) then
+            temp%s(j-k)%c = st%s(i)%c
+          else; k = 1
+          endif
+        enddo
+        call init(st,temp)
+        call delete(temp)
+      end subroutine
+
+      subroutine remove_leading_zeros_string(st)
+        implicit none
+        type(string),intent(inout) :: st
+        type(string) :: temp
+        integer :: i,n_zeros
+        if (st%n.lt.1) stop 'Error: input string must be > 1 in string.f90'
+        n_zeros = 0
+        do i=1,st%n
+          if (st%s(i)%c.eq.'0') then; n_zeros = n_zeros + 1; else; exit; endif
+        enddo
+        call init(temp,st%n-n_zeros)
+        do i=1+n_zeros,st%n
+          temp%s(i-n_zeros)%c = st%s(i)%c
+        enddo
+        call init(st,temp)
+        call delete(temp)
+      end subroutine
+
       function get_str_short(st) result(str)
         type(string),intent(in) :: st
         character(len=st%n) :: str
         str = get_str_string(st,st%n)
       end function
 
-      function str_len_string(s) result(n)
+      pure function str_len_string(s) result(n)
         type(string),intent(in) :: s
         integer :: n
         n = s%n

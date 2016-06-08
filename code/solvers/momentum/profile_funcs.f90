@@ -91,7 +91,7 @@
          L = b/a
 
          d_B = 0.0_cp
-         iter = 100
+         iter = 1000
          do k=0,iter
            do i=1,sx; do j=1,sy
              alpha_k = (k+0.5_cp)*PI/L
@@ -143,7 +143,7 @@
          V = A*B/C
        end function
 
-       function hunt_profile(cx,cy,sx,sy,d_B,Ha,mu,dpdz) result(w)
+       function hunt_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
          ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
          ! Reference:
          !      "Planas, R., Badia, S. & Codina, R. Approximation of 
@@ -153,7 +153,7 @@
          integer,intent(in) :: sx,sy
          real(cp),dimension(sx,sy) :: w
          type(coordinates),intent(in) :: cx,cy
-         real(cp),intent(in) :: Ha,mu,dpdz,d_B
+         real(cp),intent(in) :: Ha,mu,dpdz
          real(cp) :: r1k,r2k,V2,V3,coeff,N,alpha_k,L,term,a,b
          integer :: i,j,k,iter
          real(cp),dimension(:),allocatable :: x,y
@@ -172,7 +172,7 @@
          b = (cy%hmax - cy%hmin)/2.0_cp
          L = b/a
 
-         iter = 100
+         iter = 1000
          do k=0,iter
            do i=1,sx; do j=1,sy
              alpha_k = (k+0.5_cp)*PI/L

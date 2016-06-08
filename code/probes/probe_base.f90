@@ -112,49 +112,53 @@
           ip%h = h
         end subroutine
 
-        subroutine setIndexData(ip,n,d)
+        subroutine setIndexData(ip,n,t,d)
          implicit none
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           real(cp),intent(in) :: d
-          call set(ip%p,n,d)
+          call set(ip%p,n,t,d)
         end subroutine
 
-        subroutine setIndexData1(ip,n,u)
+        subroutine setIndexData1(ip,n,t,u)
          implicit none
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           real(cp),dimension(:,:,:),intent(in) :: u
           integer,dimension(3) :: temp
           temp(1) = maxval((/ip%i(1),1/))
           temp(2) = maxval((/ip%i(2),1/))
           temp(3) = maxval((/ip%i(3),1/))
-          call set(ip%p,n,u(temp(1),temp(2),temp(3)))
+          call set(ip%p,n,t,u(temp(1),temp(2),temp(3)))
         end subroutine
 
-        subroutine setErrorData(ep,n,d)
+        subroutine setErrorData(ep,n,t,d)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
-          real(cp),intent(in) :: d
-          call set(ep%p,n,d)
+          real(cp),intent(in) :: t,d
+          call set(ep%p,n,t,d)
         end subroutine
 
-        subroutine setErrorData_SF(ep,n,u,vol)
+        subroutine setErrorData_SF(ep,n,t,u,vol)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           type(SF),intent(in) :: u,vol
           call compute(ep%e,u,vol)
-          call set(ep%p,n,ep%e%L2)
+          call set(ep%p,n,t,ep%e%L2)
         end subroutine
 
-        subroutine applyIndexProbe(ip,n,u)
+        subroutine applyIndexProbe(ip,n,t,u)
          implicit none
           type(indexProbe),intent(inout) :: ip
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           real(cp),dimension(:,:,:),intent(in) :: u
-          call set(ip,n,u)
+          call set(ip,n,t,u)
           call apply(ip%p)
         end subroutine
 
@@ -170,12 +174,13 @@
           call apply(ep%p)
         end subroutine
 
-        subroutine setApplyErrorProbe(ep,n,u,vol)
+        subroutine setApplyErrorProbe(ep,n,t,u,vol)
          implicit none
           type(errorProbe),intent(inout) :: ep
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           type(SF),intent(in) :: u,vol
-          call set(ep,n,u,vol)
+          call set(ep,n,t,u,vol)
           call apply(ep%p)
         end subroutine
 

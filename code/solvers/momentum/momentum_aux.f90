@@ -12,6 +12,7 @@
        private
        
        public :: compute_TKE
+       public :: compute_TKE_2C
        public :: compute_CoFoRe_grid
        public :: addMeanPressureGrad
 
@@ -23,6 +24,17 @@
          type(VF),intent(in) :: U_CC
          type(SF),intent(in) :: vol
          call Ln(K_energy,U_CC,2.0_cp,vol)
+         K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
+       end subroutine
+
+       subroutine compute_TKE_2C(K_energy,A,B,vol,temp)
+         implicit none
+         real(cp),intent(inout) :: K_energy
+         type(SF),intent(inout) :: temp
+         type(SF),intent(in) :: A,B
+         type(SF),intent(in) :: vol
+         call add(temp,A,B)
+         call Ln(K_energy,temp,2.0_cp,vol)
          K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 

@@ -221,31 +221,34 @@
 
         ! ------------------ APPLY PROBE -----------------------
 
-        subroutine applyCenterProbe(p,n,u)
+        subroutine applyCenterProbe(p,n,t,u)
          implicit none
           type(centerProbe),intent(inout) :: p
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           real(cp),dimension(:,:,:),intent(in) :: u
-          call set(p%ip,n,u(p%ip%i(1),p%ip%i(2),p%ip%i(3)))
+          call set(p%ip,n,t,u(p%ip%i(1),p%ip%i(2),p%ip%i(3)))
           call apply(p%ip)
         end subroutine
 
-        subroutine applyAveProbe(p,n,u)
+        subroutine applyAveProbe(p,n,t,u)
          implicit none
           type(aveProbe),intent(inout) :: p
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           real(cp),dimension(:,:,:),intent(in) :: u
           real(cp) :: d
           d = 0.5_cp*(u(p%ip%i(1)    ,p%ip%i(2)    ,p%ip%i(3)) +&
                       u(p%ip%i(1)+p%x,p%ip%i(2)+p%y,p%ip%i(3)+p%z))
-          call set(p%ip,n,d)
+          call set(p%ip,n,t,d)
           call apply(p%ip)
         end subroutine
 
-        subroutine applyPlaneErrorProbe(p,n,u)
+        subroutine applyPlaneErrorProbe(p,n,t,u)
           implicit none
           type(planeErrorProbe),intent(inout) :: p
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           type(SF),intent(in) :: u
           select case (p%dir)
           case (1); p%ep%e%Linf = maxval(u%RF(1)%f(p%i,:,:))
@@ -254,14 +257,15 @@
           case default
             stop 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.'
           end select
-          call set(p%ep,n,p%ep%e%Linf)
+          call set(p%ep,n,t,p%ep%e%Linf)
           call apply(p%ep)
         end subroutine
 
-        subroutine applyAvePlaneErrorProbe(p,n,u)
+        subroutine applyAvePlaneErrorProbe(p,n,t,u)
           implicit none
           type(avePlaneErrorProbe),intent(inout) :: p
           integer,intent(in) :: n
+          real(cp),intent(in) :: t
           type(SF),intent(in) :: u
           select case (p%dir)
           case (1); p%ep%e%Linf = maxval(0.5_cp*(u%RF(1)%f(p%i,:,:)+u%RF(1)%f(p%i+1,:,:)))
@@ -270,7 +274,7 @@
           case default
             stop 'Error: dir must = 1,2,3 in applyPlaneErorrProbe.'
           end select
-          call set(p%ep,n,p%ep%e%Linf)
+          call set(p%ep,n,t,p%ep%e%Linf)
           call apply(p%ep)
         end subroutine
 

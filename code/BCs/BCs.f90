@@ -42,6 +42,7 @@
        use edge_mod
        use corner_mod
        use IO_tools_mod
+       use table_mod
        implicit none
 
 
@@ -355,7 +356,7 @@
          implicit none
          type(BCs),intent(in) :: BC
          integer,intent(in) :: NewU
-         integer :: i
+         integer :: i,col_width,precision
 
          ! write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
          ! write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
@@ -363,27 +364,22 @@
          ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
          ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
          if (BC%defined) then
-             write(newU,'(A7,6(I5))') 'Faces: ',(/(i,i=1,6)/)
-             write(newU,'(A6)',advance='no') 'Type: '
-             do i=1,6; call export_type(BC%f(i)%b,newU); enddo
-             write(newU,*) ''
-             write(newU,'(A9)',advance='no') 'meanVal: '
-             do i=1,6; call export_meanVal(BC%f(i)%b,newU); enddo
-             write(newU,*) ''
+           precision = 4
+           col_width = 12
+           call export_table('Faces   :',(/(i,i=1,6)/),col_width,newU)
+           call export_table('Type    :',(/(get_bctype(BC%f(i)%b),i=1,6)/),col_width,newU)
+           call export_table('meanVal :',(/(BC%f(i)%b%meanVal,i=1,6)/),col_width,precision,newU)
 
-             write(newU,'(A7,12(I5))') 'Edges: ',(/(i,i=1,12)/)
-             write(newU,'(A6)',advance='no') 'Type: '
-             do i=1,12; call export_type(BC%e(i)%b,newU); enddo
-             write(newU,*) ''
-             write(newU,'(A9)',advance='no') 'meanVal: '
-             do i=1,12; call export_meanVal(BC%e(i)%b,newU); enddo
-             write(newU,*) ''
+           col_width = 8
+           call export_table('Edges   :',(/(i,i=1,12)/),col_width,newU)
+           call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
+           call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
 
-           !   write(newU,*) ' ------------- CORNERS ------------- '
-           ! do i=1,8
-           !   write(newU,*) 'Corner ',i
-           !   call export(BC%c(i),newU)
-           ! enddo
+           ! col_width = 10
+           ! call export_table('Corners :',(/(i,i=1,12)/),col_width,newU)
+           ! call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
+           ! call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
+
          endif
        end subroutine
 

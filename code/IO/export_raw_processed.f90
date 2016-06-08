@@ -14,9 +14,9 @@
        implicit none
 
        private
-       public :: export_raw                 ! call export_raw(m,x,dir,name,pad)
-       public :: export_processed           ! call export_processed(m,x,dir,name,pad)
-       public :: export_processed_transient ! call export_processed_transient(m,x,dir,name,pad,nstep)
+       public :: export_raw                    ! call export_raw(m,x,dir,name,pad)
+       public :: export_processed              ! call export_processed(m,x,dir,name,pad)
+       public :: export_processed_transient_2C ! call export_processed_transient(m,x,dir,name,pad,nstep)
        public :: export_processed_transient_3C
 
        interface export_raw;                    module procedure export_raw_SF;                     end interface
@@ -24,7 +24,7 @@
        interface export_processed;              module procedure export_processed_SF;               end interface
        interface export_processed;              module procedure export_processed_VF;               end interface
 
-       interface export_processed_transient;    module procedure export_processed_transient_VF;     end interface
+       interface export_processed_transient_2C; module procedure export_processed_transient_VF_2C;  end interface
        interface export_processed_transient_3C; module procedure export_processed_transient_VF_3C;  end interface
 
        contains
@@ -313,18 +313,18 @@
          endif
        end subroutine
 
-       subroutine export_processed_transient_VF(m,x,dir,name,pad,nstep)
+       subroutine export_processed_transient_VF_2C(m,x,dir,name,pad,nstep)
          implicit none
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad,nstep
          if (.not.export_planar) then
-         stop 'Error: trying to export 3D transient solution in export_processed_transient_VF in export_processed.f90.'
+         stop 'Error: trying to export 3D transient solution in export_processed_transient_VF_2C in export_processed.f90.'
          else; if (m%plane_x) then; call export_processed_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,1,nstep)
          elseif   (m%plane_y) then; call export_processed_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,2,nstep)
          elseif   (m%plane_z) then; call export_processed_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,3,nstep)
-         else; stop 'Error: attempted plane export of 3D geometry in export_processed_VF in export_raw_processed.f90'
+         else; stop 'Error: attempted plane export of 3D geometry in export_processed_transient_VF_2C in export_raw_processed.f90'
          endif
          endif
        end subroutine

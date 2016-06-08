@@ -93,12 +93,13 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_TME_Domain(K_energy,KB_energy,B,nstep,D)
+       subroutine compute_TME_Domain(K_energy,KB_energy,B,nstep,time,D)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(probe),intent(inout) :: KB_energy
          type(VF),intent(in) :: B
          integer,intent(in) :: nstep
+         real(cp),intent(in) :: time
          type(domain),intent(in) :: D
          type(VF) :: temp
          call init_CC(temp,D%m_in)
@@ -106,20 +107,21 @@
          call Ln(K_energy,temp,2.0_cp,D%m_in)
          K_energy = 0.5_cp*K_energy
          call delete(temp)
-         call set(KB_energy,nstep,K_energy)
+         call set(KB_energy,nstep,time,K_energy)
          call apply(KB_energy)
        end subroutine
 
-       subroutine compute_TME(K_energy,KB_energy,B,nstep,m)
+       subroutine compute_TME(K_energy,KB_energy,B,nstep,time,m)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(probe),intent(inout) :: KB_energy
          type(VF),intent(in) :: B
          integer,intent(in) :: nstep
+         real(cp),intent(in) :: time
          type(mesh),intent(in) :: m
          call Ln(K_energy,B,2.0_cp,m)
          K_energy = 0.5_cp*K_energy
-         call set(KB_energy,nstep,K_energy)
+         call set(KB_energy,nstep,time,K_energy)
          call apply(KB_energy)
        end subroutine
 

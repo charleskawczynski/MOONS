@@ -14,7 +14,7 @@
        use current_precision_mod
        use string_mod
        use IO_tools_mod
-       use isnan_mod
+       use is_nan_mod
 
        implicit none
 
@@ -25,6 +25,7 @@
 
        type probe
          real(cp) :: d                        ! transient data
+         real(cp) :: t                        ! t associated with data
          integer :: n                         ! n associated with data
          type(string) :: dir,name             ! probe directory and name
          integer :: un_d                      ! file unit number for data
@@ -37,7 +38,7 @@
        interface set;         module procedure setProbeData;         end interface
        interface apply;       module procedure applyProbe;           end interface
 
-       interface export;      module procedure export_Probe_info;    end interface
+       interface export;      module procedure export_TP_info;       end interface
        interface printProbe;  module procedure printTransientProbe;  end interface
        interface delete;      module procedure deleteProbe;          end interface
 
@@ -55,7 +56,7 @@
          if (p%TF_freshStart) then
            p%un_d = newAndOpen(dir,name)
            write(p%un_d,*) 'TITLE = "probe for '//name//'"'
-           write(p%un_d,*) 'VARIABLES = N,'//name
+           write(p%un_d,*) 'VARIABLES = t,'//name//',N'
            write(p%un_d,*) 'ZONE DATAPACKING = POINT'
            flush(p%un_d)
          elseif (.not.p%TF_freshStart) then
@@ -66,12 +67,12 @@
          p%infinity = huge(1.0_cp)
        end subroutine
 
-       subroutine setProbeData(p,n,d)
+       subroutine setProbeData(p,n,t,d)
          implicit none
          type(probe),intent(inout) :: p
          integer,intent(in) :: n
-         real(cp),intent(in) :: d
-         p%n = n; p%d = d
+         real(cp),intent(in) :: t,d
+         p%n = n; p%t = t; p%d = d
        end subroutine
 
        subroutine applyProbe(p)
@@ -81,11 +82,12 @@
          write(*,*) 'Error: data>infinity in probe: ',str(p%name)
          stop 'Divergence error. Sorry!'
          endif
-         if (my_isnan(p%d)) then
+         if (is_nan(p%d)) then
          write(*,*) 'Error: NaN in data in probe: ',str(p%name)
          stop 'Divergence error. Sorry!'
          endif
-         write(p%un_d,'(2'//arrfmt//')') real(p%n,cp),p%d
+
+         write(p%un_d,'(3'//arrfmt//')') p%t,p%d,real(p%n,cp)
          flush(p%un_d)
        end subroutine
 
@@ -101,13 +103,13 @@
          integer,intent(in),optional :: u
          if (.not.present(u)) then
            write(u,*) ' ---------------- PROBE -------------- '
-           call writeProbeToFileOrScreen(p,6)
+           call export_TP(p,6)
          else
-           call writeProbeToFileOrScreen(p,6)
+           call export_TP(p,6)
          endif
        end subroutine
 
-       subroutine export_Probe_info(p,u)
+       subroutine export_TP_info(p,u)
          implicit none
          type(probe), intent(in) :: p
          integer,intent(in),optional :: u
@@ -118,14 +120,14 @@
          else; newU = u
          endif
 
-         call writeProbeToFileOrScreen(p,newU)
+         call export_TP(p,newU)
 
          if (.not.present(u)) then
            call closeAndMessage(newU,str(p%name)//'_info',str(p%dir))
          endif
        end subroutine
 
-       subroutine writeProbeToFileOrScreen(p,u)
+       subroutine export_TP(p,u)
          implicit none
          type(probe), intent(in) :: p
          integer,intent(in) :: u

@@ -2,16 +2,7 @@
       ! NOTES:
       !      ONLY CENTERED DERIVATIVES SHOULD BE USED IN THIS 
       !      FILE SINCE IMPLICIT SOLVERS IN MOONS DEPEND ON BC
-      !      IMPLICIT DERIVATIVES.
-      !      
-      ! IMPORTANT:
-      !      The intent in some of the routines below
-      !      were specified only to match an interface.
-      !      Ideally, the intent would be "in", but this
-      !      would require multiple interfaces and a larger
-      !      argument list. Therefore, one must understand
-      !      that these intents are for code reusability
-      !      over safe programming.
+      !      IMPLICIT DERIVATIVES. SEE DOCUMENTATION.
       !      
       use current_precision_mod
       use mesh_mod
@@ -30,7 +21,7 @@
       public :: Lap_uniform_VF_explicit,Lap_uniform_VF
       public :: Lap_nonuniform_props_explicit,Lap_nonuniform_props
       public :: ind_diffusion_explicit,ind_diffusion
-      public :: eng_diffusion_explicit,eng_diffusion
+      public :: nrg_diffusion_explicit,nrg_diffusion
       public :: mom_diffusion_explicit,mom_diffusion
 
       public :: op_SF,op_SF_explicit
@@ -41,7 +32,8 @@
           import :: SF,VF,mesh,matrix_free_params
           implicit none
           type(SF),intent(inout) :: Ax,x
-          type(VF),intent(inout) :: k,tempk
+          type(VF),intent(in) :: k
+          type(VF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -52,7 +44,8 @@
           import :: SF,VF,mesh,matrix_free_params
           implicit none
           type(SF),intent(inout) :: Ax,x
-          type(VF),intent(inout) :: k,tempk
+          type(VF),intent(in) :: k
+          type(VF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -63,7 +56,8 @@
           import :: VF,mesh,matrix_free_params
           implicit none
           type(VF),intent(inout) :: Ax,x
-          type(VF),intent(inout) :: k,tempk
+          type(VF),intent(in) :: k
+          type(VF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -74,7 +68,8 @@
           import :: VF,mesh,matrix_free_params
           implicit none
           type(VF),intent(inout) :: Ax,x
-          type(VF),intent(inout) :: k,tempk
+          type(VF),intent(in) :: k
+          type(VF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -87,7 +82,8 @@
         !        A = ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
@@ -101,7 +97,8 @@
         !        A = ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
@@ -117,13 +114,14 @@
         !        A = ∇•(∇)
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = tempk%is_CC
-        call lap_centered(Ax,x,m,k)
+        suppress_warning = k%is_CC
+        call lap_centered(Ax,x,m,tempk)
         call zeroGhostPoints(Ax)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
@@ -131,14 +129,15 @@
         !        A = ∇•(∇)
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = tempk%is_CC
+        suppress_warning = k%is_CC
         call apply_BCs_implicit(x,m)
-        call lap_centered(Ax,x,m,k)
+        call lap_centered(Ax,x,m,tempk)
         call zeroGhostPoints(Ax)
       end subroutine
 
@@ -147,7 +146,8 @@
         !        A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
@@ -161,7 +161,8 @@
         !        A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
@@ -177,7 +178,8 @@
         !        A = {I + c_ind ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call curl(tempk,x,m)
@@ -192,7 +194,8 @@
         !        A = {I + c_ind ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x,m)
@@ -204,69 +207,73 @@
         call zeroGhostPoints(Ax)
       end subroutine
 
-      subroutine eng_diffusion_explicit(Ax,x,k,m,MFP,tempk)
+      subroutine nrg_diffusion_explicit(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_eng ∇•(k∇)}
+        !        A = {I + c_nrg ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
-        call multiply(Ax,MFP%c_eng)
+        call multiply(Ax,MFP%c_nrg)
         call add(Ax,x)
         call zeroGhostPoints(Ax)
       end subroutine
-      subroutine eng_diffusion(Ax,x,k,m,MFP,tempk)
+      subroutine nrg_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_eng ∇•(k∇)}
+        !        A = {I + c_nrg ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x,m)
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
-        call multiply(Ax,MFP%c_eng)
+        call multiply(Ax,MFP%c_nrg)
         call add(Ax,x)
         call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine mom_diffusion_explicit(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_mom ∇•(k∇)}
+        !        A = {I + c_mom ∇•(∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
-        suppress_warning = tempk%is_CC
+        suppress_warning = k%is_CC
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).
         ! The reason this is not as simple as the laplacian operator
         ! is because U is staggered, and so k (the intermediate location), 
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
-        call lap_centered(Ax,x,m,k)
+        call lap_centered(Ax,x,m,tempk)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)
       end subroutine
       subroutine mom_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_mom ∇•(k∇)}
+        !        A = {I + c_mom ∇•(∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(inout) :: k,tempk
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
-        suppress_warning = tempk%is_CC
+        suppress_warning = k%is_CC
         call apply_BCs_implicit(x,m)
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).
@@ -274,7 +281,7 @@
         ! is because U is staggered, and so k (the intermediate location), 
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
-        call lap_centered(Ax,x,m,k)
+        call lap_centered(Ax,x,m,tempk)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)

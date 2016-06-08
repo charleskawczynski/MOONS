@@ -14,7 +14,7 @@
       public :: getUnit,closeExisting
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
-      public :: int2Str,int2Str2,num2Str,intLen
+      public :: int2Str,int2Str2,num2Str,log2Str,intLen
       public :: arrfmt,rarrfmt,logfmt,intfmt
 
        ! This website is a good reference for formatting:
@@ -182,6 +182,15 @@
           exit
           endif
         enddo
+      end function
+
+      function log2Str(L) result(s)
+        ! NOTE: the string length and the fmt must match!
+        implicit none
+        logical,intent(in) :: L
+        character(len=2) :: s
+        write(s,'(L2)') L
+        s = trim(adjustl(s))
       end function
 
       function int2Str(i) result(s)

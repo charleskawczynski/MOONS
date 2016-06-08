@@ -10,11 +10,14 @@
        use ops_interp_mod
        use ops_discrete_mod
        use apply_BCs_mod
+       use PCG_mod
+       use PCG_solver_mod
 
        implicit none
 
        private
        public :: explicitEuler
+       public :: diffusion_implicit
        public :: all_terms_explicit
 
        contains
@@ -38,6 +41,29 @@
          call multiply(temp_CC1,dt)
          call add(T,temp_CC1)
          call apply_BCs(T,m)
+       end subroutine
+
+       subroutine diffusion_implicit(PCG,T,U_F,dt,Re,Pr,m,n,compute_norms,temp_CC1,temp_CC2,temp_F)
+         ! Solves
+         !             ∂T/∂t + (u • ∇)T = ∇²T + j²/σ + Φ
+         implicit none
+         type(PCG_solver_SF),intent(inout) :: PCG
+         type(SF),intent(inout) :: T,temp_CC1,temp_CC2
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: U_F
+         real(cp),intent(in) :: dt,Re,Pr
+         type(VF),intent(inout) :: temp_F
+         logical,intent(in) :: compute_norms
+         integer,intent(in) :: n
+         call cellCenter2Face(temp_F,T,m)
+         call multiply(temp_F,U_F)
+         call div(temp_CC1,temp_F,m)
+         call multiply(temp_CC1,-1.0_cp)
+         call lap(temp_CC2,T,m)
+         call multiply(temp_CC2,0.5_cp/(Re*Pr))
+         call add(temp_CC1,temp_CC2)
+         call multiply(temp_CC1,dt)
+         call solve(PCG,T,temp_CC1,m,n,compute_norms)
        end subroutine
 
        subroutine all_terms_explicit(T,U_F,U_CC,J_CC,sigmaInv_CC,dt,Re,Pr,m,&

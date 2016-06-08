@@ -23,35 +23,35 @@
 
        contains
 
-       subroutine computeBuoyancy(buoyancy,T,gravity,Gr,Re,m,D,temp_F)
+       subroutine computeBuoyancy(buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_CC)
          ! Computes
          ! 
          !            Gr
          !           ---  T g
          !           Re^2
          implicit none
-         type(VF),intent(inout) :: buoyancy,temp_F
+         type(VF),intent(inout) :: buoyancy,temp_F,temp_CC
          type(SF),intent(in) :: T
          type(VF),intent(in) :: gravity
          real(cp),intent(in) :: Gr,Re
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
-         call assign(buoyancy,T)
-         call multiply(buoyancy,Gr/(Re**2.0_cp))
-         call multiply(buoyancy,gravity)
-         call cellCenter2Face(temp_F,buoyancy,m)
+         call assign(temp_CC,T)
+         call multiply(temp_CC,Gr/(Re**2.0_cp))
+         call multiply(temp_CC,gravity)
+         call cellCenter2Face(temp_F,temp_CC,m)
          call extractFace(buoyancy,temp_F,D)
        end subroutine
 
-       subroutine compute_AddBuoyancy(buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_buoyancy)
+       subroutine compute_AddBuoyancy(buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_CC,temp_buoyancy)
          implicit none
-         type(VF),intent(inout) :: buoyancy,temp_F,temp_buoyancy
+         type(VF),intent(inout) :: buoyancy,temp_F,temp_CC,temp_buoyancy
          type(SF),intent(in) :: T
          type(VF),intent(in) :: gravity
          real(cp),intent(in) :: Gr,Re
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
-         call computeBuoyancy(temp_buoyancy,T,gravity,Gr,Re,m,D,temp_F)
+         call computeBuoyancy(temp_buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_CC)
          call add(buoyancy,temp_buoyancy)
        end subroutine
 

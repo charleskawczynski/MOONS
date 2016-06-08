@@ -12,7 +12,7 @@
        public :: init_UBCs
        integer,dimension(3) :: periodic_dir = (/1,0,0/) ! 1 = true, else false
        ! Default = no-slip
-       integer :: preDefinedU_BCs = 13 ! See init_UBCs for details
+       integer :: preDefinedU_BCs = 0 ! See init_UBCs for details
 
        contains
 

@@ -1,5 +1,6 @@
        module subdomain_mod
        use current_precision_mod
+       use overlap_mod
        use grid_mod
        use coordinates_mod
 
@@ -11,7 +12,7 @@
        public :: print,export
 
        interface init;       module procedure init_subdomain;        end interface
-       interface init;       module procedure init_subdomain_copy;   end interface
+       interface init;       module procedure init_copy_subdomain;   end interface
        interface delete;     module procedure delete_subdomain;      end interface
        interface print;      module procedure print_subdomain;       end interface
        interface export;     module procedure export_subdomain;      end interface
@@ -27,17 +28,12 @@
          !              E = exclude boundary point
          !        T = total domain (fluid, e.g.)
          ! 
-         integer,dimension(3) :: CE1,CE2
-         integer,dimension(3) :: CI1,CI2
-         integer,dimension(3) :: NB1,NB2
-         integer,dimension(3) :: NI1,NI2
-         integer,dimension(3) :: NE1,NE2
 
-         integer,dimension(3) :: TCE1,TCE2
-         integer,dimension(3) :: TCI1,TCI2
-         integer,dimension(3) :: TNB1,TNB2
-         integer,dimension(3) :: TNI1,TNI2
-         integer,dimension(3) :: TNE1,TNE2 ! Excludes wall normal values (momentum eq)
+         type(overlap),dimension(3) :: CE
+         type(overlap),dimension(3) :: CI
+         type(overlap),dimension(3) :: NB
+         type(overlap),dimension(3) :: NI
+         type(overlap),dimension(3) :: NE
 
          logical,dimension(3) :: defined = .false.
          integer :: g_in_id,g_tot_id
@@ -66,20 +62,18 @@
          endif
        end subroutine
 
-       subroutine init_subdomain_copy(SD_out,SD_in)
+       subroutine init_copy_subdomain(SD_out,SD_in)
          implicit none
          type(subdomain),intent(inout) :: SD_out
          type(subdomain),intent(in) :: SD_in
-         SD_out%CE1 = SD_in%CE1; SD_out%CE2 = SD_in%CE2
-         SD_out%CI1 = SD_in%CI1; SD_out%CI2 = SD_in%CI2
-         SD_out%NB1 = SD_in%NB1; SD_out%NB2 = SD_in%NB2
-         SD_out%NI1 = SD_in%NI1; SD_out%NI2 = SD_in%NI2
-         SD_out%NE1 = SD_in%NE1; SD_out%NE2 = SD_in%NE2
-         SD_out%TCE1 = SD_in%TCE1; SD_out%TCE2 = SD_in%TCE2
-         SD_out%TCI1 = SD_in%TCI1; SD_out%TCI2 = SD_in%TCI2
-         SD_out%TNB1 = SD_in%TNB1; SD_out%TNB2 = SD_in%TNB2
-         SD_out%TNI1 = SD_in%TNI1; SD_out%TNI2 = SD_in%TNI2
-         SD_out%TNE1 = SD_in%TNE1; SD_out%TNE2 = SD_in%TNE2
+         integer :: i
+         do i=1,3
+           call init(SD_out%CE(i),SD_in%CE(i))
+           call init(SD_out%CI(i),SD_in%CI(i))
+           call init(SD_out%NB(i),SD_in%NB(i))
+           call init(SD_out%NI(i),SD_in%NI(i))
+           call init(SD_out%NE(i),SD_in%NE(i))
+         enddo
          SD_out%g_in_id = SD_in%g_in_id
          SD_out%g_tot_id = SD_in%g_tot_id
          SD_out%defined = SD_in%defined
@@ -88,11 +82,14 @@
        subroutine delete_subdomain(SD)
          implicit none
          type(subdomain),intent(inout) :: SD
-         SD%CE1 = 0; SD%CE2 = 0; SD%TCE1 = 0; SD%TCE2 = 0
-         SD%CI1 = 0; SD%CI2 = 0; SD%TCI1 = 0; SD%TCI2 = 0
-         SD%NB1 = 0; SD%NB2 = 0; SD%TNB1 = 0; SD%TNB2 = 0
-         SD%NI1 = 0; SD%NI2 = 0; SD%TNI1 = 0; SD%TNI2 = 0
-         SD%NE1 = 0; SD%NE2 = 0; SD%TNE1 = 0; SD%TNE2 = 0
+         integer :: i
+         do i=1,3
+           call delete(SD%CE(i))
+           call delete(SD%CI(i))
+           call delete(SD%NB(i))
+           call delete(SD%NI(i))
+           call delete(SD%NE(i))
+         enddo
          SD%defined = .false.
        end subroutine
 
@@ -103,27 +100,27 @@
          integer,intent(in) :: dir
          logical :: before,after
          integer :: i
-         SD%CE1(dir) = 0
-         SD%CE2(dir) = 0
+         SD%CE(dir)%R1(1) = 0
+         SD%CE(dir)%R2(1) = 0
          do i=1,c_tot%sc-1
            before = c_tot%hc( i ).lt.c_in%hmin
            after  = c_tot%hc(i+1).gt.c_in%hmin
-           if (before.and.after) SD%CE1(dir) = i+1
+           if (before.and.after) SD%CE(dir)%R1(1) = i+1
          enddo
          do i=1,c_tot%sc-1
            before = c_tot%hc( i ).lt.c_in%hmax
            after  = c_tot%hc(i+1).gt.c_in%hmax
-           if (before.and.after) SD%CE2(dir) = i
+           if (before.and.after) SD%CE(dir)%R2(1) = i
          enddo
          do i=1,c_in%sc-1
            before = c_in%hc( i ).lt.c_tot%hmin
            after  = c_in%hc(i+1).gt.c_tot%hmin
-           if (before.and.after) SD%TCE1(dir) = i+1
+           if (before.and.after) SD%CE(dir)%R1(2) = i+1
          enddo
          do i=1,c_in%sc-1
            before = c_in%hc( i ).lt.c_tot%hmax
            after  = c_in%hc(i+1).gt.c_tot%hmax
-           if (before.and.after) SD%TCE2(dir) = i
+           if (before.and.after) SD%CE(dir)%R2(2) = i
          enddo
 
           ! Note that in the following case is assumed
@@ -135,7 +132,7 @@
           !          |--------wall---------|
           !         CE1                    CE2
           ! 
-         if ((SD%CE1(dir).ne.0).and.(SD%CE2(dir).ne.0)) then
+         if ((SD%CE(dir)%R1(1).ne.0).and.(SD%CE(dir)%R2(1).ne.0)) then
            ! Case 1 (complete overlap of fluid)
            ! Traversing c_tot, both hmin and hmax are found in fluid
            ! 
@@ -145,18 +142,18 @@
            !    CE1                              CE2
            ! 
            SD%defined(dir) = .true.
-           SD%TCE1(dir) = 2; SD%TCE2(dir) = c_in%sc-1
+           SD%CE(dir)%R1(2) = 2; SD%CE(dir)%R2(2) = c_in%sc-1
            
-           SD%TCI1(dir) = 1; SD%TCI2(dir) = c_in%sc
-           SD%TNI1(dir) = 1; SD%TNI2(dir) = c_in%sn
-           SD%TNB1(dir) = 2; SD%TNB2(dir) = c_in%sn-1
-           SD%TNE1(dir) = 3; SD%TNE2(dir) = c_in%sn-2
-         elseif ((SD%CE1(dir).eq.0).and.(SD%CE2(dir).eq.0)) then
+           SD%CI(dir)%R1(2) = 1; SD%CI(dir)%R2(2) = c_in%sc
+           SD%NI(dir)%R1(2) = 1; SD%NI(dir)%R2(2) = c_in%sn
+           SD%NB(dir)%R1(2) = 2; SD%NB(dir)%R2(2) = c_in%sn-1
+           SD%NE(dir)%R1(2) = 3; SD%NE(dir)%R2(2) = c_in%sn-2
+         elseif ((SD%CE(dir)%R1(1).eq.0).and.(SD%CE(dir)%R2(1).eq.0)) then
            ! Case 3 (no overlap)
            !  |---------fluid---------|
            !                                 |---------wall---------|
            SD%defined(dir) = .false.
-         elseif (SD%CE1(dir).eq.0) then
+         elseif (SD%CE(dir)%R1(1).eq.0) then
            ! Case 3 (partial overlap of fluid, fluid "enters" wall domain)
            ! Traversing c_tot and c_in, only CE2 and TCE1 are found
            ! 
@@ -167,14 +164,14 @@
            ! 
            SD%defined(dir) = .true.
 
-           SD%CE1(dir) = 2
-           SD%TCE2(dir) = c_in%sc-1
+           SD%CE(dir)%R1(1) = 2
+           SD%CE(dir)%R2(2) = c_in%sc-1
 
-           SD%TCI1(dir) = 1; SD%TCI2(dir) = c_in%sc
-           SD%TNI1(dir) = 1; SD%TNI2(dir) = c_in%sn
-           SD%TNB1(dir) = 2; SD%TNB2(dir) = c_in%sn-1
-           SD%TNE1(dir) = 3; SD%TNE2(dir) = c_in%sn-2
-         elseif (SD%CE2(dir).eq.0) then
+           SD%CI(dir)%R1(2) = 1; SD%CI(dir)%R2(2) = c_in%sc
+           SD%NI(dir)%R1(2) = 1; SD%NI(dir)%R2(2) = c_in%sn
+           SD%NB(dir)%R1(2) = 2; SD%NB(dir)%R2(2) = c_in%sn-1
+           SD%NE(dir)%R1(2) = 3; SD%NE(dir)%R2(2) = c_in%sn-2
+         elseif (SD%CE(dir)%R2(1).eq.0) then
            ! Case 2 (partial overlap of fluid, fluid "leaves" wall domain)
            ! Traversing c_tot and c_in, only CE1 and TCE2 are found
            ! 
@@ -185,13 +182,13 @@
            !
            SD%defined(dir) = .true.
 
-           SD%CE2(dir) = c_tot%sc-1
-           SD%TCE1(dir) = 2
+           SD%CE(dir)%R2(1) = c_tot%sc-1
+           SD%CE(dir)%R1(2) = 2
 
-           SD%TNI1(dir) = 1; SD%TNI2(dir) = c_in%sn
-           SD%TNB1(dir) = 2; SD%TNB2(dir) = c_in%sn-1
-           SD%TNE1(dir) = 3; SD%TNE2(dir) = c_in%sn-2
-           SD%TCI1(dir) = 1; SD%TCI2(dir) = c_in%sc
+           SD%NI(dir)%R1(2) = 1; SD%NI(dir)%R2(2) = c_in%sn
+           SD%NB(dir)%R1(2) = 2; SD%NB(dir)%R2(2) = c_in%sn-1
+           SD%NE(dir)%R1(2) = 3; SD%NE(dir)%R2(2) = c_in%sn-2
+           SD%CI(dir)%R1(2) = 1; SD%CI(dir)%R2(2) = c_in%sc
          endif
        end subroutine
 
@@ -199,19 +196,20 @@
          implicit none
          type(subdomain),intent(inout) :: SD
          integer,intent(in) :: dir
-         SD%CI1(dir) = SD%CE1(dir)-1; SD%CI2(dir) = SD%CE2(dir)+1
+         SD%CI(dir)%R1(1) = SD%CE(dir)%R1(1)-1
+         SD%CI(dir)%R2(1) = SD%CE(dir)%R2(1)+1
        end subroutine
 
        subroutine define_N(SD,dir)
          implicit none
          type(subdomain),intent(inout) :: SD
          integer,intent(in) :: dir
-         SD%NB1(dir) = SD%CE1(dir)
-         SD%NB2(dir) = SD%CE2(dir)+1
-         SD%NE1(dir) = SD%NB1(dir)+1
-         SD%NE2(dir) = SD%NB2(dir)-1
-         SD%NI1(dir) = SD%NB1(dir)-1
-         SD%NI2(dir) = SD%NB2(dir)+1
+         SD%NB(dir)%R1(1) = SD%CE(dir)%R1(1)
+         SD%NB(dir)%R2(1) = SD%CE(dir)%R2(1)+1
+         SD%NE(dir)%R1(1) = SD%NB(dir)%R1(1)+1
+         SD%NE(dir)%R2(1) = SD%NB(dir)%R2(1)-1
+         SD%NI(dir)%R1(1) = SD%NB(dir)%R1(1)-1
+         SD%NI(dir)%R2(1) = SD%NB(dir)%R2(1)+1
        end subroutine
 
        subroutine print_subdomain(SD,name)
@@ -226,27 +224,29 @@
          type(subdomain),intent(in) :: SD
          character(len=*),intent(in) :: name
          integer,intent(in) :: u
+         integer :: i
          write(u,*) ' ********** Subdomain ************ '//name
-         write(u,*) 'CE1 = ',SD%CE1
-         write(u,*) 'CE2 = ',SD%CE2
-         ! write(u,*) 'CI1 = ',SD%CI1
-         ! write(u,*) 'CI2 = ',SD%CI2
-         ! write(u,*) 'NB1 = ',SD%NB1
-         ! write(u,*) 'NB2 = ',SD%NB2
-         ! write(u,*) 'NI1 = ',SD%NI1
-         ! write(u,*) 'NI2 = ',SD%NI2
-         ! write(u,*) 'NE1 = ',SD%NE1
-         ! write(u,*) 'NE2 = ',SD%NE2
-         write(u,*) 'TCE1 = ',SD%TCE1
-         write(u,*) 'TCE2 = ',SD%TCE2
-         ! write(u,*) 'TCI1 = ',SD%TCI1
-         ! write(u,*) 'TCI2 = ',SD%TCI2
-         ! write(u,*) 'TNB1 = ',SD%TNB1
-         ! write(u,*) 'TNB2 = ',SD%TNB2
-         ! write(u,*) 'TNI1 = ',SD%TNI1
-         ! write(u,*) 'TNI2 = ',SD%TNI2
-         ! write(u,*) 'TNE1 = ',SD%TNE1
-         ! write(u,*) 'TNE2 = ',SD%TNE2
+         write(u,*) 'CE1 = ',(/(SD%CE(i)%R1(1),i=1,3)/)
+         write(u,*) 'CE2 = ',(/(SD%CE(i)%R2(1),i=1,3)/)
+         write(u,*) 'CI1 = ',(/(SD%CI(i)%R1(1),i=1,3)/)
+         write(u,*) 'CI2 = ',(/(SD%CI(i)%R2(1),i=1,3)/)
+         write(u,*) 'NB1 = ',(/(SD%NB(i)%R1(1),i=1,3)/)
+         write(u,*) 'NB2 = ',(/(SD%NB(i)%R2(1),i=1,3)/)
+         write(u,*) 'NI1 = ',(/(SD%NI(i)%R1(1),i=1,3)/)
+         write(u,*) 'NI2 = ',(/(SD%NI(i)%R2(1),i=1,3)/)
+         write(u,*) 'NE1 = ',(/(SD%NE(i)%R1(1),i=1,3)/)
+         write(u,*) 'NE2 = ',(/(SD%NE(i)%R2(1),i=1,3)/)
+
+         write(u,*) 'TCE1 = ',(/(SD%CE(i)%R1(2),i=1,3)/)
+         write(u,*) 'TCE2 = ',(/(SD%CE(i)%R2(2),i=1,3)/)
+         write(u,*) 'TCI1 = ',(/(SD%CI(i)%R1(2),i=1,3)/)
+         write(u,*) 'TCI2 = ',(/(SD%CI(i)%R2(2),i=1,3)/)
+         write(u,*) 'TNB1 = ',(/(SD%NB(i)%R1(2),i=1,3)/)
+         write(u,*) 'TNB2 = ',(/(SD%NB(i)%R2(2),i=1,3)/)
+         write(u,*) 'TNI1 = ',(/(SD%NI(i)%R1(2),i=1,3)/)
+         write(u,*) 'TNI2 = ',(/(SD%NI(i)%R2(2),i=1,3)/)
+         write(u,*) 'TNE1 = ',(/(SD%NE(i)%R1(2),i=1,3)/)
+         write(u,*) 'TNE2 = ',(/(SD%NE(i)%R2(2),i=1,3)/)
          write(u,*) 'g_in_id = ',SD%g_in_id
          write(u,*) 'g_tot_id = ',SD%g_tot_id
          write(u,*) 'defined = ',SD%defined

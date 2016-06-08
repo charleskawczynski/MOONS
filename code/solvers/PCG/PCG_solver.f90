@@ -9,13 +9,14 @@
       use BCs_mod
       use PCG_aux_mod
       use export_raw_processed_mod
-      use isnan_mod
+      use is_nan_mod
       use SF_mod
       use VF_mod
       use ops_norms_mod
       use IO_tools_mod
 
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
 
       private
@@ -31,7 +32,8 @@
       subroutine solve_PCG_SF(operator,operator_explicit,name,x,b,vol,k,m,&
         MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
-        external :: operator,operator_explicit
+        procedure(op_SF) :: operator
+        procedure(op_SF_explicit) :: operator_explicit
         character(len=*),intent(in) :: name
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol,Minv
@@ -135,7 +137,8 @@
       subroutine solve_PCG_VF(operator,operator_explicit,name,x,b,vol,k,m,&
         MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
-        external :: operator,operator_explicit
+        procedure(op_VF) :: operator
+        procedure(op_VF_explicit) :: operator_explicit
         character(len=*),intent(in) :: name
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol,Minv
@@ -237,7 +240,7 @@
         implicit none
         real(cp),intent(in) :: f
         character(len=*),intent(in) :: location
-        if (my_isnan(f)) then
+        if (is_nan(f)) then
           write(*,*) 'Error: NaN in ',location
           write(*,*) 'f = ',f
           stop 'Done';

@@ -12,7 +12,13 @@
        use domain_mod
        use dir_tree_mod
        use string_mod
+       use path_mod
        use print_export_mod
+       use PCG_mod
+       use PCG_solver_mod
+       use matrix_free_params_mod
+       use matrix_free_operators_mod
+       use preconditioners_mod
 
        use energy_aux_mod
        use energy_solver_mod
@@ -51,6 +57,7 @@
          type(mesh) :: m
          type(domain) :: D
          type(norms) :: norm_divQ
+         type(matrix_free_params) :: MFP
 
          integer :: nstep             ! Nth time step
          integer :: N_nrg             ! Maximum number iterations in solving T (if iterative)
@@ -58,6 +65,7 @@
          real(cp) :: time             ! Time
          real(cp) :: tol_nrg             ! Time
 
+         type(PCG_Solver_SF) :: PCG_T
          real(cp) :: Re,Pr,Ec,Ha  ! Reynolds, Prandtl, Eckert, Hartmann
        end type
 
@@ -80,7 +88,7 @@
          integer,intent(in) :: N_nrg
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: k_cc
+         type(SF) :: k_cc,prec_T
          write(*,*) 'Initializing energy:'
          nrg%dTime = dTime
          nrg%N_nrg = N_nrg
@@ -110,7 +118,7 @@
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call initTBCs(nrg%T,nrg%m)
+         call init_TBCs(nrg%T,nrg%m)
          if (solveEnergy) call print_BCs(nrg%T,'T')
          if (solveEnergy) call export_BCs(nrg%T,str(DT%params),'T')
          write(*,*) '     BCs initialized'
@@ -130,6 +138,13 @@
          call init(nrg%transient_divQ,str(DT%T),'transient_divQ',.not.restartT)
          call export(nrg%transient_divQ)
 
+         nrg%MFP%c_nrg = -0.5_cp*nrg%dTime/(nrg%Re*nrg%Pr)
+         call init(prec_T,nrg%T)
+         call prec_lap_SF(prec_T,nrg%m)
+         ! call prec_identity_SF(prec_T) ! For ordinary CG
+         call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_T,nrg%m,&
+         nrg%tol_nrg,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T),'T',.false.,.false.)
+         call delete(prec_T)
 
          temp_unit = newAndOpen(str(DT%params),'info_nrg')
          call energyInfo(nrg,temp_unit)
@@ -148,6 +163,7 @@
        subroutine delete_energy(nrg)
          implicit none
          type(energy),intent(inout) :: nrg
+
          call delete(nrg%T)
          call delete(nrg%temp_F)
          call delete(nrg%k)
@@ -160,9 +176,12 @@
          call delete(nrg%temp_CC2_VF)
 
          call delete(nrg%divQ)
+         call delete(nrg%vol_CC)
 
          call delete(nrg%transient_divQ)
          call delete(nrg%m)
+         call delete(nrg%D)
+         call delete(nrg%PCG_T)
 
          write(*,*) 'energy object deleted'
        end subroutine
@@ -173,7 +192,7 @@
          implicit none
          type(energy),intent(inout) :: nrg
          call compute(nrg%norm_divQ,nrg%divQ,nrg%vol_CC)
-         call set(nrg%transient_divQ,nrg%nstep,nrg%norm_divQ%L2)
+         call set(nrg%transient_divQ,nrg%nstep,nrg%time,nrg%norm_divQ%L2)
          call apply(nrg%transient_divQ)
        end subroutine
 
@@ -184,12 +203,12 @@
          type(dir_tree),intent(in) :: DT
          if (solveEnergy) then
            write(*,*) 'Exporting Solutions for T at nrg%nstep = ',nrg%nstep
+           call export_processed(m,nrg%T,str(DT%T),'T',0)
+
            call export_raw(m,nrg%U_F,str(DT%T),'U',0)
            call export_raw(m,nrg%T,str(DT%T),'T',0)
            call export_raw(m,nrg%divQ,str(DT%T),'divQ',0)
            call export_raw(m,nrg%k,str(DT%T),'k',0)
-
-           call export_processed(m,nrg%T,str(DT%T),'T',0)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -235,6 +254,10 @@
          case (2) ! O2 time marching
          call explicitEuler(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+
+         case (3) ! Diffusion implicit
+         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         nrg%Pr,nrg%m,nrg%N_nrg,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select

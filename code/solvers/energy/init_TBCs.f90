@@ -14,11 +14,14 @@
 
        private
 
-       integer,parameter :: preDefinedT_BCs = 3
+       integer,dimension(3) :: periodic_dir = (/0,1,1/) ! 1 = true, else false
+
+       integer,parameter :: preDefinedT_BCs = 4
        !                                      0 : User-defined case (no override)
        !                                      1 : Insulated (dT/dn = 0)
        !                                      2 : Fixed (T = T_wall)
        !                                      3 : Cold Top, Hot Bottom (y), insulating walls
+       !                                      4 : Yi's Duct
 
        integer,parameter :: hotFace         = 4
        !                                      1 {x_min}
@@ -36,37 +39,38 @@
        !                                      5 {z_min}
        !                                      6 {z_max}
 
-       public :: initTBCs
+       public :: init_TBCs
 
        contains
 
-       subroutine initTBCs(T,m)
+
+       subroutine init_TBCs(T,m)
          implicit none
-         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
+         type(mesh),intent(in) :: m
+         integer :: i,k,pd
+         call init_BC_mesh(T,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
-         call init(T%RF(1)%b,m%g(1),T%RF(1)%s)
+         do i=1,m%s
+           call init_Neumann(T%RF(i)%b)
+           do k=1,3
+             pd = periodic_dir(k)
+             if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_TBCs in init_TBCs.f90'
+             if (pd.eq.1) call makePeriodic(T%RF(i)%b,k)
+           enddo
+           call init(T%RF(i)%b,0.0_cp)
+         enddo
+         T%all_Neumann = .false. ! Needs to be adjusted manually
 
-         if (preDefinedT_BCs.ne.0) then
-           call initPreDefinedBCs(T%RF(1)%b)
-         else
-           call initUserTBCs(T%RF(1)%b)
-         endif
-       end subroutine
-
-       subroutine initPreDefinedBCs(T_bcs)
-         implicit none
-         type(BCs),intent(inout) :: T_bcs
          select case (preDefinedT_BCs)
-         case (1); call initInsulatingBCs(T_bcs)
-         case (2); call initFixedBCs(T_bcs)
-                   call hotFaceBC(T_bcs,hotFace)
-         case (3); call initInsulatingBCs(T_bcs)
-                   call hotFaceBC(T_bcs,hotFace)
-                   call coldFaceBC(T_bcs,coldFace)
-
-         case default
-           write(*,*) 'Incorrect preDefinedT_BCs in initPreDefinedTfield';stop
+         case (1); call initInsulatingBCs(T%RF(1)%b)
+         case (2); call initFixedBCs(T%RF(1)%b)
+                   call hotFaceBC(T%RF(1)%b,hotFace)
+         case (3); call initInsulatingBCs(T%RF(1)%b)
+                   call hotFaceBC(T%RF(1)%b,hotFace)
+                   call coldFaceBC(T%RF(1)%b,coldFace)
+         case (4); call duct_for_Yi(T,m)
+         case default; stop 'Error: preDefinedT_BCs must = 1 in init_TBCs in init_TBCs.f90.'
          end select
        end subroutine
 
@@ -75,6 +79,16 @@
          type(BCs),intent(inout) :: T_bcs
          call init_Neumann(T_bcs)
          call init(T_bcs,0.0_cp)
+       end subroutine
+
+       subroutine duct_for_Yi(T,m)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(SF),intent(inout) :: T
+         call init_Neumann(T%RF(1)%b,1); call init(T%RF(1)%b,-1.0_cp)
+         call init_Neumann(T%RF(1)%b,2)
+         call init_Dirichlet(T%RF(1)%b,3)
+         call init_Neumann(T%RF(1)%b,4)
        end subroutine
 
        subroutine hotFaceBC(T_bcs,face)
@@ -105,6 +119,21 @@
          type(BCs),intent(inout) :: T_bcs
          call init_Neumann(T_bcs)
          call init(T_bcs,0.0_cp)
+       end subroutine
+
+       subroutine makePeriodic(T_bcs,dir)
+         implicit none
+         type(BCs),intent(inout) :: T_bcs
+         integer,intent(in) :: dir
+         select case (dir)
+         case (1); call init_periodic(T_bcs,1)
+                   call init_periodic(T_bcs,2)
+         case (2); call init_periodic(T_bcs,3)
+                   call init_periodic(T_bcs,4)
+         case (3); call init_periodic(T_bcs,5)
+                   call init_periodic(T_bcs,6)
+         case default; stop 'Error: dir must = 1,2,3 in makePeriodic in init_TBCs.f90'
+         end select
        end subroutine
 
        end module

@@ -11,6 +11,7 @@
        use mesh_generate_mod
        use VF_mod
        use string_mod
+       use path_mod
        use dir_tree_mod
        use export_analytic_mod
 
@@ -62,7 +63,7 @@
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
          call print_version()
-         call export_version(str(DT%root))
+         call export_version(str(DT%out_dir))
 
          ! **************************************************************
          ! Initialize all grids

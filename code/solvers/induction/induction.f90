@@ -12,6 +12,7 @@
        use IO_VF_mod
        use dir_tree_mod
        use string_mod
+       use path_mod
        use export_raw_processed_mod
        use print_export_mod
 
@@ -120,7 +121,7 @@
          real(cp),intent(in) :: Rem,dTime
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: sigma,prec_cleanB,temp_surf,temp_domain
+         type(SF) :: sigma,prec_cleanB
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
 
@@ -306,8 +307,8 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         call apply(ind%probe_divB,ind%nstep,ind%divB,ind%vol_CC)
-         call apply(ind%probe_divJ,ind%nstep,ind%divJ,ind%vol_CC)
+         call apply(ind%probe_divB,ind%nstep,ind%t,ind%divB,ind%vol_CC)
+         call apply(ind%probe_divJ,ind%nstep,ind%t,ind%divJ,ind%vol_CC)
        end subroutine
 
        subroutine export_induction(ind,m,DT)
@@ -403,20 +404,20 @@
 
          if (compute_ME) then
            call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-           call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_Domain(ind%ME_fluid(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
-           call compute_TME_Domain(ind%ME_conductor(0),ind%KB0_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
+           call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%t,ind%m)
+           call compute_TME_Domain(ind%ME_fluid(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_conductor(0),ind%KB0_c_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
 
            call face2cellCenter(ind%temp_CC,ind%B,ind%m)
-           call compute_TME(ind%ME(1),ind%KBi_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_Domain(ind%ME_fluid(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
-           call compute_TME_Domain(ind%ME_conductor(1),ind%KBi_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
+           call compute_TME(ind%ME(1),ind%KBi_energy,ind%temp_CC,ind%nstep,ind%t,ind%m)
+           call compute_TME_Domain(ind%ME_fluid(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_conductor(1),ind%KBi_c_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
 
            call add(ind%temp_F1,ind%B,ind%B0)
            call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-           call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%m)
-           call compute_TME_Domain(ind%ME_fluid(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%D_fluid)
-           call compute_TME_Domain(ind%ME_conductor(2),ind%KB_c_energy,ind%temp_CC,ind%nstep,ind%D_sigma)
+           call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%t,ind%m)
+           call compute_TME_Domain(ind%ME_fluid(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+           call compute_TME_Domain(ind%ME_conductor(2),ind%KB_c_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
          endif
 
          if (PE%transient_0D) then 
@@ -425,6 +426,7 @@
          endif
 
          if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
+         ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
 
          if (PE%info) then
            call inductionInfo(ind,6)
