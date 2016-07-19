@@ -15,6 +15,7 @@
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
       public :: int2Str,int2Str2,num2Str,log2Str,intLen
+      public :: str2int
       public :: arrfmt,rarrfmt,logfmt,intfmt
 
        ! This website is a good reference for formatting:
@@ -218,6 +219,13 @@
         character(len=15) :: s
         write(s,'(F15.15)') i
         s = trim(adjustl(s))
+      end function
+
+      function str2int(s) result(i)
+        implicit none
+        character(len=*),intent(in) :: s
+        integer :: i
+        read(s,*) i
       end function
 
       function intLen(i) result(n)

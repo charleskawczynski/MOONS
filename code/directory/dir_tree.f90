@@ -18,7 +18,7 @@
         type(string) :: tar     ! absolute target directory (.exe location)
         type(string) :: out_dir ! relative output directory (out/LDC/)
 
-        type(path) :: mat,params,BEM
+        type(path) :: mat,params,BEM,restart
 
         type(path) :: U,B,J,T
         type(path) :: U_e,B_e,J_e,T_e ! energy data
@@ -46,9 +46,10 @@
           call init(DT%out_dir,'out'//str(DT%PS)); call make_dir(str(DT%out_dir))
         call append(DT%out_dir,'LDC'//str(DT%PS)); call make_dir(str(DT%out_dir))
 
-        call init(DT%mat   ,str(DT%tar),str(DT%out_dir)//'material'  ,str(DT%PS))
-        call init(DT%params,str(DT%tar),str(DT%out_dir)//'parameters',str(DT%PS))
-        call init(DT%BEM   ,str(DT%tar),str(DT%out_dir)//'BEM'       ,str(DT%PS))
+        call init(DT%mat    ,str(DT%tar),str(DT%out_dir)//'material'  ,str(DT%PS))
+        call init(DT%params ,str(DT%tar),str(DT%out_dir)//'parameters',str(DT%PS))
+        call init(DT%BEM    ,str(DT%tar),str(DT%out_dir)//'BEM'       ,str(DT%PS))
+        call init(DT%restart,str(DT%tar),str(DT%out_dir)//'restart'   ,str(DT%PS))
 
         call init(DT%U,str(DT%tar),str(DT%out_dir)//'Ufield',str(DT%PS))
         call init(DT%B,str(DT%tar),str(DT%out_dir)//'Bfield',str(DT%PS))
@@ -73,6 +74,7 @@
         call make_dir(str(DT%params))
         call make_dir(str(DT%mat))
         call make_dir(str(DT%BEM))
+        call make_dir(str(DT%restart))
 
         call make_dir(str(DT%U))
         call make_dir(str(DT%B))
@@ -100,6 +102,7 @@
         call delete(DT%params)
         call delete(DT%mat)
         call delete(DT%BEM)
+        call delete(DT%restart)
 
         call delete(DT%U)
         call delete(DT%B)

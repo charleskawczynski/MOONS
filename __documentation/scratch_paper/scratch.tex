@@ -1,0 +1,206 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{esint}
+
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\MC}{\mathcal}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\PD}{\partial}
+\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\ep}{\epsilon}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
+\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Kinetic, Magnetic, and Thermal energy equations}
+
+\subsection{Kinetic}
+\begin{equation}
+	E_K = \frac{1}{2} \rho u_i u_i
+	,\qquad
+	S_{ij} = \frac{1}{2} \left( \frac{\PD u_i}{\PD x_j} + \frac{\PD u_j}{\PD x_i} \right)
+	,\qquad
+	2S_{ij}S_{ij} = \frac{\PD u_i}{\PD x_j} \frac{\PD u_i}{\PD x_j}
+	+ \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
+\end{equation}
+\subsubsection{Variation 1}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MC E}$ of} \\ \text{change of $E_K$}}} + 
+	\underbrace{u_j \frac{\PD E_K}{\PD x_j}}_
+	{\substack{\text{Convection } \MC C_K \\\text{of $E_K$}}}
+	+
+	\underbrace{\frac{\PD}{\PD x_i} \left( u_i p - 2 \mu u_j S_{ij} \right)}_{\text{Transport } \MC T} = 
+	- \underbrace{2 \mu S_{ij} S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}}
+	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
+	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
+	- \underbrace{u_j \frac{\PD E_m}{\PD x_j}}_
+	{\substack{\text{Convection $\MC C_m$}\\\text{of $E_m$}}}
+	}
+\end{equation}
+\subsubsection{Variation 2}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MC E}$ of} \\ \text{change of $E_K$}}} + 
+	\underbrace{u_j \frac{\PD E_K}{\PD x_j}}_
+	{\substack{\text{Convection } \MC C_K \\\text{of $E_K$}}}
+	= 
+	- \underbrace{\frac{\PD (u_i p)}{\PD x_i}}_{\text{Pressure } \MC P} 
+	+ \underbrace{ \mu \frac{\PD^2 E_K}{\PD x_j^2} }_{\substack{\text{Diffusion } \MC D_K \\ \text{of $E_K$ }}}
+	- \underbrace{\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} }_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v'}}
+	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
+	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
+	- \underbrace{u_j \frac{\PD E_m}{\PD x_j}}_
+	{\substack{\text{Convection $\MC C_m$}\\\text{of $E_m$}}}
+	}
+\end{equation}
+
+\subsection{Magnetic}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_m}{\PD t} }_
+	{\substack{\text{Time rate $\dot{\MC B}$ of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\nabla \DOT \left(\E \times \BM \right)}_
+	{\substack{\text{Radiation}\\\text{term $\MC P_{r}$}}}
+	- \underbrace{\U \DOT \left[\B \DOT \nabla \left( \BM \right) \right]}_
+	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
+	+ \underbrace{(\U \DOT \nabla) E_m}_
+	{\substack{\text{Convection $\MC C_m$}\\\text{of $E_m$}}}
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MC E_J$}}}
+	}
+\end{equation}
+
+\begin{equation}
+	\underbrace{\frac{\PD E_m}{\PD t} }_
+	{\substack{\text{Time rate $\dot{\MC B}$ of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\nabla \DOT \left(\E \times \BM \right)}_
+	{\substack{\text{Radiation}\\\text{term $\MC P_{r}$}}}
+	- \underbrace{\U \DOT \left[\B \DOT \nabla \left( \BM \right) \right]}_
+	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
+	+ \underbrace{(\U \DOT \nabla) E_m}_
+	{\substack{\text{Convection $\MC C_m$}\\\text{of $E_m$}}}
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MC E_J$}}}
+\end{equation}
+
+\begin{equation}
+	\underbrace{\frac{\PD E_m}{\PD t} }_
+	{\substack{\text{Time rate $\dot{\MC B}$ of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MC E_J$}}}
+\end{equation}
+
+\subsection{Thermal}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD T}{\PD t}}_{\substack{\text{Time rate $\MC E_T$ of} \\ \text{change of $E_T$}}} +
+	\underbrace{(\U \DOT \nabla) T}_{\substack{\text{Convection $\MC C_T$ of} \\ \text{thermal energy}}}
+	= 
+	\underbrace{\nabla \DOT (k \nabla T)}_{\substack{\text{Thermal} \\ \text{diffusion } \MC D_T}} + 
+	\underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MC E_J$}}} +
+	\underbrace{2 \mu S_{ij}S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}} +
+	\underbrace{\dot{Q}}_{\substack{\text{volumetric} \\ \text{heating } \dot{\MC Q}}}
+	}
+\end{equation}
+
+\section{Symbolic form}
+First note that $\MC T + \MC E_v = -\MC P_p + \MC D_K - \MC E_v'$.
+\subsection{Kinetic}
+\begin{equation}
+	\dot{\MC E} + \MC C_K + \MC T = - \MC E_v + \MC P_{ms} - \MC C_m
+\end{equation}
+\begin{equation}
+	\dot{\MC E} + \MC C_K = -\MC P_p + \MC D_K - \MC E_v' + \MC P_{ms} - \MC C_m
+\end{equation}
+\subsection{Magnetic}
+\begin{equation}
+	\dot{\MC B} = -\MC P_r - \MC P_{ms} + \MC C_m - \MC E_J
+\end{equation}
+\subsection{Thermal}
+\begin{equation}
+	\dot{\MC T} + \MC C_T = \MC D_T + \MC E_J + \MC E_v + \dot{\MC Q}
+\end{equation}
+
+\section{Combining above}
+\subsection{Kinetic + Magnetic}
+The term $\MC P_{em}$ drops out:
+\begin{equation}
+	(\dot{\MC E} + \dot{\MC B}) + \MC C_K + \MC T = -\MC P_r - (\MC E_v + \MC E_J)
+\end{equation}
+
+\subsection{Thermal + Magnetic}
+The term $\MC D_J$ drops out
+\begin{equation}
+	(\dot{\MC T}+\dot{\MC B}) + \MC C_T = -\MC P_r + \MC D_T - \MC P_{em} + \MC E_v + \dot{\MC Q}
+\end{equation}
+
+\subsection{Kinetic + Thermal}
+The term $\MC E_v$ drops out
+\begin{equation}
+	(\dot{\MC E}+\dot{\MC T}) + \MC C_K + \MC C_T + \MC T = \MC D_T + \MC P_{em} + \MC E_J + \dot{\MC Q}
+\end{equation}
+
+\subsection{Total = Kinetic + Magnetic + Thermal}
+Terms $\MC P_{em}, \MC D_J, \MC E_v$ drop out
+\begin{equation}
+	(\dot{\MC E}+\dot{\MC B}+\dot{\MC T}) + \MC C_K + \MC C_T + \MC T = \MC D_T - \MC P_r + \dot{\MC Q}
+\end{equation}
+
+\end{document}

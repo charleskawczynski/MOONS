@@ -39,6 +39,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: realField
         public :: init,delete
+        public :: export,import
         ! Grid initialization
         public :: init_CC
         public :: init_Face
@@ -60,8 +61,6 @@
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
         public :: size
-
-
 
         type realField
           integer,dimension(3) :: s                  ! Dimension
@@ -131,6 +130,9 @@
         interface sum;                      module procedure sum_RF;                 end interface
         interface sum;                      module procedure sum_RF_pad;             end interface
         interface size;                     module procedure size_RF;                end interface
+
+        interface export;                   module procedure export_RF;              end interface
+        interface import;                   module procedure import_RF;              end interface
 
       contains
 
@@ -989,13 +991,9 @@
           integer :: i,j,k
           if (allocated(a%f)) then
             write(*,*) 'shape(f) = ',a%s
-            do i=1,a%s(1)
-              do j=1,a%s(2)
-                do k=1,a%s(3)
-                  write(*,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
-                enddo
-              enddo
-            enddo
+            do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+              write(*,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
+            enddo; enddo; enddo
           endif
         end subroutine
 
@@ -1005,14 +1003,41 @@
           integer :: i,j,k
           if (allocated(a%f)) then
             write(*,*) 'shape(f) = ',a%s
-            do i=2,a%s(1)-1
-              do j=2,a%s(2)-1
-                do k=2,a%s(3)-1
-                  write(*,'(A4,I1,A,I1,A,I1,A4,1F20.10)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
-                enddo
-              enddo
-            enddo
+            do k=2,a%s(3)-1; do j=2,a%s(2)-1; do i=2,a%s(1)-1
+              write(*,'(A4,I1,A,I1,A,I1,A4,1F20.10)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
+            enddo; enddo; enddo
           endif
+        end subroutine
+
+        subroutine export_RF(a,un)
+          implicit none
+          type(realField),intent(in) :: a
+          integer,intent(in) :: un
+          integer :: i,j,k
+          if (allocated(a%f)) then
+          write(un,*) 'shape(f) = '
+          write(un,*) a%s
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+            write(un,*) a%f(i,j,k)
+          enddo; enddo; enddo
+          else; stop 'Error: trying to export unallocated RF in export_RF in RF.f90'
+          endif
+          call export(a%b,un)
+        end subroutine
+
+        subroutine import_RF(a,un)
+          implicit none
+          type(realField),intent(inout) :: a
+          integer,intent(in) :: un
+          integer :: i,j,k
+          call delete(a)
+          read(un,*) 
+          read(un,*) a%s
+          allocate(a%f(a%s(1),a%s(2),a%s(3)))
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+            read(un,*) a%f(i,j,k)
+          enddo; enddo; enddo
+          call import(a%b,un)
         end subroutine
 
       end module

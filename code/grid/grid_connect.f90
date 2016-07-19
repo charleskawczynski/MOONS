@@ -8,8 +8,6 @@
 
        private
 
-
-
        public :: con_prep_uniform      ! con_prep_uniform(g,g_in,N,dir)
        public :: con_prep_Roberts_L    ! con_prep_Roberts_L(g,g_in,L,N,dir)
        public :: con_prep_Roberts_R    ! con_prep_Roberts_R(g,g_in,L,N,dir)

@@ -8,8 +8,6 @@
 
        private
 
-
-
        public :: cavity3D_uniform
        public :: cavity3D_nonUniform
        public :: cavity3D_uniformBL

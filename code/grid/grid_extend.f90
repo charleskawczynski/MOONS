@@ -8,8 +8,6 @@
 
        private
 
-
-
        public :: ext_uniform_IO
        public :: ext_Roberts_near_IO
        public :: ext_Roberts_far_IO

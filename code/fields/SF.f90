@@ -37,6 +37,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: SF
         public :: init,delete
+        public :: export,import
         ! Grid initialization
         public :: init_CC
         public :: init_Node
@@ -65,8 +66,6 @@
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
-
-
 
         type SF
           integer :: s ! Number of subdomains in domain decomposition
@@ -105,6 +104,11 @@
         interface print_physical;      module procedure print_physical_SF;      end interface
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
+
+        interface export;              module procedure export_SF;              end interface
+        interface import;              module procedure import_SF;              end interface
+        interface export;              module procedure export_wrapper_SF;      end interface
+        interface import;              module procedure import_wrapper_SF;      end interface
 
         interface assign;              module procedure assign_SF_S;            end interface
         interface assign;              module procedure assign_SF_SF;           end interface
@@ -903,7 +907,55 @@
           implicit none
           type(SF),intent(in) :: f
           character(len=*),intent(in) :: name
-          call exp_BCs_SF(f,name,6)
+          call display_BCs_SF(f,name,6)
+        end subroutine
+
+        subroutine export_SF(f,un)
+          implicit none
+          type(SF),intent(in) :: f
+          integer,intent(in) :: un
+          integer :: i
+          write(un,*) 'f%s'
+          write(un,*) f%s
+          write(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
+          write(un,*) f%face,f%edge,f%numEl,f%numPhysEl
+          write(un,*) f%vol
+          do i=1,f%s; call export(f%RF(i),un); enddo
+        end subroutine
+
+        subroutine import_SF(f,un)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer,intent(in) :: un
+          integer :: i
+          call delete(f)
+          read(un,*) 
+          read(un,*) f%s
+          read(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
+          read(un,*) f%face,f%edge,f%numEl,f%numPhysEl
+          read(un,*) f%vol
+          allocate(f%RF(f%s))
+          do i=1,f%s; call import(f%RF(i),un); enddo
+        end subroutine
+
+        subroutine export_wrapper_SF(f,dir,name)
+          implicit none
+          type(SF),intent(in) :: f
+          character(len=*),intent(in) :: dir,name
+          integer :: un
+          un = newAndOpen(dir,name)
+          call export(f,un)
+          call closeAndMessage(un,name,dir)
+        end subroutine
+
+        subroutine import_wrapper_SF(f,dir,name)
+          implicit none
+          type(SF),intent(inout) :: f
+          character(len=*),intent(in) :: dir,name
+          integer :: un
+          un = newAndOpen(dir,name)
+          call import(f,un)
+          call closeAndMessage(un,name,dir)
         end subroutine
 
         subroutine export_BCs_SF(f,dir,name)
@@ -912,11 +964,11 @@
           character(len=*),intent(in) :: dir,name
           integer :: un
           un = newAndOpen(dir,name//'_BoundaryConditions')
-          call exp_BCs_SF(f,name,un)
+          call display_BCs_SF(f,name,un)
           call closeAndMessage(un,name//'_BoundaryConditions',dir)
         end subroutine
 
-        subroutine exp_BCs_SF(f,name,un)
+        subroutine display_BCs_SF(f,name,un)
           implicit none
           type(SF),intent(in) :: f
           character(len=*),intent(in) :: name
@@ -924,7 +976,7 @@
           integer :: i
           write(un,*) ' ------ BCs for ' // name // ' ------ '
           do i=1,f%s
-            call export(f%RF(i)%b,un)
+            call display(f%RF(i)%b,un)
           enddo
           write(un,*) ' ------------------------------------ '
         end subroutine

@@ -8,7 +8,7 @@
       private
       public :: coordinates
       public :: init,delete
-      public :: print,export
+      public :: print,export,import
 
       ! For stitching multi-domains, only
       ! after coordinates has been defined
@@ -48,6 +48,7 @@
 
       interface print;             module procedure printCoordinates;       end interface
       interface export;            module procedure export_c;               end interface
+      interface import;            module procedure import_c;               end interface
 
       interface restrict;          module procedure restrictCoordinates;    end interface
 
@@ -207,36 +208,6 @@
       ! ***************************** IO ********************************
       ! *****************************************************************
 
-      ! subroutine exportCoordinates(c,dir,name,u)
-      !   implicit none
-      !   type(coordinates), intent(in) :: c
-      !   character(len=*),intent(in) :: dir,name
-      !   integer,intent(in),optional :: u
-      !   integer :: newU
-      !   if (present(u)) then
-      !     call addToFile(c,u)
-      !   else
-      !     newU = newAndOpen(dir,name)
-      !     call addToFile(c,newU)
-      !     close(newU)
-      !   endif
-      ! end subroutine
-
-      ! subroutine exportCoordinates(c,dir,name,u)
-      !   implicit none
-      !   type(coordinates), intent(in) :: c
-      !   character(len=*),intent(in) :: dir,name
-      !   integer,intent(in),optional :: u
-      !   integer :: newU
-      !   if (present(u)) then
-      !     call addToFile(c,u)
-      !   else
-      !     newU = newAndOpen(dir,name)
-      !     call addToFile(c,newU)
-      !     close(newU)
-      !   endif
-      ! end subroutine
-
       subroutine printCoordinates(c)
         implicit none
         type(coordinates),intent(in) :: c
@@ -245,22 +216,29 @@
 
       subroutine export_c(c,un)
         implicit none
-        type(coordinates), intent(in) :: c
+        type(coordinates),intent(in) :: c
         integer,intent(in) :: un
         write(un,*) ' ---------------- coordinates'
-        write(un,*) 'sn = ',c%sn
-        write(un,*) 'sc = ',c%sc
-        ! write(un,*) 'hn = ',c%hn
-        ! write(un,*) 'hc = ',c%hc
-        ! write(un,*) 'dhn = ',c%dhn
-        ! write(un,*) 'dhc = ',c%dhc
-        ! write(un,*) 'alpha = ',c%alpha
-        ! write(un,*) 'beta = ',c%beta
+        write(un,*) 'sn = ';  write(un,*) c%sn
+        write(un,*) 'hn = ';  write(un,*) c%hn
         ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
         ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
         ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
         ! write(*,*) 'D_CC2N: '; call print(c%D_CC2N); write(*,*) 'U_CC2N:';call print(c%U_CC2N)
         ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
+      end subroutine
+
+      subroutine import_c(c,un)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        integer,intent(in) :: un
+        real(cp),dimension(:),allocatable :: hn
+        integer :: sn
+        call delete(c)
+        read(un,*)
+        read(un,*); read(un,*) sn; allocate(hn(sn))
+        read(un,*); read(un,*) hn; call init(c,hn,sn)
+        deallocate(hn)
       end subroutine
 
       ! *****************************************************************

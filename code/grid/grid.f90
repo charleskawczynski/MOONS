@@ -11,11 +11,10 @@
 
        private
        public :: grid
-       public :: init,delete
-       public :: print,export ! import
-       public :: print_all,export_all
+       public :: init,delete,export,import
+       public :: print,display
        public :: restrict,restrict_x,restrict_xy
-       public :: initProps,export_stitches
+       public :: initProps,display_stitches
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkGrid
@@ -32,22 +31,22 @@
          logical :: defined
        end type
 
-       interface init;           module procedure initGridCopy;        end interface
-       interface init;           module procedure initGrid1;           end interface
-       interface init;           module procedure initGrid2;           end interface
-       interface initProps;      module procedure initProps_grid;      end interface
-       interface delete;         module procedure deleteGrid;          end interface
+       interface init;               module procedure initGridCopy;            end interface
+       interface init;               module procedure initGrid1;               end interface
+       interface init;               module procedure initGrid2;               end interface
+       interface initProps;          module procedure initProps_grid;          end interface
+       interface delete;             module procedure deleteGrid;              end interface
 
-       interface restrict;       module procedure restrictGrid1;       end interface
-       interface restrict;       module procedure restrictGrid3;       end interface
-       interface restrict_x;     module procedure restrictGrid_x;      end interface
-       interface restrict_xy;    module procedure restrictGrid_xy;     end interface
+       interface restrict;           module procedure restrictGrid1;           end interface
+       interface restrict;           module procedure restrictGrid3;           end interface
+       interface restrict_x;         module procedure restrictGrid_x;          end interface
+       interface restrict_xy;        module procedure restrictGrid_xy;         end interface
 
-       interface print;          module procedure print_Grid;          end interface
-       interface print_all;      module procedure print_Grid_all;      end interface
-       interface export;         module procedure export_Grid;         end interface
-       interface export_stitches;module procedure export_grid_stitches;end interface
-       interface export_all;     module procedure export_Grid_all;     end interface
+       interface export;             module procedure export_Grid;             end interface
+       interface import;             module procedure import_Grid;             end interface
+       interface print;              module procedure print_Grid;              end interface
+       interface display_stitches;   module procedure display_grid_stitches;   end interface
+       interface display;            module procedure display_grid;            end interface
 
        contains
 
@@ -153,16 +152,50 @@
        end subroutine
 #endif
 
-       subroutine export_grid_all(g,un)
+       subroutine export_grid(g,un) ! Import / Export must mirror
          implicit none
          type(grid), intent(in) :: g
          integer,intent(in) :: un
          integer :: i
-         call export(g,un)
-         do i = 1,3; call export(g%c(i),un) ;enddo
+         write(un,*) 'volume,defined = ';         write(un,*) g%volume,g%defined
+         write(un,*) 'min/max(h)_x = ';           write(un,*) (/g%c(1)%hmin,g%c(1)%hmax/)
+         write(un,*) 'min/max(h)_y = ';           write(un,*) (/g%c(2)%hmin,g%c(2)%hmax/)
+         write(un,*) 'min/max(h)_z = ';           write(un,*) (/g%c(3)%hmin,g%c(3)%hmax/)
+         write(un,*) 'min/max(dh)_x = ';          write(un,*) (/g%c(1)%dhMin,g%c(1)%dhMax/)
+         write(un,*) 'min/max(dh)_y = ';          write(un,*) (/g%c(2)%dhMin,g%c(2)%dhMax/)
+         write(un,*) 'min/max(dh)_z = ';          write(un,*) (/g%c(3)%dhMin,g%c(3)%dhMax/)
+         write(un,*) 'N_cells_x = '; write(un,*) g%c(1)%N
+         write(un,*) 'N_cells_y = '; write(un,*) g%c(2)%N
+         write(un,*) 'N_cells_z = '; write(un,*) g%c(3)%N
+         do i = 1,3;  call export(g%c(i),un);          enddo
+         do i = 1,6;  call export(g%st_faces(i),un);   enddo
+         do i = 1,12; call export(g%st_edges(i),un);   enddo
+         do i = 1,8;  call export(g%st_corners(i),un); enddo
        end subroutine
 
-       subroutine export_grid(g,un)
+       subroutine import_grid(g,un) ! Import / Export must mirror
+         implicit none
+         type(grid), intent(inout) :: g
+         integer,intent(in) :: un
+         integer :: i
+         read(un,*); read(un,*) g%volume,g%defined
+         read(un,*); read(un,*) g%c(1)%hmin,g%c(1)%hmax
+         read(un,*); read(un,*) g%c(2)%hmin,g%c(2)%hmax
+         read(un,*); read(un,*) g%c(3)%hmin,g%c(3)%hmax
+         read(un,*); read(un,*) g%c(1)%dhMin,g%c(1)%dhMax
+         read(un,*); read(un,*) g%c(2)%dhMin,g%c(2)%dhMax
+         read(un,*); read(un,*) g%c(3)%dhMin,g%c(3)%dhMax
+         read(un,*); read(un,*) g%c(1)%N
+         read(un,*); read(un,*) g%c(2)%N
+         read(un,*); read(un,*) g%c(3)%N
+         do i = 1,3;  call import(g%c(i),un);          enddo
+         do i = 1,6;  call import(g%st_faces(i),un);   enddo
+         do i = 1,12; call import(g%st_edges(i),un);   enddo
+         do i = 1,8;  call import(g%st_corners(i),un); enddo
+         call initProps_grid(g)
+       end subroutine
+
+       subroutine display_grid(g,un)
          implicit none
          type(grid), intent(in) :: g
          integer,intent(in) :: un
@@ -176,9 +209,10 @@
          write(un,*) 'N_cells_x,stretching_x = ',g%c(1)%N,g%c(1)%dhMax-g%c(1)%dhMin
          write(un,*) 'N_cells_y,stretching_y = ',g%c(2)%N,g%c(2)%dhMax-g%c(2)%dhMin
          write(un,*) 'N_cells_z,stretching_z = ',g%c(3)%N,g%c(3)%dhMax-g%c(3)%dhMin
+         ! call display_grid_stitches(g,un)
        end subroutine
 
-       subroutine export_grid_stitches(g,un)
+       subroutine display_grid_stitches(g,un)
          implicit none
          type(grid), intent(in) :: g
          integer,intent(in) :: un
@@ -209,13 +243,7 @@
        subroutine print_Grid(g)
          implicit none
          type(grid), intent(in) :: g
-         call export(g,6)
-       end subroutine
-
-       subroutine print_Grid_all(g)
-         implicit none
-         type(grid), intent(in) :: g
-         call export_all(g,6)
+         call display(g,6)
        end subroutine
 
        end module

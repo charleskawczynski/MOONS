@@ -7,7 +7,8 @@
        private
        public :: face
        public :: init,delete
-       public :: print,export
+       public :: export,import
+       public :: print,display
 
        type face
          type(bctype) :: b
@@ -24,7 +25,10 @@
 
        interface delete;     module procedure delete_face;           end interface
        interface print;      module procedure print_face;            end interface
+       interface display;    module procedure display_face;          end interface
+
        interface export;     module procedure export_face;           end interface
+       interface import;     module procedure import_face;           end interface
 
        contains
 
@@ -103,12 +107,45 @@
          call export(f,6)
        end subroutine
 
-       subroutine export_face(f,newU)
+       subroutine display_face(f,un)
          implicit none
-         type(face), intent(in) :: f
-         integer,intent(in) :: NewU
+         type(face),intent(in) :: f
+         integer,intent(in) :: un
          if (.not.f%defined) stop 'Error: face not defined in export_face in face.f90'
-         call export(f%b,newU)
+         call export(f%b,un)
+       end subroutine
+
+       subroutine export_face(f,un)
+         implicit none
+         type(face),intent(in) :: f
+         integer,intent(in) :: un
+         if (.not.f%defined) stop 'Error: face not defined in export_face in face.f90'
+         call export(f%b,un)
+         write(un,*) 's'
+         write(un,*) f%s
+         write(un,*) 'vals'
+         write(un,*) f%vals
+         write(un,*) 'def'
+         write(un,*) f%def
+         write(un,*) 'defined'
+         write(un,*) f%defined
+       end subroutine
+
+       subroutine import_face(f,un)
+         implicit none
+         type(face),intent(inout) :: f
+         integer,intent(in) :: un
+         call delete(f)
+         call import(f%b,un)
+         read(un,*) 
+         read(un,*) f%s
+         allocate(f%vals(f%s(1),f%s(2)))
+         read(un,*) 
+         read(un,*) f%vals
+         read(un,*) 
+         read(un,*) f%def
+         read(un,*) 
+         read(un,*) f%defined
        end subroutine
 
        end module

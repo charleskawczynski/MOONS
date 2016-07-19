@@ -15,7 +15,7 @@
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(domain),intent(inout) :: D_sigma
-         ! call cube_uniform(m_mom)
+         call cube_uniform(m_mom)
          ! call extend_cube_uniform(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
@@ -38,7 +38,7 @@
          ! call BC_sim_mom(m_mom)
          ! call BC_sim_ind(m_ind,m_mom,D_sigma)
 
-         call straight_duct_fluid(m_mom)
+         ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,D_sigma)
 
          ! call straight_duct_fluid(m_mom)

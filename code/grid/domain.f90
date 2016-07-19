@@ -8,14 +8,20 @@
        private
        public :: domain
        public :: init,delete
-       public :: add,print,export
+       public :: export,import
+       public :: add,print,display
 
-       interface init;        module procedure init_domain;        end interface
-       interface add;         module procedure add_subdomain;      end interface
-       interface init;        module procedure init_domain_copy;   end interface
-       interface delete;      module procedure delete_domain;      end interface
-       interface print;       module procedure print_domain;       end interface
-       interface export;      module procedure export_domain;      end interface
+       interface init;        module procedure init_domain;           end interface
+       interface add;         module procedure add_subdomain;         end interface
+       interface init;        module procedure init_domain_copy;      end interface
+       interface delete;      module procedure delete_domain;         end interface
+       interface print;       module procedure print_domain;          end interface
+       interface display;     module procedure display_domain;        end interface
+
+       interface export;      module procedure export_domain;         end interface
+       interface import;      module procedure import_domain;         end interface
+       interface export;      module procedure export_domain_wrapper; end interface
+       interface import;      module procedure import_domain_wrapper; end interface
 
        type domain
          integer :: s ! Number of subdomains
@@ -121,13 +127,59 @@
          do i=1,D%s; call print(D%sd(i),name//'_'//int2str(i)); enddo
        end subroutine
 
-       subroutine export_domain(D,dir,name)
+       subroutine display_domain(D,dir,name)
          implicit none
          type(domain),intent(inout) :: D
          character(len=*),intent(in) :: dir,name
          integer :: i,NU
          NU = newAndOpen(dir,name)
-         do i=1,D%s; call export(D%sd(i),name//'_'//int2str(i),NU); enddo
+         do i=1,D%s; call display(D%sd(i),name//'_'//int2str(i),NU); enddo
+       end subroutine
+
+       subroutine export_domain(D,un)
+         implicit none
+         type(domain),intent(in) :: D
+         integer,intent(in) :: un
+         integer :: i
+         write(un,*) 'D%s'
+         write(un,*) D%s
+         do i=1,D%s; call export(D%sd(i),un); enddo
+         call export(D%m_tot,un)
+         call export(D%m_in,un)
+       end subroutine
+
+       subroutine export_domain_wrapper(D,dir,name)
+         implicit none
+         type(domain),intent(in) :: D
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = newAndOpen(dir,name)
+         call export(D,un)
+         call closeAndMessage(un,name,dir)
+       end subroutine
+
+       subroutine import_domain(D,un)
+         implicit none
+         type(domain),intent(inout) :: D
+         integer,intent(in) :: un
+         integer :: i
+         call delete(D)
+         read(un,*)
+         read(un,*) D%s
+         allocate(D%sd(D%s))
+         do i=1,D%s; call import(D%sd(i),un); enddo
+         call import(D%m_tot,un)
+         call import(D%m_in,un)
+       end subroutine
+
+       subroutine import_domain_wrapper(D,dir,name)
+         implicit none
+         type(domain),intent(inout) :: D
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = openToRead(dir,name)
+         call import(D,un)
+         call closeAndMessage(un,name,dir)
        end subroutine
 
        end module

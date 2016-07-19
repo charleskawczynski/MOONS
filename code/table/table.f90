@@ -9,6 +9,7 @@
        ! 
        use current_precision_mod
        use string_mod
+       use string_aux_mod
        use IO_tools_mod
        implicit none
 

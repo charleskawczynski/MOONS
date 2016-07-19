@@ -67,17 +67,26 @@
 
          ! **************************************************************
          ! Initialize all grids
-         call mesh_generate(mesh_mom,mesh_ind,D_sigma)
+         if (restart_all) then
+           call import(mesh_mom,str(DT%restart),'mesh_mom')
+           call import(mesh_ind,str(DT%restart),'mesh_ind')
+           call import(D_sigma,str(DT%restart),'D_sigma')
+         else
+           call mesh_generate(mesh_mom,mesh_ind,D_sigma)
+           call export(mesh_mom,str(DT%restart),'mesh_mom')
+           call export(mesh_ind,str(DT%restart),'mesh_ind')
+           call export(D_sigma,str(DT%restart),'D_sigma')
+         endif
 
          call initProps(mesh_mom);     call patch(mesh_mom)
          call initProps(mesh_ind);     call patch(mesh_ind)
 
          call init(D_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
 
-         call initProps(D_fluid%m_in);     call patch(D_fluid%m_in)
-         call initProps(D_fluid%m_tot);    call patch(D_fluid%m_tot)
-         call initProps(D_sigma%m_in);     call patch(D_sigma%m_in)
-         call initProps(D_sigma%m_tot);    call patch(D_sigma%m_tot)
+         call initProps(D_fluid%m_in);   call patch(D_fluid%m_in)
+         call initProps(D_fluid%m_tot);  call patch(D_fluid%m_tot)
+         call initProps(D_sigma%m_in);   call patch(D_sigma%m_in)
+         call initProps(D_sigma%m_tot);  call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS ****************************
          ! if (.not.quick_start) then

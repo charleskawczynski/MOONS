@@ -6,8 +6,9 @@
        public :: bctype
        public :: init_Dirichlet,init_Neumann,init_Robin,init_Periodic,init_symmetric,init_antisymmetric
        public :: init,delete
-       public :: print,export
-       public :: export_type,export_meanVal,get_bctype
+       public :: export,import
+       public :: print,display
+       public :: display_type,display_meanVal,get_bctype
 
        type bctype
          logical :: Dirichlet
@@ -20,25 +21,26 @@
          real(cp) :: meanVal
        end type
 
-       interface init_Dirichlet;      module procedure init_Dirichlet_b;      end interface
-       interface init_Neumann;        module procedure init_Neumann_b;        end interface
-       interface init_Robin;          module procedure init_Robin_b;          end interface
-       interface init_Periodic;       module procedure init_Periodic_b;       end interface
-       interface init_symmetric;      module procedure init_symmetric_b;      end interface
-       interface init_antisymmetric;  module procedure init_antisymmetric_b;  end interface
+       interface init_Dirichlet;      module procedure init_Dirichlet_b;       end interface
+       interface init_Neumann;        module procedure init_Neumann_b;         end interface
+       interface init_Robin;          module procedure init_Robin_b;           end interface
+       interface init_Periodic;       module procedure init_Periodic_b;        end interface
+       interface init_symmetric;      module procedure init_symmetric_b;       end interface
+       interface init_antisymmetric;  module procedure init_antisymmetric_b;   end interface
 
-       interface init;                module procedure init_copy_b;           end interface
+       interface init;                module procedure init_copy_b;            end interface
+       interface init;                module procedure init_val0;              end interface
+       interface init;                module procedure init_val1;              end interface
+       interface init;                module procedure init_val2;              end interface
+       interface delete;              module procedure delete_bctype;          end interface
 
-       interface init;                 module procedure init_val0;            end interface
-       interface init;                 module procedure init_val1;            end interface
-       interface init;                 module procedure init_val2;            end interface
+       interface export;              module procedure export_bctype;          end interface
+       interface import;              module procedure import_bctype;          end interface
 
-       interface delete;              module procedure delete_bctype;         end interface
-       interface print;               module procedure print_bctype;          end interface
-       interface export;              module procedure export_bctype;         end interface
-
-       interface export_type;         module procedure export_bctype_T_only;  end interface
-       interface export_meanVal;      module procedure export_bctype_MV_only; end interface
+       interface print;               module procedure print_bctype;           end interface
+       interface display;             module procedure display_bctype;         end interface
+       interface display_type;        module procedure display_bctype_T_only;  end interface
+       interface display_meanVal;     module procedure display_bctype_MV_only; end interface
 
        contains
 
@@ -136,10 +138,10 @@
        subroutine print_bctype(b)
          implicit none
          type(bctype), intent(in) :: b
-         call export(b,6)
+         call display(b,6)
        end subroutine
 
-       subroutine export_bctype(b,NewU)
+       subroutine display_bctype(b,NewU)
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
@@ -172,7 +174,35 @@
          ! write(newU,*) 'defined = ',b%defined
        end subroutine
 
-       subroutine export_bctype_T_only(b,NewU)
+       subroutine export_bctype(b,un)
+         implicit none
+         type(bctype),intent(in) :: b
+         integer,intent(in) :: un
+         write(un,*) 'Dirichlet';      write(un,*) b%Dirichlet
+         write(un,*) 'Neumann';        write(un,*) b%Neumann
+         write(un,*) 'Robin';          write(un,*) b%Robin
+         write(un,*) 'Periodic';       write(un,*) b%Periodic
+         write(un,*) 'symmetric';      write(un,*) b%symmetric
+         write(un,*) 'antisymmetric';  write(un,*) b%antisymmetric
+         write(un,*) 'defined';        write(un,*) b%defined
+         write(un,*) 'meanVal';        write(un,*) b%meanVal
+       end subroutine
+
+       subroutine import_bctype(b,un)
+         implicit none
+         type(bctype),intent(inout) :: b
+         integer,intent(in) :: un
+         read(un,*); read(un,*) b%Dirichlet
+         read(un,*); read(un,*) b%Neumann
+         read(un,*); read(un,*) b%Robin
+         read(un,*); read(un,*) b%Periodic
+         read(un,*); read(un,*) b%symmetric
+         read(un,*); read(un,*) b%antisymmetric
+         read(un,*); read(un,*) b%defined
+         read(un,*); read(un,*) b%meanVal
+       end subroutine
+
+       subroutine display_bctype_T_only(b,NewU)
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
@@ -194,7 +224,7 @@
          if (b%antisymmetric) BCT = 'A'
        end function
 
-       subroutine export_bctype_MV_only(b,NewU)
+       subroutine display_bctype_MV_only(b,NewU)
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU

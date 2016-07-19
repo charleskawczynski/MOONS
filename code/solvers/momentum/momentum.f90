@@ -328,7 +328,7 @@
          ! write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
          ! write(un,*) 'Kolmogorov Time = ',mom%t_eta
          write(un,*) ''
-         call export(mom%m,un)
+         call display(mom%m,un)
          write(*,*) ''
        end subroutine
 

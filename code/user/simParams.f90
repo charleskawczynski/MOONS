@@ -1,24 +1,25 @@
        module simParams_mod
        implicit none
-       logical :: exportGrids               = .true.     ! Export all Grids before starting simulation
+       logical :: exportGrids               = .false.     ! Export all Grids before starting simulation
        logical :: exportRawICs              = .false.     ! Export Raw ICs before starting simulation
        logical :: exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation
        logical :: stopAfterExportICs        = .false.     ! Just export ICs, do not run simulation
-       logical :: export_planar             = .true.      ! Export 2D data when N_cell = 1 along given direction
+       logical :: export_planar             = .false.      ! Export 2D data when N_cell = 1 along given direction
        logical :: quick_start               = .true.      ! Avoids exporting any large datasets before solve
+       logical :: restart_all               = .true.      ! restart sim (requires no code changes)
 
        logical :: post_process_only         = .false.     ! Skip solver loop and just post-process results
        logical :: export_analytic           = .false.     ! Export analytic solutions
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .true.
+       logical :: solveInduction            = .false.
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
        integer :: solveUMethod              = 1 ! Refer to momentum.f90
        integer :: solveBMethod              = 2 ! Refer to induction.f90
 
-       logical :: addJCrossB                = .true.
+       logical :: addJCrossB                = .false.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 

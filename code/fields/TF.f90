@@ -68,6 +68,7 @@
           integer :: s = 3  ! number of components
           type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
           logical :: is_CC,is_Node,is_Face,is_Edge
+          ! logical :: is_CC_diag_F_off_diag,is_CC_diag_E_off_diag
         end type
 
         interface init;          module procedure init_TF_copy_VF;          end interface

@@ -1,0 +1,13 @@
+# Don't include log files from when 
+# matlab crashes:
+*.log
+*.pdf
+*.out
+*.aux
+*.blg
+*.asv
+*.png
+*.eps
+*.gz
+*.mod
+*.o

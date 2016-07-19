@@ -29,9 +29,9 @@
          Ec         = 0.0_cp
 
          finite_Rem = .true.
-         dt_eng     = 1.0_cp*10.0_cp**(-6.0_cp)
-         dt_mom     = 1.0_cp*10.0_cp**(-6.0_cp)
-         dt_ind     = 1.0_cp*10.0_cp**(-6.0_cp)
+         dt_eng     = 5.0_cp*10.0_cp**(-3.0_cp)
+         dt_mom     = 5.0_cp*10.0_cp**(-3.0_cp)
+         dt_ind     = 5.0_cp*10.0_cp**(-3.0_cp)
          t          = 1000.0_cp
          ! t          = 1.0_cp
          ! NmaxMHD       = ceiling(t/dt_eng)

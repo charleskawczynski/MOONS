@@ -351,13 +351,13 @@
          write(un,*) 'solveBMethod,N_ind,N_cleanB = ',solveBMethod,ind%N_induction,ind%N_cleanB
          write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
          write(un,*) 'nstep = ',ind%nstep
-         write(un,*) 'ME=',ind%ME
-         write(un,*) 'MEf=',ind%ME_fluid
-         write(un,*) 'MEc=',ind%ME_conductor
+         write(un,'(A4,3(ES20.8E3))') ' ME=',ind%ME
+         write(un,'(A5,3(ES20.8E3))') ' MEf=',ind%ME_fluid
+         write(un,'(A5,3(ES20.8E3))') ' MEc=',ind%ME_conductor
          call printPhysicalMinMax(ind%divB,'divB')
          call printPhysicalMinMax(ind%divJ,'divJ')
          write(un,*) ''
-         call export(ind%m,un)
+         call display(ind%m,un)
          write(un,*) ''
        end subroutine
 

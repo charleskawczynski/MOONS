@@ -100,7 +100,7 @@
            endif
          enddo
          call print(sc)
-         call export(sc,str(DT%tar))
+         call export(sc,str(DT%out_dir))
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************

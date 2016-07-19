@@ -8,8 +8,6 @@
 
        private
 
-
-
        public :: grid_uniform
        public :: grid_Roberts_L,grid_Roberts_R,grid_Roberts_B
        public :: grid_cluster

@@ -17,9 +17,9 @@
       public :: string
       public :: init,delete
       public :: get_str,str ! str does not require length
-      public :: len
+      public :: len,match,match_index
       public :: compress,append
-      public :: remove_leading_zeros
+      public :: get_char,set_char
       public :: remove_element
       public :: print,export
 
@@ -32,11 +32,14 @@
       interface len;                  module procedure str_len_string;                 end interface
       interface str;                  module procedure get_str_short;                  end interface
       interface get_str;              module procedure get_str_string;                 end interface
+      interface match;                module procedure substring_in_string;            end interface
+      interface match_index;          module procedure index_substring_in_string;      end interface
       interface delete;               module procedure delete_string;                  end interface
       interface print;                module procedure print_string;                   end interface
       interface export;               module procedure export_string;                  end interface
+      interface get_char;             module procedure get_char_string;                end interface
+      interface set_char;             module procedure set_char_string;                end interface
       interface remove_element;       module procedure remove_element_string;          end interface
-      interface remove_leading_zeros; module procedure remove_leading_zeros_string;    end interface
 
       type char
         private
@@ -105,6 +108,7 @@
         implicit none
         type(string),intent(in) :: st
         call export(st,6)
+        write(6,*) ''
       end subroutine
 
       subroutine export_string(st,un)
@@ -174,7 +178,7 @@
         call init(temp,st%n-1)
         do j=1,st%n
           if (i.ne.j) then
-            temp%s(j-k)%c = st%s(i)%c
+            temp%s(j-k)%c = st%s(j)%c
           else; k = 1
           endif
         enddo
@@ -182,22 +186,20 @@
         call delete(temp)
       end subroutine
 
-      subroutine remove_leading_zeros_string(st)
+      function get_char_string(st,i) result(c)
+        implicit none
+        type(string),intent(in) :: st
+        integer,intent(in) :: i
+        character(len=1) :: c
+        c = st%s(i)%c
+      end function
+
+      subroutine set_char_string(st,c,i)
         implicit none
         type(string),intent(inout) :: st
-        type(string) :: temp
-        integer :: i,n_zeros
-        if (st%n.lt.1) stop 'Error: input string must be > 1 in string.f90'
-        n_zeros = 0
-        do i=1,st%n
-          if (st%s(i)%c.eq.'0') then; n_zeros = n_zeros + 1; else; exit; endif
-        enddo
-        call init(temp,st%n-n_zeros)
-        do i=1+n_zeros,st%n
-          temp%s(i-n_zeros)%c = st%s(i)%c
-        enddo
-        call init(st,temp)
-        call delete(temp)
+        integer,intent(in) :: i
+        character(len=1),intent(in) :: c
+        st%s(i)%c = c
       end subroutine
 
       function get_str_short(st) result(str)
@@ -222,6 +224,44 @@
         do i=1,st%n
           str(i:i) = st%s(i)%c
         enddo
+      end function
+
+      function substring_in_string(str,substr) result(TF)
+        implicit none
+        type(string),intent(in) :: str
+        character(len=*),intent(in) :: substr
+        logical :: TF,cond
+        integer :: i,j,s
+        TF = .false.
+        s = len(substr)
+        if (s.lt.1) stop 'Error: len(substr) must be > 1 in substring_in_string in string.f90'
+        do i=1,len(str)-s
+          cond = all((/(str%s(i+j-1:i+j-1)%c .eq. substr(j:j),j=1,s)/))
+          if (cond) then
+            TF = .true.
+            exit
+          endif
+        enddo
+      end function
+
+      function index_substring_in_string(str,substr) result(index)
+        implicit none
+        type(string),intent(in) :: str
+        character(len=*),intent(in) :: substr
+        logical :: cond
+        integer :: index,i,j,s
+        s = len(substr)
+        cond = .false.
+        index = 1
+        if (s.lt.1) stop 'Error: len(substr) must be > 1 in index_substring_in_string in string.f90'
+        do i=1,len(str)-s
+          cond = all((/(str%s(i+j-1:i+j-1)%c .eq. substr(j:j),j=1,s)/))
+          if (cond) then
+            index = i
+            exit
+          endif
+        enddo
+        if (.not.cond) stop 'Error: substring not found in index_substring_in_string in string.f90'
       end function
 
       subroutine init_char(CH,c)

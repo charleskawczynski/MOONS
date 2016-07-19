@@ -45,12 +45,11 @@
        use table_mod
        implicit none
 
-
-
        private
        public :: BCs
        public :: init,delete
-       public :: print,export
+       public :: export,import
+       public :: print,display
 
        ! Setters for type
        public :: init_Dirichlet
@@ -78,7 +77,6 @@
        end type
 
        interface init;                module procedure init_BCs_copy;           end interface
-
        interface init;                module procedure init_gridShape_BCs;      end interface
 
        interface init_Dirichlet;      module procedure init_Dirichlet_all;      end interface
@@ -98,7 +96,9 @@
 
        interface delete;              module procedure delete_BCs;              end interface
        interface print;               module procedure print_BCs;               end interface
+       interface display;             module procedure display_BCs;             end interface
        interface export;              module procedure export_BCs;              end interface
+       interface import;              module procedure import_BCs;              end interface
 
        contains
 
@@ -349,10 +349,10 @@
        subroutine print_BCs(BC)
          implicit none
          type(BCs), intent(in) :: BC
-         call export_BCs(BC,6)
+         call display(BC,6)
        end subroutine
 
-       subroutine export_BCs(BC,newU)
+       subroutine display_BCs(BC,newU)
          implicit none
          type(BCs),intent(in) :: BC
          integer,intent(in) :: NewU
@@ -381,6 +381,43 @@
            ! call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
 
          endif
+       end subroutine
+
+       subroutine export_BCs(BC,un)
+         implicit none
+         type(BCs),intent(in) :: BC
+         integer,intent(in) :: un
+         integer :: i
+         if (BC%defined) then
+         do i=1,6;  call export(BC%f(i)%b,un); enddo
+         do i=1,12; call export(BC%e(i)%b,un); enddo
+         do i=1,8;  call export(BC%c(i)%b,un); enddo
+         call export(BC%g,un)
+         write(un,*) 's'
+         write(un,*) BC%s
+         write(un,*) 'gridDefined,defined'
+         write(un,*) BC%gridDefined,BC%defined
+         write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
+         write(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
+         else; stop 'Error: Cannot undefined BC in export_BCs in BCs.f90'
+         endif
+       end subroutine
+
+       subroutine import_BCs(BC,un)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         integer,intent(in) :: un
+         integer :: i
+         do i=1,6;  call import(BC%f(i)%b,un); enddo
+         do i=1,12; call import(BC%e(i)%b,un); enddo
+         do i=1,8;  call import(BC%c(i)%b,un); enddo
+         call import(BC%g,un)
+         read(un,*) 
+         read(un,*) BC%s
+         read(un,*) 
+         read(un,*) BC%gridDefined,BC%defined
+         read(un,*) 
+         read(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
        end subroutine
 
        ! *******************************************************************************

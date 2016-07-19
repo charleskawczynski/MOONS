@@ -4,8 +4,6 @@
 
        private
 
-
-
        real(cp),parameter :: one = 1.0_cp
        real(cp),parameter :: two = 2.0_cp
        real(cp),parameter :: zero = 0.0_cp

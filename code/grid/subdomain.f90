@@ -9,13 +9,17 @@
        private
        public :: subdomain
        public :: init,delete
-       public :: print,export
+       public :: export,import
+       public :: print,display
 
        interface init;       module procedure init_subdomain;        end interface
        interface init;       module procedure init_copy_subdomain;   end interface
        interface delete;     module procedure delete_subdomain;      end interface
        interface print;      module procedure print_subdomain;       end interface
+       interface display;    module procedure display_subdomain;     end interface
+
        interface export;     module procedure export_subdomain;      end interface
+       interface import;     module procedure import_subdomain;      end interface
 
        type subdomain
          ! Legend:
@@ -216,10 +220,10 @@
          implicit none
          type(subdomain),intent(in) :: SD
          character(len=*),intent(in) :: name
-         call export(SD,name,6)
+         call display(SD,name,6)
        end subroutine
 
-       subroutine export_subdomain(SD,name,u)
+       subroutine display_subdomain(SD,name,u)
          implicit none
          type(subdomain),intent(in) :: SD
          character(len=*),intent(in) :: name
@@ -251,6 +255,40 @@
          write(u,*) 'g_tot_id = ',SD%g_tot_id
          write(u,*) 'defined = ',SD%defined
          write(u,*) ' ********************************* '
+       end subroutine
+
+       subroutine export_subdomain(SD,u)
+         implicit none
+         type(subdomain),intent(in) :: SD
+         integer,intent(in) :: u
+         integer :: i
+         write(u,*) ' ********** Subdomain ************ '
+         do i=1,3; call export(SD%CE(i),u); enddo
+         do i=1,3; call export(SD%CI(i),u); enddo
+         do i=1,3; call export(SD%NB(i),u); enddo
+         do i=1,3; call export(SD%NI(i),u); enddo
+         do i=1,3; call export(SD%NE(i),u); enddo
+         write(u,*) 'g_in_id = ';  write(u,*) SD%g_in_id
+         write(u,*) 'g_tot_id = '; write(u,*) SD%g_tot_id
+         write(u,*) 'defined = ';  write(u,*) SD%defined
+         write(u,*) ' ********************************* '
+       end subroutine
+
+       subroutine import_subdomain(SD,u)
+         implicit none
+         type(subdomain),intent(inout) :: SD
+         integer,intent(in) :: u
+         integer :: i
+         read(u,*) 
+         do i=1,3; call import(SD%CE(i),u); enddo
+         do i=1,3; call import(SD%CI(i),u); enddo
+         do i=1,3; call import(SD%NB(i),u); enddo
+         do i=1,3; call import(SD%NI(i),u); enddo
+         do i=1,3; call import(SD%NE(i),u); enddo
+         read(u,*); read(u,*) SD%g_in_id
+         read(u,*); read(u,*) SD%g_tot_id
+         read(u,*); read(u,*) SD%defined
+         read(u,*)
        end subroutine
 
        end module

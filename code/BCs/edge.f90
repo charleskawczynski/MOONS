@@ -34,7 +34,8 @@
        private
        public :: edge
        public :: init,delete
-       public :: print,export
+       public :: export,import
+       public :: print,display
 
        type edge
          type(bctype) :: b
@@ -49,9 +50,12 @@
        interface init;       module procedure init_val;              end interface
        interface init;       module procedure init_copy;             end interface
 
-       interface delete;     module procedure delete_edge;       end interface
-       interface print;      module procedure print_edge;        end interface
-       interface export;     module procedure export_edge;       end interface
+       interface delete;     module procedure delete_edge;           end interface
+       interface print;      module procedure print_edge;            end interface
+       interface display;    module procedure display_edge;          end interface
+
+       interface export;     module procedure export_edge;           end interface
+       interface import;     module procedure import_edge;           end interface
 
        contains
 
@@ -128,15 +132,48 @@
        subroutine print_edge(e)
          implicit none
          type(edge), intent(in) :: e
-         call export(e,6)
+         call display(e,6)
        end subroutine
 
-       subroutine export_edge(e,newU)
+       subroutine display_edge(e,newU)
          implicit none
          type(edge), intent(in) :: e
          integer,intent(in) :: NewU
          if (.not.e%defined) stop 'Error: edge not defined in export_edge in edge.f90'
-         call export(e%b,newU)
+         call display(e%b,newU)
+       end subroutine
+
+       subroutine export_edge(e,un)
+         implicit none
+         type(edge),intent(in) :: e
+         integer,intent(in) :: un
+         if (.not.e%defined) stop 'Error: edge not defined in export_edge in edge.f90'
+         call export(e%b,un)
+         write(un,*) 's'
+         write(un,*) e%s
+         write(un,*) 'vals'
+         write(un,*) e%vals
+         write(un,*) 'def'
+         write(un,*) e%def
+         write(un,*) 'defined'
+         write(un,*) e%defined
+       end subroutine
+
+       subroutine import_edge(e,un)
+         implicit none
+         type(edge),intent(inout) :: e
+         integer,intent(in) :: un
+         call delete(e)
+         call import(e%b,un)
+         read(un,*) 
+         read(un,*) e%s
+         allocate(e%vals(e%s))
+         read(un,*) 
+         read(un,*) e%vals
+         read(un,*) 
+         read(un,*) e%def
+         read(un,*) 
+         read(un,*) e%defined
        end subroutine
 
        end module

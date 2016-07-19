@@ -13,7 +13,8 @@
        private
        public :: mesh
        public :: init,add,delete
-       public :: print,export ! import
+       public :: export,import
+       public :: print,display
        public :: patch
        public :: restrict,restrict_x,restrict_xy
        public :: initProps
@@ -51,8 +52,11 @@
        interface restrict_xy;    module procedure restrictmesh_xy;     end interface
 
        interface print;          module procedure print_mesh;          end interface
+       interface display;        module procedure display_mesh;        end interface
        interface export;         module procedure export_mesh;         end interface
-       interface export;         module procedure exportmesh_all;      end interface
+       interface import;         module procedure import_mesh;         end interface
+       interface export;         module procedure export_wrapper;      end interface
+       interface import;         module procedure import_wrapper;      end interface
 
        contains
 
@@ -379,49 +383,88 @@
        end subroutine
 #endif
 
-       subroutine exportmesh_all(m,dir,name)
+       subroutine export_mesh(m,un)
+         implicit none
+         type(mesh), intent(in) :: m
+         integer,intent(in) :: un
+         integer :: i
+         write(un,*) 'N_grids'
+         write(un,*) m%s
+         do i = 1,m%s
+           write(un,*) ' ------------- mesh ------------- grid ID = ',i
+           call export(m%g(i),un)
+         enddo
+       end subroutine
+
+       subroutine import_mesh(m,un)
+         implicit none
+         type(mesh), intent(inout) :: m
+         integer,intent(in) :: un
+         integer :: i
+         call delete(m)
+         read(un,*)
+         read(un,*) m%s
+         allocate(m%g(m%s))
+         do i = 1,m%s
+           read(un,*);
+           call import(m%g(i),un)
+         enddo
+         call initProps(m)
+       end subroutine
+
+       subroutine export_wrapper(m,dir,name)
          implicit none
          type(mesh), intent(in) :: m
          character(len=*),intent(in) :: dir,name
-         integer :: i,NU
+         integer :: NU
          NU = newAndOpen(dir,name)
-         do i = 1,m%s; call export_all(m%g(i),NU) ;enddo
+         call export(m,NU)
+         call closeandMessage(NU,name,dir)
+       end subroutine
+
+       subroutine import_wrapper(m,dir,name)
+         implicit none
+         type(mesh), intent(inout) :: m
+         character(len=*),intent(in) :: dir,name
+         integer :: NU
+         NU = openToRead(dir,name)
+         call import(m,NU)
          call closeandMessage(NU,name,dir)
        end subroutine
 
        subroutine print_mesh(m)
          implicit none
          type(mesh), intent(in) :: m
-         call export(m,6)
+         call display(m,6)
        end subroutine
 
-       subroutine export_mesh(m,un)
+       subroutine display_mesh(m,un)
          implicit none
          type(mesh), intent(in) :: m
          integer,intent(in) :: un
          integer :: i
-         write(un,*) ' ************* mesh ************* '
          if (un.ne.6) then
            do i = 1,m%s
-             write(un,*) ' -------------------------------- grid ID = ',i
-             call export(m%g(i),un)
-             if (m%s.gt.1) call export_stitches(m%g(i),un)
-             write(un,*) ' -------------------------------- '
+             write(un,*) ' ------------- mesh ------------- grid ID = ',i
+             call display(m%g(i),un)
+             if (m%s.gt.1) call display_stitches(m%g(i),un)
            enddo
+           write(un,*) ' -------------------------------- '
          else
            if (m%s.lt.5) then
              do i = 1,m%s
-               write(un,*) ' -------------------------------- grid ID = ',i
-                 call export(m%g(i),un)
-               if (m%s.gt.1) call export_stitches(m%g(i),un)
-               write(un,*) ' -------------------------------- '
+               write(un,*) ' ------------- mesh ------------- grid ID = ',i
+                 call display(m%g(i),un)
+               if (m%s.gt.1) call display_stitches(m%g(i),un)
              enddo
+           write(un,*) ' -------------------------------- '
            else
            write(un,*) 'Many grids. To see details, see info file or change limits in mesh.f90'
            endif
          endif
 
          if (m%s.gt.1) then
+           write(un,*) ' *********** mesh props *********** '
            write(un,*) 's,volume = ',m%s,m%volume
            write(un,*) 'N_cells_tot,N_cells = ',m%N_cells_tot,m%N_cells
            write(un,*) 'min/max(h)_x = ',(/m%hmin(1),m%hmax(1)/)
@@ -430,8 +473,8 @@
            write(un,*) 'min/max(dh)_x = ',(/m%dhmin(1),m%dhmax(1)/)
            write(un,*) 'min/max(dh)_y = ',(/m%dhmin(2),m%dhmax(2)/)
            write(un,*) 'min/max(dh)_z = ',(/m%dhmin(3),m%dhmax(3)/)
+           write(un,*) ' ********************************** '
          endif
-         write(un,*) ' ******************************** '
        end subroutine
 
        end module

@@ -1,0 +1,147 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{caption}
+\usetikzlibrary{graphs}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usetikzlibrary{plotmarks}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{graphs,graphs.standard,quotes}
+\usepackage{ifthen}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{bbding}
+
+\tikzset{snake it/.style={decorate, decoration=snake}}
+
+\newcommand{\height}{0.4}
+\newcommand{\radius}{0.1}
+\newcommand{\offSet}{12}
+\newcommand{\Deltah}{2}
+\newcommand{\dx}{1.5}
+\newcommand{\dxc}{\dx*2}
+\newcommand{\w}{1}
+
+\newcommand{\qq}{$\qquad \qquad \qquad \qquad \quad$}
+\newcommand{\qe}{$\qquad$}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+% \maketitle
+
+\section{Embed extract indexes}
+
+Consider a domain (see figure below) with fluid (middle) and solid (outside) portions.
+
+\begin{figure}[h!] \label{fig:pic}
+  \begin{center}
+    \begin{tikzpicture}
+
+    % Horizontal line
+    \draw [black] (-\dx,0) to (9*\dx,0);
+
+    % Ghost data & boundary
+    \draw [snake it] (-\dx,-\height) -- ++(0,2*\height);
+    \draw plot [only marks, mark=square*] coordinates {(-0.5*\dx,0)};
+
+    % Dark walls
+    \draw[line width=\w] (0,-\height)    -- ++(0,2*\height);
+    \draw[line width=\w] (2*\dx,-\height)    -- ++(0,2*\height);
+    \draw[line width=\w] (6*\dx,-\height)    -- ++(0,2*\height);
+    \draw[line width=\w] (8*\dx,-\height)    -- ++(0,2*\height);
+
+    % Slanted lines
+    \foreach \y in {0,1,...,6}{ \draw[line width=\w] (-0.2,-\height+\y*0.1)    -- ++(0.2,0.2);}
+    \foreach \y in {0,1,...,6}{ \draw[line width=\w] (2*\dx-0.2,-\height+\y*0.1)    -- ++(0.2,0.2);}
+    \foreach \y in {0,1,...,6}{ \draw[line width=\w] (6*\dx,-\height+\y*0.1)    -- ++(0.2,+0.2);}
+    \foreach \y in {0,1,...,6}{ \draw[line width=\w] (8*\dx,-\height+\y*0.1)    -- ++(0.2,+0.2);}
+
+    % interior data
+    \foreach \x in {0,1,...,6}{
+          \draw (\x*\dx+\dx,-\height) -- ++(0,2*\height);
+          \draw (\x*\dx+\dx*0.5,0) circle [radius=\radius];
+    }
+    \draw (7*\dx+\dx/2,0) circle [radius=\radius];
+
+    % Ghost data & boundary
+    \draw plot [only marks, mark=square*] coordinates {(8*\dx + 0.5*\dx,0)};
+    \draw [snake it] (9*\dx,-\height) -- ++(0,2*\height);
+
+    \end{tikzpicture}
+    \caption*{ghost \qquad \quad Solid \qq Fluid \qq Solid \qquad \quad ghost}
+  \end{center}
+\end{figure}
+\vspace{-1em}
+\begin{itemize}
+    \item The first letter (N,C) indicates the data type (node,cell center) along a given direction.
+    \item The second letter (I,E) indicates whether ghost points are included or excluded.
+    \item The second letter may be (B), which indicates the boundary point is included (for node data).
+    \item Let $N$ be the total number of cells (should be clear from next section).
+\end{itemize}
+
+\subsection{Conservation}
+\begin{equation}\begin{aligned}
+    N = N_{wbot} + N_{wtop} + N_i = 2 + 2 + 4 = 8 \\
+\end{aligned}\end{equation}
+\subsection{NI}
+\begin{equation}\begin{aligned}
+    NI1 = 4 = N_{wbot} + 2  \qquad \text{\Checkmark} \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+    NI2 = 8 = N - N_{wtop} + x  \qquad \text{\Checkmark} \\
+    = 8 - 2 + x, \qquad \rightarrow x = 2 \\
+    = N - N_{wtop} + 2
+\end{aligned}\end{equation}
+
+\subsection{CE}
+\begin{equation}\begin{aligned}
+    CE1 = 4 = N_{wbot} + 2  \qquad \text{\Checkmark} \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+    CE2 = 7 = N - N_{wtop} + x  \qquad \text{\Checkmark} \\
+    = 7 = 8 - 2 + x, \qquad \rightarrow x = 1
+\end{aligned}\end{equation}
+
+\subsection{CI}
+\begin{equation}\begin{aligned}
+    CI1 = 3 = N_{wbot} + 1  \qquad \text{\Checkmark} \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+    CI2 = 8 = N - N_{wtop} + x, \qquad \rightarrow x = 2  \qquad \text{\Checkmark} \\
+    = 8 - 2
+\end{aligned}\end{equation}
+
+
+\end{document}

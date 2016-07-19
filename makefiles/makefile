@@ -1,7 +1,7 @@
 # ************* CLUSTER CONFIGURATION ******************
 CLUSTER = 'PC_CK'
 # CLUSTER = 'Workstation_CK'
-# CLUSTER = 'Hoffman2'
+# CLUSTER = 'Hoffman2' # Before compile, run "module load gcc/4.9.3" in terminal
 # CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
@@ -21,20 +21,27 @@ endif
 ifeq ($(CLUSTER),$(filter $(CLUSTER),'Workstation_CK' 'PC_CK'))
 	PS_clean = $(strip \)
 endif
+ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
+	PS_clean = $(strip /)
+endif
 
 # ************* MAKE CONFIGURATION ******************
 
-# MKE = gmake
-MKE = make
+MKE = gmake
+# MKE = make
 # ************* DIRECTORY SETTINGS ******************
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS8
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS1
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
 	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
+endif
+
+ifeq ($(CLUSTER),'Hoffman2')
+	TARGET_DIR = $(PS)u$(PS)home$(PS)c$(PS)ckawczyn$(PS)project-morley$(PS)MOONS_out$(PS)MOONS1
 endif
 
 ifeq ($(CLUSTER),'DOE')
@@ -58,6 +65,7 @@ $(info BUILD COMMAND = $(FC))
 $(info TARGET = $(TARGET_DIR))
 $(info PS = $(PS))
 $(info PS_clean = $(PS_clean))
+$(info OS_USED = $(OS_USED))
 
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
@@ -159,9 +167,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -207,6 +215,7 @@ VPATH =\
 SRCS_F =\
 	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
+	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\

@@ -12,6 +12,7 @@
 \usepackage{subfigure}
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{bbding}
 
 
 \setlength{\oddsidemargin}{0.1in}
@@ -43,311 +44,292 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
-\section{Document Rules}
-In order to keep this document organized
+\section{Long Term To Do}
+
 \begin{itemize}
-\item Refer to this document for 1 hour each morning to asses priorities
-\item Keep fewer than 5 items in Goals and Requirements / Today / Tomorrow
-\item Keep fewer than 10 sections total in this document
+\item Write prospectus, and refer to http://fire.pppl.gov/fpa\_annual\_meet.html
+\begin{itemize}
+\item Code development and benchmarking \Checkmark
+\item Investigate validity of pseudo-vacuum BCs compared with real vacuum BCs
+\item Finite $Re_m$ Shercliff / Hunt flows, analytic solutions / perturbation analysis for secondary flow
+\item SK flow, analytic solutions / perturbation analysis for secondary flow
+\item LM MHD flows in the presence of plasma disruptions
+\end{itemize}
 \end{itemize}
 
-\section{Goals / Requirements}
+\newpage
 
-When writing thesis, refer to http://fire.pppl.gov/fpa\_annual\_meet.html
+\section{Papers / Writing}
 
+\subsection{BC paper}
 \begin{itemize}
-\item Investigate validity of pseudo-vacuum BCs compared with true vacuum BCs
-	\begin{itemize}
-	\item Read papers on coupling fluid and vacuum domains
-	\item Read papers / start writing
-	\end{itemize}
-\item Finite $Re_m$ Shercliff/Hunt flows
-\item Mimicking plasma disruption
-\end{itemize}
-
-
-\section{Today}
-- Perform more comparisons of numerical experiment matrix
-
+\setlength\itemsep{-1em}
+\item Include all BCs formally, point out that "Psuedo-vacuum" is the insulating case of thin-walled BCs
+\item Start last few sims on workstation
+\item Write a Python script to create a KU / KBi\_f etc. into a function of time for a given output
+\item Meet with Sergey to show energy budget terms before post-processing all sims.
+\item Read Moreau book about energy transfer, write up some documentation for new implementation
+\item Plot KB in vacuum in BC sim, see if that differs more / less then KBi\_f.
+\item Look into different forms of $\mathbf{j}\times \mathbf{B}$, e.g. $\mathbf{j}\times \mathbf{B} = (\mathbf{B}\bullet\nabla) \left(\frac{\mathbf{B}}{\mu}\right) - \nabla \left( \frac{\mathbf{B}^2}{2\mu} \right)$
+\item Means of comparison
 \begin{itemize}
-\item Energy
+\setlength\itemsep{-1em}
+\item KE equation and ME equation
 \item Energy budget
 \item Direct primitives (1-D)
 \item qualitative plots (stream-traces)
 \item Energy content - location of maximum energy
 \end{itemize}
+\end{itemize}
 
-- Finish incorporating string into MOONS so that it'll run on DOE cluster
+\subsection{Finite Rem Shercliff / Hunt Flow}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Read papers
+\item Paper by Priede - Linear stability on Hunt flow ("not easy")
+\item Perform systematic numerical experiments to show if secondary flow is physical or not. Parameters to vary:
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Magnetic Reynolds number (controls the magnitude of secondary flow)
+\item Mesh density (to show results are not numerical)
+\item Hartmann number (This is a factor in the source term for the secondary flow equation)
+\end{itemize}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item 3 sims: $Re = 100, Re_m = 1, Ha = 10, N_{cells} = (1,64,64), (1,96,96), (1,128,128)$
+\item 3 sims: $Re = 100, Re_m = 100, Ha = 10, N_{cells} = (1,64,64), (1,96,96), (1,128,128)$
+\end{itemize}
+\end{itemize}
 
-- Test MOONS on DOE cluster.
+\subsection{Plasma Disruption - LM MHD flows in its presence}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Read papers
+\end{itemize}
 
-- Get oil change on car.
+\subsection{SK flow paper}
+PRL: A new two-dimensional fully coupled MHD model problem with closing currents for finite magnetic Reynolds number: description, flow regimes and stability
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item First step of SK flow is descriptive - phases (linear, non-linear, decay)
+\end{itemize}
 
-- Complete online training.
+\subsection{Prospectus}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Start writing introduction
+\item PPT
+\item Develop organization of prospectus document
+\end{itemize}
 
-- print last step of makefile in separate lines for readability.
+\section{Projects}
 
-- Check sims
+\subsection{BEM}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Make coordinates capable of handling a zero-cell, two ghost point mesh \Checkmark
+\item Make ops capable of handling a zero-cell mesh
+\item stitching is needed so that diffusion can traverse between different grids.
+\item need to look into methods to solve equation
+\item need data structures to store solution
+\end{itemize}
 
-- Look into compilation error of MOONS on Hoffman, maybe this is causing other compilation issues.
+\subsection{HPC scalability}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item HD = Hoffman2 / DOE cluster
+\item Test MOONS on HD
+\item Add option for printing or exporting, maybe introduce a .log file or something, similar to HIMAG.
+\item Try some MPI statements on HD
+\end{itemize}
 
-- Add option for printing or exporting, maybe introduce a .log file or something, similar to HIMAG.
+\subsection{Mesh}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Gaps in mesh generation + grid stretch-parameter match. Needs to be generalized, simple + easy to use.
+\item Make a uniform grid option for boundary layers (maybe make a function for this)
+\item betaRobertsRight(hmin,hmax,L,dh) - is this dh on the left side or right side? I think betaRoberts routines need a dh1 or dhend input, because when connecting, betaRobertsRight makes stretching occur on right-side, but needs dh on right side, which is a problem for con\_APP\_Roberts\_R.
+\end{itemize}
 
-- Connect to NERSC, try running MOONS.
+\subsection{SF / VF / TF}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Make TF composed of 9 SF so that it can be composed of different sizes.
+\item Try re-incorporating better parallelization for collocated / staggered VF / TF fields
+\end{itemize}
 
-- Post-processing
+\subsection{IO}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Fix IO\_tools.f90. Pick better names and separate into IO tools and conversion (int2str, etc.)
+\item Re-consider HDF5
+\item Move the makeDir to the initialization routines (mom,ind,nrg)
+\item Figure out how to view time in tecplot as animation runs
+\end{itemize}
 
-- Finish analysis and interpretation of energy equation (jxB).
+\subsection{Exception handling}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Eventually, checks of face/node/CC/edge data could be made in routines like advect\_B and advect\_U, which could help prevent searching for what is a incorrectly located variable into a subroutine that results in a interpolation or del failure.
+\item Update export: make a switch to control what to export. Exporting interior domain may help for post-processing
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item U-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+\item B-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+\item J-field: (face, cc, node)\_interior (face, cc, node)\_total domain
+\end{itemize}
+\item Try making more properties private, and more functions pure
+\item IMPORTANT: del.f90 has no safe way to assign the output when pad is present. This is VERY dangerous and needs to be addressed immediately!
+\end{itemize}
 
-- Try implementing energy budget as a post-processing step.
+\subsection{Improving Speed}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Try to incorporate anti-symmetric BCs again...
+\item Remove allocation in lap\_centered. May require changing matrix-free operator interface. Brainstorm.
+\item Look to improve performance of apply\_edges
+\item Consider replacing applyBCs with assign using embedExtract
+\item Profile to find latest bottle necks
+\item Try out pre-processor directive '-ftree -parallelize -loops=n' = split loops into n-threads
+\item Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
+\end{itemize}
 
-- Continue writing / editing paper.
+\subsection{Makefile}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Need to clean up directory. Many unused and old files exist in folders and knowing which files are grabbed by the compiler is not clear. Maybe consider making an "old" folder for backed-up old files.
+\end{itemize}
 
-- Scan Moreau book
+\subsection{Complex Geometry}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item more testing
+\item Consider making an obstacle module that allows for more complex flows
+e.g. flow over a sphere
+\item Consider making an obstacle module that is passed into the solver.
+This could assign the velocity to satisfy any desired BCs and internal
+velocity (likely u=0 inside). More tests could be done this way.
+\end{itemize}
 
-- Try to login to Nersc account, upload MOONS.
+\subsection{Documentation / Passing down MOONS}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Continue fixing file names and folder names for better organization
+\item Clean up / organize documentation.
+\item Documentation for benchmark cases (methodology, format, execution)
+\item Naming convention for all ops should be (Real,SF,VF) = (real(cp),scalarField,vectorField)
+\item Convert matlab to python.
+\item Document benchmark tests.
+\end{itemize}
 
-- Order scooter battery on amazon?
+\subsection{Benchmarks}
 
-- Stop case 5 on workstation, start new cases?
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Make benchmarks and post-processing automatic. Consider using makefile definitions that override defaults
+\begin{enumerate}
+\setlength\itemsep{-1em}
+\item 3D LDC Hydro flow - grid refinement
+\item 3D LDC Hydro flow, $Re = 400, Re = 1000$ (Guj and Stella)
+\item 2D LDC Hydro flow, $Re = $ (Ghia)
+\item 3D LDC MHD flow, $Re = 100, Ha = 45$ at low $Re_m$ (Pattison)
+\item 2D Channel MHD flow, $Re = 200, Ha = 25.82, Re_m = 1$ (Bandaru)
+\item Benchmarks to consider adding:
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item 3D LDC hydro flow - turbulent (Re=2,000 and 3,200 compare with literature)
+\item 2D kinematic MHD flow (Parker or Weiss)
+\item 3D MHD Duct (Kenjeres)
+\item 3D MHD Isotropic Turbulence decay (Knaepen)
+\item 3D Duct MHD flow - DNS (Kinet, Knaepen, Molokov)
+\item 2D LDC Hydro flow - grid refinement
+\end{itemize}
+\end{enumerate}
+\end{itemize}
 
-- Look into magnetic energy budget more.
 
-- Meet with Sergey to show energy budget terms before post-processing all sims.
+\subsection{Restart Capability}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Need to re-develop restart capability... This will require some thought.
+\item This is complex. What should be restarted and what should be re-configured?
+\item Can every module have a "natural" restart capability? YES! \Checkmark But they require more thought for solvers.
+\item Should source terms in momentum solver be fixed? This way, restart can be used with a parameter.
+\item Should the momentum\_solver be picked with a compiler flag?
+\item momentum import + override inputs? or inputs imported so MHD solver parameters stay the same?
+\item Decide on format of input file (what parameters will be set in input file and what will be coded)
+\item Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
+\end{itemize}
 
-- Remove energy budget from solvers
+\section{Ideas}
 
-- Once waiting again, return to BEM.
+\subsection{Numerical Methods}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Re-test MG
+\item Consider MG with Jacobi method, need to restrict $\sigma$...
+\item Try changing smoother to Jacobi and check convergence rate (including when coarsest level is \textit{very} coarse)
+\end{itemize}
 
-- Need to clean up directory. Many unused and old files exist in folders and knowing which files are grabbed by the compiler is not clear. Maybe consider making an "old" folder for backed-up old files.
+\subsection{New Features}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Implement an upwind scheme for the non-uniform grid.
+\item Make pressure term 2nd order accurate in time (trap)
+\item Make advection term 2nd order accurate in time (AB2)
+\item Consider different time marching method (RK4 - eldredge)
+\item Consider re-formulating using conservative higher order finite difference methods by Moin
+\item Allow for compressibility!
+\item Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
+\item Use hgiher order time marching methods! (RK4 maybe?)
+\item Consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
+\end{itemize}
 
-- Read Moreau book about energy transfer, write up some documentation for new implementation
+\subsection{Dimensionless Groups}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Elsasser number = ration of lorentz to coriolis forces = $A = sigma B^2 / (2 rho \Omega)$
+$Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alpha g \Delta T)} $
+\item Q = Chandrasekhar number = ratio of magneto-viscous diffusion time scales and the square of the alfven speed crossing time $ = t_{\eta} t_{\nu} / t_A^2$
+\item Eckmann number = ratio of rotation time to diffusion time $ = t_{\Omega} / t_{\nu} = nu / (2 \Omega H^2)$
+\item Convective Reynolds number $= Re_c = t_nu / t_f$
+\end{itemize}
 
-- Figure out compilation error for debug mode. This is becoming a more pressing issue.
 
-- There are some gaps in the mesh generation and grid stretch-parameter matching. This needs to be generalized in a simple and easy to use way.
-
-- betaRobertsRight(hmin,hmax,L,dh) - is this dh on the left side or right side? I think betaRoberts routines need a dh1 or dhend input, because when connecting, betaRobertsRight makes stretching occur on right-side, but needs dh on right side, which is a problem for con\_APP\_Roberts\_R.
-
-- Organize scanned notes from gmail to folders.
-
-- Baby steps towards BEM.
-
-- Complex geometry - do some more testing.
-
-- Develop organization of prospectus document
-
-- Plot KB in vacuum in BC sim, see if that differs more / less then KBi\_f.
-
-- Run prelim cases
-
-- Work on paper.
-
-- Need to re-develop restart capability... This will require some thought.
-
-- Move the makeDir to the initialization routines (mom,ind,nrg)
-
-- Try to incorporate anti-symmetric BCs again...
-
-- Try re-incorporating better parallelization for collocated / staggered VF / TF fields
-
-- Consider MG with Jacobi method, need to restrict $\sigma$...
+\subsection{Miscellaneous}
 
 - Try cleaning procedure with $\mathbf{B}_{tangent}=0$ and $\frac{\partial \phi}{\partial n} = \nabla \bullet \mathbf{B}^*$ and see if cleaning works. This might be equivalent to Pseudo vacuum. Also, look into paper / source that discussed this.
 
-
-- Eventually, the lap\_centered routine should be replaced by a allocation-less one. This will be complicated though because this may require changing the matrix-free operators interface. A better, more general solution may be needed.
-
-- Eventually, checks of face/node/CC/edge data could be made in routines like advect\_B and advect\_U, which could help prevent searching for what is a incorrectly located variable into a subroutine that results in a interpolation or del failure.
-
-- Re-consider HDF5
-
-\section{Tomorrow}
-
-- Documentation for benchmark cases (methodology, format, execution)
-
-- Decide on format of input file (what parameters will be set in input file and what will be coded)
-
-- Look to improve performance of apply\_edges
-
-- Consider new organization of solver folder
-
-- Continue fixing file names and folder names for better organization
-
-- Consider/try making solvers (momentum/induction) functional instead of OO.
-
-- Read plasma papers
-
-- First step of SK flow is descriptive - phases (linear, non-linear, decay)
-
-- Read literature for interface conditions BCs for bfield
-
-\section{Future Plans}
-
-- Make a coordinates / grid import and corresponding corrections to the readme routines in the IO files.
-
-- Try performing refinement on 2D flow
-
-- Look at KE equation and Bfield energy equation
-
-- Figure out how to view time in tecplot as simulation runs
-
-- Naming convention for all ops should be (Real,SF,VF) = (real(cp),scalarField,vectorField)
-
-- Convert matlab to python.
-
 - Make a python routine to compute the number of lines in MOONS
-
-- Make a prepare directory routine in MOONS
-
-- Make Poisson solvers (all) initialized outside of the call routine and look into benchmarking these solvers by looking at convergence rates
-
-- Introduce staggered B so it can be cleaned and test cleaning procedure and compare with CT method
-
-- Consider making setXMinType(1,2) for dirichlet / neumann and determine wall coincident / incoincident internally.
-
-- Make a uniform grid option for boundary layers (maybe make a function for this)
-
-- Implement Newtons method for estimating betaw. Check if betai/betaw
-are above 1000, if so just use uniform grid.
-
-- Profile to find latest bottle necks
-
-- Look into how expensive shape() is.
-
-- Calculate cw in induction solver!
-
-- Try out pre-processor directive '-ftree -parallelize -loops=n' = split loops into n-threads
-
-- Look into different forms of $\mathbf{j}\times \mathbf{B}$, for example 
-decomposing into $\mathbf{j}\times \mathbf{B} = (\mathbf{B}\bullet\nabla) \left(\frac{\mathbf{B}}{\mu}\right) - \nabla \left( \frac{\mathbf{B}^2}{2\mu} \right)$ where the second term is the magnetic pressure
-
-\section{Futuristic Plans}
-
-Dimensionless parameters to add:
-
-Elsasser number = ration of lorentz to coriolis forces = A = sigma B\^2 / (2 rho Omega)
-
-Ra = t\_k t\_nu / t\_f\^2
-
-Where t\_f is the free fall time = sqrt(H/(alpha g dT))
-
-Q = Chandrasekhar number = ratio of magneto-viscous diffusion time scales and the square of the alfven speed crossing time
- = t\_eta t\_nu / t\_A\^2
-
-Eckmann number = ratio of rotation time to diffusion time
- = t\_Omega / t\_nu = nu / (2 Omega H\^2)
-
-
-Convective Reynolds number = Re\_c = t\_nu / t\_f
-
-- Try changing smoother to Jacobi and check convergence rate (including when coarsest level is \textit{very} coarse)
-
-- Check Non-uniform N/CC data grids for D/N BCs
 
 - Try Jack's Experiment
 
-- Fix Time module: export and import time so that the average can be appropriately
-printed to the screen.
-
-- Consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
-
-- Implement an upwind scheme for the non-uniform grid.
-
-- Make pressure term 2nd order accurate in time (trap)
-
-- Make advection term 2nd order accurate in time (AB2)
-
-- Test ADI for LDC case
-
-- Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
-
-- Consider different time marching method (RK4 - eldredge)
-
-- Consider re-formulating using conservative higher order finite difference methods by Moin
-
-- Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
-
-- Get 3D douglas ADI working for fixed time step
-
-- Get 3D douglas ADI working for non-uniform grids
-
-- Get 3D douglas ADI working for variable $\alpha$
-
-- Look into Kolmogorov scale for LDC and try DNS
-
-- Make a BMC for a purely hydrodynamic turbulent flow (Re=2,000 and 3,200 compare with literature)
-
-- Consider making an obstacle module that allows for more complex flows
-e.g. flow over a sphere
-
-- Consider making an obstacle module that is passed into the solver.
-This could assign the velocity to satisfy any desired BCs and internal
-velocity (likely u=0 inside). More tests could be done this way.
-
-- implement: 1) chimney flow 2) impinging jet flow
-
-- test the cylinder driven flow case
-
 - Finish developing solverSettings estimateRemaining() subroutine
-
-- Allow for compressibility!
-
-- Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
-
-- Use hgiher order time marching methods! (RK4 maybe?)
-
-- Update export: make a switch to control what to export:
-      U-field: (face, cc, node)\_interior (face, cc, node)\_total domain
-      B-field: (face, cc, node)\_interior (face, cc, node)\_total domain
-      J-field: (face, cc, node)\_interior (face, cc, node)\_total domain
-
-\section{10 minute tasks}
-- Update matlab script to plot KU and KB
-
-
-\section{Analysis and Literature}
-- Paper by Priede - Linear stability on Hunt flow ("not easy")
-
-- Work on analysis for simple PD
-
-- Read thesis sent by Naveen
-
-\section{Unsorted}
-
-- CG
-
-- Stencils
-
-- KE/ME equation terms
-
-- Re-run several benchmark tests.
-
-- Try making properties of mom/ind/nrg private!
-
-- Remove unecessary sigma fields
-
-- Finish documentation: non-uniform grid stencils/outline of results: develop a python script to solve the system symbollically.
 
 - Look into Paul Roberts (UCLA)
 
-- Fix the explicit Neumann BCs in apply BCs. It looks like only 1st or 2nd order accuracy is capable for du/dn = 0
-
-- Right now there are two instances of restartU and restartB, this inconsistency must to be resolved.
-
-- Re-run Hunt/Shercliff flows with uniform grid in BL and with p = 0 at outlet
-
-- Update documentation for stencils (include ghost node)
-
-- Maybe include documentation on Nin,Nice,Nici?
-
 - Try comparing 1/Ha with cw for HIMAG vs MOONS and compare continuity of tangent(j)/sigma across interface
-
-- IMPORTANT: del.f90 has no safe way to assign the output when pad is present. This is VERY dangerous and needs to be addressed immediately!
-
-- For Poisson solver, check if mean(f) or mean(f\_interior) must = 0
 
 - Member of committee for Naveen was in Geo-physics, Jonathon "Arnaud"? Look online about him and maybe we can collaborate.
 
+\newpage
+\section{Non-work related}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item delete emails and organize dropbox
+\item look into optical Nand gates
+\item get veggie / fruit recipes
+\item get tablet for refrigerator?
+\item return scooter battery (if possible)
+\item email google glass (July 17th) - Matlab $\rightarrow$ c++, paid please and computer provided?
+\item prep / post tutoring flyers
+\item make birthday wishlist
+\item call verizon about barcelona phone calls
+\item convert to charleskawczynski ?
+\item organize photos and make slideshow
+\item delete duplicate photos
+\item sign up for 596 for the fall
+\item return Christa's sketchers (if possible)
+\end{itemize}
 
 \end{document}
