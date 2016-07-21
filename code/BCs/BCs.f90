@@ -47,9 +47,7 @@
 
        private
        public :: BCs
-       public :: init,delete
-       public :: export,import
-       public :: print,display
+       public :: init,delete,display,print,export,import ! Essentials
 
        ! Setters for type
        public :: init_Dirichlet
@@ -76,8 +74,16 @@
          logical :: all_Dirichlet,all_Neumann,all_Robin
        end type
 
-       interface init;                module procedure init_BCs_copy;           end interface
        interface init;                module procedure init_gridShape_BCs;      end interface
+       interface init;                module procedure init_BCs_copy;           end interface
+       interface init;                module procedure init_vals_all_S;         end interface
+       interface init;                module procedure init_vals_face_vals;     end interface
+       interface init;                module procedure init_val_face_S;         end interface
+       interface delete;              module procedure delete_BCs;              end interface
+       interface display;             module procedure display_BCs;             end interface
+       interface print;               module procedure print_BCs;               end interface
+       interface export;              module procedure export_BCs;              end interface
+       interface import;              module procedure import_BCs;              end interface
 
        interface init_Dirichlet;      module procedure init_Dirichlet_all;      end interface
        interface init_Dirichlet;      module procedure init_Dirichlet_face;     end interface
@@ -90,21 +96,11 @@
        interface init_antisymmetry;   module procedure init_antisymmetry_all;   end interface
        interface init_antisymmetry;   module procedure init_antisymmetry_face;  end interface
 
-       interface init;                module procedure init_vals_all_S;         end interface
-       interface init;                module procedure init_vals_face_vals;     end interface
-       interface init;                module procedure init_val_face_S;         end interface
-
-       interface delete;              module procedure delete_BCs;              end interface
-       interface print;               module procedure print_BCs;               end interface
-       interface display;             module procedure display_BCs;             end interface
-       interface export;              module procedure export_BCs;              end interface
-       interface import;              module procedure import_BCs;              end interface
-
        contains
 
-       ! *******************************************************************************
-       ! ********************************** INIT GRID (1) ******************************
-       ! *******************************************************************************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
        subroutine init_gridShape_BCs(BC,g,s)
          implicit none
@@ -128,9 +124,137 @@
          call define_logicals(BC)
        end subroutine
 
-       ! *******************************************************************************
-       ! ********************************** INIT TYPE (2) ******************************
-       ! *******************************************************************************
+       subroutine init_BCs_copy(b_out,b_in)
+         implicit none
+         type(BCs),intent(inout) :: b_out
+         type(BCs),intent(in) :: b_in
+         integer :: i
+         do i=1,6;  call init(b_out%f(i),b_in%f(i)); enddo
+         do i=1,12; call init(b_out%e(i),b_in%e(i)); enddo
+         do i=1,8;  call init(b_out%c(i),b_in%c(i)); enddo
+         call init(b_out%g,b_in%g)
+         b_out%s = b_in%s
+         b_out%gridDefined = b_in%gridDefined
+         b_out%defined = b_in%defined
+         b_out%all_Dirichlet = b_in%all_Dirichlet
+         b_out%all_Neumann = b_in%all_Neumann
+       end subroutine
+
+       subroutine init_vals_all_S(BC,val)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         real(cp),intent(in) :: val
+         integer :: i
+         do i=1,6;  call init(BC%f(i),val); enddo
+         do i=1,12; call init(BC%e(i),val); enddo
+         do i=1,8;  call init(BC%c(i),val); enddo
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine init_vals_face_vals(BC,vals,face)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         real(cp),dimension(:,:),intent(in) :: vals
+         integer,intent(in) :: face
+         call init(BC%f(face),vals)
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine init_val_face_S(BC,val,face)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         real(cp),intent(in) :: val
+         integer,intent(in) :: face
+         call init(BC%f(face),val)
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine delete_BCs(BC)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         integer :: i
+         do i=1,6;  call delete(BC%f(i)); enddo
+         do i=1,12; call delete(BC%e(i)); enddo
+         do i=1,8;  call delete(BC%c(i)); enddo
+         call delete(BC%g)
+         BC%gridDefined = .false.
+         BC%s = 0
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine display_BCs(BC,newU)
+         implicit none
+         type(BCs),intent(in) :: BC
+         integer,intent(in) :: NewU
+         integer :: i,col_width,precision
+         ! write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
+         ! write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
+         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
+         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
+         ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
+         if (BC%defined) then
+           precision = 4
+           col_width = 12
+           call export_table('Faces   :',(/(i,i=1,6)/),col_width,newU)
+           call export_table('Type    :',(/(get_bctype(BC%f(i)%b),i=1,6)/),col_width,newU)
+           call export_table('meanVal :',(/(BC%f(i)%b%meanVal,i=1,6)/),col_width,precision,newU)
+           col_width = 8
+           call export_table('Edges   :',(/(i,i=1,12)/),col_width,newU)
+           call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
+           call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
+           ! col_width = 10
+           ! call export_table('Corners :',(/(i,i=1,12)/),col_width,newU)
+           ! call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
+           ! call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
+         endif
+       end subroutine
+
+       subroutine print_BCs(BC)
+         implicit none
+         type(BCs), intent(in) :: BC
+         call display(BC,6)
+       end subroutine
+
+       subroutine export_BCs(BC,un)
+         implicit none
+         type(BCs),intent(in) :: BC
+         integer,intent(in) :: un
+         integer :: i
+         if (BC%defined) then
+         do i=1,6;  call export(BC%f(i)%b,un); enddo
+         do i=1,12; call export(BC%e(i)%b,un); enddo
+         do i=1,8;  call export(BC%c(i)%b,un); enddo
+         call export(BC%g,un)
+         write(un,*) 's'
+         write(un,*) BC%s
+         write(un,*) 'gridDefined,defined'
+         write(un,*) BC%gridDefined,BC%defined
+         write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
+         write(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
+         else; stop 'Error: Cannot export undefined BC in export_BCs in BCs.f90'
+         endif
+       end subroutine
+
+       subroutine import_BCs(BC,un)
+         implicit none
+         type(BCs),intent(inout) :: BC
+         integer,intent(in) :: un
+         integer :: i
+         do i=1,6;  call import(BC%f(i)%b,un); enddo
+         do i=1,12; call import(BC%e(i)%b,un); enddo
+         do i=1,8;  call import(BC%c(i)%b,un); enddo
+         call import(BC%g,un)
+         read(un,*) 
+         read(un,*) BC%s
+         read(un,*) 
+         read(un,*) BC%gridDefined,BC%defined
+         read(un,*) 
+         read(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
+       end subroutine
+
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
 
        subroutine init_Dirichlet_all(BC)
          implicit none
@@ -187,6 +311,10 @@
          call define_logicals(BC)
        end subroutine
 
+       ! *******************************************************************************
+       ! ********************************* INIT FACES **********************************
+       ! *******************************************************************************
+
        subroutine init_Dirichlet_face(BC,face)
          implicit none
          type(BCs),intent(inout) :: BC
@@ -233,39 +361,6 @@
        end subroutine
 
        ! *******************************************************************************
-       ! ********************************** INIT VALS (3) ******************************
-       ! *******************************************************************************
-
-       subroutine init_vals_all_S(BC,val)
-         implicit none
-         type(BCs),intent(inout) :: BC
-         real(cp),intent(in) :: val
-         integer :: i
-         do i=1,6;  call init(BC%f(i),val); enddo
-         do i=1,12; call init(BC%e(i),val); enddo
-         do i=1,8;  call init(BC%c(i),val); enddo
-         call define_logicals(BC)
-       end subroutine
-
-       subroutine init_vals_face_vals(BC,vals,face)
-         implicit none
-         type(BCs),intent(inout) :: BC
-         real(cp),dimension(:,:),intent(in) :: vals
-         integer,intent(in) :: face
-         call init(BC%f(face),vals)
-         call define_logicals(BC)
-       end subroutine
-
-       subroutine init_val_face_S(BC,val,face)
-         implicit none
-         type(BCs),intent(inout) :: BC
-         real(cp),intent(in) :: val
-         integer,intent(in) :: face
-         call init(BC%f(face),val)
-         call define_logicals(BC)
-       end subroutine
-
-       ! *******************************************************************************
        ! ********************************* INIT EDGES **********************************
        ! *******************************************************************************
 
@@ -308,117 +403,6 @@
        !     endif
        !   enddo
        ! end subroutine
-
-       ! *******************************************************************************
-       ! ******************************** COPY / DELETE ********************************
-       ! *******************************************************************************
-
-       subroutine init_BCs_copy(b_out,b_in)
-         implicit none
-         type(BCs),intent(inout) :: b_out
-         type(BCs),intent(in) :: b_in
-         integer :: i
-         do i=1,6;  call init(b_out%f(i),b_in%f(i)); enddo
-         do i=1,12; call init(b_out%e(i),b_in%e(i)); enddo
-         do i=1,8;  call init(b_out%c(i),b_in%c(i)); enddo
-         call init(b_out%g,b_in%g)
-         b_out%s = b_in%s
-         b_out%gridDefined = b_in%gridDefined
-         b_out%defined = b_in%defined
-         b_out%all_Dirichlet = b_in%all_Dirichlet
-         b_out%all_Neumann = b_in%all_Neumann
-       end subroutine
-
-       subroutine delete_BCs(BC)
-         implicit none
-         type(BCs),intent(inout) :: BC
-         integer :: i
-         do i=1,6;  call delete(BC%f(i)); enddo
-         do i=1,12; call delete(BC%e(i)); enddo
-         do i=1,8;  call delete(BC%c(i)); enddo
-         call delete(BC%g)
-         BC%gridDefined = .false.
-         BC%s = 0
-         call define_logicals(BC)
-       end subroutine
-
-       ! *******************************************************************************
-       ! ******************************* PRINT / EXPORT ********************************
-       ! *******************************************************************************
-
-       subroutine print_BCs(BC)
-         implicit none
-         type(BCs), intent(in) :: BC
-         call display(BC,6)
-       end subroutine
-
-       subroutine display_BCs(BC,newU)
-         implicit none
-         type(BCs),intent(in) :: BC
-         integer,intent(in) :: NewU
-         integer :: i,col_width,precision
-
-         ! write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
-         ! write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
-         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
-         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
-         ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
-         if (BC%defined) then
-           precision = 4
-           col_width = 12
-           call export_table('Faces   :',(/(i,i=1,6)/),col_width,newU)
-           call export_table('Type    :',(/(get_bctype(BC%f(i)%b),i=1,6)/),col_width,newU)
-           call export_table('meanVal :',(/(BC%f(i)%b%meanVal,i=1,6)/),col_width,precision,newU)
-
-           col_width = 8
-           call export_table('Edges   :',(/(i,i=1,12)/),col_width,newU)
-           call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
-           call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
-
-           ! col_width = 10
-           ! call export_table('Corners :',(/(i,i=1,12)/),col_width,newU)
-           ! call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
-           ! call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
-
-         endif
-       end subroutine
-
-       subroutine export_BCs(BC,un)
-         implicit none
-         type(BCs),intent(in) :: BC
-         integer,intent(in) :: un
-         integer :: i
-         if (BC%defined) then
-         do i=1,6;  call export(BC%f(i)%b,un); enddo
-         do i=1,12; call export(BC%e(i)%b,un); enddo
-         do i=1,8;  call export(BC%c(i)%b,un); enddo
-         call export(BC%g,un)
-         write(un,*) 's'
-         write(un,*) BC%s
-         write(un,*) 'gridDefined,defined'
-         write(un,*) BC%gridDefined,BC%defined
-         write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
-         write(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
-         else; stop 'Error: Cannot undefined BC in export_BCs in BCs.f90'
-         endif
-       end subroutine
-
-       subroutine import_BCs(BC,un)
-         implicit none
-         type(BCs),intent(inout) :: BC
-         integer,intent(in) :: un
-         integer :: i
-         do i=1,6;  call import(BC%f(i)%b,un); enddo
-         do i=1,12; call import(BC%e(i)%b,un); enddo
-         do i=1,8;  call import(BC%c(i)%b,un); enddo
-         call import(BC%g,un)
-         read(un,*) 
-         read(un,*) BC%s
-         read(un,*) 
-         read(un,*) BC%gridDefined,BC%defined
-         read(un,*) 
-         read(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
-       end subroutine
 
        ! *******************************************************************************
        ! ********************************* AUXILIARY ***********************************

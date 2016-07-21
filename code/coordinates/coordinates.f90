@@ -7,8 +7,7 @@
 
       private
       public :: coordinates
-      public :: init,delete
-      public :: print,export,import
+      public :: init,delete,display,print,export,import ! Essentials
 
       ! For stitching multi-domains, only
       ! after coordinates has been defined
@@ -45,39 +44,20 @@
       interface init;              module procedure initCoordinates;        end interface
       interface init;              module procedure initCopy;               end interface
       interface delete;            module procedure deleteCoordinates;      end interface
-
+      interface display;           module procedure display_coordinates;    end interface
       interface print;             module procedure printCoordinates;       end interface
       interface export;            module procedure export_c;               end interface
       interface import;            module procedure import_c;               end interface
 
       interface restrict;          module procedure restrictCoordinates;    end interface
-
       interface stitch_stencils;   module procedure stitch_stencils_c;      end interface
       interface init_stencils;     module procedure init_stencils_c;        end interface ! Private
       
       contains
 
-      ! *****************************************************************
-      ! ************************ INIT / DELETE **************************
-      ! *****************************************************************
-
-      subroutine deleteCoordinates(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        if (allocated(c%hn)) deallocate(c%hn)
-        if (allocated(c%hc)) deallocate(c%hc)
-        if (allocated(c%dhn)) deallocate(c%dhn)
-        if (allocated(c%dhc)) deallocate(c%dhc)
-        if (allocated(c%alpha)) deallocate(c%alpha)
-        if (allocated(c%beta)) deallocate(c%beta)
-        call delete(c%stagCC2N); call delete(c%stagN2CC)
-        call delete(c%colCC(1)); call delete(c%colN(1))
-        call delete(c%colCC(2)); call delete(c%colN(2))
-        c%dhc_e = 0.0_cp
-        c%dhn_e = 0.0_cp
-        c%defined = .false.
-        c%stencils_defined = .false.
-      end subroutine
+      ! **********************************************************
+      ! ********************* ESSENTIALS *************************
+      ! **********************************************************
 
       subroutine initCopy(c,d)
         implicit none
@@ -174,6 +154,70 @@
         c%defined = .true.
       end subroutine
 
+      subroutine deleteCoordinates(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        if (allocated(c%hn)) deallocate(c%hn)
+        if (allocated(c%hc)) deallocate(c%hc)
+        if (allocated(c%dhn)) deallocate(c%dhn)
+        if (allocated(c%dhc)) deallocate(c%dhc)
+        if (allocated(c%alpha)) deallocate(c%alpha)
+        if (allocated(c%beta)) deallocate(c%beta)
+        call delete(c%stagCC2N); call delete(c%stagN2CC)
+        call delete(c%colCC(1)); call delete(c%colN(1))
+        call delete(c%colCC(2)); call delete(c%colN(2))
+        c%dhc_e = 0.0_cp
+        c%dhn_e = 0.0_cp
+        c%defined = .false.
+        c%stencils_defined = .false.
+      end subroutine
+
+      subroutine display_coordinates(c,un)
+        implicit none
+        type(coordinates),intent(in) :: c
+        integer,intent(in) :: un
+        write(un,*) ' ---------------- coordinates'
+        write(un,*) 'sn = ';  write(un,*) c%sn
+        write(un,*) 'hn = ';  write(un,*) c%hn
+        ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
+        ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
+        ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
+        ! write(*,*) 'D_CC2N: '; call print(c%D_CC2N); write(*,*) 'U_CC2N:';call print(c%U_CC2N)
+        ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
+      end subroutine
+
+      subroutine printCoordinates(c)
+        implicit none
+        type(coordinates),intent(in) :: c
+        call display(c,6)
+      end subroutine
+
+      subroutine export_c(c,un)
+        implicit none
+        type(coordinates),intent(in) :: c
+        integer,intent(in) :: un
+        write(un,*) ' ---------------- coordinates'
+        write(un,*) 'sn = ';  write(un,*) c%sn
+        write(un,*) 'hn = ';  write(un,*) c%hn
+      end subroutine
+
+      subroutine import_c(c,un)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        integer,intent(in) :: un
+        real(cp),dimension(:),allocatable :: hn
+        integer :: sn
+        call delete(c)
+        read(un,*)
+        read(un,*); read(un,*) sn; allocate(hn(sn))
+        read(un,*); read(un,*) hn; call init(c,hn,sn)
+        deallocate(hn)
+      end subroutine
+
+      ! **********************************************************
+      ! **********************************************************
+      ! **********************************************************
+
       subroutine initProps(c)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -202,43 +246,6 @@
            c%dhc_e = c%dhc(1)
            c%dhn_e = c%dhn(1)
          endif
-      end subroutine
-
-      ! *****************************************************************
-      ! ***************************** IO ********************************
-      ! *****************************************************************
-
-      subroutine printCoordinates(c)
-        implicit none
-        type(coordinates),intent(in) :: c
-        call export(c,6)
-      end subroutine
-
-      subroutine export_c(c,un)
-        implicit none
-        type(coordinates),intent(in) :: c
-        integer,intent(in) :: un
-        write(un,*) ' ---------------- coordinates'
-        write(un,*) 'sn = ';  write(un,*) c%sn
-        write(un,*) 'hn = ';  write(un,*) c%hn
-        ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
-        ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
-        ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
-        ! write(*,*) 'D_CC2N: '; call print(c%D_CC2N); write(*,*) 'U_CC2N:';call print(c%U_CC2N)
-        ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
-      end subroutine
-
-      subroutine import_c(c,un)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        integer,intent(in) :: un
-        real(cp),dimension(:),allocatable :: hn
-        integer :: sn
-        call delete(c)
-        read(un,*)
-        read(un,*); read(un,*) sn; allocate(hn(sn))
-        read(un,*); read(un,*) hn; call init(c,hn,sn)
-        deallocate(hn)
       end subroutine
 
       ! *****************************************************************

@@ -3,8 +3,7 @@
 
        private
        public :: overlap
-       public :: init,delete,print,display
-       public :: export,import
+       public :: init,delete,display,print,export,import ! Essentials
 
        interface init;       module procedure init_overlap;        end interface
        interface init;       module procedure init_copy_overlap;   end interface

@@ -47,9 +47,9 @@
        implicit none
 
        private
-       public :: induction,init,delete,solve
-       public :: export,exportTransient
-       public :: compute_E_M_budget
+       public :: induction
+       public :: init,delete,display,print,export,import ! Essentials
+       public :: solve,export_tec,exportTransient,compute_E_M_budget
 
        type induction
          ! --- Tensor fields ---
@@ -101,13 +101,20 @@
 
        interface init;                 module procedure init_induction;                end interface
        interface delete;               module procedure delete_induction;              end interface
-       interface solve;                module procedure solve_induction;               end interface
+       interface display;              module procedure display_induction;             end interface
+       interface print;                module procedure print_induction;               end interface
        interface export;               module procedure export_induction;              end interface
+       interface import;               module procedure import_induction;              end interface
+
+       interface solve;                module procedure solve_induction;               end interface
+       interface export_tec;           module procedure export_tec_induction;          end interface
        interface exportTransient;      module procedure inductionExportTransient;      end interface
 
        contains
 
-       ! ******************* INIT/DELETE ***********************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
        subroutine init_induction(ind,m,D_fluid,D_sigma,finite_Rem,Rem,dTime,&
          N_induction,tol_induction,N_cleanB,tol_cleanB,DT)
@@ -222,7 +229,7 @@
 
          ! Initialize multigrid
          temp_unit = newAndOpen(str(DT%params),'info_ind')
-         call inductionInfo(ind,temp_unit)
+         call display(ind,temp_unit)
          close(temp_unit)
 
          ind%finite_Rem = finite_Rem
@@ -302,44 +309,7 @@
          write(*,*) 'Induction object deleted'
        end subroutine
 
-       ! ******************* EXPORT ****************************
-
-       subroutine inductionExportTransient(ind)
-         implicit none
-         type(induction),intent(inout) :: ind
-         call apply(ind%probe_divB,ind%nstep,ind%t,ind%divB,ind%vol_CC)
-         call apply(ind%probe_divJ,ind%nstep,ind%t,ind%divJ,ind%vol_CC)
-       end subroutine
-
-       subroutine export_induction(ind,m,DT)
-         implicit none
-         type(induction),intent(in) :: ind
-         type(mesh),intent(in) :: m
-         type(dir_tree),intent(in) :: DT
-         if (restartB.and.(.not.solveInduction)) then
-           ! This preserves the initial data
-         else
-           if (solveInduction) then
-             write(*,*) 'Exporting Solutions for B at ind%nstep = ',ind%nstep
-             call export_processed(m,ind%B ,str(DT%B),'B',1)
-             ! call export_raw(m,ind%B0,str(DT%B),'B0',0)
-             call export_raw(m,ind%B ,str(DT%B),'B',0)
-             call export_raw(m,ind%J ,str(DT%J),'J',0)
-             call export_raw(m,ind%U_E%x ,str(DT%B),'Uex',0)
-             call export_raw(m,ind%U_E%y ,str(DT%B),'Vey',0)
-             call export_raw(m,ind%U_E%z ,str(DT%B),'Wez',0)
-             call export_raw(m,ind%divB,str(DT%B),'divB',0)
-             call export_raw(m,ind%divJ,str(DT%J),'divJ',0)
-
-             call export_processed(m,ind%B0,str(DT%B),'B0',1)
-             call export_processed(m,ind%J ,str(DT%J),'J',1)
-             write(*,*) '     finished'
-           endif
-         endif
-       end subroutine
-
-       subroutine inductionInfo(ind,un)
-         ! Use un = 6 to print to screen
+       subroutine display_induction(ind,un)
          implicit none
          type(induction),intent(in) :: ind
          integer,intent(in) :: un
@@ -361,7 +331,63 @@
          write(un,*) ''
        end subroutine
 
-       ! ******************* SOLVER ****************************
+       subroutine print_induction(ind)
+         implicit none
+         type(induction),intent(in) :: ind
+         call display(ind,6)
+       end subroutine
+
+       subroutine export_induction(ind,DT)
+         implicit none
+         type(induction),intent(in) :: ind
+         type(dir_tree),intent(in) :: DT
+         call export(ind%B      ,str(DT%restart),'B')
+         call export(ind%B0     ,str(DT%restart),'B0')
+         call export(ind%J      ,str(DT%restart),'J')
+         call export(ind%U_E%x  ,str(DT%restart),'Uex')
+         call export(ind%U_E%y  ,str(DT%restart),'Vey')
+         call export(ind%U_E%z  ,str(DT%restart),'Wez')
+       end subroutine
+
+       subroutine import_induction(ind,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         call import(ind%B      ,str(DT%restart),'B')
+         call import(ind%B0     ,str(DT%restart),'B0')
+         call import(ind%J      ,str(DT%restart),'J')
+         call import(ind%U_E%x  ,str(DT%restart),'Uex')
+         call import(ind%U_E%y  ,str(DT%restart),'Vey')
+         call import(ind%U_E%z  ,str(DT%restart),'Wez')
+       end subroutine
+
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine export_tec_induction(ind,DT)
+         implicit none
+         type(induction),intent(in) :: ind
+         type(dir_tree),intent(in) :: DT
+         if (restartB.and.(.not.solveInduction)) then
+           ! This preserves the initial data
+         else
+           if (solveInduction) then
+             write(*,*) 'export_tec_induction at ind%nstep = ',ind%nstep
+             call export_processed(ind%m,ind%B ,str(DT%B),'B',1)
+             call export_processed(ind%m,ind%B0,str(DT%B),'B0',1)
+             call export_processed(ind%m,ind%J ,str(DT%J),'J',1)
+             write(*,*) '     finished'
+           endif
+         endif
+       end subroutine
+
+       subroutine inductionExportTransient(ind)
+         implicit none
+         type(induction),intent(inout) :: ind
+         call apply(ind%probe_divB,ind%nstep,ind%t,ind%divB,ind%vol_CC)
+         call apply(ind%probe_divJ,ind%nstep,ind%t,ind%divJ,ind%vol_CC)
+       end subroutine
 
        subroutine solve_induction(ind,U,PE,DT)
          implicit none
@@ -429,14 +455,15 @@
          ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
 
          if (PE%info) then
-           call inductionInfo(ind,6)
+           call print(ind)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
            exportNowB = readSwitchFromFile(str(DT%params),'exportNowB')
          else; exportNow = .false.; exportNowB = .false.
          endif
 
          if (PE%solution.or.exportNowB.or.exportNow) then
-           call export(ind,ind%m,DT)
+           call export(ind,DT)
+           call export_tec(ind,DT)
            call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
          endif
        end subroutine

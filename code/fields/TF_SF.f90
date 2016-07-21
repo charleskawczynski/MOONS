@@ -44,6 +44,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: TF
         public :: init,delete
+        
         ! Grid initialization
         public :: init_CC
         public :: init_Face
@@ -61,8 +62,6 @@
         public :: transpose
         ! public :: sum
         public :: assignX,assignY,assignZ
-
-
 
         type TF
           integer :: s = 3  ! number of components

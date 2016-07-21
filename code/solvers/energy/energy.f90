@@ -38,8 +38,9 @@
        implicit none
 
        private
-       public :: energy,init,delete,solve
-       public :: export,exportTransient
+       public :: energy
+       public :: init,delete,display,print,export,import ! Essentials
+       public :: solve,exportTransient,export_tec
 
        type energy
          ! --- Vector fields ---
@@ -71,13 +72,20 @@
 
        interface init;               module procedure init_energy;             end interface
        interface delete;             module procedure delete_energy;           end interface
-       interface solve;              module procedure solve_energy;            end interface
+       interface display;            module procedure display_energy;          end interface
+       interface print;              module procedure print_energy;            end interface
        interface export;             module procedure export_energy;           end interface
+       interface import;             module procedure import_energy;           end interface
+
+       interface solve;              module procedure solve_energy;            end interface
        interface exportTransient;    module procedure energyExportTransient;   end interface
+       interface export_tec;         module procedure export_tec_energy;       end interface
 
        contains
 
-       ! ******************* INIT/DELETE ***********************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
        subroutine init_energy(nrg,m,D,N_nrg,tol_nrg,dTime,Re,Pr,Ec,Ha,DT)
          implicit none
@@ -147,7 +155,7 @@
          call delete(prec_T)
 
          temp_unit = newAndOpen(str(DT%params),'info_nrg')
-         call energyInfo(nrg,temp_unit)
+         call print(nrg)
          close(temp_unit)
 
          write(*,*) '     probes initialized'
@@ -186,34 +194,7 @@
          write(*,*) 'energy object deleted'
        end subroutine
 
-       ! ******************* EXPORT ****************************
-
-       subroutine energyExportTransient(nrg)
-         implicit none
-         type(energy),intent(inout) :: nrg
-         call compute(nrg%norm_divQ,nrg%divQ,nrg%vol_CC)
-         call set(nrg%transient_divQ,nrg%nstep,nrg%time,nrg%norm_divQ%L2)
-         call apply(nrg%transient_divQ)
-       end subroutine
-
-       subroutine export_energy(nrg,m,DT)
-         implicit none
-         type(energy),intent(inout) :: nrg
-         type(mesh),intent(in) :: m
-         type(dir_tree),intent(in) :: DT
-         if (solveEnergy) then
-           write(*,*) 'Exporting Solutions for T at nrg%nstep = ',nrg%nstep
-           call export_processed(m,nrg%T,str(DT%T),'T',0)
-
-           call export_raw(m,nrg%U_F,str(DT%T),'U',0)
-           call export_raw(m,nrg%T,str(DT%T),'T',0)
-           call export_raw(m,nrg%divQ,str(DT%T),'divQ',0)
-           call export_raw(m,nrg%k,str(DT%T),'k',0)
-           write(*,*) '     finished'
-         endif
-       end subroutine
-
-       subroutine energyInfo(nrg,un)
+       subroutine display_energy(nrg,un)
          implicit none
          type(energy),intent(in) :: nrg
          integer,intent(in) :: un
@@ -232,7 +213,53 @@
          write(un,*) ''
        end subroutine
 
-       ! ******************* SOLVER ****************************
+       subroutine print_energy(nrg)
+         implicit none
+         type(energy),intent(in) :: nrg
+         call display(nrg,6)
+       end subroutine
+
+       subroutine export_energy(nrg,DT)
+         implicit none
+         type(energy),intent(in) :: nrg
+         type(dir_tree),intent(in) :: DT
+         call export(nrg%T   ,str(DT%restart),'T_nrg')
+         call export(nrg%U_F ,str(DT%restart),'U_nrg')
+         call export(nrg%k   ,str(DT%restart),'k_nrg')
+       end subroutine
+
+       subroutine import_energy(nrg,DT)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(dir_tree),intent(in) :: DT
+         call import(nrg%T   ,str(DT%restart),'T_nrg')
+         call import(nrg%U_F ,str(DT%restart),'U_nrg')
+         call import(nrg%k   ,str(DT%restart),'k_nrg')
+       end subroutine
+
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine export_tec_energy(nrg,DT)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(dir_tree),intent(in) :: DT
+         if (solveEnergy) then
+           write(*,*) 'export_tec_energy at nrg%nstep = ',nrg%nstep
+           call export_processed(nrg%m,nrg%T,str(DT%T),'T',0)
+           call export_raw(nrg%m,nrg%divQ,str(DT%T),'divQ',0)
+           write(*,*) '     finished'
+         endif
+       end subroutine
+
+       subroutine energyExportTransient(nrg)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         call compute(nrg%norm_divQ,nrg%divQ,nrg%vol_CC)
+         call set(nrg%transient_divQ,nrg%nstep,nrg%time,nrg%norm_divQ%L2)
+         call apply(nrg%transient_divQ)
+       end subroutine
 
        subroutine solve_energy(nrg,U,PE,DT)
          implicit none
@@ -275,14 +302,15 @@
          endif
 
          if (PE%info) then
-           call energyInfo(nrg,6)
+           call print(nrg)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
            exportNowT = readSwitchFromFile(str(DT%params),'exportNowT')
          else; exportNow = .false.; exportNowT = .false.
          endif
 
          if (PE%solution.or.exportNowT.or.exportNow) then
-           call export(nrg,nrg%m,DT)
+           call export(nrg,DT)
+           call export_tec(nrg,DT)
            call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
          endif
        end subroutine

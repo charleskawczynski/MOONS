@@ -7,18 +7,16 @@
        contains
 
        subroutine readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,N_nrg,tol_nrg,N_mom,tol_mom,&
+         dt_eng,dt_mom,dt_ind,n_dt_start,n_dt_stop,N_nrg,tol_nrg,N_mom,tol_mom,&
          N_PPE,tol_PPE,N_ind,tol_ind,N_cleanB,tol_cleanB)
          implicit none
          real(cp),intent(inout) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
          logical,intent(inout) :: finite_Rem
          real(cp),intent(inout) :: dt_eng,dt_mom,dt_ind
          real(cp),intent(inout) :: tol_nrg,tol_PPE,tol_mom,tol_ind,tol_cleanB
-         integer,intent(inout) :: NmaxMHD,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
+         integer,intent(inout) :: n_dt_start,n_dt_stop,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         ! Re         = 1000.0_cp
-         ! Re         = 1.0_cp*10.0_cp**(7.0_cp)
          Re         = 100.0_cp
          Ha         = 10.0_cp
          Rem        = 1.0_cp
@@ -33,13 +31,14 @@
          dt_mom     = 5.0_cp*10.0_cp**(-3.0_cp)
          dt_ind     = 5.0_cp*10.0_cp**(-3.0_cp)
          t          = 1000.0_cp
-         ! t          = 1.0_cp
-         ! NmaxMHD       = ceiling(t/dt_eng)
-         NmaxMHD       = ceiling(t/dt_mom)
-         ! NmaxMHD       = 1
-         ! NmaxMHD       = ceiling(t/dt_ind)
-         ! NmaxMHD       = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
-         ! NmaxMHD       = 1500
+
+         n_dt_start = 0
+         ! n_dt_stop       = ceiling(t/dt_eng)
+         n_dt_stop       = ceiling(t/dt_mom)
+         ! n_dt_stop       = 1
+         ! n_dt_stop       = ceiling(t/dt_ind)
+         ! n_dt_stop       = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
+         ! n_dt_stop       = 1500
 
          N_nrg         = 10       ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)

@@ -80,6 +80,7 @@ University of California Los Angeles, USA\\
 \item qualitative plots (stream-traces)
 \item Energy content - location of maximum energy
 \end{itemize}
+\item focus on difference between PV and RV
 \end{itemize}
 
 \subsection{Finite Rem Shercliff / Hunt Flow}
@@ -259,6 +260,7 @@ velocity (likely u=0 inside). More tests could be done this way.
 \item momentum import + override inputs? or inputs imported so MHD solver parameters stay the same?
 \item Decide on format of input file (what parameters will be set in input file and what will be coded)
 \item Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
+\item rethink how to use printPhysicalMinMax in momentum,induction,energy display routines
 \end{itemize}
 
 \section{Ideas}

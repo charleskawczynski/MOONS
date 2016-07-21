@@ -52,9 +52,10 @@
        implicit none
        private
        
-       public :: momentum,init,delete,solve
-       public :: export,exportTransient
-       public :: compute_E_K_Budget
+       public :: momentum
+       public :: init,delete,display,print,export,import ! Essentials
+
+       public :: solve,export_tec,exportTransient,compute_E_K_Budget
 
        type momentum
          ! Tensor fields
@@ -97,13 +98,20 @@
 
        interface init;                module procedure initMomentum;               end interface
        interface delete;              module procedure deleteMomentum;             end interface
-       interface solve;               module procedure solve_momentum;             end interface
+       interface display;             module procedure display_momentum;           end interface
+       interface print;               module procedure print_momentum;             end interface
        interface export;              module procedure export_momentum;            end interface
+       interface import;              module procedure import_momentum;            end interface
+
+       interface export_tec;          module procedure export_tec_momentum;        end interface
        interface exportTransient;     module procedure momentumExportTransient;    end interface
+       interface solve;               module procedure solve_momentum;             end interface
 
        contains
 
-       ! ******************* INIT/DELETE ***********************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
        subroutine initMomentum(mom,m,N_mom,tol_mom,N_PPE,tol_PPE,dTime,Re,Ha,Gr,Fr,DT)
          implicit none
@@ -222,7 +230,7 @@
          call init(mom%transient_KE_2C,str(DT%U),'KE_2C',.not.restartU)
 
          temp_unit = newAndOpen(str(DT%params),'info_mom')
-         call momentumInfo(mom,temp_unit)
+         call display(mom,temp_unit)
          close(temp_unit)
          mom%t = 0.0_cp
          write(*,*) '     Solver settings initialized'
@@ -266,49 +274,7 @@
          write(*,*) 'Momentum object deleted'
        end subroutine
 
-       ! ******************* EXPORT ****************************
-
-       subroutine momentumExportTransient(mom)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         ! real(cp) :: temp_Ln
-         call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
-         call set(mom%transient_KE,mom%nstep,mom%t,mom%KE)
-         call apply(mom%transient_KE)
-
-         call compute_TKE_2C(mom%KE,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
-         call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE)
-         call apply(mom%transient_KE_2C)
-         ! call Ln(temp_Ln,mom%divU,2.0_cp)
-         ! call set(mom%transient_divU,mom%nstep,temp_Ln)
-         call compute(mom%norm_divU,mom%divU,mom%vol_CC)
-         call set(mom%transient_divU,mom%nstep,mom%t,mom%norm_divU%L2)
-         call apply(mom%transient_divU)
-       end subroutine
-
-       subroutine export_momentum(mom,m,F,DT)
-         implicit none
-         type(momentum),intent(in) :: mom
-         type(mesh),intent(in) :: m
-         type(VF),intent(in) :: F
-         type(dir_tree),intent(in) :: DT
-         if (restartU.and.(.not.solveMomentum)) then
-           ! This preserves the initial data
-         else
-           write(*,*) 'Exporting Solutions for U at mom%nstep = ',mom%nstep
-           call export_processed(m,mom%U,str(DT%U),'U',1)
-           call export_raw(m,mom%U,str(DT%U),'U',0)
-           call export_raw(m,mom%p,str(DT%U),'p',0)
-           if (solveEnergy.or.solveInduction) call export_raw(m,F,str(DT%U),'jCrossB',0)
-           call export_raw(m,mom%divU,str(DT%U),'divU',0)
-           ! call export_processed(m,mom%temp_E,str(DT%U),'vorticity',1)
-           call export_processed(m,mom%p,str(DT%U),'p',1)
-           write(*,*) '     finished'
-         endif
-       end subroutine
-
-       subroutine momentumInfo(mom,un)
-         ! Use un = 6 to print to screen
+       subroutine display_momentum(mom,un)
          implicit none
          type(momentum),intent(in) :: mom
          integer,intent(in) :: un
@@ -330,6 +296,73 @@
          write(un,*) ''
          call display(mom%m,un)
          write(*,*) ''
+       end subroutine
+
+       subroutine print_momentum(mom)
+         implicit none
+         type(momentum),intent(in) :: mom
+         call display(mom,6)
+       end subroutine
+
+       subroutine export_momentum(mom,DT)
+         implicit none
+         type(momentum),intent(in) :: mom
+         type(dir_tree),intent(in) :: DT
+         type(path) :: restart
+         write(*,*) 'Start mom export!'
+         call oldest_modified_file(restart,DT%restart1,DT%restart2,'p.dat')
+         write(*,*) 'Finished oldest_modified_file!'
+         call export(mom%U     ,str(restart),'U')
+         call export(mom%p     ,str(restart),'p')
+         call delete(restart)
+         write(*,*) 'Finished mom export!'
+       end subroutine
+
+       subroutine import_momentum(mom,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(dir_tree),intent(in) :: DT
+         call import(mom%U     ,str(DT%restart),'U')
+         call import(mom%p     ,str(DT%restart),'p')
+       end subroutine
+
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine export_tec_momentum(mom,DT,F)
+         implicit none
+         type(momentum),intent(in) :: mom
+         type(VF),intent(in) :: F
+         type(dir_tree),intent(in) :: DT
+         if (restartU.and.(.not.solveMomentum)) then
+           ! This preserves the initial data
+         else
+           write(*,*) 'export_tec_momentum at mom%nstep = ',mom%nstep
+           call export_processed(mom%m,mom%U,str(DT%U),'U',1)
+           call export_processed(mom%m,mom%p,str(DT%U),'p',1)
+           if (solveEnergy.or.solveInduction) call export_raw(mom%m,F,str(DT%U),'jCrossB',0)
+           ! call export_processed(mom%m,mom%temp_E,str(DT%U),'vorticity',1)
+           write(*,*) '     finished'
+         endif
+       end subroutine
+
+       subroutine momentumExportTransient(mom)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         ! real(cp) :: temp_Ln
+         call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
+         call set(mom%transient_KE,mom%nstep,mom%t,mom%KE)
+         call apply(mom%transient_KE)
+
+         call compute_TKE_2C(mom%KE,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
+         call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE)
+         call apply(mom%transient_KE_2C)
+         ! call Ln(temp_Ln,mom%divU,2.0_cp)
+         ! call set(mom%transient_divU,mom%nstep,temp_Ln)
+         call compute(mom%norm_divU,mom%divU,mom%vol_CC)
+         call set(mom%transient_divU,mom%nstep,mom%t,mom%norm_divU%L2)
+         call apply(mom%transient_divU)
        end subroutine
 
        ! ******************* SOLVER ****************************
@@ -385,7 +418,7 @@
          if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%nstep)
 
          if (PE%info) then
-           call momentumInfo(mom,6)
+           call print(mom)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
            exportNowU = readSwitchFromFile(str(DT%params),'exportNowU')
            write(*,*) ''
@@ -394,7 +427,8 @@
 
          if (PE%solution.or.exportNowU.or.exportNow) then
            ! call curl(mom%temp_E,mom%U,m)
-           call export(mom,mom%m,F,DT)
+           call export(mom,DT)
+           call export_tec(mom,DT,F)
            call writeSwitchToFile(.false.,str(DT%params),'exportNowU')
          endif
        end subroutine

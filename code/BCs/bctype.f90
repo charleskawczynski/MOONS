@@ -4,10 +4,9 @@
 
        private
        public :: bctype
+       public :: init,delete,display,print,export,import ! Essentials
+
        public :: init_Dirichlet,init_Neumann,init_Robin,init_Periodic,init_symmetric,init_antisymmetric
-       public :: init,delete
-       public :: export,import
-       public :: print,display
        public :: display_type,display_meanVal,get_bctype
 
        type bctype
@@ -21,6 +20,16 @@
          real(cp) :: meanVal
        end type
 
+       interface init;                module procedure init_copy_b;            end interface
+       interface init;                module procedure init_val0;              end interface
+       interface init;                module procedure init_val1;              end interface
+       interface init;                module procedure init_val2;              end interface
+       interface delete;              module procedure delete_bctype;          end interface
+       interface display;             module procedure display_bctype;         end interface
+       interface print;               module procedure print_bctype;           end interface
+       interface export;              module procedure export_bctype;          end interface
+       interface import;              module procedure import_bctype;          end interface
+
        interface init_Dirichlet;      module procedure init_Dirichlet_b;       end interface
        interface init_Neumann;        module procedure init_Neumann_b;         end interface
        interface init_Robin;          module procedure init_Robin_b;           end interface
@@ -28,87 +37,14 @@
        interface init_symmetric;      module procedure init_symmetric_b;       end interface
        interface init_antisymmetric;  module procedure init_antisymmetric_b;   end interface
 
-       interface init;                module procedure init_copy_b;            end interface
-       interface init;                module procedure init_val0;              end interface
-       interface init;                module procedure init_val1;              end interface
-       interface init;                module procedure init_val2;              end interface
-       interface delete;              module procedure delete_bctype;          end interface
-
-       interface export;              module procedure export_bctype;          end interface
-       interface import;              module procedure import_bctype;          end interface
-
-       interface print;               module procedure print_bctype;           end interface
-       interface display;             module procedure display_bctype;         end interface
        interface display_type;        module procedure display_bctype_T_only;  end interface
        interface display_meanVal;     module procedure display_bctype_MV_only; end interface
 
        contains
 
-       ! *******************************************************************************
-       ! *********************************** TYPE **************************************
-       ! *******************************************************************************
-
-       subroutine delete_bctype(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         b%Dirichlet = .false.
-         b%Neumann = .false.
-         b%Robin = .false.
-         b%Periodic = .false.
-         b%symmetric = .false.
-         b%antisymmetric = .false.
-         b%defined = .false.
-       end subroutine
-
-       subroutine init_Dirichlet_b(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         call delete(b); b%Dirichlet = .true.; b%defined = .true.
-       end subroutine
-       subroutine init_Neumann_b(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         call delete(b); b%Neumann = .true.; b%defined = .true.
-       end subroutine
-       subroutine init_Robin_b(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         call delete(b); b%Robin = .true.; b%defined = .true.
-       end subroutine
-       subroutine init_Periodic_b(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         call delete(b); b%Periodic = .true.; b%defined = .true.
-       end subroutine
-       subroutine init_symmetric_b(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         call delete(b); b%symmetric = .true.; b%defined = .true.
-       end subroutine
-       subroutine init_antisymmetric_b(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         call delete(b); b%antisymmetric = .true.; b%defined = .true.
-       end subroutine
-
-       subroutine init_copy_b(b_out,b_in)
-         implicit none
-         type(bctype),intent(inout) :: b_out
-         type(bctype),intent(in) :: b_in
-         if (.not.b_in%defined) stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
-         b_out%meanVal = b_in%meanVal
-         b_out%Dirichlet = b_in%Dirichlet
-         b_out%Neumann = b_in%Neumann
-         b_out%Robin = b_in%Robin
-         b_out%Periodic = b_in%Periodic
-         b_out%symmetric = b_in%symmetric
-         b_out%antisymmetric = b_in%antisymmetric
-         b_out%defined = b_in%defined
-       end subroutine
-
-       ! *******************************************************************************
-       ! ********************************** VAL ****************************************
-       ! *******************************************************************************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
        subroutine init_val0(b,val)
          implicit none
@@ -131,14 +67,31 @@
          b%meanVal = sum(val)/real(size(val),cp)
        end subroutine
 
-       ! *******************************************************************************
-       ! ******************************** PRINT/EXPORT *********************************
-       ! *******************************************************************************
-
-       subroutine print_bctype(b)
+       subroutine init_copy_b(b_out,b_in)
          implicit none
-         type(bctype), intent(in) :: b
-         call display(b,6)
+         type(bctype),intent(inout) :: b_out
+         type(bctype),intent(in) :: b_in
+         if (.not.b_in%defined) stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
+         b_out%meanVal = b_in%meanVal
+         b_out%Dirichlet = b_in%Dirichlet
+         b_out%Neumann = b_in%Neumann
+         b_out%Robin = b_in%Robin
+         b_out%Periodic = b_in%Periodic
+         b_out%symmetric = b_in%symmetric
+         b_out%antisymmetric = b_in%antisymmetric
+         b_out%defined = b_in%defined
+       end subroutine
+
+       subroutine delete_bctype(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         b%Dirichlet = .false.
+         b%Neumann = .false.
+         b%Robin = .false.
+         b%Periodic = .false.
+         b%symmetric = .false.
+         b%antisymmetric = .false.
+         b%defined = .false.
        end subroutine
 
        subroutine display_bctype(b,NewU)
@@ -174,6 +127,12 @@
          ! write(newU,*) 'defined = ',b%defined
        end subroutine
 
+       subroutine print_bctype(b)
+         implicit none
+         type(bctype), intent(in) :: b
+         call display(b,6)
+       end subroutine
+
        subroutine export_bctype(b,un)
          implicit none
          type(bctype),intent(in) :: b
@@ -202,12 +161,39 @@
          read(un,*); read(un,*) b%meanVal
        end subroutine
 
-       subroutine display_bctype_T_only(b,NewU)
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine init_Dirichlet_b(b)
          implicit none
-         type(bctype),intent(in) :: b
-         integer,intent(in) :: NewU
-         if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined in bctype.f90'
-         write(newU,'(A,T1)',advance='no') get_bctype(b)
+         type(bctype),intent(inout) :: b
+         call delete(b); b%Dirichlet = .true.; b%defined = .true.
+       end subroutine
+       subroutine init_Neumann_b(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         call delete(b); b%Neumann = .true.; b%defined = .true.
+       end subroutine
+       subroutine init_Robin_b(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         call delete(b); b%Robin = .true.; b%defined = .true.
+       end subroutine
+       subroutine init_Periodic_b(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         call delete(b); b%Periodic = .true.; b%defined = .true.
+       end subroutine
+       subroutine init_symmetric_b(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         call delete(b); b%symmetric = .true.; b%defined = .true.
+       end subroutine
+       subroutine init_antisymmetric_b(b)
+         implicit none
+         type(bctype),intent(inout) :: b
+         call delete(b); b%antisymmetric = .true.; b%defined = .true.
        end subroutine
 
        function get_bctype(b) result(BCT)
@@ -223,6 +209,14 @@
          if (b%symmetric)     BCT = 'S'
          if (b%antisymmetric) BCT = 'A'
        end function
+
+       subroutine display_bctype_T_only(b,NewU)
+         implicit none
+         type(bctype),intent(in) :: b
+         integer,intent(in) :: NewU
+         if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined in bctype.f90'
+         write(newU,'(A,T1)',advance='no') get_bctype(b)
+       end subroutine
 
        subroutine display_bctype_MV_only(b,NewU)
          implicit none

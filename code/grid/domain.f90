@@ -7,21 +7,20 @@
 
        private
        public :: domain
-       public :: init,delete
-       public :: export,import
-       public :: add,print,display
+       public :: init,delete,display,print,export,import ! Essentials
+       public :: add
 
        interface init;        module procedure init_domain;           end interface
-       interface add;         module procedure add_subdomain;         end interface
        interface init;        module procedure init_domain_copy;      end interface
        interface delete;      module procedure delete_domain;         end interface
-       interface print;       module procedure print_domain;          end interface
        interface display;     module procedure display_domain;        end interface
-
+       interface print;       module procedure print_domain;          end interface
        interface export;      module procedure export_domain;         end interface
        interface import;      module procedure import_domain;         end interface
        interface export;      module procedure export_domain_wrapper; end interface
        interface import;      module procedure import_domain_wrapper; end interface
+
+       interface add;         module procedure add_subdomain;         end interface
 
        type domain
          integer :: s ! Number of subdomains
@@ -31,11 +30,9 @@
 
        contains
 
-       ! *********************************************************************************
-       ! *********************************************************************************
-       ! ******************************** INIT / DELETE **********************************
-       ! *********************************************************************************
-       ! *********************************************************************************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
        subroutine init_domain(D,m_in,m_tot)
          implicit none
@@ -63,29 +60,6 @@
               call add(D,temp)
              endif
            enddo; enddo
-         endif
-       end subroutine
-
-       subroutine add_subdomain(D,sd)
-         implicit none
-         type(domain),intent(inout) :: D
-         type(subdomain),intent(in) :: sd
-         type(domain) :: temp
-         integer :: i
-         if (.not.allocated(D%sd)) then
-           D%s = 1
-           allocate(D%sd(D%s))
-           call init(D%sd(D%s),sd)
-         else
-           call init(temp,D)
-           call delete(D)
-           call init(D%m_in,temp%m_in)
-           call init(D%m_tot,temp%m_tot)
-           D%s = temp%s + 1
-           allocate(D%sd(D%s))
-           do i=1,D%s-1; call init(D%sd(i),temp%sd(i)); enddo
-           call init(D%sd(D%s),sd)
-           call delete(temp)
          endif
        end subroutine
 
@@ -180,6 +154,33 @@
          un = openToRead(dir,name)
          call import(D,un)
          call closeAndMessage(un,name,dir)
+       end subroutine
+
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine add_subdomain(D,sd)
+         implicit none
+         type(domain),intent(inout) :: D
+         type(subdomain),intent(in) :: sd
+         type(domain) :: temp
+         integer :: i
+         if (.not.allocated(D%sd)) then
+           D%s = 1
+           allocate(D%sd(D%s))
+           call init(D%sd(D%s),sd)
+         else
+           call init(temp,D)
+           call delete(D)
+           call init(D%m_in,temp%m_in)
+           call init(D%m_tot,temp%m_tot)
+           D%s = temp%s + 1
+           allocate(D%sd(D%s))
+           do i=1,D%s-1; call init(D%sd(i),temp%sd(i)); enddo
+           call init(D%sd(D%s),sd)
+           call delete(temp)
+         endif
        end subroutine
 
        end module

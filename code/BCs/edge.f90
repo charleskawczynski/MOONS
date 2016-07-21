@@ -29,13 +29,9 @@
        use bctype_mod
        implicit none
 
-
-
        private
        public :: edge
-       public :: init,delete
-       public :: export,import
-       public :: print,display
+       public :: init,delete,display,print,export,import ! Essentials
 
        type edge
          type(bctype) :: b
@@ -49,11 +45,9 @@
        interface init;       module procedure init_vals_RF;          end interface
        interface init;       module procedure init_val;              end interface
        interface init;       module procedure init_copy;             end interface
-
        interface delete;     module procedure delete_edge;           end interface
-       interface print;      module procedure print_edge;            end interface
        interface display;    module procedure display_edge;          end interface
-
+       interface print;      module procedure print_edge;            end interface
        interface export;     module procedure export_edge;           end interface
        interface import;     module procedure import_edge;           end interface
 
@@ -125,22 +119,18 @@
          e%defined = .false.
        end subroutine
 
-       ! *******************************************************************************
-       ! ******************************** PRINT/EXPORT *********************************
-       ! *******************************************************************************
-
-       subroutine print_edge(e)
-         implicit none
-         type(edge), intent(in) :: e
-         call display(e,6)
-       end subroutine
-
        subroutine display_edge(e,newU)
          implicit none
          type(edge), intent(in) :: e
          integer,intent(in) :: NewU
          if (.not.e%defined) stop 'Error: edge not defined in export_edge in edge.f90'
          call display(e%b,newU)
+       end subroutine
+
+       subroutine print_edge(e)
+         implicit none
+         type(edge), intent(in) :: e
+         call display(e,6)
        end subroutine
 
        subroutine export_edge(e,un)

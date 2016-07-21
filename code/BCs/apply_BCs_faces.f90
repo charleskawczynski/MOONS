@@ -124,9 +124,9 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,dh1,b,p,y,z)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,dh1,b,p,x,z)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,dh1,b,p,x,y)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,-dh1,b,p,y,z)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,-dh1,b,p,x,z)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,-dh1,b,p,x,y)
          case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dhe,b,p,y,z)
          case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dhe,b,p,x,z)
          case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dhe,b,p,x,y)
@@ -186,8 +186,8 @@
 #endif
          if     (b%Dirichlet) then; ub = bvals; ug = 2.0_cp*ub - ui
          elseif (b%Neumann) then;   ug = ui + 2.0_cp*bvals*dh
-         ! elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp
-         elseif (b%Periodic) then;  ug = ui_opp
+         elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp ! Seems incorrect.. N should match naturally
+         ! elseif (b%Periodic) then;  ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'
          endif
        end subroutine

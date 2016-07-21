@@ -15,17 +15,23 @@
 
       private
       public :: string
-      public :: init,delete
+      public :: init,delete,display,print,export,import ! Essentials
+
       public :: get_str,str ! str does not require length
       public :: len,match,match_index
       public :: compress,append
       public :: get_char,set_char
       public :: remove_element
-      public :: print,export
 
       interface init;                 module procedure init_size;                      end interface
       interface init;                 module procedure init_string;                    end interface
       interface init;                 module procedure init_copy;                      end interface
+      interface delete;               module procedure delete_string;                  end interface
+      interface display;              module procedure display_string;                 end interface
+      interface print;                module procedure print_string;                   end interface
+      interface export;               module procedure export_string;                  end interface
+      interface import;               module procedure import_string;                  end interface
+
       interface append;               module procedure app_string_char;                end interface
       interface append;               module procedure app_string_string;              end interface
       interface compress;             module procedure compress_string;                end interface
@@ -34,9 +40,6 @@
       interface get_str;              module procedure get_str_string;                 end interface
       interface match;                module procedure substring_in_string;            end interface
       interface match_index;          module procedure index_substring_in_string;      end interface
-      interface delete;               module procedure delete_string;                  end interface
-      interface print;                module procedure print_string;                   end interface
-      interface export;               module procedure export_string;                  end interface
       interface get_char;             module procedure get_char_string;                end interface
       interface set_char;             module procedure set_char_string;                end interface
       interface remove_element;       module procedure remove_element_string;          end interface
@@ -88,15 +91,6 @@
         a%n = b%n
       end subroutine
 
-      subroutine check_allocated(st,s)
-        implicit none
-        type(string),intent(in) :: st
-        character(len=*),intent(in) :: s
-        if (.not.allocated(st%s)) then
-          write(*,*) 'Error: string must be allocated in '//s//' in string.f90'
-        endif
-      end subroutine
-
       subroutine delete_string(st)
         implicit none
         type(string),intent(inout) :: st
@@ -104,10 +98,17 @@
         st%n = 0
       end subroutine
 
+      subroutine display_string(st,un)
+        implicit none
+        type(string),intent(in) :: st
+        integer,intent(in) :: un
+        call export(st,un)
+      end subroutine
+
       subroutine print_string(st)
         implicit none
         type(string),intent(in) :: st
-        call export(st,6)
+        call display(st,6)
         write(6,*) ''
       end subroutine
 
@@ -120,6 +121,38 @@
         do i=1,st%n
           write(un,'(A1)',advance='no') st%s(i)%c
         enddo
+      end subroutine
+
+      subroutine import_string(s,un)
+        implicit none
+        type(string),intent(inout) :: s
+        integer,intent(in) :: un
+        character(len=1) :: c
+        logical :: first_iteration,continue_loop
+        integer :: ReadCode
+        ReadCode = 0; continue_loop = .true.
+        call delete(s); first_iteration = .true.
+        do while (continue_loop)
+          if (ReadCode.eq.0) then
+            read(un,'(A)',advance='no',iostat=ReadCode) c
+            if (first_iteration) then; call init(s,c); else; call append(s,c); endif
+          else; continue_loop = .false.; exit
+          endif; first_iteration = .false.
+        enddo
+      end subroutine
+
+      ! **********************************************************
+      ! **********************************************************
+      ! **********************************************************
+
+      subroutine check_allocated(st,s)
+        implicit none
+        type(string),intent(in) :: st
+        character(len=*),intent(in) :: s
+        if (.not.allocated(st%s)) then
+          write(*,*) 'Error: string must be allocated in '//s//' in string.f90'
+          stop 'Done'
+        endif
       end subroutine
 
       subroutine app_string_char(st,s)
@@ -151,19 +184,25 @@
         implicit none
         type(string),intent(inout) :: st
         type(string) :: temp
-        integer :: i,n_spaces
+        integer :: i,n_spaces,k
         if (st%n.lt.1) stop 'Error: input string must be > 1 in string.f90'
         n_spaces = 0
         do i=1,st%n
           if (st%s(i)%c.eq.' ') n_spaces = n_spaces + 1
         enddo
-        call init(temp,st%n-n_spaces)
-        if (temp%n.lt.1) stop 'Error: output string must be > 1 in string.f90'
-        do i=1,temp%n
-          if (st%s(i)%c.ne.' ') temp%s(i)%c = st%s(i)%c
-        enddo
-        call init(st,temp)
-        call delete(temp)
+        if (n_spaces.ne.0) then
+          if (st%n-n_spaces.lt.1) stop 'Error: only spaces in string in compress_string in string.f90'
+          call init(temp,st%n-n_spaces)
+          k = 0
+          do i=1,st%n
+            if (st%s(i)%c.ne.' ') then
+              temp%s(i-k)%c = st%s(i)%c
+            else; k = k+1
+            endif
+          enddo
+          call init(st,temp)
+          call delete(temp)
+        endif
       end subroutine
 
       subroutine remove_element_string(st,i)
@@ -221,6 +260,8 @@
         character(len=n) :: str
         integer :: i
         call check_allocated(st,'get_str_string')
+        if (st%n.lt.1) stop 'Error: st%n.lt.0 in get_str_string in string.f90'
+        if (n.lt.1) stop 'Error: n.lt.1 in get_str_string in string.f90'
         do i=1,st%n
           str(i:i) = st%s(i)%c
         enddo

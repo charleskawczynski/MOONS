@@ -31,14 +31,12 @@
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
          integer :: n_step
-         ! integer :: i
          logical :: continueLoop
          type(print_export) :: PE
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
          continueLoop = .true.
-         ! tau_inv = 1.0_cp
 
          call writeSwitchToFile(.true.,str(DT%params),'killSwitch')
          call writeSwitchToFile(.false.,str(DT%params),'exportNow')
@@ -55,17 +53,6 @@
            call init(PE,n_step)
 
            call tic(sc)
-
-           ! call assign(F,mom%U)               ! For Q2D model
-           ! call multiply(F,-1.0_cp/100.05_cp) ! For Q2D model
-
-           ! CFL condition:
-           ! mom%dTime = 0.3_cp*minval((/(mom%m%dhmin(i),i=1,3)/))/maxval((/max(mom%U),0.01_cp/))
-
-           ! mom%dTime = 0.3_cp*(mom%m%dhmin(1)/max((/mom%U%x,1.0_cp/)) +&
-           !                     mom%m%dhmin(2)/max((/mom%U%y,1.0_cp/)) +&
-           !                     mom%m%dhmin(3)/max((/mom%U%z,1.0_cp/)) )
-           ! nrg%dTime = mom%dTime
 
            if (solveEnergy)    call solve(nrg,mom%U,  PE,DT)
            if (solveMomentum)  call solve(mom,F,      PE,DT)
@@ -113,9 +100,9 @@
          if (solveMomentum)  call exportTransient(mom)
          if (solveInduction) call exportTransient(ind)
 
-         if (solveEnergy)    call export(nrg,nrg%m,DT)
-         if (solveInduction) call export(ind,ind%m,DT)
-         call export(mom,mom%m,F,DT)
+         if (solveEnergy) then;    call export_tec(nrg,DT); call export(nrg,DT); endif
+         if (solveInduction) then; call export_tec(ind,DT); call export(ind,DT); endif
+         call export_tec(mom,DT,F); call export(mom,DT)
 
          call delete(F)
        end subroutine

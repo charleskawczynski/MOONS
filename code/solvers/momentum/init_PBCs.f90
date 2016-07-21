@@ -24,12 +24,12 @@
 
          do i=1,m%s
            call init_Neumann(p%RF(i)%b)
+           call init(p%RF(i)%b,0.0_cp)
            do k=1,3
              pd = periodic_dir(k)
              if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_PBCs in init_PBCs.f90'
              if (pd.eq.1) call makePeriodic(p%RF(i)%b,k)
            enddo
-           call init(p%RF(i)%b,0.0_cp)
          enddo
          p%all_Neumann = .true. ! Needs to be adjusted manually
 

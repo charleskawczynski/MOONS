@@ -45,28 +45,24 @@
          type(domain) :: D_fluid,D_sigma
          type(dir_tree) :: DT
          ! ********************** SMALL VARIABLES ***********************
-         real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
+         real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem,dt_eng,dt_mom,dt_ind
          real(cp) :: tol_nrg,tol_mom,tol_PPE,tol_induction,tol_cleanB
          logical :: finite_Rem
-         real(cp) :: dt_eng,dt_mom,dt_ind
-         integer :: NmaxMHD,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
-         integer :: n_mhd
-         ! **************************************************************
+         integer :: n_dt_start,n_dt_stop,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
+         integer :: un
 
+         ! ************************************************************** Parallel + directory + input parameters
          call omp_set_num_threads(12) ! Set number of openMP threads
 
-         call init(DT,dir_target)  ! Initialize directory tree
-         call make_dir_tree(DT)            ! Make directory tree
+         call init(DT,dir_target)  ! Initialize + make directory tree
 
          call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
-         dt_eng,dt_mom,dt_ind,NmaxMHD,N_nrg,tol_nrg,N_mom,tol_mom,&
+         dt_eng,dt_mom,dt_ind,n_dt_start,n_dt_stop,N_nrg,tol_nrg,N_mom,tol_mom,&
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
-         call print_version()
-         call export_version(str(DT%out_dir))
+         call print_version(); call export_version(str(DT%out_dir))
 
-         ! **************************************************************
-         ! Initialize all grids
+         ! ************************************************************** Initialize mesh + domains
          if (restart_all) then
            call import(mesh_mom,str(DT%restart),'mesh_mom')
            call import(mesh_ind,str(DT%restart),'mesh_ind')
@@ -88,7 +84,7 @@
          call initProps(D_sigma%m_in);   call patch(D_sigma%m_in)
          call initProps(D_sigma%m_tot);  call patch(D_sigma%m_tot)
 
-         ! ******************** EXPORT GRIDS ****************************
+         ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          ! if (.not.quick_start) then
            if (exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
            if (exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
@@ -104,67 +100,28 @@
 
          ! ********************* EXPORT RAW ICs *************************
          if (.not.quick_start) then
-           ! if (exportRawICs) call exportRaw(nrg,nrg%m,DT)
-           if (exportRawICs) call export(ind,ind%m,DT)
-           if (exportRawICs) call export(mom,mom%m,mom%temp_F,DT)
+           ! if (exportICs) call export_tec(nrg,DT)
+           if (exportICs) call export_tec(ind,DT)
+           if (exportICs) call export_tec(mom,DT,mom%temp_F)
          endif
 
-         ! ********************* EXPORT ICs *****************************
-         ! if (exportICs) call export(mom,mom%m,DT)
-         ! if (exportICs) call export(nrg,nrg%m,DT)
-         ! if (exportICs) call export(ind,ind%m,DT)
-
-         ! *************** CHECK IF CONDITIONS ARE OK *******************
          call print(mesh_mom)
          call print(mesh_ind)
 
-         ! if (exportRawICs) then
-         !   if (solveMomentum)  call exportRaw(mom,mom%m,DT)
-         !   if (solveEnergy)    call exportRaw(nrg,nrg%m,DT)
-         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%m)
-         !   if (solveInduction) call exportRaw(ind,ind%m,DT)
-         ! endif
-         ! if (exportICs) then
-         !   if (solveMomentum)  call export(mom,mom%m,DT)
-         !   if (solveEnergy)    call export(nrg,nrg%m,DT)
-         !   if (solveInduction) call embedVelocity(ind,mom%U,mom%m)
-         !   if (solveInduction) call export(ind,ind%m,DT)
-         ! endif
-
-         if (stopAfterExportICs) then
-           stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
+         ! ******************** PREP TIME START/STOP ********************
+         if (restart_all) then
+         un = openToRead(str(DT%restart),'n_dt_start,n_dt_stop')
+         read(un,*) n_dt_start,n_dt_stop
+         call closeAndMessage(un,'n_dt_start,n_dt_stop',str(DT%restart))
+         else
+         un = newAndOpen(str(DT%restart),'n_dt_start,n_dt_stop')
+         write(un,*) n_dt_start,n_dt_stop
+         call closeAndMessage(un,'n_dt_start,n_dt_stop',str(DT%restart))
          endif
 
-         write(*,*) ''
-         write(*,*) 'Press enter if these parameters are okay.'
-         write(*,*) ''
+         if (stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
+         if (.not.post_process_only) call MHDSolver(nrg,mom,ind,DT,n_dt_start+n_dt_stop)
 
-         ! ********************** PREP LOOP ******************************
-         ! This is done in both MOONS and MHDSolver, need to fix this..
-         ! if (restartU.and.(.not.solveMomentum)) n_mhd = mom%nstep + ind%nstep
-         ! if (restartB.and.(.not.solveInduction)) n_mhd = mom%nstep + ind%nstep
-
-         ! n_mhd = maxval(/mom%nstep,ind%nstep/) ! What if U = fixed, and B is being solved?
-
-         n_mhd = 0 ! Only counts MHD loop, no data is plotted vs MHD step, only n_mom,n_ind,n_nrg
-
-         ! n_mhd = maxval(/mom%nstep,ind%nstep,nrg%nstep/)
-         ! if (restartU.or.restartB) then
-         !   call readLastStepFromFile(n_mhd,str(DT%params),'n_mhd')
-         !   n_mhd = n_mhd + 1
-         ! else; n_mhd = 0
-         ! endif
-         ! n_mhd = 0
-
-
-         if (.not.post_process_only) then
-           if (restartU.or.restartB) then
-           call readLastStepFromFile(n_mhd,str(DT%params),'n_mhd')
-           else; n_mhd = 0
-           endif
-           ! ********************* SOLVE MHD EQUATIONS ********************
-           call MHDSolver(nrg,mom,ind,DT,n_mhd+NmaxMHD)
-         endif
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'

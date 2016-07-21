@@ -2,7 +2,9 @@
        use simParams_mod
        implicit none
        private
-       public :: print_export,init
+       public :: print_export
+       public :: init
+       ! public :: init,delete,display,print,export,import
 
        interface init;     module procedure init_PE;   end interface
 

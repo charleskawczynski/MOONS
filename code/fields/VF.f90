@@ -21,8 +21,8 @@
 
         ! Initialization / Deletion (allocate/deallocate)
         public :: VF
-        public :: init,delete
-        ! public :: allocateX,allocateY,allocateZ
+        public :: init,delete,display,print,export,import ! Essentials
+
         ! Grid initialization
         public :: init_CC
         public :: init_Face
@@ -35,7 +35,6 @@
         public :: dot_product,dot
 
         ! Monitoring
-        public :: print
         public :: print_BCs
         public :: export_BCs
 
@@ -49,8 +48,6 @@
         ! public :: sum
         public :: assignX,assignY,assignZ
 
-
-
         type VF
           integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
@@ -59,6 +56,14 @@
 
         interface init;              module procedure init_VF_copy_VF;          end interface
         interface init;              module procedure init_VF_copy_SF;          end interface
+        interface delete;            module procedure delete_VF;                end interface
+        interface display;           module procedure display_VF;               end interface
+        interface print;             module procedure print_VF;                 end interface
+        interface export;            module procedure export_VF;                end interface
+        interface import;            module procedure import_VF;                end interface
+        interface export;            module procedure export_VF_wrapper;        end interface
+        interface import;            module procedure import_VF_wrapper;        end interface
+
         interface init_CC;           module procedure init_VF_CC;               end interface
         interface init_Face;         module procedure init_VF_Face;             end interface
         interface init_Edge;         module procedure init_VF_Edge;             end interface
@@ -74,11 +79,11 @@
         interface dot_product;       module procedure dot_product_VF;           end interface
         interface dot;               module procedure dot_VF_SF;                end interface
 
-        interface delete;            module procedure delete_VF;                end interface
-        interface print;             module procedure print_VF;                 end interface
         interface print_BCs;         module procedure print_BCs_VF;             end interface
         interface init_BCs;          module procedure init_BCs_VF_VF;           end interface
         interface export_BCs;        module procedure export_BCs_VF;            end interface
+
+        ! COMPUTATION ROUTINES
 
         interface assignX;           module procedure assign_VF_VF_X;          end interface
         interface assignY;           module procedure assign_VF_VF_Y;          end interface
@@ -133,6 +138,207 @@
 
         contains
 
+        ! **********************************************************
+        ! ********************* ESSENTIALS *************************
+        ! **********************************************************
+
+        subroutine init_VF_copy_VF(f1,f2)
+          implicit none
+          type(VF),intent(inout) :: f1
+          type(VF),intent(in) :: f2
+          call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
+        end subroutine
+
+        subroutine init_VF_copy_SF(f1,f2)
+          implicit none
+          type(VF),intent(inout) :: f1
+          type(SF),intent(in) :: f2
+          call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
+        end subroutine
+
+        subroutine delete_VF(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          call delete(f%x); call delete(f%y); call delete(f%z)
+          call delete_logicals(f)
+        end subroutine
+
+        subroutine display_VF(f,un)
+          implicit none
+          type(VF),intent(in) :: f
+          integer,intent(in) :: un
+          call display(f%x,un); call display(f%y,un); call display(f%z,un)
+        end subroutine
+
+        subroutine print_VF(f)
+          implicit none
+          type(VF),intent(in) :: f
+          call display(f,6)
+        end subroutine
+
+        subroutine export_VF(f,un)
+          implicit none
+          type(VF),intent(in) :: f
+          integer,intent(in) :: un
+          call export(f%x,un); call export(f%y,un); call export(f%z,un)
+        end subroutine
+
+        subroutine import_VF(f,un)
+          implicit none
+          type(VF),intent(inout) :: f
+          integer,intent(in) :: un
+          call import(f%x,un); call import(f%y,un); call import(f%z,un)
+        end subroutine
+
+        subroutine export_VF_wrapper(f,dir,name)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: dir,name
+          call export(f%x,dir,name//'_x'); call export(f%y,dir,name//'_y'); call export(f%z,dir,name//'_z')
+        end subroutine
+
+        subroutine import_VF_wrapper(f,dir,name)
+          implicit none
+          type(VF),intent(inout) :: f
+          character(len=*),intent(in) :: dir,name
+          call import(f%x,dir,name//'_x'); call import(f%y,dir,name//'_y'); call import(f%z,dir,name//'_z')
+        end subroutine
+
+        ! **********************************************************
+        ! **********************************************************
+        ! **********************************************************
+
+        subroutine delete_logicals(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          f%is_CC = .false.
+          f%is_Node = .false.
+          f%is_Face = .false.
+          f%is_Edge = .false.
+        end subroutine
+
+        subroutine print_BCs_VF(f,name)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: name
+          call print_BCs(f%x,name//'_x')
+          call print_BCs(f%y,name//'_y')
+          call print_BCs(f%z,name//'_z')
+        end subroutine
+
+        subroutine init_BCs_VF_VF(f,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          call init_BCs(f%x,g%x)
+          call init_BCs(f%y,g%y)
+          call init_BCs(f%z,g%z)
+        end subroutine
+
+        subroutine export_BCs_VF(f,dir,name)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: dir,name
+          call export_BCs(f%x,dir,name//'_x')
+          call export_BCs(f%y,dir,name//'_y')
+          call export_BCs(f%z,dir,name//'_z')
+        end subroutine
+
+        subroutine volume_VF(u,m)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
+        end subroutine
+
+        subroutine multiply_volume_VF(u,m)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          call multiply_volume(u%x,m); call multiply_volume(u%y,m); call multiply_volume(u%z,m)
+        end subroutine
+
+        subroutine init_VF_CC(f,m)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
+          call delete_logicals(f); f%is_CC = .true.
+        end subroutine
+
+        subroutine init_VF_Edge(f,m)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
+          call delete_logicals(f); f%is_Edge = .true.
+        end subroutine
+
+        subroutine init_VF_Face(f,m)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
+          call delete_logicals(f); f%is_Face = .true.
+        end subroutine
+
+        subroutine init_VF_Node(f,m)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
+          call delete_logicals(f); f%is_Node = .true.
+        end subroutine
+
+        subroutine init_VF_CC_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
+          call delete_logicals(f); f%is_CC = .true.
+        end subroutine
+
+        subroutine init_VF_Edge_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Edge(f%x,m,1,val); call init_Edge(f%y,m,2,val); call init_Edge(f%z,m,3,val)
+          call delete_logicals(f); f%is_Edge = .true.
+        end subroutine
+
+        subroutine init_VF_Face_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Face(f%x,m,1,val); call init_Face(f%y,m,2,val); call init_Face(f%z,m,3,val)
+          call delete_logicals(f); f%is_Face = .true.
+        end subroutine
+
+        subroutine init_VF_Node_assign(f,m,val)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Node(f%x,m,val); call init_Node(f%y,m,val); call init_Node(f%z,m,val)
+          call delete_logicals(f); f%is_Node = .true.
+        end subroutine
+
+        ! ****************************************************************
+        ! ****************************************************************
+        ! ********************* COMPUTATION ROUTINES *********************
+        ! ****************************************************************
+        ! ****************************************************************
         ! ----------------- ASSIGN ------------------
 
         subroutine assign_VF_VF_X(f,g)
@@ -443,112 +649,6 @@
         !   call sum(f%x,g%x); call sum(f%y,g%y); call sum(f%z,g%z)
         ! end subroutine
 
-      ! ------------------- ALLOCATE / DEALLOCATE --------------------
-
-        subroutine volume_VF(u,m)
-          implicit none
-          type(VF),intent(inout) :: u
-          type(mesh),intent(in) :: m
-          call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
-        end subroutine
-
-        subroutine multiply_volume_VF(u,m)
-          implicit none
-          type(VF),intent(inout) :: u
-          type(mesh),intent(in) :: m
-          call multiply_volume(u%x,m); call multiply_volume(u%y,m); call multiply_volume(u%z,m)
-        end subroutine
-
-        subroutine init_VF_copy_VF(f1,f2)
-          implicit none
-          type(VF),intent(inout) :: f1
-          type(VF),intent(in) :: f2
-          call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
-        end subroutine
-
-        subroutine init_VF_copy_SF(f1,f2)
-          implicit none
-          type(VF),intent(inout) :: f1
-          type(SF),intent(in) :: f2
-          call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
-        end subroutine
-
-        subroutine init_VF_CC(f,m)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
-          call delete_logicals(f); f%is_CC = .true.
-        end subroutine
-
-        subroutine init_VF_Edge(f,m)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
-          call delete_logicals(f); f%is_Edge = .true.
-        end subroutine
-
-        subroutine init_VF_Face(f,m)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
-          call delete_logicals(f); f%is_Face = .true.
-        end subroutine
-
-        subroutine init_VF_Node(f,m)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
-          call delete_logicals(f); f%is_Node = .true.
-        end subroutine
-
-        subroutine init_VF_CC_assign(f,m,val)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          real(cp),intent(in) :: val
-          call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
-          call delete_logicals(f); f%is_CC = .true.
-        end subroutine
-
-        subroutine init_VF_Edge_assign(f,m,val)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          real(cp),intent(in) :: val
-          call init_Edge(f%x,m,1,val); call init_Edge(f%y,m,2,val); call init_Edge(f%z,m,3,val)
-          call delete_logicals(f); f%is_Edge = .true.
-        end subroutine
-
-        subroutine init_VF_Face_assign(f,m,val)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          real(cp),intent(in) :: val
-          call init_Face(f%x,m,1,val); call init_Face(f%y,m,2,val); call init_Face(f%z,m,3,val)
-          call delete_logicals(f); f%is_Face = .true.
-        end subroutine
-
-        subroutine init_VF_Node_assign(f,m,val)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(mesh),intent(in) :: m
-          real(cp),intent(in) :: val
-          call init_Node(f%x,m,val); call init_Node(f%y,m,val); call init_Node(f%z,m,val)
-          call delete_logicals(f); f%is_Node = .true.
-        end subroutine
-
         function dot_product_VF(A,B,temp) result(dot)
           implicit none
           type(VF),intent(in) :: A,B
@@ -565,55 +665,6 @@
           type(VF),intent(inout) :: temp
           call multiply(temp,B,C)
           call add(A,temp%x,temp%y,temp%z)
-        end subroutine
-
-        subroutine delete_VF(f)
-          implicit none
-          type(VF),intent(inout) :: f
-          call delete(f%x); call delete(f%y); call delete(f%z)
-          call delete_logicals(f)
-        end subroutine
-
-        subroutine delete_logicals(f)
-          implicit none
-          type(VF),intent(inout) :: f
-          f%is_CC = .false.
-          f%is_Node = .false.
-          f%is_Face = .false.
-          f%is_Edge = .false.
-        end subroutine
-
-        subroutine print_VF(f)
-          implicit none
-          type(VF),intent(in) :: f
-          call print(f%x); call print(f%y); call print(f%z)
-        end subroutine
-
-        subroutine print_BCs_VF(f,name)
-          implicit none
-          type(VF),intent(in) :: f
-          character(len=*),intent(in) :: name
-          call print_BCs(f%x,name//'_x')
-          call print_BCs(f%y,name//'_y')
-          call print_BCs(f%z,name//'_z')
-        end subroutine
-
-        subroutine init_BCs_VF_VF(f,g)
-          implicit none
-          type(VF),intent(inout) :: f
-          type(VF),intent(in) :: g
-          call init_BCs(f%x,g%x)
-          call init_BCs(f%y,g%y)
-          call init_BCs(f%z,g%z)
-        end subroutine
-
-        subroutine export_BCs_VF(f,dir,name)
-          implicit none
-          type(VF),intent(in) :: f
-          character(len=*),intent(in) :: dir,name
-          call export_BCs(f%x,dir,name//'_x')
-          call export_BCs(f%y,dir,name//'_y')
-          call export_BCs(f%z,dir,name//'_z')
         end subroutine
 
       end module
