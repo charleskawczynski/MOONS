@@ -115,20 +115,20 @@ Note that the first and last equations are identities ($0=0$) which are reserved
 Consider Neumann BCs, $u_g$ may be computed by writing the equation for the first derivative on the boundary
 \begin{equation}
   \left(\frac{\partial u}{\partial x}\right)_{boundary}
-  = \frac{u_1 - u_g}{\Delta x} = \theta
+  = \frac{u_g - u_1}{\Delta x} = n \theta
   \rightarrow
-  u_g = u_1 - \theta \Delta x
+  u_g = u_1 + n \theta \Delta x, \qquad \text{n = 1 at xmax,ymax,zmin and n = -1 at xmin,ymin,zmin}
 \end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
    \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} = 
-   \frac{(u_1 - \theta \Delta x) - 2 u_1 + u_{2}}{\Delta x^2} = f_1
+   \frac{(u_1 + n \theta \Delta x) - 2 u_1 + u_{2}}{\Delta x^2} = f_1
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. Therefore our equation changes:
 \begin{equation}
    \frac{u_g - 2 u_1 + u_{2}}{\Delta x^2} = f_1
    \rightarrow
-   \frac{- u_1 + u_{2}}{\Delta x^2} = f_1 - \frac{-\theta \Delta x}{\Delta x^2}
+   \frac{- u_1 + u_{2}}{\Delta x^2} = f_1 - \frac{n\theta \Delta x}{\Delta x^2}
 \end{equation}
 Correspondingly, the matrix $A$ changes:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
@@ -233,20 +233,20 @@ This is nice because the equation has effectively become smaller. NOTE: the firs
 Consider Neumann BCs, $u_g$ may be computed by writing the equation for the first derivative on the boundary
 \begin{equation}
   \left(\frac{\partial u}{\partial x}\right)_{boundary}
-  = \frac{u_i - u_g}{2\Delta x} = \theta
+  = \frac{u_g - u_i}{2\Delta x} = n \theta
   \rightarrow
-  u_g = u_i - 2\theta \Delta x
+  u_g = u_i + 2 n\theta \Delta x, \qquad \text{n = 1 at xmax,ymax,zmin and n = -1 at xmin,ymin,zmin}
 \end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
    \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} = 
-   \frac{(u_i - 2\theta \Delta x) - 2 u_b + u_i}{\Delta x^2} = f_b
+   \frac{(u_i + 2 n \theta \Delta x) - 2 u_b + u_i}{\Delta x^2} = f_b
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. Therefore our equation changes:
 \begin{equation}
    \frac{u_g - 2 u_b + u_i}{\Delta x^2} = f_b
    \rightarrow
-   \frac{- 2u_b + 2u_i}{\Delta x^2} = f_b - \frac{-2\theta \Delta x}{\Delta x^2}
+   \frac{- 2u_b + 2u_i}{\Delta x^2} = f_b - \frac{2 n\theta \Delta x}{\Delta x^2}
 \end{equation}
 Correspondingly, the matrix $A$ changes:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
@@ -282,18 +282,18 @@ Two things to note here. One is that this matrix is singular (it has a non-zero 
 \]
 Which means the equation is
 \begin{equation}
-   \frac{- u_b + u_i}{\Delta x^2} = \frac{f_b}{2}  - \frac{-\theta \Delta x}{\Delta x^2}
+   \frac{- u_b + u_i}{\Delta x^2} = \frac{f_b}{2}  - \frac{n\theta \Delta x}{\Delta x^2}
 \end{equation}
 Note that the mean must be subtracted from the RHS AFTER dividing by the factor of 2. To apply this division correctly with applying BCs, we may use the following definition for $u_g$ to achieve solving the same equation:
 \begin{equation}
   \boxed{
-  u_g = u_b - \theta \Delta x
+  u_g = u_b + n\theta \Delta x
   }
 \end{equation}
 \begin{equation}
    \frac{u_g - 2 u_b + u_i}{\Delta x^2} = f_b
    \qquad \rightarrow \qquad
-   \frac{- u_b + u_i}{\Delta x^2} = \frac{f_b}{2} - \frac{- \theta \Delta x}{\Delta x^2}
+   \frac{- u_b + u_i}{\Delta x^2} = \frac{f_b}{2} - \frac{n \theta \Delta x}{\Delta x^2}
 \end{equation}
 
 

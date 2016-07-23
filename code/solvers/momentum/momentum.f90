@@ -91,7 +91,7 @@
          integer :: unit_nrg_budget
 
          ! Transient probes
-         real(cp) :: KE
+         real(cp) :: KE,KE_2C
          type(norms) :: norm_divU
          type(probe) :: transient_KE,transient_KE_2C,transient_divU
        end type
@@ -138,7 +138,7 @@
          mom%L_eta = Re**(-3.0_cp/4.0_cp)
          mom%U_eta = Re**(-1.0_cp/4.0_cp)
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
-         mom%KE = 0.0_cp
+         mom%KE = 0.0_cp; mom%KE_2C = 0.0_cp
          mom%nrg_budget = 0.0_cp
          call init(mom%m,m)
 
@@ -286,10 +286,9 @@
          write(un,*) 't,dt = ',mom%t,mom%dTime
          write(un,*) 'solveUMethod,N_mom,N_PPE = ',solveUMethod,mom%N_mom,mom%N_PPE
          write(un,*) 'tol_mom,tol_PPE = ',mom%tol_mom,mom%tol_PPE
-         write(un,*) 'nstep = ',mom%nstep
-         write(un,*) 'KE = ',mom%KE
-         ! call printPhysicalMinMax(mom%U,'U')
-         call printPhysicalMinMax(mom%divU,'divU')
+         write(un,*) 'nstep,KE = ',mom%nstep,mom%KE
+         ! call displayPhysicalMinMax(mom%U,'U',un)
+         call displayPhysicalMinMax(mom%divU,'divU',un)
          ! write(un,*) 'Kolmogorov Length = ',mom%L_eta
          ! write(un,*) 'Kolmogorov Velocity = ',mom%U_eta
          ! write(un,*) 'Kolmogorov Time = ',mom%t_eta
@@ -309,13 +308,10 @@
          type(momentum),intent(in) :: mom
          type(dir_tree),intent(in) :: DT
          type(path) :: restart
-         write(*,*) 'Start mom export!'
          call oldest_modified_file(restart,DT%restart1,DT%restart2,'p.dat')
-         write(*,*) 'Finished oldest_modified_file!'
          call export(mom%U     ,str(restart),'U')
          call export(mom%p     ,str(restart),'p')
          call delete(restart)
-         write(*,*) 'Finished mom export!'
        end subroutine
 
        subroutine import_momentum(mom,DT)
@@ -355,8 +351,8 @@
          call set(mom%transient_KE,mom%nstep,mom%t,mom%KE)
          call apply(mom%transient_KE)
 
-         call compute_TKE_2C(mom%KE,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
-         call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE)
+         call compute_TKE_2C(mom%KE_2C,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
+         call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE_2C)
          call apply(mom%transient_KE_2C)
          ! call Ln(temp_Ln,mom%divU,2.0_cp)
          ! call set(mom%transient_divU,mom%nstep,temp_Ln)
@@ -394,6 +390,10 @@
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%dTime,mom%N_PPE,mom%N_mom,mom%Ustar,&
            mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
+
+         case (4)
+           call Euler_PCG_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%Re,mom%dTime,&
+           mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E)
 
          case default; stop 'Error: solveUMethod must = 1,2 in momentum.f90.'
          end select

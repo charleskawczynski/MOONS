@@ -33,6 +33,7 @@
        public :: CN_AB2_PPE_GS_mom_PCG
 
        public :: Euler_PCG_Donor
+       public :: Euler_PCG_Donor_no_PPE
        public :: Euler_GS_Donor
        public :: Euler_GS_Donor_mpg
 
@@ -160,7 +161,34 @@
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
          call grad(temp_F1,p,m)
-         ! call subtract(temp_F1%x,1.0_cp) ! mpg
+         call subtract(temp_F1%x,1.0_cp) ! mpg
+         call multiply(temp_F1,dt)
+         call subtract(U,Ustar,temp_F1)
+         call apply_BCs(U,m)
+       end subroutine
+
+       subroutine Euler_PCG_Donor_no_PPE(U,U_E,F,m,Re,dt,&
+         Ustar,temp_F1,temp_CC,temp_E)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(TF),intent(inout) :: U_E
+         type(VF),intent(in) :: F
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: Re,dt
+         type(VF),intent(inout) :: Ustar,temp_F1,temp_E
+         type(SF),intent(inout) :: temp_CC
+         call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
+         call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
+         call lap(temp_F1,U,m)
+         ! call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         call multiply(temp_F1,1.0_cp/Re)
+         call add(Ustar,temp_F1)
+         call add(Ustar,F)
+         call zeroWall_conditional(Ustar,m,U)
+         call multiply(Ustar,dt)
+         call add(Ustar,U)
+         call assign(temp_F1,0.0_cp)
+         call subtract(temp_F1%x,1.0_cp) ! mpg
          call multiply(temp_F1,dt)
          call subtract(U,Ustar,temp_F1)
          call apply_BCs(U,m)

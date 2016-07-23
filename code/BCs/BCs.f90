@@ -193,12 +193,11 @@
          ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
          ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
          if (BC%defined) then
-           precision = 4
-           col_width = 12
+           precision = 4; col_width = 10
            call export_table('Faces   :',(/(i,i=1,6)/),col_width,newU)
            call export_table('Type    :',(/(get_bctype(BC%f(i)%b),i=1,6)/),col_width,newU)
            call export_table('meanVal :',(/(BC%f(i)%b%meanVal,i=1,6)/),col_width,precision,newU)
-           col_width = 8
+           precision = 1; col_width = 5
            call export_table('Edges   :',(/(i,i=1,12)/),col_width,newU)
            call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
            call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
@@ -221,17 +220,16 @@
          integer,intent(in) :: un
          integer :: i
          if (BC%defined) then
-         do i=1,6;  call export(BC%f(i)%b,un); enddo
-         do i=1,12; call export(BC%e(i)%b,un); enddo
-         do i=1,8;  call export(BC%c(i)%b,un); enddo
-         call export(BC%g,un)
-         write(un,*) 's'
-         write(un,*) BC%s
-         write(un,*) 'gridDefined,defined'
-         write(un,*) BC%gridDefined,BC%defined
-         write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
-         write(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
-         else; stop 'Error: Cannot export undefined BC in export_BCs in BCs.f90'
+           do i=1,6;  call export(BC%f(i)%b,un); enddo
+           do i=1,12; call export(BC%e(i)%b,un); enddo
+           do i=1,8;  call export(BC%c(i)%b,un); enddo
+           call export(BC%g,un)
+           write(un,*) 's'
+           write(un,*) BC%s
+           write(un,*) 'gridDefined,defined'
+           write(un,*) BC%gridDefined,BC%defined
+           write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
+           write(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
          endif
        end subroutine
 
@@ -240,16 +238,18 @@
          type(BCs),intent(inout) :: BC
          integer,intent(in) :: un
          integer :: i
-         do i=1,6;  call import(BC%f(i)%b,un); enddo
-         do i=1,12; call import(BC%e(i)%b,un); enddo
-         do i=1,8;  call import(BC%c(i)%b,un); enddo
-         call import(BC%g,un)
-         read(un,*) 
-         read(un,*) BC%s
-         read(un,*) 
-         read(un,*) BC%gridDefined,BC%defined
-         read(un,*) 
-         read(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
+         if (BC%defined) then
+           do i=1,6;  call import(BC%f(i)%b,un); enddo
+           do i=1,12; call import(BC%e(i)%b,un); enddo
+           do i=1,8;  call import(BC%c(i)%b,un); enddo
+           call import(BC%g,un)
+           read(un,*) 
+           read(un,*) BC%s
+           read(un,*) 
+           read(un,*) BC%gridDefined,BC%defined
+           read(un,*) 
+           read(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
+         endif
        end subroutine
 
        ! **********************************************************

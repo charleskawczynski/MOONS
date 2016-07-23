@@ -183,19 +183,20 @@ Analytic BCs:
 \end{aligned}\end{equation}
 After discretizing, we have
 \begin{equation}\begin{aligned}
-	\frac{\PD u}{\PD h} = \frac{u_i-u_g}{dh} \\
+	\frac{\PD u}{\PD h} = \frac{u_g - u_i}{dh} n, \qquad \text{n = 1 at xmax,ymax,zmin and n = -1 at xmin,ymin,zmin} \\
 	u_b = \frac{u_g+u_i}{2} \\
 \end{aligned}\end{equation}
 Therefore, our discrete equation is
 \begin{equation}\begin{aligned}
-	\frac{u_g+u_i}{2} = -c \frac{u_i-u_g}{dh} \\
-	u_g = -u_i - 2c \frac{u_i}{dh} + 2c \frac{u_g}{dh} \\
-	u_g \left( 1 - \frac{2 c}{dh} \right) = - u_i \left( 1 + \frac{2c}{dh} \right) \\
+	\frac{u_g+u_i}{2} = -cn \frac{u_g - u_i}{dh} \\
+	u_g = -u_i + 2cn \frac{u_i}{dh} - 2cn \frac{u_g}{dh} \\
+	u_g \left( 1 + \frac{2 cn}{dh} \right) = u_i \left( -1 + \frac{2cn}{dh} \right) \\
 \end{aligned}\end{equation}
 Leaving us with
 \begin{equation}
 	\boxed{
-	u_g = - u_i \frac{\left(1 + \frac{2c}{dh} \right)}{\left(1 - \frac{2c}{dh} \right)}
+	u_g = u_i \frac{\left(\frac{2cn}{dh} - 1 \right)}{\left(1 + \frac{2cn}{dh} \right)},
+	\qquad \left(1 + \frac{2cn}{dh} \right) \ne 0, \qquad \text{(n may be negative)}
 	}
 \end{equation}
 

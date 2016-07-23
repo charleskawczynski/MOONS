@@ -6,20 +6,20 @@
 
        logical :: exportGrids               = .false.     ! Export all Grids before starting simulation
        logical :: exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation
-       logical :: export_planar             = .false.      ! Export 2D data when N_cell = 1 along given direction
+       logical :: export_planar             = .true.      ! Export 2D data when N_cell = 1 along given direction
        logical :: quick_start               = .true.      ! Avoids exporting any large datasets before solve
 
        logical :: export_analytic           = .false.     ! Export analytic solutions
 
        logical :: solveEnergy               = .false.
        logical :: solveMomentum             = .true.
-       logical :: solveInduction            = .false.
+       logical :: solveInduction            = .true.
 
        integer :: solveTMethod              = 1 ! Refer to energy.f90
-       integer :: solveUMethod              = 1 ! Refer to momentum.f90
-       integer :: solveBMethod              = 2 ! Refer to induction.f90
+       integer :: solveUMethod              = 4 ! Refer to momentum.f90
+       integer :: solveBMethod              = 1 ! Refer to induction.f90
 
-       logical :: addJCrossB                = .false.
+       logical :: addJCrossB                = .true.
        logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 

@@ -474,6 +474,58 @@ Which yields the Robin BCs on the wall-liquid interface
 }
 \end{equation}
 
+\section{Sergey's in vector form}
+Continuity of the tangential component of the electric field between domains 1 and 2 [Eq. 1.19, Jackson p. 18] on the surface:
+\begin{equation}
+  \N \times (\E_2 - \E_1) = \mathbf{0}
+\end{equation}
+Near the wall, we use no-slip no-flow through along with Ohm's law to get
+\begin{equation}\begin{aligned}
+\N \times \left( \frac{\J_1}{\sigma_1} \right) = \N \times \left( \frac{\J_2}{\sigma_2} \right) \\
+\N \times (\sigma_1^{-1} \curl \B_1 ) = \N \times (\sigma_2^{-1} \curl \B_2 ) \\
+\sigma_1^{-1} \N \times (\curl \B_1 ) = \sigma_2^{-1} \N \times (\curl \B_2 ) \\
+\A \times (\B \times \C) = \B (\A \DOT \C) - \C (\A \DOT \B), \qquad \text{use vector triple product} \\
+\sigma_1^{-1} \left( \nabla (\N \DOT \B_1) - \B_1 (\N \DOT \nabla) \right) = 
+\sigma_2^{-1} \left( \nabla (\N \DOT \B_2) - \B_2 (\N \DOT \nabla) \right) \\
+\sigma_1^{-1} \left( \nabla (\N \DOT \B_1) - (\N \DOT \nabla) \B_1 \right) = 
+\sigma_2^{-1} \left( \nabla (\N \DOT \B_2) - (\N \DOT \nabla) \B_2 \right)
+\end{aligned}\end{equation}
+Since this equation is zero along $\N$, we can look at only the tangential components:
+\begin{equation}\begin{aligned}
+\sigma_1^{-1} \left( \nabla_{\tau} \B_{n,1} - \nabla_n \B_{\tau,1} \right) = 
+\sigma_2^{-1} \left( \nabla_{\tau} \B_{n,2} - \nabla_n \B_{\tau,2} \right)
+\end{aligned}\end{equation}
+Using $\nabla_n >> \nabla_{\tau}$, we have
+\begin{equation}\begin{aligned}
+\sigma_1^{-1} \nabla_n \B_{\tau,1} = 
+\sigma_2^{-1} \nabla_n \B_{\tau,2}
+\end{aligned}\end{equation}
+Or,
+\begin{equation}\begin{aligned}
+\sigma_1^{-1} (\N \DOT \nabla) (\N \times \B_1) = 
+\sigma_2^{-1} (\N \DOT \nabla) (\N \times \B_2) \\
+\sigma_1^{-1} \hat{n} \frac{\PD (\tau \B_{1,\tau})}{\PD n} = 
+\sigma_2^{-1} \hat{n} \frac{\PD (\tau \B_{2,\tau})}{\PD n}
+\end{aligned}\end{equation}
+Consider liquid (l), wall (w) and vacuum (v) domains, where the wall thickness, $t_w<<1$, is very thin.
+\begin{equation} \begin{aligned}
+  \frac{B_{\tau}^{w-v}-B_{\tau}^{w-l}}{t_w \sigma_w}=\left. \sigma_l^{-1}\frac{\PD B_{\tau}}{\PD n} \right|_{w-l} \\
+  \frac{B_{\tau}^{w-v}-B_{\tau}^{w-l}}{t_w \sigma_w}=\left. \sigma_l^{-1}\frac{\PD B_{\tau}}{\PD n} \right|_{w-l}
+\end{aligned} \end{equation}
+Assuming the magnetic field is very small in the vacuum, as we've observed, we have
+\begin{equation} \begin{aligned}
+  \frac{-B_{\tau}^{w-l}}{t_w \sigma_w}=\left. \sigma_l^{-1}\frac{\PD B_{\tau}}{\PD n} \right|_{w-l} \\
+  \frac{-B_{\tau}^{w-l}}{t_w \sigma_w}=\left. \sigma_l^{-1}\frac{\PD B_{\tau}}{\PD n} \right|_{w-l}
+\end{aligned} \end{equation}
+Let's figure out the correct sign.
+\subsection{Sign of equation}
+There are 3 spatial directions, 3 components, and 6 faces to the geometry. However, the sign associated with $\mathbf{\N \times \B}$, cancel out. So we are only concerned with the sign of 
+\begin{equation}\begin{aligned}
+\sigma_1^{-1} \hat{n} \frac{\PD (\tau \B_{1,\tau})}{\PD n} = 
+\sigma_2^{-1} \hat{n} \frac{\PD (\tau \B_{2,\tau})}{\PD n}
+\end{aligned}\end{equation}
+
+
 \section{Domains}
 
 \subsection{Vacuum}

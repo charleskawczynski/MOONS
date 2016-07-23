@@ -2,6 +2,7 @@
        use current_precision_mod
        use simParams_mod
        use VF_mod
+       use IO_tools_mod
        use IO_auxiliary_mod
        use string_mod
        use path_mod
@@ -21,16 +22,17 @@
 
        contains
 
-       subroutine MHDSolver(nrg,mom,ind,DT,N_timesteps)
+       subroutine MHDSolver(nrg,mom,ind,DT,n_dt_start,n_step,n_dt_stop)
          implicit none
          type(energy),intent(inout) :: nrg
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT ! Output directory
-         integer,intent(in) :: N_timesteps
+         integer,intent(in) :: n_dt_start,n_dt_stop
+         integer,intent(inout) :: n_step
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
-         integer :: n_step
+         integer :: un
          logical :: continueLoop
          type(print_export) :: PE
 
@@ -48,8 +50,8 @@
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
-         call init(sc,N_timesteps)
-         do n_step=1,N_timesteps
+         call init(sc,n_dt_stop-n_step)
+         do n_step=n_step,n_dt_stop
            call init(PE,n_step)
 
            call tic(sc)
@@ -81,13 +83,13 @@
            if (PE%info) then
              call print(sc)
              continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
+             call writeSwitchToFile(.false.,str(DT%params),'exportNow')
              write(*,*) 'Working directory = ',str(DT%tar)
              if (.not.continueLoop) then; call toc(sc); exit; endif
-             call writeSwitchToFile(.false.,str(DT%params),'exportNow')
            endif
          enddo
          call print(sc)
-         call export(sc,str(DT%out_dir))
+         call export(sc,str(DT%LDC))
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
@@ -95,6 +97,10 @@
          call writeLastStepToFile(nrg%nstep,str(DT%params),'nstep_nrg')
          call writeLastStepToFile(mom%nstep,str(DT%params),'nstep_mom')
          call writeLastStepToFile(ind%nstep,str(DT%params),'nstep_ind')
+
+         un = newAndOpen(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
+         write(un,*) n_dt_start,n_step,n_dt_stop
+         call closeAndMessage(un,'n_dt_start,n_step,n_dt_stop',str(DT%restart))
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (solveMomentum)  call exportTransient(mom)

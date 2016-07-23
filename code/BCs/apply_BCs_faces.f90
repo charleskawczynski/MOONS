@@ -103,12 +103,12 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),v,-dh1,b,p,y,z)
-         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-1,:),f(:,s(2)-2,:),v,-dh1,b,p,x,z)
-         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-1),f(:,:,s(3)-2),v,-dh1,b,p,x,y)
-         case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(2,:,:),f(3,:,:),v,dhe,b,p,y,z)
-         case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,2,:),f(:,3,:),v,dhe,b,p,x,z)
-         case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,2),f(:,:,3),v,dhe,b,p,x,y)
+         case (1); call app_N(f(1,:,:),f(2,:,:),f(3,:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),v,dh1,b,p,y,z,-1.0_cp)
+         case (3); call app_N(f(:,1,:),f(:,2,:),f(:,3,:),f(:,s(2)-1,:),f(:,s(2)-2,:),v,dh1,b,p,x,z,-1.0_cp)
+         case (5); call app_N(f(:,:,1),f(:,:,2),f(:,:,3),f(:,:,s(3)-1),f(:,:,s(3)-2),v,dh1,b,p,x,y,-1.0_cp)
+         case (2); call app_N(f(s(1),:,:),f(s(1)-1,:,:),f(s(1)-2,:,:),f(2,:,:),f(3,:,:),v,dhe,b,p,y,z,1.0_cp)
+         case (4); call app_N(f(:,s(2),:),f(:,s(2)-1,:),f(:,s(2)-2,:),f(:,2,:),f(:,3,:),v,dhe,b,p,x,z,1.0_cp)
+         case (6); call app_N(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,s(3)-2),f(:,:,2),f(:,:,3),v,dhe,b,p,x,y,1.0_cp)
          end select
        end subroutine
 
@@ -124,68 +124,68 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,-dh1,b,p,y,z)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,-dh1,b,p,x,z)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,-dh1,b,p,x,y)
-         case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dhe,b,p,y,z)
-         case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dhe,b,p,x,z)
-         case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dhe,b,p,x,y)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),v,dh1,b,p,y,z,1.0_cp)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),v,dh1,b,p,x,z,1.0_cp)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),v,dh1,b,p,x,y,1.0_cp)
+         case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),v,dhe,b,p,y,z,1.0_cp)
+         case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),v,dhe,b,p,x,z,1.0_cp)
+         case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),v,dhe,b,p,x,y,1.0_cp)
          end select
        end subroutine
 
-       subroutine app_CC(ug,ui,ui_opp,bvals,dh,b,p,x,y)
+       subroutine app_CC(ug,ui,ui_opp,bvals,dh,b,p,x,y,nhat)
          implicit none
          real(cp),dimension(:,:),intent(inout) :: ug
          real(cp),dimension(:,:),intent(in) :: ui,ui_opp,bvals
-         real(cp),intent(in) :: dh
+         real(cp),intent(in) :: dh,nhat
          type(bctype),intent(in) :: b
          integer,intent(in) :: p,x,y
-         call a_CC(ug(p:x,p:y),ui(p:x,p:y),ui_opp(p:x,p:y),bvals(p:x,p:y),dh,b)
+         call a_CC(ug(p:x,p:y),ui(p:x,p:y),ui_opp(p:x,p:y),bvals(p:x,p:y),dh,b,nhat)
        end subroutine
 
-       subroutine app_N(ug,ub,ui,ub_opp,ui_opp,bvals,dh,b,p,x,y)
+       subroutine app_N(ug,ub,ui,ub_opp,ui_opp,bvals,dh,b,p,x,y,nhat)
          implicit none
          real(cp),dimension(:,:),intent(inout) :: ug,ub
          real(cp),dimension(:,:),intent(in) :: ui,ub_opp,ui_opp,bvals
-         real(cp),intent(in) :: dh
+         real(cp),intent(in) :: dh,nhat
          type(bctype),intent(in) :: b
          integer,intent(in) :: p,x,y
-         call a_N(ug(p:x,p:y),ub(p:x,p:y),ui(p:x,p:y),ub_opp(p:x,p:y),ui_opp(p:x,p:y),bvals(p:x,p:y),dh,b)
+         call a_N(ug(p:x,p:y),ub(p:x,p:y),ui(p:x,p:y),ub_opp(p:x,p:y),ui_opp(p:x,p:y),bvals(p:x,p:y),dh,b,nhat)
        end subroutine
 
-       subroutine a_CC(ug,ui,ui_opp,bvals,dh,b)
+       subroutine a_CC(ug,ui,ui_opp,bvals,dh,b,nhat)
          ! interpolated - (wall incoincident)
          implicit none
          real(cp),dimension(:,:),intent(inout) :: ug
          real(cp),dimension(:,:),intent(in) :: ui,ui_opp,bvals
-         real(cp),intent(in) :: dh
+         real(cp),intent(in) :: dh,nhat
          type(bctype),intent(in) :: b
 #ifdef _DEBUG_APPLY_BCS_
          call check_dimensions(ug,bvals)
          call check_dimensions(ui,bvals)
 #endif
          if     (b%Dirichlet) then; ug = 2.0_cp*bvals - ui
-         elseif (b%Neumann) then;   ug = ui - dh*bvals
+         elseif (b%Neumann) then;   ug = ui + nhat*bvals*dh
          elseif (b%Periodic) then;  ug = ui_opp
          elseif (b%Robin) then
          ! NOTE: bvals is cw
-         ug = -ui*(1.0_cp + 2.0_cp*bvals/dh)/(1.0_cp - 2.0_cp*bvals/dh)
+         ug = ui*(2.0_cp*bvals/dh*nhat - 1.0_cp)/(2.0_cp*bvals/dh*nhat + 1.0_cp)
          else; stop 'Error: Bad bctype! Caught in app_CC in apply_BCs_faces.f90'
          endif
        end subroutine
 
-       subroutine a_N(ug,ub,ui,ub_opp,ui_opp,bvals,dh,b)
+       subroutine a_N(ug,ub,ui,ub_opp,ui_opp,bvals,dh,b,nhat)
          implicit none
          real(cp),dimension(:,:),intent(inout) :: ug,ub
          real(cp),dimension(:,:),intent(in) :: ui,ub_opp,ui_opp,bvals
-         real(cp),intent(in) :: dh
+         real(cp),intent(in) :: dh,nhat
          type(bctype),intent(in) :: b
 #ifdef _DEBUG_APPLY_BCS_
          call check_dimensions(ub,bvals)
          call check_dimensions(ui,bvals)
 #endif
          if     (b%Dirichlet) then; ub = bvals; ug = 2.0_cp*ub - ui
-         elseif (b%Neumann) then;   ug = ui + 2.0_cp*bvals*dh
+         elseif (b%Neumann) then;   ug = ui + 2.0_cp*bvals*dh*nhat
          elseif (b%Periodic) then;  ub = ub_opp; ug = ui_opp ! Seems incorrect.. N should match naturally
          ! elseif (b%Periodic) then;  ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'

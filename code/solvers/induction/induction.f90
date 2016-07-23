@@ -320,12 +320,9 @@
          write(un,*) 't,dt = ',ind%t,ind%dTime
          write(un,*) 'solveBMethod,N_ind,N_cleanB = ',solveBMethod,ind%N_induction,ind%N_cleanB
          write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
-         write(un,*) 'nstep = ',ind%nstep
-         write(un,'(A4,3(ES20.8E3))') ' ME=',ind%ME
-         write(un,'(A5,3(ES20.8E3))') ' MEf=',ind%ME_fluid
-         write(un,'(A5,3(ES20.8E3))') ' MEc=',ind%ME_conductor
-         call printPhysicalMinMax(ind%divB,'divB')
-         call printPhysicalMinMax(ind%divJ,'divJ')
+         write(un,*) 'nstep,ME = ',ind%nstep,ind%ME(2)
+         call displayPhysicalMinMax(ind%divB,'divB',un)
+         call displayPhysicalMinMax(ind%divJ,'divJ',un)
          write(un,*) ''
          call display(ind%m,un)
          write(un,*) ''
@@ -375,6 +372,7 @@
            if (solveInduction) then
              write(*,*) 'export_tec_induction at ind%nstep = ',ind%nstep
              call export_processed(ind%m,ind%B ,str(DT%B),'B',1)
+             call export_raw(ind%m,ind%B ,str(DT%B),'B',0)
              call export_processed(ind%m,ind%B0,str(DT%B),'B0',1)
              call export_processed(ind%m,ind%J ,str(DT%J),'J',1)
              write(*,*) '     finished'

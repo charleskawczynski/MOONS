@@ -109,13 +109,13 @@
        interface treatInterface;          module procedure treatInterface_VF;         end interface
        interface treatInterface;          module procedure treatInterface_SF;         end interface
 
-       public :: printPhysicalMinMax
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_SF;    end interface
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_VF;    end interface
+       public :: displayPhysicalMinMax
+       interface displayPhysicalMinMax;   module procedure displayPhysicalMinMax_SF;  end interface
+       interface displayPhysicalMinMax;   module procedure displayPhysicalMinMax_VF;  end interface
 
-       public :: printGlobalMinMax
-       interface printGlobalMinMax;       module procedure printGlobalMinMax_SF;      end interface
-       interface printGlobalMinMax;       module procedure printGlobalMinMax_VF;      end interface
+       public :: displayGlobalMinMax
+       interface displayGlobalMinMax;     module procedure displayGlobalMinMax_SF;    end interface
+       interface displayGlobalMinMax;     module procedure displayGlobalMinMax_VF;    end interface
 
        public :: noise
        interface noise;                   module procedure noise_RF;                  end interface
@@ -702,18 +702,20 @@
          do i=1,f%s; call treatInterface(f%RF(i)%f,f%RF(i)%s); enddo
        end subroutine
 
-       subroutine printPhysicalMinMax_SF(U,name)
+       subroutine displayPhysicalMinMax_SF(U,name,un)
          implicit none
          type(SF),intent(in) :: U
          character(len=*),intent(in) :: name
-         write(*,*) 'Min/Max ('//name//') = ',min(u,1),max(u,1)
+         integer,intent(in) :: un
+         write(un,*) 'Min/Max ('//name//') = ',min(u,1),max(u,1)
        end subroutine
 
-       subroutine printGlobalMinMax_SF(U,name)
+       subroutine displayGlobalMinMax_SF(U,name,un)
          implicit none
          type(SF),intent(in) :: U
          character(len=*),intent(in) :: name
-         write(*,*) 'Min/Max ('//name//') = ',min(u),max(u)
+         integer,intent(in) :: un
+         write(un,*) 'Min/Max ('//name//') = ',min(u),max(u)
        end subroutine
 
        subroutine noise_SF(U)
@@ -869,22 +871,24 @@
          call treatInterface(f%z)
        end subroutine
 
-       subroutine printPhysicalMinMax_VF(U,name)
+       subroutine displayPhysicalMinMax_VF(U,name,un)
          implicit none
          type(VF),intent(in) :: U
          character(len=*),intent(in) :: name
-         call printPhysicalMinMax(U%x,name//'_x')
-         call printPhysicalMinMax(U%y,name//'_y')
-         call printPhysicalMinMax(U%z,name//'_z')
+         integer,intent(in) :: un
+         call displayPhysicalMinMax(U%x,name//'_x',un)
+         call displayPhysicalMinMax(U%y,name//'_y',un)
+         call displayPhysicalMinMax(U%z,name//'_z',un)
        end subroutine
 
-       subroutine printGlobalMinMax_VF(U,name)
+       subroutine displayGlobalMinMax_VF(U,name,un)
          implicit none
          type(VF),intent(in) :: U
          character(len=*),intent(in) :: name
-         call printGlobalMinMax(U%x,name//'_x')
-         call printGlobalMinMax(U%y,name//'_y')
-         call printGlobalMinMax(U%z,name//'_z')
+         integer,intent(in) :: un
+         call displayGlobalMinMax(U%x,name//'_x',un)
+         call displayGlobalMinMax(U%y,name//'_y',un)
+         call displayGlobalMinMax(U%z,name//'_z',un)
        end subroutine
 
        subroutine noise_VF(U)

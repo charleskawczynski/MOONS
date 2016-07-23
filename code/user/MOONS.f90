@@ -48,7 +48,7 @@
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem,dt_eng,dt_mom,dt_ind
          real(cp) :: tol_nrg,tol_mom,tol_PPE,tol_induction,tol_cleanB
          logical :: finite_Rem
-         integer :: n_dt_start,n_dt_stop,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
+         integer :: n_dt_start,n_step,n_dt_stop,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
          integer :: un
 
          ! ************************************************************** Parallel + directory + input parameters
@@ -60,7 +60,7 @@
          dt_eng,dt_mom,dt_ind,n_dt_start,n_dt_stop,N_nrg,tol_nrg,N_mom,tol_mom,&
          N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
 
-         call print_version(); call export_version(str(DT%out_dir))
+         call print_version(); call export_version(str(DT%LDC))
 
          ! ************************************************************** Initialize mesh + domains
          if (restart_all) then
@@ -110,17 +110,17 @@
 
          ! ******************** PREP TIME START/STOP ********************
          if (restart_all) then
-         un = openToRead(str(DT%restart),'n_dt_start,n_dt_stop')
-         read(un,*) n_dt_start,n_dt_stop
-         call closeAndMessage(un,'n_dt_start,n_dt_stop',str(DT%restart))
+         un = openToRead(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
+         read(un,*) n_dt_start,n_step,n_dt_stop
+         call closeAndMessage(un,'n_dt_start,n_step,n_dt_stop',str(DT%restart))
          else
-         un = newAndOpen(str(DT%restart),'n_dt_start,n_dt_stop')
-         write(un,*) n_dt_start,n_dt_stop
-         call closeAndMessage(un,'n_dt_start,n_dt_stop',str(DT%restart))
+         un = newAndOpen(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
+         write(un,*) n_dt_start,n_step,n_dt_stop
+         call closeAndMessage(un,'n_dt_start,n_step,n_dt_stop',str(DT%restart))
          endif
 
          if (stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
-         if (.not.post_process_only) call MHDSolver(nrg,mom,ind,DT,n_dt_start+n_dt_stop)
+         if (.not.post_process_only) call MHDSolver(nrg,mom,ind,DT,n_dt_start,n_step,n_dt_stop)
 
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'

@@ -15,9 +15,9 @@ for r in root:
 	r = r+'\\'
 	r = r.replace('\\','\\\\')
 
-	f.post_process(r,r+'Ufield\\KU',r+'Ufield\\KU','.dat')
-	f.post_process(r,r+'Bfield\\KBi_f',r+'Bfield\\KBi_f','.dat')
-	f.post_process(r,r+'Bfield\\KBi_c',r+'Bfield\\KBi_c','.dat')
-	f.post_process(r,r+'Bfield\\KBi',r+'Bfield\\KBi','.dat')
+	f.convert_N_to_t(r,r+'Ufield\\KU',r+'Ufield\\KU','.dat')
+	f.convert_N_to_t(r,r+'Bfield\\KBi_f',r+'Bfield\\KBi_f','.dat')
+	f.convert_N_to_t(r,r+'Bfield\\KBi_c',r+'Bfield\\KBi_c','.dat')
+	f.convert_N_to_t(r,r+'Bfield\\KBi',r+'Bfield\\KBi','.dat')
 
 print '\n Finished'

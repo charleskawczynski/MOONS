@@ -33,7 +33,7 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS3
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -42,6 +42,7 @@ endif
 
 ifeq ($(CLUSTER),'Hoffman2')
 	TARGET_DIR = $(PS)u$(PS)home$(PS)c$(PS)ckawczyn$(PS)project-morley$(PS)MOONS_out$(PS)MOONS1
+#	TARGET_DIR = $(PS)u$(PS)home$(PS)p$(PS)pyhuang$(PS)Public$(PS)MOONS_out$(PS)MOONS1 # For peter, check this
 endif
 
 ifeq ($(CLUSTER),'DOE')
@@ -84,7 +85,7 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_FFT_FULL_
 # FCFLAGS += -D_FFT_RADIX2_
 
-# isnan.f90:
+# is_nan.f90:
 # FCFLAGS += -D_ISNAN_USE_HACK_
 
 # Order of accuracy of finite difference stencil
@@ -167,9 +168,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 

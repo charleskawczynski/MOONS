@@ -18,7 +18,7 @@
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
          Re         = 100.0_cp
-         Ha         = 10.0_cp
+         Ha         = 20.0_cp
          Rem        = 1.0_cp
 
          Gr         = 10.0_cp**(8.0_cp)
@@ -26,10 +26,10 @@
          Pr         = 0.043_cp
          Ec         = 0.0_cp
 
-         finite_Rem = .true.
-         dt_eng     = 5.0_cp*10.0_cp**(-3.0_cp)
-         dt_mom     = 5.0_cp*10.0_cp**(-3.0_cp)
-         dt_ind     = 5.0_cp*10.0_cp**(-3.0_cp)
+         finite_Rem = .false.
+         dt_eng     = 2.0_cp*10.0_cp**(-5.0_cp)
+         dt_mom     = 5.0_cp*10.0_cp**(-4.0_cp)
+         dt_ind     = 1.0_cp*10.0_cp**(-5.0_cp)
          t          = 1000.0_cp
 
          n_dt_start = 0
@@ -42,7 +42,7 @@
 
          N_nrg         = 10       ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_ind         = 1000     ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_ind         = 5        ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 5        ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 
@@ -55,7 +55,7 @@
          ! Which means b and r⁰ -> 0 as t-> infinity.
          tol_nrg       = 10.0_cp**(-10.0_cp)
          tol_mom       = 10.0_cp**(-10.0_cp)
-         tol_ind       = 10.0_cp**(-4.0_cp)
+         tol_ind       = 10.0_cp**(-6.0_cp)
          tol_PPE       = 10.0_cp**(-10.0_cp)
          tol_cleanB    = 10.0_cp**(-10.0_cp)
        end subroutine

@@ -48,8 +48,9 @@
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p,z
         type(norms) :: norm_res0
+        logical :: skip_PCG
         integer :: i,i_earlyExit
-        real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
+        real(cp) :: alpha,rhok,rhokp1,res_norm,temp ! betak = rhokp1/rhok
 
         ! ----------------------- MODIFY RHS -----------------------
         call multiply(r,b,vol)
@@ -85,6 +86,7 @@
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         if (.not.sqrt(norm_res0%L2).lt.tol_abs) then ! Only do PCG if necessary!
+          skip_PCG = .false.
           do i=1,n
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply(Ax,vol)
@@ -108,7 +110,7 @@
             call add(p,z)
             rhok = rhokp1
           enddo
-        else; i=1
+        else; i=1; skip_PCG = .true.
         endif
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
@@ -117,19 +119,23 @@
         call check_nans(res_norm,name//' PCG_SF res_norm')
 
         if (compute_norms) then
-          call operator_explicit(Ax,x,k,m,MFP,tempk)
-          call multiply(Ax,vol)
-          call multiply(r,b,vol)
-          if (x%all_Neumann) call subtract_physical_mean(r)
-          call subtract(r,Ax)
-          call zeroWall_conditional(r,m,x) ! Does nothing in PPE
-          call zeroGhostPoints_conditional(r,m)
-          call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
-          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
-                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
-          flush(un)
-          write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,n
-          write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
+          if (.not.skip_PCG) then
+            call operator_explicit(Ax,x,k,m,MFP,tempk)
+            call multiply(Ax,vol)
+            call multiply(r,b,vol)
+            if (x%all_Neumann) call subtract_physical_mean(r)
+            call subtract(r,Ax)
+            call zeroWall_conditional(r,m,x) ! Does nothing in PPE
+            call zeroGhostPoints_conditional(r,m)
+            call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
+            write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                              norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
+            flush(un)
+            write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,n
+            write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
+          else
+            write(*,*) 'PCG_SF skip_PCG = ',skip_PCG
+          endif
           write(*,*) ''
         endif
       end subroutine
@@ -153,6 +159,7 @@
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p,z
+        logical :: skip_PCG
         integer :: i,i_earlyExit
         type(norms) :: norm_res0
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
@@ -210,7 +217,7 @@
             call add(p,z)
             rhok = rhokp1
           enddo
-        else; i=1
+        else; i=1; skip_PCG = .true.
         endif
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
@@ -219,19 +226,23 @@
         call check_nans(res_norm,name//' PCG_VF res_norm')
         
         if (compute_norms) then
-          call operator_explicit(Ax,x,k,m,MFP,tempk)
-          call multiply(Ax,vol)
-          call multiply(r,b,vol)
-          ! if (x%all_Neumann) call subtract_physical_mean(r)
-          call subtract(r,Ax)
-          call zeroWall_conditional(r,m,x)
-          call zeroGhostPoints_conditional(r,m)
-          call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
-          write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
-                                            norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
-          flush(un)
-          write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n
-          write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
+          if (.not.skip_PCG) then
+            call operator_explicit(Ax,x,k,m,MFP,tempk)
+            call multiply(Ax,vol)
+            call multiply(r,b,vol)
+            ! if (x%all_Neumann) call subtract_physical_mean(r)
+            call subtract(r,Ax)
+            call zeroWall_conditional(r,m,x)
+            call zeroGhostPoints_conditional(r,m)
+            call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
+            write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
+                                              norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
+            flush(un)
+            write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n
+            write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
+          else
+            write(*,*) 'PCG_VF skip_PCG = ',skip_PCG
+          endif
           write(*,*) ''
         endif
       end subroutine

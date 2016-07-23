@@ -29,66 +29,56 @@
 
        contains
 
+       ! ************************************************************************************
+       ! ************************************* RAW ******************************************
+       ! ************************************************************************************
+
        subroutine export_raw_SF(m,x,dir,name,pad)
          implicit none
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (.not.export_planar) then; call export_raw_SF_func(export_3D_1C,m,x,dir,name,pad,0)
-         else; if (m%plane_x) then;    call export_raw_SF_func(export_2D_1C,m,x,dir,name,pad,1)
-         elseif   (m%plane_y) then;    call export_raw_SF_func(export_2D_1C,m,x,dir,name,pad,2)
-         elseif   (m%plane_z) then;    call export_raw_SF_func(export_2D_1C,m,x,dir,name,pad,3)
-         else; stop 'Error: attempted plane export of 3D geometry in export_raw_SF in export_raw_processed.f90'
+         integer :: direction
+         character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
+         ! ------------- collect some info
+               if (x%is_CC) then; DL = 'c'
+         elseif (x%is_Node) then; DL = 'n'
+         elseif (x%is_Face) then; DL = 'f'; CD = get_CD(x%face,'export_raw_SF')
+         elseif (x%is_Edge) then; DL = 'e'; CD = get_CD(x%edge,'export_raw_SF')
+         else; stop 'Error: bad input type to export_raw_SF in export_raw_processed.f90'
          endif
+         if (.not.export_planar) then; direction = 0
+         else;    if (m%plane_x) then; direction = 1
+              elseif (m%plane_y) then; direction = 2
+              elseif (m%plane_z) then; direction = 3
+              else; stop 'Error: attempted plane export of 3D geometry in export_raw_SF in export_raw_processed.f90'
+              endif
+         endif
+         ! ------------- begin export
+         if (.not.export_planar) then
+           if (x%is_CC.or.x%is_Node) then; call export_3D_1C(m,x,dir,name//DL,pad)
+           else;                           call export_3D_1C(m,x,dir,name//DL//'_'//CD,pad)
+           endif
+         else
+           if (x%is_CC.or.x%is_Node) then; call export_2D_1C(m,x,dir,name//DL,pad,direction)
+           else;                           call export_2D_1C(m,x,dir,name//DL//'_'//CD,pad,direction)
+           endif
          endif
        end subroutine
 
-       subroutine export_raw_SF_func(func,m,x,dir,name,pad,direction)
+       function get_CD(i,caller) result(CD)
+         ! Returns ('x','y','z') for inputs (1,2,3)
          implicit none
-         external :: func
-         type(mesh),intent(in) :: m
-         type(SF),intent(in) :: x
-         character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad,direction
-         if (.not.export_planar) then
-           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad)
-           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad)
-           elseif (x%is_Face) then
-             select case (x%face)
-             case (1); call func(m,x,dir,name//'f_x',pad)
-             case (2); call func(m,x,dir,name//'f_y',pad)
-             case (3); call func(m,x,dir,name//'f_z',pad)
-             case default; stop 'Error: face must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
-             end select
-           elseif (x%is_Edge) then
-             select case (x%edge)
-             case (1); call func(m,x,dir,name//'e_x',pad)
-             case (2); call func(m,x,dir,name//'e_y',pad)
-             case (3); call func(m,x,dir,name//'e_z',pad)
-             case default; stop 'Error: edge must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
-             end select
-           endif
-         else
-           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad,direction)
-           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad,direction)
-           elseif (x%is_Face) then
-             select case (x%face)
-             case (1); call func(m,x,dir,name//'f_x',pad,direction)
-             case (2); call func(m,x,dir,name//'f_y',pad,direction)
-             case (3); call func(m,x,dir,name//'f_z',pad,direction)
-             case default; stop 'Error: face must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
-             end select
-           elseif (x%is_Edge) then
-             select case (x%edge)
-             case (1); call func(m,x,dir,name//'e_x',pad,direction)
-             case (2); call func(m,x,dir,name//'e_y',pad,direction)
-             case (3); call func(m,x,dir,name//'e_z',pad,direction)
-             case default; stop 'Error: edge must = 1,2,3 in export_raw_SF in export_raw_processed.f90'
-             end select
-           endif
-         endif
-       end subroutine
+         integer,intent(in) :: i
+         character(len=*),intent(in) :: caller
+         character(len=1) :: CD
+         select case (i)
+         case (1); CD = 'x'; case (2); CD = 'y'; case (3); CD = 'z'
+         case default; write(*,*) 'Error: i must = 1,2,3 in '//caller
+         stop 'Done in export_raw_processed.f90'
+         end select
+       end function
 
        subroutine export_raw_VF(m,x,dir,name,pad)
          implicit none
@@ -96,54 +86,43 @@
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (.not.export_planar) then;
-           if (x%is_CC.or.x%is_Node) then;       call export_raw_VF_func(export_3D_3C,m,x,dir,name,pad,0)
-           elseif (x%is_Face.or.x%is_Edge) then; call export_raw_VF_func(export_3D_1C,m,x,dir,name,pad,0)
-           else; stop 'Error: bad input to export_raw_VF in export_processed.f90'
-           endif
-         else; if (m%plane_x) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,1)
-         elseif   (m%plane_y) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,2)
-         elseif   (m%plane_z) then;    call export_raw_VF_func(export_2D_1C,m,x,dir,name,pad,3)
-         else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
+         integer :: direction
+         real(cp),dimension(3) :: t
+         logical,dimension(3) :: L
+         real(cp) :: tol
+         integer :: j
+         character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
+               if (x%is_CC) then; DL = 'c'
+         elseif (x%is_Node) then; DL = 'n'
+         elseif (x%is_Face) then; DL = 'f'
+         elseif (x%is_Edge) then; DL = 'e'
+         else; stop 'Error: bad input type to export_raw_VF in export_raw_processed.f90'
          endif
+         if (.not.export_planar) then; direction = 0
+         else;    if (m%plane_x) then; direction = 1
+              elseif (m%plane_y) then; direction = 2
+              elseif (m%plane_z) then; direction = 3
+              else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
+              endif
+         endif
+
+         tol = 10.0_cp**(-15.0_cp)
+         t = (/maxabs(x%x),maxabs(x%y),maxabs(x%z)/)
+         L = (/(t(j).lt.tol,j=1,3)/)
+
+         if (.not.export_planar) then ! export all components
+           if (x%is_CC.or.x%is_Node) then; call export_3D_3C(m,x,dir,name//DL,pad)
+           else;                           call export_3D_1C(m,x%x,dir,name//DL//'_x',pad)
+                                           call export_3D_1C(m,x%y,dir,name//DL//'_y',pad)
+                                           call export_3D_1C(m,x%z,dir,name//DL//'_z',pad)
+           endif
+         else; call export_2D_based_on_count(m,x,dir,name,DL,pad,direction,L)
          endif
        end subroutine
 
-       subroutine export_raw_VF_func(func,m,x,dir,name,pad,direction)
-         implicit none
-         external :: func
-         type(mesh),intent(in) :: m
-         type(VF),intent(in) :: x
-         character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad,direction
-         if (.not.export_planar) then
-           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad)
-           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad)
-           elseif (x%is_Face) then
-             call func(m,x%x,dir,name//'f_x',pad)
-             call func(m,x%y,dir,name//'f_y',pad)
-             call func(m,x%z,dir,name//'f_z',pad)
-           elseif (x%is_Edge) then
-             call func(m,x%x,dir,name//'e_x',pad)
-             call func(m,x%y,dir,name//'e_y',pad)
-             call func(m,x%z,dir,name//'e_z',pad)
-           else; stop 'Error: bad input to export_raw_VF_func (1) in export_processed.f90'
-           endif
-         else
-           if (x%is_CC) then;       call func(m,x,dir,name//'c',pad,direction)
-           elseif (x%is_Node) then; call func(m,x,dir,name//'n',pad,direction)
-           elseif (x%is_Face) then
-             call func(m,x%x,dir,name//'f_x',pad,direction)
-             call func(m,x%y,dir,name//'f_y',pad,direction)
-             call func(m,x%z,dir,name//'f_z',pad,direction)
-           elseif (x%is_Edge) then
-             call func(m,x%x,dir,name//'e_x',pad,direction)
-             call func(m,x%y,dir,name//'e_y',pad,direction)
-             call func(m,x%z,dir,name//'e_z',pad,direction)
-           else; stop 'Error: bad input to export_raw_VF_func (2) in export_processed.f90'
-           endif
-         endif
-       end subroutine
+       ! ************************************************************************************
+       ! *********************************** PROCESSED **************************************
+       ! ************************************************************************************
 
        subroutine export_processed_SF(m,x,dir,name,pad)
          implicit none
@@ -151,100 +130,62 @@
          type(SF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (.not.export_planar) then; call export_processed_SF_func(export_3D_1C,m,x,dir,name,pad,0)
-         else; if (m%plane_x) then;    call export_processed_SF_func(export_2D_1C,m,x,dir,name,pad,1)
-         elseif   (m%plane_y) then;    call export_processed_SF_func(export_2D_1C,m,x,dir,name,pad,2)
-         elseif   (m%plane_z) then;    call export_processed_SF_func(export_2D_1C,m,x,dir,name,pad,3)
-         else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
-         endif
-         endif
-       end subroutine
-
-       subroutine export_processed_SF_func(func,m,x,dir,name,pad,direction)
-         implicit none
-         external :: func
-         type(mesh),intent(in) :: m
-         type(SF),intent(in) :: x
-         character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad,direction
          type(SF) :: temp_1,temp_2,temp_N
+         integer :: direction
+         character(len=2) :: DL,CD ! DL = direction letter, CD = component direction
+         integer,dimension(3) :: i_f
+               if (x%is_CC) then; DL = 'np'
+         elseif (x%is_Node) then; DL = 'np'
+         elseif (x%is_Face) then; DL = 'np'; CD = get_CD(x%face,'export_p_SF_func1')
+         elseif (x%is_Edge) then; DL = 'np'; CD = get_CD(x%edge,'export_p_SF_func2')
+         else; stop 'Error: bad input type to export_raw_VF in export_raw_processed.f90'
+         endif
+         if (.not.export_planar) then; direction = 0
+         else;    if (m%plane_x) then; direction = 1
+              elseif (m%plane_y) then; direction = 2
+              elseif (m%plane_z) then; direction = 3
+              else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
+              endif
+         endif
+
          if (.not.export_planar) then
            if (x%is_CC) then
              call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call func(m,temp_N,dir,name//'np',pad)
+             call export_3D_1C(m,temp_N,dir,name//DL,pad)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then
-             call func(m,x,dir,name//'np',pad)
+           elseif (x%is_Node) then; call export_3D_1C(m,x,dir,name//DL,pad)
            elseif (x%is_Face) then
-             select case (x%face)
-             case (1); call init_Edge(temp_1,m,2); call init_Node(temp_N,m); 
-                       call face2Node(temp_N,x,m,x%face,temp_1)
-                       call func(m,temp_N,dir,name//'np_x',pad)
-                       call delete(temp_1); call delete(temp_N)
-             case (2); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
-                       call face2Node(temp_N,x,m,x%face,temp_1)
-                       call func(m,temp_N,dir,name//'np_y',pad)
-                       call delete(temp_1); call delete(temp_N)
-             case (3); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
-                       call face2Node(temp_N,x,m,x%face,temp_1)
-                       call func(m,temp_N,dir,name//'np_z',pad)
-                       call delete(temp_1); call delete(temp_N)
-             case default; stop 'Error: face must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
-             end select
+             call init_Node(temp_N,m); i_f = (/2,1,1/)
+             call init_Edge(temp_1,m,i_f(x%face))
+             call face2Node(temp_N,x,m,x%face,temp_1)
+             call export_3D_1C(m,temp_N,dir,name//DL//'_'//CD,pad)
+             call delete(temp_1); call delete(temp_N)
            elseif (x%is_Edge) then
-             select case (x%edge)
-             case (1); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                       call func(m,temp_N,dir,name//'ep_x',pad)
-                       call delete(temp_N)
-             case (2); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                       call func(m,temp_N,dir,name//'ep_y',pad)
-                       call delete(temp_N)
-             case (3); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                       call func(m,temp_N,dir,name//'ep_z',pad)
-                       call delete(temp_N)
-             case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
-             end select
-           else; stop 'Error: bad input to export_processed_SF_func (1) in export_processed.f90'
+             call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+             call export_3D_1C(m,temp_N,dir,name//DL//'_'//CD,pad)
+             call delete(temp_N)
+           else; stop 'Error: bad input to export_p_SF_func (1) in export_processed.f90'
            endif
          else
            if (x%is_CC) then
              call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call func(m,temp_N,dir,name//'np',pad,direction)
+             call export_2D_1C(m,temp_N,dir,name//'np',pad,direction)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
            elseif (x%is_Node) then
-             call func(m,x,dir,name//'np',pad,direction)
+             call export_2D_1C(m,x,dir,name//'np',pad,direction)
            elseif (x%is_Face) then
-             select case (x%face)
-             case (1); call init_Edge(temp_1,m,2); call init_Node(temp_N,m); 
-                       call face2Node(temp_N,x,m,x%face,temp_1)
-                       call func(m,temp_N,dir,name//'np_x',pad,direction)
-                       call delete(temp_1); call delete(temp_N)
-             case (2); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
-                       call face2Node(temp_N,x,m,x%face,temp_1)
-                       call func(m,temp_N,dir,name//'np_y',pad,direction)
-                       call delete(temp_1); call delete(temp_N)
-             case (3); call init_Edge(temp_1,m,1); call init_Node(temp_N,m); 
-                       call face2Node(temp_N,x,m,x%face,temp_1)
-                       call func(m,temp_N,dir,name//'np_z',pad,direction)
-                       call delete(temp_1); call delete(temp_N)
-             case default; stop 'Error: face must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
-             end select
+             call init_Node(temp_N,m); i_f = (/2,1,1/)
+             call init_Edge(temp_1,m,i_f(x%face))
+             call face2Node(temp_N,x,m,x%face,temp_1)
+             call export_2D_1C(m,temp_N,dir,name//DL//'_'//CD,pad,direction)
+             call delete(temp_1); call delete(temp_N)
            elseif (x%is_Edge) then
-             select case (x%edge)
-             case (1); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                       call func(m,temp_N,dir,name//'ep_x',pad,direction)
-                       call delete(temp_N)
-             case (2); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                       call func(m,temp_N,dir,name//'ep_y',pad,direction)
-                       call delete(temp_N)
-             case (3); call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-                       call func(m,temp_N,dir,name//'ep_z',pad,direction)
-                       call delete(temp_N)
-             case default; stop 'Error: edge must = 1,2,3 in export_processed_SF in export_raw_processed.f90'
-             end select
-           else; stop 'Error: bad input to export_processed_SF_func (2) in export_processed.f90'
+             call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+             call export_2D_1C(m,temp_N,dir,name//DL//'_'//CD,pad,direction)
+             call delete(temp_N)
+           else; stop 'Error: bad input to export_p_SF_func (2) in export_processed.f90'
            endif
          endif
        end subroutine
@@ -255,61 +196,91 @@
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
-         if (.not.export_planar) then; call export_processed_VF_func(export_3D_3C,m,x,dir,name,pad,0)
-         else; if (m%plane_x) then;    call export_processed_VF_func(export_2D_2C,m,x,dir,name,pad,1)
-         elseif   (m%plane_y) then;    call export_processed_VF_func(export_2D_2C,m,x,dir,name,pad,2)
-         elseif   (m%plane_z) then;    call export_processed_VF_func(export_2D_2C,m,x,dir,name,pad,3)
-         else; stop 'Error: attempted plane export of 3D geometry in export_processed_VF in export_raw_processed.f90'
-         endif
-         endif
-       end subroutine
-
-       subroutine export_processed_VF_func(func,m,x,dir,name,pad,direction)
-         implicit none
-         external :: func
-         type(mesh),intent(in) :: m
-         type(VF),intent(in) :: x
-         character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad,direction
          type(VF) :: temp_1,temp_2,temp_N
+         integer :: direction
+         character(len=2) :: DL ! DL = direction letter, CD = component direction
+         integer,dimension(3) :: i_f
+         real(cp),dimension(3) :: t
+         logical,dimension(3) :: L
+         real(cp) :: tol
+         integer :: j
+               if (x%is_CC) then; DL = 'np'
+         elseif (x%is_Node) then; DL = 'np'
+         elseif (x%is_Face) then; DL = 'np'
+         elseif (x%is_Edge) then; DL = 'np'
+         else; stop 'Error: bad input type to export_processed_VF in export_raw_processed.f90'
+         endif
+
+         tol = 10.0_cp**(-15.0_cp)
+         t = (/maxabs(x%x),maxabs(x%y),maxabs(x%z)/)
+         L = (/(t(j).lt.tol,j=1,3)/)
+
          if (.not.export_planar) then
            if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call func(m,temp_N,dir,name//'np',pad)
+             call export_3D_3C(m,temp_N,dir,name//DL,pad)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
            elseif (x%is_Node) then
-             call func(m,temp_N,dir,name//'np',pad)
+             call export_3D_3C(m,temp_N,dir,name//DL,pad)
            elseif (x%is_Face) then
              call init_Edge(temp_1,m); call init_Node(temp_N,m); 
              call face2Node(temp_N,x,m,temp_1)
-             call func(m,temp_N,dir,name//'np',pad)
+             call export_3D_3C(m,temp_N,dir,name//DL,pad)
              call delete(temp_1); call delete(temp_N)
            elseif (x%is_Edge) then
              call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call func(m,temp_N,dir,name//'np',pad)
+             call export_3D_3C(m,temp_N,dir,name//DL,pad)
              call delete(temp_N)
-           else; stop 'Error: bad input to export_processed_VF_func (1) in export_processed.f90'
+           else; stop 'Error: bad input to export_processed_VF (1) in export_processed.f90'
            endif
          else
            if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call func(m,temp_N,dir,name//'np',pad,direction)
+             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
            elseif (x%is_Node) then
-             call func(m,temp_N,dir,name//'np',pad,direction)
+             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
            elseif (x%is_Face) then
              call init_Edge(temp_1,m); call init_Node(temp_N,m); 
              call face2Node(temp_N,x,m,temp_1)
-             call func(m,temp_N,dir,name//'np',pad,direction)
+             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
              call delete(temp_1); call delete(temp_N)
            elseif (x%is_Edge) then
              call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call func(m,temp_N,dir,name//'np',pad,direction)
+             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
              call delete(temp_N)
-           else; stop 'Error: bad input to export_processed_VF_func (2) in export_processed.f90'
+           else; stop 'Error: bad input to export_processed_VF (2) in export_processed.f90'
            endif
+         endif
+       end subroutine
+
+       subroutine export_2D_based_on_count(m,x,dir,name,DL,pad,direction,L)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name,DL
+         integer,intent(in) :: pad,direction
+         logical,dimension(3),intent(in) :: L ! logical array of zero components (true means max(x)<tol)
+             if (count(L).eq.2) then ! export 1 component
+                     if (.not.L(1)) then; call export_2D_1C(m,x%x,dir,name//DL,pad,1)
+                 elseif (.not.L(2)) then; call export_2D_1C(m,x%y,dir,name//DL,pad,2)
+                 elseif (.not.L(3)) then; call export_2D_1C(m,x%z,dir,name//DL,pad,3)
+                 else; stop 'Error: bad case in export_based_on_count1 in export_raw_processed.f90'
+                 endif
+         elseif (count(L).eq.1) then ! export 2 components
+                     if (.not.(L(2).and.L(3))) then; call export_2D_2C(m,x,dir,name//DL,pad,1)
+                 elseif (.not.(L(1).and.L(3))) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
+                 elseif (.not.(L(1).and.L(2))) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
+                 else; stop 'Error: bad case in export_based_on_count2 in export_raw_processed.f90'
+                 endif
+         else                        ! export all components
+                 if (x%is_CC.or.x%is_Node) then; call export_2D_3C(m,x  ,dir,name//DL,pad,direction)
+                 else;                           call export_2D_1C(m,x%x,dir,name//DL//'_x',pad,direction)
+                                                 call export_2D_1C(m,x%y,dir,name//DL//'_y',pad,direction)
+                                                 call export_2D_1C(m,x%z,dir,name//DL//'_z',pad,direction)
+                 endif
          endif
        end subroutine
 
@@ -321,9 +292,9 @@
          integer,intent(in) :: pad,nstep
          if (.not.export_planar) then
          stop 'Error: trying to export 3D transient solution in export_processed_transient_VF_2C in export_processed.f90.'
-         else; if (m%plane_x) then; call export_processed_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,1,nstep)
-         elseif   (m%plane_y) then; call export_processed_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,2,nstep)
-         elseif   (m%plane_z) then; call export_processed_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,3,nstep)
+         else; if (m%plane_x) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,1,nstep)
+         elseif   (m%plane_y) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,2,nstep)
+         elseif   (m%plane_z) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,3,nstep)
          else; stop 'Error: attempted plane export of 3D geometry in export_processed_transient_VF_2C in export_raw_processed.f90'
          endif
          endif
@@ -337,15 +308,15 @@
          integer,intent(in) :: pad,nstep
          if (.not.export_planar) then
          stop 'Error: trying to export 3D transient solution in export_processed_transient_VF_3C in export_processed.f90.'
-         else; if (m%plane_x) then; call export_processed_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,1,nstep)
-         elseif   (m%plane_y) then; call export_processed_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,2,nstep)
-         elseif   (m%plane_z) then; call export_processed_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,3,nstep)
-         else; stop 'Error: attempted plane export of 3D geometry in export_processed_VF_3C in export_raw_processed.f90'
+         else; if (m%plane_x) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,1,nstep)
+         elseif   (m%plane_y) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,2,nstep)
+         elseif   (m%plane_z) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,3,nstep)
+         else; stop 'Error: attempted plane export of 3D geometry in export_processed_transient_VF_3C in export_raw_processed.f90'
          endif
          endif
        end subroutine
 
-       subroutine export_processed_transient_VF_func(func,m,x,dir,name,pad,direction,nstep)
+       subroutine export_p_transient_VF_func(func,m,x,dir,name,pad,direction,nstep)
          implicit none
          external :: func
          type(mesh),intent(in) :: m
@@ -354,7 +325,7 @@
          integer,intent(in) :: nstep,pad,direction
          type(VF) :: temp_1,temp_2,temp_N
          if (.not.export_planar) then
-           stop 'Error: trying to export 3D transient solution in export_processed_transient_VF_func in export_processed.f90.'
+           stop 'Error: trying to export 3D transient solution in export_p_transient_VF_func in export_processed.f90.'
          else
            if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
@@ -372,7 +343,7 @@
              call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
              call func(m,temp_N,dir,name//'np',pad,direction,nstep)
              call delete(temp_N)
-           else; stop 'Error: bad input to export_processed_VF_func (2) in export_processed.f90'
+           else; stop 'Error: bad input to export_p_transient_VF_func (2) in export_processed.f90'
            endif
          endif
        end subroutine

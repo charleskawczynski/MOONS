@@ -206,8 +206,8 @@
          write(un,*) 't,dt = ',nrg%time,nrg%dTime
          write(un,*) 'solveTMethod,N_nrg = ',solveTMethod,nrg%N_nrg
          write(un,*) 'tol_nrg = ',nrg%tol_nrg
-         call printPhysicalMinMax(nrg%T,'T')
-         call printPhysicalMinMax(nrg%divQ,'divQ')
+         call displayPhysicalMinMax(nrg%T,'T',un)
+         call displayPhysicalMinMax(nrg%divQ,'divQ',un)
          write(un,*) ''
          call print(nrg%m)
          write(un,*) ''
