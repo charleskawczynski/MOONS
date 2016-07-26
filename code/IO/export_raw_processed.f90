@@ -42,43 +42,22 @@
          integer :: direction
          character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
          ! ------------- collect some info
-               if (x%is_CC) then; DL = 'c'
-         elseif (x%is_Node) then; DL = 'n'
-         elseif (x%is_Face) then; DL = 'f'; CD = get_CD(x%face,'export_raw_SF')
-         elseif (x%is_Edge) then; DL = 'e'; CD = get_CD(x%edge,'export_raw_SF')
-         else; stop 'Error: bad input type to export_raw_SF in export_raw_processed.f90'
-         endif
-         if (.not.export_planar) then; direction = 0
-         else;    if (m%plane_x) then; direction = 1
-              elseif (m%plane_y) then; direction = 2
-              elseif (m%plane_z) then; direction = 3
-              else; stop 'Error: attempted plane export of 3D geometry in export_raw_SF in export_raw_processed.f90'
-              endif
-         endif
+         DL = get_DL_SF(x,'export_raw_SF0')
+         if (x%is_Face) CD = get_CD(x%face,'export_raw_SF1')
+         if (x%is_Edge) CD = get_CD(x%edge,'export_raw_SF2')
          ! ------------- begin export
          if (.not.export_planar) then
            if (x%is_CC.or.x%is_Node) then; call export_3D_1C(m,x,dir,name//DL,pad)
            else;                           call export_3D_1C(m,x,dir,name//DL//'_'//CD,pad)
            endif
          else
+           direction = get_plane_direction(m,'export_raw_SF3')
            if (x%is_CC.or.x%is_Node) then; call export_2D_1C(m,x,dir,name//DL,pad,direction)
            else;                           call export_2D_1C(m,x,dir,name//DL//'_'//CD,pad,direction)
            endif
          endif
        end subroutine
 
-       function get_CD(i,caller) result(CD)
-         ! Returns ('x','y','z') for inputs (1,2,3)
-         implicit none
-         integer,intent(in) :: i
-         character(len=*),intent(in) :: caller
-         character(len=1) :: CD
-         select case (i)
-         case (1); CD = 'x'; case (2); CD = 'y'; case (3); CD = 'z'
-         case default; write(*,*) 'Error: i must = 1,2,3 in '//caller
-         stop 'Done in export_raw_processed.f90'
-         end select
-       end function
 
        subroutine export_raw_VF(m,x,dir,name,pad)
          implicit none
@@ -92,19 +71,7 @@
          real(cp) :: tol
          integer :: j
          character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
-               if (x%is_CC) then; DL = 'c'
-         elseif (x%is_Node) then; DL = 'n'
-         elseif (x%is_Face) then; DL = 'f'
-         elseif (x%is_Edge) then; DL = 'e'
-         else; stop 'Error: bad input type to export_raw_VF in export_raw_processed.f90'
-         endif
-         if (.not.export_planar) then; direction = 0
-         else;    if (m%plane_x) then; direction = 1
-              elseif (m%plane_y) then; direction = 2
-              elseif (m%plane_z) then; direction = 3
-              else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
-              endif
-         endif
+         DL = get_DL(x,'export_raw_VF')
 
          tol = 10.0_cp**(-15.0_cp)
          t = (/maxabs(x%x),maxabs(x%y),maxabs(x%z)/)
@@ -116,7 +83,8 @@
                                            call export_3D_1C(m,x%y,dir,name//DL//'_y',pad)
                                            call export_3D_1C(m,x%z,dir,name//DL//'_z',pad)
            endif
-         else; call export_2D_based_on_count(m,x,dir,name,DL,pad,direction,L)
+         else; direction = get_plane_direction(m,'export_processed_SF3')
+         call export_2D_based_on_count(m,x,dir,name,DL,pad,direction,L)
          endif
        end subroutine
 
@@ -134,19 +102,9 @@
          integer :: direction
          character(len=2) :: DL,CD ! DL = direction letter, CD = component direction
          integer,dimension(3) :: i_f
-               if (x%is_CC) then; DL = 'np'
-         elseif (x%is_Node) then; DL = 'np'
-         elseif (x%is_Face) then; DL = 'np'; CD = get_CD(x%face,'export_p_SF_func1')
-         elseif (x%is_Edge) then; DL = 'np'; CD = get_CD(x%edge,'export_p_SF_func2')
-         else; stop 'Error: bad input type to export_raw_VF in export_raw_processed.f90'
-         endif
-         if (.not.export_planar) then; direction = 0
-         else;    if (m%plane_x) then; direction = 1
-              elseif (m%plane_y) then; direction = 2
-              elseif (m%plane_z) then; direction = 3
-              else; stop 'Error: attempted plane export of 3D geometry in export_raw_VF in export_raw_processed.f90'
-              endif
-         endif
+         DL = 'np'
+         if (x%is_Face) CD = get_CD(x%face,'export_processed_SF1')
+         if (x%is_Edge) CD = get_CD(x%edge,'export_processed_SF2')
 
          if (.not.export_planar) then
            if (x%is_CC) then
@@ -167,7 +125,7 @@
              call delete(temp_N)
            else; stop 'Error: bad input to export_p_SF_func (1) in export_processed.f90'
            endif
-         else
+         else; direction = get_plane_direction(m,'export_processed_SF3')
            if (x%is_CC) then
              call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
@@ -204,12 +162,7 @@
          logical,dimension(3) :: L
          real(cp) :: tol
          integer :: j
-               if (x%is_CC) then; DL = 'np'
-         elseif (x%is_Node) then; DL = 'np'
-         elseif (x%is_Face) then; DL = 'np'
-         elseif (x%is_Edge) then; DL = 'np'
-         else; stop 'Error: bad input type to export_processed_VF in export_raw_processed.f90'
-         endif
+         DL = 'np' ! "p" means "processed" (interpolated to node)
 
          tol = 10.0_cp**(-15.0_cp)
          t = (/maxabs(x%x),maxabs(x%y),maxabs(x%z)/)
@@ -234,7 +187,7 @@
              call delete(temp_N)
            else; stop 'Error: bad input to export_processed_VF (1) in export_processed.f90'
            endif
-         else
+         else; direction = get_plane_direction(m,'export_processed_VF')
            if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
@@ -347,5 +300,56 @@
            endif
          endif
        end subroutine
+
+       ! *************************************************************************************
+       ! ******************************* FUNCTIONS *******************************************
+       ! *************************************************************************************
+
+       function get_CD(i,caller) result(CD)
+         ! Returns ('x','y','z') for inputs (1,2,3)
+         implicit none
+         integer,intent(in) :: i
+         character(len=*),intent(in) :: caller
+         character(len=1) :: CD
+         select case (i); case (1); CD = 'x'; case (2); CD = 'y'; case (3); CD = 'z'
+         case default; write(*,*) 'Error: i must = 1,2,3 in '//caller
+         stop 'Done in export_raw_processed.f90'
+         end select
+       end function
+
+       function get_DL(x,caller) result(DL)
+         implicit none
+         type(VF),intent(in) :: x
+         character(len=*),intent(in) :: caller
+         character(len=1) :: DL
+               if (x%is_CC) then; DL = 'c'; elseif (x%is_Node) then; DL = 'n'
+         elseif (x%is_Face) then; DL = 'f'; elseif (x%is_Edge) then; DL = 'e'
+         else; write(*,*) 'Error: bad input type in '//caller; stop 'Done in export_raw_processed.f90'
+         endif
+       end function
+
+       function get_DL_SF(x,caller) result(DL)
+         implicit none
+         type(SF),intent(in) :: x
+         character(len=*),intent(in) :: caller
+         character(len=1) :: DL
+               if (x%is_CC) then; DL = 'c'; elseif (x%is_Node) then; DL = 'n'
+         elseif (x%is_Face) then; DL = 'f'; elseif (x%is_Edge) then; DL = 'e'
+         else; write(*,*) 'Error: bad input type in '//caller; stop 'Done in export_raw_processed.f90'
+         endif
+       end function
+
+       function get_plane_direction(m,caller) result(direction)
+         implicit none
+         type(mesh),intent(in) :: m
+         character(len=*),intent(in) :: caller
+         integer :: direction
+             if (m%plane_x) then; direction = 1
+         elseif (m%plane_y) then; direction = 2
+         elseif (m%plane_z) then; direction = 3
+         else; write(*,*) 'Error: attempted plane export of 3D geometry in '//caller
+         stop 'Done in export_raw_processed.f90'
+         endif
+       end function
 
        end module

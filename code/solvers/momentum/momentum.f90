@@ -337,6 +337,7 @@
            write(*,*) 'export_tec_momentum at mom%nstep = ',mom%nstep
            call export_processed(mom%m,mom%U,str(DT%U),'U',1)
            call export_processed(mom%m,mom%p,str(DT%U),'p',1)
+           call export_raw(mom%m,mom%divU,str(DT%U),'divU',1)
            if (solveEnergy.or.solveInduction) call export_raw(mom%m,F,str(DT%U),'jCrossB',0)
            ! call export_processed(mom%m,mom%temp_E,str(DT%U),'vorticity',1)
            write(*,*) '     finished'

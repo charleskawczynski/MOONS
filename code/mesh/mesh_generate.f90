@@ -23,7 +23,7 @@
          ! call init(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
-         ! call cube(m_mom)
+         call cube(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
@@ -41,7 +41,7 @@
          ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,D_sigma)
 
-         call straight_duct_fluid(m_mom)
+         ! call straight_duct_fluid(m_mom)
          call init(m_ind,m_mom)
          call init(D_sigma,m_mom,m_ind)
 

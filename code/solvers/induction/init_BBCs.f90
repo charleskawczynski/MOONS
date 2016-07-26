@@ -9,9 +9,10 @@
 
        private
 
-       integer,dimension(3) :: periodic_dir = (/1,0,0/) ! 1 = true, else false
+       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        integer :: preDefinedB_BCs = 5
-       real(cp) :: cw = 0.01_cp
+       real(cp) :: cw = 0.05_cp
+       ! real(cp) :: cw = 0.01_cp
        !                                      0 : B = 0
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
        !                                      2 : Bandaru
@@ -41,6 +42,7 @@
          case (3); call periodic_duct_flow(B,m)
          case (4); call thin_wall(B,m,cw)
          case (5); call thin_wall_LDC(B,m,cw)
+         case (6); call thin_wall_Hunt(B,m,cw)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
 
@@ -153,7 +155,7 @@
          enddo
        end subroutine
 
-       subroutine thin_wall_LDC(B,m,cw)
+       subroutine thin_wall_Hunt(B,m,cw)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
@@ -162,6 +164,16 @@
          call pseudo_vacuum(B,m)
          call thin_wall_face(B,m,cw,5)
          call thin_wall_face(B,m,cw,6)
+       end subroutine
+
+       subroutine thin_wall_LDC(B,m,cw)
+         implicit none
+         type(VF),intent(inout) :: B
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: cw
+         integer :: i,j
+         call pseudo_vacuum(B,m)
+         call thin_wall_face(B,m,cw,4)
        end subroutine
 
        subroutine makePeriodic(Bx_BCs,By_BCs,Bz_BCs,dir)

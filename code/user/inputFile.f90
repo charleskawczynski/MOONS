@@ -17,7 +17,7 @@
          integer,intent(inout) :: n_dt_start,n_dt_stop,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 100.0_cp
+         Re         = 400.0_cp
          Ha         = 20.0_cp
          Rem        = 1.0_cp
 
@@ -26,10 +26,13 @@
          Pr         = 0.043_cp
          Ec         = 0.0_cp
 
-         finite_Rem = .false.
-         dt_eng     = 2.0_cp*10.0_cp**(-5.0_cp)
-         dt_mom     = 5.0_cp*10.0_cp**(-4.0_cp)
+         finite_Rem = .true.
+         dt_eng     = 1.0_cp*10.0_cp**(-5.0_cp)
+         dt_mom     = 1.0_cp*10.0_cp**(-5.0_cp)
          dt_ind     = 1.0_cp*10.0_cp**(-5.0_cp)
+
+         ! dt_mom     = 1.0_cp*10.0_cp**(-3.0_cp) ! LDC
+         ! dt_ind     = 1.0_cp*10.0_cp**(-4.0_cp) ! LDC
          t          = 1000.0_cp
 
          n_dt_start = 0

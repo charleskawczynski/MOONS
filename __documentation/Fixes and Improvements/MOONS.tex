@@ -65,12 +65,11 @@ University of California Los Angeles, USA\\
 \begin{itemize}
 \setlength\itemsep{-1em}
 \item Include all BCs formally, point out that "Psuedo-vacuum" is the insulating case of thin-walled BCs
-\item Start last few sims on workstation
-\item Write a Python script to create a KU / KBi\_f etc. into a function of time for a given output
 \item Meet with Sergey to show energy budget terms before post-processing all sims.
 \item Read Moreau book about energy transfer, write up some documentation for new implementation
 \item Plot KB in vacuum in BC sim, see if that differs more / less then KBi\_f.
 \item Look into different forms of $\mathbf{j}\times \mathbf{B}$, e.g. $\mathbf{j}\times \mathbf{B} = (\mathbf{B}\bullet\nabla) \left(\frac{\mathbf{B}}{\mu}\right) - \nabla \left( \frac{\mathbf{B}^2}{2\mu} \right)$
+\item Write a Python script to compare PV / RV BC sims
 \item Means of comparison
 \begin{itemize}
 \setlength\itemsep{-1em}
@@ -165,7 +164,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \item export\_raw\_processed works almost perfectly, but there are several design flaws. 1) remove global vars (from sim params) 2) check for when the correct field is exported 3) remove "external" and look for different options. SOME OF THESE HAVE BEEN CORRECTED, WITH THE EXCEPTION OF THE TRANSIENT ROUTINES.
 \item Fix IO\_tools.f90. Pick better names and separate into IO tools and conversion (int2str, etc.)
 \item Re-consider HDF5
-\item Move the makeDir to the initialization routines (mom,ind,nrg)
 \item Figure out how to view time in tecplot as animation runs
 \end{itemize}
 

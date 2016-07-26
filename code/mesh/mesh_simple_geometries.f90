@@ -174,19 +174,19 @@
          integer,dimension(3) :: N
          integer :: i
          real(cp) :: Ha,Re
-         Ha = 10.0_cp; Re = 1000.0_cp
+         Ha = 20.0_cp; Re = 1000.0_cp
          call delete(m)
-         N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
-         beta = reynoldsBL(Re,hmin,hmax)
+         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp
+         ! beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 
-         i= 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         ! i= 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         ! i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         ! i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
 
-         ! i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
-         ! i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
-         ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          ! i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          call add(m,g)

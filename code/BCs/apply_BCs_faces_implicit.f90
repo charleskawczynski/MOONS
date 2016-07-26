@@ -110,9 +110,9 @@
          ! For readability, the faces are traversed in the order:
          !       {1,3,5,2,4,6} = (x_min,y_min,z_min,x_max,y_max,z_max)
          select case (face) ! face
-         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),b,p,y,z,-1.0_cp)
-         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),b,p,x,z,-1.0_cp)
-         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),b,p,x,y,-1.0_cp)
+         case (1); call app_CC(f(1,:,:),f(2,:,:),f(s(1)-1,:,:),b,p,y,z,1.0_cp)
+         case (3); call app_CC(f(:,1,:),f(:,2,:),f(:,s(2)-1,:),b,p,x,z,1.0_cp)
+         case (5); call app_CC(f(:,:,1),f(:,:,2),f(:,:,s(3)-1),b,p,x,y,1.0_cp)
          case (2); call app_CC(f(s(1),:,:),f(s(1)-1,:,:),f(2,:,:),b,p,y,z,1.0_cp)
          case (4); call app_CC(f(:,s(2),:),f(:,s(2)-1,:),f(:,2,:),b,p,x,z,1.0_cp)
          case (6); call app_CC(f(:,:,s(3)),f(:,:,s(3)-1),f(:,:,2),b,p,x,y,1.0_cp)
