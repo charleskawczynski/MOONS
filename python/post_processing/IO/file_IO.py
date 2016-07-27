@@ -86,3 +86,41 @@ def make_directory_tree_target(root,source,target,PS):
 		directory_tree(root,t+'Tfield'+PS,PS)
 		directory_tree(root,t+'material'+PS,PS)
 		directory_tree(root,t+'parameters'+PS,PS)
+
+def keep_direction_only_in_header(header,direction):
+	h = header
+	if direction==1: h[1] = h[1].replace('"y",','').replace('"z",','')
+	if direction==2: h[1] = h[1].replace('"x",','').replace('"z",','')
+	if direction==3: h[1] = h[1].replace('"x",','').replace('"y",','')
+	s = ''.join(header[2]).split(',')
+	if direction==1: s = [x+',' for x in s if 'J = ' not in x and 'K = ' not in x]
+	if direction==2: s = [x+',' for x in s if 'I = ' not in x and 'K = ' not in x]
+	if direction==3: s = [x+',' for x in s if 'I = ' not in x and 'J = ' not in x]
+	if direction==1 or direction==2: s.append(' DATAPACKING = POINT')
+	h[2] = s
+	h = [item for sublist in h for item in sublist]
+	return h
+
+def combine_variables_in_header(h1,h2,suffix1,suffix2):
+	h = h1
+	vars1 = h1[1].replace('VARIABLES = ','').replace('"x",','').replace('"y",','').replace('"z",','').replace('\n','')
+	vars2 = h2[1].replace('VARIABLES = ','').replace('"x",','').replace('"y",','').replace('"z",','').replace('\n','')
+	coordinates = h1[1].replace(vars1,'').replace('\n','')
+	vars1 = vars1.split(','); vars_1 = ['"'+k[1:-1]+'_'+suffix1+'"' for k in vars1]
+	vars2 = vars2.split(','); vars_2 = ['"'+k[1:-1]+'_'+suffix2+'"' for k in vars2]
+	h[1] = coordinates+','.join(vars_1)+','+','.join(vars_2)+'\n'
+	return h
+
+def combine_variables_in_header_new(h1,h2):
+	h = h1
+	s1 = h[1].replace('\n',',')
+	vars1 = h1[1].replace('VARIABLES = ','').replace('"x",','').replace('"y",','').replace('"z",','').replace('\n','')
+	vars2 = h2[1].replace('VARIABLES = ','').replace('"x",','').replace('"y",','').replace('"z",','').replace('\n','')
+	coordinates = h1[1].replace(vars1,'')
+	print coordinates
+	print s2
+	s = s2.split(',')
+	suffix2 = '2'
+	s = ['"'+k[1:-1]+'_'+suffix2+'"' for k in s]
+	h[1] = s1+','.join(s[-3:])+'\n'
+	return h

@@ -6,7 +6,7 @@ sys.path.insert(0, 'IO')
 import file_IO as IO
 
 def get_overlapped_data_set(a1,a2,direction): # len(a1)>len(a2)
-	b1 = [];b2 = []; k=0
+	b1 = [];b2 = []; c1=[]; k=0
 	s1 = a1.shape; s2 = a2.shape; tol = 1e-15
 	if direction==1: x=[1,2]
 	if direction==2: x=[0,2]
@@ -15,42 +15,32 @@ def get_overlapped_data_set(a1,a2,direction): # len(a1)>len(a2)
 		if (k<s2[0]):
 			if abs(a1[i,0]-a2[k,0])<tol and abs(a1[i,1]-a2[k,1])<tol and abs(a1[i,2]-a2[k,2])<tol:
 				if abs(a1[i,x[0]])<tol and abs(a1[i,x[1]])<tol:
-					b1.append(a1[i,:])
-					b2.append(a2[k,:])
+					b1.append(a1[i,3:])
+					b2.append(a2[k,3:])
+					c1.append(a2[k,0:3]) # x,y,z must be removed later
 				k=k+1
-	return (np.array(b1),np.array(b2))
+	return (np.array(c1),np.array(b1),np.array(b2))
 
 def get_overlapped_data(a1,a2,direction):
 	s1 = a1.shape; s2 = a2.shape
-	if (s1[0]>s2[0]): (interior,total) = get_overlapped_data_set(a1,a2,direction)
-	else:			  (total,interior) = get_overlapped_data_set(a2,a1,direction)
-	return (interior,total)
+	if (s1[0]>s2[0]): (c,interior,total) = get_overlapped_data_set(a1,a2,direction)
+	else:			  (c,total,interior) = get_overlapped_data_set(a2,a1,direction)
+	return (c,interior,total)
 
-def adjust_header(header,direction):
-	h = header
-	h[0] = h[0].replace('PV','').replace('RV','')
-	if direction==1: h[1] = h[1].replace('"y",','').replace('"z",','')
-	if direction==2: h[1] = h[1].replace('"x",','').replace('"z",','')
-	if direction==3: h[1] = h[1].replace('"x",','').replace('"y",','')
-	s = ''.join(header[2]).split(',')
-	if direction==1: s = [x+',' for x in s if 'J = ' not in x and 'K = ' not in x]
-	if direction==2: s = [x+',' for x in s if 'I = ' not in x and 'K = ' not in x]
-	if direction==3: s = [x+',' for x in s if 'I = ' not in x and 'J = ' not in x]
-	if direction==1 or direction==2: s.append(' DATAPACKING = POINT')
-	h[2] = s
-	h = [item for sublist in h for item in sublist]
-	return h
-
-def compute_same_grid(f1,f2,direction):
+def compute_same_grid(f1,f2,direction,suffix1,suffix2):
 	(a_1,h_1) = IO.get_data(f1)
 	(a_2,h_2) = IO.get_data(f2)
-	h = adjust_header(h_1,direction)
-	(interior,total) = get_overlapped_data(a_1,a_2,direction)
-	s = np.concatenate((interior,total[:,3:]),axis=1) # Need to label this still...
+	h = IO.combine_variables_in_header(h_1,h_2,suffix1,suffix2)
+	h = IO.keep_direction_only_in_header(h,direction)
+	(c,interior,total) = get_overlapped_data(a_1,a_2,direction)
+	s = np.concatenate((c,interior,total),axis=1)
+	if direction==1: s = np.delete(s,[1,2],axis=1)
+	if direction==2: s = np.delete(s,[0,2],axis=1)
+	if direction==3: s = np.delete(s,[0,1],axis=1)
 	return (s,h)
 
-def export_difference_same_grid(f1,f2,line_dir,direction):
-	(arr,head) = compute_same_grid(f1,f2,direction)
+def export_difference_same_grid(f1,f2,line_dir,direction,suffix1,suffix2):
+	(arr,head) = compute_same_grid(f1,f2,direction,suffix1,suffix2)
 	np.savetxt(line_dir, arr, delimiter='	  ', header = ''.join(head), comments='') # Save file
 
 def compare_PV_RV(root,source,target,v,direction,PS):
@@ -67,5 +57,5 @@ def compare_PV_RV(root,source,target,v,direction,PS):
 		suffix = v+'field'+PS+v+'np.dat'
 		print 'diff_dir='+diff_dir.replace(root,'')
 		print 'diff_name='+diff_name
-		export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name,direction)
+		export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name,direction,'PV','RV')
 
