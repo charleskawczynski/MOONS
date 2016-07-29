@@ -96,7 +96,9 @@ def keep_direction_only_in_header(header,direction):
 	if direction==1: s = [x+',' for x in s if 'J = ' not in x and 'K = ' not in x]
 	if direction==2: s = [x+',' for x in s if 'I = ' not in x and 'K = ' not in x]
 	if direction==3: s = [x+',' for x in s if 'I = ' not in x and 'J = ' not in x]
-	if direction==1 or direction==2: s.append(' DATAPACKING = POINT')
+	s[-1] = s[-1][:-1]
+	if direction==1 or direction==2: s.append(' DATAPACKING = POINT\n')
+	s = [x if not x.endswith('\n') else x[:-1] for x in s]
 	h[2] = s
 	h = [item for sublist in h for item in sublist]
 	return h

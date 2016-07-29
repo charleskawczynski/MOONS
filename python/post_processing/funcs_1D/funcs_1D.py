@@ -53,9 +53,43 @@ def compare_PV_RV(root,source,target,v,direction,PS):
 		(diff_dir,diff_mismatch) = IO.highest_matching_directory(PVt,RVt,PS)
 		# print 'PVs='+PVs.replace(root,''); print 'PVt='+PVt.replace(root,'')
 		# print 'RVs='+RVs.replace(root,''); print 'RVt='+RVt.replace(root,'')
-		diff_name = diff_mismatch.replace(' ','').replace('RV','').replace('PV','')+'_1D_'+d+'_'+v+'np.dat'
+		diff_name = diff_mismatch.replace(' ','').replace('RV','').replace('PV','')
+		var_suffix = diff_name+' '
+		diff_name = diff_name+'_'+v+'np'+'_along_'+d+'.dat'
 		suffix = v+'field'+PS+v+'np.dat'
-		print 'diff_dir='+diff_dir.replace(root,'')
-		print 'diff_name='+diff_name
-		export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name,direction,'PV','RV')
+		print 'diff_file='+diff_dir.replace(root,'')+diff_name
+		export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name,direction,var_suffix+'PV'+'_along_'+d,var_suffix+'RV'+'_along_'+d)
 
+def plot_all_files_PV_RV(root,source,target,x_label,y_label,PS):
+	PV_s = [k for k in source if 'PV' in k]; RV_s = [k for k in source if 'RV' in k]
+	PV_t = [k for k in target if 'PV' in k]; RV_t = [k for k in target if 'RV' in k]
+	for PVs,RVs,PVt,RVt in zip(PV_s,RV_s,PV_t,RV_t):
+		(diff_dir,diff_mismatch) = IO.highest_matching_directory(PVt,RVt,PS)
+		# print 'PVs='+PVs.replace(root,''); print 'PVt='+PVt.replace(root,'')
+		# print 'RVs='+RVs.replace(root,''); print 'RVt='+RVt.replace(root,'')
+		# print 'diff_dir='+diff_dir.replace(root,'')
+		onlyfiles = IO.get_all_files_in_path(diff_dir)
+		onlyfiles = [x for x in onlyfiles if 'along' in x]
+		print '\n'.join(onlyfiles)
+		ymax = []; xmax = []
+		for filename in onlyfiles:
+			file = diff_dir+PS+filename
+			print 'file='+file.replace(root,'')
+			(arr,header) = IO.get_data(file)
+			(x,y) = IO.get_vec_data_np(arr)
+			ymax.append(np.fabs(y))
+			xmax.append(np.fabs(x))
+			# xmax.append(np.fabs(x[len(x)-1]))
+			plt.plot(x,y,label=filename.replace('LDC_',' ').replace('.dat','').replace('_',','))
+		xmax = [item for sublist in xmax for item in sublist] # flatten xmax
+		ymax = [item for sublist in ymax for item in sublist] # flatten ymax
+		plt.xlabel(x_label)
+		plt.ylabel(y_label)
+		x_max = np.amax(np.array(xmax))
+		y_max = np.amax(np.array(ymax))
+		plt.title(x_label + ' vs. ' + y_label)
+		plt.legend(loc=4,prop={'size':10})
+		# plt.axis([0, x_max, 0, y_max*1.2])
+		# plt.legend(loc='upper left')
+		plt.draw()
+	plt.show()

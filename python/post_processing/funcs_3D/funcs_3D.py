@@ -26,7 +26,8 @@ def compare_data_set(interior,total):
 	d = total
 	d[:,3:] = d[:,3:] - interior[:,3:] # PV - RV
 	d[:,3:] = np.abs(d[:,3:])		   # |PV - RV|
-	E = 0.5*d[:,3:]*d[:,3:]		       # Energy error
+	# E = 0.5*d[:,3:]*d[:,3:]		       # Energy error
+	E = 0.5*(np.square(d[:,3])+np.square(d[:,4])+np.square(d[:,5]))    # Energy error
 	d_amax_abs = np.amax(np.abs(d[:,3:]))
 	E_amax_abs = np.amax(np.abs(E))
 	return (d,d_amax_abs,E_amax_abs)
@@ -52,17 +53,17 @@ def compare_PV_RV(root,source,target,v,PS):
 	PV_RV_energy_error = []
 	for PVs,RVs,PVt,RVt in zip(PV_s,RV_s,PV_t,RV_t):
 		(diff_dir,diff_mismatch) = IO.highest_matching_directory(PVt,RVt,PS)
-		# print 'PVs='+PVs.replace(root,''); print 'PVt='+PVt.replace(root,'')
-		# print 'RVs='+RVs.replace(root,''); print 'RVt='+RVt.replace(root,'')
 		diff_name = diff_mismatch.replace(' ','').replace('RV','').replace('PV','')+'_diff_'+v+'np.dat'
 		suffix = v+'field'+PS+v+'np.dat'
-		print 'diff_dir='+diff_dir.replace(root,'')
-		print 'diff_name='+diff_name
+		print 'diff_file='+diff_dir.replace(root,'')+diff_name
 		(a,e) = export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name)
 		PV_RV_abs_error.append(a)
 		PV_RV_energy_error.append(e)
 		d = diff_dir+diff_name
-		PV_RV_abs_error_name.append(d.replace(root,''))
+		name = d.replace(root,'').replace('diff_','').replace('.dat','').replace(' ','')
+		name = name.replace('PP','')
+		if name.startswith(PS): name = name[1:]
+		PV_RV_abs_error_name.append(name)
 
 	for n,e,err in zip(PV_RV_abs_error_name,PV_RV_energy_error,PV_RV_abs_error):
-		print 'dir,error,energy_diff='+n,err,e
+		print 'n,d,e='+n+'\t'+str(err)+'\t'+str(e)

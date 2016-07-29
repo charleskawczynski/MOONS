@@ -51,20 +51,24 @@ def convert_N_to_t_given_dt(root,file_old,file_new,header_var_suffix,dt):
 	delim = '	  '
 	IO.copy_file(file_old,file_new)
 	np.savetxt(file_new, arr, delimiter=delim, header = head, comments='') # Save file
-	print 'Converted old:'+file_old.replace(root,'')
-	print 'Converted new:'+file_new.replace(root,'')
+	print 'Old copy:'+file_old.replace(root,'')
+	print 'New copy:'+file_new.replace(root,'')
 
-def plot_all_files_in_path(file_path,x_label,y_label,PS):
+def plot_all_files_in_path(file_path,x_label,y_label,var,PS):
 	onlyfiles = IO.get_all_files_in_path(file_path)
 	ymax = []; xmax = []
-	for filename in onlyfiles:
-		file = file_path+PS+filename
+	if var=='U': onlyfiles = [x for x in onlyfiles if 'KE' in x]
+	elif var=='B': onlyfiles = [x for x in onlyfiles if 'ME' in x]
+	else: sys.error('Error: variable input must be U or B')
+	print '\n'.join(onlyfiles)
+	for file_name in onlyfiles:
+		file = file_path+PS+file_name
 		(arr,header) = IO.get_data(file)
 		(x,y) = IO.get_vec_data_np(arr)
 		ymax.append(np.fabs(y))
 		xmax.append(np.fabs(x))
 		# xmax.append(np.fabs(x[len(x)-1]))
-		plt.plot(x,y,label=filename.replace('LDC_',' ').replace('.dat','').replace('_',','))
+		plt.plot(x,y,label=file_name.replace('LDC_',' ').replace('.dat','').replace('_',','))
 	xmax = [item for sublist in xmax for item in sublist] # flatten xmax
 	ymax = [item for sublist in ymax for item in sublist] # flatten ymax
 	plt.xlabel(x_label)
@@ -77,26 +81,44 @@ def plot_all_files_in_path(file_path,x_label,y_label,PS):
 	# plt.legend(loc='upper left')
 	plt.show()
 
-def copy_KE_ME_to_common_folder(root,source,target,fileName,variable,PS):
+def export_all_SS_energy(root,file_path,v,PS):
+	onlyfiles = IO.get_all_files_in_path(file_path)
+	ymax = []; xmax = []
+	x_SS = []; y_SS = []; name_SS = []
+	onlyfiles = [x for x in onlyfiles if not 'global_data.dat' in x]
+	for file_name in onlyfiles:
+		file = file_path+PS+file_name
+		print file.replace(root,'')
+		(arr,header) = IO.get_data(file)
+		(x,y) = IO.get_vec_data_np(arr)
+		x_SS.append(x[-1])
+		y_SS.append(y[-1])
+		name_SS.append(file_name.replace('LDC_',' ').replace('.dat','').replace('_',',').replace('KU','KE').replace(' ',''))
+		ymax.append(np.fabs(y))
+		xmax.append(np.fabs(x))
+	for a,b,c in zip(name_SS,x_SS,y_SS): print a,'\t',c
+
+def copy_KE_ME_to_common_folder(root,source,target,energy_path,file_name,variable,PS):
 	for s,t in zip(source,target):
-		f_src = t+variable+'field'+PS+fileName
-		# Filename processing
-		file_name = t+fileName
-		file_name = file_name.replace(root,'').replace(PS,'_').replace(' ','')
-		file_name = file_name.replace('LDC'+PS,'').replace('PP_','').replace('.dat','')
-		print 'file_name='+file_name
-		f_dst = root+'PP'+PS+file_name+'.dat'
-		print 'f_src:'+f_src.replace(root,'')
+		f_src = t+variable+'field'+PS+file_name
+		# file_name processing
+		file = t+file_name
+		file = file.replace(root,'').replace('LDC','').replace('PP','').replace('.dat','')
+		if file.startswith(PS): file = file[1:] # must be after .replace(root,'')
+		file = file.replace(PS+PS,PS).replace(PS,'_').replace(' ','')
+		file = file.replace('PV','_PV_').replace('RV','_RV_').replace('__','_')
+		f_dst = root+energy_path+file+'.dat'
+		print 'f_src:'+s.replace(root,'')
 		print 'f_dst:'+f_dst.replace(root,'')
 		IO.copy_file(f_src,f_dst)
 
 def convert_N_to_t_all(root,source,target,PS):
 	for s,t in zip(source,target):
-		f_src = s+'Ufield'+PS+'KU.dat'
-		f_dst = t+'KU_vs_t.dat'
+		f_src = s+'Ufield'+PS+'KE.dat'
+		f_dst = t+'KE_vs_t.dat'
 		print 'f_src:'+f_src.replace(root,'')
 		print 'f_dst:'+f_dst.replace(root,'')
-		convert_N_to_t(root,s,s+'Ufield'+PS+'KU'	,t+'Ufield'+PS+'KU_vs_t'	,'vs_t','.dat')
-		convert_N_to_t(root,s,s+'Bfield'+PS+'KBi_f' ,t+'Bfield'+PS+'KBi_f_vs_t' ,'vs_t','.dat')
-		convert_N_to_t(root,s,s+'Bfield'+PS+'KBi_c' ,t+'Bfield'+PS+'KBi_c_vs_t' ,'vs_t','.dat')
-		convert_N_to_t(root,s,s+'Bfield'+PS+'KBi'   ,t+'Bfield'+PS+'KBi_vs_t'   ,'vs_t','.dat')
+		convert_N_to_t(root,s,s+'Ufield'+PS+'KU'	,t+'Ufield'+PS+'KE_vs_t'	,'vs_t','.dat')
+		convert_N_to_t(root,s,s+'Bfield'+PS+'KBi_f' ,t+'Bfield'+PS+'MEi_f_vs_t' ,'vs_t','.dat')
+		convert_N_to_t(root,s,s+'Bfield'+PS+'KBi_c' ,t+'Bfield'+PS+'MEi_c_vs_t' ,'vs_t','.dat')
+		convert_N_to_t(root,s,s+'Bfield'+PS+'KBi'   ,t+'Bfield'+PS+'MEi_vs_t'   ,'vs_t','.dat')

@@ -53,6 +53,7 @@
          ! --- Scalar fields ---
          type(SF) :: divQ                  ! CC data
          type(SF) :: vol_CC
+         type(SF) :: Q_source
 
          type(errorProbe) :: transient_divQ
          type(mesh) :: m
@@ -110,6 +111,7 @@
          call init(nrg%D,D)
 
          call init_CC(nrg%T,m,0.0_cp)
+         call init_CC(nrg%Q_source,m,0.0_cp)
          call init_CC(nrg%temp_CC2,m,0.0_cp)
          call init_Face(nrg%temp_F,m,0.0_cp)
          call init_Face(nrg%k,m,0.0_cp)
@@ -173,6 +175,7 @@
          type(energy),intent(inout) :: nrg
 
          call delete(nrg%T)
+         call delete(nrg%Q_source)
          call delete(nrg%temp_F)
          call delete(nrg%k)
          call delete(nrg%temp_CC1)
@@ -285,6 +288,11 @@
          case (3) ! Diffusion implicit
          call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
          nrg%Pr,nrg%m,nrg%N_nrg,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+
+         case (4)
+         if (nrg%nstep.le.1) call assign(nrg%Q_source,-1.0_cp)
+         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         nrg%Pr,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
