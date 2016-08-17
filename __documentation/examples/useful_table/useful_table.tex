@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+
+\usepackage{hyperref} % Do not load to make boxes absent
+\usepackage{amsmath}
+\usepackage{tabularx, multirow, booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{esint}
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+\usepackage{numprint}
+
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\U}{\mathbf{u}}
+\renewcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\PD}{\partial}
+\newcommand{\MAC}{\mathcal}
+\newcommand{\MC}{\multicolumn}
+\newcommand{\MR}{\multirow}
+\newcommand{\BM}{\frac{\B}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\J}{\sigma}}
+\newcommand{\JoS}{\frac{\J^1}{\sigma}}
+\newcommand{\JSS}{\frac{\J^2}{\sigma}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Useful table}
+\npdecimalsign{.}
+\nprounddigits{3}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{| c | c *{4}{| n{1}{3} } |}
+  \hline
+  \MC{2}{| c |}{} & \MC{4}{  c |}{$t_w=0.05$} \\ \cline{3-6}
+  \MC{2}{| c |}{} & \MC{2}{c |}{$Re_m=1$} & \MC{2}{c |}{$Re_m=100$} \\
+  \hline
+  \MC{1}{|c|}{$Re$}&\MC{1}{ c|}{$Ha$}&
+  \MC{1}{ c|}{RV} & \MC{1}{ c|}{PV}&
+  \MC{1}{ c|}{RV} & \MC{1}{ c|}{PV} \\
+  \hline
+  % Re      Ha            RV                   PV                   RV                    PV
+  400    &  20  &  6.85922249595e-05  &  7.58080708454e-05  & 0.632565687475000  &  0.731459957128000 \\
+  1000   &  20  &  0.000000000000000  &  0.000000000000000  & 0.493844264408000  &  0.601445213758000 \\ \hline
+  400    &  100 &  3.82406371932e-06  &  4.62538806585e-06  & 0.036091097398400  &  0.040780086537000 \\
+  1000   &  100 &  0.000000000000000  &  0.000000000000000  & 0.039078589952600  &  0.043058671169900 \\
+  \hline
+  \MC{2}{| c |}{} & \MC{4}{  c |}{$t_w=0.5$} \\ \cline{3-6}
+  \hline
+  % Re      Ha            RV                   PV                   RV                    PV
+  400    &  20  &  2.30881889979e-4  &  2.60009020221e-4  & 1.799756553390000  &  1.957555067260000 \\
+  1000   &  20  &  2.09470756236e-4  &  2.26944493490e-4  & 1.587463810240000  &  1.738410988350000 \\ \hline
+  400    &  100 &  1.63394663944e-5  &  2.17447549891e-5  & 0.132106207008000  &  0.140019635305000 \\
+  1000   &  100 &  1.62210747387e-5  &  2.07963980558e-5  & 0.135777060848000  &  0.143371581624000 \\
+  \hline
+\end{tabular}
+\caption{Steady state ME for PV and RV BCs in a lid-driven cavity MHD flow at various $Re,Ha,Re_m$ and $t_w$.}
+\label{tab:MEi_f_comparison}
+\end{table}
+
+
+\end{document}

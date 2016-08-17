@@ -17,7 +17,7 @@
         type(string) :: PS
         type(string) :: tar     ! absolute target directory (.exe location)
 
-        type(path) :: tar_p,out_dir,LDC,mat,params,BEM
+        type(path) :: tar_p,out_dir,LDC,mat,params,BEM,e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
 
         type(path) :: U,B,J,T
@@ -47,6 +47,7 @@
         call init(DT%out_dir     ,DT%tar_p       ,'out'        ,str(DT%PS))
         call init(DT%LDC         ,DT%out_dir     ,'LDC'        ,str(DT%PS))
 
+        call init(DT%e_budget    ,DT%LDC         ,'e_budget'   ,str(DT%PS))
         call init(DT%mat         ,DT%LDC         ,'material'   ,str(DT%PS))
         call init(DT%params      ,DT%LDC         ,'parameters' ,str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
@@ -55,7 +56,9 @@
         call init(DT%B           ,DT%LDC         ,'Bfield'     ,str(DT%PS))
         call init(DT%J           ,DT%LDC         ,'Jfield'     ,str(DT%PS))
         call init(DT%T           ,DT%LDC         ,'Tfield'     ,str(DT%PS))
-        
+
+        call init(DT%e_budget_N  ,DT%e_budget    ,'e_budget_N' ,str(DT%PS))
+        call init(DT%e_budget_C  ,DT%e_budget    ,'e_budget_C' ,str(DT%PS))
         call init(DT%restart1    ,DT%restart_sim ,'restart1'   ,str(DT%PS))
         call init(DT%restart2    ,DT%restart_sim ,'restart2'   ,str(DT%PS))
         call init(DT%U_t         ,DT%U           ,'transient'  ,str(DT%PS))
@@ -81,6 +84,9 @@
         call make_dir(full(DT%LDC))
 
         call make_dir(str(DT%params))
+        call make_dir(str(DT%e_budget))
+        call make_dir(str(DT%e_budget_C))
+        call make_dir(str(DT%e_budget_N))
         call make_dir(str(DT%mat))
         call make_dir(str(DT%BEM))
         call make_dir(str(DT%restart))
@@ -112,6 +118,9 @@
 
         call delete(DT%params)
         call delete(DT%mat)
+        call delete(DT%e_budget)
+        call delete(DT%e_budget_C)
+        call delete(DT%e_budget_N)
         call delete(DT%BEM)
         call delete(DT%restart)
         call delete(DT%restart1)

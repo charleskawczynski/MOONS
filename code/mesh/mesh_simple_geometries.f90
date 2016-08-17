@@ -17,6 +17,7 @@
        public :: Hunt_duct_magnetic
        public :: Shercliff_duct_magnetic
        public :: duct_with_vacuum
+       public :: matrix_export_mesh
 
        real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
@@ -62,13 +63,13 @@
          Gamma_v = 7.0_cp
          tf = 1.0_cp
 
-         ! tw = 0.5_cp
+         tw = 0.5_cp
          ! N_w = 8 ! For Ha = 20
-         ! N_w = 10 ! For Ha = 100
+         N_w = 10 ! For Ha = 100
 
-         tw = 0.05_cp
+         ! tw = 0.05_cp
          ! N_w = 4 ! For Ha = 20
-         N_w = 6 ! For Ha = 100
+         ! N_w = 6 ! For Ha = 100
 
          N_v = 12
          N_extra = 6 ! since no wall domain above lid
@@ -242,17 +243,36 @@
          integer,dimension(3) :: N
          integer :: i
          real(cp) :: Ha,Re
-         Ha = 20.0_cp; Re = 10.0_cp**(7.0_cp)
+         Ha = 60.0_cp; Re = 10.0_cp**(7.0_cp)
          call delete(m)
-         N = (/1,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         N = (/256,200,1/); hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
          ! beta = reynoldsBL(Re,hmin,hmax)
          beta = hartmannBL(Ha,hmin,hmax)
 
          i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
-         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i = 3; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
 
+         call add(m,g)
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine matrix_export_mesh(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m)
+         N = (/3,3,3/); hmin = -1.0_cp; hmax = 1.0_cp
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
          call initProps(m)
          call patch(m)

@@ -54,13 +54,21 @@
          do n_step=n_step,n_dt_stop
            call init(PE,n_step)
 
+           ! write(*,*) 'n_step=',n_step
+
            call tic(sc)
 
            if (solveEnergy)    call solve(nrg,mom%U,  PE,DT)
            if (solveMomentum)  call solve(mom,F,      PE,DT)
            if (solveInduction) call solve(ind,mom%U_E,PE,DT)
 
-           call assign(F,0.0_cp)
+           ! Q-2D implementation:
+           ! call assign_negative(F%x,mom%U%x); call multiply(F%x,1.0_cp/(mom%Re/mom%Ha))
+           ! call assign_negative(F%y,mom%U%y); call multiply(F%y,1.0_cp/(mom%Re/mom%Ha))
+           ! call assign(F%z,0.0_cp)
+
+           ! call assign(F,0.0_cp)
+
            if (addJCrossB) then
              call compute_AddJCrossB(F,ind%B,ind%B0,ind%J,ind%m,&
                                      ind%D_fluid,mom%Ha,mom%Re,&
@@ -81,6 +89,9 @@
 
            call toc(sc)
            if (PE%info) then
+             ! oldest_modified_file violates intent, but this 
+             ! would be better to update outside the solvers.
+             ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc)
              continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
              call writeSwitchToFile(.false.,str(DT%params),'exportNow')
@@ -106,9 +117,9 @@
          if (solveMomentum)  call exportTransient(mom)
          if (solveInduction) call exportTransient(ind)
 
-         if (solveEnergy) then;    call export_tec(nrg,DT); call export(nrg,DT); endif
-         if (solveInduction) then; call export_tec(ind,DT); call export(ind,DT); endif
-         call export_tec(mom,DT,F); call export(mom,DT)
+         if (solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
+         if (solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
+         if (solveMomentum) then;  call export_tec(mom,DT,F); call export(mom,DT); endif
 
          call delete(F)
        end subroutine

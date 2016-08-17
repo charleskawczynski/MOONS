@@ -111,6 +111,7 @@ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
 \end{array} \right]
 \]
 Note that the first and last equations are identities ($0=0$) which are reserved for the ghost points.
+
 \subsection{Neumann}
 Consider Neumann BCs, $u_g$ may be computed by writing the equation for the first derivative on the boundary
 \begin{equation}
@@ -154,6 +155,44 @@ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
 Note that the first and last equations are identities ($0=0$) which are reserved for the ghost points.
 
 ALSO: In this case, $A$ is singular, so the nullspace must be removed. This can be addressed in several ways. In MOONS, the nullspace is removed by subtracting the weighted mean of the RHS. Notice that the matrix $A$ is already nicely symmetric, so CG may be applied.
+
+\subsection{Periodic}
+THIS IS NOT WORKING YET AND NEEDS TO BE MODIFIED.
+
+Consider periodic BCs, $u_g$ may is known on the ghost point since it wraps around to $u_i$ on the opposing side.
+\begin{equation}
+  \left(\frac{\partial u}{\partial x}\right)_{boundary}
+  = \frac{u_g - u_i}{\Delta x} = \frac{{u_i}_{opp} - u_i}{\Delta x}
+  \rightarrow
+  u_g = {u_i}_{opp}
+\end{equation}
+So our Laplacian stencil becomes:
+\begin{equation}
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} = 
+   \frac{- 2 u_1 + u_{2}}{\Delta x^2} = f_1 - \frac{{u_i}_{opp}}{\Delta x^2}
+\end{equation}
+This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. However, we must still see the matrix $A$:
+\[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
+1  & 1     &           &           &           &           &           &         &  0 \\
+1  & -2    & 1         &           &           &           &           &         &    \\
+   & 1     & -2        & 1         &           &           &           &         &    \\
+   &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
+   &       &           &           &           & 1         & -2        & 1       &    \\
+   &       &           &           &           &           &  1        & -2      &  1 \\
+0  &       &           &           &           &           &           & 1       &  1 \\
+\end{array} \right]
+\rightarrow
+A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
+0  & 0     & 0         &           &           &           &           & 0       &  0 \\
+0  & -2    & 1         &           &           &           &           & 0       &  0 \\
+0  & 1     & -2        & 1         &           &           &           &         &    \\
+   &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
+   &       &           &           &           & 1         & -2        & 1       &  0 \\
+0  & 0     &           &           &           &           &  1        & -2      &  0 \\
+0  & 0     &           &           &           &           &  0        & 0       &  0 \\
+\end{array} \right]
+\]
+
 
 \newpage
 \section{Node data}

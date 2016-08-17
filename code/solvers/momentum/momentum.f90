@@ -71,7 +71,7 @@
          type(SF) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
          type(SF) :: vol_CC
 
-         type(GS_Poisson) :: GS_p
+         type(GS_Poisson_SF) :: GS_p
 
          type(matrix_free_params) :: MFP
          type(PCG_Solver_SF) :: PCG_P
@@ -87,7 +87,7 @@
          real(cp) :: Re,Ha,Gr,Fr
          real(cp) :: L_eta,U_eta,t_eta ! Kolmogorov Scales
 
-         real(cp),dimension(5) :: nrg_budget
+         real(cp),dimension(8) :: e_budget
          integer :: unit_nrg_budget
 
          ! Transient probes
@@ -139,30 +139,37 @@
          mom%U_eta = Re**(-1.0_cp/4.0_cp)
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
          mom%KE = 0.0_cp; mom%KE_2C = 0.0_cp
-         mom%nrg_budget = 0.0_cp
+         mom%e_budget = 0.0_cp
+         mom%t = 0.0_cp
          call init(mom%m,m)
 
-         call init_Edge(mom%U_E,m,0.0_cp)
-         call init_Face(mom%U,m,0.0_cp)
-         call init_Face(mom%Ustar,m,0.0_cp)
-         call init_Face(mom%Unm1,m,0.0_cp)
-         call init_Face(mom%temp_F,m,0.0_cp)
-         call init_Edge(mom%temp_E,m,0.0_cp)
-         call init_CC(mom%p,m,0.0_cp)
-         call init_CC(mom%divU,m,0.0_cp)
-         call init_CC(mom%U_CC,m,0.0_cp)
-         call init_CC(mom%temp_CC,m,0.0_cp)
-         call init_CC(mom%Fo_grid,m,0.0_cp)
-         call init_CC(mom%Co_grid,m,0.0_cp)
-         call init_CC(mom%Re_grid,m,0.0_cp)
-         call init_CC(mom%KE_adv,m,0.0_cp)
-         call init_CC(mom%KE_diff,m,0.0_cp)
-         call init_CC(mom%KE_pres,m,0.0_cp)
+         if (restartU) then
+         call readLastStepFromFile(mom%nstep,str(DT%params),'nstep_mom')
+         else; mom%nstep = 0
+         endif
+
+         call init_Edge(mom%U_E       ,m,0.0_cp)
+         call init_Face(mom%U         ,m,0.0_cp)
+         call init_Face(mom%Ustar     ,m,0.0_cp)
+         call init_Face(mom%Unm1      ,m,0.0_cp)
+         call init_Face(mom%temp_F    ,m,0.0_cp)
+         call init_Edge(mom%temp_E    ,m,0.0_cp)
+         call init_CC(mom%p           ,m,0.0_cp)
+         call init_CC(mom%divU        ,m,0.0_cp)
+         call init_CC(mom%U_CC        ,m,0.0_cp)
+         call init_CC(mom%temp_CC     ,m,0.0_cp)
+         call init_CC(mom%Fo_grid     ,m,0.0_cp)
+         call init_CC(mom%Co_grid     ,m,0.0_cp)
+         call init_CC(mom%Re_grid     ,m,0.0_cp)
+         call init_CC(mom%KE_adv      ,m,0.0_cp)
+         call init_CC(mom%KE_diff     ,m,0.0_cp)
+         call init_CC(mom%KE_pres     ,m,0.0_cp)
          call init_CC(mom%KE_transient,m,0.0_cp)
-         call init_CC(mom%KE_jCrossB,m,0.0_cp)
+         call init_CC(mom%KE_jCrossB  ,m,0.0_cp)
 
          call init_CC(mom%vol_CC,m)
          call volume(mom%vol_CC,m)
+         call export_raw(mom%m,mom%vol_CC,str(DT%U),'cell_volume',0)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -195,13 +202,8 @@
          call export(mom%transient_divU)
          write(*,*) '     momentum probes initialized'
 
-         mom%unit_nrg_budget = newAndOpen(str(DT%U),'energy_budget')
-         ! {error} = {dudt} + {adv} - {diff} + {pres} - {external}
-         write(mom%unit_nrg_budget,*) ' TITLE = "momentum energy budget"'
-         write(mom%unit_nrg_budget,*) ' VARIABLES = N,unsteady,convection,transport,Lorentz,Viscous_Dissipation'
-         write(mom%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
          ! Initialize interior solvers
-         call init(mom%GS_p,mom%p,mom%m,str(DT%U),'p')
+         call init(mom%GS_p,mom%p,mom%m,mom%tol_PPE,100,str(DT%U),'p')
          write(*,*) '     GS solver initialized for p'
 
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
@@ -222,17 +224,13 @@
          call delete(prec_PPE)
          write(*,*) '     PCG solver initialized for p'
 
-         if (restartU) then
-         call readLastStepFromFile(mom%nstep,str(DT%params),'nstep_mom')
-         else; mom%nstep = 0
-         endif
          call init(mom%transient_KE,str(DT%U),'KU',.not.restartU)
-         call init(mom%transient_KE_2C,str(DT%U),'KE_2C',.not.restartU)
+         if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U),'KE_2C',.not.restartU)
 
          temp_unit = newAndOpen(str(DT%params),'info_mom')
          call display(mom,temp_unit)
          close(temp_unit)
-         mom%t = 0.0_cp
+         if (restart_all) call import(mom,DT)
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
          write(*,*) ''
@@ -307,17 +305,36 @@
          implicit none
          type(momentum),intent(in) :: mom
          type(dir_tree),intent(in) :: DT
-         type(path) :: restart
-         call oldest_modified_file(restart,DT%restart1,DT%restart2,'p.dat')
-         call export(mom%U     ,str(restart),'U')
-         call export(mom%p     ,str(restart),'p')
-         call delete(restart)
+         integer :: un
+         un = newAndOpen(str(DT%restart),'mom_restart')
+         write(un,*) mom%dTime;    write(un,*) mom%N_mom
+         write(un,*) mom%N_PPE;    write(un,*) mom%tol_mom
+         write(un,*) mom%tol_PPE;  write(un,*) mom%Re
+         write(un,*) mom%Ha;       write(un,*) mom%Gr
+         write(un,*) mom%Fr;       write(un,*) mom%L_eta
+         write(un,*) mom%U_eta;    write(un,*) mom%t_eta
+         write(un,*) mom%KE;       write(un,*) mom%e_budget
+         write(un,*) mom%t
+         call export(mom%MFP,newAndOpen(str(DT%restart),'mom_MFP'))
+         call export(mom%U     ,str(DT%restart),'U')
+         call export(mom%p     ,str(DT%restart),'p')
        end subroutine
 
        subroutine import_momentum(mom,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
+         integer :: un
+         un = openToRead(str(DT%restart),'mom_restart')
+         read(un,*) mom%dTime;    read(un,*) mom%N_mom
+         read(un,*) mom%N_PPE;    read(un,*) mom%tol_mom
+         read(un,*) mom%tol_PPE;  read(un,*) mom%Re
+         read(un,*) mom%Ha;       read(un,*) mom%Gr
+         read(un,*) mom%Fr;       read(un,*) mom%L_eta
+         read(un,*) mom%U_eta;    read(un,*) mom%t_eta
+         read(un,*) mom%KE;       read(un,*) mom%e_budget
+         read(un,*) mom%t
+         call import(mom%MFP,openToRead(str(DT%restart),'mom_MFP'))
          call import(mom%U     ,str(DT%restart),'U')
          call import(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -353,8 +370,10 @@
          call apply(mom%transient_KE)
 
          call compute_TKE_2C(mom%KE_2C,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
-         call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE_2C)
-         call apply(mom%transient_KE_2C)
+         if (mom%m%plane_xyz) then
+           call set(mom%transient_KE_2C,mom%nstep,mom%t,mom%KE_2C)
+           call apply(mom%transient_KE_2C)
+         endif
          ! call Ln(temp_Ln,mom%divU,2.0_cp)
          ! call set(mom%transient_divU,mom%nstep,temp_Ln)
          call compute(mom%norm_divU,mom%divU,mom%vol_CC)
@@ -376,6 +395,7 @@
          else;                        N_PPE = mom%N_PPE
          endif
          N_PPE = mom%N_PPE
+         ! call assign(mom%Unm1,mom%U) ! If Unm1 is needed
 
          select case(solveUMethod)
          case (1)
@@ -434,8 +454,9 @@
          endif
        end subroutine
 
-       subroutine compute_E_K_Budget(mom,B,B0,J,D_fluid)
+       subroutine compute_E_K_Budget(mom,B,B0,J,D_fluid,DT)
          implicit none
+         type(dir_tree),intent(in) :: DT
          type(momentum),intent(inout) :: mom
          type(domain),intent(in) :: D_fluid
          type(VF),intent(in) :: B,B0,J
@@ -460,12 +481,11 @@
          call extractFace(temp_B0,B0,D_fluid)
          call extractEdge(temp_J,J,D_fluid)
 
-         call E_K_Budget(mom%nrg_budget,mom%U,mom%Unm1,mom%U_CC,&
+         call E_K_Budget(DT,mom%e_budget,mom%U,mom%Unm1,mom%U_CC,&
          temp_B,temp_B0,temp_J,mom%p,mom%m,mom%dTime,&
          temp_F1,temp_F2,temp_CC1_TF,temp_CC2_TF)
 
-         write(mom%unit_nrg_budget,*) mom%nstep,mom%nrg_budget
-         flush(mom%unit_nrg_budget)
+         call export_E_K_budget(mom,DT)
 
          call delete(temp_B)
          call delete(temp_B0)
@@ -474,6 +494,54 @@
          call delete(temp_F2)
          call delete(temp_CC1_TF)
          call delete(temp_CC2_TF)
+       end subroutine
+
+       subroutine export_E_K_budget(mom,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(dir_tree),intent(in) :: DT
+         type(string),dimension(8) :: vars
+         integer :: un,i
+         un = newAndOpen(str(DT%e_budget),'E_K_budget_terms')
+         i=1
+         call init(vars(i),'Unsteady = '); i=i+1
+         call init(vars(i),'E_K_Convection = '); i=i+1
+         call init(vars(i),'E_K_Diffusion = '); i=i+1
+         call init(vars(i),'E_K_Pressure = '); i=i+1
+         call init(vars(i),'Viscous_Dissipation = '); i=i+1
+         call init(vars(i),'E_M_Convection = '); i=i+1
+         call init(vars(i),'E_M_Tension = '); i=i+1
+         call init(vars(i),'Lorentz = '); i=i+1
+
+         write(un,*) 'kinetic energy budget at nstep=',mom%nstep
+         do i=1,size(vars)
+         write(un,*) str(vars(i)),mom%e_budget(i)
+         call delete(vars(i))
+         enddo
+         flush(un)
+         close(un)
+       end subroutine
+
+
+       subroutine init_E_K_Budget_old(mom,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(dir_tree),intent(in) :: DT
+         type(string) :: vars
+         mom%unit_nrg_budget = newAndOpen(str(DT%U),'E_K_budget_terms')
+         write(mom%unit_nrg_budget,*) ' TITLE = "momentum energy budget"'
+         call init(vars,' VARIABLES = ')
+         call append(vars,'Unsteady,')
+         call append(vars,'E_K_Convection,')
+         call append(vars,'E_K_Diffusion,')
+         call append(vars,'E_K_Pressure,')
+         call append(vars,'Viscous_Dissipation,')
+         call append(vars,'E_M_Convection,')
+         call append(vars,'E_M_Tension,')
+         call append(vars,'Lorentz')
+         write(mom%unit_nrg_budget,*) str(vars)
+         write(mom%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
+         call delete(vars)
        end subroutine
 
        end module

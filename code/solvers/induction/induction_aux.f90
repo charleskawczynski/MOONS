@@ -21,8 +21,8 @@
        public :: compute_JCrossB
        public :: compute_divBJ
        public :: compute_J
-       public :: compute_TME_Domain
-       public :: compute_TME
+       public :: compute_Total_Energy_Domain
+       public :: compute_Total_Energy
        public :: embedVelocity_E
        public :: embedVelocity_F
        public :: embedVelocity_CC
@@ -93,36 +93,36 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_TME_Domain(K_energy,KB_energy,B,nstep,time,D)
+       subroutine compute_Total_Energy_Domain(energy,field,nstep,time,D)
          implicit none
-         real(cp),intent(inout) :: K_energy
-         type(probe),intent(inout) :: KB_energy
-         type(VF),intent(in) :: B
+         type(probe),intent(inout) :: energy
+         type(VF),intent(in) :: field
          integer,intent(in) :: nstep
          real(cp),intent(in) :: time
          type(domain),intent(in) :: D
-         type(VF) :: temp
-         call init_CC(temp,D%m_in)
-         call extractCC(temp,B,D)
-         call Ln(K_energy,temp,2.0_cp,D%m_in)
-         K_energy = 0.5_cp*K_energy
-         call delete(temp)
-         call set(KB_energy,nstep,time,K_energy)
-         call apply(KB_energy)
+         type(VF) :: temp_VF
+         real(cp) :: temp
+         call init_CC(temp_VF,D%m_in)
+         call extractCC(temp_VF,field,D)
+         call Ln(temp,temp_VF,2.0_cp,D%m_in)
+         temp = 0.5_cp*temp
+         call delete(temp_VF)
+         call set(energy,nstep,time,temp)
+         call apply(energy)
        end subroutine
 
-       subroutine compute_TME(K_energy,KB_energy,B,nstep,time,m)
+       subroutine compute_Total_Energy(energy,field,nstep,time,m)
          implicit none
-         real(cp),intent(inout) :: K_energy
-         type(probe),intent(inout) :: KB_energy
-         type(VF),intent(in) :: B
+         type(probe),intent(inout) :: energy
+         type(VF),intent(in) :: field
          integer,intent(in) :: nstep
          real(cp),intent(in) :: time
          type(mesh),intent(in) :: m
-         call Ln(K_energy,B,2.0_cp,m)
-         K_energy = 0.5_cp*K_energy
-         call set(KB_energy,nstep,time,K_energy)
-         call apply(KB_energy)
+         real(cp) :: temp
+         call Ln(temp,field,2.0_cp,m)
+         temp = 0.5_cp*temp
+         call set(energy,nstep,time,temp)
+         call apply(energy)
        end subroutine
 
        subroutine embedVelocity_E(U_E_tot,U_E_in,D_fluid)

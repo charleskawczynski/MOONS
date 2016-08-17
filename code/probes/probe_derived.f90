@@ -405,25 +405,25 @@
 
         subroutine deleteCenterProbe(p)
           implicit none
-          type(centerProbe),intent(in) :: p
+          type(centerProbe),intent(inout) :: p
           call delete(p%ip)
         end subroutine
 
         subroutine deleteAveProbe(p)
           implicit none
-          type(aveProbe),intent(in) :: p
+          type(aveProbe),intent(inout) :: p
           call delete(p%ip)
         end subroutine
 
         subroutine deletePlaneErrorProbe(p)
           implicit none
-          type(planeErrorProbe),intent(in) :: p
+          type(planeErrorProbe),intent(inout) :: p
           call delete(p%ep)
         end subroutine
 
         subroutine deleteAvePlaneErrorProbe(p)
           implicit none
-          type(avePlaneErrorProbe),intent(in) :: p
+          type(avePlaneErrorProbe),intent(inout) :: p
           call delete(p%ep)
         end subroutine
 

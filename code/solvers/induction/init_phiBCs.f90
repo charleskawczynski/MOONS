@@ -11,7 +11,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = dirichlet on all sides
-       integer :: preDefinedphi_BCs = 2 ! see cases in init_phiBCs
+       integer :: preDefinedphi_BCs = 0 ! see cases in init_phiBCs
        
        contains
 
@@ -24,18 +24,18 @@
 
          do i=1,m%s
            call init_Dirichlet(phi%RF(i)%b)
+           call init(phi%RF(i)%b,0.0_cp)
            do k=1,3
              pd = periodic_dir(k)
              if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_phiBCs in init_phiBCs.f90'
              if (pd.eq.1) call makePeriodic(phi%RF(i)%b,k)
            enddo
-           call init(phi%RF(i)%b,0.0_cp)
          enddo
          phi%all_Neumann = .false. ! Needs to be adjusted manually
 
          select case (preDefinedphi_BCs)
-         case (1)
-         case (2); call periodic_duct_flow(phi)
+         case (0)
+         case (1); call periodic_duct_flow(phi)
          case default; stop 'Error: preDefinedphi_BCs must = 1:5 in init_phiBCs in init_phiBCs.f90.'
          end select
        end subroutine

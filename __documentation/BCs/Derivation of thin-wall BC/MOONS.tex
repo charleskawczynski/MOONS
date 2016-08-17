@@ -440,6 +440,16 @@ The resulting algorithm is:
 % \item Compute $\mathbf{J}_{boundary}^{\tau}$ and relax $\mathbf{B}_{ghost}$ (Ampere's law) - will be non-zero
 % \item Compute $\mathbf{E}_{boundary}^{\tau}$ (Ampere's law) - will be non-zero
 % \item Solve for $\mathbf{E}_{boundary}$ explicitly from 
+\newpage
+\section{Helmholtz formulation at boundary}
+The magnetic field on the boundary can be described by a scalar field
+\begin{equation} \begin{aligned}
+\B = \curl \A + \nabla \phi
+\end{aligned} \end{equation}
+The scalar field equation on the surface may be computed from
+\begin{equation} \begin{aligned}
+\B = \nabla \phi, \qquad \nabla^2 \phi = 0, \qquad (\N \DOT \nabla) \phi = B_n
+\end{aligned} \end{equation}
 
 \newpage
 

@@ -30,6 +30,15 @@ def make_path(new_path):
 def get_all_files_in_path(file_path):
 	return [k for k in listdir(file_path) if isfile(join(file_path, k))]
 
+def get_file_contents(file_path):
+	with open(file_path, 'r') as content_file:
+		content = content_file.read()
+
+def set_file_contents(file_path,contents):
+	text_file = open(file_path, "w")
+	text_file.write(contents)
+	text_file.close()
+
 def directory_tree(root,new_path,PS):
 	path = root+new_path
 	path = path.replace(root,'')
@@ -90,6 +99,37 @@ def make_directory_tree_target(root,source,target,PS):
 def keep_direction_only_in_header(header,direction):
 	h = header
 	if direction==1: h[1] = h[1].replace('"y",','').replace('"z",','')
+	if direction==2: h[1] = h[1].replace('"x",','').replace('"z",','')
+	if direction==3: h[1] = h[1].replace('"x",','').replace('"y",','')
+	s = h[1].split('"')
+	if direction==1: s = [x.replace('np','')[0:3]+'(x) '+x.replace('np','')[4:] if 'np' in x else x for x in s]
+	if direction==2: s = [x.replace('np','')[0:3]+'(y) '+x.replace('np','')[4:] if 'np' in x else x for x in s]
+	if direction==3: s = [x.replace('np','')[0:3]+'(z) '+x.replace('np','')[4:] if 'np' in x else x for x in s]
+	h[1] = '"'.join(s)
+
+	s = ''.join(header[2]).split(',')
+	if direction==1: s = [x+',' for x in s if 'J = ' not in x and 'K = ' not in x]
+	if direction==2: s = [x+',' for x in s if 'I = ' not in x and 'K = ' not in x]
+	if direction==3: s = [x+',' for x in s if 'I = ' not in x and 'J = ' not in x]
+	s[-1] = s[-1][:-1]
+	if direction==1 or direction==2: s.append(' DATAPACKING = POINT\n')
+	s = [x if not x.endswith('\n') else x[:-1] for x in s]
+	h[2] = s
+	h = [item for sublist in h for item in sublist]
+	return h
+
+def keep_direction_only_in_header_new(header,direction):
+	h = header
+	if direction==1: h[1] = h[1].replace('"y",','').replace('"z",','')
+	if direction==2: h[1] = h[1].replace('"x",','').replace('"z",','')
+	if direction==3: h[1] = h[1].replace('"x",','').replace('"y",','')
+	s = h[1].split('"')
+	if direction==1: s = [x.replace('np','')+'(x)' if 'np' in x else x for x in h[1].split('"')]
+	if direction==2: s = [x.replace('np','')+'(y)' if 'np' in x else x for x in h[1].split('"')]
+	if direction==3: s = [x.replace('np','')+'(z)' if 'np' in x else x for x in h[1].split('"')]
+	h[1] = ''.join(s)
+
+	if direction==1: h[1] = h[1].replace('"x",','').replace('"z",','')
 	if direction==2: h[1] = h[1].replace('"x",','').replace('"z",','')
 	if direction==3: h[1] = h[1].replace('"x",','').replace('"y",','')
 	s = ''.join(header[2]).split(',')

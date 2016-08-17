@@ -12,13 +12,13 @@
 
        ! This gets overridden by benchmarkCase
        integer :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
-       !                                       0 : User-defined case (no override)
+       !                                       0 : Uniform
        !                                       1 : Subdomain dependent
        !                                       2 : Cylinder (2D)
 
-       real(cp) :: sigmaStarWall = 1.0_cp             ! sigma* = sigma_wall/sigma_l
+       ! real(cp) :: sigmaStarWall = 1.0_cp             ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
-       ! real(cp) :: sigmaStarWall = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
+       real(cp) :: sigmaStarWall = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -42,7 +42,9 @@
          type(SF),intent(inout) :: sigma
          type(domain),intent(in) :: D
          type(mesh),intent(in) :: m
+         call assign(sigma,1.0_cp)
          select case (preDefined_Sigma)
+         case (0);
          case (1); call initSubdomain(sigma,D)
          case (2); call initCylinder2D(sigma,D,m%g(1),3) ! Only for single domain
          case default

@@ -25,9 +25,10 @@ if getEig
 end
 
 %% Plot original matrix
-% figure; spy(A)
-% title(['spy(' name ')'])
-
+figure; spy(A,'k')
+title(['spy(' name ')'])
+% h = gcf;
+% set(h,'Color','b')
 % figure; surf(A)
 % title(['Matrix surface of ' name ' operator'])
 

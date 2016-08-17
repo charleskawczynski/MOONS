@@ -94,6 +94,10 @@
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
        interface zeroInterior;            module procedure zeroInterior_SF;           end interface
 
+       public :: assign_first_interior_cell
+       interface assign_first_interior_cell; module procedure assign_first_interior_cell_RF; end interface
+       interface assign_first_interior_cell; module procedure assign_first_interior_cell_SF; end interface
+
        public :: sineWaves
        interface sineWaves;               module procedure sineWaves_SF;              end interface
 
@@ -332,9 +336,39 @@
          integer,intent(in) :: px,py,pz
          integer :: i,j,k
          ! $OMP PARALLEL DO
-         do k=2+px,s(1)-1-px; do j=2+py,s(2)-1-py; do i=2+pz,s(3)-1-pz
+         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px
          f(i,j,k) = 0.0_cp
          enddo; enddo; enddo
+         ! $OMP END PARALLEL DO
+       end subroutine
+
+       subroutine assign_first_interior_cell_RF(a,b,s,px,py,pz)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: a
+         real(cp),dimension(:,:,:),intent(in) :: b
+         integer,dimension(3),intent(in) :: s
+         integer,intent(in) :: px,py,pz
+         integer :: i,j,k
+         i=2
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         j=2
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         k=2
+         ! $OMP PARALLEL DO
+         do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         ! $OMP PARALLEL DO
+         do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
          ! $OMP END PARALLEL DO
        end subroutine
 
@@ -358,23 +392,24 @@
          CC(:,:,1) = Fz(:,:,2); CC(:,:,s(3)) = Fz(:,:,s(3))
        end subroutine
 
-       subroutine treatInterface_RF(f,s)
+       subroutine treatInterface_RF(f,s,take_high_value)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
+         logical,intent(in) :: take_high_value
          integer :: i,j,k
-         real(cp) :: top,bot,int,mi,ma
-         mi = minval(f); ma = maxval(f)
-         int = 0.5_cp*(mi+ma)
-         top = 0.5_cp*(ma+int)
-         bot = 0.5_cp*(mi+int)
+         real(cp) :: low_value,high_value,tol
+         low_value = minval(f); high_value = maxval(f)
          ! Make interface property the min/max of
          ! fluid / wall domain depending on treatment
+         tol = 10.0_cp**(-10.0_cp)
 
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
-         if ((f(i,j,k).gt.mi).and.(f(i,j,k).lt.ma)) then
-          f(i,j,k) = ma
+         if ((f(i,j,k).gt.low_value+tol).and.(f(i,j,k).lt.high_value-tol)) then
+           if (take_high_value) then;  f(i,j,k) = high_value
+           else;                       f(i,j,k) = low_value
+           endif
          endif
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
@@ -695,11 +730,21 @@
          do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,x,y,z); enddo
        end subroutine
 
-       subroutine treatInterface_SF(f)
+       subroutine assign_first_interior_cell_SF(a,b)
+         implicit none
+         type(SF),intent(inout) :: a
+         type(SF),intent(inout) :: b
+         integer :: i,x,y,z
+         call C0_N1_tensor(a,x,y,z)
+         do i=1,a%s; call assign_first_interior_cell(a%RF(i)%f,b%RF(i)%f,a%RF(i)%s,x,y,z); enddo
+       end subroutine
+
+       subroutine treatInterface_SF(f,take_high_value)
          implicit none
          type(SF),intent(inout) :: f
+         logical,intent(in) :: take_high_value
          integer :: i
-         do i=1,f%s; call treatInterface(f%RF(i)%f,f%RF(i)%s); enddo
+         do i=1,f%s; call treatInterface(f%RF(i)%f,f%RF(i)%s,take_high_value); enddo
        end subroutine
 
        subroutine displayPhysicalMinMax_SF(U,name,un)
@@ -863,12 +908,13 @@
          call zeroInterior(f%z)
        end subroutine
 
-       subroutine treatInterface_VF(f)
+       subroutine treatInterface_VF(f,take_high_value)
          implicit none
          type(VF),intent(inout) :: f
-         call treatInterface(f%x)
-         call treatInterface(f%y)
-         call treatInterface(f%z)
+         logical,intent(in) :: take_high_value
+         call treatInterface(f%x,take_high_value)
+         call treatInterface(f%y,take_high_value)
+         call treatInterface(f%z,take_high_value)
        end subroutine
 
        subroutine displayPhysicalMinMax_VF(U,name,un)

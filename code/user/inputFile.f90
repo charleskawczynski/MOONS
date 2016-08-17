@@ -17,23 +17,23 @@
          integer,intent(inout) :: n_dt_start,n_dt_stop,N_nrg,N_mom,N_PPE,N_ind,N_cleanB
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
-         Re         = 400.0_cp
-         Ha         = 20.0_cp
-         Rem        = 1.0_cp
+         Re         = 1000.0_cp
+         Ha         = 100.0_cp
+         Rem        = 100.0_cp
 
          Gr         = 10.0_cp**(8.0_cp)
-         Fr         = 0.0_cp
-         Pr         = 0.043_cp
+         Pr         = 0.01_cp
+         Fr         = 1.0_cp
          Ec         = 0.0_cp
 
          finite_Rem = .true.
-         dt_eng     = 1.0_cp*10.0_cp**(-5.0_cp)
-         dt_mom     = 1.0_cp*10.0_cp**(-5.0_cp)
-         dt_ind     = 1.0_cp*10.0_cp**(-5.0_cp)
+         dt_eng     = 1.0_cp*10.0_cp**(-7.0_cp)
+         dt_mom     = 1.0_cp*10.0_cp**(-7.0_cp)
+         dt_ind     = 1.0_cp*10.0_cp**(-7.0_cp)
 
          ! dt_mom     = 1.0_cp*10.0_cp**(-3.0_cp) ! LDC
          ! dt_ind     = 1.0_cp*10.0_cp**(-4.0_cp) ! LDC
-         t          = 1000.0_cp
+         t          = 200.0_cp
 
          n_dt_start = 0
          ! n_dt_stop       = ceiling(t/dt_eng)
@@ -44,8 +44,8 @@
          ! n_dt_stop       = 1500
 
          N_nrg         = 10       ! Number of iterations to solve energy    equation (if iterative solver is used)
-         N_mom         = 100      ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_ind         = 5        ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_mom         = 10       ! Number of iterations to solve momentum  equation (if iterative solver is used)
+         N_ind         = 1       ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 5        ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 

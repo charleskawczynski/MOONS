@@ -34,7 +34,7 @@
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
-         logical :: plane_x,plane_y,plane_z
+         logical :: plane_x,plane_y,plane_z,plane_xyz
          type(realField),dimension(:),allocatable :: vol
        end type
 
@@ -212,6 +212,7 @@
          m%plane_x = all((/(m%g(i)%c(1)%N.eq.1,i=1,m%s)/))
          m%plane_y = all((/(m%g(i)%c(2)%N.eq.1,i=1,m%s)/))
          m%plane_z = all((/(m%g(i)%c(3)%N.eq.1,i=1,m%s)/))
+         m%plane_xyz = any((/m%plane_x,m%plane_y,m%plane_z/))
          call init_volume(m)
        end subroutine
 

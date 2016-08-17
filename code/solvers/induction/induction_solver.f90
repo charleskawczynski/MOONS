@@ -31,6 +31,7 @@
        public :: CT_Finite_Rem
        public :: CT_Finite_Rem_perfect_vacuum
        public :: CT_Low_Rem
+       public :: CT_Finite_Rem_interior_solved
 
        ! Implicit time marching methods (diffusion implicit)
        public :: ind_PCG_BE_EE_cleanB_PCG
@@ -66,6 +67,80 @@
          call multiply(temp_F1,dt)
          call add(B,temp_F1)
          call apply_BCs(B,m)
+       end subroutine
+
+       subroutine CT_Finite_Rem_interior_solved(B,B0,B_interior,U_E,J,sigmaInv_E,m,D_sigma,dt,N_induction,&
+         temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
+         ! Solves:
+         !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
+         ! Computes:
+         !             B (above)
+         ! Input:
+         !             J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !!!!!
+         ! Method:
+         !             Constrained Transport (CT)
+         ! Info:
+         !             cell face => B,B0
+         !             cell edge => J,sigmaInv_E,U_E
+         !             Finite Rem
+         implicit none
+         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3
+         type(VF),intent(in) :: B_interior,B0,sigmaInv_E,J
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
+         type(domain),intent(in) :: D_sigma
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         integer,intent(in) :: N_induction
+         integer :: i
+         do i=1,N_induction
+           call add(temp_F2,B,B0) ! Since finite Rem
+           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+           call multiply(temp_E,J,sigmaInv_E)
+           call curl(temp_F3,temp_E,m)
+           call subtract(temp_F1,temp_F3)
+           call multiply(temp_F1,dt)
+           call add(B,temp_F1)
+           call apply_BCs(B,m)
+           call embedFace(B,B_interior,D_sigma)
+         enddo
+       end subroutine
+
+       subroutine CT_Finite_Rem_interior_solved_Poisson(B,B0,B_interior,U_E,J,sigmaInv_E,m,&
+         D_sigma,dt,N_induction,temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
+         ! Solves:
+         !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
+         ! Computes:
+         !             B (above)
+         ! Input:
+         !             J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !!!!!
+         ! Method:
+         !             Constrained Transport (CT)
+         ! Info:
+         !             cell face => B,B0
+         !             cell edge => J,sigmaInv_E,U_E
+         !             Finite Rem
+         implicit none
+         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3
+         type(VF),intent(in) :: B_interior,B0,sigmaInv_E,J
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
+         type(domain),intent(in) :: D_sigma
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         integer,intent(in) :: N_induction
+         integer :: i
+         do i=1,N_induction
+           call add(temp_F2,B,B0) ! Since finite Rem
+           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+           call multiply(temp_E,J,sigmaInv_E)
+           call curl(temp_F3,temp_E,m)
+           call subtract(temp_F1,temp_F3)
+           call multiply(temp_F1,dt)
+           call add(B,temp_F1)
+           call apply_BCs(B,m)
+           call embedFace(B,B_interior,D_sigma)
+         enddo
        end subroutine
 
        subroutine CT_Finite_Rem_perfect_vacuum(PCG_B,PCG_cleanB,B,B0,U_E,J,m,&

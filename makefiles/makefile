@@ -168,9 +168,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -313,6 +313,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90\
@@ -343,6 +344,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phiBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\

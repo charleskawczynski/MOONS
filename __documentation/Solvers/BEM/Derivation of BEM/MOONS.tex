@@ -13,6 +13,7 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
+\input{C:/Users/Charlie/Documents/GitHub/MOONS/__documentation/useful_commands.tex}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -28,11 +29,6 @@
 \setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
 \setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
 \setlength{\voffset}{0.5in}
-\newcommand{\DOT}{\text{\textbullet}}
-\newcommand{\X}{\mathbf{x}}
-\newcommand{\Y}{\mathbf{y}}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\PD}{\partial}
 
 % Useful commands:
 
@@ -50,24 +46,54 @@ University of California Los Angeles, USA\\
 \section{Boundary Element Method (BEM)}
 Here, I follow the work of \cite{Iskakov2004}. Consider boundary $\Gamma$. The tangential component of the electric field on the boundary is
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times \mathbf{B})_{\Gamma} + 
-  Re_m^{-1} \mathbf{\tau} \DOT (\nabla \times \mathbf{B})_{\Gamma}
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times \B)_{\Gamma} + 
+  Re_m^{-1} \mathbf{\tau} \DOT (\DEL \times \B)_{\Gamma}
 \end{equation}
 If we assume $\mathbf{u}_{\Gamma} \DOT \mathbf{n} = 0$ then this simplifies to
 \begin{equation}
   E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times (B_n \mathbf{n})_{\Gamma}) + 
-  Re_m^{-1} \mathbf{\tau} \DOT (\nabla \times \mathbf{B})_{\Gamma}
+  Re_m^{-1} \mathbf{\tau} \DOT (\DEL \times \B)_{\Gamma}
 \end{equation}
 % \begin{equation}
-%   (\nabla \times \mathbf{B})_{\Gamma} = \lim_{r \rightarrow \Gamma} (\nabla \times \mathbf{B}(\mathbf{r}))
+%   (\DEL \times \B)_{\Gamma} = \lim_{r \rightarrow \Gamma} (\DEL \times \B(\mathbf{r}))
 % \end{equation}
 The first term requires knowledge of $B_n$ only and therefore requires no special difficulty. The second term may be approximated using a 2nd order accurate stencil, but the tangential component of the magnetic field is still unknown. This will be determined from the normal component and from proper boundary conditions.
+
+\section{Vector identities}
+\begin{equation}\begin{aligned}
+  \CURL (\A \times \B) = \A (\DIV \B) - \B (\DIV \A) + (\B \DOT \DEL)\A - (\A \DOT \DEL)\B \\
+  \A \times (\B \times \C) = \B (\A \DOT \C) - \C (\A \DOT \B)
+\end{aligned}\end{equation}
+
+\section{Details of first term}
+The component of $\E$ tangent to the surface normal $\N$ is
+\begin{equation}\begin{aligned}
+  \N \times \E = -\N \times (\U \times \B) + Re_m^{-1} \N \times (\SII \DEL \times \B) \\
+  \A \times (\B \times \C) = \B (\A \DOT \C) - \C (\A \DOT \B) \\
+  \N \times \E = -(\U (\N \DOT \B) - \B (\N \DOT \U)) + Re_m^{-1} \N \times (\SII \DEL \times \B) \\
+\end{aligned}\end{equation}
+
+The normal component may be updated from
+
+\begin{equation}\begin{aligned}
+  \PD_t (\N \DOT \B) =& - \N \DOT \CURL \E \\
+   =& - \N \DOT \CURL (\SII \CURL \B - \U \times \B) \\
+   =& \N \DOT \CURL \U \times \B - \N \DOT \CURL (\SII \CURL \B) \\
+  & \CURL (\A \times \B) = \A (\DIV \B) - \B (\DIV \A) + (\B \DOT \DEL)\A - (\A \DOT \DEL)\B \\
+   =& \N \DOT (\U (\DIV \B) - \B (\DIV \U) + (\B \DOT \DEL)\U - (\U \DOT \DEL)\B) - \N \DOT \CURL (\SII \CURL \B) \\
+   =& \N \DOT ((\B \DOT \DEL)\U - (\U \DOT \DEL)\B) - \N \DOT \CURL (\SII \CURL \B) \\
+   =& \qquad \qquad \hdots \qquad \qquad \quad  - \N \DOT \CURL (\SII \CURL \B) \\
+   =& \qquad \qquad \hdots \qquad \qquad \quad  - \N \DOT \SII \CURL (\CURL \B) \\
+   =& \qquad \qquad \hdots \qquad \qquad \quad  - \N \DOT \SII (0 - \DEL^2 \B) \\
+   =& (\B \DOT \DEL)(\N \DOT \U) - (\U \DOT \DEL)(\N \DOT \B) + \underbrace{\SII \DEL^2 (\N \DOT \B)}_{\text{source term when $\U=\mathbf{0}$}} \\
+\end{aligned}\end{equation}
+
 \section{Integral formulation at the boundary}
 The tangential component of the magnetic field depends on the values of its normal component everywhere at the boundary.
 
 Consider matching a potential field as an elliptic problem in $\Omega^c$, the complementary domain of $\Omega$
 \begin{equation}
-  \mathbf{B} = -\nabla \phi, \qquad \Delta \phi = 0.
+  \B = -\DEL \phi, \qquad \Delta \phi = 0.
 \end{equation}
 Where $\phi: \Omega^c \rightarrow R$ is the potential function. At infinity, the physical condition for the magnetic field is
 \begin{equation}
@@ -98,12 +124,12 @@ Where $n$ is the coordinate along the outward normal to $\Omega$ and $\tilde{n}$
 \end{equation}
 Consequently, the tangential component of the magnetic field on $\Gamma$ along the unit vector $\tau$ is 
 \begin{equation}
-  B_{\tau} = - \mathbf{\tau} \DOT \nabla \phi(\X) = 
+  B_{\tau} = - \mathbf{\tau} \DOT \DEL \phi(\X) = 
   2 \mathbf{\tau} \DOT
   \int_{\Gamma}
   \left(
   \phi(\Y) \frac{\PD G(\X,\Y)}{\PD n}
-  + B_n(\Y) \nabla_x G(\X,\Y)
+  + B_n(\Y) \DEL_x G(\X,\Y)
   \right) ds(\Y)
 \end{equation}
 The discrete form of this may be assembeled as 

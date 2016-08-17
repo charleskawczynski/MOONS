@@ -70,7 +70,7 @@
          logical,dimension(3) :: L
          real(cp) :: tol
          integer :: j
-         character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
+         character(len=1) :: DL ! DL = direction letter, CD = component direction
          DL = get_DL(x,'export_raw_VF')
 
          tol = 10.0_cp**(-15.0_cp)
@@ -157,7 +157,6 @@
          type(VF) :: temp_1,temp_2,temp_N
          integer :: direction
          character(len=2) :: DL ! DL = direction letter, CD = component direction
-         integer,dimension(3) :: i_f
          real(cp),dimension(3) :: t
          logical,dimension(3) :: L
          real(cp) :: tol
@@ -216,17 +215,30 @@
          character(len=*),intent(in) :: dir,name,DL
          integer,intent(in) :: pad,direction
          logical,dimension(3),intent(in) :: L ! logical array of zero components (true means max(x)<tol)
-             if (count(L).eq.2) then ! export 1 component
-                     if (.not.L(1)) then; call export_2D_1C(m,x%x,dir,name//DL,pad,1)
-                 elseif (.not.L(2)) then; call export_2D_1C(m,x%y,dir,name//DL,pad,2)
-                 elseif (.not.L(3)) then; call export_2D_1C(m,x%z,dir,name//DL,pad,3)
-                 else; stop 'Error: bad case in export_based_on_count1 in export_raw_processed.f90'
+         logical,dimension(3) :: C,A
+         integer :: flag
+         A = (/direction.eq.1,direction.eq.2,direction.eq.3/)
+         C = (/.not.L(1),.not.L(2),.not.L(3)/)
+         flag = 0
+
+             if (count(L).eq.2) then ! try to export 1 component, then 2 components
+                     if (A(1).and.C(1)) then; call export_2D_1C(m,x%x,dir,name//DL,pad,1)
+                 elseif (A(2).and.C(2)) then; call export_2D_1C(m,x%y,dir,name//DL,pad,2)
+                 elseif (A(3).and.C(3)) then; call export_2D_1C(m,x%z,dir,name//DL,pad,3)
+                 elseif (A(1)) then; call export_2D_2C(m,x,dir,name//DL,pad,1)
+                 elseif (A(2)) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
+                 elseif (A(3)) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
+                 else; flag = 1
                  endif
          elseif (count(L).eq.1) then ! export 2 components
-                     if (.not.(L(2).and.L(3))) then; call export_2D_2C(m,x,dir,name//DL,pad,1)
-                 elseif (.not.(L(1).and.L(3))) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
-                 elseif (.not.(L(1).and.L(2))) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
-                 else; stop 'Error: bad case in export_based_on_count2 in export_raw_processed.f90'
+                     if (A(1).and.(.not.C(1))) then; call export_2D_2C(m,x,dir,name//DL,pad,1)
+                 elseif (A(2).and.(.not.C(2))) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
+                 elseif (A(3).and.(.not.C(3))) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
+                 else; flag = 2
+                         if (A(1)) then; call export_2D_2C(m,x,dir,name//DL,pad,1)
+                     elseif (A(2)) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
+                     elseif (A(3)) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
+                     endif
                  endif
          else                        ! export all components
                  if (x%is_CC.or.x%is_Node) then; call export_2D_3C(m,x  ,dir,name//DL,pad,direction)
@@ -234,6 +246,14 @@
                                                  call export_2D_1C(m,x%y,dir,name//DL//'_y',pad,direction)
                                                  call export_2D_1C(m,x%z,dir,name//DL//'_z',pad,direction)
                  endif
+         endif
+         if (flag.eq.0) then
+         elseif (flag.eq.1) then
+         write(*,*) 'A=',A; write(*,*) 'C=',C
+         stop 'Error: bad case in export_based_on_count1 in export_raw_processed.f90'
+         elseif (flag.eq.2) then
+         write(*,*) 'A=',A; write(*,*) 'C=',C
+         stop 'Error: bad case in export_based_on_count2 in export_raw_processed.f90'
          endif
        end subroutine
 

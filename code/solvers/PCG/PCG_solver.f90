@@ -48,9 +48,9 @@
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p,z
         type(norms) :: norm_res0
-        logical :: skip_PCG
+        logical :: skip_loop
         integer :: i,i_earlyExit
-        real(cp) :: alpha,rhok,rhokp1,res_norm,temp ! betak = rhokp1/rhok
+        real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
 
         ! ----------------------- MODIFY RHS -----------------------
         call multiply(r,b,vol)
@@ -74,7 +74,7 @@
         call multiply(Ax,vol)
         call subtract(r,Ax)
         call compute(norm_res0,r)
-        call check_nans(norm_res0%L2,name//' PCG_SF norm_res0%L2')
+        call check_nans(norm_res0%L2,norm_res0,name//' PCG_SF norm_res0%L2')
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
           call compute(norm,r)
@@ -86,7 +86,7 @@
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
         if (.not.sqrt(norm_res0%L2).lt.tol_abs) then ! Only do PCG if necessary!
-          skip_PCG = .false.
+          skip_loop = .false.
           do i=1,n
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply(Ax,vol)
@@ -110,16 +110,16 @@
             call add(p,z)
             rhok = rhokp1
           enddo
-        else; i=1; skip_PCG = .true.
+        else; i=1; skip_loop = .true.
         endif
 
 #ifdef _EXPORT_PCG_SF_CONVERGENCE_
         flush(un)
 #endif
-        call check_nans(res_norm,name//' PCG_SF res_norm')
+        call check_nans(res_norm,norm_res0,name//' PCG_SF res_norm')
 
         if (compute_norms) then
-          if (.not.skip_PCG) then
+          if (.not.skip_loop) then
             call operator_explicit(Ax,x,k,m,MFP,tempk)
             call multiply(Ax,vol)
             call multiply(r,b,vol)
@@ -134,7 +134,7 @@
             write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
           else
-            write(*,*) 'PCG_SF skip_PCG = ',skip_PCG
+            write(*,*) 'PCG_SF skip_loop = ',skip_loop
           endif
           write(*,*) ''
         endif
@@ -159,7 +159,7 @@
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p,z
-        logical :: skip_PCG
+        logical :: skip_loop
         integer :: i,i_earlyExit
         type(norms) :: norm_res0
         real(cp) :: alpha,rhok,rhokp1,res_norm ! betak = rhokp1/rhok
@@ -182,7 +182,7 @@
         call multiply(Ax,vol)
         call subtract(r,Ax)
         call compute(norm_res0,r)
-        call check_nans(norm_res0%L2,name//' PCG_VF norm_res0%L2')
+        call check_nans(norm_res0%L2,norm_res0,name//' PCG_VF norm_res0%L2')
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
           call compute(norm,r)
@@ -217,16 +217,16 @@
             call add(p,z)
             rhok = rhokp1
           enddo
-        else; i=1; skip_PCG = .true.
+        else; i=1; skip_loop = .true.
         endif
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
         flush(un)
 #endif
-        call check_nans(res_norm,name//' PCG_VF res_norm')
+        call check_nans(res_norm,norm_res0,name//' PCG_VF res_norm')
         
         if (compute_norms) then
-          if (.not.skip_PCG) then
+          if (.not.skip_loop) then
             call operator_explicit(Ax,x,k,m,MFP,tempk)
             call multiply(Ax,vol)
             call multiply(r,b,vol)
@@ -241,19 +241,21 @@
             write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
           else
-            write(*,*) 'PCG_VF skip_PCG = ',skip_PCG
+            write(*,*) 'PCG_VF skip_loop = ',skip_loop
           endif
           write(*,*) ''
         endif
       end subroutine
 
-      subroutine check_nans(f,location)
+      subroutine check_nans(f,norm_res0,location)
         implicit none
         real(cp),intent(in) :: f
+        type(norms),intent(in) :: norm_res0
         character(len=*),intent(in) :: location
         if (is_nan(f)) then
           write(*,*) 'Error: NaN in ',location
           write(*,*) 'f = ',f
+          call print(norm_res0,'norm_res0 in '//location)
           stop 'Done';
         endif
       end subroutine

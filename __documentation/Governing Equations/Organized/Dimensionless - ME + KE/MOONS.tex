@@ -1,0 +1,135 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Dimensionless ME + KE (for BC paper)}
+The dimensionless kinetic and magnetic energy equations are:
+\begin{equation}\begin{aligned}
+	\frac{\PD E_K}{\PD t}
+	+ \frac{t_c U_c}{L_c} (\U \DOT \DEL) E_K
+	= 
+	- \frac{t_c p_c}{L_c \rho U_c} \DEL \DOT (\U p)
+	+ \frac{t_c \nu_c}{L_c^2}
+	\left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right)
+	+ \frac{t_c B_c^2}{\rho_c L_c U_c \M_c}
+	( - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) ) \\
+	\frac{\PD E_M}{\PD t} = 
+	- \frac{t_c J_c^2 \M_c}{\sigma_c B_c^2} \frac{\J^2}{\SI}
+	- \frac{J_c t_c}{L_c \sigma_c B_c} \DEL \DOT \left[\frac{\J}{\SI} \times \H \right]
+	+ \frac{U_c t_c}{L_c}
+	\left( 
+	\DEL \DOT \left[\left(\U \CROSS \B \right) \times \H \right]
+	+ (\U \DOT \DEL) E_M
+	- \U \DOT (\B \DOT \DEL) \H
+	\right)
+\end{aligned}\end{equation}
+Where
+\begin{equation}
+	E_K = \frac{1}{2} \rho \U \DOT \U, \qquad E_M = \frac{1}{2} \B \DOT \H
+\end{equation}
+Using the specific scales
+\begin{equation}\begin{aligned}
+	J_c = U_c \sigma_c B_c, \qquad
+	p_c = \rho_c U_c^2, \qquad
+	t_c = L_c / U_c
+\end{aligned}\end{equation}
+We have
+\begin{equation}\boxed{\begin{aligned}
+	\frac{\PD E_K}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	= 
+	- \DEL \DOT (\U p)
+	+ \frac{1}{Re} ( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) )
+	+ \frac{Ha^2}{Re Re_m} (  - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) )
+	\\
+	\frac{\PD E_M}{\PD t} = 
+	- Re_m \frac{\J^2}{\SI}
+	- \DEL \DOT \left[\frac{\J}{\SI} \times \H \right]
+	+ 
+	\DEL \DOT \left[\left(\U \CROSS \B \right) \times \H \right]
+	+ (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H
+\end{aligned}}\end{equation}
+Keep in mind that although it appears that Joule heating scales with $Re_m$, the current scales as $Re_m^{-1}$, which is easily seen from its definition:
+\begin{equation}
+	\J^* = \frac{\J}{J_c} = \frac{\CURL \H}{U_c \sigma_c B_c} = \frac{\DEL^* \times \H^*}{U_c \sigma_c L_c \M_c} = \frac{1}{Re_m} \DEL \times \H^*
+\end{equation}
+We cannot add these equations yet, because they've been scaled by different coefficients. It is clear that, if they were scaled by the correct coefficients then, the corresponding terms would cancel out. Therefore, let's scale the $E_M$ equation by $\frac{Ha^2}{Re Re_m}$, so that they cancel appropriately. In addition, let's combine the Poynting terms.
+\begin{equation}\begin{aligned}
+	\frac{\PD E_K}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	= 
+	- \DEL \DOT (\U p)
+	+ \frac{1}{Re} \left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right)
+	+ \frac{Ha^2}{Re Re_m} (  - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) )
+	\\
+	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} = 
+	- \frac{Ha^2}{Re} \frac{\J^2}{\SI}
+	+ \frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \times \H \right]
+	+ \frac{Ha^2}{Re Re_m} ( + (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H )
+\end{aligned}\end{equation}
+Adding these equations, we have
+\begin{equation}\begin{aligned}
+	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	= 
+	- \DEL \DOT (\U p)
+	+ \frac{1}{Re} \left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right) \\
+	- \frac{Ha^2}{Re} \frac{\J^2}{\SI}
+	+ \frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \times \H \right]
+\end{aligned}\end{equation}
+In terms of the paper, we assume uniform properties, so we have
+\begin{equation}\begin{aligned}
+	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	= 
+	- \DEL \DOT (\U p)
+	+ \frac{1}{Re} \left( \DEL^2 E_K - (\DEL \U) \DOT (\DEL \U) \right) \\
+	- \frac{Ha^2}{Re} \frac{\J^2}{\SO}
+	+ \frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SO} \right) \times \B \right]
+\end{aligned}\end{equation}
+
+
+\end{document}

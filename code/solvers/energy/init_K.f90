@@ -14,7 +14,7 @@
        integer,parameter :: preDefined_K = 1 ! k* = k_wall/k_l
        !                                       0 : User-defined case (no override)
        !                                       1 : k* = kStar
-       real(cp) :: kStarWall = 1000.0_cp ! k* = k_wall/k_l
+       real(cp) :: kStarWall = 1.0_cp ! k* = k_wall/k_l
 
        contains
 

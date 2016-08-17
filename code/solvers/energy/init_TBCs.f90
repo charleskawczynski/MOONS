@@ -14,14 +14,13 @@
 
        private
 
-       integer,dimension(3) :: periodic_dir = (/0,1,1/) ! 1 = true, else false
+       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
 
-       integer,parameter :: preDefinedT_BCs = 4
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Insulated (dT/dn = 0)
-       !                                      2 : Fixed (T = T_wall)
-       !                                      3 : Cold Top, Hot Bottom (y), insulating walls
-       !                                      4 : Yi's Duct
+       integer,parameter :: preDefinedT_BCs = 1
+       !                                      0 : Insulated (dT/dn = 0)
+       !                                      1 : Fixed (T = T_wall)
+       !                                      2 : Cold Top, Hot Bottom (y), insulating walls
+       !                                      3 : Yi's Duct
 
        integer,parameter :: hotFace         = 4
        !                                      1 {x_min}
@@ -52,26 +51,26 @@
          call init_BC_mesh(T,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m%s
-           call init_Neumann(T%RF(i)%b)
-           do k=1,3
-             pd = periodic_dir(k)
-             if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_TBCs in init_TBCs.f90'
-             if (pd.eq.1) call makePeriodic(T%RF(i)%b,k)
-           enddo
-           call init(T%RF(i)%b,0.0_cp)
+           call init_Neumann(T%RF(i)%b); call init(T%RF(i)%b,0.0_cp)
          enddo
          T%all_Neumann = .false. ! Needs to be adjusted manually
 
          select case (preDefinedT_BCs)
-         case (1); call initInsulatingBCs(T%RF(1)%b)
-         case (2); call initFixedBCs(T%RF(1)%b)
+         case (0) ! Default insulating
+         case (1); call initFixedBCs(T%RF(1)%b)
                    call hotFaceBC(T%RF(1)%b,hotFace)
-         case (3); call initInsulatingBCs(T%RF(1)%b)
+         case (2); call initInsulatingBCs(T%RF(1)%b)
                    call hotFaceBC(T%RF(1)%b,hotFace)
                    call coldFaceBC(T%RF(1)%b,coldFace)
-         case (4); call duct_for_Yi(T,m)
+         case (3); call duct_for_Yi(T)
          case default; stop 'Error: preDefinedT_BCs must = 1 in init_TBCs in init_TBCs.f90.'
          end select
+
+         do i=1,m%s; do k=1,3
+           pd = periodic_dir(k)
+           if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_TBCs in init_TBCs.f90'
+           if (pd.eq.1) call makePeriodic(T%RF(i)%b,k)
+         enddo; enddo
        end subroutine
 
        subroutine initInsulatingBCs(T_bcs)
@@ -81,9 +80,8 @@
          call init(T_bcs,0.0_cp)
        end subroutine
 
-       subroutine duct_for_Yi(T,m)
+       subroutine duct_for_Yi(T)
          implicit none
-         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
          call init_Neumann(T%RF(1)%b,1); call init(T%RF(1)%b,-1.0_cp)
          call init_Neumann(T%RF(1)%b,2)
@@ -111,13 +109,6 @@
          implicit none
          type(BCs),intent(inout) :: T_bcs
          call init_Dirichlet(T_bcs)
-         call init(T_bcs,0.0_cp)
-       end subroutine
-
-       subroutine initUserTBCs(T_bcs)
-         implicit none
-         type(BCs),intent(inout) :: T_bcs
-         call init_Neumann(T_bcs)
          call init(T_bcs,0.0_cp)
        end subroutine
 

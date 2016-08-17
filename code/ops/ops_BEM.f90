@@ -20,16 +20,15 @@
 
        contains
 
-       subroutine boundaryFlux_VF(BF,u,m)
+       function boundaryFlux_VF(u,m) result(BF)
          ! Computes
          ! 
          !   BF = ∫∫ u•n dA
          ! 
          implicit none
          type(VF),intent(in) :: u
-         real(cp),intent(inout) :: BF
          type(mesh),intent(in) :: m
-         real(cp) :: BFtemp
+         real(cp) :: BFtemp,BF
          integer :: i,j,k,t
          BFtemp = 0.0_cp ! temp is necessary for reduction
          BF = 0.0_cp
@@ -87,24 +86,24 @@
              BF = BF + BFtemp; BFtemp = 0.0_cp
            endif
          enddo
-       end subroutine
+       end function
 
        ! *********************************************************************************
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
 
-       subroutine boundaryFlux_VF_SD(BF,f,D)
+       function boundaryFlux_VF_SD(f,D) result(BF)
          implicit none
          type(VF),intent(in) :: f
-         real(cp),intent(inout) :: BF
          type(domain),intent(in) :: D
+         real(cp) :: BF
          type(VF) :: temp
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
          call init_Face(temp,D%m_in)
          call extractFace(temp,f,D)
-         call boundaryFlux(BF,temp,D%m_in)
+         BF = boundaryFlux(temp,D%m_in)
          call delete(temp)
-       end subroutine
+       end function
 
        ! is this right???
        ! subroutine boundaryShear_VF(BF,f,m,temp_F,temp_F_TF)

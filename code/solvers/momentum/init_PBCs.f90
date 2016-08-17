@@ -11,7 +11,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = pure Neumann on all sides
-       integer :: preDefinedP_BCs = 1 ! see cases in init_PBCs
+       integer :: preDefinedP_BCs = 0 ! see cases in init_PBCs
        
        contains
 
@@ -23,24 +23,23 @@
          call init_BC_mesh(p,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m%s
-           call init_Neumann(p%RF(i)%b)
-           call init(p%RF(i)%b,0.0_cp)
-           do k=1,3
-             pd = periodic_dir(k)
-             if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_PBCs in init_PBCs.f90'
-             if (pd.eq.1) call makePeriodic(p%RF(i)%b,k)
-           enddo
+           call init_Neumann(p%RF(i)%b); call init(p%RF(i)%b,0.0_cp)
          enddo
          p%all_Neumann = .true. ! Needs to be adjusted manually
 
          select case (preDefinedP_BCs)
-         case (1)
-         case (2); call flow_past_2D_square(p)
-         case (3); call duct_flow_2D(p)
-         case (4); call duct_flow_2D_2domains(p)
-         case (5); call periodic_duct_flow(p)
+         case (0) ! Pure Neumann default
+         case (1); call flow_past_2D_square(p)
+         case (2); call duct_flow_2D(p)
+         case (3); call duct_flow_2D_2domains(p)
+         case (4); call periodic_duct_flow(p)
          case default; stop 'Error: preDefinedP_BCs must = 1:5 in init_PBCs in init_PBCs.f90.'
          end select
+         do i=1,m%s; do k=1,3
+           pd = periodic_dir(k)
+           if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_PBCs in init_PBCs.f90'
+           if (pd.eq.1) call makePeriodic(p%RF(i)%b,k)
+         enddo; enddo
        end subroutine
 
        subroutine flow_past_2D_square(p)

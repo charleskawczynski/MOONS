@@ -1,6 +1,9 @@
        module E_M_budget_mod
        use current_precision_mod
        use mesh_mod
+       use string_mod
+       use path_mod
+       use dir_tree_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -12,36 +15,28 @@
 
        contains
 
-       subroutine E_M_Budget(e_budget,B,Bnm1,B0,B0nm1,J,sigmaInv_F,sigmaInv_CC,U,U_CC,&
-         m,dt,temp_CC_TF,temp_CC_VF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
+       subroutine E_M_Budget(DT,e_integral,B,Bnm1,B0,B0nm1,J,sigmaInv_F,sigmaInv_CC,U,&
+         m,dTime,TF_CC,VF_CC,VF_F1,VF_F2,TF_F1,TF_F2,TF_F3)
          implicit none
-         type(VF),intent(in) :: B,Bnm1,B0,B0nm1,J,sigmaInv_F,U,U_CC
+         type(dir_tree),intent(in) :: DT
+         type(VF),intent(in) :: B,Bnm1,B0,B0nm1,J,sigmaInv_F,U
          type(SF),intent(in) :: sigmaInv_CC
-         type(VF),intent(inout) :: temp_F1,temp_F2,temp_CC_VF
-         type(TF),intent(inout) :: temp_CC_TF,temp_F1_TF,temp_F2_TF,temp_F3_TF
+         type(VF),intent(inout) :: VF_F1,VF_F2,VF_CC
+         type(TF),intent(inout) :: TF_CC,TF_F1,TF_F2,TF_F3
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         real(cp),dimension(5),intent(inout) :: e_budget
-         logical :: debug
-         debug = .false.
+         real(cp),intent(in) :: dTime
+         real(cp),dimension(3),intent(inout) :: e_integral
+         integer :: i
+         type(SF) :: e
+         call init(e,sigmaInv_CC)
+         i = 1
          
-         if (debug) write(*,*) 'got here 1'
-         call add(temp_F2,B,B0)
-         if (debug) write(*,*) 'got here 2'
-         call add(temp_F1_TF%y,Bnm1,B0nm1)
-         if (debug) write(*,*) 'got here 3'
-         call unsteady(e_budget(1),temp_F2,temp_F1_TF%y,dt,m,temp_F1_TF%z,temp_CC_TF%x)
-         if (debug) write(*,*) 'got here 4'
-         call Poynting(e_budget(2),temp_F2,J,U,sigmaInv_F,m,temp_CC_TF%x%x,temp_F1,temp_F1_TF,temp_F2_TF,temp_F3_TF)
-         if (debug) write(*,*) 'got here 5'
-         call Joule_Dissipation(e_budget(3),J,sigmaInv_CC,m,temp_CC_TF%x,temp_F1_TF%y)
-
-         ! call Lorentz(e_budget(4),J,temp_F2,U_CC,m,temp_CC_TF%x,temp_CC_TF%y,temp_CC_TF%z,temp_F1_TF%y)
-         if (debug) write(*,*) 'got here 6'
-         call maxwell_stress(e_budget(4),temp_F2,U_CC,m,temp_CC_VF,temp_CC_TF)
-         if (debug) write(*,*) 'got here 7'
-         call E_M_Convection(e_budget(5),temp_F2,U_CC,m,temp_CC_TF%x,temp_CC_TF%y%y)
-         if (debug) write(*,*) 'got here 8'
+         call add(VF_F2,B,B0)
+         call add(TF_F1%y,Bnm1,B0nm1)
+         call Unsteady_export(e_integral(i),e,VF_F2,TF_F1%y,dTime,m,TF_CC%x,TF_CC%y,DT); i=i+1
+         call Joule_Dissipation_export(e_integral(i),e,J,sigmaInv_CC,m,TF_CC%x,VF_F1,DT); i=i+1
+         call Poynting_export(e_integral(i),e,VF_F2,J,U,sigmaInv_F,m,VF_CC%x,VF_F1,TF_F1,TF_F2,TF_F3,DT); i=i+1
+         call delete(e)
        end subroutine
 
        end module

@@ -1,0 +1,152 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\newcommand{\OB}{\overbrace{\rightarrow}^{\left(\frac{t_c}{\rho_c {C_p}_c \theta_c}\right)}}
+\newcommand{\Cp}{{C_p}_c}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Dimensionless thermal energy equation}
+From the dimensional momentum equation:
+\begin{equation}
+	\rho C_p \left[ \frac{\PD T}{\PD t} 
+	+ (\U \DOT \DEL) T \right] 
+	= \DEL \DOT (k \DEL T) 
+	+ \frac{1}{\sigma} \J^2 
+	+ \mu ( \DEL \U^T + \DEL \U ) \DEL \U
+	+ \dot{Q}
+\end{equation}
+First, let $\theta = (T - T_c)$, to get
+\begin{equation}
+	\rho C_p \left[ \frac{\PD \theta}{\PD t} 
+	+ (\U \DOT \DEL) \theta \right] 
+	= \DEL \DOT (k \DEL \theta) 
+	+ \frac{1}{\sigma} \J^2 
+	+ \mu ( \DEL \U^T + \DEL \U ) \DEL \U
+	+ \dot{Q}
+\end{equation}
+Where $\dot{Q}$ is some volumetric heat generation per unit volume. Non-dimensionalizing by general scales:
+\begin{equation}\begin{aligned}
+	[\U] = U_c \qquad
+	[t] = t_c \qquad
+	[\DEL] = \frac{1}{L_c} \qquad
+	[\rho] = \rho_c \qquad
+	[\sigma] = \sigma_c \\
+	[\theta] = \theta_c \qquad
+	[\J] = J_c \qquad
+	[C_p] = \Cp \qquad
+	[k] = k_c \qquad
+	[\mu] = \mu_c \qquad
+	[\dot{Q}] = \dot{Q}_c
+\end{aligned}\end{equation}
+And dividing by the coefficient of the transient term, we have:
+\subsection{Transient term}
+\begin{equation}
+	\rho_c \Cp \left( \frac{\theta_c}{t_c} \frac{\PD \theta^*}{\PD t^*} \right) 
+	\OB
+	\frac{\PD \theta^*}{\PD t^*}
+\end{equation}
+\subsection{Convection}
+\begin{equation}
+	\frac{\rho_c \Cp U_c \theta_c}{L_c} (\U^* \DOT \DEL^*) \theta^*
+	\OB
+	\frac{U_c t_c}{L_c} (\U^* \DOT \DEL^*) \theta^*
+\end{equation}
+\subsection{Diffusion}
+\begin{equation}
+	\frac{k_c \theta_c}{L_c^2} \DEL^* \DOT (k^* \DEL^* \theta^*)
+	\OB
+	\frac{k_c}{\rho_c \Cp} \frac{t_c}{L_c^2} \DEL^* \DOT (k^* \DEL^* \theta^*)
+\end{equation}
+\subsection{Joule Heating}
+\begin{equation}
+	\frac{J_c^2}{\sigma_c \sigma^*} {\J^*}^2
+	\OB
+	\frac{J_c^2 t_c}{\rho_c \Cp \theta_c \sigma_c \sigma^*} {\J^*}^2
+\end{equation}
+\subsection{Viscous dissipation}
+\begin{equation}
+	\frac{\mu_c U_c^2}{L_c^2} ( \DEL^* {\U^*}^T + \DEL^* \U^* ) \DEL^* \U^*
+	\OB
+	\frac{\mu_c t_c U_c^2}{\rho_c \Cp \theta_c L_c^2} ( \DEL^* {\U^*}^T + \DEL^* \U^* ) \DEL^* \U^*
+\end{equation}
+\subsection{General term}
+\begin{equation}
+	\dot{Q}
+	\OB
+	\frac{t_c}{\theta_c \rho_c \Cp}\dot{Q}
+\end{equation}
+\section{Putting it all together}
+\begin{equation}
+	\boxed{
+	\frac{\PD \theta^*}{\PD t^*}
+	+ \frac{U_c t_c}{L_c} (\U^* \DOT \DEL^*) \theta^*
+	= \frac{k_c}{\rho_c \Cp} \frac{t_c}{L_c^2} \DEL^* \DOT (k^* \DEL^* \theta^*)
+	+ \frac{J_c^2 t_c}{\rho_c \Cp \theta_c \sigma_c \sigma^*} {\J^*}^2
+	+ \frac{\mu_c t_c U_c^2}{\rho_c \Cp \theta_c L_c^2} ( \DEL^* {\U^*}^T + \DEL^* \U^* ) \DEL^* \U^*
+	+ \frac{t_c \dot{Q}_c}{\theta_c \rho_c \Cp} \dot{Q}^*
+	}
+\end{equation}
+
+The choice of specific scales used after this may change the dimensionless groups in front of each term. This will be handled in a different document. Here are some examples of particular scales and some typical resulting dimensionless groups:
+
+Some typical scale choices:
+\begin{equation}\begin{aligned}
+	t_c = L_c/ U_c \qquad
+	\theta_c = \Delta T_c \qquad
+	J_c = U_c \sigma_c B_c \qquad
+\end{aligned}\end{equation}
+
+Typical dimensionless groups:
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c} \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Re_m = \mu_c \sigma_c U_c L_c \qquad
+	Pr = \frac{\nu_c}{\alpha_c} \qquad
+	Al = \frac{B_c^2}{\mu_c \rho_c U_c^2} \qquad
+	Ec = \frac{U_c^2}{C_{p,c} \Delta T_c} \qquad
+\end{equation}
+
+\end{document}

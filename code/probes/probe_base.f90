@@ -282,13 +282,13 @@
 
        subroutine deleteIndexProbe(ip)
          implicit none
-         type(indexProbe), intent(in) :: ip
+         type(indexProbe),intent(inout) :: ip
          call delete(ip%p)
        end subroutine
 
        subroutine deleteErrorProbe(ep)
          implicit none
-         type(errorProbe), intent(in) :: ep
+         type(errorProbe),intent(inout) :: ep
          call delete(ep%p)
        end subroutine
 

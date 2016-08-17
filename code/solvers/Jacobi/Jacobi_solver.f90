@@ -10,96 +10,140 @@
       use VF_mod
       use IO_SF_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
 
       implicit none
 
-      private
-      public :: solve
+      real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
+      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
 
-      interface solve;   module procedure solve_SF;         end interface
-      interface solve;   module procedure solve_VF;         end interface
+      private
+      public :: solve_Jacobi
+      interface solve_Jacobi;   module procedure solve_Jacobi_SF;         end interface
+      interface solve_Jacobi;   module procedure solve_Jacobi_VF;         end interface
 
       contains
 
-      subroutine solve_SF(operator,x,f,vol,k,Dinv,D,m,MFP,n,norm,compute_norm,un,Ax,res,tempk)
+      subroutine solve_Jacobi_SF(operator,x,f,vol,k,Dinv,D,m,MFP,n,N_iter,&
+        norm,compute_norm,un,n_skip_check_res,tol,name,Ax,res,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF) :: operator
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: f,Dinv,D,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: tol
+        character(len=*),intent(in) :: name
         type(matrix_free_params),intent(in) :: MFP
-        integer,intent(in) :: n,un
+        integer,intent(in) :: n,un,n_skip_check_res
+        integer,intent(inout) :: N_iter
         type(norms),intent(inout) :: norm
         logical,intent(in) :: compute_norm
         type(SF),intent(inout) :: Ax,res
-        integer :: i
+        type(norms) :: norm0
+        integer :: i,i_earlyExit
+        logical :: skip_loop
         call apply_BCs(x,m) ! Boundaries
-        do i=1,n
-          call operator(Ax,x,k,vol,m,MFP,tempk)
-          call subtract(Ax,D) ! LU = Ax - D
-          call subtract(res,f,Ax)
-          call multiply(x,Dinv,res)
-          call apply_Stitches(x,m)
-          call apply_BCs(x,m)
-#ifdef _EXPORT_JAC_CONVERGENCE
-          call zeroGhostPoints(res)
-          call compute(norm,res,vol)
-          write(un,*) norm%L1,norm%L2,norm%Linf
+        i_earlyExit=0
+        if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do iterations if necessary!
+          skip_loop = .false.
+          do i=1,n
+            call operator_explicit(Ax,x,k,m,MFP,tempk)
+            call multiply(res,x,D)
+            call subtract(Ax,res) ! LU = Ax - Dx
+            call subtract(res,f,Ax)
+            call multiply(x,Dinv,res)
+            call apply_Stitches(x,m)
+            call apply_BCs(x,m)
+            N_iter = N_iter + 1
+            if (mod(i,n_skip_check_res).eq.0) then
+              call compute(norm,res,vol)
+#ifdef _EXPORT_GS_SF_CONVERGENCE_
+              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+                                 norm0%L1,norm0%L2,norm0%Linf,i-1
 #endif
-        enddo
-        if (x%all_neumann) call subtract(x,mean(x))
-#ifndef _EXPORT_JAC_CONVERGENCE_
-        if (compute_norm) then
-          call operator(Ax,x,k,vol,m,MFP,tempk)
-          write(*,*) 'Jacobi iterations = ',n
-          call subtract(res,Ax,f)
-          call zeroGhostPoints(res)
-          call compute(norm,res,vol)
-          call print(norm,'Jacobi residuals')
-          write(un,*) norm%L1,norm%L2,norm%Linf
+              if ((norm%L2/norm0%L2.lt.tol).or.(norm%L2.lt.tol_abs)) then; i_earlyExit=1; exit; endif
+            endif
+          enddo
+        else; i=1; skip_loop = .true.
         endif
-#endif
+        if (x%all_neumann) call subtract(x,mean(x))
+        if (compute_norm) then
+          if (.not.skip_loop) then
+            call zeroGhostPoints(res)
+            call compute(norm,res,vol)
+            call print(norm,'Jacobi_SF Residuals for '//name)
+            write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+                               norm0%L1,norm0%L2,norm0%Linf,i-1
+            write(*,*) 'Jacobi_SF iterations (executed/max) = ',i-1+i_earlyExit,n
+            write(*,*) 'Jacobi_SF exit condition = ',norm%L2/norm0%L2
+          else
+            write(*,*) 'Jacobi_SF skip_loop = ',skip_loop
+          endif
+          write(*,*) ''
+        endif
       end subroutine
 
-      subroutine solve_VF(operator,x,f,vol,k,Dinv,D,m,MFP,n,norm,compute_norm,un,Ax,res,tempk)
+      subroutine solve_Jacobi_VF(operator,x,f,vol,k,Dinv,D,m,MFP,n,N_iter,&
+        norm,compute_norm,un,n_skip_check_res,tol,name,Ax,res,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(VF),intent(inout) :: x
-        type(VF),intent(in) :: f,k,Dinv,D,vol
+        type(VF),intent(in) :: f,Dinv,D,vol
+        type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
+        real(cp),intent(in) :: tol
+        character(len=*),intent(in) :: name
         type(matrix_free_params),intent(in) :: MFP
-        integer,intent(in) :: n,un
+        integer,intent(in) :: n,un,n_skip_check_res
+        integer,intent(inout) :: N_iter
         type(norms),intent(inout) :: norm
         logical,intent(in) :: compute_norm
         type(VF),intent(inout) :: Ax,res
-        integer :: i
+        type(norms) :: norm0
+        integer :: i,i_earlyExit
+        logical :: skip_loop
         call apply_BCs(x,m) ! Boundaries
-        do i=1,n
-          call operator(Ax,x,k,vol,m,MFP,tempk)
-          call subtract(Ax,D) ! LU = Ax - D
-          call subtract(res,f,Ax)
-          call multiply(x,Dinv,res)
-          call apply_Stitches(x,m)
-          call apply_BCs(x,m)
-#ifdef _EXPORT_JAC_CONVERGENCE_
-          call zeroGhostPoints(res)
-          call compute(norm,res,vol); write(un,*) norm%L1,norm%L2,norm%Linf
+        i_earlyExit=0
+        if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do iterations if necessary!
+          skip_loop = .false.
+          do i=1,n
+            call operator(Ax,x,k,m,MFP,tempk)
+            call multiply(res,x,D)
+            call subtract(Ax,res) ! LU = Ax - Dx
+            call subtract(res,f,Ax)
+            call multiply(x,Dinv,res)
+            call apply_Stitches(x,m)
+            call apply_BCs(x,m)
+            N_iter = N_iter + 1
+            if (mod(i,n_skip_check_res).eq.0) then
+              call compute(norm,res,vol)
+#ifdef _EXPORT_GS_VF_CONVERGENCE_
+              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+                                 norm0%L1,norm0%L2,norm0%Linf,i-1
 #endif
-        enddo
-
-#ifndef _EXPORT_JAC_CONVERGENCE_
-        if (compute_norm) then
-          call operator(Ax,x,k,vol,m,MFP,tempk)
-          write(*,*) 'Jacobi iterations = ',n
-          call subtract(res,Ax,f)
-          call zeroGhostPoints(res)
-          call compute(norm,res,vol); call print(norm,'Jacobi residuals')
-          write(un,*) norm%L1,norm%L2,norm%Linf
+              if ((norm%L2/norm0%L2.lt.tol).or.(norm%L2.lt.tol_abs)) then; i_earlyExit=1; exit; endif
+            endif
+          enddo
+        else; i=1; skip_loop = .true.
         endif
-#endif
+        ! if (x%all_neumann) call subtract(x,mean(x))
+        if (compute_norm) then
+          if (.not.skip_loop) then
+            call zeroGhostPoints(res)
+            call compute(norm,res,vol)
+            call print(norm,'Jacobi_VF Residuals for '//name)
+            write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+                               norm0%L1,norm0%L2,norm0%Linf,i-1
+            write(*,*) 'Jacobi_VF iterations (executed/max) = ',i-1+i_earlyExit,n
+            write(*,*) 'Jacobi_VF exit condition = ',norm%L2/norm0%L2
+          else
+            write(*,*) 'Jacobi_VF skip_loop = ',skip_loop
+          endif
+          write(*,*) ''
+        endif
       end subroutine
 
       end module

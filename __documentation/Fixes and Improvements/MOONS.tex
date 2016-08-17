@@ -80,6 +80,17 @@ University of California Los Angeles, USA\\
 \item Energy content - location of maximum energy
 \end{itemize}
 \item focus on difference between PV and RV
+\item setup post-processing for J energy (don't need sigma since it's uniform through fluid-solid)
+\item Finalize energy budget in code
+\item restart  mesh? to make energy budget easier?
+\item restart solution to make easier
+\item brainstorm what to plot
+\item way to detect $\delta_{Ha}$?
+\item Use thin wall BC for driven cavity
+\item 2nd order forward diff may be necessary to get higher accuracy since the BC is partly Neumann.
+\item Remove color: symbols. filled/empty = RV/PV. Arrows for components. (left,up,right) = (z,y,x)
+\item consider making python output include $<$sub$>$\_x,y,z$<$\textbackslash sub$>$ so that legends in tecplot have subscripts
+\item Start new sims that bridge $Re_m$
 \end{itemize}
 
 \subsection{Finite Rem Shercliff / Hunt Flow}
@@ -165,6 +176,7 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \item Fix IO\_tools.f90. Pick better names and separate into IO tools and conversion (int2str, etc.)
 \item Re-consider HDF5
 \item Figure out how to view time in tecplot as animation runs
+\item FIX THE NAME OF THE PROBES. THEY ARE TOTALLY INCONSISTENT.
 \end{itemize}
 
 \subsection{Exception handling}
@@ -284,6 +296,7 @@ velocity (likely u=0 inside). More tests could be done this way.
 \item Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
 \item Use hgiher order time marching methods! (RK4 maybe?)
 \item Consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
+\item Consider passing MFP into PCG solver, this way, different coefficients can be used with the same PCG object.
 \end{itemize}
 
 \subsection{Dimensionless Groups}
@@ -321,7 +334,6 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \item look into optical Nand gates
 \item get veggie / fruit recipes
 \item get tablet for refrigerator?
-\item return scooter battery (if possible) - attempted \Checkmark
 \item email google glass (July 17th) - Matlab $\rightarrow$ c++, paid please and computer provided?
 \item prep / post tutoring flyers
 \item make birthday wishlist

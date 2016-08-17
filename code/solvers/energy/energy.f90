@@ -251,6 +251,7 @@
          if (solveEnergy) then
            write(*,*) 'export_tec_energy at nrg%nstep = ',nrg%nstep
            call export_processed(nrg%m,nrg%T,str(DT%T),'T',0)
+           call export_raw(nrg%m,nrg%T,str(DT%T),'T',0)
            call export_raw(nrg%m,nrg%divQ,str(DT%T),'divQ',0)
            write(*,*) '     finished'
          endif
@@ -272,7 +273,7 @@
          type(dir_tree),intent(in) :: DT
          logical :: exportNow,exportNowT
 
-         call assign(nrg%gravity%y,1.0_cp)
+         call assign(nrg%gravity%x,1.0_cp)
 
          call embed_velocity_F(nrg%U_F,U,nrg%D)
 
@@ -290,9 +291,15 @@
          nrg%Pr,nrg%m,nrg%N_nrg,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (4)
-         if (nrg%nstep.le.1) call assign(nrg%Q_source,-1.0_cp)
+         if (nrg%nstep.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
+
          call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
          nrg%Pr,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+
+         case (5)
+         if (nrg%nstep.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
+         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         nrg%Pr,nrg%m,nrg%Q_source,nrg%N_nrg,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
@@ -316,6 +323,7 @@
          else; exportNow = .false.; exportNowT = .false.
          endif
 
+         if (nrg%nstep.eq.9) call export_tec(nrg,DT)
          if (PE%solution.or.exportNowT.or.exportNow) then
            call export(nrg,DT)
            call export_tec(nrg,DT)

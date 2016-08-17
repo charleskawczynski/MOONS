@@ -19,6 +19,7 @@
        use init_BBCs_mod
        use init_phiBCs_mod
        use init_Bfield_mod
+       use init_B_interior_mod
        use init_Sigma_mod
        use ops_embedExtract_mod
        use BEM_solver_mod
@@ -36,6 +37,7 @@
        use induction_solver_mod
        use preconditioners_mod
        use PCG_mod
+       use Jacobi_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use induction_aux_mod
@@ -50,6 +52,7 @@
        public :: induction
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec,exportTransient,compute_E_M_budget
+       public :: compute_induction_energies
 
        type induction
          ! --- Tensor fields ---
@@ -58,7 +61,7 @@
 
          ! --- Vector fields ---
          type(VF) :: J,temp_E                         ! Edge data
-         type(VF) :: B,B0,temp_F1,temp_F2             ! Face data
+         type(VF) :: B,B0,B_interior,temp_F1,temp_F2  ! Face data
          type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
 
@@ -76,9 +79,12 @@
 
          type(errorProbe) :: probe_divB,probe_divJ
 
-         type(probe) :: KB_energy,KB0_energy,KBi_energy
-         type(probe) :: KB_f_energy,KB0_f_energy,KBi_f_energy
-         type(probe) :: KB_c_energy,KB0_c_energy,KBi_c_energy
+         ! Subscripts:
+         ! f = fluid, c = conductor, t = total
+         ! Magnetic field:
+         ! 0 = applied, 1 = induced, total=no subscript
+         type(probe),dimension(3) :: ME,ME_fluid,ME_conductor
+         type(probe) :: JE,JE_fluid
          type(mesh) :: m,m_surface
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
          type(domain) :: D_surface
@@ -93,10 +99,7 @@
          real(cp) :: Rem              ! Magnetic Reynolds number
          logical :: finite_Rem
          integer :: unit_nrg_budget
-         real(cp),dimension(5) :: nrg_budget
-         real(cp),dimension(0:2) :: ME
-         real(cp),dimension(0:2) :: ME_fluid
-         real(cp),dimension(0:2) :: ME_conductor
+         real(cp),dimension(3) :: e_budget
        end type
 
        interface init;                 module procedure init_induction;                end interface
@@ -138,52 +141,54 @@
          ind%tol_cleanB = tol_cleanB
          ind%tol_induction = tol_induction
          ind%Rem = Rem
-         ind%nrg_budget = 0.0_cp
+         ind%e_budget = 0.0_cp
+
+         if (restartB) then
+         call readLastStepFromFile(ind%nstep,str(DT%params),'nstep_ind')
+         else; ind%nstep = 0
+         endif
+         ind%finite_Rem = finite_Rem
+         ind%t = 0.0_cp
 
          call init(ind%m,m)
          call init(ind%D_fluid,D_fluid)
          call init(ind%D_sigma,D_sigma)
          ! --- tensor,vector and scalar fields ---
-         call init_Edge(ind%U_E,m,0.0_cp)
-         call init_Edge(ind%temp_E_TF,m,0.0_cp)
-         call init_Face(ind%temp_F1_TF,m,0.0_cp)
-         call init_Face(ind%temp_F2_TF,m,0.0_cp)
-         call init_Face(ind%B,m,0.0_cp)
-         call init_Face(ind%B0,m,0.0_cp)
-         call init_CC(ind%temp_CC,m,0.0_cp)
-         call init_Edge(ind%J,m,0.0_cp)
-         call init_Edge(ind%temp_E,m,0.0_cp)
+         call init_Face(ind%B_interior   ,ind%D_sigma%m_in,0.0_cp)
+         call init_Edge(ind%U_E          ,m,0.0_cp)
+         call init_Edge(ind%temp_E_TF    ,m,0.0_cp)
+         call init_Face(ind%temp_F1_TF   ,m,0.0_cp)
+         call init_Face(ind%temp_F2_TF   ,m,0.0_cp)
+         call init_Face(ind%B            ,m,0.0_cp)
+         call init_Face(ind%B0           ,m,0.0_cp)
+         call init_CC(ind%temp_CC        ,m,0.0_cp)
+         call init_Edge(ind%J            ,m,0.0_cp)
+         call init_Edge(ind%temp_E       ,m,0.0_cp)
          call init_Edge(ind%sigmaInv_edge,m,0.0_cp)
-         call init_Face(ind%temp_F1,m,0.0_cp)
-         call init_Face(ind%temp_F2,m,0.0_cp)
-         call init_CC(ind%phi,m,0.0_cp)
-         call init_CC(ind%temp_CC_SF,m,0.0_cp)
-         call init_CC(ind%divB,m,0.0_cp)
-         call init_Node(ind%divJ,m,0.0_cp)
+         call init_Face(ind%temp_F1      ,m,0.0_cp)
+         call init_Face(ind%temp_F2      ,m,0.0_cp)
+         call init_CC(ind%phi            ,m,0.0_cp)
+         call init_CC(ind%temp_CC_SF     ,m,0.0_cp)
+         call init_CC(ind%divB           ,m,0.0_cp)
+         call init_Node(ind%divJ         ,m,0.0_cp)
+         call init_CC(ind%sigmaInv_CC    ,m,0.0_cp)
 
-         call init_CC(ind%sigmaInv_CC,m,0.0_cp)
          call init_CC(ind%vol_CC,m)
          call volume(ind%vol_CC,m)
+         call export_raw(ind%m,ind%vol_CC,str(DT%B),'cell_volume',0)
          write(*,*) '     Fields allocated'
 
-         ! call BEM_Poisson(m,DT)
-
          ! --- Initialize Fields ---
-         call init_BBCs(ind%B,m)
-         write(*,*) '     B BCs initialized'
-         call init_phiBCs(ind%phi,m)
-         write(*,*) '     phi BCs initialized'
+         call init_BBCs(ind%B,m);                         write(*,*) '     B BCs initialized'
+         call init_phiBCs(ind%phi,m);                     write(*,*) '     phi BCs initialized'
+         call initBfield(ind%B,ind%B0,m,str(DT%B));       write(*,*) '     B-field initialized'
+         call initB_interior(ind%B_interior,ind%D_sigma%m_in,str(DT%B))
+         call apply_BCs(ind%B,m);                         write(*,*) '     BCs applied'
 
          if (solveInduction) call print_BCs(ind%B,'B')
          if (solveInduction) call export_BCs(ind%B,str(DT%params),'B')
          if (solveInduction) call print_BCs(ind%phi,'phi')
          if (solveInduction) call export_BCs(ind%phi,str(DT%params),'phi')
-
-         call initBfield(ind%B,ind%B0,m,str(DT%B))
-         write(*,*) '     B-field initialized'
-
-         call apply_BCs(ind%B,m)
-         write(*,*) '     BCs applied'
 
          ! ******************** MATERIAL PROPERTIES ********************
          call init_CC(sigma,m,0.0_cp)
@@ -192,7 +197,7 @@
          if (.not.quick_start) call export_raw(m,sigma,str(DT%mat),'sigma',0)
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
-         call treatInterface(ind%sigmaInv_edge)
+         call treatInterface(ind%sigmaInv_edge,.false.)
          if (.not.quick_start) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
@@ -205,25 +210,22 @@
          call export(ind%probe_divB)
          call export(ind%probe_divJ)
 
-         call init(ind%KB_energy,str(DT%B),'KB',.not.restartB)
-         call init(ind%KBi_energy,str(DT%B),'KBi',.not.restartB)
-         call init(ind%KB0_energy,str(DT%B),'KB0',.not.restartB)
-         call init(ind%KB_f_energy,str(DT%B),'KB_f',.not.restartB)
-         call init(ind%KBi_f_energy,str(DT%B),'KBi_f',.not.restartB)
-         call init(ind%KB0_f_energy,str(DT%B),'KB0_f',.not.restartB)
-         call init(ind%KB_c_energy,str(DT%B),'KB_c',.not.restartB)
-         call init(ind%KBi_c_energy,str(DT%B),'KBi_c',.not.restartB)
-         call init(ind%KB0_c_energy,str(DT%B),'KB0_c',.not.restartB)
+         call init(ind%JE,str(DT%J),'JE',.not.restartB)
+         call init(ind%JE_fluid,str(DT%J),'JE_fluid',.not.restartB)
+
+         call init(ind%ME(1),str(DT%B),'ME',.not.restartB)
+         call init(ind%ME_fluid(1),str(DT%B),'ME_fluid',.not.restartB)
+         call init(ind%ME_conductor(1),str(DT%B),'ME_conductor',.not.restartB)
+
+         call init(ind%ME(2),str(DT%B),'ME0',.not.restartB)
+         call init(ind%ME_fluid(2),str(DT%B),'ME0_fluid',.not.restartB)
+         call init(ind%ME_conductor(2),str(DT%B),'ME0_conductor',.not.restartB)
+
+         call init(ind%ME(3),str(DT%B),'ME1',.not.restartB)
+         call init(ind%ME_fluid(3),str(DT%B),'ME1_fluid',.not.restartB)
+         call init(ind%ME_conductor(3),str(DT%B),'ME1_conductor',.not.restartB)
+
          write(*,*) '     B/J probes initialized'
-
-         ind%unit_nrg_budget = newAndOpen(str(DT%B),'energy_budget')
-         ! {error} = {dBdt} + {adv} - {diff}
-         write(ind%unit_nrg_budget,*) ' TITLE = "induction energy budget"'
-         write(ind%unit_nrg_budget,*) ' VARIABLES = N,unsteady,Poynting,Joule_Dissipation,maxwell_stress,E_M_Convection'
-         write(ind%unit_nrg_budget,*) ' VARIABLES = N,unsteady,Poynting,Joule_Dissipation,Lorentz'
-
-         write(ind%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
-         flush(ind%unit_nrg_budget)
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
@@ -232,7 +234,6 @@
          call display(ind,temp_unit)
          close(temp_unit)
 
-         ind%finite_Rem = finite_Rem
 
          if (finite_Rem) then; ind%MFP_B%c_ind = ind%dTime/ind%Rem
          else;                 ind%MFP_B%c_ind = ind%dTime
@@ -253,15 +254,11 @@
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
-         if (restartB) then
-         call readLastStepFromFile(ind%nstep,str(DT%params),'nstep_ind')
-         else; ind%nstep = 0
-         endif
-         ind%t = 0.0_cp
-         ind%ME = 0.0_cp
-         ind%ME_fluid = 0.0_cp
-         ind%ME_conductor = 0.0_cp
+         ! call init(ind%JAC,Lap_uniform_VF_explicit,ind%B,ind%sigmaInv_edge,ind%m,ind%MFP,&
+         ! ind%tol_induction,str(DT%B),'B',.false.)
+
          write(*,*) '     Finished'
+         if (restart_all) call import(ind,DT)
        end subroutine
 
        subroutine delete_induction(ind)
@@ -273,6 +270,7 @@
          call delete(ind%U_E)
 
          call delete(ind%B)
+         call delete(ind%B_interior)
          call delete(ind%B0)
          call delete(ind%J)
          call delete(ind%temp_CC)
@@ -293,15 +291,12 @@
 
          call delete(ind%probe_divB)
          call delete(ind%probe_divJ)
-         call delete(ind%KB_energy)
-         call delete(ind%KBi_energy)
-         call delete(ind%KB0_energy)
-         call delete(ind%KB_f_energy)
-         call delete(ind%KBi_f_energy)
-         call delete(ind%KB0_f_energy)
-         call delete(ind%KB_c_energy)
-         call delete(ind%KBi_c_energy)
-         call delete(ind%KB0_c_energy)
+
+         call delete(ind%ME)
+         call delete(ind%ME_fluid)
+         call delete(ind%ME_conductor)
+         call delete(ind%JE)
+         call delete(ind%JE_fluid)
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
@@ -320,7 +315,7 @@
          write(un,*) 't,dt = ',ind%t,ind%dTime
          write(un,*) 'solveBMethod,N_ind,N_cleanB = ',solveBMethod,ind%N_induction,ind%N_cleanB
          write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
-         write(un,*) 'nstep,ME = ',ind%nstep,ind%ME(2)
+         write(un,*) 'nstep,ME = ',ind%nstep,ind%ME(1)%d
          call displayPhysicalMinMax(ind%divB,'divB',un)
          call displayPhysicalMinMax(ind%divJ,'divJ',un)
          write(un,*) ''
@@ -338,6 +333,14 @@
          implicit none
          type(induction),intent(in) :: ind
          type(dir_tree),intent(in) :: DT
+         integer :: un
+         un = newAndOpen(str(DT%restart),'ind_restart')
+         write(un,*) ind%dTime;         write(un,*) ind%N_cleanB
+         write(un,*) ind%N_induction;   write(un,*) ind%tol_cleanB
+         write(un,*) ind%tol_induction; write(un,*) ind%Rem
+         write(un,*) ind%e_budget;    write(un,*) ind%nstep
+         write(un,*) ind%finite_Rem;    write(un,*) ind%t
+         call export(ind%MFP_B,newAndOpen(str(DT%restart),'ind_MFP'))
          call export(ind%B      ,str(DT%restart),'B')
          call export(ind%B0     ,str(DT%restart),'B0')
          call export(ind%J      ,str(DT%restart),'J')
@@ -350,6 +353,14 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
+         integer :: un
+         un = openToRead(str(DT%restart),'ind_restart')
+         read(un,*) ind%dTime;         read(un,*) ind%N_cleanB
+         read(un,*) ind%N_induction;   read(un,*) ind%tol_cleanB
+         read(un,*) ind%tol_induction; read(un,*) ind%Rem
+         read(un,*) ind%e_budget;    read(un,*) ind%nstep
+         read(un,*) ind%finite_Rem;    read(un,*) ind%t
+         call import(ind%MFP_B,openToRead(str(DT%restart),'ind_MFP'))
          call import(ind%B      ,str(DT%restart),'B')
          call import(ind%B0     ,str(DT%restart),'B0')
          call import(ind%J      ,str(DT%restart),'J')
@@ -414,6 +425,11 @@
          PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
+         case (4)
+         call CT_Finite_Rem_interior_solved(ind%B,ind%B0,ind%B_interior,ind%U_E,ind%J,&
+         ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%dTime,ind%N_induction,ind%temp_F1,ind%temp_F2,&
+         ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
+
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
 
@@ -425,24 +441,7 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          compute_ME = (computeKB.and.PE%transient_0D.or.(ind%nstep.eq.0))
-
-         if (compute_ME) then
-           call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-           call compute_TME(ind%ME(0),ind%KB0_energy,ind%temp_CC,ind%nstep,ind%t,ind%m)
-           call compute_TME_Domain(ind%ME_fluid(0),ind%KB0_f_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
-           call compute_TME_Domain(ind%ME_conductor(0),ind%KB0_c_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
-
-           call face2cellCenter(ind%temp_CC,ind%B,ind%m)
-           call compute_TME(ind%ME(1),ind%KBi_energy,ind%temp_CC,ind%nstep,ind%t,ind%m)
-           call compute_TME_Domain(ind%ME_fluid(1),ind%KBi_f_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
-           call compute_TME_Domain(ind%ME_conductor(1),ind%KBi_c_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
-
-           call add(ind%temp_F1,ind%B,ind%B0)
-           call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-           call compute_TME(ind%ME(2),ind%KB_energy,ind%temp_CC,ind%nstep,ind%t,ind%m)
-           call compute_TME_Domain(ind%ME_fluid(2),ind%KB_f_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
-           call compute_TME_Domain(ind%ME_conductor(2),ind%KB_c_energy,ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
-         endif
+         if (compute_ME) call compute_induction_energies(ind)
 
          if (PE%transient_0D) then 
            call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
@@ -466,13 +465,39 @@
          endif
        end subroutine
 
-       subroutine compute_E_M_budget(ind,U,U_CC,D_fluid)
+       subroutine compute_induction_energies(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         type(VF),intent(in) :: U,U_CC
+
+         call add(ind%temp_F1,ind%B,ind%B0)
+         call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
+         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%nstep,ind%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
+
+         call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%nstep,ind%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
+
+         call face2cellCenter(ind%temp_CC,ind%B,ind%m)
+         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%nstep,ind%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
+
+         call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
+         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%nstep,ind%t,ind%m)
+         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+       end subroutine
+
+       subroutine compute_E_M_budget(ind,U,D_fluid,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(VF),intent(in) :: U
          type(domain),intent(in) :: D_fluid
+         type(dir_tree),intent(in) :: DT
          type(TF) :: temp_CC_TF,temp_F1_TF,temp_F2_TF,temp_F3_TF
-         type(VF) :: temp_F1,temp_F2,temp_U,temp_U_CC,sigmaInv_Face,temp_CC_VF
+         type(VF) :: temp_F1,temp_F2,temp_U,sigmaInv_Face,temp_CC_VF
 
          call init_CC(temp_CC_TF,ind%m)
          call init_CC(temp_CC_VF,ind%m)
@@ -483,22 +508,19 @@
          call init_Face(temp_F3_TF,ind%m)
 
          call init_Face(temp_U,ind%m)
-         call init_CC(temp_U_CC,ind%m)
 
          call init_Face(sigmaInv_Face,ind%m)
          call cellCenter2Face(sigmaInv_Face,ind%sigmaInv_CC,ind%m)
-         call treatInterface(sigmaInv_Face)
+         call treatInterface(sigmaInv_Face,.false.)
 
-         call embedCC(temp_U_CC,U_CC,D_fluid)
          call embedFace(temp_U,U,D_fluid)
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call E_M_Budget(ind%nrg_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
-         sigmaInv_Face,ind%sigmaInv_CC,temp_U,temp_U_CC,&
+         call E_M_Budget(DT,ind%e_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
+         sigmaInv_Face,ind%sigmaInv_CC,temp_U,&
          ind%m,ind%dTime,temp_CC_TF,temp_CC_VF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
 
-         write(ind%unit_nrg_budget,*) ind%nstep,ind%nrg_budget
-         flush(ind%unit_nrg_budget)
+         call export_E_M_budget(ind,DT)
 
          call delete(temp_CC_TF)
          call delete(temp_CC_VF)
@@ -508,8 +530,43 @@
          call delete(temp_F2_TF)
          call delete(temp_F3_TF)
          call delete(temp_U)
-         call delete(temp_U_CC)
          call delete(sigmaInv_Face)
+       end subroutine
+
+       subroutine export_E_M_budget(ind,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         type(string),dimension(3) :: vars
+         integer :: un,i
+         un = newAndOpen(str(DT%e_budget),'E_M_budget_terms')
+         call init(vars(1),'Unsteady = ')
+         call init(vars(2),'Joule_Dissipation = ')
+         call init(vars(3),'Poynting = ')
+
+         write(un,*) 'magnetic energy budget at nstep=',ind%nstep
+         do i=1,3
+         write(un,*) str(vars(i)),ind%e_budget(i)
+         call delete(vars(i))
+         enddo
+         flush(un)
+         close(un)
+       end subroutine
+
+       subroutine init_E_M_budget_old(ind,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         type(string) :: vars
+         ind%unit_nrg_budget = newAndOpen(str(DT%e_budget),'E_M_budget_terms')
+         write(ind%unit_nrg_budget,*) ' TITLE = "magnetic energy budget"'
+         call init(vars,' VARIABLES = ')
+         call append(vars,'Unsteady,')
+         call append(vars,'Joule_Dissipation,')
+         call append(vars,'Poynting,')
+         write(ind%unit_nrg_budget,*) str(vars)
+         write(ind%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
+         call delete(vars)
        end subroutine
 
        end module

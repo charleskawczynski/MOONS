@@ -40,7 +40,7 @@
          type(momentum) :: mom
          type(induction) :: ind
          type(energy) :: nrg
-         type(mesh) :: mesh_mom,mesh_ind
+         type(mesh) :: mesh_mom,mesh_ind,mesh_ind_interior
          ! ********************** MEDIUM VARIABLES **********************
          type(domain) :: D_fluid,D_sigma
          type(dir_tree) :: DT
@@ -74,6 +74,7 @@
            call export(D_sigma,str(DT%restart),'D_sigma')
          endif
 
+         call init(mesh_ind_interior,D_sigma%m_tot)
          call initProps(mesh_mom);     call patch(mesh_mom)
          call initProps(mesh_ind);     call patch(mesh_ind)
 
@@ -122,18 +123,27 @@
          if (stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          if (.not.post_process_only) call MHDSolver(nrg,mom,ind,DT,n_dt_start,n_step,n_dt_stop)
 
-         write(*,*) ' *********************** POST PROCESSING ***********************'
-         write(*,*) ' *********************** POST PROCESSING ***********************'
-         write(*,*) ' *********************** POST PROCESSING ***********************'
-         write(*,*) ' COMPUTING ENERGY BUDGETS: '
-         if (solveMomentum.and.solveInduction) call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid)
-         write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
-         if (solveMomentum.and.solveInduction) call compute_E_M_budget(ind,mom%U,mom%U_CC,ind%D_fluid)
-         write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
+         if (post_process_only) then
+           write(*,*) ' *********************** POST PROCESSING ***********************'
+           write(*,*) ' *********************** POST PROCESSING ***********************'
+           write(*,*) ' *********************** POST PROCESSING ***********************'
+           write(*,*) ' COMPUTING ENERGY BUDGETS: '
+           if (solveMomentum.and.solveInduction) call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,DT)
+           write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
+           if (solveMomentum.and.solveInduction) call compute_E_M_budget(ind,mom%U,ind%D_fluid,DT)
+           write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
 
-         if (export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
+           if (export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
+         else
+           write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
+           write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
+           write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
+         endif
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
+         ! if (solveEnergy)    call export(nrg,DT)
+         ! if (solveInduction) call export(ind,DT)
+         ! if (solveMomentum)  call export(mom,DT)
 
          call delete(nrg)
          call delete(mom)
@@ -144,6 +154,7 @@
 
          call delete(mesh_mom)
          call delete(mesh_ind)
+         call delete(mesh_ind_interior)
        end subroutine
 
        end module

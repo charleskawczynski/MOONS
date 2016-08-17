@@ -78,6 +78,7 @@
          call zeroGhostPoints(temp_CC)
          call solve(PPE_PCG,p,temp_CC,m,Nmax_PPE,compute_norms)
          call grad(temp_F,p,m)
+         call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
          call subtract(U,temp_F) ! U = Ustar - grad(p)
          call apply_BCs(U,m)
@@ -87,7 +88,7 @@
          Re,dt,Nmax_PPE,Nmax_mom,Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
-         type(GS_poisson),intent(inout) :: PPE_GS
+         type(GS_Poisson_SF),intent(inout) :: PPE_GS
          type(SF),intent(inout) :: p
          type(VF),intent(inout) :: U,Unm1
          type(TF),intent(inout) :: U_E
@@ -161,7 +162,7 @@
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,n,compute_norms)
          call grad(temp_F1,p,m)
-         ! call subtract(temp_F1%x,1.0_cp) ! mpg
+         call subtract(temp_F1%x,1.0_cp) ! mpg
          call multiply(temp_F1,dt)
          call subtract(U,Ustar,temp_F1)
          call apply_BCs(U,m)
@@ -197,7 +198,7 @@
        subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&
          Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
-         type(GS_poisson),intent(inout) :: GS
+         type(GS_Poisson_SF),intent(inout) :: GS
          type(SF),intent(inout) :: p
          type(VF),intent(inout) :: U
          type(TF),intent(inout) :: U_E
@@ -232,7 +233,7 @@
        subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,n,&
          Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
-         type(GS_poisson),intent(inout) :: GS
+         type(GS_Poisson_SF),intent(inout) :: GS
          type(SF),intent(inout) :: p
          type(VF),intent(inout) :: U
          type(TF),intent(inout) :: U_E

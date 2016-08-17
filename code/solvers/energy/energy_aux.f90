@@ -18,6 +18,8 @@
        public :: computeBuoyancy
        public :: computeGravity
        public :: compute_Q
+       public :: volumetric_heating_intro
+       public :: volumetric_heating_equation
        public :: compute_divQ
        public :: embed_velocity_F
 
@@ -68,7 +70,7 @@
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
          call assign(temp_CC,g)
-         call divide(temp_CC,Fr**2.0_cp)
+         call multiply(temp_CC,1.0_cp/(Fr**2.0_cp))
          call cellCenter2Face(temp_F,temp_CC,m)
          call extractFace(gravity,temp_F,D)
        end subroutine
@@ -101,6 +103,41 @@
          type(VF),intent(in) :: Q
          type(mesh),intent(in) :: m
          call div(divQ,Q,m)
+       end subroutine
+
+       subroutine volumetric_heating_intro(Q_CC,m)
+         implicit none
+         type(SF),intent(inout) :: Q_CC
+         type(mesh),intent(in) :: m
+         integer :: t,i,j,k
+         real(cp) :: q_flux,a,L
+         q_flux = 1.0_cp
+         a = 1.0_cp
+         L = 1.0_cp
+         !$OMP PARALLEL DO
+         do t=1,m%s; do k=1,Q_CC%RF(t)%s(3); do j=1,Q_CC%RF(t)%s(2); do i=1,Q_CC%RF(t)%s(1)
+         Q_CC%RF(t)%f(i,j,k) = q_flux*exp(-(m%g(t)%c(2)%hc(j)+a)/L)
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+       end subroutine
+
+       subroutine volumetric_heating_equation(Q_CC,m,Re,Pr)
+         implicit none
+         type(SF),intent(inout) :: Q_CC
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: Re,Pr
+         integer :: t,i,j,k
+         real(cp) :: a,L,m_,F
+         a = 1.0_cp
+         L = 1.0_cp
+         m_ = a/L
+         F = 2.0_cp*m_/(1.0_cp-exp(-2.0_cp*m_)) /Re/Pr
+         !$OMP PARALLEL DO
+         do t=1,m%s; do k=1,Q_CC%RF(t)%s(3); do j=1,Q_CC%RF(t)%s(2); do i=1,Q_CC%RF(t)%s(1)
+         Q_CC%RF(t)%f(i,j,k) = F*exp(-m_*(m%g(t)%c(2)%hc(j)+1.0_cp))
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         ! call subtract_physical_mean(Q_CC)
        end subroutine
 
        subroutine embed_velocity_F(U_Ft,U_Fi,D)

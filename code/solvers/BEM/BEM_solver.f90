@@ -36,8 +36,9 @@
          type(domain) :: D_surface
          type(mesh) :: m_surface
          type(VF) :: x,x_surface,f,f_surface
-         type(GS_Poisson) :: GS
-         integer :: i
+         type(GS_Poisson_SF) :: GS
+         integer :: i,n_skip_check_res
+         real(cp) :: tol
 
          call init_surface(m_surface,m)
          call init(D_surface,m_surface,m)
@@ -69,7 +70,9 @@
          call export_raw(m_surface,f_surface,str(DT%BEM),'f_surface',0)
 
          write(*,*) 'initializing GS'
-         call init(GS,x_surface%x,m_surface,str(DT%BEM),'x_surface%x')
+         tol = 10.0_cp**(-6.0_cp)
+         n_skip_check_res = 100
+         call init(GS,x_surface%x,m_surface,tol,n_skip_check_res,str(DT%BEM),'x_surface%x')
          write(*,*) 'initialized GS'
          write(*,*) 'solving Poisson with GS'
          call solve(GS,x_surface%x,f_surface%x,m_surface,1000,.true.)

@@ -41,6 +41,7 @@
        interface export;      module procedure export_TP_info;       end interface
        interface printProbe;  module procedure printTransientProbe;  end interface
        interface delete;      module procedure deleteProbe;          end interface
+       interface delete;      module procedure deleteProbe_many;     end interface
 
        contains
 
@@ -93,8 +94,20 @@
 
        subroutine deleteProbe(p)
          implicit none
-         type(probe),intent(in) :: p
+         type(probe),intent(inout) :: p
+         call delete(p%dir)
+         call delete(p%name)
          close(p%un_d); close(p%un_i)
+       end subroutine
+
+       subroutine deleteProbe_many(p)
+         implicit none
+         type(probe),dimension(:),intent(inout) :: p
+         integer :: i,s
+         s = size(p)
+         if (s.gt.0) then
+           do i=1,size(p); call delete(p(i)); enddo
+         endif
        end subroutine
 
        subroutine printTransientProbe(p,u)

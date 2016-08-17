@@ -10,8 +10,9 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 5
-       real(cp) :: cw = 0.05_cp
+       integer :: preDefinedB_BCs = 0
+       real(cp) :: cw = 0.0_cp
+       ! real(cp) :: cw = 0.05_cp
        ! real(cp) :: cw = 0.01_cp
        !                                      0 : B = 0
        !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
@@ -160,7 +161,6 @@
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: cw
-         integer :: i,j
          call pseudo_vacuum(B,m)
          call thin_wall_face(B,m,cw,5)
          call thin_wall_face(B,m,cw,6)
@@ -171,7 +171,6 @@
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: cw
-         integer :: i,j
          call pseudo_vacuum(B,m)
          call thin_wall_face(B,m,cw,4)
        end subroutine
