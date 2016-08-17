@@ -295,7 +295,7 @@ classdef modelProblem
 
             utemp = un; utemp(2:end-1) = 0;
             lapUBC = lap(a,utemp,alpha,dh);
-            dbstop at 303 in modelProblem
+%             dbstop at 303 in modelProblem
             % Boundary values no longer matter since interior of matrix is
             % inverted.
             % f(1) = f(1) - lapUBC(2);
