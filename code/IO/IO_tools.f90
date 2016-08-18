@@ -151,11 +151,10 @@
         call delete(s)
       end function
 
-      subroutine closeAndMessage(u,name,dir)
-        ! BONEHEAD MOVE: should be dir,name,u
+      subroutine closeAndMessage(u,dir,name)
         implicit none
         integer,intent(in) :: u
-        character(len=*),intent(in) :: name,dir
+        character(len=*),intent(in) :: dir,name
         close(u)
         write(*,*) '+++ Data for ' // name // ' written to ' // dir //' +++'
       end subroutine

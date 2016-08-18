@@ -316,7 +316,7 @@
          call writeAveProbeToFileOrScreen(p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%ip%p%name)//'_info',str(p%ip%p%dir))
+           call closeAndMessage(newU,str(p%ip%p%dir),str(p%ip%p%name)//'_info')
          endif
        end subroutine
 
@@ -351,7 +351,7 @@
          call export(p%ep%p,newU)
          call writePlaneErrorProbeToFileOrScreen(p,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%ep%p%name)//'_info',str(p%ep%p%dir))
+           call closeAndMessage(newU,str(p%ep%p%dir),str(p%ep%p%name)//'_info')
          endif
        end subroutine
 
@@ -387,7 +387,7 @@
          call export(p%ep%p,newU)
          call writeAvePlaneErrorProbeToFileOrScreen(p,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%ep%p%name)//'_info',str(p%ep%p%dir))
+           call closeAndMessage(newU,str(p%ep%p%dir),str(p%ep%p%name)//'_info')
          endif
        end subroutine
 

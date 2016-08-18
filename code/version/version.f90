@@ -15,7 +15,7 @@
          integer :: NewU
          NewU = newAndOpen(dir,'version')
          call export_version_no_dir(newU)
-         call closeAndMessage(newU,'version',dir)
+         call closeAndMessage(newU,dir,'version')
        end subroutine
 
        subroutine print_version()

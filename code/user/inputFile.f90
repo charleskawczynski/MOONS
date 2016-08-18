@@ -45,7 +45,7 @@
 
          N_nrg         = 10       ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 10       ! Number of iterations to solve momentum  equation (if iterative solver is used)
-         N_ind         = 1       ! Number of iterations to solve induction equation (if iterative solver is used)
+         N_ind         = 10       ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 5        ! Number of iterations to solve PPE steps
          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
 

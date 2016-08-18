@@ -29,4 +29,6 @@ Superscript one				¹
 Superscript two				²
 Superscript n               ⁿ
 Superscript parenthasis     ⁽⁾
+Superscript -1				⁻¹
+
 

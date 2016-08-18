@@ -19,6 +19,7 @@
        use compute_energy_mod
        use GS_Poisson_mod
        use PCG_mod
+       use Jacobi_mod
        use export_raw_processed_mod
        use domain_mod
        use ops_embedExtract_mod
@@ -32,6 +33,7 @@
        public :: CT_Finite_Rem_perfect_vacuum
        public :: CT_Low_Rem
        public :: CT_Finite_Rem_interior_solved
+       public :: JAC_interior_solved
 
        ! Implicit time marching methods (diffusion implicit)
        public :: ind_PCG_BE_EE_cleanB_PCG
@@ -69,7 +71,8 @@
          call apply_BCs(B,m)
        end subroutine
 
-       subroutine CT_Finite_Rem_interior_solved(B,B0,B_interior,U_E,J,sigmaInv_E,m,D_sigma,dt,N_induction,&
+       subroutine CT_Finite_Rem_interior_solved(B,B0,B_interior,U_E,J,&
+         sigmaInv_E,m,D_sigma,dt,N_induction,&
          temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
          ! Solves:
          !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
@@ -103,6 +106,20 @@
            call add(B,temp_F1)
            call apply_BCs(B,m)
            call embedFace(B,B_interior,D_sigma)
+         enddo
+       end subroutine
+
+       subroutine JAC_interior_solved(JAC,B,RHS,m,n,N_induction)
+         ! Solves: ∇•(∇B) = 0 using Jacobi method
+         implicit none
+         type(Jacobi),intent(inout) :: JAC
+         type(VF),intent(inout) :: B
+         type(VF),intent(in) :: RHS
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: n,N_induction
+         integer :: i
+         do i=1,n
+           call solve(JAC,B,RHS,m,N_induction,i.eq.N_induction)
          enddo
        end subroutine
 

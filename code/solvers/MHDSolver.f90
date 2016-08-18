@@ -54,7 +54,7 @@
          do n_step=n_step,n_dt_stop
            call init(PE,n_step)
 
-           ! write(*,*) 'n_step=',n_step
+           write(*,*) 'n_step=',n_step
 
            call tic(sc)
 
@@ -111,7 +111,7 @@
 
          un = newAndOpen(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
          write(un,*) n_dt_start,n_step,n_dt_stop
-         call closeAndMessage(un,'n_dt_start,n_step,n_dt_stop',str(DT%restart))
+         call closeAndMessage(un,str(DT%restart),'n_dt_start,n_step,n_dt_stop')
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (solveMomentum)  call exportTransient(mom)

@@ -136,7 +136,7 @@
          call export_TP(p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%name)//'_info',str(p%dir))
+           call closeAndMessage(newU,str(p%dir),str(p%name)//'_info')
          endif
        end subroutine
 

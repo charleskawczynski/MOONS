@@ -87,7 +87,7 @@
          integer :: un
          un = newAndOpen(dir,'norms_'//name)
          call export_norms(norm,name,un)
-         call closeAndMessage(un,name,dir)
+         call closeAndMessage(un,dir,name)
        end subroutine
 
        subroutine export_norms(norm,name,un)

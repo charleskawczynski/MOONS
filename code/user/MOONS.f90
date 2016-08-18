@@ -113,11 +113,11 @@
          if (restart_all) then
          un = openToRead(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
          read(un,*) n_dt_start,n_step,n_dt_stop
-         call closeAndMessage(un,'n_dt_start,n_step,n_dt_stop',str(DT%restart))
+         call closeAndMessage(un,str(DT%restart),'n_dt_start,n_step,n_dt_stop')
          else
          un = newAndOpen(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
          write(un,*) n_dt_start,n_step,n_dt_stop
-         call closeAndMessage(un,'n_dt_start,n_step,n_dt_stop',str(DT%restart))
+         call closeAndMessage(un,str(DT%restart),'n_dt_start,n_step,n_dt_stop')
          endif
 
          if (stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'

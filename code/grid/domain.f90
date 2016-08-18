@@ -129,7 +129,7 @@
          integer :: un
          un = newAndOpen(dir,name)
          call export(D,un)
-         call closeAndMessage(un,name,dir)
+         call closeAndMessage(un,dir,name)
        end subroutine
 
        subroutine import_domain(D,un)
@@ -153,7 +153,7 @@
          integer :: un
          un = openToRead(dir,name)
          call import(D,un)
-         call closeAndMessage(un,name,dir)
+         call closeAndMessage(un,dir,name)
        end subroutine
 
        ! **********************************************************

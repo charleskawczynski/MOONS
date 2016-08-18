@@ -234,7 +234,7 @@
 !          do k = 1,sz; do j = 1,sy; do i = 1,sx
 !            write(un,'(6'//arrfmt//')') x(i),y(j),z(k),u(i,j,k),v(i,j,k),w(i,j,k)
 !          enddo; enddo; enddo
-!         call closeAndMessage(un,trim(adjustl(namex))//','//trim(adjustl(namey))//','//trim(adjustl(namez)),dir)
+!         call closeAndMessage(un,dir,namex//','//namey//','//namez)
 !       end subroutine
       
       subroutine delete_data_set(DS)

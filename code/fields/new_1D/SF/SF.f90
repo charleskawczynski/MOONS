@@ -250,7 +250,7 @@
           integer :: un
           un = newAndOpen(dir,name)
           call export(f,un)
-          call closeAndMessage(un,name,dir)
+          call closeAndMessage(un,dir,name)
         end subroutine
 
         subroutine import_wrapper_SF(f,dir,name)
@@ -260,7 +260,7 @@
           integer :: un
           un = newAndOpen(dir,name)
           call import(f,un)
-          call closeAndMessage(un,name,dir)
+          call closeAndMessage(un,dir,name)
         end subroutine
 
 

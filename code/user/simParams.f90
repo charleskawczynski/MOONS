@@ -17,10 +17,10 @@
 
        integer :: solveTMethod              = 5 ! Refer to energy.f90
        integer :: solveUMethod              = 1 ! Refer to momentum.f90
-       integer :: solveBMethod              = 4 ! Refer to induction.f90
+       integer :: solveBMethod              = 5 ! Refer to induction.f90
 
        logical :: addJCrossB                = .false.
-       logical :: addBuoyancy               = .true.
+       logical :: addBuoyancy               = .false.
        logical :: addGravity                = .false.
 
        logical :: computeKU                 = .true.    ! Compute kinetic energy at each time step

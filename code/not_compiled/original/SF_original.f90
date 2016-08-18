@@ -629,7 +629,7 @@
           integer :: un
           un = newAndOpen(dir,name//'_BoundaryConditions')
           call exp_BCs_SF(f,name,un)
-          call closeAndMessage(un,name//'_BoundaryConditions',dir)
+          call closeAndMessage(un,dir,name//'_BoundaryConditions')
         end subroutine
 
         subroutine exp_BCs_SF(f,name,un)

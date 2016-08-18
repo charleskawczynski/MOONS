@@ -236,7 +236,7 @@
          call export(ip%p,newU)
          call writeIndexProbeToFileOrScreen(ip,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(ip%p%name)//'_info',str(ip%p%dir))
+           call closeAndMessage(newU,str(ip%p%dir),str(ip%p%name)//'_info')
          endif
        end subroutine
 
@@ -276,7 +276,7 @@
          call export(ep%p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(ep%p%name)//'_info',str(ep%p%dir))
+           call closeAndMessage(newU,str(ep%p%dir),str(ep%p%name)//'_info')
          endif
        end subroutine
 

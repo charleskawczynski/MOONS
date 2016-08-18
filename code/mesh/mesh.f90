@@ -420,7 +420,7 @@
          integer :: NU
          NU = newAndOpen(dir,name)
          call export(m,NU)
-         call closeandMessage(NU,name,dir)
+         call closeandMessage(NU,dir,name)
        end subroutine
 
        subroutine import_wrapper(m,dir,name)
@@ -430,7 +430,7 @@
          integer :: NU
          NU = openToRead(dir,name)
          call import(m,NU)
-         call closeandMessage(NU,name,dir)
+         call closeandMessage(NU,dir,name)
        end subroutine
 
        subroutine print_mesh(m)

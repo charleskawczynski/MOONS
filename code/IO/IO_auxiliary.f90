@@ -26,7 +26,7 @@
         integer :: un
         un = openToRead(dir,name)
         read(un,'('//intfmt//')') n
-        call closeExisting(un,name,dir)
+        call closeExisting(un,dir,name)
       end subroutine
 
       subroutine writeLastStepToFile(n,dir,name)
@@ -35,7 +35,7 @@
         integer :: un
         un = newAndOpen(dir,name)
         write(un,'('//intfmt//')') n
-        call closeAndMessage(un,name,dir)
+        call closeAndMessage(un,dir,name)
       end subroutine
 
       subroutine writeSwitchToFile(ks,dir,name)
@@ -44,7 +44,7 @@
         integer :: un
         un = newAndOpen(dir,name)
         write(un,'('//logfmt//')') ks
-        call closeAndMessage(un,name,dir)
+        call closeAndMessage(un,dir,name)
       end subroutine
 
       ! subroutine readSwitchFromFile(ks,dir,name)
@@ -62,7 +62,7 @@
         integer :: un
         un = openToRead(dir,name)
         read(un,'('//logfmt//')') ks
-        call closeExisting(un,name,dir)
+        call closeExisting(un,dir,name)
       end function
 
       subroutine writeIntegerToFile(i,dir,name)
@@ -71,7 +71,7 @@
         integer :: un
         un = newAndOpen(dir,name)
         write(un,'('//intfmt//')') i
-        call closeAndMessage(un,name,dir)
+        call closeAndMessage(un,dir,name)
       end subroutine
 
       function readIntegerFromFile(dir,name) result(val)
@@ -80,7 +80,7 @@
         integer :: un
         un = openToRead(dir,name)
         read(un,*) val
-        call closeExisting(un,name,dir)
+        call closeExisting(un,dir,name)
       end function
 
       end module

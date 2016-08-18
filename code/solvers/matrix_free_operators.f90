@@ -121,7 +121,7 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
-        call lap_centered(Ax,x,m,tempk)
+        call lap(Ax,x,m)
         call zeroGhostPoints(Ax)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)

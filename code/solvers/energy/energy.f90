@@ -114,6 +114,7 @@
          call init_CC(nrg%Q_source,m,0.0_cp)
          call init_CC(nrg%temp_CC2,m,0.0_cp)
          call init_Face(nrg%temp_F,m,0.0_cp)
+
          call init_Face(nrg%k,m,0.0_cp)
          call init_Face(nrg%U_F,m,0.0_cp)
          call init_CC(nrg%temp_CC1,m,0.0_cp)

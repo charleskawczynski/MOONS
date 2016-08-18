@@ -334,6 +334,7 @@
          read(un,*) mom%U_eta;    read(un,*) mom%t_eta
          read(un,*) mom%KE;       read(un,*) mom%e_budget
          read(un,*) mom%t
+         call closeAndMessage(un,str(DT%restart),'mom_restart')
          call import(mom%MFP,openToRead(str(DT%restart),'mom_MFP'))
          call import(mom%U     ,str(DT%restart),'U')
          call import(mom%p     ,str(DT%restart),'p')

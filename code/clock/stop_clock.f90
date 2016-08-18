@@ -128,8 +128,7 @@
 
         NewU = newAndOpen(dir,'WALL_CLOCK_TIME_INFO')
         call export_sc(sc,newU)
-        close(NewU)
-        call closeAndMessage(newU,'WALL_CLOCK_TIME_INFO',dir)
+        call closeAndMessage(newU,dir,'WALL_CLOCK_TIME_INFO')
       end subroutine
 
       subroutine print_sc(sc)

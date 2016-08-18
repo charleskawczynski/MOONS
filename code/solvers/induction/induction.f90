@@ -74,6 +74,8 @@
          type(PCG_solver_VF) :: PCG_B
          type(PCG_solver_SF) :: PCG_cleanB
 
+         type(Jacobi) :: JAC_B
+
          type(matrix_free_params) :: MFP_B
          type(matrix_free_params) :: MFP_cleanB
 
@@ -254,8 +256,9 @@
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
-         ! call init(ind%JAC,Lap_uniform_VF_explicit,ind%B,ind%sigmaInv_edge,ind%m,ind%MFP,&
-         ! ind%tol_induction,str(DT%B),'B',.false.)
+         call init(ind%JAC_B,Lap_uniform_VF_explicit,ind%B,ind%B_interior,&
+         ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%MFP_B,10,ind%tol_induction,&
+         str(DT%B),'B',.false.)
 
          write(*,*) '     Finished'
          if (restart_all) call import(ind,DT)
@@ -300,6 +303,7 @@
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
+         call delete(ind%JAC_B)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -340,13 +344,16 @@
          write(un,*) ind%tol_induction; write(un,*) ind%Rem
          write(un,*) ind%e_budget;    write(un,*) ind%nstep
          write(un,*) ind%finite_Rem;    write(un,*) ind%t
-         call export(ind%MFP_B,newAndOpen(str(DT%restart),'ind_MFP'))
+         call closeAndMessage(un,str(DT%restart),'ind_restart')
+         un = newAndOpen(str(DT%restart,'ind_MFP'))
+         call export(ind%MFP_B,un)
          call export(ind%B      ,str(DT%restart),'B')
          call export(ind%B0     ,str(DT%restart),'B0')
          call export(ind%J      ,str(DT%restart),'J')
          call export(ind%U_E%x  ,str(DT%restart),'Uex')
          call export(ind%U_E%y  ,str(DT%restart),'Vey')
          call export(ind%U_E%z  ,str(DT%restart),'Wez')
+         call closeAndMessage(un,str(DT%restart),'ind_MFP')
        end subroutine
 
        subroutine import_induction(ind,DT)
@@ -430,6 +437,10 @@
          ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%dTime,ind%N_induction,ind%temp_F1,ind%temp_F2,&
          ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
 
+         case (5)
+         if (ind%nstep.le.1) call assign(ind%temp_F1,0.0_cp)
+         call JAC_interior_solved(ind%JAC_B,ind%B,ind%temp_F1,ind%m,1,ind%N_induction)
+
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
 
@@ -454,14 +465,20 @@
          if (PE%info) then
            call print(ind)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
+           write(*,*) 'got here 1'
            exportNowB = readSwitchFromFile(str(DT%params),'exportNowB')
+           write(*,*) 'got here 2'
          else; exportNow = .false.; exportNowB = .false.
          endif
 
          if (PE%solution.or.exportNowB.or.exportNow) then
+           write(*,*) 'got here 3'
            call export(ind,DT)
+           write(*,*) 'got here 4'
            call export_tec(ind,DT)
+           write(*,*) 'got here 5'
            call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
+           write(*,*) 'got here 6'
          endif
        end subroutine
 

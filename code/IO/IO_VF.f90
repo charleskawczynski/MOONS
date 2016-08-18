@@ -25,9 +25,9 @@
         integer,intent(in) :: pad
         type(VF),intent(in) :: U
         integer :: un
-        un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_3D_3C(m,pad,un,arrfmt,trim(adjustl(name)),U)
-        call closeAndMessage(un,trim(adjustl(name)),dir)
+        un = newAndOpen(dir,name)
+        call exp_3D_3C(m,pad,un,arrfmt,name,U)
+        call closeAndMessage(un,name,dir)
       end subroutine
 
       subroutine export_2D_2C_transient(m,U,dir,name,pad,direction,nstep)
@@ -37,9 +37,9 @@
         integer,intent(in) :: pad,direction,nstep
         type(VF),intent(in) :: U
         integer :: un
-        un = newAndOpen(dir,trim(adjustl(name//int2str(nstep))))
-        call exp_2D_2C(m,pad,un,arrfmt,trim(adjustl(name)),U,direction)
-        call closeAndMessage(un,trim(adjustl(name)),dir)
+        un = newAndOpen(dir,name//int2str(nstep))
+        call exp_2D_2C(m,pad,un,arrfmt,name,U,direction)
+        call closeAndMessage(un,name,dir)
       end subroutine
 
       subroutine export_2D_3C_transient(m,U,dir,name,pad,direction,nstep)
@@ -49,9 +49,9 @@
         integer,intent(in) :: pad,direction,nstep
         type(VF),intent(in) :: U
         integer :: un
-        un = newAndOpen(dir,trim(adjustl(name//int2str(nstep))))
-        call exp_2D_3C(m,pad,un,arrfmt,trim(adjustl(name)),U,direction)
-        call closeAndMessage(un,trim(adjustl(name)),dir)
+        un = newAndOpen(dir,name//int2str(nstep))
+        call exp_2D_3C(m,pad,un,arrfmt,name,U,direction)
+        call closeAndMessage(un,name,dir)
       end subroutine
 
       subroutine export_2D_2C(m,U,dir,name,pad,direction)
@@ -61,9 +61,9 @@
         integer,intent(in) :: pad,direction
         type(VF),intent(in) :: U
         integer :: un
-        un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_2D_2C(m,pad,un,arrfmt,trim(adjustl(name)),U,direction)
-        call closeAndMessage(un,trim(adjustl(name)),dir)
+        un = newAndOpen(dir,name)
+        call exp_2D_2C(m,pad,un,arrfmt,name,U,direction)
+        call closeAndMessage(un,name,dir)
       end subroutine
 
       subroutine export_2D_3C(m,U,dir,name,pad,direction)
@@ -73,9 +73,9 @@
         integer,intent(in) :: pad,direction
         type(VF),intent(in) :: U
         integer :: un
-        un = newAndOpen(dir,trim(adjustl(name)))
-        call exp_2D_3C(m,pad,un,arrfmt,trim(adjustl(name)),U,direction)
-        call closeAndMessage(un,trim(adjustl(name)),dir)
+        un = newAndOpen(dir,name)
+        call exp_2D_3C(m,pad,un,arrfmt,name,U,direction)
+        call closeAndMessage(un,name,dir)
       end subroutine
 
       subroutine import_3D_3C(m,U,dir,name,pad)
@@ -85,9 +85,9 @@
         integer,intent(in) :: pad
         type(VF),intent(inout) :: U
         integer :: un
-        un = openToRead(dir,trim(adjustl(name)))
-        call imp_3D_3C(m,pad,un,arrfmt,trim(adjustl(name)),U)
-        call closeExisting(un,trim(adjustl(name)),dir)
+        un = openToRead(dir,name)
+        call imp_3D_3C(m,pad,un,arrfmt,name,U)
+        call closeExisting(un,name,dir)
       end subroutine
 
 
