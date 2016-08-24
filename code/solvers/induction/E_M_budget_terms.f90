@@ -17,9 +17,9 @@
        implicit none
 
        private
-       public :: unsteady,         unsteady_export
-       public :: Joule_Dissipation,Joule_Dissipation_export
-       public :: Poynting,         Poynting_export
+       public :: unsteady,         export_unsteady
+       public :: Joule_Dissipation,export_Joule_Dissipation
+       public :: Poynting,         export_Poynting
 
        contains
 
@@ -37,7 +37,7 @@
          call add(e,VF_CC1)
          call multiply(e,0.5_cp/dTime)
        end subroutine
-       subroutine Unsteady_export(e_integral,e,B,Bnm1,dTime,m,VF_CC1,VF_CC2,DT)
+       subroutine export_Unsteady(e_integral,e,B,Bnm1,dTime,m,VF_CC1,VF_CC2,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -65,7 +65,7 @@
          call multiply(VF_CC,sigmaInv_CC)
          call add(e,VF_CC)
        end subroutine
-       subroutine Joule_Dissipation_export(e_integral,e,J,sigmaInv_CC,m,VF_CC,VF_F,DT)
+       subroutine export_Joule_Dissipation(e_integral,e,J,sigmaInv_CC,m,VF_CC,VF_F,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -103,7 +103,7 @@
          call cross(VF_F,TF_F3,TF_F2) ! F = E x B
          call div(e,VF_F,m)
        end subroutine
-       subroutine Poynting_export(e_integral,e,B,J,U,sigmaInv_F,m,SF_CC,VF_F,TF_F1,TF_F2,TF_F3,DT)
+       subroutine export_Poynting(e_integral,e,B,J,U,sigmaInv_F,m,SF_CC,VF_F,TF_F1,TF_F2,TF_F3,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e

@@ -33,9 +33,9 @@
          
          call add(VF_F2,B,B0)
          call add(TF_F1%y,Bnm1,B0nm1)
-         call Unsteady_export(e_integral(i),e,VF_F2,TF_F1%y,dTime,m,TF_CC%x,TF_CC%y,DT); i=i+1
-         call Joule_Dissipation_export(e_integral(i),e,J,sigmaInv_CC,m,TF_CC%x,VF_F1,DT); i=i+1
-         call Poynting_export(e_integral(i),e,VF_F2,J,U,sigmaInv_F,m,VF_CC%x,VF_F1,TF_F1,TF_F2,TF_F3,DT); i=i+1
+         call export_Unsteady(e_integral(i),e,VF_F2,TF_F1%y,dTime,m,TF_CC%x,TF_CC%y,DT); i=i+1
+         call export_Joule_Dissipation(e_integral(i),e,J,sigmaInv_CC,m,TF_CC%x,VF_F1,DT); i=i+1
+         call export_Poynting(e_integral(i),e,VF_F2,J,U,sigmaInv_F,m,VF_CC%x,VF_F1,TF_F1,TF_F2,TF_F3,DT); i=i+1
          call delete(e)
        end subroutine
 

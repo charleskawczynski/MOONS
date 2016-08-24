@@ -256,6 +256,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = k%is_CC
+        suppress_warning = tempk%is_CC
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).
         ! The reason this is not as simple as the laplacian operator
@@ -278,6 +279,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = k%is_CC
+        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).

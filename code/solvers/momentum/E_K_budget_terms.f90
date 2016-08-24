@@ -17,14 +17,14 @@
        implicit none
 
        private
-       public :: Unsteady,           Unsteady_export
-       public :: E_K_Convection,     E_K_Convection_export
-       public :: E_K_Diffusion,      E_K_Diffusion_export
-       public :: E_K_Pressure,       E_K_Pressure_export
-       public :: Viscous_Dissipation,Viscous_Dissipation_export
-       public :: E_M_Convection,     E_M_Convection_export
-       public :: E_M_Tension,        E_M_Tension_export
-       public :: Lorentz,            Lorentz_export
+       public :: Unsteady,           export_Unsteady
+       public :: E_K_Convection,     export_E_K_Convection
+       public :: E_K_Diffusion,      export_E_K_Diffusion
+       public :: E_K_Pressure,       export_E_K_Pressure
+       public :: Viscous_Dissipation,export_Viscous_Dissipation
+       public :: E_M_Convection,     export_E_M_Convection
+       public :: E_M_Tension,        export_E_M_Tension
+       public :: Lorentz,            export_Lorentz
 
        contains
 
@@ -42,7 +42,7 @@
          call add(e,VF_CC1)
          call multiply(e,0.5_cp/dTime)
        end subroutine
-       subroutine Unsteady_export(e_integral,e,U,Unm1,dTime,m,VF_CC1,VF_CC2,DT)
+       subroutine export_Unsteady(e_integral,e,U,Unm1,dTime,m,VF_CC1,VF_CC2,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -79,7 +79,7 @@
          call multiply(e,0.5_cp)
          write(*,*) 'max(e) = ',maxabs(e)
        end subroutine
-       subroutine E_K_Convection_export(e_integral,e,U,U_CC,m,VF_F1,VF_F2,VF_CC,SF_CC,DT)
+       subroutine export_E_K_Convection(e_integral,e,U,U_CC,m,VF_F1,VF_F2,VF_CC,SF_CC,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -88,14 +88,14 @@
          type(VF),intent(inout) :: VF_F1,VF_F2,VF_CC
          type(SF),intent(inout) :: SF_CC
          type(dir_tree),intent(in) :: DT
-         write(*,*) '-------------------------------------------E_K_Convection_export start'
+         write(*,*) '-------------------------------------------export_E_K_Convection start'
          write(*,*) 'e_integral = ',e_integral
          call E_K_Convection(e,U,U_CC,m,VF_F1,VF_F2,VF_CC,SF_CC)
          call export_raw      (m,e,str(DT%e_budget_C),'E_K_Convection',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_K_Convection',1)
          call Ln(e_integral,e,1.0_cp,m)
          write(*,*) 'e_integral = ',e_integral
-         write(*,*) '-------------------------------------------E_K_Convection_export end'
+         write(*,*) '-------------------------------------------export_E_K_Convection end'
        end subroutine
 
        subroutine E_K_Diffusion(e,U_CC,m,VF_CC)
@@ -110,7 +110,7 @@
          call lap(e,VF_CC%x,m)
          call multiply(e,0.5_cp)
        end subroutine
-       subroutine E_K_Diffusion_export(e_integral,e,U_CC,m,VF_CC,DT)
+       subroutine export_E_K_Diffusion(e_integral,e,U_CC,m,VF_CC,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -136,7 +136,7 @@
          call multiply(VF_F,U)
          call div(e,VF_F,m)
        end subroutine
-       subroutine E_K_Pressure_export(e_integral,e,U,p,m,VF_F,DT)
+       subroutine export_E_K_Pressure(e_integral,e,U,p,m,VF_F,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -168,7 +168,7 @@
          call add(TF_CC1%x%z,TF_CC2%z)
          call add(e,TF_CC1%x)
        end subroutine
-       subroutine Viscous_Dissipation_export(e_integral,e,U_CC,m,TF_CC1,TF_CC2,DT)
+       subroutine export_Viscous_Dissipation(e_integral,e,U_CC,m,TF_CC1,TF_CC2,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -204,7 +204,7 @@
          call multiply(e,0.5_cp)
          write(*,*) 'max(e) = ',maxabs(e)
        end subroutine
-       subroutine E_M_Convection_export(e_integral,e,B,U,m,VF_CC1,VF_CC2,VF_F,DT)
+       subroutine export_E_M_Convection(e_integral,e,B,U,m,VF_CC1,VF_CC2,VF_F,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -212,14 +212,14 @@
          type(mesh),intent(in) :: m
          type(VF),intent(inout) :: VF_CC1,VF_CC2,VF_F
          type(dir_tree),intent(in) :: DT
-         write(*,*) '-------------------------------------------E_M_Convection_export start'
+         write(*,*) '-------------------------------------------export_E_M_Convection start'
          call E_M_Convection(e,B,U,m,VF_CC1,VF_CC2,VF_F)
          call export_raw      (m,e,str(DT%e_budget_C),'E_M_Convection',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_M_Convection',1)
          write(*,*) 'max(e) = ',maxabs(e)
          call Ln(e_integral,e,1.0_cp,m)
          write(*,*) 'e_integral = ',e_integral
-         write(*,*) '-------------------------------------------E_M_Convection_export end'
+         write(*,*) '-------------------------------------------export_E_M_Convection end'
        end subroutine
 
        subroutine E_M_Tension(e,B,U_CC,m,VF_CC1,VF_CC2,VF_CC3,TF_CC)
@@ -238,7 +238,7 @@
          call multiply(VF_CC1,U_CC)
          call add(e,VF_CC1)
        end subroutine
-       subroutine E_M_Tension_export(e_integral,e,B,U_CC,m,VF_CC1,VF_CC2,VF_CC3,TF_CC,DT)
+       subroutine export_E_M_Tension(e_integral,e,B,U_CC,m,VF_CC1,VF_CC2,VF_CC3,TF_CC,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -266,7 +266,7 @@
          call multiply(VF_CC3,U_CC)
          call add(e,VF_CC3)
        end subroutine
-       subroutine Lorentz_export(e_integral,e,J,B,U_CC,m,VF_CC1,VF_CC2,VF_CC3,VF_F,DT)
+       subroutine export_Lorentz(e_integral,e,J,B,U_CC,m,VF_CC1,VF_CC2,VF_CC3,VF_F,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e

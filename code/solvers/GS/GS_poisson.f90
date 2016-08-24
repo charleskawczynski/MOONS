@@ -64,7 +64,7 @@
       interface delete;       module procedure delete_GS_SF;         end interface
       interface delete;       module procedure delete_GS_VF;         end interface
       interface solve;        module procedure solve_GS_poisson_SF;  end interface
-      interface solve;        module procedure solve_GS_poisson_VF;  end interface
+      ! interface solve;        module procedure solve_GS_poisson_VF;  end interface
 
       contains
 
@@ -181,17 +181,17 @@
         str(GS%name),GS%n_skip_check_res)
       end subroutine
 
-      subroutine solve_GS_poisson_VF(GS,u,f,m,n,compute_norm)
-        implicit none
-        type(GS_poisson_VF),intent(inout) :: GS
-        type(VF),intent(inout) :: u
-        type(VF),intent(in) :: f
-        type(mesh),intent(in) :: m
-        integer,intent(in) :: n
-        logical,intent(in) :: compute_norm
-!         call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,n,GS%tol,GS%norm,compute_norm,&
-!         GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,str(GS%name,GS%n_skip_check_res)
-      end subroutine
+      ! subroutine solve_GS_poisson_VF(GS,u,f,m,n,compute_norm)
+      !   implicit none
+      !   type(GS_poisson_VF),intent(inout) :: GS
+      !   type(VF),intent(inout) :: u
+      !   type(VF),intent(in) :: f
+      !   type(mesh),intent(in) :: m
+      !   integer,intent(in) :: n
+      !   logical,intent(in) :: compute_norm
+      !   call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,n,GS%tol,GS%norm,compute_norm,&
+      !   GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,str(GS%name,GS%n_skip_check_res)
+      ! end subroutine
 
       subroutine delete_GS_SF(GS)
         implicit none

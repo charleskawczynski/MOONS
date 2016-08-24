@@ -46,7 +46,9 @@
         type(SF),intent(inout) :: Ax,res
         type(norms) :: norm0
         integer :: i,i_earlyExit
-        logical :: skip_loop
+        logical :: skip_loop,suppress_warning
+        suppress_warning = x_interior%is_Face
+        suppress_warning = D_interior%s.eq.0
         call apply_BCs(x,m) ! Boundaries
 
         call operator(Ax,x,k,m,MFP,tempk)
