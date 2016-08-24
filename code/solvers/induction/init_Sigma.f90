@@ -10,11 +10,10 @@
        private
        public :: initSigma
 
-       ! This gets overridden by benchmarkCase
        integer :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
-       !                                       0 : Uniform
-       !                                       1 : Subdomain dependent
-       !                                       2 : Cylinder (2D)
+       !                                          0 : Uniform
+       !                                          1 : Subdomain dependent
+       !                                          2 : Cylinder (2D)
 
        ! real(cp) :: sigmaStarWall = 1.0_cp             ! sigma* = sigma_wall/sigma_l
        ! real(cp) :: sigmaStarWall = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l

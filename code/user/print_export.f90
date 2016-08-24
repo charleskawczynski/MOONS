@@ -1,5 +1,4 @@
        module print_export_mod
-       use simParams_mod
        implicit none
        private
        public :: print_export
@@ -17,10 +16,11 @@
 
        contains
 
-       subroutine init_PE(PE,n_step)
+       subroutine init_PE(PE,n_step,export_planar)
          implicit none
          type(print_export),intent(inout) :: PE
          integer,intent(in) :: n_step
+         logical,intent(in) :: export_planar
          logical,dimension(6) :: temp
          integer :: i
          temp = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)

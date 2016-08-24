@@ -472,15 +472,15 @@
          type(momentum),intent(inout) :: mom
          type(domain),intent(in) :: D_fluid
          type(VF),intent(in) :: B,B0,J
-         type(TF) :: temp_CC1_TF,temp_CC2_TF
-         type(VF) :: temp_F1,temp_F2,temp_B,temp_B0,temp_J
+         type(TF) :: TF_CC1,TF_CC2
+         type(VF) :: VF_F1,VF_F2,temp_B,temp_B0,temp_J
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
 
-         call init_CC(temp_CC1_TF,mom%m)
-         call init_CC(temp_CC2_TF,mom%m)
-         call init_Face(temp_F1,mom%m)
-         call init_Face(temp_F2,mom%m)
+         call init_CC(TF_CC1,mom%m)
+         call init_CC(TF_CC2,mom%m)
+         call init_Face(VF_F1,mom%m)
+         call init_Face(VF_F2,mom%m)
 
          call init_Face(temp_B,mom%m)
          call init_Face(temp_B0,mom%m)
@@ -495,17 +495,17 @@
 
          call E_K_Budget(DT,mom%e_budget,mom%U,mom%Unm1,mom%U_CC,&
          temp_B,temp_B0,temp_J,mom%p,mom%m,mom%dTime,&
-         temp_F1,temp_F2,temp_CC1_TF,temp_CC2_TF)
+         VF_F1,VF_F2,TF_CC1,TF_CC2)
 
          call export_E_K_budget(mom,DT)
 
          call delete(temp_B)
          call delete(temp_B0)
          call delete(temp_J)
-         call delete(temp_F1)
-         call delete(temp_F2)
-         call delete(temp_CC1_TF)
-         call delete(temp_CC2_TF)
+         call delete(VF_F1)
+         call delete(VF_F2)
+         call delete(TF_CC1)
+         call delete(TF_CC2)
        end subroutine
 
        subroutine export_E_K_budget(mom,DT)
@@ -532,28 +532,6 @@
          enddo
          flush(un)
          close(un)
-       end subroutine
-
-
-       subroutine init_E_K_Budget_old(mom,DT)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(dir_tree),intent(in) :: DT
-         type(string) :: vars
-         mom%unit_nrg_budget = newAndOpen(str(DT%U),'E_K_budget_terms')
-         write(mom%unit_nrg_budget,*) ' TITLE = "momentum energy budget"'
-         call init(vars,' VARIABLES = ')
-         call append(vars,'Unsteady,')
-         call append(vars,'E_K_Convection,')
-         call append(vars,'E_K_Diffusion,')
-         call append(vars,'E_K_Pressure,')
-         call append(vars,'Viscous_Dissipation,')
-         call append(vars,'E_M_Convection,')
-         call append(vars,'E_M_Tension,')
-         call append(vars,'Lorentz')
-         write(mom%unit_nrg_budget,*) str(vars)
-         write(mom%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
-         call delete(vars)
        end subroutine
 
        end module

@@ -1,6 +1,5 @@
        module level_set_mod
        use current_precision_mod
-       use simParams_mod
        
        use BCs_mod
        use mesh_mod

@@ -52,7 +52,7 @@
          ! ***************************************************************
          call init(sc,n_dt_stop-n_step)
          do n_step=n_step,n_dt_stop
-           call init(PE,n_step)
+           call init(PE,n_step,export_planar)
 
            call tic(sc)
 

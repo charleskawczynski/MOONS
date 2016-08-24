@@ -459,7 +459,7 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         compute_ME = (computeKB.and.PE%transient_0D.or.(ind%nstep.eq.0))
+         compute_ME = (PE%transient_0D.or.(ind%nstep.eq.0))
          if (compute_ME) call compute_induction_energies(ind)
 
          if (PE%transient_0D) then 
@@ -570,22 +570,6 @@
          enddo
          flush(un)
          close(un)
-       end subroutine
-
-       subroutine init_E_M_budget_old(ind,DT)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(dir_tree),intent(in) :: DT
-         type(string) :: vars
-         ind%unit_nrg_budget = newAndOpen(str(DT%e_budget),'E_M_budget_terms')
-         write(ind%unit_nrg_budget,*) ' TITLE = "magnetic energy budget"'
-         call init(vars,' VARIABLES = ')
-         call append(vars,'Unsteady,')
-         call append(vars,'Joule_Dissipation,')
-         call append(vars,'Poynting,')
-         write(ind%unit_nrg_budget,*) str(vars)
-         write(ind%unit_nrg_budget,*) ' ZONE DATAPACKING = POINT'
-         call delete(vars)
        end subroutine
 
        end module

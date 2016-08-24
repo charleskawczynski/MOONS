@@ -2,7 +2,6 @@
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
        use current_precision_mod
-       use simParams_mod
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
@@ -16,6 +15,9 @@
        use richardsonExtrapolation_mod
 
        use MOONS_mod
+       use dir_tree_mod
+       use path_mod
+       use string_mod
 
        implicit none
        private
@@ -25,7 +27,7 @@
       
        contains
 
-       subroutine computeCRFromExisting(directory)
+       subroutine computeCRFromExisting(DT)
          ! This routine may need some testing again since it hasn't been used in a 
          ! while. The original version that was used ran all tests, while keeping
          ! the data, then performed the convergence rate computations. This approach
@@ -64,7 +66,7 @@
          ! For 2D and 3D simulations, the refinement factor must be changed accordingly.
          ! 
          implicit none
-         character(len=*),intent(in) :: directory
+         type(dir_tree),intent(in) :: DT
          integer,parameter :: Nstart = 4
          integer,parameter :: Nsims = 4
          integer,parameter :: r0 = 2 ! Magnetiude of refinement factor
@@ -82,8 +84,7 @@
          write(*,*) 'parametric Ni = ',Ni
 
          do i=1,Nsims ! Start with finest grid
-           call loadData(U(i),mesh_mom(i),&
-            directory//'N_'//trim(adjustl(int2str2(Ni(i))))//'\Ufield\','Uni_phys',1)
+           call import_3D_3C(mesh_mom(i),U(i),str(DT%U_f)//'_N_'//int2str2(Ni(i)),'Unp',0)
          enddo
 
          RE = computeRe(U,mesh_mom,Nsims,r,1,directory,'U')

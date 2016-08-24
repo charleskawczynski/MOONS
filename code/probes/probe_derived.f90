@@ -58,7 +58,6 @@
        ! 
        ! NOTE: init prints the index location if one exists.
        ! 
-       ! use simParams_mod
        use current_precision_mod
        use string_mod
        use probe_transient_mod
