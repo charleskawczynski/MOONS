@@ -48,7 +48,9 @@
         ! Grid initialization
         public :: init_CC
         public :: init_Face
+        public :: init_Face_compliment
         public :: init_Edge
+        public :: init_Edge_compliment
         public :: init_Node
 
         ! Monitoring
@@ -61,13 +63,12 @@
         public :: square
         public :: transpose
         ! public :: sum
-        public :: assignX,assignY,assignZ
+        ! public :: assignX,assignY,assignZ
 
         type TF
           integer :: s = 3  ! number of components
           type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
-          logical :: is_CC,is_Node,is_Face,is_Edge
-          ! logical :: is_CC_diag_F_off_diag,is_CC_diag_E_off_diag
+          logical :: is_CC,is_Node
         end type
 
         interface init;          module procedure init_TF_copy_VF;          end interface
@@ -77,6 +78,8 @@
         interface init_Face;     module procedure init_TF_Face;             end interface
         interface init_Edge;     module procedure init_TF_Edge;             end interface
         interface init_Node;     module procedure init_TF_Node;             end interface
+        interface init_Face_compliment;  module procedure init_TF_Face_compliment;  end interface
+        interface init_Edge_compliment;  module procedure init_TF_Edge_compliment;  end interface
 
         interface init_CC;       module procedure init_TF_CC_assign;        end interface
         interface init_Face;     module procedure init_TF_Face_assign;      end interface
@@ -85,13 +88,6 @@
 
         interface delete;        module procedure delete_TF;                end interface
         interface print;         module procedure print_TF;                 end interface
-
-        interface assignX;       module procedure assign_TF_TF_X;          end interface
-        interface assignY;       module procedure assign_TF_TF_Y;          end interface
-        interface assignZ;       module procedure assign_TF_TF_Z;          end interface
-        interface assignX;       module procedure assign_TF_S_X;           end interface
-        interface assignY;       module procedure assign_TF_S_Y;           end interface
-        interface assignZ;       module procedure assign_TF_S_Z;           end interface
 
         interface assign;        module procedure assign_TF_S;              end interface
         interface assign;        module procedure assign_TF_VF;             end interface
@@ -129,48 +125,6 @@
         contains
 
         ! ----------------- ASSIGN ------------------
-
-        subroutine assign_TF_TF_X(f,g)
-          implicit none
-          type(TF),intent(inout) :: f
-          type(TF),intent(in) :: g
-          call assign(f%x,g%x)
-        end subroutine
-
-        subroutine assign_TF_TF_Y(f,g)
-          implicit none
-          type(TF),intent(inout) :: f
-          type(TF),intent(in) :: g
-          call assign(f%y,g%y)
-        end subroutine
-
-        subroutine assign_TF_TF_Z(f,g)
-          implicit none
-          type(TF),intent(inout) :: f
-          type(TF),intent(in) :: g
-          call assign(f%z,g%z)
-        end subroutine
-
-        subroutine assign_TF_S_X(f,g)
-          implicit none
-          type(TF),intent(inout) :: f
-          real(cp),intent(in) :: g
-          call assign(f%x,g)
-        end subroutine
-
-        subroutine assign_TF_S_Y(f,g)
-          implicit none
-          type(TF),intent(inout) :: f
-          real(cp),intent(in) :: g
-          call assign(f%y,g)
-        end subroutine
-
-        subroutine assign_TF_S_Z(f,g)
-          implicit none
-          type(TF),intent(inout) :: f
-          real(cp),intent(in) :: g
-          call assign(f%z,g)
-        end subroutine
 
         subroutine assign_TF_TF(f,g)
           implicit none
@@ -397,8 +351,6 @@
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
           f1%is_CC = f2%is_CC
           f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine init_TF_copy_VF(f1,f2)
@@ -408,8 +360,6 @@
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
           f1%is_CC = f2%is_CC
           f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine init_TF_CC(f,m)
@@ -425,7 +375,25 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m); call init_Edge(f%y,m); call init_Edge(f%z,m)
-          call delete_logicals(f); f%is_Edge = .true.
+          call delete_logicals(f)
+        end subroutine
+
+        subroutine init_TF_Edge_compliment(f,m)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_Node(f%x%x,m)
+          call init_Face(f%x%y,m,3)
+          call init_Face(f%x%z,m,2)
+
+          call init_Face(f%y%x,m,3)
+          call init_Node(f%y%y,m)
+          call init_Face(f%y%z,m,1)
+
+          call init_Face(f%z%x,m,2)
+          call init_Face(f%z%y,m,1)
+          call init_Node(f%z%z,m)
+          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Face(f,m)
@@ -433,7 +401,25 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m); call init_Face(f%y,m); call init_Face(f%z,m)
-          call delete_logicals(f); f%is_Face = .true.
+          call delete_logicals(f)
+        end subroutine
+
+        subroutine init_TF_Face_compliment(f,m)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_CC  (f%x%x,m)
+          call init_Edge(f%x%y,m,3)
+          call init_Edge(f%x%z,m,2)
+
+          call init_Edge(f%y%x,m,3)
+          call init_CC  (f%y%y,m)
+          call init_Edge(f%y%z,m,1)
+
+          call init_Edge(f%z%x,m,2)
+          call init_Edge(f%z%y,m,1)
+          call init_CC  (f%z%z,m)
+          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Node(f,m)
@@ -488,8 +474,6 @@
           type(TF),intent(inout) :: f
           f%is_CC = .false.
           f%is_Node = .false.
-          f%is_Face = .false.
-          f%is_Edge = .false.
         end subroutine
 
         subroutine print_TF(f)

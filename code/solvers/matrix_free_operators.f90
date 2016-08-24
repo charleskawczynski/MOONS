@@ -121,7 +121,9 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
-        call lap(Ax,x,m)
+        suppress_warning = tempk%is_CC
+        call lap_centered(Ax,x,m) ! Involves dynamic allocations
+        ! call lap(Ax,x,m)
         call zeroGhostPoints(Ax)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
@@ -136,8 +138,10 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
+        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call lap_centered(Ax,x,m,tempk)
+        call lap_centered(Ax,x,m) ! Involves dynamic allocations
+        ! call lap(Ax,x,m)
         call zeroGhostPoints(Ax)
       end subroutine
 
@@ -258,7 +262,7 @@
         ! is because U is staggered, and so k (the intermediate location), 
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
-        call lap_centered(Ax,x,m,tempk)
+        call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)
@@ -281,7 +285,7 @@
         ! is because U is staggered, and so k (the intermediate location), 
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
-        call lap_centered(Ax,x,m,tempk)
+        call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
         call zeroGhostPoints(Ax)

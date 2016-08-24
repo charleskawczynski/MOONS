@@ -2,7 +2,7 @@
        implicit none
        logical :: restart_all               = .false.     ! restart sim (requires no code changes)
        logical :: stopBeforeSolve           = .false.     ! Just export ICs, do not run simulation
-       logical :: post_process_only         = .false.     ! Skip solver loop and just post-process results
+       logical :: post_process_only         = .true.      ! Skip solver loop and just post-process results
 
        logical :: exportGrids               = .false.     ! Export all Grids before starting simulation
        logical :: exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation
@@ -17,7 +17,7 @@
 
        integer :: solveTMethod              = 5 ! Refer to energy.f90
        integer :: solveUMethod              = 1 ! Refer to momentum.f90
-       integer :: solveBMethod              = 5 ! Refer to induction.f90
+       integer :: solveBMethod              = 4 ! Refer to induction.f90
 
        logical :: addJCrossB                = .false.
        logical :: addBuoyancy               = .false.

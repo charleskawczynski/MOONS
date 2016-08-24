@@ -22,6 +22,8 @@
 
         type(path) :: U,B,J,T
         type(path) :: U_e,B_e,J_e,T_e ! energy data
+        type(path) :: U_f,B_f,J_f,T_f ! field data
+        type(path) :: U_r,B_r,J_r,T_r ! residual data
         type(path) :: U_t,B_t,J_t,T_t ! transient data
       end type
 
@@ -61,14 +63,22 @@
         call init(DT%e_budget_C  ,DT%e_budget    ,'e_budget_C' ,str(DT%PS))
         call init(DT%restart1    ,DT%restart_sim ,'restart1'   ,str(DT%PS))
         call init(DT%restart2    ,DT%restart_sim ,'restart2'   ,str(DT%PS))
-        call init(DT%U_t         ,DT%U           ,'transient'  ,str(DT%PS))
-        call init(DT%B_t         ,DT%B           ,'transient'  ,str(DT%PS))
-        call init(DT%J_t         ,DT%J           ,'transient'  ,str(DT%PS))
-        call init(DT%T_t         ,DT%T           ,'transient'  ,str(DT%PS))
         call init(DT%U_e         ,DT%U           ,'energy'     ,str(DT%PS))
         call init(DT%B_e         ,DT%B           ,'energy'     ,str(DT%PS))
         call init(DT%J_e         ,DT%J           ,'energy'     ,str(DT%PS))
         call init(DT%T_e         ,DT%T           ,'energy'     ,str(DT%PS))
+        call init(DT%U_r         ,DT%U           ,'res'        ,str(DT%PS))
+        call init(DT%B_r         ,DT%B           ,'res'        ,str(DT%PS))
+        call init(DT%J_r         ,DT%J           ,'res'        ,str(DT%PS))
+        call init(DT%T_r         ,DT%T           ,'res'        ,str(DT%PS))
+        call init(DT%U_f         ,DT%U           ,'field'      ,str(DT%PS))
+        call init(DT%B_f         ,DT%B           ,'field'      ,str(DT%PS))
+        call init(DT%J_f         ,DT%J           ,'field'      ,str(DT%PS))
+        call init(DT%T_f         ,DT%T           ,'field'      ,str(DT%PS))
+        call init(DT%U_t         ,DT%U_f         ,'transient'  ,str(DT%PS))
+        call init(DT%B_t         ,DT%B_f         ,'transient'  ,str(DT%PS))
+        call init(DT%J_t         ,DT%J_f         ,'transient'  ,str(DT%PS))
+        call init(DT%T_t         ,DT%T_f         ,'transient'  ,str(DT%PS))
 
         call init(DT%restart,DT%restart1)
 
@@ -98,15 +108,20 @@
         call make_dir(str(DT%J))
         call make_dir(str(DT%T))
 
-        call make_dir(str(DT%U_t))
-        call make_dir(str(DT%B_t))
-        call make_dir(str(DT%J_t))
-        call make_dir(str(DT%T_t))
-
         call make_dir(str(DT%U_e))
         call make_dir(str(DT%B_e))
         call make_dir(str(DT%J_e))
         call make_dir(str(DT%T_e))
+
+        call make_dir(str(DT%U_r))
+        call make_dir(str(DT%B_r))
+        call make_dir(str(DT%J_r))
+        call make_dir(str(DT%T_r))
+
+        call make_dir(str(DT%U_f)); call make_dir(str(DT%U_t))
+        call make_dir(str(DT%B_f)); call make_dir(str(DT%B_t))
+        call make_dir(str(DT%J_f)); call make_dir(str(DT%J_t))
+        call make_dir(str(DT%T_f)); call make_dir(str(DT%T_t))
       end subroutine
 
       subroutine delete_DT(DT)
@@ -140,6 +155,16 @@
         call delete(DT%B_e)
         call delete(DT%J_e)
         call delete(DT%T_e)
+
+        call delete(DT%U_r)
+        call delete(DT%B_r)
+        call delete(DT%J_r)
+        call delete(DT%T_r)
+
+        call delete(DT%U_f)
+        call delete(DT%B_f)
+        call delete(DT%J_f)
+        call delete(DT%T_f)
       end subroutine
 
       end module

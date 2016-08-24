@@ -27,9 +27,9 @@
          Ec         = 0.0_cp
 
          finite_Rem = .true.
-         dt_eng     = 1.0_cp*10.0_cp**(-7.0_cp)
-         dt_mom     = 1.0_cp*10.0_cp**(-7.0_cp)
-         dt_ind     = 1.0_cp*10.0_cp**(-7.0_cp)
+         dt_eng     = 1.0_cp*10.0_cp**(-8.0_cp)
+         dt_mom     = 1.0_cp*10.0_cp**(-8.0_cp)
+         dt_ind     = 1.0_cp*10.0_cp**(-8.0_cp)
 
          ! dt_mom     = 1.0_cp*10.0_cp**(-3.0_cp) ! LDC
          ! dt_ind     = 1.0_cp*10.0_cp**(-4.0_cp) ! LDC
@@ -37,17 +37,19 @@
 
          n_dt_start = 0
          ! n_dt_stop       = ceiling(t/dt_eng)
-         n_dt_stop       = ceiling(t/dt_mom)
+         ! n_dt_stop       = ceiling(t/dt_mom)
+         n_dt_stop       = 1000000000
          ! n_dt_stop       = 1
          ! n_dt_stop       = ceiling(t/dt_ind)
          ! n_dt_stop       = maxval((/ceiling(t/dt_eng),ceiling(t/dt_mom),ceiling(t/dt_ind)/))
          ! n_dt_stop       = 1500
+         if (n_dt_stop.lt.1) stop 'Error: n_dt_stop<1 in inputFile.f90'
 
          N_nrg         = 10       ! Number of iterations to solve energy    equation (if iterative solver is used)
          N_mom         = 10       ! Number of iterations to solve momentum  equation (if iterative solver is used)
          N_ind         = 10       ! Number of iterations to solve induction equation (if iterative solver is used)
          N_PPE         = 5        ! Number of iterations to solve PPE steps
-         N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
+         N_cleanB      = 10       ! Number of iterations to solve Poisson equation to clean B
 
          ! Stopping criteria for iterative solvers:
          !         ||Ax - b||

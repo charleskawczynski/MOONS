@@ -34,7 +34,7 @@
         integer,intent(in) :: pad,direction
         type(SF),intent(in) :: U
         integer :: un
-        un = newAndOpen(dir,name))
+        un = newAndOpen(dir,name)
         call exp_2D_1C(m,pad,un,arrfmt,name,U,direction)
         call closeAndMessage(un,dir,name)
       end subroutine
@@ -51,7 +51,7 @@
         call init(temp,m)
         call imp_3D_1C(temp,pad,un,arrfmt,name,U)
         call delete(temp)
-        call closeExisting(un,dir,name)
+        call closeAndMessage(un,dir,name)
       end subroutine
 
       subroutine export_mesh(m,dir,name,pad)

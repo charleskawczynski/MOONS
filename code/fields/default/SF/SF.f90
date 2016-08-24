@@ -49,7 +49,7 @@
         public :: N0_C1_tensor
         public :: C0_N1_tensor
 
-        public :: init_BCs,init_BC_props,init_BC_mesh
+        public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
 
         ! Monitoring
@@ -70,6 +70,8 @@
         type SF
           integer :: s ! Number of subdomains in domain decomposition
           type(realField),dimension(:),allocatable :: RF
+          logical,dimension(3) :: CC_along
+          logical,dimension(3) :: N_along
           logical :: is_CC,is_Node,is_face,is_edge
           logical :: all_neumann ! If necessary to subtract mean
           integer :: face = 0 ! Direction of face data
@@ -98,6 +100,7 @@
         interface init_Edge;           module procedure init_SF_Edge_assign;    end interface
 
         interface init_BCs;            module procedure init_BC_vals_SF;        end interface
+        interface init_BC_Dirichlet;   module procedure init_BC_Dirichlet_SF;   end interface
         interface init_BCs;            module procedure init_BC_val_SF;         end interface
         interface init_BCs;            module procedure init_BCs_SF_SF;         end interface
         interface init_BC_props;       module procedure init_BC_props_SF;       end interface
@@ -250,7 +253,7 @@
           integer :: un
           un = newAndOpen(dir,name)
           call export(f,un)
-          call closeAndMessage(un,name,dir)
+          call closeAndMessage(un,dir,name)
         end subroutine
 
         subroutine import_wrapper_SF(f,dir,name)
@@ -260,7 +263,7 @@
           integer :: un
           un = newAndOpen(dir,name)
           call import(f,un)
-          call closeAndMessage(un,name,dir)
+          call closeAndMessage(un,dir,name)
         end subroutine
 
 
@@ -355,6 +358,33 @@
           enddo
         end subroutine
 
+        subroutine init_CC_N_along(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          if (f%is_CC) then;       f%CC_along = .true.; f%N_along  = .false.
+          elseif (f%is_Node) then; f%N_along  = .true.; f%CC_along = .false.
+          elseif (f%is_Face) then
+            f%CC_along = .not.diag_true(f%face)
+            f%N_along  =      diag_true(f%face)
+          elseif (f%is_Edge) then
+            f%CC_along =      diag_true(f%edge)
+            f%N_along  = .not.diag_true(f%edge)
+          else; stop 'Error: bad data type in init_CC_N_along in SF.f90'
+          endif
+        end subroutine
+
+        function diag_true(dir) result(L)
+          implicit none
+          integer,intent(in) :: dir
+          logical,dimension(3) :: L
+          select case(dir)
+          case (1);L=(/.true.,.false.,.false./)
+          case (2);L=(/.false.,.true.,.false./)
+          case (3);L=(/.false.,.false.,.true./)
+          case default; stop 'Error: dir must = 1,2,3 in diag_true in SF.f90'
+          end select
+        end function
+
         subroutine init_SF_CC(f,m)
           implicit none
           type(SF),intent(inout) :: f
@@ -366,6 +396,7 @@
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_CC = .true.
+          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_CC_assign(f,m,val)
@@ -389,6 +420,7 @@
           call computeNumEl(f)
           f%is_face = .true.
           f%face = dir
+          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_Face_assign(f,m,dir,val)
@@ -413,6 +445,7 @@
           call computeNumEl(f)
           f%is_edge = .true.
           f%edge = dir
+          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_Edge_assign(f,m,dir,val)
@@ -435,6 +468,7 @@
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_node = .true.
+          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_Node_assign(f,m,val)
@@ -445,20 +479,20 @@
           call init_Node(f,m); call assign(f,val)
         end subroutine
 
-        function CC_along_SF(f,dir) result(TF)
+        function CC_along_SF(f,dir) result(L)
           implicit none
           type(SF),intent(in) :: f
           integer,intent(in) :: dir
-          logical :: TF
-          TF = any((/f%is_CC,f%is_Face.and.(f%face.ne.dir),f%is_Edge.and.(f%edge.eq.dir)/))
+          logical :: L
+          L = any((/f%is_CC,f%is_Face.and.(f%face.ne.dir),f%is_Edge.and.(f%edge.eq.dir)/))
         end function
 
-        function Node_along_SF(f,dir) result(TF)
+        function Node_along_SF(f,dir) result(L)
           implicit none
           type(SF),intent(in) :: f
           integer,intent(in) :: dir
-          logical :: TF
-          TF = any((/f%is_Node,f%is_Face.and.(f%face.eq.dir),f%is_Edge.and.(f%edge.ne.dir)/))
+          logical :: L
+          L = any((/f%is_Node,f%is_Face.and.(f%face.eq.dir),f%is_Edge.and.(f%edge.ne.dir)/))
         end function
 
         subroutine init_BCs_SF_SF(f,g)
@@ -482,6 +516,13 @@
           endif
           f%all_Neumann = all((/(f%RF(i)%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
+        end subroutine
+
+        subroutine init_BC_Dirichlet_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          do i=1,f%s; call init_Dirichlet(f%RF(i)%b); enddo
         end subroutine
 
         subroutine init_BC_val_SF(f,val)

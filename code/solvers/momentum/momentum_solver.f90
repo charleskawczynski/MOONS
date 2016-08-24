@@ -151,7 +151,7 @@
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          call lap(temp_F1,U,m)
-         ! call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
          call add(Ustar,F)
@@ -181,7 +181,7 @@
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          call lap(temp_F1,U,m)
-         ! call lap_centered(temp_F1,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
          call add(Ustar,F)
@@ -212,7 +212,7 @@
          call advect_U(temp_F,U,U_E,m,.false.,temp_E,temp_CC)
          call multiply(Ustar,temp_F,-1.0_cp) ! Because advect_div gives positive
          ! call lap(temp_F,U,m)
-         call lap_centered(temp_F,U,m,temp_E) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         call lap_centered(temp_F,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
          call multiply(temp_F,1.0_cp/Re)
          call add(Ustar,temp_F)
          call add(Ustar,F)

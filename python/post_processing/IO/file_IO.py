@@ -118,6 +118,27 @@ def keep_direction_only_in_header(header,direction):
 	h = [item for sublist in h for item in sublist]
 	return h
 
+def neglect_direction_in_header(header,direction):
+	h = header
+	if direction==1: h[1] = h[1].replace('"x",','')
+	if direction==2: h[1] = h[1].replace('"y",','')
+	if direction==3: h[1] = h[1].replace('"z",','')
+	s = h[1].split('"')
+	if direction==1: s = [x.replace('np','')[0:3]+'(y,z)'+x.replace('np','')[4:] if 'np' in x else x for x in s]
+	if direction==2: s = [x.replace('np','')[0:3]+'(x,y)'+x.replace('np','')[4:] if 'np' in x else x for x in s]
+	if direction==3: s = [x.replace('np','')[0:3]+'(y,z)'+x.replace('np','')[4:] if 'np' in x else x for x in s]
+	h[1] = '"'.join(s)
+	s = ''.join(header[2]).split(',')
+	if direction==1: s = [x+',' for x in s if 'I = ' not in x]
+	if direction==2: s = [x+',' for x in s if 'J = ' not in x]
+	if direction==3: s = [x+',' for x in s if 'K = ' not in x]
+	s[-1] = s[-1][:-1]
+	if direction==3: s.append(' DATAPACKING = POINT\n')
+	s = [x if not x.endswith('\n') else x[:-1] for x in s]
+	h[2] = s
+	h = [item for sublist in h for item in sublist]
+	return h
+
 def keep_direction_only_in_header_new(header,direction):
 	h = header
 	if direction==1: h[1] = h[1].replace('"y",','').replace('"z",','')

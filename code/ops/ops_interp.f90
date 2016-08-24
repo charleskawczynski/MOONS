@@ -150,7 +150,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2_RF(f,g,gd,sf,sg,dir)
+       subroutine interpO2_RF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir)
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
@@ -172,6 +172,7 @@
          real(cp),dimension(:,:,:),intent(in) :: g
          type(grid),intent(in) :: gd
          integer,dimension(3),intent(in) :: sg,sf
+         logical,intent(in) :: f_N,f_C,g_N,g_C
          integer,intent(in) :: dir
          integer :: i,j,k,t,x,y,z
 
@@ -179,15 +180,14 @@
          case (1); x=1;y=0;z=0
          case (2); x=0;y=1;z=0
          case (3); x=0;y=0;z=1
-         case default
-           stop 'Error: dir must = 1,2,3 in interpO2.'
+         case default; stop 'Error: dir must = 1,2,3 in interpO2_RF in ops_interp.f90.'
          end select
 
 #ifdef _DEBUG_INTERP_
          call checkInterpSizes(sf,sg,dir)
 #endif
 
-         if ((sf(dir).eq.gd%c(dir)%sc).and.(sg(dir).eq.gd%c(dir)%sn)) then
+         if (f_C.and.g_N) then
            ! f(cc grid), g(node/face grid)
            !         g  f  g  f  g  f  g  f  g
            !         |--o--|--o--|--o--|--o--|   --> dir
@@ -198,7 +198,7 @@
            f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+x,j+y,k+z))
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         elseif ((sf(dir).eq.gd%c(dir)%sn).and.(sg(dir).eq.gd%c(dir)%sc)) then
+         elseif (f_N.and.g_C) then
            ! f(node/face grid), g(cc grid)
            !         f  g  f  g  f  g  f  g  f
            !         |--o--|--o--|--o--|--o--|      --> dir
@@ -305,9 +305,12 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,m%s
-           call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
+           call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,&
+           f%N_along(dir),f%CC_along(dir),&
+           g%N_along(dir),g%CC_along(dir),&
+           dir)
          enddo
-         call apply_stitches(f,m)
+         ! call apply_stitches(f,m)
        end subroutine
 
 #ifdef _DEBUG_INTERP_

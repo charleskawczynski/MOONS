@@ -60,8 +60,8 @@
         call init(JAC%res,x)
         call init(JAC%Dinv,x)
         call init(JAC%D,x)
-        call init_Face(JAC%k,m)
         call init(JAC%tempk,JAC%k)
+        call init(JAC%k,k)
         call assign(JAC%k,k)
         call init(JAC%vol,x)
         call init(JAC%x_interior,x_interior)
@@ -81,7 +81,7 @@
         ! call get_diagonal(operator,JAC%D,x,JAC%k,JAC%vol,m,MFP,JAC%tempk)
 
         if (vizualizeOperator) then
-          call export_operator(operator,'JAC_VF_'//name,dir,x,JAC%k,JAC%vol,m,MFP,JAC%tempk)
+          call export_operator(operator,dir,'JAC_VF_'//name,x,JAC%k,JAC%vol,m,MFP,JAC%tempk)
           call export_matrix(JAC%D,dir,'JAC_VF_diag_'//name)
         endif
 

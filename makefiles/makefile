@@ -183,7 +183,13 @@ VPATH =\
 	$(SRC_DIR)$(PS)convergence_rate\
 	$(SRC_DIR)$(PS)coordinates\
 	$(SRC_DIR)$(PS)directory\
+	$(SRC_DIR)$(PS)domain\
 	$(SRC_DIR)$(PS)fields\
+	$(SRC_DIR)$(PS)fields$(PS)default\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
 	$(SRC_DIR)$(PS)globals\
 	$(SRC_DIR)$(PS)grid\
 	$(SRC_DIR)$(PS)IO\
@@ -250,18 +256,18 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)edge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90\
-	$(SRC_DIR)$(PS)fields$(PS)RF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)user$(PS)simParams.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
-	$(SRC_DIR)$(PS)grid$(PS)subdomain.f90\
-	$(SRC_DIR)$(PS)grid$(PS)domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
-	$(SRC_DIR)$(PS)fields$(PS)SF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)VF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)TF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90\
@@ -329,6 +335,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)vorticity_streamfunction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)export_analytic.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90\

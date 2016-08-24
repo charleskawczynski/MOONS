@@ -98,14 +98,14 @@
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: NewU
-         logical :: TF
-         TF = .false. ! show all regardless
+         logical :: L
+         L = .false. ! show all regardless
 
          if (.not.b%defined) then 
            write(newU,*) 'defined = ',b%defined
            stop 'Error: trying to export bctype before fully defined in bctype.f90'
          endif
-         if (TF) then
+         if (L) then
            write(newU,*) 'Dirichlet = ',b%Dirichlet
            write(newU,*) 'Neumann = ',b%Neumann
            write(newU,*) 'Robin = ',b%Robin

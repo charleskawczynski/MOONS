@@ -77,7 +77,7 @@
           call test_symmetry(operator,'PSE_SF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PSE_SF_'//name,dir,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
+          call export_operator(operator,dir,'PSE_SF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
       end subroutine
 
@@ -107,7 +107,7 @@
           call test_symmetry(operator,'PSE_VF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PSE_VF_'//name,dir,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
+          call export_operator(operator,dir,'PSE_VF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
       end subroutine
 

@@ -61,13 +61,14 @@
          type(norms) :: norm_divQ
          type(matrix_free_params) :: MFP
 
+         type(PCG_Solver_SF) :: PCG_T
+
          integer :: nstep             ! Nth time step
          integer :: N_nrg             ! Maximum number iterations in solving T (if iterative)
          real(cp) :: dTime            ! Time step
          real(cp) :: time             ! Time
          real(cp) :: tol_nrg             ! Time
 
-         type(PCG_Solver_SF) :: PCG_T
          real(cp) :: Re,Pr,Ec,Ha  ! Reynolds, Prandtl, Eckert, Hartmann
        end type
 
@@ -227,6 +228,17 @@
          implicit none
          type(energy),intent(in) :: nrg
          type(dir_tree),intent(in) :: DT
+         integer :: un
+         un = newAndOpen(str(DT%restart),'nrg_restart')
+         write(un,*) nrg%nstep;        write(un,*) nrg%N_nrg
+         write(un,*) nrg%dTime;        write(un,*) nrg%time
+         write(un,*) nrg%tol_nrg;      write(un,*) nrg%Re
+         write(un,*) nrg%Ec;           write(un,*) nrg%Ha
+         write(un,*) nrg%Pr
+         call closeAndMessage(un,str(DT%restart),'nrg_restart')
+         un = openToRead(str(DT%restart),'nrg_MFP')
+         call export(nrg%MFP,un)
+         call closeAndMessage(un,str(DT%restart),'nrg_MFP')
          call export(nrg%T   ,str(DT%restart),'T_nrg')
          call export(nrg%U_F ,str(DT%restart),'U_nrg')
          call export(nrg%k   ,str(DT%restart),'k_nrg')
@@ -236,6 +248,17 @@
          implicit none
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
+         integer :: un
+         un = openToRead(str(DT%restart),'nrg_restart')
+         read(un,*) nrg%nstep;        read(un,*) nrg%N_nrg
+         read(un,*) nrg%dTime;        read(un,*) nrg%time
+         read(un,*) nrg%tol_nrg;      read(un,*) nrg%Re
+         read(un,*) nrg%Ec;           read(un,*) nrg%Ha
+         read(un,*) nrg%Pr
+         call closeAndMessage(un,str(DT%restart),'nrg_restart')
+         un = openToRead(str(DT%restart),'nrg_MFP')
+         call import(nrg%MFP,un)
+         call closeAndMessage(un,str(DT%restart),'nrg_MFP')
          call import(nrg%T   ,str(DT%restart),'T_nrg')
          call import(nrg%U_F ,str(DT%restart),'U_nrg')
          call import(nrg%k   ,str(DT%restart),'k_nrg')

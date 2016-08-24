@@ -57,12 +57,12 @@
       ! ************************************************************************************
       ! ************************************************************************************
 
-      function is_element_09(st,j) result(TF)
+      function is_element_09(st,j) result(L)
         implicit none
         type(string),intent(in) :: st
         integer,intent(in) :: j
         logical,dimension(10) :: any_num
-        logical :: TF
+        logical :: L
         any_num(1)  = get_char(st,j).eq.'0'
         any_num(2)  = get_char(st,j).eq.'1'
         any_num(3)  = get_char(st,j).eq.'2'
@@ -73,7 +73,7 @@
         any_num(8)  = get_char(st,j).eq.'7'
         any_num(9)  = get_char(st,j).eq.'8'
         any_num(10) = get_char(st,j).eq.'9'
-        TF = any(any_num)
+        L = any(any_num)
       end function
 
       ! ************************************************************************************

@@ -132,10 +132,13 @@
           skip_loop = .false.
           do i=1,n
             call operator(Ax,x,k,m,MFP,tempk)
-            call multiply(res,x,Diag) ! Dx = Diag*x
-            call subtract(Ax,res) ! LUx = Ax - Dx
-            call subtract(res,f,Ax)
-            call multiply(x,Dinv,res) ! x^n+1 = Diag^-1 (b - LUx)
+            call multiply(res,x,Diag) ! = Dx
+            call subtract(Ax,res)     ! = LUx
+            call subtract(res,f,Ax)   ! = (b - LUx)
+            call multiply(res,Dinv)   ! = Dinv (b - LUx)
+            call multiply(x,0.1_cp)
+            call multiply(res,(1.0_cp-0.1_cp))
+            call add(x,res) ! x^n+1 = x^n w + (1-w) Dinv (b - LUx)
             ! call apply_Stitches(x,m)
             call apply_BCs(x,m)
             if (x%is_Face) call embedFace(x,x_interior,D_interior)

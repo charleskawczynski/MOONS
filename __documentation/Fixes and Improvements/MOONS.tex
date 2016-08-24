@@ -165,6 +165,7 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \subsection{SF / VF / TF}
 \begin{itemize}
 \setlength\itemsep{-1em}
+\item There is an inherent danger with is\_CC, is\_Node etc. for VF and TF fields, since, at the fundamental level, this really only applies to SF data. Since VF components, x,y,z, are public, VF fields can be initialized with any combination of CC,N,F,E data and not fall into the appropriate categories for VF to have is\_CC, is\_Node etc. correctly defined. This should be changed into a function, and maybe renamed, so that, e.g., all\_CC is called and will return an accurate depiction of the data type.
 \item Make TF composed of 9 SF so that it can be composed of different sizes.
 \item Try re-incorporating better parallelization for collocated / staggered VF / TF fields
 \end{itemize}

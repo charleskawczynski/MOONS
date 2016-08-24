@@ -11,7 +11,7 @@
 
       public :: make_dir,remove_dir
       public :: newUnit
-      public :: getUnit,closeExisting
+      public :: getUnit
       public :: newAndOpen,newAndOpenBinary,openToRead,openToAppend
       public :: closeAndMessage
       public :: int2Str,int2Str2,num2Str,log2Str,intLen
@@ -156,15 +156,7 @@
         integer,intent(in) :: u
         character(len=*),intent(in) :: dir,name
         close(u)
-        write(*,*) '+++ Data for ' // name // ' written to ' // dir //' +++'
-      end subroutine
-
-      subroutine closeExisting(u,name,dir)
-        implicit none
-        integer,intent(in) :: u
-        character(len=*),intent(in) :: name,dir
-        close(u)
-        write(*,*) '+++ Data for ' // name // ' read from ' // dir //' +++'
+        write(*,*) '+++ Closed file ' // dir // name
       end subroutine
 
       function newUnit() result(nu)

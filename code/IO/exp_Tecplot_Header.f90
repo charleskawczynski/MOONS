@@ -44,7 +44,7 @@
       ! ********************* 2D FIELDS *********************
       ! *****************************************************
 
-      subroutine exp_Header_2D_1C(u,name,dir)
+      subroutine exp_Header_2D_1C(u,dir,name)
         implicit none
         character(len=*),intent(in) :: name
         integer,intent(in) :: u,dir
@@ -62,7 +62,7 @@
         end select
       end subroutine
 
-      subroutine exp_Header_2D_2C(u,name,dir)
+      subroutine exp_Header_2D_2C(u,dir,name)
         implicit none
         character(len=*),intent(in) :: name
         integer,intent(in) :: u,dir
@@ -83,7 +83,7 @@
         end select
       end subroutine
 
-      subroutine exp_Header_2D_3C(u,name,dir)
+      subroutine exp_Header_2D_3C(u,dir,name)
         implicit none
         character(len=*),intent(in) :: name
         integer,intent(in) :: u,dir
@@ -111,7 +111,7 @@
       ! ********************* 1D FIELDS *********************
       ! *****************************************************
 
-      subroutine exp_Header_1D_1C(u,name,dir)
+      subroutine exp_Header_1D_1C(u,dir,name)
         implicit none
         character(len=*),intent(in) :: name
         integer,intent(in) :: u,dir

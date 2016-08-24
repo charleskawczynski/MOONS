@@ -13,7 +13,6 @@ def get_dt(file_name,n):
 
 def get_Re_Ha(LDC_dir,PS):
 	T = get_floats_in_line_n(LDC_dir+'parameters'+PS+'info_mom.dat',3,7)
-	print 'T='+str(T)
 	Re = T[0]
 	Ha = T[1]
 	return (Re,Ha)

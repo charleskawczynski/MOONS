@@ -49,7 +49,7 @@
         character(len=*),intent(in) :: arrfmt,name
         integer,dimension(2) :: s
         integer :: i,DT
-        call exp_Header_2D_2C(un,name,dir)
+        call exp_Header_2D_2C(un,dir,name)
         select case (dir)
         case(1); s = (/U%x%RF(1)%s(2),U%x%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
         case(2); s = (/U%x%RF(1)%s(1),U%x%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
@@ -81,7 +81,7 @@
         character(len=*),intent(in) :: arrfmt,name
         integer,dimension(2) :: s
         integer :: i,DT
-        call exp_Header_2D_3C(un,name,dir)
+        call exp_Header_2D_3C(un,dir,name)
         select case (dir)
         case(1); s = (/U%x%RF(1)%s(2),U%x%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
         case(2); s = (/U%x%RF(1)%s(1),U%x%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)

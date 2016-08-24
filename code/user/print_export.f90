@@ -27,7 +27,8 @@
 
          PE%info = temp(2)
          PE%info = .true.
-         PE%transient_0D = temp(2)
+         PE%transient_0D = temp(1)
+         PE%transient_0D = .true.
          PE%transient_2D = export_planar.and.(temp(5).or.n_step.eq.1)
          ! PE%transient_2D = .false.
          PE%solution = temp(6).and.(n_step.gt.1)

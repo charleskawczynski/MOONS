@@ -104,6 +104,7 @@
        interface import;              module procedure import_momentum;            end interface
 
        interface export_tec;          module procedure export_tec_momentum;        end interface
+       interface export_tec;          module procedure export_tec_momentum_no_ext; end interface
        interface exportTransient;     module procedure momentumExportTransient;    end interface
        interface solve;               module procedure solve_momentum;             end interface
 
@@ -184,9 +185,8 @@
          if (solveMomentum) call export_BCs(mom%p,str(DT%params),'p')
 
          ! Use mom%m later, for no just m
-         write(*,*) 'str(DT%U) = ',str(DT%U)
-         call init_Ufield(mom%U,m,str(DT%U))
-         call init_Pfield(mom%p,m,str(DT%U))
+         call init_Ufield(mom%U,m,str(DT%U_f))
+         call init_Pfield(mom%p,m,str(DT%U_f))
          write(*,*) '     Field initialized'
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
@@ -198,12 +198,12 @@
          call apply_stitches(mom%p,m)
          write(*,*) '     P BCs applied'
 
-         call init(mom%transient_divU,str(DT%U),'transient_divU',.not.restartU)
+         call init(mom%transient_divU,str(DT%U_r),'transient_divU',.not.restartU)
          call export(mom%transient_divU)
          write(*,*) '     momentum probes initialized'
 
          ! Initialize interior solvers
-         call init(mom%GS_p,mom%p,mom%m,mom%tol_PPE,100,str(DT%U),'p')
+         call init(mom%GS_p,mom%p,mom%m,mom%tol_PPE,100,str(DT%U_r),'p')
          write(*,*) '     GS solver initialized for p'
 
          mom%MFP%c_mom = -0.5_cp*mom%dTime/mom%Re
@@ -212,7 +212,7 @@
          call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)
          ! call prec_identity_VF(prec_mom) ! For ordinary CG
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
-         mom%tol_mom,mom%MFP,mom%U,mom%temp_E,str(DT%U),'U',.false.,.false.)
+         mom%tol_mom,mom%MFP,mom%U,mom%temp_E,str(DT%U_r),'U',.false.,.false.)
          call delete(prec_mom)
          write(*,*) '     PCG solver initialized for U'
 
@@ -220,17 +220,17 @@
          call prec_lap_SF(prec_PPE,mom%m)
          ! call prec_identity_SF(prec_PPE) ! For ordinary CG
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_PPE,mom%m,&
-         mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,str(DT%U),'p',.false.,.false.)
+         mom%tol_PPE,mom%MFP,mom%p,mom%temp_F,str(DT%U_r),'p',.false.,.false.)
          call delete(prec_PPE)
          write(*,*) '     PCG solver initialized for p'
 
-         call init(mom%transient_KE,str(DT%U),'KU',.not.restartU)
-         if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U),'KE_2C',.not.restartU)
+         call init(mom%transient_KE,str(DT%U_e),'KU',.not.restartU)
+         if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U_e),'KE_2C',.not.restartU)
 
          temp_unit = newAndOpen(str(DT%params),'info_mom')
          call display(mom,temp_unit)
          close(temp_unit)
-         if (restart_all) call import(mom,DT)
+         ! if (restart_all) call import(mom,DT)
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
          write(*,*) ''
@@ -315,7 +315,10 @@
          write(un,*) mom%U_eta;    write(un,*) mom%t_eta
          write(un,*) mom%KE;       write(un,*) mom%e_budget
          write(un,*) mom%t
-         call export(mom%MFP,newAndOpen(str(DT%restart),'mom_MFP'))
+         call closeAndMessage(un,str(DT%restart),'mom_restart')
+         un = newAndOpen(str(DT%restart),'mom_MFP')
+         call export(mom%MFP,un)
+         call closeAndMessage(un,str(DT%restart),'mom_MFP')
          call export(mom%U     ,str(DT%restart),'U')
          call export(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -335,7 +338,9 @@
          read(un,*) mom%KE;       read(un,*) mom%e_budget
          read(un,*) mom%t
          call closeAndMessage(un,str(DT%restart),'mom_restart')
-         call import(mom%MFP,openToRead(str(DT%restart),'mom_MFP'))
+         un = openToRead(str(DT%restart),'mom_MFP')
+         call import(mom%MFP,un)
+         call closeAndMessage(un,str(DT%restart),'mom_MFP')
          call import(mom%U     ,str(DT%restart),'U')
          call import(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -349,15 +354,21 @@
          type(momentum),intent(in) :: mom
          type(VF),intent(in) :: F
          type(dir_tree),intent(in) :: DT
+         if (solveEnergy.or.solveInduction) call export_raw(mom%m,F,str(DT%U_f),'jCrossB',0)
+         call export_tec_momentum_no_ext(mom,DT)
+       end subroutine
+       subroutine export_tec_momentum_no_ext(mom,DT)
+         implicit none
+         type(momentum),intent(in) :: mom
+         type(dir_tree),intent(in) :: DT
          if (restartU.and.(.not.solveMomentum)) then
            ! This preserves the initial data
          else
-           write(*,*) 'export_tec_momentum at mom%nstep = ',mom%nstep
-           call export_processed(mom%m,mom%U,str(DT%U),'U',1)
-           call export_processed(mom%m,mom%p,str(DT%U),'p',1)
-           call export_raw(mom%m,mom%divU,str(DT%U),'divU',1)
-           if (solveEnergy.or.solveInduction) call export_raw(mom%m,F,str(DT%U),'jCrossB',0)
-           ! call export_processed(mom%m,mom%temp_E,str(DT%U),'vorticity',1)
+           write(*,*) 'export_tec_momentum_no_ext at mom%nstep = ',mom%nstep
+           call export_processed(mom%m,mom%U,str(DT%U_f),'U',1)
+           call export_processed(mom%m,mom%p,str(DT%U_f),'p',1)
+           call export_raw(mom%m,mom%divU,str(DT%U_f),'divU',1)
+           ! call export_processed(mom%m,mom%temp_E,str(DT%U_f),'vorticity',1)
            write(*,*) '     finished'
          endif
        end subroutine

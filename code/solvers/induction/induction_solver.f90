@@ -71,9 +71,9 @@
          call apply_BCs(B,m)
        end subroutine
 
-       subroutine CT_Finite_Rem_interior_solved(B,B0,B_interior,U_E,J,&
-         sigmaInv_E,m,D_sigma,dt,N_induction,&
-         temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
+       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B0,B_interior,U_E,J,&
+         sigmaInv_E,phi,m,D_sigma,dt,N_induction,N_cleanB,compute_norms,SF_CC,&
+         VF_F1,VF_F2,VF_F3,VF_E,TF_E)
          ! Solves:
          !             ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:
@@ -87,39 +87,60 @@
          !             cell edge => J,sigmaInv_E,U_E
          !             Finite Rem
          implicit none
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3
+         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
+         type(VF),intent(inout) :: B,VF_E,VF_F1,VF_F2,VF_F3
          type(VF),intent(in) :: B_interior,B0,sigmaInv_E,J
-         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(inout) :: TF_E
+         type(SF),intent(inout) :: SF_CC,phi
          type(TF),intent(in) :: U_E
          type(domain),intent(in) :: D_sigma
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction
+         integer,intent(in) :: N_induction,N_cleanB
+         logical,intent(in) :: compute_norms
          integer :: i
          do i=1,N_induction
-           call add(temp_F2,B,B0) ! Since finite Rem
-           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-           call multiply(temp_E,J,sigmaInv_E)
-           call curl(temp_F3,temp_E,m)
-           call subtract(temp_F1,temp_F3)
-           call multiply(temp_F1,dt)
-           call add(B,temp_F1)
+           call add(VF_F2,B,B0) ! Since finite Rem
+           call advect_B(VF_F1,U_E,VF_F2,m,TF_E,VF_E)
+           call multiply(VF_E,J,sigmaInv_E)
+           call curl(VF_F3,VF_E,m)
+           call subtract(VF_F1,VF_F3)
+           call multiply(VF_F1,dt)
+           call add(B,VF_F1)
            call apply_BCs(B,m)
            call embedFace(B,B_interior,D_sigma)
          enddo
+         ! Clean B
+         call div(SF_CC,B,m)
+         call solve(PCG_cleanB,phi,SF_CC,m,N_cleanB,compute_norms)
+         call grad(VF_F1,phi,m)
+         call subtract(B,VF_F1)
+         call apply_BCs(B,m)
+         call embedFace(B,B_interior,D_sigma)
        end subroutine
 
-       subroutine JAC_interior_solved(JAC,B,RHS,m,n,N_induction)
-         ! Solves: ∇•(∇B) = 0 using Jacobi method
+       subroutine JAC_interior_solved(JAC,PCG_cleanB,B,RHS,phi,m,&
+         n,N_induction,N_cleanB,compute_norms,SF_CC,VF_F)
+         ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
+         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
          type(VF),intent(inout) :: B
          type(VF),intent(in) :: RHS
+         type(SF),intent(inout) :: SF_CC,phi
+         type(VF),intent(inout) :: VF_F
          type(mesh),intent(in) :: m
-         integer,intent(in) :: n,N_induction
+         integer,intent(in) :: n,N_induction,N_cleanB
+         logical,intent(in) :: compute_norms
          integer :: i
          do i=1,n
-           call solve(JAC,B,RHS,m,N_induction,i.eq.N_induction)
+           call solve(JAC,B,RHS,m,N_induction,.true.)
+           ! Clean B
+           call div(SF_CC,B,m)
+           call solve(PCG_cleanB,phi,SF_CC,m,N_cleanB,compute_norms)
+           call grad(VF_F,phi,m)
+           call subtract(B,VF_F)
+           call apply_BCs(B,m)
          enddo
        end subroutine
 

@@ -418,47 +418,47 @@
          implicit none
          type(BCs),intent(inout) :: BC
          integer :: i
-         logical,dimension(3) :: TF
-         TF(1) = all((/BC%gridDefined,(BC%f(i)%defined,i=1,6)/))
-         TF(2) = all((/BC%gridDefined,(BC%e(i)%defined,i=1,12)/))
-         TF(3) = all((/BC%gridDefined,(BC%c(i)%defined,i=1,8)/))
-         BC%defined = all(TF)
+         logical,dimension(3) :: L
+         L(1) = all((/BC%gridDefined,(BC%f(i)%defined,i=1,6)/))
+         L(2) = all((/BC%gridDefined,(BC%e(i)%defined,i=1,12)/))
+         L(3) = all((/BC%gridDefined,(BC%c(i)%defined,i=1,8)/))
+         BC%defined = all(L)
 
-         TF(1) = all((/(BC%f(i)%b%Dirichlet,i=1,6)/))
-         TF(2) = all((/(BC%e(i)%b%Dirichlet,i=1,12)/))
-         TF(3) = all((/(BC%c(i)%b%Dirichlet,i=1,8)/))
-         BC%all_Dirichlet = all(TF)
+         L(1) = all((/(BC%f(i)%b%Dirichlet,i=1,6)/))
+         L(2) = all((/(BC%e(i)%b%Dirichlet,i=1,12)/))
+         L(3) = all((/(BC%c(i)%b%Dirichlet,i=1,8)/))
+         BC%all_Dirichlet = all(L)
 
-         TF(1) = all((/(BC%f(i)%b%Robin,i=1,6)/))
-         TF(2) = all((/(BC%e(i)%b%Robin,i=1,12)/))
-         TF(3) = all((/(BC%c(i)%b%Robin,i=1,8)/))
-         BC%all_Robin = all(TF)
+         L(1) = all((/(BC%f(i)%b%Robin,i=1,6)/))
+         L(2) = all((/(BC%e(i)%b%Robin,i=1,12)/))
+         L(3) = all((/(BC%c(i)%b%Robin,i=1,8)/))
+         BC%all_Robin = all(L)
 
-         TF(1) = all((/(BC%f(i)%b%Neumann,i=1,6)/))
-         TF(2) = all((/(BC%e(i)%b%Neumann,i=1,12)/))
-         TF(3) = all((/(BC%c(i)%b%Neumann,i=1,8)/))
-         BC%all_Neumann = all(TF)
+         L(1) = all((/(BC%f(i)%b%Neumann,i=1,6)/))
+         L(2) = all((/(BC%e(i)%b%Neumann,i=1,12)/))
+         L(3) = all((/(BC%c(i)%b%Neumann,i=1,8)/))
+         BC%all_Neumann = all(L)
        end subroutine
 
-       function getAllNeumann(BC) result(TF)
+       function getAllNeumann(BC) result(L)
          implicit none
          type(BCs),intent(inout) :: BC
-         logical :: TF
-         TF = BC%all_Neumann
+         logical :: L
+         L = BC%all_Neumann
        end function
 
-       function getDirichlet(BC) result(TF)
+       function getDirichlet(BC) result(L)
          implicit none
          type(BCs),intent(inout) :: BC
-         logical :: TF
-         TF = BC%all_Dirichlet
+         logical :: L
+         L = BC%all_Dirichlet
        end function
 
-       function getAllRobin(BC) result(TF)
+       function getAllRobin(BC) result(L)
          implicit none
          type(BCs),intent(inout) :: BC
-         logical :: TF
-         TF = BC%all_Robin
+         logical :: L
+         L = BC%all_Robin
        end function
 
        end module

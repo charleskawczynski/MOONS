@@ -183,8 +183,8 @@
          ! --- Initialize Fields ---
          call init_BBCs(ind%B,m);                         write(*,*) '     B BCs initialized'
          call init_phiBCs(ind%phi,m);                     write(*,*) '     phi BCs initialized'
-         call initBfield(ind%B,ind%B0,m,str(DT%B));       write(*,*) '     B-field initialized'
-         call initB_interior(ind%B_interior,ind%D_sigma%m_in,str(DT%B))
+         call initBfield(ind%B,ind%B0,m,str(DT%B_f));     write(*,*) '     B-field initialized'
+         call initB_interior(ind%B_interior,ind%D_sigma%m_in,str(DT%B_f))
          call apply_BCs(ind%B,m);                         write(*,*) '     BCs applied'
 
          if (solveInduction) call print_BCs(ind%B,'B')
@@ -207,25 +207,25 @@
 
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call init(ind%probe_divB,str(DT%B),'transient_divB',.not.restartB)
-         call init(ind%probe_divJ,str(DT%J),'transient_divJ',.not.restartB)
+         call init(ind%probe_divB,str(DT%B_r),'transient_divB',.not.restartB)
+         call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',.not.restartB)
          call export(ind%probe_divB)
          call export(ind%probe_divJ)
 
-         call init(ind%JE,str(DT%J),'JE',.not.restartB)
-         call init(ind%JE_fluid,str(DT%J),'JE_fluid',.not.restartB)
+         call init(ind%JE,str(DT%J_e),'JE',.not.restartB)
+         call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',.not.restartB)
 
-         call init(ind%ME(1),str(DT%B),'ME',.not.restartB)
-         call init(ind%ME_fluid(1),str(DT%B),'ME_fluid',.not.restartB)
-         call init(ind%ME_conductor(1),str(DT%B),'ME_conductor',.not.restartB)
+         call init(ind%ME(1),str(DT%B_e),'ME',.not.restartB)
+         call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',.not.restartB)
+         call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',.not.restartB)
 
-         call init(ind%ME(2),str(DT%B),'ME0',.not.restartB)
-         call init(ind%ME_fluid(2),str(DT%B),'ME0_fluid',.not.restartB)
-         call init(ind%ME_conductor(2),str(DT%B),'ME0_conductor',.not.restartB)
+         call init(ind%ME(2),str(DT%B_e),'ME0',.not.restartB)
+         call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',.not.restartB)
+         call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',.not.restartB)
 
-         call init(ind%ME(3),str(DT%B),'ME1',.not.restartB)
-         call init(ind%ME_fluid(3),str(DT%B),'ME1_fluid',.not.restartB)
-         call init(ind%ME_conductor(3),str(DT%B),'ME1_conductor',.not.restartB)
+         call init(ind%ME(3),str(DT%B_e),'ME1',.not.restartB)
+         call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',.not.restartB)
+         call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',.not.restartB)
 
          write(*,*) '     B/J probes initialized'
 
@@ -244,7 +244,7 @@
          call init(prec_induction,ind%B)
          call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
-         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B),'B',.false.,.false.)
+         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B_r),'B',.false.,.false.)
          call delete(prec_induction)
 
          write(*,*) '     PCG Solver initialized for B'
@@ -252,16 +252,17 @@
          call init(prec_cleanB,ind%phi)
          call prec_lap_SF(prec_cleanB,ind%m)
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
-         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B),'phi',.false.,.false.)
+         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B_r),'phi',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
          call init(ind%JAC_B,Lap_uniform_VF_explicit,ind%B,ind%B_interior,&
          ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%MFP_B,10,ind%tol_induction,&
-         str(DT%B),'B',.false.)
+         str(DT%B_r),'B',.false.)
 
          write(*,*) '     Finished'
          if (restart_all) call import(ind,DT)
+         call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
        end subroutine
 
        subroutine delete_induction(ind)
@@ -342,18 +343,18 @@
          write(un,*) ind%dTime;         write(un,*) ind%N_cleanB
          write(un,*) ind%N_induction;   write(un,*) ind%tol_cleanB
          write(un,*) ind%tol_induction; write(un,*) ind%Rem
-         write(un,*) ind%e_budget;    write(un,*) ind%nstep
+         write(un,*) ind%e_budget;      write(un,*) ind%nstep
          write(un,*) ind%finite_Rem;    write(un,*) ind%t
          call closeAndMessage(un,str(DT%restart),'ind_restart')
-         un = newAndOpen(str(DT%restart,'ind_MFP'))
+         un = newAndOpen(str(DT%restart),'ind_MFP')
          call export(ind%MFP_B,un)
+         call closeAndMessage(un,str(DT%restart),'ind_MFP')
          call export(ind%B      ,str(DT%restart),'B')
          call export(ind%B0     ,str(DT%restart),'B0')
          call export(ind%J      ,str(DT%restart),'J')
          call export(ind%U_E%x  ,str(DT%restart),'Uex')
          call export(ind%U_E%y  ,str(DT%restart),'Vey')
          call export(ind%U_E%z  ,str(DT%restart),'Wez')
-         call closeAndMessage(un,str(DT%restart),'ind_MFP')
        end subroutine
 
        subroutine import_induction(ind,DT)
@@ -365,9 +366,12 @@
          read(un,*) ind%dTime;         read(un,*) ind%N_cleanB
          read(un,*) ind%N_induction;   read(un,*) ind%tol_cleanB
          read(un,*) ind%tol_induction; read(un,*) ind%Rem
-         read(un,*) ind%e_budget;    read(un,*) ind%nstep
+         read(un,*) ind%e_budget;      read(un,*) ind%nstep
          read(un,*) ind%finite_Rem;    read(un,*) ind%t
-         call import(ind%MFP_B,openToRead(str(DT%restart),'ind_MFP'))
+         call closeAndMessage(un,str(DT%restart),'ind_restart')
+         un = openToRead(str(DT%restart),'ind_MFP')
+         call import(ind%MFP_B,un)
+         call closeAndMessage(un,str(DT%restart),'ind_MFP')
          call import(ind%B      ,str(DT%restart),'B')
          call import(ind%B0     ,str(DT%restart),'B0')
          call import(ind%J      ,str(DT%restart),'J')
@@ -389,10 +393,11 @@
          else
            if (solveInduction) then
              write(*,*) 'export_tec_induction at ind%nstep = ',ind%nstep
-             call export_processed(ind%m,ind%B ,str(DT%B),'B',1)
-             call export_raw(ind%m,ind%B ,str(DT%B),'B',0)
-             call export_processed(ind%m,ind%B0,str(DT%B),'B0',1)
-             call export_processed(ind%m,ind%J ,str(DT%J),'J',1)
+             call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1)
+             call export_raw(ind%m,ind%B ,str(DT%B_f),'B',0)
+             call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
+             call export_processed(ind%m,ind%B0,str(DT%B_f),'B0',1)
+             call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1)
              write(*,*) '     finished'
            endif
          endif
@@ -433,13 +438,16 @@
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case (4)
-         call CT_Finite_Rem_interior_solved(ind%B,ind%B0,ind%B_interior,ind%U_E,ind%J,&
-         ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%dTime,ind%N_induction,ind%temp_F1,ind%temp_F2,&
+         call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%B0,ind%B_interior,&
+         ind%U_E,ind%J,ind%sigmaInv_edge,ind%phi,ind%m,ind%D_sigma,ind%dTime,ind%N_induction,&
+         ind%N_cleanB,PE%transient_0D,ind%temp_CC_SF,ind%temp_F1,ind%temp_F2,&
          ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
 
          case (5)
          if (ind%nstep.le.1) call assign(ind%temp_F1,0.0_cp)
-         call JAC_interior_solved(ind%JAC_B,ind%B,ind%temp_F1,ind%m,1,ind%N_induction)
+         ! call JAC_interior_solved(ind%JAC_B,ind%B,ind%temp_F1,ind%m,1,ind%N_induction)
+         call JAC_interior_solved(ind%JAC_B,ind%PCG_cleanB,ind%B,ind%temp_F1,ind%phi,ind%m,&
+         1,ind%N_induction,ind%N_cleanB,.true.,ind%temp_CC_SF,ind%temp_F1_TF%x)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
@@ -465,20 +473,14 @@
          if (PE%info) then
            call print(ind)
            exportNow = readSwitchFromFile(str(DT%params),'exportNow')
-           write(*,*) 'got here 1'
            exportNowB = readSwitchFromFile(str(DT%params),'exportNowB')
-           write(*,*) 'got here 2'
          else; exportNow = .false.; exportNowB = .false.
          endif
 
          if (PE%solution.or.exportNowB.or.exportNow) then
-           write(*,*) 'got here 3'
            call export(ind,DT)
-           write(*,*) 'got here 4'
            call export_tec(ind,DT)
-           write(*,*) 'got here 5'
            call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
-           write(*,*) 'got here 6'
          endif
        end subroutine
 

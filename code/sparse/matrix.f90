@@ -187,40 +187,40 @@
         write(*,*) ' ---------------------------------------------- '
       end subroutine
 
-      function cycle_TF_SF(U,i,t,p) result(TF_any)
+      function cycle_TF_SF(U,i,t,p) result(L_any)
         implicit none
         type(SF),intent(in) :: U
         integer,intent(in) :: t
         integer,dimension(3),intent(in) :: i,p
-        logical,dimension(3) :: TF
-        logical :: TF_any
+        logical,dimension(3) :: L
+        logical :: L_any
         integer :: k
-        do k=1,3;TF(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%RF(t)%s(k)))); enddo
-        TF_any = any(TF)
+        do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%RF(t)%s(k)))); enddo
+        L_any = any(L)
       end function
 
-      function cycle_TF_VF(U,i,t,p,comp) result(TF_any)
+      function cycle_TF_VF(U,i,t,p,comp) result(L_any)
         implicit none
         type(VF),intent(in) :: U
         integer,intent(in) :: t,comp
         integer,dimension(3),intent(in) :: i,p
-        logical,dimension(3) :: TF
-        logical :: TF_any
+        logical,dimension(3) :: L
+        logical :: L_any
         integer :: k
         select case(comp)
-        case(1); do k=1,3;TF(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%x%RF(t)%s(k)))); enddo
-        case(2); do k=1,3;TF(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%y%RF(t)%s(k)))); enddo
-        case(3); do k=1,3;TF(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%z%RF(t)%s(k)))); enddo
+        case(1); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%x%RF(t)%s(k)))); enddo
+        case(2); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%y%RF(t)%s(k)))); enddo
+        case(3); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%z%RF(t)%s(k)))); enddo
         case default; stop 'Error: dir must =1,2,3 in cycle_TF_VF in matrix.f90'
         end select
-        TF_any = any(TF)
+        L_any = any(L)
       end function
 
       ! *********************************************************************
       ! ******************** EXPORTING MATRIX OPERATOR **********************
       ! *********************************************************************
 
-      subroutine export_operator_SF(operator,name,dir,x,k,vol,m,MFP,tempk)
+      subroutine export_operator_SF(operator,dir,name,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(SF),intent(in) :: x,vol
@@ -249,7 +249,7 @@
         close(newU)
       end subroutine
 
-      subroutine export_operator_VF(operator,name,dir,x,k,vol,m,MFP,tempk)
+      subroutine export_operator_VF(operator,dir,name,x,k,vol,m,MFP,tempk)
         implicit none
         external :: operator
         type(VF),intent(in) :: x,vol

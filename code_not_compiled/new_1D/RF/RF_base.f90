@@ -1,5 +1,5 @@
-      module vec_base_mod
-        ! Pre-processor directives: (_DEBUG_VEC_,_PARALLELIZE_VEC_)
+      module RF_base_mod
+        ! Pre-processor directives: (_DEBUG_RF_,_PARALLELIZE_RF_)
         use current_precision_mod
         use grid_mod
         use BCs_mod
@@ -7,7 +7,7 @@
         private
 
         ! Initialization / Deletion (allocate/deallocate)
-        public :: vec
+        public :: realField
         public :: init,delete,display,print,export,import ! Essentials
 
         ! Grid initialization
@@ -22,26 +22,26 @@
         ! Monitoring
         public :: print_physical
 
-        type vec
+        type realField
           integer :: s                           ! size
           integer,dimension(3) :: d              ! dimensions
-          real(cp),dimension(:),allocatable :: f ! field
-          integer,dimension(:),allocatable :: g0,g1,g2 ! ghost,1-away from ghost,1-away from ghost
+          type(vec_float) :: f
+          type(vec_int) :: i
           type(BCs) :: b
         end type
 
-        interface init;                     module procedure init_vec_size;           end interface
-        interface init;                     module procedure init_vec_copy;           end interface
-        interface delete;                   module procedure delete_vec;              end interface
-        interface display;                  module procedure display_vec;             end interface
-        interface print;                    module procedure print_vec;               end interface
-        interface export;                   module procedure export_vec;              end interface
-        interface import;                   module procedure import_vec;              end interface
+        interface init;                     module procedure init_RF_size;           end interface
+        interface init;                     module procedure init_RF_copy;           end interface
+        interface delete;                   module procedure delete_RF;              end interface
+        interface display;                  module procedure display_RF;             end interface
+        interface print;                    module procedure print_RF;               end interface
+        interface export;                   module procedure export_RF;              end interface
+        interface import;                   module procedure import_RF;              end interface
 
-        interface init_CC;                  module procedure init_vec_CC;             end interface
-        interface init_Face;                module procedure init_vec_Face;           end interface
-        interface init_Edge;                module procedure init_vec_Edge;           end interface
-        interface init_Node;                module procedure init_vec_Node;           end interface
+        interface init_CC;                  module procedure init_RF_CC;             end interface
+        interface init_Face;                module procedure init_RF_Face;           end interface
+        interface init_Edge;                module procedure init_RF_Edge;           end interface
+        interface init_Node;                module procedure init_RF_Node;           end interface
 
         interface init_BCs;                 module procedure init_BC_val;            end interface
         interface init_BCs;                 module procedure init_BC_vals;           end interface
@@ -52,32 +52,28 @@
         ! ********************* ESSENTIALS *************************
         ! **********************************************************
 
-        subroutine init_vec_size(a,Nx,Ny,Nz)
+        subroutine init_RF_size(a,Nx,Ny,Nz)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           integer,intent(in) :: Nx,Ny,Nz
-          if (allocated(a%f)) deallocate(a%f)
-          allocate(a%f(Nx*Ny*Nz))
+          call init(a%f,Nx*Ny*Nz)
           a%d = (/Nx,Ny,Nz/)
-          a%s = Nx*Ny*Nz
         end subroutine
 
-        subroutine init_vec_copy(f1,f2)
+        subroutine init_RF_copy(f1,f2)
           implicit none
-          type(vec),intent(inout) :: f1
-          type(vec),intent(in) :: f2
+          type(realField),intent(inout) :: f1
+          type(realField),intent(in) :: f2
           integer,dimension(3) :: d
-          if (.not.allocated(f2%f)) stop 'Error: trying to copy unallocated vec in vec_base.f90'
-          call delete(f1)
-          allocate(f1%f(f2%s))
+          call init(f1%f,f2%f)
+          call init(f1%i,f2%i)
           f1%d = f2%d
-          f1%s = f1%s
           if (f2%b%defined) call init(f1%b,f2%b)
         end subroutine
 
         subroutine init_g0(f)
           implicit none
-          type(vec),intent(inout) :: f
+          type(realField),intent(inout) :: f
           integer,dimension(3) :: d
           integer :: t,i,j,k,counter
           counter = 0
@@ -93,9 +89,9 @@
           enddo
         end subroutine
 
-        subroutine delete_vec(a)
+        subroutine delete_RF(a)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           if (allocated(a%f)) deallocate(a%f)
           call delete(a%b)
           a%s = 0
@@ -114,7 +110,7 @@
           !     Which should equal
           !     m = im*jm*km
           implicit none
-          type(vec),intent(in) :: U
+          type(realField),intent(in) :: U
           integer,intent(in) :: i,j,k
           integer :: index_1D
           ! im = U%s(1); jm = U%s(2); km = U%s(3)
@@ -124,7 +120,7 @@
 
         subroutine get_ijk(i_3D,j_3D,k_3D,U,index_1D) ! Expensive
           implicit none
-          type(vec),intent(in) :: U
+          type(realField),intent(in) :: U
           integer,intent(inout) :: i_3D,j_3D,k_3D
           integer,intent(in) :: index_1D
           integer :: im,jm
@@ -137,15 +133,15 @@
 
         function get_f(U,i,j,k) result(f_ijk)
           implicit none
-          type(vec),intent(in) :: U
+          type(realField),intent(in) :: U
           integer,intent(in) :: i,j,k
           real(cp) :: f_ijk
-          f_ijk = U%f(get_i_1D(i,j,k))
+          f_ijk = U%f%f(get_i_1D(i,j,k))
         end function
 
-        subroutine display_vec(a,un)
+        subroutine display_RF(a,un)
           implicit none
-          type(vec),intent(in) :: a
+          type(realField),intent(in) :: a
           integer,intent(in) :: un
           integer :: i,j,k,t
           if (allocated(a%f)) then
@@ -157,15 +153,15 @@
           endif
         end subroutine
 
-        subroutine print_vec(a)
+        subroutine print_RF(a)
           implicit none
-          type(vec),intent(in) :: a
+          type(realField),intent(in) :: a
           call display(a,6)
         end subroutine
 
-        subroutine export_vec(a,un)
+        subroutine export_RF(a,un)
           implicit none
-          type(vec),intent(in) :: a
+          type(realField),intent(in) :: a
           integer,intent(in) :: un
           integer :: t
           if (allocated(a%f)) then
@@ -174,14 +170,14 @@
           write(un,*) 'a%d = '
           write(un,*) a%d
           do t=1,a%s; write(un,*) a%f(t); enddo
-          else; stop 'Error: trying to export unallocated vec in export_vec in vec.f90'
+          else; stop 'Error: trying to export unallocated RF in export_RF in RF.f90'
           endif
           call export(a%b,un)
         end subroutine
 
-        subroutine import_vec(a,un)
+        subroutine import_RF(a,un)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           integer,intent(in) :: un
           integer :: t
           call delete(a)
@@ -200,61 +196,61 @@
 
         ! ------------------- LOCATION-BASED ALLOCATE / DEALLOCATE --------------------
 
-        subroutine init_vec_CC(a,g)
+        subroutine init_RF_CC(a,g)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
         end subroutine
 
-        subroutine init_vec_Face(a,g,dir)
+        subroutine init_RF_Face(a,g,dir)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           integer,intent(in) :: dir
           select case (dir)
           case (1); call init(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
           case (2); call init(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
           case (3); call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
-          case default; stop 'Error: dir must = 1,2,3 in init_vec_Face in vec.f90'
+          case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
           end select
         end subroutine
 
-        subroutine init_vec_Edge(a,g,dir)
+        subroutine init_RF_Edge(a,g,dir)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           integer,intent(in) :: dir
           select case (dir)
           case (1); call init(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
           case (2); call init(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
           case (3); call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
-          case default; stop 'Error: dir must = 1,2,3 in init_vec_Face in vec.f90'
+          case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
           end select
         end subroutine
 
-        subroutine init_vec_Node(a,g)
+        subroutine init_RF_Node(a,g)
           implicit none
-          type(vec),intent(inout) :: a
+          type(realField),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
         end subroutine
 
         subroutine init_BC_val(f,val)
           implicit none
-          type(vec),intent(inout) :: f
+          type(realField),intent(inout) :: f
           real(cp),intent(in) :: val
           call init(f%b,val)
         end subroutine
 
         subroutine init_BC_vals(f,is_CC,is_Node)
           implicit none
-          type(vec),intent(inout) :: f
+          type(realField),intent(inout) :: f
           logical,intent(in) :: is_CC,is_Node
-          logical,dimension(2) :: TF
-          TF = (/is_CC,is_Node/)
-          if (count(TF).gt.1) then
-            stop 'Error: more than one datatype in init_BC_vals in vec.f90'
+          logical,dimension(2) :: L
+          L = (/is_CC,is_Node/)
+          if (count(L).gt.1) then
+            stop 'Error: more than one datatype in init_BC_vals in RF.f90'
           endif
           if (is_Node) then
             call init(f%b,f%f(2,:,:),1)
@@ -275,9 +271,9 @@
           endif
         end subroutine
 
-        subroutine print_physical_vec(a)
+        subroutine print_physical_RF(a)
           implicit none
-          type(vec),intent(in) :: a
+          type(realField),intent(in) :: a
           integer :: i,j,k
           if (allocated(a%f)) then
             write(*,*) 'shape(f) = ',a%s

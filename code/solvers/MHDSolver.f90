@@ -54,8 +54,6 @@
          do n_step=n_step,n_dt_stop
            call init(PE,n_step)
 
-           write(*,*) 'n_step=',n_step
-
            call tic(sc)
 
            if (solveEnergy)    call solve(nrg,mom%U,  PE,DT)

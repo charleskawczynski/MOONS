@@ -1,126 +1,17 @@
-      module RF_mod
-        ! Pre-processor directives: (_DEBUG_RF_,_PARALLELIZE_RF_)
-        ! 
-        ! Naming convention: name = operation_type1_type2
-        ! 
-        !      RF = type(realField)
-        !      R  = real(cp),dimension(:,:,:)
-        !      S  = real(cp)
-        ! 
-        ! Example(1): Adding a scalar to RF
-        !             name = add_RF_S
-        ! Example(2): Subtracting a real field from RF
-        !             name = subtract_RF_R
-        ! Example(3): Subtracting a RF from a real field
-        !             name = subtract_R_RF
-        ! 
-        ! NOTES: RF stands for 'real field'
-        ! 
-        ! Rules:
-        ! a = a + b => call add(a,b)
-        ! a = a - b => call subtract(a,b)
-        ! a = a * b => call multiply(a,b)
-        ! a = a / b => call divide(a,b)
-        ! a = b / a => call divide(b,a)
-        ! OR
-        ! c = a + b => call add(c,a,b)
-        ! c = a - b => call subtract(c,a,b)
-        ! c = a * b => call multiply(c,a,b)
-        ! c = a / b => call divide(c,a,b)
-        ! c = b / a => call divide(c,b,a)
-
-        !         
+      module RF_aux_mod
+        use RF_base_mod
         use current_precision_mod
         use grid_mod
         use BCs_mod
         implicit none
         private
 
-        ! Initialization / Deletion (allocate/deallocate)
-        public :: realField
-        public :: init,delete,display,print,export,import ! Essentials
-
-        ! Grid initialization
-        public :: init_CC
-        public :: init_Face
-        public :: init_Edge
-        public :: init_Node
-
-        ! BC initialization
-        public :: init_BCs
-
-        ! Monitoring
-        public :: print_physical
-
-        ! Operators
-        public :: assign,assign_negative
-        public :: add,subtract
-        public :: multiply,divide
-        public :: add_product,swap
         ! Auxiliary
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
         public :: size
 
-        type realField
-          integer,dimension(3) :: s                  ! Dimension
-          real(cp),dimension(:,:,:),allocatable :: f ! field
-          type(BCs) :: b
-        end type
-
-        interface init;                     module procedure init_RF_size;           end interface
-        interface init;                     module procedure init_RF_copy;           end interface
-        interface delete;                   module procedure delete_RF;              end interface
-        interface display;                  module procedure display_RF;             end interface
-        interface print;                    module procedure print_RF;               end interface
-        interface export;                   module procedure export_RF;              end interface
-        interface import;                   module procedure import_RF;              end interface
-
-        interface init_CC;                  module procedure init_RF_CC;             end interface
-        interface init_Face;                module procedure init_RF_Face;           end interface
-        interface init_Edge;                module procedure init_RF_Edge;           end interface
-        interface init_Node;                module procedure init_RF_Node;           end interface
-
-        interface init_BCs;                 module procedure init_BC_val;            end interface
-        interface init_BCs;                 module procedure init_BC_vals;           end interface
-
-        interface assign;                   module procedure assign_RF_S;            end interface
-        interface assign;                   module procedure assign_RF_RF;           end interface
-        interface assign;                   module procedure assign_RF_R;            end interface
-        interface assign_negative;          module procedure assign_negative_RF_RF;  end interface
-
-        interface add;                      module procedure add_RF_RF;              end interface
-        interface add;                      module procedure add_RF_RF_RF;           end interface
-        interface add;                      module procedure add_RF_RF_RF_RF;        end interface
-        interface add;                      module procedure add_RF_R;               end interface
-        interface add;                      module procedure add_RF_S;               end interface
-        interface add;                      module procedure add_S_RF;               end interface
-        interface add;                      module procedure add_RF_RF9;             end interface
-
-        interface add_product;              module procedure add_product_RF_RF_S;    end interface
-        interface add_product;              module procedure add_product_RF_RF_RF;   end interface
-
-        interface multiply;                 module procedure multiply_RF_RF;         end interface
-        interface multiply;                 module procedure multiply_RF_RF_RF;      end interface
-        interface multiply;                 module procedure multiply_RF_RF_S;       end interface
-        interface multiply;                 module procedure multiply_RF_S;          end interface
-        interface multiply;                 module procedure multiply_S_RF;          end interface
-
-        interface subtract;                 module procedure subtract_RF_RF;         end interface
-        interface subtract;                 module procedure subtract_RF_RF_RF;      end interface
-        interface subtract;                 module procedure subtract_RF_R_R;        end interface
-        interface subtract;                 module procedure subtract_RF_R;          end interface
-        interface subtract;                 module procedure subtract_RF_S;          end interface
-        interface subtract;                 module procedure subtract_S_RF;          end interface
-
-        interface divide;                   module procedure divide_RF_RF;           end interface
-        interface divide;                   module procedure divide_RF_RF_RF;        end interface
-        interface divide;                   module procedure divide_RF_S_RF;         end interface
-        interface divide;                   module procedure divide_RF_S;            end interface
-        interface divide;                   module procedure divide_S_RF;            end interface
-
         interface square;                   module procedure square_RF;              end interface
-        interface swap;                     module procedure swap_RF;                end interface
         interface print_physical;           module procedure print_physical_RF;      end interface
         interface min;                      module procedure min_RF;                 end interface
         interface max;                      module procedure max_RF;                 end interface
@@ -1016,9 +907,9 @@
           implicit none
           type(realField),intent(inout) :: f
           logical,intent(in) :: is_CC,is_Node
-          logical,dimension(2) :: TF
-          TF = (/is_CC,is_Node/)
-          if (count(TF).gt.1) then
+          logical,dimension(2) :: L
+          L = (/is_CC,is_Node/)
+          if (count(L).gt.1) then
             stop 'Error: more than one datatype in init_BC_vals in RF.f90'
           endif
           if (is_Node) then

@@ -42,7 +42,7 @@
         integer,intent(in) :: n,n_levels
         logical,intent(in) :: compute_norms
         type(norms),intent(inout) :: norm
-        logical :: continueLoop,TF
+        logical :: continueLoop,L
         integer :: i_MG
 
         call assign(mg(1)%smooth%b,b)

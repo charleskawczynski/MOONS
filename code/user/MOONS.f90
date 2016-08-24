@@ -14,6 +14,7 @@
        use path_mod
        use dir_tree_mod
        use export_analytic_mod
+       use vorticity_streamfunction_mod
 
        use init_Bfield_mod, only : restartB ! For restart
        use init_Ufield_mod, only : restartU ! For restart
@@ -127,11 +128,17 @@
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
-           write(*,*) ' COMPUTING ENERGY BUDGETS: '
+           write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
+           call export_vorticity_streamfunction(mom%U,mom%m,DT)
+           write(*,*) ' COMPUTING ENERGY BUDGETS:'
            if (solveMomentum.and.solveInduction) call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,DT)
            write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
            if (solveMomentum.and.solveInduction) call compute_E_M_budget(ind,mom%U,ind%D_fluid,DT)
            write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
+
+           if (solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
+           if (solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
+           if (solveMomentum) then;  call export_tec(mom,DT);   call export(mom,DT); endif
 
            if (export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
          else

@@ -28,6 +28,10 @@
         public :: init_Face
         public :: init_Edge
         public :: init_Node
+
+        public :: init_Face_compliment
+        public :: init_Edge_compliment
+
         public :: init_BCs
         public :: volume
         public :: multiply_volume
@@ -68,6 +72,9 @@
         interface init_Face;         module procedure init_VF_Face;             end interface
         interface init_Edge;         module procedure init_VF_Edge;             end interface
         interface init_Node;         module procedure init_VF_Node;             end interface
+
+        interface init_Face_compliment; module procedure init_VF_Face_compliment;  end interface
+        interface init_Edge_compliment; module procedure init_VF_Edge_compliment;  end interface
 
         interface init_CC;           module procedure init_VF_CC_assign;        end interface
         interface init_Face;         module procedure init_VF_Face_assign;      end interface
@@ -282,12 +289,40 @@
           call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
+        subroutine init_VF_Edge_compliment(f,m,dir)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          select case (dir)
+          case (1); call init_Node(f%x,m);  call init_Face(f%y,m,3);call init_Face(f%z,m,2)
+          case (2); call init_Face(f%x,m,3);call init_Node(f%y,m);  call init_Face(f%z,m,1)
+          case (3); call init_Face(f%x,m,2);call init_Face(f%y,m,1);call init_Node(f%z,m)  
+          case default; stop 'Error: dir must = 1,2,3 in init_VF_Edge_compliment in VF.f90'
+          end select
+          call delete_logicals(f)
+        end subroutine
+
         subroutine init_VF_Face(f,m)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
           call delete_logicals(f); f%is_Face = .true.
+        end subroutine
+
+        subroutine init_VF_Face_compliment(f,m,dir)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          select case (dir)
+          case (1); call init_CC  (f%x,m);  call init_Edge(f%y,m,3);call init_Edge(f%z,m,2)
+          case (2); call init_Edge(f%x,m,3);call init_CC  (f%y,m);  call init_Edge(f%z,m,1)
+          case (3); call init_Edge(f%x,m,2);call init_Edge(f%y,m,1);call init_CC  (f%z,m)  
+          case default; stop 'Error: dir must = 1,2,3 in init_VF_Face_compliment in VF.f90'
+          end select
+          call delete_logicals(f)
         end subroutine
 
         subroutine init_VF_Node(f,m)

@@ -267,19 +267,19 @@
         enddo
       end function
 
-      function substring_in_string(str,substr) result(TF)
+      function substring_in_string(str,substr) result(L)
         implicit none
         type(string),intent(in) :: str
         character(len=*),intent(in) :: substr
-        logical :: TF,cond
+        logical :: L,cond
         integer :: i,j,s
-        TF = .false.
+        L = .false.
         s = len(substr)
         if (s.lt.1) stop 'Error: len(substr) must be > 1 in substring_in_string in string.f90'
         do i=1,len(str)-s
           cond = all((/(str%s(i+j-1:i+j-1)%c .eq. substr(j:j),j=1,s)/))
           if (cond) then
-            TF = .true.
+            L = .true.
             exit
           endif
         enddo
