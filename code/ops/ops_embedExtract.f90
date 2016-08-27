@@ -26,6 +26,8 @@
        public :: embed_F_surface
        public :: extract_F_surface
 
+       interface extractCC;  module procedure extractCC_SF;      end interface
+       interface extractCC;  module procedure extractCC_VF;      end interface
        interface embedCC;    module procedure embedCC_SF;        end interface
        interface embedCC;    module procedure embedCC_VF;        end interface
        interface EE;         module procedure embedExtract_RF;   end interface
@@ -159,8 +161,22 @@
          enddo
        end subroutine
 
-       subroutine extractCC(CC_i,CC_t,D)
-         ! Including ghost nodes / ghost cells / boundary values
+       subroutine extractCC_SF(CC_i,CC_t,D)
+         implicit none
+         type(SF),intent(inout) :: CC_i
+         type(SF),intent(in) :: CC_t
+         type(domain),intent(in) :: D
+         integer :: i
+#ifdef _DEBUG_EMBEDEXTRACT_
+         if (.not.CC_i%is_CC) stop 'Error: CC data not found (1) in embedCC in ops_embedExtract.f90'
+         if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC in ops_embedExtract.f90'
+#endif
+         do i=1,D%s
+         call EE(CC_i%RF(D%sd(i)%g_in_id),CC_t%RF(D%sd(i)%g_tot_id),EE_shape(CC_i,D,i),2,1)
+         enddo
+       end subroutine
+
+       subroutine extractCC_VF(CC_i,CC_t,D)
          implicit none
          type(VF),intent(inout) :: CC_i
          type(VF),intent(in) :: CC_t

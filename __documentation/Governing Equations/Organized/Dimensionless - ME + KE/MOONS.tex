@@ -110,7 +110,12 @@ We cannot add these equations yet, because they've been scaled by different coef
 	+ \frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \times \H \right]
 	+ \frac{Ha^2}{Re Re_m} ( + (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H )
 \end{aligned}\end{equation}
-Adding these equations, we have
+Note that the Poynting term may be written as a flux using Gauss' divergence theorem, and in vacuum domain we have
+\begin{equation}\begin{aligned}
+	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} = 
+	\frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \times \H \right]
+\end{aligned}\end{equation}
+Therefore, we can see that the Poynting term is zero at steady state. Adding these equations, we have
 \begin{equation}\begin{aligned}
 	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
 	+ (\U \DOT \DEL) E_K

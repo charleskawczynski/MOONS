@@ -1,6 +1,6 @@
 def get_all_NEM_paths(PS):
-	rel = get_all_NEM_paths_real(PS)
-	# rel = get_all_NEM_paths_test(PS)
+	# rel = get_all_NEM_paths_real(PS)
+	rel = get_all_NEM_paths_test(PS)
 	return rel
 
 def get_all_NEM_paths_test(PS):

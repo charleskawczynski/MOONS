@@ -184,7 +184,7 @@
          call init_BBCs(ind%B,m);                         write(*,*) '     B BCs initialized'
          call init_phiBCs(ind%phi,m);                     write(*,*) '     phi BCs initialized'
          call initBfield(ind%B,ind%B0,m,str(DT%B_f));     write(*,*) '     B-field initialized'
-         call initB_interior(ind%B_interior,ind%D_sigma%m_in,str(DT%B_f))
+         ! call initB_interior(ind%B_interior,ind%D_sigma%m_in,str(DT%B_f))
          call apply_BCs(ind%B,m);                         write(*,*) '     BCs applied'
 
          if (solveInduction) call print_BCs(ind%B,'B')
@@ -207,25 +207,21 @@
 
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
-         call init(ind%probe_divB,str(DT%B_r),'transient_divB',.not.restartB)
-         call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',.not.restartB)
-         call export(ind%probe_divB)
-         call export(ind%probe_divJ)
-
-         call init(ind%JE,str(DT%J_e),'JE',.not.restartB)
-         call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',.not.restartB)
-
-         call init(ind%ME(1),str(DT%B_e),'ME',.not.restartB)
-         call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',.not.restartB)
-         call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',.not.restartB)
-
-         call init(ind%ME(2),str(DT%B_e),'ME0',.not.restartB)
-         call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',.not.restartB)
-         call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',.not.restartB)
-
-         call init(ind%ME(3),str(DT%B_e),'ME1',.not.restartB)
-         call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',.not.restartB)
-         call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',.not.restartB)
+         ! call init(ind%probe_divB,str(DT%B_r),'transient_divB',.not.restartB)
+         ! call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',.not.restartB)
+         ! call export(ind%probe_divB)
+         ! call export(ind%probe_divJ)
+         ! call init(ind%JE,str(DT%J_e),'JE',.not.restartB)
+         ! call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',.not.restartB)
+         ! call init(ind%ME(1),str(DT%B_e),'ME',.not.restartB)
+         ! call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',.not.restartB)
+         ! call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',.not.restartB)
+         ! call init(ind%ME(2),str(DT%B_e),'ME0',.not.restartB)
+         ! call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',.not.restartB)
+         ! call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',.not.restartB)
+         ! call init(ind%ME(3),str(DT%B_e),'ME1',.not.restartB)
+         ! call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',.not.restartB)
+         ! call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',.not.restartB)
 
          write(*,*) '     B/J probes initialized'
 
@@ -396,7 +392,7 @@
              call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1)
              call export_raw(ind%m,ind%B ,str(DT%B_f),'B',0)
              call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
-             call export_processed(ind%m,ind%B0,str(DT%B_f),'B0',1)
+             ! call export_processed(ind%m,ind%B0,str(DT%B_f),'B0',1)
              call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1)
              write(*,*) '     finished'
            endif
@@ -509,14 +505,17 @@
          call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
        end subroutine
 
-       subroutine compute_E_M_budget(ind,U,D_fluid,DT)
+       subroutine compute_E_M_budget(ind,U,D_fluid,Re,Ha,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
          type(domain),intent(in) :: D_fluid
          type(dir_tree),intent(in) :: DT
+         real(cp),intent(in) :: Re,Ha
          type(TF) :: temp_CC_TF,temp_F1_TF,temp_F2_TF,temp_F3_TF
-         type(VF) :: temp_F1,temp_F2,temp_U,sigmaInv_Face,temp_CC_VF
+         type(VF) :: temp_F1,temp_F2,temp_U,temp_CC_VF
+         type(VF) :: sigmaInv_F,sigmaInv_F_solid,sigmaInv_F_ideal
+         type(SF) :: sigmaInv_CC_solid,sigmaInv_CC_ideal
 
          call init_CC(temp_CC_TF,ind%m)
          call init_CC(temp_CC_VF,ind%m)
@@ -525,19 +524,30 @@
          call init_Face(temp_F1_TF,ind%m)
          call init_Face(temp_F2_TF,ind%m)
          call init_Face(temp_F3_TF,ind%m)
-
          call init_Face(temp_U,ind%m)
+         call init_CC(sigmaInv_CC_solid,ind%D_sigma%m_in)
+         call init_CC(sigmaInv_CC_ideal,ind%m)
+         call init_Face(sigmaInv_F_solid,ind%D_sigma%m_in)
+         call init_Face(sigmaInv_F_ideal,ind%m)
+         call init_Face(sigmaInv_F,ind%m)
 
-         call init_Face(sigmaInv_Face,ind%m)
-         call cellCenter2Face(sigmaInv_Face,ind%sigmaInv_CC,ind%m)
-         call treatInterface(sigmaInv_Face,.false.)
+         call cellCenter2Face(sigmaInv_F,ind%sigmaInv_CC,ind%m)
+         call treatInterface(sigmaInv_F,.false.)
+         call assign(sigmaInv_F_ideal,0.0_cp)
+         call extractFace(sigmaInv_F_solid,sigmaInv_F,ind%D_sigma)
+         call embedFace(sigmaInv_F_ideal,sigmaInv_F_solid,ind%D_sigma)
+
+         call assign(sigmaInv_CC_ideal,0.0_cp)
+         call extractCC(sigmaInv_CC_solid,ind%sigmaInv_CC,ind%D_sigma)
+         call embedCC(sigmaInv_CC_ideal,sigmaInv_CC_solid,ind%D_sigma)
 
          call embedFace(temp_U,U,D_fluid)
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
 
          call E_M_Budget(DT,ind%e_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
-         sigmaInv_Face,ind%sigmaInv_CC,temp_U,&
-         ind%m,ind%dTime,temp_CC_TF,temp_CC_VF,temp_F1,temp_F2,temp_F1_TF,temp_F2_TF,temp_F3_TF)
+         sigmaInv_F_ideal,sigmaInv_CC_ideal,temp_U,&
+         ind%m,ind%dTime,Re,Ha,ind%Rem,temp_CC_TF,temp_CC_VF,temp_F1,temp_F2,&
+         temp_F1_TF,temp_F2_TF,temp_F3_TF)
 
          call export_E_M_budget(ind,DT)
 
@@ -549,7 +559,11 @@
          call delete(temp_F2_TF)
          call delete(temp_F3_TF)
          call delete(temp_U)
-         call delete(sigmaInv_Face)
+         call delete(sigmaInv_CC_ideal)
+         call delete(sigmaInv_CC_solid)
+         call delete(sigmaInv_F)
+         call delete(sigmaInv_F_solid)
+         call delete(sigmaInv_F_ideal)
        end subroutine
 
        subroutine export_E_M_budget(ind,DT)

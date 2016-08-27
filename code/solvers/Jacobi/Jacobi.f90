@@ -60,7 +60,7 @@
         call init(JAC%res,x)
         call init(JAC%Dinv,x)
         call init(JAC%D,x)
-        call init(JAC%tempk,JAC%k)
+        call init(JAC%tempk,k)
         call init(JAC%k,k)
         call assign(JAC%k,k)
         call init(JAC%vol,x)

@@ -115,9 +115,9 @@
          if (solveMomentum)  call exportTransient(mom)
          if (solveInduction) call exportTransient(ind)
 
-         if (solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
-         if (solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
-         if (solveMomentum) then;  call export_tec(mom,DT,F); call export(mom,DT); endif
+         if (solveEnergy) then;    call export_tec(nrg,DT);   ; endif ! call export(nrg,DT); endif
+         if (solveInduction) then; call export_tec(ind,DT);   ; endif ! call export(ind,DT); endif
+         if (solveMomentum) then;  call export_tec(mom,DT,F); ; endif ! call export(mom,DT); endif
 
          call delete(F)
        end subroutine

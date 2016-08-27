@@ -124,28 +124,30 @@
          if (stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          if (.not.post_process_only) call MHDSolver(nrg,mom,ind,DT,n_dt_start,n_step,n_dt_stop)
 
-         if (post_process_only) then
+         ! if (post_process_only) then
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
            call export_vorticity_streamfunction(mom%U,mom%m,DT)
-           write(*,*) ' COMPUTING ENERGY BUDGETS:'
-           if (solveMomentum.and.solveInduction) call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,DT)
-           write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
-           if (solveMomentum.and.solveInduction) call compute_E_M_budget(ind,mom%U,ind%D_fluid,DT)
-           write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
+           ! if (solveMomentum.and.solveInduction) then
+             write(*,*) ' COMPUTING ENERGY BUDGETS:'
+             call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,ind%Rem,DT)
+             write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
+             call compute_E_M_budget(ind,mom%U,ind%D_fluid,mom%Re,mom%Ha,DT)
+             write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
+           ! endif
 
-           if (solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
-           if (solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
-           if (solveMomentum) then;  call export_tec(mom,DT);   call export(mom,DT); endif
+           ! if (solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
+           ! if (solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
+           ! if (solveMomentum) then;  call export_tec(mom,DT);   call export(mom,DT); endif
 
            if (export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
-         else
+         ! else
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
-         endif
+         ! endif
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
          ! if (solveEnergy)    call export(nrg,DT)

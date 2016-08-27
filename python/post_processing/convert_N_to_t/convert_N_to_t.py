@@ -4,6 +4,8 @@ import file_IO as IO
 import pylab
 import inspect
 import sys
+import os
+import shutil
 import matplotlib.pyplot as plt
 
 def get_dt(file_name,n):
@@ -56,9 +58,10 @@ def convert_N_to_t(root,LDC,file_old,file_new,header_var_suffix,ext,PS):
 	dt = get_and_check_dt(LDC,PS)
 	convert_N_to_t_given_dt(root,file_old+ext,file_new+ext,header_var_suffix,dt,1,1,1)
 
-def convert_N_to_t_and_scale_energy(root,LDC,file_old,file_new,header_var_suffix,ext,PS,scale):
+def copy_and_scale(root,LDC,file_old,file_new,header_var_suffix,ext,PS,scale_x,scale_y):
 	dt = get_and_check_dt(LDC,PS)
-	if (scale):
+	if not (scale_x): dt = 1.0
+	if (scale_y):
 		(Re,Ha) = get_Re_Ha(LDC,PS)
 		Rem = get_Rem(LDC,PS)
 		convert_N_to_t_given_dt(root,file_old+ext,file_new+ext,header_var_suffix,dt,Re,Ha,Rem)
@@ -131,7 +134,7 @@ def print_all_SS_energy(root,file_path,v,PS):
 		raise ValueError('Error: no files in path in '+__name__+' in '+inspect.getfile(inspect.currentframe()))
 	for file_name in onlyfiles:
 		file = file_path+PS+file_name
-		print file.replace(root,'')
+		# print file.replace(root,'')
 		(arr,header) = IO.get_data(file)
 		(x,y) = IO.get_vec_data_np(arr)
 		x_SS.append(x[-1])
@@ -143,7 +146,11 @@ def print_all_SS_energy(root,file_path,v,PS):
 
 def copy_KE_ME_to_common_folder(root,source,target,energy_path,file_name,variable,PS):
 	for s,t in zip(source,target):
-		f_src = t+variable+'field'+PS+file_name
+		e = PS+'energy'+PS
+		if variable=='B' and 'PV' in t:
+			f_src = t+variable+'field_reconstructed'+e+file_name
+		else:
+			f_src = t+variable+'field'+e+file_name
 		# file_name processing
 		file = t+file_name
 		file = file.replace(root,'').replace('LDC','').replace('PP','').replace('.dat','')
@@ -155,13 +162,32 @@ def copy_KE_ME_to_common_folder(root,source,target,energy_path,file_name,variabl
 		print 'f_dst:'+f_dst.replace(root,'')
 		IO.copy_file(f_src,f_dst)
 
-def convert_N_to_t_all(root,source,target,PS):
+def copy_and_scale_all(root,source,target,PS):
 	for s,t in zip(source,target):
 		f_src = s+'Ufield'+PS+'KE.dat'
 		f_dst = t+'KE_vs_t.dat'
 		print 'f_src:'+f_src.replace(root,'')
 		print 'f_dst:'+f_dst.replace(root,'')
-		convert_N_to_t_and_scale_energy(root,s,s+'Ufield'+PS+'KU'	 ,t+'Ufield'+PS+'KE_vs_t'	 ,'vs_t','.dat',PS,False)
-		convert_N_to_t_and_scale_energy(root,s,s+'Bfield'+PS+'KBi_f' ,t+'Bfield'+PS+'MEi_f_vs_t' ,'vs_t','.dat',PS,True)
-		convert_N_to_t_and_scale_energy(root,s,s+'Bfield'+PS+'KBi_c' ,t+'Bfield'+PS+'MEi_c_vs_t' ,'vs_t','.dat',PS,True)
-		convert_N_to_t_and_scale_energy(root,s,s+'Bfield'+PS+'KBi'   ,t+'Bfield'+PS+'MEi_t_vs_t' ,'vs_t','.dat',PS,True)
+		e = PS+'energy'+PS
+
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_c_vs_t.dat')
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_f_vs_t.dat')
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_t_vs_t.dat')
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_vs_t.dat')
+
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_c_vs_t_r.dat')
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_f_vs_t_r.dat')
+		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_t_vs_t_r.dat')
+
+		copy_and_scale(root,s,s+'Ufield'+e+'KU'	   ,t+'Ufield'+e+'KE'   	     ,'','.dat',PS,True,False)
+		copy_and_scale(root,s,s+'Bfield'+e+'KBi_f' ,t+'Bfield'+e+'ME1_fluid'     ,'','.dat',PS,True,True)
+		copy_and_scale(root,s,s+'Bfield'+e+'KBi_c' ,t+'Bfield'+e+'ME1_conductor' ,'','.dat',PS,True,True)
+		copy_and_scale(root,s,s+'Bfield'+e+'KBi'   ,t+'Bfield'+e+'ME1'           ,'','.dat',PS,True,True)
+
+		if 'PV' in s:
+			B = 'Bfield'
+			B_r = B+'_reconstructed'
+			copy_and_scale(root,s,s+B_r+e+'ME1'          ,t+B_r+e+'ME1'           ,'','.dat',PS,False,True)
+			copy_and_scale(root,s,s+B_r+e+'ME1_fluid'    ,t+B_r+e+'ME1_fluid'     ,'','.dat',PS,False,True)
+			copy_and_scale(root,s,s+B_r+e+'ME1_conductor',t+B_r+e+'ME1_conductor' ,'','.dat',PS,False,True)
+

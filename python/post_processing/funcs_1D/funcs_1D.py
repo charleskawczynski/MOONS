@@ -61,6 +61,24 @@ def compare_PV_RV(root,source,target,v,direction,PS):
 		print 'diff_file='+diff_dir.replace(root,'')+diff_name
 		export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name,direction,var_suffix+'PV',var_suffix+'RV')
 
+def energy_budget_1D(root,source,target,direction,PS):
+	PV_s = [k for k in source if 'PV' in k]; RV_s = [k for k in source if 'RV' in k]
+	PV_t = [k for k in target if 'PV' in k]; RV_t = [k for k in target if 'RV' in k]
+	if direction==1: d = 'x'
+	if direction==2: d = 'y'
+	if direction==3: d = 'z'
+	for PVs,RVs,PVt,RVt in zip(PV_s,RV_s,PV_t,RV_t):
+		(diff_dir,diff_mismatch) = IO.highest_matching_directory(PVt,RVt,PS)
+		# print 'PVs='+PVs.replace(root,''); print 'PVt='+PVt.replace(root,'')
+		# print 'RVs='+RVs.replace(root,''); print 'RVt='+RVt.replace(root,'')
+		diff_name = diff_mismatch.replace(' ','').replace('RV','').replace('PV','')
+		var_suffix = diff_name+' '
+		var_suffix = '' # Depends on needs for Tecplot file...
+		diff_name = diff_name+'_'+v+'np'+'_along_'+d+'.dat'
+		suffix = v+'field'+PS+v+'np.dat'
+		print 'diff_file='+diff_dir.replace(root,'')+diff_name
+		export_difference_same_grid(PVs+suffix,RVs+suffix,diff_dir+diff_name,direction,var_suffix+'PV',var_suffix+'RV')
+
 def plot_all_files_PV_RV(root,source,target,x_label,y_label,PS):
 	PV_s = [k for k in source if 'PV' in k]; RV_s = [k for k in source if 'RV' in k]
 	PV_t = [k for k in target if 'PV' in k]; RV_t = [k for k in target if 'RV' in k]

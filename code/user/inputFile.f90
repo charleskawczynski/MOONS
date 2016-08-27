@@ -18,7 +18,7 @@
          real(cp) :: t
          ! ***************** DEFAULT VALUES *****************
          Re         = 1000.0_cp
-         Ha         = 100.0_cp
+         Ha         = 20.0_cp
          Rem        = 100.0_cp
 
          Gr         = 10.0_cp**(8.0_cp)

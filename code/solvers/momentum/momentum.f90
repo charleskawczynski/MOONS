@@ -466,12 +466,13 @@
          endif
        end subroutine
 
-       subroutine compute_E_K_Budget(mom,B,B0,J,D_fluid,DT)
+       subroutine compute_E_K_Budget(mom,B,B0,J,D_fluid,Rem,DT)
          implicit none
          type(dir_tree),intent(in) :: DT
          type(momentum),intent(inout) :: mom
          type(domain),intent(in) :: D_fluid
          type(VF),intent(in) :: B,B0,J
+         real(cp),intent(in) :: Rem
          type(TF) :: TF_CC1,TF_CC2
          type(VF) :: VF_F1,VF_F2,temp_B,temp_B0,temp_J
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
@@ -493,8 +494,10 @@
          call extractFace(temp_B0,B0,D_fluid)
          call extractEdge(temp_J,J,D_fluid)
 
+         call assign(mom%Unm1,mom%U)
+
          call E_K_Budget(DT,mom%e_budget,mom%U,mom%Unm1,mom%U_CC,&
-         temp_B,temp_B0,temp_J,mom%p,mom%m,mom%dTime,&
+         temp_B,temp_B0,temp_J,mom%p,mom%m,mom%dTime,mom%Re,mom%Ha,Rem,&
          VF_F1,VF_F2,TF_CC1,TF_CC2)
 
          call export_E_K_budget(mom,DT)

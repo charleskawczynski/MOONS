@@ -31,10 +31,10 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m)
-         ! N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 20
-         N = (/32,32,32/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 100
-         ! beta = hartmannBL(20.0_cp,hmin,hmax)
-         beta = hartmannBL(100.0_cp,hmin,hmax)
+         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 20
+         ! N = (/32,32,32/); hmin = -1.0_cp; hmax = 1.0_cp ! For Ha = 100
+         beta = hartmannBL(20.0_cp,hmin,hmax) ! For Ha = 20
+         ! beta = hartmannBL(100.0_cp,hmin,hmax) ! For Ha = 100
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
@@ -63,12 +63,12 @@
          Gamma_v = 7.0_cp
          tf = 1.0_cp
 
-         tw = 0.5_cp
+         ! tw = 0.5_cp
          ! N_w = 8 ! For Ha = 20
-         N_w = 10 ! For Ha = 100
+         ! N_w = 10 ! For Ha = 100
 
-         ! tw = 0.05_cp
-         ! N_w = 4 ! For Ha = 20
+         tw = 0.05_cp
+         N_w = 4 ! For Ha = 20
          ! N_w = 6 ! For Ha = 100
 
          N_v = 12

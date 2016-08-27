@@ -28,13 +28,9 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: N_psi
          logical,intent(in) :: compute_norms
-         write(*,*) 'got here CVS 1'
          call curl(omega,U,m)
-         write(*,*) 'got here CVS 2'
          call multiply(omega,-1.0_cp)
-         write(*,*) 'got here CVS 3'
          call solve(PCG,psi,omega,m,N_psi,compute_norms)
-         write(*,*) 'got here CVS 4'
        end subroutine
 
        subroutine export_vorticity_streamfunction(U,m,DT)
@@ -48,7 +44,7 @@
          real(cp) :: tol
          integer :: N_iterations
          type(matrix_free_params) :: MFP
-         tol = 10.0_cp**(-10.0_cp)
+         tol = 10.0_cp**(-12.0_cp)
          N_iterations = 1000
 
          call init_Edge(omega,m)

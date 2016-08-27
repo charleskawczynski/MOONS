@@ -18,6 +18,12 @@ def delete_pyc_files():
 	for f in gen_files('.', '.pyc'):
 		os.remove(f)
 
+def remove_file_if_exists(p):
+	if os.path.exists(p): os.remove(p)
+
+def remove_path_if_exists(p):
+	if os.path.exists(p): shutil.rmtree(p)
+
 def delete_pyc_files_1_dir():
 	filelist = [ f for f in os.listdir(".") if f.endswith(".pyc") ]
 	for f in filelist:
