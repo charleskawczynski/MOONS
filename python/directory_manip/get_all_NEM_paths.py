@@ -1,6 +1,7 @@
 def get_all_NEM_paths(PS):
 	# rel = get_all_NEM_paths_real(PS)
-	rel = get_all_NEM_paths_test(PS)
+	# rel = get_all_NEM_paths_test(PS)
+	rel = get_all_Rem_paths(PS)
 	return rel
 
 def get_all_NEM_paths_test(PS):
@@ -65,10 +66,10 @@ def get_all_Rem_paths(PS):
 	rel.append('Rem_study'+PS+'PV'+PS+'Rem = 100'+PS+'LDC')
 
 	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 1'  +PS+'LDC')
-	# rel.append('Rem_study'+PS+'RV'+PS+'Rem = 20' +PS+'LDC')
+	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 20' +PS+'LDC')
 	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 40' +PS+'LDC')
-	# rel.append('Rem_study'+PS+'RV'+PS+'Rem = 60' +PS+'LDC')
-	# rel.append('Rem_study'+PS+'RV'+PS+'Rem = 80' +PS+'LDC')
+	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 60' +PS+'LDC')
+	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 80' +PS+'LDC')
 	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 100'+PS+'LDC')
 
 	return rel

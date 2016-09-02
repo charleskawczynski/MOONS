@@ -75,8 +75,8 @@
 
        public :: zeroGhostPoints
        interface zeroGhostPoints;         module procedure zeroGhostPoints_RF;        end interface
-       interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
 
        public :: zeroWall
        interface zeroWall;                module procedure zeroWall_RF;               end interface
@@ -633,19 +633,19 @@
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
          integer :: i
-         if (Node_along(f,1)) then
+         if (f%N_along(1)) then
            do i=1,m%s
              call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
              call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
-         if (Node_along(f,2)) then
+         if (f%N_along(2)) then
            do i=1,m%s
              call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
              call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
-         if (Node_along(f,3)) then
+         if (f%N_along(3)) then
            do i=1,m%s
              call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
              call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
@@ -661,7 +661,7 @@
          type(mesh),intent(in) :: m
          logical :: L
          integer :: i
-         if (Node_along(f,1)) then
+         if (f%N_along(1)) then
            do i=1,m%s
              L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann).and.(.not.f%RF(i)%b%f(1)%b%periodic)
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
@@ -669,7 +669,7 @@
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
-         if (Node_along(f,2)) then
+         if (f%N_along(2)) then
            do i=1,m%s
              L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann).and.(.not.f%RF(i)%b%f(3)%b%periodic)
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
@@ -677,7 +677,7 @@
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
-         if (Node_along(f,3)) then
+         if (f%N_along(3)) then
            do i=1,m%s
              L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann).and.(.not.f%RF(i)%b%f(5)%b%periodic)
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
@@ -696,7 +696,7 @@
          type(mesh),intent(in) :: m
          logical :: L
          integer :: i
-         if (Node_along(f,1)) then
+         if (f%N_along(1)) then
            do i=1,m%s
              L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann).and.(.not.u%RF(i)%b%f(1)%b%periodic)
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
@@ -704,7 +704,7 @@
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
-         if (Node_along(f,2)) then
+         if (f%N_along(2)) then
            do i=1,m%s
              L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann).and.(.not.u%RF(i)%b%f(3)%b%periodic)
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
@@ -712,7 +712,7 @@
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
-         if (Node_along(f,3)) then
+         if (f%N_along(3)) then
            do i=1,m%s
              L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann).and.(.not.u%RF(i)%b%f(5)%b%periodic)
              if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)

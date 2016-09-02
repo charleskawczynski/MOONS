@@ -19,6 +19,7 @@ Integral                    ∫
 Summation					Σ
 Infinity					∞
 One half					½
+Not equal					≠
 
 Superscript / Subscript
 Superscript beta			ᵝ

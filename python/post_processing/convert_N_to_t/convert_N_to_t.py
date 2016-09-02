@@ -95,36 +95,6 @@ def convert_N_to_t_given_dt(root,file_old,file_new,header_var_suffix,dt,Re,Ha,Re
 	print 'Old copy:'+file_old.replace(root,'')
 	print 'New copy:'+file_new.replace(root,'')
 
-def plot_all_files_in_path(root,file_path,x_label,y_label,var,PS):
-	onlyfiles = IO.get_all_files_in_path(file_path)
-	ymax = []; xmax = []
-	if var=='U': onlyfiles = [x for x in onlyfiles if 'KE' in x]
-	elif var=='B': onlyfiles = [x for x in onlyfiles if 'ME' in x]
-	else: sys.error('Error: variable input must be U or B')
-	print '\n'.join(onlyfiles)
-	if onlyfiles==[]:
-		raise ValueError('Error: no files in path in '+__name__+' in '+inspect.getfile(inspect.currentframe()))
-	for file_name in onlyfiles:
-		file = file_path+file_name
-		print 'file='+file.replace(root,'')
-		(arr,header) = IO.get_data(file)
-		(x,y) = IO.get_vec_data_np(arr)
-		ymax.append(np.fabs(y))
-		xmax.append(np.fabs(x))
-		# xmax.append(np.fabs(x[len(x)-1]))
-		plt.plot(x,y,label=file_name.replace('LDC_',' ').replace('.dat','').replace('_',','))
-	xmax = [item for sublist in xmax for item in sublist] # flatten xmax
-	ymax = [item for sublist in ymax for item in sublist] # flatten ymax
-	plt.xlabel(x_label)
-	plt.ylabel(y_label)
-	x_max = np.amax(np.array(xmax))
-	y_max = np.amax(np.array(ymax))
-	plt.title(x_label + ' vs. ' + y_label)
-	plt.legend(loc=4,prop={'size':10})
-	plt.axis([0, x_max, 0, y_max*1.2])
-	# plt.legend(loc='upper left')
-	plt.show()
-
 def print_all_SS_energy(root,file_path,v,PS):
 	onlyfiles = IO.get_all_files_in_path(file_path)
 	ymax = []; xmax = []
@@ -144,10 +114,32 @@ def print_all_SS_energy(root,file_path,v,PS):
 		xmax.append(np.fabs(x))
 	for a,b,c in zip(name_SS,x_SS,y_SS): print a,'\t',c
 
-def copy_KE_ME_to_common_folder(root,source,target,energy_path,file_name,variable,PS):
+def print_all_e_budget(root,source,folder,PS):
+	for s in source:
+		p = s+folder
+		E_K = p+'E_K_budget_terms.dat'
+		E_M = p+'E_M_budget_terms.dat'
+		i=1
+		Unsteady_U =         get_floats_in_line_n(E_K,i,0); i=i+1
+		E_K_Convection =     get_floats_in_line_n(E_K,i,0); i=i+1
+		E_K_Diffusion =      get_floats_in_line_n(E_K,i,0); i=i+1
+		E_K_Pressure =       get_floats_in_line_n(E_K,i,0); i=i+1
+		Viscous_Dissipation =get_floats_in_line_n(E_K,i,0); i=i+1
+		E_M_Convection =     get_floats_in_line_n(E_K,i,0); i=i+1
+		E_M_Tension =        get_floats_in_line_n(E_K,i,0); i=i+1
+		Lorentz =            get_floats_in_line_n(E_K,i,0); i=i+1
+
+		i=1
+		Unsteady_B =         get_floats_in_line_n(E_M,i,0); i=i+1
+		Joule_Heat =         get_floats_in_line_n(E_M,i,0); i=i+1
+		Poynting =           get_floats_in_line_n(E_M,i,0); i=i+1
+		print 'p:'+p.replace(root,'')+' 	Joule_Heat='+str(Joule_Heat[0])
+
+
+def copy_KE_ME_to_common_folder(root,source,target,energy_path,file_name,variable,PS,include_reconstructed):
 	for s,t in zip(source,target):
 		e = PS+'energy'+PS
-		if variable=='B' and 'PV' in t:
+		if variable=='B' and 'PV' in t and include_reconstructed:
 			f_src = t+variable+'field_reconstructed'+e+file_name
 		else:
 			f_src = t+variable+'field'+e+file_name
@@ -162,7 +154,7 @@ def copy_KE_ME_to_common_folder(root,source,target,energy_path,file_name,variabl
 		print 'f_dst:'+f_dst.replace(root,'')
 		IO.copy_file(f_src,f_dst)
 
-def copy_and_scale_all(root,source,target,PS):
+def copy_and_scale_all(root,source,target,PS,include_reconstructed):
 	for s,t in zip(source,target):
 		f_src = s+'Ufield'+PS+'KE.dat'
 		f_dst = t+'KE_vs_t.dat'
@@ -170,6 +162,7 @@ def copy_and_scale_all(root,source,target,PS):
 		print 'f_dst:'+f_dst.replace(root,'')
 		e = PS+'energy'+PS
 
+		IO.remove_file_if_exists(t+'Ufield'+e+'KE_vs_t.dat')
 		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_c_vs_t.dat')
 		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_f_vs_t.dat')
 		IO.remove_file_if_exists(t+'Bfield'+e+'MEi_t_vs_t.dat')
@@ -184,7 +177,7 @@ def copy_and_scale_all(root,source,target,PS):
 		copy_and_scale(root,s,s+'Bfield'+e+'KBi_c' ,t+'Bfield'+e+'ME1_conductor' ,'','.dat',PS,True,True)
 		copy_and_scale(root,s,s+'Bfield'+e+'KBi'   ,t+'Bfield'+e+'ME1'           ,'','.dat',PS,True,True)
 
-		if 'PV' in s:
+		if 'PV' in s and include_reconstructed:
 			B = 'Bfield'
 			B_r = B+'_reconstructed'
 			copy_and_scale(root,s,s+B_r+e+'ME1'          ,t+B_r+e+'ME1'           ,'','.dat',PS,False,True)

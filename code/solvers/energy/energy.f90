@@ -1,6 +1,6 @@
        module energy_mod
        use current_precision_mod
-       use simParams_mod
+       use sim_params_mod
        use IO_tools_mod
        use IO_Auxiliary_mod
        use IO_SF_mod
@@ -62,6 +62,7 @@
          type(matrix_free_params) :: MFP
 
          type(PCG_Solver_SF) :: PCG_T
+         type(sim_params) :: SP
 
          integer :: nstep             ! Nth time step
          integer :: N_nrg             ! Maximum number iterations in solving T (if iterative)
@@ -89,11 +90,12 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_energy(nrg,m,D,N_nrg,tol_nrg,dTime,Re,Pr,Ec,Ha,DT)
+       subroutine init_energy(nrg,m,SP,D,N_nrg,tol_nrg,dTime,Re,Pr,Ec,Ha,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
+         type(sim_params),intent(in) :: SP
          real(cp),intent(in) :: tol_nrg,dTime,Re,Pr,Ec,Ha
          integer,intent(in) :: N_nrg
          type(dir_tree),intent(in) :: DT
@@ -107,6 +109,7 @@
          nrg%Pr = Pr
          nrg%Ec = Ec
          nrg%Ha = Ha
+         call init(nrg%SP,SP)
 
          call init(nrg%m,m)
          call init(nrg%D,D)
@@ -131,11 +134,11 @@
 
          ! --- Initialize Fields ---
          call init_TBCs(nrg%T,nrg%m)
-         if (solveEnergy) call print_BCs(nrg%T,'T')
-         if (solveEnergy) call export_BCs(nrg%T,str(DT%params),'T')
+         if (nrg%SP%solveEnergy) call print_BCs(nrg%T,'T')
+         if (nrg%SP%solveEnergy) call export_BCs(nrg%T,str(DT%params),'T')
          write(*,*) '     BCs initialized'
 
-         call initTfield(nrg%T,m,str(DT%T))
+         call initTfield(nrg%T,m,nrg%SP%restartT,str(DT%T))
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T,m)
@@ -147,7 +150,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%transient_divQ,str(DT%T),'transient_divQ',.not.restartT)
+         call init(nrg%transient_divQ,str(DT%T),'transient_divQ',.not.nrg%SP%restartT)
          call export(nrg%transient_divQ)
 
          nrg%MFP%c_nrg = -0.5_cp*nrg%dTime/(nrg%Re*nrg%Pr)
@@ -164,7 +167,7 @@
 
          write(*,*) '     probes initialized'
 
-         if (restartT) then
+         if (nrg%SP%restartT) then
          call readLastStepFromFile(nrg%nstep,str(DT%params),'nstep_nrg')
          else; nrg%nstep = 0
          endif
@@ -209,7 +212,7 @@
          write(un,*) 'Re,Pr = ',nrg%Re,nrg%Pr
          write(un,*) 'Ec,Ha = ',nrg%Ec,nrg%Ha
          write(un,*) 't,dt = ',nrg%time,nrg%dTime
-         write(un,*) 'solveTMethod,N_nrg = ',solveTMethod,nrg%N_nrg
+         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%solveTMethod,nrg%N_nrg
          write(un,*) 'tol_nrg = ',nrg%tol_nrg
          call displayPhysicalMinMax(nrg%T,'T',un)
          call displayPhysicalMinMax(nrg%divQ,'divQ',un)
@@ -272,7 +275,7 @@
          implicit none
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
-         if (solveEnergy) then
+         if (nrg%SP%solveEnergy) then
            write(*,*) 'export_tec_energy at nrg%nstep = ',nrg%nstep
            call export_processed(nrg%m,nrg%T,str(DT%T),'T',0)
            call export_raw(nrg%m,nrg%T,str(DT%T),'T',0)
@@ -301,7 +304,7 @@
 
          call embed_velocity_F(nrg%U_F,U,nrg%D)
 
-         select case (solveTMethod)
+         select case (nrg%SP%solveTMethod)
          case (1)
          call explicitEuler(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)

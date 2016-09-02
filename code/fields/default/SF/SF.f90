@@ -29,6 +29,7 @@
         use current_precision_mod
         use IO_tools_mod
         use mesh_mod
+        use domain_mod
         use BCs_mod
         use RF_mod
         implicit none
@@ -42,7 +43,7 @@
         public :: init_Node
         public :: init_Face
         public :: init_Edge
-        public :: CC_along,Node_along
+        ! public :: CC_along,Node_along
         public :: volume
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
@@ -81,6 +82,7 @@
         end type
 
         interface init;                module procedure init_SF_copy;           end interface
+        interface init;                module procedure init_SF_copy_domain;    end interface
         interface delete;              module procedure delete_SF;              end interface
         interface display;             module procedure display_SF;             end interface
         interface print;               module procedure print_SF;               end interface
@@ -110,8 +112,8 @@
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
 
-        interface CC_along;            module procedure CC_along_SF;            end interface
-        interface Node_along;          module procedure Node_along_SF;          end interface
+        ! interface CC_along;            module procedure CC_along_SF;            end interface
+        ! interface Node_along;          module procedure Node_along_SF;          end interface
 
         interface volume;              module procedure volume_SF;              end interface
         interface multiply_volume;     module procedure multiply_volume_SF;     end interface
@@ -189,6 +191,24 @@
 
           f1%face = f2%face
           f1%edge = f2%edge
+          f1%CC_along = f2%CC_along
+          f1%N_along = f2%N_along
+        end subroutine
+
+        subroutine init_SF_copy_domain(f1,f2,D)
+          implicit none
+          type(SF),intent(inout) :: f1
+          type(SF),intent(in) :: f2
+          type(domain),intent(in) :: D
+          type(SF) :: temp
+          if (f2%is_CC) then;       call init_CC(temp,D%m_in)
+          elseif (f2%is_Node) then; call init_Node(temp,D%m_in)
+          elseif (f2%is_Face) then; call init_Face(temp,D%m_in,f2%face)
+          elseif (f2%is_Edge) then; call init_Edge(temp,D%m_in,f2%edge)
+          else; stop 'Error: bad datatype in init_SF_copy_domain in SF.f90'
+          endif
+          call init(f1,temp)
+          call delete(temp)
         end subroutine
 
         subroutine delete_SF(f)

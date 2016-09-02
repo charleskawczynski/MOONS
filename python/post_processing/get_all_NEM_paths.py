@@ -65,10 +65,10 @@ def get_all_Rem_paths(PS):
 	rel.append('Rem_study'+PS+'PV'+PS+'Rem = 100'+PS+'LDC')
 
 	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 1'  +PS+'LDC')
-	# rel.append('Rem_study'+PS+'RV'+PS+'Rem = 20' +PS+'LDC')
+	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 20' +PS+'LDC')
 	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 40' +PS+'LDC')
-	# rel.append('Rem_study'+PS+'RV'+PS+'Rem = 60' +PS+'LDC')
-	# rel.append('Rem_study'+PS+'RV'+PS+'Rem = 80' +PS+'LDC')
+	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 60' +PS+'LDC')
+	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 80' +PS+'LDC')
 	rel.append('Rem_study'+PS+'RV'+PS+'Rem = 100'+PS+'LDC')
 
 	return rel

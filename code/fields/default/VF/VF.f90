@@ -15,6 +15,7 @@
 
         use current_precision_mod
         use mesh_mod
+        use domain_mod
         use SF_mod
         implicit none
         private
@@ -60,6 +61,7 @@
 
         interface init;              module procedure init_VF_copy_VF;          end interface
         interface init;              module procedure init_VF_copy_SF;          end interface
+        interface init;              module procedure init_VF_copy_VF_domain;   end interface
         interface delete;            module procedure delete_VF;                end interface
         interface display;           module procedure display_VF;               end interface
         interface print;             module procedure print_VF;                 end interface
@@ -154,10 +156,16 @@
           type(VF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
+          call copy_props_VF(f1,f2)
+        end subroutine
+
+        subroutine init_VF_copy_VF_domain(f1,f2,D)
+          implicit none
+          type(VF),intent(inout) :: f1
+          type(VF),intent(in) :: f2
+          type(domain),intent(in) :: D
+          call init(f1%x,f2%x,D); call init(f1%y,f2%y,D); call init(f1%z,f2%z,D)
+          call copy_props_VF(f1,f2)
         end subroutine
 
         subroutine init_VF_copy_SF(f1,f2)
@@ -165,6 +173,16 @@
           type(VF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+          f1%is_Face = f2%is_Face
+          f1%is_Edge = f2%is_Edge
+        end subroutine
+
+        subroutine copy_props_VF(f1,f2)
+          implicit none
+          type(VF),intent(inout) :: f1
+          type(VF),intent(in) :: f2
           f1%is_CC = f2%is_CC
           f1%is_Node = f2%is_Node
           f1%is_Face = f2%is_Face

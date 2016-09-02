@@ -36,6 +36,7 @@
 
         use current_precision_mod
         use mesh_mod
+        use domain_mod
         use SF_mod
         use VF_mod
         implicit none
@@ -73,6 +74,7 @@
 
         interface init;          module procedure init_TF_copy_VF;          end interface
         interface init;          module procedure init_TF_copy_TF;          end interface
+        interface init;          module procedure init_TF_copy_TF_domain;   end interface
 
         interface init_CC;       module procedure init_TF_CC;               end interface
         interface init_Face;     module procedure init_TF_Face;             end interface
@@ -349,8 +351,16 @@
           type(TF),intent(inout) :: f1
           type(TF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
+          call copy_props_TF(f1,f2)
+        end subroutine
+
+        subroutine init_TF_copy_TF_domain(f1,f2,D)
+          implicit none
+          type(TF),intent(inout) :: f1
+          type(TF),intent(in) :: f2
+          type(domain),intent(in) :: D
+          call init(f1%x,f2%x,D); call init(f1%y,f2%y,D); call init(f1%z,f2%z,D)
+          call copy_props_TF(f1,f2)
         end subroutine
 
         subroutine init_TF_copy_VF(f1,f2)
@@ -358,6 +368,14 @@
           type(TF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
+          f1%is_CC = f2%is_CC
+          f1%is_Node = f2%is_Node
+        end subroutine
+
+        subroutine copy_props_TF(f1,f2)
+          implicit none
+          type(TF),intent(inout) :: f1
+          type(TF),intent(in) :: f2
           f1%is_CC = f2%is_CC
           f1%is_Node = f2%is_Node
         end subroutine

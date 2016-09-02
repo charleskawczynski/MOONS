@@ -215,6 +215,13 @@
            !$OMP END PARALLEL
            call extrap(f,g,sf,sg,dir)
          else
+           write(*,*) 'dir=',dir
+           write(*,*) 'sg=',sg
+           write(*,*) 'g_C=',g_C
+           write(*,*) 'g_N=',g_N
+           write(*,*) 'sf=',sf
+           write(*,*) 'f_C=',f_C
+           write(*,*) 'f_N=',f_N
            stop 'gridType must be 1 or 2 in interpO2. Terminating.'
          endif
        end subroutine

@@ -33,7 +33,7 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -120,6 +120,7 @@ FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
+FC_DEBUG += -D_DEBUG_INTERNAL_BC_
 FC_DEBUG += -D_DEBUG_RF_
 FC_DEBUG += -D_DEBUG_SF_
 FC_DEBUG += -D_DEBUG_VF_
@@ -148,6 +149,7 @@ FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
+FC_OPTIMIZE += -D_PARALLELIZE_INTERNAL_BC_
 
 # FC_OPTIMIZE += mpif90
 # FC_OPTIMIZE += mpirun -np 4
@@ -258,7 +260,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
-	$(SRC_DIR)$(PS)user$(PS)simParams.f90\
+	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
@@ -293,8 +295,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\
 	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
@@ -303,6 +303,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract_surface.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_internal_BC.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
@@ -311,6 +315,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)probes$(PS)probe_transient.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe_base.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe_derived.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90\
@@ -353,6 +359,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\

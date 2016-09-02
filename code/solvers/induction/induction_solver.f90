@@ -20,9 +20,11 @@
        use GS_Poisson_mod
        use PCG_mod
        use Jacobi_mod
+       use induction_aux_mod
        use export_raw_processed_mod
        use domain_mod
        use ops_embedExtract_mod
+       use ops_internal_BC_mod
 
        implicit none
 
@@ -64,20 +66,17 @@
          call apply_BCs(B,m)
        end subroutine
 
-       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B0,B_interior,U_E,J,&
-         sigmaInv_E,phi,m,D_sigma,dt,N_induction,N_cleanB,compute_norms,SF_CC,&
-         VF_F1,VF_F2,VF_F3,VF_E,TF_E)
+       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B_interior,curlE,&
+         phi,m,D_sigma,dt,N_induction,N_cleanB,compute_norms,SF_CC,VF_F1)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:  Constrained Transport (CT)
-         ! Info:    Cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Finite Rem
+         ! Info:    Cell face => B,cell edge => J,sigmaInv_E,U_E,Finite Rem
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B,VF_E,VF_F1,VF_F2,VF_F3
-         type(VF),intent(in) :: B_interior,B0,sigmaInv_E,J
-         type(TF),intent(inout) :: TF_E
+         type(VF),intent(inout) :: B,VF_F1
+         type(VF),intent(in) :: B_interior,curlE
          type(SF),intent(inout) :: SF_CC,phi
-         type(TF),intent(in) :: U_E
          type(domain),intent(in) :: D_sigma
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
@@ -85,12 +84,7 @@
          logical,intent(in) :: compute_norms
          integer :: i
          do i=1,N_induction
-           call add(VF_F2,B,B0) ! Since finite Rem
-           call advect_B(VF_F1,U_E,VF_F2,m,TF_E,VF_E)
-           call multiply(VF_E,J,sigmaInv_E)
-           call curl(VF_F3,VF_E,m)
-           call subtract(VF_F1,VF_F3)
-           call multiply(VF_F1,dt)
+           call multiply(VF_F1,curlE,-dt)
            call add(B,VF_F1)
            call apply_BCs(B,m)
            call embedFace(B,B_interior,D_sigma)

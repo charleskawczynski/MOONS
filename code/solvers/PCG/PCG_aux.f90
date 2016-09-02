@@ -28,7 +28,7 @@
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
         integer :: i
-        if (Node_along(f,1).and.(.not.m%plane_x)) then
+        if (f%N_along(1).and.(.not.m%plane_x)) then
           do i=1,m%s
             if (.not.m%g(i)%st_faces(1)%TF) then
               if (x%RF(i)%b%f(1)%b%Neumann) then
@@ -46,7 +46,7 @@
             endif
           enddo
         endif
-        if (Node_along(f,2).and.(.not.m%plane_y)) then
+        if (f%N_along(2).and.(.not.m%plane_y)) then
           do i=1,m%s
             if (.not.m%g(i)%st_faces(3)%TF) then
               if (x%RF(i)%b%f(3)%b%Neumann) then
@@ -64,7 +64,7 @@
             endif
           enddo
         endif
-        if (Node_along(f,3).and.(.not.m%plane_z)) then
+        if (f%N_along(3).and.(.not.m%plane_z)) then
           do i=1,m%s
             if (.not.m%g(i)%st_faces(5)%TF) then
               if (x%RF(i)%b%f(5)%b%Neumann) then
@@ -90,7 +90,7 @@
         type(SF),intent(in) :: x
         type(mesh),intent(in) :: m
         integer :: i
-        if (CC_along(x,1).and.(.not.m%plane_x)) then
+        if (x%CC_along(1).and.(.not.m%plane_x)) then
         do i=1,m%s
           if (.not.m%g(i)%st_faces(1)%TF.and.xg%RF(i)%b%f(1)%b%periodic) then
             xg%RF(i)%f(1,:,:) = x%RF(i)%f(1,:,:)
@@ -100,7 +100,7 @@
           endif
         enddo
         endif
-        if (CC_along(x,2).and.(.not.m%plane_y)) then
+        if (x%CC_along(2).and.(.not.m%plane_y)) then
         do i=1,m%s
           if (.not.m%g(i)%st_faces(3)%TF.and.xg%RF(i)%b%f(3)%b%periodic) then
             xg%RF(i)%f(:,1,:) = x%RF(i)%f(:,1,:)
@@ -110,7 +110,7 @@
           endif
         enddo
         endif
-        if (CC_along(x,3).and.(.not.m%plane_z)) then
+        if (x%CC_along(3).and.(.not.m%plane_z)) then
         do i=1,m%s
           if (.not.m%g(i)%st_faces(5)%TF.and.xg%RF(i)%b%f(5)%b%periodic) then
             xg%RF(i)%f(:,:,1) = x%RF(i)%f(:,:,1)
@@ -148,19 +148,19 @@
         type(SF),intent(inout) :: x
         type(mesh),intent(in) :: m
         integer :: i
-        if (Node_along(x,1)) then
+        if (x%N_along(1)) then
           do i=1,m%s
             if ((.not.m%g(i)%st_faces(1)%TF).and.(.not.x%RF(i)%b%f(1)%b%periodic)) x%RF(i)%f(1,:,:) = 0.0_cp
             if ((.not.m%g(i)%st_faces(2)%TF).and.(.not.x%RF(i)%b%f(2)%b%periodic)) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
           enddo
         endif
-        if (Node_along(x,2)) then
+        if (x%N_along(2)) then
           do i=1,m%s
             if ((.not.m%g(i)%st_faces(3)%TF).and.(.not.x%RF(i)%b%f(3)%b%periodic)) x%RF(i)%f(:,1,:) = 0.0_cp
             if ((.not.m%g(i)%st_faces(4)%TF).and.(.not.x%RF(i)%b%f(4)%b%periodic)) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
           enddo
         endif
-        if (Node_along(x,3)) then
+        if (x%N_along(3)) then
           do i=1,m%s
             if ((.not.m%g(i)%st_faces(5)%TF).and.(.not.x%RF(i)%b%f(5)%b%periodic)) x%RF(i)%f(:,:,1) = 0.0_cp
             if ((.not.m%g(i)%st_faces(6)%TF).and.(.not.x%RF(i)%b%f(6)%b%periodic)) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp

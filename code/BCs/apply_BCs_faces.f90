@@ -54,7 +54,7 @@
 
          k = dir_given_face(f)
          a = adj_faces_given_dir(k)
-         if (CC_along(U,k)) then
+         if (U%CC_along(k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...
              ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
@@ -63,7 +63,7 @@
                call app_CC_SF(U%RF(i),f,m%g(i)%c(k)%dhc(1),m%g(i)%c(k)%dhc_e,p)
              endif
            enddo
-         elseif (Node_along(U,k)) then
+         elseif (U%N_along(k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...
              ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif

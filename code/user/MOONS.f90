@@ -16,10 +16,9 @@
        use export_analytic_mod
        use vorticity_streamfunction_mod
 
-       use init_Bfield_mod, only : restartB ! For restart
-       use init_Ufield_mod, only : restartU ! For restart
-
-       use simParams_mod
+       use iter_solver_params_mod
+       use time_marching_params_mod
+       use sim_params_mod
        use inputFile_mod
 
        use energy_mod
@@ -45,31 +44,38 @@
          ! ********************** MEDIUM VARIABLES **********************
          type(domain) :: D_fluid,D_sigma
          type(dir_tree) :: DT
+         type(sim_params) :: SP
          ! ********************** SMALL VARIABLES ***********************
-         real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem,dt_eng,dt_mom,dt_ind
+         type(iter_solver_params) :: ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi
+         type(time_marching_params) :: TMP_U,TMP_B,TMP_T,coupled
+         real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
+         real(cp) :: dt_eng,dt_mom,dt_ind
          real(cp) :: tol_nrg,tol_mom,tol_PPE,tol_induction,tol_cleanB
-         logical :: finite_Rem
          integer :: n_dt_start,n_step,n_dt_stop,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
+         logical :: finite_Rem
          integer :: un
+         logical :: include_vacuum
+         real(cp) :: tw,sig_local_over_sig_f
 
          ! ************************************************************** Parallel + directory + input parameters
          call omp_set_num_threads(12) ! Set number of openMP threads
 
          call init(DT,dir_target)  ! Initialize + make directory tree
 
+         call init(SP)             ! Initializes simulation parameters
          call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
-         dt_eng,dt_mom,dt_ind,n_dt_start,n_dt_stop,N_nrg,tol_nrg,N_mom,tol_mom,&
-         N_PPE,tol_PPE,N_induction,tol_induction,N_cleanB,tol_cleanB)
+         coupled,TMP_U,TMP_B,TMP_T,ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi,tw,&
+         sig_local_over_sig_f,include_vacuum)
 
          call print_version(); call export_version(str(DT%LDC))
 
          ! ************************************************************** Initialize mesh + domains
-         if (restart_all) then
+         if (SP%restart_all) then
            call import(mesh_mom,str(DT%restart),'mesh_mom')
            call import(mesh_ind,str(DT%restart),'mesh_ind')
            call import(D_sigma,str(DT%restart),'D_sigma')
          else
-           call mesh_generate(mesh_mom,mesh_ind,D_sigma)
+           call mesh_generate(mesh_mom,mesh_ind,D_sigma,Ha,tw,include_vacuum)
            call export(mesh_mom,str(DT%restart),'mesh_mom')
            call export(mesh_ind,str(DT%restart),'mesh_ind')
            call export(D_sigma,str(DT%restart),'D_sigma')
@@ -87,42 +93,38 @@
          call initProps(D_sigma%m_tot);  call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
-         ! if (.not.quick_start) then
-           if (exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
-           if (exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
+         ! if (.not.SP%quick_start) then
+           if (SP%exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
+           if (SP%exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
          ! endif
 
          ! Initialize energy,momentum,induction
-         call init(mom,mesh_mom,N_mom,tol_mom,N_PPE,tol_PPE,dt_mom,Re,Ha,Gr,Fr,DT)
-         if (solveEnergy) call init(nrg,mesh_ind,D_fluid,N_nrg,tol_nrg,dt_eng,Re,Pr,Ec,Ha,DT)
-         if (solveInduction) then
-           call init(ind,mesh_ind,D_fluid,D_sigma,finite_Rem,Rem,dt_ind,&
-           N_induction,tol_induction,N_cleanB,tol_cleanB,DT)
+         call init(mom,mesh_mom,SP,TMP_U,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)
+         if (SP%solveEnergy) then
+          call init(nrg,mesh_ind,SP,D_fluid,TMP_T,ISP_T,Re,Pr,Ec,Ha,DT)
+         endif
+         if (SP%solveInduction) then
+           call init(ind,mesh_ind,SP,D_fluid,D_sigma,include_vacuum,&
+                     sig_local_over_sig_f,finite_Rem,Rem,TMP_B,ISP_B,ISP_phi,DT)
          endif
 
          ! ********************* EXPORT RAW ICs *************************
-         if (.not.quick_start) then
-           ! if (exportICs) call export_tec(nrg,DT)
-           if (exportICs) call export_tec(ind,DT)
-           if (exportICs) call export_tec(mom,DT,mom%temp_F)
+         if (.not.SP%quick_start) then
+           ! if (SP%exportICs) call export_tec(nrg,DT)
+           if (SP%exportICs) call export_tec(ind,DT)
+           if (SP%exportICs) call export_tec(mom,DT,mom%temp_F)
          endif
 
          call print(mesh_mom)
          call print(mesh_ind)
 
          ! ******************** PREP TIME START/STOP ********************
-         if (restart_all) then
-         un = openToRead(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
-         read(un,*) n_dt_start,n_step,n_dt_stop
-         call closeAndMessage(un,str(DT%restart),'n_dt_start,n_step,n_dt_stop')
-         else
-         un = newAndOpen(str(DT%restart),'n_dt_start,n_step,n_dt_stop')
-         write(un,*) n_dt_start,n_step,n_dt_stop
-         call closeAndMessage(un,str(DT%restart),'n_dt_start,n_step,n_dt_stop')
+         if (SP%restart_all) then; call import(coupled,openToRead(str(DT%restart),'TMP_coupled'))
+         else;                     call export(coupled,newAndOpen(str(DT%restart),'TMP_coupled'))
          endif
 
-         if (stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
-         if (.not.post_process_only) call MHDSolver(nrg,mom,ind,DT,n_dt_start,n_step,n_dt_stop)
+         if (SP%stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
+         if (.not.SP%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,coupled)
 
          ! if (post_process_only) then
            write(*,*) ' *********************** POST PROCESSING ***********************'
@@ -132,17 +134,19 @@
            call export_vorticity_streamfunction(mom%U,mom%m,DT)
            ! if (solveMomentum.and.solveInduction) then
              write(*,*) ' COMPUTING ENERGY BUDGETS:'
+             write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
              call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,ind%Rem,DT)
              write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
+             write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
              call compute_E_M_budget(ind,mom%U,ind%D_fluid,mom%Re,mom%Ha,DT)
              write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
            ! endif
 
-           ! if (solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
-           ! if (solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
-           ! if (solveMomentum) then;  call export_tec(mom,DT);   call export(mom,DT); endif
+           ! if (SP%solveEnergy) then;    call export_tec(nrg,DT);   call export(nrg,DT); endif
+           ! if (SP%solveInduction) then; call export_tec(ind,DT);   call export(ind,DT); endif
+           ! if (SP%solveMomentum) then;  call export_tec(mom,DT);   call export(mom,DT); endif
 
-           if (export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
+           if (SP%export_analytic) call export_SH(mom%m,mom%U%x,Ha,0.0_cp,-1.0_cp,1,DT)
          ! else
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
@@ -150,9 +154,9 @@
          ! endif
 
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
-         ! if (solveEnergy)    call export(nrg,DT)
-         ! if (solveInduction) call export(ind,DT)
-         ! if (solveMomentum)  call export(mom,DT)
+         ! if (SP%solveEnergy)    call export(nrg,DT)
+         ! if (SP%solveInduction) call export(ind,DT)
+         ! if (SP%solveMomentum)  call export(mom,DT)
 
          call delete(nrg)
          call delete(mom)

@@ -29,23 +29,22 @@ for k in source: print 's='+k.replace(root,'')
 for k in target: print 't='+k.replace(root,'')
 print '\n'
 
-IO.make_directory_tree_target(root,target,PS)
-IO.make_directory_tree_target(root,source,PS)
+IO.make_directory_tree_target(root,target_Rem,PS)
+IO.make_directory_tree_target(root,source_Rem,PS)
 
-IO.delete_folders_in_dir_tree(root,target,PS)
-IO.delete_folders_in_dir_tree(root,source,PS)
+IO.delete_folders_in_dir_tree(root,target_Rem,PS)
+IO.delete_folders_in_dir_tree(root,source_Rem,PS)
 
-IO.delete_files_in_dir_tree(root,target,PS)
-IO.delete_files_in_dir_tree(root,source,PS)
+IO.delete_files_in_dir_tree(root,target_Rem,PS)
+IO.delete_files_in_dir_tree(root,source_Rem,PS)
 
-IO.organize_Ufield(root,source,PS)
-# IO.organize_Bfield(root,source,PS)
-IO.organize_Jfield(root,source,PS)
+IO.organize_Ufield(root,source_Rem,PS)
+IO.organize_Bfield(root,source_Rem,PS)
+IO.organize_Jfield(root,source_Rem,PS)
 
-IO.organize_Ufield(root,target,PS)
-IO.organize_Bfield(root,target,PS)
-IO.organize_Jfield(root,target,PS)
-
+IO.organize_Ufield(root,target_Rem,PS)
+IO.organize_Bfield(root,target_Rem,PS)
+IO.organize_Jfield(root,target_Rem,PS)
 
 
 IO.delete_pyc_files()

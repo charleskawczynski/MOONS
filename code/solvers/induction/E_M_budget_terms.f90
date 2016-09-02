@@ -1,6 +1,7 @@
        module E_M_budget_terms_mod
        use current_precision_mod
        use mesh_mod
+       use domain_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -12,14 +13,15 @@
        use ops_interp_mod
        use ops_discrete_mod
        use ops_norms_mod
+       use ops_embedExtract_mod
        use norms_mod
 
        implicit none
 
        private
-       public :: unsteady,         export_unsteady
-       public :: Joule_Dissipation,export_Joule_Dissipation
-       public :: Poynting,         export_Poynting
+       public :: unsteady,  export_unsteady
+       public :: Joule_Heat,export_Joule_Heat
+       public :: Poynting,  export_Poynting
 
        contains
 
@@ -54,7 +56,7 @@
          call Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
-       subroutine Joule_Dissipation(e,J,sigmaInv_CC,m,scale,VF_CC,VF_F)
+       subroutine Joule_Heat(e,J,sigmaInv_CC,m,scale,VF_CC,VF_F)
          ! Computes: scale j•j/σ
          implicit none
          type(SF),intent(inout) :: e
@@ -69,7 +71,7 @@
          call add(e,VF_CC)
          call multiply(e,scale)
        end subroutine
-       subroutine export_Joule_Dissipation(e_integral,e,J,sigmaInv_CC,m,scale,VF_CC,VF_F,DT)
+       subroutine export_Joule_Heat(e_integral,e,J,sigmaInv_CC,m,scale,VF_CC,VF_F,DT)
          implicit none
          real(cp),intent(inout) :: e_integral
          type(SF),intent(inout) :: e
@@ -79,9 +81,9 @@
          real(cp),intent(in) :: scale
          type(VF),intent(inout) :: VF_CC,VF_F
          type(dir_tree),intent(in) :: DT
-         call Joule_Dissipation(e,J,sigmaInv_CC,m,scale,VF_CC,VF_F)
-         call export_raw      (m,e,str(DT%e_budget_C),'Joule_Dissipation',0)
-         call export_processed(m,e,str(DT%e_budget_N),'Joule_Dissipation',1)
+         call Joule_Heat(e,J,sigmaInv_CC,m,scale,VF_CC,VF_F)
+         call export_raw      (m,e,str(DT%e_budget_C),'Joule_Heat',0)
+         call export_processed(m,e,str(DT%e_budget_N),'Joule_Heat',1)
          call Ln(e_integral,e,1.0_cp,m)
        end subroutine
 

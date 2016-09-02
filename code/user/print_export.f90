@@ -21,14 +21,14 @@
          type(print_export),intent(inout) :: PE
          integer,intent(in) :: n_step
          logical,intent(in) :: export_planar
-         logical,dimension(6) :: temp
+         logical,dimension(6) :: temp,temp_half,temp_more_frequent
          integer :: i
          temp = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
+         temp_half = (/((mod(n_step/2,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
+         temp_more_frequent = temp.or.temp_half
 
-         PE%info = temp(2)
-         PE%info = .true.
-         PE%transient_0D = temp(1)
-         PE%transient_0D = .true.
+         PE%info = temp_more_frequent(1)
+         PE%transient_0D = temp_more_frequent(1)
          PE%transient_2D = export_planar.and.(temp(5).or.n_step.eq.1)
          ! PE%transient_2D = .false.
          PE%solution = temp(6).and.(n_step.gt.1)

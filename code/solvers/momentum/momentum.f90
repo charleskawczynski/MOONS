@@ -1,7 +1,7 @@
        module momentum_mod
        use current_precision_mod
-       use simParams_mod
        
+       use sim_params_mod
        use BCs_mod
        use mesh_mod
        use SF_mod
@@ -39,6 +39,9 @@
 
        use apply_BCs_mod
        use apply_stitches_mod
+
+       use iter_solver_params_mod
+       use time_marching_params_mod
 
        use PCG_mod
        use preconditioners_mod
@@ -80,12 +83,17 @@
          ! Time step, Reynolds number, grid
          type(mesh) :: m
          type(mesh) :: m_surface
+
+         type(time_marching_params) :: TMP
+         type(iter_solver_params) :: ISP_U,ISP_P
          integer :: N_PPE,N_mom
          real(cp) :: tol_PPE,tol_mom
          integer :: nstep
          real(cp) :: dTime,t
+
          real(cp) :: Re,Ha,Gr,Fr
          real(cp) :: L_eta,U_eta,t_eta ! Kolmogorov Scales
+         type(sim_params) :: SP
 
          real(cp),dimension(8) :: e_budget
          integer :: unit_nrg_budget
@@ -114,10 +122,11 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine initMomentum(mom,m,N_mom,tol_mom,N_PPE,tol_PPE,dTime,Re,Ha,Gr,Fr,DT)
+       subroutine initMomentum(mom,m,SP,N_mom,tol_mom,N_PPE,tol_PPE,dTime,Re,Ha,Gr,Fr,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(mesh),intent(in) :: m
+         type(sim_params),intent(in) :: SP
          integer,intent(in) :: N_mom,N_PPE
          real(cp),intent(in) :: tol_mom,tol_PPE
          real(cp),intent(in) :: dTime,Re,Ha,Gr,Fr
@@ -132,6 +141,11 @@
          mom%N_PPE = N_PPE
          mom%tol_mom = tol_mom
          mom%tol_PPE = tol_PPE
+         mom%t = 0.0_cp
+
+         ! call init(mom%TMP,TMP)
+         ! call init(mom%ISP_U,ISP_U)
+         ! call init(mom%ISP_P,ISP_P)
          mom%Re = Re
          mom%Ha = Ha
          mom%Gr = Gr
@@ -141,10 +155,11 @@
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
          mom%KE = 0.0_cp; mom%KE_2C = 0.0_cp
          mom%e_budget = 0.0_cp
-         mom%t = 0.0_cp
+
+         call init(mom%SP,SP)
          call init(mom%m,m)
 
-         if (restartU) then
+         if (mom%SP%restartU) then
          call readLastStepFromFile(mom%nstep,str(DT%params),'nstep_mom')
          else; mom%nstep = 0
          endif
@@ -179,14 +194,14 @@
          write(*,*) 'U_BCs defined'
          call init_PBCs(mom%p,m)
          write(*,*) '     BCs initialized'
-         if (solveMomentum) call print_BCs(mom%U,'U')
-         if (solveMomentum) call export_BCs(mom%U,str(DT%params),'U')
-         if (solveMomentum) call print_BCs(mom%p,'p')
-         if (solveMomentum) call export_BCs(mom%p,str(DT%params),'p')
+         if (mom%SP%solveMomentum) call print_BCs(mom%U,'U')
+         if (mom%SP%solveMomentum) call export_BCs(mom%U,str(DT%params),'U')
+         if (mom%SP%solveMomentum) call print_BCs(mom%p,'p')
+         if (mom%SP%solveMomentum) call export_BCs(mom%p,str(DT%params),'p')
 
          ! Use mom%m later, for no just m
-         call init_Ufield(mom%U,m,str(DT%U_f))
-         call init_Pfield(mom%p,m,str(DT%U_f))
+         call init_Ufield(mom%U,m,mom%SP%restartU,str(DT%U_f))
+         call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
          write(*,*) '     Field initialized'
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
@@ -198,7 +213,7 @@
          call apply_stitches(mom%p,m)
          write(*,*) '     P BCs applied'
 
-         call init(mom%transient_divU,str(DT%U_r),'transient_divU',.not.restartU)
+         call init(mom%transient_divU,str(DT%U_r),'transient_divU',.not.mom%SP%restartU)
          call export(mom%transient_divU)
          write(*,*) '     momentum probes initialized'
 
@@ -224,8 +239,8 @@
          call delete(prec_PPE)
          write(*,*) '     PCG solver initialized for p'
 
-         call init(mom%transient_KE,str(DT%U_e),'KU',.not.restartU)
-         if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U_e),'KE_2C',.not.restartU)
+         call init(mom%transient_KE,str(DT%U_e),'KU',.not.mom%SP%restartU)
+         if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U_e),'KE_2C',.not.mom%SP%restartU)
 
          temp_unit = newAndOpen(str(DT%params),'info_mom')
          call display(mom,temp_unit)
@@ -282,7 +297,7 @@
          write(un,*) 'Re,Ha = ',mom%Re,mom%Ha
          write(un,*) 'Gr,Fr = ',mom%Gr,mom%Fr
          write(un,*) 't,dt = ',mom%t,mom%dTime
-         write(un,*) 'solveUMethod,N_mom,N_PPE = ',solveUMethod,mom%N_mom,mom%N_PPE
+         write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%solveUMethod,mom%N_mom,mom%N_PPE
          write(un,*) 'tol_mom,tol_PPE = ',mom%tol_mom,mom%tol_PPE
          write(un,*) 'nstep,KE = ',mom%nstep,mom%KE
          ! call displayPhysicalMinMax(mom%U,'U',un)
@@ -316,9 +331,7 @@
          write(un,*) mom%KE;       write(un,*) mom%e_budget
          write(un,*) mom%t
          call closeAndMessage(un,str(DT%restart),'mom_restart')
-         un = newAndOpen(str(DT%restart),'mom_MFP')
-         call export(mom%MFP,un)
-         call closeAndMessage(un,str(DT%restart),'mom_MFP')
+         call export(mom%MFP,newAndOpen(str(DT%restart),'mom_MFP'))
          call export(mom%U     ,str(DT%restart),'U')
          call export(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -338,9 +351,7 @@
          read(un,*) mom%KE;       read(un,*) mom%e_budget
          read(un,*) mom%t
          call closeAndMessage(un,str(DT%restart),'mom_restart')
-         un = openToRead(str(DT%restart),'mom_MFP')
-         call import(mom%MFP,un)
-         call closeAndMessage(un,str(DT%restart),'mom_MFP')
+         call import(mom%MFP,openToRead(str(DT%restart),'mom_MFP'))
          call import(mom%U     ,str(DT%restart),'U')
          call import(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -354,14 +365,16 @@
          type(momentum),intent(in) :: mom
          type(VF),intent(in) :: F
          type(dir_tree),intent(in) :: DT
-         if (solveEnergy.or.solveInduction) call export_raw(mom%m,F,str(DT%U_f),'jCrossB',0)
+         if (mom%SP%solveInduction.or.mom%SP%solveEnergy) then
+           call export_raw(mom%m,F,str(DT%U_f),'F_external',0)
+         endif
          call export_tec_momentum_no_ext(mom,DT)
        end subroutine
        subroutine export_tec_momentum_no_ext(mom,DT)
          implicit none
          type(momentum),intent(in) :: mom
          type(dir_tree),intent(in) :: DT
-         if (restartU.and.(.not.solveMomentum)) then
+         if (mom%SP%restartU.and.(.not.mom%SP%solveMomentum)) then
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%nstep = ',mom%nstep
@@ -409,7 +422,7 @@
          N_PPE = mom%N_PPE
          ! call assign(mom%Unm1,mom%U) ! If Unm1 is needed
 
-         select case(solveUMethod)
+         select case(mom%SP%solveUMethod)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%dTime,&
            N_PPE,mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,&

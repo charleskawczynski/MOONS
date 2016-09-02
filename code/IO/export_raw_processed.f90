@@ -1,6 +1,5 @@
        module export_raw_processed_mod
        use current_precision_mod
-       use simParams_mod
        use mesh_mod
        use SF_mod
        use VF_mod
@@ -18,6 +17,8 @@
        public :: export_processed              ! call export_processed(m,x,dir,name,pad)
        public :: export_processed_transient_2C ! call export_processed_transient(m,x,dir,name,pad,nstep)
        public :: export_processed_transient_3C
+
+       logical :: export_planar = .false.      ! Export 2D data when N_cell = 1 along given direction
 
        interface export_raw;                    module procedure export_raw_SF;                     end interface
        interface export_raw;                    module procedure export_raw_VF;                     end interface

@@ -65,41 +65,41 @@
          L(1) = m%g(i)%st_faces(fa(1))%TF.and.m%g(j)%st_faces(fa(1))%TF
          L(2) = .not.m%g(i)%st_faces(fa(1))%TF.and.U%RF(i)%b%f(fa(1))%b%Neumann
          L(3) = .not.m%g(j)%st_faces(fa(1))%TF.and.U%RF(j)%b%f(fa(1))%b%Neumann
-         if ((k.ne.d).and.Node_along(U,d).and.(L(1).or.(L(2).and.L(3)))) a(d) = a(d)-1
+         if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) a(d) = a(d)-1
          ! if (L(2).and.L(3)) a(d) = 1
 
          d = dir_given_face(fa(2))
          L(1) = m%g(i)%st_faces(fa(2))%TF.and.m%g(j)%st_faces(fa(2))%TF
          L(2) = .not.m%g(i)%st_faces(fa(2))%TF.and.U%RF(i)%b%f(fa(2))%b%Neumann
          L(3) = .not.m%g(j)%st_faces(fa(2))%TF.and.U%RF(j)%b%f(fa(2))%b%Neumann
-         if ((k.ne.d).and.Node_along(U,d).and.(L(1).or.(L(2).and.L(3)))) b(d) = b(d)+1
+         if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) b(d) = b(d)+1
          ! if (L(2).and.L(3)) b(d) = U%RF(i)%s(d)
 
          d = dir_given_face(fa(3))
          L(1) = m%g(i)%st_faces(fa(3))%TF.and.m%g(j)%st_faces(fa(3))%TF
          L(2) = .not.m%g(i)%st_faces(fa(3))%TF.and.U%RF(i)%b%f(fa(3))%b%Neumann
          L(3) = .not.m%g(j)%st_faces(fa(3))%TF.and.U%RF(j)%b%f(fa(3))%b%Neumann
-         if ((k.ne.d).and.Node_along(U,d).and.(L(1).or.(L(2).and.L(3)))) a(d) = a(d)-1
+         if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) a(d) = a(d)-1
          ! if (L(2).and.L(3)) a(d) = 1
 
          d = dir_given_face(fa(4))
          L(1) = m%g(i)%st_faces(fa(4))%TF.and.m%g(j)%st_faces(fa(4))%TF
          L(2) = .not.m%g(i)%st_faces(fa(4))%TF.and.U%RF(i)%b%f(fa(4))%b%Neumann
          L(3) = .not.m%g(j)%st_faces(fa(4))%TF.and.U%RF(j)%b%f(fa(4))%b%Neumann
-         if ((k.ne.d).and.Node_along(U,d).and.(L(1).or.(L(2).and.L(3)))) b(d) = b(d)+1
+         if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) b(d) = b(d)+1
          ! if (L(2).and.L(3)) b(d) = U%RF(i)%s(d)
 
          else
          a = (/2+x,2+y,2+z/); b = (/U%RF(i)%s(1)-1-x,U%RF(i)%s(2)-1-y,U%RF(i)%s(3)-1-z/)
          fa = adj_faces_given_dir(k)
          d = dir_given_face(fa(1))
-         if (Node_along(U,d).and.(m%g(i)%st_faces(fa(1))%TF.and.m%g(j)%st_faces(fa(1))%TF)) a(d) = a(d)-1
+         if (U%N_along(d).and.(m%g(i)%st_faces(fa(1))%TF.and.m%g(j)%st_faces(fa(1))%TF)) a(d) = a(d)-1
          d = dir_given_face(fa(2))
-         if (Node_along(U,d).and.(m%g(i)%st_faces(fa(2))%TF.and.m%g(j)%st_faces(fa(2))%TF)) b(d) = b(d)+1
+         if (U%N_along(d).and.(m%g(i)%st_faces(fa(2))%TF.and.m%g(j)%st_faces(fa(2))%TF)) b(d) = b(d)+1
          d = dir_given_face(fa(3))
-         if (Node_along(U,d).and.(m%g(i)%st_faces(fa(3))%TF.and.m%g(j)%st_faces(fa(3))%TF)) a(d) = a(d)-1
+         if (U%N_along(d).and.(m%g(i)%st_faces(fa(3))%TF.and.m%g(j)%st_faces(fa(3))%TF)) a(d) = a(d)-1
          d = dir_given_face(fa(4))
-         if (Node_along(U,d).and.(m%g(i)%st_faces(fa(4))%TF.and.m%g(j)%st_faces(fa(4))%TF)) b(d) = b(d)+1
+         if (U%N_along(d).and.(m%g(i)%st_faces(fa(4))%TF.and.m%g(j)%st_faces(fa(4))%TF)) b(d) = b(d)+1
          endif
          if (m%g(i)%c(1)%N.eq.1) then; a(1) = 1; b(1) = U%RF(i)%s(1); endif
          if (m%g(i)%c(2)%N.eq.1) then; a(2) = 1; b(2) = U%RF(i)%s(2); endif

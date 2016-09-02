@@ -26,7 +26,7 @@ PS = '\\'; print 'PS = '+PS
 root = 'C:'+PS+'Users'+PS+'Charlie'+PS+'Documents'+PS+'MOONS'+PS+'Numerical Experiment Matrix'+PS; print 'root = '+root[path_trim:]
 
 print '\n'
-Rem_rel  = p_NEM.get_all_Rem_paths(PS); # print target_rel
+path_rel  = p_NEM.get_all_Rem_paths(PS); # print target_rel
 
 source = [root+        k+PS for k in path_rel]
 target = [root+'PP'+PS+k+PS for k in path_rel]
@@ -45,7 +45,6 @@ path_ME_t = energy_path+'ME_t'+PS
 path_JE = energy_path+'JE'+PS
 
 IO.make_directory_tree_target(root,source,target,PS)
-IO.make_directory_tree_target(root,source_Rem,target_Rem,PS)
 IO.directory_tree(root,energy_path,PS)
 IO.directory_tree(root,path_KE,PS)
 IO.directory_tree(root,path_ME_f,PS)
@@ -55,15 +54,18 @@ IO.directory_tree(root,path_JE,PS)
 
 ################### CONVERT OLD "VS N" TO "VS t" TO NEW DIRECTORY ############
 print '################### CONVERT OLD "VS N" TO "VS t" TO NEW DIRECTORY ############'
-# CNT.convert_N_to_t_all(root,source,target,PS)
+CNT.copy_and_scale_all(root,source,target,PS,False)
 print '\n Finished 1'
 
 ################### ASSEMBLE ALL "VS t" PLOTS ############
 print '################### ASSEMBLE ALL "VS t" PLOTS ############'
-# CNT.copy_KE_ME_to_common_folder(root,source,target,path_KE,'KE_vs_t.dat','U',PS)
-# CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_f,'MEi_f_vs_t.dat','B',PS)
-# CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_c,'MEi_c_vs_t.dat','B',PS)
-# CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_t,'MEi_t_vs_t.dat','B',PS)
+CNT.copy_KE_ME_to_common_folder(root,source,target,path_KE,'KE.dat','U',PS,False)
+# CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_f,'MEi_f_vs_t.dat','B',PS,False)
+# CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_c,'MEi_c_vs_t.dat','B',PS,False)
+# CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_t,'MEi_t_vs_t.dat','B',PS,False)
+CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_f,'ME1_fluid.dat','B',PS,False)
+CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_c,'ME1_conductor.dat','B',PS,False)
+CNT.copy_KE_ME_to_common_folder(root,source,target,path_ME_t,'ME1.dat','B',PS,False)
 print '\n Finished 2'
 
 ################### PLOT KE + ME VS TIME ############
@@ -75,7 +77,7 @@ print '\n Finished 3'
 ################### PRINT KE + ME SS ############
 print '################### PRINT KE + ME SS ############'
 # CNT.print_all_SS_energy(root,root+path_KE,'U',PS)
-CNT.print_all_SS_energy(root,root+path_ME_t,'B',PS)
+# CNT.print_all_SS_energy(root,root+path_ME_t,'B',PS)
 # CNT.print_all_SS_energy(root,root+path_ME_f,'B',PS)
 # CNT.print_all_SS_energy(root,root+path_ME_c,'B',PS)
 print '\n Finished 4'

@@ -10,6 +10,7 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
+       use ops_internal_BC_mod
        use probe_base_mod
        use probe_transient_mod
        use ops_norms_mod
@@ -84,7 +85,7 @@
 
        subroutine compute_J(J,B,Rem,m,finite_Rem)
          implicit none
-         type(VF),intent(in) :: B
+         type(VF),intent(inout) :: B
          type(VF),intent(inout) :: J
          real(cp),intent(in) :: Rem
          type(mesh),intent(in) :: m

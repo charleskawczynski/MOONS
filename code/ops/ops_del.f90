@@ -230,7 +230,7 @@
           call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
             n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,diffType,pad1,pad2)
         enddo
-        call apply_stitches(dfdh,m)
+        ! call apply_stitches(dfdh,m)
       end subroutine
 
       ! *********************************************************
@@ -273,19 +273,19 @@
         type(SF),intent(in) :: f,dfdh
         integer,intent(in) :: dir
         integer :: diffType
-            if (CC_along(f,dir).and.CC_along(dfdh,dir)) then
+            if (f%CC_along(dir).and.dfdh%CC_along(dir)) then
           diffType = 1 ! Collocated derivative (CC)
-        elseif (Node_along(f,dir).and.Node_along(dfdh,dir)) then
+        elseif (f%N_along(dir).and.dfdh%N_along(dir)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif (CC_along(f,dir).and.Node_along(dfdh,dir)) then
+        elseif (f%CC_along(dir).and.dfdh%N_along(dir)) then
           diffType = 3 ! Staggered derivative (CC->N)
-        elseif (Node_along(f,dir).and.CC_along(dfdh,dir)) then
+        elseif (f%N_along(dir).and.dfdh%CC_along(dir)) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
-          write(*,*) 'CC_along(f,dir) = ',CC_along(f,dir)
-          write(*,*) 'Node_along(f,dir) = ',Node_along(f,dir)
-          write(*,*) 'CC_along(dfdh,dir) = ',CC_along(dfdh,dir)
-          write(*,*) 'Node_along(dfdh,dir) = ',Node_along(dfdh,dir)
+          write(*,*) 'f%CC_along(dir) = ',f%CC_along(dir)
+          write(*,*) 'f%Node_along(dir) = ',f%N_along(dir)
+          write(*,*) 'dfdh%CC_along(dir) = ',dfdh%CC_along(dir)
+          write(*,*) 'dfdh%Node_along(dir) = ',dfdh%N_along(dir)
           write(*,*) 'dir = ',dir
           stop 'Error: diffType undetermined in ops_del.f90.'
         endif

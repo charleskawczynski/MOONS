@@ -489,7 +489,7 @@
           !$OMP END PARALLEL DO
 #else
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1) ! No intrinsic matrix-matrix mult.
-                a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c%f(i,j,k)
+          a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c%f(i,j,k)
           enddo; enddo; enddo
 #endif
         end subroutine
