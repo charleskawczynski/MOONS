@@ -157,8 +157,8 @@
         character(len=*),intent(in) :: dir,name
         logical :: exist
         inquire(file=dir//name, exist=exist)
+        close(u)
         if (exist) then
-          close(u)
           write(*,*) '+++ Closed file ' // dir // name
         else; write(*,*) '+++ Attempted to close non-existant file ' // dir // name
         endif
