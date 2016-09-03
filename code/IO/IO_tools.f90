@@ -155,8 +155,13 @@
         implicit none
         integer,intent(in) :: u
         character(len=*),intent(in) :: dir,name
-        close(u)
-        write(*,*) '+++ Closed file ' // dir // name
+        logical :: exist
+        inquire(file=dir//name, exist=exist)
+        if (exist) then
+          close(u)
+          write(*,*) '+++ Closed file ' // dir // name
+        else; write(*,*) '+++ Attempted to close non-existant file ' // dir // name
+        endif
       end subroutine
 
       function newUnit() result(nu)

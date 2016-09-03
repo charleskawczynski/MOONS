@@ -45,16 +45,11 @@
          type(domain) :: D_fluid,D_sigma
          type(dir_tree) :: DT
          type(sim_params) :: SP
-         ! ********************** SMALL VARIABLES ***********************
          type(iter_solver_params) :: ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi
          type(time_marching_params) :: TMP_U,TMP_B,TMP_T,coupled
+         ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
-         real(cp) :: dt_eng,dt_mom,dt_ind
-         real(cp) :: tol_nrg,tol_mom,tol_PPE,tol_induction,tol_cleanB
-         integer :: n_dt_start,n_step,n_dt_stop,N_mom,N_PPE,N_induction,N_cleanB,N_nrg
-         logical :: finite_Rem
-         integer :: un
-         logical :: include_vacuum
+         logical :: finite_Rem,include_vacuum
          real(cp) :: tw,sig_local_over_sig_f
 
          ! ************************************************************** Parallel + directory + input parameters
@@ -63,7 +58,9 @@
          call init(DT,dir_target)  ! Initialize + make directory tree
 
          call init(SP)             ! Initializes simulation parameters
-         call readInputFile(Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
+
+         ! Initializes solver parameters, dimensionless groups
+         call readInputFile(SP,DT,Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
          coupled,TMP_U,TMP_B,TMP_T,ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi,tw,&
          sig_local_over_sig_f,include_vacuum)
 
@@ -73,12 +70,12 @@
          if (SP%restart_all) then
            call import(mesh_mom,str(DT%restart),'mesh_mom')
            call import(mesh_ind,str(DT%restart),'mesh_ind')
-           call import(D_sigma,str(DT%restart),'D_sigma')
+           call import(D_sigma ,str(DT%restart),'D_sigma')
          else
            call mesh_generate(mesh_mom,mesh_ind,D_sigma,Ha,tw,include_vacuum)
            call export(mesh_mom,str(DT%restart),'mesh_mom')
            call export(mesh_ind,str(DT%restart),'mesh_ind')
-           call export(D_sigma,str(DT%restart),'D_sigma')
+           call export(D_sigma ,str(DT%restart),'D_sigma')
          endif
 
          call init(mesh_ind_interior,D_sigma%m_tot)
@@ -119,10 +116,6 @@
          call print(mesh_ind)
 
          ! ******************** PREP TIME START/STOP ********************
-         if (SP%restart_all) then; call import(coupled,openToRead(str(DT%restart),'TMP_coupled'))
-         else;                     call export(coupled,newAndOpen(str(DT%restart),'TMP_coupled'))
-         endif
-
          if (SP%stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
          if (.not.SP%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,coupled)
 
@@ -131,14 +124,14 @@
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
-           call export_vorticity_streamfunction(mom%U,mom%m,DT)
+           ! call export_vorticity_streamfunction(mom%U,mom%m,DT)
            ! if (solveMomentum.and.solveInduction) then
              write(*,*) ' COMPUTING ENERGY BUDGETS:'
              write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
-             call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,ind%Rem,DT)
+             ! call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,ind%Rem,DT)
              write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
              write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
-             call compute_E_M_budget(ind,mom%U,ind%D_fluid,mom%Re,mom%Ha,DT)
+             ! call compute_E_M_budget(ind,mom%U,ind%D_fluid,mom%Re,mom%Ha,DT)
              write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
            ! endif
 
@@ -168,6 +161,11 @@
          call delete(mesh_mom)
          call delete(mesh_ind)
          call delete(mesh_ind_interior)
+
+         call delete(coupled)
+         call delete(TMP_U); call delete(TMP_B); call delete(TMP_T)
+         call delete(ISP_U); call delete(ISP_B); call delete(ISP_T)
+         call delete(ISP_P); call delete(ISP_phi)
        end subroutine
 
        end module

@@ -20,11 +20,13 @@
         type(path) :: tar_p,out_dir,LDC,mat,params,BEM,e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
 
+        type(path) :: ISP,TMP
         type(path) :: U,B,J,T
         type(path) :: U_e,B_e,J_e,T_e ! energy data
         type(path) :: U_f,B_f,J_f,T_f ! field data
         type(path) :: U_r,B_r,J_r,T_r ! residual data
         type(path) :: U_t,B_t,J_t,T_t ! transient data
+        type(path) :: U_BCs,B_BCs,T_BCs ! BCs
       end type
 
       contains
@@ -52,6 +54,8 @@
         call init(DT%e_budget    ,DT%LDC         ,'e_budget'   ,str(DT%PS))
         call init(DT%mat         ,DT%LDC         ,'material'   ,str(DT%PS))
         call init(DT%params      ,DT%LDC         ,'parameters' ,str(DT%PS))
+        call init(DT%TMP         ,DT%params      ,'TMP'        ,str(DT%PS))
+        call init(DT%ISP         ,DT%params      ,'ISP'        ,str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
         call init(DT%restart_sim ,DT%LDC         ,'restart'    ,str(DT%PS))
         call init(DT%U           ,DT%LDC         ,'Ufield'     ,str(DT%PS))
@@ -75,6 +79,9 @@
         call init(DT%B_f         ,DT%B           ,'field'      ,str(DT%PS))
         call init(DT%J_f         ,DT%J           ,'field'      ,str(DT%PS))
         call init(DT%T_f         ,DT%T           ,'field'      ,str(DT%PS))
+        call init(DT%U_BCs       ,DT%U           ,'BCs'        ,str(DT%PS))
+        call init(DT%B_BCs       ,DT%B           ,'BCs'        ,str(DT%PS))
+        call init(DT%T_BCs       ,DT%T           ,'BCs'        ,str(DT%PS))
         call init(DT%U_t         ,DT%U_f         ,'transient'  ,str(DT%PS))
         call init(DT%B_t         ,DT%B_f         ,'transient'  ,str(DT%PS))
         call init(DT%J_t         ,DT%J_f         ,'transient'  ,str(DT%PS))
@@ -94,6 +101,8 @@
         call make_dir(full(DT%LDC))
 
         call make_dir(str(DT%params))
+        call make_dir(str(DT%ISP))
+        call make_dir(str(DT%TMP))
         call make_dir(str(DT%e_budget))
         call make_dir(str(DT%e_budget_C))
         call make_dir(str(DT%e_budget_N))
@@ -112,6 +121,10 @@
         call make_dir(str(DT%B_e))
         call make_dir(str(DT%J_e))
         call make_dir(str(DT%T_e))
+
+        call make_dir(str(DT%U_BCs))
+        call make_dir(str(DT%B_BCs))
+        call make_dir(str(DT%T_BCs))
 
         call make_dir(str(DT%U_r))
         call make_dir(str(DT%B_r))
@@ -132,6 +145,8 @@
         call delete(DT%out_dir)
 
         call delete(DT%params)
+        call delete(DT%ISP)
+        call delete(DT%TMP)
         call delete(DT%mat)
         call delete(DT%e_budget)
         call delete(DT%e_budget_C)
@@ -150,6 +165,10 @@
         call delete(DT%B_t)
         call delete(DT%J_t)
         call delete(DT%T_t)
+
+        call delete(DT%U_BCs)
+        call delete(DT%B_BCs)
+        call delete(DT%T_BCs)
 
         call delete(DT%U_e)
         call delete(DT%B_e)

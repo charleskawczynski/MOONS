@@ -29,6 +29,7 @@
       use IO_tools_mod
       use preconditioners_mod
       use GS_solver_mod
+      use iter_solver_params_mod
       implicit none
 
       private
@@ -37,11 +38,11 @@
 
       type GS_poisson_SF
         type(mesh) :: p,d         ! Primary / Dual grids
-        integer :: un,N_iter,n_skip_check_res
+        integer :: un,N_iter
         type(norms) :: norm
         type(string) :: name
         logical :: setCoeff
-        real(cp) :: tol
+        type(iter_solver_params) :: ISP
 
         type(SF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gt,s
@@ -49,11 +50,11 @@
 
       type GS_poisson_VF
         type(mesh) :: p,d         ! Primary / Dual grids
-        integer :: un,N_iter,n_skip_check_res
+        integer :: un,N_iter
         type(norms) :: norm
         type(string) :: name
         logical :: setCoeff
-        real(cp) :: tol
+        type(iter_solver_params) :: ISP
           
         type(VF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gtx,gty,gtz,sx,sy,sz
@@ -68,16 +69,16 @@
 
       contains
 
-      subroutine init_GS_SF(GS,u,m,tol,n_skip_check_res,dir,name)
+      subroutine init_GS_SF(GS,u,m,ISP,dir,name)
         implicit none
         type(GS_poisson_SF),intent(inout) :: GS
         type(SF),intent(in) :: u
-        real(cp),intent(in) :: tol
-        integer,intent(in) :: n_skip_check_res
+        type(iter_solver_params),intent(in) :: ISP
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         integer :: i,t
         
+        call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)
         call init(GS%name,name)
@@ -103,8 +104,6 @@
         else; stop 'Error: mesh type was not determined in GS.f90'
         endif
 
-        GS%tol = tol
-        GS%n_skip_check_res = n_skip_check_res
         call init(GS%lapu,u)
         call init(GS%f,u)
         call init(GS%res,u)
@@ -116,16 +115,16 @@
         GS%N_iter = 1
       end subroutine
 
-      subroutine init_GS_VF(GS,u,m,tol,n_skip_check_res,dir,name)
+      subroutine init_GS_VF(GS,u,m,ISP,dir,name)
         implicit none
         type(GS_poisson_VF),intent(inout) :: GS
         type(VF),intent(in) :: u
-        real(cp),intent(in) :: tol
-        integer,intent(in) :: n_skip_check_res
+        type(iter_solver_params),intent(in) :: ISP
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         integer :: i,t
         
+        call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)
         call init(GS%name,name)
@@ -155,8 +154,6 @@
         else; stop 'Error: mesh type was not determined in GS.f90'
         endif
 
-        GS%tol = tol
-        GS%n_skip_check_res = n_skip_check_res
         call init(GS%lapu,u)
         call init(GS%f,u)
         call init(GS%res,u)
@@ -168,17 +165,16 @@
         GS%N_iter = 1
       end subroutine
 
-      subroutine solve_GS_poisson_SF(GS,u,f,m,n,compute_norm)
+      subroutine solve_GS_poisson_SF(GS,u,f,m,compute_norm)
         implicit none
         type(GS_poisson_SF),intent(inout) :: GS
         type(SF),intent(inout) :: u
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
-        integer,intent(in) :: n
         logical,intent(in) :: compute_norm
-        call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,n,&
-        GS%tol,GS%norm,compute_norm,GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,&
-        str(GS%name),GS%n_skip_check_res)
+        call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,GS%ISP%iter_max,&
+        GS%ISP%tol_rel,GS%norm,compute_norm,GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,&
+        str(GS%name),GS%ISP%n_skip_check_res)
       end subroutine
 
       ! subroutine solve_GS_poisson_VF(GS,u,f,m,n,compute_norm)
@@ -196,6 +192,7 @@
       subroutine delete_GS_SF(GS)
         implicit none
         type(GS_poisson_SF),intent(inout) :: GS
+        call delete(GS%ISP)
         call delete(GS%p)
         call delete(GS%d)
         call delete(GS%f)
@@ -207,13 +204,12 @@
         close(GS%un)
         GS%un = 0
         GS%N_iter = 1
-        GS%n_skip_check_res = 1
-        GS%tol = 0.0_cp
       end subroutine
 
       subroutine delete_GS_VF(GS)
         implicit none
         type(GS_poisson_VF),intent(inout) :: GS
+        call delete(GS%ISP)
         call delete(GS%p)
         call delete(GS%d)
         call delete(GS%f)
@@ -225,8 +221,6 @@
         close(GS%un)
         GS%un = 0
         GS%N_iter = 1
-        GS%n_skip_check_res = 1
-        GS%tol = 0.0_cp
       end subroutine
 
       subroutine tecHeader(name,un,VF)

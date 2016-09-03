@@ -33,14 +33,14 @@
        public :: CN_AB2_PPE_GS_mom_PCG
 
        public :: Euler_PCG_Donor
-       public :: Euler_PCG_Donor_no_PPE
+       public :: Euler_Donor_no_PPE
        public :: Euler_GS_Donor
        public :: Euler_GS_Donor_mpg
 
        contains
 
        subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,Nmax_PPE,Nmax_mom,Ustar,temp_F,temp_CC,temp_E,compute_norms)
+         Re,dt,Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
@@ -50,7 +50,6 @@
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: Nmax_PPE,Nmax_mom
          type(VF),intent(inout) :: Ustar,temp_F,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
@@ -70,13 +69,13 @@
          call add(Ustar,U)
          call assign(Unm1,U)
 
-         call solve(mom_PCG,U,Ustar,m,Nmax_mom,compute_norms) ! Solve for Ustar
+         call solve(mom_PCG,U,Ustar,m,compute_norms) ! Solve for Ustar
 
          call zeroWall_conditional(U,m)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)
-         call solve(PPE_PCG,p,temp_CC,m,Nmax_PPE,compute_norms)
+         call solve(PPE_PCG,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
@@ -85,7 +84,7 @@
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,Nmax_PPE,Nmax_mom,Ustar,temp_F,temp_CC,temp_E,compute_norms)
+         Re,dt,Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(GS_Poisson_SF),intent(inout) :: PPE_GS
@@ -95,7 +94,6 @@
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: Nmax_PPE,Nmax_mom
          type(VF),intent(inout) :: Ustar,temp_F,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
@@ -116,12 +114,12 @@
          call zeroWall_conditional(Ustar,m,U)
          call assign(Unm1,U)
 
-         call solve(mom_PCG,U,Ustar,m,Nmax_mom,compute_norms)
+         call solve(mom_PCG,U,Ustar,m,compute_norms)
 
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)
-         call solve(PPE_GS,p,temp_CC,m,Nmax_PPE,compute_norms)
+         call solve(PPE_GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          call multiply(temp_F,dt)
          call subtract(U,temp_F)
@@ -134,7 +132,7 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,n,&
+       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,&
          Ustar,temp_F1,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
@@ -144,7 +142,6 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n
          type(VF),intent(inout) :: Ustar,temp_F1,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
@@ -160,7 +157,7 @@
          call add(Ustar,U)
          call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
-         call solve(PCG,p,temp_CC,m,n,compute_norms)
+         call solve(PCG,p,temp_CC,m,compute_norms)
          call grad(temp_F1,p,m)
          call subtract(temp_F1%x,1.0_cp) ! mpg
          call multiply(temp_F1,dt)
@@ -168,7 +165,7 @@
          call apply_BCs(U,m)
        end subroutine
 
-       subroutine Euler_PCG_Donor_no_PPE(U,U_E,F,m,Re,dt,&
+       subroutine Euler_Donor_no_PPE(U,U_E,F,m,Re,dt,&
          Ustar,temp_F1,temp_CC,temp_E)
          implicit none
          type(VF),intent(inout) :: U
@@ -195,7 +192,7 @@
          call apply_BCs(U,m)
        end subroutine
 
-       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,n,&
+       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,&
          Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(GS_Poisson_SF),intent(inout) :: GS
@@ -205,7 +202,6 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n
          type(VF),intent(inout) :: Ustar,temp_F,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
@@ -222,7 +218,7 @@
          call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)
-         call solve(GS,p,temp_CC,m,n,compute_norms)
+         call solve(GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
@@ -230,7 +226,7 @@
          call apply_BCs(U,m)
        end subroutine
 
-       subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,n,&
+       subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,&
          Ustar,temp_F,temp_CC,temp_E,compute_norms)
          implicit none
          type(GS_Poisson_SF),intent(inout) :: GS
@@ -240,7 +236,6 @@
          type(VF),intent(in) :: F,mpg
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         integer,intent(in) :: n
          type(VF),intent(inout) :: Ustar,temp_F,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
@@ -256,7 +251,7 @@
          call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)
-         call solve(GS,p,temp_CC,m,n,compute_norms)
+         call solve(GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          call subtract(temp_F,mpg)
          call multiply(temp_F,dt)

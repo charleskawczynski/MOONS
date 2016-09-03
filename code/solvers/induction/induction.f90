@@ -26,6 +26,9 @@
        use ops_internal_BC_mod
        use BEM_solver_mod
 
+       use iter_solver_params_mod
+       use time_marching_params_mod
+
        use domain_mod
        use grid_mod
        use mesh_mod
@@ -93,14 +96,8 @@
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
          type(domain) :: D_surface
 
-         integer :: nstep             ! Nth time step
-         integer :: N_induction       ! Maximum number iterations in solving B (if iterative)
-         integer :: N_cleanB          ! Maximum number iterations to clean B
-         real(cp) :: tol_cleanB       ! Tolerance for iteratively solvd cleanB equation
-         real(cp) :: tol_induction    ! Tolerance for iteratively solvd induction equation
-         real(cp) :: dTime            ! Time step
-         ! type(solver_params) :: B_SP,phi_SP
-         real(cp) :: t                ! Time
+         type(time_marching_params) :: TMP
+         type(iter_solver_params) :: ISP_B,ISP_phi
          real(cp) :: Rem              ! Magnetic Reynolds number
          real(cp) :: sig_local_over_sig_f
          logical :: finite_Rem,include_vacuum
@@ -128,38 +125,34 @@
        ! **********************************************************
 
        subroutine init_induction(ind,m,SP,D_fluid,D_sigma,include_vacuum,&
-         sig_local_over_sig_f,finite_Rem,Rem,dTime,N_induction,tol_induction,&
-         N_cleanB,tol_cleanB,DT)
+         sig_local_over_sig_f,finite_Rem,Rem,TMP,ISP_B,ISP_phi,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          type(domain),intent(in) :: D_fluid,D_sigma
          logical,intent(in) :: finite_Rem,include_vacuum
-         integer,intent(in) :: N_induction,N_cleanB
-         real(cp),intent(in) :: tol_induction,tol_cleanB
-         real(cp),intent(in) :: Rem,dTime,sig_local_over_sig_f
+         type(iter_solver_params),intent(in) :: ISP_B,ISP_phi
+         type(time_marching_params),intent(in) :: TMP
+         real(cp),intent(in) :: Rem,sig_local_over_sig_f
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: sigma,prec_cleanB
          type(VF) :: prec_induction
          write(*,*) 'Initializing induction:'
 
-         ind%dTime = dTime
-         ind%N_cleanB = N_cleanB
-         ind%N_induction = N_induction
-         ind%tol_cleanB = tol_cleanB
-         ind%tol_induction = tol_induction
+         call init(ind%TMP,TMP)
+         call init(ind%ISP_B,ISP_B)
+         call init(ind%ISP_phi,ISP_phi)
          ind%Rem = Rem
          ind%include_vacuum = include_vacuum
          ind%sig_local_over_sig_f = sig_local_over_sig_f
          ind%e_budget = 0.0_cp
          call init(ind%SP,SP)
-         ind%t = 0.0_cp
 
          if (ind%SP%restartB) then
-         call readLastStepFromFile(ind%nstep,str(DT%params),'nstep_ind')
-         else; ind%nstep = 0
+         call readLastStepFromFile(ind%TMP%n_step,str(DT%params),'nstep_ind')
+         else; ind%TMP%n_step = 0
          endif
 
          call init(ind%m,m)
@@ -190,7 +183,7 @@
 
          call init_CC(ind%vol_CC,m)
          call volume(ind%vol_CC,m)
-         call export_raw(ind%m,ind%vol_CC,str(DT%B),'cell_volume',0)
+         if (.not.ind%SP%quick_start) call export_raw(ind%m,ind%vol_CC,str(DT%B),'cell_volume',0)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -204,9 +197,9 @@
          call apply_BCs(ind%B,m);                         write(*,*) '     BCs applied'
 
          if (ind%SP%solveInduction) call print_BCs(ind%B,'B')
-         if (ind%SP%solveInduction) call export_BCs(ind%B,str(DT%params),'B')
+         if (ind%SP%solveInduction) call export_BCs(ind%B,str(DT%B_BCs),'B')
          if (ind%SP%solveInduction) call print_BCs(ind%phi,'phi')
-         if (ind%SP%solveInduction) call export_BCs(ind%phi,str(DT%params),'phi')
+         if (ind%SP%solveInduction) call export_BCs(ind%phi,str(DT%B_BCs),'phi')
 
          ! ******************** MATERIAL PROPERTIES ********************
          call init_CC(sigma,m,0.0_cp)
@@ -249,14 +242,14 @@
          close(temp_unit)
 
 
-         if (finite_Rem) then; ind%MFP_B%c_ind = ind%dTime/ind%Rem
-         else;                 ind%MFP_B%c_ind = ind%dTime
+         if (finite_Rem) then; ind%MFP_B%c_ind = ind%TMP%dt/ind%Rem
+         else;                 ind%MFP_B%c_ind = ind%TMP%dt
          endif
 
          call init(prec_induction,ind%B)
          call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
-         ind%tol_induction,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B_r),'B',.false.,.false.)
+         ind%ISP_B,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B_r),'B',.false.,.false.)
          call delete(prec_induction)
 
          write(*,*) '     PCG Solver initialized for B'
@@ -264,12 +257,12 @@
          call init(prec_cleanB,ind%phi)
          call prec_lap_SF(prec_cleanB,ind%m)
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
-         ind%m,ind%tol_cleanB,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B_r),'phi',.false.,.false.)
+         ind%m,ind%ISP_phi,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B_r),'phi',.false.,.false.)
          call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
          call init(ind%JAC_B,Lap_uniform_VF_explicit,ind%B,ind%B_interior,&
-         ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%MFP_B,10,ind%tol_induction,&
+         ind%sigmaInv_edge,ind%m,ind%D_sigma,ind%MFP_B,10,ind%ISP_B%tol_rel,&
          str(DT%B_r),'B',.false.)
 
          write(*,*) '     Finished'
@@ -320,6 +313,9 @@
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
          call delete(ind%JAC_B)
+         call delete(ind%TMP)
+         call delete(ind%ISP_B)
+         call delete(ind%ISP_phi)
 
          write(*,*) 'Induction object deleted'
        end subroutine
@@ -332,10 +328,10 @@
          write(un,*) '************************** MAGNETIC **************************'
          write(un,*) '**************************************************************'
          write(un,*) 'Rem,finite_Rem = ',ind%Rem,ind%finite_Rem
-         write(un,*) 't,dt = ',ind%t,ind%dTime
-         write(un,*) 'solveBMethod,N_ind,N_cleanB = ',ind%SP%solveBMethod,ind%N_induction,ind%N_cleanB
-         write(un,*) 'tol_ind,tol_cleanB = ',ind%tol_induction,ind%tol_cleanB
-         write(un,*) 'nstep,ME = ',ind%nstep,ind%ME(1)%d
+         write(un,*) 't,dt = ',ind%TMP%t,ind%TMP%dt
+         write(un,*) 'solveBMethod,N_ind,N_cleanB = ',ind%SP%solveBMethod,ind%ISP_B%iter_max,ind%ISP_phi%iter_max
+         write(un,*) 'tol_ind,tol_cleanB = ',ind%ISP_B%tol_rel,ind%ISP_phi%tol_rel
+         write(un,*) 'nstep,ME = ',ind%TMP%n_step,ind%ME(1)%d
          write(un,*) 'include_vacuum = ',ind%include_vacuum
          call displayPhysicalMinMax(ind%divB,'divB',un)
          call displayPhysicalMinMax(ind%divJ,'divJ',un)
@@ -355,12 +351,13 @@
          type(induction),intent(in) :: ind
          type(dir_tree),intent(in) :: DT
          integer :: un
+         call export(ind%TMP)
+         call export(ind%ISP_B)
+         call export(ind%ISP_phi)
          un = newAndOpen(str(DT%restart),'ind_restart')
-         write(un,*) ind%dTime;         write(un,*) ind%N_cleanB
-         write(un,*) ind%N_induction;   write(un,*) ind%tol_cleanB
-         write(un,*) ind%tol_induction; write(un,*) ind%Rem
-         write(un,*) ind%e_budget;      write(un,*) ind%nstep
-         write(un,*) ind%finite_Rem;    write(un,*) ind%t
+         write(un,*) ind%Rem
+         write(un,*) ind%e_budget
+         write(un,*) ind%finite_Rem
          call closeAndMessage(un,str(DT%restart),'ind_restart')
          un = newAndOpen(str(DT%restart),'ind_MFP')
          call export(ind%MFP_B,un)
@@ -378,12 +375,13 @@
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
          integer :: un
+         call import(ind%TMP)
+         call import(ind%ISP_B)
+         call import(ind%ISP_phi)
          un = openToRead(str(DT%restart),'ind_restart')
-         read(un,*) ind%dTime;         read(un,*) ind%N_cleanB
-         read(un,*) ind%N_induction;   read(un,*) ind%tol_cleanB
-         read(un,*) ind%tol_induction; read(un,*) ind%Rem
-         read(un,*) ind%e_budget;      read(un,*) ind%nstep
-         read(un,*) ind%finite_Rem;    read(un,*) ind%t
+         read(un,*) ind%Rem
+         read(un,*) ind%e_budget
+         read(un,*) ind%finite_Rem
          call closeAndMessage(un,str(DT%restart),'ind_restart')
          un = openToRead(str(DT%restart),'ind_MFP')
          call import(ind%MFP_B,un)
@@ -408,7 +406,7 @@
            ! This preserves the initial data
          else
            if (ind%SP%solveInduction) then
-             write(*,*) 'export_tec_induction at ind%nstep = ',ind%nstep
+             write(*,*) 'export_tec_induction at ind%TMP%n_step = ',ind%TMP%n_step
              call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1)
              call export_raw(ind%m,ind%B ,str(DT%B_f),'B',0)
              call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
@@ -434,8 +432,8 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         call apply(ind%probe_divB,ind%nstep,ind%t,ind%divB,ind%vol_CC)
-         call apply(ind%probe_divJ,ind%nstep,ind%t,ind%divJ,ind%vol_CC)
+         call apply(ind%probe_divB,ind%TMP%n_step,ind%TMP%t,ind%divB,ind%vol_CC)
+         call apply(ind%probe_divJ,ind%TMP%n_step,ind%TMP%t,ind%divJ,ind%vol_CC)
        end subroutine
 
        subroutine solve_induction(ind,U,PE,DT)
@@ -447,26 +445,25 @@
          logical :: exportNow,exportNowB
 
          if (ind%SP%solveMomentum) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
-         else;if (ind%nstep.le.1)        call embedVelocity_E(ind%U_E,U,ind%D_fluid)
+         else;if (ind%TMP%n_step.le.1)   call embedVelocity_E(ind%U_E,U,ind%D_fluid)
          endif
 
          select case (ind%SP%solveBMethod)
          case (1)
          call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%N_induction,ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
+         ind%ISP_B%iter_max,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
 
          case (2)
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%dTime,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
+         ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
 
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
-         ind%m,ind%dTime,ind%N_induction,ind%N_cleanB,&
-         PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         ind%m,ind%TMP%dt,PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case (4)
-         if (ind%nstep.le.1) then
+         if (ind%TMP%n_step.le.1) then
            call compute_J_ind(ind)
            call add(ind%temp_F2,ind%B,ind%B0)
            call advect_B(ind%curlUCrossB,ind%U_E,ind%temp_F2,ind%m,ind%temp_E_TF,ind%temp_E)
@@ -475,27 +472,26 @@
          endif
          call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,&
          ind%B_interior,ind%curlE,ind%phi,ind%m,ind%D_sigma,&
-         ind%dTime,ind%N_induction,ind%N_cleanB,PE%transient_0D,&
+         ind%TMP%dt,ind%ISP_B%iter_max,PE%transient_0D,&
          ind%temp_CC_SF,ind%temp_F1)
 
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
-         ind%nstep = ind%nstep + 1
-         ind%t = ind%t + ind%dTime ! This only makes sense for finite Rem
+         call iterate_step(ind%TMP)
 
          call compute_J_ind(ind)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if ((PE%transient_0D.or.(ind%nstep.eq.0))) call compute_induction_energies(ind)
+         if ((PE%transient_0D.or.(ind%TMP%n_step.eq.0))) call compute_induction_energies(ind)
 
          if (PE%transient_0D) then 
            call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
            call exportTransient(ind)
          endif
 
-         if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
-         ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%nstep)
+         if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP%n_step)
+         ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP%n_step)
 
          if (PE%info) then
            call print(ind)
@@ -517,23 +513,23 @@
 
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%nstep,ind%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
+         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_sigma)
 
          call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%nstep,ind%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
+         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_sigma)
 
          call face2cellCenter(ind%temp_CC,ind%B,ind%m)
-         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%nstep,ind%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%nstep,ind%t,ind%D_sigma)
+         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_sigma)
 
          call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
-         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%nstep,ind%t,ind%m)
-         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%nstep,ind%t,ind%D_fluid)
+         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
        end subroutine
 
        subroutine compute_E_M_budget(ind,U,D_fluid,Re,Ha,DT)
@@ -576,7 +572,7 @@
          call compute_J_ind(ind)
 
          call E_M_Budget(DT,ind%e_budget,ind%B,ind%B,ind%B0,ind%B0,ind%J,&
-         sigmaInv_F_ideal,sigmaInv_CC_ideal,temp_U,ind%m,ind%dTime,Re,Ha,&
+         sigmaInv_F_ideal,sigmaInv_CC_ideal,temp_U,ind%m,ind%TMP%dt,Re,Ha,&
          ind%Rem,temp_CC_TF,temp_CC_VF,temp_F1,temp_F2,&
          temp_F1_TF,temp_F2_TF,temp_F3_TF)
 
@@ -608,7 +604,7 @@
          call init(vars(2),'Joule_Heat = ')
          call init(vars(3),'Poynting = ')
 
-         write(un,*) 'magnetic energy budget at nstep=',ind%nstep
+         write(un,*) 'magnetic energy budget at nstep=',ind%TMP%n_step
          do i=1,3
          write(un,*) str(vars(i)),ind%e_budget(i)
          call delete(vars(i))

@@ -67,7 +67,7 @@
        end subroutine
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B_interior,curlE,&
-         phi,m,D_sigma,dt,N_induction,N_cleanB,compute_norms,SF_CC,VF_F1)
+         phi,m,D_sigma,dt,N_induction,compute_norms,SF_CC,VF_F1)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:  Constrained Transport (CT)
@@ -80,7 +80,7 @@
          type(domain),intent(in) :: D_sigma
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction,N_cleanB
+         integer,intent(in) :: N_induction
          logical,intent(in) :: compute_norms
          integer :: i
          do i=1,N_induction
@@ -91,7 +91,7 @@
          enddo
          ! Clean B
          call div(SF_CC,B,m)
-         call solve(PCG_cleanB,phi,SF_CC,m,N_cleanB,compute_norms)
+         call solve(PCG_cleanB,phi,SF_CC,m,compute_norms)
          call grad(VF_F1,phi,m)
          call subtract(B,VF_F1)
          call apply_BCs(B,m)
@@ -99,7 +99,7 @@
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,RHS,phi,m,&
-         n,N_induction,N_cleanB,compute_norms,SF_CC,VF_F)
+         n,N_induction,compute_norms,SF_CC,VF_F)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
@@ -109,14 +109,14 @@
          type(SF),intent(inout) :: SF_CC,phi
          type(VF),intent(inout) :: VF_F
          type(mesh),intent(in) :: m
-         integer,intent(in) :: n,N_induction,N_cleanB
+         integer,intent(in) :: n,N_induction
          logical,intent(in) :: compute_norms
          integer :: i
          do i=1,n
            call solve(JAC,B,RHS,m,N_induction,.true.)
            ! Clean B
            call div(SF_CC,B,m)
-           call solve(PCG_cleanB,phi,SF_CC,m,N_cleanB,compute_norms)
+           call solve(PCG_cleanB,phi,SF_CC,m,compute_norms)
            call grad(VF_F,phi,m)
            call subtract(B,VF_F)
            call apply_BCs(B,m)
@@ -124,7 +124,7 @@
        end subroutine
 
        subroutine CT_Finite_Rem_perfect_vacuum(PCG_B,PCG_cleanB,B,B0,U_E,J,m,&
-         D_conductor,dt,N_induction,N_cleanB,compute_norms,temp_CC,temp_F1,&
+         D_conductor,dt,compute_norms,temp_CC,temp_F1,&
          temp_F2,temp_E,temp_E_TF,phi)
          ! This has not yet been tested and is likely flawed currently.
          ! 
@@ -143,7 +143,6 @@
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction,N_cleanB
          type(domain),intent(in) :: D_conductor
          logical,intent(in) :: compute_norms
          type(VF) :: temp
@@ -158,14 +157,14 @@
          call div(temp_CC,B,m)
          call grad(temp_F1,temp_CC,m)
          call assign(temp_F2,B)
-         call solve(PCG_B,B,temp_F1,m,N_induction,compute_norms)
+         call solve(PCG_B,B,temp_F1,m,compute_norms)
          call init_Face(temp,D_conductor%m_in)
          call extractFace(temp,temp_F2,D_conductor)
          call embedFace(B,temp,D_conductor)
          call delete(temp)
          ! Clean B
          call div(temp_CC,B,m)
-         call solve(PCG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
+         call solve(PCG_cleanB,phi,temp_CC,m,compute_norms)
          call grad(temp_F1,phi,m)
          call subtract(B,temp_F1)
          call apply_BCs(B,m)
@@ -200,7 +199,7 @@
        end subroutine
 
        subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,&
-         dt,N_induction,N_cleanB,compute_norms,temp_F1,temp_F2,temp_E,&
+         dt,compute_norms,temp_F1,temp_F2,temp_E,&
          temp_E_TF,temp_CC,phi)
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:  B (above)
@@ -218,17 +217,16 @@
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction,N_cleanB
          logical,intent(in) :: compute_norms
          ! Induction
          call add(temp_F2,B,B0) ! Since finite Rem
          call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
          call multiply(temp_F1,dt)
          call add(temp_F1,B)
-         call solve(PCG_B,B,temp_F1,m,N_induction,compute_norms)
+         call solve(PCG_B,B,temp_F1,m,compute_norms)
          ! Clean B
          call div(temp_CC,B,m)
-         call solve(PCG_cleanB,phi,temp_CC,m,N_cleanB,compute_norms)
+         call solve(PCG_cleanB,phi,temp_CC,m,compute_norms)
          call grad(temp_F1,phi,m)
          call subtract(B,temp_F1)
          call apply_BCs(B,m)

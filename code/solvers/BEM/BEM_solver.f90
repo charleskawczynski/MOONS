@@ -18,6 +18,7 @@
        use ops_interp_mod
        use ops_discrete_mod
        use apply_BCs_mod
+       use iter_solver_params_mod
 
        implicit none
 
@@ -37,8 +38,8 @@
          type(mesh) :: m_surface
          type(VF) :: x,x_surface,f,f_surface
          type(GS_Poisson_SF) :: GS
-         integer :: i,n_skip_check_res
-         real(cp) :: tol
+         integer :: i
+         type(iter_solver_params) :: ISP
 
          call init_surface(m_surface,m)
          call init(D_surface,m_surface,m)
@@ -70,12 +71,11 @@
          call export_raw(m_surface,f_surface,str(DT%BEM),'f_surface',0)
 
          write(*,*) 'initializing GS'
-         tol = 10.0_cp**(-6.0_cp)
-         n_skip_check_res = 100
-         call init(GS,x_surface%x,m_surface,tol,n_skip_check_res,str(DT%BEM),'x_surface%x')
+         call init(ISP,1000,10.0_cp**(-6.0_cp),10.0_cp**(-10.0_cp),100,str(DT%ISP),'BEM')
+         call init(GS,x_surface%x,m_surface,ISP,str(DT%BEM),'x_surface%x')
          write(*,*) 'initialized GS'
          write(*,*) 'solving Poisson with GS'
-         call solve(GS,x_surface%x,f_surface%x,m_surface,1000,.true.)
+         call solve(GS,x_surface%x,f_surface%x,m_surface,.true.)
          write(*,*) 'solved Poisson with GS'
 
          call export_raw(m_surface,x_surface,str(DT%BEM),'x_surface',0)

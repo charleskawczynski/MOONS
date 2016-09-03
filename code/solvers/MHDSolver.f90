@@ -33,7 +33,7 @@
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
-         integer :: un,n_step
+         integer :: n_step
          logical :: continueLoop
          type(print_export) :: PE
 
@@ -93,6 +93,20 @@
              ! would be better to update outside the solvers.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc)
+             if (SP%solveMomentum) then
+               call import(mom%TMP)
+               call import(mom%ISP_U)
+               call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
+             endif
+             if (SP%solveInduction) then
+               call import(ind%TMP)
+               call import(ind%ISP_B); call init(ind%PCG_B%ISP,ind%ISP_B)
+               call import(ind%ISP_phi); call init(ind%PCG_cleanB%ISP,ind%ISP_phi)
+             endif
+             if (SP%solveEnergy) then; call import(nrg%TMP)
+                                       call import(nrg%ISP_T)
+             endif
+
              continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
              call writeSwitchToFile(.false.,str(DT%params),'exportNow')
              write(*,*) 'Working directory = ',str(DT%tar)
@@ -105,11 +119,11 @@
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
          call writeLastStepToFile(coupled%n_step,str(DT%params),'n_step')
-         call writeLastStepToFile(nrg%nstep,str(DT%params),'nstep_nrg')
-         call writeLastStepToFile(mom%nstep,str(DT%params),'nstep_mom')
-         call writeLastStepToFile(ind%nstep,str(DT%params),'nstep_ind')
+         call writeLastStepToFile(nrg%TMP%n_step,str(DT%params),'nstep_nrg')
+         call writeLastStepToFile(mom%TMP%n_step,str(DT%params),'nstep_mom')
+         call writeLastStepToFile(ind%TMP%n_step,str(DT%params),'nstep_ind')
 
-         call export(coupled,newAndOpen(str(DT%restart),'TMP_coupled'))
+         call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (SP%solveMomentum)  call exportTransient(mom)

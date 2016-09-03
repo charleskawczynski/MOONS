@@ -26,6 +26,9 @@
        use init_Tfield_mod
        use init_K_mod
 
+       use iter_solver_params_mod
+       use time_marching_params_mod
+
        use ops_embedExtract_mod
        use norms_mod
        use ops_aux_mod
@@ -61,6 +64,9 @@
          type(norms) :: norm_divQ
          type(matrix_free_params) :: MFP
 
+         type(time_marching_params) :: TMP
+         type(iter_solver_params) :: ISP_T
+
          type(PCG_Solver_SF) :: PCG_T
          type(sim_params) :: SP
 
@@ -90,21 +96,21 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_energy(nrg,m,SP,D,N_nrg,tol_nrg,dTime,Re,Pr,Ec,Ha,DT)
+       subroutine init_energy(nrg,m,SP,D,TMP,ISP_T,Re,Pr,Ec,Ha,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
          type(sim_params),intent(in) :: SP
-         real(cp),intent(in) :: tol_nrg,dTime,Re,Pr,Ec,Ha
-         integer,intent(in) :: N_nrg
+         type(time_marching_params),intent(in) :: TMP
+         type(iter_solver_params),intent(in) :: ISP_T
+         real(cp),intent(in) :: Re,Pr,Ec,Ha
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: k_cc,prec_T
          write(*,*) 'Initializing energy:'
-         nrg%dTime = dTime
-         nrg%N_nrg = N_nrg
-         nrg%tol_nrg = tol_nrg
+         call init(nrg%TMP,TMP)
+         call init(nrg%ISP_T,ISP_T)
          nrg%Re = Re
          nrg%Pr = Pr
          nrg%Ec = Ec
@@ -135,7 +141,7 @@
          ! --- Initialize Fields ---
          call init_TBCs(nrg%T,nrg%m)
          if (nrg%SP%solveEnergy) call print_BCs(nrg%T,'T')
-         if (nrg%SP%solveEnergy) call export_BCs(nrg%T,str(DT%params),'T')
+         if (nrg%SP%solveEnergy) call export_BCs(nrg%T,str(DT%T_BCs),'T')
          write(*,*) '     BCs initialized'
 
          call initTfield(nrg%T,m,nrg%SP%restartT,str(DT%T))
@@ -153,12 +159,12 @@
          call init(nrg%transient_divQ,str(DT%T),'transient_divQ',.not.nrg%SP%restartT)
          call export(nrg%transient_divQ)
 
-         nrg%MFP%c_nrg = -0.5_cp*nrg%dTime/(nrg%Re*nrg%Pr)
+         nrg%MFP%c_nrg = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
          call init(prec_T,nrg%T)
          call prec_lap_SF(prec_T,nrg%m)
          ! call prec_identity_SF(prec_T) ! For ordinary CG
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_T,nrg%m,&
-         nrg%tol_nrg,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T),'T',.false.,.false.)
+         nrg%ISP_T,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T),'T',.false.,.false.)
          call delete(prec_T)
 
          temp_unit = newAndOpen(str(DT%params),'info_nrg')
@@ -168,10 +174,10 @@
          write(*,*) '     probes initialized'
 
          if (nrg%SP%restartT) then
-         call readLastStepFromFile(nrg%nstep,str(DT%params),'nstep_nrg')
-         else; nrg%nstep = 0
+         call readLastStepFromFile(nrg%TMP%n_step,str(DT%params),'nstep_nrg')
+         else; nrg%TMP%n_step = 0
          endif
-         nrg%time = 0.0_cp
+         nrg%TMP%t = 0.0_cp
          write(*,*) '     Finished'
        end subroutine
 
@@ -199,6 +205,9 @@
          call delete(nrg%D)
          call delete(nrg%PCG_T)
 
+         call delete(nrg%TMP)
+         call delete(nrg%ISP_T)
+
          write(*,*) 'energy object deleted'
        end subroutine
 
@@ -211,9 +220,9 @@
          write(un,*) '**************************************************************'
          write(un,*) 'Re,Pr = ',nrg%Re,nrg%Pr
          write(un,*) 'Ec,Ha = ',nrg%Ec,nrg%Ha
-         write(un,*) 't,dt = ',nrg%time,nrg%dTime
-         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%solveTMethod,nrg%N_nrg
-         write(un,*) 'tol_nrg = ',nrg%tol_nrg
+         write(un,*) 't,dt = ',nrg%TMP%t,nrg%TMP%dt
+         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%solveTMethod,nrg%ISP_T%iter_max
+         write(un,*) 'tol_nrg = ',nrg%ISP_T%tol_rel
          call displayPhysicalMinMax(nrg%T,'T',un)
          call displayPhysicalMinMax(nrg%divQ,'divQ',un)
          write(un,*) ''
@@ -232,12 +241,10 @@
          type(energy),intent(in) :: nrg
          type(dir_tree),intent(in) :: DT
          integer :: un
+         call export(nrg%TMP)
+         call export(nrg%ISP_T)
          un = newAndOpen(str(DT%restart),'nrg_restart')
-         write(un,*) nrg%nstep;        write(un,*) nrg%N_nrg
-         write(un,*) nrg%dTime;        write(un,*) nrg%time
-         write(un,*) nrg%tol_nrg;      write(un,*) nrg%Re
-         write(un,*) nrg%Ec;           write(un,*) nrg%Ha
-         write(un,*) nrg%Pr
+         write(un,*) nrg%Re,nrg%Pr,nrg%Ha,nrg%Ec
          call closeAndMessage(un,str(DT%restart),'nrg_restart')
          un = openToRead(str(DT%restart),'nrg_MFP')
          call export(nrg%MFP,un)
@@ -252,12 +259,10 @@
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
          integer :: un
+         call import(nrg%TMP)
+         call import(nrg%ISP_T)
          un = openToRead(str(DT%restart),'nrg_restart')
-         read(un,*) nrg%nstep;        read(un,*) nrg%N_nrg
-         read(un,*) nrg%dTime;        read(un,*) nrg%time
-         read(un,*) nrg%tol_nrg;      read(un,*) nrg%Re
-         read(un,*) nrg%Ec;           read(un,*) nrg%Ha
-         read(un,*) nrg%Pr
+         read(un,*) nrg%Re,nrg%Pr,nrg%Ha,nrg%Ec
          call closeAndMessage(un,str(DT%restart),'nrg_restart')
          un = openToRead(str(DT%restart),'nrg_MFP')
          call import(nrg%MFP,un)
@@ -276,7 +281,7 @@
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
          if (nrg%SP%solveEnergy) then
-           write(*,*) 'export_tec_energy at nrg%nstep = ',nrg%nstep
+           write(*,*) 'export_tec_energy at nrg%TMP%n_step = ',nrg%TMP%n_step
            call export_processed(nrg%m,nrg%T,str(DT%T),'T',0)
            call export_raw(nrg%m,nrg%T,str(DT%T),'T',0)
            call export_raw(nrg%m,nrg%divQ,str(DT%T),'divQ',0)
@@ -288,7 +293,7 @@
          implicit none
          type(energy),intent(inout) :: nrg
          call compute(nrg%norm_divQ,nrg%divQ,nrg%vol_CC)
-         call set(nrg%transient_divQ,nrg%nstep,nrg%time,nrg%norm_divQ%L2)
+         call set(nrg%transient_divQ,nrg%TMP%n_step,nrg%TMP%t,nrg%norm_divQ%L2)
          call apply(nrg%transient_divQ)
        end subroutine
 
@@ -306,32 +311,31 @@
 
          select case (nrg%SP%solveTMethod)
          case (1)
-         call explicitEuler(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
          
          case (2) ! O2 time marching
-         call explicitEuler(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (3) ! Diffusion implicit
-         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
-         nrg%Pr,nrg%m,nrg%N_nrg,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
+         nrg%Pr,nrg%m,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (4)
-         if (nrg%nstep.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
+         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
 
-         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
+         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (5)
-         if (nrg%nstep.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
-         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%dTime,nrg%Re,&
-         nrg%Pr,nrg%m,nrg%Q_source,nrg%N_nrg,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
+         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
+         nrg%Pr,nrg%m,nrg%Q_source,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
-         nrg%nstep = nrg%nstep + 1
-         nrg%time = nrg%time + nrg%dTime ! This only makes sense for finite Rem
+         call iterate_step(nrg%TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 
@@ -350,7 +354,7 @@
          else; exportNow = .false.; exportNowT = .false.
          endif
 
-         if (nrg%nstep.eq.9) call export_tec(nrg,DT)
+         if (nrg%TMP%n_step.eq.9) call export_tec(nrg,DT)
          if (PE%solution.or.exportNowT.or.exportNow) then
            call export(nrg,DT)
            call export_tec(nrg,DT)

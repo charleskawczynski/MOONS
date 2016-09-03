@@ -43,7 +43,7 @@
         public :: init_Node
         public :: init_Face
         public :: init_Edge
-        ! public :: CC_along,Node_along
+        
         public :: volume
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
@@ -111,9 +111,6 @@
         interface print_physical;      module procedure print_physical_SF;      end interface
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
-
-        ! interface CC_along;            module procedure CC_along_SF;            end interface
-        ! interface Node_along;          module procedure Node_along_SF;          end interface
 
         interface volume;              module procedure volume_SF;              end interface
         interface multiply_volume;     module procedure multiply_volume_SF;     end interface
@@ -498,22 +495,6 @@
           real(cp),intent(in) :: val
           call init_Node(f,m); call assign(f,val)
         end subroutine
-
-        function CC_along_SF(f,dir) result(L)
-          implicit none
-          type(SF),intent(in) :: f
-          integer,intent(in) :: dir
-          logical :: L
-          L = any((/f%is_CC,f%is_Face.and.(f%face.ne.dir),f%is_Edge.and.(f%edge.eq.dir)/))
-        end function
-
-        function Node_along_SF(f,dir) result(L)
-          implicit none
-          type(SF),intent(in) :: f
-          integer,intent(in) :: dir
-          logical :: L
-          L = any((/f%is_Node,f%is_Face.and.(f%face.eq.dir),f%is_Edge.and.(f%edge.ne.dir)/))
-        end function
 
         subroutine init_BCs_SF_SF(f,g)
           implicit none

@@ -41,7 +41,7 @@
        type(sim_params),intent(inout) :: SP
        SP%restart_all               = .false.     ! restart sim (requires no code changes)
        SP%stopBeforeSolve           = .false.     ! Just export ICs, do not run simulation
-       SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
+       SP%post_process_only         = .false.      ! Skip solver loop and just post-process results
 
        SP%exportGrids               = .false.      ! Export all Grids before starting simulation
        SP%exportICs                 = .false.      ! Export Post-Processed ICs before starting simulation

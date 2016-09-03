@@ -43,7 +43,7 @@
         type(norms) :: norm
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
         integer :: un,N_iter
-        real(cp) :: tol
+        type(iter_solver_params) :: ISP
         type(string) :: name
         procedure(op_SF),pointer,nopass :: operator
         procedure(op_SF_explicit),pointer,nopass :: operator_explicit
@@ -55,7 +55,7 @@
         type(norms) :: norm
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
         integer :: un,N_iter
-        real(cp) :: tol
+        type(iter_solver_params) :: ISP
         type(string) :: name
         procedure(op_VF),pointer,nopass :: operator
         procedure(op_VF_explicit),pointer,nopass :: operator_explicit
@@ -63,7 +63,7 @@
 
       contains
 
-      subroutine init_PCG_SF(PCG,operator,operator_explicit,Minv,m,tol,MFP,&
+      subroutine init_PCG_SF(PCG,operator,operator_explicit,Minv,m,ISP,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
         procedure(op_SF) :: operator
@@ -71,7 +71,7 @@
         type(PCG_solver_SF),intent(inout) :: PCG
         type(SF),intent(in) :: Minv
         type(mesh),intent(in) :: m
-        real(cp),intent(in) :: tol
+        type(iter_solver_params),intent(in) :: ISP
         type(SF),intent(in) :: x
         type(VF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
@@ -92,6 +92,7 @@
         call init(PCG%tempk,k)
         call init(PCG%z,PCG%tempx)
         call init(PCG%Minv,PCG%tempx)
+        call init(PCG%ISP,ISP)
 
         call init(PCG%norm)
         call assign(PCG%k,k)
@@ -99,12 +100,10 @@
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
         call init(PCG%name,name)
-        call export_raw(m,PCG%vol,dir,'PCG_volume',0)
         PCG%un = newAndOpen(dir,'norm_PCG_SF_'//str(PCG%name))
         call tecHeader(str(PCG%name),PCG%un,.false.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
-        PCG%tol = tol
 
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
@@ -127,7 +126,7 @@
         PCG%N_iter = 1
       end subroutine
 
-      subroutine init_PCG_VF(PCG,operator,operator_explicit,Minv,m,tol,MFP,&
+      subroutine init_PCG_VF(PCG,operator,operator_explicit,Minv,m,ISP,MFP,&
         x,k,dir,name,testSymmetry,exportOperator)
         implicit none
         procedure(op_VF) :: operator
@@ -135,7 +134,7 @@
         type(PCG_solver_VF),intent(inout) :: PCG
         type(VF),intent(in) :: Minv
         type(mesh),intent(in) :: m
-        real(cp),intent(in) :: tol
+        type(iter_solver_params),intent(in) :: ISP
         type(VF),intent(in) :: x,k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
@@ -155,6 +154,7 @@
         call init(PCG%tempk,k)
         call init(PCG%z,PCG%tempx)
         call init(PCG%Minv,PCG%tempx)
+        call init(PCG%ISP,ISP)
 
         call init(PCG%norm)
         call assign(PCG%k,k)
@@ -166,7 +166,6 @@
         call tecHeader(str(PCG%name),PCG%un,.true.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
-        PCG%tol = tol
 
         call init(temp_Minv,Minv)
         call assign(temp_Minv,PCG%Minv)
@@ -188,29 +187,27 @@
         PCG%N_iter = 1
       end subroutine
 
-      subroutine solve_PCG_SF(PCG,x,b,m,n,compute_norms)
+      subroutine solve_PCG_SF(PCG,x,b,m,compute_norms)
         implicit none
         type(PCG_solver_SF),intent(inout) :: PCG
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b
         type(mesh),intent(in) :: m
-        integer,intent(in) :: n
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
-        x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,compute_norms,PCG%un,&
+        x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 
-      subroutine solve_PCG_VF(PCG,x,b,m,n,compute_norms)
+      subroutine solve_PCG_VF(PCG,x,b,m,compute_norms)
         implicit none
         type(PCG_solver_VF),intent(inout) :: PCG
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b
         type(mesh),intent(in) :: m
-        integer,intent(in) :: n
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
-        x,b,PCG%vol,PCG%k,m,PCG%MFP,n,PCG%tol,PCG%norm,compute_norms,PCG%un,&
+        x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
       end subroutine
 

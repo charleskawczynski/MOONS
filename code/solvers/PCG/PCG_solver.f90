@@ -15,6 +15,7 @@
       use ops_norms_mod
       use IO_tools_mod
 
+      use iter_solver_params_mod
       use matrix_free_params_mod
       use matrix_free_operators_mod
       implicit none
@@ -24,13 +25,12 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
-      real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
       character(len=19) :: norm_fmt = '(I10,7E40.28E3,I10)'
 
       contains
 
       subroutine solve_PCG_SF(operator,operator_explicit,name,x,b,vol,k,m,&
-        MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
+        MFP,ISP,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         procedure(op_SF) :: operator
         procedure(op_SF_explicit) :: operator_explicit
@@ -41,8 +41,8 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
-        integer,intent(in) :: n,un
-        real(cp),intent(in) :: tol
+        integer,intent(in) :: un
+        type(iter_solver_params),intent(in) :: ISP
         integer,intent(inout) :: N_iter
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
@@ -85,9 +85,9 @@
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
-        if (.not.sqrt(norm_res0%L2).lt.tol_abs) then ! Only do PCG if necessary!
+        if (.not.sqrt(norm_res0%L2).lt.ISP%tol_abs) then ! Only do PCG if necessary!
           skip_loop = .false.
-          do i=1,n
+          do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
@@ -103,7 +103,8 @@
             write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                               norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-            if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
+            if ((sqrt(res_norm)/norm_res0%L2.lt.ISP%tol_rel).or.&
+                 (sqrt(res_norm).lt.ISP%tol_abs)) then; i_earlyExit=1; exit; endif
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,m,x,tempx)
             call multiply(p,rhokp1/rhok) ! p = z + beta p
@@ -131,7 +132,7 @@
             write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                               norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
             flush(un)
-            write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,n
+            write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max
             write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm)/norm_res0%L2
           else
             write(*,*) 'PCG_SF skip_loop = ',skip_loop
@@ -141,7 +142,7 @@
       end subroutine
 
       subroutine solve_PCG_VF(operator,operator_explicit,name,x,b,vol,k,m,&
-        MFP,n,tol,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
+        MFP,ISP,norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         procedure(op_VF) :: operator
         procedure(op_VF_explicit) :: operator_explicit
@@ -152,8 +153,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
-        integer,intent(in) :: n
-        real(cp),intent(in) :: tol
+        type(iter_solver_params),intent(in) :: ISP
         integer,intent(inout) :: N_iter
         integer,intent(in) :: un
         logical,intent(in) :: compute_norms
@@ -193,8 +193,8 @@
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm = rhok; i_earlyExit = 0
-        if (.not.sqrt(norm_res0%L2).lt.tol_abs) then ! Only do PCG if necessary!
-          do i=1,n
+        if (.not.sqrt(norm_res0%L2).lt.ISP%tol_abs) then ! Only do PCG if necessary!
+          do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
@@ -210,7 +210,8 @@
             write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                               norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
-            if ((sqrt(res_norm)/norm_res0%L2.lt.tol).or.(sqrt(res_norm).lt.tol_abs)) then; i_earlyExit=1; exit; endif
+            if ((sqrt(res_norm)/norm_res0%L2.lt.ISP%tol_rel).or.&
+                (sqrt(res_norm).lt.ISP%tol_abs)) then; i_earlyExit=1; exit; endif
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,m,x,tempx)
             call multiply(p,rhokp1/rhok) ! p = z + beta p
@@ -238,7 +239,7 @@
             write(un,norm_fmt) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                               norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
             flush(un)
-            write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,n
+            write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max
             write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm)/norm_res0%L2
           else
             write(*,*) 'PCG_VF skip_loop = ',skip_loop

@@ -12,6 +12,7 @@
        use matrix_free_operators_mod
        use matrix_free_params_mod
        use preconditioners_mod
+       use iter_solver_params_mod
        
        implicit none
        private
@@ -20,17 +21,16 @@
 
        contains
 
-       subroutine compute_vorticity_streamfunction(PCG,psi,omega,U,m,N_psi,compute_norms)
+       subroutine compute_vorticity_streamfunction(PCG,psi,omega,U,m,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: PCG
          type(VF),intent(inout) :: psi,omega
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
-         integer,intent(in) :: N_psi
          logical,intent(in) :: compute_norms
          call curl(omega,U,m)
          call multiply(omega,-1.0_cp)
-         call solve(PCG,psi,omega,m,N_psi,compute_norms)
+         call solve(PCG,psi,omega,m,compute_norms)
        end subroutine
 
        subroutine export_vorticity_streamfunction(U,m,DT)
@@ -41,11 +41,9 @@
          type(VF) :: psi,omega,temp_dummy
          type(PCG_solver_VF) :: PCG
          type(VF) :: prec_psi ! preconditioner
-         real(cp) :: tol
-         integer :: N_iterations
+         type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
-         tol = 10.0_cp**(-12.0_cp)
-         N_iterations = 1000
+         call init(ISP,1000,10.0_cp**(-12.0_cp),10.0_cp**(-15.0_cp),1,str(DT%ISP),'vorticity_streamfunction')
 
          call init_Edge(omega,m)
          call init_Edge(psi,m)
@@ -62,9 +60,9 @@
          ! Make sure that Lap_uniform_VF does not 
          call prec_Lap_VF(prec_psi,m)
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_psi,m,&
-         tol,MFP,psi,temp_dummy,str(DT%U_r),'streamfunction',.false.,.false.)
+         ISP,MFP,psi,temp_dummy,str(DT%U_r),'streamfunction',.false.,.false.)
 
-         call compute_vorticity_streamfunction(PCG,psi,omega,U,m,N_iterations,.true.)
+         call compute_vorticity_streamfunction(PCG,psi,omega,U,m,.true.)
          call export_processed(m,psi  ,str(DT%U_f),'streamfunction',1)
          call export_processed(m,omega,str(DT%U_f),'vorticity'     ,1)
 
