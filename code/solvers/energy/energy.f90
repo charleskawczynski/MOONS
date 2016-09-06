@@ -172,12 +172,6 @@
          close(temp_unit)
 
          write(*,*) '     probes initialized'
-
-         if (nrg%SP%restartT) then
-         call readLastStepFromFile(nrg%TMP%n_step,str(DT%params),'nstep_nrg')
-         else; nrg%TMP%n_step = 0
-         endif
-         nrg%TMP%t = 0.0_cp
          write(*,*) '     Finished'
        end subroutine
 

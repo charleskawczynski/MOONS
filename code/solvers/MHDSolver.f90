@@ -51,7 +51,7 @@
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
-         call init(sc,coupled%n_step_stop-coupled%n_step)
+         call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
          do n_step = coupled%n_step,coupled%n_step_stop
            call init(PE,coupled%n_step,SP%export_planar)
 
@@ -61,12 +61,7 @@
            if (SP%solveMomentum)  call solve(mom,F,      PE,DT)
            if (SP%solveInduction) call solve(ind,mom%U_E,PE,DT)
 
-           ! Q-2D implementation:
-           ! call assign_negative(F%x,mom%U%x); call multiply(F%x,1.0_cp/(mom%Re/mom%Ha))
-           ! call assign_negative(F%y,mom%U%y); call multiply(F%y,1.0_cp/(mom%Re/mom%Ha))
-           ! call assign(F%z,0.0_cp)
-
-           ! call assign(F,0.0_cp)
+           call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE ADD PROCEDURE BELOW
 
            if (SP%addJCrossB) then
              call compute_AddJCrossB(F,ind%B,ind%B0,ind%J,ind%m,&
@@ -74,6 +69,9 @@
                                      ind%finite_Rem,ind%temp_CC_SF,&
                                      ind%temp_F1,ind%temp_F1_TF,&
                                      ind%temp_F2_TF,mom%temp_F)
+           endif
+           if (SP%add_Q2D_JCrossB) then
+             call compute_add_Q2D_JCrossB(F,mom%U,mom%Ha,mom%Re,mom%temp_F)
            endif
            if (SP%addBuoyancy) then
              call compute_AddBuoyancy(F,nrg%T,nrg%gravity,&
@@ -87,24 +85,22 @@
            endif
 
            call iterate_step(coupled)
-           call toc(sc)
+           call toc(sc,coupled%t)
            if (PE%info) then
              ! oldest_modified_file violates intent, but this 
              ! would be better to update outside the solvers.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc)
              if (SP%solveMomentum) then
-               call import(mom%TMP)
                call import(mom%ISP_U)
                call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
              endif
              if (SP%solveInduction) then
-               call import(ind%TMP)
-               call import(ind%ISP_B); call init(ind%PCG_B%ISP,ind%ISP_B)
+               call import(ind%ISP_B);   call init(ind%PCG_B%ISP,ind%ISP_B)
                call import(ind%ISP_phi); call init(ind%PCG_cleanB%ISP,ind%ISP_phi)
              endif
-             if (SP%solveEnergy) then; call import(nrg%TMP)
-                                       call import(nrg%ISP_T)
+             if (SP%solveEnergy) then; call import(nrg%ISP_T)
+                                       call init(nrg%PCG_T%ISP,nrg%ISP_T)
              endif
 
              continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
@@ -118,11 +114,9 @@
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-         call writeLastStepToFile(coupled%n_step,str(DT%params),'n_step')
-         call writeLastStepToFile(nrg%TMP%n_step,str(DT%params),'nstep_nrg')
-         call writeLastStepToFile(mom%TMP%n_step,str(DT%params),'nstep_mom')
-         call writeLastStepToFile(ind%TMP%n_step,str(DT%params),'nstep_ind')
-
+         call export(nrg%TMP)
+         call export(mom%TMP)
+         call export(ind%TMP)
          call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************

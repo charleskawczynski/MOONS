@@ -18,8 +18,8 @@
        implicit none
 
        private
-       public :: compute_AddJCrossB
-       public :: compute_JCrossB
+       public :: compute_AddJCrossB, compute_add_Q2D_JCrossB
+       public :: compute_JCrossB, compute_Q2D_JCrossB
        public :: compute_divBJ
        public :: compute_J
        public :: compute_Total_Energy_Domain
@@ -72,6 +72,25 @@
          call extractFace(jCrossB,temp_F,D_fluid)
          call zeroGhostPoints(jCrossB)
          call multiply(jCrossB,Ha**2.0_cp/Re)
+       end subroutine
+
+       subroutine compute_add_Q2D_JCrossB(Q2D_JCrossB,U,Ha,Re,temp_F)
+         implicit none
+         type(VF),intent(inout) :: Q2D_JCrossB,temp_F
+         type(VF),intent(in) :: U
+         real(cp),intent(in) :: Ha,Re
+         call compute_Q2D_JCrossB(temp_F,U,Ha,Re)
+         call add(Q2D_JCrossB,temp_F)
+       end subroutine
+
+       subroutine compute_Q2D_JCrossB(Q2D_JCrossB,U,Ha,Re)
+         ! computes: Q2D_JCrossB = -U/tau, tau = Re/Ha
+         implicit none
+         type(VF),intent(inout) :: Q2D_JCrossB
+         type(VF),intent(in) :: U
+         real(cp),intent(in) :: Ha,Re
+         call assign(Q2D_JCrossB,U)
+         call multiply(Q2D_JCrossB,-1.0_cp/(Re/Ha))
        end subroutine
 
        subroutine compute_divBJ(divB,divJ,B,J,m)

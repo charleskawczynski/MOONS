@@ -23,17 +23,22 @@
          type(time_marching_params),intent(inout) :: coupled,TMP_U,TMP_B,TMP_T
          real(cp),intent(inout) :: Re,Ha,Gr,Fr,Pr,Ec,Rem,tw,sig_local_over_sig_f
          logical,intent(inout) :: finite_Rem,include_vacuum
-         real(cp) :: time,dtime
+         real(cp) :: time,dtime,tol_abs,delta_Ha,dh_min
+         logical :: coupled_time_step
          ! ***************** DEFAULT VALUES *****************
          Re         = 400.0_cp
          Ha         = 100.0_cp
+
+         Re         = 100.0_cp
+         Ha         = 10.0_cp
          Rem        = 1.0_cp
          tw = 0.5_cp
-         include_vacuum = .true.
-         finite_Rem = .true.
-         ! sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
+         include_vacuum = .false.
+         finite_Rem = .false.
+         coupled_time_step = .false.
+         sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
-         sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
+         ! sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -42,25 +47,36 @@
          Pr         = 0.01_cp
          Fr         = 1.0_cp
          Ec         = 0.0_cp
+         tol_abs = 10.0_cp**(-13.0_cp)
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
-         call init(ISP_B   ,100, 10.0_cp**(- 6.0_cp), 10.0_cp**(-13.0_cp) , 100, str(DT%ISP),'ISP_B')
-         call init(ISP_U   ,  5, 10.0_cp**(-10.0_cp), 10.0_cp**(-13.0_cp) , 100, str(DT%ISP),'ISP_U')
-         call init(ISP_p   ,100, 10.0_cp**(-10.0_cp), 10.0_cp**(-13.0_cp) , 100, str(DT%ISP),'ISP_p')
-         call init(ISP_T   ,  5, 10.0_cp**(-10.0_cp), 10.0_cp**(-13.0_cp) , 100, str(DT%ISP),'ISP_T')
-         call init(ISP_phi ,  5, 10.0_cp**(-10.0_cp), 10.0_cp**(-13.0_cp) , 100, str(DT%ISP),'ISP_phi')
+         delta_Ha = 1.0_cp/Ha
+         dh_min = delta_Ha/5.0_cp
+         call init(ISP_B  ,  10  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-11.0_cp), 100, str(DT%ISP),'ISP_B')
+         call init(ISP_U  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
+         call init(ISP_p  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
+         call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
+         call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
-         time  = 10.0_cp
-         dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         ! time  = 200.0_cp
+         time  = 100.0_cp
+         dtime = 1.0_cp*10.0_cp**(-2.0_cp)
+         ! dtime = 1.5_cp*10.0_cp**(-2.0_cp)
 
          ! call init(TMP,nstep_stop,dtime)
          ! call init(coupled,1000000000,dtime)
          call init(coupled,ceiling(time/dtime),dtime,str(DT%TMP), 'TMP_coupled')
 
-         call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
+         call init(TMP_B, coupled%n_step_stop, coupled%dt/100.0_cp, str(DT%TMP), 'TMP_B')
          call init(TMP_U, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_U')
          call init(TMP_T, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_T')
 
          if (coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in inputFile.f90'
+
+         if (coupled_time_step) then
+           TMP_U%dt = coupled%dt; TMP_U%n_step_stop = coupled%n_step_stop
+           TMP_B%dt = coupled%dt; TMP_B%n_step_stop = coupled%n_step_stop
+           TMP_T%dt = coupled%dt; TMP_T%n_step_stop = coupled%n_step_stop
+         endif
          ! Stopping criteria for iterative solvers:
          !         ||Ax - b||
          !         ----------- < tol_rel

@@ -17,7 +17,8 @@
         type(string) :: PS
         type(string) :: tar     ! absolute target directory (.exe location)
 
-        type(path) :: tar_p,out_dir,LDC,mat,params,BEM,e_budget,e_budget_N,e_budget_C
+        type(path) :: tar_p,out_dir,LDC,mat,params,BEM,wall_clock
+        type(path) :: e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
 
         type(path) :: ISP,TMP
@@ -54,6 +55,7 @@
         call init(DT%e_budget    ,DT%LDC         ,'e_budget'   ,str(DT%PS))
         call init(DT%mat         ,DT%LDC         ,'material'   ,str(DT%PS))
         call init(DT%params      ,DT%LDC         ,'parameters' ,str(DT%PS))
+        call init(DT%wall_clock  ,DT%LDC         ,'wall_clock' ,str(DT%PS))
         call init(DT%TMP         ,DT%params      ,'TMP'        ,str(DT%PS))
         call init(DT%ISP         ,DT%params      ,'ISP'        ,str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
@@ -101,6 +103,7 @@
         call make_dir(full(DT%LDC))
 
         call make_dir(str(DT%params))
+        call make_dir(str(DT%wall_clock))
         call make_dir(str(DT%ISP))
         call make_dir(str(DT%TMP))
         call make_dir(str(DT%e_budget))
@@ -145,6 +148,7 @@
         call delete(DT%out_dir)
 
         call delete(DT%params)
+        call delete(DT%wall_clock)
         call delete(DT%ISP)
         call delete(DT%TMP)
         call delete(DT%mat)

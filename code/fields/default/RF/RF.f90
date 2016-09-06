@@ -59,10 +59,14 @@
         public :: add_product,swap
         ! Auxiliary
         public :: square,min,max,maxabs
-        public :: maxabsdiff,mean,sum
-        public :: size
+        public :: maxabsdiff,mean,sum,size
+
+        public :: zero_ghost_xmin_xmax
+        public :: zero_ghost_ymin_ymax
+        public :: zero_ghost_zmin_zmax
 
         type realField
+          integer :: s_1D                            ! size
           integer,dimension(3) :: s                  ! Dimension
           real(cp),dimension(:,:,:),allocatable :: f ! field
           type(BCs) :: b
@@ -133,6 +137,10 @@
         interface sum;                      module procedure sum_RF_pad;             end interface
         interface size;                     module procedure size_RF;                end interface
 
+        interface zero_ghost_xmin_xmax;     module procedure zero_ghost_xmin_xmax_RF;end interface
+        interface zero_ghost_ymin_ymax;     module procedure zero_ghost_ymin_ymax_RF;end interface
+        interface zero_ghost_zmin_zmax;     module procedure zero_ghost_zmin_zmax_RF;end interface
+
       contains
 
         ! **********************************************************
@@ -146,6 +154,7 @@
           if (allocated(a%f)) deallocate(a%f)
           allocate(a%f(Nx,Ny,Nz))
           a%s = shape(a%f)
+          a%s_1D = a%s(1)*a%s(2)*a%s(3)
         end subroutine
 
         subroutine init_RF_copy(f1,f2)
@@ -159,6 +168,7 @@
           allocate(f1%f(s(1),s(2),s(3)))
           f1%s = shape(f1%f)
           if (f2%b%defined) call init(f1%b,f2%b)
+          f1%s_1D = f2%s_1D
         end subroutine
 
         subroutine delete_RF(a)
@@ -167,6 +177,7 @@
           if (allocated(a%f)) deallocate(a%f)
           call delete(a%b)
           a%s = 0
+          a%s_1D = 0
         end subroutine
 
         subroutine display_RF(a,un)
@@ -196,6 +207,8 @@
           if (allocated(a%f)) then
           write(un,*) 'shape(f) = '
           write(un,*) a%s
+          write(un,*) 'size(f) = '
+          write(un,*) a%s_1D
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
             write(un,*) a%f(i,j,k)
           enddo; enddo; enddo
@@ -212,6 +225,8 @@
           call delete(a)
           read(un,*) 
           read(un,*) a%s
+          read(un,*) 
+          read(un,*) a%s_1D
           allocate(a%f(a%s(1),a%s(2),a%s(3)))
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
             read(un,*) a%f(i,j,k)
@@ -956,11 +971,65 @@
 #endif
         end function
 
+        subroutine zero_ghost_xmin_xmax_RF(f)
+          implicit none
+          type(realField),intent(inout) :: f
+          integer :: j,k
+#ifdef _PARALLELIZE_RF_
+          !$OMP PARALLEL DO
+
+#endif
+          do k=1,f%s(3); do j=1,f%s(2)
+            f%f(1,j,k) = 0.0_cp
+            f%f(f%s(1),j,k) = 0.0_cp
+          enddo; enddo
+#ifdef _PARALLELIZE_RF_
+          !$OMP END PARALLEL DO
+
+#endif
+        end subroutine
+
+        subroutine zero_ghost_ymin_ymax_RF(f)
+          implicit none
+          type(realField),intent(inout) :: f
+          integer :: i,k
+#ifdef _PARALLELIZE_RF_
+          !$OMP PARALLEL DO
+
+#endif
+          do k=1,f%s(3); do i=1,f%s(1)
+            f%f(i,1,k) = 0.0_cp
+            f%f(i,f%s(2),k) = 0.0_cp
+          enddo; enddo
+#ifdef _PARALLELIZE_RF_
+          !$OMP END PARALLEL DO
+
+#endif
+        end subroutine
+
+        subroutine zero_ghost_zmin_zmax_RF(f)
+          implicit none
+          type(realField),intent(inout) :: f
+          integer :: i,j
+#ifdef _PARALLELIZE_RF_
+          !$OMP PARALLEL DO
+
+#endif
+          do j=1,f%s(2); do i=1,f%s(1)
+            f%f(i,j,1) = 0.0_cp
+            f%f(i,j,f%s(3)) = 0.0_cp
+          enddo; enddo
+#ifdef _PARALLELIZE_RF_
+          !$OMP END PARALLEL DO
+
+#endif
+        end subroutine
+
         function size_RF(a) result(s)
           implicit none
           type(realField),intent(in) :: a
           integer :: s
-          s = a%s(1)*a%s(2)*a%s(3)
+          s = a%s_1D
         end function
 
       ! ------------------- LOCATION-BASED ALLOCATE / DEALLOCATE --------------------

@@ -150,11 +150,6 @@
          ind%e_budget = 0.0_cp
          call init(ind%SP,SP)
 
-         if (ind%SP%restartB) then
-         call readLastStepFromFile(ind%TMP%n_step,str(DT%params),'nstep_ind')
-         else; ind%TMP%n_step = 0
-         endif
-
          call init(ind%m,m)
          call init(ind%D_fluid,D_fluid)
          call init(ind%D_sigma,D_sigma)
@@ -240,7 +235,6 @@
          temp_unit = newAndOpen(str(DT%params),'info_ind')
          call display(ind,temp_unit)
          close(temp_unit)
-
 
          if (finite_Rem) then; ind%MFP_B%c_ind = ind%TMP%dt/ind%Rem
          else;                 ind%MFP_B%c_ind = ind%TMP%dt

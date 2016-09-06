@@ -15,6 +15,19 @@
       public :: export_2D_2C_transient
       public :: export_2D_3C_transient
       public :: import_3D_3C
+      
+      public :: export_transient
+
+      abstract interface
+        subroutine export_transient(m,U,dir,name,pad,direction,nstep)
+          import mesh,VF
+          implicit none
+          character(len=*),intent(in) :: dir,name
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: pad,direction,nstep
+          type(VF),intent(in) :: U
+        end subroutine
+      end interface
 
       contains
 

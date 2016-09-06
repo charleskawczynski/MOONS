@@ -12,6 +12,7 @@
       use index_mapping_mod
       use ops_interp_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
 
       private
@@ -51,7 +52,7 @@
 
       subroutine test_symmetry_SF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF) :: operator
         type(SF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
@@ -87,7 +88,7 @@
 
       subroutine test_symmetry_VF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(VF),intent(in) :: x,k,vol
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
@@ -222,7 +223,7 @@
 
       subroutine export_operator_SF(operator,dir,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF) :: operator
         type(SF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
@@ -251,7 +252,7 @@
 
       subroutine export_operator_VF(operator,dir,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(VF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
@@ -270,7 +271,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
           if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),1)) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%x,i)
@@ -280,7 +281,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%y,i)
           if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),2)) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%y,i)
@@ -290,7 +291,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%z,i)
           if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),3)) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%z,i)
@@ -337,7 +338,7 @@
 
       subroutine get_diagonal_SF(operator,D,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF_explicit) :: operator
         type(SF),intent(inout) :: D
         type(SF),intent(in) :: vol,x
         type(VF),intent(in) :: k
@@ -355,7 +356,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un,i)
           if (cycle_TF_SF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/))) cycle
           call unitVector(un,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i)
           call deleteUnitVector(un,i)
@@ -379,7 +380,7 @@
 
       subroutine get_diagonal_VF(operator,D,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF_explicit) :: operator
         type(VF),intent(inout) :: D
         type(VF),intent(in) :: k,vol,x
         type(VF),intent(inout) :: tempk
@@ -397,7 +398,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
           if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),1)) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,1)
           call deleteUnitVector(un%x,i)
@@ -411,7 +412,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%y,i)
           if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),2)) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,2)
           call deleteUnitVector(un%y,i)
@@ -425,7 +426,7 @@
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%z,i)
           if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),3)) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,3)
           call deleteUnitVector(un%z,i)

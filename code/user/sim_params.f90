@@ -29,6 +29,7 @@
        logical :: addJCrossB
        logical :: addBuoyancy
        logical :: addGravity
+       logical :: add_Q2D_JCrossB
      end type
      
      interface init;    module procedure init_sim_params;        end interface
@@ -61,11 +62,12 @@
 
        SP%solveTMethod              = 5           ! Refer to energy.f90
        SP%solveUMethod              = 1           ! Refer to momentum.f90
-       SP%solveBMethod              = 3           ! Refer to induction.f90
+       SP%solveBMethod              = 1           ! Refer to induction.f90
 
-       SP%addJCrossB                = .true.      ! add JCrossB  to momentum equation
-       SP%addBuoyancy               = .false.     ! add Buoyancy to momentum equation
-       SP%addGravity                = .false.     ! add Gravity  to momentum equation
+       SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
+       SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation
+       SP%addBuoyancy               = .false.     ! add Buoyancy     to momentum equation
+       SP%addGravity                = .false.     ! add Gravity      to momentum equation
       end subroutine
 
      subroutine init_sim_params_copy(SP_out,SP_in)
@@ -89,6 +91,7 @@
        SP_out%addJCrossB = SP_in%addJCrossB
        SP_out%addBuoyancy = SP_in%addBuoyancy
        SP_out%addGravity = SP_in%addGravity
+       SP_out%add_Q2D_JCrossB = SP_in%add_Q2D_JCrossB
        SP_out%restartT = SP_in%restartT
        SP_out%restartU = SP_in%restartU
        SP_out%restartB = SP_in%restartB

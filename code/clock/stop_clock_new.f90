@@ -9,8 +9,6 @@
        use current_precision_mod
        use IO_tools_mod
        use clock_mod
-       use string_mod
-       use unit_conversion_mod
        implicit none
 
        private
@@ -21,16 +19,15 @@
 
        type stop_clock
         ! Known Quantities
-        type(unit_conversion) :: uc
         type(clock) :: c
-        real(cp) :: seconds_per_iter
+        real(cp) :: secPerIter
         real(cp) :: t_passed
         integer :: N,Nmax,NRemaining
         real(cp) :: Nr,Nmaxr
         ! Estimated Quantities
-        real(cp) :: estimated_total
-        real(cp) :: estimated_remaining
-        real(cp) :: percentage_complete,t_elapsed
+        real(cp) :: estimatedTotal
+        real(cp) :: estimatedRemaining
+        real(cp) :: percentageComplete,t_elapsed
 
         integer :: iterPerSec
         integer :: iterPerMin
@@ -55,36 +52,22 @@
         type(stop_clock),intent(inout) :: sc
         integer,intent(in) :: Nmax
         character(len=*),intent(in) :: dir,name
-        type(string) :: vars
         call delete(sc)
         call init(sc%c)
         sc%NMax = Nmax
         sc%NMaxr = real(sc%Nmax,cp)
         sc%un_plot = newAndOpen(dir,name//'_plot')
-        flush(sc%un_plot)
         sc%un_info = newAndOpen(dir,name//'_info')
-
-        call init(vars,'VARIABLES = ')
-        call append(vars,'t,')
-        call append(vars,'t_elapsed,')
-        call append(vars,'t_elapsed(raw),')
-        call append(vars,'estimated_total_m,')
-        call append(vars,'estimated_total_h,')
-        call append(vars,'estimated_total_d')
-
         write(sc%un_plot,*) 'TITLE = "WALL_CLOCK_TIME_INFO"'
-        write(sc%un_plot,*) str(vars)
+        write(sc%un_plot,*) 'VARIABLES = t,iterPerSec'
         write(sc%un_plot,*) 'ZONE DATAPACKING = POINT'
-        flush(sc%un_plot)
-        call delete(vars)
-        call init(sc%uc)
       end subroutine
 
       subroutine delete_sc(sc)
         implicit none
         type(stop_clock),intent(inout) :: sc
         call init(sc%c)
-        sc%seconds_per_iter = 0.0_cp
+        sc%secPerIter = 0.0_cp
         sc%t_passed = 0.0_cp
         sc%N = 0
         sc%NMax = 0
@@ -93,9 +76,9 @@
         sc%NMaxr = real(sc%Nmax,cp)
         sc%frozen_elapsed = .false.
 
-        sc%estimated_total = 0.0_cp
-        sc%estimated_remaining = 0.0_cp
-        sc%percentage_complete = 0.0_cp
+        sc%estimatedTotal = 0.0_cp
+        sc%estimatedRemaining = 0.0_cp
+        sc%percentageComplete = 0.0_cp
 
         sc%iterPerSec = 0
         sc%iterPerMin = 0
@@ -111,10 +94,9 @@
         call tic(sc%c)
       end subroutine
 
-      subroutine toc_sc(sc,t)
+      subroutine toc_sc(sc)
         implicit none
         type(stop_clock),intent(inout) :: sc
-        real(cp),intent(in) :: t
         call toc(sc%c)
         if (sc%c%t_elapsed.lt.0.0_cp) then; sc%frozen_elapsed = .true.
         else;                               sc%t_elapsed = sc%c%t_elapsed
@@ -122,20 +104,16 @@
         sc%t_passed = sc%t_passed + sc%t_elapsed
         sc%N = sc%N + 1
         sc%Nr = real(sc%N,cp)
-        sc%seconds_per_iter = sc%t_passed/sc%Nr
-        sc%estimated_total = sc%seconds_per_iter*sc%NMaxr
-        sc%estimated_remaining = sc%estimated_total - sc%t_passed
-        sc%percentage_complete = sc%Nr/sc%NMaxr*100.0_cp
+        sc%secPerIter = sc%t_passed/sc%Nr
+        sc%estimatedTotal = sc%secPerIter*sc%NMaxr
+        sc%estimatedRemaining = sc%estimatedTotal - sc%t_passed
+        sc%percentageComplete = sc%Nr/sc%NMaxr*100.0_cp
         sc%NRemaining = sc%NMax - sc%N + 1
-        sc%iterPerSec = floor(1.0_cp/sc%seconds_per_iter)
-        sc%iterPerMin = floor(sc%uc%seconds_per_minute/sc%seconds_per_iter)
-        sc%iterPerHour = floor(sc%uc%seconds_per_hour/sc%seconds_per_iter)
-        sc%iterPerDay = floor(sc%uc%seconds_per_day/sc%seconds_per_iter)
-        write(sc%un_plot,*) t,sc%t_elapsed,sc%c%t_elapsed,&
-                            sc%estimated_total/sc%uc%seconds_per_minute,&
-                            sc%estimated_total/sc%uc%seconds_per_hour,&
-                            sc%estimated_total/sc%uc%seconds_per_day
-        flush(sc%un_plot)
+        sc%iterPerSec = floor(1.0_cp/sc%secPerIter)
+        sc%iterPerMin = floor(60.0_cp/sc%secPerIter)
+        sc%iterPerHour = floor(3600.0_cp/sc%secPerIter)
+        sc%iterPerDay = floor(86400.0_cp/sc%secPerIter) ! 3600*24 = 86400
+        write(sc%un_plot,*) sc%N,sc%iterPerSec
       end subroutine
 
       subroutine export_sc_dir(sc,dir)
@@ -167,12 +145,12 @@
 
         write(un,*) 'Iterations (complete) = ',sc%N
 
-        temp = sc%seconds_per_iter; call getTimeWithUnits(temp,u,sc%uc)
+        temp = sc%secPerIter; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (seconds/iteration) = ',temp,' (', u,')'
 
         write(un,*) 'Iterations per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
 
-        temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
+        temp = sc%t_passed; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
 
         write(un,*) ''
@@ -180,33 +158,32 @@
 
         write(un,*) 'Iterations (remaining/max) = ',sc%NRemaining,sc%NMax
 
-        temp = sc%estimated_total; call getTimeWithUnits(temp,u,sc%uc)
+        temp = sc%estimatedTotal; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (total) = ',temp,' (', u,')'
 
-        temp = sc%estimated_remaining; call getTimeWithUnits(temp,u,sc%uc)
+        temp = sc%estimatedRemaining; call getTimeWithUnits(temp,u)
         write(un,*) 'Time (remaining) = ',temp,' (', u,')'
 
-        write(un,*) 'Percentage complete = ',sc%percentage_complete
+        write(un,*) 'Percentage complete = ',sc%percentageComplete
 
         write(un,*) ''
         write(un,*) '********************************************************************'
       end subroutine
 
-      subroutine getTimeWithUnits(t,u,uc)
+      subroutine getTimeWithUnits(t,u)
         implicit none
         real(cp),intent(inout) :: t
         character(len=1),intent(inout) :: u
-        type(unit_conversion),intent(in) :: uc
-        if (t.lt.uc%minute_per_seconds) then
+        if (t.lt.60.0_cp) then
          u = 's'; t = t
-        elseif ((t.ge.uc%seconds_per_minute).and.(t.lt.uc%seconds_per_hour)) then
-         u = 'm'; t = t*uc%minute_per_seconds
-        elseif ((t.ge.uc%seconds_per_hour).and.(t.lt.uc%seconds_per_day)) then
-         u = 'h'; t = t*uc%hour_per_seconds
-        elseif ((t.ge.uc%seconds_per_day).and.(t.lt.uc%seconds_per_year)) then
-         u = 'd'; t = t*uc%day_per_seconds
-        elseif (t.ge.uc%seconds_per_year) then
-         u = 'y'; t = t*uc%year_per_seconds
+        elseif ((t.ge.60.0_cp).and.(t.lt.3600.0_cp)) then
+         u = 'm'; t = t/60.0_cp
+        elseif ((t.ge.3600.0_cp).and.(t.lt.86400.0_cp)) then
+         u = 'h'; t = t/3600.0_cp ! 60*60 = 3600
+        elseif ((t.ge.86400.0_cp).and.(t.lt.31557600.0_cp)) then
+         u = 'd'; t = t/86400.0_cp ! 60*60*24 = 86400
+        elseif (t.ge.31557600.0_cp) then
+         u = 'y'; t = t/31557600.0_cp ! 60*60*24*365.24 = 31557600
         endif
        end subroutine
 

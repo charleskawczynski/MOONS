@@ -64,6 +64,12 @@
          coupled,TMP_U,TMP_B,TMP_T,ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi,tw,&
          sig_local_over_sig_f,include_vacuum)
 
+         call init(nrg%ISP_T,ISP_T); call init(nrg%TMP,TMP_T)
+         call init(mom%ISP_U,ISP_U); call init(mom%TMP,TMP_U)
+         call init(ind%ISP_B,ISP_B); call init(ind%TMP,TMP_B)
+         call init(mom%ISP_P,ISP_P)
+         call init(ind%ISP_phi,ISP_phi)
+
          call print_version(); call export_version(str(DT%LDC))
 
          ! ************************************************************** Initialize mesh + domains

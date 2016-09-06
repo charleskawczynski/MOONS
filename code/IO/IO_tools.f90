@@ -156,7 +156,7 @@
         integer,intent(in) :: u
         character(len=*),intent(in) :: dir,name
         logical :: exist
-        inquire(file=dir//name, exist=exist)
+        inquire(file=dir//name//'.dat', exist=exist)
         close(u)
         if (exist) then
           write(*,*) '+++ Closed file ' // dir // name

@@ -150,7 +150,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2_RF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir)
+       subroutine interpO2_RF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,p)
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
@@ -174,14 +174,8 @@
          integer,dimension(3),intent(in) :: sg,sf
          logical,intent(in) :: f_N,f_C,g_N,g_C
          integer,intent(in) :: dir
-         integer :: i,j,k,t,x,y,z
-
-         select case (dir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default; stop 'Error: dir must = 1,2,3 in interpO2_RF in ops_interp.f90.'
-         end select
+         integer,dimension(3),intent(in) :: p
+         integer :: i,j,k,t
 
 #ifdef _DEBUG_INTERP_
          call checkInterpSizes(sf,sg,dir)
@@ -194,8 +188,8 @@
            !            *     *     *     *
            
            !$OMP PARALLEL DO
-           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
-           f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+x,j+y,k+z))
+           do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
+           f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+p(1),j+p(2),k+p(3)))
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (f_N.and.g_C) then
@@ -206,10 +200,10 @@
 
            !$OMP PARALLEL PRIVATE(t)
            !$OMP DO
-           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
-           t = i*x + j*y + k*z
-           f(i+x,j+y,k+z) = g(i+x,j+y,k+z)*gd%c(dir)%alpha(t) + &
-                            g(i,j,k)*gd%c(dir)%beta(t)
+           do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
+           t = i*p(1) + j*p(2) + k*p(3)
+           f(i+p(1),j+p(2),k+p(3)) = g(i+p(1),j+p(2),k+p(3))*gd%c(dir)%alpha(t) + &
+                                     g(i,j,k)*gd%c(dir)%beta(t)
            enddo; enddo; enddo
            !$OMP END DO
            !$OMP END PARALLEL
@@ -315,7 +309,7 @@
            call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,&
            f%N_along(dir),f%CC_along(dir),&
            g%N_along(dir),g%CC_along(dir),&
-           dir)
+           dir,m%int_tensor(dir)%eye)
          enddo
          ! call apply_stitches(f,m)
        end subroutine

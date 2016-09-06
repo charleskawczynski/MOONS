@@ -209,7 +209,9 @@
          integer,dimension(3) :: N
          call delete(m)
          N = (/45,45,45/)
+         ! N = (/67,67,27/)
          hmin = -1.0_cp; hmax = 1.0_cp
+         ! hmin = -0.5_cp; hmax = 0.5_cp
          ! hmin(1) = -1.0_cp; hmax(1) = 1.0_cp
          ! hmin(3) = -0.5_cp; hmax(3) = 0.5_cp
 

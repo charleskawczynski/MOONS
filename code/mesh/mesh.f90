@@ -1,6 +1,7 @@
        module mesh_mod
       ! Pre-processor directives: (_DEBUG_MESH_)
        use current_precision_mod
+       use simple_int_tensor_mod
        use IO_tools_mod
        use grid_mod
        use grid_genHelper_mod
@@ -36,6 +37,7 @@
          real(cp) :: dhmax_max,dhmin_min
          logical :: plane_x,plane_y,plane_z,plane_xyz
          type(realField),dimension(:),allocatable :: vol
+         type(simple_int_tensor),dimension(3) :: int_tensor
        end type
 
        interface init;           module procedure init_grid;           end interface
@@ -213,6 +215,7 @@
          m%plane_y = all((/(m%g(i)%c(2)%N.eq.1,i=1,m%s)/))
          m%plane_z = all((/(m%g(i)%c(3)%N.eq.1,i=1,m%s)/))
          m%plane_xyz = any((/m%plane_x,m%plane_y,m%plane_z/))
+         do i=1,3; call init(m%int_tensor(i),i); enddo
          call init_volume(m)
        end subroutine
 

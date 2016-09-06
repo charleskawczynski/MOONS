@@ -8,6 +8,24 @@
        real(cp),parameter :: two = 2.0_cp
        real(cp),parameter :: zero = 0.0_cp
        
+       abstract interface
+         function func(beta,hmin,hmax,alpha,N,dh) result(f)
+           import cp
+           real(cp),intent(in) :: beta,hmin,hmax,alpha,dh
+           integer,intent(in) :: N
+           real(cp) :: f
+         end function
+       end interface
+
+       abstract interface
+         function func_prime(beta,alpha,N) result(f)
+           import cp
+           real(cp),intent(in) :: beta,alpha
+           integer,intent(in) :: N
+           real(cp) :: f
+         end function
+       end interface
+
        public :: betaRobertsLeft
        public :: betaRobertsRight
        public :: betaRobertsBoth
@@ -72,7 +90,8 @@
          !   the number of iterations iters
          implicit none
          real(cp),intent(inout) :: beta
-         real(cp),external :: T2_root, T2_prime
+         procedure(func) :: T2_root
+         procedure(func_prime) :: T2_prime
          real(cp),intent(in) :: hmin,hmax,alpha,dh
          integer,intent(in) :: N
 

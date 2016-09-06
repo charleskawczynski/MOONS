@@ -148,11 +148,6 @@
          call init(mom%SP,SP)
          call init(mom%m,m)
 
-         if (mom%SP%restartU) then
-         call readLastStepFromFile(mom%TMP%n_step,str(DT%params),'nstep_mom')
-         else; mom%TMP%n_step = 0
-         endif
-
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
          call init_Face(mom%Ustar     ,m,0.0_cp)

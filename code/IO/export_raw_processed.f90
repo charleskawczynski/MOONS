@@ -291,7 +291,7 @@
 
        subroutine export_p_transient_VF_func(func,m,x,dir,name,pad,direction,nstep)
          implicit none
-         external :: func
+         procedure(export_transient) :: func
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name

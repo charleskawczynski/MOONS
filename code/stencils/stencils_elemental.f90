@@ -3,33 +3,6 @@
       use triDiag_mod
       implicit none
       private
-
-      abstract interface
-        pure subroutine stencils_stag(dfdh,f,T,s,sdfdh,gt)
-          import :: triDiag,cp
-          implicit none
-          integer,intent(in) :: s,sdfdh
-          real(cp),dimension(sdfdh),intent(inout) :: dfdh
-          real(cp),dimension(s),intent(in) :: f
-          type(triDiag),intent(in) :: T
-          integer,intent(in) :: gt
-        end subroutine
-      end interface
-
-      abstract interface
-        pure subroutine stencils_col(dfdh,f,T,s,pad1,pad2)
-          import :: triDiag,cp
-          implicit none
-          integer,intent(in) :: s,pad1,pad2
-          real(cp),dimension(s),intent(inout) :: dfdh
-          real(cp),dimension(s),intent(in) :: f
-          type(triDiag),intent(in) :: T
-        end subroutine
-      end interface
-
-      public :: stencils_col
-      public :: stencils_stag
-
       public :: stag_assign
       public :: col_CC_assign
       public :: col_N_assign
@@ -44,7 +17,7 @@
 
       contains
 
-      pure subroutine stag_assign(dfdh,f,T,s,sdfdh,gt)
+      elemental subroutine stag_assign(dfdh,f,T,s,sdfdh,gt)
         implicit none
         integer,intent(in) :: s,sdfdh
         real(cp),dimension(sdfdh),intent(inout) :: dfdh
@@ -57,7 +30,7 @@
           dfdh(i+gt) = f(i)*T%D(i) + f(i+1)*T%U(i)
         enddo
       end subroutine
-      pure subroutine col_CC_assign(dfdh,f,T,s,pad1,pad2)
+      elemental subroutine col_CC_assign(dfdh,f,T,s,pad1,pad2)
         implicit none
         integer,intent(in) :: s,pad1,pad2
         real(cp),dimension(s),intent(inout) :: dfdh
@@ -82,7 +55,7 @@
 
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
       end subroutine
-      pure subroutine col_N_assign(dfdh,f,T,s,pad1,pad2)
+      elemental subroutine col_N_assign(dfdh,f,T,s,pad1,pad2)
         implicit none
         integer,intent(in) :: s,pad1,pad2
         real(cp),dimension(s),intent(inout) :: dfdh
@@ -94,9 +67,9 @@
                     f( i )*T%D(i-1) + &
                     f(i+1)*T%U(i-1)
         enddo
-        dfdh(2) = f(2-pad1)*T%L(1) + &
-                  f(3-pad1)*T%D(1) + &
-                  f(4-pad1)*T%U(1)
+        dfdh(2) = f(2-pad1)*T%L(2-1) + &
+                  f(3-pad1)*T%D(2-1) + &
+                  f(4-pad1)*T%U(2-1)
 
         dfdh(s-1) = f(s-3+pad2)*T%L(s-2) + &
                     f(s-2+pad2)*T%D(s-2) + &
@@ -105,7 +78,7 @@
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
       end subroutine
 
-      pure subroutine stag_add(dfdh,f,T,s,sdfdh,gt)
+      elemental subroutine stag_add(dfdh,f,T,s,sdfdh,gt)
         implicit none
         integer,intent(in) :: s,sdfdh
         real(cp),dimension(sdfdh),intent(inout) :: dfdh
@@ -118,7 +91,7 @@
           dfdh(i+gt) = dfdh(i+gt) + f(i)*T%D(i) + f(i+1)*T%U(i)
         enddo
       end subroutine
-      pure subroutine col_CC_add(dfdh,f,T,s,pad1,pad2)
+      elemental subroutine col_CC_add(dfdh,f,T,s,pad1,pad2)
         implicit none
         integer,intent(in) :: s,pad1,pad2
         real(cp),dimension(s),intent(inout) :: dfdh
@@ -143,7 +116,7 @@
 
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
       end subroutine
-      pure subroutine col_N_add(dfdh,f,T,s,pad1,pad2)
+      elemental subroutine col_N_add(dfdh,f,T,s,pad1,pad2)
         implicit none
         integer,intent(in) :: s,pad1,pad2
         real(cp),dimension(s),intent(inout) :: dfdh
@@ -155,9 +128,9 @@
                               f( i )*T%D(i-1) + &
                               f(i+1)*T%U(i-1)
         enddo
-        dfdh(2) = dfdh(2) + f(2-pad1)*T%L(1) + &
-                            f(3-pad1)*T%D(1) + &
-                            f(4-pad1)*T%U(1)
+        dfdh(2) = dfdh(2) + f(2-pad1)*T%L(2-1) + &
+                            f(3-pad1)*T%D(2-1) + &
+                            f(4-pad1)*T%U(2-1)
 
         dfdh(s-1) = dfdh(s-1) + f(s-3+pad2)*T%L(s-2) + &
                                 f(s-2+pad2)*T%D(s-2) + &
@@ -166,7 +139,7 @@
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
       end subroutine
 
-      pure subroutine stag_subtract(dfdh,f,T,s,sdfdh,gt)
+      elemental subroutine stag_subtract(dfdh,f,T,s,sdfdh,gt)
         implicit none
         integer,intent(in) :: s,sdfdh
         real(cp),dimension(sdfdh),intent(inout) :: dfdh
@@ -179,7 +152,7 @@
           dfdh(i+gt) = dfdh(i+gt) - (f(i)*T%D(i) + f(i+1)*T%U(i))
         enddo
       end subroutine
-      pure subroutine col_CC_subtract(dfdh,f,T,s,pad1,pad2)
+      elemental subroutine col_CC_subtract(dfdh,f,T,s,pad1,pad2)
         implicit none
         integer,intent(in) :: s,pad1,pad2
         real(cp),dimension(s),intent(inout) :: dfdh
@@ -204,7 +177,7 @@
 
         dfdh(1) = 0.0_cp; dfdh(s) = 0.0_cp
       end subroutine
-      pure subroutine col_N_subtract(dfdh,f,T,s,pad1,pad2)
+      elemental subroutine col_N_subtract(dfdh,f,T,s,pad1,pad2)
         implicit none
         integer,intent(in) :: s,pad1,pad2
         real(cp),dimension(s),intent(inout) :: dfdh
@@ -216,9 +189,9 @@
                                f( i )*T%D(i-1) + &
                                f(i+1)*T%U(i-1))
         enddo
-        dfdh(2) = dfdh(2) - (f(2-pad1)*T%L(1) + &
-                             f(3-pad1)*T%D(1) + &
-                             f(4-pad1)*T%U(1))
+        dfdh(2) = dfdh(2) - (f(2-pad1)*T%L(2-1) + &
+                             f(3-pad1)*T%D(2-1) + &
+                             f(4-pad1)*T%U(2-1))
 
         dfdh(s-1) = dfdh(s-1) - (f(s-3+pad2)*T%L(s-2) + &
                                  f(s-2+pad2)*T%D(s-2) + &

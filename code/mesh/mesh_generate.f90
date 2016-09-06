@@ -17,9 +17,9 @@
          type(domain),intent(inout) :: D_sigma
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
-         ! call cube_uniform(m_mom)
-         ! call extend_cube_uniform(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
+         call cube_uniform(m_mom)
+         call extend_cube_uniform(m_ind,m_mom)
+         call init(D_sigma,m_mom,m_ind)
 
          ! call cube_uniform(m_mom)
          ! call init(m_ind,m_mom)
@@ -37,8 +37,8 @@
          ! call flow_past_square(m_ind)
          ! call init(D_sigma,m_mom,m_ind)
 
-         call BC_sim_mom(m_mom,Ha)
-         call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+         ! call BC_sim_mom(m_mom,Ha)
+         ! call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
 
          ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,D_sigma)

@@ -68,6 +68,10 @@
         public :: square,min,max,maxabs
         public :: maxabsdiff,mean,sum
 
+        public :: zero_ghost_xmin_xmax
+        public :: zero_ghost_ymin_ymax
+        public :: zero_ghost_zmin_zmax
+
         type SF
           integer :: s ! Number of subdomains in domain decomposition
           type(realField),dimension(:),allocatable :: RF
@@ -116,6 +120,11 @@
         interface multiply_volume;     module procedure multiply_volume_SF;     end interface
         interface mean_along_dir;      module procedure mean_along_dir_SF;      end interface
         interface subtract_mean_along_dir;  module procedure subtract_mean_along_dir_SF;  end interface
+
+        interface zero_ghost_xmin_xmax;module procedure zero_ghost_xmin_xmax_SF;end interface
+        interface zero_ghost_ymin_ymax;module procedure zero_ghost_ymin_ymax_SF;end interface
+        interface zero_ghost_zmin_zmax;module procedure zero_ghost_zmin_zmax_SF;end interface
+
 
         ! COMPUTATION ROUTINES:
 
@@ -1120,5 +1129,25 @@
           dot = sum(temp)
         end function
 
+        subroutine zero_ghost_xmin_xmax_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: t
+          do t=1,f%s; call zero_ghost_xmin_xmax(f%RF(t)); enddo
+        end subroutine
+
+        subroutine zero_ghost_ymin_ymax_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: t
+          do t=1,f%s; call zero_ghost_ymin_ymax(f%RF(t)); enddo
+        end subroutine
+
+        subroutine zero_ghost_zmin_zmax_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: t
+          do t=1,f%s; call zero_ghost_zmin_zmax(f%RF(t)); enddo
+        end subroutine
 
       end module

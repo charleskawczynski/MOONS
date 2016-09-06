@@ -14,6 +14,8 @@
 #endif
 #endif
 
+       ! integer,parameter :: ip = selected_int_kind(8)  ! Short int
+
        ! integer,parameter :: cip = selected_int_kind(64)
        ! real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
        ! real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp

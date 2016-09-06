@@ -54,7 +54,7 @@
         public :: assignX,assignY,assignZ
 
         type VF
-          integer :: s = 3  ! number of components
+          ! integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
           logical :: is_CC,is_Node,is_Face,is_Edge
         end type

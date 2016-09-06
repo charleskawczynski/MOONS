@@ -159,7 +159,7 @@
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,compute_norms)
          call grad(temp_F1,p,m)
-         call subtract(temp_F1%x,1.0_cp) ! mpg
+         ! call subtract(temp_F1%x,1.0_cp) ! mpg
          call multiply(temp_F1,dt)
          call subtract(U,Ustar,temp_F1)
          call apply_BCs(U,m)

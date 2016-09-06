@@ -150,6 +150,7 @@ FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERNAL_BC_
+FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_RAW_
 
 # FC_OPTIMIZE += mpif90
 # FC_OPTIMIZE += mpirun -np 4
@@ -224,6 +225,7 @@ VPATH =\
 # **************** SOURCE FILES *********************
 SRCS_F =\
 	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
+	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
 	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
@@ -282,6 +284,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_VF.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
+	$(SRC_DIR)$(PS)clock$(PS)unit_conversion.f90\
 	$(SRC_DIR)$(PS)clock$(PS)clock.f90\
 	$(SRC_DIR)$(PS)clock$(PS)stop_clock.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
@@ -296,6 +299,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_implicit.f90\
@@ -319,6 +323,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
