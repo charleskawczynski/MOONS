@@ -11,6 +11,7 @@
        use string_mod
        use string_aux_mod
        use IO_tools_mod
+       use datatype_conversion_mod
        implicit none
 
        private

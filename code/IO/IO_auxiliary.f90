@@ -1,6 +1,7 @@
       module IO_auxiliary_mod
       use current_precision_mod
       use IO_tools_mod
+      use fmt_mod
       implicit none
 
      ! Fixes / Improvements:
@@ -46,15 +47,6 @@
         write(un,'('//logfmt//')') ks
         call closeAndMessage(un,dir,name)
       end subroutine
-
-      ! subroutine readSwitchFromFile(ks,dir,name)
-      !   character(len=*),intent(in) :: dir,name
-      !   logical,intent(inout) :: ks
-      !   integer :: un
-      !   un = openToRead(dir,name)
-      !   read(un,'('//logfmt//')') ks
-      !   call closeAndMessage(un,dir,name)
-      ! end subroutine
 
       function readSwitchFromFile(dir,name) result(ks)
         character(len=*),intent(in) :: dir,name

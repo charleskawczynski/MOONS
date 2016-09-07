@@ -33,7 +33,7 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -133,6 +133,7 @@ FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
 FC_DEBUG += -D_DEBUG_INTERP_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
+FC_DEBUG += -D_DEBUG_IO_TOOLS_
 # FC_DEBUG += -D_DEBUG_APPLY_STITCHES
 # FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 
@@ -145,6 +146,7 @@ FC_OPTIMIZE += -D_PARALLELIZE_RF_
 FC_OPTIMIZE += -D_PARALLELIZE_SF_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
+FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
@@ -172,9 +174,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -229,6 +231,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
 	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
+	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
+	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
+	$(SRC_DIR)$(PS)IO$(PS)inquire_funcs.f90\
+	$(SRC_DIR)$(PS)IO$(PS)IO_check.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
@@ -264,6 +270,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
+	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\

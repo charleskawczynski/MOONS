@@ -15,6 +15,7 @@
        use path_mod
        use export_raw_processed_mod
        use print_export_mod
+       use export_now_mod
 
        use init_BBCs_mod
        use init_phiBCs_mod
@@ -406,6 +407,7 @@
              call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
              call export_raw(ind%m,ind%J ,str(DT%J_f),'J',0)
              call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1)
+             call export_raw(ind%m,ind%sigmaInv_edge ,str(DT%mat),'sigma',0)
              ! call export_processed(ind%m,ind%B0,str(DT%B_f),'B0',1)
              ! call embedFace(ind%B,ind%B_interior,ind%D_sigma)
              ! call export_processed(ind%m,ind%B ,str(DT%B_f),'B_final',1)
@@ -430,13 +432,13 @@
          call apply(ind%probe_divJ,ind%TMP%n_step,ind%TMP%t,ind%divJ,ind%vol_CC)
        end subroutine
 
-       subroutine solve_induction(ind,U,PE,DT)
+       subroutine solve_induction(ind,U,PE,EN,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
          type(print_export),intent(in) :: PE
+         type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
-         logical :: exportNow,exportNowB
 
          if (ind%SP%solveMomentum) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
          else;if (ind%TMP%n_step.le.1)   call embedVelocity_E(ind%U_E,U,ind%D_fluid)
@@ -487,17 +489,10 @@
          if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP%n_step)
          ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP%n_step)
 
-         if (PE%info) then
-           call print(ind)
-           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
-           exportNowB = readSwitchFromFile(str(DT%params),'exportNowB')
-         else; exportNow = .false.; exportNowB = .false.
-         endif
-
-         if (PE%solution.or.exportNowB.or.exportNow) then
+         if (PE%info) call print(ind)
+         if (PE%solution.or.EN%B%this.or.EN%all%this) then
            call export(ind,DT)
            call export_tec(ind,DT)
-           call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
          endif
        end subroutine
 

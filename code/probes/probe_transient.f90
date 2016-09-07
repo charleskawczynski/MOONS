@@ -14,6 +14,7 @@
        use current_precision_mod
        use string_mod
        use IO_tools_mod
+       use fmt_mod
        use is_nan_mod
 
        implicit none

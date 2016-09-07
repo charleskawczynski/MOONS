@@ -62,7 +62,7 @@
 
        SP%solveTMethod              = 5           ! Refer to energy.f90
        SP%solveUMethod              = 1           ! Refer to momentum.f90
-       SP%solveBMethod              = 1           ! Refer to induction.f90
+       SP%solveBMethod              = 3           ! Refer to induction.f90
 
        SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation

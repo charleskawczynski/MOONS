@@ -14,6 +14,7 @@
        use string_mod
        use path_mod
        use print_export_mod
+       use export_now_mod
        use PCG_mod
        use PCG_solver_mod
        use matrix_free_params_mod
@@ -291,13 +292,13 @@
          call apply(nrg%transient_divQ)
        end subroutine
 
-       subroutine solve_energy(nrg,U,PE,DT)
+       subroutine solve_energy(nrg,U,PE,EN,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
          type(print_export),intent(in) :: PE
+         type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
-         logical :: exportNow,exportNowT
 
          call assign(nrg%gravity%x,1.0_cp)
 
@@ -341,18 +342,10 @@
            call exportTransient(nrg)
          endif
 
-         if (PE%info) then
-           call print(nrg)
-           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
-           exportNowT = readSwitchFromFile(str(DT%params),'exportNowT')
-         else; exportNow = .false.; exportNowT = .false.
-         endif
-
-         if (nrg%TMP%n_step.eq.9) call export_tec(nrg,DT)
-         if (PE%solution.or.exportNowT.or.exportNow) then
+         if (PE%info) call print(nrg)
+         if (PE%solution.or.EN%T%this.or.EN%all%this) then
            call export(nrg,DT)
            call export_tec(nrg,DT)
-           call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
          endif
        end subroutine
 

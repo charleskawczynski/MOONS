@@ -27,6 +27,7 @@
        use IO_VF_mod
        use export_raw_processed_mod
        use print_export_mod
+       use export_now_mod
 
        use norms_mod
        use ops_norms_mod
@@ -396,13 +397,13 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,PE,DT)
+       subroutine solve_momentum(mom,F,PE,EN,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
          type(print_export),intent(in) :: PE
+         type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
-         logical :: exportNow,exportNowU
          ! call assign(mom%Unm1,mom%U) ! If Unm1 is needed
 
          select case(mom%SP%solveUMethod)
@@ -444,19 +445,11 @@
          ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP%n_step)
          if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP%n_step)
 
-         if (PE%info) then
-           call print(mom)
-           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
-           exportNowU = readSwitchFromFile(str(DT%params),'exportNowU')
-           write(*,*) ''
-         else; exportNow = .false.; exportNowU = .false.
-         endif
-
-         if (PE%solution.or.exportNowU.or.exportNow) then
+         if (PE%info) call print(mom)
+         if (PE%solution.or.EN%U%this.or.EN%all%this) then
            ! call curl(mom%temp_E,mom%U,m)
            call export(mom,DT)
            call export_tec(mom,DT,F)
-           call writeSwitchToFile(.false.,str(DT%params),'exportNowU')
          endif
        end subroutine
 

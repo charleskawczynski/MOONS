@@ -9,6 +9,7 @@
        use dir_tree_mod
        use stop_clock_mod
        use print_export_mod
+       use export_now_mod
 
        use time_marching_params_mod
        use energy_mod
@@ -36,32 +37,32 @@
          integer :: n_step
          logical :: continueLoop
          type(print_export) :: PE
+         type(export_now) :: EN
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
          continueLoop = .true.
 
          call writeSwitchToFile(.true.,str(DT%params),'killSwitch')
-         call writeSwitchToFile(.false.,str(DT%params),'exportNow')
-         call writeSwitchToFile(.false.,str(DT%params),'exportNowU')
-         call writeSwitchToFile(.false.,str(DT%params),'exportNowB')
-         call writeSwitchToFile(.false.,str(DT%params),'exportNowT')
+
+         call init(EN,str(DT%export_now),'EN'); call export(EN)
+         call init(PE,SP%export_planar,str(DT%PE),'PE')
+         call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          write(*,*) 'Working directory = ',str(DT%tar)
          ! ***************************************************************
          ! ********** SOLVE MHD EQUATIONS ********************************
          ! ***************************************************************
-         call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
          do n_step = coupled%n_step,coupled%n_step_stop
-           call init(PE,coupled%n_step,SP%export_planar)
 
            call tic(sc)
+           call update(PE,coupled%n_step)
 
-           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,DT)
-           if (SP%solveMomentum)  call solve(mom,F,      PE,DT)
-           if (SP%solveInduction) call solve(ind,mom%U_E,PE,DT)
+           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,DT)
+           if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
+           if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
 
-           call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE ADD PROCEDURE BELOW
+           call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
            if (SP%addJCrossB) then
              call compute_AddJCrossB(F,ind%B,ind%B0,ind%J,ind%m,&
@@ -85,12 +86,16 @@
            endif
 
            call iterate_step(coupled)
-           call toc(sc,coupled%t)
+           call import(EN); call update(EN); call export(EN)
+
+           call toc(sc)
            if (PE%info) then
              ! oldest_modified_file violates intent, but this 
-             ! would be better to update outside the solvers.
+             ! would be better to update outside the solvers, 
+             ! since it should be updated for all solver variables.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc)
+             call export(sc,coupled%t)
              if (SP%solveMomentum) then
                call import(mom%ISP_U)
                call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
@@ -104,13 +109,15 @@
              endif
 
              continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
-             call writeSwitchToFile(.false.,str(DT%params),'exportNow')
              write(*,*) 'Working directory = ',str(DT%tar)
              if (.not.continueLoop) then; call toc(sc); exit; endif
            endif
          enddo
+
          call print(sc)
-         call export(sc,str(DT%LDC))
+         call export(sc)
+         call delete(PE)
+         call delete(EN)
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************

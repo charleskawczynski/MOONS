@@ -5,6 +5,7 @@
       use export_SF_mod
       use import_SF_mod
       use IO_tools_mod
+      use fmt_mod
       implicit none
 
       private

@@ -15,14 +15,14 @@
 
        private
        public :: stop_clock
-       public :: init,delete
+       public :: init,delete,export,print
        public :: tic,toc
-       public :: print,export
 
        type stop_clock
         ! Known Quantities
         type(unit_conversion) :: uc
         type(clock) :: c
+        type(string) :: dir,name
         real(cp) :: seconds_per_iter
         real(cp) :: t_passed
         integer :: N,Nmax,NRemaining
@@ -40,13 +40,14 @@
         integer :: un_plot,un_info
        end type
 
-       interface init;   module procedure init_sc;       end interface
-       interface delete; module procedure delete_sc;     end interface
-       interface tic;    module procedure tic_sc;        end interface
-       interface toc;    module procedure toc_sc;        end interface
-       interface print;  module procedure print_sc;      end interface
-       interface export; module procedure export_sc;     end interface
-       interface export; module procedure export_sc_dir; end interface
+       interface init;      module procedure init_sc;         end interface
+       interface delete;    module procedure delete_sc;       end interface
+       interface tic;       module procedure tic_sc;          end interface
+       interface toc;       module procedure toc_sc;          end interface
+       interface print;     module procedure print_sc;        end interface
+       interface export;    module procedure export_sc;       end interface
+       interface export;    module procedure export_sc_dir;   end interface
+       interface export;    module procedure export_plot_sc;  end interface
 
        contains
 
@@ -60,8 +61,10 @@
         call init(sc%c)
         sc%NMax = Nmax
         sc%NMaxr = real(sc%Nmax,cp)
+        call init(sc%dir,dir)
+        call init(sc%name,name)
+
         sc%un_plot = newAndOpen(dir,name//'_plot')
-        flush(sc%un_plot)
         sc%un_info = newAndOpen(dir,name//'_info')
 
         call init(vars,'VARIABLES = ')
@@ -103,6 +106,8 @@
         sc%iterPerDay = 0
         close(sc%un_plot)
         close(sc%un_info)
+        call delete(sc%dir)
+        call delete(sc%name)
       end subroutine
 
       subroutine tic_sc(sc)
@@ -111,10 +116,9 @@
         call tic(sc%c)
       end subroutine
 
-      subroutine toc_sc(sc,t)
+      subroutine toc_sc(sc)
         implicit none
         type(stop_clock),intent(inout) :: sc
-        real(cp),intent(in) :: t
         call toc(sc%c)
         if (sc%c%t_elapsed.lt.0.0_cp) then; sc%frozen_elapsed = .true.
         else;                               sc%t_elapsed = sc%c%t_elapsed
@@ -131,6 +135,12 @@
         sc%iterPerMin = floor(sc%uc%seconds_per_minute/sc%seconds_per_iter)
         sc%iterPerHour = floor(sc%uc%seconds_per_hour/sc%seconds_per_iter)
         sc%iterPerDay = floor(sc%uc%seconds_per_day/sc%seconds_per_iter)
+      end subroutine
+
+      subroutine export_plot_sc(sc,t)
+        implicit none
+        type(stop_clock),intent(in) :: sc
+        real(cp),intent(in) :: t
         write(sc%un_plot,*) t,sc%t_elapsed,sc%c%t_elapsed,&
                             sc%estimated_total/sc%uc%seconds_per_minute,&
                             sc%estimated_total/sc%uc%seconds_per_hour,&
@@ -138,15 +148,13 @@
         flush(sc%un_plot)
       end subroutine
 
-      subroutine export_sc_dir(sc,dir)
+      subroutine export_sc_dir(sc)
         implicit none
         type(stop_clock),intent(in) :: sc
-        character(len=*),intent(in) :: dir
-        integer :: NewU
-
-        NewU = newAndOpen(dir,'WALL_CLOCK_TIME_INFO')
-        call export_sc(sc,newU)
-        call closeAndMessage(newU,dir,'WALL_CLOCK_TIME_INFO')
+        integer :: un
+        un = newAndOpen(str(sc%dir),str(sc%name))
+        call export_sc(sc,un)
+        call closeAndMessage(un,str(sc%dir),str(sc%name))
       end subroutine
 
       subroutine print_sc(sc)
@@ -197,7 +205,7 @@
         real(cp),intent(inout) :: t
         character(len=1),intent(inout) :: u
         type(unit_conversion),intent(in) :: uc
-        if (t.lt.uc%minute_per_seconds) then
+        if (t.lt.uc%seconds_per_minute) then
          u = 's'; t = t
         elseif ((t.ge.uc%seconds_per_minute).and.(t.lt.uc%seconds_per_hour)) then
          u = 'm'; t = t*uc%minute_per_seconds

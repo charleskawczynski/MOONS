@@ -1,6 +1,7 @@
        module domain_mod
        use current_precision_mod
        use IO_tools_mod
+       use datatype_conversion_mod
        use subdomain_mod
        use mesh_mod
        implicit none

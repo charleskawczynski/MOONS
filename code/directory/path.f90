@@ -7,8 +7,8 @@
       private
       public :: path
       public :: init,make,str,rel,full,delete
-
       public :: oldest_modified_file,latest_modified_file
+      public :: make_dir,remove_dir
       
       interface init;          module procedure init_P;            end interface
       interface init;          module procedure init_ext_rel_str;  end interface
@@ -137,6 +137,40 @@
           else;                 call init(p,p1)
           endif
         endif
+      end subroutine
+
+      ! Make a buildDirectory routine:
+      ! http://homepages.wmich.edu/~korista/README-fortran.html
+
+      subroutine make_dir(d1,d2,d3,d4)
+        character(len=*),intent(in) :: d1
+        character(len=*),intent(in),optional :: d2,d3,d4
+        type(string) :: s
+        logical :: ex
+        if (present(d2).and.present(d3).and.present(d4)) then
+          call init(s,d1//d2//d3//d4)
+        elseif (present(d3)) then
+          call init(s,d1//d2//d3)
+        elseif (present(d2)) then
+          call init(s,d1//d2)
+        else
+          call init(s,d1)
+        endif
+
+        inquire (file=str(s), EXIST=ex)
+        if (.not.ex) then
+          call system('mkdir ' // str(s) )
+          write(*,*) 'Directory ' // str(s) // ' created.'
+        else 
+          write(*,*) 'Directory ' // str(s) // ' already exists.'
+        endif
+        call delete(s)
+      end subroutine
+
+      subroutine remove_dir(d)
+        character(len=*),intent(in) :: d
+        call system('rm -r /' // d )
+        write(*,*) 'Directory ' // d // ' removed.'
       end subroutine
 
       end module

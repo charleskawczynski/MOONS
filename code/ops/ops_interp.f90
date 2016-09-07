@@ -187,26 +187,39 @@
            !         |--o--|--o--|--o--|--o--|   --> dir
            !            *     *     *     *
            
+#ifdef _PARALLELIZE_INTERP_
            !$OMP PARALLEL DO
+
+#endif
+
            do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
            f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+p(1),j+p(2),k+p(3)))
            enddo; enddo; enddo
+#ifdef _PARALLELIZE_INTERP_
            !$OMP END PARALLEL DO
+
+#endif
          elseif (f_N.and.g_C) then
            ! f(node/face grid), g(cc grid)
            !         f  g  f  g  f  g  f  g  f
            !         |--o--|--o--|--o--|--o--|      --> dir
            !               *     *     *
 
+#ifdef _PARALLELIZE_INTERP_
            !$OMP PARALLEL PRIVATE(t)
            !$OMP DO
+
+#endif
            do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
            t = i*p(1) + j*p(2) + k*p(3)
            f(i+p(1),j+p(2),k+p(3)) = g(i+p(1),j+p(2),k+p(3))*gd%c(dir)%alpha(t) + &
                                      g(i,j,k)*gd%c(dir)%beta(t)
            enddo; enddo; enddo
+#ifdef _PARALLELIZE_INTERP_
            !$OMP END DO
            !$OMP END PARALLEL
+
+#endif
            call extrap(f,g,sf,sg,dir)
          else
            write(*,*) 'dir=',dir

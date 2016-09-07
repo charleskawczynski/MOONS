@@ -1,6 +1,7 @@
       module exp_Tecplot_Header_mod
       use current_precision_mod
       use IO_tools_mod
+      use datatype_conversion_mod
       implicit none
 
       private
