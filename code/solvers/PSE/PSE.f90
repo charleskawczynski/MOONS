@@ -69,7 +69,7 @@
         call assign(PSE%k,k)
         call init(PSE%MFP,MFP)
         call volume(PSE%vol,m)
-        PSE%un = newAndOpen(dir,'norm_PSE_'//name)
+        PSE%un = new_and_open(dir,'norm_PSE_'//name)
         call tecHeader(name,PSE%un,.false.)
         PSE%N_iter = 1
         PSE%operator => operator
@@ -99,7 +99,7 @@
         call assign(PSE%k,k)
         call init(PSE%MFP,MFP)
         call volume(PSE%vol,m)
-        PSE%un = newAndOpen(dir,'norm_PSE_'//name)
+        PSE%un = new_and_open(dir,'norm_PSE_'//name)
         call tecHeader(name,PSE%un,.true.)
         PSE%N_iter = 1
         PSE%operator => operator

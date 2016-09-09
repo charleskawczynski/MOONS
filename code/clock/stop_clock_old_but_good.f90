@@ -126,9 +126,9 @@
         character(len=*),intent(in) :: dir
         integer :: NewU
 
-        NewU = newAndOpen(dir,'WALL_CLOCK_TIME_INFO')
+        NewU = new_and_open(dir,'WALL_CLOCK_TIME_INFO')
         call export_sc(sc,newU)
-        call closeAndMessage(newU,dir,'WALL_CLOCK_TIME_INFO')
+        call close_and_message(newU,dir,'WALL_CLOCK_TIME_INFO')
       end subroutine
 
       subroutine print_sc(sc)

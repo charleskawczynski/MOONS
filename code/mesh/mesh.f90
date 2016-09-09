@@ -420,20 +420,20 @@
          implicit none
          type(mesh), intent(in) :: m
          character(len=*),intent(in) :: dir,name
-         integer :: NU
-         NU = newAndOpen(dir,name)
-         call export(m,NU)
-         call closeandMessage(NU,dir,name)
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(m,un)
+         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine import_wrapper(m,dir,name)
          implicit none
          type(mesh), intent(inout) :: m
          character(len=*),intent(in) :: dir,name
-         integer :: NU
-         NU = openToRead(dir,name)
-         call import(m,NU)
-         call closeandMessage(NU,dir,name)
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(m,un)
+         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine print_mesh(m)

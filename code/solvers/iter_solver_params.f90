@@ -49,7 +49,6 @@
          ISP%n_skip_check_res = n_skip_check_res
          call init(ISP%dir,dir)
          call init(ISP%name,name)
-         ! ISP%un = newAndOpen(str(ISP%dir),str(ISP%name))
        end subroutine
 
        subroutine init_copy_ISP(ISP_out,ISP_in)
@@ -72,10 +71,6 @@
          ISP%iter_max = 1
          ISP%tol_rel = 0.1_cp
          ISP%tol_abs = 10.0_cp**(-10.0_cp)
-         ! prefer closeAndMessage, but not all copies are initialized, and fail to have dir / name
-         ! call closeAndMessage(ISP%un,str(ISP%dir),str(ISP%name))
-         close(ISP%un)
-         ISP%un = 0
          call delete(ISP%dir)
          call delete(ISP%name)
        end subroutine
@@ -84,7 +79,7 @@
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer :: un
-         un = newAndOpen(str(ISP%dir),str(ISP%name))
+         un = new_and_open(str(ISP%dir),str(ISP%name))
          write(un,*) 'iter_max = ';         write(un,*) ISP%iter_max
          write(un,*) 'tol_rel = ';          write(un,*) ISP%tol_rel
          write(un,*) 'tol_abs = ';          write(un,*) ISP%tol_abs
@@ -95,12 +90,13 @@
        subroutine import_ISP(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         ISP%un = openToRead(str(ISP%dir),str(ISP%name))
-         read(ISP%un,*); read(ISP%un,*) ISP%iter_max
-         read(ISP%un,*); read(ISP%un,*) ISP%tol_rel
-         read(ISP%un,*); read(ISP%un,*) ISP%tol_abs
-         read(ISP%un,*); read(ISP%un,*) ISP%n_skip_check_res
-         close(ISP%un)
+         integer :: un
+         un = open_to_read(str(ISP%dir),str(ISP%name))
+         read(un,*); read(un,*) ISP%iter_max
+         read(un,*); read(un,*) ISP%tol_rel
+         read(un,*); read(un,*) ISP%tol_abs
+         read(un,*); read(un,*) ISP%n_skip_check_res
+         close(un)
        end subroutine
 
        subroutine display_ISP(ISP,un)

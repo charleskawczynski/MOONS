@@ -64,8 +64,8 @@
         call init(sc%dir,dir)
         call init(sc%name,name)
 
-        sc%un_plot = newAndOpen(dir,name//'_plot')
-        sc%un_info = newAndOpen(dir,name//'_info')
+        sc%un_plot = new_and_open(dir,name//'_plot')
+        sc%un_info = new_and_open(dir,name//'_info')
 
         call init(vars,'VARIABLES = ')
         call append(vars,'t,')
@@ -152,9 +152,9 @@
         implicit none
         type(stop_clock),intent(in) :: sc
         integer :: un
-        un = newAndOpen(str(sc%dir),str(sc%name))
+        un = new_and_open(str(sc%dir),str(sc%name))
         call export_sc(sc,un)
-        call closeAndMessage(un,str(sc%dir),str(sc%name))
+        call close_and_message(un,str(sc%dir),str(sc%name))
       end subroutine
 
       subroutine print_sc(sc)

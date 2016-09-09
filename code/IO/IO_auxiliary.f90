@@ -10,12 +10,12 @@
 
       private
       
-      public :: writeSwitchToFile
-      public :: readSwitchFromFile
-      public :: readLastStepFromFile
-      public :: writeLastStepToFile
-      public :: writeIntegerToFile
-      public :: readIntegerFromFile
+      ! public :: writeSwitchToFile
+      ! public :: readSwitchFromFile
+      ! public :: readLastStepFromFile
+      ! public :: writeLastStepToFile
+      ! public :: writeIntegerToFile
+      ! public :: readIntegerFromFile
 
       logical,parameter :: headerTecplot = .true.
 
@@ -25,54 +25,54 @@
         character(len=*),intent(in) :: dir,name
         integer,intent(inout) :: n
         integer :: un
-        un = openToRead(dir,name)
+        un = open_to_read(dir,name)
         read(un,'('//intfmt//')') n
-        call closeAndMessage(un,dir,name)
+        call close_and_message(un,dir,name)
       end subroutine
 
       subroutine writeLastStepToFile(n,dir,name)
         character(len=*),intent(in) :: dir,name
         integer,intent(in) :: n
         integer :: un
-        un = newAndOpen(dir,name)
+        un = new_and_open(dir,name)
         write(un,'('//intfmt//')') n
-        call closeAndMessage(un,dir,name)
+        call close_and_message(un,dir,name)
       end subroutine
 
       subroutine writeSwitchToFile(ks,dir,name)
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: ks
         integer :: un
-        un = newAndOpen(dir,name)
+        un = new_and_open(dir,name)
         write(un,'('//logfmt//')') ks
-        call closeAndMessage(un,dir,name)
+        call close_and_message(un,dir,name)
       end subroutine
 
       function readSwitchFromFile(dir,name) result(ks)
         character(len=*),intent(in) :: dir,name
         logical :: ks
         integer :: un
-        un = openToRead(dir,name)
+        un = open_to_read(dir,name)
         read(un,'('//logfmt//')') ks
-        call closeAndMessage(un,dir,name)
+        call close_and_message(un,dir,name)
       end function
 
       subroutine writeIntegerToFile(i,dir,name)
         character(len=*),intent(in) :: dir,name
         integer,intent(in) :: i
         integer :: un
-        un = newAndOpen(dir,name)
+        un = new_and_open(dir,name)
         write(un,'('//intfmt//')') i
-        call closeAndMessage(un,dir,name)
+        call close_and_message(un,dir,name)
       end subroutine
 
       function readIntegerFromFile(dir,name) result(val)
         character(len=*),intent(in) :: dir,name
         integer :: val
         integer :: un
-        un = openToRead(dir,name)
+        un = open_to_read(dir,name)
         read(un,*) val
-        call closeAndMessage(un,dir,name)
+        call close_and_message(un,dir,name)
       end function
 
       end module

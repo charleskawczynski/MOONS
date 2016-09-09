@@ -119,55 +119,47 @@
         open(unit=un,status='old',action='write')
       end subroutine
 
-      subroutine open_to_append_unit(un)
+      subroutine open_to_app_unit(un)
         implicit none
         integer,intent(in) :: un
 #ifdef _DEBUG_IO_TOOLS_
-        call check_unit_exists(un,'open_to_append_unit')
-        call check_unit_open(un,'open_to_append_unit')
+        call check_unit_exists(un,'open_to_app_unit')
+        call check_unit_open(un,'open_to_app_unit')
 #endif
         open(unit=un,status='old',action='write',position='append')
       end subroutine
 
       ! ------------------------------------------- file
 
-      subroutine open_to_read_file(un)
+      subroutine open_to_read_file(dir,name)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(string) :: s
-        call init(s,dir//name//dot_dat)
 #ifdef _DEBUG_IO_TOOLS_
-        call check_unit_exists(un,'open_to_read_file')
-        call check_unit_open(un,'open_to_read_file')
+        call check_file_exists(dir,name,'open_to_read_file')
+        call check_file_open(dir,name,'open_to_read_file')
 #endif
-        open(file=str(s),status='old',action='read')
+        open(unit=get_file_unit(dir,name),status='old',action='read')
         call delete(s)
       end subroutine
 
       subroutine open_to_write_file(dir,name)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(string) :: s
-        call init(s,dir//name//dot_dat)
 #ifdef _DEBUG_IO_TOOLS_
-        call check_unit_exists(un,'open_to_write_file')
-        call check_unit_open(un,'open_to_write_file')
+        call check_file_exists(dir,name,'open_to_write_file')
+        call check_file_open(dir,name,'open_to_write_file')
 #endif
-        open(file=str(s),status='old',action='write')
-        call delete(s)
+        open(unit=get_file_unit(dir,name),status='old',action='write')
       end subroutine
 
-      subroutine open_to_append_file(dir,name)
+      subroutine open_to_app_file(dir,name)
         implicit none
         character(len=*),intent(in) :: dir,name
-        type(string) :: s
-        call init(s,dir//name//dot_dat)
 #ifdef _DEBUG_IO_TOOLS_
-        call check_file_exists(dir,name,'open_to_append_file')
-        call check_file_open(dir,name,'open_to_append_file')
+        call check_file_exists(dir,name,'open_to_app_file')
+        call check_file_open(dir,name,'open_to_app_file')
 #endif
-        open(file=str(s),status='old',action='write',position='append')
-        call delete(s)
+        open(unit=get_file_unit(dir,name),status='old',action='write',position='append')
       end subroutine
 
       end module

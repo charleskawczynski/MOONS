@@ -100,7 +100,7 @@
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
         call init(PCG%name,name)
-        PCG%un = newAndOpen(dir,'norm_PCG_SF_'//str(PCG%name))
+        PCG%un = new_and_open(dir,'norm_PCG_SF_'//str(PCG%name))
         call tecHeader(str(PCG%name),PCG%un,.false.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
@@ -162,7 +162,7 @@
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
         call init(PCG%name,name)
-        PCG%un = newAndOpen(dir,'norm_PCG_VF_'//str(PCG%name))
+        PCG%un = new_and_open(dir,'norm_PCG_VF_'//str(PCG%name))
         call tecHeader(str(PCG%name),PCG%un,.true.)
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit

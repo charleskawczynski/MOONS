@@ -56,13 +56,13 @@
          call init(p%name,name)
          p%TF_freshStart = TF_freshStart
          if (p%TF_freshStart) then
-           p%un_d = newAndOpen(dir,name)
+           p%un_d = new_and_open(dir,name)
            write(p%un_d,*) 'TITLE = "probe for '//name//'"'
            write(p%un_d,*) 'VARIABLES = t,'//name//',N'
            write(p%un_d,*) 'ZONE DATAPACKING = POINT'
            flush(p%un_d)
          elseif (.not.p%TF_freshStart) then
-           p%un_d = openToAppend(dir,name)
+           p%un_d = open_to_append(dir,name)
          else; stop 'Error: no case found in initProbe in probe_transient.f90'
          endif
          p%TF_freshStart = .false.
@@ -129,7 +129,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(str(p%dir),str(p%name)//'_info')
+           newU = new_and_open(str(p%dir),str(p%name)//'_info')
            write(newU,*) ' ---------------- PROBE -------------- '
          else; newU = u
          endif
@@ -137,7 +137,7 @@
          call export_TP(p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%dir),str(p%name)//'_info')
+           call close_and_message(newU,str(p%dir),str(p%name)//'_info')
          endif
        end subroutine
 

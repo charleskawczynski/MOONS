@@ -277,9 +277,9 @@
           type(SF),intent(in) :: f
           character(len=*),intent(in) :: dir,name
           integer :: un
-          un = newAndOpen(dir,name)
+          un = new_and_open(dir,name)
           call export(f,un)
-          call closeAndMessage(un,dir,name)
+          call close_and_message(un,dir,name)
         end subroutine
 
         subroutine import_wrapper_SF(f,dir,name)
@@ -287,9 +287,9 @@
           type(SF),intent(inout) :: f
           character(len=*),intent(in) :: dir,name
           integer :: un
-          un = newAndOpen(dir,name)
+          un = new_and_open(dir,name)
           call import(f,un)
-          call closeAndMessage(un,dir,name)
+          call close_and_message(un,dir,name)
         end subroutine
 
 
@@ -753,9 +753,9 @@
           type(SF),intent(in) :: f
           character(len=*),intent(in) :: dir,name
           integer :: un
-          un = newAndOpen(dir,name//'_BoundaryConditions')
+          un = new_and_open(dir,name//'_BoundaryConditions')
           call display_BCs_SF(f,name,un)
-          call closeAndMessage(un,dir,name//'_BoundaryConditions')
+          call close_and_message(un,dir,name//'_BoundaryConditions')
         end subroutine
 
         subroutine display_BCs_SF(f,name,un)

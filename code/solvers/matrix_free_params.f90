@@ -65,7 +65,6 @@
         write(un,*) 'c_nrg = ';            write(un,*) m%c_nrg
         write(un,*) 'c_ind = ';            write(un,*) m%c_ind
         write(un,*) 'c_mom = ';            write(un,*) m%c_mom
-        close(un)
       end subroutine
 
       subroutine import_MFP(m,un)
@@ -76,7 +75,6 @@
         read(un,*) ; read(un,*) m%c_nrg
         read(un,*) ; read(un,*) m%c_ind
         read(un,*) ; read(un,*) m%c_mom
-        close(un)
       end subroutine
 
       end module

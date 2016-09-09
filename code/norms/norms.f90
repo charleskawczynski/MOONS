@@ -73,9 +73,9 @@
          type(norms),intent(in) :: norm
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = newAndOpen(dir,'norms_'//name)
+         un = new_and_open(dir,'norms_'//name)
          call export_norms(norm,name,un)
-         call closeAndMessage(un,dir,name)
+         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine export_norms(norm,name,un)

@@ -10,6 +10,7 @@
        use stop_clock_mod
        use print_export_mod
        use export_now_mod
+       use kill_switch_mod
 
        use time_marching_params_mod
        use energy_mod
@@ -35,18 +36,16 @@
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
          integer :: n_step
-         logical :: continueLoop
          type(print_export) :: PE
          type(export_now) :: EN
+         type(kill_switch) :: KS
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
-         continueLoop = .true.
 
-         call writeSwitchToFile(.true.,str(DT%params),'killSwitch')
-
+         call init(KS,str(DT%params),'kill_switch'); call export(KS)
          call init(EN,str(DT%export_now),'EN'); call export(EN)
-         call init(PE,SP%export_planar,str(DT%PE),'PE')
+         call init(PE,SP%export_planar,str(DT%PE),'PE'); call export(PE)
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          write(*,*) 'Working directory = ',str(DT%tar)
@@ -86,7 +85,10 @@
            endif
 
            call iterate_step(coupled)
-           call import(EN); call update(EN); call export(EN)
+           call import(EN)
+           call update(EN)
+           call export(EN)
+           call import(PE)
 
            call toc(sc)
            if (PE%info) then
@@ -108,16 +110,14 @@
                                        call init(nrg%PCG_T%ISP,nrg%ISP_T)
              endif
 
-             continueLoop = readSwitchFromFile(str(DT%params),'killSwitch')
+             call import(KS)
              write(*,*) 'Working directory = ',str(DT%tar)
-             if (.not.continueLoop) then; call toc(sc); exit; endif
+             if (.not.KS%continue_loop) then; call toc(sc); exit; endif
            endif
          enddo
-
          call print(sc)
          call export(sc)
-         call delete(PE)
-         call delete(EN)
+
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
@@ -134,6 +134,10 @@
          if (SP%solveInduction) then; call export_tec(ind,DT);   endif ! call export(ind,DT); endif
          if (SP%solveMomentum) then;  call export_tec(mom,DT,F); endif ! call export(mom,DT); endif
 
+         call delete(PE)
+         call delete(sc)
+         call delete(EN)
+         call delete(KS)
          call delete(F)
        end subroutine
 

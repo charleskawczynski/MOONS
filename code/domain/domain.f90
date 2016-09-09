@@ -107,7 +107,7 @@
          type(domain),intent(inout) :: D
          character(len=*),intent(in) :: dir,name
          integer :: i,NU
-         NU = newAndOpen(dir,name)
+         NU = new_and_open(dir,name)
          do i=1,D%s; call display(D%sd(i),name//'_'//int2str(i),NU); enddo
        end subroutine
 
@@ -128,9 +128,9 @@
          type(domain),intent(in) :: D
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = newAndOpen(dir,name)
+         un = new_and_open(dir,name)
          call export(D,un)
-         call closeAndMessage(un,dir,name)
+         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine import_domain(D,un)
@@ -152,9 +152,9 @@
          type(domain),intent(inout) :: D
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = openToRead(dir,name)
+         un = open_to_read(dir,name)
          call import(D,un)
-         call closeAndMessage(un,dir,name)
+         call close_and_message(un,dir,name)
        end subroutine
 
        ! **********************************************************

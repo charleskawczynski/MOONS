@@ -168,9 +168,9 @@
          nrg%ISP_T,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T),'T',.false.,.false.)
          call delete(prec_T)
 
-         temp_unit = newAndOpen(str(DT%params),'info_nrg')
+         temp_unit = new_and_open(str(DT%params),'info_nrg')
          call print(nrg)
-         close(temp_unit)
+         call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
          write(*,*) '     probes initialized'
          write(*,*) '     Finished'
@@ -238,12 +238,15 @@
          integer :: un
          call export(nrg%TMP)
          call export(nrg%ISP_T)
-         un = newAndOpen(str(DT%restart),'nrg_restart')
+
+         un = new_and_open(str(DT%restart),'nrg_restart')
          write(un,*) nrg%Re,nrg%Pr,nrg%Ha,nrg%Ec
-         call closeAndMessage(un,str(DT%restart),'nrg_restart')
-         un = openToRead(str(DT%restart),'nrg_MFP')
+         call close_and_message(un,str(DT%restart),'nrg_restart')
+
+         un = new_and_open(str(DT%restart),'nrg_MFP')
          call export(nrg%MFP,un)
-         call closeAndMessage(un,str(DT%restart),'nrg_MFP')
+         call close_and_message(un,str(DT%restart),'nrg_MFP')
+
          call export(nrg%T   ,str(DT%restart),'T_nrg')
          call export(nrg%U_F ,str(DT%restart),'U_nrg')
          call export(nrg%k   ,str(DT%restart),'k_nrg')
@@ -256,12 +259,15 @@
          integer :: un
          call import(nrg%TMP)
          call import(nrg%ISP_T)
-         un = openToRead(str(DT%restart),'nrg_restart')
+
+         un = open_to_read(str(DT%restart),'nrg_restart')
          read(un,*) nrg%Re,nrg%Pr,nrg%Ha,nrg%Ec
-         call closeAndMessage(un,str(DT%restart),'nrg_restart')
-         un = openToRead(str(DT%restart),'nrg_MFP')
+         call close_and_message(un,str(DT%restart),'nrg_restart')
+
+         un = open_to_read(str(DT%restart),'nrg_MFP')
          call import(nrg%MFP,un)
-         call closeAndMessage(un,str(DT%restart),'nrg_MFP')
+         call close_and_message(un,str(DT%restart),'nrg_MFP')
+
          call import(nrg%T   ,str(DT%restart),'T_nrg')
          call import(nrg%U_F ,str(DT%restart),'U_nrg')
          call import(nrg%k   ,str(DT%restart),'k_nrg')

@@ -62,18 +62,18 @@
 
          call delete(EN%dir)
          call delete(EN%name)
-         EN%un = 0
        end subroutine
 
        subroutine export_EN(EN)
          implicit none
          type(export_now),intent(inout) :: EN
          integer :: un
-         un = newAndOpen(str(EN%dir),str(EN%name))
+         un = new_and_open(str(EN%dir),str(EN%name))
          write(un,*) 'T_next = ';   write(un,*) EN%T%next
          write(un,*) 'U_next = ';   write(un,*) EN%U%next
          write(un,*) 'B_next = ';   write(un,*) EN%B%next
          write(un,*) 'all_next = '; write(un,*) EN%all%next
+         ! call close_and_message(un,str(EN%dir),str(EN%name))
          close(un)
        end subroutine
 
@@ -81,11 +81,12 @@
          implicit none
          type(export_now),intent(inout) :: EN
          integer :: un
-         un = openToRead(str(EN%dir),str(EN%name))
+         un = open_to_read(str(EN%dir),str(EN%name))
          read(un,*) ; read(un,*) EN%T%next
          read(un,*) ; read(un,*) EN%U%next
          read(un,*) ; read(un,*) EN%B%next
          read(un,*) ; read(un,*) EN%all%next
+         ! call close_and_message(un,str(EN%dir),str(EN%name))
          close(un)
        end subroutine
 

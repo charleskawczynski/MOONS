@@ -132,7 +132,7 @@
         type(SF) :: un
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,D)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------- EXPORTING SF MATRIX ------------ '//name
         call assign(un,0.0_cp)
         do i=1,un%numEl
@@ -154,7 +154,7 @@
         type(VF) :: un
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,D)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------- EXPORTING VF MATRIX ------------ '//name
         write(*,*) 'System size = ',un%x%numEl + un%y%numEl + un%z%numEl
         call assign(un,0.0_cp)
@@ -233,7 +233,7 @@
         type(SF) :: un,Aun
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,x); call init(Aun,x)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------ EXPORTING SF OPERATOR ----------- '//name
         call assign(un,0.0_cp)
         call init_BCs(un,x)
@@ -262,7 +262,7 @@
         type(VF) :: un,Aun
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,x); call init(Aun,x)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------ EXPORTING VF OPERATOR ----------- '//name
         write(*,*) 'System size = ',un%x%numEl + un%y%numEl + un%z%numEl
         call assign(un,0.0_cp)

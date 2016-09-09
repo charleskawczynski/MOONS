@@ -1,108 +1,132 @@
       module IO_tools_mod
       use current_precision_mod
       use string_mod
+      use inquire_funcs_mod
+      use IO_check_mod
       implicit none
 
       private
 
-      public :: newAndOpen
-      public :: openToRead,openToAppend
-      public :: closeAndMessage
+      public :: get_file_unit
+      public :: new_and_open,close_and_message
+      public :: rewind_unit
+      public :: open_to_read,open_to_write,open_to_append
 
       character(len=4),parameter :: dot_dat = '.dat'
 
       contains
 
-      function newAndOpen(dir,name) result(NU)
+      function get_file_unit(dir,name) result(un)
         implicit none
         character(len=*),intent(in) :: dir,name
-        integer :: NU
+        integer :: un
         type(string) :: s
+#ifdef _DEBUG_IO_TOOLS_
+        call check_file_exists(dir,name,'get_file_unit')
+#endif
         call init(s,dir//name//dot_dat)
-        NU = newUnit()
-        open(NU,file=str(s),pad='YES')
+        inquire(file=str(s),number=un)
         call delete(s)
       end function
 
-      function openToRead(dir,name) result(NU)
+      ! ************************* NEW UNIT *************************
+      ! ************************* NEW UNIT *************************
+      ! ************************* NEW UNIT *************************
+
+      function new_unit() result(nu)
+        implicit none
+        integer,parameter :: lun_min=10,lun_max=1000
+        integer :: lun,nu
+        nu=-1
+        do lun=lun_min,lun_max
+          if (.not.unit_open(lun)) then; nu=lun; exit; endif
+        enddo
+      end function
+
+      function new_and_open(dir,name) result(un)
         implicit none
         character(len=*),intent(in) :: dir,name
-        integer :: NU,ok
-        logical :: ex,op
-        character(len=9) :: act
+        integer :: un
         type(string) :: s
         call init(s,dir//name//dot_dat)
-        NU = newUnit()
-        inquire(file=str(s),number=NU,exist=ex,opened=op,action=act)
-
-        if (.not.op) then
-          NU = newUnit()
-        endif
-        if (ex) then
-          open(NU,file=str(s), status = 'old', action = 'read',iostat=ok)
-        else
-          write(*,*) 'The file ' // str(s) // ' does not exist. Terminating execution.'; stop
-        endif
-        if (ok.ne.0) then
-          write(*,*) 'The file ' // str(s) // ' was not opened successfully.'; stop
-        endif
+        un = new_unit()
+        open(un,file=str(s),pad='YES',action='readwrite')
         call delete(s)
       end function
 
-      function openToAppend(dir,name) result(NU)
-        implicit none
-        character(len=*),intent(in) :: dir,name
-        integer :: NU,ok
-        logical :: ex,op
-        character(len=9) :: act
-        type(string) :: s
-        NU = newUnit()
-        call init(s,dir//name//dot_dat)
-        inquire(file=str(s),number=NU,exist=ex,opened=op,action=act)
+      ! ************************* CLOSE UNIT *************************
+      ! ************************* CLOSE UNIT *************************
+      ! ************************* CLOSE UNIT *************************
 
-        NU = newUnit()
-        if (.not.op) then
-          if (ex) then
-            open(NU,file=str(s),&
-            status = 'old', action = 'readwrite',iostat=ok,position='append')
-          else
-            write(*,*) 'The file ' // str(s) // ' does not exist. Terminating execution.'; stop
-          endif
-          if (ok.ne.0) then
-            write(*,*) 'The file ' // str(s) // ' was not opened successfully.'; stop
-          endif
-        endif
-        call delete(s)
-      end function
-
-      subroutine closeAndMessage(u,dir,name)
+      subroutine close_and_message(un,dir,name)
         implicit none
-        integer,intent(in) :: u
+        integer,intent(in) :: un
         character(len=*),intent(in) :: dir,name
-        logical :: exist
-        inquire(file=dir//name//'.dat', exist=exist)
-        close(u)
-        if (exist) then
-          write(*,*) '+++ Closed file ' // dir // name
-        else; write(*,*) '+++ Attempted to close non-existant file ' // dir // name
-        endif
+#ifdef _DEBUG_IO_TOOLS_
+        call check_file_exists(dir,name,'close_and_message')
+        call check_file_open(dir,name,'close_and_message')
+#endif
+        close(un)
+        ! #ifndef _OPTIMIZE_IO_TOOLS_
+        write(*,*) '+++ Closed file ' // dir // name
+        ! #endif
       end subroutine
 
-      function newUnit() result(nu)
+      ! **************************** REWIND ****************************
+      ! **************************** REWIND ****************************
+      ! **************************** REWIND ****************************
+
+      subroutine rewind_unit(un)
         implicit none
-        ! local
-        integer, parameter :: LUN_MIN=10, LUN_MAX=1000
-        logical :: opened
-        integer :: lun,nu
-        ! begin
-        nu=-1
-        do lun=LUN_MIN,LUN_MAX
-          inquire(unit=lun,opened=opened)
-          if (.not. opened) then
-            nu=lun
-          exit
-          endif
-        enddo
+        integer,intent(in) :: un
+#ifdef _DEBUG_IO_TOOLS_
+        call check_unit_exists(un,'rewind_unit')
+        call check_unit_open(un,'rewind_unit')
+#endif
+        rewind(un)
+      end subroutine
+
+      ! *************************** OPEN UNIT ***************************
+      ! *************************** OPEN UNIT ***************************
+      ! *************************** OPEN UNIT ***************************
+
+      function open_to_read(dir,name) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        type(string) :: s
+        call init(s,dir//name//dot_dat)
+        un = new_unit()
+#ifdef _DEBUG_IO_TOOLS_
+        call check_file_exists(dir,name,'open_to_read')
+        call check_file_closed(dir,name,'open_to_read')
+#endif
+        open(un,file=str(s),status = 'old',action = 'read')
+        call delete(s)
+      end function
+
+      function open_to_write(dir,name) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+#ifdef _DEBUG_IO_TOOLS_
+        call check_file_exists(dir,name,'open_to_write')
+        call check_file_closed(dir,name,'open_to_write')
+#endif
+        un = new_unit()
+        open(unit=un,status='old',action='write')
+      end function
+
+      function open_to_append(dir,name) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+#ifdef _DEBUG_IO_TOOLS_
+        call check_file_exists(dir,name,'open_to_append')
+        call check_file_closed(dir,name,'open_to_append')
+#endif
+        un = new_unit()
+        open(unit=un,status='old',action='write',position='append')
       end function
 
       end module

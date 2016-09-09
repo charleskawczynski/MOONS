@@ -98,7 +98,7 @@
          integer :: temp,s,sn,i
          s = size(e); sn = size(N)
 
-         temp = newAndOpen(dir,name)
+         temp = new_and_open(dir,name)
 
          if (sn.eq.s) then
            write(temp,'(7(A10))') 'N','L1','L2','Linf'

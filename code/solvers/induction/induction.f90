@@ -233,9 +233,9 @@
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
          ! Initialize multigrid
-         temp_unit = newAndOpen(str(DT%params),'info_ind')
+         temp_unit = new_and_open(str(DT%params),'info_ind')
          call display(ind,temp_unit)
-         close(temp_unit)
+         call close_and_message(temp_unit,str(DT%params),'info_ind')
 
          if (finite_Rem) then; ind%MFP_B%c_ind = ind%TMP%dt/ind%Rem
          else;                 ind%MFP_B%c_ind = ind%TMP%dt
@@ -349,14 +349,17 @@
          call export(ind%TMP)
          call export(ind%ISP_B)
          call export(ind%ISP_phi)
-         un = newAndOpen(str(DT%restart),'ind_restart')
+
+         un = new_and_open(str(DT%restart),'ind_restart')
          write(un,*) ind%Rem
          write(un,*) ind%e_budget
          write(un,*) ind%finite_Rem
-         call closeAndMessage(un,str(DT%restart),'ind_restart')
-         un = newAndOpen(str(DT%restart),'ind_MFP')
+         call close_and_message(un,str(DT%restart),'ind_restart')
+
+         un = new_and_open(str(DT%restart),'ind_MFP')
          call export(ind%MFP_B,un)
-         call closeAndMessage(un,str(DT%restart),'ind_MFP')
+         call close_and_message(un,str(DT%restart),'ind_MFP')
+
          call export(ind%B      ,str(DT%restart),'B')
          call export(ind%B0     ,str(DT%restart),'B0')
          call export(ind%J      ,str(DT%restart),'J')
@@ -373,14 +376,17 @@
          call import(ind%TMP)
          call import(ind%ISP_B)
          call import(ind%ISP_phi)
-         un = openToRead(str(DT%restart),'ind_restart')
+
+         un = open_to_read(str(DT%restart),'ind_restart')
          read(un,*) ind%Rem
          read(un,*) ind%e_budget
          read(un,*) ind%finite_Rem
-         call closeAndMessage(un,str(DT%restart),'ind_restart')
-         un = openToRead(str(DT%restart),'ind_MFP')
+         call close_and_message(un,str(DT%restart),'ind_restart')
+
+         un = open_to_read(str(DT%restart),'ind_MFP')
          call import(ind%MFP_B,un)
-         call closeAndMessage(un,str(DT%restart),'ind_MFP')
+         call close_and_message(un,str(DT%restart),'ind_MFP')
+
          call import(ind%B      ,str(DT%restart),'B')
          call import(ind%B0     ,str(DT%restart),'B0')
          call import(ind%J      ,str(DT%restart),'J')
@@ -588,7 +594,7 @@
          type(dir_tree),intent(in) :: DT
          type(string),dimension(3) :: vars
          integer :: un,i
-         un = newAndOpen(str(DT%e_budget),'E_M_budget_terms')
+         un = new_and_open(str(DT%e_budget),'E_M_budget_terms')
          call init(vars(1),'Unsteady = ')
          call init(vars(2),'Joule_Heat = ')
          call init(vars(3),'Poynting = ')
@@ -599,7 +605,7 @@
          call delete(vars(i))
          enddo
          flush(un)
-         close(un)
+         call close_and_message(un,str(DT%e_budget),'E_M_budget_terms')
        end subroutine
 
        end module

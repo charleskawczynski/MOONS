@@ -56,8 +56,8 @@
         call init(sc%c)
         sc%NMax = Nmax
         sc%NMaxr = real(sc%Nmax,cp)
-        sc%un_plot = newAndOpen(dir,name//'_plot')
-        sc%un_info = newAndOpen(dir,name//'_info')
+        sc%un_plot = new_and_open(dir,name//'_plot')
+        sc%un_info = new_and_open(dir,name//'_info')
         write(sc%un_plot,*) 'TITLE = "WALL_CLOCK_TIME_INFO"'
         write(sc%un_plot,*) 'VARIABLES = t,iterPerSec'
         write(sc%un_plot,*) 'ZONE DATAPACKING = POINT'
@@ -122,9 +122,9 @@
         character(len=*),intent(in) :: dir
         integer :: NewU
 
-        NewU = newAndOpen(dir,'WALL_CLOCK_TIME_INFO')
+        NewU = new_and_open(dir,'WALL_CLOCK_TIME_INFO')
         call export_sc(sc,newU)
-        call closeAndMessage(newU,dir,'WALL_CLOCK_TIME_INFO')
+        call close_and_message(newU,dir,'WALL_CLOCK_TIME_INFO')
       end subroutine
 
       subroutine print_sc(sc)

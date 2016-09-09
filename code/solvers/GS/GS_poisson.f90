@@ -82,11 +82,11 @@
         call init(GS%p,m)
         call init(GS%d,m)
         call init(GS%name,name)
-        GS%un = newAndOpen(dir,'norm_GS_'//name)
+        GS%un = new_and_open(dir,'norm_GS_'//name)
         call init(GS%norm)
         call init(GS%vol,u)
         call volume(GS%vol,m)
-        GS%un = newAndOpen(dir,'norm_GS_SF_'//str(GS%name))
+        GS%un = new_and_open(dir,'norm_GS_SF_'//str(GS%name))
         call tecHeader(str(GS%name),GS%un,.false.)
 
         if (u%is_CC) then
@@ -128,11 +128,11 @@
         call init(GS%p,m)
         call init(GS%d,m)
         call init(GS%name,name)
-        GS%un = newAndOpen(dir,'norm_GS_'//name)
+        GS%un = new_and_open(dir,'norm_GS_'//name)
         call init(GS%norm)
         call init(GS%vol,u)
         call volume(GS%vol,m)
-        GS%un = newAndOpen(dir,'norm_GS_SF_'//str(GS%name))
+        GS%un = new_and_open(dir,'norm_GS_SF_'//str(GS%name))
         call tecHeader(str(GS%name),GS%un,.true.)
 
         if (u%is_CC) then

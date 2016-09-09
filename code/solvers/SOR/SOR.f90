@@ -141,7 +141,7 @@
         call apply_BCs(u,m) ! Necessary with ghost nodes
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
-        NU = newAndOpen('out\','norm_SOR')
+        NU = new_and_open('out\','norm_SOR')
 #endif
 
         do i = 1,n

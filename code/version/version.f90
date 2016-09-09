@@ -13,9 +13,9 @@
          implicit none
          character(len=*),intent(in) :: dir
          integer :: NewU
-         NewU = newAndOpen(dir,'version')
+         NewU = new_and_open(dir,'version')
          call export_version_no_dir(newU)
-         call closeAndMessage(newU,dir,'version')
+         call close_and_message(newU,dir,'version')
        end subroutine
 
        subroutine print_version()

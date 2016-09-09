@@ -265,7 +265,7 @@
         endif; continueLoop = .true.
 
 #ifdef _EXPORT_MG_CONVERGENCE_
-        NU = newAndOpen('out\','norm_MG')
+        NU = new_and_open('out\','norm_MG')
 #endif
 
         i_MG = 0

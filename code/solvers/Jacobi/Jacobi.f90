@@ -69,7 +69,7 @@
         call volume(JAC%vol,m)
         call init(JAC%name,name)
         call init(JAC%D_interior,D_interior)
-        JAC%un = newAndOpen(dir,'norm_JAC_VF_'//name)
+        JAC%un = new_and_open(dir,'norm_JAC_VF_'//name)
         call tecHeader(name,JAC%un,.true.)
         JAC%operator => operator
         call init(JAC%norm)

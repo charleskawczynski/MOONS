@@ -306,7 +306,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(str(p%ip%p%dir),str(p%ip%p%name)//'_info')
+           newU = new_and_open(str(p%ip%p%dir),str(p%ip%p%name)//'_info')
            write(newU,*) ' ---------------- AVERAGE PROBE -------------- '
          else; newU = u
          endif
@@ -315,7 +315,7 @@
          call writeAveProbeToFileOrScreen(p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%ip%p%dir),str(p%ip%p%name)//'_info')
+           call close_and_message(newU,str(p%ip%p%dir),str(p%ip%p%name)//'_info')
          endif
        end subroutine
 
@@ -343,14 +343,14 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(str(p%ep%p%dir),str(p%ep%p%name)//'_info')
+           newU = new_and_open(str(p%ep%p%dir),str(p%ep%p%name)//'_info')
            write(newU,*) ' ---------------- PLANE ERROR PROBE -------------- '
          else; newU = u
          endif
          call export(p%ep%p,newU)
          call writePlaneErrorProbeToFileOrScreen(p,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%ep%p%dir),str(p%ep%p%name)//'_info')
+           call close_and_message(newU,str(p%ep%p%dir),str(p%ep%p%name)//'_info')
          endif
        end subroutine
 
@@ -378,7 +378,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(str(p%ep%p%dir),str(p%ep%p%name)//'_info')
+           newU = new_and_open(str(p%ep%p%dir),str(p%ep%p%name)//'_info')
            write(newU,*) ' ---------------- AVERAGE PLANE ERROR PROBE -------------- '
          else; newU = u
          endif
@@ -386,7 +386,7 @@
          call export(p%ep%p,newU)
          call writeAvePlaneErrorProbeToFileOrScreen(p,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(p%ep%p%dir),str(p%ep%p%name)//'_info')
+           call close_and_message(newU,str(p%ep%p%dir),str(p%ep%p%name)//'_info')
          endif
        end subroutine
 

@@ -227,9 +227,9 @@
          call init(mom%transient_KE,str(DT%U_e),'KE',.not.mom%SP%restartU)
          if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U_e),'KE_2C',.not.mom%SP%restartU)
 
-         temp_unit = newAndOpen(str(DT%params),'info_mom')
+         temp_unit = new_and_open(str(DT%params),'info_mom')
          call display(mom,temp_unit)
-         close(temp_unit)
+         call close_and_message(temp_unit,str(DT%params),'info_mom')
          ! if (restart_all) call import(mom,DT)
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
@@ -313,14 +313,19 @@
          call export(mom%TMP  )
          call export(mom%ISP_U)
          call export(mom%ISP_P)
-         un = newAndOpen(str(DT%restart),'mom_restart')
+
+         un = new_and_open(str(DT%restart),'mom_restart')
          write(un,*) mom%Re
          write(un,*) mom%Ha;       write(un,*) mom%Gr
          write(un,*) mom%Fr;       write(un,*) mom%L_eta
          write(un,*) mom%U_eta;    write(un,*) mom%t_eta
          write(un,*) mom%KE;       write(un,*) mom%e_budget
-         call closeAndMessage(un,str(DT%restart),'mom_restart')
-         call export(mom%MFP,newAndOpen(str(DT%restart),'mom_MFP'))
+         call close_and_message(un,str(DT%restart),'mom_restart')
+
+         un = new_and_open(str(DT%restart),'mom_MFP')
+         call export(mom%MFP,un)
+         call close_and_message(un,str(DT%restart),'mom_MFP')
+
          call export(mom%U     ,str(DT%restart),'U')
          call export(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -333,14 +338,19 @@
          call import(mom%TMP  )
          call import(mom%ISP_U)
          call import(mom%ISP_P)
-         un = openToRead(str(DT%restart),'mom_restart')
+
+         un = open_to_read(str(DT%restart),'mom_restart')
          read(un,*) mom%Re
          read(un,*) mom%Ha;       read(un,*) mom%Gr
          read(un,*) mom%Fr;       read(un,*) mom%L_eta
          read(un,*) mom%U_eta;    read(un,*) mom%t_eta
          read(un,*) mom%KE;       read(un,*) mom%e_budget
-         call closeAndMessage(un,str(DT%restart),'mom_restart')
-         call import(mom%MFP,openToRead(str(DT%restart),'mom_MFP'))
+         call close_and_message(un,str(DT%restart),'mom_restart')
+
+         un = open_to_read(str(DT%restart),'mom_MFP')
+         call import(mom%MFP,un)
+         call close_and_message(un,str(DT%restart),'mom_MFP')
+
          call import(mom%U     ,str(DT%restart),'U')
          call import(mom%p     ,str(DT%restart),'p')
        end subroutine
@@ -504,7 +514,7 @@
          type(dir_tree),intent(in) :: DT
          type(string),dimension(8) :: vars
          integer :: un,i
-         un = newAndOpen(str(DT%e_budget),'E_K_budget_terms')
+         un = new_and_open(str(DT%e_budget),'E_K_budget_terms')
          i=1
          call init(vars(i),'Unsteady = '); i=i+1
          call init(vars(i),'E_K_Convection = '); i=i+1
@@ -521,7 +531,7 @@
          call delete(vars(i))
          enddo
          flush(un)
-         close(un)
+         call close_and_message(un,str(DT%e_budget),'E_K_budget_terms')
        end subroutine
 
        end module

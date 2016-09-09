@@ -4,25 +4,15 @@
 
       private
 
-      public :: get_file_unit
       public :: file_exists,unit_exists
       public :: file_open,  unit_open
       public :: file_closed,unit_closed
+      public :: file_iostat_error,unit_iostat_error
       public :: file_iostat,unit_iostat
 
       character(len=4),parameter :: dot_dat = '.dat'
 
       contains
-
-      function get_file_unit(dir,name) result(un)
-        implicit none
-        character(len=*),intent(in) :: dir,name
-        integer :: un
-        type(string) :: s
-        call init(s,dir//name//dot_dat)
-        inquire(file=str(s),number=un)
-        call delete(s)
-      end function
 
       function file_exists(dir,name) result(ex)
         implicit none
@@ -75,6 +65,27 @@
         logical :: op,not_op
         inquire(unit=un,opened=op)
         not_op = .not.op
+      end function
+
+      function file_iostat_error(dir,name) result(L)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        type(string) :: s
+        logical :: L
+        integer :: i
+        call init(s,dir//name//dot_dat)
+        inquire(file=str(s),iostat=i)
+        call delete(s)
+        L = .not.i.eq.0
+      end function
+
+      function unit_iostat_error(un) result(L)
+        implicit none
+        integer,intent(in) :: un
+        logical :: L
+        integer :: i
+        inquire(unit=un,iostat=i)
+        L = .not.i.eq.0
       end function
 
       function file_iostat(dir,name) result(i)

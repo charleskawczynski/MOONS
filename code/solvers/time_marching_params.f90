@@ -48,7 +48,6 @@
          TMP%dt = dt
          call init(TMP%dir,dir)
          call init(TMP%name,name)
-         ! TMP%un = newAndOpen(str(TMP%dir),str(TMP%name))
        end subroutine
 
        subroutine init_copy_TMP(TMP_out,TMP_in)
@@ -73,9 +72,6 @@
          TMP%n_step_stop = 1
          TMP%t = 0.0_cp
          TMP%dt = 10.0_cp**(-10.0_cp)
-         ! prefer closeAndMessage, but not all copies are initialized, and fail to have dir / name
-         ! call closeAndMessage(TMP%un,str(TMP%dir),str(TMP%name))
-         close(TMP%un)
          call delete(TMP%dir)
          call delete(TMP%name)
          TMP%un = 0
@@ -85,25 +81,26 @@
          implicit none
          type(time_marching_params),intent(in) :: TMP
          integer :: un
-         un = newAndOpen(str(TMP%dir),str(TMP%name))
+         un = new_and_open(str(TMP%dir),str(TMP%name))
          write(un,*) 'n_step_start = ';write(un,*) TMP%n_step_start
          write(un,*) 'n_step = ';      write(un,*) TMP%n_step
          write(un,*) 'n_step_stop = '; write(un,*) TMP%n_step_stop
          write(un,*) 't = ';           write(un,*) TMP%t
          write(un,*) 'dt = ';          write(un,*) TMP%dt
-         close(un)
+         call close_and_message(un,str(TMP%dir),str(TMP%name))
        end subroutine
 
        subroutine import_TMP(TMP)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         TMP%un = openToRead(str(TMP%dir),str(TMP%name))
-         read(TMP%un,*); read(TMP%un,*) TMP%n_step_start
-         read(TMP%un,*); read(TMP%un,*) TMP%n_step
-         read(TMP%un,*); read(TMP%un,*) TMP%n_step_stop
-         read(TMP%un,*); read(TMP%un,*) TMP%t
-         read(TMP%un,*); read(TMP%un,*) TMP%dt
-         close(TMP%un)
+         integer :: un
+         un = open_to_read(str(TMP%dir),str(TMP%name))
+         read(un,*); read(un,*) TMP%n_step_start
+         read(un,*); read(un,*) TMP%n_step
+         read(un,*); read(un,*) TMP%n_step_stop
+         read(un,*); read(un,*) TMP%t
+         read(un,*); read(un,*) TMP%dt
+         call close_and_message(un,str(TMP%dir),str(TMP%name))
        end subroutine
 
        subroutine display_TMP(TMP,un)

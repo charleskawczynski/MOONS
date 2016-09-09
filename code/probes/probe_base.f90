@@ -228,7 +228,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-          newU = newAndOpen(str(ip%p%dir),str(ip%p%name)//'_info')
+          newU = new_and_open(str(ip%p%dir),str(ip%p%name)//'_info')
            write(newU,*) ' ---------------- INDEX PROBE -------------- '
          else; newU = u
          endif
@@ -236,7 +236,7 @@
          call export(ip%p,newU)
          call writeIndexProbeToFileOrScreen(ip,newU)
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(ip%p%dir),str(ip%p%name)//'_info')
+           call close_and_message(newU,str(ip%p%dir),str(ip%p%name)//'_info')
          endif
        end subroutine
 
@@ -268,7 +268,7 @@
          integer,intent(in),optional :: u
          integer :: newU
          if (.not.present(u)) then
-           newU = newAndOpen(str(ep%p%dir),str(ep%p%name)//'_info')
+           newU = new_and_open(str(ep%p%dir),str(ep%p%name)//'_info')
            write(newU,*) ' ---------------- ERROR PROBE -------------- '
          else; newU = u
          endif
@@ -276,7 +276,7 @@
          call export(ep%p,newU)
 
          if (.not.present(u)) then
-           call closeAndMessage(newU,str(ep%p%dir),str(ep%p%name)//'_info')
+           call close_and_message(newU,str(ep%p%dir),str(ep%p%name)//'_info')
          endif
        end subroutine
 

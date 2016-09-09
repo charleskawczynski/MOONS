@@ -97,7 +97,7 @@
          else; LS%nstep = 0
          endif
 
-         temp_unit = newAndOpen(str(DT%params),'info_LS')
+         temp_unit = new_and_open(str(DT%params),'info_LS')
          call level_setInfo(LS,temp_unit)
          close(temp_unit)
          LS%t = 0.0_cp
