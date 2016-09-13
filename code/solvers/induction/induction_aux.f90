@@ -11,8 +11,7 @@
        use ops_interp_mod
        use ops_discrete_mod
        use ops_internal_BC_mod
-       use probe_base_mod
-       use probe_transient_mod
+       use probe_mod
        use ops_norms_mod
 
        implicit none
@@ -113,11 +112,10 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_Total_Energy_Domain(energy,field,nstep,time,D)
+       subroutine compute_Total_Energy_Domain(energy,field,time,D)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
-         integer,intent(in) :: nstep
          real(cp),intent(in) :: time
          type(domain),intent(in) :: D
          type(VF) :: temp_VF
@@ -127,22 +125,19 @@
          call Ln(temp,temp_VF,2.0_cp,D%m_in)
          temp = 0.5_cp*temp
          call delete(temp_VF)
-         call set(energy,nstep,time,temp)
-         call apply(energy)
+         call export(energy,time,temp)
        end subroutine
 
-       subroutine compute_Total_Energy(energy,field,nstep,time,m)
+       subroutine compute_Total_Energy(energy,field,time,m)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
-         integer,intent(in) :: nstep
          real(cp),intent(in) :: time
          type(mesh),intent(in) :: m
          real(cp) :: temp
          call Ln(temp,field,2.0_cp,m)
          temp = 0.5_cp*temp
-         call set(energy,nstep,time,temp)
-         call apply(energy)
+         call export(energy,time,temp)
        end subroutine
 
        subroutine embedVelocity_E(U_E_tot,U_E_in,D_fluid)

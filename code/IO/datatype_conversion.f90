@@ -6,6 +6,7 @@
       private
 
       public :: log2Str,int2Str,int2Str2,num2Str,str2int,intLen
+      public :: cp2str
       ! public :: logical2Str,int2Str,int2Str2,float2Str,str2int,intLen ! change to this eventually
 
       contains
@@ -23,6 +24,14 @@
         integer,intent(in) :: i
         character(len=15) :: s
         write(s,'(I15.15)') i
+        s = trim(adjustl(s))
+      end function
+
+      function cp2Str(f) result(s) ! NOTE: the string length and the fmt must match!
+        implicit none
+        real(cp),intent(in) :: f
+        character(len=15) :: s
+        write(s,'(F15.15)') f
         s = trim(adjustl(s))
       end function
 

@@ -55,7 +55,6 @@
            p%un = open_to_append(dir,name)
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
-         p%restart = .true.
          p%infinity = huge(1.0_cp)
        end subroutine
 

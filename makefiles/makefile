@@ -174,9 +174,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -281,6 +281,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)index_mapping.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90\
@@ -325,11 +326,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
-	$(SRC_DIR)$(PS)probes$(PS)probe_transient.f90\
-	$(SRC_DIR)$(PS)probes$(PS)probe_base.f90\
-	$(SRC_DIR)$(PS)probes$(PS)probe_derived.f90\
+	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)BC_funcs.f90\

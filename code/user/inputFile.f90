@@ -11,7 +11,6 @@
        private
        public :: readInputFile
 
-       integer,parameter :: ip = selected_int_kind(16) ! To avoid timer wraparound
        contains
 
        subroutine readInputFile(SP,DT,Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
@@ -26,7 +25,7 @@
          logical,intent(inout) :: finite_Rem,include_vacuum
          real(cp) :: time,dtime,tol_abs,delta_Ha,dh_min
          logical :: coupled_time_step
-         integer :: nstep_stop
+         integer(li) :: nstep_stop
          ! ***************** DEFAULT VALUES *****************
          Re         = 1000.0_cp
          Ha         = 20.0_cp
@@ -63,18 +62,8 @@
          dtime = 1.0_cp*10.0_cp**(-9.0_cp) ! Explicit time marching
 
          ! call init(TMP,nstep_stop,dtime,dir,name)
-         write(*,*) 'time/dtime = ',time/dtime
-         nstep_stop = ceiling(time/dtime)
-         write(*,*) 'nstep_stop = ',nstep_stop
-         nstep_stop = ceiling(time/dtime,ip)
-         write(*,*) 'nstep_stop = ',nstep_stop
-         nstep_stop = nint(time/dtime)
-         write(*,*) 'nstep_stop = ',nstep_stop
-         nstep_stop = 1000000000
-         write(*,*) 'nstep_stop = ',nstep_stop
-
-         stop 'Done in inputFile.f90'
-         call init(coupled,nstep_stop,dtime,str(DT%TMP), 'TMP_coupled')
+         call init(coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
+         ! call init(coupled,1000000000,dtime,str(DT%TMP), 'TMP_coupled')
 
          call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
          call init(TMP_U, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_U')

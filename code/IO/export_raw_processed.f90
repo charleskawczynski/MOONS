@@ -8,13 +8,14 @@
        use IO_SF_mod
        use IO_VF_mod
        use ops_interp_mod
+       use time_marching_params_mod
        
        implicit none
 
        private
        public :: export_raw                    ! call export_raw(m,x,dir,name,pad)
        public :: export_processed              ! call export_processed(m,x,dir,name,pad)
-       public :: export_processed_transient_2C ! call export_processed_transient(m,x,dir,name,pad,nstep)
+       public :: export_processed_transient_2C ! call export_processed_transient(m,x,dir,name,pad,TMP)
        public :: export_processed_transient_3C
 
        logical :: export_planar = .false.      ! Export 2D data when N_cell = 1 along given direction
@@ -256,45 +257,48 @@
          endif
        end subroutine
 
-       subroutine export_processed_transient_VF_2C(m,x,dir,name,pad,nstep)
+       subroutine export_processed_transient_VF_2C(m,x,dir,name,pad,TMP)
          implicit none
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad,nstep
+         integer,intent(in) :: pad
+         type(time_marching_params),intent(in) :: TMP
          if (.not.export_planar) then
          stop 'Error: trying to export 3D transient solution in export_processed_transient_VF_2C in export_processed.f90.'
-         else; if (m%plane_x) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,1,nstep)
-         elseif   (m%plane_y) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,2,nstep)
-         elseif   (m%plane_z) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,3,nstep)
+         else; if (m%plane_x) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,1,TMP)
+         elseif   (m%plane_y) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,2,TMP)
+         elseif   (m%plane_z) then; call export_p_transient_VF_func(export_2D_2C_transient,m,x,dir,name,pad,3,TMP)
          else; stop 'Error: attempted plane export of 3D geometry in export_processed_transient_VF_2C in export_raw_processed.f90'
          endif
          endif
        end subroutine
 
-       subroutine export_processed_transient_VF_3C(m,x,dir,name,pad,nstep)
+       subroutine export_processed_transient_VF_3C(m,x,dir,name,pad,TMP)
          implicit none
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad,nstep
+         integer,intent(in) :: pad
+         type(time_marching_params),intent(in) :: TMP
          if (.not.export_planar) then
          stop 'Error: trying to export 3D transient solution in export_processed_transient_VF_3C in export_processed.f90.'
-         else; if (m%plane_x) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,1,nstep)
-         elseif   (m%plane_y) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,2,nstep)
-         elseif   (m%plane_z) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,3,nstep)
+         else; if (m%plane_x) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,1,TMP)
+         elseif   (m%plane_y) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,2,TMP)
+         elseif   (m%plane_z) then; call export_p_transient_VF_func(export_2D_3C_transient,m,x,dir,name,pad,3,TMP)
          else; stop 'Error: attempted plane export of 3D geometry in export_processed_transient_VF_3C in export_raw_processed.f90'
          endif
          endif
        end subroutine
 
-       subroutine export_p_transient_VF_func(func,m,x,dir,name,pad,direction,nstep)
+       subroutine export_p_transient_VF_func(func,m,x,dir,name,pad,direction,TMP)
          implicit none
          procedure(export_transient) :: func
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: nstep,pad,direction
+         integer,intent(in) :: pad,direction
+         type(time_marching_params),intent(in) :: TMP
          type(VF) :: temp_1,temp_2,temp_N
          if (.not.export_planar) then
            stop 'Error: trying to export 3D transient solution in export_p_transient_VF_func in export_processed.f90.'
@@ -302,18 +306,18 @@
            if (x%is_CC) then
              call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
              call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call func(m,temp_N,dir,name//'np',pad,direction,nstep)
+             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
              call delete(temp_1); call delete(temp_2); call delete(temp_N)
            elseif (x%is_Node) then
-             call func(m,temp_N,dir,name//'np',pad,direction,nstep)
+             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
            elseif (x%is_Face) then
              call init_Edge(temp_1,m); call init_Node(temp_N,m); 
              call face2Node(temp_N,x,m,temp_1)
-             call func(m,temp_N,dir,name//'np',pad,direction,nstep)
+             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
              call delete(temp_1); call delete(temp_N)
            elseif (x%is_Edge) then
              call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call func(m,temp_N,dir,name//'np',pad,direction,nstep)
+             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
              call delete(temp_N)
            else; stop 'Error: bad input to export_p_transient_VF_func (2) in export_processed.f90'
            endif

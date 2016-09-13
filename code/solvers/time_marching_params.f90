@@ -9,12 +9,10 @@
        public :: init,delete,export,import,display,print
        public :: iterate_step
 
-       integer,parameter :: ip = selected_int_kind(16) ! To avoid timer wraparound
-
        type time_marching_params
-         integer :: n_step        ! nth time step
-         integer :: n_step_stop   ! nth time step to stop
-         integer :: n_step_start  ! nth time step to start
+         integer(li) :: n_step        ! nth time step
+         integer(li) :: n_step_stop   ! nth time step to stop
+         integer(li) :: n_step_start  ! nth time step to start
          real(cp) :: t                ! time, or pseudo time
          real(cp) :: dt               ! time step, or pseudo time step
          integer :: un                ! file unit
@@ -40,7 +38,7 @@
        subroutine init_TMP(TMP,n_step_stop,dt,dir,name)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         integer,intent(in) :: n_step_stop
+         integer(li),intent(in) :: n_step_stop
          real(cp),intent(in) :: dt
          character(len=*),intent(in) :: dir,name
          TMP%n_step_start = 0

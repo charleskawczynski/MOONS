@@ -6,6 +6,7 @@
       use import_VF_mod
       use IO_tools_mod
       use fmt_mod
+      use time_marching_params_mod
       use datatype_conversion_mod
 
       implicit none
@@ -21,12 +22,13 @@
       public :: export_transient
 
       abstract interface
-        subroutine export_transient(m,U,dir,name,pad,direction,nstep)
-          import mesh,VF
+        subroutine export_transient(m,U,dir,name,pad,direction,TMP)
+          import mesh,VF,time_marching_params
           implicit none
           character(len=*),intent(in) :: dir,name
           type(mesh),intent(in) :: m
-          integer,intent(in) :: pad,direction,nstep
+          integer,intent(in) :: pad,direction
+          type(time_marching_params),intent(in) :: TMP
           type(VF),intent(in) :: U
         end subroutine
       end interface
@@ -45,26 +47,28 @@
         call close_and_message(un,dir,name)
       end subroutine
 
-      subroutine export_2D_2C_transient(m,U,dir,name,pad,direction,nstep)
+      subroutine export_2D_2C_transient(m,U,dir,name,pad,direction,TMP)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(mesh),intent(in) :: m
-        integer,intent(in) :: pad,direction,nstep
+        integer,intent(in) :: pad,direction
+        type(time_marching_params),intent(in) :: TMP
         type(VF),intent(in) :: U
         integer :: un
-        un = new_and_open(dir,name//int2str(nstep))
+        un = new_and_open(dir,name//cp2str(TMP%t))
         call exp_2D_2C(m,pad,un,arrfmt,name,U,direction)
         call close_and_message(un,dir,name)
       end subroutine
 
-      subroutine export_2D_3C_transient(m,U,dir,name,pad,direction,nstep)
+      subroutine export_2D_3C_transient(m,U,dir,name,pad,direction,TMP)
         implicit none
         character(len=*),intent(in) :: dir,name
         type(mesh),intent(in) :: m
-        integer,intent(in) :: pad,direction,nstep
+        integer,intent(in) :: pad,direction
+        type(time_marching_params),intent(in) :: TMP
         type(VF),intent(in) :: U
         integer :: un
-        un = new_and_open(dir,name//int2str(nstep))
+        un = new_and_open(dir,name//cp2str(TMP%t))
         call exp_2D_3C(m,pad,un,arrfmt,name,U,direction)
         call close_and_message(un,dir,name)
       end subroutine

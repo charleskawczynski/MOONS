@@ -36,7 +36,9 @@
        use ops_discrete_mod
        use BCs_mod
        use apply_BCs_mod
-       use probe_base_mod
+
+       use probe_mod
+       use ops_norms_mod
 
        implicit none
 
@@ -58,10 +60,10 @@
          type(SF) :: vol_CC
          type(SF) :: Q_source
 
-         type(errorProbe) :: transient_divQ
+         type(probe) :: probe_divQ
+
          type(mesh) :: m
          type(domain) :: D
-         type(norms) :: norm_divQ
          type(matrix_free_params) :: MFP
 
          type(time_marching_params) :: TMP
@@ -156,8 +158,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%transient_divQ,str(DT%T),'transient_divQ',.not.nrg%SP%restartT)
-         call export(nrg%transient_divQ)
+         call init(nrg%probe_divQ,str(DT%T),'probe_divQ',nrg%SP%restartT)
 
          nrg%MFP%c_nrg = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
          call init(prec_T,nrg%T)
@@ -194,7 +195,7 @@
          call delete(nrg%divQ)
          call delete(nrg%vol_CC)
 
-         call delete(nrg%transient_divQ)
+         call delete(nrg%probe_divQ)
          call delete(nrg%m)
          call delete(nrg%D)
          call delete(nrg%PCG_T)
@@ -292,9 +293,8 @@
        subroutine energyExportTransient(nrg)
          implicit none
          type(energy),intent(inout) :: nrg
-         call compute(nrg%norm_divQ,nrg%divQ,nrg%vol_CC)
-         call set(nrg%transient_divQ,nrg%TMP%n_step,nrg%TMP%t,nrg%norm_divQ%L2)
-         call apply(nrg%transient_divQ)
+         real(cp) :: temp
+         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP%t,temp)
        end subroutine
 
        subroutine solve_energy(nrg,U,PE,EN,DT)

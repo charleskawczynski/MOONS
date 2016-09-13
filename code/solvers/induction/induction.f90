@@ -30,6 +30,9 @@
        use iter_solver_params_mod
        use time_marching_params_mod
 
+       use probe_mod
+       use ops_norms_mod
+
        use domain_mod
        use grid_mod
        use mesh_mod
@@ -49,9 +52,6 @@
        use matrix_free_operators_mod
        use induction_aux_mod
        use E_M_Budget_mod
-
-       use probe_base_mod
-       use probe_transient_mod
 
        implicit none
 
@@ -87,13 +87,12 @@
          type(matrix_free_params) :: MFP_B
          type(matrix_free_params) :: MFP_cleanB
 
-         type(errorProbe) :: probe_divB,probe_divJ
-         ! type(probe) :: probe_divB,probe_divJ
-
          ! Subscripts:
          ! Magnetic field:
          type(probe),dimension(3) :: ME,ME_fluid,ME_conductor ! 1 = total, 2 = applied, 3 induced
          type(probe) :: JE,JE_fluid
+         type(probe) :: probe_divB,probe_divJ
+
          type(mesh) :: m,m_surface
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
          type(domain) :: D_surface
@@ -246,21 +245,19 @@
 
          call compute_J_ind(ind)
 
-         call init(ind%probe_divB,str(DT%B_r),'transient_divB',.not.ind%SP%restartB)
-         call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',.not.ind%SP%restartB)
-         call export(ind%probe_divB)
-         call export(ind%probe_divJ)
-         call init(ind%JE,str(DT%J_e),'JE',.not.ind%SP%restartB)
-         call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',.not.ind%SP%restartB)
-         call init(ind%ME(1),str(DT%B_e),'ME',.not.ind%SP%restartB)
-         call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',.not.ind%SP%restartB)
-         call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',.not.ind%SP%restartB)
-         call init(ind%ME(2),str(DT%B_e),'ME0',.not.ind%SP%restartB)
-         call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',.not.ind%SP%restartB)
-         call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',.not.ind%SP%restartB)
-         call init(ind%ME(3),str(DT%B_e),'ME1',.not.ind%SP%restartB)
-         call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',.not.ind%SP%restartB)
-         call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',.not.ind%SP%restartB)
+         call init(ind%probe_divB,str(DT%B_r),'transient_divB',ind%SP%restartB)
+         call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',ind%SP%restartB)
+         call init(ind%JE,str(DT%J_e),'JE',ind%SP%restartB)
+         call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',ind%SP%restartB)
+         call init(ind%ME(1),str(DT%B_e),'ME',ind%SP%restartB)
+         call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',ind%SP%restartB)
+         call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',ind%SP%restartB)
+         call init(ind%ME(2),str(DT%B_e),'ME0',ind%SP%restartB)
+         call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',ind%SP%restartB)
+         call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',ind%SP%restartB)
+         call init(ind%ME(3),str(DT%B_e),'ME1',ind%SP%restartB)
+         call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',ind%SP%restartB)
+         call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',ind%SP%restartB)
 
          write(*,*) '     B/J probes initialized'
 
@@ -470,16 +467,9 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         ! real(cp) :: temp
-         ! call Ln(temp,ind%divB,2.0_cp,m)
-         ! call set(ind%probe_divB,ind%TMP%t,temp)
-         ! call apply(ind%probe_divB)
-         ! call Ln(temp,ind%divJ,2.0_cp,m)
-         ! call set(ind%probe_divJ,ind%TMP%t,temp)
-         ! call apply(ind%probe_divJ)
-
-         call apply(ind%probe_divB,ind%TMP%n_step,ind%TMP%t,ind%divB,ind%vol_CC)
-         call apply(ind%probe_divJ,ind%TMP%n_step,ind%TMP%t,ind%divJ,ind%vol_CC)
+         real(cp) :: temp
+         call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP%t,temp)
+         call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP%t,temp)
        end subroutine
 
        subroutine solve_induction(ind,U,PE,EN,DT)
@@ -536,8 +526,8 @@
            call exportTransient(ind)
          endif
 
-         if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP%n_step)
-         ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP%n_step)
+         if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
+         ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
 
          if (PE%info) call print(ind)
          if (PE%solution.or.EN%B%this.or.EN%all%this) then
@@ -552,23 +542,23 @@
 
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_sigma)
+         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP%t,ind%D_sigma)
 
          call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_sigma)
+         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP%t,ind%D_sigma)
 
          call face2cellCenter(ind%temp_CC,ind%B,ind%m)
-         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_sigma)
+         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP%t,ind%D_sigma)
 
          call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
-         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP%n_step,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP%t,ind%m)
+         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP%t,ind%D_fluid)
        end subroutine
 
        subroutine compute_E_M_budget(ind,U,D_fluid,Re,Ha,DT)

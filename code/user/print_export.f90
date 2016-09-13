@@ -1,4 +1,5 @@
        module print_export_mod
+       use current_precision_mod
        use string_mod
        use IO_tools_mod
        implicit none
@@ -100,7 +101,7 @@
        subroutine update_PE(PE,n_step)
          implicit none
          type(print_export),intent(inout) :: PE
-         integer,intent(in) :: n_step
+         integer(li),intent(in) :: n_step
          logical,dimension(0:6) :: temp
          integer :: i
          temp(0) = .true.

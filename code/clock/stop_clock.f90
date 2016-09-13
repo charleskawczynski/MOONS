@@ -25,7 +25,9 @@
         type(string) :: dir,name
         real(cp) :: seconds_per_iter
         real(cp) :: t_passed
-        integer :: N,Nmax,NRemaining
+
+        integer(li) :: N,Nmax,NRemaining
+
         real(cp) :: Nr,Nmaxr
         ! Estimated Quantities
         real(cp) :: estimated_total
@@ -54,7 +56,7 @@
       subroutine init_sc(sc,Nmax,dir,name)
         implicit none
         type(stop_clock),intent(inout) :: sc
-        integer,intent(in) :: Nmax
+        integer(li),intent(in) :: Nmax
         character(len=*),intent(in) :: dir,name
         type(string) :: vars
         call delete(sc)

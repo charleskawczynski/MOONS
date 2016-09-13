@@ -43,14 +43,14 @@
        use iter_solver_params_mod
        use time_marching_params_mod
 
+       use probe_mod
+       use ops_norms_mod
+
        use PCG_mod
        use preconditioners_mod
        use GS_Poisson_mod
        use E_K_Budget_mod
 
-       use probe_base_mod
-       use probe_transient_mod
-       use probe_derived_mod
        
        implicit none
        private
@@ -94,10 +94,8 @@
          real(cp),dimension(8) :: e_budget
          integer :: unit_nrg_budget
 
-         ! Transient probes
-         real(cp) :: KE,KE_2C
-         type(norms) :: norm_divU
-         type(probe) :: transient_KE,transient_KE_2C,transient_divU
+         ! Probes
+         type(probe) :: probe_KE,probe_KE_2C,probe_divU
        end type
 
        interface init;                module procedure initMomentum;               end interface
@@ -142,7 +140,6 @@
          mom%L_eta = Re**(-3.0_cp/4.0_cp)
          mom%U_eta = Re**(-1.0_cp/4.0_cp)
          mom%t_eta = Re**(-1.0_cp/2.0_cp)
-         mom%KE = 0.0_cp; mom%KE_2C = 0.0_cp
          mom%e_budget = 0.0_cp
 
          call init(mom%SP,SP)
@@ -200,8 +197,9 @@
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%transient_divU,str(DT%U_r),'transient_divU',.not.mom%SP%restartU)
-         call export(mom%transient_divU)
+         call init(mom%probe_divU,str(DT%U_r),'probe_divU',mom%SP%restartU)
+         call init(mom%probe_KE,str(DT%U_e),'KE',mom%SP%restartU)
+         if (m%plane_xyz) call init(mom%probe_KE_2C,str(DT%U_e),'KE_2C',mom%SP%restartU)
          write(*,*) '     momentum probes initialized'
 
          ! Initialize interior solvers
@@ -225,9 +223,6 @@
          mom%ISP_P,mom%MFP,mom%p,mom%temp_F,str(DT%U_r),'p',.false.,.false.)
          call delete(prec_PPE)
          write(*,*) '     PCG solver initialized for p'
-
-         call init(mom%transient_KE,str(DT%U_e),'KE',.not.mom%SP%restartU)
-         if (m%plane_xyz) call init(mom%transient_KE_2C,str(DT%U_e),'KE_2C',.not.mom%SP%restartU)
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
          call display(mom,temp_unit)
@@ -261,9 +256,9 @@
          call delete(mom%KE_transient)
          call delete(mom%KE_jCrossB)
 
-         call delete(mom%transient_divU)
-         call delete(mom%transient_KE)
-         call delete(mom%transient_KE_2C)
+         call delete(mom%probe_divU)
+         call delete(mom%probe_KE)
+         call delete(mom%probe_KE_2C)
          call delete(mom%temp_E)
          call delete(mom%m)
          call delete(mom%vol_CC)
@@ -290,7 +285,7 @@
          write(un,*) 't,dt = ',mom%TMP%t,mom%TMP%dt
          write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%solveUMethod,mom%ISP_U%iter_max,mom%ISP_P%iter_max
          write(un,*) 'tol_mom,tol_PPE = ',mom%ISP_U%tol_rel,mom%ISP_P%tol_rel
-         write(un,*) 'nstep,KE = ',mom%TMP%n_step,mom%KE
+         write(un,*) 'nstep,KE = ',mom%TMP%n_step,mom%probe_KE%d
          ! call displayPhysicalMinMax(mom%U,'U',un)
          call displayPhysicalMinMax(mom%divU,'divU',un)
          ! write(un,*) 'Kolmogorov Length = ',mom%L_eta
@@ -321,7 +316,7 @@
          write(un,*) mom%Ha;       write(un,*) mom%Gr
          write(un,*) mom%Fr;       write(un,*) mom%L_eta
          write(un,*) mom%U_eta;    write(un,*) mom%t_eta
-         write(un,*) mom%KE;       write(un,*) mom%e_budget
+         write(un,*) mom%e_budget
          call close_and_message(un,str(DT%restart),'mom_restart')
 
          un = new_and_open(str(DT%restart),'mom_MFP')
@@ -346,7 +341,7 @@
          read(un,*) mom%Ha;       read(un,*) mom%Gr
          read(un,*) mom%Fr;       read(un,*) mom%L_eta
          read(un,*) mom%U_eta;    read(un,*) mom%t_eta
-         read(un,*) mom%KE;       read(un,*) mom%e_budget
+         read(un,*) mom%e_budget
          call close_and_message(un,str(DT%restart),'mom_restart')
 
          un = open_to_read(str(DT%restart),'mom_MFP')
@@ -390,21 +385,15 @@
        subroutine momentumExportTransient(mom)
          implicit none
          type(momentum),intent(inout) :: mom
-         ! real(cp) :: temp_Ln
-         call compute_TKE(mom%KE,mom%U_CC,mom%vol_CC)
-         call set(mom%transient_KE,mom%TMP%n_step,mom%TMP%t,mom%KE)
-         call apply(mom%transient_KE)
-
-         call compute_TKE_2C(mom%KE_2C,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
+         real(cp) :: temp
+         call compute_TKE(temp,mom%U_CC,mom%vol_CC)
+         call export(mom%probe_KE,mom%TMP%t,temp)
          if (mom%m%plane_xyz) then
-           call set(mom%transient_KE_2C,mom%TMP%n_step,mom%TMP%t,mom%KE_2C)
-           call apply(mom%transient_KE_2C)
+           call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
+           call export(mom%probe_KE_2C,mom%TMP%t,temp)
          endif
-         ! call Ln(temp_Ln,mom%divU,2.0_cp)
-         ! call set(mom%transient_divU,mom%TMP%n_step,temp_Ln)
-         call compute(mom%norm_divU,mom%divU,mom%vol_CC)
-         call set(mom%transient_divU,mom%TMP%n_step,mom%TMP%t,mom%norm_divU%L2)
-         call apply(mom%transient_divU)
+         call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP%t,temp)
+         ! call Ln(temp,mom%divU,2.0_cp,mom%vol_CC); call export(mom%probe_divU,mom%TMP%t,temp)
        end subroutine
 
        ! ******************* SOLVER ****************************
@@ -454,8 +443,8 @@
            call div(mom%divU,mom%U,mom%m)
            call exportTransient(mom)
          endif
-         ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP%n_step)
-         if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP%n_step)
+         ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
+         if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
 
          if (PE%info) call print(mom)
          if (PE%solution.or.EN%U%this.or.EN%all%this) then
