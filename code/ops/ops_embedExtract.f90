@@ -41,8 +41,6 @@
        interface embedEdge;      module procedure embedEdge_SF;      end interface
        interface embedEdge;      module procedure embedEdge_VF;      end interface
 
-       interface embedFace;      module procedure embedFace_VF_I;    end interface
-
        interface EE;             module procedure embedExtract_RF;   end interface
 
        contains
@@ -295,25 +293,6 @@
          call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),EE_shape(Face_t%z,D,i),1,2)
          enddo
        end subroutine
-       subroutine embedFace_VF_I(Face_t,Face_i,D,L)
-         implicit none
-         type(VF),intent(inout) :: Face_t
-         type(VF),intent(in) :: Face_i
-         type(domain),intent(in) :: D
-         logical,intent(in) :: L
-         logical :: suppress_warning
-         integer :: i
-         suppress_warning = L
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.Face_i%is_Face) stop 'Error: Face data not found (1) in embedFace_VF_I in ops_embedExtract.f90'
-         if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_VF_I in ops_embedExtract.f90'
-#endif
-         do i=1,D%s
-         call EE(Face_t%x%RF(D%sd(i)%g_tot_id),Face_i%x%RF(D%sd(i)%g_in_id),EE_shape_I(Face_t%x,D,i),1,2)
-         call EE(Face_t%y%RF(D%sd(i)%g_tot_id),Face_i%y%RF(D%sd(i)%g_in_id),EE_shape_I(Face_t%y,D,i),1,2)
-         call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),EE_shape_I(Face_t%z,D,i),1,2)
-         enddo
-       end subroutine
 
        subroutine embedEdge_SF(Edge_t,Edge_i,D) ! Embeds velocity from momentum into induction
          implicit none
@@ -402,6 +381,25 @@
        ! ****************************** INDEX DETAILS ************************************
        ! *********************************************************************************
 
+       ! type subdomain
+       !   ! Legend:
+       !   !        C = Cell Center
+       !   !              E = exclude first exterior point
+       !   !              I = include first exterior point
+       !   !        N = Node
+       !   !              B = include boundary point (for node data)
+       !   !              I = include first exterior point
+       !   !              E = exclude boundary point
+       !   !        T = total domain (fluid, e.g.)
+       !   type(overlap),dimension(3) :: CE
+       !   type(overlap),dimension(3) :: CI
+       !   type(overlap),dimension(3) :: NB
+       !   type(overlap),dimension(3) :: NI
+       !   type(overlap),dimension(3) :: NE
+       !   logical,dimension(3) :: defined = .false.
+       !   integer :: g_in_id,g_tot_id
+       ! end type
+
        function EE_shape(f,D,i) result(s)
          implicit none
          type(SF),intent(in) :: f
@@ -424,34 +422,6 @@
            end select
          elseif (f%is_CC) then
            s = (/D%sd(i)%CE(1),D%sd(i)%CE(2),D%sd(i)%CE(3)/)
-         elseif (f%is_Node) then
-           s = (/D%sd(i)%NB(1),D%sd(i)%NB(2),D%sd(i)%NB(3)/)
-         else; stop 'Error: no type found in ops_embedExtract.f90'
-         endif
-       end function
-
-       function EE_shape_I(f,D,i) result(s)
-         implicit none
-         type(SF),intent(in) :: f
-         type(domain),intent(in) :: D
-         integer,intent(in) :: i
-         type(overlap),dimension(3) :: s
-         if (f%is_Face) then
-           select case (f%face)
-           case (1); s = (/D%sd(i)%NB(1),D%sd(i)%CI(2),D%sd(i)%CI(3)/)
-           case (2); s = (/D%sd(i)%CI(1),D%sd(i)%NB(2),D%sd(i)%CI(3)/)
-           case (3); s = (/D%sd(i)%CI(1),D%sd(i)%CI(2),D%sd(i)%NB(3)/)
-           case default; stop 'Error: f%face must = 1,2,3 in ops_embedExtract.f90'
-           end select
-         elseif (f%is_Edge) then
-           select case (f%edge)
-           case (1); s = (/D%sd(i)%CI(1),D%sd(i)%NB(2),D%sd(i)%NB(3)/)
-           case (2); s = (/D%sd(i)%NB(1),D%sd(i)%CI(2),D%sd(i)%NB(3)/)
-           case (3); s = (/D%sd(i)%NB(1),D%sd(i)%NB(2),D%sd(i)%CI(3)/)
-           case default; stop 'Error: f%edge must = 1,2,3 in ops_embedExtract.f90'
-           end select
-         elseif (f%is_CC) then
-           s = (/D%sd(i)%CI(1),D%sd(i)%CI(2),D%sd(i)%CI(3)/)
          elseif (f%is_Node) then
            s = (/D%sd(i)%NB(1),D%sd(i)%NB(2),D%sd(i)%NB(3)/)
          else; stop 'Error: no type found in ops_embedExtract.f90'

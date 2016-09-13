@@ -16,7 +16,6 @@
        use init_LSField_mod
 
        use IO_tools_mod
-       use IO_auxiliary_mod
        use IO_SF_mod
        use IO_VF_mod
        use export_raw_processed_mod
@@ -152,13 +151,13 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_level_set(LS,F,PE,DT)
+       subroutine solve_level_set(LS,F,PE,EN,DT)
          implicit none
          type(level_set),intent(inout) :: LS
          type(VF),intent(in) :: F
          type(print_export),intent(in) :: PE
+         type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
-         logical :: exportNow,exportNowLS
 
          select case(solveLSMethod)
          case (1); call Euler_LS(LS%phi,U,m,dt,temp_F,temp_CC)
@@ -169,18 +168,10 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%info) then
-           call level_setInfo(LS,6)
-           exportNow = readSwitchFromFile(str(DT%params),'exportNow')
-           exportNowLS = readSwitchFromFile(str(DT%params),'exportNowLS')
-           write(*,*) ''
-         else; exportNow = .false.; exportNowLS = .false.
-         endif
-
-         if (PE%solution.or.exportNowLS.or.exportNow) then
+         if (PE%info) call level_setInfo(LS,6)
+         if (PE%solution.or.EN%level_set%this.or.EN%all%this) then
            ! call curl(LS%temp_E,LS%U,m)
            call export(LS,LS%m,F,DT)
-           call writeSwitchToFile(.false.,str(DT%params),'exportNowLS')
          endif
        end subroutine
 

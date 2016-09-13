@@ -33,7 +33,7 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)MOONS2
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -195,6 +195,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
+	$(SRC_DIR)$(PS)geometric_region\
 	$(SRC_DIR)$(PS)globals\
 	$(SRC_DIR)$(PS)grid\
 	$(SRC_DIR)$(PS)IO\
@@ -238,7 +239,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_auxiliary.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
 	$(SRC_DIR)$(PS)directory$(PS)draw_DT.f90\
@@ -301,6 +301,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_edges.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_corners.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches.f90\
+	$(SRC_DIR)$(PS)ops$(PS)geometric_region$(PS)geometric_region.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\

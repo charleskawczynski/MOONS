@@ -14,6 +14,7 @@
 #endif
 #endif
 
+       ! integer,parameter :: li = selected_int_kind(16)
        ! integer,parameter :: ip = selected_int_kind(8)  ! Short int
 
        ! integer,parameter :: cip = selected_int_kind(64)

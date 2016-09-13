@@ -7,6 +7,7 @@
        real(cp),parameter :: one = 1.0_cp
        real(cp),parameter :: two = 2.0_cp
        real(cp),parameter :: zero = 0.0_cp
+       real(cp),parameter :: tol = 10.0_cp**(-12.0_cp)
        
        ! Uniform grids
        public :: uniform,uniformLeft,uniformRight
@@ -47,8 +48,17 @@
          real(cp),dimension(N+1) :: hn
          integer :: i
          real(cp) :: dh
-         dh = (hmax - hmin)/real(N,cp)
-         hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
+         if (N.lt.0) stop 'Error: N < 0 in uniform in grid_distribution_funcs.f90'
+         if (N.eq.0) then
+           if (abs(hmax-hmin).lt.tol) then
+             dh = 0.0_cp
+             hn = hmin
+             else; stop 'Error: N = 0 but hmin.ne.hmax in grid_distribution_funcs.f90'
+           endif
+         else
+           dh = (hmax - hmin)/real(N,cp)
+           hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
+         endif
        end function
 
        function uniformDirection(hstart,dh,N,dir) result(hn)
@@ -69,9 +79,16 @@
          integer,intent(in) :: N,dir
          real(cp),dimension(N+1) :: hn
          integer :: i
-         ! Total coordinates (uniform)
-         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,N+1)/)
-         if (dir.eq.-1) call reverseIndex(hn)
+         if (N.lt.0) stop 'Error: N < 0 in uniformDirection in grid_distribution_funcs.f90'
+         if (N.eq.0) then
+           if (dh.lt.tol) then
+             hn = hstart
+           else; stop 'Error: N = 0 but dh.gt.tol in uniformDirection in grid_distribution_funcs.f90'
+           endif
+         else
+           hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,N+1)/)
+           if (dir.eq.-1) call reverseIndex(hn)
+         endif
        end function
 
        function uniformLeft(hstart,dh,N) result(hn)

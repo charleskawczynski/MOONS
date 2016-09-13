@@ -58,7 +58,7 @@
         public :: multiply,divide
         public :: add_product,swap
         ! Auxiliary
-        public :: square,min,max,maxabs
+        public :: square,min,max,minabs,maxabs
         public :: maxabsdiff,mean,sum,size
 
         public :: zero_ghost_xmin_xmax
@@ -130,6 +130,7 @@
         interface max;                      module procedure max_RF;                 end interface
         interface min;                      module procedure min_pad_RF;             end interface
         interface max;                      module procedure max_pad_RF;             end interface
+        interface minabs;                   module procedure minabs_RF;              end interface
         interface maxabs;                   module procedure maxabs_RF;              end interface
         interface maxabsdiff;               module procedure maxabsdiff_RF;          end interface
         interface mean;                     module procedure mean_RF;                end interface
@@ -909,6 +910,13 @@
           integer,intent(in) :: pad
           real(cp) :: m
           m = maxval(a%f(1+pad:a%s(1)-pad,1+pad:a%s(2)-pad,1+pad:a%s(3)-pad))
+        end function
+
+        function minabs_RF(a) result(m)
+          implicit none
+          type(realField),intent(in) :: a
+          real(cp) :: m
+          m = minval(abs(a%f))
         end function
 
         function maxabs_RF(a) result(m)

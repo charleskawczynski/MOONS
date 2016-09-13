@@ -403,7 +403,6 @@
          ! Make interface property the min/max of
          ! fluid / wall domain depending on treatment
          tol = 10.0_cp**(-10.0_cp)
-
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
          if ((f(i,j,k).gt.low_value+tol).and.(f(i,j,k).lt.high_value-tol)) then

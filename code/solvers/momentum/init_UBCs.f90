@@ -26,9 +26,7 @@
          call init_BC_mesh(U%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
-         write(*,*) 'GH 1'
          call Dirichlet_BCs(U)
-         write(*,*) 'GH 2'
 
          select case (preDefinedU_BCs)
          case (0); 

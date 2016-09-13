@@ -20,6 +20,7 @@
        type export_now
          type(step) :: U,B,T,all
          type(string) :: dir,name
+         logical :: any_next
          integer :: un
        end type
 
@@ -47,6 +48,7 @@
          call delete_step(EN%U)
          call delete_step(EN%B)
          call delete_step(EN%all)
+         EN%any_next = .false.
 
          call init(EN%dir,dir)
          call init(EN%name,name)
@@ -59,6 +61,7 @@
          call delete_step(EN%U)
          call delete_step(EN%B)
          call delete_step(EN%all)
+         EN%any_next = .false.
 
          call delete(EN%dir)
          call delete(EN%name)
@@ -73,7 +76,6 @@
          write(un,*) 'U_next = ';   write(un,*) EN%U%next
          write(un,*) 'B_next = ';   write(un,*) EN%B%next
          write(un,*) 'all_next = '; write(un,*) EN%all%next
-         ! call close_and_message(un,str(EN%dir),str(EN%name))
          close(un)
        end subroutine
 
@@ -86,13 +88,13 @@
          read(un,*) ; read(un,*) EN%U%next
          read(un,*) ; read(un,*) EN%B%next
          read(un,*) ; read(un,*) EN%all%next
-         ! call close_and_message(un,str(EN%dir),str(EN%name))
          close(un)
        end subroutine
 
        subroutine update_EN(EN)
          implicit none
          type(export_now),intent(inout) :: EN
+         EN%any_next = any((/EN%T%next,EN%U%next,EN%B%next,EN%all%next/))
          call update_step(EN%T)
          call update_step(EN%U)
          call update_step(EN%B)

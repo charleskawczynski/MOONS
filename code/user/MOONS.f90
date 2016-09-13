@@ -3,7 +3,6 @@
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
-       use IO_auxiliary_mod
 
        use version_mod
        use mesh_mod
@@ -97,8 +96,9 @@
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          ! if (.not.SP%quick_start) then
-           if (SP%exportGrids) call export_mesh(mesh_mom,str(DT%U),'mesh_mom',1)
-           if (SP%exportGrids) call export_mesh(mesh_ind,str(DT%B),'mesh_ind',1)
+           if (SP%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
+           if (SP%export_meshes) call export_mesh(D_sigma%m_in,str(DT%meshes),'mesh_D_sigma',1)
+           if (SP%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
          ! endif
 
          ! Initialize energy,momentum,induction

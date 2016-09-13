@@ -11,6 +11,7 @@
        private
        public :: readInputFile
 
+       integer,parameter :: ip = selected_int_kind(16) ! To avoid timer wraparound
        contains
 
        subroutine readInputFile(SP,DT,Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
@@ -25,16 +26,18 @@
          logical,intent(inout) :: finite_Rem,include_vacuum
          real(cp) :: time,dtime,tol_abs,delta_Ha,dh_min
          logical :: coupled_time_step
+         integer :: nstep_stop
          ! ***************** DEFAULT VALUES *****************
-         Re         = 400.0_cp
-         Ha         = 100.0_cp
-         Rem        = 1.0_cp
-         tw = 0.5_cp
+         Re         = 1000.0_cp
+         Ha         = 20.0_cp
+         Rem        = 100.0_cp
+         tw = 0.05_cp
          include_vacuum = .true.
          finite_Rem = .true.
          coupled_time_step = .true.
          ! sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
+         ! sig_local_over_sig_f = 10.0_cp**(-2.0_cp) ! sigma* = sigma_wall/sigma_l
          sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -48,18 +51,30 @@
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
          delta_Ha = 1.0_cp/Ha
          dh_min = delta_Ha/5.0_cp
-         call init(ISP_B  , 10000, 10.0_cp**(-5.0_cp) , 1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
+         call init(ISP_B  , 10000, 10.0_cp**(-5.0_cp) , 1.0_cp*10.0_cp**(-6.0_cp) , 100, str(DT%ISP),'ISP_B')
          call init(ISP_U  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
          call init(ISP_p  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
-         time  = 10.0_cp
-         dtime = 5.0_cp*10.0_cp**(-4.0_cp)
+         time  = 4.0_cp
+         ! dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         ! dtime = 1.0_cp*10.0_cp**(-7.0_cp) ! Implicit time marching
+         dtime = 1.0_cp*10.0_cp**(-9.0_cp) ! Explicit time marching
 
-         ! call init(TMP,nstep_stop,dtime)
-         ! call init(coupled,1000000000,dtime)
-         call init(coupled,ceiling(time/dtime),dtime,str(DT%TMP), 'TMP_coupled')
+         ! call init(TMP,nstep_stop,dtime,dir,name)
+         write(*,*) 'time/dtime = ',time/dtime
+         nstep_stop = ceiling(time/dtime)
+         write(*,*) 'nstep_stop = ',nstep_stop
+         nstep_stop = ceiling(time/dtime,ip)
+         write(*,*) 'nstep_stop = ',nstep_stop
+         nstep_stop = nint(time/dtime)
+         write(*,*) 'nstep_stop = ',nstep_stop
+         nstep_stop = 1000000000
+         write(*,*) 'nstep_stop = ',nstep_stop
+
+         stop 'Done in inputFile.f90'
+         call init(coupled,nstep_stop,dtime,str(DT%TMP), 'TMP_coupled')
 
          call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
          call init(TMP_U, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_U')

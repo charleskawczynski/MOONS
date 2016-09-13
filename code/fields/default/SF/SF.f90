@@ -65,7 +65,7 @@
         public :: invert
         public :: add_product,swap
         ! Auxiliary
-        public :: square,min,max,maxabs
+        public :: square,min,max,minabs,maxabs
         public :: maxabsdiff,mean,sum
 
         public :: zero_ghost_xmin_xmax
@@ -167,6 +167,7 @@
         interface max;                 module procedure max_SF;                 end interface
         interface min;                 module procedure min_pad_SF;             end interface
         interface max;                 module procedure max_pad_SF;             end interface
+        interface minabs;              module procedure minabs_SF;              end interface
         interface maxabs;              module procedure maxabs_SF;              end interface
         interface maxabsdiff;          module procedure maxabsdiff_SF;          end interface
         interface mean;                module procedure mean_SF;                end interface
@@ -1059,6 +1060,17 @@
           m = 0.0_cp
           do i=1,f%s
             m = maxval((/m,max(f%RF(i),pad)/))
+          enddo
+        end function
+
+        function minabs_SF(f) result(m)
+          implicit none
+          type(SF),intent(in) :: f
+          real(cp) :: m
+          integer :: i
+          m = 0.0_cp
+          do i=1,f%s
+            m = minval(abs((/m,minabs(f%RF(i))/)))
           enddo
         end function
 

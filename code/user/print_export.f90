@@ -41,12 +41,12 @@
          PE%transient_0D = .false.
          PE%transient_2D = .false.
          PE%solution = .false.
-
-         PE%export_planar = export_planar
          PE%i_info = 1
          PE%i_transient_0D = 2
          PE%i_transient_2D = 4
          PE%i_solution = 6
+
+         PE%export_planar = export_planar
          call init(PE%dir,dir)
          call init(PE%name,name)
        end subroutine
@@ -59,9 +59,9 @@
          PE%transient_2D = .false.
          PE%solution = .false.
          PE%i_info = 1
-         PE%i_transient_0D = 1
-         PE%i_transient_2D = 1
-         PE%i_solution = 1
+         PE%i_transient_0D = 2
+         PE%i_transient_2D = 4
+         PE%i_solution = 6
          call delete(PE%dir)
          call delete(PE%name)
        end subroutine
@@ -76,7 +76,7 @@
          write(un,*) 'i_transient_2D = '; write(un,*) PE%i_transient_2D
          write(un,*) 'i_solution = ';     write(un,*) PE%i_solution
          write(un,*) 'export_planar = ';  write(un,*) PE%export_planar ! DO NOT IMPORT (DANGEROUS)
-         call close_and_message(un,str(PE%dir),str(PE%name))
+         close(un)
        end subroutine
 
        subroutine import_PE(PE)
@@ -88,22 +88,24 @@
          read(un,*) ; read(un,*) PE%i_transient_0D
          read(un,*) ; read(un,*) PE%i_transient_2D
          read(un,*) ; read(un,*) PE%i_solution
-         call close_and_message(un,str(PE%dir),str(PE%name))
+         close(un)
 
          ! The following is a safegaurd against a bad import:
-         if ((PE%i_info.lt.1).or.(PE%i_info.gt.6)) PE%i_info = 1
-         if ((PE%i_transient_0D.lt.1).or.(PE%i_transient_0D.gt.6)) PE%i_transient_0D = 2
-         if ((PE%i_transient_2D.lt.1).or.(PE%i_transient_2D.gt.6)) PE%i_transient_2D = 4
-         if ((PE%i_solution.lt.1).or.(PE%i_solution.gt.6)) PE%i_solution = 6
+         if ((PE%i_info.lt.0).or.(PE%i_info.gt.6)) PE%i_info = 1
+         if ((PE%i_transient_0D.lt.0).or.(PE%i_transient_0D.gt.6)) PE%i_transient_0D = 2
+         if ((PE%i_transient_2D.lt.0).or.(PE%i_transient_2D.gt.6)) PE%i_transient_2D = 4
+         if ((PE%i_solution.lt.0).or.(PE%i_solution.gt.6)) PE%i_solution = 6
        end subroutine
 
        subroutine update_PE(PE,n_step)
          implicit none
          type(print_export),intent(inout) :: PE
          integer,intent(in) :: n_step
-         logical,dimension(6) :: temp
+         logical,dimension(0:6) :: temp
          integer :: i
-         temp = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
+         temp(0) = .true.
+         temp(1:6) = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
+         ! temp(1:6) = (/((mod(n_step+1,10**i).eq.1).and.(n_step.ne.0),i=1,6)/)
 
          PE%info = temp(PE%i_info)
          PE%transient_0D = temp(PE%i_transient_0D)

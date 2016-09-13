@@ -5,7 +5,6 @@
        use VF_mod
        use TF_mod
        use IO_tools_mod
-       use IO_auxiliary_mod
        use IO_SF_mod
        use IO_VF_mod
        use ops_interp_mod
@@ -235,25 +234,25 @@
                  elseif (A(2).and.(.not.C(2))) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
                  elseif (A(3).and.(.not.C(3))) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
                  else; flag = 2
-                         if (A(1)) then; call export_2D_2C(m,x,dir,name//DL,pad,1)
-                     elseif (A(2)) then; call export_2D_2C(m,x,dir,name//DL,pad,2)
-                     elseif (A(3)) then; call export_2D_2C(m,x,dir,name//DL,pad,3)
-                     endif
                  endif
-         else                        ! export all components
-                 if (x%is_CC.or.x%is_Node) then; call export_2D_3C(m,x  ,dir,name//DL,pad,direction)
-                 else;                           call export_2D_1C(m,x%x,dir,name//DL//'_x',pad,direction)
-                                                 call export_2D_1C(m,x%y,dir,name//DL//'_y',pad,direction)
-                                                 call export_2D_1C(m,x%z,dir,name//DL//'_z',pad,direction)
-                 endif
+         else              ! export all components
+           if (x%is_CC.or.x%is_Node) then; call export_2D_3C(m,x  ,dir,name//DL,pad,direction)
+           else;                           call export_2D_1C(m,x%x,dir,name//DL//'_x',pad,direction)
+                                           call export_2D_1C(m,x%y,dir,name//DL//'_y',pad,direction)
+                                           call export_2D_1C(m,x%z,dir,name//DL//'_z',pad,direction)
+           endif
          endif
-         if (flag.eq.0) then
-         elseif (flag.eq.1) then
-         write(*,*) 'A=',A; write(*,*) 'C=',C
-         stop 'Error: bad case in export_based_on_count1 in export_raw_processed.f90'
-         elseif (flag.eq.2) then
-         write(*,*) 'A=',A; write(*,*) 'C=',C
-         stop 'Error: bad case in export_based_on_count2 in export_raw_processed.f90'
+
+         if ((flag.eq.1).or.(flag.eq.2)) then
+           if (x%is_CC.or.x%is_Node) then; call export_3D_3C(m,x  ,dir,name//DL,pad)
+           else;                           call export_3D_1C(m,x%x,dir,name//DL//'_x_warning',pad)
+                                           call export_3D_1C(m,x%y,dir,name//DL//'_y_warning',pad)
+                                           call export_3D_1C(m,x%z,dir,name//DL//'_z_warning',pad)
+           endif
+           write(*,*) 'flag=',flag
+           write(*,*) 'A=',A
+           write(*,*) 'C=',C
+           write(*,*) 'WARNING: bad case in export_based_on_count in export_raw_processed.f90'
          endif
        end subroutine
 

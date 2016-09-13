@@ -2,7 +2,6 @@
        use current_precision_mod
        use sim_params_mod
        use IO_tools_mod
-       use IO_auxiliary_mod
        use export_SF_mod
        use export_VF_mod
        use SF_mod
@@ -25,6 +24,7 @@
        use init_Sigma_mod
        use ops_embedExtract_mod
        use ops_internal_BC_mod
+       use geometric_region_mod
        use BEM_solver_mod
 
        use iter_solver_params_mod
@@ -88,6 +88,7 @@
          type(matrix_free_params) :: MFP_cleanB
 
          type(errorProbe) :: probe_divB,probe_divJ
+         ! type(probe) :: probe_divB,probe_divJ
 
          ! Subscripts:
          ! Magnetic field:
@@ -139,7 +140,8 @@
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: sigma,prec_cleanB
-         type(VF) :: prec_induction
+         type(VF) :: prec_induction,sigma_temp_E
+         type(geometric_region) :: GR_sigma
          write(*,*) 'Initializing induction:'
 
          call init(ind%TMP,TMP)
@@ -154,6 +156,26 @@
          call init(ind%m,m)
          call init(ind%D_fluid,D_fluid)
          call init(ind%D_sigma,D_sigma)
+         call init(GR_sigma,ind%D_sigma%m_in%hmin,&
+                            ind%D_sigma%m_in%hmax,&
+                            (/.false.,.false.,.false./),&
+                            (/.false.,.false.,.false./))
+         call init(GR_sigma,(/ind%D_sigma%m_in%hmin(1),&
+                              ind%D_sigma%m_in%hmin(2),&
+                              ind%D_sigma%m_in%hmin(3)/),&
+                            (/ind%D_sigma%m_in%hmax(1),&
+                              ind%D_sigma%m_in%hmax(2),&
+                              ind%D_sigma%m_in%hmax(3)/),&
+                             (/.true.,.true.,.true./),&
+                             (/.true.,.true.,.true./))
+         ! call init(GR_sigma,(/ind%D_fluid%m_in%hmin(1),&
+         !                      ind%D_fluid%m_in%hmax(2),&
+         !                      ind%D_fluid%m_in%hmin(3)/),&
+         !                    (/ind%D_fluid%m_in%hmax(1),&
+         !                      ind%D_fluid%m_in%hmax(2),&
+         !                      ind%D_fluid%m_in%hmax(3)/),&
+         !                     (/.false.,.true.,.false./),&
+         !                     (/.false.,.true.,.false./))
          ! --- tensor,vector and scalar fields ---
          call init_Face(ind%B_interior   ,ind%D_sigma%m_in,0.0_cp)
          call init_Edge(ind%J_interior   ,ind%D_sigma%m_in,0.0_cp)
@@ -199,13 +221,25 @@
 
          ! ******************** MATERIAL PROPERTIES ********************
          call init_CC(sigma,m,0.0_cp)
-         call initSigma(sigma,ind%D_sigma,m,ind%sig_local_over_sig_f) ! If sigma changes across wall
+         call initSigma(sigma,ind%D_sigma,m,ind%sig_local_over_sig_f)
          write(*,*) '     Materials initialized'
-         if (.not.ind%SP%quick_start) call export_raw(m,sigma,str(DT%mat),'sigma',0)
+         if (ind%SP%export_mat_props) call export_raw(m,sigma,str(DT%mat),'sigma',0)
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
-         call treatInterface(ind%sigmaInv_edge,.false.)
-         if (.not.ind%SP%quick_start) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
+
+         ! call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
+         ! call assign_inside(ind%sigmaInv_edge%x,ind%m,GR_sigma,1.0_cp)
+         ! call assign_inside(ind%sigmaInv_edge%y,ind%m,GR_sigma,1.0_cp)
+         ! call assign_inside(ind%sigmaInv_edge%z,ind%m,GR_sigma,1.0_cp)
+
+         call init_Edge(sigma_temp_E,D_sigma%m_in,1.0_cp)
+         call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
+         call embedEdge(ind%sigmaInv_edge,sigma_temp_E,D_sigma)
+         call delete(sigma_temp_E)
+
+         ! call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
+         ! call treatInterface(ind%sigmaInv_edge,.false.) ! Logical = take_high_value
+         if (ind%SP%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
          ! *************************************************************
@@ -363,9 +397,9 @@
          call export(ind%B      ,str(DT%restart),'B')
          call export(ind%B0     ,str(DT%restart),'B0')
          call export(ind%J      ,str(DT%restart),'J')
-         call export(ind%U_E%x  ,str(DT%restart),'Uex')
-         call export(ind%U_E%y  ,str(DT%restart),'Vey')
-         call export(ind%U_E%z  ,str(DT%restart),'Wez')
+         call export(ind%U_E%x  ,str(DT%restart),'U_E_x')
+         call export(ind%U_E%y  ,str(DT%restart),'U_E_y')
+         call export(ind%U_E%z  ,str(DT%restart),'U_E_z')
        end subroutine
 
        subroutine import_induction(ind,DT)
@@ -390,9 +424,9 @@
          call import(ind%B      ,str(DT%restart),'B')
          call import(ind%B0     ,str(DT%restart),'B0')
          call import(ind%J      ,str(DT%restart),'J')
-         call import(ind%U_E%x  ,str(DT%restart),'Uex')
-         call import(ind%U_E%y  ,str(DT%restart),'Vey')
-         call import(ind%U_E%z  ,str(DT%restart),'Wez')
+         call import(ind%U_E%x  ,str(DT%restart),'U_E_x')
+         call import(ind%U_E%y  ,str(DT%restart),'U_E_y')
+         call import(ind%U_E%z  ,str(DT%restart),'U_E_z')
        end subroutine
 
        ! **********************************************************
@@ -413,7 +447,9 @@
              call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
              call export_raw(ind%m,ind%J ,str(DT%J_f),'J',0)
              call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1)
-             call export_raw(ind%m,ind%sigmaInv_edge ,str(DT%mat),'sigma',0)
+             call export_raw(ind%m,ind%U_E%x  ,str(DT%B_f),'U_E_x',0)
+             call export_raw(ind%m,ind%U_E%y  ,str(DT%B_f),'U_E_y',0)
+             call export_raw(ind%m,ind%U_E%z  ,str(DT%B_f),'U_E_z',0)
              ! call export_processed(ind%m,ind%B0,str(DT%B_f),'B0',1)
              ! call embedFace(ind%B,ind%B_interior,ind%D_sigma)
              ! call export_processed(ind%m,ind%B ,str(DT%B_f),'B_final',1)
@@ -434,6 +470,14 @@
        subroutine inductionExportTransient(ind)
          implicit none
          type(induction),intent(inout) :: ind
+         ! real(cp) :: temp
+         ! call Ln(temp,ind%divB,2.0_cp,m)
+         ! call set(ind%probe_divB,ind%TMP%t,temp)
+         ! call apply(ind%probe_divB)
+         ! call Ln(temp,ind%divJ,2.0_cp,m)
+         ! call set(ind%probe_divJ,ind%TMP%t,temp)
+         ! call apply(ind%probe_divJ)
+
          call apply(ind%probe_divB,ind%TMP%n_step,ind%TMP%t,ind%divB,ind%vol_CC)
          call apply(ind%probe_divJ,ind%TMP%n_step,ind%TMP%t,ind%divJ,ind%vol_CC)
        end subroutine
@@ -446,8 +490,8 @@
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         if (ind%SP%solveMomentum) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
-         else;if (ind%TMP%n_step.le.1)   call embedVelocity_E(ind%U_E,U,ind%D_fluid)
+         if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%D_fluid)
+         elseif (ind%TMP%n_step.le.1) then; call embedVelocity_E(ind%U_E,U,ind%D_fluid)
          endif
 
          select case (ind%SP%solveBMethod)
@@ -497,7 +541,7 @@
 
          if (PE%info) call print(ind)
          if (PE%solution.or.EN%B%this.or.EN%all%this) then
-           call export(ind,DT)
+           ! call export(ind,DT)
            call export_tec(ind,DT)
          endif
        end subroutine
@@ -604,8 +648,42 @@
          write(un,*) str(vars(i)),ind%e_budget(i)
          call delete(vars(i))
          enddo
-         flush(un)
          call close_and_message(un,str(DT%e_budget),'E_M_budget_terms')
+       end subroutine
+
+       subroutine conducting_lid_only(S,m,sig_local_over_sig_f)
+         implicit none
+         type(VF),intent(inout) :: S
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: sig_local_over_sig_f
+         call conducting_lid_only_SF(S%x,m)
+         call assign(S%y,sig_local_over_sig_f)
+         call conducting_lid_only_SF(S%z,m)
+       end subroutine
+
+       subroutine conducting_lid_only_SF(S,m)
+         implicit none
+         type(SF),intent(inout) :: S
+         type(mesh),intent(in) :: m
+         integer :: t,i,j,k
+         real(cp) :: tol,Smax
+         Smax = maxabs(S)
+         tol = 10.0_cp**(-10.0_cp)
+         do t=1,m%s; do k=1,S%RF(t)%s(3);do j=1,S%RF(t)%s(2);do i=1,S%RF(t)%s(1)
+         if (.not.(abs(m%g(t)%c(2)%hn(j)-1.0_cp).lt.tol)) S%RF(t)%f(i,j,k) = Smax
+         enddo; enddo; enddo; enddo
+       end subroutine
+
+       subroutine update_PCG_k(PCG_B,m,R,outside)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: PCG_B
+         type(mesh),intent(in) :: m
+         type(geometric_region),intent(in) :: R
+         real(cp),intent(in) :: outside
+         call assign(PCG_B%k,outside)
+         call assign_inside(PCG_B%k%x,m,R,1.0_cp)
+         call assign_inside(PCG_B%k%y,m,R,1.0_cp)
+         call assign_inside(PCG_B%k%z,m,R,1.0_cp)
        end subroutine
 
        end module

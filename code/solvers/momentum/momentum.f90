@@ -22,7 +22,6 @@
        use matrix_free_operators_mod
 
        use IO_tools_mod
-       use IO_auxiliary_mod
        use IO_SF_mod
        use IO_VF_mod
        use export_raw_processed_mod
@@ -188,8 +187,6 @@
          call init_Ufield(mom%U,m,mom%SP%restartU,str(DT%U_f))
          call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
          write(*,*) '     Field initialized'
-         call face2CellCenter(mom%U_CC,mom%U,mom%m)
-         call face2edge_no_diag(mom%U_E,mom%U,mom%m)
 
          call apply_BCs(mom%U,m)
          call apply_stitches(mom%U,m)
@@ -197,6 +194,11 @@
          call apply_BCs(mom%p,m)
          call apply_stitches(mom%p,m)
          write(*,*) '     P BCs applied'
+
+         call assign(mom%U%x,1.0_cp)
+         call face2CellCenter(mom%U_CC,mom%U,mom%m)
+         call face2edge_no_diag(mom%U_E,mom%U,mom%m)
+         write(*,*) '     Interpolated fields initialized'
 
          call init(mom%transient_divU,str(DT%U_r),'transient_divU',.not.mom%SP%restartU)
          call export(mom%transient_divU)

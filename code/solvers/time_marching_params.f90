@@ -9,14 +9,16 @@
        public :: init,delete,export,import,display,print
        public :: iterate_step
 
+       integer,parameter :: ip = selected_int_kind(16) ! To avoid timer wraparound
+
        type time_marching_params
          integer :: n_step        ! nth time step
          integer :: n_step_stop   ! nth time step to stop
          integer :: n_step_start  ! nth time step to start
-         real(cp) :: t            ! time, or pseudo time
-         real(cp) :: dt           ! time step, or pseudo time step
-         integer :: un            ! file unit
-         type(string) :: dir,name ! directory / name
+         real(cp) :: t                ! time, or pseudo time
+         real(cp) :: dt               ! time step, or pseudo time step
+         integer :: un                ! file unit
+         type(string) :: dir,name     ! directory / name
        end type
 
        interface init;         module procedure init_TMP;         end interface

@@ -24,7 +24,7 @@
         integer,dimension(3),intent(in) :: s
         integer :: i,j,k
         do k = 1+pad,s(3)-pad; do j = 1+pad,s(2)-pad; do i = 1+pad,s(1)-pad
-          read(un,'(6'//arrfmt//')') x(i),y(j),z(k),u(i,j,k),v(i,j,k),w(i,j,k)
+          read(un,arrfmt) x(i),y(j),z(k),u(i,j,k),v(i,j,k),w(i,j,k)
         enddo; enddo; enddo
       end subroutine
 
@@ -37,7 +37,7 @@
         integer,dimension(3),intent(in) :: s
         integer :: i,j,k
         do k = 1+pad,s(3)-pad; do j = 1+pad,s(2)-pad; do i = 1+pad,s(1)-pad
-          read(un,'(5'//arrfmt//')') x(i),y(j),z(k),u(i,j,k),v(i,j,k)
+          read(un,arrfmt) x(i),y(j),z(k),u(i,j,k),v(i,j,k)
         enddo; enddo; enddo
       end subroutine
 
@@ -50,7 +50,7 @@
         integer,dimension(3),intent(in) :: s
         integer :: i,j,k
         do k = 1+pad,s(3)-pad; do j = 1+pad,s(2)-pad; do i = 1+pad,s(1)-pad
-          read(un,'(4'//arrfmt//')') x(i),y(j),z(k),u(i,j,k)
+          read(un,arrfmt) x(i),y(j),z(k),u(i,j,k)
         enddo; enddo; enddo
       end subroutine
 
@@ -69,7 +69,7 @@
         integer,dimension(2),intent(in) :: s
         integer :: i,j
         do j = 1+pad,s(2)-pad; do i = 1+pad,s(1)-pad
-          read(un,'(5'//arrfmt//')') x(i),y(j),u(i,j),v(i,j),w(i,j)
+          read(un,arrfmt) x(i),y(j),u(i,j),v(i,j),w(i,j)
         enddo; enddo
       end subroutine
 
@@ -82,7 +82,7 @@
         integer,dimension(2),intent(in) :: s
         integer :: i,j
         do j = 1+pad,s(2)-pad; do i = 1+pad,s(1)-pad
-          read(un,'(4'//arrfmt//')') x(i),y(j),u(i,j),v(i,j)
+          read(un,arrfmt) x(i),y(j),u(i,j),v(i,j)
         enddo; enddo
       end subroutine
 
@@ -95,7 +95,7 @@
         integer,dimension(2),intent(in) :: s
         integer :: i,j
         do j = 1+pad,s(2)-pad; do i = 1+pad,s(1)-pad
-          read(un,'(3'//arrfmt//')') x(i),y(j),u(i,j)
+          read(un,arrfmt) x(i),y(j),u(i,j)
         enddo; enddo
       end subroutine
 
@@ -114,7 +114,7 @@
         integer,dimension(1),intent(in) :: s
         integer :: i
         do i = 1+pad,s(1)-pad
-          read(un,'(4'//arrfmt//')') x(i),u(i),v(i),w(i)
+          read(un,arrfmt) x(i),u(i),v(i),w(i)
         enddo
       end subroutine
 
@@ -127,7 +127,7 @@
         integer,dimension(1),intent(in) :: s
         integer :: i
         do i = 1+pad,s(1)-pad
-          read(un,'(3'//arrfmt//')') x(i),u(i),v(i)
+          read(un,arrfmt) x(i),u(i),v(i)
         enddo
       end subroutine
 
@@ -140,7 +140,7 @@
         integer,dimension(1),intent(in) :: s
         integer :: i
         do i = 1+pad,s(1)-pad
-          read(un,'(2'//arrfmt//')') x(i),u(i)
+          read(un,arrfmt) x(i),u(i)
         enddo
       end subroutine
 

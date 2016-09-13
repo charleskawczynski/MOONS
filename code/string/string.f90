@@ -52,7 +52,7 @@
       type string
         private
         type(char),dimension(:),allocatable :: s ! string
-        integer :: n                             ! string length
+        integer :: n = 0                         ! string length
       end type
 
       contains
@@ -144,16 +144,6 @@
       ! **********************************************************
       ! **********************************************************
       ! **********************************************************
-
-      subroutine check_allocated(st,s)
-        implicit none
-        type(string),intent(in) :: st
-        character(len=*),intent(in) :: s
-        if (.not.allocated(st%s)) then
-          write(*,*) 'Error: string must be allocated in '//s//' in string.f90'
-          stop 'Done'
-        endif
-      end subroutine
 
       subroutine app_string_char(st,s)
         implicit none
@@ -318,5 +308,52 @@
         type(char),intent(in) :: b
         a%c = b%c
       end subroutine
+
+      function string_allocated(st) result(L)
+        implicit none
+        type(string),intent(in) :: st
+        logical :: L
+        L = allocated(st%s)
+      end function
+
+      function valid_length(st) result(L)
+        implicit none
+        type(string),intent(in) :: st
+        logical :: L
+        L = st%n.gt.0
+      end function
+
+      ! function valid_string(st) result(L)
+      !   implicit none
+      !   type(string),intent(in) :: st
+      !   logical :: L
+      !   L = string_allocated(st).and.valid_length(st)
+      ! end function
+
+      subroutine check_allocated(st,s)
+        implicit none
+        type(string),intent(in) :: st
+        character(len=*),intent(in) :: s
+        if (.not.string_allocated(st)) then
+          write(*,*) 'Error: string must be allocated in '//s//' in string.f90'
+          stop 'Done'
+        elseif (.not.valid_length(st)) then
+          write(*,*) 'Error: string must have a valid length in '//s//' in string.f90'
+          stop 'Done'
+        endif
+      end subroutine
+
+      ! subroutine insist_allocated(st,s)
+      !   implicit none
+      !   type(string),intent(in) :: st
+      !   character(len=*),intent(in) :: s
+      !   if (.not.string_allocated(st)) then
+      !     write(*,*) 'Error: string must be allocated in '//s//' in string.f90'
+      !     stop 'Done'
+      !   elseif (.not.valid_length(st)) then
+      !     write(*,*) 'Error: string must have a valid length in '//s//' in string.f90'
+      !     stop 'Done'
+      !   endif
+      ! end subroutine
 
       end module

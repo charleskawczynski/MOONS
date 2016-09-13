@@ -50,9 +50,27 @@
         type(string) :: s
         call init(s,dir//name//dot_dat)
         un = new_unit()
-        open(un,file=str(s),pad='YES',action='readwrite')
+        ! open(un,file=str(s),pad='YES',action='readwrite')
+        call attemp_to_open_to_write(un,s)
         call delete(s)
       end function
+
+      subroutine attemp_to_open_to_write(un,s)
+        implicit none
+        integer,intent(in) :: un
+        type(string),intent(in) :: s
+        integer :: n,i
+        logical :: failed
+        failed = .true.
+        do n=1,100000
+          open(un,file=str(s),pad='YES',action='readwrite',iostat=i)
+          if (i.eq.0) then; failed = .false.; exit; endif
+        enddo
+        if (failed) then
+          write(*,*) 'Error: tried to open file but failed!!'
+          stop 'Done in attemp_to_open_to_write in IO_tools.f90'
+        endif
+      end subroutine
 
       ! ************************* CLOSE UNIT *************************
       ! ************************* CLOSE UNIT *************************

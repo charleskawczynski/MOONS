@@ -37,8 +37,10 @@
          ! call flow_past_square(m_ind)
          ! call init(D_sigma,m_mom,m_ind)
 
-         call BC_sim_mom(m_mom,Ha)
-         call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+         ! call BC_sim_mom(m_mom,Ha)
+         ! call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+         call BC_sim_mom_sheet(m_mom,Ha)
+         call BC_sim_ind_sheet(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
 
          ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,D_sigma)

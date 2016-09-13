@@ -3,7 +3,6 @@
        use sim_params_mod
        use VF_mod
        use IO_tools_mod
-       use IO_auxiliary_mod
        use string_mod
        use path_mod
        use dir_tree_mod
@@ -85,10 +84,11 @@
            endif
 
            call iterate_step(coupled)
+           call import(PE)
+
            call import(EN)
            call update(EN)
-           call export(EN)
-           call import(PE)
+           if (EN%any_next) call export(EN)
 
            call toc(sc)
            if (PE%info) then
@@ -99,15 +99,15 @@
              call print(sc)
              call export(sc,coupled%t)
              if (SP%solveMomentum) then
-               call import(mom%ISP_U)
+               call import(mom%ISP_U) !; call init(mom%PCG_U%ISP,mom%ISP_U)
                call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
              endif
              if (SP%solveInduction) then
                call import(ind%ISP_B);   call init(ind%PCG_B%ISP,ind%ISP_B)
                call import(ind%ISP_phi); call init(ind%PCG_cleanB%ISP,ind%ISP_phi)
              endif
-             if (SP%solveEnergy) then; call import(nrg%ISP_T)
-                                       call init(nrg%PCG_T%ISP,nrg%ISP_T)
+             if (SP%solveEnergy) then
+               call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
              endif
 
              call import(KS)

@@ -9,7 +9,7 @@
       implicit none
       ! Implementation:
       ! 
-      !          call init(DS,'out/Bfield/','B',3,1)
+      !          call init(DS,dir,name,3,1)
       !          call export(m,DS,B)
       ! 
 
@@ -251,6 +251,5 @@
         call delete(DS%titleFMT);    call delete(DS%variablesFMT)
         call delete(DS%tit)
       end subroutine
-
 
       end module

@@ -10,10 +10,11 @@
        private
        public :: initSigma
 
-       integer :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
+       integer :: preDefined_Sigma = 3 ! sigma* = sigma_wall/sigma_l
        !                                          0 : Uniform
        !                                          1 : Subdomain dependent
        !                                          2 : Cylinder (2D)
+       !                                          3 : single cell sheet
 
        contains
 
@@ -41,6 +42,7 @@
          case (0);
          case (1); call initSubdomain(sigma,D,sig_local_over_sig_f)
          case (2); call initCylinder2D(sigma,D,m%g(1),3,sig_local_over_sig_f) ! Only for single domain
+         case (3); call single_cell_sheet(sigma,D,sig_local_over_sig_f)
          case default
          stop 'Error: preDefined_Sigma not found in initPredefinedSigma in initializeSigma.f90'
          end select
@@ -54,6 +56,20 @@
          type(SF) :: sigma_l
          call init_CC(sigma_l,D%m_in)
          call assign(sigma_l,1.0_cp)
+         call assign(sigma,sig_local_over_sig_f)
+         call embedCC(sigma,sigma_l,D)
+         call delete(sigma_l)
+       end subroutine
+
+       subroutine single_cell_sheet(sigma,D,sig_local_over_sig_f)
+         implicit none
+         type(SF),intent(inout) :: sigma
+         type(domain),intent(in) :: D
+         real(cp),intent(in) :: sig_local_over_sig_f
+         type(SF) :: sigma_l
+         call init_CC(sigma_l,D%m_in)
+         call assign(sigma_l,sig_local_over_sig_f)
+         sigma_l%RF(1)%f(:,sigma_l%RF(1)%s(2)-1,:) = 1.0_cp
          call assign(sigma,sig_local_over_sig_f)
          call embedCC(sigma,sigma_l,D)
          call delete(sigma_l)
