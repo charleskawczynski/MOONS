@@ -42,12 +42,12 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        SP%restart_all               = .false.     ! restart sim (requires no code changes)
-       SP%stopBeforeSolve           = .false.     ! Just export ICs, do not run simulation
+       SP%stopBeforeSolve           = .true.      ! Just export ICs, do not run simulation
        SP%post_process_only         = .false.      ! Skip solver loop and just post-process results
 
        SP%export_meshes             = .true.      ! Export all meshes before starting simulation
        SP%export_mat_props          = .true.      ! Export material properties before starting simulation
-       SP%exportICs                 = .false.     ! Export Post-Processed ICs before starting simulation
+       SP%exportICs                 = .true.      ! Export Post-Processed ICs before starting simulation
        SP%quick_start               = .true.     ! Avoids exporting any large datasets before solve
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
 

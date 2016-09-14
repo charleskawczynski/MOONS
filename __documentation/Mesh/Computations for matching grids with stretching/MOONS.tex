@@ -106,6 +106,7 @@ In a slightly different notation, for a scaled grid, not starting at zero, we ma
 \subsection{Matching the stretching parameter}
 Note that this section is for node data, and does not apply to cell center data, hence the notation for node indexes ($sn$ and $sn-1$).
 
+\subsubsection{Transformation 2}
 We would like to ensure that the ghost cell is the same size as the first interior cell in order to able to linearly extrapolate from the interior cells to the ghost cells.
 
 To do this, we must choose $\beta$ such that
@@ -129,6 +130,11 @@ Note that this $\Delta h$ is dimensional. Plugging this in, we have
 	=
 	\Delta h
 \end{equation}
+Where
+\begin{equation}
+	\gamma = \left[ \frac{\beta+1}{\beta-1} \right]^{(\bar{h}-\alpha)/(1-\alpha)}
+\end{equation}
+
 Eliminating the scaled sizes results in the equation that must be solved to match the stretching parameters
 \begin{equation}
 	\boxed{
@@ -146,7 +152,7 @@ This is a nonlinear algebraic equation who's solution must be determined by an i
 
 \subsubsection{Additional notes}
 Now, here comes the tricky part.
-Note that $\bar{h}_{sn}$ and $\bar{h}_{sn-1}$ are normalized with no stretching, and at the far end we have
+Note that $\bar{h}_{sn}$ and $\bar{h}_{sn-1}$ are uniform and normalized (between 0 and 1), and at the far end we have
 
 \begin{equation}
 	\gamma_{sn} = \left[ 
@@ -166,17 +172,13 @@ and at the near end we have
 \begin{equation}
 	\gamma_{2} = \left[ 
 	\frac{\beta+1}{\beta-1}
-	\right]^{(\Delta h^*-\alpha)/(1-\alpha)} = 
-	\left[ 
-	\frac{\beta+1}{\beta-1}
-	\right]
+	\right]^{(\Delta h^*-\alpha)/(1-\alpha)}
 	, \qquad \qquad
 	\gamma_{1} = \left[ 
 	\frac{\beta+1}{\beta-1}
 	\right]^{(0-\alpha)/(1-\alpha)}
 \end{equation}
-
-
+Where $\Delta h^*$ is the dimensionless discretized element length assuming a uniform distribution.
 
 \section{Roberts Transformation 3}
 In this transformation, $\tau$ is the stretching parameter, which varies from zero (no stretching) to large values that produce the most refinement near $y=y_c$.

@@ -2,6 +2,7 @@
        use current_precision_mod
        use mesh_mod
        use mesh_simple_geometries_mod
+       use mesh_BC_geometries_mod
        use mesh_complex_geometries_mod
        use domain_mod
        implicit none
@@ -39,8 +40,8 @@
 
          ! call BC_sim_mom(m_mom,Ha)
          ! call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
-         call BC_sim_mom_sheet(m_mom,Ha)
-         call BC_sim_ind_sheet(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+         call BC_sim_mom_proper_insulate(m_mom,Ha)
+         call BC_sim_ind_proper_insulate(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
 
          ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,D_sigma)

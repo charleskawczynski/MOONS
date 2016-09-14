@@ -56,6 +56,7 @@
            call tic(sc)
            call update(PE,coupled%n_step)
 
+           ! if (SP%solveDensity)    call solve(dens,mom%U,  PE,EN,DT)
            if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,DT)
            if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
            if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)

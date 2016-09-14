@@ -3,7 +3,7 @@
        use grid_init_mod
        use grid_extend_mod
        use grid_connect_mod
-       use grid_distribution_funcs_mod
+       use coordinate_stretch_parameters_mod
        use grid_mod
        use grid_genHelper_mod
        use domain_mod
@@ -39,7 +39,7 @@
          N = (/15,30,1/)
          hmin = -0.5_cp; hmax = 0.5_cp
          hmin(1) = -0.5_cp; hmax(1) = 0.0_cp
-         beta = reynoldsBL(Re,hmin,hmax); beta = hartmannBL(Ha,hmin,hmax)
+         beta = reynoldsBL(Re,hmin,hmax); beta = HartmannBL(Ha,hmin,hmax)
 
          call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
          call grid_uniform(g1,hmin(2),hmax(2),N(2),2)
@@ -65,7 +65,7 @@
          N = (/30,15,1/)
          hmin = -0.5_cp; hmax = 0.5_cp
          hmin(2) = -0.5_cp; hmax(2) = 0.0_cp
-         beta = reynoldsBL(Re,hmin,hmax); beta = hartmannBL(Ha,hmin,hmax)
+         beta = reynoldsBL(Re,hmin,hmax); beta = HartmannBL(Ha,hmin,hmax)
 
          call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
          call grid_uniform(g1,hmin(2),hmax(2),N(2),2)
@@ -94,7 +94,7 @@
          hmin(3) = -0.5_cp
          hmax(3) = 0.0_cp
          beta = reynoldsBL(Re,hmin,hmax)
-         beta = hartmannBL(Ha,hmin,hmax)
+         beta = HartmannBL(Ha,hmin,hmax)
 
          call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
          call grid_Roberts_B(g1,hmin(2),hmax(2),N(2),beta(2),2)
@@ -121,7 +121,7 @@
          N = (/1,25,50/)
          hmin = -0.5_cp; hmax = 0.5_cp
          hmin(2) = -0.5_cp; hmax(2) = 0.0_cp
-         beta = reynoldsBL(Re,hmin,hmax); beta = hartmannBL(Ha,hmin,hmax)
+         beta = reynoldsBL(Re,hmin,hmax); beta = HartmannBL(Ha,hmin,hmax)
 
          call grid_uniform(g1,hmin(1),hmax(1),N(1),1)
          call grid_Roberts_L(g1,hmin(2),hmax(2),N(2),beta(2),2)
@@ -151,7 +151,7 @@
          hmin(3) = -0.5_cp
          hmax(3) = 0.5_cp
          beta = reynoldsBL(Re,hmin,hmax)
-         beta = hartmannBL(Ha,hmin,hmax)
+         beta = HartmannBL(Ha,hmin,hmax)
 
          call grid_Roberts_L(g1,hmin(1),hmax(1),N(1),beta(1),1)
          call grid_Roberts_L(g1,hmin(2),hmax(2),N(2),beta(2),2)
@@ -191,7 +191,7 @@
          hmin(3) = -0.5_cp
          hmax(3) = 0.5_cp
          beta = reynoldsBL(Re,hmin,hmax)
-         beta = hartmannBL(Ha,hmin,hmax)
+         beta = HartmannBL(Ha,hmin,hmax)
 
          call grid_Roberts_L(g1,hmin(1),hmax(1),N(1),beta(1),1)
          call grid_Roberts_L(g1,hmin(2),hmax(2),N(2),beta(2),2)

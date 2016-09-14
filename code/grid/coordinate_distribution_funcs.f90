@@ -1,35 +1,21 @@
-       module grid_distribution_funcs_mod
+       module coordinate_distribution_funcs_mod
        use current_precision_mod
+       use coordinate_stretch_parameters_mod
        implicit none
 
        private
+       public :: uniform,linspace,uniformLeft,uniformRight ! Uniform grids
+       public :: robertsLeft,robertsRight,robertsBoth,cluster ! Stretched grids
 
        real(cp),parameter :: one = 1.0_cp
        real(cp),parameter :: two = 2.0_cp
        real(cp),parameter :: zero = 0.0_cp
        real(cp),parameter :: tol = 10.0_cp**(-12.0_cp)
        
-       ! Uniform grids
-       public :: uniform,uniformLeft,uniformRight
-       public :: linspace1,uniformGrid1
-
-       ! Stretched grids
-       public :: robertsLeft,robertsRight,robertsBoth,cluster
-       ! Stretching parameters
-       public :: robertsBL
-       ! Physical stretching arameters
-       public :: hartmannBL,reynoldsBL
-
-       ! Other tools
-       public :: robertsGrid2                   ! Soon to be private
-       public :: reverseIndex,defineGhostPoints ! Soon to be private
-
        contains
 
        ! ***************************************************************
-       ! ***************************************************************
        ! *********************** UNIFORM GRIDS *************************
-       ! ***************************************************************
        ! ***************************************************************
 
        function uniform(hmin,hmax,N) result(hn)
@@ -61,6 +47,26 @@
          endif
        end function
 
+       subroutine linspace(hn,hmin,hmax,N)
+         ! This routine returns a uniform grid from
+         ! hmin to hmax using N+1 points.
+         ! 
+         ! NOTE: hmin and hmax are included in the result.
+         ! 
+         ! INPUT:
+         !      hmin     = minimum value
+         !      hmax     = maximum value
+         !      N        = N segments of dh
+         implicit none
+         real(cp),dimension(N+1),intent(inout) :: hn
+         real(cp),intent(in) :: hmin,hmax
+         integer,intent(in) :: N
+         integer :: i
+         real(cp) :: dh
+         dh = (hmax - hmin)/real(N,cp)
+         hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
+       end subroutine
+
        function uniformDirection(hstart,dh,N,dir) result(hn)
          ! This routine returns a uniform grid beginning
          ! from hstart with uniform step size dh.
@@ -87,7 +93,7 @@
            endif
          else
            hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,N+1)/)
-           if (dir.eq.-1) call reverseIndex(hn)
+           if (dir.eq.-1) call reverseIndex(hn,N+1)
          endif
        end function
 
@@ -120,9 +126,7 @@
        end function
 
        ! ***************************************************************
-       ! ***************************************************************
        ! ********************* STRETCHED GRIDS *************************
-       ! ***************************************************************
        ! ***************************************************************
 
        function transformation1(hmin,hmax,N,beta) result(hn)
@@ -281,9 +285,7 @@
        end function
 
        ! ***************************************************************
-       ! ***************************************************************
        ! ************************* ALIASES *****************************
-       ! ***************************************************************
        ! ***************************************************************
 
        function robertsLeft(hmin,hmax,N,beta) result(hn)
@@ -319,204 +321,25 @@
        end function
 
        ! ***************************************************************
-       ! ***************************************************************
-       ! ************************* PHYSICAL ****************************
-       ! ***************************************************************
-       ! ***************************************************************
-
-       function robertsBL1D(delta,h) result (beta)
-         ! robertsBL1D returns the beta for a given boundary laryer
-         ! as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
-         ! 2nd edition, J. Tannehill et al.
-         ! 
-         ! INPUT:
-         !      hmin     = wall boundary (minimum value)
-         !      hmax     = wall boundary (maximum value)
-         !      delta    = thickness of boundary layer
-         implicit none
-         real(cp),intent(in) :: h,delta
-         real(cp) :: beta
-         ! The 'if' statement protects against the case when 
-         ! Ha = 1 (delta=h), which leads to beta = infinity. 
-         ! HIMAG doesn't seem to protect against this.
-         if (delta.lt.h*0.99_cp) then
-           beta = (1.0_cp - delta/h)**(-0.5_cp)
-         else; beta = 1000.0_cp
-         endif
-       end function
-
-       function robertsBL(delta,hmin,hmax) result(beta)
-         ! robertsGridBL returns the beta for a given boundary laryer
-         ! as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
-         ! 2nd edition, J. Tannehill et al.
-         ! 
-         ! INPUT:
-         !      hmin     = wall boundary (minimum value)
-         !      hmax     = wall boundary (maximum value)
-         !      delta    = thickness of boundary layer
-         implicit none
-         real(cp),intent(in) :: hmin,hmax
-         real(cp),intent(in) :: delta
-         real(cp) :: beta
-         beta = robertsBL1D(delta,hmax-hmin)
-       end function
-
-       function hartmannBL(Ha,hmin,hmax) result (beta)
-         implicit none
-         real(cp),dimension(3),intent(in) :: hmin,hmax
-         real(cp),intent(in) :: Ha
-         real(cp),dimension(3) :: beta
-         integer :: i
-         do i = 1,3
-            beta(i) = robertsBL((hmax(i)-hmin(i))/Ha,hmin(i),hmax(i))
-         enddo
-       end function
-
-       function reynoldsBL(Re,hmin,hmax) result (beta)
-         implicit none
-         real(cp),dimension(3),intent(in) :: hmin,hmax
-         real(cp),intent(in) :: Re
-         real(cp),dimension(3) :: beta
-         integer :: i
-         do i = 1,3
-            beta(i) = robertsBL((hmax(i)-hmin(i))/sqrt(Re),hmin(i),hmax(i))
-         enddo
-       end function
-
-       ! ***************************************************************
-       ! ***************************************************************
        ! *********************** OTHER TOOLS ***************************
        ! ***************************************************************
-       ! ***************************************************************
-       ! These routines must be removed with the addition of gridGen.
 
-       subroutine robertsGrid2(hn,hmin,hmax,N,alpha,beta) ! OBSOLETE, NEED TO DELETE
-         ! This function returns the coordinates and differences of a Robert's 
-         ! stretching function as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
-         ! 2nd edition, J. Tannehill et al.
-         ! 
-         ! INPUT:
-         !      hmin     = minimum value
-         !      hmax     = maximum value
-         !      N        = N segments of dh
-         !      alpha    = 0      stretching at y=h only
-         !      alpha    = 0.5    stretching at y=0 and y=hmax
-         !      beta     = 1.0 <= beta <= infinity = stretching factor
-         !               = larger -> less stretching
-         ! 
-         ! Here is a picture illustration for alpha = 0:
-         ! 
-         !                                y=h
-         !                                 |
-         !     |----------|-------|---|--|-|
-         !     |------> y
-         ! 
-         ! Note that this must be used in reverse for the lid driven
-         ! cavity geometry for the 'front' and 'back' walls.
-         ! 
-         ! NOTE: I have abused notation a bit to provide consistent notation
-         ! with the reference as well as generalize the returned grid
-         ! so that it need not start at y=0.
-         ! 
-         implicit none
-         real(cp),dimension(:),intent(inout) :: hn
-         real(cp),intent(in) :: hmin,hmax,alpha,beta
+       subroutine reverseIndex(h,N)
          integer,intent(in) :: N
-         real(cp),dimension(:),allocatable :: hnbar
-         integer :: s
-         real(cp) :: dh ! Uniform dh
-         integer :: i
-         real(cp) :: a,b,g ! alpha,beta,gamma
-         s = size(hn)
-         allocate(hnbar(s))
-         a = alpha; b = beta
-         g = (b+one)/(b-one)
-         ! Where N is the number of cells in the wall
-         dh = (hmax - hmin)/real(N,cp)
-         ! Total coordinates (uniform)
-         hnbar = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
-         ! Push coordinates to zero, and normalize for stretching
-         hnbar = (hnbar - hmin)/(hmax-hmin)
-         ! Total coordinates (non-uniform Roberts stretching function)
-         hn = (/( ((b+two*a)*(g)**((hnbar(i)-a)/(one-a))-&
-         b+two*a)/((two*a+one)*(one+&
-         g**((hnbar(i)-a)/(one-a)))),i=1,N+1)/)
-         ! Return coordinates to original scale:
-         hn = hmin + (hmax - hmin)*hn
-         deallocate(hnbar)
-       end subroutine
-
-       subroutine linspace1(hn,hmin,hmax,N)
-         ! This routine returns a uniform grid from
-         ! hmin to hmax using N+1 points.
-         ! 
-         ! NOTE: hmin and hmax are included in the result.
-         ! 
-         ! INPUT:
-         !      hmin     = minimum value
-         !      hmax     = maximum value
-         !      N        = N segments of dh
-         implicit none
-         real(cp),dimension(:),intent(inout) :: hn
-         real(cp),intent(in) :: hmin,hmax
-         integer,intent(in) :: N
-         integer :: i
-         real(cp) :: dh
-         dh = (hmax - hmin)/real(N,cp)
-         hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
-       end subroutine
-
-       subroutine uniformGrid1(hn,hstart,dh,dir)
-         ! This routine returns a uniform grid beginning
-         ! from hstart with uniform step size dh.
-         ! The size of the segment depends on the size
-         ! of hn. dir is the positive or negative direction.
-         ! 
-         ! NOTE: hstart is included in the result.
-         ! 
-         ! INPUT:
-         !      hstart   = start value
-         !      dh       = step size
-         !      N        = N points in segment
-         !      dir      = (1,-1)
-         implicit none
-         real(cp),dimension(:),intent(inout) :: hn
-         real(cp),intent(in) :: hstart,dh
-         integer,intent(in) :: dir
-         integer :: s,i
-         s = size(hn)
-         ! Total coordinates (uniform)
-         hn = (/(hstart+real(dir,cp)*real(i-1,cp)*dh,i=1,s)/)
-       end subroutine
-
-       subroutine reverseIndex(h)
-         real(cp),dimension(:),intent(inout) :: h
+         real(cp),dimension(N),intent(inout) :: h
          real(cp),dimension(:),allocatable :: temp
-         integer :: i,s
-         s = size(h)
-         allocate(temp(s))
-         do i=1,s
-          temp(s-i+1) = h(i)
+         integer :: i
+         allocate(temp(N))
+         do i=1,N
+          temp(N-i+1) = h(i)
          enddo
          h = temp
          deallocate(temp)
        end subroutine
 
-       ! subroutine reverseIndex_new(h) ! Probably the same, but faster than above
-       !   real(cp),dimension(:),intent(inout) :: h
-       !   h = h(size(h):1:-1)
+       ! subroutine reverseIndex_new(h,N) ! Probably the same, but faster than above
+       !   real(cp),dimension(N),intent(inout) :: h
+       !   h = h(N:1:-1)
        ! end subroutine
-
-       subroutine defineGhostPoints(h)
-         implicit none
-         real(cp),dimension(:),intent(inout) :: h
-         integer :: s
-         s = size(h)
-         h(1) = h(2) - (h(3) - h(2))
-         h(s) = h(s-1) + (h(s-1) - h(s-2))
-       end subroutine
 
        end module

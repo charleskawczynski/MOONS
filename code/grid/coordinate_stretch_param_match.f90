@@ -1,4 +1,4 @@
-       module grid_stretchParamMatch_mod
+       module coordinate_stretch_param_match_mod
        use current_precision_mod
        implicit none
 
@@ -79,19 +79,19 @@
          (two*a+one)
        end function
 
-       subroutine newtonT2(T2_root,T2_prime,beta,hmin,hmax,alpha,N,dh)
+       subroutine newtonT2(T_root,T_prime,beta,hmin,hmax,alpha,N,dh)
          ! Estimate the zero of T2_root(beta) using Newton's method. 
          ! Input:
-         !   T2_root:  the function to find a root of
-         !   T2_prime: function returning the derivative T2_root'
+         !   T_root:  the function to find a root of
+         !   T_prime: function returning the derivative T2_root'
          !   debug: logical, prints iterations if debug=.true.
          ! Returns:
          !   the estimate beta satisfying T2_root(beta)=0 (assumes Newton converged!) 
          !   the number of iterations iters
          implicit none
          real(cp),intent(inout) :: beta
-         procedure(func) :: T2_root
-         procedure(func_prime) :: T2_prime
+         procedure(func) :: T_root
+         procedure(func_prime) :: T_prime
          real(cp),intent(in) :: hmin,hmax,alpha,dh
          integer,intent(in) :: N
 
@@ -106,9 +106,9 @@
          if (debug) write(*,*) 'Initial guess: beta = ',beta
 
          do k=1,maxiter ! Newton iteration to find a zero of T2_root(beta)
-           fbeta = T2_root(beta,hmin,hmax,alpha,N,dh) ! evaluate function and its derivative:
+           fbeta = T_root(beta,hmin,hmax,alpha,N,dh) ! evaluate function and its derivative:
            if (debug) write(*,*) 'fbeta = ',fbeta
-           fbetaprime = T2_prime(beta,alpha,N)
+           fbetaprime = T_prime(beta,alpha,N)
            if (debug) write(*,*) 'fbetaprime = ',fbetaprime
            if (abs(fbeta) < tol) exit  ! jump out of do loop
            dbeta = fbeta/fbetaprime ! compute Newton increment beta:
@@ -116,9 +116,9 @@
            if (debug) write(*,*) '(Iterations,beta) = ',k,beta
          enddo
 
-         if (k > maxiter) then ! might not have converged
-           fbeta = T2_root(beta,hmin,hmax,alpha,N,dh)
-           if (abs(fbeta) > err) then
+         if (k.gt.maxiter) then ! might not have converged
+           fbeta = T_root(beta,hmin,hmax,alpha,N,dh)
+           if (abs(fbeta).gt.err) then
             write(*,*) '*** Warning: has not yet converged'
             write(*,*) '(Iterations,beta) = ',k,beta
             write(*,*) 'tol = ',tol

@@ -174,9 +174,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -254,9 +254,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
 	$(SRC_DIR)$(PS)grid$(PS)overlap.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_distribution_funcs.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_parameters.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_distribution_funcs.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_genHelper.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_stretchParamMatch.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_param_match.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
@@ -275,6 +276,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF.f90\

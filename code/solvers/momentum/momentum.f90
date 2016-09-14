@@ -192,7 +192,6 @@
          call apply_stitches(mom%p,m)
          write(*,*) '     P BCs applied'
 
-         call assign(mom%U%x,1.0_cp)
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'

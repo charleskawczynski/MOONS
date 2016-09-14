@@ -95,11 +95,10 @@
          call initProps(D_sigma%m_tot);  call patch(D_sigma%m_tot)
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
-         ! if (.not.SP%quick_start) then
-           if (SP%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
-           if (SP%export_meshes) call export_mesh(D_sigma%m_in,str(DT%meshes),'mesh_D_sigma',1)
-           if (SP%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
-         ! endif
+         if (SP%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
+         if (SP%export_meshes) call export_mesh(D_sigma%m_in,str(DT%meshes),'mesh_D_sigma',1)
+         if (SP%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
+         stop 'Done in MOONS.f90'
 
          ! Initialize energy,momentum,induction
          call init(mom,mesh_mom,SP,TMP_U,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)

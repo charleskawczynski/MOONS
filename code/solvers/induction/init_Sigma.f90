@@ -10,7 +10,7 @@
        private
        public :: initSigma
 
-       integer :: preDefined_Sigma = 3 ! sigma* = sigma_wall/sigma_l
+       integer :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
        !                                          0 : Uniform
        !                                          1 : Subdomain dependent
        !                                          2 : Cylinder (2D)
