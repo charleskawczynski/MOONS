@@ -16,6 +16,13 @@
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
+\newcommand{\gammadef}{\left[\frac{\beta+1}{\beta-1}\right]}
+\newcommand{\g}{\gamma}
+\newcommand{\gsn}{\g^{\theta(sn)}}
+\newcommand{\gsnmo}{\g^{\theta(sn-1)}}
+
+\newcommand{\gz}{\g^{\theta(0)}}
+\newcommand{\go}{\g^{\theta(1)}}
 
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
@@ -50,28 +57,16 @@ MOONS implements several stretching functions. These stretching factors were ado
 This transformation clusters more points near $y=0$ as the stretching parameter $\beta \rightarrow 1$.
 
 \begin{equation}
-	y
-	=
-	h
-	\frac{(\beta+1)-(\beta-1) \left[ (\beta+1)/(\beta-1)^{1-\bar{y}} \right] }
-	{\left[ (\beta+1)/(\beta-1)^{1-\bar{y}} \right]+1}
+	y = h \frac{(\beta+1)-(\beta-1) \g^{1-\bar{y}} } {\g^{1-\bar{y}}+1}, \g = \gammadef
 \end{equation}
 
 \section{Roberts Transformation 2}
 For this transformation, if $\alpha=0$, the mesh will be refined near $y=h$ only, whereas if $\alpha= \frac{1}{2}$, the mesh will be refined equally near $y=0$ and $y=h$.
 
-\begin{equation}
-	y 
-	= 
-	h 
-	\frac{
-	(\beta + 2 \alpha)
-	\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}
-	{
-	(2\alpha+1)
-	\left(1+\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right]
-	\right)
-	}
+\begin{equation} \label{eq:T2}
+	y = h \frac{ (\beta + 2 \alpha) \g^{\theta} - \beta + 2 \alpha}
+	{ (2\alpha+1) \left(1+\g^{\theta} \right) }
+	, \qquad \g = \gammadef, \theta = (\bar{y}-\alpha)/(1-\alpha)
 \end{equation}
 
 Where $h$ is the length of the domain. Note that
@@ -104,7 +99,7 @@ In a slightly different notation, for a scaled grid, not starting at zero, we ma
 \end{equation}
 
 \subsection{Matching the stretching parameter}
-Note that this section is for node data, and does not apply to cell center data, hence the notation for node indexes ($sn$ and $sn-1$).
+Note that this section is for node data, and does not apply to cell center data, hence the notation for node indexes ($N$ and $N-1$).
 
 \subsubsection{Transformation 2}
 We would like to ensure that the ghost cell is the same size as the first interior cell in order to able to linearly extrapolate from the interior cells to the ghost cells.
@@ -112,36 +107,38 @@ We would like to ensure that the ghost cell is the same size as the first interi
 To do this, we must choose $\beta$ such that
 
 \begin{equation}
-	h_{sn} - h_{sn-1} = \Delta h
+	h_{N} - h_{N-1} = \Delta h
 \end{equation}
 Where
 \begin{equation}
 	\Delta h = h_{interior}(2) - h_{interior}(1)
 \end{equation}
 
-Note that this $\Delta h$ is dimensional. Plugging this in, we have
-
+Note that this $\Delta h$ is dimensional. Before plugging this in, let's define some useful things the exponent in \ref{eq:T2} and note the definition of $\bar{h}$:
 \begin{equation}
-	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	\bar{h} = \frac{i}{N}, \qquad 
+	\theta(i) = \frac{\frac{i}{N} - \alpha}{1 - \alpha}, 
+	\qquad i=0,...,N,
+	\qquad \g = \gammadef
+\end{equation}
+So, we must find the roots of:
+\begin{equation}
+	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\g^{\theta(N)} - \beta + 2\alpha}{(2\alpha+1)\left(1+\g^{\theta(N)} \right)}
 	-
 	\left[
-	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\g^{\theta(N-1)} - \beta + 2\alpha}{(2\alpha+1)\left(1+\g^{\theta(N-1)} \right)}
 	\right]
 	=
 	\Delta h
 \end{equation}
-Where
-\begin{equation}
-	\gamma = \left[ \frac{\beta+1}{\beta-1} \right]^{(\bar{h}-\alpha)/(1-\alpha)}
-\end{equation}
 
 Eliminating the scaled sizes results in the equation that must be solved to match the stretching parameters
-\begin{equation}
+\begin{equation} \label{eq:T2_roots}
 	\boxed{
-	\frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	\frac{(\beta+2\alpha)\g^{\theta(N)} - \beta + 2\alpha}{(2\alpha+1) \left(1+\g^{\theta(N)} \right)}
 	-
 	\left[
-	\frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	\frac{(\beta+2\alpha)\g^{\theta(N-1)} - \beta + 2\alpha}{(2\alpha+1) \left(1+\g^{\theta(N-1)} \right)}
 	\right]
 	=
 	\frac{\Delta h}{h_{max}-h_{min}}
@@ -150,35 +147,54 @@ Eliminating the scaled sizes results in the equation that must be solved to matc
 
 This is a nonlinear algebraic equation who's solution must be determined by an iterative method (I think).
 
+\subsubsection{Equation Roots}
+To compute the roots, we can apply Newton's method, which requires the derivative of the roots equation. Since the derivatives are commutative property of addition, we only need to compute the derivative of one term, which we did using Python:
+
+\begin{equation} \label{eq:T2_prime}
+	R(\theta) = \frac{\partial}{\partial \beta}
+	\frac{(\beta+2\alpha)\g^{\theta} - \beta + 2\alpha}{(2\alpha+1) \left(1+\g^{\theta} \right)}
+	= - \frac{- \beta^{2} \g^{2 \theta} + \beta^{2} + 4 \beta \g^{\theta} \theta + \g^{2 \theta} - 1}{\left(2 \alpha + 1\right) \left(\beta - 1\right) \left(\beta + 1\right) \left(\g^{\theta} + 1\right)^{2}}
+\end{equation}
+And, therefore, the roots of \ref{eq:T2_roots} are:
+\begin{equation}
+	R = R(\theta(N)) - R(\theta(N-1))
+\end{equation}
+\begin{equation}
+	R = R(\theta(1)) - R(\theta(0))
+\end{equation}
+
+For the near and far ends respectively.
+
 \subsubsection{Additional notes}
-Now, here comes the tricky part.
-Note that $\bar{h}_{sn}$ and $\bar{h}_{sn-1}$ are uniform and normalized (between 0 and 1), and at the far end we have
+Note that $\bar{h}_{N}$ and $\bar{h}_{sn-1}$ are uniform and normalized (between 0 and 1), and at the far end we have
 
 \begin{equation}
-	\gamma_{sn} = \left[ 
+	\g^{\theta(N)} = \left[ 
 	\frac{\beta+1}{\beta-1}
-	\right]^{(\bar{h}_{sn}-\alpha)/(1-\alpha)} = 
+	\right]^{(N/N-\alpha)/(1-\alpha)} = 
 	\left[ 
 	\frac{\beta+1}{\beta-1}
 	\right]
 	, \qquad \qquad
-	\gamma_{sn-1} = \left[ 
+	\g^{\theta(N-1)} = \left[ 
 	\frac{\beta+1}{\beta-1}
-	\right]^{((1 - \frac{1}{N})-\alpha)/(1-\alpha)}
+	\right]^{(\frac{N-1}{N}-\alpha)/(1-\alpha)}
 \end{equation}
 
 and at the near end we have
 
 \begin{equation}
-	\gamma_{2} = \left[ 
+	\g^{\theta(1)} = \left[ 
 	\frac{\beta+1}{\beta-1}
-	\right]^{(\Delta h^*-\alpha)/(1-\alpha)}
+	\right]^{(1/N-\alpha)/(1-\alpha)} = 
+	\left[ 
+	\frac{\beta+1}{\beta-1}
+	\right]
 	, \qquad \qquad
-	\gamma_{1} = \left[ 
+	\g^{\theta(0)} = \left[ 
 	\frac{\beta+1}{\beta-1}
-	\right]^{(0-\alpha)/(1-\alpha)}
+	\right]^{(\frac{0}{N}-\alpha)/(1-\alpha)}
 \end{equation}
-Where $\Delta h^*$ is the dimensionless discretized element length assuming a uniform distribution.
 
 \section{Roberts Transformation 3}
 In this transformation, $\tau$ is the stretching parameter, which varies from zero (no stretching) to large values that produce the most refinement near $y=y_c$.
