@@ -4,6 +4,9 @@
        use grid_extend_mod
        use grid_connect_mod
        use coordinate_stretch_parameters_mod
+       use dir_tree_mod
+       use string_mod
+       use path_mod
        use grid_mod
        use domain_mod
        use mesh_mod
@@ -90,44 +93,52 @@
 
 
 
-       subroutine BC_sim_mom_proper_insulate(m,Ha)
+       subroutine BC_sim_mom_proper_insulate(m,Ha,DT)
          implicit none
          type(mesh),intent(inout) :: m
          real(cp),intent(in) :: Ha
+         type(dir_tree),intent(in) :: DT
          type(grid) :: g
-         real(cp),dimension(3) :: hmin,hmax,beta
+         real(cp),dimension(3) :: hmin,hmax,beta,beta_buffer
          integer,dimension(3) :: N
-         integer :: i,N_insulate
-         real(cp) :: t_insulate,buffer
+         integer :: i,N_conduct
+         real(cp) :: t_insulate,t_conduct,t_layer,buffer
          call delete(m)
-         buffer = 80.0_cp
-         hmin = -1.0_cp; hmax = 1.0_cp; beta = HartmannBL(Ha+buffer,hmin,hmax)
+         buffer = 60.0_cp
+         hmin = -1.0_cp; hmax = 1.0_cp; beta = HartmannBL(Ha,hmin,hmax)
+         beta_buffer = HartmannBL(Ha+buffer,hmin,hmax)
+         beta(1) = beta_buffer(1)
+         beta(3) = beta_buffer(3)
 
-         N_insulate = 10
-         t_insulate = (1.0_cp/Ha)/10.0_cp
-         hmax(2) = hmax(2)-t_insulate
+         N_conduct = 10
+         t_layer = (1.0_cp/Ha)
+         t_insulate = t_layer/100.0_cp
+         t_conduct = t_layer - t_insulate
 
          if (low_Ha(Ha)) then;      N = (/38,38,38/) ! For Ha = 20
          elseif (high_Ha(Ha)) then; N = (/32,32,32/) ! For Ha = 100
          else; stop 'Error: bad input to geometry in BC_sim_mom in mesh_simple_geometries.f90'
          endif
+         i = 2; call grid_uniform(g,hmax(i)-t_insulate,hmax(i),1,i) ! insulating cell
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
-         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
 
-         i = 2; call ext_app_Roberts_R_IO(g,t_insulate,N_insulate,i)
+         i = 2; call ext_prep_Roberts_R_IO(g,t_conduct,N_conduct,i)
+         i = 2; call ext_prep_Roberts_B_IO(g,hmax(2)-hmin(2)-t_layer,N(2),i)
 
          call add(m,g)
 
          call initProps(m)
          call patch(m)
+         call export(m,str(DT%meshes),'mesh_mom')
          call delete(g)
        end subroutine
-       subroutine BC_sim_ind_proper_insulate(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+       subroutine BC_sim_ind_proper_insulate(m_ind,m_mom,D_sigma,DT,Ha,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
          type(domain),intent(inout) :: D_sigma
+         type(dir_tree),intent(in) :: DT
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
          type(mesh) :: m_sigma
@@ -135,32 +146,41 @@
          real(cp) :: tf
          real(cp) :: Gamma_v
          integer :: N_w,N_v,N_extra,i
-         integer :: N_insulate
-         real(cp) :: t_insulate
+         integer :: N_conduct
+         real(cp) :: t_insulate,t_conduct,t_layer
          call delete(m_ind)
          call init(g,m_mom%g(1))
 
-         N_insulate = 10
-         t_insulate = (1.0_cp/Ha)/10.0_cp
+         N_conduct = 10
+         t_layer = (1.0_cp/Ha)
+         t_insulate = t_layer/100.0_cp
+         t_conduct = t_layer - t_insulate
 
          Gamma_v = 7.0_cp
          tf = 1.0_cp
          N_w = get_N_w(Ha,tw)
 
-         N_v = 12
-         N_extra = 6 ! since no wall domain above lid
+         N_v = 14
+         N_extra = 8 ! since no wall domain above lid
 
          ! Wall
-         i = 1; call ext_Roberts_B_IO(g,tw,N_w,i)
-         i = 3; call ext_Roberts_B_IO(g,tw,N_w,i)
-         i = 2; call ext_prep_Roberts_B_IO(g,tw,N_w,i)
+         ! i = 2; call ext_prep_Roberts_R_IO(g,t_conduct,N_conduct,i)
+         ! i = 2; call ext_prep_Roberts_B_IO(g,hmax(2)-hmin(2)-t_layer,N(2),i)
+
+         i = 1; call ext_Roberts_B_IO(g,tw-t_insulate,N_w,i)
+         i = 3; call ext_Roberts_B_IO(g,tw-t_insulate,N_w,i)
+         i = 2; call ext_prep_Roberts_B_IO(g,tw-t_insulate,N_w,i)
+         ! i = 2; call ext_app_Roberts_C2F_IO(g,t_conduct,N_conduct,i)
 
          ! Define domain for electrical conductivity
          call add(m_sigma,g)
          call initProps(m_sigma)
          call patch(m_sigma)
-
-         i = 2; call ext_app_Roberts_L_IO(g,t_insulate,N_insulate,i)
+         i = 1; call ext_prep_uniform_IO(g,1,i)
+         i = 1; call ext_app_uniform_IO(g,1,i)
+         i = 3; call ext_prep_uniform_IO(g,1,i)
+         i = 3; call ext_app_uniform_IO(g,1,i)
+         i = 2; call ext_prep_uniform_IO(g,1,i)
 
          ! Vacuum
          ! Remove the following 4 lines for vacuum-absent case
@@ -186,6 +206,27 @@
          integer :: N_w
          if (low_tw(tw)) then
            if (low_Ha(Ha)) then;      N_w = 4 ! For Ha = 20
+           elseif (high_Ha(Ha)) then; N_w = 6 ! For Ha = 100
+           else; write(*,*) 'Ha,tw=',Ha,tw
+            stop 'Error: 2 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
+           endif
+         elseif (high_tw(tw)) then
+           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
+           elseif (high_Ha(Ha)) then; N_w = 10 ! For Ha = 100
+           else; write(*,*) 'Ha,tw=',Ha,tw
+            stop 'Error: 3 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
+           endif
+         else; write(*,*) 'Ha,tw=',Ha,tw
+            stop 'Error: 4 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
+         endif
+       end function
+
+       function get_N_w_proper_insulate(Ha,tw) result(N_w)
+         implicit none
+         real(cp),intent(in) :: Ha,tw
+         integer :: N_w
+         if (low_tw(tw)) then
+           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
            elseif (high_Ha(Ha)) then; N_w = 6 ! For Ha = 100
            else; write(*,*) 'Ha,tw=',Ha,tw
             stop 'Error: 2 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'

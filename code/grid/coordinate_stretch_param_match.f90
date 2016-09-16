@@ -28,10 +28,9 @@
          end function
        end interface
 
-       public :: betaRobertsLeft
-       public :: betaRobertsRight
-       public :: betaRobertsBoth
-       ! public :: betaCluster ! Not yet implemented
+       public :: beta_dh_small
+       public :: beta_dh_big
+       public :: beta_dh_both
 
        contains
 
@@ -99,7 +98,7 @@
 
        ! ---------------------------------------------------------------
 
-       subroutine newtonT2(T_root,T_prime,beta,hmin,hmax,alpha,N,dh)
+       subroutine newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,new_case)
          ! Estimate the zero of T_root(beta) using Newton's method. 
          ! Input:
          !   T_root:  the function to find a root of
@@ -114,14 +113,17 @@
          procedure(func_prime) :: T_prime
          real(cp),intent(in) :: hmin,hmax,alpha,dh
          integer,intent(in) :: N
+         logical,intent(in) :: new_case
 
-         real(cp) :: dbeta, fbeta, fbetaprime ! local variables
+         real(cp) :: dbeta, fbeta, fbetaprime,beta0 ! local variables
          integer,parameter :: maxiter = 1000000
          real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
          real(cp),parameter :: err = 10.0_cp**(-10.0_cp) ! We may have a problem
          integer :: k
          logical :: debug
-         debug = .false.
+         debug = new_case
+         ! deubg = new_case
+         beta0 = beta
 
          if (debug) write(*,*) '****************************************'
          if (debug) write(*,*) '****************************************'
@@ -133,6 +135,7 @@
          if (debug) write(*,*) '****************************************'
          if (debug) write(*,*) '****************************************'
 
+         if (debug) write(*,*) 'beta = ',beta
          do k=1,maxiter ! Newton iteration to find a zero of T_root(beta)
            if (debug) write(*,*) '****************************************'
            if (debug) write(*,*) 'iteration = ',k
@@ -141,11 +144,24 @@
            fbetaprime = T_prime(beta,alpha,N)
            if (debug) write(*,*) 'f_prime = ',fbetaprime
            if (abs(fbeta) .lt. tol) exit  ! jump out of do loop
+           ! if (beta .gt. 1.0000001_cp) exit  ! jump out of do loop
+           if (beta .gt. 100.0_cp) exit  ! jump out of do loop
+           if (beta .lt. beta0) then
+             beta = beta0
+             exit  ! jump out of do loop
+           endif
            dbeta = fbeta/fbetaprime ! compute Newton increment beta:
            if (debug) write(*,*) 'dbeta = ',dbeta
            beta = beta - dbeta ! update beta:
+           if (debug) write(*,*) 'beta = ',beta
            if (debug) write(*,*) 'updated beta = ',beta
-           if (is_nan(beta)) stop 'Done in newtonT2 due to Nans'
+           if (is_nan(beta)) then
+             write(*,*) 'beta = ',beta
+             write(*,*) 'Error: Divergent stretch parameter matching.'
+             write(*,*) 'Consider decreasing tol in beta Roberts functions.'
+             write(*,*) 'Or check mesh config.'
+             stop 'Done in newtonT2 in coordinate_stretch_param_match.f90'
+           endif
          enddo
 
          if (k.gt.maxiter) then ! might not have converged
@@ -159,7 +175,36 @@
            endif
          endif
          if (debug) write(*,*) 'max(iter) = ',k-1 ! number of iterations taken
-         if (debug) then; stop 'Done in newtonT2'; endif
+         ! if (debug) then; stop 'Done in newtonT2'; endif
+       end subroutine
+
+       subroutine newtonT2(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,new_case)
+         implicit none
+         real(cp),intent(inout) :: beta
+         procedure(func) :: T_root
+         procedure(func_prime) :: T_prime
+         real(cp),intent(in) :: hmin,hmax,alpha,dh
+         integer,intent(in) :: N
+         logical,intent(in) :: new_case
+         real(cp) :: dbeta,fbeta,fbetaprime,beta_low ! local variables
+         integer,parameter :: maxiter = 1000000
+         real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
+         integer :: k
+         logical :: flag
+         beta_low = one + 10.0_cp**(-10.0_cp)
+         do k=1,maxiter ! Newton iteration to find a zero of T_root(beta)
+           fbeta = T_root(beta,hmin,hmax,alpha,N,dh) ! evaluate function and its derivative:
+           fbetaprime = T_prime(beta,alpha,N)
+           if (abs(fbeta) .lt. tol) exit                              ! success!
+           if (beta .gt. 1000.0_cp) exit                              ! big enough!
+           if (beta .lt. beta_low) then; beta = 1.1_cp; exit; endif   ! oops!
+           dbeta = fbeta/fbetaprime                                   ! compute beta increment
+           beta = beta - dbeta                                        ! update
+         enddo
+         if (is_nan(beta)) then; flag = .true.; beta = 1.1_cp; endif  ! oops, gracefully handle
+         ! if (flag) then
+         !   call newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,.true.)
+         ! endif
        end subroutine
 
        ! ***************************************************************
@@ -170,38 +215,34 @@
        ! ******************** SOLUTIONS OF ROOTS ***********************
        ! ***************************************************************
 
-       function betaRobertsRight(hmin,hmax,N,dh) result(beta)
+       function beta_dh_small(hmin,hmax,N,dh) result(beta)
          implicit none
          real(cp),intent(in) :: hmin,hmax,dh
          integer,intent(in) :: N
          real(cp) :: beta,tol
          tol = 10.0_cp**(-10.0_cp)
          beta = one + tol ! Initial guess
-         call newtonT2(T2_root,T2_prime,beta,hmin,hmax,0.0_cp,N,dh)
+         call newtonT2(T2_root_dh_near_hmax,T2_prime_dh_near_hmax,beta,hmin,hmax,0.0_cp,N,dh,.false.)
        end function
 
-       function betaRobertsLeft(hmin,hmax,N,dh) result(beta)
-         ! I believe transformations 1 and 2 have symmetries that
-         ! can be exploited to compute the stretching factors by
-         ! only using one of the transformations. This was the approach
-         ! used here.
+       function beta_dh_big(hmin,hmax,N,dh) result(beta)
          implicit none
          real(cp),intent(in) :: hmin,hmax,dh
          integer,intent(in) :: N
          real(cp) :: beta,tol
          tol = 10.0_cp**(-10.0_cp)
          beta = one + tol ! Initial guess
-         call newtonT2(T2_root,T2_prime,beta,hmin,hmax,0.0_cp,N,dh)
+         call newtonT2(T2_root_dh_near_hmin,T2_prime_dh_near_hmin,beta,hmin,hmax,0.0_cp,N,dh,.true.)
        end function
 
-       function betaRobertsBoth(hmin,hmax,N,dh) result(beta)
+       function beta_dh_both(hmin,hmax,N,dh) result(beta)
          implicit none
          real(cp),intent(in) :: hmin,hmax,dh
          integer,intent(in) :: N
          real(cp) :: beta,tol
          tol = 10.0_cp**(-10.0_cp)
          beta = one + tol ! Initial guess
-         call newtonT2(T2_root,T2_prime,beta,hmin,hmax,0.5_cp,N,dh)
+         call newtonT2(T2_root_dh_near_hmax,T2_prime_dh_near_hmax,beta,hmin,hmax,0.5_cp,N,dh,.false.)
        end function
 
        end module

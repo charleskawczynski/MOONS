@@ -77,7 +77,7 @@
            call import(mesh_ind,str(DT%restart),'mesh_ind')
            call import(D_sigma ,str(DT%restart),'D_sigma')
          else
-           call mesh_generate(mesh_mom,mesh_ind,D_sigma,Ha,tw,include_vacuum)
+           call mesh_generate(mesh_mom,mesh_ind,D_sigma,DT,Ha,tw,include_vacuum)
            call export(mesh_mom,str(DT%restart),'mesh_mom')
            call export(mesh_ind,str(DT%restart),'mesh_ind')
            call export(D_sigma ,str(DT%restart),'D_sigma')
@@ -98,7 +98,9 @@
          if (SP%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
          if (SP%export_meshes) call export_mesh(D_sigma%m_in,str(DT%meshes),'mesh_D_sigma',1)
          if (SP%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
-         stop 'Done in MOONS.f90'
+         if (SP%stop_after_mesh_export) then
+           stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
+         endif
 
          ! Initialize energy,momentum,induction
          call init(mom,mesh_mom,SP,TMP_U,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)
@@ -121,7 +123,9 @@
          call print(mesh_ind)
 
          ! ******************** PREP TIME START/STOP ********************
-         if (SP%stopBeforeSolve) stop 'Exported ICs. Turn off stopAfterExportICs in simParams.f90 to run sim'
+         if (SP%stopBeforeSolve) then
+           stop 'Exported ICs. Turn off stopAfterExportICs in sim_params.f90 to run sim.'
+         endif
          if (.not.SP%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,coupled)
 
          ! if (post_process_only) then

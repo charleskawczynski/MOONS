@@ -146,6 +146,7 @@
          call init(ind%TMP,TMP)
          call init(ind%ISP_B,ISP_B)
          call init(ind%ISP_phi,ISP_phi)
+         ind%finite_Rem = finite_Rem
          ind%Rem = Rem
          ind%include_vacuum = include_vacuum
          ind%sig_local_over_sig_f = sig_local_over_sig_f
@@ -235,6 +236,7 @@
          call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
          call embedEdge(ind%sigmaInv_edge,sigma_temp_E,D_sigma)
          call delete(sigma_temp_E)
+         call insulate_lid(ind%sigmaInv_edge,ind%m,1.0_cp/sig_local_over_sig_f)
 
          ! call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
          ! call treatInterface(ind%sigmaInv_edge,.false.) ! Logical = take_high_value
@@ -641,39 +643,26 @@
          call close_and_message(un,str(DT%e_budget),'E_M_budget_terms')
        end subroutine
 
-       subroutine conducting_lid_only(S,m,sig_local_over_sig_f)
+       subroutine insulate_lid(S,m,sigma_insulate)
          implicit none
          type(VF),intent(inout) :: S
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: sig_local_over_sig_f
-         call conducting_lid_only_SF(S%x,m)
-         call assign(S%y,sig_local_over_sig_f)
-         call conducting_lid_only_SF(S%z,m)
+         real(cp),intent(in) :: sigma_insulate
+         call insulate_lid_SF(S%x,m,sigma_insulate)
+         call insulate_lid_SF(S%z,m,sigma_insulate)
        end subroutine
 
-       subroutine conducting_lid_only_SF(S,m)
+       subroutine insulate_lid_SF(S,m,sigma_insulate)
          implicit none
          type(SF),intent(inout) :: S
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: sigma_insulate
          integer :: t,i,j,k
-         real(cp) :: tol,Smax
-         Smax = maxabs(S)
+         real(cp) :: tol
          tol = 10.0_cp**(-10.0_cp)
          do t=1,m%s; do k=1,S%RF(t)%s(3);do j=1,S%RF(t)%s(2);do i=1,S%RF(t)%s(1)
-         if (.not.(abs(m%g(t)%c(2)%hn(j)-1.0_cp).lt.tol)) S%RF(t)%f(i,j,k) = Smax
+         if (abs(m%g(t)%c(2)%hn(j)-1.0_cp).lt.tol) S%RF(t)%f(i,j,k) = sigma_insulate
          enddo; enddo; enddo; enddo
-       end subroutine
-
-       subroutine update_PCG_k(PCG_B,m,R,outside)
-         implicit none
-         type(PCG_solver_VF),intent(inout) :: PCG_B
-         type(mesh),intent(in) :: m
-         type(geometric_region),intent(in) :: R
-         real(cp),intent(in) :: outside
-         call assign(PCG_B%k,outside)
-         call assign_inside(PCG_B%k%x,m,R,1.0_cp)
-         call assign_inside(PCG_B%k%y,m,R,1.0_cp)
-         call assign_inside(PCG_B%k%z,m,R,1.0_cp)
        end subroutine
 
        end module

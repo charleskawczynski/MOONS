@@ -4,6 +4,7 @@
      type sim_params
        logical :: restart_all
        logical :: stopBeforeSolve
+       logical :: stop_after_mesh_export
        logical :: post_process_only
 
        logical :: export_meshes
@@ -42,19 +43,20 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        SP%restart_all               = .false.     ! restart sim (requires no code changes)
-       SP%stopBeforeSolve           = .true.      ! Just export ICs, do not run simulation
+       SP%stopBeforeSolve           = .false.      ! Just export ICs, do not run simulation
        SP%post_process_only         = .false.      ! Skip solver loop and just post-process results
 
-       SP%export_meshes             = .true.      ! Export all meshes before starting simulation
-       SP%export_mat_props          = .true.      ! Export material properties before starting simulation
-       SP%exportICs                 = .true.      ! Export Post-Processed ICs before starting simulation
+       SP%export_meshes             = .false.      ! Export all meshes before starting simulation
+       SP%export_mat_props          = .false.      ! Export material properties before starting simulation
+       SP%exportICs                 = .false.      ! Export Post-Processed ICs before starting simulation
        SP%quick_start               = .true.     ! Avoids exporting any large datasets before solve
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
+       SP%stop_after_mesh_export    = .false.     ! 
 
        SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
 
        SP%solveEnergy               = .false.     ! Solve energy    equation
-       SP%solveMomentum             = .false.     ! Solve momentum  equation
+       SP%solveMomentum             = .true.      ! Solve momentum  equation
        SP%solveInduction            = .true.      ! Solve induction equation
 
        SP%restartT                  = .false.     ! restart T  field
@@ -66,7 +68,7 @@
        SP%solveUMethod              = 1           ! Refer to momentum.f90
        SP%solveBMethod              = 3           ! Refer to induction.f90
 
-       SP%addJCrossB                = .false.     ! add JCrossB      to momentum equation
+       SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation
        SP%addBuoyancy               = .false.     ! add Buoyancy     to momentum equation
        SP%addGravity                = .false.     ! add Gravity      to momentum equation
@@ -78,6 +80,7 @@
        type(sim_params),intent(in) :: SP_in
        SP_out%restart_all = SP_in%restart_all
        SP_out%stopBeforeSolve = SP_in%stopBeforeSolve
+       SP_out%stop_after_mesh_export = SP_in%stop_after_mesh_export
        SP_out%post_process_only = SP_in%post_process_only
        SP_out%export_meshes = SP_in%export_meshes
        SP_out%export_mat_props = SP_in%export_mat_props

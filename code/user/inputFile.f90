@@ -37,7 +37,7 @@
          ! sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-2.0_cp) ! sigma* = sigma_wall/sigma_l
-         sig_local_over_sig_f = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
+         sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -56,10 +56,10 @@
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
-         time  = 1.0_cp*10.0_cp**(-1.0_cp)
-         ! dtime = 1.0_cp*10.0_cp**(-6.0_cp) ! Implicit time marching
+         time  = 10.0_cp
+         dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
 
-         dtime = 1.0_cp*10.0_cp**(-5.0_cp)*Rem*sig_local_over_sig_f ! Explicit time marching estimate
+         ! dtime = 1.0_cp*10.0_cp**(-5.0_cp)*Rem*sig_local_over_sig_f ! Explicit time marching estimate
 
          ! call init(TMP,nstep_stop,dtime,dir,name)
          call init(coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')

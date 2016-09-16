@@ -48,10 +48,11 @@
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          write(*,*) 'Working directory = ',str(DT%tar)
-         ! ***************************************************************
-         ! ********** SOLVE MHD EQUATIONS ********************************
-         ! ***************************************************************
-         do n_step = coupled%n_step,coupled%n_step_stop
+
+         write(*,*) '***************************************************************'
+         write(*,*) '****************** ENTERING MAIN LOOP *************************'
+         write(*,*) '***************************************************************'
+         do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
 
            call tic(sc)
            call update(PE,coupled%n_step)
@@ -111,9 +112,8 @@
                call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
              endif
 
-             call import(KS)
              write(*,*) 'Working directory = ',str(DT%tar)
-             if (.not.KS%continue_loop) then; call toc(sc); exit; endif
+             call import(KS)
            endif
          enddo
          call print(sc)
