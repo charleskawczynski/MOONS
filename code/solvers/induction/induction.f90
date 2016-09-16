@@ -180,7 +180,7 @@
          if (.not.quick_start) call export_raw(m,sigma,str(DT%mat),'sigma',0)
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
-         call treatInterface(ind%sigmaInv_edge)
+         call treatInterface(ind%sigmaInv_edge,.false.)
          if (.not.quick_start) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
@@ -456,7 +456,7 @@
 
          call init_Face(sigmaInv_Face,ind%m)
          call cellCenter2Face(sigmaInv_Face,ind%sigmaInv_CC,ind%m)
-         call treatInterface(sigmaInv_Face)
+         call treatInterface(sigmaInv_Face,.false.)
 
          call embedCC(temp_U_CC,U_CC,D_fluid)
          call embedFace(temp_U,U,D_fluid)

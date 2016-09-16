@@ -148,7 +148,7 @@
 
          if (.not.post_process_only) then
            if (restartU.or.restartB) then
-           call readLastStepFromFile(n_mhd,str(DT%params),'n_mhd')
+           call readLastStepFromFile(n_mhd,str(DT%params),'n_step')
            else; n_mhd = 0
            endif
            ! ********************* SOLVE MHD EQUATIONS ********************
