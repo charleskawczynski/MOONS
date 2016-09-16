@@ -8,6 +8,7 @@
        public :: time_marching_params
        public :: init,delete,export,import,display,print
        public :: iterate_step
+       public :: couple_time_step
 
        type time_marching_params
          integer(li) :: n_step        ! nth time step
@@ -19,15 +20,16 @@
          type(string) :: dir,name     ! directory / name
        end type
 
-       interface init;         module procedure init_TMP;         end interface
-       interface init;         module procedure init_copy_TMP;    end interface
-       interface delete;       module procedure delete_TMP;       end interface
-       interface export;       module procedure export_TMP;       end interface
-       interface import;       module procedure import_TMP;       end interface
-       interface display;      module procedure display_TMP;      end interface
-       interface print;        module procedure print_TMP;        end interface
+       interface init;             module procedure init_TMP;             end interface
+       interface init;             module procedure init_copy_TMP;        end interface
+       interface delete;           module procedure delete_TMP;           end interface
+       interface export;           module procedure export_TMP;           end interface
+       interface import;           module procedure import_TMP;           end interface
+       interface display;          module procedure display_TMP;          end interface
+       interface print;            module procedure print_TMP;            end interface
+       interface iterate_step;     module procedure iterate_step_TMP;     end interface
 
-       interface iterate_step; module procedure iterate_step_TMP; end interface
+       interface couple_time_step; module procedure couple_time_step_TMP; end interface
 
        contains
 
@@ -127,6 +129,17 @@
          type(time_marching_params),intent(inout) :: TMP
          TMP%n_step = TMP%n_step + 1
          TMP%t = TMP%t + TMP%dt
+       end subroutine
+
+       subroutine couple_time_step_TMP(TMP,coupled)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         type(time_marching_params),intent(in) :: coupled
+         TMP%t = coupled%t
+         TMP%dt = coupled%dt
+         TMP%n_step_start = coupled%n_step_start
+         TMP%n_step_stop = coupled%n_step_stop
+         TMP%n_step = coupled%n_step
        end subroutine
 
        end module

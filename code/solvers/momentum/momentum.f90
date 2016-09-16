@@ -166,7 +166,9 @@
 
          call init_CC(mom%vol_CC,m)
          call volume(mom%vol_CC,m)
-         call export_raw(mom%m,mom%vol_CC,str(DT%U),'cell_volume',0)
+         if (mom%SP%export_cell_volume) then
+           call export_raw(mom%m,mom%vol_CC,str(DT%meshes),'mom_cell_volume',0)
+         endif
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs

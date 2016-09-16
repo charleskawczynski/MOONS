@@ -138,6 +138,9 @@
          call init_CC(nrg%divQ,m)
          call init_CC(nrg%vol_CC,m)
          call volume(nrg%vol_CC,m)
+         if (nrg%SP%export_cell_volume) then
+           call export_raw(nrg%m,nrg%vol_CC,str(DT%meshes),'nrg_cell_volume',0)
+         endif
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---

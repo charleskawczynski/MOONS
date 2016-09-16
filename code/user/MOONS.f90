@@ -113,18 +113,16 @@
          endif
 
          ! ********************* EXPORT RAW ICs *************************
-         if (.not.SP%quick_start) then
-           ! if (SP%exportICs) call export_tec(nrg,DT)
-           if (SP%exportICs) call export_tec(ind,DT)
-           if (SP%exportICs) call export_tec(mom,DT,mom%temp_F)
-         endif
+           ! if (SP%export_ICs) call export_tec(nrg,DT)
+           if (SP%export_ICs) call export_tec(ind,DT)
+           if (SP%export_ICs) call export_tec(mom,DT,mom%temp_F)
 
          call print(mesh_mom)
          call print(mesh_ind)
 
          ! ******************** PREP TIME START/STOP ********************
          if (SP%stopBeforeSolve) then
-           stop 'Exported ICs. Turn off stopAfterExportICs in sim_params.f90 to run sim.'
+           stop 'Exported ICs. Turn off stopBeforeSolve in sim_params.f90 to run sim.'
          endif
          if (.not.SP%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,coupled)
 

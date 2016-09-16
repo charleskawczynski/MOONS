@@ -3,21 +3,23 @@
 
      type sim_params
        logical :: restart_all
+       logical :: post_process_only
+       logical :: export_analytic
+
        logical :: stopBeforeSolve
        logical :: stop_after_mesh_export
-       logical :: post_process_only
 
        logical :: export_meshes
        logical :: export_mat_props
-       logical :: exportICs
-       logical :: quick_start
+       logical :: export_cell_volume
+       logical :: export_ICs
        logical :: export_planar
-
-       logical :: export_analytic
 
        logical :: solveEnergy
        logical :: solveMomentum
        logical :: solveInduction
+
+       logical :: coupled_time_step
 
        integer :: solveTMethod
        integer :: solveUMethod
@@ -43,17 +45,19 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        SP%restart_all               = .false.     ! restart sim (requires no code changes)
-       SP%stopBeforeSolve           = .false.      ! Just export ICs, do not run simulation
-       SP%post_process_only         = .false.      ! Skip solver loop and just post-process results
+       SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
+       SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
 
-       SP%export_meshes             = .false.      ! Export all meshes before starting simulation
-       SP%export_mat_props          = .false.      ! Export material properties before starting simulation
-       SP%exportICs                 = .false.      ! Export Post-Processed ICs before starting simulation
-       SP%quick_start               = .true.     ! Avoids exporting any large datasets before solve
-       SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
+       SP%stopBeforeSolve           = .false.     ! Just export ICs, do not run simulation
        SP%stop_after_mesh_export    = .false.     ! 
 
-       SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
+       SP%export_meshes             = .false.     ! Export all meshes before starting simulation
+       SP%export_mat_props          = .false.     ! Export material properties before starting simulation
+       SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
+       SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
+       SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
+
+       SP%coupled_time_step         = .true.      ! Ensures all time steps are equal to coupled%dt
 
        SP%solveEnergy               = .false.     ! Solve energy    equation
        SP%solveMomentum             = .true.      ! Solve momentum  equation
@@ -84,10 +88,11 @@
        SP_out%post_process_only = SP_in%post_process_only
        SP_out%export_meshes = SP_in%export_meshes
        SP_out%export_mat_props = SP_in%export_mat_props
-       SP_out%exportICs = SP_in%exportICs
+       SP_out%export_ICs = SP_in%export_ICs
        SP_out%export_planar = SP_in%export_planar
-       SP_out%quick_start = SP_in%quick_start
+       SP_out%export_cell_volume = SP_in%export_cell_volume
        SP_out%export_analytic = SP_in%export_analytic
+       SP_out%coupled_time_step = SP_in%coupled_time_step
        SP_out%solveEnergy = SP_in%solveEnergy
        SP_out%solveMomentum = SP_in%solveMomentum
        SP_out%solveInduction = SP_in%solveInduction

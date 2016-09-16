@@ -111,6 +111,12 @@
              if (SP%solveEnergy) then
                call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
              endif
+             ! call import(coupled)
+             ! if (SP%coupled_time_step) then
+             !   call couple_time_step(nrg%TMP,coupled)
+             !   call couple_time_step(mom%TMP,coupled)
+             !   call couple_time_step(ind%TMP,coupled)
+             ! endif
 
              write(*,*) 'Working directory = ',str(DT%tar)
              call import(KS)
@@ -132,8 +138,8 @@
          if (SP%solveInduction) call exportTransient(ind)
 
          if (SP%solveEnergy) then;    call export_tec(nrg,DT);   endif ! call export(nrg,DT); endif
-         if (SP%solveInduction) then; call export_tec(ind,DT);   endif ! call export(ind,DT); endif
          if (SP%solveMomentum) then;  call export_tec(mom,DT,F); endif ! call export(mom,DT); endif
+         if (SP%solveInduction) then; call export_tec(ind,DT);   endif ! call export(ind,DT); endif
 
          call delete(PE)
          call delete(sc)

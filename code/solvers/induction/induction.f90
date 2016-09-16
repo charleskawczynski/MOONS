@@ -95,7 +95,6 @@
 
          type(mesh) :: m,m_surface
          type(domain) :: D_fluid,D_sigma ! Latter for vacuum case
-         type(domain) :: D_surface
 
          type(time_marching_params) :: TMP
          type(iter_solver_params) :: ISP_B,ISP_phi
@@ -201,7 +200,9 @@
 
          call init_CC(ind%vol_CC,m)
          call volume(ind%vol_CC,m)
-         if (.not.ind%SP%quick_start) call export_raw(ind%m,ind%vol_CC,str(DT%B),'cell_volume',0)
+         if (ind%SP%export_cell_volume) then
+           call export_raw(ind%m,ind%vol_CC,str(DT%meshes),'ind_cell_volume',0)
+         endif
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
