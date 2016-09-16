@@ -7,22 +7,18 @@
 
        private
        public :: initTfield
-       public :: restartT
-
-       logical,parameter :: restartT = .false. ! (induced field)
-
-       integer,parameter :: preDefinedT_ICs = 1 ! NOTE: All cases use B_induced = 0
-       !                                      0 : User-defined case (no override)
-       !                                      1 : Uniform
-
+       integer :: preDefinedT_ICs = 1 ! NOTE: All cases use B_induced = 0
+       !                              0 : User-defined case (no override)
+       !                              1 : Uniform
 
        contains
 
-       subroutine initTfield(T,m,dir)
+       subroutine initTfield(T,m,restartT,dir)
          implicit none
-         character(len=*),intent(in) :: dir
-         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
+         type(mesh),intent(in) :: m
+         logical,intent(in) :: restartT
+         character(len=*),intent(in) :: dir
          if (restartT) then
            call initRestartT(T,m,dir)
          elseif (preDefinedT_ICs.ne.0) then
@@ -39,7 +35,7 @@
          type(SF),intent(inout) :: T
          type(mesh) :: temp
          call init(temp,m)
-         call import_3D_1C(temp,T,dir,'Tct',1)
+         call import_3D_1C(temp,T,dir,'Tc',1)
          call delete(temp)
        end subroutine
 

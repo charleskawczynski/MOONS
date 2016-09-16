@@ -12,12 +12,14 @@ pi                          π
 
 Math Operators
 Nabla                       ∇
+Laplacian					∇²
 Divergence 					•
 Cross						x
 Integral                    ∫
 Summation					Σ
 Infinity					∞
 One half					½
+Not equal					≠
 
 Superscript / Subscript
 Superscript beta			ᵝ
@@ -28,4 +30,6 @@ Superscript one				¹
 Superscript two				²
 Superscript n               ⁿ
 Superscript parenthasis     ⁽⁾
+Superscript -1				⁻¹
+
 

@@ -69,7 +69,7 @@
         call assign(PSE%k,k)
         call init(PSE%MFP,MFP)
         call volume(PSE%vol,m)
-        PSE%un = newAndOpen(dir,'norm_PSE_'//name)
+        PSE%un = new_and_open(dir,'norm_PSE_'//name)
         call tecHeader(name,PSE%un,.false.)
         PSE%N_iter = 1
         PSE%operator => operator
@@ -77,7 +77,7 @@
           call test_symmetry(operator,'PSE_SF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PSE_SF_'//name,dir,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
+          call export_operator(operator,dir,'PSE_SF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
       end subroutine
 
@@ -99,7 +99,7 @@
         call assign(PSE%k,k)
         call init(PSE%MFP,MFP)
         call volume(PSE%vol,m)
-        PSE%un = newAndOpen(dir,'norm_PSE_'//name)
+        PSE%un = new_and_open(dir,'norm_PSE_'//name)
         call tecHeader(name,PSE%un,.true.)
         PSE%N_iter = 1
         PSE%operator => operator
@@ -107,7 +107,7 @@
           call test_symmetry(operator,'PSE_VF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PSE_VF_'//name,dir,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
+          call export_operator(operator,dir,'PSE_VF_'//name,x,PSE%k,PSE%vol,m,MFP,PSE%tempk)
         endif
       end subroutine
 

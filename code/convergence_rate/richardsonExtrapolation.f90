@@ -41,9 +41,6 @@
        public :: richardsonExtrapolation
        public :: reportResults
        public :: computeRE
-       public :: loadData
-
-
       
        interface computeRE;    module procedure computeRE_VF;                 end interface
        ! interface computeRE;    module procedure computeRE_RealfromExisting;   end interface
@@ -101,7 +98,7 @@
          integer :: temp,s,sn,i
          s = size(e); sn = size(N)
 
-         temp = newAndOpen(dir,name)
+         temp = new_and_open(dir,name)
 
          if (sn.eq.s) then
            write(temp,'(7(A10))') 'N','L1','L2','Linf'
@@ -117,15 +114,6 @@
          else
            stop 'Error: unknown size in exportREList in richardsonExtrapolation.f90'
          endif
-       end subroutine
-
-       subroutine loadData(f,m,directory,name,pad)
-         implicit none
-         type(VF),intent(inout) :: f
-         type(mesh),intent(inout) :: m
-         character(len=*),intent(in) :: directory,name
-         integer,intent(in) :: pad
-         call import_3D_3C(m,f,directory,name,pad)
        end subroutine
 
        ! *******************************************************************************

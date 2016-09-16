@@ -56,8 +56,8 @@
        interface lap;             module procedure lapVarCoeff_VF;            end interface
 
        public :: lap_centered
-       interface lap_centered;    module procedure lap_centered_SF;           end interface
-       interface lap_centered;    module procedure lap_centered_VF;           end interface
+       interface lap_centered;    module procedure lap_centered_SF_dynamic;   end interface
+       interface lap_centered;    module procedure lap_centered_VF_dynamic;   end interface
 
        public :: div
        interface div;             module procedure div_SF;                    end interface
@@ -178,50 +178,86 @@
             call d%add(lapU,u,m,2,3,0) ! Padding avoids calcs on fictive cells
        end subroutine
 
-       subroutine lap_centered_SF(lapU,u,m,temp_E,dir,addTo)
+       subroutine lap_centered_SF_given_both(lapU,U,m,tempx,tempy,tempz)
          implicit none
-         type(SF),intent(inout) :: lapU,temp_E
-         type(SF),intent(in) :: u
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: U
          type(mesh),intent(in) :: m
-         integer,intent(in) :: dir
-         logical,intent(in) :: addTo
-         type(SF) :: temp
+         type(SF),intent(inout) :: tempx,tempy,tempz
          type(del) :: d
-         if (u%is_Face) then
-           if (u%face.eq.dir) then
-             call init_CC(temp,m)
-             call d%assign(temp,u,m,1,dir,1)
-             if (addTo) then; call d%add(lapU,temp,m,1,dir,1)
-             else;            call d%assign(lapU,temp,m,1,dir,1)
-             endif
-             call delete(temp)
-           else
-             call d%assign(temp_E,u,m,1,dir,1)
-             if (addTo) then; call d%add(lapU,temp_E,m,1,dir,1)
-             else;            call d%assign(lapU,temp_E,m,1,dir,1)
-             endif
-           endif
-         else; stop 'Error: non-face input to lap_centered in ops_discrete.f90'
+         call d%assign(tempx,U,m,1,1,0); call d%assign(lapU,tempx,m,1,1,0)
+         call d%assign(tempy,U,m,1,2,0); call d%add   (lapU,tempy,m,1,2,0)
+         call d%assign(tempz,U,m,1,3,0); call d%add   (lapU,tempz,m,1,3,0)
+       end subroutine
+
+       subroutine lap_centered_VF_dynamic(lapU,U,m)
+         implicit none
+         type(VF),intent(inout) :: lapU
+         type(VF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         type(TF) :: TF_temp
+         type(VF) :: VF_temp
+         if     (U%is_CC) then
+           call init_Face(VF_temp,m)
+           call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call delete(VF_temp)
+         elseif (U%is_Node) then
+           call init_Edge(VF_temp,m)
+           call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call delete(VF_temp)
+         elseif (U%is_Face) then
+           call init_Face_compliment(TF_temp,m)
+           call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
+           call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
+           call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
+           call delete(TF_temp)
+         elseif (U%is_Edge) then
+           call init_Edge_compliment(TF_temp,m)
+           call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
+           call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
+           call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
+           call delete(TF_temp)
+         else; stop 'Error: bad data type in lap_centered_VF_dynamic in ops_discrete.f90'
          endif
        end subroutine
 
-       subroutine lap_centered_VF(lapU,u,m,temp_E)
+       subroutine lap_centered_SF_dynamic(lapU,U,m)
          implicit none
-         type(VF),intent(inout) :: lapU
-         type(VF),intent(inout) :: temp_E
-         type(VF),intent(in) :: u
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: U
          type(mesh),intent(in) :: m
-         call lap_centered(lapU%x,u%x,m,temp_E%x,1,.false.)
-         call lap_centered(lapU%x,u%x,m,temp_E%z,2,.true.)
-         call lap_centered(lapU%x,u%x,m,temp_E%y,3,.true.)
-
-         call lap_centered(lapU%y,u%y,m,temp_E%z,1,.false.)
-         call lap_centered(lapU%y,u%y,m,temp_E%y,2,.true.)
-         call lap_centered(lapU%y,u%y,m,temp_E%x,3,.true.)
-
-         call lap_centered(lapU%z,u%z,m,temp_E%y,1,.false.)
-         call lap_centered(lapU%z,u%z,m,temp_E%x,2,.true.)
-         call lap_centered(lapU%z,u%z,m,temp_E%z,3,.true.)
+         type(TF) :: TF_temp
+         type(VF) :: VF_temp
+         if     (U%is_CC) then
+           call init_Face(VF_temp,m)
+           call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call delete(VF_temp)
+         elseif (U%is_Node) then
+           call init_Edge(VF_temp,m)
+           call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
+           call delete(VF_temp)
+         elseif (U%is_Face) then
+           call init_Face_compliment(TF_temp,m)
+           select case (U%face)
+           case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
+           case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
+           case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
+           end select
+           call delete(TF_temp)
+         elseif (U%is_Edge) then
+           call init_Edge_compliment(TF_temp,m)
+           select case (U%edge)
+           case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
+           case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
+           case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
+           end select
+           call delete(TF_temp)
+         else; stop 'Error: bad data type in lap_centered_VF_dynamic in ops_discrete.f90'
+         endif
        end subroutine
 
        subroutine lapVarCoeff_SF(lapU,u,k,m,temp,dir)
@@ -299,10 +335,12 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir1,dir2
          type(del) :: d
+#if _DEBUG_DISCRETE_OPS_
          if (dir1.eq.dir2) then
            write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeff_RF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
+#endif
          call d%assign(temp,f,m,1,dir1,1)
          call d%assign(mix,temp,m,1,dir2,1)
        end subroutine
@@ -325,10 +363,12 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir1,dir2
          type(del) :: d
+#if _DEBUG_DISCRETE_OPS_
          if (dir1.eq.dir2) then
            write(*,*) 'Error: dir1=dir2 in mixed_variableCoeff_RF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
+#endif
          call d%assign(temp,f,m,1,dir1,1)
          call multiply(temp,k)
          call d%assign(mix,temp,m,1,dir2,1)

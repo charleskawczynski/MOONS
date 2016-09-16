@@ -12,9 +12,8 @@
       use ops_discrete_mod
       use ops_aux_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
-
-
 
       private
       public :: solve_PSE
@@ -30,7 +29,7 @@
 
       subroutine solve_PSE_SF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r,N_iter)
         implicit none
-        external :: operator
+        procedure(op_SF_explicit) :: operator
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol
         type(VF),intent(in) :: k
@@ -49,15 +48,15 @@
         integer :: i
         call apply_BCs(x,m)
         do i=1,n
-          call operator(Ax,x,k,vol,m,MFP,tempk)
+          call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call multiply(r,ds)
           call add(x,r)
           call apply_BCs(x,m)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          if (n.eq.1) call compute(norm_res0,r)
-          call compute(norm,r)
+          if (n.eq.1) call compute(norm_res0,r,vol)
+          call compute(norm,r,vol)
           write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
@@ -65,11 +64,11 @@
         if (x%all_Neumann) call subtract(x,mean(x))
 #ifndef _EXPORT_PSE_CONVERGENCE_
         if (compute_norms) then
-          call operator(Ax,x,k,vol,m,MFP,tempk)
+          call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r); call print(norm,'PSE Residuals SF')
+          call compute(norm,r,vol); call print(norm,'PSE Residuals SF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif
@@ -78,7 +77,7 @@
       
       subroutine solve_PSE_VF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r,N_iter)
         implicit none
-        external :: operator
+        procedure(op_VF_explicit) :: operator
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol
         type(VF),intent(in) :: k
@@ -97,15 +96,15 @@
         integer :: i
         call apply_BCs(x,m)
         do i=1,n
-          call operator(Ax,x,k,vol,m,MFP,tempk)
+          call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call multiply(r,ds)
           call add(x,r)
           call apply_BCs(x,m)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          if (n.eq.1) call compute(norm_res0,r)
-          call compute(norm,r)
+          if (n.eq.1) call compute(norm_res0,r,vol)
+          call compute(norm,r,vol)
           write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
@@ -114,11 +113,11 @@
         call apply_BCs(x,m)
 #ifndef _EXPORT_PSE_CONVERGENCE_
         if (compute_norms) then
-          call operator(Ax,x,k,vol,m,MFP,tempk)
+          call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call zeroGhostPoints(r)
           call zeroWall_conditional(r,m,x)
-          call compute(norm,r); call print(norm,'PSE Residuals VF')
+          call compute(norm,r,vol); call print(norm,'PSE Residuals VF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif

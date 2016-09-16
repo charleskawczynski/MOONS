@@ -2,7 +2,7 @@
       implicit none
 
       private
-      public :: cp
+      public :: cp,li
 
 #ifdef _QUAD_PRECISION_
        ! integer,parameter :: cp = selected_real_kind(32) ! Quad precision
@@ -13,6 +13,9 @@
        integer,parameter :: cp = selected_real_kind(14) ! Double precision (default)
 #endif
 #endif
+
+       integer,parameter :: li = selected_int_kind(16)
+       ! integer,parameter :: ip = selected_int_kind(8)  ! Short int
 
        ! integer,parameter :: cip = selected_int_kind(64)
        ! real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)

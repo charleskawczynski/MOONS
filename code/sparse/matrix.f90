@@ -12,6 +12,7 @@
       use index_mapping_mod
       use ops_interp_mod
       use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
 
       private
@@ -51,7 +52,7 @@
 
       subroutine test_symmetry_SF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF) :: operator
         type(SF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
@@ -87,7 +88,7 @@
 
       subroutine test_symmetry_VF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(VF),intent(in) :: x,k,vol
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
@@ -131,14 +132,12 @@
         type(SF) :: un
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,D)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------- EXPORTING SF MATRIX ------------ '//name
         call assign(un,0.0_cp)
         do i=1,un%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_SF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/))) cycle
           call unitVector(un,i)
           call multiply(un,D)
           call export_transpose_SF(un,newU,px,py,pz) ! Export rows of A
@@ -155,15 +154,13 @@
         type(VF) :: un
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,D)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------- EXPORTING VF MATRIX ------------ '//name
         write(*,*) 'System size = ',un%x%numEl + un%y%numEl + un%z%numEl
         call assign(un,0.0_cp)
         do i=1,un%x%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%x%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),1)) cycle
           call unitVector(un%x,i)
           call multiply(un%x,D%x)
           call export_transpose(un,newU,px,py,pz) ! Export rows of A
@@ -172,9 +169,7 @@
         call assign(un,0.0_cp)
         do i=1,un%y%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%y,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%y%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),2)) cycle
           call unitVector(un%y,i)
           call multiply(un%y,D%y)
           call export_transpose(un,newU,px,py,pz) ! Export rows of A
@@ -183,9 +178,7 @@
         call assign(un,0.0_cp)
         do i=1,un%z%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%z,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%z%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),3)) cycle
           call unitVector(un%z,i)
           call multiply(un%z,D%z)
           call export_transpose(un,newU,px,py,pz) ! Export rows of A
@@ -195,13 +188,42 @@
         write(*,*) ' ---------------------------------------------- '
       end subroutine
 
+      function cycle_TF_SF(U,i,t,p) result(L_any)
+        implicit none
+        type(SF),intent(in) :: U
+        integer,intent(in) :: t
+        integer,dimension(3),intent(in) :: i,p
+        logical,dimension(3) :: L
+        logical :: L_any
+        integer :: k
+        do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%RF(t)%s(k)))); enddo
+        L_any = any(L)
+      end function
+
+      function cycle_TF_VF(U,i,t,p,comp) result(L_any)
+        implicit none
+        type(VF),intent(in) :: U
+        integer,intent(in) :: t,comp
+        integer,dimension(3),intent(in) :: i,p
+        logical,dimension(3) :: L
+        logical :: L_any
+        integer :: k
+        select case(comp)
+        case(1); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%x%RF(t)%s(k)))); enddo
+        case(2); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%y%RF(t)%s(k)))); enddo
+        case(3); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%z%RF(t)%s(k)))); enddo
+        case default; stop 'Error: dir must =1,2,3 in cycle_TF_VF in matrix.f90'
+        end select
+        L_any = any(L)
+      end function
+
       ! *********************************************************************
       ! ******************** EXPORTING MATRIX OPERATOR **********************
       ! *********************************************************************
 
-      subroutine export_operator_SF(operator,name,dir,x,k,vol,m,MFP,tempk)
+      subroutine export_operator_SF(operator,dir,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF) :: operator
         type(SF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
@@ -211,15 +233,13 @@
         type(SF) :: un,Aun
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,x); call init(Aun,x)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------ EXPORTING SF OPERATOR ----------- '//name
         call assign(un,0.0_cp)
         call init_BCs(un,x)
         do i=1,un%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_SF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/))) cycle
           call unitVector(un,i)
           call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
@@ -230,9 +250,9 @@
         close(newU)
       end subroutine
 
-      subroutine export_operator_VF(operator,name,dir,x,k,vol,m,MFP,tempk)
+      subroutine export_operator_VF(operator,dir,name,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF) :: operator
         type(VF),intent(in) :: x,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
@@ -242,18 +262,16 @@
         type(VF) :: un,Aun
         integer :: i,newU,i_3D,j_3D,k_3D,t_3D
         call init(un,x); call init(Aun,x)
-        newU = newAndOpen(dir,name)
+        newU = new_and_open(dir,name)
         write(*,*) ' ------------ EXPORTING VF OPERATOR ----------- '//name
         write(*,*) 'System size = ',un%x%numEl + un%y%numEl + un%z%numEl
         call assign(un,0.0_cp)
         call init_BCs(un,x)
         do i=1,un%x%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%x%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),1)) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%x,i)
@@ -261,11 +279,9 @@
         call assign(un,0.0_cp)
         do i=1,un%y%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%y,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%y%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),2)) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%y,i)
@@ -273,11 +289,9 @@
         call assign(un,0.0_cp)
         do i=1,un%z%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%z,i)
-          if ((px.eq.1).and.((i_3D.eq.1).or.(i_3D.eq.un%z%RF(t_3D)%s(1)))) cycle
-          if ((py.eq.1).and.((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2)))) cycle
-          if ((pz.eq.1).and.((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3)))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),3)) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call export_transpose(Aun,newU,px,py,pz) ! Export rows of A
           call deleteUnitVector(un%z,i)
@@ -324,7 +338,7 @@
 
       subroutine get_diagonal_SF(operator,D,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_SF_explicit) :: operator
         type(SF),intent(inout) :: D
         type(SF),intent(in) :: vol,x
         type(VF),intent(in) :: k
@@ -340,11 +354,9 @@
         call init_BCs(un,x)
         do i=1,un%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un,i)
-          if ((i_3D.eq.1).or.(i_3D.eq.un%RF(t_3D)%s(1))) cycle
-          if ((j_3D.eq.1).or.(j_3D.eq.un%RF(t_3D)%s(2))) cycle
-          if ((k_3D.eq.1).or.(k_3D.eq.un%RF(t_3D)%s(3))) cycle
+          if (cycle_TF_SF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/))) cycle
           call unitVector(un,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i)
           call deleteUnitVector(un,i)
@@ -368,7 +380,7 @@
 
       subroutine get_diagonal_VF(operator,D,x,k,vol,m,MFP,tempk)
         implicit none
-        external :: operator
+        procedure(op_VF_explicit) :: operator
         type(VF),intent(inout) :: D
         type(VF),intent(in) :: k,vol,x
         type(VF),intent(inout) :: tempk
@@ -384,11 +396,9 @@
         call init_BCs(un,x)
         do i=1,un%x%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%x,i)
-          if ((i_3D.eq.1).or.(i_3D.eq.un%x%RF(t_3D)%s(1))) cycle
-          if ((j_3D.eq.1).or.(j_3D.eq.un%x%RF(t_3D)%s(2))) cycle
-          if ((k_3D.eq.1).or.(k_3D.eq.un%x%RF(t_3D)%s(3))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),1)) cycle
           call unitVector(un%x,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,1)
           call deleteUnitVector(un%x,i)
@@ -400,11 +410,9 @@
         call assign(un,0.0_cp)
         do i=1,un%y%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%y,i)
-          if ((i_3D.eq.1).or.(i_3D.eq.un%y%RF(t_3D)%s(1))) cycle
-          if ((j_3D.eq.1).or.(j_3D.eq.un%y%RF(t_3D)%s(2))) cycle
-          if ((k_3D.eq.1).or.(k_3D.eq.un%y%RF(t_3D)%s(3))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),2)) cycle
           call unitVector(un%y,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,2)
           call deleteUnitVector(un%y,i)
@@ -416,11 +424,9 @@
         call assign(un,0.0_cp)
         do i=1,un%z%numEl
           call get_3D_index(i_3D,j_3D,k_3D,t_3D,un%z,i)
-          if ((i_3D.eq.1).or.(i_3D.eq.un%z%RF(t_3D)%s(1))) cycle
-          if ((j_3D.eq.1).or.(j_3D.eq.un%z%RF(t_3D)%s(2))) cycle
-          if ((k_3D.eq.1).or.(k_3D.eq.un%z%RF(t_3D)%s(3))) cycle
+          if (cycle_TF_VF(un,(/i_3D,j_3D,k_3D/),t_3D,(/px,py,pz/),3)) cycle
           call unitVector(un%z,i)
-          call operator(Aun,un,k,m,MFP,tempk,i)
+          call operator(Aun,un,k,m,MFP,tempk)
           call multiply(Aun,vol)
           call define_ith_diag(D,Aun,i,3)
           call deleteUnitVector(un%z,i)
@@ -439,12 +445,9 @@
         integer,intent(in) :: col,component
         integer :: i,j,k,t
         select case (component)
-        case (1); call get_3D_index(i,j,k,t,D%x,col)
-                  D%x%RF(t)%f(i,j,k) = Aun%x%RF(t)%f(i,j,k)
-        case (2); call get_3D_index(i,j,k,t,D%y,col)
-                  D%y%RF(t)%f(i,j,k) = Aun%y%RF(t)%f(i,j,k)
-        case (3); call get_3D_index(i,j,k,t,D%z,col)
-                  D%z%RF(t)%f(i,j,k) = Aun%z%RF(t)%f(i,j,k)
+        case (1); call get_3D_index(i,j,k,t,D%x,col); D%x%RF(t)%f(i,j,k) = Aun%x%RF(t)%f(i,j,k)
+        case (2); call get_3D_index(i,j,k,t,D%y,col); D%y%RF(t)%f(i,j,k) = Aun%y%RF(t)%f(i,j,k)
+        case (3); call get_3D_index(i,j,k,t,D%z,col); D%z%RF(t)%f(i,j,k) = Aun%z%RF(t)%f(i,j,k)
         case default; stop 'Error: dir must = 1,2,3 in define_ith_diag_VF in matrix.f90'
         end select
       end subroutine

@@ -9,10 +9,7 @@
 
        private
        public :: initBfield
-       public :: restartB
 
-       logical :: restartB  = .false. ! (induced field)
-       logical :: restartB0 = .false. ! (applied field)
        ! NOTE: - The applied field cannot (and probably should not) be restarted
        !       - By default, preDefinedB0_ICs is used to define the applied field
 
@@ -46,9 +43,10 @@
 
        contains
 
-       subroutine initBfield(B,B0,m,dir)
+       subroutine initBfield(B,B0,m,restartB,restartB0,dir)
          implicit none
          type(VF),intent(inout) :: B,B0
+         logical,intent(in) :: restartB,restartB0
          character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
          if (restartB) then

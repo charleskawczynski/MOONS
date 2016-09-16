@@ -1,0 +1,114 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\newcommand{\OB}{\overbrace{\rightarrow}^{\left(\frac{t_c}{B_c}\right)}}
+% \setlength{\textfloatsep}{0.1cm}
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Dimensionless induction equation}
+From the dimensional induction equation:
+\begin{equation}
+	\frac{\PD \B}{\PD t} + \CURL \left( \sigma^{-1}\CURL \H \right)
+	= \CURL (\U \times \B), \qquad \H = \frac{\B}{\M}
+\end{equation}
+Where $\F$ is some dimensional force per unit volume. Non-dimensionalizing by general scales:
+\begin{equation}\begin{aligned}
+	[\U] = U_c \qquad
+	[t] = t_c \qquad
+	[\DEL] = \frac{1}{L_c} \qquad
+	[\sigma] = \sigma_c \qquad
+	[\M] = \M_c \qquad
+	[\B] = B_c \qquad
+\end{aligned}\end{equation}
+And dividing by the coefficient of the transient term, we have:
+\subsection{Transient term}
+\begin{equation}
+	\left( \frac{B_c}{t_c} \frac{\PD \B^*}{\PD t^*} \right)
+	\OB
+	\frac{\PD \B^*}{\PD t^*}
+\end{equation}
+\subsection{Diffusion term}
+\begin{equation}
+	\frac{B_c}{L_c^2 \sigma_c \M_c} \DEL^* \times \left( {\sigma^*}^{-1}\DEL^* \times \frac{\B^*}{\M^*} \right)
+	\OB
+	\frac{t_c}{L_c^2 \sigma_c \M_c} \DEL^* \times \left( {\sigma^*}^{-1}\DEL^* \times \frac{\B^*}{\M^*} \right)
+\end{equation}
+\subsection{Advection term}
+\begin{equation}
+	\frac{U_c B_c}{L_c} \DEL^* \times (\U^* \times \B^*)
+	\OB
+	\frac{U_c t_c}{L_c} \DEL^* \times (\U^* \times \B^*)
+\end{equation}
+\section{Putting it all together}
+\begin{equation}
+	\boxed{
+	\frac{\PD \B^*}{\PD t^*}
+	+ \frac{t_c}{L_c^2 \sigma_c \M_c} \DEL^* \times \left( {\sigma^*}^{-1}\DEL^* \times \frac{\B^*}{\M^*} \right)
+	= \frac{U_c t_c}{L_c} \DEL^* \times (\U^* \times \B^*)
+	}
+\end{equation}
+
+The choice of specific scales used after this may change the dimensionless groups in front of each term. This will be handled in a different document. Here are some examples of particular scales and some typical resulting dimensionless groups:
+
+Some typical scale choices:
+\begin{equation}\begin{aligned}
+	t_c = L_c/ U_c \qquad
+	t_c = L_c^2/ (\sigma_c \M_c)^{-1}
+\end{aligned}\end{equation}
+
+Typical dimensionless groups:
+\begin{equation}
+	Re_m = \M_c \sigma_c U_c L_c
+\end{equation}
+
+
+\end{document}

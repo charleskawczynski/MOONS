@@ -5,22 +5,20 @@
        use mesh_mod
        use SF_mod
        use BCs_mod
-       use init_Ufield_mod ! for restartU
        implicit none
 
        private
-       public :: init_Pfield,restartP
-
+       public :: init_Pfield
        integer :: preDefinedP_ICs = 1
-       logical,parameter :: restartP = restartU
 
        contains
 
-       subroutine init_Pfield(p,m,dir)
+       subroutine init_Pfield(p,m,restartP,dir)
          implicit none
          type(SF),intent(inout) :: p
-         character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
+         logical,intent(in) :: restartP
+         character(len=*),intent(in) :: dir
          if (restartP) then
                call initRestartPfield(p,m,dir)
          elseif (preDefinedP_ICs.ne.0) then

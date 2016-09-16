@@ -247,7 +247,7 @@
         type(norms),intent(inout) :: norm
         type(SORSolver) :: SOR
         logical,intent(in) :: displayTF
-        logical :: continueLoop,TF
+        logical :: continueLoop,L
         integer :: i_MG,maxIterations,nLevels
 #ifdef _EXPORT_MG_CONVERGENCE_
         integer :: NU
@@ -260,16 +260,16 @@
 
         if (getMaxIterationsTF(ss)) then
           maxIterations = getMaxIterations(ss)
-          TF = (maxIterations.ge.1)
-        else; TF = .true.
+          L = (maxIterations.ge.1)
+        else; L = .true.
         endif; continueLoop = .true.
 
 #ifdef _EXPORT_MG_CONVERGENCE_
-        NU = newAndOpen('out\','norm_MG')
+        NU = new_and_open('out\','norm_MG')
 #endif
 
         i_MG = 0
-        do while (continueLoop.and.TF)
+        do while (continueLoop.and.L)
 
           call setIteration(ss,i_MG)
 

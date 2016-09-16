@@ -65,6 +65,7 @@
        ! Base interpolation
        public :: interp               ! call interp(f,m,gd,dir)
        public :: extrap               ! call extrap(f,m,gd,dir)
+       public :: orthogonalDirection
 
        ! Derived interpolations (* = has vector interface)
        public :: face2Face            ! call face2Face(faceAve,f,m,dir,aveLoc)
@@ -149,7 +150,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2_RF(f,g,gd,sf,sg,dir)
+       subroutine interpO2_RF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,p)
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
@@ -171,49 +172,63 @@
          real(cp),dimension(:,:,:),intent(in) :: g
          type(grid),intent(in) :: gd
          integer,dimension(3),intent(in) :: sg,sf
+         logical,intent(in) :: f_N,f_C,g_N,g_C
          integer,intent(in) :: dir
-         integer :: i,j,k,t,x,y,z
-
-         select case (dir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default
-           stop 'Error: dir must = 1,2,3 in interpO2.'
-         end select
+         integer,dimension(3),intent(in) :: p
+         integer :: i,j,k,t
 
 #ifdef _DEBUG_INTERP_
          call checkInterpSizes(sf,sg,dir)
 #endif
 
-         if ((sf(dir).eq.gd%c(dir)%sc).and.(sg(dir).eq.gd%c(dir)%sn)) then
+         if (f_C.and.g_N) then
            ! f(cc grid), g(node/face grid)
            !         g  f  g  f  g  f  g  f  g
            !         |--o--|--o--|--o--|--o--|   --> dir
            !            *     *     *     *
            
+#ifdef _PARALLELIZE_INTERP_
            !$OMP PARALLEL DO
-           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
-           f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+x,j+y,k+z))
+
+#endif
+
+           do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
+           f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+p(1),j+p(2),k+p(3)))
            enddo; enddo; enddo
+#ifdef _PARALLELIZE_INTERP_
            !$OMP END PARALLEL DO
-         elseif ((sf(dir).eq.gd%c(dir)%sn).and.(sg(dir).eq.gd%c(dir)%sc)) then
+
+#endif
+         elseif (f_N.and.g_C) then
            ! f(node/face grid), g(cc grid)
            !         f  g  f  g  f  g  f  g  f
            !         |--o--|--o--|--o--|--o--|      --> dir
            !               *     *     *
 
+#ifdef _PARALLELIZE_INTERP_
            !$OMP PARALLEL PRIVATE(t)
            !$OMP DO
-           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
-           t = i*x + j*y + k*z
-           f(i+x,j+y,k+z) = g(i+x,j+y,k+z)*gd%c(dir)%alpha(t) + &
-                            g(i,j,k)*gd%c(dir)%beta(t)
+
+#endif
+           do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
+           t = i*p(1) + j*p(2) + k*p(3)
+           f(i+p(1),j+p(2),k+p(3)) = g(i+p(1),j+p(2),k+p(3))*gd%c(dir)%alpha(t) + &
+                                     g(i,j,k)*gd%c(dir)%beta(t)
            enddo; enddo; enddo
+#ifdef _PARALLELIZE_INTERP_
            !$OMP END DO
            !$OMP END PARALLEL
+
+#endif
            call extrap(f,g,sf,sg,dir)
          else
+           write(*,*) 'dir=',dir
+           write(*,*) 'sg=',sg
+           write(*,*) 'g_C=',g_C
+           write(*,*) 'g_N=',g_N
+           write(*,*) 'sf=',sf
+           write(*,*) 'f_C=',f_C
+           write(*,*) 'f_N=',f_N
            stop 'gridType must be 1 or 2 in interpO2. Terminating.'
          endif
        end subroutine
@@ -304,9 +319,12 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,m%s
-           call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,dir)
+           call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,&
+           f%N_along(dir),f%CC_along(dir),&
+           g%N_along(dir),g%CC_along(dir),&
+           dir,m%int_tensor(dir)%eye)
          enddo
-         call apply_stitches(f,m)
+         ! call apply_stitches(f,m)
        end subroutine
 
 #ifdef _DEBUG_INTERP_

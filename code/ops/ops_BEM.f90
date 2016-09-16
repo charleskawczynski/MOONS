@@ -16,20 +16,21 @@
        interface boundaryFlux;   module procedure boundaryFlux_VF;          end interface
        interface boundaryFlux;   module procedure boundaryFlux_VF_SD;       end interface
 
+       public :: compute_phi_pseudo_time_marching
+
        real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 
-       subroutine boundaryFlux_VF(BF,u,m)
+       function boundaryFlux_VF(u,m) result(BF)
          ! Computes
          ! 
          !   BF = ∫∫ u•n dA
          ! 
          implicit none
          type(VF),intent(in) :: u
-         real(cp),intent(inout) :: BF
          type(mesh),intent(in) :: m
-         real(cp) :: BFtemp
+         real(cp) :: BFtemp,BF
          integer :: i,j,k,t
          BFtemp = 0.0_cp ! temp is necessary for reduction
          BF = 0.0_cp
@@ -87,24 +88,24 @@
              BF = BF + BFtemp; BFtemp = 0.0_cp
            endif
          enddo
-       end subroutine
+       end function
 
        ! *********************************************************************************
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
 
-       subroutine boundaryFlux_VF_SD(BF,f,D)
+       function boundaryFlux_VF_SD(f,D) result(BF)
          implicit none
          type(VF),intent(in) :: f
-         real(cp),intent(inout) :: BF
          type(domain),intent(in) :: D
+         real(cp) :: BF
          type(VF) :: temp
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
          call init_Face(temp,D%m_in)
          call extractFace(temp,f,D)
-         call boundaryFlux(BF,temp,D%m_in)
+         BF = boundaryFlux(temp,D%m_in)
          call delete(temp)
-       end subroutine
+       end function
 
        ! is this right???
        ! subroutine boundaryShear_VF(BF,f,m,temp_F,temp_F_TF)
@@ -217,36 +218,36 @@
           phi_i%RF(t_3D)%f(i_3D,j_3D,k_3D) = temp*0.5_cp*PI
         end subroutine
 
-        function phi_integral_func(phi,B,m,i) result(phi_xi)
-          ! Computes
-          !  phi(x_i) = (2π)⁻¹ [ Σ_j φ_j ∫ ∂_n G(x,y) dA + Σ_j Bn_j ∫ G(x,y) dA ]
-          ! Where
-          !                1
-          !   G(x,y) =  -------
-          !             |x - y|
-          implicit none
-          type(SF),intent(in) :: phi
-          type(VF),intent(in) :: B
-          type(mesh),intent(in) :: m
-          integer,intent(in) :: i
-          real(cp) :: phi_xi
-          real(cp),dimension(3) :: x,y,Bj
-          real(cp) :: G_ij,dA,phij,temp
-          integer :: i_3D,j_3D,k_3D,t_3D,j
-          temp = 0.0_cp
-          do j=1,phi%numEl
-            call get_3D_index(i_3D,j_3D,k_3D,t_3D,m,j)
-            G_ij = get_G_ij(m,i,j)
-            x = get_x_m(m,i)
-            y = get_x_m(m,j)
-            dA = get_dA(m,j)
-            phij = get_val(phi,j)
-            Bj = get_val(B,j)
-            temp = temp + G_ij**(3.0_cp)*dot_n(m,t_3D,x-y)*dA*phij
-            temp = temp + G_ij*dA*dot_n(m,t_3D,Bj)
-          enddo
-          phi_xi = temp*0.5_cp*PI
-        end function
+        ! function phi_integral_func(phi,B,m,i) result(phi_xi)
+        !   ! Computes
+        !   !  phi(x_i) = (2π)⁻¹ [ Σ_j φ_j ∫ ∂_n G(x,y) dA + Σ_j Bn_j ∫ G(x,y) dA ]
+        !   ! Where
+        !   !                1
+        !   !   G(x,y) =  -------
+        !   !             |x - y|
+        !   implicit none
+        !   type(SF),intent(in) :: phi
+        !   type(VF),intent(in) :: B
+        !   type(mesh),intent(in) :: m
+        !   integer,intent(in) :: i
+        !   real(cp) :: phi_xi
+        !   real(cp),dimension(3) :: x,y,Bj
+        !   real(cp) :: G_ij,dA,phij,temp
+        !   integer :: i_3D,j_3D,k_3D,t_3D,j
+        !   temp = 0.0_cp
+        !   do j=1,phi%numEl
+        !     call get_3D_index(i_3D,j_3D,k_3D,t_3D,m,j)
+        !     G_ij = get_G_ij(m,i,j)
+        !     x = get_x_m(m,i)
+        !     y = get_x_m(m,j)
+        !     dA = get_dA(m,j)
+        !     phij = get_val(phi,j)
+        !     Bj = get_val(B,j)
+        !     temp = temp + G_ij**(3.0_cp)*dot_n(m,t_3D,x-y)*dA*phij
+        !     temp = temp + G_ij*dA*dot_n(m,t_3D,Bj)
+        !   enddo
+        !   phi_xi = temp*0.5_cp*PI
+        ! end function
 
         function get_x_m(m,index_1D) result(x)
           ! Computes x given 1D index and the mesh
@@ -260,18 +261,18 @@
           x = get_x_on_surface(m,i_3D,j_3D,k_3D,t_3D)
         end function
 
-        function get_x_i_SF(m,u,index_1D) result(x)
-          ! Computes x given 1D index and the mesh
-          ! these should be cell centered values
-          implicit none
-          type(mesh),intent(in) :: m
-          type(SF),intent(in) :: u
-          integer,intent(in) :: index_1D
-          real(cp),dimension(3) :: x
-          integer :: i_3D,j_3D,k_3D,t_3D
-          call get_3D_index(i_3D,j_3D,k_3D,t_3D,u,index_1D)
-          x = get_x_on_surface(m,i_3D,j_3D,k_3D,t_3D)
-        end function
+        ! function get_x_i_SF(m,u,index_1D) result(x)
+        !   ! Computes x given 1D index and the mesh
+        !   ! these should be cell centered values
+        !   implicit none
+        !   type(mesh),intent(in) :: m
+        !   type(SF),intent(in) :: u
+        !   integer,intent(in) :: index_1D
+        !   real(cp),dimension(3) :: x
+        !   integer :: i_3D,j_3D,k_3D,t_3D
+        !   call get_3D_index(i_3D,j_3D,k_3D,t_3D,u,index_1D)
+        !   x = get_x_on_surface(m,i_3D,j_3D,k_3D,t_3D)
+        ! end function
 
         function get_G_ij(m,i_1D,j_1D) result(G_ij)
           ! Computes

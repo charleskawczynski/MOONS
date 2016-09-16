@@ -37,7 +37,9 @@
 #ifdef _DEBUG_APPLY_BCS_
        call check_defined(U,m)
 #endif
-         do k = 1,6; call apply_face(U,m,k); enddo
+         do k = 3,6; call apply_face(U,m,k); enddo
+         call apply_face(U,m,1)
+         call apply_face(U,m,2)
        end subroutine
 
        subroutine apply_face(U,m,f)
@@ -50,13 +52,13 @@
 
          k = dir_given_face(f)
          a = adj_faces_given_dir(k)
-         if (CC_along(U,k)) then
+         if (U%CC_along(k)) then
            do i=1,m%s
              ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
              if (.not.m%g(i)%st_faces(f)%TF) call app_CC_SF(U%RF(i),f,p)
            enddo
-         elseif (Node_along(U,k)) then
+         elseif (U%N_along(k)) then
            do i=1,m%s
              ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
@@ -143,7 +145,9 @@
          type(bctype),intent(in) :: b
          if     (b%Dirichlet) then; ug = - ui
          elseif (b%Neumann) then;   ug = ui
-         elseif (b%Periodic) then;  ug = ui_opp
+         elseif (b%Periodic) then;  ug = ui_opp ! Might need to be zero
+         ! elseif (b%Periodic) then;  ug = 0.0_cp ! Might need to be zero, needs careful testing.
+         elseif (b%Robin) then; ug = -ui
          else; stop 'Error: Bad bctype! Caught in app_CC_imp in apply_BCs_faces_imp.f90'
          endif
        end subroutine

@@ -12,9 +12,8 @@
        implicit none
 
        private
-       public :: init_Ufield,restartU
+       public :: init_Ufield
 
-       logical,parameter :: restartU        = .false.
        integer :: preDefinedU_ICs = 1
        !                            0 : User-defined case (no override)
        !                            1 : Rest (u,v,w = 0)
@@ -35,11 +34,12 @@
 
        contains
 
-       subroutine init_Ufield(U,m,dir)
+       subroutine init_Ufield(U,m,restartU,dir)
          implicit none
          type(VF),intent(inout) :: U
-         character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
+         logical,intent(in) :: restartU
+         character(len=*),intent(in) :: dir
          integer :: i
          if (restartU) then
            call initRestartUfield(U,m,dir)

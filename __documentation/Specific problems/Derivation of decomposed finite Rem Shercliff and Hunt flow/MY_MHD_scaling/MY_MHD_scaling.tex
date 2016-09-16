@@ -1,0 +1,166 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\BS}{B^{SH}}
+\newcommand{\BT}{\tilde{B}}
+\renewcommand{\H}{\mathbf{H}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\curl}{\nabla \times}
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\PD}{\partial}
+\newcommand{\MC}{\mathcal}
+\newcommand{\BM}{\frac{\B}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\J}{\sigma}}
+\newcommand{\JoS}{\frac{\J^1}{\sigma}}
+\newcommand{\JSS}{\frac{\J^2}{\sigma}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+\newcommand{\Rei}{\frac{1}{Re}}
+\newcommand{\Remi}{\frac{1}{Re_m}}
+\newcommand{\NRemi}{\frac{N}{Re_m}}
+
+% \setlength{\textfloatsep}{0.1cm}
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+% \renewcommand{\arraystretch}{0.0} % Removes vertical spaces before/after tabularx
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Scaling for the MHD equations}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Dimensional equations}
+The dimensional momentum and induction equations for uniform material properties are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \mu} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = \frac{1}{\sigma \mu} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned}\end{equation}
+Grouping mechanical and magnetic pressure, we have
+\begin{equation}\boxed{\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \mu} B_j \PD_j B_i \\
+\PD_t B_i = \frac{1}{\sigma \mu} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned}}\end{equation}
+
+\section{My MHD equations scaling}
+Consider choosing "general" scales, which may be modified later. Let's use the scales:
+\begin{equation}\begin{aligned}
+	[x,y,z] = L, \qquad
+	[t] = t_c, \qquad
+	[u] = U, \qquad
+	[B] = B, \qquad
+	[P] = \frac{\rho U L}{t_c}
+\end{aligned} \end{equation}
+Notice here that a time scale-specific non-dimensionalization was used for pressure. This was done so that it's coefficient will be unity automatically.
+
+Before algebra
+\begin{equation}\begin{aligned}
+\frac{U}{t_c} \PD_t u_i+ \frac{U^2}{L} u_j\PD_j u_i =-\frac{\rho U L}{\rho t_c L}\PD_i p+ \frac{U \nu}{L^2} \PD_{jj} u_i + \frac{B^2}{\rho L \mu} B_j \PD_j B_i \\
+\frac{1}{t_c} \PD_t B_i + \frac{U}{L} \PD_j (u_j B_i - u_i B_j) = \frac{1}{\sigma \mu L^2} \PD_{jj} B_i
+\end{aligned} \end{equation}
+After algebra
+\begin{equation}\begin{aligned}
+\PD_t u_i+ \frac{U t_c}{L} u_j\PD_j u_i =-\PD_i p + \frac{\nu t_c}{L^2} \PD_{jj} u_i + \frac{B^2 t_c}{\rho \mu U L} B_j \PD_j B_i \\
+\PD_t B_i + \frac{U t_c}{L} \PD_j (u_j B_i - u_i B_j) = \frac{t_c}{\sigma \mu L^2} \PD_{jj} B_i
+\end{aligned} \end{equation}
+Simplified
+\begin{equation}\boxed{\begin{aligned}
+\PD_t u_i+ C u_j\PD_j u_i = - \PD_i p+ D \PD_{jj} u_i + E B_j \PD_j B_i \\
+\PD_t B_i + C \PD_j (u_j B_i - u_i B_j) = A \PD_{jj} B_i
+\end{aligned}}\end{equation}
+Where
+\begin{equation}\boxed{\begin{aligned}
+	C = \frac{U t_c}{L}, \qquad
+	D = \frac{\nu t_c}{L^2}, \qquad
+	E = \frac{B^2 t_c}{\rho \mu U L}, \qquad
+	A = \frac{t_c}{\sigma \mu L^2}, \qquad
+\end{aligned}}\end{equation}
+Relation to dimensionless groups:
+\begin{equation}\begin{aligned}
+	\frac{C}{D} = Re, \qquad
+	\frac{C}{A} = Re_m, \qquad
+	\frac{D}{A} = \frac{Re_m}{Re}, \qquad
+	\frac{E}{D} = \frac{Ha^2}{Re_m}, \qquad
+	\frac{E}{C} = \frac{Ha^2}{Re_m} \frac{1}{Re}, \qquad
+	\frac{E}{A} = \frac{Ha^2}{Re}, \qquad
+\end{aligned} \end{equation}
+% Details
+% \begin{equation}\begin{aligned}
+% 	\frac{C}{D} = Re, \qquad
+% 	\frac{C}{A} = Re_m, \qquad
+% 	\frac{E}{D} = \frac{B^2 L^2 \sigma}{\rho \nu \mu U \sigma L} = Ha^2 \frac{1}{\mu U \sigma L} = \frac{Ha^2}{Re_m}, \qquad
+% 	\frac{E}{C} = \frac{E D}{C D} = \frac{E}{D} \frac{D}{C} = \frac{Ha^2}{Re_m} \frac{1}{Re}, \qquad
+% \end{aligned} \end{equation}
+Simplification for specific time scales:
+\begin{equation}\begin{aligned}
+	t_c = \frac{L}{U}              \rightarrow \qquad & C = 1, \qquad & A = \frac{1}{Re_m},    \qquad & D = \frac{1}{Re},         \qquad & E = \frac{Ha^2}{Re Re_m} \\
+	t_c = \frac{L^2}{\nu}          \rightarrow \qquad & D = 1, \qquad & A = \frac{Re}{Re_m},   \qquad & C = Re,                   \qquad & E = \frac{Ha^2}{Re_m} \\
+	t_c = \frac{\rho \mu U L}{B^2} \rightarrow \qquad & E = 1, \qquad & A = \frac{Re}{Ha^2},   \qquad & C = \frac{Re Re_m}{Ha^2}, \qquad & D = \frac{Re_m}{Ha^2} \\
+	t_c = \sigma \mu L^2           \rightarrow \qquad & A = 1, \qquad & C = Re_m,              \qquad & D = \frac{Re_m}{Re},      \qquad & E = \frac{Ha^2}{Re} \\
+\end{aligned} \end{equation}
+
+
+\end{document}

@@ -73,9 +73,9 @@
          type(norms),intent(in) :: norm
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = newAndOpen(dir,'norms_'//trim(adjustl(name)))
+         un = new_and_open(dir,'norms_'//name)
          call export_norms(norm,name,un)
-         call closeAndMessage(un,trim(adjustl(name)),dir)
+         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine export_norms(norm,name,un)
@@ -83,7 +83,7 @@
          type(norms),intent(in) :: norm
          integer,intent(in) :: un
          character(len=*),intent(in) :: name
-         write(un,*) '++++++++++++++ '//trim(adjustl(name))//' +++++++++++++++'
+         write(un,*) '++++++++++++++ '//name//' +++++++++++++++'
          write(un,*) 'L1 = ',norm%L1
          write(un,*) 'L2 = ',norm%L2
          write(un,*) 'Linf = ',norm%Linf

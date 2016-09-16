@@ -1,6 +1,7 @@
        module mesh_mod
       ! Pre-processor directives: (_DEBUG_MESH_)
        use current_precision_mod
+       use simple_int_tensor_mod
        use IO_tools_mod
        use grid_mod
        use grid_genHelper_mod
@@ -13,11 +14,12 @@
        private
        public :: mesh
        public :: init,add,delete
-       public :: print,export ! import
+       public :: export,import
+       public :: print,display
        public :: patch
        public :: restrict,restrict_x,restrict_xy
        public :: initProps
-       public :: init_boundary
+       public :: init_surface
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkmesh
@@ -33,8 +35,9 @@
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
-         logical :: plane_x,plane_y,plane_z
+         logical :: plane_x,plane_y,plane_z,plane_xyz
          type(realField),dimension(:),allocatable :: vol
+         type(simple_int_tensor),dimension(3) :: int_tensor
        end type
 
        interface init;           module procedure init_grid;           end interface
@@ -51,8 +54,11 @@
        interface restrict_xy;    module procedure restrictmesh_xy;     end interface
 
        interface print;          module procedure print_mesh;          end interface
+       interface display;        module procedure display_mesh;        end interface
        interface export;         module procedure export_mesh;         end interface
-       interface export;         module procedure exportmesh_all;      end interface
+       interface import;         module procedure import_mesh;         end interface
+       interface export;         module procedure export_wrapper;      end interface
+       interface import;         module procedure import_wrapper;      end interface
 
        contains
 
@@ -70,9 +76,10 @@
            do k=1,12; call delete(m%g(i)%st_edges(i)); enddo
            do k=1,8; call delete(m%g(i)%st_corners(i)); enddo
          enddo
+         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in init_grid in mesh.f90'
        end subroutine
 
-       subroutine init_boundary(m,m_in)
+       subroutine init_surface(m,m_in)
          implicit none
          type(mesh),intent(inout) :: m
          type(mesh),intent(in) :: m_in
@@ -88,6 +95,7 @@
          enddo; enddo
          call delete(gg)
          call initProps(m)
+         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in init_surface in mesh.f90'
        end subroutine
 
        subroutine addGrid(m,g)
@@ -97,6 +105,7 @@
          type(mesh) :: temp
          integer :: i
          if (allocated(m%g)) then
+           if (m%s.lt.1) stop 'Error: allocated mesh but size<1 in addGrid mesh.f90'
            call init(temp,m)
            call delete(m)
            m%s = temp%s + 1
@@ -109,22 +118,20 @@
            call init(m%g(1),g); m%s = 1
          endif
          call initProps(m)
+         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in addGrid in mesh.f90'
        end subroutine
 
        subroutine deletemesh(m)
          implicit none
          type(mesh),intent(inout) :: m
          integer :: i
-         if (allocated(m%g)) then
-           do i = 1,m%s; call delete(m%g(i)) ;enddo
-           m%s = 0; deallocate(m%g)
-         else; m%s = 0
-         endif
          if (allocated(m%vol)) then
-           do i=1,m%s; call delete(m%vol(i)); enddo
-           deallocate(m%vol)
+           do i=1,m%s; call delete(m%vol(i)); enddo; deallocate(m%vol)
          endif
-         call remove_stitches(m)
+         if (allocated(m%g)) then
+           do i=1,m%s; call delete(m%g(i)) ;enddo; deallocate(m%g)
+         endif
+         m%s = 0
        end subroutine
 
        subroutine remove_stitches(m)
@@ -144,7 +151,9 @@
          type(mesh),intent(in) :: m_in
          integer :: i
          if (.not.allocated(m_in%g)) stop 'Error: mesh not allocated in initmeshCopy in mesh.f90'
+         if (m_in%s.ne.size(m_in%g)) stop 'Error: size incorrect in addGrid in mesh.f90'
          call delete(m_out)
+         if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in initmeshCopy in mesh.f90'
          m_out%s = m_in%s
          allocate(m_out%g(m_in%s))
          do i=1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
@@ -175,6 +184,7 @@
          type(mesh),intent(inout) :: m
          integer :: i,j
          if (.not.allocated(m%g)) stop 'Error: mesh not allocated in initProps_mesh in mesh.f90'
+         m%s = size(m%g)
          if (m%s.gt.1) then
            do j=1,3
              m%hmin(j)  = minval( (/(m%g(i)%c(j)%hmin  , i=2,m%s)/) )
@@ -204,6 +214,8 @@
          m%plane_x = all((/(m%g(i)%c(1)%N.eq.1,i=1,m%s)/))
          m%plane_y = all((/(m%g(i)%c(2)%N.eq.1,i=1,m%s)/))
          m%plane_z = all((/(m%g(i)%c(3)%N.eq.1,i=1,m%s)/))
+         m%plane_xyz = any((/m%plane_x,m%plane_y,m%plane_z/))
+         do i=1,3; call init(m%int_tensor(i),i); enddo
          call init_volume(m)
        end subroutine
 
@@ -375,49 +387,88 @@
        end subroutine
 #endif
 
-       subroutine exportmesh_all(m,dir,name)
-         implicit none
-         type(mesh), intent(in) :: m
-         character(len=*),intent(in) :: dir,name
-         integer :: i,NU
-         NU = newAndOpen(dir,name)
-         do i = 1,m%s; call export_all(m%g(i),NU) ;enddo
-         call closeandMessage(NU,name,dir)
-       end subroutine
-
-       subroutine print_mesh(m)
-         implicit none
-         type(mesh), intent(in) :: m
-         call export(m,6)
-       end subroutine
-
        subroutine export_mesh(m,un)
          implicit none
          type(mesh), intent(in) :: m
          integer,intent(in) :: un
          integer :: i
-         write(un,*) ' ************* mesh ************* '
+         write(un,*) 'N_grids'
+         write(un,*) m%s
+         do i = 1,m%s
+           write(un,*) ' ------------- mesh ------------- grid ID = ',i
+           call export(m%g(i),un)
+         enddo
+       end subroutine
+
+       subroutine import_mesh(m,un)
+         implicit none
+         type(mesh), intent(inout) :: m
+         integer,intent(in) :: un
+         integer :: i
+         call delete(m)
+         read(un,*)
+         read(un,*) m%s
+         allocate(m%g(m%s))
+         do i = 1,m%s
+           read(un,*);
+           call import(m%g(i),un)
+         enddo
+         call initProps(m)
+       end subroutine
+
+       subroutine export_wrapper(m,dir,name)
+         implicit none
+         type(mesh), intent(in) :: m
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(m,un)
+         call close_and_message(un,dir,name)
+       end subroutine
+
+       subroutine import_wrapper(m,dir,name)
+         implicit none
+         type(mesh), intent(inout) :: m
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(m,un)
+         call close_and_message(un,dir,name)
+       end subroutine
+
+       subroutine print_mesh(m)
+         implicit none
+         type(mesh), intent(in) :: m
+         call display(m,6)
+       end subroutine
+
+       subroutine display_mesh(m,un)
+         implicit none
+         type(mesh), intent(in) :: m
+         integer,intent(in) :: un
+         integer :: i
          if (un.ne.6) then
            do i = 1,m%s
-             write(un,*) ' -------------------------------- grid ID = ',i
-             call export(m%g(i),un)
-             if (m%s.gt.1) call export_stitches(m%g(i),un)
-             write(un,*) ' -------------------------------- '
+             write(un,*) ' ------------- mesh ------------- grid ID = ',i
+             call display(m%g(i),un)
+             if (m%s.gt.1) call display_stitches(m%g(i),un)
            enddo
+           write(un,*) ' -------------------------------- '
          else
            if (m%s.lt.5) then
              do i = 1,m%s
-               write(un,*) ' -------------------------------- grid ID = ',i
-                 call export(m%g(i),un)
-               if (m%s.gt.1) call export_stitches(m%g(i),un)
-               write(un,*) ' -------------------------------- '
+               write(un,*) ' ------------- mesh ------------- grid ID = ',i
+                 call display(m%g(i),un)
+               if (m%s.gt.1) call display_stitches(m%g(i),un)
              enddo
+           write(un,*) ' -------------------------------- '
            else
            write(un,*) 'Many grids. To see details, see info file or change limits in mesh.f90'
            endif
          endif
 
          if (m%s.gt.1) then
+           write(un,*) ' *********** mesh props *********** '
            write(un,*) 's,volume = ',m%s,m%volume
            write(un,*) 'N_cells_tot,N_cells = ',m%N_cells_tot,m%N_cells
            write(un,*) 'min/max(h)_x = ',(/m%hmin(1),m%hmax(1)/)
@@ -426,8 +477,8 @@
            write(un,*) 'min/max(dh)_x = ',(/m%dhmin(1),m%dhmax(1)/)
            write(un,*) 'min/max(dh)_y = ',(/m%dhmin(2),m%dhmax(2)/)
            write(un,*) 'min/max(dh)_z = ',(/m%dhmin(3),m%dhmax(3)/)
+           write(un,*) ' ********************************** '
          endif
-         write(un,*) ' ******************************** '
        end subroutine
 
        end module

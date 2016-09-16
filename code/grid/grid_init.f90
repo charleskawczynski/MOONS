@@ -2,13 +2,11 @@
        use current_precision_mod
        use grid_mod
        use grid_genHelper_mod
-       use grid_distribution_funcs_mod
-       use grid_stretchParamMatch_mod
+       use coordinate_distribution_funcs_mod
+       use coordinate_stretch_param_match_mod
        implicit none
 
        private
-
-
 
        public :: grid_uniform
        public :: grid_Roberts_L,grid_Roberts_R,grid_Roberts_B

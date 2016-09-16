@@ -75,8 +75,8 @@
 
        public :: zeroGhostPoints
        interface zeroGhostPoints;         module procedure zeroGhostPoints_RF;        end interface
-       interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
 
        public :: zeroWall
        interface zeroWall;                module procedure zeroWall_RF;               end interface
@@ -94,6 +94,10 @@
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
        interface zeroInterior;            module procedure zeroInterior_SF;           end interface
 
+       public :: assign_first_interior_cell
+       interface assign_first_interior_cell; module procedure assign_first_interior_cell_RF; end interface
+       interface assign_first_interior_cell; module procedure assign_first_interior_cell_SF; end interface
+
        public :: sineWaves
        interface sineWaves;               module procedure sineWaves_SF;              end interface
 
@@ -109,13 +113,13 @@
        interface treatInterface;          module procedure treatInterface_VF;         end interface
        interface treatInterface;          module procedure treatInterface_SF;         end interface
 
-       public :: printPhysicalMinMax
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_SF;    end interface
-       interface printPhysicalMinMax;     module procedure printPhysicalMinMax_VF;    end interface
+       public :: displayPhysicalMinMax
+       interface displayPhysicalMinMax;   module procedure displayPhysicalMinMax_SF;  end interface
+       interface displayPhysicalMinMax;   module procedure displayPhysicalMinMax_VF;  end interface
 
-       public :: printGlobalMinMax
-       interface printGlobalMinMax;       module procedure printGlobalMinMax_SF;      end interface
-       interface printGlobalMinMax;       module procedure printGlobalMinMax_VF;      end interface
+       public :: displayGlobalMinMax
+       interface displayGlobalMinMax;     module procedure displayGlobalMinMax_SF;    end interface
+       interface displayGlobalMinMax;     module procedure displayGlobalMinMax_VF;    end interface
 
        public :: noise
        interface noise;                   module procedure noise_RF;                  end interface
@@ -332,9 +336,39 @@
          integer,intent(in) :: px,py,pz
          integer :: i,j,k
          ! $OMP PARALLEL DO
-         do k=2+px,s(1)-1-px; do j=2+py,s(2)-1-py; do i=2+pz,s(3)-1-pz
+         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px
          f(i,j,k) = 0.0_cp
          enddo; enddo; enddo
+         ! $OMP END PARALLEL DO
+       end subroutine
+
+       subroutine assign_first_interior_cell_RF(a,b,s,px,py,pz)
+         implicit none
+         real(cp),dimension(:,:,:),intent(inout) :: a
+         real(cp),dimension(:,:,:),intent(in) :: b
+         integer,dimension(3),intent(in) :: s
+         integer,intent(in) :: px,py,pz
+         integer :: i,j,k
+         i=2
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         j=2
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         ! $OMP PARALLEL DO
+         do k=2+pz,s(3)-1-pz; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         k=2
+         ! $OMP PARALLEL DO
+         do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
+         ! $OMP END PARALLEL DO
+         ! $OMP PARALLEL DO
+         do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
          ! $OMP END PARALLEL DO
        end subroutine
 
@@ -369,7 +403,6 @@
          ! Make interface property the min/max of
          ! fluid / wall domain depending on treatment
          tol = 10.0_cp**(-10.0_cp)
-
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
          if ((f(i,j,k).gt.low_value+tol).and.(f(i,j,k).lt.high_value-tol)) then
@@ -525,7 +558,7 @@
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         case default; stop 'Error: face must = 1,2,3 in cosineWaves_RF'
          end select
          elseif (f%is_Edge) then
          select case (f%face)
@@ -599,19 +632,19 @@
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
          integer :: i
-         if (Node_along(f,1)) then
+         if (f%N_along(1)) then
            do i=1,m%s
              call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
              call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
-         if (Node_along(f,2)) then
+         if (f%N_along(2)) then
            do i=1,m%s
              call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
              call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
-         if (Node_along(f,3)) then
+         if (f%N_along(3)) then
            do i=1,m%s
              call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
              call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
@@ -625,30 +658,30 @@
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         logical :: TF
+         logical :: L
          integer :: i
-         if (Node_along(f,1)) then
+         if (f%N_along(1)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%RF(i)%b%f(2)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
+             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann).and.(.not.f%RF(i)%b%f(1)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
+             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%RF(i)%b%f(2)%b%Neumann).and.(.not.f%RF(i)%b%f(2)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
-         if (Node_along(f,2)) then
+         if (f%N_along(2)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%RF(i)%b%f(4)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
+             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann).and.(.not.f%RF(i)%b%f(3)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
+             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%RF(i)%b%f(4)%b%Neumann).and.(.not.f%RF(i)%b%f(4)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
-         if (Node_along(f,3)) then
+         if (f%N_along(3)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%RF(i)%b%f(6)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
+             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann).and.(.not.f%RF(i)%b%f(5)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
+             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%RF(i)%b%f(6)%b%Neumann).and.(.not.f%RF(i)%b%f(6)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -660,30 +693,30 @@
          type(SF),intent(inout) :: f
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
-         logical :: TF
+         logical :: L
          integer :: i
-         if (Node_along(f,1)) then
+         if (f%N_along(1)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             TF = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%RF(i)%b%f(2)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
+             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann).and.(.not.u%RF(i)%b%f(1)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
+             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%RF(i)%b%f(2)%b%Neumann).and.(.not.u%RF(i)%b%f(2)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
            enddo
          endif
-         if (Node_along(f,2)) then
+         if (f%N_along(2)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             TF = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%RF(i)%b%f(4)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
+             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann).and.(.not.u%RF(i)%b%f(3)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
+             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%RF(i)%b%f(4)%b%Neumann).and.(.not.u%RF(i)%b%f(4)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
            enddo
          endif
-         if (Node_along(f,3)) then
+         if (f%N_along(3)) then
            do i=1,m%s
-             TF = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             TF = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%RF(i)%b%f(6)%b%Neumann)
-             if (TF) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
+             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann).and.(.not.u%RF(i)%b%f(5)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
+             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%RF(i)%b%f(6)%b%Neumann).and.(.not.u%RF(i)%b%f(6)%b%periodic)
+             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -696,6 +729,15 @@
          do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,x,y,z); enddo
        end subroutine
 
+       subroutine assign_first_interior_cell_SF(a,b)
+         implicit none
+         type(SF),intent(inout) :: a
+         type(SF),intent(inout) :: b
+         integer :: i,x,y,z
+         call C0_N1_tensor(a,x,y,z)
+         do i=1,a%s; call assign_first_interior_cell(a%RF(i)%f,b%RF(i)%f,a%RF(i)%s,x,y,z); enddo
+       end subroutine
+
        subroutine treatInterface_SF(f,take_high_value)
          implicit none
          type(SF),intent(inout) :: f
@@ -704,18 +746,20 @@
          do i=1,f%s; call treatInterface(f%RF(i)%f,f%RF(i)%s,take_high_value); enddo
        end subroutine
 
-       subroutine printPhysicalMinMax_SF(U,name)
+       subroutine displayPhysicalMinMax_SF(U,name,un)
          implicit none
          type(SF),intent(in) :: U
          character(len=*),intent(in) :: name
-         write(*,*) 'Min/Max ('//name//') = ',min(u,1),max(u,1)
+         integer,intent(in) :: un
+         write(un,*) 'Min/Max ('//name//') = ',min(u,1),max(u,1)
        end subroutine
 
-       subroutine printGlobalMinMax_SF(U,name)
+       subroutine displayGlobalMinMax_SF(U,name,un)
          implicit none
          type(SF),intent(in) :: U
          character(len=*),intent(in) :: name
-         write(*,*) 'Min/Max ('//name//') = ',min(u),max(u)
+         integer,intent(in) :: un
+         write(un,*) 'Min/Max ('//name//') = ',min(u),max(u)
        end subroutine
 
        subroutine noise_SF(U)
@@ -872,22 +916,24 @@
          call treatInterface(f%z,take_high_value)
        end subroutine
 
-       subroutine printPhysicalMinMax_VF(U,name)
+       subroutine displayPhysicalMinMax_VF(U,name,un)
          implicit none
          type(VF),intent(in) :: U
          character(len=*),intent(in) :: name
-         call printPhysicalMinMax(U%x,name//'_x')
-         call printPhysicalMinMax(U%y,name//'_y')
-         call printPhysicalMinMax(U%z,name//'_z')
+         integer,intent(in) :: un
+         call displayPhysicalMinMax(U%x,name//'_x',un)
+         call displayPhysicalMinMax(U%y,name//'_y',un)
+         call displayPhysicalMinMax(U%z,name//'_z',un)
        end subroutine
 
-       subroutine printGlobalMinMax_VF(U,name)
+       subroutine displayGlobalMinMax_VF(U,name,un)
          implicit none
          type(VF),intent(in) :: U
          character(len=*),intent(in) :: name
-         call printGlobalMinMax(U%x,name//'_x')
-         call printGlobalMinMax(U%y,name//'_y')
-         call printGlobalMinMax(U%z,name//'_z')
+         integer,intent(in) :: un
+         call displayGlobalMinMax(U%x,name//'_x',un)
+         call displayGlobalMinMax(U%y,name//'_y',un)
+         call displayGlobalMinMax(U%z,name//'_z',un)
        end subroutine
 
        subroutine noise_VF(U)

@@ -10,64 +10,78 @@
        private
        public :: initSigma
 
-       ! This gets overridden by benchmarkCase
        integer :: preDefined_Sigma = 1 ! sigma* = sigma_wall/sigma_l
-       !                                       0 : User-defined case (no override)
-       !                                       1 : Subdomain dependent
-       !                                       2 : Cylinder (2D)
-
-       ! real(cp) :: sigmaStarWall = 1.0_cp             ! sigma* = sigma_wall/sigma_l
-       ! real(cp) :: sigmaStarWall = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
-       real(cp) :: sigmaStarWall = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
-       ! real(cp) :: sigmaStarWall = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
-       ! real(cp) :: sigmaStarWall = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
-       ! real(cp) :: sigmaStarWall = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
+       !                                          0 : Uniform
+       !                                          1 : Subdomain dependent
+       !                                          2 : Cylinder (2D)
+       !                                          3 : single cell sheet
 
        contains
 
-       subroutine initSigma(sigma,D,m)
+       subroutine initSigma(sigma,D,m,sig_local_over_sig_f)
          implicit none
          type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
          type(SF),intent(inout) :: sigma
+         real(cp),intent(in) :: sig_local_over_sig_f
          if (preDefined_Sigma.ne.0) then
-           call initPredefinedSigma(sigma,D,m)
+           call initPredefinedSigma(sigma,D,m,sig_local_over_sig_f)
          else
-           call initUserSigma(sigma,D)
+           call initUserSigma(sigma,D,sig_local_over_sig_f)
          endif
        end subroutine
 
-       subroutine initPredefinedSigma(sigma,D,m)
+       subroutine initPredefinedSigma(sigma,D,m,sig_local_over_sig_f)
          implicit none
          type(SF),intent(inout) :: sigma
          type(domain),intent(in) :: D
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: sig_local_over_sig_f
+         call assign(sigma,1.0_cp)
          select case (preDefined_Sigma)
-         case (1); call initSubdomain(sigma,D)
-         case (2); call initCylinder2D(sigma,D,m%g(1),3) ! Only for single domain
+         case (0);
+         case (1); call initSubdomain(sigma,D,sig_local_over_sig_f)
+         case (2); call initCylinder2D(sigma,D,m%g(1),3,sig_local_over_sig_f) ! Only for single domain
+         case (3); call single_cell_sheet(sigma,D,sig_local_over_sig_f)
          case default
          stop 'Error: preDefined_Sigma not found in initPredefinedSigma in initializeSigma.f90'
          end select
        end subroutine
 
-       subroutine initSubdomain(sigma,D)
+       subroutine initSubdomain(sigma,D,sig_local_over_sig_f)
          implicit none
          type(SF),intent(inout) :: sigma
          type(domain),intent(in) :: D
+         real(cp),intent(in) :: sig_local_over_sig_f
          type(SF) :: sigma_l
          call init_CC(sigma_l,D%m_in)
          call assign(sigma_l,1.0_cp)
-         call assign(sigma,sigmaStarWall)
+         call assign(sigma,sig_local_over_sig_f)
          call embedCC(sigma,sigma_l,D)
          call delete(sigma_l)
        end subroutine
 
-       subroutine initCylinder2D(sigma,D,g,dir)
+       subroutine single_cell_sheet(sigma,D,sig_local_over_sig_f)
+         implicit none
+         type(SF),intent(inout) :: sigma
+         type(domain),intent(in) :: D
+         real(cp),intent(in) :: sig_local_over_sig_f
+         type(SF) :: sigma_l
+         call init_CC(sigma_l,D%m_in)
+         call assign(sigma_l,sig_local_over_sig_f)
+         sigma_l%RF(1)%f(:,sigma_l%RF(1)%s(2)-1,:) = 1.0_cp
+         call assign(sigma,sig_local_over_sig_f)
+         call embedCC(sigma,sigma_l,D)
+         call delete(sigma_l)
+       end subroutine
+
+       subroutine initCylinder2D(sigma,D,g,dir,sig_local_over_sig_f)
          implicit none
          type(SF),intent(inout) :: sigma
          type(domain),intent(in) :: D
          type(grid),intent(in) :: g
          integer,intent(in) :: dir
+         real(cp),intent(in) :: sig_local_over_sig_f
          type(SF) :: sigma_l
          real(cp),dimension(3) :: hc
          integer,dimension(3) :: s
@@ -77,7 +91,7 @@
          r0 = 1.0_cp
          call init_CC(sigma_l,D%m_in)
          call assign(sigma_l,1.0_cp)
-         call assign(sigma,sigmaStarWall)
+         call assign(sigma,sig_local_over_sig_f)
          s = sigma%RF(1)%s
          hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
          select case (dir)
@@ -102,14 +116,15 @@
          call delete(sigma_l)
        end subroutine
 
-       subroutine initUserSigma(sigma,D)
+       subroutine initUserSigma(sigma,D,sig_local_over_sig_f)
          implicit none
          type(SF),intent(inout) :: sigma
          type(domain),intent(in) :: D
+         real(cp),intent(in) :: sig_local_over_sig_f
          type(SF) :: sigma_l
          call init_CC(sigma_l,D%m_in)
          call assign(sigma_l,1.0_cp)
-         call assign(sigma,sigmaStarWall)
+         call assign(sigma,sig_local_over_sig_f)
          call embedCC(sigma,sigma_l,D)
          call delete(sigma_l)
        end subroutine

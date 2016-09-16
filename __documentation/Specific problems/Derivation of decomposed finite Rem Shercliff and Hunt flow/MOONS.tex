@@ -1,0 +1,359 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+
+\newcommand{\B}{\mathbf{B}}
+\newcommand{\BS}{B^{SH}}
+\newcommand{\BT}{\tilde{B}}
+\renewcommand{\H}{\mathbf{H}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\curl}{\nabla \times}
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\PD}{\partial}
+\newcommand{\MC}{\mathcal}
+\newcommand{\BM}{\frac{\B}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\J}{\sigma}}
+\newcommand{\JoS}{\frac{\J^1}{\sigma}}
+\newcommand{\JSS}{\frac{\J^2}{\sigma}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+\newcommand{\Rei}{\frac{1}{Re}}
+\newcommand{\Remi}{\frac{1}{Re_m}}
+\newcommand{\NRemi}{\frac{N}{Re_m}}
+
+% \setlength{\textfloatsep}{0.1cm}
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+% \renewcommand{\arraystretch}{0.0} % Removes vertical spaces before/after tabularx
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Secondary flow in finite Rem Shercliff and Hunt analog}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Before higher order attempt}
+\section{Low but finite Rem Shercliff and Hunt flow}
+The dimensional momentum and induction equations for uniform material properties are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = \frac{1}{\sigma \mu} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+
+Non-dimensionalizing using
+
+\begin{equation}\begin{aligned}
+	[u] = U, \qquad
+	[B] = U (\sigma \rho \nu)^{1/2} \times \mu \quad \text{(Shercliff uses H)}, \qquad
+	[P] = \rho U \nu / L, \qquad
+	[t] = L^2 / \nu
+\end{aligned} \end{equation}
+
+The dimensionless momentum and induction equations are
+
+\begin{equation}\begin{aligned}
+\frac{U \nu}{L^2} \PD_t u_i+ \frac{U^2}{L} u_j\PD_j u_i =-\frac{\rho \nu U}{\rho L^2}\PD_i p+ \frac{U \nu}{L^2} \PD_{jj} u_i + \frac{U^2 (\sigma \rho \nu) \mu^2}{\rho L \mu} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\frac{\nu U (\sigma \rho \nu)^{1/2}}{L^2} \PD_t B_i + \frac{U^2 (\sigma \rho \nu)^{1/2}}{L} \PD_j (u_j B_i - u_i B_j) = \frac{U (\sigma \rho \nu)^{1/2}}{\sigma \mu L^2} \PD_{jj} B_i
+\end{aligned} \end{equation}
+Simplifying, we have
+\begin{equation}\begin{aligned}
+\PD_t u_i+ Re u_j\PD_j u_i =-\PD_i p+ \PD_{jj} u_i + Re_m (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+Re^{-1} \PD_t B_i + \PD_j (u_j B_i - u_i B_j) = Re_m^{-1} \PD_{jj} B_i
+\end{aligned} \end{equation}
+
+Instead, using Hartmann number for $B$, that is, the scale for $B$ is instead $L^{-1} (\rho \nu / \sigma)^{1/2}$, we have
+
+\begin{equation}\begin{aligned}
+\frac{U \nu}{L^2} \PD_t u_i+ \frac{U^2}{L} u_j\PD_j u_i =-\frac{\rho \nu U}{\rho L^2}\PD_i p+ \frac{U \nu}{L^2} \PD_{jj} u_i + \frac{L^{-2} (\rho \nu / \sigma)}{\rho L \mu} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\frac{\nu U (\sigma \rho \nu)^{1/2}}{L^2} \PD_t B_i + \frac{U^2 (\sigma \rho \nu)^{1/2}}{L} \PD_j (u_j B_i - u_i B_j) = \frac{U (\sigma \rho \nu)^{1/2}}{\sigma \mu L^2} \PD_{jj} B_i
+\end{aligned} \end{equation}
+Simplifying, we have
+\begin{equation}\begin{aligned}
+\PD_t u_i+ Re u_j\PD_j u_i =-\PD_i p+ \PD_{jj} u_i + Re_m^{-1} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+Re^{-1} \PD_t B_i + \PD_j (u_j B_i - u_i B_j) = Re_m^{-1} \PD_{jj} B_i
+\end{aligned} \end{equation}
+
+Where $\U,\B,p,Re,N,Re_m$ are the velocity, magnetic field, pressure, Reynolds, interaction and magnetic Reynolds number respectively. First, let's let the mechanical pressure absorb the magnetic pressure and seek the steady solution.
+\begin{equation}\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + Re_m^{-1} Ha^2 Re^{-1} (B_j \PD_j B_i) \\
+Re_m^{-1} \PD_{jj} B_i = \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+Since we are interested in when $Re_m$ is small, and the induction equation is linear, we'll combine them by factors of $Re_m$. There is documentation in MOONS how this is done. To be clear we may decompse $\B$ in one of two ways:
+\begin{equation}\begin{aligned}
+	\B = \B^0 + \B^1 + \B^2 + \hdots , \\
+	\B = \B^0 + Re_m \B^* + Re_m^2 \B^{**} + \hdots \\
+	\J = \curl \B = \curl \B^* + Re_m \curl \B^{**} + \hdots \\
+	\J \times \B = B_j \PD_j B_i - \underbrace{\tfrac{1}{2} \PD_j (B_i B_i)}_{\text{let pressure absorb}} \\
+	= B_j \PD_j B_i \\
+	= (B_j^0+Re_m B_j^* + \hdots) \PD_j (B_i^*+Re_m B_i^{**} + \hdots) \\
+\end{aligned} \end{equation}
+Now, let's rewrite the induction equation and Lorentz force with this expansion and neglect $Re_m^2$ terms
+
+\begin{equation}\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + N (B_j^0+Re_m B_j^*) \PD_j B_i^*, \qquad \qquad \text{ neglecting } \B^{**}  \\
+\PD_{jj} B_i^{*}  = \PD_j (u_j (B_i^0 + Re_m B_i^*) - u_i (B_j^0+Re_m B_j^*)), \qquad \qquad \text{equation for } \B, \text{ neglecting } \B^{**} \\
+\end{aligned} \end{equation}
+
+Note that $\B^{**}$ has been neglected in both the induction and momentum equations. Our final result is:
+
+\begin{equation}\boxed{\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + N (B_j^0+Re_m B_j^*) \PD_j B_i^* \\
+\PD_{jj} B_i^* = \PD_j (u_j (B_i^0 + Re_m B_i^{*}) - u_i (B_j^0+Re_m B_j^{*}))
+\end{aligned}}\end{equation}
+
+Notice that with this formulation, we may set $Re_m$ to be zero \textit{exactly} and still be able to solve for have a physical MHD result since $\B^*$ has absorbed $Re_m$ in the denominator of the Lorentz force term in the momentum equation. This is the low $Re_m$ formulation.
+
+\section{End of finite Rem formulation in B, start of finite Rem formulation in U}
+Now, let's expand velocity and pressure with respect to $Re_m$.
+\begin{equation}\begin{aligned}
+	\U = \U^0 + Re_m \U^* + Re_m^2 \U^{**} + \hdots \\
+	p = p^0 + Re_m p^* + Re_m^2 p^{**} + \hdots
+\end{aligned} \end{equation}
+Plug into the momentum and induction equations.
+\small\begin{equation}\begin{aligned}
+(u_j^0+Re_m u_j^*)\PD_j (u_i^0+Re_m u_i^*) =-\PD_i p^0-Re_m\PD_i p^*+ Re^{-1} \PD_{jj} (u_i^0+Re_m u_i^*) + N (B_j^0+Re_m B_j^*) \PD_j B_i^* \\
+\PD_{jj} B_i^* =  \PD_j ((u_j^0+Re_m u_j^*) (B_i^0 + Re_m B_i^{*}) - (u_i^0+Re_m u_i^*) (B_j^0+Re_m B_j^{*}))
+\end{aligned}\end{equation}\normalsize
+Expanding out and neglect $Re_m^2$ order terms.
+\begin{equation}\boxed{\begin{aligned}
+u_j^0 \PD_j u_i^0 +
+Re_m u_j^0 \PD_j u_i^* +
+Re_m u_j^* \PD_j u_i^0 
+= -\PD_i p^0 - Re_m\PD_i p^*+ Re^{-1} \PD_{jj} u_i^0 + Re_m Re^{-1} \PD_{jj} u_i^* + N B_j^0 \PD_j B_i^* + Re_m N B_j^* \PD_j B_i^* \\
+\PD_{jj} B_i^* = \PD_j ( u_j^0 B_i^0 + Re_m u_j^0 B_i^{*} + Re_m u_j^* B_i^0 - u_i^0 B_j^0 - Re_m u_i^0 B_j^{*} - Re_m u_i^* B_j^0)
+\end{aligned}}\end{equation}
+Let's collect terms of $Re_m$ to end up with two equations for momentum and two equations for induction
+
+\section{Separating \texorpdfstring{$\B^*$}{} into \texorpdfstring{$\B^{\text{Shercliff}}$}{} and \texorpdfstring{$\tilde{\B}$}{}}
+
+Let's decompose the induced magnetic field into
+\begin{equation}
+	\B^* = \mathbf{B}^{SH} + Re_m \tilde{\mathbf{B}}
+\end{equation}
+Doing so yields
+\tiny\begin{equation}\boxed{\begin{aligned}
+u_j^0 \PD_j u_i^0 +
+Re_m u_j^0 \PD_j u_i^* +
+Re_m u_j^* \PD_j u_i^0 
+= -\PD_i p^0 - Re_m\PD_i p^*+ Re^{-1} \PD_{jj} u_i^0 + Re_m Re^{-1} \PD_{jj} u_i^* + N B_j^0 \PD_j (\BS_i+Re_m \BT_i) + Re_m N (\BS_j+Re_m \BT_j) \PD_j (\BS_i+Re_m \BT_i) \\
+\PD_{jj} (\BS_i+Re_m \BT_i) = \PD_j ( u_j^0 B_i^0 + Re_m u_j^0 (\BS_i+Re_m \BT_i) + Re_m u_j^* B_i^0 - u_i^0 B_j^0 - Re_m u_i^0 (\BS_j+Re_m \BT_j) - Re_m u_i^* B_j^0)
+\end{aligned}}\end{equation}\normalsize
+Again, neglecting the higher order terms, we have
+
+\tiny\begin{equation}\begin{aligned}
+u_j^0 \PD_j u_i^0 +
+Re_m u_j^0 \PD_j u_i^* +
+Re_m u_j^* \PD_j u_i^0 
+= -\PD_i p^0 - Re_m\PD_i p^*+ Re^{-1} \PD_{jj} u_i^0 + Re_m Re^{-1} \PD_{jj} u_i^* + N B_j^0 \PD_j (\BS_i+Re_m \BT_i) + Re_m N \BS_j \PD_j \BS_i \\
+\PD_{jj} (\BS_i+Re_m \BT_i) = \PD_j ( u_j^0 B_i^0 + Re_m u_j^0 \BS_i + Re_m u_j^* B_i^0 - u_i^0 B_j^0 - Re_m u_i^0 \BS_j - Re_m u_i^* B_j^0)
+\end{aligned}\end{equation}\normalsize
+
+\section{Separation into Rem 0 and Rem 1}
+Equations for $Re_m^0$
+\begin{equation}\boxed{\begin{aligned}
+u_j^0 \PD_j u_i^0 = -\PD_i p^0 + Re^{-1} \PD_{jj} u_i^0 + N B_j^0 \PD_j \BS_i \\
+\PD_{jj} \BS_i = \PD_j ( u_j^0 B_i^0 - u_i^0 B_j^0)
+\end{aligned}}\end{equation}
+
+Equations for $Re_m^1$
+\begin{equation}\boxed{\begin{aligned}
+u_j^0 \PD_j u_i^* + u_j^* \PD_j u_i^0 = -\PD_i p^*+ Re^{-1} \PD_{jj} u_i^* + N ( B_j^0 \PD_j \BT_i + \BS_j \PD_j \BS_i ) \\
+\PD_{jj} \BT_i = \PD_j ( u_j^0 \BS_i + u_j^* B_i^0 - u_i^0 \BS_j - u_i^* B_j^0)
+\end{aligned}}\end{equation}
+
+\section{Apply duct flow conditions}
+Let's expand and apply $B_x^0 = 0,B_y^0 = 0, v^0 = 0, w^0 = 0$ and $\PD_x() = 0$ except for pressure, which we'll assume varies linearly. 
+Keeping in mind to group magnetic pressure with mechanical pressure, we have
+
+Equations for $Re_m^0$
+\begin{equation}\begin{aligned}
+0 = -\PD_x p^0 + Re^{-1} (\PD_{yy} u^0 + \PD_{zz} u^0) + N (B_z^0 \PD_z \BS_x) \\
+0 = -\PD_y p^0 + Re^{-1} (\PD_{yy} v^0 + \PD_{zz} v^0) + N (B_z^0 \PD_z \BS_y) \\
+0 = -\PD_z p^0 + Re^{-1} (\PD_{yy} w^0 + \PD_{zz} w^0) + N (B_z^0 \PD_z \BS_z) \\
+\PD_{yy} \BS_x + \PD_{zz} \BS_x = - \PD_y ( u^0 B_y^0) - \PD_z ( u^0 B_z^0) \\
+\PD_{yy} \BS_y + \PD_{zz} \BS_y = - \PD_z ( v^0 B_z^0) \\
+\PD_{yy} \BS_z + \PD_{zz} \BS_z = - \PD_y ( w^0 B_y^0) \\
+\end{aligned}\end{equation}
+
+Equations for $Re_m^1 $
+\small\begin{equation}\begin{aligned}
+v^* \PD_y u^0 + w^* \PD_z u^0 = -\PD_x p^*+ Re^{-1} (\PD_{yy} u^* + \PD_{zz} u^*) + N ( B_z^0 \PD_z \BT_x + \BS_y \PD_y \BS_x + \BS_z \PD_z \BS_x ) \\
+0                             = -\PD_y p^*+ Re^{-1} (\PD_{yy} v^* + \PD_{zz} v^*) + N ( B_z^0 \PD_z \BT_y + \BS_y \PD_y \BS_y + \BS_z \PD_z \BS_y ) \\
+0                             = -\PD_z p^*+ Re^{-1} (\PD_{yy} w^* + \PD_{zz} w^*) + N ( B_z^0 \PD_z \BT_z + \BS_y \PD_y \BS_z + \BS_z \PD_z \BS_z ) \\
+\PD_{jj} \BT_x =-\PD_y ( u^0 \BS_y) + \PD_z ( u^0 \BS_z - u^* B_z^0) \\
+\PD_{jj} \BT_y =-\PD_z ( v^* B_z^0) \\
+\PD_{jj} \BT_z = \PD_y ( v^* B_z^0) \\
+\end{aligned}\end{equation}\normalsize
+
+\section{Separate by SH and secondary flow}
+Using applied magnetic field conditions and SH solution $B_x^0=0,B_y^0=0,v^0=0,w^0=0,B_z=\text{uniform}$ yields the SH governing equations and secondary flow governing equations
+
+Equations for $Re_m^0$
+\begin{equation}\boxed{\begin{aligned}
+0 = -\PD_x p^0 + Re^{-1} (\PD_{yy} u^0 + \PD_{zz} u^0) + N B_z^0 \PD_z \BS_x \\
+\PD_{yy} \BS_x + \PD_{zz} \BS_x = - \PD_z (u^0 B_z^0) \\
+\end{aligned}} \qquad \text{Shercliff / Hunt governing equations}\end{equation}
+Scaling $\PD_x p^0$ by $Re$ and multiplying by $Re$ yields
+\begin{equation}\boxed{\begin{aligned}
+1 = (\PD_{yy} u^0 + \PD_{zz} u^0) + Ha^2 B_z^0 \PD_z \BS_x \\
+\PD_{yy} \BS_x + \PD_{zz} \BS_x = - \PD_z (u^0 B_z^0) \\
+\end{aligned}} \qquad \text{Shercliff / Hunt governing equations}\end{equation}
+
+
+Equations for $Re_m^1$
+\begin{equation}\begin{aligned}
+v^* \PD_y u^0 + w^* \PD_z u^0 = -\PD_x p^*+ Re^{-1} (\PD_{yy} u^* + \PD_{zz} u^*) + N ( B_z^0 \PD_z \BT_x + \BS_y \PD_y \BS_x + \BS_z \PD_z \BS_x ) \\
+0 = -\PD_y p^*+ Re^{-1} (\PD_{yy} v^* + \PD_{zz} v^*) + N ( B_z^0 \PD_z \BT_y + \BS_z \PD_z \BS_y ) \\
+0 = -\PD_z p^*+ Re^{-1} (\PD_{yy} w^* + \PD_{zz} w^*) + N ( B_z^0 \PD_z \BT_z + \BS_y \PD_y \BS_z) \\
+\PD_{yy} \BT_x + \PD_{zz} \BT_x =-\PD_y ( u^0 \BS_y) - \PD_z ( u^0 \BS_z + u^* B_z^0) \\
+\PD_{yy} \BT_y + \PD_{zz} \BT_y = \PD_z ( v^* B_z^0 ) \\
+\PD_{yy} \BT_z + \PD_{zz} \BT_z = \PD_y ( v^* B_z^0 ) \\
+\end{aligned}\end{equation}
+Noting that $\BS_y = 0, \BS_z = 0$, we have
+
+Equations for $Re_m^1$
+\begin{equation}\begin{aligned}
+v^* \PD_y u^0 + w^* \PD_z u^0 = -\PD_x p^*+ Re^{-1} (\PD_{yy} u^* + \PD_{zz} u^*) + N B_z^0 \PD_z \BT_x \\
+0 = -\PD_y p^*+ Re^{-1} (\PD_{yy} v^* + \PD_{zz} v^*) + N B_z^0 \PD_z \BT_y \\
+0 = -\PD_z p^*+ Re^{-1} (\PD_{yy} w^* + \PD_{zz} w^*) + N B_z^0 \PD_z \BT_z \\
+\PD_{yy} \BT_x + \PD_{zz} \BT_x =-\PD_z ( u^* B_z^0 ) \\
+\PD_{yy} \BT_y + \PD_{zz} \BT_y = \PD_z ( v^* B_z^0 ) \\
+\PD_{yy} \BT_z + \PD_{zz} \BT_z = \PD_y ( v^* B_z^0 ) \\
+\end{aligned}\end{equation}
+
+It is clear that the transverse directions are decoupled from the streamwise direction. 
+Let's focus on the transverse direction, and return to streamwise later. Also, let's assume $B_z^0$. We have
+
+\begin{equation}\begin{aligned}
+0 = -\PD_y p^*+ Re^{-1} (\PD_{yy} v^* + \PD_{zz} v^*) + N B_z^0 \PD_z \BT_y \\
+0 = -\PD_z p^*+ Re^{-1} (\PD_{yy} w^* + \PD_{zz} w^*) + N B_z^0 \PD_z \BT_z \\
+\PD_{yy} \BT_y + \PD_{zz} \BT_y = B_z^0 \PD_z v^* \\
+\PD_{yy} \BT_z + \PD_{zz} \BT_z = B_z^0 \PD_y v^* \\
+\end{aligned}\end{equation}
+
+Taking the curl of these equations we have
+
+\begin{equation}\begin{aligned}
+0 = Re^{-1} (\PD_{yy} \omega_x^* + \PD_{zz} \omega_x^*) + N B_z^0 (\PD_{yz} \BT_z - \PD_{zz} \BT_y) \\
+0 = \PD_y (\PD_{yy} \BT_z + \PD_{zz} \BT_z - B_z^0 \PD_y v^*) - \PD_z (\PD_{yy} \BT_y + \PD_{zz} \BT_y - B_z^0 \PD_z v^*) \\
+\PD_y (\PD_{yy} \BT_z + \PD_{zz} \BT_z) - \PD_z (\PD_{yy} \BT_y + \PD_{zz} \BT_y) = B_z^0 (\PD_{yy} v^* - \PD_{zz} v^*), \qquad \text{modifying above} \\
+\end{aligned}\end{equation}
+
+Writing in terms of current
+
+\begin{equation}\begin{aligned}
+0 = Re^{-1} (\PD_{yy} \omega_x^* + \PD_{zz} \omega_x^*) + N B_z^0 \PD_{z} j_x \\
+\PD_{yy} j_x + \PD_{zz} j_x = B_z^0 (\PD_{yy} v^* - \PD_{zz} v^*) \\
+\end{aligned}\end{equation}
+Or, for $\B_z^0 = 1$, we have
+
+\begin{equation}\boxed{\begin{aligned}
+\PD_t \omega_x = \PD_{yy} \omega_x^* + \PD_{zz} \omega_x^* + Ha^2 \PD_{z} j_x \\
+\PD_t j_x + \PD_{yy} j_x + \PD_{zz} j_x = (\PD_{yy} v^* - \PD_{zz} v^*) \\
+\end{aligned}}\end{equation}
+
+\section{Assumed solution}
+
+Assuming the solutions are of the form
+
+\begin{equation}\begin{aligned}
+\omega_x = \bar{\omega_x} e^{i(\alpha y + \beta z - \theta t)} \\
+j_x      = \bar{j_x}      e^{i(\alpha y + \beta z - \theta t)} \\
+v^*      = \bar{v}        e^{i(\alpha y + \beta z - \theta t)} \\
+\alpha = \alpha_r, \qquad \beta = \beta_r, \qquad \theta = \theta_r + i \theta_i,  \\
+\end{aligned}\end{equation}
+
+\begin{equation}\begin{aligned}
+\{\omega_x,j_x,v^*\}(y,z,t) = \{\bar{\omega_x},\bar{j_x},\bar{v}\}(y,z) + \{\hat{\omega_x},\hat{j_x},\hat{v}\} (y,z) e^{i(\alpha y + \beta z - \theta t)} \\
+\alpha = \alpha_r, \qquad \beta = \beta_r, \qquad \theta = \theta_r + i \theta_i,  \\
+\end{aligned}\end{equation}
+
+We can substitute to get
+
+\begin{equation}\begin{aligned}
+-i\theta \PD_t \bar{\omega_x} = - (\alpha^2 \PD_{yy} \bar{\omega_x} + \beta^2 \PD_{zz} \bar{\omega_x}) + Ha^2 i \beta \PD_z \bar{j_x} \\
+i\theta \PD_t \bar{j_x} + \alpha^2 \PD_{yy} \bar{j_x} + \beta^2 \PD_{zz} \bar{j_x} = \alpha^2 \PD_{yy} \bar{v} + \beta^2 \PD_{zz} \bar{v} \\
+\end{aligned}\end{equation}
+
+Taking the derivative of the momentum equation w.r.t $z$, we may combine the two equations
+after solving for the Lorentz force term in the induction equation
+
+\begin{equation}\begin{aligned}
+-i\theta \PD_{zt} \bar{\omega_x} = - (\alpha^2 \PD_{zyy} \bar{\omega_x} + \beta^2 \PD_{zzz} \bar{\omega_x}) + Ha^2 i \beta \PD_{zz} \bar{j_x} \\
+\beta^2 \PD_{zz} \bar{j_x} = (\alpha^2 \PD_{yy} \bar{v} + \beta^2 \PD_{zz} \bar{v}) - i\theta \PD_t \bar{j_x} - \alpha^2 \PD_{yy} \bar{j_x} \\
+\beta \PD_{zz} \bar{j_x} = \frac{\alpha^2}{\beta} \PD_{yy} \bar{v} + \beta \PD_{zz} \bar{v} - i \frac{\theta}{\beta} \PD_t \bar{j_x} - \frac{\alpha^2}{\beta} \PD_{yy} \bar{j_x} \\
+\end{aligned}\end{equation}
+Combining and expanding $\theta$, we have
+\begin{equation}\begin{aligned}
+-i(\theta_r + i\theta_i) \PD_{zt} \bar{\omega_x} = - (\alpha^2 \PD_{zyy} \bar{\omega_x} + \beta^2 \PD_{zzz} \bar{\omega_x}) + Ha^2 i \left( \frac{\alpha^2}{\beta} \PD_{yy} \bar{v} + \beta \PD_{zz} \bar{v} - i \frac{(\theta_r + i\theta_i)}{\beta} \PD_t \bar{j_x} - \frac{\alpha^2}{\beta} \PD_{yy} \bar{j_x} \right) \\
+-i(\theta_r + i\theta_i) \beta \PD_{zt} \bar{\omega_x} = - \beta (\alpha^2 \PD_{zyy} \bar{\omega_x} + \beta^2 \PD_{zzz} \bar{\omega_x}) + Ha^2 i \left( \alpha^2 \PD_{yy} \bar{v} + \beta^2 \PD_{zz} \bar{v} - i (\theta_r + i\theta_i) \PD_t \bar{j_x} - \alpha^2 \PD_{yy} \bar{j_x} \right) \\
+(-i\theta_r + \theta_i) \beta \PD_{zt} \bar{\omega_x} = - \beta (\alpha^2 \PD_{zyy} \bar{\omega_x} + \beta^2 \PD_{zzz} \bar{\omega_x}) + Ha^2 \theta_r \PD_t \bar{j_x} + Ha^2 i \left( \alpha^2 \PD_{yy} \bar{v} + \beta^2 \PD_{zz} \bar{v} + \theta_i \PD_t \bar{j_x} - \alpha^2 \PD_{yy} \bar{j_x} \right) \\
+\end{aligned}\end{equation}
+Comparing the real and imaginary parts of this equation, we have
+\begin{equation}\begin{aligned}
+ \theta_i \beta \PD_{zt} \bar{\omega_x} = - \beta (\alpha^2 \PD_{zyy} \bar{\omega_x} + \beta^2 \PD_{zzz} \bar{\omega_x}) + Ha^2 \theta_r \PD_t \bar{j_x}, \qquad \text{real} \\
+-\theta_r \beta \PD_{zt} \bar{\omega_x} = Ha^2 \left( \alpha^2 \PD_{yy} \bar{v} + \beta^2 \PD_{zz} \bar{v} + \theta_i \PD_t \bar{j_x} - \alpha^2 \PD_{yy} \bar{j_x} \right), \qquad \text{imag} \\
+\end{aligned}\end{equation}
+
+\end{document}

@@ -1,5 +1,6 @@
        module init_UBCs_mod
        use current_precision_mod
+       use BC_funcs_mod
        use grid_mod
        use mesh_mod
        use BCs_mod
@@ -13,7 +14,6 @@
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = no-slip
        integer :: preDefinedU_BCs = 1 ! See init_UBCs for details
-       ! integer :: preDefinedU_BCs = 7
 
        contains
 
@@ -21,25 +21,12 @@
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: i,k,pd
 
          call init_BC_mesh(U%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
-         do i=1,m%s
-           call init_Dirichlet(U%x%RF(i)%b)
-           call init_Dirichlet(U%y%RF(i)%b)
-           call init_Dirichlet(U%z%RF(i)%b)
-           call init(U%x%RF(i)%b,0.0_cp)
-           call init(U%y%RF(i)%b,0.0_cp)
-           call init(U%z%RF(i)%b,0.0_cp)
-           do k=1,3
-             pd = periodic_dir(k)
-             if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_UBCs in init_UBCs.f90'
-             if (pd.eq.1) call makePeriodic(U%x%RF(i)%b,U%y%RF(i)%b,U%z%RF(i)%b,k)
-           enddo
-         enddo
+         call Dirichlet_BCs(U)
 
          select case (preDefinedU_BCs)
          case (0); 
@@ -55,8 +42,10 @@
          case (10); call fully_developed_duct_flow(U,m)
          case (11); call LDC_crisscross_driven_lid(U)
          case (12); call LDC_double_crisscross_driven_lid(U)
+         case (13); call periodic_duct_flow(U)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
+         call make_periodic(U,periodic_dir)
        end subroutine
 
        subroutine LDC_1_domain(U)
@@ -115,6 +104,19 @@
          call init_Neumann(U%x%RF(1)%b,2)
          call init_Neumann(U%y%RF(1)%b,2)
          call init_Neumann(U%z%RF(1)%b,2)
+       end subroutine
+
+       subroutine periodic_duct_flow(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         ! Inlet (periodic)
+         call init_periodic(U%x%RF(1)%b,1)
+         call init_periodic(U%y%RF(1)%b,1)
+         call init_periodic(U%z%RF(1)%b,1)
+         ! Outlet (periodic)
+         call init_periodic(U%x%RF(1)%b,2)
+         call init_periodic(U%y%RF(1)%b,2)
+         call init_periodic(U%z%RF(1)%b,2)
        end subroutine
 
        subroutine duct_flow_2D_2domains(U)
@@ -191,27 +193,6 @@
          call init_Neumann(U%x%RF(14)%b,1)
          call init_Neumann(U%y%RF(14)%b,1)
          call init_Neumann(U%z%RF(14)%b,1)
-       end subroutine
-
-       subroutine makePeriodic(u_bcs,v_bcs,w_bcs,dir)
-         implicit none
-         type(BCs),intent(inout) :: u_bcs,v_bcs,w_bcs
-         integer,intent(in) :: dir
-         integer :: face1,face2
-         select case (dir)
-         case (1); face1 = 1; face2 = 2
-         case (2); face1 = 3; face2 = 4
-         case (3); face1 = 5; face2 = 6
-         case default
-         stop 'Error: dir must = 1,2,3 in makePeriodic in initializeUBCs.f90'
-         end select
-         call init_periodic(u_bcs,face1); call init(u_bcs,0.0_cp,face1)
-         call init_periodic(v_bcs,face1); call init(v_bcs,0.0_cp,face1)
-         call init_periodic(w_bcs,face1); call init(w_bcs,0.0_cp,face1)
-
-         call init_periodic(u_bcs,face2); call init(u_bcs,0.0_cp,face2)
-         call init_periodic(v_bcs,face2); call init(v_bcs,0.0_cp,face2)
-         call init_periodic(w_bcs,face2); call init(w_bcs,0.0_cp,face2)
        end subroutine
 
        subroutine cylinder_driven_cavity(U,m)

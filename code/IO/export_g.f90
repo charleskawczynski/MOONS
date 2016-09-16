@@ -47,14 +47,14 @@
         integer,dimension(3),intent(in) :: s
         character(len=*),intent(in) :: arrfmt
         select case (DT)
-        case (1); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u,v,w)
-        case (2); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u,v,w)
-        case (3); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u,v,w)
-        case (4); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u,v,w)
-        case (5); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u,v,w)
-        case (6); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u,v,w)
-        case (7); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u,v,w)
-        case (8); call exp_3D_3C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u,v,w)
+        case (1); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u,v,w)
+        case (2); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u,v,w)
+        case (3); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u,v,w)
+        case (4); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u,v,w)
+        case (5); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u,v,w)
+        case (6); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u,v,w)
+        case (7); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u,v,w)
+        case (8); call exp_3D_3C(s,pad,un,'(6'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u,v,w)
         end select
       end subroutine
 
@@ -66,14 +66,14 @@
         integer,dimension(3),intent(in) :: s
         character(len=*),intent(in) :: arrfmt
         select case (DT)
-        case (1); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u,v)
-        case (2); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u,v)
-        case (3); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u,v)
-        case (4); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u,v)
-        case (5); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u,v)
-        case (6); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u,v)
-        case (7); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u,v)
-        case (8); call exp_3D_2C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u,v)
+        case (1); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u,v)
+        case (2); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u,v)
+        case (3); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u,v)
+        case (4); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u,v)
+        case (5); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u,v)
+        case (6); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u,v)
+        case (7); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u,v)
+        case (8); call exp_3D_2C(s,pad,un,'(5'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u,v)
         end select
       end subroutine
 
@@ -85,14 +85,14 @@
         integer,dimension(3),intent(in) :: s
         character(len=*),intent(in) :: arrfmt
         select case (DT)
-        case (1); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u)
-        case (2); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u)
-        case (3); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u)
-        case (4); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u)
-        case (5); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u)
-        case (6); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u)
-        case (7); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u)
-        case (8); call exp_3D_1C(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u)
+        case (1); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u)
+        case (2); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u)
+        case (3); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u)
+        case (4); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u)
+        case (5); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u)
+        case (6); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u)
+        case (7); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u)
+        case (8); call exp_3D_1C(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u)
         end select
       end subroutine
 
@@ -104,14 +104,14 @@
         integer,dimension(3),intent(in) :: s
         character(len=*),intent(in) :: arrfmt
         select case (DT)
-        case (1); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u)
-        case (2); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u)
-        case (3); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u)
-        case (4); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u)
-        case (5); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u)
-        case (6); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u)
-        case (7); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u)
-        case (8); call exp_3D_1C_S(s,pad,un,arrfmt,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u)
+        case (1); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,u)
+        case (2); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,u)
+        case (3); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,u)
+        case (4); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,u)
+        case (5); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,u)
+        case (6); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,u)
+        case (7); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,u)
+        case (8); call exp_3D_1C_S(s,pad,un,'(4'//arrfmt//')',g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,u)
         end select
       end subroutine
 
@@ -134,10 +134,10 @@
         case default; stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         end select
         select case (DT)
-        case (1); call exp_2D_3C(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hn,u,v,w)
-        case (2); call exp_2D_3C(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hc,u,v,w)
-        case (3); call exp_2D_3C(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hc,u,v,w)
-        case (4); call exp_2D_3C(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hn,u,v,w)
+        case (1); call exp_2D_3C(s,pad,un,'(5'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hn,u,v,w)
+        case (2); call exp_2D_3C(s,pad,un,'(5'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hc,u,v,w)
+        case (3); call exp_2D_3C(s,pad,un,'(5'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hc,u,v,w)
+        case (4); call exp_2D_3C(s,pad,un,'(5'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hn,u,v,w)
         end select
       end subroutine
 
@@ -154,10 +154,10 @@
         case default; stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         end select
         select case (DT)
-        case (1); call exp_2D_2C(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hn,u,v)
-        case (2); call exp_2D_2C(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hc,u,v)
-        case (3); call exp_2D_2C(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hc,u,v)
-        case (4); call exp_2D_2C(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hn,u,v)
+        case (1); call exp_2D_2C(s,pad,un,'(4'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hn,u,v)
+        case (2); call exp_2D_2C(s,pad,un,'(4'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hc,u,v)
+        case (3); call exp_2D_2C(s,pad,un,'(4'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hc,u,v)
+        case (4); call exp_2D_2C(s,pad,un,'(4'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hn,u,v)
         end select
       end subroutine
 
@@ -174,10 +174,10 @@
         case default; stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         end select
         select case (DT)
-        case (1); call exp_2D_1C(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hn,u)
-        case (2); call exp_2D_1C(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hc,u)
-        case (3); call exp_2D_1C(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hc,u)
-        case (4); call exp_2D_1C(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hn,u)
+        case (1); call exp_2D_1C(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hn,u)
+        case (2); call exp_2D_1C(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hc,u)
+        case (3); call exp_2D_1C(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hc,u)
+        case (4); call exp_2D_1C(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hn,u)
         end select
       end subroutine
 
@@ -194,10 +194,10 @@
         case default; stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         end select
         select case (DT)
-        case (1); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hn,u)
-        case (2); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hc,u)
-        case (3); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hn,g%c(d(2))%hc,u)
-        case (4); call exp_2D_1C_S(s,pad,un,arrfmt,g%c(d(1))%hc,g%c(d(2))%hn,u)
+        case (1); call exp_2D_1C_S(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hn,u)
+        case (2); call exp_2D_1C_S(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hc,u)
+        case (3); call exp_2D_1C_S(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hn,g%c(d(2))%hc,u)
+        case (4); call exp_2D_1C_S(s,pad,un,'(3'//arrfmt//')',g%c(d(1))%hc,g%c(d(2))%hn,u)
         end select
       end subroutine
 
@@ -216,8 +216,8 @@
         character(len=*),intent(in) :: arrfmt
         if (.not.any((/axis.eq.(/1,2,3/)/))) stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         select case (DT)
-        case (1); call exp_1D_3C(s,pad,un,arrfmt,g%c(axis)%hn,u,v,w)
-        case (2); call exp_1D_3C(s,pad,un,arrfmt,g%c(axis)%hc,u,v,w)
+        case (1); call exp_1D_3C(s,pad,un,'(4'//arrfmt//')',g%c(axis)%hn,u,v,w)
+        case (2); call exp_1D_3C(s,pad,un,'(4'//arrfmt//')',g%c(axis)%hc,u,v,w)
         end select
       end subroutine
 
@@ -230,8 +230,8 @@
         character(len=*),intent(in) :: arrfmt
         if (.not.any((/axis.eq.(/1,2,3/)/))) stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         select case (DT)
-        case (1); call exp_1D_2C(s,pad,un,arrfmt,g%c(axis)%hn,u,v)
-        case (2); call exp_1D_2C(s,pad,un,arrfmt,g%c(axis)%hc,u,v)
+        case (1); call exp_1D_2C(s,pad,un,'(3'//arrfmt//')',g%c(axis)%hn,u,v)
+        case (2); call exp_1D_2C(s,pad,un,'(3'//arrfmt//')',g%c(axis)%hc,u,v)
         end select
       end subroutine
 
@@ -244,8 +244,8 @@
         character(len=*),intent(in) :: arrfmt
         if (.not.any((/axis.eq.(/1,2,3/)/))) stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         select case (DT)
-        case (1); call exp_1D_1C(s,pad,un,arrfmt,g%c(axis)%hn,u)
-        case (2); call exp_1D_1C(s,pad,un,arrfmt,g%c(axis)%hc,u)
+        case (1); call exp_1D_1C(s,pad,un,'(2'//arrfmt//')',g%c(axis)%hn,u)
+        case (2); call exp_1D_1C(s,pad,un,'(2'//arrfmt//')',g%c(axis)%hc,u)
         end select
       end subroutine
 
@@ -258,8 +258,8 @@
         character(len=*),intent(in) :: arrfmt
         if (.not.any((/axis.eq.(/1,2,3/)/))) stop 'Error: axis must = 1,2,3 in exp_2D_2Cg in export.f90'
         select case (DT)
-        case (1); call exp_1D_1C_S(s,pad,un,arrfmt,g%c(axis)%hn,u)
-        case (2); call exp_1D_1C_S(s,pad,un,arrfmt,g%c(axis)%hc,u)
+        case (1); call exp_1D_1C_S(s,pad,un,'(2'//arrfmt//')',g%c(axis)%hn,u)
+        case (2); call exp_1D_1C_S(s,pad,un,'(2'//arrfmt//')',g%c(axis)%hc,u)
         end select
       end subroutine
 

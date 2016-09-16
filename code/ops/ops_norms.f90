@@ -43,7 +43,8 @@
          type(mesh),intent(in) :: m
          real(cp) :: eTemp
          integer :: i,j,k,t
-         if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_VF in ops_Ln_norms.f90'
+         ! if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_VF in ops_Ln_norms.f90'
+         if (u%is_CC) then
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
          do t=1,u%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
@@ -51,6 +52,18 @@
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
+         elseif (u%is_Node) then
+         eTemp = 0.0_cp ! temp is necessary for reduction
+         !$OMP PARALLEL DO REDUCTION(+:eTemp)
+         do t=1,u%s; do k=3,m%g(t)%c(3)%sn-2; do j=3,m%g(t)%c(2)%sn-2; do i=3,m%g(t)%c(1)%sn-2
+           eTemp = eTemp + (u%RF(t)%f(i,j,k)**n)*m%g(t)%c(1)%dhc(i-1)*&
+                                                 m%g(t)%c(2)%dhc(j-1)*&
+                                                 m%g(t)%c(3)%dhc(k-1)
+         enddo; enddo; enddo; enddo
+         !$OMP END PARALLEL DO
+         e = eTemp
+         else; stop 'Error: must use CC/N data in Ln_mesh_VF in ops_Ln_norms.f90'
+         endif
        end subroutine
 
        subroutine Ln_mesh_VF(e,u,n,m)

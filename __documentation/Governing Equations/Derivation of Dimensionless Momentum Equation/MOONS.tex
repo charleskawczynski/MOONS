@@ -1,0 +1,323 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\newcommand{\B}{\mathbf{B}}
+\renewcommand{\H}{\mathbf{H}}
+\newcommand{\C}{\mathbf{C}}
+\newcommand{\U}{\mathbf{u}}
+\newcommand{\SI}{\sigma}
+\newcommand{\M}{\mu}
+\newcommand{\curl}{\nabla \times}
+
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\PD}{\partial}
+\newcommand{\MC}{\mathcal}
+\newcommand{\BM}{\frac{\B}{\mu}}
+\newcommand{\J}{\mathbf{j}}
+\newcommand{\F}{\mathbf{f}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\N}{\mathbf{n}}
+\newcommand{\JS}{\frac{\J}{\sigma}}
+\newcommand{\JoS}{\frac{\J^1}{\sigma}}
+\newcommand{\JSS}{\frac{\J^2}{\sigma}}
+\newcommand{\SII}{\sigma^{-1}}
+\newcommand{\MO}{\overline{\mu}}
+\newcommand{\SO}{\overline{\sigma}}
+\newcommand{\DOT}{\text{\textbullet}}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of the Dimensionless momentum equation (Navier Stokes)}
+\subsection{Dimensionless NS with j Cross B Force}
+\begin{equation}
+	\rho \left( \frac{\PD \U}{\PD t} + \U \bullet \nabla \U \right) = 
+	-\nabla p + \mu \nabla^2 \U + \F + \J \times \B
+\end{equation}
+Where $\F$ is some dimensional force per unit volume. Non-dimensionalizing by
+\begin{equation}\begin{aligned}
+	\U^* = \U/U_c \qquad
+	t^* = t/t_c \qquad
+	t_c = L_c/U_c \qquad
+	\nabla^* = L_c \nabla \qquad
+	\rho = \rho_c \\
+	p^* = p/\rho_c U_c^2 \qquad
+	\J^* = \J/ \sigma_c U_c B_c \qquad
+	\B^* = \B/B_c
+\end{aligned}\end{equation}
+Yields
+\begin{equation}
+	\rho_c \left( \frac{U_c^2}{L_c} \frac{\PD \U^*}{\PD t} + \frac{U_c^2}{L_c} \U^* \bullet \nabla^* \U^* \right) = 
+	- \rho_c \frac{U_c^2}{L_c} \nabla^*  p^* + \mu \frac{U_c}{L_c^2} {\nabla^*}^2 \U^* + \F +
+	U_c B_c^2 \sigma_c \J^* \times \B^*
+\end{equation}
+Dividing by $\frac{\rho_c U_c^2}{L_c}$ yields
+\begin{equation}
+	\frac{\PD \U^*}{\PD t} + \U^* \bullet \nabla^* \U^* = 
+	- \nabla^*  p^* + 
+	\frac{\nu_c}{U_c L_c} {\nabla^*}^2 \U^* + \frac{L_c}{\rho_c U_c^2} \F + 
+	\frac{L_c B_c^2 \sigma_c}{\rho_c U_c} \J^* \times \B^*
+\end{equation}
+Note that
+\begin{equation}
+	\J^* =
+	\frac{\J}{\sigma_c U_c B_c} =
+	\frac{\nabla \times \left( \frac{\B}{\mu} \right)}{\sigma_c U_c B_c} =
+	\frac{ \frac{B_c}{\mu_c L_c} \nabla^* \times \left( \frac{\B^*}{\mu^*} \right)}{\sigma_c U_c B_c} =
+	\frac{1}{Re_m} \nabla \times \left( \frac{\B^*}{\mu^*} \right)
+\end{equation}
+\begin{equation}
+\boxed{ \J^* = \frac{1}{Re_m} \nabla \times \left( \frac{\B^*}{\mu^*} \right) }
+\end{equation}
+
+Re-ordering, and removing the asterisk, we have
+\begin{equation}
+	\frac{\PD \U}{\PD t} + \frac{U_c^2}{L_c} \U \bullet \nabla \U = 
+	- \nabla  p + 
+	\frac{\nu_c}{U_c L_c} {\nabla}^2 \U + \frac{L_c}{\rho_c U_c^2} \F + 
+	\frac{\mu_c}{\rho_c U_c L_c} 
+	L_c^2 B_c^2 \frac{\sigma_c}{\rho_c \mu_c}
+	\J \times \B
+\end{equation}
+Finally, we have
+\begin{equation}
+	\boxed{
+	\frac{\PD \U}{\PD t} + \U \bullet \nabla \U = 
+	-\nabla  p + 
+	\frac{1}{Re} {\nabla}^2 \U + \frac{L_c}{\rho_c U_c^2} \F + 
+	\frac{Ha^2}{Re} \J \times \B
+	}
+\end{equation}
+OR
+\begin{equation}
+	\boxed{
+	\frac{\PD \U}{\PD t} + \U \bullet \nabla \U = 
+	-\nabla  p + 
+	\frac{1}{Re} {\nabla}^2 \U + \frac{L_c}{\rho_c U_c^2} \F + 
+	\frac{Ha^2}{Re Re_m} (\nabla \times \B) \times \B
+	}
+\end{equation}
+Where
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c} \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Re_m = \mu_c \sigma_c U_c L_c
+\end{equation}
+	Using the kronecker delta relation, we may write this as
+\begin{equation}
+	\frac{\PD u_i }{\PD t} + u_j \PD_j u_i = 
+	-\PD_i  p + 
+	\frac{1}{Re} \PD_j \PD_j u_i + 
+	\frac{L_c}{\rho_c U_c^2} f_i +
+	\frac{Ha^2}{Re} \J \times \B
+\end{equation}
+We may write the $\J\times \B$ force as
+
+\begin{equation}
+	\J\times \B = \epsilon_ijk j_j B_k = 
+	\epsilon_ijk \left( \epsilon_jmn \PD_m \frac{B_n}{\mu} B_k \right)
+\end{equation}
+\begin{equation}
+	= \epsilon_ijk \epsilon_jmn \left( \PD_m \frac{B_n}{\mu} B_k \right)
+	= \epsilon_jki \epsilon_jmn \left( \PD_m \frac{B_n}{\mu} B_k \right)
+\end{equation}
+\begin{equation}
+	= (\delta_{km} \delta_{in} - \delta_{kn} \delta_{im} ) \left( \PD_m \frac{B_n}{\mu} B_k \right)
+\end{equation}
+\begin{equation}
+	= \left( \PD_k \frac{B_i}{\mu} B_k \right) - 
+	\left( \PD_i \frac{B_k}{\mu} B_k \right)
+\end{equation}
+
+\begin{equation}
+	\J \times \B = B_k 
+	\left( \PD_k \frac{B_i}{\mu} - \PD_i \frac{B_k}{\mu} \right)
+\end{equation}
+
+\subsection{Dimensionless NS with gravity, buyancy and j Cross B Force using index notation}
+\begin{equation}
+	\rho 
+	\left( 
+	\frac{\PD u_i}{\PD t} + 
+	\frac{\PD (u_i u_j)}{\PD x_j}
+	\right) 
+	= 
+	- \frac{\PD p}{\PD x_j}
+	+ \mu \frac{\PD^2 u_i}{\PD x_j^2}
+	+ \rho g_i
+	+ \rho g_i \beta \Delta T
+	+ (j \times B)_i
+\end{equation}
+
+Non-dimensionalizing by
+
+\begin{equation}
+	u_k^* = u_k/U_c \qquad
+	t^* = t/t_c \qquad
+	t_c = L_c/U_c \qquad
+	\nabla^* = L_c \nabla \qquad
+	\rho = \rho_c
+\end{equation}
+\begin{equation}
+	p^* = p/\rho_c U_c^2 \qquad
+	j_k^* = j_k/ \sigma_c U_c B_c \qquad
+	B_k^* = B_k/B_c \qquad
+	g_k^* = g_k/g_c \qquad
+	T^* = \frac{T - T_c}{\Delta T_c}
+\end{equation}
+
+Note that $T_c$ may be $\Delta T_c$. With this yields
+
+\begin{equation}
+	\rho_c 
+	\left( 
+	\frac{U_c^2}{L_c} 
+	\frac{\PD u_i^*}{\PD t} + 
+	\frac{U_c^2}{L_c} 
+	\frac{\PD (u_i^* u_j^*)}{\PD x_j^*}
+	\right) 
+	= 
+	- \rho_c \frac{U_c^2}{L_c} 
+	\frac{\PD p_i^*}{\PD x_i^*}
+	+ \mu \frac{U_c}{L_c^2} 
+	\frac{\PD^2 u_i^*}{\PD {x_j^*}^2}
+	+ \rho_c g_c g_i^* 
+	+ \rho_c g_c \beta \Delta T_c T^*g_i^*
+	+ U_c B_c^2 \sigma_c 
+	(j^* \times B^*)_i
+\end{equation}
+
+Dividing by $\frac{\rho_c U_c^2}{L_c}$ yields
+
+\begin{equation}
+	\frac{\PD u_i^*}{\PD t} + 
+	\frac{\PD (u_i^* u_j^*)}{\PD x_j^*}
+	= 
+	- \frac{\PD p_i^*}{\PD x_i^*}
+	+ \frac{\mu_c/\rho_c}{U_c L_c} 
+	\frac{\PD^2 u_i^*}{\PD {x_j^*}^2}
+	+ \frac{g_c L_c}{U_c^2}
+	g_i^*
+	+ \frac{g_c \beta_c \Delta T_c L_c^3}{\nu^2} \frac{\nu_c^2}{U_c^2 L_c^2} T^*g_i^*
+	+ \frac{L_c B_c^2 \sigma_c}{\rho_c U_c}
+	(j^* \times B^*)_i
+\end{equation}
+
+Note that
+
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c} \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Fr = \frac{U_c}{\sqrt{g_c L_c}} \qquad
+	Gr = \frac{g_c \beta_c \Delta T_c L_c^3}{\nu^2}
+\end{equation}
+
+So we have
+
+\begin{equation}
+	\frac{\PD u_i^*}{\PD t} + 
+	\frac{\PD (u_i^* u_j^*)}{\PD x_j^*}
+	= 
+	- \frac{\PD p_i^*}{\PD x_i^*}
+	+ \frac{1}{Re}
+	\frac{\PD^2 u_i^*}{\PD {x_j^*}^2}
+	+ \frac{1}{Fr^2}
+	g_i^*
+	+ \frac{Gr}{Re^2}
+	T^*g_i^*
+	+ \frac{Ha^2}{Re}
+	(j^* \times B^*)_i
+\end{equation}
+
+Removing the asterisk, we have
+
+\begin{equation}
+	\boxed{
+	\frac{\PD u_i}{\PD t} + 
+	\frac{\PD (u_i u_j)}{\PD x_j}
+	= 
+	- \frac{\PD p_i}{\PD x_i}
+	+ \frac{1}{Re}
+	\frac{\PD^2 u_i}{\PD x_j^2}
+	+ \frac{1}{Fr^2}
+	g_i
+	+ \frac{Gr}{Re^2}
+	T g_i
+	+ \frac{Ha^2}{Re}
+	(j \times B)_i
+	}
+\end{equation}
+
+
+\subsection{Spatial discretization}
+MOONS implements similar spatial discretization described in \cite{griebel1997numerical}. An extra ghost node is present in MOONS for easy implementation of Neumann BCs.
+
+\subsection{Time discretization}
+MOONS offers several time marching schemes including explicit Euler and a 3D ADI by . implements similar spatial discretization described in \cite{griebel1997numerical}
+Below the equations are written for this method with minimal explanation, since it can be found in the reference. Also, a mixed index-vector notation has been used.
+\begin{equation}
+	\frac{u_i^{n+1}- u_i^{n}}{\Delta t} = - \PD_j (u_j^{n} u_i^{n}) 
+	-\PD_i  p^{n+1} + 
+	\frac{1}{Re} \PD_j \PD_j u_i^{n} + 
+	\frac{Ha^2}{Re} \J^n \times \B^n
+\end{equation}
+Estimating for the velocity at the next time step, we have
+\begin{equation}
+	u_i^* = u_i^{n} + \Delta t \left[ - \PD_j (u_j^{n} u_i^{n}) + 
+	\frac{1}{Re} \PD_j \PD_j u_i^{n} + 
+	\frac{Ha^2}{Re} \J^n \times \B^n \right]
+\end{equation}
+And the pressure-correction step
+\begin{equation}
+	u_i^{n+1} = u_i^* -\PD_i p^{n+1}
+\end{equation}
+Where the implicit pressure is solved in
+\begin{equation}
+	\PD_j \PD_j p^{n+1} = \frac{1}{\Delta t} \PD_i u_i^n
+\end{equation}
+
+
+\bibliography{handpicked}
+\bibliographystyle{plain}
+
+
+\end{document}

@@ -113,7 +113,7 @@
          if (m%s.gt.1) call apply_edge_SF(U,m)
        end subroutine
 
-       function BC_TF(RF,g,f,e) result(TF)
+       function BC_TF(RF,g,f,e) result(L)
          !
          !        z                          x                          y                        
          !        ^    6                     ^    2                     ^    4                   
@@ -128,14 +128,13 @@
          type(grid),intent(in) :: g
          integer,dimension(2),intent(in) :: f
          integer,intent(in) :: e
-         logical,dimension(2) :: TF1
-         logical,dimension(2) :: TF2
-         logical :: TF
-         TF1(1) = RF%b%f(f(1))%b%Dirichlet.and.(.not.g%st_faces(f(1))%TF).and.(.not.RF%b%f(f(2))%b%periodic)
-         TF1(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_faces(f(2))%TF).and.(.not.RF%b%f(f(1))%b%periodic)
-         TF2(1) = g%st_faces(f(1))%TF.and.g%st_faces(f(2))%TF
-         TF2(2) = .not.g%st_edges(e)%TF
-         TF = any(TF1).or.all(TF2)
+         logical,dimension(2) :: L1,L2
+         logical :: L
+         L1(1) = RF%b%f(f(1))%b%Dirichlet.and.(.not.g%st_faces(f(1))%TF).and.(.not.RF%b%f(f(2))%b%periodic)
+         L1(2) = RF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_faces(f(2))%TF).and.(.not.RF%b%f(f(1))%b%periodic)
+         L2(1) = g%st_faces(f(1))%TF.and.g%st_faces(f(2))%TF
+         L2(2) = .not.g%st_edges(e)%TF
+         L = any(L1).or.all(L2)
        end function
 
        subroutine apply_edge_SF(U,m)

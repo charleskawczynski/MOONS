@@ -10,19 +10,19 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
-       use probe_base_mod
-       use probe_transient_mod
+       use ops_internal_BC_mod
+       use probe_mod
        use ops_norms_mod
 
        implicit none
 
        private
-       public :: compute_AddJCrossB
-       public :: compute_JCrossB
+       public :: compute_AddJCrossB, compute_add_Q2D_JCrossB
+       public :: compute_JCrossB, compute_Q2D_JCrossB
        public :: compute_divBJ
        public :: compute_J
-       public :: compute_TME_Domain
-       public :: compute_TME
+       public :: compute_Total_Energy_Domain
+       public :: compute_Total_Energy
        public :: embedVelocity_E
        public :: embedVelocity_F
        public :: embedVelocity_CC
@@ -73,6 +73,25 @@
          call multiply(jCrossB,Ha**2.0_cp/Re)
        end subroutine
 
+       subroutine compute_add_Q2D_JCrossB(Q2D_JCrossB,U,Ha,Re,temp_F)
+         implicit none
+         type(VF),intent(inout) :: Q2D_JCrossB,temp_F
+         type(VF),intent(in) :: U
+         real(cp),intent(in) :: Ha,Re
+         call compute_Q2D_JCrossB(temp_F,U,Ha,Re)
+         call add(Q2D_JCrossB,temp_F)
+       end subroutine
+
+       subroutine compute_Q2D_JCrossB(Q2D_JCrossB,U,Ha,Re)
+         ! computes: Q2D_JCrossB = -U/tau, tau = Re/Ha
+         implicit none
+         type(VF),intent(inout) :: Q2D_JCrossB
+         type(VF),intent(in) :: U
+         real(cp),intent(in) :: Ha,Re
+         call assign(Q2D_JCrossB,U)
+         call multiply(Q2D_JCrossB,-1.0_cp/(Re/Ha))
+       end subroutine
+
        subroutine compute_divBJ(divB,divJ,B,J,m)
          implicit none
          type(SF),intent(inout) :: divB,divJ
@@ -84,7 +103,7 @@
 
        subroutine compute_J(J,B,Rem,m,finite_Rem)
          implicit none
-         type(VF),intent(in) :: B
+         type(VF),intent(inout) :: B
          type(VF),intent(inout) :: J
          real(cp),intent(in) :: Rem
          type(mesh),intent(in) :: m
@@ -93,34 +112,32 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_TME_Domain(K_energy,KB_energy,B,nstep,D)
+       subroutine compute_Total_Energy_Domain(energy,field,time,D)
          implicit none
-         real(cp),intent(inout) :: K_energy
-         type(probe),intent(inout) :: KB_energy
-         type(VF),intent(in) :: B
-         integer,intent(in) :: nstep
+         type(probe),intent(inout) :: energy
+         type(VF),intent(in) :: field
+         real(cp),intent(in) :: time
          type(domain),intent(in) :: D
-         type(VF) :: temp
-         call init_CC(temp,D%m_in)
-         call extractCC(temp,B,D)
-         call Ln(K_energy,temp,2.0_cp,D%m_in)
-         K_energy = 0.5_cp*K_energy
-         call delete(temp)
-         call set(KB_energy,nstep,K_energy)
-         call apply(KB_energy)
+         type(VF) :: temp_VF
+         real(cp) :: temp
+         call init_CC(temp_VF,D%m_in)
+         call extractCC(temp_VF,field,D)
+         call Ln(temp,temp_VF,2.0_cp,D%m_in)
+         temp = 0.5_cp*temp
+         call delete(temp_VF)
+         call export(energy,time,temp)
        end subroutine
 
-       subroutine compute_TME(K_energy,KB_energy,B,nstep,m)
+       subroutine compute_Total_Energy(energy,field,time,m)
          implicit none
-         real(cp),intent(inout) :: K_energy
-         type(probe),intent(inout) :: KB_energy
-         type(VF),intent(in) :: B
-         integer,intent(in) :: nstep
+         type(probe),intent(inout) :: energy
+         type(VF),intent(in) :: field
+         real(cp),intent(in) :: time
          type(mesh),intent(in) :: m
-         call Ln(K_energy,B,2.0_cp,m)
-         K_energy = 0.5_cp*K_energy
-         call set(KB_energy,nstep,K_energy)
-         call apply(KB_energy)
+         real(cp) :: temp
+         call Ln(temp,field,2.0_cp,m)
+         temp = 0.5_cp*temp
+         call export(energy,time,temp)
        end subroutine
 
        subroutine embedVelocity_E(U_E_tot,U_E_in,D_fluid)

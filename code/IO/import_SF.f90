@@ -4,9 +4,12 @@
       ! can be checked in the getType_3D,getType_2D,getType_1D routines.
       ! 
       use current_precision_mod
+      use IO_tools_mod
       use mesh_mod
       use SF_mod
       use import_g_mod
+      use string_mod
+      use string_aux_mod
       implicit none
 
       private

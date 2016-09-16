@@ -30,6 +30,7 @@
       use grid_mod
       use face_edge_corner_indexing_mod
       use mesh_mod
+      use RF_mod
       use SF_mod
       use triDiag_mod
       use stencils_mod
@@ -55,23 +56,22 @@
       ! *********************** LOW LEVEL ***********************
       ! *********************************************************
 
-      subroutine diff_stag(operator,dfdh,f,T,dir,pad,gt,s,sdfdh)
+      subroutine diff_stag(operator,dfdh,f,T,dir,pad,gt)
         implicit none
-        external :: operator
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        procedure(stencils_stag) :: operator
+        type(realField),intent(inout) :: dfdh
+        type(realField),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: dir,pad,gt
-        integer,dimension(3),intent(in) :: s,sdfdh
         integer :: i,j,k
         select case (dir)
         case (1)
 #ifdef _PARALLELIZE_DEL_
-        !$OMP PARALLEL DO SHARED(T,s,sdfdh,gt)
+        !$OMP PARALLEL DO SHARED(T,f,gt)
 
 #endif
-        do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),sdfdh(1),gt)
+        do k=1+pad,f%s(3)-pad; do j=1+pad,f%s(2)-pad
+          call operator(dfdh%f(:,j,k),f%f(:,j,k),T,f%s(dir),dfdh%s(dir),gt)
         enddo; enddo
 #ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
@@ -79,11 +79,11 @@
 #endif
         case (2)
 #ifdef _PARALLELIZE_DEL_
-        !$OMP PARALLEL DO SHARED(T,s,sdfdh,gt)
+        !$OMP PARALLEL DO SHARED(T,f,gt)
 
 #endif
-        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),sdfdh(2),gt)
+        do k=1+pad,f%s(3)-pad; do i=1+pad,f%s(1)-pad
+          call operator(dfdh%f(i,:,k),f%f(i,:,k),T,f%s(dir),dfdh%s(dir),gt)
         enddo; enddo
 #ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
@@ -91,38 +91,35 @@
 #endif
         case (3)
 #ifdef _PARALLELIZE_DEL_
-        !$OMP PARALLEL DO SHARED(T,s,sdfdh,gt)
+        !$OMP PARALLEL DO SHARED(T,f,gt)
 
 #endif
-        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),sdfdh(3),gt)
+        do j=1+pad,f%s(2)-pad; do i=1+pad,f%s(1)-pad
+          call operator(dfdh%f(i,j,:),f%f(i,j,:),T,f%s(dir),dfdh%s(dir),gt)
         enddo; enddo
 #ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
 
 #endif
-        case default
-        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
       end subroutine
 
-      subroutine diff_col(operator,dfdh,f,T,dir,pad,s,pad1,pad2)
+      subroutine diff_col(operator,dfdh,f,T,dir,pad,pad1,pad2)
         implicit none
-        external :: operator
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        procedure(stencils_col) :: operator
+        type(realField),intent(inout) :: dfdh
+        type(realField),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: dir,pad,pad1,pad2
-        integer,dimension(3),intent(in) :: s
         integer :: i,j,k
         select case (dir)
         case (1)
 #ifdef _PARALLELIZE_DEL_
-        !$OMP PARALLEL DO SHARED(T,s,pad1,pad2)
+        !$OMP PARALLEL DO SHARED(T,f,pad1,pad2)
 
 #endif
-        do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad
-          call operator(dfdh(:,j,k),f(:,j,k),T,s(1),pad1,pad2)
+        do k=1+pad,f%s(3)-pad; do j=1+pad,f%s(2)-pad
+          call operator(dfdh%f(:,j,k),f%f(:,j,k),T,f%s(dir),pad1,pad2)
         enddo; enddo
 #ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
@@ -130,11 +127,11 @@
 #endif
         case (2)
 #ifdef _PARALLELIZE_DEL_
-        !$OMP PARALLEL DO SHARED(T,s,pad1,pad2)
+        !$OMP PARALLEL DO SHARED(T,f,pad1,pad2)
 
 #endif
-        do k=1+pad,s(3)-pad; do i=1+pad,s(1)-pad
-          call operator(dfdh(i,:,k),f(i,:,k),T,s(2),pad1,pad2)
+        do k=1+pad,f%s(3)-pad; do i=1+pad,f%s(1)-pad
+          call operator(dfdh%f(i,:,k),f%f(i,:,k),T,f%s(dir),pad1,pad2)
         enddo; enddo
 #ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
@@ -142,18 +139,16 @@
 #endif
         case (3)
 #ifdef _PARALLELIZE_DEL_
-        !$OMP PARALLEL DO SHARED(T,s,pad1,pad2)
+        !$OMP PARALLEL DO SHARED(T,f,pad1,pad2)
 
 #endif
-        do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
-          call operator(dfdh(i,j,:),f(i,j,:),T,s(3),pad1,pad2)
+        do j=1+pad,f%s(2)-pad; do i=1+pad,f%s(1)-pad
+          call operator(dfdh%f(i,j,:),f%f(i,j,:),T,f%s(dir),pad1,pad2)
         enddo; enddo
 #ifdef _PARALLELIZE_DEL_
         !$OMP END PARALLEL DO
 
 #endif
-        case default
-        stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
         end select
       end subroutine
 
@@ -162,55 +157,37 @@
       ! *********************** MED LEVEL ***********************
       ! *********************************************************
 
-      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,s,sdfdh,diffType,pad1,pad2)
+      subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,diffType,pad1,pad2)
         implicit none
-        real(cp),dimension(:,:,:),intent(inout) :: dfdh
-        real(cp),dimension(:,:,:),intent(in) :: f
+        type(realField),intent(inout) :: dfdh
+        type(realField),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType,pad1,pad2
-        integer,dimension(3),intent(in) :: s,sdfdh
         integer,intent(in) :: diffType
+#ifdef _DEBUG_DEL_
+        call checkSideDimensions(f%s,dfdh%s,dir)
+#endif
         select case (genType)
         case (1); select case (diffType)
-                  case (1); call diff_col(col_CC_assign,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
-                  case (2); call diff_col(col_N_assign ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
-                  case (3); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
-                  case (4); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
-                  end select
-        case (2); select case (diffType)
-                  case (1); call diff_col(col_CC_add,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
-                  case (2); call diff_col(col_N_add ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
-                  case (3); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
-                  case (4); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
+                  case (3); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1)
+                  case (4); call diff_stag(stag_assign ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0)
+                  case (1); call diff_col(col_CC_assign,dfdh,f,g%c(dir)%colCC(n),dir,pad,pad1,pad2)
+                  case (2); call diff_col(col_N_assign ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,pad1,pad2)
                   end select
         case (3); select case (diffType)
-                  case (1); call diff_col(col_CC_subtract,dfdh,f,g%c(dir)%colCC(n),dir,pad,s,pad1,pad2)
-                  case (2); call diff_col(col_N_subtract ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,s,pad1,pad2)
-                  case (3); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1,s,sdfdh)
-                  case (4); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0,s,sdfdh)
+                  case (3); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1)
+                  case (4); call diff_stag(stag_subtract ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0)
+                  case (1); call diff_col(col_CC_subtract,dfdh,f,g%c(dir)%colCC(n),dir,pad,pad1,pad2)
+                  case (2); call diff_col(col_N_subtract ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,pad1,pad2)
                   end select
-        case default
-        stop 'Error: genType must = 1,2,3 in ops_del.f90'
+        case (2); select case (diffType)
+                  case (3); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagCC2N,dir,pad,1)
+                  case (4); call diff_stag(stag_add ,dfdh,f,g%c(dir)%stagN2CC,dir,pad,0)
+                  case (1); call diff_col(col_CC_add,dfdh,f,g%c(dir)%colCC(n),dir,pad,pad1,pad2)
+                  case (2); call diff_col(col_N_add ,dfdh,f,g%c(dir)%colN(n) ,dir,pad,pad1,pad2)
+                  end select
+        case default; stop 'Error: genType must = 1,2,3 in diff_tree_search in ops_del.f90'
         end select
-
-        if (genType.eq.1) then
-          if (pad.gt.0) then
-            select case (dir)
-          case (1); dfdh(:,:,1) = 0.0_cp; dfdh(:,:,sdfdh(3)) = 0.0_cp
-                    dfdh(:,1,:) = 0.0_cp; dfdh(:,sdfdh(2),:) = 0.0_cp
-          case (2); dfdh(1,:,:) = 0.0_cp; dfdh(sdfdh(1),:,:) = 0.0_cp
-                    dfdh(:,:,1) = 0.0_cp; dfdh(:,:,sdfdh(3)) = 0.0_cp
-          case (3); dfdh(1,:,:) = 0.0_cp; dfdh(sdfdh(1),:,:) = 0.0_cp
-                    dfdh(:,1,:) = 0.0_cp; dfdh(:,sdfdh(2),:) = 0.0_cp
-          case default
-            stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
-            end select
-          endif
-        endif
-
-#ifdef _DEBUG_DEL_
-        call checkSideDimensions(s,sdfdh,dir)
-#endif
       end subroutine
 
       subroutine diff(dfdh,f,m,n,dir,pad,genType)
@@ -219,18 +196,29 @@
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         integer,intent(in) :: n,dir,pad,genType
-        integer :: i,pad1,pad2,diffType
-        integer,dimension(2) :: faces
+        integer :: i,diffType
+        ! integer :: pad1,pad2
+        ! integer,dimension(2) :: faces
 
         diffType = getDiffType(f,dfdh,dir)
         do i=1,m%s
-          faces = normal_faces_given_dir(dir)
-          if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
-          if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
-          call diff_tree_search(dfdh%RF(i)%f,f%RF(i)%f,m%g(i),&
-            n,dir,pad,genType,f%RF(i)%s,dfdh%RF(i)%s,diffType,pad1,pad2)
+          ! faces = normal_faces_given_dir(dir)
+          ! if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
+          ! if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
+          call diff_tree_search(dfdh%RF(i),f%RF(i),m%g(i),n,dir,pad,genType,diffType,0,0)
         enddo
-        call apply_stitches(dfdh,m)
+        if ((genType.eq.1).and.(pad.gt.0)) then
+          select case (dir)
+          case (1); call zero_ghost_ymin_ymax(dfdh)
+                    call zero_ghost_zmin_zmax(dfdh)
+          case (2); call zero_ghost_xmin_xmax(dfdh)
+                    call zero_ghost_zmin_zmax(dfdh)
+          case (3); call zero_ghost_xmin_xmax(dfdh)
+                    call zero_ghost_ymin_ymax(dfdh)
+          case default; stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
+          end select
+        endif
+        ! call apply_stitches(dfdh,m)
       end subroutine
 
       ! *********************************************************
@@ -273,19 +261,19 @@
         type(SF),intent(in) :: f,dfdh
         integer,intent(in) :: dir
         integer :: diffType
-            if (CC_along(f,dir).and.CC_along(dfdh,dir)) then
+            if (f%CC_along(dir).and.dfdh%CC_along(dir)) then
           diffType = 1 ! Collocated derivative (CC)
-        elseif (Node_along(f,dir).and.Node_along(dfdh,dir)) then
+        elseif (f%N_along(dir).and.dfdh%N_along(dir)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif (CC_along(f,dir).and.Node_along(dfdh,dir)) then
+        elseif (f%CC_along(dir).and.dfdh%N_along(dir)) then
           diffType = 3 ! Staggered derivative (CC->N)
-        elseif (Node_along(f,dir).and.CC_along(dfdh,dir)) then
+        elseif (f%N_along(dir).and.dfdh%CC_along(dir)) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
-          write(*,*) 'CC_along(f,dir) = ',CC_along(f,dir)
-          write(*,*) 'Node_along(f,dir) = ',Node_along(f,dir)
-          write(*,*) 'CC_along(dfdh,dir) = ',CC_along(dfdh,dir)
-          write(*,*) 'Node_along(dfdh,dir) = ',Node_along(dfdh,dir)
+          write(*,*) 'f%CC_along(dir) = ',f%CC_along(dir)
+          write(*,*) 'f%Node_along(dir) = ',f%N_along(dir)
+          write(*,*) 'dfdh%CC_along(dir) = ',dfdh%CC_along(dir)
+          write(*,*) 'dfdh%Node_along(dir) = ',dfdh%N_along(dir)
           write(*,*) 'dir = ',dir
           stop 'Error: diffType undetermined in ops_del.f90.'
         endif
@@ -306,8 +294,7 @@
                   if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 4 in checkSideDimensions in ops_del.f90'
         case (3); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 5 in checkSideDimensions in ops_del.f90'
                   if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 6 in checkSideDimensions in ops_del.f90'
-        case default
-        stop 'Error: dir must = 1,2,3 in ops_del.f90'
+        case default; stop 'Error: dir must = 1,2,3 in checkSideDimensions in ops_del.f90'
         end select
       end subroutine
 #endif
