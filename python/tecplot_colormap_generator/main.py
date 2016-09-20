@@ -14,10 +14,17 @@ def scale_rgb(r_original,g_original,b_original,n_control_points,scale):
 	return (r,g,b)
 
 
-def export_colormap(color_map):
+def export_colormap(color_map,reverse_values):
 	r_original = np.loadtxt(color_map+'/r.dat',skiprows=0)
 	g_original = np.loadtxt(color_map+'/g.dat',skiprows=0)
 	b_original = np.loadtxt(color_map+'/b.dat',skiprows=0)
+	if reverse_values:
+		r_original = r_original[::-1]
+		g_original = g_original[::-1]
+		b_original = b_original[::-1]
+		ext = '_reversed'
+	else:
+		ext = ''
 
 	continuous = False
 	scale = 256
@@ -35,7 +42,7 @@ def export_colormap(color_map):
 
 	if len(r)!=7: raise ValueError('Error: Adjust n_control_points so that len(r)=7')
 
-	file_name = color_map+'_colormap.mcr'
+	file_name = color_map+'_colormap'+ext+'.mcr'
 	c = []
 	c.append('#!MC 1120')
 	c.append('# Created by Tecplot 360 build 11.2-0-563')
@@ -62,6 +69,10 @@ def export_colormap(color_map):
 	print 'Done'
 
 color_maps = ['option_a', 'option_b', 'option_c', 'viridis', 'fake_purula']
+
 for cm in color_maps:
-	export_colormap(cm)
+	export_colormap(cm,False)
+
+for cm in color_maps:
+	export_colormap(cm,True)
 

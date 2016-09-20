@@ -252,7 +252,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_edge.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch_corner.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
-	$(SRC_DIR)$(PS)grid$(PS)overlap.f90\
+	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
 	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_parameters.f90\
 	$(SRC_DIR)$(PS)grid$(PS)coordinate_distribution_funcs.f90\
@@ -266,7 +266,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)edge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF$(PS)RF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
@@ -278,10 +278,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)index_mapping.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90\
@@ -303,7 +303,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_edges.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_corners.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches.f90\
-	$(SRC_DIR)$(PS)ops$(PS)geometric_region$(PS)geometric_region.f90\
+	$(SRC_DIR)$(PS)geometric_region$(PS)geometric_region.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\
