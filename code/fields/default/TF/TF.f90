@@ -74,12 +74,18 @@
 
         interface init;          module procedure init_TF_copy_VF;          end interface
         interface init;          module procedure init_TF_copy_TF;          end interface
-        interface init;          module procedure init_TF_copy_TF_domain;   end interface
+        interface init;          module procedure init_TF_copy_TF_mesh;     end interface
 
         interface init_CC;       module procedure init_TF_CC;               end interface
         interface init_Face;     module procedure init_TF_Face;             end interface
         interface init_Edge;     module procedure init_TF_Edge;             end interface
         interface init_Node;     module procedure init_TF_Node;             end interface
+
+        interface init_CC;       module procedure init_TF_CC_D;             end interface
+        interface init_Face;     module procedure init_TF_Face_D;           end interface
+        interface init_Edge;     module procedure init_TF_Edge_D;           end interface
+        interface init_Node;     module procedure init_TF_Node_D;           end interface
+
         interface init_Face_compliment;  module procedure init_TF_Face_compliment;  end interface
         interface init_Edge_compliment;  module procedure init_TF_Edge_compliment;  end interface
 
@@ -354,12 +360,12 @@
           call copy_props_TF(f1,f2)
         end subroutine
 
-        subroutine init_TF_copy_TF_domain(f1,f2,D)
+        subroutine init_TF_copy_TF_mesh(f1,f2,m)
           implicit none
           type(TF),intent(inout) :: f1
           type(TF),intent(in) :: f2
-          type(domain),intent(in) :: D
-          call init(f1%x,f2%x,D); call init(f1%y,f2%y,D); call init(f1%z,f2%z,D)
+          type(mesh),intent(in) :: m
+          call init(f1%x,f2%x,m); call init(f1%y,f2%y,m); call init(f1%z,f2%z,m)
           call copy_props_TF(f1,f2)
         end subroutine
 
@@ -388,11 +394,29 @@
           call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
+        subroutine init_TF_CC_D(f,m,D)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_CC(f%x,m,D); call init_CC(f%y,m,D); call init_CC(f%z,m,D)
+          call delete_logicals(f); f%is_CC = .true.
+        end subroutine
+
         subroutine init_TF_Edge(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m); call init_Edge(f%y,m); call init_Edge(f%z,m)
+          call delete_logicals(f)
+        end subroutine
+
+        subroutine init_TF_Edge_D(f,m,D)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_Edge(f%x,m,D); call init_Edge(f%y,m,D); call init_Edge(f%z,m,D)
           call delete_logicals(f)
         end subroutine
 
@@ -422,6 +446,15 @@
           call delete_logicals(f)
         end subroutine
 
+        subroutine init_TF_Face_D(f,m,D)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_Face(f%x,m,D); call init_Face(f%y,m,D); call init_Face(f%z,m,D)
+          call delete_logicals(f)
+        end subroutine
+
         subroutine init_TF_Face_compliment(f,m)
           implicit none
           type(TF),intent(inout) :: f
@@ -445,6 +478,15 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
+          call delete_logicals(f); f%is_Node = .true.
+        end subroutine
+
+        subroutine init_TF_Node_D(f,m,D)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_Node(f%x,m,D); call init_Node(f%y,m,D); call init_Node(f%z,m,D)
           call delete_logicals(f); f%is_Node = .true.
         end subroutine
 

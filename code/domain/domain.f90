@@ -9,7 +9,7 @@
        private
        public :: domain
        public :: init,delete,display,print,export,import ! Essentials
-       public :: add
+       public :: add,init_other
 
        interface init;        module procedure init_domain;           end interface
        interface init;        module procedure init_domain_copy;      end interface
@@ -22,11 +22,12 @@
        interface import;      module procedure import_domain_wrapper; end interface
 
        interface add;         module procedure add_subdomain;         end interface
+       interface init_other;  module procedure init_other_domain;     end interface
 
        type domain
          integer :: s ! Number of subdomains
          type(subdomain),dimension(:),allocatable :: sd
-         type(mesh) :: m_in,m_tot
+         type(mesh) :: m_R1,m_R2
        end type
 
        contains
@@ -35,28 +36,28 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_domain(D,m_in,m_tot)
+       subroutine init_domain(D,m_R1,m_R2)
          implicit none
          type(domain),intent(inout) :: D
-         type(mesh),intent(in) :: m_in,m_tot
+         type(mesh),intent(in) :: m_R1,m_R2
          type(subdomain) :: temp
          integer :: j,k
          call delete(D)
 
          ! Initialize mesh:
-         call init(D%m_in,m_in)
-         call init(D%m_tot,m_tot)
+         call init(D%m_R1,m_R1)
+         call init(D%m_R2,m_R2)
          ! Make all possible/necessary subdomains:
-         if (m_tot%s.gt.m_in%s) then
-           do k=1,m_tot%s; do j=1,m_in%s
-             call init(temp,m_in%g(j),m_tot%g(k),j,k)
+         if (m_R2%s.gt.m_R1%s) then
+           do k=1,m_R2%s; do j=1,m_R1%s
+             call init(temp,m_R1%g(j),m_R2%g(k),j,k)
              if (all(temp%defined)) then
               call add(D,temp)
              endif
            enddo; enddo
          else
-           do k=1,m_in%s; do j=1,m_tot%s
-             call init(temp,m_in%g(k),m_tot%g(j),k,j)
+           do k=1,m_R1%s; do j=1,m_R2%s
+             call init(temp,m_R1%g(k),m_R2%g(j),k,j)
              if (all(temp%defined)) then
               call add(D,temp)
              endif
@@ -76,8 +77,8 @@
            do i=1,D_in%s; call init(D_out%sd(i),D_in%sd(i)); enddo
          else; stop 'Error: trying to copy un-initialized subdomain in domain.f90'
          endif
-         call init(D_out%m_in,D_in%m_in)
-         call init(D_out%m_tot,D_in%m_tot)
+         call init(D_out%m_R1,D_in%m_R1)
+         call init(D_out%m_R2,D_in%m_R2)
        end subroutine
 
        subroutine delete_domain(D)
@@ -88,8 +89,8 @@
            do i=1,D%s; call delete(D%sd(i)); enddo
            deallocate(D%sd)
          endif
-         call delete(D%m_in)
-         call delete(D%m_tot)
+         call delete(D%m_R1)
+         call delete(D%m_R2)
          D%s = 0
        end subroutine
 
@@ -119,8 +120,8 @@
          write(un,*) 'D%s'
          write(un,*) D%s
          do i=1,D%s; call export(D%sd(i),un); enddo
-         call export(D%m_tot,un)
-         call export(D%m_in,un)
+         call export(D%m_R2,un)
+         call export(D%m_R1,un)
        end subroutine
 
        subroutine export_domain_wrapper(D,dir,name)
@@ -143,8 +144,8 @@
          read(un,*) D%s
          allocate(D%sd(D%s))
          do i=1,D%s; call import(D%sd(i),un); enddo
-         call import(D%m_tot,un)
-         call import(D%m_in,un)
+         call import(D%m_R2,un)
+         call import(D%m_R1,un)
        end subroutine
 
        subroutine import_domain_wrapper(D,dir,name)
@@ -174,13 +175,25 @@
          else
            call init(temp,D)
            call delete(D)
-           call init(D%m_in,temp%m_in)
-           call init(D%m_tot,temp%m_tot)
+           call init(D%m_R1,temp%m_R1)
+           call init(D%m_R2,temp%m_R2)
            D%s = temp%s + 1
            allocate(D%sd(D%s))
            do i=1,D%s-1; call init(D%sd(i),temp%sd(i)); enddo
            call init(D%sd(D%s),sd)
            call delete(temp)
+         endif
+       end subroutine
+
+       subroutine init_other_domain(m_other,m,D)
+         implicit none
+         type(mesh),intent(inout) :: m_other
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
+         call delete(m_other)
+         if (compare(m,D%m_R1)) then;     call init(m_other,D%m_R2)
+         elseif (compare(m,D%m_R2)) then; call init(m_other,D%m_R1)
+         else; stop 'Error: case not found in init_other in domain.f90'
          endif
        end subroutine
 

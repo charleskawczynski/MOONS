@@ -158,7 +158,7 @@
          call grad(temp_F1,temp_CC,m)
          call assign(temp_F2,B)
          call solve(PCG_B,B,temp_F1,m,compute_norms)
-         call init_Face(temp,D_conductor%m_in)
+         call init_Face(temp,m,D_conductor)
          call extractFace(temp,temp_F2,D_conductor)
          call embedFace(B,temp,D_conductor)
          call delete(temp)

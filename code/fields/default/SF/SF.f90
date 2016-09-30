@@ -86,7 +86,7 @@
         end type
 
         interface init;                module procedure init_SF_copy;           end interface
-        interface init;                module procedure init_SF_copy_domain;    end interface
+        interface init;                module procedure init_SF_copy_mesh;      end interface
         interface delete;              module procedure delete_SF;              end interface
         interface display;             module procedure display_SF;             end interface
         interface print;               module procedure print_SF;               end interface
@@ -99,6 +99,11 @@
         interface init_Node;           module procedure init_SF_Node;           end interface
         interface init_Face;           module procedure init_SF_Face;           end interface
         interface init_Edge;           module procedure init_SF_Edge;           end interface
+
+        interface init_CC;             module procedure init_SF_CC_D;           end interface
+        interface init_Node;           module procedure init_SF_Node_D;         end interface
+        interface init_Face;           module procedure init_SF_Face_D;         end interface
+        interface init_Edge;           module procedure init_SF_Edge_D;         end interface
 
         interface init_CC;             module procedure init_SF_CC_assign;      end interface
         interface init_Node;           module procedure init_SF_Node_assign;    end interface
@@ -202,17 +207,17 @@
           f1%N_along = f2%N_along
         end subroutine
 
-        subroutine init_SF_copy_domain(f1,f2,D)
+        subroutine init_SF_copy_mesh(f1,f2,m)
           implicit none
           type(SF),intent(inout) :: f1
           type(SF),intent(in) :: f2
-          type(domain),intent(in) :: D
+          type(mesh),intent(in) :: m
           type(SF) :: temp
-          if (f2%is_CC) then;       call init_CC(temp,D%m_in)
-          elseif (f2%is_Node) then; call init_Node(temp,D%m_in)
-          elseif (f2%is_Face) then; call init_Face(temp,D%m_in,f2%face)
-          elseif (f2%is_Edge) then; call init_Edge(temp,D%m_in,f2%edge)
-          else; stop 'Error: bad datatype in init_SF_copy_domain in SF.f90'
+          if (f2%is_CC) then;       call init_CC(temp,m)
+          elseif (f2%is_Node) then; call init_Node(temp,m)
+          elseif (f2%is_Face) then; call init_Face(temp,m,f2%face)
+          elseif (f2%is_Edge) then; call init_Edge(temp,m,f2%edge)
+          else; stop 'Error: bad datatype in init_SF_copy_mesh in SF.f90'
           endif
           call init(f1,temp)
           call delete(temp)
@@ -426,6 +431,17 @@
           call init_CC_N_along(f)
         end subroutine
 
+        subroutine init_SF_CC_D(f,m,D)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          if (compare(m,D%m_R1)) then;     call init_CC(f,D%m_R2)
+          elseif (compare(m,D%m_R2)) then; call init_CC(f,D%m_R1)
+          else; stop 'Error: case not found in init_SF_CC_D in SF.f90'
+          endif
+        end subroutine
+
         subroutine init_SF_CC_assign(f,m,val)
           implicit none
           type(SF),intent(inout) :: f
@@ -448,6 +464,18 @@
           f%is_face = .true.
           f%face = dir
           call init_CC_N_along(f)
+        end subroutine
+
+        subroutine init_SF_Face_D(f,m,dir,D)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          type(domain),intent(in) :: D
+          if (compare(m,D%m_R1)) then;     call init_Face(f,D%m_R2,dir)
+          elseif (compare(m,D%m_R2)) then; call init_Face(f,D%m_R1,dir)
+          else; stop 'Error: case not found in init_SF_Face_D in SF.f90'
+          endif
         end subroutine
 
         subroutine init_SF_Face_assign(f,m,dir,val)
@@ -475,6 +503,18 @@
           call init_CC_N_along(f)
         end subroutine
 
+        subroutine init_SF_Edge_D(f,m,dir,D)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          type(domain),intent(in) :: D
+          if (compare(m,D%m_R1)) then;     call init_Edge(f,D%m_R2,dir)
+          elseif (compare(m,D%m_R2)) then; call init_Edge(f,D%m_R1,dir)
+          else; stop 'Error: case not found in init_SF_Edge_D in SF.f90'
+          endif
+        end subroutine
+
         subroutine init_SF_Edge_assign(f,m,dir,val)
           implicit none
           type(SF),intent(inout) :: f
@@ -496,6 +536,17 @@
           call computeNumEl(f)
           f%is_node = .true.
           call init_CC_N_along(f)
+        end subroutine
+
+        subroutine init_SF_Node_D(f,m,D)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          if (compare(m,D%m_R1)) then;     call init_Node(f,D%m_R2)
+          elseif (compare(m,D%m_R2)) then; call init_Node(f,D%m_R1)
+          else; stop 'Error: case not found in init_SF_Node_D in SF.f90'
+          endif
         end subroutine
 
         subroutine init_SF_Node_assign(f,m,val)

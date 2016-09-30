@@ -20,6 +20,7 @@
        public :: restrict,restrict_x,restrict_xy
        public :: initProps
        public :: init_surface
+       public :: compare
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkmesh
@@ -59,6 +60,8 @@
        interface import;         module procedure import_mesh;         end interface
        interface export;         module procedure export_wrapper;      end interface
        interface import;         module procedure import_wrapper;      end interface
+
+       interface compare;        module procedure compare_mesh;        end interface
 
        contains
 
@@ -339,6 +342,25 @@
          call delete(m%g(i)%st_corners(k))
          enddo; enddo
        end subroutine
+
+       function compare_mesh(a,b) result(L_all)
+         implicit none
+         type(mesh),intent(in) :: a,b
+         logical,dimension(8) :: L
+         integer :: i
+         logical :: L_all
+         real(cp) :: tol
+         tol = 10.0_cp**(-12.0_cp)
+         L(1) = all((/(abs(a%hmax(i)-b%hmax(i)).lt.tol,i=1,3)/))
+         L(2) = all((/(abs(a%hmin(i)-b%hmin(i)).lt.tol,i=1,3)/))
+         L(3) = all((/(abs(a%dhmax(i)-b%dhmax(i)).lt.tol,i=1,3)/))
+         L(4) = all((/(abs(a%dhmin(i)-b%dhmin(i)).lt.tol,i=1,3)/))
+         L(5) = abs(a%volume-b%volume).lt.tol
+         L(6) = all((/(a%N_cells(i)-b%N_cells(i).eq.0,i=1,3)/))
+         L(7) = a%N_cells_tot-b%N_cells_tot.eq.0
+         L(8) = a%s-b%s.eq.0
+         L_all = all(L)
+       end function
 
        ! ------------------- restrict (for multimesh) --------------
 

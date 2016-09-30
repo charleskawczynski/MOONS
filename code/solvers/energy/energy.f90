@@ -156,7 +156,7 @@
          write(*,*) '     BCs applied'
 
          call init_CC(k_cc,m,0.0_cp)
-         call initK(k_cc,nrg%D)
+         call initK(k_cc,nrg%m,nrg%D)
          call cellCenter2Face(nrg%k,k_cc,m)
          call delete(k_cc)
          write(*,*) '     Materials initialized'

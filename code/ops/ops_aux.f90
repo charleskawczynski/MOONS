@@ -859,17 +859,21 @@
          call stabilityTerms(fo,fi%z,m,n,3)
        end subroutine
 
-       subroutine boundaryFlux_VF_SD(BF,f,D)
+       subroutine boundaryFlux_VF_SD(BF,f,m,D)
          implicit none
          type(VF),intent(in) :: f
          real(cp),intent(inout) :: BF
+         type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
+         type(mesh) :: m_temp
          type(VF) :: temp
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
-         call init_Face(temp,D%m_in)
+         call init_other(m_temp,m,D)
+         call init_Face(temp,m_temp)
          call extractFace(temp,f,D)
-         call boundaryFlux(BF,temp,D%m_in)
+         call boundaryFlux(BF,temp,m_temp)
          call delete(temp)
+         call delete(m_temp)
        end subroutine
 
        ! is this right???

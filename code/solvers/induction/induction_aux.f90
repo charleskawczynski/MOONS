@@ -112,17 +112,18 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_Total_Energy_Domain(energy,field,time,D)
+       subroutine compute_Total_Energy_Domain(energy,field,time,m,D)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
          real(cp),intent(in) :: time
+         type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
          type(VF) :: temp_VF
          real(cp) :: temp
-         call init_CC(temp_VF,D%m_in)
+         call init_CC(temp_VF,m,D)
          call extractCC(temp_VF,field,D)
-         call Ln(temp,temp_VF,2.0_cp,D%m_in)
+         call Ln(temp,temp_VF,2.0_cp,m,D)
          temp = 0.5_cp*temp
          call delete(temp_VF)
          call export(energy,time,temp)

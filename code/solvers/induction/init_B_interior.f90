@@ -2,6 +2,7 @@
        use current_precision_mod
        use grid_mod
        use mesh_mod
+       use domain_mod
        use VF_mod
        use IO_VF_mod
        use IO_SF_mod
@@ -12,13 +13,14 @@
 
        contains
 
-       subroutine initB_interior(B,m,dir)
+       subroutine initB_interior(B,m,D,dir)
          implicit none
          type(VF),intent(inout) :: B
-         character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
+         character(len=*),intent(in) :: dir
          type(mesh) :: temp
-         call init(temp,m)
+         call init_other(temp,m,D)
          call import_3D_1C(temp,B%x,dir,'B_interior_f_x',0)
          call import_3D_1C(temp,B%y,dir,'B_interior_f_y',0)
          call import_3D_1C(temp,B%z,dir,'B_interior_f_z',0)

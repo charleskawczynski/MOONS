@@ -83,20 +83,25 @@
            call export(D_sigma ,str(DT%restart),'D_sigma')
          endif
 
-         call init(mesh_ind_interior,D_sigma%m_tot)
+         call init(mesh_ind_interior,D_sigma%m_R2)
+
          call initProps(mesh_mom);     call patch(mesh_mom)
          call initProps(mesh_ind);     call patch(mesh_ind)
 
          call init(D_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
 
-         call initProps(D_fluid%m_in);   call patch(D_fluid%m_in)
-         call initProps(D_fluid%m_tot);  call patch(D_fluid%m_tot)
-         call initProps(D_sigma%m_in);   call patch(D_sigma%m_in)
-         call initProps(D_sigma%m_tot);  call patch(D_sigma%m_tot)
+         call initProps(D_fluid%m_R1); call patch(D_fluid%m_R1)
+         call initProps(D_fluid%m_R2); call patch(D_fluid%m_R2)
+         call initProps(D_sigma%m_R1); call patch(D_sigma%m_R1)
+         call initProps(D_sigma%m_R2); call patch(D_sigma%m_R2)
+
+         call print(D_fluid,'D_fluid')
+         call print(D_sigma,'D_sigma')
+         ! stop 'Done in MOONS.f90'
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
-         if (SP%export_meshes) call export_mesh(D_sigma%m_in,str(DT%meshes),'mesh_D_sigma',1)
+         if (SP%export_meshes) call export_mesh(D_sigma%m_R2,str(DT%meshes),'mesh_D_sigma',1)
          if (SP%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
          if (SP%stop_after_mesh_export) then
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'

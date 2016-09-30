@@ -94,17 +94,21 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
 
-       function boundaryFlux_VF_SD(f,D) result(BF)
+       function boundaryFlux_VF_SD(f,m,D) result(BF)
          implicit none
          type(VF),intent(in) :: f
+         type(mesh),intent(in) :: m
          type(domain),intent(in) :: D
          real(cp) :: BF
          type(VF) :: temp
+         type(mesh) :: m_temp
+         call init_other(m_temp,m,D)
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
-         call init_Face(temp,D%m_in)
+         call init_Face(temp,m_temp)
          call extractFace(temp,f,D)
-         BF = boundaryFlux(temp,D%m_in)
+         BF = boundaryFlux(temp,m_temp)
          call delete(temp)
+         call delete(m_temp)
        end function
 
        ! is this right???

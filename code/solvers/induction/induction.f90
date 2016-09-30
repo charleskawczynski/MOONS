@@ -139,7 +139,6 @@
          integer :: temp_unit
          type(SF) :: sigma,prec_cleanB
          type(VF) :: prec_induction,sigma_temp_E
-         type(geometric_region) :: GR_sigma
          write(*,*) 'Initializing induction:'
 
          call init(ind%TMP,TMP)
@@ -155,29 +154,9 @@
          call init(ind%m,m)
          call init(ind%D_fluid,D_fluid)
          call init(ind%D_sigma,D_sigma)
-         call init(GR_sigma,ind%D_sigma%m_in%hmin,&
-                            ind%D_sigma%m_in%hmax,&
-                            (/.false.,.false.,.false./),&
-                            (/.false.,.false.,.false./))
-         call init(GR_sigma,(/ind%D_sigma%m_in%hmin(1),&
-                              ind%D_sigma%m_in%hmin(2),&
-                              ind%D_sigma%m_in%hmin(3)/),&
-                            (/ind%D_sigma%m_in%hmax(1),&
-                              ind%D_sigma%m_in%hmax(2),&
-                              ind%D_sigma%m_in%hmax(3)/),&
-                             (/.true.,.true.,.true./),&
-                             (/.true.,.true.,.true./))
-         ! call init(GR_sigma,(/ind%D_fluid%m_in%hmin(1),&
-         !                      ind%D_fluid%m_in%hmax(2),&
-         !                      ind%D_fluid%m_in%hmin(3)/),&
-         !                    (/ind%D_fluid%m_in%hmax(1),&
-         !                      ind%D_fluid%m_in%hmax(2),&
-         !                      ind%D_fluid%m_in%hmax(3)/),&
-         !                     (/.false.,.true.,.false./),&
-         !                     (/.false.,.true.,.false./))
          ! --- tensor,vector and scalar fields ---
-         call init_Face(ind%B_interior   ,ind%D_sigma%m_in,0.0_cp)
-         call init_Edge(ind%J_interior   ,ind%D_sigma%m_in,0.0_cp)
+         call init_Face(ind%B_interior   ,m,ind%D_sigma); call assign(ind%B_interior,0.0_cp)
+         call init_Edge(ind%J_interior   ,m,ind%D_sigma); call assign(ind%J_interior,0.0_cp)
          call init_Edge(ind%U_E          ,m,0.0_cp)
          call init_Edge(ind%temp_E_TF    ,m,0.0_cp)
          call init_Face(ind%temp_F1_TF   ,m,0.0_cp)
@@ -210,8 +189,8 @@
          call init_phiBCs(ind%phi,m);                     write(*,*) '     phi BCs initialized'
          call initBfield(ind%B,ind%B0,m,ind%SP%restartB,ind%SP%restartB0,str(DT%B_f))
          write(*,*) '     B-field initialized'
-         ! call initB_interior(ind%B_interior,ind%D_sigma%m_in,str(DT%B_f))
-         ! call initJ_interior(ind%J_interior,ind%D_sigma%m_in,str(DT%J_f))
+         ! call initB_interior(ind%B_interior,m,ind%D_sigma,str(DT%B_f))
+         ! call initJ_interior(ind%J_interior,m,ind%D_sigma,str(DT%J_f))
          call zeroGhostPoints(ind%B_interior)
          call apply_BCs(ind%B,m);                         write(*,*) '     BCs applied'
 
@@ -222,22 +201,20 @@
 
          ! ******************** MATERIAL PROPERTIES ********************
          call init_CC(sigma,m,0.0_cp)
-         call initSigma(sigma,ind%D_sigma,m,ind%sig_local_over_sig_f)
+         call initSigma(sigma,m,ind%D_sigma,ind%sig_local_over_sig_f)
          write(*,*) '     Materials initialized'
          if (ind%SP%export_mat_props) call export_raw(m,sigma,str(DT%mat),'sigma',0)
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
 
          ! call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
-         ! call assign_inside(ind%sigmaInv_edge%x,ind%m,GR_sigma,1.0_cp)
-         ! call assign_inside(ind%sigmaInv_edge%y,ind%m,GR_sigma,1.0_cp)
-         ! call assign_inside(ind%sigmaInv_edge%z,ind%m,GR_sigma,1.0_cp)
 
-         call init_Edge(sigma_temp_E,D_sigma%m_in,1.0_cp)
+         call init_Edge(sigma_temp_E,ind%m,ind%D_sigma)
+         call assign(sigma_temp_E,1.0_cp)
          call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
          call embedEdge(ind%sigmaInv_edge,sigma_temp_E,D_sigma)
          call delete(sigma_temp_E)
-         call insulate_lid(ind%sigmaInv_edge,ind%m,1.0_cp/sig_local_over_sig_f)
+         ! call insulate_lid(ind%sigmaInv_edge,ind%m,1.0_cp/sig_local_over_sig_f)
 
          ! call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
          ! call treatInterface(ind%sigmaInv_edge,.false.) ! Logical = take_high_value
@@ -546,22 +523,22 @@
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
          call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP%t,ind%D_sigma)
+         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP%t,ind%m,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP%t,ind%m,ind%D_sigma)
 
          call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
          call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP%t,ind%D_sigma)
+         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP%t,ind%m,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP%t,ind%m,ind%D_sigma)
 
          call face2cellCenter(ind%temp_CC,ind%B,ind%m)
          call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP%t,ind%D_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP%t,ind%D_sigma)
+         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP%t,ind%m,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP%t,ind%m,ind%D_sigma)
 
          call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
          call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP%t,ind%D_fluid)
+         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP%t,ind%m,ind%D_fluid)
        end subroutine
 
        subroutine compute_E_M_budget(ind,U,D_fluid,Re,Ha,DT)
@@ -584,9 +561,9 @@
          call init_Face(temp_F2_TF,ind%m)
          call init_Face(temp_F3_TF,ind%m)
          call init_Face(temp_U,ind%m)
-         call init_CC(sigmaInv_CC_solid,ind%D_sigma%m_in)
+         call init_CC(sigmaInv_CC_solid,ind%m,ind%D_sigma)
          call init_CC(sigmaInv_CC_ideal,ind%m)
-         call init_Face(sigmaInv_F_solid,ind%D_sigma%m_in)
+         call init_Face(sigmaInv_F_solid,ind%m,ind%D_sigma)
          call init_Face(sigmaInv_F_ideal,ind%m)
          call init_Face(sigmaInv_F,ind%m)
 

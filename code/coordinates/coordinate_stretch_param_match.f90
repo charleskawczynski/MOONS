@@ -99,6 +99,7 @@
 
        ! ---------------------------------------------------------------
 
+#ifdef _DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
        subroutine newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,debug)
          ! Estimate the zero of T_root(beta) using Newton's method. 
          ! Input:
@@ -174,6 +175,7 @@
          if (debug) write(*,*) 'max(iter) = ',k-1 ! number of iterations taken
          ! if (debug) then; stop 'Done in newtonT2'; endif
        end subroutine
+#endif
 
        subroutine newtonT2(T_root,T_prime,beta,hmin,hmax,alpha,N,dh)
          implicit none

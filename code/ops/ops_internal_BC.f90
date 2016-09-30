@@ -152,14 +152,14 @@
          endif
        end subroutine
 
-       subroutine internal_BC_RF(A,AB,iA,CC_along)
+       subroutine internal_BC_RF(A,AB,i_1,i_2,CC_along)
          implicit none
          type(realField),intent(inout) :: A
          type(overlap),dimension(3),intent(in) :: AB
          logical,dimension(3),intent(in) :: CC_along
-         integer,intent(in) :: iA
-         call internal_BC_RF_raw_face(A,(/AB(1)%R1(iA),AB(2)%R1(iA),AB(3)%R1(iA)/),&
-                                        (/AB(1)%R2(iA),AB(2)%R2(iA),AB(3)%R2(iA)/),&
+         integer,intent(in) :: i_1,i_2
+         call internal_BC_RF_raw_face(A,(/AB(1)%i1(i_1),AB(2)%i1(i_1),AB(3)%i1(i_1)/),&
+                                        (/AB(1)%i1(i_2),AB(2)%i1(i_2),AB(3)%i1(i_2)/),&
                                         CC_along)
        end subroutine
 
@@ -176,7 +176,7 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in internal_BC_Face_SF in ops_internal_BC.f90'
 #endif
          do i=1,D%s
-         call IBC(Face_t%RF(D%sd(i)%g_tot_id),EE_shape_I(Face_t,D,i),1,Face_t%CC_along)
+         call IBC(Face_t%RF(D%sd(i)%g_R2_id),EE_shape_I(Face_t,D,i),1,2,Face_t%CC_along)
          enddo
        end subroutine
 

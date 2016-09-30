@@ -61,7 +61,7 @@
 
         interface init;              module procedure init_VF_copy_VF;          end interface
         interface init;              module procedure init_VF_copy_SF;          end interface
-        interface init;              module procedure init_VF_copy_VF_domain;   end interface
+        interface init;              module procedure init_VF_copy_VF_mesh;     end interface
         interface delete;            module procedure delete_VF;                end interface
         interface display;           module procedure display_VF;               end interface
         interface print;             module procedure print_VF;                 end interface
@@ -74,6 +74,11 @@
         interface init_Face;         module procedure init_VF_Face;             end interface
         interface init_Edge;         module procedure init_VF_Edge;             end interface
         interface init_Node;         module procedure init_VF_Node;             end interface
+
+        interface init_CC;           module procedure init_VF_CC_D;             end interface
+        interface init_Face;         module procedure init_VF_Face_D;           end interface
+        interface init_Edge;         module procedure init_VF_Edge_D;           end interface
+        interface init_Node;         module procedure init_VF_Node_D;           end interface
 
         interface init_Face_compliment; module procedure init_VF_Face_compliment;  end interface
         interface init_Edge_compliment; module procedure init_VF_Edge_compliment;  end interface
@@ -160,12 +165,12 @@
           call copy_props_VF(f1,f2)
         end subroutine
 
-        subroutine init_VF_copy_VF_domain(f1,f2,D)
+        subroutine init_VF_copy_VF_mesh(f1,f2,m)
           implicit none
           type(VF),intent(inout) :: f1
           type(VF),intent(in) :: f2
-          type(domain),intent(in) :: D
-          call init(f1%x,f2%x,D); call init(f1%y,f2%y,D); call init(f1%z,f2%z,D)
+          type(mesh),intent(in) :: m
+          call init(f1%x,f2%x,m); call init(f1%y,f2%y,m); call init(f1%z,f2%z,m)
           call copy_props_VF(f1,f2)
         end subroutine
 
@@ -300,11 +305,29 @@
           call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
+        subroutine init_VF_CC_D(f,m,D)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_CC(f%x,m,D); call init_CC(f%y,m,D); call init_CC(f%z,m,D)
+          call delete_logicals(f); f%is_CC = .true.
+        end subroutine
+
         subroutine init_VF_Edge(f,m)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
+          call delete_logicals(f); f%is_Edge = .true.
+        end subroutine
+
+        subroutine init_VF_Edge_D(f,m,D)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_Edge(f%x,m,1,D); call init_Edge(f%y,m,2,D); call init_Edge(f%z,m,3,D)
           call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
@@ -330,6 +353,15 @@
           call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
+        subroutine init_VF_Face_D(f,m,D)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_Face(f%x,m,1,D); call init_Face(f%y,m,2,D); call init_Face(f%z,m,3,D)
+          call delete_logicals(f); f%is_Face = .true.
+        end subroutine
+
         subroutine init_VF_Face_compliment(f,m,dir)
           implicit none
           type(VF),intent(inout) :: f
@@ -349,6 +381,15 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
+          call delete_logicals(f); f%is_Node = .true.
+        end subroutine
+
+        subroutine init_VF_Node_D(f,m,D)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(domain),intent(in) :: D
+          call init_Node(f%x,m,D); call init_Node(f%y,m,D); call init_Node(f%z,m,D)
           call delete_logicals(f); f%is_Node = .true.
         end subroutine
 

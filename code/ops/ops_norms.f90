@@ -1,6 +1,7 @@
        module ops_norms_mod
        use current_precision_mod
        use mesh_mod
+       use domain_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -19,9 +20,14 @@
        interface Ln;    module procedure Ln_vol_SF;            end interface
        interface Ln;    module procedure Ln_vol_VF;            end interface
        interface Ln;    module procedure Ln_vol_VF_collocated; end interface
+
        interface Ln;    module procedure Ln_mesh_SF;           end interface
        interface Ln;    module procedure Ln_mesh_VF;           end interface
        interface Ln;    module procedure Ln_mesh_TF;           end interface
+
+       interface Ln;    module procedure Ln_mesh_SF_D;         end interface
+       interface Ln;    module procedure Ln_mesh_VF_D;         end interface
+       interface Ln;    module procedure Ln_mesh_TF_D;         end interface
 
        interface Ln;    module procedure Ln_no_vol_SF;         end interface
        interface Ln;    module procedure Ln_no_vol_VF;         end interface
@@ -118,6 +124,43 @@
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
+       end subroutine
+
+       subroutine Ln_mesh_SF_D(e,u,n,m,D)
+         implicit none
+         real(cp),intent(inout) :: e
+         type(SF),intent(in) :: u
+         real(cp),intent(in) :: n
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
+         if (compare(m,D%m_R1)) then;    call Ln(e,u,n,D%m_R2)
+         elseif(compare(m,D%m_R2)) then; call Ln(e,u,n,D%m_R1)
+         else; stop 'Error: missed case in Ln_mesh_SF_D in ops_norms.f90'
+         endif
+       end subroutine
+       subroutine Ln_mesh_VF_D(e,u,n,m,D)
+         implicit none
+         real(cp),intent(inout) :: e
+         type(VF),intent(in) :: u
+         real(cp),intent(in) :: n
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
+         if (compare(m,D%m_R1)) then;    call Ln(e,u,n,D%m_R2)
+         elseif(compare(m,D%m_R2)) then; call Ln(e,u,n,D%m_R1)
+         else; stop 'Error: missed case in Ln_mesh_VF_D in ops_norms.f90'
+         endif
+       end subroutine
+       subroutine Ln_mesh_TF_D(e,u,n,m,D)
+         implicit none
+         real(cp),intent(inout) :: e
+         type(TF),intent(in) :: u
+         real(cp),intent(in) :: n
+         type(mesh),intent(in) :: m
+         type(domain),intent(in) :: D
+         if (compare(m,D%m_R1)) then;    call Ln(e,u,n,D%m_R2)
+         elseif(compare(m,D%m_R2)) then; call Ln(e,u,n,D%m_R1)
+         else; stop 'Error: missed case in Ln_mesh_TF_D in ops_norms.f90'
+         endif
        end subroutine
 
        subroutine Ln_vol_SF(e,u,n,vol)

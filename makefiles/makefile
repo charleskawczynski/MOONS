@@ -320,7 +320,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract_surface.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_internal_BC.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
