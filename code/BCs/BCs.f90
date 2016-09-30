@@ -219,6 +219,8 @@
          type(BCs),intent(in) :: BC
          integer,intent(in) :: un
          integer :: i
+         write(un,*) 'defined'
+         write(un,*) BC%defined
          if (BC%defined) then
            do i=1,6;  call export(BC%f(i)%b,un); enddo
            do i=1,12; call export(BC%e(i)%b,un); enddo
@@ -226,8 +228,8 @@
            call export(BC%g,un)
            write(un,*) 's'
            write(un,*) BC%s
-           write(un,*) 'gridDefined,defined'
-           write(un,*) BC%gridDefined,BC%defined
+           write(un,*) 'gridDefined'
+           write(un,*) BC%gridDefined
            write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
            write(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
          endif
@@ -238,6 +240,8 @@
          type(BCs),intent(inout) :: BC
          integer,intent(in) :: un
          integer :: i
+         read(un,*) 
+         read(un,*) BC%defined
          if (BC%defined) then
            do i=1,6;  call import(BC%f(i)%b,un); enddo
            do i=1,12; call import(BC%e(i)%b,un); enddo
@@ -246,7 +250,7 @@
            read(un,*) 
            read(un,*) BC%s
            read(un,*) 
-           read(un,*) BC%gridDefined,BC%defined
+           read(un,*) BC%gridDefined
            read(un,*) 
            read(un,*) BC%all_Dirichlet,BC%all_Neumann,BC%all_Robin
          endif

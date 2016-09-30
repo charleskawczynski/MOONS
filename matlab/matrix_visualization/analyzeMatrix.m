@@ -1,4 +1,4 @@
-function analyzeMatrix(A,name,symmetryTest,conditionNumber,preconditioner,getEig,debug)
+function analyzeMatrix(A,name,symmetryTest,conditionNumber,preconditioner,getEig,debug,line_specifier)
 
 %% Check if SPD
 s = size(A);
@@ -25,7 +25,11 @@ if getEig
 end
 
 %% Plot original matrix
-figure; spy(A,'k')
+figure; spy(A,'ko')
+h = gcf;
+ms = 2;
+set( findobj(h, 'Type', 'line'), 'LineWidth',1, 'MarkerEdgeColor','k','MarkerFaceColor',[0 0 0], 'MarkerSize',ms);
+
 title(['spy(' name ')'])
 % h = gcf;
 % set(h,'Color','b')

@@ -11,7 +11,7 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 0
+       integer :: preDefinedB_BCs = 1
        real(cp) :: cw = 0.0_cp
        ! real(cp) :: cw = 0.05_cp
        ! real(cp) :: cw = 0.01_cp

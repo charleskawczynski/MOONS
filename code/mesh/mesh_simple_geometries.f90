@@ -31,9 +31,7 @@
          integer :: i
          integer,dimension(3) :: N
          call delete(m)
-         N = (/45,45,45/)
-         ! N = (/67,67,27/)
-         hmin = -1.0_cp; hmax = 1.0_cp
+         N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
          ! hmin = -0.5_cp; hmax = 0.5_cp
          ! hmin(1) = -1.0_cp; hmax(1) = 1.0_cp
          ! hmin(3) = -0.5_cp; hmax(3) = 0.5_cp
@@ -55,9 +53,9 @@
          integer,dimension(3) :: N
          integer :: i
          real(cp) :: Ha,Re
-         Ha = 20.0_cp; Re = 1000.0_cp
+         Ha = 45.0_cp; Re = 1000.0_cp
          call delete(m)
-         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp
+         N = (/64,64,64/); hmin = -0.5_cp; hmax = 0.5_cp
          ! beta = reynoldsBL(Re,hmin,hmax)
          beta = HartmannBL(Ha,hmin,hmax)
 
@@ -110,6 +108,33 @@
          i = 2; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 3; call ext_Roberts_near_IO(g,L(i),N(i),i)
          call init(m,g)
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine channel_Bandaru(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         real(cp) :: Ha,Re
+         Ha = 26.0_cp; Re = 10.0_cp**(7.0_cp)
+         call delete(m)
+         N = (/64,1,64/); hmin = -1.0_cp; hmax = 1.0_cp
+
+         hmin(2) = -0.5_cp; hmax(2) = 0.5_cp
+         hmin(1) = 0.0_cp; hmax(1) = 2.0_cp*PI
+         ! beta = reynoldsBL(Re,hmin,hmax)
+         beta = HartmannBL(Ha,hmin,hmax)
+
+         i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+
+         call add(m,g)
          call initProps(m)
          call patch(m)
          call delete(g)

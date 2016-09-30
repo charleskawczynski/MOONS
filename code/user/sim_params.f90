@@ -51,13 +51,13 @@
        SP%stopBeforeSolve           = .false.     ! Just export ICs, do not run simulation
        SP%stop_after_mesh_export    = .false.     ! 
 
-       SP%export_meshes             = .false.     ! Export all meshes before starting simulation
-       SP%export_mat_props          = .false.     ! Export material properties before starting simulation
+       SP%export_meshes             = .true.     ! Export all meshes before starting simulation
+       SP%export_mat_props          = .true.     ! Export material properties before starting simulation
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
 
-       SP%coupled_time_step         = .true.      ! Ensures all time steps are equal to coupled%dt
+       SP%coupled_time_step         = .false.      ! Ensures all time steps are equal to coupled%dt
 
        SP%solveEnergy               = .false.     ! Solve energy    equation
        SP%solveMomentum             = .true.      ! Solve momentum  equation
@@ -70,7 +70,7 @@
 
        SP%solveTMethod              = 5           ! Refer to energy.f90
        SP%solveUMethod              = 1           ! Refer to momentum.f90
-       SP%solveBMethod              = 3           ! Refer to induction.f90
+       SP%solveBMethod              = 1           ! Refer to induction.f90
 
        SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation

@@ -22,8 +22,6 @@
        implicit none
        private
        public :: computeCRFromExisting
-
-
       
        contains
 

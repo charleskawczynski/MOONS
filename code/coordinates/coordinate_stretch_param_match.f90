@@ -1,4 +1,5 @@
        module coordinate_stretch_param_match_mod
+       ! Compiler flag (_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_)
        use is_nan_mod
        use current_precision_mod
        implicit none
@@ -98,7 +99,7 @@
 
        ! ---------------------------------------------------------------
 
-       subroutine newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,new_case)
+       subroutine newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,debug)
          ! Estimate the zero of T_root(beta) using Newton's method. 
          ! Input:
          !   T_root:  the function to find a root of
@@ -113,18 +114,14 @@
          procedure(func_prime) :: T_prime
          real(cp),intent(in) :: hmin,hmax,alpha,dh
          integer,intent(in) :: N
-         logical,intent(in) :: new_case
+         logical,intent(in) :: debug
 
          real(cp) :: dbeta, fbeta, fbetaprime,beta0 ! local variables
          integer,parameter :: maxiter = 1000000
          real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
          real(cp),parameter :: err = 10.0_cp**(-10.0_cp) ! We may have a problem
          integer :: k
-         logical :: debug
-         debug = new_case
-         ! deubg = new_case
          beta0 = beta
-
          if (debug) write(*,*) '****************************************'
          if (debug) write(*,*) '****************************************'
          if (debug) write(*,*) '****************************************'
@@ -178,19 +175,18 @@
          ! if (debug) then; stop 'Done in newtonT2'; endif
        end subroutine
 
-       subroutine newtonT2(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,new_case)
+       subroutine newtonT2(T_root,T_prime,beta,hmin,hmax,alpha,N,dh)
          implicit none
          real(cp),intent(inout) :: beta
          procedure(func) :: T_root
          procedure(func_prime) :: T_prime
          real(cp),intent(in) :: hmin,hmax,alpha,dh
          integer,intent(in) :: N
-         logical,intent(in) :: new_case
          real(cp) :: dbeta,fbeta,fbetaprime,beta_low ! local variables
          integer,parameter :: maxiter = 1000000
          real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
          integer :: k
-         logical :: flag
+         logical :: err
          beta_low = one + 10.0_cp**(-10.0_cp)
          do k=1,maxiter ! Newton iteration to find a zero of T_root(beta)
            fbeta = T_root(beta,hmin,hmax,alpha,N,dh) ! evaluate function and its derivative:
@@ -201,10 +197,11 @@
            dbeta = fbeta/fbetaprime                                   ! compute beta increment
            beta = beta - dbeta                                        ! update
          enddo
-         if (is_nan(beta)) then; flag = .true.; beta = 1.1_cp; endif  ! oops, gracefully handle
-         ! if (flag) then
-         !   call newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,.true.)
-         ! endif
+         if (is_nan(beta)) then; err = .true.; beta = 1.1_cp; endif  ! oops, gracefully handle
+
+#ifdef _DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
+         call newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,err)
+#endif
        end subroutine
 
        ! ***************************************************************
@@ -222,7 +219,7 @@
          real(cp) :: beta,tol
          tol = 10.0_cp**(-10.0_cp)
          beta = one + tol ! Initial guess
-         call newtonT2(T2_root_dh_near_hmax,T2_prime_dh_near_hmax,beta,hmin,hmax,0.0_cp,N,dh,.false.)
+         call newtonT2(T2_root_dh_near_hmax,T2_prime_dh_near_hmax,beta,hmin,hmax,0.0_cp,N,dh)
        end function
 
        function beta_dh_big(hmin,hmax,N,dh) result(beta)
@@ -232,7 +229,7 @@
          real(cp) :: beta,tol
          tol = 10.0_cp**(-10.0_cp)
          beta = one + tol ! Initial guess
-         call newtonT2(T2_root_dh_near_hmin,T2_prime_dh_near_hmin,beta,hmin,hmax,0.0_cp,N,dh,.true.)
+         call newtonT2(T2_root_dh_near_hmin,T2_prime_dh_near_hmin,beta,hmin,hmax,0.0_cp,N,dh)
        end function
 
        function beta_dh_both(hmin,hmax,N,dh) result(beta)
@@ -242,7 +239,7 @@
          real(cp) :: beta,tol
          tol = 10.0_cp**(-10.0_cp)
          beta = one + tol ! Initial guess
-         call newtonT2(T2_root_dh_near_hmax,T2_prime_dh_near_hmax,beta,hmin,hmax,0.5_cp,N,dh,.false.)
+         call newtonT2(T2_root_dh_near_hmax,T2_prime_dh_near_hmax,beta,hmin,hmax,0.5_cp,N,dh)
        end function
 
        end module

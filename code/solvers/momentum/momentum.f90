@@ -375,6 +375,7 @@
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
+           call export_raw(mom%m,mom%U,str(DT%U_f),'U',0)
            call export_processed(mom%m,mom%U,str(DT%U_f),'U',1)
            call export_processed(mom%m,mom%p,str(DT%U_f),'p',1)
            call export_raw(mom%m,mom%divU,str(DT%U_f),'divU',1)

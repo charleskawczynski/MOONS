@@ -34,7 +34,6 @@
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock) :: sc
          type(VF) :: F ! Forces added to momentum equation
-         integer(li) :: n_step
          type(print_export) :: PE
          type(export_now) :: EN
          type(kill_switch) :: KS

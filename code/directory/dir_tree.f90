@@ -1,7 +1,6 @@
       module dir_tree_mod
       ! use IO_tools_mod
       use string_mod
-      use draw_DT_mod
       use path_mod
       implicit none
 
@@ -197,6 +196,21 @@
         call delete(DT%B_f)
         call delete(DT%J_f)
         call delete(DT%T_f)
+      end subroutine
+
+      subroutine draw_DT()
+        implicit none
+        write(*,*) ' ------------------- Directory Tree ------------------- '
+        write(*,*) '                           |                            '
+        write(*,*) '                       ----------                       '
+        write(*,*) '                       |        |                       '
+        write(*,*) '                  -------------------                   '
+        write(*,*) '                  |        |        |                   '
+        write(*,*) '             -------------------------------            '
+        write(*,*) '             |        |        |           |            '
+        write(*,*) '        -----------------------------------------       '
+        write(*,*) '        |        |        |           |         |       '
+        write(*,*) ''
       end subroutine
 
       end module

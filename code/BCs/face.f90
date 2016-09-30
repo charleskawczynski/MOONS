@@ -93,7 +93,7 @@
          implicit none
          type(face),intent(in) :: f
          integer,intent(in) :: un
-         if (.not.f%defined) stop 'Error: face not defined in export_face in face.f90'
+         if (.not.f%defined) stop 'Error: face not defined in display_face in face.f90'
          call export(f%b,un)
        end subroutine
 
@@ -107,6 +107,8 @@
          implicit none
          type(face),intent(in) :: f
          integer,intent(in) :: un
+         write(un,*) 'defined'
+         write(un,*) f%defined
          if (.not.f%defined) stop 'Error: face not defined in export_face in face.f90'
          call export(f%b,un)
          write(un,*) 's'
@@ -115,14 +117,14 @@
          write(un,*) f%vals
          write(un,*) 'def'
          write(un,*) f%def
-         write(un,*) 'defined'
-         write(un,*) f%defined
        end subroutine
 
        subroutine import_face(f,un)
          implicit none
          type(face),intent(inout) :: f
          integer,intent(in) :: un
+         read(un,*) 
+         read(un,*) f%defined
          call delete(f)
          call import(f%b,un)
          read(un,*) 
@@ -132,8 +134,6 @@
          read(un,*) f%vals
          read(un,*) 
          read(un,*) f%def
-         read(un,*) 
-         read(un,*) f%defined
        end subroutine
 
        end module

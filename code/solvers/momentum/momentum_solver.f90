@@ -220,7 +220,7 @@
          call zeroGhostPoints(temp_CC)
          call solve(GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
-         call subtract(temp_F%x,1.0_cp) ! mpg
+         ! call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
          call apply_BCs(U,m)

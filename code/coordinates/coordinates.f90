@@ -29,6 +29,7 @@
         real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
         integer :: N                                    ! Number of cells
         real(cp) :: hmin,hmax                           ! Min/Max value of domain
+        real(cp) :: amin,amax                           ! absolute Min/Max value of domain (including ghost)
         real(cp) :: dhMin,dhMax,maxRange                ! Smallest spatial step/Maximum range
         integer :: sn,sc                                ! size of hn/hc
         real(cp),dimension(:),allocatable :: hn         ! Cell corner coordinates
@@ -36,6 +37,7 @@
         real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
         real(cp),dimension(:),allocatable :: dhc        ! Difference in cell center coordinates
         real(cp) :: dhn_e,dhc_e                         ! dhn(end),dhc(end)
+        real(cp) :: hn_e,hc_e                           ! hn(end),hc(end)
         logical :: defined = .false.
         logical :: stencils_defined = .false.
         logical,dimension(2) :: stencils_modified = .false.
@@ -66,18 +68,18 @@
         call delete(c)
         if (.not.d%defined) stop 'Error: trying to copy undefined coordinate in coordinates.f90'
 
-        if (allocated(d%alpha)) then; allocate(c%alpha(size(d%alpha))); c%alpha = d%alpha
-        else; stop 'Error: d%alpha not allocated in coordinates.f90'; endif
-        if (allocated(d%beta)) then; allocate(c%beta(size(d%beta))); c%beta = d%beta
-        else; stop 'Error: d%beta not allocated in coordinates.f90'; endif
-        if (allocated(d%hn)) then; allocate(c%hn(size(d%hn))); c%hn = d%hn
-        else; stop 'Error: d%hn not allocated in coordinates.f90'; endif
-        if (allocated(d%hc)) then; allocate(c%hc(size(d%hc))); c%hc = d%hc
-        else; stop 'Error: d%hc not allocated in coordinates.f90'; endif
-        if (allocated(d%dhn)) then; allocate(c%dhn(size(d%dhn))); c%dhn = d%dhn
-        else; stop 'Error: d%dhn not allocated in coordinates.f90'; endif
-        if (allocated(d%dhc)) then; allocate(c%dhc(size(d%dhc))); c%dhc = d%dhc
-        else; stop 'Error: d%dhc not allocated in coordinates.f90'; endif
+        if (.not.allocated(d%alpha)) stop 'Error: d%alpha not allocated in coordinates.f90'
+        if (.not.allocated(d%beta))  stop 'Error: d%beta  not allocated in coordinates.f90'
+        if (.not.allocated(d%hn))    stop 'Error: d%hn    not allocated in coordinates.f90'
+        if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
+        if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
+        if (.not.allocated(d%dhc))   stop 'Error: d%dhc   not allocated in coordinates.f90'
+        allocate(c%alpha(size(d%alpha))); c%alpha = d%alpha
+        allocate(c%beta(size(d%beta)));   c%beta  = d%beta
+        allocate(c%hn(size(d%hn)));       c%hn    = d%hn
+        allocate(c%hc(size(d%hc)));       c%hc    = d%hc
+        allocate(c%dhn(size(d%dhn)));     c%dhn   = d%dhn
+        allocate(c%dhc(size(d%dhc)));     c%dhc   = d%dhc
 
         call init(c%stagCC2N,d%stagCC2N)
         call init(c%stagN2CC,d%stagN2CC)
@@ -88,6 +90,8 @@
         call init(c%colCC_centered(1),d%colCC_centered(1))
         call init(c%colCC_centered(2),d%colCC_centered(2))
 
+        c%hc_e = d%hc_e
+        c%hn_e = d%hn_e
         c%dhc_e = d%dhc_e
         c%dhn_e = d%dhn_e
         c%sn = d%sn
@@ -99,6 +103,47 @@
       end subroutine
 
       subroutine initCoordinates(c,hn,sn)
+        ! Here is a picture how coordinates are initialized for different cases:
+        ! 
+        ! 
+        ! ----------------------------- 1) 1 interior cell  + 2 ghost (typical):
+        ! 
+        !         hn(1)     hn(2)     hn(3)     hn(4)
+        !          |-----------------------------|
+        !          |    .    |    .    |    .    |
+        !          |-----------------------------|
+        !          |   hc(1) |   hc(2) |   hc(3) |
+        !        amin       hmin      hmax      amax
+        ! 
+        ! ----------------------------- 2) 0 interior cells + 2 ghost:
+        ! * This case does need special initialization because it is a special case of 1).
+        ! 
+        !              hn(1)     hn(2)     hn(3)
+        !               |-------------------|
+        !               |    .    |    .    |
+        !               |-------------------|
+        !               |   hc(1) |   hc(2) |
+        !             amin    hmin,hmax      amax
+        ! 
+        ! ----------------------------- 3) 0 interior cells + 1 ghost:
+        ! 
+        !                 hn(1)        hn(2)
+        !                  |-------------|
+        !                  |      .      |
+        !                  |-------------|
+        !                  |     hc(1)   |
+        !              hmin,amin     hmax,amax
+        ! 
+        ! ----------------------------- 4) 0 interior cells + 0 ghost (infinitely thin plane):
+        ! 
+        !                    hn(1),hc(1)
+        !                         |
+        !                         .
+        !                         |
+        !                         |
+        !                hmin,amin,hmax,amax
+        ! 
+        ! ----------------------------- 
         implicit none
         type(coordinates),intent(inout) :: c
         integer,intent(in) :: sn
@@ -224,6 +269,10 @@
          ! Additional information
          c%dhMin = minval(c%dhn)
          c%dhMax = maxval(c%dhn)
+         c%amin = c%hn(1)
+         c%amax = c%hn(c%sn)
+         c%hn_e = c%hn(c%sn)
+         c%hc_e = c%hc(c%sc)
          if (c%sn.gt.2) then ! Typical init
            c%hmin = c%hn(2)
            c%hmax = c%hn(c%sn-1) ! To account for ghost node

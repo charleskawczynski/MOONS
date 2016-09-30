@@ -22,18 +22,22 @@
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
          type(dir_tree),intent(in) :: DT
-         ! call cube_uniform(m_mom)
-         ! call extend_cube_uniform(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
+         ! Uniform no walls
          ! call cube_uniform(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
+         ! Uniform with walls
+         call cube_uniform(m_mom)
+         call extend_cube_uniform(m_ind,m_mom)
+         call init(D_sigma,m_mom,m_ind)
+
+         ! non-uniform no walls
          ! call cube(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
+         ! non-uniform with walls
          ! call cube(m_mom)
          ! call extend_cube(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
@@ -42,8 +46,8 @@
          ! call flow_past_square(m_ind)
          ! call init(D_sigma,m_mom,m_ind)
 
-         call BC_sim_mom(m_mom,Ha)
-         call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+         ! call BC_sim_mom(m_mom,Ha)
+         ! call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
          ! call BC_sim_mom_proper_insulate(m_mom,Ha,DT)
          ! call BC_sim_ind_proper_insulate(m_ind,m_mom,D_sigma,DT,Ha,tw,include_vacuum)
 
@@ -61,7 +65,6 @@
          ! call init(m_ind,m_mom)
          ! call init(D_sigma,m_mom,m_ind)
 
-         ! call cube(m_mom)
          ! call LDC_2D_2domains_vertical_z(m_mom)
          ! call LDC_2D_2domains_horizontal_z(m_mom)
          ! call LDC_2D_4domains(m_mom)

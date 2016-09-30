@@ -1,7 +1,8 @@
 # ************* CLUSTER CONFIGURATION ******************
 CLUSTER = 'PC_CK'
 # CLUSTER = 'Workstation_CK'
-# CLUSTER = 'Hoffman2' # Before compile, run "module load gcc/4.9.3" in terminal
+# On Hoffman / DOE, run "module load gcc/4.9.3" in terminal before compile
+# CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
@@ -126,8 +127,9 @@ FC_DEBUG += -D_DEBUG_SF_
 FC_DEBUG += -D_DEBUG_VF_
 FC_DEBUG += -D_DEBUG_TF_
 
-# _DEBUG_COORDINATES_ is for rigorous mesh / stencil checking
+# These flags are for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
+# FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
 
 FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
@@ -241,7 +243,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
-	$(SRC_DIR)$(PS)directory$(PS)draw_DT.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
@@ -254,10 +255,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
 	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
-	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_parameters.f90\
-	$(SRC_DIR)$(PS)grid$(PS)coordinate_distribution_funcs.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_genHelper.f90\
-	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_param_match.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
