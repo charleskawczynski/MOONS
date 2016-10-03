@@ -116,31 +116,28 @@ endif
 
 # -O0 bad in cygwin generated gfortran
 FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
-
 # FC_DEBUG += -Wall -Wextra -fbacktrace
+
+# Suppress temporrary array warning:
+# FC_DEBUG += -Wno-array-temporaries
 FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
 
+# These flags are for rigorous mesh / stencil checking
+# FC_DEBUG += -D_DEBUG_COORDINATES_
+# FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
+# FC_DEBUG += -D_DEBUG_APPLY_STITCHES
+# FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_INTERNAL_BC_
 FC_DEBUG += -D_DEBUG_RF_
 FC_DEBUG += -D_DEBUG_SF_
 FC_DEBUG += -D_DEBUG_VF_
 FC_DEBUG += -D_DEBUG_TF_
-
-# These flags are for rigorous mesh / stencil checking
-# FC_DEBUG += -D_DEBUG_COORDINATES_
-# FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
-
 FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
 FC_DEBUG += -D_DEBUG_INTERP_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
-# FC_DEBUG += -D_DEBUG_APPLY_STITCHES
-# FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
-
-# Suppress temporrary array warning:
-# FC_DEBUG += -Wno-array-temporaries
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -g -O3
@@ -148,13 +145,16 @@ FC_OPTIMIZE += -D_PARALLELIZE_RF_
 FC_OPTIMIZE += -D_PARALLELIZE_SF_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
-FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
+# FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERNAL_BC_
-FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_RAW_
+FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
+FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_EDGES_RAW_
+# Corners are likely not worth it:
+# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_CORNERS_RAW_
 
 # FC_OPTIMIZE += mpif90
 # FC_OPTIMIZE += mpirun -np 4
@@ -176,9 +176,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -193,6 +193,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)domain\
 	$(SRC_DIR)$(PS)fields\
 	$(SRC_DIR)$(PS)fields$(PS)default\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
@@ -267,6 +268,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)edge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)RF$(PS)RF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
@@ -315,6 +320,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_implicit.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\

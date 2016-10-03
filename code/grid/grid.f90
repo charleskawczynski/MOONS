@@ -13,10 +13,12 @@
        public :: grid
        public :: init,delete,display,print,export,import ! Essentials
        public :: restrict,restrict_x,restrict_xy
+       ! public :: get_face,get_edge,get_corner
        public :: initProps,display_stitches
+       public :: snip,pop
 
 #ifdef _DEBUG_COORDINATES_
-      public :: checkGrid
+       public :: checkGrid
 #endif
 
        type grid
@@ -45,6 +47,9 @@
        interface restrict;           module procedure restrictGrid3;           end interface
        interface restrict_x;         module procedure restrictGrid_x;          end interface
        interface restrict_xy;        module procedure restrictGrid_xy;         end interface
+
+       interface snip;               module procedure snip_grid;               end interface
+       interface pop;                module procedure pop_grid;                end interface
 
 
        contains
@@ -212,6 +217,47 @@
          type(grid),intent(in) :: g
          call restrict(r%c(1),g%c(1))
          call restrict(r%c(2),g%c(2))
+       end subroutine
+
+       ! ------------------- restrict (for multigrid) --------------
+
+       ! subroutine get_face(g,g_in,face)
+       !   ! Removes all cells except for prescribed face
+       !   implicit none
+       !   type(grid),intent(inout) :: g
+       !   type(grid),intent(in) :: g_in
+       !   integer,intent(in) :: face
+       !   integer :: i,dir,s
+       !   call init(g,g_in)
+       !   select case (face)
+       !   case (1,2); dir = 1
+       !   case (3,4); dir = 2
+       !   case (5,6); dir = 3
+       !   case default; stop 'Error: face (1) must = 1:6 in get_face in grid.f90'
+       !   end select
+       !   ! The number of times that snip / pop are called
+       !   ! must be chosen carefully, this is just a test...
+       !   s = g%c(dir)%N
+       !   N = c%sc-2
+       !   select case (face)
+       !   case (1,3,5); do i=1,s; call snip(g,dir); enddo
+       !   case (2,4,6); do i=1,s; call  pop(g,dir); enddo
+       !   case default; stop 'Error: face (2) must = 1:6 in get_face in grid.f90'
+       !   end select
+       ! end subroutine
+
+       subroutine pop_grid(g,dir) ! Removes the last index from the grid
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call pop(g%c(dir))
+       end subroutine
+
+       subroutine snip_grid(g,dir) ! Removes the first index from the grid
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call snip(g%c(dir))
        end subroutine
 
        ! ---------------------------------------------- check grid

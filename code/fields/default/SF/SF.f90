@@ -54,7 +54,6 @@
         public :: dot_product
 
         ! Monitoring
-        public :: print_physical
         public :: print_BCs
         public :: export_BCs
 
@@ -117,7 +116,6 @@
         interface init_BC_props;       module procedure init_BC_props_SF;       end interface
         interface init_BC_mesh;        module procedure init_BC_mesh_SF;        end interface
 
-        interface print_physical;      module procedure print_physical_SF;      end interface
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
 
@@ -785,13 +783,6 @@
          end select
          x_mean = temp/m%g(t)%c(dir)%maxRange
        end function
-
-        subroutine print_physical_SF(f)
-          implicit none
-          type(SF),intent(in) :: f
-          integer :: i
-          do i=1,f%s; call print_physical(f%RF(i)); enddo
-        end subroutine
 
         subroutine print_BCs_SF(f,name)
           implicit none

@@ -6,7 +6,7 @@
        private
        public :: overlap
        public :: init,delete,display,print,export,import ! Essentials
-       public :: is_overlap,inside
+       public :: is_overlap,inside,init_props
 
        interface init;          module procedure init_overlap;              end interface
        interface init;          module procedure init_copy_overlap;         end interface
@@ -19,6 +19,7 @@
        interface is_overlap;    module procedure is_overlap_real;           end interface
        interface is_overlap;    module procedure is_overlap_coordinates;    end interface
        interface inside;        module procedure inside_OL;                 end interface
+       interface init_props;    module procedure init_props_OL;             end interface
 
        type overlap
          ! i1(1) and i1(2) are indexes for start and end of overlapping region 1
@@ -30,6 +31,7 @@
          !     |-------------R2---------------|
          !                           i2(2)     i2(2)
          integer,dimension(2) :: i1,i2
+         integer :: iR                 ! = i1(2)-i1(1)+1 = i2(2)-i2(1)+1 (range of indexes)
        end type
 
        contains
@@ -40,6 +42,7 @@
          integer,dimension(2),intent(in) :: i1,i2
          OL%i1 = i1
          OL%i2 = i2
+         call init_props(OL)
        end subroutine
 
        subroutine init_copy_overlap(a,b)
@@ -48,6 +51,13 @@
          type(overlap),intent(in) :: b
          a%i1 = b%i1
          a%i2 = b%i2
+         a%iR = b%iR
+       end subroutine
+
+       subroutine init_props_OL(OL)
+         implicit none
+         type(overlap),intent(inout) :: OL
+         OL%iR = OL%i1(2) - OL%i1(1) + 1
        end subroutine
 
        subroutine delete_overlap(OL)
@@ -55,6 +65,7 @@
          type(overlap),intent(inout) :: OL
          OL%i1 = 0
          OL%i2 = 0
+         OL%iR = 0
        end subroutine
 
        subroutine print_overlap(OL)
@@ -69,6 +80,7 @@
          integer,intent(in) :: u
          write(u,*) 'i1 = ',OL%i1
          write(u,*) 'i2 = ',OL%i2
+         write(u,*) 'iR = ',OL%iR
        end subroutine
 
        subroutine export_overlap(OL,u)
@@ -77,6 +89,7 @@
          integer,intent(in) :: u
          write(u,*) 'i1'; write(u,*) OL%i1
          write(u,*) 'i2'; write(u,*) OL%i2
+         write(u,*) 'iR'; write(u,*) OL%iR
        end subroutine
 
        subroutine import_overlap(OL,u)
@@ -85,6 +98,7 @@
          integer,intent(in) :: u
          read(u,*) ; read(u,*) OL%i1
          read(u,*) ; read(u,*) OL%i2
+         read(u,*) ; read(u,*) OL%iR
        end subroutine
 
        function is_overlap_coordinates(R1,R2,tol) result(L)

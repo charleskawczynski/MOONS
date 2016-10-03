@@ -81,7 +81,7 @@
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
 #ifdef _DEBUG_APPLY_BCS_
-       call check_defined(U,m)
+       call check_defined(U)
 #endif
          if (m%s.gt.1) call apply_stitches_faces(U,m)
          if (m%s.gt.1) call apply_stitches_edges(U,m)

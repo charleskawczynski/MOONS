@@ -11,12 +11,11 @@
 
        contains
 
-       subroutine check_defined(U,m)
+       subroutine check_defined(U)
          implicit none
          type(SF),intent(in) :: U
-         type(mesh),intent(in) :: m
          integer :: i,k
-         do i=1,m%s
+         do i=1,U%s
            do k=1,6
              if (.not.U%RF(i)%b%f(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo

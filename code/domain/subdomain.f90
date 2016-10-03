@@ -60,6 +60,10 @@
            do i=1,3; call define_NI(SD,g_R1%c(i),g_R2%c(i),i,tol); enddo
            SD%g_R1_id = g_R1_id
            SD%g_R2_id = g_R2_id
+           do i=1,3; call init_props(SD%CE(i)); enddo
+           do i=1,3; call init_props(SD%CI(i)); enddo
+           do i=1,3; call init_props(SD%NB(i)); enddo
+           do i=1,3; call init_props(SD%NI(i)); enddo
          endif
        end subroutine
 

@@ -31,6 +31,9 @@
        interface preMirror;   module procedure prepMirrorGrid;     end interface
        interface appMirror;   module procedure appMirrorGrid;      end interface
 
+       interface pop;         module procedure pop_gridGenerator;  end interface
+       interface snip;        module procedure snip_gridGenerator; end interface
+
        contains
 
        subroutine initGridGen(gg,h,dir)
@@ -204,36 +207,20 @@
        ! ********************************************************************
        ! ********************************************************************
 
-       subroutine pop(gg,dir)
+       subroutine pop_gridGenerator(gg,dir)
          ! Removes the last index from the grid
          implicit none
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: temp
-         integer :: i,s
-         s = gg%g%c(dir)%sn
-         allocate(temp(s-1))
-         do i=1,s-1
-          temp(i) = gg%g%c(dir)%hn(i)
-         enddo
-         call init(gg%g,temp,dir)
-         deallocate(temp)
+         call pop(gg%g,dir)
        end subroutine
 
-       subroutine snip(gg,dir)
+       subroutine snip_gridGenerator(gg,dir)
          ! Removes the first index from the grid
          implicit none
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: temp
-         integer :: i,s
-         s = gg%g%c(dir)%sn
-         allocate(temp(s-1))
-         do i=2,s
-          temp(i-1) = gg%g%c(dir)%hn(i)
-         enddo
-         call init(gg%g,temp,dir)
-         deallocate(temp)
+         call snip(gg%g,dir)
        end subroutine
 
        subroutine get_boundary_face(gg,face)

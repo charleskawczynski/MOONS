@@ -50,7 +50,6 @@
         public :: init_BCs
 
         ! Monitoring
-        public :: print_physical
 
         ! Operators
         public :: assign,assign_negative
@@ -125,7 +124,6 @@
 
         interface square;                   module procedure square_RF;              end interface
         interface swap;                     module procedure swap_RF;                end interface
-        interface print_physical;           module procedure print_physical_RF;      end interface
         interface min;                      module procedure min_RF;                 end interface
         interface max;                      module procedure max_RF;                 end interface
         interface min;                      module procedure min_pad_RF;             end interface
@@ -1114,18 +1112,6 @@
             call init(f%b,0.5_cp*(f%f(:,:,f%s(3))+f%f(:,:,f%s(3)-1)),6)
           else
             stop 'Error: field-based BC init is only available for N / CC data.'
-          endif
-        end subroutine
-
-        subroutine print_physical_RF(a)
-          implicit none
-          type(realField),intent(in) :: a
-          integer :: i,j,k
-          if (allocated(a%f)) then
-            write(*,*) 'shape(f) = ',a%s
-            do k=2,a%s(3)-1; do j=2,a%s(2)-1; do i=2,a%s(1)-1
-              write(*,'(A4,I1,A,I1,A,I1,A4,1F20.10)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
-            enddo; enddo; enddo
           endif
         end subroutine
 

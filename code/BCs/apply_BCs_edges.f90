@@ -75,6 +75,7 @@
        ! 
        ! 
        use current_precision_mod
+       use apply_BCs_edges_raw_mod
        use coordinates_mod
        use RF_mod
        use SF_mod

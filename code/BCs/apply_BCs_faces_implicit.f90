@@ -35,7 +35,7 @@
          type(mesh),intent(in) :: m
          integer :: k
 #ifdef _DEBUG_APPLY_BCS_
-       call check_defined(U,m)
+       call check_defined(U)
 #endif
          do k = 3,6; call apply_face(U,m,k); enddo
          call apply_face(U,m,1)

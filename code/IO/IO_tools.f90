@@ -85,9 +85,9 @@
         call check_file_open(dir,name,'close_and_message')
 #endif
         close(un)
-        ! #ifndef _OPTIMIZE_IO_TOOLS_
+#ifndef _OPTIMIZE_IO_TOOLS_
         write(*,*) '+++ Closed file ' // dir // name
-        ! #endif
+#endif
       end subroutine
 
       ! **************************** REWIND ****************************

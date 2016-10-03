@@ -15,6 +15,7 @@
 
       ! For multi-grid
       public :: restrict
+      public :: pop,snip
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkCoordinates
@@ -54,6 +55,9 @@
       interface restrict;          module procedure restrictCoordinates;    end interface
       interface stitch_stencils;   module procedure stitch_stencils_c;      end interface
       interface init_stencils;     module procedure init_stencils_c;        end interface ! Private
+
+      interface pop;               module procedure pop_coordinates;        end interface
+      interface snip;              module procedure snip_coordinates;       end interface
       
       contains
 
@@ -682,6 +686,30 @@
           endif
         else; call init(r,c) ! return c
         endif
+      end subroutine
+
+      ! *****************************************************************
+      ! ********************* POP / SNIP ROUTINES ***********************
+      ! *****************************************************************
+
+      subroutine snip_coordinates(c) ! Removes the first index from the coordinates
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(coordinates) :: temp
+        if (c%sn.eq.1) stop 'Error: no nodes to snip in snip_coordinates in coordinates.f90'
+        call init(temp,c%hn(2:c%sn-1),c%sn-1)
+        call init(c,temp%hn,temp%sn)
+        call delete(temp)
+      end subroutine
+
+      subroutine pop_coordinates(c) ! Removes the last index from the coordinates
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(coordinates) :: temp
+        if (c%sn.eq.1) stop 'Error: no nodes to snip in pop_coordinates in coordinates.f90'
+        call init(temp,c%hn(1:c%sn-1),c%sn-1)
+        call init(c,temp%hn,temp%sn)
+        call delete(temp)
       end subroutine
 
       ! *****************************************************************
