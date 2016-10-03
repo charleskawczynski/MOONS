@@ -176,15 +176,16 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
 # **************** INCLUDE PATHS ********************
 VPATH =\
 	$(TARGET_DIR)\
+	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
 	$(SRC_DIR)$(PS)clock\
 	$(SRC_DIR)$(PS)convergence_rate\
@@ -282,6 +283,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
+	$(SRC_DIR)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\

@@ -143,11 +143,11 @@
          real(cp),dimension(:,:),intent(inout) :: ug
          real(cp),dimension(:,:),intent(in) :: ui,ui_opp
          type(bctype),intent(in) :: b
-         if     (b%Dirichlet) then; ug = - ui
-         elseif (b%Neumann) then;   ug = ui
-         elseif (b%Periodic) then;  ug = ui_opp ! Might need to be zero
-         ! elseif (b%Periodic) then;  ug = 0.0_cp ! Might need to be zero, needs careful testing.
-         elseif (b%Robin) then; ug = -ui
+         if     (is_Dirichlet(b)) then; ug = - ui
+         elseif (is_Neumann(b)) then;   ug = ui
+         elseif (is_Periodic(b)) then;  ug = ui_opp ! Might need to be zero
+         ! elseif (is_Periodic(b)) then;  ug = 0.0_cp ! Might need to be zero, needs careful testing.
+         elseif (is_Robin(b)) then; ug = -ui
          else; stop 'Error: Bad bctype! Caught in app_CC_imp in apply_BCs_faces_imp.f90'
          endif
        end subroutine
@@ -157,9 +157,9 @@
          real(cp),dimension(:,:),intent(inout) :: ug,ub
          real(cp),dimension(:,:),intent(in) :: ui,ui_opp
          type(bctype),intent(in) :: b
-         if     (b%Dirichlet) then; ub = 0.0_cp; ug = - ui
-         elseif (b%Neumann) then;   ug = ub ! implied 0 Neumann, needs mod for non-zero Neumann
-         elseif (b%Periodic) then;  ug = ui_opp
+         if     (is_Dirichlet(b)) then; ub = 0.0_cp; ug = - ui
+         elseif (is_Neumann(b)) then;   ug = ub ! implied 0 Neumann, needs mod for non-zero Neumann
+         elseif (is_Periodic(b)) then;  ug = ui_opp
          else; stop 'Error: Bad bctype! Caught in app_N_imp in apply_BCs_faces_imp.f90'
          endif
        end subroutine

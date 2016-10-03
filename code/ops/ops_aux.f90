@@ -31,6 +31,7 @@
        ! 
        ! 
        use current_precision_mod
+       use bctype_mod
        use ops_del_mod
        use grid_mod
        use mesh_mod
@@ -662,25 +663,25 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%GF(i)%b%f(1)%b%Neumann).and.(.not.f%GF(i)%b%f(1)%b%periodic)
+             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.is_Neumann(f%GF(i)%b%f(1)%b)).and.(.not.is_periodic(f%GF(i)%b%f(1)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,1)
-             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%GF(i)%b%f(2)%b%Neumann).and.(.not.f%GF(i)%b%f(2)%b%periodic)
+             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.is_Neumann(f%GF(i)%b%f(2)%b)).and.(.not.is_periodic(f%GF(i)%b%f(2)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%GF(i)%b%f(3)%b%Neumann).and.(.not.f%GF(i)%b%f(3)%b%periodic)
+             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.is_Neumann(f%GF(i)%b%f(3)%b)).and.(.not.is_periodic(f%GF(i)%b%f(3)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,3)
-             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%GF(i)%b%f(4)%b%Neumann).and.(.not.f%GF(i)%b%f(4)%b%periodic)
+             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.is_Neumann(f%GF(i)%b%f(4)%b)).and.(.not.is_periodic(f%GF(i)%b%f(4)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%GF(i)%b%f(5)%b%Neumann).and.(.not.f%GF(i)%b%f(5)%b%periodic)
+             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.is_Neumann(f%GF(i)%b%f(5)%b)).and.(.not.is_periodic(f%GF(i)%b%f(5)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,5)
-             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%GF(i)%b%f(6)%b%Neumann).and.(.not.f%GF(i)%b%f(6)%b%periodic)
+             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.is_Neumann(f%GF(i)%b%f(6)%b)).and.(.not.is_periodic(f%GF(i)%b%f(6)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,6)
            enddo
          endif
@@ -697,25 +698,25 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%GF(i)%b%f(1)%b%Neumann).and.(.not.u%GF(i)%b%f(1)%b%periodic)
+             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.is_Neumann(u%GF(i)%b%f(1)%b)).and.(.not.is_periodic(u%GF(i)%b%f(1)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,1)
-             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%GF(i)%b%f(2)%b%Neumann).and.(.not.u%GF(i)%b%f(2)%b%periodic)
+             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.is_Neumann(u%GF(i)%b%f(2)%b)).and.(.not.is_periodic(u%GF(i)%b%f(2)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%GF(i)%b%f(3)%b%Neumann).and.(.not.u%GF(i)%b%f(3)%b%periodic)
+             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.is_Neumann(u%GF(i)%b%f(3)%b)).and.(.not.is_periodic(u%GF(i)%b%f(3)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,3)
-             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%GF(i)%b%f(4)%b%Neumann).and.(.not.u%GF(i)%b%f(4)%b%periodic)
+             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.is_Neumann(u%GF(i)%b%f(4)%b)).and.(.not.is_periodic(u%GF(i)%b%f(4)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%GF(i)%b%f(5)%b%Neumann).and.(.not.u%GF(i)%b%f(5)%b%periodic)
+             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.is_Neumann(u%GF(i)%b%f(5)%b)).and.(.not.is_periodic(u%GF(i)%b%f(5)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,5)
-             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%GF(i)%b%f(6)%b%Neumann).and.(.not.u%GF(i)%b%f(6)%b%periodic)
+             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.is_Neumann(u%GF(i)%b%f(6)%b)).and.(.not.is_periodic(u%GF(i)%b%f(6)%b))
              if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,6)
            enddo
          endif

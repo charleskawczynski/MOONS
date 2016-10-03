@@ -6,10 +6,19 @@
        public :: bctype
        public :: init,delete,display,print,export,import ! Essentials
 
-       public :: init_Dirichlet,init_Neumann,init_Robin,init_Periodic,init_symmetric,init_antisymmetric
+       public :: init_Dirichlet,     is_Dirichlet
+       public :: init_Neumann,       is_Neumann
+       public :: init_Robin,         is_Robin
+       public :: init_Periodic,      is_Periodic
+       public :: init_symmetric,     is_symmetric
+       public :: init_antisymmetric, is_antisymmetric
+       public :: is_defined
+
+       public :: get_mean_value
        public :: display_type,display_meanVal,get_bctype
 
        type bctype
+         private
          logical :: Dirichlet
          logical :: Neumann
          logical :: Robin
@@ -37,8 +46,18 @@
        interface init_symmetric;      module procedure init_symmetric_b;       end interface
        interface init_antisymmetric;  module procedure init_antisymmetric_b;   end interface
 
+       interface is_Dirichlet;        module procedure get_Dirichlet_b;        end interface
+       interface is_Neumann;          module procedure get_Neumann_b;          end interface
+       interface is_Robin;            module procedure get_Robin_b;            end interface
+       interface is_Periodic;         module procedure get_Periodic_b;         end interface
+       interface is_symmetric;        module procedure get_symmetric_b;        end interface
+       interface is_antisymmetric;    module procedure get_antisymmetric_b;    end interface
+
        interface display_type;        module procedure display_bctype_T_only;  end interface
        interface display_meanVal;     module procedure display_bctype_MV_only; end interface
+
+       interface is_defined;          module procedure is_defined_BCT;         end interface
+       interface get_mean_value;      module procedure get_mean_value_BCT;     end interface
 
        contains
 
@@ -94,37 +113,37 @@
          b%defined = .false.
        end subroutine
 
-       subroutine display_bctype(b,NewU)
+       subroutine display_bctype(b,un)
          implicit none
          type(bctype),intent(in) :: b
-         integer,intent(in) :: NewU
+         integer,intent(in) :: un
          logical :: L
          L = .false. ! show all regardless
 
          if (.not.b%defined) then 
-           write(newU,*) 'defined = ',b%defined
+           write(un,*) 'defined = ',b%defined
            stop 'Error: trying to export bctype before fully defined in bctype.f90'
          endif
          if (L) then
-           write(newU,*) 'Dirichlet = ',b%Dirichlet
-           write(newU,*) 'Neumann = ',b%Neumann
-           write(newU,*) 'Robin = ',b%Robin
-           write(newU,*) 'Periodic = ',b%Periodic
-           write(newU,*) 'Symmetric = ',b%symmetric
-           write(newU,*) 'Antisymmetric = ',b%antisymmetric
+           write(un,*) 'Dirichlet = ',b%Dirichlet
+           write(un,*) 'Neumann = ',b%Neumann
+           write(un,*) 'Robin = ',b%Robin
+           write(un,*) 'Periodic = ',b%Periodic
+           write(un,*) 'Symmetric = ',b%symmetric
+           write(un,*) 'Antisymmetric = ',b%antisymmetric
          else
-           ! if (b%Dirichlet)     write(newU,*) 'Dirichlet'
-           ! if (b%Neumann)       write(newU,*) 'Neumann'
-           ! if (b%Periodic)      write(newU,*) 'Periodic'
-           ! if (b%symmetric)     write(newU,*) 'Symmetric'
-           ! if (b%antisymmetric) write(newU,*) 'Antisymmetric'
+           ! if (b%Dirichlet)     write(un,*) 'Dirichlet'
+           ! if (b%Neumann)       write(un,*) 'Neumann'
+           ! if (b%Periodic)      write(un,*) 'Periodic'
+           ! if (b%symmetric)     write(un,*) 'Symmetric'
+           ! if (b%antisymmetric) write(un,*) 'Antisymmetric'
 
-           write(newU,'(A,T1)',advance='no') get_bctype(b)
+           write(un,'(A,T1)',advance='no') get_bctype(b)
          endif
 
-         write(newU,'(F5.2)',advance='no') b%meanVal
-         ! write(newU,*) 'meanVal = ',b%meanVal
-         ! write(newU,*) 'defined = ',b%defined
+         write(un,'(F5.2)',advance='no') b%meanVal
+         ! write(un,*) 'meanVal = ',b%meanVal
+         ! write(un,*) 'defined = ',b%defined
        end subroutine
 
        subroutine print_bctype(b)
@@ -196,6 +215,43 @@
          call delete(b); b%antisymmetric = .true.; b%defined = .true.
        end subroutine
 
+       function get_Dirichlet_b(b) result(L)
+         implicit none
+         type(bctype),intent(in) :: b
+         logical :: L
+         L = b%Dirichlet
+       end function
+       function get_Neumann_b(b) result(L)
+         implicit none
+         type(bctype),intent(in) :: b
+         logical :: L
+         L = b%Neumann
+       end function
+       function get_Robin_b(b) result(L)
+         implicit none
+         type(bctype),intent(in) :: b
+         logical :: L
+         L = b%Robin
+       end function
+       function get_Periodic_b(b) result(L)
+         implicit none
+         type(bctype),intent(in) :: b
+         logical :: L
+         L = b%Periodic
+       end function
+       function get_symmetric_b(b) result(L)
+         implicit none
+         type(bctype),intent(in) :: b
+         logical :: L
+         L = b%symmetric
+       end function
+       function get_antisymmetric_b(b) result(L)
+         implicit none
+         type(bctype),intent(in) :: b
+         logical :: L
+         L = b%antisymmetric
+       end function
+
        function get_bctype(b) result(BCT)
          implicit none
          type(bctype),intent(in) :: b
@@ -210,20 +266,34 @@
          if (b%antisymmetric) BCT = 'A'
        end function
 
-       subroutine display_bctype_T_only(b,NewU)
+       subroutine display_bctype_T_only(b,un)
          implicit none
          type(bctype),intent(in) :: b
-         integer,intent(in) :: NewU
+         integer,intent(in) :: un
          if (.not.b%defined) stop 'Error: trying to export bctype (T only) before fully defined in bctype.f90'
-         write(newU,'(A,T1)',advance='no') get_bctype(b)
+         write(un,'(A,T1)',advance='no') get_bctype(b)
        end subroutine
 
-       subroutine display_bctype_MV_only(b,NewU)
+       subroutine display_bctype_MV_only(b,un)
          implicit none
          type(bctype),intent(in) :: b
-         integer,intent(in) :: NewU
+         integer,intent(in) :: un
          if (.not.b%defined) stop 'Error: trying to export bctype (MV only) before fully defined in bctype.f90'
-         write(newU,'(F19.10)',advance='no') b%meanVal
+         write(un,'(F19.10)',advance='no') b%meanVal
        end subroutine
+
+       function get_mean_value_BCT(BCT) result(MV)
+        implicit none
+        type(bctype),intent(in) :: BCT
+        real(cp) :: MV
+        MV = BCT%meanVal
+       end function
+
+       function is_defined_BCT(BCT) result(L)
+        implicit none
+        type(bctype),intent(in) :: BCT
+        logical :: L
+        L = BCT%defined
+       end function
 
        end module

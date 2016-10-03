@@ -182,29 +182,29 @@
          call define_logicals(BC)
        end subroutine
 
-       subroutine display_BCs(BC,newU)
+       subroutine display_BCs(BC,un)
          implicit none
          type(BCs),intent(in) :: BC
-         integer,intent(in) :: NewU
+         integer,intent(in) :: un
          integer :: i,col_width,precision
-         ! write(newU,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
-         ! write(newU,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
-         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
-         ! write(newU,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
-         ! write(newU,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
+         ! write(un,*) 'Faces  : {xmin,xmax,ymin,ymax,zmin,zmax}'
+         ! write(un,*) 'Edges  : {minmin,minmax,maxmin,maxmax} (x: y-z)'
+         ! write(un,*) '       : {minmin,minmax,maxmin,maxmax} (y: x-z)'
+         ! write(un,*) '       : {minmin,minmax,maxmin,maxmax} (z: x-y)'
+         ! write(un,*) 'Corners: {min(x,y,z), max(x,y,z), min(y,z)/max(x)}'
          if (BC%defined) then
            precision = 4; col_width = 10
-           call export_table('Faces   :',(/(i,i=1,6)/),col_width,newU)
-           call export_table('Type    :',(/(get_bctype(BC%f(i)%b),i=1,6)/),col_width,newU)
-           call export_table('meanVal :',(/(BC%f(i)%b%meanVal,i=1,6)/),col_width,precision,newU)
+           call export_table('Faces   :',(/(i,i=1,6)/),col_width,un)
+           call export_table('Type    :',(/(get_bctype(BC%f(i)%b),i=1,6)/),col_width,un)
+           call export_table('meanVal :',(/(get_mean_value(BC%f(i)%b),i=1,6)/),col_width,precision,un)
            precision = 1; col_width = 5
-           call export_table('Edges   :',(/(i,i=1,12)/),col_width,newU)
-           call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
-           call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
+           call export_table('Edges   :',(/(i,i=1,12)/),col_width,un)
+           call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,un)
+           call export_table('meanVal :',(/(get_mean_value(BC%e(i)%b),i=1,12)/),col_width,precision,un)
            ! col_width = 10
-           ! call export_table('Corners :',(/(i,i=1,12)/),col_width,newU)
-           ! call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,newU)
-           ! call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,newU)
+           ! call export_table('Corners :',(/(i,i=1,12)/),col_width,un)
+           ! call export_table('Type    :',(/(get_bctype(BC%e(i)%b),i=1,12)/),col_width,un)
+           ! call export_table('meanVal :',(/(BC%e(i)%b%meanVal,i=1,12)/),col_width,precision,un)
          endif
        end subroutine
 
@@ -428,19 +428,19 @@
          L(3) = all((/BC%gridDefined,(BC%c(i)%defined,i=1,8)/))
          BC%defined = all(L)
 
-         L(1) = all((/(BC%f(i)%b%Dirichlet,i=1,6)/))
-         L(2) = all((/(BC%e(i)%b%Dirichlet,i=1,12)/))
-         L(3) = all((/(BC%c(i)%b%Dirichlet,i=1,8)/))
+         L(1) = all((/(is_Dirichlet(BC%f(i)%b),i=1,6)/))
+         L(2) = all((/(is_Dirichlet(BC%e(i)%b),i=1,12)/))
+         L(3) = all((/(is_Dirichlet(BC%c(i)%b),i=1,8)/))
          BC%all_Dirichlet = all(L)
 
-         L(1) = all((/(BC%f(i)%b%Robin,i=1,6)/))
-         L(2) = all((/(BC%e(i)%b%Robin,i=1,12)/))
-         L(3) = all((/(BC%c(i)%b%Robin,i=1,8)/))
+         L(1) = all((/(is_Robin(BC%f(i)%b),i=1,6)/))
+         L(2) = all((/(is_Robin(BC%e(i)%b),i=1,12)/))
+         L(3) = all((/(is_Robin(BC%c(i)%b),i=1,8)/))
          BC%all_Robin = all(L)
 
-         L(1) = all((/(BC%f(i)%b%Neumann,i=1,6)/))
-         L(2) = all((/(BC%e(i)%b%Neumann,i=1,12)/))
-         L(3) = all((/(BC%c(i)%b%Neumann,i=1,8)/))
+         L(1) = all((/(is_Neumann(BC%f(i)%b),i=1,6)/))
+         L(2) = all((/(is_Neumann(BC%e(i)%b),i=1,12)/))
+         L(3) = all((/(is_Neumann(BC%c(i)%b),i=1,8)/))
          BC%all_Neumann = all(L)
        end subroutine
 

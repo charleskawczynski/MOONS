@@ -148,10 +148,10 @@
          call check_dimensions(ug,bvals)
          call check_dimensions(ui,bvals)
 #endif
-         if     (b%Dirichlet) then; call apply_Dirichlet_C(ug,ui,bvals,x,y,p)
-         elseif (b%Neumann) then;   call apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
-         elseif (b%Periodic) then;  call apply_Periodic_C(ug,ui_opp,x,y,p)
-         elseif (b%Robin) then;     call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
+         if     (is_Dirichlet(b)) then; call apply_Dirichlet_C(ug,ui,bvals,x,y,p)
+         elseif (is_Neumann(b)) then;   call apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
+         elseif (is_Periodic(b)) then;  call apply_Periodic_C(ug,ui_opp,x,y,p)
+         elseif (is_Robin(b)) then;     call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
          else; stop 'Error: Bad bctype! Caught in app_CC in apply_BCs_faces.f90'
          endif
        end subroutine
@@ -167,9 +167,9 @@
          call check_dimensions(ub,bvals)
          call check_dimensions(ui,bvals)
 #endif
-         if     (b%Dirichlet) then; call apply_Dirichlet_N(ug,ub,ui,bvals,x,y,p)
-         elseif (b%Neumann) then;   call apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
-         elseif (b%Periodic) then;  call apply_Periodic_N(ug,ui_opp,x,y,p)
+         if     (is_Dirichlet(b)) then; call apply_Dirichlet_N(ug,ub,ui,bvals,x,y,p)
+         elseif (is_Neumann(b)) then;   call apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
+         elseif (is_Periodic(b)) then;  call apply_Periodic_N(ug,ui_opp,x,y,p)
          else; stop 'Error: Bad bctype! Caught in app_N in apply_BCs_faces.f90'
          endif
        end subroutine

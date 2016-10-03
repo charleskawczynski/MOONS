@@ -1,31 +1,4 @@
       module SF_mod
-        ! Naming convention: name = operation_type1_type2
-        ! 
-        !      SF = type(SF)
-        !      R  = real(cp),dimension(:,:,:)
-        !      S  = real(cp)
-        ! 
-        ! Example(1): Adding a scalar to SF
-        !             name = add_SF_S
-        ! Example(2): Subtracting a real field from SF
-        !             name = subtract_SF_R
-        ! Example(3): Subtracting a SF from a real field
-        !             name = subtract_R_SF
-        ! 
-        ! NOTES: SF stands for 'real field'
-        ! 
-        ! Rules:
-        ! a = a + b => call add(a,b)
-        ! a = a - b => call subtract(a,b)
-        ! a = a * b => call multiply(a,b)
-        ! a = a / b => call divide(a,b)
-        ! a = b / a => call divide(b,a)
-        ! OR
-        ! c = a + b => call add(c,a,b)
-        ! c = a - b => call subtract(c,a,b)
-        ! c = a * b => call multiply(c,a,b)
-        ! c = a / b => call divide(c,a,b)
-        ! c = b / a => call divide(c,b,a)
         use current_precision_mod
         use IO_tools_mod
         use mesh_mod

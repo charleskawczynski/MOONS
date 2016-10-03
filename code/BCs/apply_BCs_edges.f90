@@ -90,9 +90,6 @@
        private
        public :: apply_BCs_edges
 
-
-
-
        interface apply_BCs_edges;       module procedure apply_BCs_edges_VF;     end interface
        interface apply_BCs_edges;       module procedure apply_BCs_edges_SF;     end interface
 
@@ -131,8 +128,8 @@
          integer,intent(in) :: e
          logical,dimension(2) :: L1,L2
          logical :: L
-         L1(1) = GF%b%f(f(1))%b%Dirichlet.and.(.not.g%st_faces(f(1))%TF).and.(.not.GF%b%f(f(2))%b%periodic)
-         L1(2) = GF%b%f(f(2))%b%Dirichlet.and.(.not.g%st_faces(f(2))%TF).and.(.not.GF%b%f(f(1))%b%periodic)
+         L1(1) = is_Dirichlet(GF%b%f(f(1))%b).and.(.not.g%st_faces(f(1))%TF).and.(.not.is_periodic(GF%b%f(f(2))%b))
+         L1(2) = is_Dirichlet(GF%b%f(f(2))%b).and.(.not.g%st_faces(f(2))%TF).and.(.not.is_periodic(GF%b%f(f(1))%b))
          L2(1) = g%st_faces(f(1))%TF.and.g%st_faces(f(2))%TF
          L2(2) = .not.g%st_edges(e)%TF
          L = any(L1).or.all(L2)
@@ -597,8 +594,8 @@
          real(cp),dimension(:),intent(in) :: bvals,ui,ug1,ug2
          real(cp),dimension(2),intent(in) :: dh
          type(bctype),intent(in) :: bct
-         if (bct%Dirichlet) then;   ug = 4.0_cp*bvals - (ui + ug1 + ug2)
-         elseif (bct%Neumann) then; 
+         if (is_Dirichlet(bct)) then;   ug = 4.0_cp*bvals - (ui + ug1 + ug2)
+         elseif (is_Neumann(bct)) then; 
          ug = (ug1*dh(1) + ug2*dh(2))/(dh(1)+dh(2)) ! (hard coded zero)
          else; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
          endif
@@ -611,8 +608,8 @@
          real(cp),dimension(:),intent(in) :: bvals,ui1,ui2
          real(cp),dimension(2),intent(in) :: dh ! needed for non-zero Neumann
          type(bctype),intent(in) :: bct
-         if (bct%Dirichlet) then;   ub = bvals
-         elseif (bct%Neumann) then; 
+         if (is_Dirichlet(bct)) then;   ub = bvals
+         elseif (is_Neumann(bct)) then; 
            ug1 = ui1 - 2.0_cp*dh(1)*bvals
            ug2 = ui2 - 2.0_cp*dh(2)*bvals
          else; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'
@@ -626,8 +623,8 @@
          real(cp),dimension(:),intent(in) :: ui,bvals
          real(cp),intent(in) :: dh
          type(bctype),intent(in) :: bct
-         if (bct%Dirichlet) then;   ug = 2.0_cp*bvals - ui
-         elseif (bct%Neumann) then; ug = ui + dh*bvals
+         if (is_Dirichlet(bct)) then;   ug = 2.0_cp*bvals - ui
+         elseif (is_Neumann(bct)) then; ug = ui + dh*bvals
          else; stop 'Error: Bad bctype! Caught in a_F in apply_BCs_edges.f90'
          endif
        end subroutine

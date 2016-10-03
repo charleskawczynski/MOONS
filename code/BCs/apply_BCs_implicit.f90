@@ -14,8 +14,6 @@
        private
        public :: apply_BCs_implicit
 
-
-
        interface apply_BCs_implicit;  module procedure apply_BCs_implicit_VF;   end interface
        interface apply_BCs_implicit;  module procedure apply_BCs_implicit_SF;   end interface
 

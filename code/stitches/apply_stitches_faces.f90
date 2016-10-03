@@ -2,6 +2,7 @@
        use current_precision_mod
        use face_edge_corner_indexing_mod
        ! use export_raw_processed_mod
+       use bctype_mod
        use GF_mod
        use SF_mod
        use VF_mod
@@ -61,29 +62,29 @@
 
          d = dir_given_face(fa(1))
          L(1) = m%g(i)%st_faces(fa(1))%TF.and.m%g(j)%st_faces(fa(1))%TF
-         L(2) = .not.m%g(i)%st_faces(fa(1))%TF.and.U%GF(i)%b%f(fa(1))%b%Neumann
-         L(3) = .not.m%g(j)%st_faces(fa(1))%TF.and.U%GF(j)%b%f(fa(1))%b%Neumann
+         L(2) = .not.m%g(i)%st_faces(fa(1))%TF.and.is_Neumann(U%GF(i)%b%f(fa(1))%b)
+         L(3) = .not.m%g(j)%st_faces(fa(1))%TF.and.is_Neumann(U%GF(j)%b%f(fa(1))%b)
          if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) a(d) = a(d)-1
          ! if (L(2).and.L(3)) a(d) = 1
 
          d = dir_given_face(fa(2))
          L(1) = m%g(i)%st_faces(fa(2))%TF.and.m%g(j)%st_faces(fa(2))%TF
-         L(2) = .not.m%g(i)%st_faces(fa(2))%TF.and.U%GF(i)%b%f(fa(2))%b%Neumann
-         L(3) = .not.m%g(j)%st_faces(fa(2))%TF.and.U%GF(j)%b%f(fa(2))%b%Neumann
+         L(2) = .not.m%g(i)%st_faces(fa(2))%TF.and.is_Neumann(U%GF(i)%b%f(fa(2))%b)
+         L(3) = .not.m%g(j)%st_faces(fa(2))%TF.and.is_Neumann(U%GF(j)%b%f(fa(2))%b)
          if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) b(d) = b(d)+1
          ! if (L(2).and.L(3)) b(d) = U%GF(i)%s(d)
 
          d = dir_given_face(fa(3))
          L(1) = m%g(i)%st_faces(fa(3))%TF.and.m%g(j)%st_faces(fa(3))%TF
-         L(2) = .not.m%g(i)%st_faces(fa(3))%TF.and.U%GF(i)%b%f(fa(3))%b%Neumann
-         L(3) = .not.m%g(j)%st_faces(fa(3))%TF.and.U%GF(j)%b%f(fa(3))%b%Neumann
+         L(2) = .not.m%g(i)%st_faces(fa(3))%TF.and.is_Neumann(U%GF(i)%b%f(fa(3))%b)
+         L(3) = .not.m%g(j)%st_faces(fa(3))%TF.and.is_Neumann(U%GF(j)%b%f(fa(3))%b)
          if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) a(d) = a(d)-1
          ! if (L(2).and.L(3)) a(d) = 1
 
          d = dir_given_face(fa(4))
          L(1) = m%g(i)%st_faces(fa(4))%TF.and.m%g(j)%st_faces(fa(4))%TF
-         L(2) = .not.m%g(i)%st_faces(fa(4))%TF.and.U%GF(i)%b%f(fa(4))%b%Neumann
-         L(3) = .not.m%g(j)%st_faces(fa(4))%TF.and.U%GF(j)%b%f(fa(4))%b%Neumann
+         L(2) = .not.m%g(i)%st_faces(fa(4))%TF.and.is_Neumann(U%GF(i)%b%f(fa(4))%b)
+         L(3) = .not.m%g(j)%st_faces(fa(4))%TF.and.is_Neumann(U%GF(j)%b%f(fa(4))%b)
          if ((k.ne.d).and.U%N_along(d).and.(L(1).or.(L(2).and.L(3)))) b(d) = b(d)+1
          ! if (L(2).and.L(3)) b(d) = U%GF(i)%s(d)
 

@@ -171,7 +171,7 @@
          do i = 1,6;  call import(g%st_faces(i),un);   enddo
          do i = 1,12; call import(g%st_edges(i),un);   enddo
          do i = 1,8;  call import(g%st_corners(i),un); enddo
-         call initProps_grid(g)
+         call initProps(g)
        end subroutine
 
        ! **********************************************************

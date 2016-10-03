@@ -51,16 +51,12 @@
          if (m_R2%s.gt.m_R1%s) then
            do k=1,m_R2%s; do j=1,m_R1%s
              call init(temp,m_R1%g(j),m_R2%g(k),j,k)
-             if (all(temp%defined)) then
-              call add(D,temp)
-             endif
+             if (all(temp%defined)) call add(D,temp)
            enddo; enddo
          else
            do k=1,m_R1%s; do j=1,m_R2%s
              call init(temp,m_R1%g(k),m_R2%g(j),k,j)
-             if (all(temp%defined)) then
-              call add(D,temp)
-             endif
+             if (all(temp%defined)) call add(D,temp)
            enddo; enddo
          endif
        end subroutine

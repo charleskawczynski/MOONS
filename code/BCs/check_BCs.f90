@@ -1,5 +1,6 @@
        module check_BCs_mod
        use current_precision_mod
+       use bctype_mod
        use SF_mod
        use VF_mod
        use mesh_mod
@@ -15,15 +16,18 @@
          implicit none
          type(SF),intent(in) :: U
          integer :: i,k
+         ! do i=1,U%s
+         ! if (.not.defined(U%GF(i)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+         ! enddo
          do i=1,U%s
            do k=1,6
-             if (.not.U%GF(i)%b%f(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+             if (.not.is_defined(U%GF(i)%b%f(k)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo
            do k=1,12
-             if (.not.U%GF(i)%b%e(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+             if (.not.is_defined(U%GF(i)%b%e(k)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo
            do k=1,6
-             if (.not.U%GF(i)%b%c(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+             if (.not.is_defined(U%GF(i)%b%c(k)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo
          enddo
        end subroutine

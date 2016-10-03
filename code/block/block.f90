@@ -1,5 +1,6 @@
        module block_mod
        use grid_mod
+       use domain_mod
        use IO_tools_mod
        implicit none
 
@@ -37,9 +38,13 @@
          type(grid),intent(in) :: g
          integer :: i
          call init(b%B,g)
-         do i=1,6;  call init(b%f(i),g); call get_face(b%f(i),i);   enddo
-         do i=1,12; call init(b%e(i),g); call get_edge(b%e(i),i);   enddo
-         do i=1,8;  call init(b%c(i),g); call get_corner(b%c(i),i); enddo
+         ! do i=1,6;  call init(b%f(i),g); call get_face(b%f(i),i);   enddo
+         ! do i=1,12; call init(b%e(i),g); call get_edge(b%e(i),i);   enddo
+         ! do i=1,8;  call init(b%c(i),g); call get_corner(b%c(i),i); enddo
+
+         ! do i=1,6;  call init(b%D_f(i),b%f(i),b%B); enddo
+         ! do i=1,12; call init(b%D_e(i),b%e(i),b%B); enddo
+         ! do i=1,8;  call init(b%D_c(i),b%c(i),b%B); enddo
        end subroutine
 
        subroutine init_block_copy(b_out,b_in)
@@ -56,16 +61,18 @@
        subroutine delete_block(b)
          implicit none
          type(block),intent(inout) :: b
+         integer :: i
          call delete(b%B)
-         do i=1,6;  call delete(b%f(i))); enddo
-         do i=1,12; call delete(b%e(i))); enddo
-         do i=1,8;  call delete(b%c(i))); enddo
+         do i=1,6;  call delete(b%f(i)); enddo
+         do i=1,12; call delete(b%e(i)); enddo
+         do i=1,8;  call delete(b%c(i)); enddo
        end subroutine
 
        subroutine display_block(b,un)
          implicit none
          type(block),intent(in) :: b
          integer,intent(in) :: un
+         integer :: i
          call display(b%B,un)
          do i=1,6;  call display(b%f(i),un); enddo
          do i=1,12; call display(b%e(i),un); enddo
@@ -75,6 +82,7 @@
        subroutine print_block(b)
          implicit none
          type(block),intent(in) :: b
+         integer :: i
          call print(b%B)
          do i=1,6;  call print(b%f(i)); enddo
          do i=1,12; call print(b%e(i)); enddo
@@ -85,6 +93,7 @@
          implicit none
          type(block),intent(in) :: b
          integer,intent(in) :: un
+         integer :: i
          call export(b%B,un)
          do i=1,6;  call export(b%f(i),un); enddo
          do i=1,12; call export(b%e(i),un); enddo
@@ -93,8 +102,9 @@
 
        subroutine import_block(b,un)
          implicit none
-         type(block),intent(in) :: b
+         type(block),intent(inout) :: b
          integer,intent(in) :: un
+         integer :: i
          call import(b%B,un)
          do i=1,6;  call import(b%f(i),un); enddo
          do i=1,12; call import(b%e(i),un); enddo
