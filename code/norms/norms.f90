@@ -13,7 +13,7 @@
        use grid_mod
        use mesh_mod
        use ops_norms_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        implicit none

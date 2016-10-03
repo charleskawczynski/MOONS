@@ -1,6 +1,6 @@
        module apply_stitches_corners_mod
        use current_precision_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        use mesh_mod

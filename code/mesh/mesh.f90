@@ -8,7 +8,7 @@
        use coordinates_mod
        use face_edge_corner_indexing_mod
        use stitch_mod
-       use RF_mod
+       use GF_mod
        implicit none
 
        private
@@ -37,7 +37,7 @@
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
          logical :: plane_x,plane_y,plane_z,plane_xyz
-         type(realField),dimension(:),allocatable :: vol
+         type(grid_field),dimension(:),allocatable :: vol
          type(simple_int_tensor),dimension(3) :: int_tensor
        end type
 

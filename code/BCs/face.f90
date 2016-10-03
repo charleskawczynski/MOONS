@@ -17,7 +17,7 @@
        end type
 
        interface init;       module procedure init_shape;            end interface
-       interface init;       module procedure init_vals_RF;          end interface
+       interface init;       module procedure init_vals_GF;          end interface
        interface init;       module procedure init_val;              end interface
        interface init;       module procedure init_copy;             end interface
        interface delete;     module procedure delete_face;           end interface
@@ -40,14 +40,14 @@
          f%defined = all(f%def)
        end subroutine
 
-       subroutine init_vals_RF(f,vals)
+       subroutine init_vals_GF(f,vals)
          implicit none
          type(face),intent(inout) :: f
          real(cp),dimension(:,:),intent(in) :: vals
          integer,dimension(2) :: s
          s = shape(vals)
-         if ((s(1).lt.1).or.(s(2).lt.1)) stop 'Error: shape input in init_vals_RF < 1 in face.f90'
-         if ((s(1).ne.f%s(1)).or.(s(2).ne.f%s(2))) stop 'Error: shape mis-match in init_vals_RF in face.f90'
+         if ((s(1).lt.1).or.(s(2).lt.1)) stop 'Error: shape input in init_vals_GF < 1 in face.f90'
+         if ((s(1).ne.f%s(1)).or.(s(2).ne.f%s(2))) stop 'Error: shape mis-match in init_vals_GF in face.f90'
          call init(f%b,vals)
          f%vals = vals
          f%def(2) = .true.

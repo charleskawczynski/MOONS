@@ -44,7 +44,7 @@
        private
 
        public :: cross
-       interface cross;           module procedure collocatedCross_RF;        end interface
+       interface cross;           module procedure collocatedCross_GF;        end interface
        interface cross;           module procedure collocatedCross_SF;        end interface
        interface cross;           module procedure collocatedCross_VF;        end interface
        interface cross;           module procedure collocatedCross_TF;        end interface
@@ -97,7 +97,7 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedCross_RF(AcrossB,Ax,Ay,Az,Bx,By,Bz,sx,sy,sz,dir)
+       subroutine collocatedCross_GF(AcrossB,Ax,Ay,Az,Bx,By,Bz,sx,sy,sz,dir)
          ! This routine computes the ith component of A x B on a collocated mesh
          ! dir = (1,2,3)
          implicit none
@@ -110,17 +110,17 @@
          integer,dimension(3) :: sAx,sAy,sAz,sBx,sBy,sBz
          sAx = shape(Ax); sAy = shape(Ay); sAz = shape(Az)
          sBx = shape(Bx); sBy = shape(By); sBz = shape(Bz)
-         if (sAx(1).ne.sBx(1)) stop 'Error: sAx(1).ne.sBx(1) in collocatedCross_RF in ops_discrete.f90'
-         if (sAx(2).ne.sBx(2)) stop 'Error: sAx(2).ne.sBx(2) in collocatedCross_RF in ops_discrete.f90'
-         if (sAx(3).ne.sBx(3)) stop 'Error: sAx(3).ne.sBx(3) in collocatedCross_RF in ops_discrete.f90'
+         if (sAx(1).ne.sBx(1)) stop 'Error: sAx(1).ne.sBx(1) in collocatedCross_GF in ops_discrete.f90'
+         if (sAx(2).ne.sBx(2)) stop 'Error: sAx(2).ne.sBx(2) in collocatedCross_GF in ops_discrete.f90'
+         if (sAx(3).ne.sBx(3)) stop 'Error: sAx(3).ne.sBx(3) in collocatedCross_GF in ops_discrete.f90'
 
-         if (sAy(1).ne.sBy(1)) stop 'Error: sAy(1).ne.sBy(1) in collocatedCross_RF in ops_discrete.f90'
-         if (sAy(2).ne.sBy(2)) stop 'Error: sAy(2).ne.sBy(2) in collocatedCross_RF in ops_discrete.f90'
-         if (sAy(3).ne.sBy(3)) stop 'Error: sAy(3).ne.sBy(3) in collocatedCross_RF in ops_discrete.f90'
+         if (sAy(1).ne.sBy(1)) stop 'Error: sAy(1).ne.sBy(1) in collocatedCross_GF in ops_discrete.f90'
+         if (sAy(2).ne.sBy(2)) stop 'Error: sAy(2).ne.sBy(2) in collocatedCross_GF in ops_discrete.f90'
+         if (sAy(3).ne.sBy(3)) stop 'Error: sAy(3).ne.sBy(3) in collocatedCross_GF in ops_discrete.f90'
 
-         if (sAz(1).ne.sBz(1)) stop 'Error: sAz(1).ne.sBz(1) in collocatedCross_RF in ops_discrete.f90'
-         if (sAz(2).ne.sBz(2)) stop 'Error: sAz(2).ne.sBz(2) in collocatedCross_RF in ops_discrete.f90'
-         if (sAz(3).ne.sBz(3)) stop 'Error: sAz(3).ne.sBz(3) in collocatedCross_RF in ops_discrete.f90'
+         if (sAz(1).ne.sBz(1)) stop 'Error: sAz(1).ne.sBz(1) in collocatedCross_GF in ops_discrete.f90'
+         if (sAz(2).ne.sBz(2)) stop 'Error: sAz(2).ne.sBz(2) in collocatedCross_GF in ops_discrete.f90'
+         if (sAz(3).ne.sBz(3)) stop 'Error: sAz(3).ne.sBz(3) in collocatedCross_GF in ops_discrete.f90'
 #endif
          select case (dir)
          case (1)
@@ -141,7 +141,7 @@
              AcrossB(i,j,k) = Ax(i,j,k)*By(i,j,k) - Ay(i,j,k)*Bx(i,j,k)
            enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: dir must = 1,2,3 in collocatedCross_RF in ops_discrete.f90.'
+         case default; stop 'Error: dir must = 1,2,3 in collocatedCross_GF in ops_discrete.f90.'
          end select
        end subroutine
 
@@ -160,10 +160,10 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,AcrossB%s
-           call cross(AcrossB%RF(i)%f,&
-           Ax%RF(i)%f,Ay%RF(i)%f,Az%RF(i)%f,&
-           Bx%RF(i)%f,By%RF(i)%f,Bz%RF(i)%f,&
-           Ax%RF(i)%s,Ay%RF(i)%s,Az%RF(i)%s,dir)
+           call cross(AcrossB%GF(i)%f,&
+           Ax%GF(i)%f,Ay%GF(i)%f,Az%GF(i)%f,&
+           Bx%GF(i)%f,By%GF(i)%f,Bz%GF(i)%f,&
+           Ax%GF(i)%s,Ay%GF(i)%s,Az%GF(i)%s,dir)
          enddo
        end subroutine
 
@@ -300,7 +300,7 @@
        end subroutine
 
        subroutine curl_SF(curlU,u,v,w,m,dir)
-         ! curl_RF computes curlU (component dir) of
+         ! curl_GF computes curlU (component dir) of
          ! the collocated u,v,w field.
          implicit none
          type(SF),intent(inout) :: curlU
@@ -337,7 +337,7 @@
          type(del) :: d
 #if _DEBUG_DISCRETE_OPS_
          if (dir1.eq.dir2) then
-           write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeff_RF in ops_discrete.f90'
+           write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeff_GF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
 #endif
@@ -365,7 +365,7 @@
          type(del) :: d
 #if _DEBUG_DISCRETE_OPS_
          if (dir1.eq.dir2) then
-           write(*,*) 'Error: dir1=dir2 in mixed_variableCoeff_RF in ops_discrete.f90'
+           write(*,*) 'Error: dir1=dir2 in mixed_variableCoeff_GF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
 #endif

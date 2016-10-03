@@ -141,9 +141,9 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(B%x%RF(1)%f,m%g(1),fringeDir)
-         case (2); call initFringe_Sergey(B%y%RF(1)%f,m%g(1),fringeDir)
-         case (3); call initFringe_Sergey(B%z%RF(1)%f,m%g(1),fringeDir)
+         case (1); call initFringe_Sergey(B%x%GF(1)%f,m%g(1),fringeDir)
+         case (2); call initFringe_Sergey(B%y%GF(1)%f,m%g(1),fringeDir)
+         case (3); call initFringe_Sergey(B%z%GF(1)%f,m%g(1),fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
@@ -190,12 +190,12 @@
          type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          integer,intent(in) :: currentDir
-         call initField_Bandaru_RF(B%x%RF(1)%f,&
-                                   B%y%RF(1)%f,&
-                                   B%z%RF(1)%f,m%g(1),currentDir)
+         call initField_Bandaru_GF(B%x%GF(1)%f,&
+                                   B%y%GF(1)%f,&
+                                   B%z%GF(1)%f,m%g(1),currentDir)
        end subroutine
 
-       subroutine initField_Bandaru_RF(Bx,By,Bz,g,currentDir)
+       subroutine initField_Bandaru_GF(Bx,By,Bz,g,currentDir)
          implicit none
          type(grid),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
@@ -234,7 +234,7 @@
                          sinh(ka*g%c(1)%hc(i))/cosh(ka)
            enddo;enddo;enddo
          case default
-         stop 'Error: applied_dir must = 1,2,3 in initField_Bandaru_RF in init_Bfield.'
+         stop 'Error: applied_dir must = 1,2,3 in initField_Bandaru_GF in init_Bfield.'
          end select
        end subroutine
 
@@ -244,9 +244,9 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: dir,fringeDir
          select case (dir)
-         case (1); call initFringe_ALEX(B%x%RF(1)%f,m%g(1),fringeDir)
-         case (2); call initFringe_ALEX(B%y%RF(1)%f,m%g(1),fringeDir)
-         case (3); call initFringe_ALEX(B%z%RF(1)%f,m%g(1),fringeDir)
+         case (1); call initFringe_ALEX(B%x%GF(1)%f,m%g(1),fringeDir)
+         case (2); call initFringe_ALEX(B%y%GF(1)%f,m%g(1),fringeDir)
+         case (3); call initFringe_ALEX(B%z%GF(1)%f,m%g(1),fringeDir)
          case default
          stop 'Error: dir must = 1,2,3 in initFringingField_ALEX.'
          end select

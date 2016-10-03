@@ -26,10 +26,10 @@
         character(len=*),intent(in) :: arrfmt,name
         integer :: i,DT
         read(un,*);read(un,*) ! Read tecplot header
-        DT = getType_3D(m%g(1),A%RF(1)%s,name)
+        DT = getType_3D(m%g(1),A%GF(1)%s,name)
         do i=1,m%s
           read(un,*) ! Read tecplot header
-          call imp_3D_1C_g(m%g(i),DT,pad,un,arrfmt,A%RF(i)%s,A%RF(i)%f)
+          call imp_3D_1C_g(m%g(i),DT,pad,un,arrfmt,A%GF(i)%s,A%GF(i)%f)
         enddo
       end subroutine
 
@@ -43,23 +43,23 @@
         integer :: i,DT
         read(un,*);read(un,*) ! Read tecplot header
         select case (dir)
-        case(1); s = (/A%RF(1)%s(2),A%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
-        case(2); s = (/A%RF(1)%s(1),A%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
-        case(3); s = (/A%RF(1)%s(1),A%RF(1)%s(2)/); DT = getType_2D(m%g(1),s,name,dir)
+        case(1); s = (/A%GF(1)%s(2),A%GF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
+        case(2); s = (/A%GF(1)%s(1),A%GF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
+        case(3); s = (/A%GF(1)%s(1),A%GF(1)%s(2)/); DT = getType_2D(m%g(1),s,name,dir)
         case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
         end select
         select case (dir)
         case(1); do i=1,m%s
                    read(un,*) ! Read tecplot header
-                   call imp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%RF(i)%f(2,:,:))
+                   call imp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%GF(i)%f(2,:,:))
                  enddo
         case(2); do i=1,m%s
                    read(un,*) ! Read tecplot header
-                   call imp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%RF(i)%f(:,2,:))
+                   call imp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%GF(i)%f(:,2,:))
                  enddo
         case(3); do i=1,m%s
                    read(un,*) ! Read tecplot header
-                   call imp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%RF(i)%f(:,:,2))
+                   call imp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%GF(i)%f(:,:,2))
                  enddo
         case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
         end select

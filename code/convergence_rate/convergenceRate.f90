@@ -21,11 +21,11 @@
 
        implicit none
        private
-       public :: computeCRFromExisting
+       public :: computeCGFromExisting
       
        contains
 
-       subroutine computeCRFromExisting(DT)
+       subroutine computeCGFromExisting(DT)
          ! This routine may need some testing again since it hasn't been used in a 
          ! while. The original version that was used ran all tests, while keeping
          ! the data, then performed the convergence rate computations. This approach

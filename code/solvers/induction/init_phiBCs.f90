@@ -37,8 +37,8 @@
        subroutine periodic_duct_flow(phi)
          implicit none
          type(SF),intent(inout) :: phi
-         call init_periodic(phi%RF(1)%b,1)
-         call init_periodic(phi%RF(1)%b,2)
+         call init_periodic(phi%GF(1)%b,1)
+         call init_periodic(phi%GF(1)%b,2)
        end subroutine
 
        end module

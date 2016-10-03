@@ -1,6 +1,6 @@
        module apply_BCs_corners_mod
        use current_precision_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        use bctype_mod

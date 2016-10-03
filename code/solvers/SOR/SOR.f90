@@ -59,7 +59,7 @@
       interface delete;      module procedure deleteSOR;     end interface
       interface solve;       module procedure solveSOR;      end interface
 
-      interface init_r;      module procedure init_r_RF;     end interface
+      interface init_r;      module procedure init_r_GF;     end interface
       interface init_r;      module procedure init_r_SF;     end interface
 
       contains
@@ -72,7 +72,7 @@
         integer,dimension(3) :: s
         integer :: Nx,Ny,Nz,i,t
         
-        s = u%RF(1)%s
+        s = u%GF(1)%s
         SOR%s = s
         call init(SOR%p,m)
         call init(SOR%d,m)
@@ -223,7 +223,7 @@
         integer,dimension(3),intent(in) :: odd
         integer :: i
         do i=1,m%s
-          call redBlack(u%RF(i)%f,f%RF(i)%f,r%RF(i)%f,u%RF(i)%s,&
+          call redBlack(u%GF(i)%f,f%GF(i)%f,r%GF(i)%f,u%GF(i)%s,&
           SOR%p%g(i)%c(1)%dhn,SOR%p%g(i)%c(2)%dhn,SOR%p%g(i)%c(3)%dhn,&
           SOR%d%g(i)%c(1)%dhn,SOR%d%g(i)%c(2)%dhn,SOR%d%g(i)%c(3)%dhn,&
           SOR%omega,SOR%gt,odd)
@@ -276,13 +276,13 @@
         integer,dimension(3),intent(in) :: gt
         integer :: i
         do i=1,p%s
-          call init_r(r%RF(i)%f,r%RF(i)%s,&
+          call init_r(r%GF(i)%f,r%GF(i)%s,&
             p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
             d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,gt)
         enddo
       end subroutine
 
-      subroutine init_r_RF(r,s,dxp,dyp,dzp,dxd,dyd,dzd,gt)
+      subroutine init_r_GF(r,s,dxp,dyp,dzp,dxd,dyd,dzd,gt)
         implicit none
         real(cp),dimension(:,:,:),intent(inout) :: r
         integer,dimension(3),intent(in) :: s

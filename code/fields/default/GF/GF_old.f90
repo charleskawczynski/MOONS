@@ -1,20 +1,20 @@
-      module RF_mod
-        ! Pre-processor directives: (_DEBUG_RF_,_PARALLELIZE_RF_)
+      module GF_mod
+        ! Pre-processor directives: (_DEBUG_GF_,_PARALLELIZE_GF_)
         ! 
         ! Naming convention: name = operation_type1_type2
         ! 
-        !      RF = type(realField)
+        !      GF = type(grid_field)
         !      R  = real(cp),dimension(:,:,:)
         !      S  = real(cp)
         ! 
-        ! Example(1): Adding a scalar to RF
-        !             name = add_RF_S
-        ! Example(2): Subtracting a real field from RF
-        !             name = subtract_RF_R
-        ! Example(3): Subtracting a RF from a real field
-        !             name = subtract_R_RF
+        ! Example(1): Adding a scalar to GF
+        !             name = add_GF_S
+        ! Example(2): Subtracting a real field from GF
+        !             name = subtract_GF_R
+        ! Example(3): Subtracting a GF from a real field
+        !             name = subtract_R_GF
         ! 
-        ! NOTES: RF stands for 'real field'
+        ! NOTES: GF stands for 'real field'
         ! 
         ! Rules:
         ! a = a + b => call add(a,b)
@@ -37,7 +37,7 @@
         private
 
         ! Initialization / Deletion (allocate/deallocate)
-        public :: realField
+        public :: grid_field
         public :: init,delete,display,print,export,import ! Essentials
 
         ! Grid initialization
@@ -64,81 +64,81 @@
         public :: zero_ghost_ymin_ymax
         public :: zero_ghost_zmin_zmax
 
-        type realField
+        type grid_field
           integer :: s_1D                            ! size
           integer,dimension(3) :: s                  ! Dimension
           real(cp),dimension(:,:,:),allocatable :: f ! field
           type(BCs) :: b
         end type
 
-        interface init;                     module procedure init_RF_size;           end interface
-        interface init;                     module procedure init_RF_copy;           end interface
-        interface delete;                   module procedure delete_RF;              end interface
-        interface display;                  module procedure display_RF;             end interface
-        interface print;                    module procedure print_RF;               end interface
-        interface export;                   module procedure export_RF;              end interface
-        interface import;                   module procedure import_RF;              end interface
+        interface init;                     module procedure init_GF_size;           end interface
+        interface init;                     module procedure init_GF_copy;           end interface
+        interface delete;                   module procedure delete_GF;              end interface
+        interface display;                  module procedure display_GF;             end interface
+        interface print;                    module procedure print_GF;               end interface
+        interface export;                   module procedure export_GF;              end interface
+        interface import;                   module procedure import_GF;              end interface
 
-        interface init_CC;                  module procedure init_RF_CC;             end interface
-        interface init_Face;                module procedure init_RF_Face;           end interface
-        interface init_Edge;                module procedure init_RF_Edge;           end interface
-        interface init_Node;                module procedure init_RF_Node;           end interface
+        interface init_CC;                  module procedure init_GF_CC;             end interface
+        interface init_Face;                module procedure init_GF_Face;           end interface
+        interface init_Edge;                module procedure init_GF_Edge;           end interface
+        interface init_Node;                module procedure init_GF_Node;           end interface
 
         interface init_BCs;                 module procedure init_BC_val;            end interface
         interface init_BCs;                 module procedure init_BC_vals;           end interface
 
-        interface assign;                   module procedure assign_RF_S;            end interface
-        interface assign;                   module procedure assign_RF_RF;           end interface
-        interface assign;                   module procedure assign_RF_R;            end interface
-        interface assign_negative;          module procedure assign_negative_RF_RF;  end interface
+        interface assign;                   module procedure assign_GF_S;            end interface
+        interface assign;                   module procedure assign_GF_GF;           end interface
+        interface assign;                   module procedure assign_GF_R;            end interface
+        interface assign_negative;          module procedure assign_negative_GF_GF;  end interface
 
-        interface add;                      module procedure add_RF_RF;              end interface
-        interface add;                      module procedure add_RF_RF_RF;           end interface
-        interface add;                      module procedure add_RF_RF_RF_RF;        end interface
-        interface add;                      module procedure add_RF_R;               end interface
-        interface add;                      module procedure add_RF_S;               end interface
-        interface add;                      module procedure add_S_RF;               end interface
-        interface add;                      module procedure add_RF_RF9;             end interface
+        interface add;                      module procedure add_GF_GF;              end interface
+        interface add;                      module procedure add_GF_GF_GF;           end interface
+        interface add;                      module procedure add_GF_GF_GF_GF;        end interface
+        interface add;                      module procedure add_GF_R;               end interface
+        interface add;                      module procedure add_GF_S;               end interface
+        interface add;                      module procedure add_S_GF;               end interface
+        interface add;                      module procedure add_GF_GF9;             end interface
 
-        interface add_product;              module procedure add_product_RF_RF_S;    end interface
-        interface add_product;              module procedure add_product_RF_RF_RF;   end interface
+        interface add_product;              module procedure add_product_GF_GF_S;    end interface
+        interface add_product;              module procedure add_product_GF_GF_GF;   end interface
 
-        interface multiply;                 module procedure multiply_RF_RF;         end interface
-        interface multiply;                 module procedure multiply_RF_RF_RF;      end interface
-        interface multiply;                 module procedure multiply_RF_RF_S;       end interface
-        interface multiply;                 module procedure multiply_RF_S;          end interface
-        interface multiply;                 module procedure multiply_S_RF;          end interface
+        interface multiply;                 module procedure multiply_GF_GF;         end interface
+        interface multiply;                 module procedure multiply_GF_GF_GF;      end interface
+        interface multiply;                 module procedure multiply_GF_GF_S;       end interface
+        interface multiply;                 module procedure multiply_GF_S;          end interface
+        interface multiply;                 module procedure multiply_S_GF;          end interface
 
-        interface subtract;                 module procedure subtract_RF_RF;         end interface
-        interface subtract;                 module procedure subtract_RF_RF_RF;      end interface
-        interface subtract;                 module procedure subtract_RF_R_R;        end interface
-        interface subtract;                 module procedure subtract_RF_R;          end interface
-        interface subtract;                 module procedure subtract_RF_S;          end interface
-        interface subtract;                 module procedure subtract_S_RF;          end interface
+        interface subtract;                 module procedure subtract_GF_GF;         end interface
+        interface subtract;                 module procedure subtract_GF_GF_GF;      end interface
+        interface subtract;                 module procedure subtract_GF_R_R;        end interface
+        interface subtract;                 module procedure subtract_GF_R;          end interface
+        interface subtract;                 module procedure subtract_GF_S;          end interface
+        interface subtract;                 module procedure subtract_S_GF;          end interface
 
-        interface divide;                   module procedure divide_RF_RF;           end interface
-        interface divide;                   module procedure divide_RF_RF_RF;        end interface
-        interface divide;                   module procedure divide_RF_S_RF;         end interface
-        interface divide;                   module procedure divide_RF_S;            end interface
-        interface divide;                   module procedure divide_S_RF;            end interface
+        interface divide;                   module procedure divide_GF_GF;           end interface
+        interface divide;                   module procedure divide_GF_GF_GF;        end interface
+        interface divide;                   module procedure divide_GF_S_GF;         end interface
+        interface divide;                   module procedure divide_GF_S;            end interface
+        interface divide;                   module procedure divide_S_GF;            end interface
 
-        interface square;                   module procedure square_RF;              end interface
-        interface swap;                     module procedure swap_RF;                end interface
-        interface min;                      module procedure min_RF;                 end interface
-        interface max;                      module procedure max_RF;                 end interface
-        interface min;                      module procedure min_pad_RF;             end interface
-        interface max;                      module procedure max_pad_RF;             end interface
-        interface minabs;                   module procedure minabs_RF;              end interface
-        interface maxabs;                   module procedure maxabs_RF;              end interface
-        interface maxabsdiff;               module procedure maxabsdiff_RF;          end interface
-        interface mean;                     module procedure mean_RF;                end interface
-        interface sum;                      module procedure sum_RF;                 end interface
-        interface sum;                      module procedure sum_RF_pad;             end interface
-        interface size;                     module procedure size_RF;                end interface
+        interface square;                   module procedure square_GF;              end interface
+        interface swap;                     module procedure swap_GF;                end interface
+        interface min;                      module procedure min_GF;                 end interface
+        interface max;                      module procedure max_GF;                 end interface
+        interface min;                      module procedure min_pad_GF;             end interface
+        interface max;                      module procedure max_pad_GF;             end interface
+        interface minabs;                   module procedure minabs_GF;              end interface
+        interface maxabs;                   module procedure maxabs_GF;              end interface
+        interface maxabsdiff;               module procedure maxabsdiff_GF;          end interface
+        interface mean;                     module procedure mean_GF;                end interface
+        interface sum;                      module procedure sum_GF;                 end interface
+        interface sum;                      module procedure sum_GF_pad;             end interface
+        interface size;                     module procedure size_GF;                end interface
 
-        interface zero_ghost_xmin_xmax;     module procedure zero_ghost_xmin_xmax_RF;end interface
-        interface zero_ghost_ymin_ymax;     module procedure zero_ghost_ymin_ymax_RF;end interface
-        interface zero_ghost_zmin_zmax;     module procedure zero_ghost_zmin_zmax_RF;end interface
+        interface zero_ghost_xmin_xmax;     module procedure zero_ghost_xmin_xmax_GF;end interface
+        interface zero_ghost_ymin_ymax;     module procedure zero_ghost_ymin_ymax_GF;end interface
+        interface zero_ghost_zmin_zmax;     module procedure zero_ghost_zmin_zmax_GF;end interface
 
       contains
 
@@ -146,9 +146,9 @@
         ! ********************* ESSENTIALS *************************
         ! **********************************************************
 
-        subroutine init_RF_size(a,Nx,Ny,Nz)
+        subroutine init_GF_size(a,Nx,Ny,Nz)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           integer,intent(in) :: Nx,Ny,Nz
           if (allocated(a%f)) deallocate(a%f)
           allocate(a%f(Nx,Ny,Nz))
@@ -156,12 +156,12 @@
           a%s_1D = a%s(1)*a%s(2)*a%s(3)
         end subroutine
 
-        subroutine init_RF_copy(f1,f2)
+        subroutine init_GF_copy(f1,f2)
           implicit none
-          type(realField),intent(inout) :: f1
-          type(realField),intent(in) :: f2
+          type(grid_field),intent(inout) :: f1
+          type(grid_field),intent(in) :: f2
           integer,dimension(3) :: s
-          if (.not.allocated(f2%f)) stop 'Error: trying to copy unallocated RF in RF.f90'
+          if (.not.allocated(f2%f)) stop 'Error: trying to copy unallocated GF in GF.f90'
           s = shape(f2%f)
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))
@@ -170,18 +170,18 @@
           f1%s_1D = f2%s_1D
         end subroutine
 
-        subroutine delete_RF(a)
+        subroutine delete_GF(a)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           if (allocated(a%f)) deallocate(a%f)
           call delete(a%b)
           a%s = 0
           a%s_1D = 0
         end subroutine
 
-        subroutine display_RF(a,un)
+        subroutine display_GF(a,un)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           integer,intent(in) :: un
           integer :: i,j,k
           if (allocated(a%f)) then
@@ -192,15 +192,15 @@
           endif
         end subroutine
 
-        subroutine print_RF(a)
+        subroutine print_GF(a)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           call display(a,6)
         end subroutine
 
-        subroutine export_RF(a,un)
+        subroutine export_GF(a,un)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           integer,intent(in) :: un
           integer :: i,j,k
           if (allocated(a%f)) then
@@ -211,14 +211,14 @@
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
             write(un,*) a%f(i,j,k)
           enddo; enddo; enddo
-          else; stop 'Error: trying to export unallocated RF in export_RF in RF.f90'
+          else; stop 'Error: trying to export unallocated GF in export_GF in GF.f90'
           endif
           call export(a%b,un)
         end subroutine
 
-        subroutine import_RF(a,un)
+        subroutine import_GF(a,un)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           integer,intent(in) :: un
           integer :: i,j,k
           call delete(a)
@@ -237,11 +237,11 @@
         ! **********************************************************
         ! **********************************************************
 
-        subroutine assign_RF_RF(a,b)
+        subroutine assign_GF_GF(a,b)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -257,11 +257,11 @@
 #endif
         end subroutine
 
-        subroutine assign_RF_R(a,b)
+        subroutine assign_GF_R(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),dimension(:,:,:),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -277,11 +277,11 @@
 #endif
         end subroutine
 
-        subroutine assign_RF_S(a,b)
+        subroutine assign_GF_S(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -297,11 +297,11 @@
 #endif
         end subroutine
 
-        subroutine assign_negative_RF_RF(a,b)
+        subroutine assign_negative_GF_GF(a,b)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -319,11 +319,11 @@
 
       ! ------------------- ADD ------------------------
 
-        subroutine add_RF_RF(a,b)
+        subroutine add_GF_GF(a,b)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -339,11 +339,11 @@
 #endif
         end subroutine
 
-        subroutine add_RF_RF_RF(a,b,c)
+        subroutine add_GF_GF_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b,c
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b,c
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -359,11 +359,11 @@
 #endif
         end subroutine
 
-        subroutine add_RF_RF_RF_RF(a,b,c,d)
+        subroutine add_GF_GF_GF_GF(a,b,c,d)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b,c,d
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b,c,d
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -379,11 +379,11 @@
 #endif
         end subroutine
 
-        subroutine add_RF_R(a,b)
+        subroutine add_GF_R(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),dimension(:,:,:),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -399,11 +399,11 @@
 #endif
         end subroutine
 
-        subroutine add_RF_S(a,b)
+        subroutine add_GF_S(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -419,11 +419,11 @@
 #endif
         end subroutine
 
-        subroutine add_S_RF(g2,a)
+        subroutine add_S_GF(g2,a)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -439,11 +439,11 @@
 #endif
         end subroutine
 
-        subroutine add_RF_RF9(A,B1,B2,B3,B4,B5,B6,B7,B8,B9)
+        subroutine add_GF_GF9(A,B1,B2,B3,B4,B5,B6,B7,B8,B9)
           implicit none
-          type(realField),intent(inout) :: A
-          type(realField),intent(in) :: B1,B2,B3,B4,B5,B6,B7,B8,B9
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: A
+          type(grid_field),intent(in) :: B1,B2,B3,B4,B5,B6,B7,B8,B9
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,A%s(3)
@@ -465,12 +465,12 @@
 
       ! ------------------- ADD PRODUCT ------------------------
 
-        subroutine add_product_RF_RF_S(a,b,c)
+        subroutine add_product_GF_GF_S(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
           real(cp),intent(in) :: c
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -486,12 +486,12 @@
 #endif
         end subroutine
 
-        subroutine add_product_RF_RF_RF(a,b,c)
+        subroutine add_product_GF_GF_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b,c
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b,c
           integer :: i,j,k
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
           do k=1,a%s(3)
             do j=1,a%s(2)
@@ -510,11 +510,11 @@
 
       ! ------------------- SUBTRACT ------------------------
 
-        subroutine subtract_RF_RF(a,b)
+        subroutine subtract_GF_GF(a,b)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -530,11 +530,11 @@
 #endif
         end subroutine
 
-        subroutine subtract_RF_RF_RF(a,b,c)
+        subroutine subtract_GF_GF_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b,c
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b,c
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -550,11 +550,11 @@
 #endif
         end subroutine
 
-        subroutine subtract_RF_R_R(a,b,c)
+        subroutine subtract_GF_R_R(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),dimension(:,:,:),intent(in) :: b,c
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -570,11 +570,11 @@
 #endif
         end subroutine
 
-        subroutine subtract_RF_S(a,b)
+        subroutine subtract_GF_S(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -590,11 +590,11 @@
 #endif
         end subroutine
 
-        subroutine subtract_RF_R(a,b)
+        subroutine subtract_GF_R(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),dimension(:,:,:),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -610,11 +610,11 @@
 #endif
         end subroutine
 
-        subroutine subtract_S_RF(g2,a)
+        subroutine subtract_S_GF(g2,a)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -632,11 +632,11 @@
 
       ! ------------------- MULTIPLY ------------------------
 
-        subroutine multiply_RF_RF(a,b)
+        subroutine multiply_GF_GF(a,b)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -652,11 +652,11 @@
 #endif
         end subroutine
 
-        subroutine multiply_RF_RF_RF(a,b,c)
+        subroutine multiply_GF_GF_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b,c
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b,c
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -672,12 +672,12 @@
 #endif
         end subroutine
 
-        subroutine multiply_RF_RF_S(a,b,c)
+        subroutine multiply_GF_GF_S(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
           real(cp),intent(in) :: c
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -693,11 +693,11 @@
 #endif
         end subroutine
 
-        subroutine multiply_RF_S(a,b)
+        subroutine multiply_GF_S(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -713,11 +713,11 @@
 #endif
         end subroutine
 
-        subroutine multiply_S_RF(g2,a)
+        subroutine multiply_S_GF(g2,a)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -735,11 +735,11 @@
 
       ! ------------------- DIVIDE ------------------------
 
-        subroutine divide_RF_RF(a,b)
+        subroutine divide_GF_GF(a,b)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -755,11 +755,11 @@
 #endif
         end subroutine
 
-        subroutine divide_RF_RF_RF(a,b,c)
+        subroutine divide_GF_GF_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: b,c
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: b,c
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -775,12 +775,12 @@
 #endif
         end subroutine
 
-        subroutine divide_RF_S_RF(a,b,c)
+        subroutine divide_GF_S_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a
-          type(realField),intent(in) :: c
+          type(grid_field),intent(inout) :: a
+          type(grid_field),intent(in) :: c
           real(cp),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -796,11 +796,11 @@
 #endif
         end subroutine
 
-        subroutine divide_RF_S(a,b)
+        subroutine divide_GF_S(a,b)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -816,11 +816,11 @@
 #endif
         end subroutine
 
-        subroutine divide_S_RF(g2,a)
+        subroutine divide_S_GF(g2,a)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: g2
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -838,10 +838,10 @@
 
       ! ------------------- OTHER ------------------------
 
-        subroutine square_RF(a)
+        subroutine square_GF(a)
           implicit none
-          type(realField),intent(inout) :: a
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -857,10 +857,10 @@
 #endif
         end subroutine
 
-        subroutine swap_RF(a,b,c)
+        subroutine swap_GF(a,b,c)
           implicit none
-          type(realField),intent(inout) :: a,b,c
-#ifdef _PARALLELIZE_RF_
+          type(grid_field),intent(inout) :: a,b,c
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3)
@@ -880,69 +880,69 @@
 #endif
         end subroutine
 
-        function min_RF(a) result(m)
+        function min_GF(a) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           real(cp) :: m
           m = minval(a%f)
         end function
 
-        function max_RF(a) result(m)
+        function max_GF(a) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           real(cp) :: m
           m = maxval(a%f)
         end function
 
-        function min_pad_RF(a,pad) result(m)
+        function min_pad_GF(a,pad) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           integer,intent(in) :: pad
           real(cp) :: m
           m = minval(a%f(1+pad:a%s(1)-pad,1+pad:a%s(2)-pad,1+pad:a%s(3)-pad))
         end function
 
-        function max_pad_RF(a,pad) result(m)
+        function max_pad_GF(a,pad) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           integer,intent(in) :: pad
           real(cp) :: m
           m = maxval(a%f(1+pad:a%s(1)-pad,1+pad:a%s(2)-pad,1+pad:a%s(3)-pad))
         end function
 
-        function minabs_RF(a) result(m)
+        function minabs_GF(a) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           real(cp) :: m
           m = minval(abs(a%f))
         end function
 
-        function maxabs_RF(a) result(m)
+        function maxabs_GF(a) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           real(cp) :: m
           m = maxval(abs(a%f))
         end function
 
-        function maxabsdiff_RF(a,b) result(m)
+        function maxabsdiff_GF(a,b) result(m)
           implicit none
-          type(realField),intent(in) :: a,b
+          type(grid_field),intent(in) :: a,b
           real(cp) :: m
           m = maxval(abs(a%f-b%f))
         end function
 
-        function mean_RF(a) result(m)
+        function mean_GF(a) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           real(cp) :: m
           m = sum(a)/(max(1,size(a%f)))
         end function
 
-        function sum_RF(a) result(m)
+        function sum_GF(a) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           real(cp) :: m
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           real(cp) :: mTemp
           mTemp = 0.0_cp
@@ -957,12 +957,12 @@
 #endif
         end function
 
-        function sum_RF_pad(a,pad) result(m)
+        function sum_GF_pad(a,pad) result(m)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           integer,intent(in) :: pad
           real(cp) :: m
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           real(cp) :: mTemp
           mTemp = 0.0_cp
@@ -977,11 +977,11 @@
 #endif
         end function
 
-        subroutine zero_ghost_xmin_xmax_RF(f)
+        subroutine zero_ghost_xmin_xmax_GF(f)
           implicit none
-          type(realField),intent(inout) :: f
+          type(grid_field),intent(inout) :: f
           integer :: j,k
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
 
 #endif
@@ -989,17 +989,17 @@
             f%f(1,j,k) = 0.0_cp
             f%f(f%s(1),j,k) = 0.0_cp
           enddo; enddo
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
 
 #endif
         end subroutine
 
-        subroutine zero_ghost_ymin_ymax_RF(f)
+        subroutine zero_ghost_ymin_ymax_GF(f)
           implicit none
-          type(realField),intent(inout) :: f
+          type(grid_field),intent(inout) :: f
           integer :: i,k
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
 
 #endif
@@ -1007,17 +1007,17 @@
             f%f(i,1,k) = 0.0_cp
             f%f(i,f%s(2),k) = 0.0_cp
           enddo; enddo
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
 
 #endif
         end subroutine
 
-        subroutine zero_ghost_zmin_zmax_RF(f)
+        subroutine zero_ghost_zmin_zmax_GF(f)
           implicit none
-          type(realField),intent(inout) :: f
+          type(grid_field),intent(inout) :: f
           integer :: i,j
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
 
 #endif
@@ -1025,76 +1025,76 @@
             f%f(i,j,1) = 0.0_cp
             f%f(i,j,f%s(3)) = 0.0_cp
           enddo; enddo
-#ifdef _PARALLELIZE_RF_
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
 
 #endif
         end subroutine
 
-        function size_RF(a) result(s)
+        function size_GF(a) result(s)
           implicit none
-          type(realField),intent(in) :: a
+          type(grid_field),intent(in) :: a
           integer :: s
           s = a%s_1D
         end function
 
       ! ------------------- LOCATION-BASED ALLOCATE / DEALLOCATE --------------------
 
-        subroutine init_RF_CC(a,g)
+        subroutine init_GF_CC(a,g)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
         end subroutine
 
-        subroutine init_RF_Face(a,g,dir)
+        subroutine init_GF_Face(a,g,dir)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           type(grid),intent(in) :: g
           integer,intent(in) :: dir
           select case (dir)
           case (1); call init(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
           case (2); call init(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
           case (3); call init(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
-          case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
+          case default; stop 'Error: dir must = 1,2,3 in init_GF_Face in GF.f90'
           end select
         end subroutine
 
-        subroutine init_RF_Edge(a,g,dir)
+        subroutine init_GF_Edge(a,g,dir)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           type(grid),intent(in) :: g
           integer,intent(in) :: dir
           select case (dir)
           case (1); call init(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
           case (2); call init(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
           case (3); call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
-          case default; stop 'Error: dir must = 1,2,3 in init_RF_Face in RF.f90'
+          case default; stop 'Error: dir must = 1,2,3 in init_GF_Face in GF.f90'
           end select
         end subroutine
 
-        subroutine init_RF_Node(a,g)
+        subroutine init_GF_Node(a,g)
           implicit none
-          type(realField),intent(inout) :: a
+          type(grid_field),intent(inout) :: a
           type(grid),intent(in) :: g
           call init(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
         end subroutine
 
         subroutine init_BC_val(f,val)
           implicit none
-          type(realField),intent(inout) :: f
+          type(grid_field),intent(inout) :: f
           real(cp),intent(in) :: val
           call init(f%b,val)
         end subroutine
 
         subroutine init_BC_vals(f,is_CC,is_Node)
           implicit none
-          type(realField),intent(inout) :: f
+          type(grid_field),intent(inout) :: f
           logical,intent(in) :: is_CC,is_Node
           logical,dimension(2) :: L
           L = (/is_CC,is_Node/)
           if (count(L).gt.1) then
-            stop 'Error: more than one datatype in init_BC_vals in RF.f90'
+            stop 'Error: more than one datatype in init_BC_vals in GF.f90'
           endif
           if (is_Node) then
             call init(f%b,f%f(2,:,:),1)

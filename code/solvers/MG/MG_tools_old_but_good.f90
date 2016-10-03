@@ -27,7 +27,7 @@
       ! **********************************************************
       ! **********************************************************
 
-      subroutine restrictField1D_RF(r,u,c,dir,s,sr,x,y,z)
+      subroutine restrictField1D_GF(r,u,c,dir,s,sr,x,y,z)
         ! This routine restricts the field u {fine grid} to r {coarse grid}
         ! There are 4 possible scenarios
         ! 
@@ -163,9 +163,9 @@
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call restrict(temp1%RF(i)%f,  u%RF(i)%f  ,g%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
-          call restrict(temp2%RF(i)%f,temp1%RF(i)%f,g%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
-          call restrict(  r%RF(i)%f,  temp2%RF(i)%f,g%c(3),3,temp2%RF(i)%s,r%RF(i)%s    ,0,0,1)
+          call restrict(temp1%GF(i)%f,  u%GF(i)%f  ,g%c(1),1,u%GF(i)%s    ,temp1%GF(i)%s,1,0,0)
+          call restrict(temp2%GF(i)%f,temp1%GF(i)%f,g%c(2),2,temp1%GF(i)%s,temp2%GF(i)%s,0,1,0)
+          call restrict(  r%GF(i)%f,  temp2%GF(i)%f,g%c(3),3,temp2%GF(i)%s,r%GF(i)%s    ,0,0,1)
         enddo
       end subroutine
 
@@ -290,9 +290,9 @@
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call prolongate(temp1%RF(i)%f,  u%RF(i)%f  ,fg%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
-          call prolongate(temp2%RF(i)%f,temp1%RF(i)%f,fg%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
-          call prolongate(  p%RF(i)%f,  temp2%RF(i)%f,fg%c(3),3,temp2%RF(i)%s,p%RF(i)%s    ,0,0,1)
+          call prolongate(temp1%GF(i)%f,  u%GF(i)%f  ,fg%c(1),1,u%GF(i)%s    ,temp1%GF(i)%s,1,0,0)
+          call prolongate(temp2%GF(i)%f,temp1%GF(i)%f,fg%c(2),2,temp1%GF(i)%s,temp2%GF(i)%s,0,1,0)
+          call prolongate(  p%GF(i)%f,  temp2%GF(i)%f,fg%c(3),3,temp2%GF(i)%s,p%GF(i)%s    ,0,0,1)
         enddo
       end subroutine
 

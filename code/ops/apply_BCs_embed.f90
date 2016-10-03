@@ -4,7 +4,7 @@
        use overlap_mod
        use mesh_mod
        use domain_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
 
@@ -48,7 +48,7 @@
          if (.not.U%is_CC) stop 'Error: CC data not found (1) in apply_BCs_faces_CC in apply_BCs_faces.f90'
 #endif
          ! call Dirichlet_C(bulk,surf,G,I,S,p)
-         call EM(U%RF(D%sd(i)%g_R2_id),U%RF(D%sd(i)%g_R1_id),EE_shape(U,D,i),'embedCC_SF')
+         call EM(U%GF(D%sd(i)%g_R2_id),U%GF(D%sd(i)%g_R1_id),EE_shape(U,D,i),'embedCC_SF')
          if (U%BCs%Dirichlet%defined) then
            do i=1,U%BCs%Dirichlet%s
            call Dirichlet_C(U%BF(U%BCs%Dirichlet%sd(i)%g_R2_id)%b,&
@@ -68,9 +68,9 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EM(CC_t%x%RF(D%sd(i)%g_R2_id),CC_i%x%RF(D%sd(i)%g_R1_id),EE_shape(CC_t%x,D,i),'embedCC_VF')
-         call EM(CC_t%y%RF(D%sd(i)%g_R2_id),CC_i%y%RF(D%sd(i)%g_R1_id),EE_shape(CC_t%y,D,i),'embedCC_VF')
-         call EM(CC_t%z%RF(D%sd(i)%g_R2_id),CC_i%z%RF(D%sd(i)%g_R1_id),EE_shape(CC_t%z,D,i),'embedCC_VF')
+         call EM(CC_t%x%GF(D%sd(i)%g_R2_id),CC_i%x%GF(D%sd(i)%g_R1_id),EE_shape(CC_t%x,D,i),'embedCC_VF')
+         call EM(CC_t%y%GF(D%sd(i)%g_R2_id),CC_i%y%GF(D%sd(i)%g_R1_id),EE_shape(CC_t%y,D,i),'embedCC_VF')
+         call EM(CC_t%z%GF(D%sd(i)%g_R2_id),CC_i%z%GF(D%sd(i)%g_R1_id),EE_shape(CC_t%z,D,i),'embedCC_VF')
          enddo
        end subroutine
 
@@ -85,7 +85,7 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EM(Face_t%RF(D%sd(i)%g_R2_id),Face_i%RF(D%sd(i)%g_R1_id),EE_shape(Face_t,D,i),'embedFace_SF')
+         call EM(Face_t%GF(D%sd(i)%g_R2_id),Face_i%GF(D%sd(i)%g_R1_id),EE_shape(Face_t,D,i),'embedFace_SF')
          enddo
        end subroutine
        subroutine embedFace_VF(Face_t,Face_i,D)
@@ -99,9 +99,9 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EM(Face_t%x%RF(D%sd(i)%g_R2_id),Face_i%x%RF(D%sd(i)%g_R1_id),EE_shape(Face_t%x,D,i),'embedFace_VF')
-         call EM(Face_t%y%RF(D%sd(i)%g_R2_id),Face_i%y%RF(D%sd(i)%g_R1_id),EE_shape(Face_t%y,D,i),'embedFace_VF')
-         call EM(Face_t%z%RF(D%sd(i)%g_R2_id),Face_i%z%RF(D%sd(i)%g_R1_id),EE_shape(Face_t%z,D,i),'embedFace_VF')
+         call EM(Face_t%x%GF(D%sd(i)%g_R2_id),Face_i%x%GF(D%sd(i)%g_R1_id),EE_shape(Face_t%x,D,i),'embedFace_VF')
+         call EM(Face_t%y%GF(D%sd(i)%g_R2_id),Face_i%y%GF(D%sd(i)%g_R1_id),EE_shape(Face_t%y,D,i),'embedFace_VF')
+         call EM(Face_t%z%GF(D%sd(i)%g_R2_id),Face_i%z%GF(D%sd(i)%g_R1_id),EE_shape(Face_t%z,D,i),'embedFace_VF')
          enddo
        end subroutine
 
@@ -116,7 +116,7 @@
          if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EM(Edge_t%RF(D%sd(i)%g_R2_id),Edge_i%RF(D%sd(i)%g_R1_id),EE_shape(Edge_t,D,i),'embedFace_VF')
+         call EM(Edge_t%GF(D%sd(i)%g_R2_id),Edge_i%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t,D,i),'embedFace_VF')
          enddo
        end subroutine
        subroutine embedEdge_VF(Edge_t,Edge_i,D) ! Embeds velocity from momentum into induction
@@ -130,9 +130,9 @@
          if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EM(Edge_t%x%RF(D%sd(i)%g_R2_id),Edge_i%x%RF(D%sd(i)%g_R1_id),EE_shape(Edge_t%x,D,i),'embedEdge_VF')
-         call EM(Edge_t%y%RF(D%sd(i)%g_R2_id),Edge_i%y%RF(D%sd(i)%g_R1_id),EE_shape(Edge_t%y,D,i),'embedEdge_VF')
-         call EM(Edge_t%z%RF(D%sd(i)%g_R2_id),Edge_i%z%RF(D%sd(i)%g_R1_id),EE_shape(Edge_t%z,D,i),'embedEdge_VF')
+         call EM(Edge_t%x%GF(D%sd(i)%g_R2_id),Edge_i%x%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t%x,D,i),'embedEdge_VF')
+         call EM(Edge_t%y%GF(D%sd(i)%g_R2_id),Edge_i%y%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t%y,D,i),'embedEdge_VF')
+         call EM(Edge_t%z%GF(D%sd(i)%g_R2_id),Edge_i%z%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t%z,D,i),'embedEdge_VF')
          enddo
        end subroutine
 

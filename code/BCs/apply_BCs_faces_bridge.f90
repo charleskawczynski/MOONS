@@ -1,7 +1,7 @@
        module apply_BCs_faces_bridge_mod
        use current_precision_mod
        use overlap_mod
-       use RF_mod
+       use GF_mod
 
        implicit none
 
@@ -46,8 +46,8 @@
 
        subroutine F_Dirichlet_C(bulk,surf,G,I,S,p) ! checked
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,I,S
          integer,intent(in) :: p
          call F_Dirichlet_C_I(bulk,surf,G(1:3)%i2(1),&
@@ -59,8 +59,8 @@
        end subroutine
        subroutine F_Dirichlet_C_I(bulk,surf,G1,G2,I1,I2,S1,S2,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,I1,I2,S1,S2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
@@ -73,8 +73,8 @@
 
        subroutine F_Dirichlet_N(bulk,surf,G,B,I,S,p) ! checked
          implicit none
-         type(realField),intent(inout) :: B ! Bulk field
-         type(realField),intent(in) :: S ! Surface field (BCs)
+         type(grid_field),intent(inout) :: B ! Bulk field
+         type(grid_field),intent(in) :: S ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,B,I,S
          integer,intent(in) :: p
          call F_Dirichlet_N_I(bulk,surf,G(1:3)%i2(1),&
@@ -88,8 +88,8 @@
        end subroutine
        subroutine F_Dirichlet_N_I(bulk,surf,G1,G2,B1,B2,I1,I2,S1,S2,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,B1,B2,I1,I2,S1,S2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
@@ -107,8 +107,8 @@
 
        subroutine F_Neumann_C(bulk,surf,G,I,S,dh,nhat,p) ! checked
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,I,S
          real(cp),intent(in) :: dh,nhat
          integer,intent(in) :: p
@@ -122,8 +122,8 @@
        end subroutine
        subroutine F_Neumann_C_I(bulk,surf,G1,G2,I1,I2,S1,S2,dh,nhat,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,I1,I2,S1,S2
          integer,dimension(2),intent(in) :: iR
          real(cp),intent(in) :: dh,nhat
@@ -137,8 +137,8 @@
 
        subroutine F_Neumann_N(bulk,surf,G,I,S,dh,nhat,p) ! checked
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,I,S
          real(cp),intent(in) :: dh,nhat
          integer,intent(in) :: p
@@ -152,8 +152,8 @@
        end subroutine
        subroutine F_Neumann_N_I(bulk,surf,G1,G2,I1,I2,S1,S2,dh,nhat,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,I1,I2,S1,S2
          real(cp),intent(in) :: dh,nhat
          integer,dimension(2),intent(in) :: iR
@@ -171,8 +171,8 @@
 
        subroutine F_Periodic_C(bulk,surf,G,S,I_opp,p) ! checked
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,I_opp,S
          integer,intent(in) :: p
          call F_Periodic_C_I(bulk,surf,G(1:3)%i2(1),&
@@ -182,8 +182,8 @@
        end subroutine
        subroutine F_Periodic_C_I(bulk,surf,G1,G2,I1,I2,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
@@ -195,8 +195,8 @@
 
        subroutine F_Periodic_N(bulk,surf,G,I_opp,S,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,I_opp,S
          integer,intent(in) :: p
          call F_Periodic_N_I(bulk,surf,G(1:3)%i2(1),&
@@ -206,8 +206,8 @@
        end subroutine
        subroutine F_Periodic_N_I(bulk,surf,G1,G2,I1,I2,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
@@ -223,8 +223,8 @@
 
        subroutine F_Robin_C(bulk,surf,G,I,S,dh,nhat,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          type(overlap),dimension(3),intent(in) :: G,I,S
          real(cp),intent(in) :: dh,nhat
          integer,intent(in) :: p
@@ -238,8 +238,8 @@
        end subroutine
        subroutine F_Robin_C_I(bulk,surf,G1,G2,I1,I2,S1,S2,dh,nhat,iR,p)
          implicit none
-         type(realField),intent(inout) :: bulk ! Bulk field
-         type(realField),intent(in) :: surf ! Surface field (BCs)
+         type(grid_field),intent(inout) :: bulk ! Bulk field
+         type(grid_field),intent(in) :: surf ! Surface field (BCs)
          integer,dimension(3),intent(in) :: G1,G2,I1,I2,S1,S2
          integer,dimension(2),intent(in) :: iR
          real(cp),intent(in) :: dh,nhat

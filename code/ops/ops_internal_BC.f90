@@ -9,7 +9,7 @@
        use mesh_mod
        use apply_BCs_mod
        use domain_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
 
@@ -21,13 +21,13 @@
        interface internal_BC_Face;  module procedure internal_BC_Face_SF;        end interface
        interface internal_BC_Face;  module procedure internal_BC_Face_VF;        end interface
 
-       interface IBC;               module procedure internal_BC_RF;             end interface
+       interface IBC;               module procedure internal_BC_GF;             end interface
 
        contains
 
-       subroutine internal_BC_RF_raw_face(A,A1,A2,CC_along)
+       subroutine internal_BC_GF_raw_face(A,A1,A2,CC_along)
          implicit none
-         type(realField),intent(inout) :: A
+         type(grid_field),intent(inout) :: A
          integer,dimension(3),intent(in) :: A1,A2
          logical,dimension(3),intent(in) :: CC_along
 #ifdef _PARALLELIZE_INTERNAL_BC_
@@ -88,12 +88,12 @@
          A%f(A1(1)+1:A2(1)-1,A1(2)+1:A2(2)-1,A2(3)-1) = -A%f(A1(1)+1:A2(1)-1,A1(2)+1:A2(2)-1,A2(3)  )
          endif
 #endif
-         call internal_BC_RF_raw_edge(A,A1,A2,CC_along)
+         call internal_BC_GF_raw_edge(A,A1,A2,CC_along)
        end subroutine
 
-       subroutine internal_BC_RF_raw_edge(A,A1,A2,CC_along)
+       subroutine internal_BC_GF_raw_edge(A,A1,A2,CC_along)
          implicit none
-         type(realField),intent(inout) :: A
+         type(grid_field),intent(inout) :: A
          integer,dimension(3),intent(in) :: A1,A2
          logical,dimension(3),intent(in) :: CC_along
          if (CC_along(2).and.CC_along(3)) then
@@ -152,13 +152,13 @@
          endif
        end subroutine
 
-       subroutine internal_BC_RF(A,AB,i_1,i_2,CC_along)
+       subroutine internal_BC_GF(A,AB,i_1,i_2,CC_along)
          implicit none
-         type(realField),intent(inout) :: A
+         type(grid_field),intent(inout) :: A
          type(overlap),dimension(3),intent(in) :: AB
          logical,dimension(3),intent(in) :: CC_along
          integer,intent(in) :: i_1,i_2
-         call internal_BC_RF_raw_face(A,(/AB(1)%i1(i_1),AB(2)%i1(i_1),AB(3)%i1(i_1)/),&
+         call internal_BC_GF_raw_face(A,(/AB(1)%i1(i_1),AB(2)%i1(i_1),AB(3)%i1(i_1)/),&
                                         (/AB(1)%i1(i_2),AB(2)%i1(i_2),AB(3)%i1(i_2)/),&
                                         CC_along)
        end subroutine
@@ -172,11 +172,11 @@
          type(SF),intent(inout) :: Face_t
          type(domain),intent(in) :: D
          integer :: i
-#ifdef _DEBUG_INTERNAL_BC_RF_
+#ifdef _DEBUG_INTERNAL_BC_GF_
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in internal_BC_Face_SF in ops_internal_BC.f90'
 #endif
          do i=1,D%s
-         call IBC(Face_t%RF(D%sd(i)%g_R2_id),EE_shape_I(Face_t,D,i),1,2,Face_t%CC_along)
+         call IBC(Face_t%GF(D%sd(i)%g_R2_id),EE_shape_I(Face_t,D,i),1,2,Face_t%CC_along)
          enddo
        end subroutine
 

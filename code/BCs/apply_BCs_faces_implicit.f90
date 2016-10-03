@@ -1,6 +1,6 @@
        module apply_BCs_faces_implicit_mod
        use current_precision_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        use bctype_mod
@@ -54,35 +54,35 @@
          a = adj_faces_given_dir(k)
          if (U%CC_along(k)) then
            do i=1,m%s
-             ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
-             if (.not.m%g(i)%st_faces(f)%TF) call app_CC_SF(U%RF(i),f,p)
+             if (.not.m%g(i)%st_faces(f)%TF) call app_CC_SF(U%GF(i),f,p)
            enddo
          elseif (U%N_along(k)) then
            do i=1,m%s
-             ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
-             if (.not.m%g(i)%st_faces(f)%TF) call app_N_SF(U%RF(i),f,p)
+             if (.not.m%g(i)%st_faces(f)%TF) call app_N_SF(U%GF(i),f,p)
            enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif
        end subroutine
 
-       subroutine app_N_SF(RF,face,p)
+       subroutine app_N_SF(GF,face,p)
          implicit none
-         type(RealField),intent(inout) :: RF
+         type(grid_field),intent(inout) :: GF
          integer,intent(in) :: face,p
-         call app_N_RF(RF%f,RF%s,face,RF%b%f(face)%b,1+p,RF%s(1)-p,RF%s(2)-p,RF%s(3)-p)
+         call app_N_GF(GF%f,GF%s,face,GF%b%f(face)%b,1+p,GF%s(1)-p,GF%s(2)-p,GF%s(3)-p)
        end subroutine
 
-       subroutine app_CC_SF(RF,face,p)
+       subroutine app_CC_SF(GF,face,p)
          implicit none
-         type(RealField),intent(inout) :: RF
+         type(grid_field),intent(inout) :: GF
          integer,intent(in) :: face,p
-         call app_CC_RF(RF%f,RF%s,face,RF%b%f(face)%b,1+p,RF%s(1)-p,RF%s(2)-p,RF%s(3)-p)
+         call app_CC_GF(GF%f,GF%s,face,GF%b%f(face)%b,1+p,GF%s(1)-p,GF%s(2)-p,GF%s(3)-p)
        end subroutine
 
-       subroutine app_N_RF(f,s,face,b,p,x,y,z)
+       subroutine app_N_GF(f,s,face,b,p,x,y,z)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          type(bctype),intent(in) :: b
@@ -100,7 +100,7 @@
          end select
        end subroutine
 
-       subroutine app_CC_RF(f,s,face,b,p,x,y,z)
+       subroutine app_CC_GF(f,s,face,b,p,x,y,z)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s ! shape

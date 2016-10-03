@@ -2,13 +2,13 @@
        ! Not all embed / extract routines are used for each method. For example,
        ! the CT method only uses embedEdge, and not embedCC or embedFace.
        ! 
-       ! Pre-processor directives: (_PARALLELIZE_EMBEDEXTRACT_SURFACE_,_DEBUG_EMBEDEXTRACT_)
+       ! Pre-processor directives: (_PARALLELIZE_EMBEDEXTRACT_SUGFACE_,_DEBUG_EMBEDEXTRACT_)
 
        use current_precision_mod
        use overlap_mod
        use mesh_mod
        use domain_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
 
@@ -36,7 +36,7 @@
        interface embedEdge_surface;      module procedure embedEdge_SF;               end interface
        interface embedEdge_surface;      module procedure embedEdge_VF;               end interface
 
-       interface EE;                     module procedure embed_extract_surface_RF;   end interface
+       interface EE;                     module procedure embed_extract_surface_GF;   end interface
 
        contains
 
@@ -46,13 +46,13 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine embedExtract_RF_raw_p_cells(A,B,A1,A2,B1,B2,p)
+       subroutine embedExtract_GF_raw_p_cells(A,B,A1,A2,B1,B2,p)
          ! This is the embed/extract (EE) routine.
          implicit none
-         type(realField),intent(inout) :: A
-         type(realField),intent(in) :: B
+         type(grid_field),intent(inout) :: A
+         type(grid_field),intent(in) :: B
          integer,dimension(3),intent(in) :: A1,A2,B1,B2,p
-#ifdef _PARALLELIZE_EMBEDEXTRACT_SURFACE_
+#ifdef _PARALLELIZE_EMBEDEXTRACT_SUGFACE_
          integer :: i,j,k
          integer,dimension(3) :: suppress_warning
          suppress_warning = B2 ! B2 is not needed for parallel computations
@@ -103,13 +103,13 @@
        end subroutine
 
 
-       subroutine embed_extract_surface_RF(A,B,AB,iA,iB)
+       subroutine embed_extract_surface_GF(A,B,AB,iA,iB)
          implicit none
-         type(realField),intent(inout) :: A
-         type(realField),intent(in) :: B
+         type(grid_field),intent(inout) :: A
+         type(grid_field),intent(in) :: B
          type(overlap),dimension(3),intent(in) :: AB
          integer,intent(in) :: iA,iB
-         call embedExtract_RF_raw_p_cells(A,B,(/AB(1)%R1(iA),AB(2)%R1(iA),AB(3)%R1(iA)/),&
+         call embedExtract_GF_raw_p_cells(A,B,(/AB(1)%R1(iA),AB(2)%R1(iA),AB(3)%R1(iA)/),&
                                               (/AB(1)%R2(iA),AB(2)%R2(iA),AB(3)%R2(iA)/),&
                                               (/AB(1)%R1(iB),AB(2)%R1(iB),AB(3)%R1(iB)/),&
                                               (/AB(1)%R2(iB),AB(2)%R2(iB),AB(3)%R2(iB)/),&
@@ -154,7 +154,7 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in extractCC_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(CC_i%RF(D%sd(i)%g_in_id),CC_t%RF(D%sd(i)%g_tot_id),EE_shape(CC_i,D,i),2,1)
+         call EE(CC_i%GF(D%sd(i)%g_in_id),CC_t%GF(D%sd(i)%g_tot_id),EE_shape(CC_i,D,i),2,1)
          enddo
        end subroutine
        subroutine extractCC_VF(CC_i,CC_t,D)
@@ -168,9 +168,9 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in extractCC_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(CC_i%x%RF(D%sd(i)%g_in_id),CC_t%x%RF(D%sd(i)%g_tot_id),EE_shape(CC_i%x,D,i),2,1)
-         call EE(CC_i%y%RF(D%sd(i)%g_in_id),CC_t%y%RF(D%sd(i)%g_tot_id),EE_shape(CC_i%y,D,i),2,1)
-         call EE(CC_i%z%RF(D%sd(i)%g_in_id),CC_t%z%RF(D%sd(i)%g_tot_id),EE_shape(CC_i%z,D,i),2,1)
+         call EE(CC_i%x%GF(D%sd(i)%g_in_id),CC_t%x%GF(D%sd(i)%g_tot_id),EE_shape(CC_i%x,D,i),2,1)
+         call EE(CC_i%y%GF(D%sd(i)%g_in_id),CC_t%y%GF(D%sd(i)%g_tot_id),EE_shape(CC_i%y,D,i),2,1)
+         call EE(CC_i%z%GF(D%sd(i)%g_in_id),CC_t%z%GF(D%sd(i)%g_tot_id),EE_shape(CC_i%z,D,i),2,1)
          enddo
        end subroutine
 
@@ -185,7 +185,7 @@
          if (.not.face_i%is_Face) stop 'Error: face data not found (2) in extractFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(face_i%RF(D%sd(i)%g_in_id),face_t%RF(D%sd(i)%g_tot_id),EE_shape(face_i,D,i),2,1)
+         call EE(face_i%GF(D%sd(i)%g_in_id),face_t%GF(D%sd(i)%g_tot_id),EE_shape(face_i,D,i),2,1)
          enddo
        end subroutine
        subroutine extractFace_VF(face_i,face_t,D) ! Extracts Lorentz force from induction to momentum
@@ -199,9 +199,9 @@
          if (.not.face_i%is_Face) stop 'Error: face data not found (2) in extractFace_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(face_i%x%RF(D%sd(i)%g_in_id),face_t%x%RF(D%sd(i)%g_tot_id),EE_shape(face_i%x,D,i),2,1)
-         call EE(face_i%y%RF(D%sd(i)%g_in_id),face_t%y%RF(D%sd(i)%g_tot_id),EE_shape(face_i%y,D,i),2,1)
-         call EE(face_i%z%RF(D%sd(i)%g_in_id),face_t%z%RF(D%sd(i)%g_tot_id),EE_shape(face_i%z,D,i),2,1)
+         call EE(face_i%x%GF(D%sd(i)%g_in_id),face_t%x%GF(D%sd(i)%g_tot_id),EE_shape(face_i%x,D,i),2,1)
+         call EE(face_i%y%GF(D%sd(i)%g_in_id),face_t%y%GF(D%sd(i)%g_tot_id),EE_shape(face_i%y,D,i),2,1)
+         call EE(face_i%z%GF(D%sd(i)%g_in_id),face_t%z%GF(D%sd(i)%g_tot_id),EE_shape(face_i%z,D,i),2,1)
          enddo
        end subroutine
 
@@ -216,7 +216,7 @@
          if (.not.edge_t%is_Edge) stop 'Error: edge data not found (2) in extractEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(edge_i%RF(D%sd(i)%g_in_id),edge_t%RF(D%sd(i)%g_tot_id),EE_shape(edge_i,D,i),2,1)
+         call EE(edge_i%GF(D%sd(i)%g_in_id),edge_t%GF(D%sd(i)%g_tot_id),EE_shape(edge_i,D,i),2,1)
          enddo
        end subroutine
        subroutine extractEdge_VF(edge_i,edge_t,D) ! Auxiliary (energy budget)
@@ -230,9 +230,9 @@
          if (.not.edge_t%is_Edge) stop 'Error: edge data not found (2) in extractEdge_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(edge_i%x%RF(D%sd(i)%g_in_id),edge_t%x%RF(D%sd(i)%g_tot_id),EE_shape(edge_i%x,D,i),2,1)
-         call EE(edge_i%y%RF(D%sd(i)%g_in_id),edge_t%y%RF(D%sd(i)%g_tot_id),EE_shape(edge_i%y,D,i),2,1)
-         call EE(edge_i%z%RF(D%sd(i)%g_in_id),edge_t%z%RF(D%sd(i)%g_tot_id),EE_shape(edge_i%z,D,i),2,1)
+         call EE(edge_i%x%GF(D%sd(i)%g_in_id),edge_t%x%GF(D%sd(i)%g_tot_id),EE_shape(edge_i%x,D,i),2,1)
+         call EE(edge_i%y%GF(D%sd(i)%g_in_id),edge_t%y%GF(D%sd(i)%g_tot_id),EE_shape(edge_i%y,D,i),2,1)
+         call EE(edge_i%z%GF(D%sd(i)%g_in_id),edge_t%z%GF(D%sd(i)%g_tot_id),EE_shape(edge_i%z,D,i),2,1)
          enddo
        end subroutine
 
@@ -274,7 +274,7 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(CC_t%RF(D%sd(i)%g_tot_id),CC_i%RF(D%sd(i)%g_in_id),EE_shape(CC_t,D,i),1,2)
+         call EE(CC_t%GF(D%sd(i)%g_tot_id),CC_i%GF(D%sd(i)%g_in_id),EE_shape(CC_t,D,i),1,2)
          enddo
        end subroutine
        subroutine embedCC_VF(CC_t,CC_i,D)
@@ -288,9 +288,9 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(CC_t%x%RF(D%sd(i)%g_tot_id),CC_i%x%RF(D%sd(i)%g_in_id),EE_shape(CC_t%x,D,i),1,2)
-         call EE(CC_t%y%RF(D%sd(i)%g_tot_id),CC_i%y%RF(D%sd(i)%g_in_id),EE_shape(CC_t%y,D,i),1,2)
-         call EE(CC_t%z%RF(D%sd(i)%g_tot_id),CC_i%z%RF(D%sd(i)%g_in_id),EE_shape(CC_t%z,D,i),1,2)
+         call EE(CC_t%x%GF(D%sd(i)%g_tot_id),CC_i%x%GF(D%sd(i)%g_in_id),EE_shape(CC_t%x,D,i),1,2)
+         call EE(CC_t%y%GF(D%sd(i)%g_tot_id),CC_i%y%GF(D%sd(i)%g_in_id),EE_shape(CC_t%y,D,i),1,2)
+         call EE(CC_t%z%GF(D%sd(i)%g_tot_id),CC_i%z%GF(D%sd(i)%g_in_id),EE_shape(CC_t%z,D,i),1,2)
          enddo
        end subroutine
 
@@ -305,7 +305,7 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(Face_t%RF(D%sd(i)%g_tot_id),Face_i%RF(D%sd(i)%g_in_id),EE_shape(Face_t,D,i),1,2)
+         call EE(Face_t%GF(D%sd(i)%g_tot_id),Face_i%GF(D%sd(i)%g_in_id),EE_shape(Face_t,D,i),1,2)
          enddo
        end subroutine
        subroutine embedFace_VF(Face_t,Face_i,D)
@@ -319,9 +319,9 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(Face_t%x%RF(D%sd(i)%g_tot_id),Face_i%x%RF(D%sd(i)%g_in_id),EE_shape(Face_t%x,D,i),1,2)
-         call EE(Face_t%y%RF(D%sd(i)%g_tot_id),Face_i%y%RF(D%sd(i)%g_in_id),EE_shape(Face_t%y,D,i),1,2)
-         call EE(Face_t%z%RF(D%sd(i)%g_tot_id),Face_i%z%RF(D%sd(i)%g_in_id),EE_shape(Face_t%z,D,i),1,2)
+         call EE(Face_t%x%GF(D%sd(i)%g_tot_id),Face_i%x%GF(D%sd(i)%g_in_id),EE_shape(Face_t%x,D,i),1,2)
+         call EE(Face_t%y%GF(D%sd(i)%g_tot_id),Face_i%y%GF(D%sd(i)%g_in_id),EE_shape(Face_t%y,D,i),1,2)
+         call EE(Face_t%z%GF(D%sd(i)%g_tot_id),Face_i%z%GF(D%sd(i)%g_in_id),EE_shape(Face_t%z,D,i),1,2)
          enddo
        end subroutine
 
@@ -336,7 +336,7 @@
          if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(Edge_t%RF(D%sd(i)%g_tot_id),Edge_i%RF(D%sd(i)%g_in_id),EE_shape(Edge_t,D,i),1,2)
+         call EE(Edge_t%GF(D%sd(i)%g_tot_id),Edge_i%GF(D%sd(i)%g_in_id),EE_shape(Edge_t,D,i),1,2)
          enddo
        end subroutine
        subroutine embedEdge_VF(Edge_t,Edge_i,D) ! Embeds velocity from momentum into induction
@@ -350,9 +350,9 @@
          if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_VF in ops_embedExtract.f90'
 #endif
          do i=1,D%s
-         call EE(Edge_t%x%RF(D%sd(i)%g_tot_id),Edge_i%x%RF(D%sd(i)%g_in_id),EE_shape(Edge_t%x,D,i),1,2)
-         call EE(Edge_t%y%RF(D%sd(i)%g_tot_id),Edge_i%y%RF(D%sd(i)%g_in_id),EE_shape(Edge_t%y,D,i),1,2)
-         call EE(Edge_t%z%RF(D%sd(i)%g_tot_id),Edge_i%z%RF(D%sd(i)%g_in_id),EE_shape(Edge_t%z,D,i),1,2)
+         call EE(Edge_t%x%GF(D%sd(i)%g_tot_id),Edge_i%x%GF(D%sd(i)%g_in_id),EE_shape(Edge_t%x,D,i),1,2)
+         call EE(Edge_t%y%GF(D%sd(i)%g_tot_id),Edge_i%y%GF(D%sd(i)%g_in_id),EE_shape(Edge_t%y,D,i),1,2)
+         call EE(Edge_t%z%GF(D%sd(i)%g_tot_id),Edge_i%z%GF(D%sd(i)%g_in_id),EE_shape(Edge_t%z,D,i),1,2)
          enddo
        end subroutine
 

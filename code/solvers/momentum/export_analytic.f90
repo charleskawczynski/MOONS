@@ -31,13 +31,13 @@
          call init_Face(temp,m,dir)
          select case (dir)
          case (1); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(i,:,:) = Shercliff_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         temp%GF(1)%f(i,:,:) = Shercliff_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
          enddo
          case (2); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,i,:) = Shercliff_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         temp%GF(1)%f(:,i,:) = Shercliff_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
          enddo
          case (3); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,:,i) = Shercliff_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,Ha,mu,dpdh)
+         temp%GF(1)%f(:,:,i) = Shercliff_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,Ha,mu,dpdh)
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
@@ -64,13 +64,13 @@
          call init_Face(temp,m,dir)
          select case (dir)
          case (1); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(i,:,:) = Hunt_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         temp%GF(1)%f(i,:,:) = Hunt_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
          enddo
          case (2); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,i,:) = Hunt_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         temp%GF(1)%f(:,i,:) = Hunt_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
          enddo
          case (3); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,:,i) = Hunt_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,Ha,mu,dpdh)
+         temp%GF(1)%f(:,:,i) = Hunt_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,Ha,mu,dpdh)
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
@@ -96,13 +96,13 @@
          call init_Face(temp,m,dir)
          select case (dir)
          case (1); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(i,:,:) = SH_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,d_B,Ha,mu,dpdh)
+         temp%GF(1)%f(i,:,:) = SH_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,d_B,Ha,mu,dpdh)
          enddo
          case (2); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,i,:) = SH_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,d_B,Ha,mu,dpdh)
+         temp%GF(1)%f(:,i,:) = SH_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,d_B,Ha,mu,dpdh)
          enddo
          case (3); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,:,i) = SH_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,d_B,Ha,mu,dpdh)
+         temp%GF(1)%f(:,:,i) = SH_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,d_B,Ha,mu,dpdh)
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select

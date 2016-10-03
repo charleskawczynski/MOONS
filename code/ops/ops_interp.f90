@@ -40,7 +40,7 @@
 
        ! Compiler flags: ( fopenmp, _DEBUG_INTERP_ )
 
-       ! VECTOR INTERFACES:
+       ! VECTOR INTEGFACES:
        !        face2Face_VF(faceX,faceY,faceZ,face,m,tempCC)
        !        face2CellCenter_VF(cellCenter,face,m)
        !        face2Node_VF(node,face,m,tempE)
@@ -89,11 +89,11 @@
 
        ! ****************** Raw interpolation / extrapolation routines ******************
 
-       interface interp;              module procedure interpO2_RF;          end interface
+       interface interp;              module procedure interpO2_GF;          end interface
        interface interp;              module procedure interpO2_SF;          end interface
-       interface extrap;              module procedure extrapO2_RF;          end interface
+       interface extrap;              module procedure extrapO2_GF;          end interface
 
-       interface extrap;              module procedure extrapLinear_RF;      end interface
+       interface extrap;              module procedure extrapLinear_GF;      end interface
        interface extrap;              module procedure extrapO2_SF;          end interface
 
        ! ********************************** SF routines **********************************
@@ -150,7 +150,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2_RF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,p)
+       subroutine interpO2_GF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,p)
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform 
          ! grids. f lives on the dual grid. It is expected that
@@ -233,7 +233,7 @@
          endif
        end subroutine
 
-       subroutine extrapO2_RF(f,g,sf,sg,dir)
+       subroutine extrapO2_GF(f,g,sf,sg,dir)
          ! extrapO2 extrapolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for 
          ! non-uniform grids. f lives on the dual grid. 
@@ -288,7 +288,7 @@
          end select
        end subroutine
 
-       subroutine extrapLinear_RF(f,sf,dir)
+       subroutine extrapLinear_GF(f,sf,dir)
          ! extrapO2 extrapolates f to ghost points.
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -307,7 +307,7 @@
          type(mesh),intent(in) :: m
          integer :: i,k
          do k=1,3; do i=1,m%s
-           call extrap(f%RF(i)%f,f%RF(i)%s,k) ! Calls linear, collocated extrapolation
+           call extrap(f%GF(i)%f,f%GF(i)%s,k) ! Calls linear, collocated extrapolation
          enddo; enddo
        end subroutine
 
@@ -319,7 +319,7 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,m%s
-           call interp(f%RF(i)%f,g%RF(i)%f,m%g(i),f%RF(i)%s,g%RF(i)%s,&
+           call interp(f%GF(i)%f,g%GF(i)%f,m%g(i),f%GF(i)%s,g%GF(i)%s,&
            f%N_along(dir),f%CC_along(dir),&
            g%N_along(dir),g%CC_along(dir),&
            dir,m%int_tensor(dir)%eye)
@@ -550,7 +550,7 @@
          case (1); faceDir = 2
          case (2); faceDir = 3
          case (3); faceDir = 1
-         case default; stop 'Error: edgeDir must = 1,2,3 in edge2CellCenter_RF in interpOps.f90'
+         case default; stop 'Error: edgeDir must = 1,2,3 in edge2CellCenter_GF in interpOps.f90'
          end select
          call edge2Face(tempF,edge,m,edgeDir,faceDir)
          call face2CellCenter(cellCenter,tempF,m,faceDir)

@@ -54,7 +54,7 @@
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
          do t=1,u%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
-           eTemp = eTemp + (u%RF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
+           eTemp = eTemp + (u%GF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -62,7 +62,7 @@
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
          do t=1,u%s; do k=3,m%g(t)%c(3)%sn-2; do j=3,m%g(t)%c(2)%sn-2; do i=3,m%g(t)%c(1)%sn-2
-           eTemp = eTemp + (u%RF(t)%f(i,j,k)**n)*m%g(t)%c(1)%dhc(i-1)*&
+           eTemp = eTemp + (u%GF(t)%f(i,j,k)**n)*m%g(t)%c(1)%dhc(i-1)*&
                                                  m%g(t)%c(2)%dhc(j-1)*&
                                                  m%g(t)%c(3)%dhc(k-1)
          enddo; enddo; enddo; enddo
@@ -88,9 +88,9 @@
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
          do t=1,m%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
-           eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**n+&
-                            u%y%RF(t)%f(i,j,k)**n+&
-                            u%z%RF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
+           eTemp = eTemp + (u%x%GF(t)%f(i,j,k)**n+&
+                            u%y%GF(t)%f(i,j,k)**n+&
+                            u%z%GF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -112,15 +112,15 @@
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
          do t=1,m%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
-           eTemp = eTemp + (u%x%x%RF(t)%f(i,j,k)**n+&
-                            u%x%y%RF(t)%f(i,j,k)**n+&
-                            u%x%z%RF(t)%f(i,j,k)**n+&
-                            u%y%x%RF(t)%f(i,j,k)**n+&
-                            u%y%y%RF(t)%f(i,j,k)**n+&
-                            u%y%z%RF(t)%f(i,j,k)**n+&
-                            u%z%x%RF(t)%f(i,j,k)**n+&
-                            u%z%y%RF(t)%f(i,j,k)**n+&
-                            u%z%z%RF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
+           eTemp = eTemp + (u%x%x%GF(t)%f(i,j,k)**n+&
+                            u%x%y%GF(t)%f(i,j,k)**n+&
+                            u%x%z%GF(t)%f(i,j,k)**n+&
+                            u%y%x%GF(t)%f(i,j,k)**n+&
+                            u%y%y%GF(t)%f(i,j,k)**n+&
+                            u%y%z%GF(t)%f(i,j,k)**n+&
+                            u%z%x%GF(t)%f(i,j,k)**n+&
+                            u%z%y%GF(t)%f(i,j,k)**n+&
+                            u%z%z%GF(t)%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -176,8 +176,8 @@
          integer :: i,j,k,t
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,u%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-           eTemp = eTemp + (u%RF(t)%f(i,j,k)**n)*vol%RF(t)%f(i,j,k)
+         do t=1,u%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
+           eTemp = eTemp + (u%GF(t)%f(i,j,k)**n)*vol%GF(t)%f(i,j,k)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -197,10 +197,10 @@
          integer :: i,j,k,t
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,u%x%s; do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
-           eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**n+&
-                            u%y%RF(t)%f(i,j,k)**n+&
-                            u%z%RF(t)%f(i,j,k)**n)*vol%RF(t)%f(i,j,k)
+         do t=1,u%x%s; do k=2,u%x%GF(t)%s(3)-1; do j=2,u%x%GF(t)%s(2)-1; do i=2,u%x%GF(t)%s(1)-1
+           eTemp = eTemp + (u%x%GF(t)%f(i,j,k)**n+&
+                            u%y%GF(t)%f(i,j,k)**n+&
+                            u%z%GF(t)%f(i,j,k)**n)*vol%GF(t)%f(i,j,k)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -221,20 +221,20 @@
          else
            eTemp = 0.0_cp ! temp is necessary for reduction
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%x%s; do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
-             eTemp = eTemp + (u%x%RF(t)%f(i,j,k)**n)*vol%x%RF(t)%f(i,j,k)
+           do t=1,u%x%s; do k=2,u%x%GF(t)%s(3)-1; do j=2,u%x%GF(t)%s(2)-1; do i=2,u%x%GF(t)%s(1)-1
+             eTemp = eTemp + (u%x%GF(t)%f(i,j,k)**n)*vol%x%GF(t)%f(i,j,k)
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = eTemp; eTemp = 0.0_cp
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%y%s; do k=2,u%y%RF(t)%s(3)-1; do j=2,u%y%RF(t)%s(2)-1; do i=2,u%y%RF(t)%s(1)-1
-             eTemp = eTemp + (u%y%RF(t)%f(i,j,k)**n)*vol%y%RF(t)%f(i,j,k)
+           do t=1,u%y%s; do k=2,u%y%GF(t)%s(3)-1; do j=2,u%y%GF(t)%s(2)-1; do i=2,u%y%GF(t)%s(1)-1
+             eTemp = eTemp + (u%y%GF(t)%f(i,j,k)**n)*vol%y%GF(t)%f(i,j,k)
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = e+eTemp; eTemp = 0.0_cp
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%z%s; do k=2,u%z%RF(t)%s(3)-1; do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-             eTemp = eTemp + (u%z%RF(t)%f(i,j,k)**n)*vol%z%RF(t)%f(i,j,k)
+           do t=1,u%z%s; do k=2,u%z%GF(t)%s(3)-1; do j=2,u%z%GF(t)%s(2)-1; do i=2,u%z%GF(t)%s(1)-1
+             eTemp = eTemp + (u%z%GF(t)%f(i,j,k)**n)*vol%z%GF(t)%f(i,j,k)
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = e+eTemp
@@ -254,8 +254,8 @@
          integer :: i,j,k,t
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,u%s; do k=2,u%RF(t)%s(3)-1; do j=2,u%RF(t)%s(2)-1; do i=2,u%RF(t)%s(1)-1
-           eTemp = eTemp + (u%RF(t)%f(i,j,k)**n)
+         do t=1,u%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
+           eTemp = eTemp + (u%GF(t)%f(i,j,k)**n)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -275,30 +275,30 @@
          if (u%is_CC.or.u%is_Node) then
            eTemp = 0.0_cp ! temp is necessary for reduction
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%x%s; do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
-             eTemp = eTemp + u%x%RF(t)%f(i,j,k)**n+&
-                             u%y%RF(t)%f(i,j,k)**n+&
-                             u%z%RF(t)%f(i,j,k)**n
+           do t=1,u%x%s; do k=2,u%x%GF(t)%s(3)-1; do j=2,u%x%GF(t)%s(2)-1; do i=2,u%x%GF(t)%s(1)-1
+             eTemp = eTemp + u%x%GF(t)%f(i,j,k)**n+&
+                             u%y%GF(t)%f(i,j,k)**n+&
+                             u%z%GF(t)%f(i,j,k)**n
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = eTemp
          else
            eTemp = 0.0_cp ! temp is necessary for reduction
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%x%s; do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1; do i=2,u%x%RF(t)%s(1)-1
-             eTemp = eTemp + u%x%RF(t)%f(i,j,k)**n
+           do t=1,u%x%s; do k=2,u%x%GF(t)%s(3)-1; do j=2,u%x%GF(t)%s(2)-1; do i=2,u%x%GF(t)%s(1)-1
+             eTemp = eTemp + u%x%GF(t)%f(i,j,k)**n
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = eTemp; eTemp = 0.0_cp
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%y%s; do k=2,u%y%RF(t)%s(3)-1; do j=2,u%y%RF(t)%s(2)-1; do i=2,u%y%RF(t)%s(1)-1
-             eTemp = eTemp + u%y%RF(t)%f(i,j,k)**n
+           do t=1,u%y%s; do k=2,u%y%GF(t)%s(3)-1; do j=2,u%y%GF(t)%s(2)-1; do i=2,u%y%GF(t)%s(1)-1
+             eTemp = eTemp + u%y%GF(t)%f(i,j,k)**n
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = e+eTemp; eTemp = 0.0_cp
            !$OMP PARALLEL DO REDUCTION(+:eTemp)
-           do t=1,u%z%s; do k=2,u%z%RF(t)%s(3)-1; do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-             eTemp = eTemp + u%z%RF(t)%f(i,j,k)**n
+           do t=1,u%z%s; do k=2,u%z%GF(t)%s(3)-1; do j=2,u%z%GF(t)%s(2)-1; do i=2,u%z%GF(t)%s(1)-1
+             eTemp = eTemp + u%z%GF(t)%f(i,j,k)**n
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            e = e+eTemp

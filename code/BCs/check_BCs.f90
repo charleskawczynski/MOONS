@@ -17,13 +17,13 @@
          integer :: i,k
          do i=1,U%s
            do k=1,6
-             if (.not.U%RF(i)%b%f(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+             if (.not.U%GF(i)%b%f(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo
            do k=1,12
-             if (.not.U%RF(i)%b%e(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+             if (.not.U%GF(i)%b%e(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo
            do k=1,6
-             if (.not.U%RF(i)%b%c(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
+             if (.not.U%GF(i)%b%c(k)%b%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
            enddo
          enddo
        end subroutine

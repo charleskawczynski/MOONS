@@ -78,7 +78,7 @@
         mg(:)%nLevels = size(mg)
         ! mg(:)%displayTF = displayTF
         mg(:)%displayTF = displayTF
-        s = u%RF(1)%s
+        s = u%GF(1)%s
 
         ! ******************** Check size of data ********************
         if (u%is_Node) then

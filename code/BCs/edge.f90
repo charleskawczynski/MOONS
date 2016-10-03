@@ -42,7 +42,7 @@
        end type
 
        interface init;       module procedure init_size;             end interface
-       interface init;       module procedure init_vals_RF;          end interface
+       interface init;       module procedure init_vals_GF;          end interface
        interface init;       module procedure init_val;              end interface
        interface init;       module procedure init_copy;             end interface
        interface delete;     module procedure delete_edge;           end interface
@@ -69,14 +69,14 @@
          e%defined = all(e%def)
        end subroutine
 
-       subroutine init_vals_RF(e,vals)
+       subroutine init_vals_GF(e,vals)
          implicit none
          type(edge),intent(inout) :: e
          real(cp),dimension(:),intent(in) :: vals
          integer :: s
          s = size(vals)
          if (s.lt.1) stop 'Error: edge size input less than 1 in edge.f90'
-         if (s.ne.e%s) stop 'Error: shape mis-match in init_vals_RF in edge.f90'
+         if (s.ne.e%s) stop 'Error: shape mis-match in init_vals_GF in edge.f90'
          call init(e%b,vals)
          e%vals = vals
          e%def(2) = .true.

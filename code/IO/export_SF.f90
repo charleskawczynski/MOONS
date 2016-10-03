@@ -30,10 +30,10 @@
         character(len=*),intent(in) :: arrfmt,name
         integer :: i,DT
         call exp_Header_3D_1C(un,name)
-        DT = getType_3D(m%g(1),A%RF(1)%s,name)
+        DT = getType_3D(m%g(1),A%GF(1)%s,name)
         do i=1,m%s
-          call exp_Zone_3I(un,A%RF(i)%s-2*pad,i)
-          call exp_3D_1C_g(m%g(i),DT,pad,un,arrfmt,A%RF(i)%s,A%RF(i)%f)
+          call exp_Zone_3I(un,A%GF(i)%s-2*pad,i)
+          call exp_3D_1C_g(m%g(i),DT,pad,un,arrfmt,A%GF(i)%s,A%GF(i)%f)
         enddo
       end subroutine
 
@@ -51,23 +51,23 @@
         integer :: i,DT
         call exp_Header_2D_1C(un,dir,name)
         select case (dir)
-        case(1); s = (/A%RF(1)%s(2),A%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
-        case(2); s = (/A%RF(1)%s(1),A%RF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
-        case(3); s = (/A%RF(1)%s(1),A%RF(1)%s(2)/); DT = getType_2D(m%g(1),s,name,dir)
+        case(1); s = (/A%GF(1)%s(2),A%GF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
+        case(2); s = (/A%GF(1)%s(1),A%GF(1)%s(3)/); DT = getType_2D(m%g(1),s,name,dir)
+        case(3); s = (/A%GF(1)%s(1),A%GF(1)%s(2)/); DT = getType_2D(m%g(1),s,name,dir)
         case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
         end select
         select case (dir)
         case(1); do i=1,m%s
-                   s = (/A%RF(i)%s(2),A%RF(i)%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
-                   call exp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%RF(i)%f(2,:,:))
+                   s = (/A%GF(i)%s(2),A%GF(i)%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
+                   call exp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%GF(i)%f(2,:,:))
                  enddo
         case(2); do i=1,m%s
-                   s = (/A%RF(i)%s(1),A%RF(i)%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
-                   call exp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%RF(i)%f(:,2,:))
+                   s = (/A%GF(i)%s(1),A%GF(i)%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
+                   call exp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%GF(i)%f(:,2,:))
                  enddo
         case(3); do i=1,m%s
-                   s = (/A%RF(i)%s(1),A%RF(i)%s(2)/); call exp_Zone_2I(un,s-2*pad,i)
-                   call exp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%RF(i)%f(:,:,2))
+                   s = (/A%GF(i)%s(1),A%GF(i)%s(2)/); call exp_Zone_2I(un,s-2*pad,i)
+                   call exp_2D_1C_g(m%g(i),DT,pad,un,arrfmt,s,dir,A%GF(i)%f(:,:,2))
                  enddo
         case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
         end select

@@ -9,7 +9,7 @@
        use mesh_mod
        use apply_BCs_mod
        use domain_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
 
@@ -21,17 +21,17 @@
        interface internal_BC_Face;  module procedure internal_BC_Face_SF;        end interface
        interface internal_BC_Face;  module procedure internal_BC_Face_VF;        end interface
 
-       interface IBC;               module procedure internal_BC_RF;             end interface
+       interface IBC;               module procedure internal_BC_GF;             end interface
 
        contains
 
-       subroutine internal_BC_RF_raw(A,B,A1,A2,B1,B2,p,shift,CC_along)
+       subroutine internal_BC_GF_raw(A,B,A1,A2,B1,B2,p,shift,CC_along)
          implicit none
-         type(realField),intent(inout) :: A
-         type(realField),intent(in) :: B
+         type(grid_field),intent(inout) :: A
+         type(grid_field),intent(in) :: B
          integer,dimension(3),intent(in) :: A1,A2,B1,B2,p,shift
          logical,dimension(3),intent(in) :: CC_along
-#ifdef _PARALLELIZE_INTERNAL_BC_RF_
+#ifdef _PARALLELIZE_INTERNAL_BC_GF_
          integer :: i,j,k
          integer,dimension(3) :: suppress_warning
          suppress_warning = B2 ! B2 is not needed for parallel computations
@@ -93,14 +93,14 @@
 #endif
        end subroutine
 
-       subroutine internal_BC_RF(A,B,AB,iA,iB,CC_along)
+       subroutine internal_BC_GF(A,B,AB,iA,iB,CC_along)
          implicit none
-         type(realField),intent(inout) :: A
-         type(realField),intent(in) :: B
+         type(grid_field),intent(inout) :: A
+         type(grid_field),intent(in) :: B
          type(overlap),dimension(3),intent(in) :: AB
          logical,dimension(3),intent(in) :: CC_along
          integer,intent(in) :: iA,iB
-         call internal_BC_RF_raw(A,B,(/AB(1)%R1(iA),AB(2)%R1(iA),AB(3)%R1(iA)/),&
+         call internal_BC_GF_raw(A,B,(/AB(1)%R1(iA),AB(2)%R1(iA),AB(3)%R1(iA)/),&
                                      (/AB(1)%R2(iA),AB(2)%R2(iA),AB(3)%R2(iA)/),&
                                      (/AB(1)%R1(iB),AB(2)%R1(iB),AB(3)%R1(iB)/),&
                                      (/AB(1)%R2(iB),AB(2)%R2(iB),AB(3)%R2(iB)/),&
@@ -117,13 +117,13 @@
          type(SF),intent(in) :: Face_i
          type(domain),intent(in) :: D
          integer :: i
-#ifdef _DEBUG_INTERNAL_BC_RF_
+#ifdef _DEBUG_INTERNAL_BC_GF_
          if (.not.Face_i%is_Face) stop 'Error: Face data not found (1) in internal_BC_Face_SF in ops_internal_BC.f90'
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in internal_BC_Face_SF in ops_internal_BC.f90'
 #endif
          do i=1,D%s
-         call IBC(Face_t%RF(D%sd(i)%g_tot_id),&
-                  Face_i%RF(D%sd(i)%g_in_id),&
+         call IBC(Face_t%GF(D%sd(i)%g_tot_id),&
+                  Face_i%GF(D%sd(i)%g_in_id),&
                   EE_shape_I(Face_t,D,i),1,2,(/Face_t%CC_along(1),&
                                                Face_t%CC_along(2),&
                                                Face_t%CC_along(3)/))

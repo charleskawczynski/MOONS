@@ -51,7 +51,7 @@
         type(FFTSolver),intent(inout) :: FFT
         type(SF),intent(in) :: u
         type(mesh),intent(in) :: m
-        FFT%s = u%RF(1)%s
+        FFT%s = u%GF(1)%s
         FFT%dx2 = m%g(1)%c(1)%dhn(1)**2.0_cp
         FFT%dy2 = m%g(1)%c(2)%dhn(1)**2.0_cp
         FFT%dz2 = m%g(1)%c(3)%dhn(1)**2.0_cp
@@ -85,16 +85,16 @@
 
         call assign(FFT%f,f)
         do t=1,u%s
-          s = U%RF(t)%s
+          s = U%GF(t)%s
           call init(FFT,U,m)
 
           select case (dir)
-          case (1); call dct(FFT%f%RF(t)%f(:,2:s(2)-1,:),2,1)
-                    call dct(FFT%f%RF(t)%f(:,:,2:s(3)-1),3,1)
-          case (2); call dct(FFT%f%RF(t)%f(2:s(1)-1,:,:),1,1)
-                    call dct(FFT%f%RF(t)%f(:,:,2:s(3)-1),3,1)
-          case (3); call dct(FFT%f%RF(t)%f(2:s(1)-1,:,:),1,1)
-                    call dct(FFT%f%RF(t)%f(:,2:s(2)-1,:),2,1)
+          case (1); call dct(FFT%f%GF(t)%f(:,2:s(2)-1,:),2,1)
+                    call dct(FFT%f%GF(t)%f(:,:,2:s(3)-1),3,1)
+          case (2); call dct(FFT%f%GF(t)%f(2:s(1)-1,:,:),1,1)
+                    call dct(FFT%f%GF(t)%f(:,:,2:s(3)-1),3,1)
+          case (3); call dct(FFT%f%GF(t)%f(2:s(1)-1,:,:),1,1)
+                    call dct(FFT%f%GF(t)%f(:,2:s(2)-1,:),2,1)
           case default
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select
@@ -107,7 +107,7 @@
             cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
             cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
             if (.not.((i.eq.2).and.(j.eq.2))) then
-              u%RF(t)%f(i,j,k) = 0.5_cp*FFT%f%RF(t)%f(i,j,k)/(cosj+cosk-2.0_cp)*FFT%dy2
+              u%GF(t)%f(i,j,k) = 0.5_cp*FFT%f%GF(t)%f(i,j,k)/(cosj+cosk-2.0_cp)*FFT%dy2
             endif
             enddo; enddo; enddo
             !$OMP END PARALLEL DO
@@ -117,7 +117,7 @@
             cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
             cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
             if (.not.((i.eq.2).and.(k.eq.2))) then
-              u%RF(t)%f(i,j,k) = 0.5_cp*FFT%f%RF(t)%f(i,j,k)/(cosi+cosk-2.0_cp)*FFT%dx2
+              u%GF(t)%f(i,j,k) = 0.5_cp*FFT%f%GF(t)%f(i,j,k)/(cosi+cosk-2.0_cp)*FFT%dx2
             endif
             enddo; enddo; enddo
             !$OMP END PARALLEL DO
@@ -127,7 +127,7 @@
             cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
             cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
             if (.not.((i.eq.2).and.(j.eq.2))) then
-              u%RF(t)%f(i,j,k) = 0.5_cp*FFT%f%RF(t)%f(i,j,k)/(cosi+cosj-2.0_cp)*FFT%dx2
+              u%GF(t)%f(i,j,k) = 0.5_cp*FFT%f%GF(t)%f(i,j,k)/(cosi+cosj-2.0_cp)*FFT%dx2
             endif
             enddo; enddo; enddo
             !$OMP END PARALLEL DO
@@ -137,20 +137,20 @@
 
           ! 'Pin down pressure'
           select case (dir)
-          case (1); u%RF(t)%f(:,2,2) = 0.0_cp
-          case (2); u%RF(t)%f(2,:,2) = 0.0_cp
-          case (3); u%RF(t)%f(2,2,:) = 0.0_cp
+          case (1); u%GF(t)%f(:,2,2) = 0.0_cp
+          case (2); u%GF(t)%f(2,:,2) = 0.0_cp
+          case (3); u%GF(t)%f(2,2,:) = 0.0_cp
           case default
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select
 
           select case (dir)
-          case (1); call idct(u%RF(t)%f(:,2:s(2)-1,:),2,1)
-                    call idct(u%RF(t)%f(:,:,2:s(3)-1),3,1)
-          case (2); call idct(u%RF(t)%f(2:s(1)-1,:,:),1,1)
-                    call idct(u%RF(t)%f(:,:,2:s(3)-1),3,1)
-          case (3); call idct(u%RF(t)%f(2:s(1)-1,:,:),1,1)
-                    call idct(u%RF(t)%f(:,2:s(2)-1,:),2,1)
+          case (1); call idct(u%GF(t)%f(:,2:s(2)-1,:),2,1)
+                    call idct(u%GF(t)%f(:,:,2:s(3)-1),3,1)
+          case (2); call idct(u%GF(t)%f(2:s(1)-1,:,:),1,1)
+                    call idct(u%GF(t)%f(:,:,2:s(3)-1),3,1)
+          case (3); call idct(u%GF(t)%f(2:s(1)-1,:,:),1,1)
+                    call idct(u%GF(t)%f(:,2:s(2)-1,:),2,1)
           case default
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select

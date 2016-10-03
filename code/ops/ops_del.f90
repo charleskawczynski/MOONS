@@ -30,7 +30,7 @@
       use grid_mod
       use face_edge_corner_indexing_mod
       use mesh_mod
-      use RF_mod
+      use GF_mod
       use SF_mod
       use triDiag_mod
       use stencils_mod
@@ -59,8 +59,8 @@
       subroutine diff_stag(operator,dfdh,f,T,dir,pad,gt)
         implicit none
         procedure(stencils_stag) :: operator
-        type(realField),intent(inout) :: dfdh
-        type(realField),intent(in) :: f
+        type(grid_field),intent(inout) :: dfdh
+        type(grid_field),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: dir,pad,gt
         integer :: i,j,k
@@ -107,8 +107,8 @@
       subroutine diff_col(operator,dfdh,f,T,dir,pad,pad1,pad2)
         implicit none
         procedure(stencils_col) :: operator
-        type(realField),intent(inout) :: dfdh
-        type(realField),intent(in) :: f
+        type(grid_field),intent(inout) :: dfdh
+        type(grid_field),intent(in) :: f
         type(triDiag),intent(in) :: T
         integer,intent(in) :: dir,pad,pad1,pad2
         integer :: i,j,k
@@ -159,8 +159,8 @@
 
       subroutine diff_tree_search(dfdh,f,g,n,dir,pad,genType,diffType,pad1,pad2)
         implicit none
-        type(realField),intent(inout) :: dfdh
-        type(realField),intent(in) :: f
+        type(grid_field),intent(inout) :: dfdh
+        type(grid_field),intent(in) :: f
         type(grid),intent(in) :: g
         integer,intent(in) :: n,dir,pad,genType,pad1,pad2
         integer,intent(in) :: diffType
@@ -205,7 +205,7 @@
           ! faces = normal_faces_given_dir(dir)
           ! if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
           ! if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
-          call diff_tree_search(dfdh%RF(i),f%RF(i),m%g(i),n,dir,pad,genType,diffType,0,0)
+          call diff_tree_search(dfdh%GF(i),f%GF(i),m%g(i),n,dir,pad,genType,diffType,0,0)
         enddo
         if ((genType.eq.1).and.(pad.gt.0)) then
           select case (dir)

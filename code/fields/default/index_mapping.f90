@@ -45,9 +45,9 @@
         real(cp) :: index_1D
         if (U%s.gt.1) stop 'Error: get_1D_index_SF not developed for U%s>1 in SF.f90'
         if (t.gt.1) stop 'Error: get_1D_index_SF not developed for t>1 in SF.f90'
-        im = U%RF(1)%s(1)
-        jm = U%RF(1)%s(2)
-        km = U%RF(1)%s(3)
+        im = U%GF(1)%s(1)
+        jm = U%GF(1)%s(2)
+        km = U%GF(1)%s(3)
         index_1D = i + im*( (j-1) + jm*(k-1) )
       end function
 
@@ -74,9 +74,9 @@
         integer,intent(in) :: index_1D
         integer :: im,jm,km
         if (U%s.gt.1) stop 'Error: get_3D_index_SF not developed for U%s>1 in SF.f90'
-        im = U%RF(1)%s(1)
-        jm = U%RF(1)%s(2)
-        km = U%RF(1)%s(3)
+        im = U%GF(1)%s(1)
+        jm = U%GF(1)%s(2)
+        km = U%GF(1)%s(3)
         t_3D = 1
         k_3D = (index_1D-1)/(im*jm)+1
         j_3D = ((index_1D-1) - ((k_3D-1)*im*jm))/im+1
@@ -90,9 +90,9 @@
         integer,intent(in) :: index_1D
         integer :: im,jm,km
         if (U%x%s.gt.1) stop 'Error: get_3D_index_VF not developed for U%s>1 in SF.f90'
-        im = U%x%RF(1)%s(1)
-        jm = U%x%RF(1)%s(2)
-        km = U%x%RF(1)%s(3)
+        im = U%x%GF(1)%s(1)
+        jm = U%x%GF(1)%s(2)
+        km = U%x%GF(1)%s(3)
         t_3D = 1
         k_3D = (index_1D-1)/(im*jm)+1
         j_3D = ((index_1D-1) - ((k_3D-1)*im*jm))/im+1
@@ -124,7 +124,7 @@
         integer,intent(in) :: index_1D
         real(cp) :: val
         integer :: i_3D,j_3D,k_3D,t_3D
-        call get_3D_index(i_3D,j_3D,k_3D,t_3D,u,index_1D); val = u%RF(t_3D)%f(i_3D,j_3D,k_3D)
+        call get_3D_index(i_3D,j_3D,k_3D,t_3D,u,index_1D); val = u%GF(t_3D)%f(i_3D,j_3D,k_3D)
       end function
 
       function get_val_VF(u,index_1D) result(val)

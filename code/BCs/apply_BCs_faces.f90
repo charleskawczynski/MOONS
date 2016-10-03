@@ -1,6 +1,6 @@
        module apply_BCs_faces_mod
        use current_precision_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        use bctype_mod
@@ -59,44 +59,44 @@
          if (U%CC_along(k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...
-             ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
              if (.not.m%g(i)%st_faces(f)%TF) then
-               call app_CC_SF(U%RF(i),f,m%g(i)%c(k)%dhc(1),m%g(i)%c(k)%dhc_e,U%RF(i)%s,p)
+               call app_CC_SF(U%GF(i),f,m%g(i)%c(k)%dhc(1),m%g(i)%c(k)%dhc_e,U%GF(i)%s,p)
              endif
            enddo
          elseif (U%N_along(k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...
-             ! if (any((/(U%RF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
              if (.not.m%g(i)%st_faces(f)%TF) then
-               call app_N_SF(U%RF(i),f,m%g(i)%c(k)%dhn(1),m%g(i)%c(k)%dhn_e,U%RF(i)%s,p)
+               call app_N_SF(U%GF(i),f,m%g(i)%c(k)%dhn(1),m%g(i)%c(k)%dhn_e,U%GF(i)%s,p)
              endif
            enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif
        end subroutine
 
-       subroutine app_N_SF(RF,face,dh1,dhe,s,p)
+       subroutine app_N_SF(GF,face,dh1,dhe,s,p)
          implicit none
-         type(RealField),intent(inout) :: RF
+         type(grid_field),intent(inout) :: GF
          integer,intent(in) :: face,p
          real(cp),intent(in) :: dh1,dhe
          integer,dimension(3),intent(in) :: s
-         call app_N_RF(RF%f,face,RF%b%f(face),RF%b%f(face)%b,dh1,dhe,s(1),s(2),s(3),p)
+         call app_N_GF(GF%f,face,GF%b%f(face),GF%b%f(face)%b,dh1,dhe,s(1),s(2),s(3),p)
        end subroutine
 
-       subroutine app_CC_SF(RF,face,dh1,dhe,s,p)
+       subroutine app_CC_SF(GF,face,dh1,dhe,s,p)
          implicit none
-         type(RealField),intent(inout) :: RF
+         type(grid_field),intent(inout) :: GF
          integer,intent(in) :: face,p
          real(cp),intent(in) :: dh1,dhe
          integer,dimension(3),intent(in) :: s
-         call app_CC_RF(RF%f,face,RF%b%f(face),RF%b%f(face)%b,dh1,dhe,s(1),s(2),s(3),p)
+         call app_CC_GF(GF%f,face,GF%b%f(face),GF%b%f(face)%b,dh1,dhe,s(1),s(2),s(3),p)
        end subroutine
 
-       subroutine app_N_RF(f,face_ID,v,b,dh1,dhe,x,y,z,p)
+       subroutine app_N_GF(f,face_ID,v,b,dh1,dhe,x,y,z,p)
          implicit none
          integer,intent(in) :: x,y,z,p
          real(cp),dimension(x,y,z),intent(inout) :: f
@@ -116,7 +116,7 @@
          end select
        end subroutine
 
-       subroutine app_CC_RF(f,face_ID,v,b,dh1,dhe,x,y,z,p)
+       subroutine app_CC_GF(f,face_ID,v,b,dh1,dhe,x,y,z,p)
          implicit none
          integer,intent(in) :: x,y,z,p
          real(cp),dimension(x,y,z),intent(inout) :: f

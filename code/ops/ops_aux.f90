@@ -53,7 +53,7 @@
        interface dot_product;             module procedure dot_product_VF;            end interface
 
        public :: collocatedMagnitude
-       interface collocatedMagnitude;     module procedure collocatedMagnitude_RF;    end interface
+       interface collocatedMagnitude;     module procedure collocatedMagnitude_GF;    end interface
        interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
 
        public :: boundaryFlux
@@ -69,17 +69,17 @@
        interface physical_mean;           module procedure phys_mean_SF;              end interface
 
        public :: stabilityTerms
-       interface stabilityTerms;          module procedure stabilityTerms_RF;         end interface
+       interface stabilityTerms;          module procedure stabilityTerms_GF;         end interface
        interface stabilityTerms;          module procedure stabilityTerms_SF;         end interface
        interface stabilityTerms;          module procedure stabilityTerms_VF;         end interface
 
        public :: zeroGhostPoints
-       interface zeroGhostPoints;         module procedure zeroGhostPoints_RF;        end interface
+       interface zeroGhostPoints;         module procedure zeroGhostPoints_GF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
 
        public :: zeroWall
-       interface zeroWall;                module procedure zeroWall_RF;               end interface
+       interface zeroWall;                module procedure zeroWall_GF;               end interface
        interface zeroWall;                module procedure zeroWall_SF;               end interface
        interface zeroWall;                module procedure zeroWall_VF;               end interface
         
@@ -90,12 +90,12 @@
        interface zeroWall_conditional;    module procedure zeroWall_conditional_VF2;  end interface
 
        public :: zeroInterior
-       interface zeroInterior;            module procedure zeroInterior_RF;           end interface
+       interface zeroInterior;            module procedure zeroInterior_GF;           end interface
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
        interface zeroInterior;            module procedure zeroInterior_SF;           end interface
 
        public :: assign_first_interior_cell
-       interface assign_first_interior_cell; module procedure assign_first_interior_cell_RF; end interface
+       interface assign_first_interior_cell; module procedure assign_first_interior_cell_GF; end interface
        interface assign_first_interior_cell; module procedure assign_first_interior_cell_SF; end interface
 
        public :: sineWaves
@@ -106,10 +106,10 @@
 
        public :: assign_gradGhost
        interface assign_gradGhost;        module procedure assign_gradGhost_SF;       end interface
-       interface assign_gradGhost;        module procedure assign_gradGhost_RF;       end interface
+       interface assign_gradGhost;        module procedure assign_gradGhost_GF;       end interface
 
        public :: treatInterface
-       interface treatInterface;          module procedure treatInterface_RF;         end interface
+       interface treatInterface;          module procedure treatInterface_GF;         end interface
        interface treatInterface;          module procedure treatInterface_VF;         end interface
        interface treatInterface;          module procedure treatInterface_SF;         end interface
 
@@ -122,7 +122,7 @@
        interface displayGlobalMinMax;     module procedure displayGlobalMinMax_VF;    end interface
 
        public :: noise
-       interface noise;                   module procedure noise_RF;                  end interface
+       interface noise;                   module procedure noise_GF;                  end interface
        interface noise;                   module procedure noise_SF;                  end interface
        interface noise;                   module procedure noise_VF;                  end interface
 
@@ -143,7 +143,7 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine collocatedMagnitude_RF(mag,x,y,z,s) ! Finished
+       subroutine collocatedMagnitude_GF(mag,x,y,z,s) ! Finished
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: x,y,z
          real(cp),dimension(:,:,:),intent(inout) :: mag
@@ -158,7 +158,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine stabilityTerms_RF(fo,fi,g,n,s,dir) ! Finished
+       subroutine stabilityTerms_GF(fo,fi,g,n,s,dir) ! Finished
          ! Computes
          !                     |  fi  |
          !    fo =  max( fo  , | ---- | )
@@ -175,7 +175,7 @@
          case (1); x=1;y=0;z=0
          case (2); x=0;y=1;z=0
          case (3); x=0;y=0;z=1
-         case default; stop 'Error: dir must = 1,2,3 in stabilityTerms_RF in ops_aux.f90'
+         case default; stop 'Error: dir must = 1,2,3 in stabilityTerms_GF in ops_aux.f90'
          end select
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
@@ -202,16 +202,16 @@
          do t=1,m%s
            if (.not.m%g(t)%st_faces(1)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
-               BFtemp = BFtemp + u%x%RF(t)%f(2,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%x%GF(t)%s(3)-1; do j=2,u%x%GF(t)%s(2)-1
+               BFtemp = BFtemp + u%x%GF(t)%f(2,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
            endif
            if (.not.m%g(t)%st_faces(2)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
-               BFtemp = BFtemp + u%x%RF(t)%f(u%x%RF(t)%s(1)-1,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%x%GF(t)%s(3)-1; do j=2,u%x%GF(t)%s(2)-1
+               BFtemp = BFtemp + u%x%GF(t)%f(u%x%GF(t)%s(1)-1,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
@@ -220,16 +220,16 @@
          do t=1,m%s
            if (.not.m%g(t)%st_faces(3)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%y%RF(t)%f(i,2,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%y%GF(t)%s(3)-1; do i=2,u%y%GF(t)%s(1)-1
+               BFtemp = BFtemp + u%y%GF(t)%f(i,2,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
            endif
            if (.not.m%g(t)%st_faces(4)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%y%RF(t)%f(i,u%y%RF(t)%s(2)-1,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%y%GF(t)%s(3)-1; do i=2,u%y%GF(t)%s(1)-1
+               BFtemp = BFtemp + u%y%GF(t)%f(i,u%y%GF(t)%s(2)-1,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
@@ -238,16 +238,16 @@
          do t=1,m%s
            if (.not.m%g(t)%st_faces(5)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%z%RF(t)%f(i,j,2)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
+             do j=2,u%z%GF(t)%s(2)-1; do i=2,u%z%GF(t)%s(1)-1
+               BFtemp = BFtemp + u%z%GF(t)%f(i,j,2)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
            endif
            if (.not.m%g(t)%st_faces(6)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%z%RF(t)%f(i,j,u%z%RF(t)%s(3)-1)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
+             do j=2,u%z%GF(t)%s(2)-1; do i=2,u%z%GF(t)%s(1)-1
+               BFtemp = BFtemp + u%z%GF(t)%f(i,j,u%z%GF(t)%s(3)-1)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
@@ -304,7 +304,7 @@
          meanU = sum(u,1)/real(u%numPhysEl,cp)
        end function
 
-       subroutine zeroGhostPoints_RF(f,s)
+       subroutine zeroGhostPoints_GF(f,s)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
@@ -313,7 +313,7 @@
          f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
        end subroutine
 
-       subroutine zeroWall_RF(f,s,face)
+       subroutine zeroWall_GF(f,s,face)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
@@ -325,11 +325,11 @@
          case (2); f(s(1)-1,:,:) = 0.0_cp
          case (4); f(:,s(2)-1,:) = 0.0_cp
          case (6); f(:,:,s(3)-1) = 0.0_cp
-         case default; stop 'Error: face must = 1:6 in zeroWall_RF in ops_aux.f90'
+         case default; stop 'Error: face must = 1:6 in zeroWall_GF in ops_aux.f90'
          end select
        end subroutine
 
-       subroutine zeroInterior_RF(f,s,px,py,pz)
+       subroutine zeroInterior_GF(f,s,px,py,pz)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
@@ -342,7 +342,7 @@
          ! $OMP END PARALLEL DO
        end subroutine
 
-       subroutine assign_first_interior_cell_RF(a,b,s,px,py,pz)
+       subroutine assign_first_interior_cell_GF(a,b,s,px,py,pz)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: a
          real(cp),dimension(:,:,:),intent(in) :: b
@@ -378,11 +378,11 @@
          type(VF),intent(in) :: F
          integer :: i
          do i=1,CC%s
-         call assign_gradGhost_RF(CC%RF(i)%f,F%x%RF(i)%f,F%y%RF(i)%f,F%z%RF(i)%f,CC%RF(i)%s)
+         call assign_gradGhost_GF(CC%GF(i)%f,F%x%GF(i)%f,F%y%GF(i)%f,F%z%GF(i)%f,CC%GF(i)%s)
          enddo
        end subroutine
 
-       subroutine assign_gradGhost_RF(CC,Fx,Fy,Fz,s)
+       subroutine assign_gradGhost_GF(CC,Fx,Fy,Fz,s)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: CC
          real(cp),dimension(:,:,:),intent(in) :: Fx,Fy,Fz
@@ -392,7 +392,7 @@
          CC(:,:,1) = Fz(:,:,2); CC(:,:,s(3)) = Fz(:,:,s(3))
        end subroutine
 
-       subroutine treatInterface_RF(f,s,take_high_value)
+       subroutine treatInterface_GF(f,s,take_high_value)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
@@ -414,7 +414,7 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine noise_RF(f,s)
+       subroutine noise_GF(f,s)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: s
@@ -436,16 +436,16 @@
          integer :: i,j,k,t
          if (f%is_CC) then
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (f%is_Node) then
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
@@ -454,59 +454,59 @@
          select case (f%face)
          case (1)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hc(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hc(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hc(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hc(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_GF'
          end select
          elseif (f%is_Edge) then
          select case (f%face)
          case (1)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hc(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hc(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hn(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = sin(wavenum(1)*PI*(m%g(t)%c(1)%hn(i) - phi(1)))*&
                                 sin(wavenum(2)*PI*(m%g(t)%c(2)%hn(j) - phi(2)))*&
                                 sin(wavenum(3)*PI*(m%g(t)%c(3)%hc(k) - phi(3)))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_GF'
          end select
-         else; stop 'Error: bad input to sineWaves_RF in ops_aux.f90'
+         else; stop 'Error: bad input to sineWaves_GF in ops_aux.f90'
          endif
        end subroutine
 
@@ -518,16 +518,16 @@
          integer :: i,j,k,t
          if (f%is_CC) then
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          elseif (f%is_Node) then
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
@@ -536,59 +536,59 @@
          select case (f%face)
          case (1)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in cosineWaves_RF'
+         case default; stop 'Error: face must = 1,2,3 in cosineWaves_GF'
          end select
          elseif (f%is_Edge) then
          select case (f%face)
          case (1)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hc(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hc(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hn(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%RF(t)%s(3); do j=1,f%RF(t)%s(2); do i=1,f%RF(t)%s(1)
-             f%RF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
+           do t=1,f%s; do k=1,f%GF(t)%s(3); do j=1,f%GF(t)%s(2); do i=1,f%GF(t)%s(1)
+             f%GF(t)%f(i,j,k) = cos(wavenum(1)*PI*m%g(t)%c(1)%hn(i))*&
                                 cos(wavenum(2)*PI*m%g(t)%c(2)%hn(j))*&
                                 cos(wavenum(3)*PI*m%g(t)%c(3)%hc(k))
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_RF'
+         case default; stop 'Error: face must = 1,2,3 in sineWaves_GF'
          end select
-         else; stop 'Error: bad input to sineWaves_RF in ops_aux.f90'
+         else; stop 'Error: bad input to sineWaves_GF in ops_aux.f90'
          endif
        end subroutine
 
@@ -624,7 +624,7 @@
          implicit none
          type(SF),intent(inout) :: f
          integer :: i
-         do i=1,f%s; call zeroGhostPoints(f%RF(i)%f,f%RF(i)%s); enddo
+         do i=1,f%s; call zeroGhostPoints(f%GF(i)%f,f%GF(i)%s); enddo
        end subroutine
 
        subroutine zeroWall_SF(f,m)
@@ -634,20 +634,20 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
+             call zeroWall(f%GF(i)%f,f%GF(i)%s,1)
+             call zeroWall(f%GF(i)%f,f%GF(i)%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
+             call zeroWall(f%GF(i)%f,f%GF(i)%s,3)
+             call zeroWall(f%GF(i)%f,f%GF(i)%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
+             call zeroWall(f%GF(i)%f,f%GF(i)%s,5)
+             call zeroWall(f%GF(i)%f,f%GF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -662,26 +662,26 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%RF(i)%b%f(1)%b%Neumann).and.(.not.f%RF(i)%b%f(1)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%RF(i)%b%f(2)%b%Neumann).and.(.not.f%RF(i)%b%f(2)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
+             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.f%GF(i)%b%f(1)%b%Neumann).and.(.not.f%GF(i)%b%f(1)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,1)
+             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.f%GF(i)%b%f(2)%b%Neumann).and.(.not.f%GF(i)%b%f(2)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%RF(i)%b%f(3)%b%Neumann).and.(.not.f%RF(i)%b%f(3)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%RF(i)%b%f(4)%b%Neumann).and.(.not.f%RF(i)%b%f(4)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
+             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.f%GF(i)%b%f(3)%b%Neumann).and.(.not.f%GF(i)%b%f(3)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,3)
+             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.f%GF(i)%b%f(4)%b%Neumann).and.(.not.f%GF(i)%b%f(4)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%RF(i)%b%f(5)%b%Neumann).and.(.not.f%RF(i)%b%f(5)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%RF(i)%b%f(6)%b%Neumann).and.(.not.f%RF(i)%b%f(6)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
+             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.f%GF(i)%b%f(5)%b%Neumann).and.(.not.f%GF(i)%b%f(5)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,5)
+             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.f%GF(i)%b%f(6)%b%Neumann).and.(.not.f%GF(i)%b%f(6)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -697,26 +697,26 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%RF(i)%b%f(1)%b%Neumann).and.(.not.u%RF(i)%b%f(1)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,1)
-             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%RF(i)%b%f(2)%b%Neumann).and.(.not.u%RF(i)%b%f(2)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,2)
+             L = (.not.m%g(i)%st_faces(1)%TF).and.(.not.u%GF(i)%b%f(1)%b%Neumann).and.(.not.u%GF(i)%b%f(1)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,1)
+             L = (.not.m%g(i)%st_faces(2)%TF).and.(.not.u%GF(i)%b%f(2)%b%Neumann).and.(.not.u%GF(i)%b%f(2)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%RF(i)%b%f(3)%b%Neumann).and.(.not.u%RF(i)%b%f(3)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,3)
-             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%RF(i)%b%f(4)%b%Neumann).and.(.not.u%RF(i)%b%f(4)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,4)
+             L = (.not.m%g(i)%st_faces(3)%TF).and.(.not.u%GF(i)%b%f(3)%b%Neumann).and.(.not.u%GF(i)%b%f(3)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,3)
+             L = (.not.m%g(i)%st_faces(4)%TF).and.(.not.u%GF(i)%b%f(4)%b%Neumann).and.(.not.u%GF(i)%b%f(4)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%RF(i)%b%f(5)%b%Neumann).and.(.not.u%RF(i)%b%f(5)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,5)
-             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%RF(i)%b%f(6)%b%Neumann).and.(.not.u%RF(i)%b%f(6)%b%periodic)
-             if (L) call zeroWall(f%RF(i)%f,f%RF(i)%s,6)
+             L = (.not.m%g(i)%st_faces(5)%TF).and.(.not.u%GF(i)%b%f(5)%b%Neumann).and.(.not.u%GF(i)%b%f(5)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,5)
+             L = (.not.m%g(i)%st_faces(6)%TF).and.(.not.u%GF(i)%b%f(6)%b%Neumann).and.(.not.u%GF(i)%b%f(6)%b%periodic)
+             if (L) call zeroWall(f%GF(i)%f,f%GF(i)%s,6)
            enddo
          endif
        end subroutine
@@ -726,7 +726,7 @@
          type(SF),intent(inout) :: f
          integer :: i,x,y,z
          call C0_N1_tensor(f,x,y,z)
-         do i=1,f%s; call zeroInterior(f%RF(i)%f,f%RF(i)%s,x,y,z); enddo
+         do i=1,f%s; call zeroInterior(f%GF(i)%f,f%GF(i)%s,x,y,z); enddo
        end subroutine
 
        subroutine assign_first_interior_cell_SF(a,b)
@@ -735,7 +735,7 @@
          type(SF),intent(inout) :: b
          integer :: i,x,y,z
          call C0_N1_tensor(a,x,y,z)
-         do i=1,a%s; call assign_first_interior_cell(a%RF(i)%f,b%RF(i)%f,a%RF(i)%s,x,y,z); enddo
+         do i=1,a%s; call assign_first_interior_cell(a%GF(i)%f,b%GF(i)%f,a%GF(i)%s,x,y,z); enddo
        end subroutine
 
        subroutine treatInterface_SF(f,take_high_value)
@@ -743,7 +743,7 @@
          type(SF),intent(inout) :: f
          logical,intent(in) :: take_high_value
          integer :: i
-         do i=1,f%s; call treatInterface(f%RF(i)%f,f%RF(i)%s,take_high_value); enddo
+         do i=1,f%s; call treatInterface(f%GF(i)%f,f%GF(i)%s,take_high_value); enddo
        end subroutine
 
        subroutine displayPhysicalMinMax_SF(U,name,un)
@@ -766,7 +766,7 @@
          implicit none
          type(SF),intent(inout) :: U
          integer :: i
-         do i=1,U%s; call noise(U%RF(i)%f,U%RF(i)%s); enddo
+         do i=1,U%s; call noise(U%GF(i)%f,U%GF(i)%s); enddo
        end subroutine
 
        subroutine unitVector_SF(U,un)
@@ -777,7 +777,7 @@
          if (un.lt.1) stop 'Error: un must > 0 in unitVector_SF in ops_aux.f90'
          if (un.gt.U%numEl) stop 'Error: un must < U%numEl in unitVector_SF in ops_aux.f90'
          call get_3D_index(i,j,k,t,U,un)
-         U%RF(t)%f(i,j,k) = 1.0_cp
+         U%GF(t)%f(i,j,k) = 1.0_cp
        end subroutine
 
        subroutine deleteUnitVector_SF(U,un)
@@ -788,7 +788,7 @@
          if (un.lt.1) stop 'Error: un must > 0 in unitVector_consecutive_SF in ops_aux.f90'
          if (un.gt.U%numEl) stop 'Error: un must < U%numEl in unitVector_consecutive_SF in ops_aux.f90'
          call get_3D_index(i,j,k,t,U,un)
-         U%RF(t)%f(i,j,k) = 0.0_cp
+         U%GF(t)%f(i,j,k) = 0.0_cp
        end subroutine
 
        subroutine stabilityTerms_SF(fo,fi,m,n,dir)
@@ -799,7 +799,7 @@
          integer,intent(in) :: n,dir
          integer :: i
          call assign(fo,0.0_cp)
-         do i=1,fi%s; call stabilityTerms(fo%RF(i)%f,fi%RF(i)%f,m%g(i),n,fi%RF(i)%s,dir); enddo
+         do i=1,fi%s; call stabilityTerms(fo%GF(i)%f,fi%GF(i)%f,m%g(i),n,fi%GF(i)%s,dir); enddo
          call zeroGhostPoints(fo)
        end subroutine
 
@@ -815,10 +815,10 @@
          type(VF),intent(in) :: V
          integer :: i
          do i=1,mag%s
-           call collocatedMagnitude(mag%RF(i)%f,V%x%RF(i)%f,&
-                                                V%y%RF(i)%f,&
-                                                V%z%RF(i)%f,&
-                                                V%x%RF(i)%s)
+           call collocatedMagnitude(mag%GF(i)%f,V%x%GF(i)%f,&
+                                                V%y%GF(i)%f,&
+                                                V%z%GF(i)%f,&
+                                                V%x%GF(i)%s)
          enddo
        end subroutine
 

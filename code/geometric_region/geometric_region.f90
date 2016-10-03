@@ -42,34 +42,34 @@
          tol = 10.0_cp**(-12.0_cp)
          if (U%is_CC) then
          !$OMP PARALLEL DO
-         do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-         if (inside_CC(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+         do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+         if (inside_CC(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          elseif (U%is_Node) then
          !$OMP PARALLEL DO
-         do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-         if (inside_N(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+         do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+         if (inside_N(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          elseif (U%is_Face) then
            select case (U%face)
            case (1)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-             if (inside_F_x(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+             if (inside_F_x(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (2)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-             if (inside_F_y(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+             if (inside_F_y(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (3)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-             if (inside_F_z(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+             if (inside_F_z(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case default; stop 'Error: bad data face input to assign_inside in geometric_define.f90'
@@ -78,20 +78,20 @@
            select case (U%edge)
            case (1)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-             if (inside_E_x(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+             if (inside_E_x(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (2)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-             if (inside_E_y(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+             if (inside_E_y(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (3)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%RF(t)%s(3); do j=1,U%RF(t)%s(2); do i=1,U%RF(t)%s(1)
-             if (inside_E_z(R,m,i,j,k,t,tol)) U%RF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
+             if (inside_E_z(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case default; stop 'Error: bad data edge input to assign_inside in geometric_define.f90'

@@ -45,15 +45,15 @@
            call initRestartUfield(U,m,dir)
          elseif (preDefinedU_ICs.ne.0) then
            do i=1,m%s
-             call initPreDefinedUfield(U%x%RF(i)%f,&
-                                       U%y%RF(i)%f,&
-                                       U%z%RF(i)%f,m%g(i))
+             call initPreDefinedUfield(U%x%GF(i)%f,&
+                                       U%y%GF(i)%f,&
+                                       U%z%GF(i)%f,m%g(i))
            enddo
          else
            do i=1,m%s
-             call initUserUfield(U%x%RF(i)%f,&
-                                 U%y%RF(i)%f,&
-                                 U%z%RF(i)%f,m%g(i))
+             call initUserUfield(U%x%GF(i)%f,&
+                                 U%y%GF(i)%f,&
+                                 U%z%GF(i)%f,m%g(i))
            enddo
          endif
          ! call sineWaves(U%x,m,(/100.0_cp,100.0_cp,PI/2.0_cp/),(/0.0_cp,0.0_cp,1.0_cp/))

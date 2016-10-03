@@ -222,7 +222,7 @@
         integer,dimension(3),intent(in) :: gt
         integer :: i
         do i=1,m%s
-          call redBlack(u%RF(i)%f,f%RF(i)%f,D_inv%RF(i)%f,u%RF(i)%s,&
+          call redBlack(u%GF(i)%f,f%GF(i)%f,D_inv%GF(i)%f,u%GF(i)%s,&
           p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
           d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,&
           gt,odd)
@@ -240,10 +240,10 @@
         integer,dimension(3),intent(in) :: gtx,gty,gtz
         integer :: i
         do i=1,m%s
-          call redBlack(u%x%RF(i)%f,u%y%RF(i)%f,u%z%RF(i)%f,&
-                        f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,&
-                        D_inv%x%RF(i)%f,D_inv%y%RF(i)%f,D_inv%z%RF(i)%f,&
-                        u%x%RF(i)%s,u%y%RF(i)%s,u%z%RF(i)%s,&
+          call redBlack(u%x%GF(i)%f,u%y%GF(i)%f,u%z%GF(i)%f,&
+                        f%x%GF(i)%f,f%y%GF(i)%f,f%z%GF(i)%f,&
+                        D_inv%x%GF(i)%f,D_inv%y%GF(i)%f,D_inv%z%GF(i)%f,&
+                        u%x%GF(i)%s,u%y%GF(i)%s,u%z%GF(i)%s,&
           p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
           d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,&
           gtx,gty,gtz,odd)

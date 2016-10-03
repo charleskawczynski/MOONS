@@ -27,7 +27,7 @@
          type(SF),intent(inout) :: f
          integer :: i
          do i=1,f%s
-           call init_Dirichlet(f%RF(i)%b); call init(f%RF(i)%b,0.0_cp)
+           call init_Dirichlet(f%GF(i)%b); call init(f%GF(i)%b,0.0_cp)
          enddo
        end subroutine
 
@@ -36,9 +36,9 @@
          type(VF),intent(inout) :: f
          integer :: i
          do i=1,f%x%s
-           call init_Dirichlet(f%x%RF(i)%b); call init(f%x%RF(i)%b,0.0_cp)
-           call init_Dirichlet(f%y%RF(i)%b); call init(f%y%RF(i)%b,0.0_cp)
-           call init_Dirichlet(f%z%RF(i)%b); call init(f%z%RF(i)%b,0.0_cp)
+           call init_Dirichlet(f%x%GF(i)%b); call init(f%x%GF(i)%b,0.0_cp)
+           call init_Dirichlet(f%y%GF(i)%b); call init(f%y%GF(i)%b,0.0_cp)
+           call init_Dirichlet(f%z%GF(i)%b); call init(f%z%GF(i)%b,0.0_cp)
          enddo
        end subroutine
 
@@ -47,7 +47,7 @@
          type(SF),intent(inout) :: f
          integer :: i
          do i=1,f%s
-           call init_Neumann(f%RF(i)%b); call init(f%RF(i)%b,0.0_cp)
+           call init_Neumann(f%GF(i)%b); call init(f%GF(i)%b,0.0_cp)
          enddo
        end subroutine
 
@@ -56,9 +56,9 @@
          type(VF),intent(inout) :: f
          integer :: i
          do i=1,f%x%s
-           call init_Neumann(f%x%RF(i)%b); call init(f%x%RF(i)%b,0.0_cp)
-           call init_Neumann(f%y%RF(i)%b); call init(f%y%RF(i)%b,0.0_cp)
-           call init_Neumann(f%z%RF(i)%b); call init(f%z%RF(i)%b,0.0_cp)
+           call init_Neumann(f%x%GF(i)%b); call init(f%x%GF(i)%b,0.0_cp)
+           call init_Neumann(f%y%GF(i)%b); call init(f%y%GF(i)%b,0.0_cp)
+           call init_Neumann(f%z%GF(i)%b); call init(f%z%GF(i)%b,0.0_cp)
          enddo
        end subroutine
 
@@ -73,7 +73,7 @@
            endif
          enddo
          do i=1,f%s; do k=1,3
-           if (periodic_dir(k).eq.1) call makePeriodic_SF(f%RF(i)%b,k)
+           if (periodic_dir(k).eq.1) call makePeriodic_SF(f%GF(i)%b,k)
          enddo; enddo
        end subroutine
 
@@ -88,7 +88,7 @@
            endif
          enddo
          do i=1,f%x%s; do k=1,3
-           if (periodic_dir(k).eq.1) call makePeriodic_VF(f%x%RF(i)%b,f%y%RF(i)%b,f%z%RF(i)%b,k)
+           if (periodic_dir(k).eq.1) call makePeriodic_VF(f%x%GF(i)%b,f%y%GF(i)%b,f%z%GF(i)%b,k)
          enddo; enddo
        end subroutine
 
