@@ -2,7 +2,7 @@
        use current_precision_mod
        use ops_del_mod
        use mesh_mod
-       use domain_mod
+       use mesh_domain_mod
        use ops_embedExtract_mod
        use VF_mod
        use SF_mod
@@ -94,18 +94,18 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
 
-       function boundaryFlux_VF_SD(f,m,D) result(BF)
+       function boundaryFlux_VF_SD(f,m,MD) result(BF)
          implicit none
          type(VF),intent(in) :: f
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(mesh_domain),intent(in) :: MD
          real(cp) :: BF
          type(VF) :: temp
          type(mesh) :: m_temp
-         call init_other(m_temp,m,D)
+         call init_other(m_temp,m,MD)
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
          call init_Face(temp,m_temp)
-         call extractFace(temp,f,D)
+         call extractFace(temp,f,MD)
          BF = boundaryFlux(temp,m_temp)
          call delete(temp)
          call delete(m_temp)

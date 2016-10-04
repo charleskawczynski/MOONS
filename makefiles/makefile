@@ -285,6 +285,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
+	$(SRC_DIR)$(PS)block$(PS)block_domain.f90\
+	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\

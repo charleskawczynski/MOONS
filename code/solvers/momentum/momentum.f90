@@ -3,11 +3,13 @@
        
        use sim_params_mod
        use BCs_mod
+       use block_mod
+       use mesh_block_mod
        use mesh_mod
        use SF_mod
        use VF_mod
        use TF_mod
-       use domain_mod
+       use mesh_domain_mod
        use string_mod
        use path_mod
        use dir_tree_mod
@@ -82,6 +84,8 @@
 
          ! Time step, Reynolds number, grid
          type(mesh) :: m
+         type(block) :: B
+         type(mesh_block) :: MB
          type(mesh) :: m_surface
 
          type(time_marching_params) :: TMP
@@ -144,6 +148,10 @@
 
          call init(mom%SP,SP)
          call init(mom%m,m)
+
+         call init(mom%B,mom%m%g(1))
+         call init(mom%MB,mom%B)
+         call export_mesh(mom%MB%m,str(DT%meshes),'block_mom',0)
 
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
@@ -262,6 +270,8 @@
          call delete(mom%probe_KE_2C)
          call delete(mom%temp_E)
          call delete(mom%m)
+         call delete(mom%MB)
+         call delete(mom%B)
          call delete(mom%vol_CC)
 
          call delete(mom%PCG_P)
@@ -456,11 +466,11 @@
          endif
        end subroutine
 
-       subroutine compute_E_K_Budget(mom,B,B0,J,D_fluid,Rem,DT)
+       subroutine compute_E_K_Budget(mom,B,B0,J,MD_fluid,Rem,DT)
          implicit none
          type(dir_tree),intent(in) :: DT
          type(momentum),intent(inout) :: mom
-         type(domain),intent(in) :: D_fluid
+         type(mesh_domain),intent(in) :: MD_fluid
          type(VF),intent(in) :: B,B0,J
          real(cp),intent(in) :: Rem
          type(TF) :: TF_CC1,TF_CC2
@@ -480,9 +490,9 @@
          call assign(temp_B0,B0)
          call assign(temp_J,J)
 
-         call extractFace(temp_B,B,D_fluid)
-         call extractFace(temp_B0,B0,D_fluid)
-         call extractEdge(temp_J,J,D_fluid)
+         call extractFace(temp_B,B,MD_fluid)
+         call extractFace(temp_B0,B0,MD_fluid)
+         call extractEdge(temp_J,J,MD_fluid)
 
          call assign(mom%Unm1,mom%U)
 

@@ -13,9 +13,12 @@
        public :: grid
        public :: init,delete,display,print,export,import ! Essentials
        public :: restrict,restrict_x,restrict_xy
-       ! public :: get_face,get_edge,get_corner
        public :: initProps,display_stitches
        public :: snip,pop
+
+       public :: get_face_b,   get_face_g,   get_face_i
+       public :: get_edge_b,   get_edge_g,   get_edge_i
+       public :: get_corner_b, get_corner_g, get_corner_i
 
 #ifdef _DEBUG_COORDINATES_
        public :: checkGrid
@@ -51,6 +54,17 @@
        interface snip;               module procedure snip_grid;               end interface
        interface pop;                module procedure pop_grid;                end interface
 
+       interface get_face_b;         module procedure get_face_grid_b;         end interface
+       interface get_edge_b;         module procedure get_edge_grid_b;         end interface
+       interface get_corner_b;       module procedure get_corner_grid_b;       end interface
+
+       interface get_face_g;         module procedure get_face_grid_g;         end interface
+       interface get_edge_g;         module procedure get_edge_grid_g;         end interface
+       interface get_corner_g;       module procedure get_corner_grid_g;       end interface
+
+       interface get_face_i;         module procedure get_face_grid_i;         end interface
+       interface get_edge_i;         module procedure get_edge_grid_i;         end interface
+       interface get_corner_i;       module procedure get_corner_grid_i;       end interface
 
        contains
 
@@ -219,33 +233,6 @@
          call restrict(r%c(2),g%c(2))
        end subroutine
 
-       ! ------------------- restrict (for multigrid) --------------
-
-       ! subroutine get_face(g,g_in,face)
-       !   ! Removes all cells except for prescribed face
-       !   implicit none
-       !   type(grid),intent(inout) :: g
-       !   type(grid),intent(in) :: g_in
-       !   integer,intent(in) :: face
-       !   integer :: i,dir,s
-       !   call init(g,g_in)
-       !   select case (face)
-       !   case (1,2); dir = 1
-       !   case (3,4); dir = 2
-       !   case (5,6); dir = 3
-       !   case default; stop 'Error: face (1) must = 1:6 in get_face in grid.f90'
-       !   end select
-       !   ! The number of times that snip / pop are called
-       !   ! must be chosen carefully, this is just a test...
-       !   s = g%c(dir)%N
-       !   N = c%sc-2
-       !   select case (face)
-       !   case (1,3,5); do i=1,s; call snip(g,dir); enddo
-       !   case (2,4,6); do i=1,s; call  pop(g,dir); enddo
-       !   case default; stop 'Error: face (2) must = 1:6 in get_face in grid.f90'
-       !   end select
-       ! end subroutine
-
        subroutine pop_grid(g,dir) ! Removes the last index from the grid
          implicit none
          type(grid),intent(inout) :: g
@@ -298,5 +285,174 @@
          ! write(un,*) 'stitches_corner (maxmin) = ',(/(g%st_corner%maxmin(i),i=1,3)/)
          ! write(un,*) 'stitches_corner (maxmax) = ',g%st_corner%maxmax
        end subroutine
+
+       ! *********************************************************************
+       ! *********************************************************************
+       ! ******************** GET SURFACE / EDGE / CORNER ********************
+       ! *********************************************************************
+       ! *********************************************************************
+
+       subroutine get_face_grid_g(g,g_in,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: face
+         call init(g,g_in)
+         if (f_min(face)) call get_ghost(g%c(get_dir_from_face(face)),-1)
+         if (f_max(face)) call get_ghost(g%c(get_dir_from_face(face)), 1)
+       end subroutine
+       subroutine get_face_grid_b(g,g_in,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: face
+         call init(g,g_in)
+         if (f_min(face)) call get_boundary(g%c(get_dir_from_face(face)),-1)
+         if (f_max(face)) call get_boundary(g%c(get_dir_from_face(face)), 1)
+       end subroutine
+       subroutine get_face_grid_i(g,g_in,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: face
+         call init(g,g_in)
+         if (f_min(face)) call get_interior(g%c(get_dir_from_face(face)),-1)
+         if (f_max(face)) call get_interior(g%c(get_dir_from_face(face)), 1)
+       end subroutine
+
+       subroutine get_edge_grid_b(g,g_in,edge)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: edge
+         type(grid) :: temp
+         integer,dimension(2) :: f
+         f = get_f12_from_edge(edge)
+         call get_face_b(temp,g_in,f(1))
+         call get_face_b(g,temp,f(2))
+       end subroutine
+       subroutine get_edge_grid_g(g,g_in,edge)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: edge
+         type(grid) :: temp
+         integer,dimension(2) :: f
+         f = get_f12_from_edge(edge)
+         call get_face_g(temp,g_in,f(1))
+         call get_face_g(g,temp,f(2))
+       end subroutine
+       subroutine get_edge_grid_i(g,g_in,edge)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: edge
+         type(grid) :: temp
+         integer,dimension(2) :: f
+         f = get_f12_from_edge(edge)
+         call get_face_i(temp,g_in,f(1))
+         call get_face_i(g,temp,f(2))
+       end subroutine
+
+       subroutine get_corner_grid_b(g,g_in,corner)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: corner
+         type(grid) :: A,B
+         integer,dimension(3) :: f
+         f = get_f123_from_corner(corner)
+         call get_face_b(A,g_in,f(1))
+         call get_face_b(B,A,f(2))
+         call get_face_b(g,B,f(3))
+       end subroutine
+       subroutine get_corner_grid_g(g,g_in,corner)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: corner
+         type(grid) :: A,B
+         integer,dimension(3) :: f
+         f = get_f123_from_corner(corner)
+         call get_face_g(A,g_in,f(1))
+         call get_face_g(B,A,f(2))
+         call get_face_g(g,B,f(3))
+       end subroutine
+       subroutine get_corner_grid_i(g,g_in,corner)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: corner
+         type(grid) :: A,B
+         integer,dimension(3) :: f
+         f = get_f123_from_corner(corner)
+         call get_face_i(A,g_in,f(1))
+         call get_face_i(B,A,f(2))
+         call get_face_i(g,B,f(3))
+       end subroutine
+
+
+       function get_dir_from_face(face) result(dir)
+        implicit none
+        integer,intent(in) :: face
+        integer :: dir
+        select case (face)
+        case (1,2); dir = 1
+        case (3,4); dir = 2
+        case (5,6); dir = 3
+        case default; stop 'Error: face must = 1:6 in get_dir_from_dir in grid_to_FEC.f90'
+        end select
+       end function
+
+       function get_f12_from_edge(edge) result(f)
+        implicit none
+        integer,intent(in) :: edge
+        integer,dimension(2) :: f
+        select case (edge)
+        case (1);  f(1) = 3;  f(2) = 5 ! 3,4 , 5,6 minmin
+        case (2);  f(1) = 3;  f(2) = 6 ! 3,4 , 5,6 
+        case (3);  f(1) = 4;  f(2) = 5 ! 3,4 , 5,6
+        case (4);  f(1) = 4;  f(2) = 6 ! 3,4 , 5,6 maxmax
+        case (5);  f(1) = 1;  f(2) = 5 ! 1,2 , 5,6 minmin
+        case (6);  f(1) = 1;  f(2) = 6 ! 1,2 , 5,6 
+        case (7);  f(1) = 2;  f(2) = 5 ! 1,2 , 5,6
+        case (8);  f(1) = 2;  f(2) = 6 ! 1,2 , 5,6 maxmax
+        case (9);  f(1) = 1;  f(2) = 3 ! 1,2 , 3,4 minmin
+        case (10); f(1) = 1;  f(2) = 4 ! 1,2 , 3,4 
+        case (11); f(1) = 2;  f(2) = 3 ! 1,2 , 3,4
+        case (12); f(1) = 2;  f(2) = 4 ! 1,2 , 3,4 maxmax
+        case default; stop 'Error: bad case in get_f12_from_edge in grid_to_FEC.f90'
+        end select
+       end function
+
+       function get_f123_from_corner(corner) result(f)
+        implicit none
+        integer,intent(in) :: corner
+        integer,dimension(3) :: f
+        select case (corner)
+        case (1); f(1) = 1; f(2) = 3; f(3) = 5
+        case (2); f(1) = 2; f(2) = 3; f(3) = 5
+        case (3); f(1) = 1; f(2) = 4; f(3) = 5
+        case (4); f(1) = 1; f(2) = 3; f(3) = 6
+        case (5); f(1) = 1; f(2) = 4; f(3) = 6
+        case (6); f(1) = 2; f(2) = 3; f(3) = 6
+        case (7); f(1) = 2; f(2) = 4; f(3) = 5
+        case (8); f(1) = 2; f(2) = 4; f(3) = 6
+        case default; stop 'Error: bad case in get_f123_from_corner in grid_to_FEC.f90'
+        end select
+       end function
+
+       function f_min(face) result(L)
+        implicit none
+        integer,intent(in) :: face
+        logical :: L
+        L = (face.eq.1).or.(face.eq.3).or.(face.eq.5)
+       end function
+       function f_max(face) result(L)
+        implicit none
+        integer,intent(in) :: face
+        logical :: L
+        L = (face.eq.2).or.(face.eq.4).or.(face.eq.6)
+       end function
 
        end module

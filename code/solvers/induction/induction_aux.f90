@@ -4,7 +4,7 @@
        use VF_mod
        use TF_mod
        use ops_embedExtract_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_mod
        use norms_mod
        use ops_aux_mod
@@ -36,7 +36,7 @@
          type(VF),intent(in) :: B,B0
          type(VF),intent(in) :: J
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D_fluid
+         type(mesh_domain),intent(in) :: D_fluid
          real(cp),intent(in) :: Ha,Re
          logical,intent(in) :: finite_Rem
          type(SF),intent(inout) :: temp_CC
@@ -58,7 +58,7 @@
          type(VF),intent(inout) :: jCrossB,temp_F
          type(VF),intent(in) :: B,B0,J
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D_fluid
+         type(mesh_domain),intent(in) :: D_fluid
          real(cp),intent(in) :: Ha,Re
          logical,intent(in) :: finite_Rem
          type(SF),intent(inout) :: temp_CC
@@ -112,18 +112,18 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_Total_Energy_Domain(energy,field,time,m,D)
+       subroutine compute_Total_Energy_Domain(energy,field,time,m,MD)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
          real(cp),intent(in) :: time
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(mesh_domain),intent(in) :: MD
          type(VF) :: temp_VF
          real(cp) :: temp
-         call init_CC(temp_VF,m,D)
-         call extractCC(temp_VF,field,D)
-         call Ln(temp,temp_VF,2.0_cp,m,D)
+         call init_CC(temp_VF,m,MD)
+         call extractCC(temp_VF,field,MD)
+         call Ln(temp,temp_VF,2.0_cp,m,MD)
          temp = 0.5_cp*temp
          call delete(temp_VF)
          call export(energy,time,temp)
@@ -145,7 +145,7 @@
          implicit none
          type(TF),intent(inout) :: U_E_tot
          type(TF),intent(in) :: U_E_in ! Momentum edge velocity
-         type(domain),intent(in) :: D_fluid
+         type(mesh_domain),intent(in) :: D_fluid
          call embedEdge(U_E_tot%x,U_E_in%x,D_fluid)
          call embedEdge(U_E_tot%y,U_E_in%y,D_fluid)
          call embedEdge(U_E_tot%z,U_E_in%z,D_fluid)
@@ -155,7 +155,7 @@
          implicit none
          type(VF),intent(inout) :: U_Ft
          type(VF),intent(in) :: U_F ! Momentum edge velocity
-         type(domain),intent(in) :: D_fluid
+         type(mesh_domain),intent(in) :: D_fluid
          call embedFace(U_Ft,U_F,D_fluid)
        end subroutine
 
@@ -163,7 +163,7 @@
          implicit none
          type(VF),intent(inout) :: U_cct
          type(VF),intent(in) :: U_CC ! Momentum edge velocity
-         type(domain),intent(in) :: D_fluid
+         type(mesh_domain),intent(in) :: D_fluid
          call embedCC(U_cct,U_CC,D_fluid)
        end subroutine
 

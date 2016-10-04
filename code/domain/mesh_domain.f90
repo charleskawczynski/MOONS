@@ -67,11 +67,11 @@
          call print(MD%D,name)
        end subroutine
 
-       subroutine display_mesh_domain(MD,dir,name)
+       subroutine display_mesh_domain(MD,un)
          implicit none
          type(mesh_domain),intent(inout) :: MD
-         character(len=*),intent(in) :: dir,name
-         call display(MD%D,dir,name)
+         integer,intent(in) :: un
+         call display(MD%D,un)
        end subroutine
 
        subroutine export_mesh_domain(MD,un)

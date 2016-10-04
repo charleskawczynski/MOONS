@@ -6,7 +6,7 @@
 
        use version_mod
        use mesh_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_generate_mod
        use VF_mod
        use string_mod
@@ -41,7 +41,7 @@
          type(energy) :: nrg
          type(mesh) :: mesh_mom,mesh_ind,mesh_ind_interior
          ! ********************** MEDIUM VARIABLES **********************
-         type(domain) :: D_fluid,D_sigma
+         type(mesh_domain) :: MD_fluid,MD_sigma
          type(dir_tree) :: DT
          type(sim_params) :: SP
          type(iter_solver_params) :: ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi
@@ -75,33 +75,33 @@
          if (SP%restart_all) then
            call import(mesh_mom,str(DT%restart),'mesh_mom')
            call import(mesh_ind,str(DT%restart),'mesh_ind')
-           call import(D_sigma ,str(DT%restart),'D_sigma')
+           call import(MD_sigma ,str(DT%restart),'MD_sigma')
          else
-           call mesh_generate(mesh_mom,mesh_ind,D_sigma,DT,Ha,tw,include_vacuum)
+           call mesh_generate(mesh_mom,mesh_ind,MD_sigma,DT,Ha,tw,include_vacuum)
            call export(mesh_mom,str(DT%restart),'mesh_mom')
            call export(mesh_ind,str(DT%restart),'mesh_ind')
-           call export(D_sigma ,str(DT%restart),'D_sigma')
+           call export(MD_sigma ,str(DT%restart),'MD_sigma')
          endif
 
-         call init(mesh_ind_interior,D_sigma%m_R2)
+         call init(mesh_ind_interior,MD_sigma%m_R2)
 
          call initProps(mesh_mom);     call patch(mesh_mom)
          call initProps(mesh_ind);     call patch(mesh_ind)
 
-         call init(D_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
+         call init(MD_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
 
-         call initProps(D_fluid%m_R1); call patch(D_fluid%m_R1)
-         call initProps(D_fluid%m_R2); call patch(D_fluid%m_R2)
-         call initProps(D_sigma%m_R1); call patch(D_sigma%m_R1)
-         call initProps(D_sigma%m_R2); call patch(D_sigma%m_R2)
+         call initProps(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
+         call initProps(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
+         call initProps(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
+         call initProps(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
 
-         call print(D_fluid,'D_fluid')
-         call print(D_sigma,'D_sigma')
+         ! call print(MD_fluid,'MD_fluid')
+         ! call print(MD_sigma,'MD_sigma')
          ! stop 'Done in MOONS.f90'
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
-         if (SP%export_meshes) call export_mesh(D_sigma%m_R2,str(DT%meshes),'mesh_D_sigma',1)
+         if (SP%export_meshes) call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
          if (SP%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
          if (SP%stop_after_mesh_export) then
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
@@ -110,10 +110,10 @@
          ! Initialize energy,momentum,induction
          call init(mom,mesh_mom,SP,TMP_U,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)
          if (SP%solveEnergy) then
-          call init(nrg,mesh_ind,SP,D_fluid,TMP_T,ISP_T,Re,Pr,Ec,Ha,DT)
+          call init(nrg,mesh_ind,SP,MD_fluid,TMP_T,ISP_T,Re,Pr,Ec,Ha,DT)
          endif
          if (SP%solveInduction) then
-           call init(ind,mesh_ind,SP,D_fluid,D_sigma,include_vacuum,&
+           call init(ind,mesh_ind,SP,MD_fluid,MD_sigma,include_vacuum,&
                      sig_local_over_sig_f,finite_Rem,Rem,TMP_B,ISP_B,ISP_phi,DT)
          endif
 
@@ -140,10 +140,10 @@
            ! if (solveMomentum.and.solveInduction) then
              write(*,*) ' COMPUTING ENERGY BUDGETS:'
              write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
-             ! call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%D_fluid,ind%Rem,DT)
+             ! call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%MD_fluid,ind%Rem,DT)
              write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
              write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
-             ! call compute_E_M_budget(ind,mom%U,ind%D_fluid,mom%Re,mom%Ha,DT)
+             ! call compute_E_M_budget(ind,mom%U,ind%MD_fluid,mom%Re,mom%Ha,DT)
              write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
            ! endif
 
@@ -166,8 +166,8 @@
          call delete(nrg)
          call delete(mom)
          call delete(ind)
-         call delete(D_fluid)
-         call delete(D_sigma)
+         call delete(MD_fluid)
+         call delete(MD_sigma)
          call delete(DT)
 
          call delete(mesh_mom)

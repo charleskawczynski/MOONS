@@ -22,7 +22,7 @@
        use Jacobi_mod
        use induction_aux_mod
        use export_raw_processed_mod
-       use domain_mod
+       use mesh_domain_mod
        use ops_embedExtract_mod
        use ops_internal_BC_mod
 
@@ -67,7 +67,7 @@
        end subroutine
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B_interior,curlE,&
-         phi,m,D_sigma,dt,N_induction,compute_norms,SF_CC,VF_F1)
+         phi,m,MD_sigma,dt,N_induction,compute_norms,SF_CC,VF_F1)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:  Constrained Transport (CT)
@@ -77,7 +77,7 @@
          type(VF),intent(inout) :: B,VF_F1
          type(VF),intent(in) :: B_interior,curlE
          type(SF),intent(inout) :: SF_CC,phi
-         type(domain),intent(in) :: D_sigma
+         type(mesh_domain),intent(in) :: MD_sigma
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_induction
@@ -87,7 +87,7 @@
            call multiply(VF_F1,curlE,-dt)
            call add(B,VF_F1)
            call apply_BCs(B,m)
-           call embedFace(B,B_interior,D_sigma)
+           call embedFace(B,B_interior,MD_sigma)
          enddo
          ! Clean B
          call div(SF_CC,B,m)
@@ -95,7 +95,7 @@
          call grad(VF_F1,phi,m)
          call subtract(B,VF_F1)
          call apply_BCs(B,m)
-         call embedFace(B,B_interior,D_sigma)
+         call embedFace(B,B_interior,MD_sigma)
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,RHS,phi,m,&
@@ -143,7 +143,7 @@
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         type(domain),intent(in) :: D_conductor
+         type(mesh_domain),intent(in) :: D_conductor
          logical,intent(in) :: compute_norms
          type(VF) :: temp
          call add(temp_F2,B,B0) ! Since finite Rem

@@ -35,7 +35,7 @@
        use ops_del_mod
        use grid_mod
        use mesh_mod
-       use domain_mod
+       use mesh_domain_mod
        use ops_embedExtract_mod
        use VF_mod
        use SF_mod
@@ -261,7 +261,7 @@
          ! 
          !      u = u - mean(u)
          ! 
-         ! Where this mean operation is only in the interior domain
+         ! Where this mean operation is only in the interior
          implicit none
          type(SF),intent(inout) :: u
          real(cp) :: meanU
@@ -275,7 +275,7 @@
          ! 
          !      u = u - mean(u)
          ! 
-         ! Where this mean operation is only in the interior domain
+         ! Where this mean operation is only in the interior
          implicit none
          type(SF),intent(inout) :: u,temp
          type(SF),intent(in) :: vol
@@ -402,7 +402,7 @@
          real(cp) :: low_value,high_value,tol
          low_value = minval(f); high_value = maxval(f)
          ! Make interface property the min/max of
-         ! fluid / wall domain depending on treatment
+         ! fluid / wall depending on treatment
          tol = 10.0_cp**(-10.0_cp)
          !$OMP PARALLEL DO
          do k=1,s(3); do j=1,s(2); do i=1,s(1)
@@ -860,18 +860,18 @@
          call stabilityTerms(fo,fi%z,m,n,3)
        end subroutine
 
-       subroutine boundaryFlux_VF_SD(BF,f,m,D)
+       subroutine boundaryFlux_VF_SD(BF,f,m,MD)
          implicit none
          type(VF),intent(in) :: f
          real(cp),intent(inout) :: BF
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(mesh_domain),intent(in) :: MD
          type(mesh) :: m_temp
          type(VF) :: temp
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
-         call init_other(m_temp,m,D)
+         call init_other(m_temp,m,MD)
          call init_Face(temp,m_temp)
-         call extractFace(temp,f,D)
+         call extractFace(temp,f,MD)
          call boundaryFlux(BF,temp,m_temp)
          call delete(temp)
          call delete(m_temp)

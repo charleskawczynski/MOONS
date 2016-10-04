@@ -10,6 +10,7 @@
         type block_field
           type(grid_field) :: B ! bulk
           type(boundary_conditions) :: BCs
+          ! type(boundary_conditions) :: BCs%BD%Dirichlet
           type(stitches) :: st
         end type
 

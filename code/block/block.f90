@@ -9,13 +9,10 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        type block
-         type(grid) :: B                ! Bulk
-         type(grid),dimension(6) :: f   ! Faces
-         type(grid),dimension(12) :: e  ! Edges
-         type(grid),dimension(8) :: c   ! Corners
-         type(domain) :: D_f ! Faces
-         type(domain) :: D_e ! Edges
-         type(domain) :: D_c ! Corners
+         type(grid) :: B                       ! Bulk
+         type(grid),dimension(6) :: fb,fg,fi   ! Faces (boundary,ghost,interior)
+         type(grid),dimension(12) :: eb,eg,ei  ! Edges (boundary,ghost,interior)
+         type(grid),dimension(8) :: cb,cg,ci   ! Corners (boundary,ghost,interior)
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -25,6 +22,8 @@
        interface print;              module procedure print_block;              end interface
        interface export;             module procedure export_block;             end interface
        interface import;             module procedure import_block;             end interface
+       interface export;             module procedure export_block_wrapper;     end interface
+       interface import;             module procedure import_block_wrapper;     end interface
 
        contains
 
@@ -32,83 +31,155 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_block(b,g)
+       subroutine init_block(B,g)
          implicit none
-         type(block),intent(inout) :: b
+         type(block),intent(inout) :: B
          type(grid),intent(in) :: g
          integer :: i
-         call init(b%B,g)
-         ! do i=1,6;  call init(b%f(i),g); call get_face(b%f(i),i);   enddo
-         ! do i=1,12; call init(b%e(i),g); call get_edge(b%e(i),i);   enddo
-         ! do i=1,8;  call init(b%c(i),g); call get_corner(b%c(i),i); enddo
+         call init(B%B,g)
+         do i=1,6;  call get_face_g(B%fg(i),g,i);   enddo
+         do i=1,12; call get_edge_g(B%eg(i),g,i);   enddo
+         do i=1,8;  call get_corner_g(B%cg(i),g,i); enddo
 
-         ! do i=1,6;  call init(b%D_f(i),b%f(i),b%B); enddo
-         ! do i=1,12; call init(b%D_e(i),b%e(i),b%B); enddo
-         ! do i=1,8;  call init(b%D_c(i),b%c(i),b%B); enddo
+         do i=1,6;  call get_face_b(B%fb(i),g,i);   enddo
+         do i=1,12; call get_edge_b(B%eb(i),g,i);   enddo
+         do i=1,8;  call get_corner_b(B%cb(i),g,i); enddo
+
+         do i=1,6;  call get_face_i(B%fi(i),g,i);   enddo
+         do i=1,12; call get_edge_i(B%ei(i),g,i);   enddo
+         do i=1,8;  call get_corner_i(B%ci(i),g,i); enddo
        end subroutine
 
-       subroutine init_block_copy(b_out,b_in)
+       subroutine init_block_copy(B_out,B_in)
          implicit none
-         type(block),intent(inout) :: b_out
-         type(block),intent(in) :: b_in
+         type(block),intent(inout) :: B_out
+         type(block),intent(in) :: B_in
          integer :: i
-         call init(b_out%B,b_in%B)
-         do i=1,6;  call init(b_out%f(i),b_in%f(i)); enddo
-         do i=1,12; call init(b_out%e(i),b_in%e(i)); enddo
-         do i=1,8;  call init(b_out%c(i),b_in%c(i)); enddo
+         call init(B_out%B,B_in%B)
+         do i=1,6;  call init(B_out%fg(i),B_in%fg(i)); enddo
+         do i=1,12; call init(B_out%eg(i),B_in%eg(i)); enddo
+         do i=1,8;  call init(B_out%cg(i),B_in%cg(i)); enddo
+
+         do i=1,6;  call init(B_out%fb(i),B_in%fb(i)); enddo
+         do i=1,12; call init(B_out%eb(i),B_in%eb(i)); enddo
+         do i=1,8;  call init(B_out%cb(i),B_in%cb(i)); enddo
+
+         do i=1,6;  call init(B_out%fi(i),B_in%fi(i)); enddo
+         do i=1,12; call init(B_out%ei(i),B_in%ei(i)); enddo
+         do i=1,8;  call init(B_out%ci(i),B_in%ci(i)); enddo
        end subroutine
 
-       subroutine delete_block(b)
+       subroutine delete_block(B)
          implicit none
-         type(block),intent(inout) :: b
+         type(block),intent(inout) :: B
          integer :: i
-         call delete(b%B)
-         do i=1,6;  call delete(b%f(i)); enddo
-         do i=1,12; call delete(b%e(i)); enddo
-         do i=1,8;  call delete(b%c(i)); enddo
+         call delete(B%B)
+         do i=1,6;  call delete(B%fg(i)); enddo
+         do i=1,12; call delete(B%eg(i)); enddo
+         do i=1,8;  call delete(B%cg(i)); enddo
+
+         do i=1,6;  call delete(B%fb(i)); enddo
+         do i=1,12; call delete(B%eb(i)); enddo
+         do i=1,8;  call delete(B%cb(i)); enddo
+
+         do i=1,6;  call delete(B%fi(i)); enddo
+         do i=1,12; call delete(B%ei(i)); enddo
+         do i=1,8;  call delete(B%ci(i)); enddo
        end subroutine
 
-       subroutine display_block(b,un)
+       subroutine display_block(B,un)
          implicit none
-         type(block),intent(in) :: b
+         type(block),intent(in) :: B
          integer,intent(in) :: un
          integer :: i
-         call display(b%B,un)
-         do i=1,6;  call display(b%f(i),un); enddo
-         do i=1,12; call display(b%e(i),un); enddo
-         do i=1,8;  call display(b%c(i),un); enddo
+         call display(B%B,un)
+         do i=1,6;  call display(B%fg(i),un); enddo
+         do i=1,12; call display(B%eg(i),un); enddo
+         do i=1,8;  call display(B%cg(i),un); enddo
+
+         do i=1,6;  call display(B%fb(i),un); enddo
+         do i=1,12; call display(B%eb(i),un); enddo
+         do i=1,8;  call display(B%cb(i),un); enddo
+
+         do i=1,6;  call display(B%fi(i),un); enddo
+         do i=1,12; call display(B%ei(i),un); enddo
+         do i=1,8;  call display(B%ci(i),un); enddo
        end subroutine
 
-       subroutine print_block(b)
+       subroutine print_block(B)
          implicit none
-         type(block),intent(in) :: b
+         type(block),intent(in) :: B
          integer :: i
-         call print(b%B)
-         do i=1,6;  call print(b%f(i)); enddo
-         do i=1,12; call print(b%e(i)); enddo
-         do i=1,8;  call print(b%c(i)); enddo
+         call print(B%B)
+         do i=1,6;  call print(B%fg(i)); enddo
+         do i=1,12; call print(B%eg(i)); enddo
+         do i=1,8;  call print(B%cg(i)); enddo
+
+         do i=1,6;  call print(B%fb(i)); enddo
+         do i=1,12; call print(B%eb(i)); enddo
+         do i=1,8;  call print(B%cb(i)); enddo
+
+         do i=1,6;  call print(B%fi(i)); enddo
+         do i=1,12; call print(B%ei(i)); enddo
+         do i=1,8;  call print(B%ci(i)); enddo
        end subroutine
 
-       subroutine export_block(b,un)
+       subroutine export_block(B,un)
          implicit none
-         type(block),intent(in) :: b
+         type(block),intent(in) :: B
          integer,intent(in) :: un
          integer :: i
-         call export(b%B,un)
-         do i=1,6;  call export(b%f(i),un); enddo
-         do i=1,12; call export(b%e(i),un); enddo
-         do i=1,8;  call export(b%c(i),un); enddo
+         call export(B%B,un)
+         do i=1,6;  call export(B%fg(i),un); enddo
+         do i=1,12; call export(B%eg(i),un); enddo
+         do i=1,8;  call export(B%cg(i),un); enddo
+
+         do i=1,6;  call export(B%fb(i),un); enddo
+         do i=1,12; call export(B%eb(i),un); enddo
+         do i=1,8;  call export(B%cb(i),un); enddo
+
+         do i=1,6;  call export(B%fi(i),un); enddo
+         do i=1,12; call export(B%ei(i),un); enddo
+         do i=1,8;  call export(B%ci(i),un); enddo
        end subroutine
 
-       subroutine import_block(b,un)
+       subroutine import_block(B,un)
          implicit none
-         type(block),intent(inout) :: b
+         type(block),intent(inout) :: B
          integer,intent(in) :: un
          integer :: i
-         call import(b%B,un)
-         do i=1,6;  call import(b%f(i),un); enddo
-         do i=1,12; call import(b%e(i),un); enddo
-         do i=1,8;  call import(b%c(i),un); enddo
+         call import(B%B,un)
+         do i=1,6;  call import(B%fg(i),un); enddo
+         do i=1,12; call import(B%eg(i),un); enddo
+         do i=1,8;  call import(B%cg(i),un); enddo
+
+         do i=1,6;  call import(B%fb(i),un); enddo
+         do i=1,12; call import(B%eb(i),un); enddo
+         do i=1,8;  call import(B%cb(i),un); enddo
+
+         do i=1,6;  call import(B%fi(i),un); enddo
+         do i=1,12; call import(B%ei(i),un); enddo
+         do i=1,8;  call import(B%ci(i),un); enddo
+       end subroutine
+
+       subroutine export_block_wrapper(B,dir,name)
+         implicit none
+         type(block),intent(in) :: B
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(B,un)
+         call close_and_message(un,dir,name)
+       end subroutine
+
+       subroutine import_block_wrapper(B,dir,name)
+         implicit none
+         type(block),intent(inout) :: B
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(B,un)
+         call close_and_message(un,dir,name)
        end subroutine
 
        end module

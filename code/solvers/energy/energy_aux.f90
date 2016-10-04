@@ -4,7 +4,7 @@
        use VF_mod
 
        use ops_embedExtract_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -25,7 +25,7 @@
 
        contains
 
-       subroutine computeBuoyancy(buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_CC)
+       subroutine computeBuoyancy(buoyancy,T,gravity,Gr,Re,m,MD,temp_F,temp_CC)
          ! Computes
          ! 
          !            Gr
@@ -37,27 +37,27 @@
          type(VF),intent(in) :: gravity
          real(cp),intent(in) :: Gr,Re
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(mesh_domain),intent(in) :: MD
          call assign(temp_CC,T)
          call multiply(temp_CC,Gr/(Re**2.0_cp))
          call multiply(temp_CC,gravity)
          call cellCenter2Face(temp_F,temp_CC,m)
-         call extractFace(buoyancy,temp_F,D)
+         call extractFace(buoyancy,temp_F,MD)
        end subroutine
 
-       subroutine compute_AddBuoyancy(buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_CC,temp_buoyancy)
+       subroutine compute_AddBuoyancy(buoyancy,T,gravity,Gr,Re,m,MD,temp_F,temp_CC,temp_buoyancy)
          implicit none
          type(VF),intent(inout) :: buoyancy,temp_F,temp_CC,temp_buoyancy
          type(SF),intent(in) :: T
          type(VF),intent(in) :: gravity
          real(cp),intent(in) :: Gr,Re
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
-         call computeBuoyancy(temp_buoyancy,T,gravity,Gr,Re,m,D,temp_F,temp_CC)
+         type(mesh_domain),intent(in) :: MD
+         call computeBuoyancy(temp_buoyancy,T,gravity,Gr,Re,m,MD,temp_F,temp_CC)
          call add(buoyancy,temp_buoyancy)
        end subroutine
 
-       subroutine computeGravity(gravity,g,Fr,m,D,temp_F,temp_CC)
+       subroutine computeGravity(gravity,g,Fr,m,MD,temp_F,temp_CC)
          ! Computes
          ! 
          !            1   
@@ -68,21 +68,21 @@
          type(VF),intent(in) :: g
          real(cp),intent(in) :: Fr
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(mesh_domain),intent(in) :: MD
          call assign(temp_CC,g)
          call multiply(temp_CC,1.0_cp/(Fr**2.0_cp))
          call cellCenter2Face(temp_F,temp_CC,m)
-         call extractFace(gravity,temp_F,D)
+         call extractFace(gravity,temp_F,MD)
        end subroutine
 
-       subroutine compute_AddGravity(gravity,g,Fr,m,D,temp_F,temp_CC,temp_gravity)
+       subroutine compute_AddGravity(gravity,g,Fr,m,MD,temp_F,temp_CC,temp_gravity)
          implicit none
          type(VF),intent(inout) :: gravity,temp_F,temp_CC,temp_gravity
          type(VF),intent(in) :: g
          real(cp),intent(in) :: Fr
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
-         call computeGravity(temp_gravity,g,Fr,m,D,temp_F,temp_CC)
+         type(mesh_domain),intent(in) :: MD
+         call computeGravity(temp_gravity,g,Fr,m,MD,temp_F,temp_CC)
          call add(gravity,temp_gravity)
        end subroutine
 
@@ -140,12 +140,12 @@
          ! call subtract_physical_mean(Q_CC)
        end subroutine
 
-       subroutine embed_velocity_F(U_Ft,U_Fi,D)
+       subroutine embed_velocity_F(U_Ft,U_Fi,MD)
          implicit none
          type(VF),intent(inout) :: U_Ft
          type(VF),intent(in) :: U_Fi ! Raw momentum velocity
-         type(domain),intent(in) :: D
-         call embedFace(U_Ft,U_Fi,D)
+         type(mesh_domain),intent(in) :: MD
+         call embedFace(U_Ft,U_Fi,MD)
        end subroutine
 
        end module

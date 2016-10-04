@@ -2,7 +2,7 @@
         use current_precision_mod
         use IO_tools_mod
         use mesh_mod
-        use domain_mod
+        use mesh_domain_mod
         use BCs_mod
         use GF_mod
         implicit none
@@ -402,13 +402,13 @@
           call init_CC_N_along(f)
         end subroutine
 
-        subroutine init_SF_CC_D(f,m,D)
+        subroutine init_SF_CC_D(f,m,MD)
           implicit none
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
-          type(domain),intent(in) :: D
-          if (compare(m,D%m_R1)) then;     call init_CC(f,D%m_R2)
-          elseif (compare(m,D%m_R2)) then; call init_CC(f,D%m_R1)
+          type(mesh_domain),intent(in) :: MD
+          if (compare(m,MD%m_R1)) then;     call init_CC(f,MD%m_R2)
+          elseif (compare(m,MD%m_R2)) then; call init_CC(f,MD%m_R1)
           else; stop 'Error: case not found in init_SF_CC_D in SF.f90'
           endif
         end subroutine
@@ -437,14 +437,14 @@
           call init_CC_N_along(f)
         end subroutine
 
-        subroutine init_SF_Face_D(f,m,dir,D)
+        subroutine init_SF_Face_D(f,m,dir,MD)
           implicit none
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer,intent(in) :: dir
-          type(domain),intent(in) :: D
-          if (compare(m,D%m_R1)) then;     call init_Face(f,D%m_R2,dir)
-          elseif (compare(m,D%m_R2)) then; call init_Face(f,D%m_R1,dir)
+          type(mesh_domain),intent(in) :: MD
+          if (compare(m,MD%m_R1)) then;     call init_Face(f,MD%m_R2,dir)
+          elseif (compare(m,MD%m_R2)) then; call init_Face(f,MD%m_R1,dir)
           else; stop 'Error: case not found in init_SF_Face_D in SF.f90'
           endif
         end subroutine
@@ -474,14 +474,14 @@
           call init_CC_N_along(f)
         end subroutine
 
-        subroutine init_SF_Edge_D(f,m,dir,D)
+        subroutine init_SF_Edge_D(f,m,dir,MD)
           implicit none
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer,intent(in) :: dir
-          type(domain),intent(in) :: D
-          if (compare(m,D%m_R1)) then;     call init_Edge(f,D%m_R2,dir)
-          elseif (compare(m,D%m_R2)) then; call init_Edge(f,D%m_R1,dir)
+          type(mesh_domain),intent(in) :: MD
+          if (compare(m,MD%m_R1)) then;     call init_Edge(f,MD%m_R2,dir)
+          elseif (compare(m,MD%m_R2)) then; call init_Edge(f,MD%m_R1,dir)
           else; stop 'Error: case not found in init_SF_Edge_D in SF.f90'
           endif
         end subroutine
@@ -509,13 +509,13 @@
           call init_CC_N_along(f)
         end subroutine
 
-        subroutine init_SF_Node_D(f,m,D)
+        subroutine init_SF_Node_D(f,m,MD)
           implicit none
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
-          type(domain),intent(in) :: D
-          if (compare(m,D%m_R1)) then;     call init_Node(f,D%m_R2)
-          elseif (compare(m,D%m_R2)) then; call init_Node(f,D%m_R1)
+          type(mesh_domain),intent(in) :: MD
+          if (compare(m,MD%m_R1)) then;     call init_Node(f,MD%m_R2)
+          elseif (compare(m,MD%m_R2)) then; call init_Node(f,MD%m_R1)
           else; stop 'Error: case not found in init_SF_Node_D in SF.f90'
           endif
         end subroutine

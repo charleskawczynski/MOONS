@@ -1,7 +1,7 @@
       module Jacobi_mod
       use current_precision_mod
       use mesh_mod
-      use domain_mod
+      use mesh_domain_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -27,7 +27,7 @@
         type(mesh) :: m
         type(VF) :: Ax,res,Dinv,D,k,tempk,vol,x_interior
         type(norms) :: norm
-        type(domain) :: D_interior
+        type(mesh_domain) :: D_interior
         type(string) :: name
         type(matrix_free_params) :: MFP
         integer :: un,n_skip_check_res,N_iter ! unit to export norm
@@ -49,7 +49,7 @@
         type(VF),intent(in) :: x,x_interior
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
-        type(domain),intent(in) :: D_interior
+        type(mesh_domain),intent(in) :: D_interior
         type(matrix_free_params),intent(in) :: MFP
         real(cp),intent(in) :: tol
         integer,intent(in) :: n_skip_check_res

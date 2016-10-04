@@ -8,7 +8,7 @@
        use string_mod
        use path_mod
        use grid_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_mod
        implicit none
 
@@ -41,11 +41,11 @@
          call patch(m)
          call delete(g)
        end subroutine
-       subroutine BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
+       subroutine BC_sim_ind(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: MD_sigma
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
          type(mesh) :: m_sigma
@@ -85,7 +85,7 @@
          call initProps(m_ind)
          call patch(m_ind)
 
-         call init(D_sigma,m_sigma,m_ind)
+         call init(MD_sigma,m_sigma,m_ind)
          call delete(m_sigma)
          call delete(g)
        end subroutine
@@ -133,11 +133,11 @@
          call export(m,str(DT%meshes),'mesh_mom')
          call delete(g)
        end subroutine
-       subroutine BC_sim_ind_proper_insulate(m_ind,m_mom,D_sigma,DT,Ha,tw,include_vacuum)
+       subroutine BC_sim_ind_proper_insulate(m_ind,m_mom,MD_sigma,DT,Ha,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: MD_sigma
          type(dir_tree),intent(in) :: DT
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
@@ -195,7 +195,7 @@
          call initProps(m_ind)
          call patch(m_ind)
 
-         call init(D_sigma,m_sigma,m_ind)
+         call init(MD_sigma,m_sigma,m_ind)
          call delete(m_sigma)
          call delete(g)
        end subroutine

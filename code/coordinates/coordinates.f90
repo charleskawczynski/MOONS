@@ -17,6 +17,9 @@
       public :: restrict
       public :: pop,snip
 
+      ! For getting surface / edge corner
+      public :: get_ghost,get_boundary,get_interior
+
 #ifdef _DEBUG_COORDINATES_
       public :: checkCoordinates
 #endif
@@ -58,6 +61,10 @@
 
       interface pop;               module procedure pop_coordinates;        end interface
       interface snip;              module procedure snip_coordinates;       end interface
+
+      interface get_ghost;         module procedure get_ghost_c;            end interface
+      interface get_boundary;      module procedure get_boundary_c;         end interface
+      interface get_interior;      module procedure get_interior_c;         end interface
       
       contains
 
@@ -713,35 +720,82 @@
       end subroutine
 
       ! *****************************************************************
+      ! ************* GET GHOST / BOUNDARY / FIRST INTERIOR *************
+      ! *****************************************************************
+
+      subroutine get_ghost_c(c,dir)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        integer,intent(in) :: dir
+        integer :: i,s
+        if ((dir.ne.1).and.(dir.ne.-1)) stop 'Error: dir must = 1,-1 in get_ghost_c in coordinates.f90'
+        s = c%sn
+        if (s.gt.2) then ! 3 or more nodes, remove all but boundary surface
+        if (dir.eq.-1) then; do i=1,s-2; call pop(c);  enddo; endif
+        if (dir.eq.1) then;  do i=1,s-2; call snip(c); enddo; endif
+        elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
+        else; stop 'Error: bad case in get_ghost_c in coordinates.f90'
+        endif
+      end subroutine
+
+      subroutine get_boundary_c(c,dir)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        integer,intent(in) :: dir
+        integer :: i,s
+        if ((dir.ne.1).and.(dir.ne.-1)) stop 'Error: dir must = 1,-1 in get_boundary_c in coordinates.f90'
+        s = c%sn
+        if (s.gt.2) then ! 3 or more nodes, remove all but boundary surface
+        if (dir.eq.-1) then; do i=1,s-2; call pop(c);  enddo; call snip(c); endif
+        if (dir.eq.1) then;  do i=1,s-2; call snip(c); enddo; call pop(c);  endif
+        elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
+        else; stop 'Error: bad case in get_boundary_c in coordinates.f90'
+        endif
+      end subroutine
+
+      subroutine get_interior_c(c,dir)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        integer,intent(in) :: dir
+        integer :: i,s
+        if ((dir.ne.1).and.(dir.ne.-1)) stop 'Error: dir must = 1,-1 in get_interior_c in coordinates.f90'
+        s = c%sn
+        if (s.gt.3) then ! 3 or more nodes, remove all but boundary surface
+        if (dir.eq.-1) then; do i=1,s-3; call pop(c);  enddo; call snip(c); endif
+        if (dir.eq.1) then;  do i=1,s-3; call snip(c); enddo; call pop(c);  endif
+        elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
+        else; stop 'Error: bad case in get_interior_c in coordinates.f90'
+        endif
+      end subroutine
+
+      ! *****************************************************************
       ! ************************** AUXILIARY ****************************
       ! *****************************************************************
 
       subroutine init_stencils_c(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        if (c%sc.ge.2) then
-          ! Interpolation stencils
-          call init_interpStencil(c)
+        ! Interpolation stencils
+        call init_interpStencil(c)
 
-          ! Derivative stencils
-          call stencil_colCC_1(c)
-          call stencil_colCC_2(c)
-          call stencil_colCC_1_centered(c)
-          call stencil_colCC_2_centered(c)
-          call stencil_colN_1(c)
-          call stencil_colN_2(c)
-          call stencil_stagCC2N(c)
-          call stencil_stagN2CC(c)
-          
-          ! call check(c%lapCC)
-          ! call check(c%lapN)
-          ! call check(c%stagCC2N)
-          ! call check(c%stagN2CC)
-          ! call check(c%colCC)
-          ! call check(c%colN)
-          ! stop 'Done'
-          c%stencils_defined = .true.
-        endif
+        ! Derivative stencils
+        call stencil_colCC_1(c)
+        call stencil_colCC_2(c)
+        call stencil_colCC_1_centered(c)
+        call stencil_colCC_2_centered(c)
+        call stencil_colN_1(c)
+        call stencil_colN_2(c)
+        call stencil_stagCC2N(c)
+        call stencil_stagN2CC(c)
+        
+        ! call check(c%lapCC)
+        ! call check(c%lapN)
+        ! call check(c%stagCC2N)
+        ! call check(c%stagN2CC)
+        ! call check(c%colCC)
+        ! call check(c%colN)
+        ! stop 'Done'
+        c%stencils_defined = .true.
       end subroutine
 
       subroutine addGhostNodes(c)

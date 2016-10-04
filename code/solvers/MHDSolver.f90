@@ -65,7 +65,7 @@
 
            if (SP%addJCrossB) then
              call compute_AddJCrossB(F,ind%B,ind%B0,ind%J,ind%m,&
-                                     ind%D_fluid,mom%Ha,mom%Re,&
+                                     ind%MD_fluid,mom%Ha,mom%Re,&
                                      ind%finite_Rem,ind%temp_CC_SF,&
                                      ind%temp_F1,ind%temp_F1_TF,&
                                      ind%temp_F2_TF,mom%temp_F)
@@ -75,12 +75,12 @@
            endif
            if (SP%addBuoyancy) then
              call compute_AddBuoyancy(F,nrg%T,nrg%gravity,&
-                                      mom%Gr,mom%Re,nrg%m,nrg%D,&
+                                      mom%Gr,mom%Re,nrg%m,nrg%MD,&
                                       nrg%temp_F,nrg%temp_CC1_VF,mom%temp_F)
            endif
            if (SP%addGravity) then
              call compute_AddGravity(F,nrg%gravity,mom%Fr,nrg%m,&
-                                     nrg%D,nrg%temp_F,nrg%temp_CC1_VF,&
+                                     nrg%MD,nrg%temp_F,nrg%temp_CC1_VF,&
                                      mom%temp_F)
            endif
 

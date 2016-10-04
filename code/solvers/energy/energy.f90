@@ -8,7 +8,7 @@
        use SF_mod
        use VF_mod
        use mesh_mod
-       use domain_mod
+       use mesh_domain_mod
        use dir_tree_mod
        use string_mod
        use path_mod
@@ -63,7 +63,7 @@
          type(probe) :: probe_divQ
 
          type(mesh) :: m
-         type(domain) :: D
+         type(mesh_domain) :: MD
          type(matrix_free_params) :: MFP
 
          type(time_marching_params) :: TMP
@@ -98,11 +98,11 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_energy(nrg,m,SP,D,TMP,ISP_T,Re,Pr,Ec,Ha,DT)
+       subroutine init_energy(nrg,m,SP,MD,TMP,ISP_T,Re,Pr,Ec,Ha,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
-         type(domain),intent(in) :: D
+         type(mesh_domain),intent(in) :: MD
          type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          type(iter_solver_params),intent(in) :: ISP_T
@@ -120,7 +120,7 @@
          call init(nrg%SP,SP)
 
          call init(nrg%m,m)
-         call init(nrg%D,D)
+         call init(nrg%MD,MD)
 
          call init_CC(nrg%T,m,0.0_cp)
          call init_CC(nrg%Q_source,m,0.0_cp)
@@ -156,7 +156,7 @@
          write(*,*) '     BCs applied'
 
          call init_CC(k_cc,m,0.0_cp)
-         call initK(k_cc,nrg%m,nrg%D)
+         call initK(k_cc,nrg%m,nrg%MD)
          call cellCenter2Face(nrg%k,k_cc,m)
          call delete(k_cc)
          write(*,*) '     Materials initialized'
@@ -200,7 +200,7 @@
 
          call delete(nrg%probe_divQ)
          call delete(nrg%m)
-         call delete(nrg%D)
+         call delete(nrg%MD)
          call delete(nrg%PCG_T)
 
          call delete(nrg%TMP)
@@ -310,7 +310,7 @@
 
          call assign(nrg%gravity%x,1.0_cp)
 
-         call embed_velocity_F(nrg%U_F,U,nrg%D)
+         call embed_velocity_F(nrg%U_F,U,nrg%MD)
 
          select case (nrg%SP%solveTMethod)
          case (1)

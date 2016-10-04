@@ -1,7 +1,7 @@
       module Jacobi_solver_mod
       use current_precision_mod
       use mesh_mod
-      use domain_mod
+      use mesh_domain_mod
       use apply_BCs_mod
       use apply_Stitches_mod
       use norms_mod
@@ -26,7 +26,7 @@
 
       contains
 
-      subroutine solve_Jacobi_SF(operator,x,x_interior,f,vol,k,Dinv,Diag,m,D_interior,MFP,n,N_iter,&
+      subroutine solve_Jacobi_SF(operator,x,x_interior,f,vol,k,Dinv,Diag,m,MD_interior,MFP,n,N_iter,&
         norm,compute_norm,un,n_skip_check_res,tol,name,Ax,res,tempk)
         implicit none
         procedure(op_SF_explicit) :: operator
@@ -34,7 +34,7 @@
         type(SF),intent(in) :: f,x_interior,Dinv,Diag,vol
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
-        type(domain),intent(in) :: D_interior
+        type(mesh_domain),intent(in) :: MD_interior
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: tol
         character(len=*),intent(in) :: name
@@ -48,7 +48,7 @@
         integer :: i,i_earlyExit
         logical :: skip_loop,suppress_warning
         suppress_warning = x_interior%is_Face
-        suppress_warning = D_interior%s.eq.0
+        suppress_warning = MD_interior%D%s.eq.0
         call apply_BCs(x,m) ! Boundaries
 
         call operator(Ax,x,k,m,MFP,tempk)
@@ -99,7 +99,7 @@
         endif
       end subroutine
 
-      subroutine solve_Jacobi_VF(operator,x,x_interior,f,vol,k,Dinv,Diag,m,D_interior,MFP,n,N_iter,&
+      subroutine solve_Jacobi_VF(operator,x,x_interior,f,vol,k,Dinv,Diag,m,MD_interior,MFP,n,N_iter,&
         norm,compute_norm,un,n_skip_check_res,tol,name,Ax,res,tempk)
         implicit none
         procedure(op_VF_explicit) :: operator
@@ -108,7 +108,7 @@
         type(VF),intent(in) :: k
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
-        type(domain),intent(in) :: D_interior
+        type(mesh_domain),intent(in) :: MD_interior
         real(cp),intent(in) :: tol
         character(len=*),intent(in) :: name
         type(matrix_free_params),intent(in) :: MFP
@@ -120,7 +120,7 @@
         type(norms) :: norm0
         integer :: i,i_earlyExit
         logical :: skip_loop
-        if (x%is_Face) call embedFace(x,x_interior,D_interior)
+        if (x%is_Face) call embedFace(x,x_interior,MD_interior)
         call apply_BCs(x,m) ! Boundaries
 
         call operator(Ax,x,k,m,MFP,tempk)
@@ -143,7 +143,7 @@
             call add(x,res) ! x^n+1 = x^n w + (1-w) Dinv (b - LUx)
             ! call apply_Stitches(x,m)
             call apply_BCs(x,m)
-            if (x%is_Face) call embedFace(x,x_interior,D_interior)
+            if (x%is_Face) call embedFace(x,x_interior,MD_interior)
 
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
