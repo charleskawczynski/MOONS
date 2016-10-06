@@ -13,13 +13,10 @@
         public :: init_Edge
         public :: init_Node
 
-        public :: init_BCs
-
         type grid_field
           integer :: s_1D                            ! size
           integer,dimension(3) :: s                  ! Dimension
           real(cp),dimension(:,:,:),allocatable :: f ! field
-          type(BCs) :: b
         end type
 
         interface init;                     module procedure init_GF_copy;           end interface
@@ -34,10 +31,7 @@
         interface init_Edge;                module procedure init_GF_Edge;           end interface
         interface init_Node;                module procedure init_GF_Node;           end interface
 
-        interface init_BCs;                 module procedure init_BC_val;            end interface
-        interface init_BCs;                 module procedure init_BC_vals;           end interface
-
-      contains
+       contains
 
         ! **********************************************************
         ! ********************* ESSENTIALS *************************
@@ -103,7 +97,6 @@
           if (allocated(f1%f)) deallocate(f1%f)
           allocate(f1%f(s(1),s(2),s(3)))
           f1%s = shape(f1%f)
-          if (f2%b%defined) call init(f1%b,f2%b)
           f1%s_1D = f2%s_1D
         end subroutine
 
@@ -111,7 +104,6 @@
           implicit none
           type(grid_field),intent(inout) :: a
           if (allocated(a%f)) deallocate(a%f)
-          call delete(a%b)
           a%s = 0
           a%s_1D = 0
         end subroutine
@@ -150,7 +142,6 @@
           enddo; enddo; enddo
           else; stop 'Error: trying to export unallocated GF in export_GF in GF.f90'
           endif
-          call export(a%b,un)
         end subroutine
 
         subroutine import_GF(a,un)
@@ -167,46 +158,6 @@
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
             read(un,*) a%f(i,j,k)
           enddo; enddo; enddo
-          call import(a%b,un)
-        end subroutine
-
-        ! **********************************************************
-        ! **********************************************************
-        ! **********************************************************
-
-        subroutine init_BC_val(f,val)
-          implicit none
-          type(grid_field),intent(inout) :: f
-          real(cp),intent(in) :: val
-          call init(f%b,val)
-        end subroutine
-
-        subroutine init_BC_vals(f,is_CC,is_Node)
-          implicit none
-          type(grid_field),intent(inout) :: f
-          logical,intent(in) :: is_CC,is_Node
-          logical,dimension(2) :: L
-          L = (/is_CC,is_Node/)
-          if (count(L).gt.1) then
-            stop 'Error: more than one datatype in init_BC_vals in GF.f90'
-          endif
-          if (is_Node) then
-            call init(f%b,f%f(2,:,:),1)
-            call init(f%b,f%f(:,2,:),3)
-            call init(f%b,f%f(:,:,2),5)
-            call init(f%b,f%f(f%s(1)-1,:,:),2)
-            call init(f%b,f%f(:,f%s(2)-1,:),4)
-            call init(f%b,f%f(:,:,f%s(3)-1),6)
-          elseif (is_CC) then
-            call init(f%b,0.5_cp*(f%f(1,:,:)+f%f(2,:,:)),1)
-            call init(f%b,0.5_cp*(f%f(:,1,:)+f%f(:,2,:)),3)
-            call init(f%b,0.5_cp*(f%f(:,:,1)+f%f(:,:,2)),5)
-            call init(f%b,0.5_cp*(f%f(f%s(1),:,:)+f%f(f%s(1)-1,:,:)),2)
-            call init(f%b,0.5_cp*(f%f(:,f%s(2),:)+f%f(:,f%s(2)-1,:)),4)
-            call init(f%b,0.5_cp*(f%f(:,:,f%s(3))+f%f(:,:,f%s(3)-1)),6)
-          else
-            stop 'Error: field-based BC init is only available for N / CC data.'
-          endif
         end subroutine
 
       end module

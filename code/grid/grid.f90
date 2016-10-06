@@ -3,14 +3,13 @@
        use current_precision_mod
        use IO_tools_mod
        use coordinates_mod
-       use stitch_mod
        implicit none
 
        private
        public :: grid
        public :: init,delete,display,print,export,import ! Essentials
        public :: restrict,restrict_x,restrict_xy
-       public :: initProps,display_stitches
+       public :: initProps
        public :: snip,pop
 
        public :: get_face_b,   get_face_g,   get_face_i
@@ -37,7 +36,6 @@
        interface import;             module procedure import_Grid;             end interface
 
        interface initProps;          module procedure initProps_grid;          end interface
-       interface display_stitches;   module procedure display_grid_stitches;   end interface
        interface restrict;           module procedure restrictGrid1;           end interface
        interface restrict;           module procedure restrictGrid3;           end interface
        interface restrict_x;         module procedure restrictGrid_x;          end interface
@@ -122,7 +120,6 @@
          write(un,*) 'N_cells_x,stretching_x = ',g%c(1)%N,g%c(1)%dhMax-g%c(1)%dhMin
          write(un,*) 'N_cells_y,stretching_y = ',g%c(2)%N,g%c(2)%dhMax-g%c(2)%dhMin
          write(un,*) 'N_cells_z,stretching_z = ',g%c(3)%N,g%c(3)%dhMax-g%c(3)%dhMin
-         ! call display_grid_stitches(g,un)
        end subroutine
 
        subroutine print_Grid(g)
@@ -215,23 +212,6 @@
          do i=1,3; call checkCoordinates(g%c(i)); enddo
        end subroutine
 #endif
-
-       subroutine display_grid_stitches(g,un)
-         implicit none
-         type(grid), intent(in) :: g
-         integer,intent(in) :: un
-         integer :: i
-
-         ! write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge (maxmin) = ',(/(g%st_edge%maxmin(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge (maxmax) = ',(/(g%st_edge%maxmax(i),i=1,3)/)
-
-         ! write(un,*) 'stitches_corner (minmin) = ',g%st_corner%minmin
-         ! write(un,*) 'stitches_corner (minmax) = ',(/(g%st_corner%minmax(i),i=1,3)/)
-         ! write(un,*) 'stitches_corner (maxmin) = ',(/(g%st_corner%maxmin(i),i=1,3)/)
-         ! write(un,*) 'stitches_corner (maxmax) = ',g%st_corner%maxmax
-       end subroutine
 
        ! *********************************************************************
        ! *********************************************************************

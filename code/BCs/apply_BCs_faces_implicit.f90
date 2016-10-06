@@ -5,6 +5,7 @@
        use VF_mod
        use bctype_mod
        use BCs_mod
+       use block_field_mod
        use mesh_mod
        use check_BCs_mod
        use face_edge_corner_indexing_mod
@@ -12,7 +13,6 @@
 
        private
        public :: apply_BCs_faces_implicit
-
 
 
        interface apply_BCs_faces_implicit;  module procedure apply_BCs_faces_VF;     end interface
@@ -54,34 +54,34 @@
          a = adj_faces_given_dir(k)
          if (U%CC_along(k)) then
            do i=1,m%s
-             ! if (any((/(U%BF(i)%GF%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%BF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
              ! if (.not.m%B(i)%g%st_faces(f)%TF)
-             call app_CC_SF(U%BF(i)%GF,f,p)
+             call app_CC_SF(U%BF(i),f,p)
            enddo
          elseif (U%N_along(k)) then
            do i=1,m%s
-             ! if (any((/(U%BF(i)%GF%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%BF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
              ! if (.not.m%B(i)%g%st_faces(f)%TF)
-             call app_N_SF(U%BF(i)%GF,f,p)
+             call app_N_SF(U%BF(i),f,p)
            enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif
        end subroutine
 
-       subroutine app_N_SF(GF,face,p)
+       subroutine app_N_SF(BF,face,p)
          implicit none
-         type(grid_field),intent(inout) :: GF
+         type(block_field),intent(inout) :: BF
          integer,intent(in) :: face,p
-         call app_N_GF(GF%f,GF%s,face,GF%b%f(face)%b,1+p,GF%s(1)-p,GF%s(2)-p,GF%s(3)-p)
+         call app_N_GF(BF%GF%f,BF%GF%s,face,BF%b%f(face)%b,1+p,BF%GF%s(1)-p,BF%GF%s(2)-p,BF%GF%s(3)-p)
        end subroutine
 
-       subroutine app_CC_SF(GF,face,p)
+       subroutine app_CC_SF(BF,face,p)
          implicit none
-         type(grid_field),intent(inout) :: GF
+         type(block_field),intent(inout) :: BF
          integer,intent(in) :: face,p
-         call app_CC_GF(GF%f,GF%s,face,GF%b%f(face)%b,1+p,GF%s(1)-p,GF%s(2)-p,GF%s(3)-p)
+         call app_CC_GF(BF%GF%f,BF%GF%s,face,BF%b%f(face)%b,1+p,BF%GF%s(1)-p,BF%GF%s(2)-p,BF%GF%s(3)-p)
        end subroutine
 
        subroutine app_N_GF(f,s,face,b,p,x,y,z)

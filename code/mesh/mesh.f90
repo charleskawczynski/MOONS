@@ -446,7 +446,6 @@
            do i = 1,m%s
              write(un,*) ' ------------- mesh ------------- grid ID = ',i
              call display(m%B(i)%g,un)
-             if (m%s.gt.1) call display_stitches(m%B(i)%g,un)
            enddo
            write(un,*) ' -------------------------------- '
          else
@@ -454,7 +453,6 @@
              do i = 1,m%s
                write(un,*) ' ------------- mesh ------------- grid ID = ',i
                  call display(m%B(i)%g,un)
-               if (m%s.gt.1) call display_stitches(m%B(i)%g,un)
              enddo
            write(un,*) ' -------------------------------- '
            else

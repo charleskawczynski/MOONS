@@ -23,7 +23,7 @@
         public :: init_Node
 
         ! BC initialization
-        public :: init_BCs
+        ! public :: init_BCs
 
         public :: assign,assign_negative
         public :: add,subtract

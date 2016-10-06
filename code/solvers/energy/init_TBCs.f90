@@ -51,17 +51,17 @@
          call init_BC_mesh(T,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m%s
-           call init_Neumann(T%BF(i)%GF%b); call init(T%BF(i)%GF%b,0.0_cp)
+           call init_Neumann(T%BF(i)%b); call init(T%BF(i)%b,0.0_cp)
          enddo
          T%all_Neumann = .false. ! Needs to be adjusted manually
 
          select case (preDefinedT_BCs)
          case (0) ! Default insulating
-         case (1); call initFixedBCs(T%BF(1)%GF%b)
-                   call hotFaceBC(T%BF(1)%GF%b,hotFace)
-         case (2); call initInsulatingBCs(T%BF(1)%GF%b)
-                   call hotFaceBC(T%BF(1)%GF%b,hotFace)
-                   call coldFaceBC(T%BF(1)%GF%b,coldFace)
+         case (1); call initFixedBCs(T%BF(1)%b)
+                   call hotFaceBC(T%BF(1)%b,hotFace)
+         case (2); call initInsulatingBCs(T%BF(1)%b)
+                   call hotFaceBC(T%BF(1)%b,hotFace)
+                   call coldFaceBC(T%BF(1)%b,coldFace)
          case (3); call duct_for_Yi(T)
          case default; stop 'Error: preDefinedT_BCs must = 1 in init_TBCs in init_TBCs.f90.'
          end select
@@ -69,7 +69,7 @@
          do i=1,m%s; do k=1,3
            pd = periodic_dir(k)
            if ((pd.ne.1).and.(pd.ne.0)) stop 'Error: periodic_dir must = 1,0 in init_TBCs in init_TBCs.f90'
-           if (pd.eq.1) call makePeriodic(T%BF(i)%GF%b,k)
+           if (pd.eq.1) call makePeriodic(T%BF(i)%b,k)
          enddo; enddo
        end subroutine
 
@@ -83,10 +83,10 @@
        subroutine duct_for_Yi(T)
          implicit none
          type(SF),intent(inout) :: T
-         call init_Neumann(T%BF(1)%GF%b,1); call init(T%BF(1)%GF%b,-1.0_cp)
-         call init_Neumann(T%BF(1)%GF%b,2)
-         call init_Dirichlet(T%BF(1)%GF%b,3)
-         call init_Neumann(T%BF(1)%GF%b,4)
+         call init_Neumann(T%BF(1)%b,1); call init(T%BF(1)%b,-1.0_cp)
+         call init_Neumann(T%BF(1)%b,2)
+         call init_Dirichlet(T%BF(1)%b,3)
+         call init_Neumann(T%BF(1)%b,4)
        end subroutine
 
        subroutine hotFaceBC(T_bcs,face)

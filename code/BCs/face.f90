@@ -71,7 +71,13 @@
          implicit none
          type(face),intent(inout) :: b_out
          type(face),intent(in) :: b_in
-         if (.not.b_in%defined) stop 'Error: trying to copy undefined face in face.f90'
+         ! character(len=*),intent(in) :: caller
+
+         if (.not.b_in%defined) then
+          ! write(*,*) 'Error: trying to copy undefined face in ',caller,' in face.f90'
+          write(*,*) 'Error: trying to copy undefined face in init_copy in face.f90'
+          stop 'Done'
+         endif
          call init(b_out%b,b_in%b)
          b_out%vals = b_in%vals
          b_out%def = b_in%def

@@ -165,7 +165,7 @@
           integer :: i
           call delete(f1)
           allocate(f1%BF(f2%s)); f1%s = f2%s
-          do i=1,f1%s; call init(f1%BF(i)%GF,f2%BF(i)%GF); enddo
+          do i=1,f1%s; call init(f1%BF(i),f2%BF(i)); enddo
           f1%numEl = f2%numEl
           f1%numPhysEl = f2%numPhysEl
           f1%is_CC = f2%is_CC
@@ -200,7 +200,7 @@
           type(SF),intent(inout) :: f
           integer :: i
           if (allocated(f%BF)) then
-            do i=1,f%s; call delete(f%BF(i)%GF); enddo
+            do i=1,f%s; call delete(f%BF(i)); enddo
             deallocate(f%BF)
           endif
           f%s = 0
@@ -213,7 +213,7 @@
           type(SF),intent(in) :: f
           integer,intent(in) :: un
           integer :: i
-          do i=1,f%s; call display(f%BF(i)%GF,un); enddo
+          do i=1,f%s; call display(f%BF(i),un); enddo
         end subroutine
 
         subroutine print_SF(f)
@@ -232,7 +232,7 @@
           write(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
           write(un,*) f%face,f%edge,f%numEl,f%numPhysEl
           write(un,*) f%vol
-          do i=1,f%s; call export(f%BF(i)%GF,un); enddo
+          do i=1,f%s; call export(f%BF(i),un); enddo
         end subroutine
 
         subroutine import_SF(f,un)
@@ -247,7 +247,7 @@
           read(un,*) f%face,f%edge,f%numEl,f%numPhysEl
           read(un,*) f%vol
           allocate(f%BF(f%s))
-          do i=1,f%s; call import(f%BF(i)%GF,un); enddo
+          do i=1,f%s; call import(f%BF(i),un); enddo
         end subroutine
 
         subroutine export_wrapper_SF(f,dir,name)
@@ -396,7 +396,7 @@
           integer :: i
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
-          do i=1,f%s; call init_CC(f%BF(i)%GF,m%B(i)%g); enddo
+          do i=1,f%s; call init_CC(f%BF(i),m%B(i)); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_CC = .true.
@@ -430,7 +430,7 @@
           integer :: i
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
-          do i=1,f%s; call init_Face(f%BF(i)%GF,m%B(i)%g,dir); enddo
+          do i=1,f%s; call init_Face(f%BF(i),m%B(i),dir); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_face = .true.
@@ -467,7 +467,7 @@
           integer :: i
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
-          do i=1,f%s; call init_Edge(f%BF(i)%GF,m%B(i)%g,dir); enddo
+          do i=1,f%s; call init_Edge(f%BF(i),m%B(i),dir); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_edge = .true.
@@ -503,7 +503,7 @@
           integer :: i
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
-          do i=1,f%s; call init_Node(f%BF(i)%GF,m%B(i)%g); enddo
+          do i=1,f%s; call init_Node(f%BF(i),m%B(i)); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_node = .true.
@@ -534,7 +534,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call init(f%BF(i)%GF%b,g%BF(i)%GF%b); enddo
+          do i=1,f%s; call init(f%BF(i)%b,g%BF(i)%b); enddo
         end subroutine
 
         subroutine init_BC_vals_SF(f)
@@ -542,13 +542,13 @@
           type(SF),intent(inout) :: f
           integer :: i
           if (f%is_CC) then
-            do i=1,f%s; call init_BCs(f%BF(i)%GF,.true.,.false.); enddo
+            do i=1,f%s; call init_BCs(f%BF(i),.true.,.false.); enddo
           elseif (f%is_Node) then
-            do i=1,f%s; call init_BCs(f%BF(i)%GF,.false.,.true.); enddo
+            do i=1,f%s; call init_BCs(f%BF(i),.false.,.true.); enddo
           else
             stop 'Error: no datatype found in init_BC_vals_SF in SF.f90'
           endif
-          f%all_Neumann = all((/(f%BF(i)%GF%b%all_Neumann,i=1,f%s)/))
+          f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
         end subroutine
 
@@ -556,7 +556,7 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call init_Dirichlet(f%BF(i)%GF%b); enddo
+          do i=1,f%s; call init_Dirichlet(f%BF(i)%b); enddo
         end subroutine
 
         subroutine init_BC_val_SF(f,val)
@@ -564,8 +564,8 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: val
           integer :: i
-          do i=1,f%s; call init_BCs(f%BF(i)%GF,val); enddo
-          f%all_Neumann = all((/(f%BF(i)%GF%b%all_Neumann,i=1,f%s)/))
+          do i=1,f%s; call init_BCs(f%BF(i),val); enddo
+          f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
         end subroutine
 
@@ -574,7 +574,7 @@
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init(f%BF(i)%GF%b,m%B(i)%g,f%BF(i)%GF%s); enddo
+          do i=1,f%s; call init(f%BF(i)%b,m%B(i)%g,f%BF(i)%GF%s); enddo
         end subroutine
 
         subroutine init_BC_props_SF(f)
@@ -586,7 +586,7 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          f%all_Neumann = all((/(f%BF(i)%GF%b%all_Neumann,i=1,f%s)/))
+          f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
         end subroutine
 
         subroutine volume_SF(u,m)
@@ -672,6 +672,19 @@
           end select
           else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
           endif
+          u%vol = sum(u)
+        end subroutine
+
+        subroutine volume_SF_new(u,m)
+          ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          integer :: t
+          call assign(u,0.0_cp)
+          ! do t=1,m%s
+          !   call volume(u%BF(t),m%B(t),u%is_CC,u%is_Node,u%is_Face,u%is_Edge,u%face,u%edge)
+          ! enddo
           u%vol = sum(u)
         end subroutine
 
@@ -783,7 +796,7 @@
           integer :: i
           write(un,*) ' ------ BCs for ' // name // ' ------ '
           do i=1,f%s
-            call display(f%BF(i)%GF%b,un)
+            call display(f%BF(i)%b,un)
           enddo
           write(un,*) ' ------------------------------------ '
         end subroutine
