@@ -115,8 +115,8 @@
          a = 1.0_cp
          L = 1.0_cp
          !$OMP PARALLEL DO
-         do t=1,m%s; do k=1,Q_CC%GF(t)%s(3); do j=1,Q_CC%GF(t)%s(2); do i=1,Q_CC%GF(t)%s(1)
-         Q_CC%GF(t)%f(i,j,k) = q_flux*exp(-(m%g(t)%c(2)%hc(j)+a)/L)
+         do t=1,m%s; do k=1,Q_CC%BF(t)%GF%s(3); do j=1,Q_CC%BF(t)%GF%s(2); do i=1,Q_CC%BF(t)%GF%s(1)
+         Q_CC%BF(t)%GF%f(i,j,k) = q_flux*exp(-(m%B(t)%g%c(2)%hc(j)+a)/L)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
@@ -133,8 +133,8 @@
          m_ = a/L
          F = 2.0_cp*m_/(1.0_cp-exp(-2.0_cp*m_)) /Re/Pr
          !$OMP PARALLEL DO
-         do t=1,m%s; do k=1,Q_CC%GF(t)%s(3); do j=1,Q_CC%GF(t)%s(2); do i=1,Q_CC%GF(t)%s(1)
-         Q_CC%GF(t)%f(i,j,k) = F*exp(-m_*(m%g(t)%c(2)%hc(j)+1.0_cp))
+         do t=1,m%s; do k=1,Q_CC%BF(t)%GF%s(3); do j=1,Q_CC%BF(t)%GF%s(2); do i=1,Q_CC%BF(t)%GF%s(1)
+         Q_CC%BF(t)%GF%f(i,j,k) = F*exp(-m_*(m%B(t)%g%c(2)%hc(j)+1.0_cp))
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          ! call subtract_physical_mean(Q_CC)

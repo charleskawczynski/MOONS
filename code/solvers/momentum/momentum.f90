@@ -40,7 +40,6 @@
        use ops_embedExtract_mod
 
        use apply_BCs_mod
-       use apply_stitches_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -149,7 +148,7 @@
          call init(mom%SP,SP)
          call init(mom%m,m)
 
-         call init(mom%B,mom%m%g(1))
+         call init(mom%B,mom%m%B(1)%g)
          call init(mom%MB,mom%B)
          call export_mesh(mom%MB%m,str(DT%meshes),'block_mom',0)
 
@@ -196,10 +195,10 @@
          write(*,*) '     Field initialized'
 
          call apply_BCs(mom%U,m)
-         call apply_stitches(mom%U,m)
+         ! call apply_stitches(mom%U,m)
          write(*,*) '     U BCs applied'
          call apply_BCs(mom%p,m)
-         call apply_stitches(mom%p,m)
+         ! call apply_stitches(mom%p,m)
          write(*,*) '     P BCs applied'
 
          call face2CellCenter(mom%U_CC,mom%U,mom%m)

@@ -40,38 +40,38 @@
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .false.
-         call init_Dirichlet(p%GF(5)%b,2)
-         call init_Dirichlet(p%GF(7)%b,2)
-         call init_Dirichlet(p%GF(8)%b,2)
-         call init_Dirichlet(p%GF(5)%b%e(8+3)%b)
-         call init_Dirichlet(p%GF(8)%b%e(8+3)%b)
-         call init_Dirichlet(p%GF(8)%b%e(8+4)%b)
-         call init_Dirichlet(p%GF(7)%b%e(8+4)%b)
+         call init_Dirichlet(p%BF(5)%GF%b,2)
+         call init_Dirichlet(p%BF(7)%GF%b,2)
+         call init_Dirichlet(p%BF(8)%GF%b,2)
+         call init_Dirichlet(p%BF(5)%GF%b%e(8+3)%b)
+         call init_Dirichlet(p%BF(8)%GF%b%e(8+3)%b)
+         call init_Dirichlet(p%BF(8)%GF%b%e(8+4)%b)
+         call init_Dirichlet(p%BF(7)%GF%b%e(8+4)%b)
        end subroutine
 
        subroutine duct_flow_2D(p)
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .false.
-         call init_Dirichlet(p%GF(1)%b,2)
+         call init_Dirichlet(p%BF(1)%GF%b,2)
        end subroutine
 
        subroutine periodic_duct_flow(p)
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .true.
-         call init_periodic(p%GF(1)%b,1)
-         call init_periodic(p%GF(1)%b,2)
+         call init_periodic(p%BF(1)%GF%b,1)
+         call init_periodic(p%BF(1)%GF%b,2)
        end subroutine
 
        subroutine duct_flow_2D_2domains(p)
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .false.
-         call init_Dirichlet(p%GF(1)%b,2)
-         call init_Dirichlet(p%GF(2)%b,2)
-         ! call init_Dirichlet(p%GF(1)%b%e(8+4)%b)
-         ! call init_Dirichlet(p%GF(2)%b%e(8+3)%b)
+         call init_Dirichlet(p%BF(1)%GF%b,2)
+         call init_Dirichlet(p%BF(2)%GF%b,2)
+         ! call init_Dirichlet(p%BF(1)%GF%b%e(8+4)%b)
+         ! call init_Dirichlet(p%BF(2)%GF%b%e(8+3)%b)
        end subroutine
 
        end module

@@ -141,9 +141,9 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(B%x%GF(1)%f,m%g(1),fringeDir)
-         case (2); call initFringe_Sergey(B%y%GF(1)%f,m%g(1),fringeDir)
-         case (3); call initFringe_Sergey(B%z%GF(1)%f,m%g(1),fringeDir)
+         case (1); call initFringe_Sergey(B%x%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (2); call initFringe_Sergey(B%y%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (3); call initFringe_Sergey(B%z%BF(1)%GF%f,m%B(1)%g,fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
@@ -190,9 +190,9 @@
          type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          integer,intent(in) :: currentDir
-         call initField_Bandaru_GF(B%x%GF(1)%f,&
-                                   B%y%GF(1)%f,&
-                                   B%z%GF(1)%f,m%g(1),currentDir)
+         call initField_Bandaru_GF(B%x%BF(1)%GF%f,&
+                                   B%y%BF(1)%GF%f,&
+                                   B%z%BF(1)%GF%f,m%B(1)%g,currentDir)
        end subroutine
 
        subroutine initField_Bandaru_GF(Bx,By,Bz,g,currentDir)
@@ -244,9 +244,9 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: dir,fringeDir
          select case (dir)
-         case (1); call initFringe_ALEX(B%x%GF(1)%f,m%g(1),fringeDir)
-         case (2); call initFringe_ALEX(B%y%GF(1)%f,m%g(1),fringeDir)
-         case (3); call initFringe_ALEX(B%z%GF(1)%f,m%g(1),fringeDir)
+         case (1); call initFringe_ALEX(B%x%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (2); call initFringe_ALEX(B%y%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (3); call initFringe_ALEX(B%z%BF(1)%GF%f,m%B(1)%g,fringeDir)
          case default
          stop 'Error: dir must = 1,2,3 in initFringingField_ALEX.'
          end select

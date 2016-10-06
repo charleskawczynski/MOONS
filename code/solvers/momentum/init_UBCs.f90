@@ -51,95 +51,95 @@
        subroutine LDC_1_domain(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%GF(1)%b,1.0_cp,4)
+         call init(U%x%BF(1)%GF%b,1.0_cp,4)
        end subroutine
 
        subroutine LDC_crisscross_driven_lid(U)
          implicit none
          type(VF),intent(inout) :: U
          integer :: N
-         call init(U%x%GF(1)%b,1.0_cp,4)
-         N = U%x%GF(1)%b%f(4)%s(1)/2
-         U%x%GF(1)%b%f(4)%vals(2:N,:) = -1.0_cp
+         call init(U%x%BF(1)%GF%b,1.0_cp,4)
+         N = U%x%BF(1)%GF%b%f(4)%s(1)/2
+         U%x%BF(1)%GF%b%f(4)%vals(2:N,:) = -1.0_cp
        end subroutine
 
        subroutine LDC_double_crisscross_driven_lid(U)
          implicit none
          type(VF),intent(inout) :: U
          integer :: N
-         call init(U%x%GF(1)%b,1.0_cp,4)
-         N = U%x%GF(1)%b%f(4)%s(1)/2
-         U%x%GF(1)%b%f(4)%vals(2:N,:) = -1.0_cp
+         call init(U%x%BF(1)%GF%b,1.0_cp,4)
+         N = U%x%BF(1)%GF%b%f(4)%s(1)/2
+         U%x%BF(1)%GF%b%f(4)%vals(2:N,:) = -1.0_cp
 
-         call init(U%y%GF(1)%b,-1.0_cp,2)
-         N = U%y%GF(1)%b%f(2)%s(1)/2
-         U%y%GF(1)%b%f(2)%vals(2:N,:) = 1.0_cp
+         call init(U%y%BF(1)%GF%b,-1.0_cp,2)
+         N = U%y%BF(1)%GF%b%f(2)%s(1)/2
+         U%y%BF(1)%GF%b%f(2)%vals(2:N,:) = 1.0_cp
        end subroutine
 
        subroutine LDC_4_domains(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%GF(3)%b,1.0_cp,4) ! periodic in z, driven at ymax
-         call init(U%x%GF(4)%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%BF(3)%GF%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%BF(4)%GF%b,1.0_cp,4) ! periodic in z, driven at ymax
        end subroutine
 
        subroutine LDC_9_domains(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%GF(5)%b,1.0_cp,4) ! periodic in z, driven at ymax
-         call init(U%x%GF(8)%b,1.0_cp,4) ! periodic in z, driven at ymax
-         call init(U%x%GF(9)%b,1.0_cp,4) ! periodic in z, driven at ymax
-         call init(U%x%GF(5)%b%e(8+4),1.0_cp)
-         call init(U%x%GF(8)%b%e(8+2),1.0_cp)
-         call init(U%x%GF(8)%b%e(8+4),1.0_cp)
-         call init(U%x%GF(9)%b%e(8+2),1.0_cp)
+         call init(U%x%BF(5)%GF%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%BF(8)%GF%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%BF(9)%GF%b,1.0_cp,4) ! periodic in z, driven at ymax
+         call init(U%x%BF(5)%GF%b%e(8+4),1.0_cp)
+         call init(U%x%BF(8)%GF%b%e(8+2),1.0_cp)
+         call init(U%x%BF(8)%GF%b%e(8+4),1.0_cp)
+         call init(U%x%BF(9)%GF%b%e(8+2),1.0_cp)
        end subroutine
 
        subroutine duct_flow(U)
          implicit none
          type(VF),intent(inout) :: U
          ! Inlet (uniform)
-         call init(U%x%GF(1)%b,1.0_cp,1)
+         call init(U%x%BF(1)%GF%b,1.0_cp,1)
          ! Outlet (fully developed)
-         call init_Neumann(U%x%GF(1)%b,2)
-         call init_Neumann(U%y%GF(1)%b,2)
-         call init_Neumann(U%z%GF(1)%b,2)
+         call init_Neumann(U%x%BF(1)%GF%b,2)
+         call init_Neumann(U%y%BF(1)%GF%b,2)
+         call init_Neumann(U%z%BF(1)%GF%b,2)
        end subroutine
 
        subroutine periodic_duct_flow(U)
          implicit none
          type(VF),intent(inout) :: U
          ! Inlet (periodic)
-         call init_periodic(U%x%GF(1)%b,1)
-         call init_periodic(U%y%GF(1)%b,1)
-         call init_periodic(U%z%GF(1)%b,1)
+         call init_periodic(U%x%BF(1)%GF%b,1)
+         call init_periodic(U%y%BF(1)%GF%b,1)
+         call init_periodic(U%z%BF(1)%GF%b,1)
          ! Outlet (periodic)
-         call init_periodic(U%x%GF(1)%b,2)
-         call init_periodic(U%y%GF(1)%b,2)
-         call init_periodic(U%z%GF(1)%b,2)
+         call init_periodic(U%x%BF(1)%GF%b,2)
+         call init_periodic(U%y%BF(1)%GF%b,2)
+         call init_periodic(U%z%BF(1)%GF%b,2)
        end subroutine
 
        subroutine duct_flow_2D_2domains(U)
          implicit none
          type(VF),intent(inout) :: U
          ! Inlet (uniform)
-         call init(U%x%GF(1)%b,1.0_cp,1)
-         call init(U%x%GF(2)%b,1.0_cp,1)
-         call init(U%x%GF(1)%b%e(8+2),1.0_cp)
-         call init(U%x%GF(2)%b%e(8+1),1.0_cp)
+         call init(U%x%BF(1)%GF%b,1.0_cp,1)
+         call init(U%x%BF(2)%GF%b,1.0_cp,1)
+         call init(U%x%BF(1)%GF%b%e(8+2),1.0_cp)
+         call init(U%x%BF(2)%GF%b%e(8+1),1.0_cp)
          ! Outlet (fully developed)
-         call init_Neumann(U%x%GF(1)%b,2)
-         call init_Neumann(U%x%GF(2)%b,2)
+         call init_Neumann(U%x%BF(1)%GF%b,2)
+         call init_Neumann(U%x%BF(2)%GF%b,2)
        end subroutine
 
        subroutine channel_flow_1domain(U)
          implicit none
          type(VF),intent(inout) :: U
          ! Inlet (uniform)
-         call init(U%x%GF(1)%b,1.0_cp,1)
+         call init(U%x%BF(1)%GF%b,1.0_cp,1)
          ! Outlet (fully developed)
-         call init_Neumann(U%x%GF(1)%b,2)
-         call init_Neumann(U%y%GF(1)%b,2)
+         call init_Neumann(U%x%BF(1)%GF%b,2)
+         call init_Neumann(U%y%BF(1)%GF%b,2)
        end subroutine
 
        subroutine flow_over_2D_square(U)
@@ -147,27 +147,27 @@
          type(VF),intent(inout) :: U
          ! 16 edges total must be defined here with velocity of 1
          ! Inlet (uniform)
-         call init(U%x%GF(1)%b,1.0_cp,1)
-         call init(U%x%GF(2)%b,1.0_cp,1)
-         call init(U%x%GF(3)%b,1.0_cp,1)
+         call init(U%x%BF(1)%GF%b,1.0_cp,1)
+         call init(U%x%BF(2)%GF%b,1.0_cp,1)
+         call init(U%x%BF(3)%GF%b,1.0_cp,1)
               ! Edges
-              call init(U%x%GF(1)%b%e(8+1),1.0_cp); call init(U%x%GF(1)%b%e(8+2),1.0_cp)
-              call init(U%x%GF(2)%b%e(8+1),1.0_cp); call init(U%x%GF(2)%b%e(8+2),1.0_cp)
-              call init(U%x%GF(3)%b%e(8+1),1.0_cp); call init(U%x%GF(3)%b%e(8+2),1.0_cp)
+              call init(U%x%BF(1)%GF%b%e(8+1),1.0_cp); call init(U%x%BF(1)%GF%b%e(8+2),1.0_cp)
+              call init(U%x%BF(2)%GF%b%e(8+1),1.0_cp); call init(U%x%BF(2)%GF%b%e(8+2),1.0_cp)
+              call init(U%x%BF(3)%GF%b%e(8+1),1.0_cp); call init(U%x%BF(3)%GF%b%e(8+2),1.0_cp)
          ! Sides (free-stream)
-         call init(U%x%GF(2)%b,1.0_cp,4); call init(U%x%GF(3)%b,1.0_cp,3)
-         call init(U%x%GF(4)%b,1.0_cp,4); call init(U%x%GF(6)%b,1.0_cp,3)
-         call init(U%x%GF(5)%b,1.0_cp,4); call init(U%x%GF(7)%b,1.0_cp,3)
+         call init(U%x%BF(2)%GF%b,1.0_cp,4); call init(U%x%BF(3)%GF%b,1.0_cp,3)
+         call init(U%x%BF(4)%GF%b,1.0_cp,4); call init(U%x%BF(6)%GF%b,1.0_cp,3)
+         call init(U%x%BF(5)%GF%b,1.0_cp,4); call init(U%x%BF(7)%GF%b,1.0_cp,3)
               ! Edges
-              call init(U%x%GF(2)%b%e(8+4),1.0_cp); call init(U%x%GF(3)%b%e(8+3),1.0_cp)
-              call init(U%x%GF(4)%b%e(8+2),1.0_cp); call init(U%x%GF(6)%b%e(8+1),1.0_cp)
-              call init(U%x%GF(4)%b%e(8+4),1.0_cp); call init(U%x%GF(6)%b%e(8+3),1.0_cp)
-              call init(U%x%GF(5)%b%e(8+2),1.0_cp); call init(U%x%GF(7)%b%e(8+1),1.0_cp)
-              call init(U%x%GF(5)%b%e(8+4),1.0_cp); call init(U%x%GF(7)%b%e(8+3),1.0_cp)
+              call init(U%x%BF(2)%GF%b%e(8+4),1.0_cp); call init(U%x%BF(3)%GF%b%e(8+3),1.0_cp)
+              call init(U%x%BF(4)%GF%b%e(8+2),1.0_cp); call init(U%x%BF(6)%GF%b%e(8+1),1.0_cp)
+              call init(U%x%BF(4)%GF%b%e(8+4),1.0_cp); call init(U%x%BF(6)%GF%b%e(8+3),1.0_cp)
+              call init(U%x%BF(5)%GF%b%e(8+2),1.0_cp); call init(U%x%BF(7)%GF%b%e(8+1),1.0_cp)
+              call init(U%x%BF(5)%GF%b%e(8+4),1.0_cp); call init(U%x%BF(7)%GF%b%e(8+3),1.0_cp)
          ! Outlet (fully developed and v=0)
-         call init_Neumann(U%x%GF(5)%b,2)
-         call init_Neumann(U%x%GF(7)%b,2)
-         call init_Neumann(U%x%GF(8)%b,2)
+         call init_Neumann(U%x%BF(5)%GF%b,2)
+         call init_Neumann(U%x%BF(7)%GF%b,2)
+         call init_Neumann(U%x%BF(8)%GF%b,2)
        end subroutine
 
        subroutine Tylers_geometry(U)
@@ -176,37 +176,37 @@
          integer :: i
          ! THIS NEEDS TO BE FIXED
          do i=4,6
-           call init_Neumann(U%x%GF(i)%b,2)
-           call init_Neumann(U%y%GF(i)%b,2)
-           call init_Neumann(U%z%GF(i)%b,2)
+           call init_Neumann(U%x%BF(i)%GF%b,2)
+           call init_Neumann(U%y%BF(i)%GF%b,2)
+           call init_Neumann(U%z%BF(i)%GF%b,2)
          enddo
-         call init_Neumann(U%x%GF(10)%b,2); call init_Neumann(U%x%GF(14)%b,2)
-         call init_Neumann(U%y%GF(10)%b,2); call init_Neumann(U%y%GF(14)%b,2)
-         call init_Neumann(U%z%GF(10)%b,2); call init_Neumann(U%z%GF(14)%b,2)
-         call init(U%x%GF(1)%b,1.0_cp,1)
+         call init_Neumann(U%x%BF(10)%GF%b,2); call init_Neumann(U%x%BF(14)%GF%b,2)
+         call init_Neumann(U%y%BF(10)%GF%b,2); call init_Neumann(U%y%BF(14)%GF%b,2)
+         call init_Neumann(U%z%BF(10)%GF%b,2); call init_Neumann(U%z%BF(14)%GF%b,2)
+         call init(U%x%BF(1)%GF%b,1.0_cp,1)
 
-         call init_Neumann(U%x%GF(1)%b,6)
-         call init_Neumann(U%y%GF(1)%b,6)
-         call init_Neumann(U%z%GF(1)%b,6)
+         call init_Neumann(U%x%BF(1)%GF%b,6)
+         call init_Neumann(U%y%BF(1)%GF%b,6)
+         call init_Neumann(U%z%BF(1)%GF%b,6)
 
-         call init(U%x%GF(1)%b,1.0_cp,1)
-         call init_Neumann(U%x%GF(14)%b,1)
-         call init_Neumann(U%y%GF(14)%b,1)
-         call init_Neumann(U%z%GF(14)%b,1)
+         call init(U%x%BF(1)%GF%b,1.0_cp,1)
+         call init_Neumann(U%x%BF(14)%GF%b,1)
+         call init_Neumann(U%y%BF(14)%GF%b,1)
+         call init_Neumann(U%z%BF(14)%GF%b,1)
        end subroutine
 
        subroutine cylinder_driven_cavity(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call cylinderDrivenBCs(U%x%GF(1)%b,U%y%GF(1)%b,U%z%GF(1)%b,m%g(1),3)
+         call cylinderDrivenBCs(U%x%BF(1)%GF%b,U%y%BF(1)%GF%b,U%z%BF(1)%GF%b,m%B(1)%g,3)
        end subroutine
 
        subroutine fully_developed_duct_flow(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call ductFlow_FD_Profile(U%x%GF(1)%b,U%y%GF(1)%b,U%z%GF(1)%b,m%g(1),1,1)
+         call ductFlow_FD_Profile(U%x%BF(1)%GF%b,U%y%BF(1)%GF%b,U%z%BF(1)%GF%b,m%B(1)%g,1,1)
        end subroutine
 
        subroutine cylinderDrivenBCs(u_bcs,v_bcs,w_bcs,g,dir)

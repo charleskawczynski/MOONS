@@ -6,7 +6,6 @@
       use VF_mod
       use BCs_mod
       use apply_BCs_mod
-      use apply_Stitches_mod
       use norms_mod
       use ops_norms_mod
       use ops_discrete_mod

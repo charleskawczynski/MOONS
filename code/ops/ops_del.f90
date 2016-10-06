@@ -34,7 +34,6 @@
       use SF_mod
       use triDiag_mod
       use stencils_mod
-      use apply_stitches_mod
       implicit none
 
       private
@@ -203,9 +202,9 @@
         diffType = getDiffType(f,dfdh,dir)
         do i=1,m%s
           ! faces = normal_faces_given_dir(dir)
-          ! if (m%g(i)%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
-          ! if (m%g(i)%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
-          call diff_tree_search(dfdh%GF(i),f%GF(i),m%g(i),n,dir,pad,genType,diffType,0,0)
+          ! if (m%B(i)%g%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
+          ! if (m%B(i)%g%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
+          call diff_tree_search(dfdh%BF(i)%GF,f%BF(i)%GF,m%B(i)%g,n,dir,pad,genType,diffType,0,0)
         enddo
         if ((genType.eq.1).and.(pad.gt.0)) then
           select case (dir)
@@ -218,7 +217,6 @@
           case default; stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
           end select
         endif
-        ! call apply_stitches(dfdh,m)
       end subroutine
 
       ! *********************************************************

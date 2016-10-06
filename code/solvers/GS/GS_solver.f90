@@ -18,7 +18,6 @@
       use current_precision_mod
       use mesh_mod
       use apply_BCs_mod
-      use apply_stitches_mod
       use BCs_mod
       use norms_mod
       use ops_discrete_mod
@@ -222,11 +221,10 @@
         integer,dimension(3),intent(in) :: gt
         integer :: i
         do i=1,m%s
-          call redBlack(u%GF(i)%f,f%GF(i)%f,D_inv%GF(i)%f,u%GF(i)%s,&
-          p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
-          d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,&
+          call redBlack(u%BF(i)%GF%f,f%BF(i)%GF%f,D_inv%BF(i)%GF%f,u%BF(i)%GF%s,&
+          p%B(i)%g%c(1)%dhn,p%B(i)%g%c(2)%dhn,p%B(i)%g%c(3)%dhn,&
+          d%B(i)%g%c(1)%dhn,d%B(i)%g%c(2)%dhn,d%B(i)%g%c(3)%dhn,&
           gt,odd)
-          ! call apply_stitches(u,m)
           call apply_BCs(u,m)
         enddo
       end subroutine
@@ -240,14 +238,13 @@
         integer,dimension(3),intent(in) :: gtx,gty,gtz
         integer :: i
         do i=1,m%s
-          call redBlack(u%x%GF(i)%f,u%y%GF(i)%f,u%z%GF(i)%f,&
-                        f%x%GF(i)%f,f%y%GF(i)%f,f%z%GF(i)%f,&
-                        D_inv%x%GF(i)%f,D_inv%y%GF(i)%f,D_inv%z%GF(i)%f,&
-                        u%x%GF(i)%s,u%y%GF(i)%s,u%z%GF(i)%s,&
-          p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
-          d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,&
+          call redBlack(u%x%BF(i)%GF%f,u%y%BF(i)%GF%f,u%z%BF(i)%GF%f,&
+                        f%x%BF(i)%GF%f,f%y%BF(i)%GF%f,f%z%BF(i)%GF%f,&
+                        D_inv%x%BF(i)%GF%f,D_inv%y%BF(i)%GF%f,D_inv%z%BF(i)%GF%f,&
+                        u%x%BF(i)%GF%s,u%y%BF(i)%GF%s,u%z%BF(i)%GF%s,&
+          p%B(i)%g%c(1)%dhn,p%B(i)%g%c(2)%dhn,p%B(i)%g%c(3)%dhn,&
+          d%B(i)%g%c(1)%dhn,d%B(i)%g%c(2)%dhn,d%B(i)%g%c(3)%dhn,&
           gtx,gty,gtz,odd)
-          ! call apply_stitches(u,m)
           call apply_BCs(u,m)
         enddo
       end subroutine

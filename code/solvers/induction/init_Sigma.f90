@@ -71,7 +71,7 @@
          type(SF) :: sigma_l
          call init_CC(sigma_l,m,MD)
          call assign(sigma_l,sig_local_over_sig_f)
-         sigma_l%GF(1)%f(:,sigma_l%GF(1)%s(2)-1,:) = 1.0_cp
+         sigma_l%BF(1)%GF%f(:,sigma_l%BF(1)%GF%s(2)-1,:) = 1.0_cp
          call assign(sigma,sig_local_over_sig_f)
          call embedCC(sigma,sigma_l,MD)
          call delete(sigma_l)
@@ -94,23 +94,23 @@
          call init_CC(sigma_l,m,MD)
          call assign(sigma_l,1.0_cp)
          call assign(sigma,sig_local_over_sig_f)
-         s = sigma%GF(1)%s
-         hc = (/((m%g(1)%c(i)%hmax+m%g(1)%c(i)%hmin)/2.0_cp,i=1,3)/)
+         s = sigmA%BF(1)%GF%s
+         hc = (/((m%B(1)%g%c(i)%hmax+m%B(1)%g%c(i)%hmin)/2.0_cp,i=1,3)/)
          select case (dir)
          case (1)
            do k=1,s(3);do j=1,s(2);do i=1,s(1)
-                r = sqrt((m%g(1)%c(2)%hc(j)-hc(2))**two + (m%g(1)%c(3)%hc(k)-hc(3))**two)
-                if (r.lt.r0) sigma%GF(1)%f(i,j,k) = 1.0_cp
+                r = sqrt((m%B(1)%g%c(2)%hc(j)-hc(2))**two + (m%B(1)%g%c(3)%hc(k)-hc(3))**two)
+                if (r.lt.r0) sigmA%BF(1)%GF%f(i,j,k) = 1.0_cp
            enddo;enddo;enddo
          case (2)
            do k=1,s(3);do j=1,s(2);do i=1,s(1)
-                r = sqrt((m%g(1)%c(1)%hc(i)-hc(1))**two + (m%g(1)%c(3)%hc(k)-hc(3))**two)
-                if (r.lt.r0) sigma%GF(1)%f(i,j,k) = 1.0_cp
+                r = sqrt((m%B(1)%g%c(1)%hc(i)-hc(1))**two + (m%B(1)%g%c(3)%hc(k)-hc(3))**two)
+                if (r.lt.r0) sigmA%BF(1)%GF%f(i,j,k) = 1.0_cp
            enddo;enddo;enddo
          case (3)
            do k=1,s(3);do j=1,s(2);do i=1,s(1)
-                r = sqrt((m%g(1)%c(1)%hc(i)-hc(1))**two + (m%g(1)%c(2)%hc(j)-hc(2))**two)
-                if (r.lt.r0) sigma%GF(1)%f(i,j,k) = 1.0_cp
+                r = sqrt((m%B(1)%g%c(1)%hc(i)-hc(1))**two + (m%B(1)%g%c(2)%hc(j)-hc(2))**two)
+                if (r.lt.r0) sigmA%BF(1)%GF%f(i,j,k) = 1.0_cp
            enddo;enddo;enddo
          case default
          stop 'Error: dir must = 1,2,3 in initCylinder2D in initializeSigma.f90'

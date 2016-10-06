@@ -56,7 +56,7 @@
          integer :: N_w,N_v,N_extra
          integer :: i
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
 
          Gamma_v = 7.0_cp
          tf = 1.0_cp

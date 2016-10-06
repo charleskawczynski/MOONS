@@ -59,20 +59,20 @@
          if (U%CC_along(k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...
-             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%BF(i)%GF%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
-             if (.not.m%g(i)%st_faces(f)%TF) then
-               call app_CC_SF(U%GF(i),f,m%g(i)%c(k)%dhc(1),m%g(i)%c(k)%dhc_e,U%GF(i)%s,p)
-             endif
+             ! if (.not.m%B(i)%g%st_faces(f)%TF) then
+               call app_CC_SF(U%BF(i)%GF,f,m%B(i)%g%c(k)%dhc(1),m%B(i)%g%c(k)%dhc_e,U%BF(i)%GF%s,p)
+             ! endif
            enddo
          elseif (U%N_along(k)) then
            do i=1,m%s
              ! The following if does not satisfy momentum BCs for the 2D LDC...
-             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%BF(i)%GF%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
-             if (.not.m%g(i)%st_faces(f)%TF) then
-               call app_N_SF(U%GF(i),f,m%g(i)%c(k)%dhn(1),m%g(i)%c(k)%dhn_e,U%GF(i)%s,p)
-             endif
+             ! if (.not.m%B(i)%g%st_faces(f)%TF) then
+               call app_N_SF(U%BF(i)%GF,f,m%B(i)%g%c(k)%dhn(1),m%B(i)%g%c(k)%dhn_e,U%BF(i)%GF%s,p)
+             ! endif
            enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif

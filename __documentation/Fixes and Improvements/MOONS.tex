@@ -364,4 +364,15 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \item fix mendeley links to files
 \end{itemize}
 
+\section{Code changes to make}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item put check back into coordinate stretch parameter matching
+\item in sim params, change post-process only to skip solver loop and include a "post process" logical
+\item add restart to PE, and use this to separate tec export and restart export
+\item make "array" class and use it in coordinates and triDiag (maybe)
+\item delete more matlab scripts / convert to python
+\item remove apply\_stitches\_mod from ops\_advect.f90 and momentum\_solver.f90
+\end{itemize}
+
 \end{document}

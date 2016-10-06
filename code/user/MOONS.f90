@@ -82,7 +82,6 @@
            call export(mesh_ind,str(DT%restart),'mesh_ind')
            call export(MD_sigma ,str(DT%restart),'MD_sigma')
          endif
-
          call init(mesh_ind_interior,MD_sigma%m_R2)
 
          call initProps(mesh_mom);     call patch(mesh_mom)

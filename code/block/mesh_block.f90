@@ -36,7 +36,7 @@
          integer :: i
          call delete(MB%m)
          call delete(MB%B)
-         call init(MB%m,B%B)
+         call init(MB%m,B%g)
          do i=1,6;  call add(MB%m,B%fb(i));  enddo
          do i=1,6;  call add(MB%m,B%fg(i)); enddo
          do i=1,6;  call add(MB%m,B%fi(i)); enddo

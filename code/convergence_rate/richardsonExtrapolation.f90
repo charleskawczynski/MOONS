@@ -241,13 +241,13 @@
          call init_Node(e,m)
          do t = 1,e%s
            !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
-           do k=2,e%GF(t)%s(3)-1
+           do k=2,e%BF(t)%GF%s(3)-1
              k1 = 2 + (k-2)*r1(3); k2 = 2 + (k-2)*r2(3)
-             do j=2,e%GF(t)%s(2)-1
+             do j=2,e%BF(t)%GF%s(2)-1
               j1 = 2 + (j-2)*r1(2); j2 = 2 + (j-2)*r2(2)
-               do i=2,e%GF(t)%s(1)-1
+               do i=2,e%BF(t)%GF%s(1)-1
                i1 = 2 + (i-2)*r1(1); i2 = 2 + (i-2)*r2(1)
-             e%GF(t)%f(i,j,k) = f2%GF(t)%f(i2,j2,k2) - f1%GF(t)%f(i1,j1,k1)
+             e%BF(t)%GF%f(i,j,k) = f2%BF(t)%GF%f(i2,j2,k2) - f1%BF(t)%GF%f(i1,j1,k1)
            enddo;enddo;enddo
            !$OMP END PARALLEL DO
          enddo

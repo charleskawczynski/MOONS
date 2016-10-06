@@ -54,12 +54,12 @@
          call init_BC_mesh(x_surface%z,m_surface) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m_surface%s
-           call init_Neumann(x_surface%x%GF(i)%b)
-           call init_Neumann(x_surface%y%GF(i)%b)
-           call init_Neumann(x_surface%z%GF(i)%b)
-           call init(x_surface%x%GF(i)%b,0.0_cp)
-           call init(x_surface%y%GF(i)%b,0.0_cp)
-           call init(x_surface%z%GF(i)%b,0.0_cp)
+           call init_Neumann(x_surface%x%BF(i)%GF%b)
+           call init_Neumann(x_surface%y%BF(i)%GF%b)
+           call init_Neumann(x_surface%z%BF(i)%GF%b)
+           call init(x_surface%x%BF(i)%GF%b,0.0_cp)
+           call init(x_surface%y%BF(i)%GF%b,0.0_cp)
+           call init(x_surface%z%BF(i)%GF%b,0.0_cp)
          enddo
 
          ! Changes values on surface from volume

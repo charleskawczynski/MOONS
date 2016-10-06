@@ -54,15 +54,17 @@
          a = adj_faces_given_dir(k)
          if (U%CC_along(k)) then
            do i=1,m%s
-             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%BF(i)%GF%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
-             if (.not.m%g(i)%st_faces(f)%TF) call app_CC_SF(U%GF(i),f,p)
+             ! if (.not.m%B(i)%g%st_faces(f)%TF)
+             call app_CC_SF(U%BF(i)%GF,f,p)
            enddo
          elseif (U%N_along(k)) then
            do i=1,m%s
-             ! if (any((/(U%GF(i)%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
+             ! if (any((/(U%BF(i)%GF%b%f(a(j))%b%Periodic,j=1,4)/))) then; p = 0; else; p = 1; endif
              p = 0
-             if (.not.m%g(i)%st_faces(f)%TF) call app_N_SF(U%GF(i),f,p)
+             ! if (.not.m%B(i)%g%st_faces(f)%TF)
+             call app_N_SF(U%BF(i)%GF,f,p)
            enddo
          else; stop 'Error: datatype not found in apply_BCs_faces.f90'
          endif

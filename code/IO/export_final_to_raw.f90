@@ -26,12 +26,12 @@
         un = new_and_open(dir,name)
         call exp_Header_3D_3C(un,name)
         do i=1,m%s
-          call exp_Zone_3I(un,U%x%GF(i)%s-2*pad,i)
-          call exp_3D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                         U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                         get_h(U%x,m%g(i)%c(1),U%x%GF(i)%s(1)),&
-                         get_h(U%x,m%g(i)%c(2),U%x%GF(i)%s(2)),&
-                         get_h(U%x,m%g(i)%c(3),U%x%GF(i)%s(3)),&
+          call exp_Zone_3I(un,U%x%BF(i)%GF%s-2*pad,i)
+          call exp_3D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                         U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                         get_h(U%x,m%B(i)%g%c(1),U%x%BF(i)%GF%s(1)),&
+                         get_h(U%x,m%B(i)%g%c(2),U%x%BF(i)%GF%s(2)),&
+                         get_h(U%x,m%B(i)%g%c(3),U%x%BF(i)%GF%s(3)),&
                          fmt,pad,un)
         enddo
         call close_and_message(un,dir,name)
@@ -49,29 +49,29 @@
         select case (direction)
         case (1)
           do i=1,m%s
-            call exp_Zone_2I(un,U%x%GF(i)%s-2*pad,i)
-            call exp_2D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                           U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                           get_h(U%x,m%g(i)%c(2),U%x%GF(i)%s(2)),&
-                           get_h(U%x,m%g(i)%c(3),U%x%GF(i)%s(3)),&
+            call exp_Zone_2I(un,U%x%BF(i)%GF%s-2*pad,i)
+            call exp_2D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                           U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                           get_h(U%x,m%B(i)%g%c(2),U%x%BF(i)%GF%s(2)),&
+                           get_h(U%x,m%B(i)%g%c(3),U%x%BF(i)%GF%s(3)),&
                            fmt,pad,un)
           enddo
         case (2)
           do i=1,m%s
-            call exp_Zone_2I(un,U%x%GF(i)%s-2*pad,i)
-            call exp_2D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                           U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                           get_h(U%x,m%g(i)%c(1),U%x%GF(i)%s(1)),&
-                           get_h(U%x,m%g(i)%c(3),U%x%GF(i)%s(3)),&
+            call exp_Zone_2I(un,U%x%BF(i)%GF%s-2*pad,i)
+            call exp_2D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                           U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                           get_h(U%x,m%B(i)%g%c(1),U%x%BF(i)%GF%s(1)),&
+                           get_h(U%x,m%B(i)%g%c(3),U%x%BF(i)%GF%s(3)),&
                            fmt,pad,un)
           enddo
         case (3)
           do i=1,m%s
-            call exp_Zone_2I(un,U%x%GF(i)%s-2*pad,i)
-            call exp_2D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                           U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                           get_h(U%x,m%g(i)%c(1),U%x%GF(i)%s(1)),&
-                           get_h(U%x,m%g(i)%c(2),U%x%GF(i)%s(2)),&
+            call exp_Zone_2I(un,U%x%BF(i)%GF%s-2*pad,i)
+            call exp_2D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                           U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                           get_h(U%x,m%B(i)%g%c(1),U%x%BF(i)%GF%s(1)),&
+                           get_h(U%x,m%B(i)%g%c(2),U%x%BF(i)%GF%s(2)),&
                            fmt,pad,un)
           enddo
         case default; stop 'Error: direction must = 1,2,3 in export_2D_3C in IO_VF.f90'
@@ -91,26 +91,26 @@
         select case (axis)
         case (1)
           do i=1,m%s
-            call exp_Zone_1I(un,U%x%GF(i)%s-2*pad,i)
-            call exp_1D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                           U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                           get_h(U%x,m%g(i)%c(1),U%x%GF(i)%s(1)),&
+            call exp_Zone_1I(un,U%x%BF(i)%GF%s-2*pad,i)
+            call exp_1D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                           U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                           get_h(U%x,m%B(i)%g%c(1),U%x%BF(i)%GF%s(1)),&
                            fmt,pad,un)
           enddo
         case (2)
           do i=1,m%s
-            call exp_Zone_1I(un,U%x%GF(i)%s-2*pad,i)
-            call exp_1D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                           U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                           get_h(U%x,m%g(i)%c(2),U%x%GF(i)%s(2)),&
+            call exp_Zone_1I(un,U%x%BF(i)%GF%s-2*pad,i)
+            call exp_1D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                           U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                           get_h(U%x,m%B(i)%g%c(2),U%x%BF(i)%GF%s(2)),&
                            fmt,pad,un)
           enddo
         case (3)
           do i=1,m%s
-            call exp_Zone_1I(un,U%x%GF(i)%s-2*pad,i)
-            call exp_1D_3C(U%x%GF(i)%s(1),U%x%GF(i)%s(2),U%x%GF(i)%s(3),&
-                           U%x%GF(i)%f   ,U%y%GF(i)%f   ,U%z%GF(i)%f,&
-                           get_h(U%x,m%g(i)%c(3),U%x%GF(i)%s(3)),&
+            call exp_Zone_1I(un,U%x%BF(i)%GF%s-2*pad,i)
+            call exp_1D_3C(U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3),&
+                           U%x%BF(i)%GF%f   ,U%y%BF(i)%GF%f   ,U%z%BF(i)%GF%f,&
+                           get_h(U%x,m%B(i)%g%c(3),U%x%BF(i)%GF%s(3)),&
                            fmt,pad,un)
           enddo
         case default; stop 'Error: axis must = 1,2,3 in export_1D_3C in IO_VF.f90'

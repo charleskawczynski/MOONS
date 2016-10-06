@@ -23,7 +23,6 @@
       use grid_mod
       use mesh_mod
       use apply_BCs_mod
-      use apply_stitches_mod
       use BCs_mod
       use norms_mod
       use ops_discrete_mod
@@ -72,7 +71,7 @@
         integer,dimension(3) :: s
         integer :: Nx,Ny,Nz,i,t
         
-        s = u%GF(1)%s
+        s = u%BF(1)%GF%s
         SOR%s = s
         call init(SOR%p,m)
         call init(SOR%d,m)
@@ -81,12 +80,12 @@
 
         if (u%is_CC) then
           do t=1,u%s; do i=1,3
-            call init(SOR%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
             SOR%gt(i) = 1
           enddo; enddo
         elseif(u%is_Node) then
           do t=1,u%s; do i=1,3
-            call init(SOR%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
               SOR%gt(i) = 0
           enddo; enddo
         elseif (u%is_Face) then
@@ -223,11 +222,10 @@
         integer,dimension(3),intent(in) :: odd
         integer :: i
         do i=1,m%s
-          call redBlack(u%GF(i)%f,f%GF(i)%f,r%GF(i)%f,u%GF(i)%s,&
-          SOR%p%g(i)%c(1)%dhn,SOR%p%g(i)%c(2)%dhn,SOR%p%g(i)%c(3)%dhn,&
-          SOR%d%g(i)%c(1)%dhn,SOR%d%g(i)%c(2)%dhn,SOR%d%g(i)%c(3)%dhn,&
+          call redBlack(u%BF(i)%GF%f,f%BF(i)%GF%f,r%BF(i)%GF%f,u%BF(i)%GF%s,&
+          SOR%p%B(i)%g%c(1)%dhn,SOR%p%B(i)%g%c(2)%dhn,SOR%p%B(i)%g%c(3)%dhn,&
+          SOR%d%B(i)%g%c(1)%dhn,SOR%d%B(i)%g%c(2)%dhn,SOR%d%B(i)%g%c(3)%dhn,&
           SOR%omega,SOR%gt,odd)
-          ! call apply_stitches(u,m)
         enddo
       end subroutine
 
@@ -240,12 +238,10 @@
         real(cp),intent(in) :: omega
         integer,dimension(3),intent(in) :: gt
         integer :: i,j,k
-
 #ifdef _PARALLELIZE_SOR_
         !$OMP DO
 
 #endif
-
         do k=2+odd(3),s(3)-1,2
           do j=2+odd(2),s(2)-1,2
             do i=2+odd(1),s(1)-1,2
@@ -276,9 +272,9 @@
         integer,dimension(3),intent(in) :: gt
         integer :: i
         do i=1,p%s
-          call init_r(r%GF(i)%f,r%GF(i)%s,&
-            p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
-            d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,gt)
+          call init_r(r%BF(i)%GF%f,r%BF(i)%GF%s,&
+            p%B(i)%g%c(1)%dhn,p%B(i)%g%c(2)%dhn,p%B(i)%g%c(3)%dhn,&
+            d%B(i)%g%c(1)%dhn,d%B(i)%g%c(2)%dhn,d%B(i)%g%c(3)%dhn,gt)
         enddo
       end subroutine
 

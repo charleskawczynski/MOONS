@@ -42,34 +42,34 @@
          tol = 10.0_cp**(-12.0_cp)
          if (U%is_CC) then
          !$OMP PARALLEL DO
-         do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-         if (inside_CC(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+         do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+         if (inside_CC(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          elseif (U%is_Node) then
          !$OMP PARALLEL DO
-         do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-         if (inside_N(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+         do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+         if (inside_N(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          elseif (U%is_Face) then
            select case (U%face)
            case (1)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-             if (inside_F_x(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+             if (inside_F_x(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (2)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-             if (inside_F_y(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+             if (inside_F_y(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (3)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-             if (inside_F_z(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+             if (inside_F_z(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case default; stop 'Error: bad data face input to assign_inside in geometric_define.f90'
@@ -78,20 +78,20 @@
            select case (U%edge)
            case (1)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-             if (inside_E_x(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+             if (inside_E_x(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (2)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-             if (inside_E_y(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+             if (inside_E_y(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case (3)
            !$OMP PARALLEL DO
-           do t=1,U%s; do k=1,U%GF(t)%s(3); do j=1,U%GF(t)%s(2); do i=1,U%GF(t)%s(1)
-             if (inside_E_z(R,m,i,j,k,t,tol)) U%GF(t)%f(i,j,k) = val
+           do t=1,U%s; do k=1,u%BF(t)%GF%s(3); do j=1,u%BF(t)%GF%s(2); do i=1,u%BF(t)%GF%s(1)
+             if (inside_E_z(R,m,i,j,k,t,tol)) u%BF(t)%GF%f(i,j,k) = val
            enddo; enddo; enddo; enddo
            !$OMP END PARALLEL DO
            case default; stop 'Error: bad data edge input to assign_inside in geometric_define.f90'
@@ -112,17 +112,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -134,17 +134,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -156,17 +156,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -178,17 +178,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -200,17 +200,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -222,17 +222,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hc(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hc(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hc(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hc(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -244,17 +244,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hc(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hc(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hc(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hn(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hn(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hn(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function
@@ -266,17 +266,17 @@
          integer,intent(in) :: i,j,k,t
          real(cp),intent(in) :: tol
          logical :: inside_min,inside_max,L
-         inside_min=(m%g(t)%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmin(1)).lt.&
+         inside_min=(m%B(t)%g%c(1)%hn(i).gt.R%hmin(1)+tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmin(1)).lt.&
                      tol).and.R%include_hmin(1))).and.&
-                    (m%g(t)%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmin(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).gt.R%hmin(2)+tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmin(2)).lt.&
                      tol).and.R%include_hmin(2))).and.&
-                    (m%g(t)%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmin(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).gt.R%hmin(3)+tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmin(3)).lt.&
                      tol).and.R%include_hmin(3)))
-         inside_max=(m%g(t)%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%g(t)%c(1)%hn(i)-R%hmax(1)).lt.&
+         inside_max=(m%B(t)%g%c(1)%hn(i).lt.R%hmax(1)-tol.or.((abs(m%B(t)%g%c(1)%hn(i)-R%hmax(1)).lt.&
                      tol).and.R%include_hmax(1))).and.&
-                    (m%g(t)%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%g(t)%c(2)%hn(j)-R%hmax(2)).lt.&
+                    (m%B(t)%g%c(2)%hn(j).lt.R%hmax(2)-tol.or.((abs(m%B(t)%g%c(2)%hn(j)-R%hmax(2)).lt.&
                      tol).and.R%include_hmax(2))).and.&
-                    (m%g(t)%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%g(t)%c(3)%hc(k)-R%hmax(3)).lt.&
+                    (m%B(t)%g%c(3)%hc(k).lt.R%hmax(3)-tol.or.((abs(m%B(t)%g%c(3)%hc(k)-R%hmax(3)).lt.&
                      tol).and.R%include_hmax(3)))
          L = inside_min.and.inside_max
        end function

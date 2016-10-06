@@ -83,7 +83,7 @@
         mg(:)%n_levels = size(mg)
         ! mg(:)%displayTF = displayTF
         mg(:)%displayTF = displayTF
-        s = u%GF(1)%s
+        s = u%BF(1)%GF%s
 
         ! ******************** Check size of data ********************
         if (u%is_Node) then
@@ -98,7 +98,7 @@
         enddo
         write(*,*) 'Multigrid levels:'
         do j = 1,mg(1)%n_levels
-          write(*,*) 'N_cells of grid 1 level ',j,' = ',(/(mg(j)%m%g(1)%c(i)%sc,i=1,3)/)-2
+          write(*,*) 'N_cells of grid 1 level ',j,' = ',(/(mg(j)%m%B(1)%g%c(i)%sc,i=1,3)/)-2
         enddo
 
         ! ******************** Initialize fields ********************

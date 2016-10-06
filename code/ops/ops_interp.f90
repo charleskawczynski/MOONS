@@ -31,7 +31,6 @@
        use current_precision_mod
        use grid_mod
        use mesh_mod
-       use apply_stitches_mod
        use apply_BCs_mod
        use SF_mod
        use VF_mod
@@ -307,7 +306,7 @@
          type(mesh),intent(in) :: m
          integer :: i,k
          do k=1,3; do i=1,m%s
-           call extrap(f%GF(i)%f,f%GF(i)%s,k) ! Calls linear, collocated extrapolation
+           call extrap(f%BF(i)%GF%f,f%BF(i)%GF%s,k) ! Calls linear, collocated extrapolation
          enddo; enddo
        end subroutine
 
@@ -319,12 +318,11 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,m%s
-           call interp(f%GF(i)%f,g%GF(i)%f,m%g(i),f%GF(i)%s,g%GF(i)%s,&
+           call interp(f%BF(i)%GF%f,g%BF(i)%GF%f,m%B(i)%g,f%BF(i)%GF%s,g%BF(i)%GF%s,&
            f%N_along(dir),f%CC_along(dir),&
            g%N_along(dir),g%CC_along(dir),&
            dir,m%int_tensor(dir)%eye)
          enddo
-         ! call apply_stitches(f,m)
        end subroutine
 
 #ifdef _DEBUG_INTERP_

@@ -4,6 +4,7 @@
        use simple_int_tensor_mod
        use IO_tools_mod
        use grid_mod
+       use block_mod
        use grid_genHelper_mod
        use coordinates_mod
        use face_edge_corner_indexing_mod
@@ -27,7 +28,7 @@
 #endif
 
        type mesh
-         type(grid),dimension(:),allocatable :: g
+         type(block),dimension(:),allocatable :: B
          ! Properties
          integer :: s       ! Number of grids
          integer,dimension(3) :: N_cells ! Number of cells, for export
@@ -71,15 +72,10 @@
          type(grid),intent(in) :: g
          integer :: i,k
          call delete(m)
-         allocate(m%g(1))
-         call init(m%g(1),g); m%s = 1
+         allocate(m%B(1))
+         call init(m%B(1)%g,g); m%s = 1
          call initProps(m)
-         do i=1,m%s
-           do k=1,6; call delete(m%g(i)%st_faces(i)); enddo
-           do k=1,12; call delete(m%g(i)%st_edges(i)); enddo
-           do k=1,8; call delete(m%g(i)%st_corners(i)); enddo
-         enddo
-         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in init_grid in mesh.f90'
+         call insist_allocated_mesh(m,'init_grid')
        end subroutine
 
        subroutine init_surface(m,m_in)
@@ -90,7 +86,7 @@
          integer :: i,face
          call delete(m)
          do i=1,m_in%s; do face=1,6
-           call init(gg%g,m_in%g(i))
+           call init(gg%g,m_in%B(i)%g)
            call get_boundary_face(gg,face)
            if ((i.eq.1).and.(face.eq.1)) then; call init(m,gg%g)
            else;                               call add(m,gg%g)
@@ -98,7 +94,7 @@
          enddo; enddo
          call delete(gg)
          call initProps(m)
-         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in init_surface in mesh.f90'
+         call insist_allocated_mesh(m,'init_surface')
        end subroutine
 
        subroutine addGrid(m,g)
@@ -107,21 +103,21 @@
          type(grid),intent(in) :: g
          type(mesh) :: temp
          integer :: i
-         if (allocated(m%g)) then
+         if (allocated(m%B)) then
            if (m%s.lt.1) stop 'Error: allocated mesh but size<1 in addGrid mesh.f90'
            call init(temp,m)
            call delete(m)
            m%s = temp%s + 1
-           allocate(m%g(m%s))
-           do i=1,temp%s; call init(m%g(i),temp%g(i)); enddo
-           call init(m%g(m%s),g)
+           allocate(m%B(m%s))
+           do i=1,temp%s; call init(m%B(i)%g,temp%B(i)%g); enddo
+           call init(m%B(m%s)%g,g)
            call delete(temp)
          else
-           allocate(m%g(1))
-           call init(m%g(1),g); m%s = 1
+           allocate(m%B(1))
+           call init(m%B(1)%g,g); m%s = 1
          endif
          call initProps(m)
-         if (m%s.ne.size(m%g)) stop 'Error: size incorrect in addGrid in mesh.f90'
+         call insist_allocated_mesh(m,'addGrid')
        end subroutine
 
        subroutine deletemesh(m)
@@ -131,8 +127,8 @@
          if (allocated(m%vol)) then
            do i=1,m%s; call delete(m%vol(i)); enddo; deallocate(m%vol)
          endif
-         if (allocated(m%g)) then
-           do i=1,m%s; call delete(m%g(i)) ;enddo; deallocate(m%g)
+         if (allocated(m%B)) then
+           do i=1,m%s; call delete(m%B(i)%g) ;enddo; deallocate(m%B)
          endif
          m%s = 0
        end subroutine
@@ -142,9 +138,6 @@
          type(mesh),intent(inout) :: m
          integer :: i,k
          do i=1,m%s
-           do k=1,6; call delete(m%g(i)%st_faces(k)); enddo
-           do k=1,12; call delete(m%g(i)%st_edges(k)); enddo
-           do k=1,8; call delete(m%g(i)%st_corners(k)); enddo
          enddo
        end subroutine
 
@@ -153,13 +146,12 @@
          type(mesh),intent(inout) :: m_out
          type(mesh),intent(in) :: m_in
          integer :: i
-         if (.not.allocated(m_in%g)) stop 'Error: mesh not allocated in initmeshCopy in mesh.f90'
-         if (m_in%s.ne.size(m_in%g)) stop 'Error: size incorrect in addGrid in mesh.f90'
+         call insist_allocated_mesh(m_in,'initmeshCopy')
          call delete(m_out)
          if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in initmeshCopy in mesh.f90'
          m_out%s = m_in%s
-         allocate(m_out%g(m_in%s))
-         do i=1,m_in%s; call init(m_out%g(i),m_in%g(i)) ;enddo
+         allocate(m_out%B(m_in%s))
+         do i=1,m_in%s; call init(m_out%B(i)%g,m_in%B(i)%g) ;enddo
          call initProps(m_out)
        end subroutine
 
@@ -172,12 +164,12 @@
            deallocate(m%vol)
          endif
          allocate(m%vol(m%s))
-         do t=1,m%s; call init_CC(m%vol(t),m%g(t)); enddo
+         do t=1,m%s; call init_CC(m%vol(t),m%B(t)%g); enddo
          !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
-           m%vol(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                               (m%g(t)%c(2)%dhn(j))*&
-                               (m%g(t)%c(3)%dhn(k))
+         do t=1,m%s; do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
+           m%vol(t)%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
+                               (m%B(t)%g%c(2)%dhn(j))*&
+                               (m%B(t)%g%c(3)%dhn(k))
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
@@ -186,37 +178,36 @@
          implicit none
          type(mesh),intent(inout) :: m
          integer :: i,j
-         if (.not.allocated(m%g)) stop 'Error: mesh not allocated in initProps_mesh in mesh.f90'
-         m%s = size(m%g)
+         call insist_allocated_mesh(m,'initProps_mesh')
          if (m%s.gt.1) then
            do j=1,3
-             m%hmin(j)  = minval( (/(m%g(i)%c(j)%hmin  , i=2,m%s)/) )
-             m%dhmin(j) = minval( (/(m%g(i)%c(j)%dhmin , i=2,m%s)/) )
-             m%hmax(j)  = maxval( (/(m%g(i)%c(j)%hmax  , i=2,m%s)/) )
-             m%dhmax(j) = maxval( (/(m%g(i)%c(j)%dhmax , i=2,m%s)/) )
+             m%hmin(j)  = minval( (/(m%B(i)%g%c(j)%hmin  , i=2,m%s)/) )
+             m%dhmin(j) = minval( (/(m%B(i)%g%c(j)%dhmin , i=2,m%s)/) )
+             m%hmax(j)  = maxval( (/(m%B(i)%g%c(j)%hmax  , i=2,m%s)/) )
+             m%dhmax(j) = maxval( (/(m%B(i)%g%c(j)%dhmax , i=2,m%s)/) )
            enddo
          else
            do j=1,3
-             m%hmin(j)  = m%g(1)%c(j)%hmin
-             m%dhmin(j) = m%g(1)%c(j)%dhmin
-             m%hmax(j)  = m%g(1)%c(j)%hmax
-             m%dhmax(j) = m%g(1)%c(j)%dhmax
+             m%hmin(j)  = m%B(1)%g%c(j)%hmin
+             m%dhmin(j) = m%B(1)%g%c(j)%dhmin
+             m%hmax(j)  = m%B(1)%g%c(j)%hmax
+             m%dhmax(j) = m%B(1)%g%c(j)%dhmax
            enddo
          endif
          m%N_cells = 0; m%N_cells_tot = 0; m%volume = 0.0_cp
          do i=1,m%s
-           m%volume = m%volume + m%g(i)%volume
+           m%volume = m%volume + m%B(i)%g%volume
            do j=1,3
-             m%N_cells(j) = m%N_cells(j) + m%g(i)%c(j)%N
+             m%N_cells(j) = m%N_cells(j) + m%B(i)%g%c(j)%N
            enddo
-           m%N_cells_tot = m%N_cells_tot + m%g(i)%c(1)%N*m%g(i)%c(2)%N*m%g(i)%c(3)%N
+           m%N_cells_tot = m%N_cells_tot + m%B(i)%g%c(1)%N*m%B(i)%g%c(2)%N*m%B(i)%g%c(3)%N
          enddo
          m%dhmin_min = minval((/m%dhmin(1),m%dhmin(2),m%dhmin(3)/))
          m%dhmax_max = maxval((/m%dhmax(1),m%dhmax(2),m%dhmax(3)/))
 
-         m%plane_x = all((/(m%g(i)%c(1)%N.eq.1,i=1,m%s)/))
-         m%plane_y = all((/(m%g(i)%c(2)%N.eq.1,i=1,m%s)/))
-         m%plane_z = all((/(m%g(i)%c(3)%N.eq.1,i=1,m%s)/))
+         m%plane_x = all((/(m%B(i)%g%c(1)%N.eq.1,i=1,m%s)/))
+         m%plane_y = all((/(m%B(i)%g%c(2)%N.eq.1,i=1,m%s)/))
+         m%plane_z = all((/(m%B(i)%g%c(3)%N.eq.1,i=1,m%s)/))
          m%plane_xyz = any((/m%plane_x,m%plane_y,m%plane_z/))
          do i=1,3; call init(m%int_tensor(i),i); enddo
          call init_volume(m)
@@ -226,8 +217,7 @@
          implicit none
          type(mesh),intent(inout) :: m
          real(cp) :: tol
-         if (.not.allocated(m%g)) stop 'Error: mesh not allocated in patch_grids in mesh.f90'
-         if (size(m%g).ne.m%s) stop 'Error: mesh size not correct in patch_grids in mesh.f90'
+         call insist_allocated_mesh(m,'patch_grids')
          call remove_stitches(m)
          if (m%s.gt.1) then
            tol = 0.01_cp
@@ -249,23 +239,20 @@
          logical,dimension(5) :: TF_face
          do k=1,3; do i=1,m%s; do j=1,m%s
            if (i.ne.j) then
-             TF_face(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
+             TF_face(1) = abs(m%B(i)%g%c(k)%hmin-m%B(j)%g%c(k)%hmax).lt.tol*m%dhmin(k) ! Contact face
              a = adj_dir_given_dir(k)
-             TF_face(2) = abs(m%g(i)%c(a(1))%hmin-m%g(j)%c(a(1))%hmin).lt.tol*m%dhmin(a(1)) ! Adjacent face 1 hmin
-             TF_face(3) = abs(m%g(i)%c(a(1))%hmax-m%g(j)%c(a(1))%hmax).lt.tol*m%dhmin(a(1)) ! Adjacent face 1 hmax
-             TF_face(4) = abs(m%g(i)%c(a(2))%hmin-m%g(j)%c(a(2))%hmin).lt.tol*m%dhmin(a(2)) ! Adjacent face 2 hmin
-             TF_face(5) = abs(m%g(i)%c(a(2))%hmax-m%g(j)%c(a(2))%hmax).lt.tol*m%dhmin(a(2)) ! Adjacent face 2 hmax
+             TF_face(2) = abs(m%B(i)%g%c(a(1))%hmin-m%B(j)%g%c(a(1))%hmin).lt.tol*m%dhmin(a(1)) ! Adjacent face 1 hmin
+             TF_face(3) = abs(m%B(i)%g%c(a(1))%hmax-m%B(j)%g%c(a(1))%hmax).lt.tol*m%dhmin(a(1)) ! Adjacent face 1 hmax
+             TF_face(4) = abs(m%B(i)%g%c(a(2))%hmin-m%B(j)%g%c(a(2))%hmin).lt.tol*m%dhmin(a(2)) ! Adjacent face 2 hmin
+             TF_face(5) = abs(m%B(i)%g%c(a(2))%hmax-m%B(j)%g%c(a(2))%hmax).lt.tol*m%dhmin(a(2)) ! Adjacent face 2 hmax
 
              if (all(TF_face)) then
                f = normal_faces_given_dir(k)
-               call init(m%g(i)%st_faces(f(1)),j)
-               call init(m%g(j)%st_faces(f(2)),i)
              endif
            endif
          enddo; enddo; enddo
          do k=1,3; do i=1,m%s
             f = normal_faces_given_dir(k)
-            call stitch_stencils(m%g(i)%c(k),m%g(i)%st_faces(f(1))%TF,m%g(i)%st_faces(f(2))%TF)
          enddo; enddo
        end subroutine
 
@@ -288,27 +275,14 @@
          logical,dimension(6) :: TF_edge
          do k=1,3; do i=1,m%s; do j=1,m%s
            if (i.ne.j) then
-             TF_edge(1) = abs(m%g(i)%c(k)%hmin-m%g(j)%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (min)
-             TF_edge(2) = abs(m%g(i)%c(k)%hmax-m%g(j)%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (max)
+             TF_edge(1) = abs(m%B(i)%g%c(k)%hmin-m%B(j)%g%c(k)%hmin).lt.tol*m%dhmin(k) ! Edge direction (min)
+             TF_edge(2) = abs(m%B(i)%g%c(k)%hmax-m%B(j)%g%c(k)%hmax).lt.tol*m%dhmin(k) ! Edge direction (max)
              a = adj_dir_given_dir(k)
-             TF_edge(3) = abs(m%g(i)%c(a(1))%hmin-m%g(j)%c(a(1))%hmax).lt.tol*m%dhmin(a(1)) ! min/max (a(1))
-             TF_edge(4) = abs(m%g(i)%c(a(1))%hmax-m%g(j)%c(a(1))%hmin).lt.tol*m%dhmin(a(1)) ! max/min (a(1))
-             TF_edge(5) = abs(m%g(i)%c(a(2))%hmin-m%g(j)%c(a(2))%hmax).lt.tol*m%dhmin(a(2)) ! min/max (a(2))
-             TF_edge(6) = abs(m%g(i)%c(a(2))%hmax-m%g(j)%c(a(2))%hmin).lt.tol*m%dhmin(a(2)) ! max/min (a(2))
+             TF_edge(3) = abs(m%B(i)%g%c(a(1))%hmin-m%B(j)%g%c(a(1))%hmax).lt.tol*m%dhmin(a(1)) ! min/max (a(1))
+             TF_edge(4) = abs(m%B(i)%g%c(a(1))%hmax-m%B(j)%g%c(a(1))%hmin).lt.tol*m%dhmin(a(1)) ! max/min (a(1))
+             TF_edge(5) = abs(m%B(i)%g%c(a(2))%hmin-m%B(j)%g%c(a(2))%hmax).lt.tol*m%dhmin(a(2)) ! min/max (a(2))
+             TF_edge(6) = abs(m%B(i)%g%c(a(2))%hmax-m%B(j)%g%c(a(2))%hmin).lt.tol*m%dhmin(a(2)) ! max/min (a(2))
              e = edges_given_dir(k)
-                 if (TF_edge(1).and.TF_edge(2).and.TF_edge(3).and.TF_edge(5)) then
-               call init(m%g(i)%st_edges(e(1)),j)
-               call init(m%g(j)%st_edges(e(4)),i)
-             elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(3).and.TF_edge(6)) then
-               call init(m%g(i)%st_edges(e(2)),j)
-               call init(m%g(j)%st_edges(e(3)),i)
-             elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(4).and.TF_edge(5)) then
-               call init(m%g(i)%st_edges(e(3)),j)
-               call init(m%g(j)%st_edges(e(2)),i)
-             elseif (TF_edge(1).and.TF_edge(2).and.TF_edge(4).and.TF_edge(6)) then
-               call init(m%g(i)%st_edges(e(4)),j)
-               call init(m%g(j)%st_edges(e(1)),i)
-             endif
            endif
          enddo; enddo; enddo
        end subroutine
@@ -323,10 +297,6 @@
          do k=1,3; do i=1,m%s
            a = adj_dir_given_dir(k)
            f1 = normal_faces_given_dir(a(1)); f2 = normal_faces_given_dir(a(2)); e = edges_given_dir(k)
-           if (.not.(m%g(i)%st_faces(f1(1))%TF.and.(m%g(i)%st_faces(f2(1))%TF))) call delete(m%g(i)%st_edges(e(1)))
-           if (.not.(m%g(i)%st_faces(f1(1))%TF.and.(m%g(i)%st_faces(f2(2))%TF))) call delete(m%g(i)%st_edges(e(2)))
-           if (.not.(m%g(i)%st_faces(f1(2))%TF.and.(m%g(i)%st_faces(f2(1))%TF))) call delete(m%g(i)%st_edges(e(3)))
-           if (.not.(m%g(i)%st_faces(f1(2))%TF.and.(m%g(i)%st_faces(f2(2))%TF))) call delete(m%g(i)%st_edges(e(4)))
          enddo; enddo
        end subroutine
 
@@ -339,7 +309,6 @@
          real(cp) :: suppress_warning
          suppress_warning = tol
          do i=1,m%s; do k=1,8
-         call delete(m%g(i)%st_corners(k))
          enddo; enddo
        end subroutine
 
@@ -369,33 +338,37 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
          integer :: i
-         if (.not.allocated(m%g)) stop 'Error: mesh not allocated in restrictmesh1 in mesh.f90'
-         do i = 1,m%s; call restrict(rm%g(i)%c(dir),m%g(i)%c(dir)) ;enddo
+         call insist_allocated_mesh(m,'restrictmesh1 (1)')
+         call insist_allocated_mesh(rm,'restrictmesh1 (2)')
+         do i = 1,m%s; call restrict(rm%B(i)%g%c(dir),m%B(i)%g%c(dir)) ;enddo
        end subroutine
 
        subroutine restrictmesh3(rm,m)
          type(mesh),intent(inout) :: rm
          type(mesh),intent(in) :: m
          integer :: i
-         if (.not.allocated(rm%g)) stop 'Error: mesh not allocated in restrictmesh3 in mesh.f90'
-         do i = 1,m%s; call restrict(rm%g(i),m%g(i)) ;enddo
+         call insist_allocated_mesh(m,'restrictmesh3 (1)')
+         call insist_allocated_mesh(rm,'restrictmesh3 (2)')
+         do i = 1,m%s; call restrict(rm%B(i)%g,m%B(i)%g) ;enddo
        end subroutine
 
        subroutine restrictmesh_x(rm,m)
          type(mesh),intent(inout) :: rm
          type(mesh),intent(in) :: m
          integer :: i
-         if (.not.allocated(rm%g)) stop 'Error: mesh not allocated in restrictmesh_x in mesh.f90'
-         do i = 1,m%s; call restrict(rm%g(i)%c(1),m%g(i)%c(1)) ;enddo
+         call insist_allocated_mesh(m,'restrictmesh_x (1)')
+         call insist_allocated_mesh(rm,'restrictmesh_x (2)')
+         do i = 1,m%s; call restrict(rm%B(i)%g%c(1),m%B(i)%g%c(1)) ;enddo
        end subroutine
 
        subroutine restrictmesh_xy(rm,m)
          type(mesh),intent(inout) :: rm
          type(mesh),intent(in) :: m
          integer :: i
-         if (.not.allocated(rm%g)) stop 'Error: mesh not allocated in restrictmesh_xy in mesh.f90'
-         do i = 1,m%s; call restrict(rm%g(i)%c(1),m%g(i)%c(1)) ;enddo
-         do i = 1,m%s; call restrict(rm%g(i)%c(2),m%g(i)%c(2)) ;enddo
+         call insist_allocated_mesh(m,'restrictmesh_xy (1)')
+         call insist_allocated_mesh(rm,'restrictmesh_xy (2)')
+         do i = 1,m%s; call restrict(rm%B(i)%g%c(1),m%B(i)%g%c(1)) ;enddo
+         do i = 1,m%s; call restrict(rm%B(i)%g%c(2),m%B(i)%g%c(2)) ;enddo
        end subroutine
 
        ! ---------------------------------------------- check mesh
@@ -405,7 +378,7 @@
          implicit none
          type(mesh),intent(in) :: m
          integer :: i
-         do i = 1,m%s; call checkGrid(m%g(i)) ;enddo
+         do i = 1,m%s; call checkGrid(m%B(i)%g) ;enddo
        end subroutine
 #endif
 
@@ -418,7 +391,7 @@
          write(un,*) m%s
          do i = 1,m%s
            write(un,*) ' ------------- mesh ------------- grid ID = ',i
-           call export(m%g(i),un)
+           call export(m%B(i)%g,un)
          enddo
        end subroutine
 
@@ -430,10 +403,10 @@
          call delete(m)
          read(un,*)
          read(un,*) m%s
-         allocate(m%g(m%s))
+         allocate(m%B(m%s))
          do i = 1,m%s
            read(un,*);
-           call import(m%g(i),un)
+           call import(m%B(i)%g,un)
          enddo
          call initProps(m)
        end subroutine
@@ -472,16 +445,16 @@
          if (un.ne.6) then
            do i = 1,m%s
              write(un,*) ' ------------- mesh ------------- grid ID = ',i
-             call display(m%g(i),un)
-             if (m%s.gt.1) call display_stitches(m%g(i),un)
+             call display(m%B(i)%g,un)
+             if (m%s.gt.1) call display_stitches(m%B(i)%g,un)
            enddo
            write(un,*) ' -------------------------------- '
          else
            if (m%s.lt.5) then
              do i = 1,m%s
                write(un,*) ' ------------- mesh ------------- grid ID = ',i
-                 call display(m%g(i),un)
-               if (m%s.gt.1) call display_stitches(m%g(i),un)
+                 call display(m%B(i)%g,un)
+               if (m%s.gt.1) call display_stitches(m%B(i)%g,un)
              enddo
            write(un,*) ' -------------------------------- '
            else
@@ -500,6 +473,19 @@
            write(un,*) 'min/max(dh)_y = ',(/m%dhmin(2),m%dhmax(2)/)
            write(un,*) 'min/max(dh)_z = ',(/m%dhmin(3),m%dhmax(3)/)
            write(un,*) ' ********************************** '
+         endif
+       end subroutine
+
+       subroutine insist_allocated_mesh(m,caller)
+         implicit none
+         type(mesh),intent(in) :: m
+         character(len=*),intent(in) :: caller
+         if (.not.allocated(m%B)) then
+          write(*,*) 'Error: mesh not allocated in '//caller//' in mesh.f90'
+          stop 'Done'
+         elseif (size(m%B).ne.m%s) then
+          write(*,*) 'Error: mesh size not correct in '//caller//' in mesh.f90'
+          stop 'Done'
          endif
        end subroutine
 

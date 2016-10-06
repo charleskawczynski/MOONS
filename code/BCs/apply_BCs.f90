@@ -50,17 +50,11 @@
        use apply_BCs_faces_mod
        use apply_BCs_edges_mod
        use apply_BCs_corners_mod
-       use apply_stitches_faces_mod
-       use apply_stitches_edges_mod
-       use apply_stitches_corners_mod
        use mesh_mod
        implicit none
 
        private
        public :: apply_BCs
-
-
-
 
        interface apply_BCs;    module procedure apply_BCs_VF;                 end interface
        interface apply_BCs;    module procedure apply_BCs_SF;                 end interface
@@ -83,8 +77,8 @@
 #ifdef _DEBUG_APPLY_BCS_
        call check_defined(U)
 #endif
-         if (m%s.gt.1) call apply_stitches_faces(U,m)
-         if (m%s.gt.1) call apply_stitches_edges(U,m)
+         ! if (m%s.gt.1) call apply_stitches_faces(U,m)
+         ! if (m%s.gt.1) call apply_stitches_edges(U,m)
          ! if (m%s.gt.1) call apply_stitches_corners(U,m)
          call apply_BCs_faces(U,m)
          if (m%s.gt.1) call apply_BCs_edges(U,m)

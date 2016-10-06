@@ -39,6 +39,7 @@
          i= 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         ! call init(m,g)
          call add(m,g)
          call initProps(m)
          call patch(m)
@@ -82,7 +83,7 @@
          integer :: i
          integer,dimension(3) :: N
          call delete(m)
-         call init(g,m_in%g(1))
+         call init(g,m_in%B(1)%g)
          N = 11
          i = 1; call ext_uniform_IO(g,N(i),i)
          i = 2; call ext_uniform_IO(g,N(i),i)
@@ -102,7 +103,7 @@
          integer,dimension(3) :: N
          real(cp),dimension(3) :: L
          call delete(m)
-         call init(g,m_in%g(1))
+         call init(g,m_in%B(1)%g)
          N = 2; L = 1.0_cp
          i = 1; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 2; call ext_Roberts_near_IO(g,L(i),N(i),i)
@@ -177,7 +178,7 @@
          real(cp) :: Gamma_f,Gamma_w,Gamma_v
          integer :: N_w,N_v
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
 
          Gamma_f = 1.0_cp
          Gamma_w = Gamma_f + tw
@@ -240,7 +241,7 @@
          real(cp) :: tw
          integer :: N_w
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
          tw = 0.01_cp
          N_w = 3
          ! Wall
@@ -268,7 +269,7 @@
          type(grid) :: g
          integer :: N_w
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
          N_w = 3
          ! Define domain for electrical conductivity
          call add(m_sigma,g)

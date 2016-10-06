@@ -2,7 +2,6 @@
       use current_precision_mod
       use mesh_mod
       use apply_BCs_mod
-      use apply_Stitches_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod

@@ -81,7 +81,7 @@
         mg(:)%nLevels = size(mg)
         ! mg(:)%displayTF = displayTF
         mg(:)%displayTF = .false.
-        s = u%GF(1)%s
+        s = u%BF(1)%GF%s
 
         ! ******************** Check size of data ********************
         if (all((/(s(i).eq.g_base%c(i)%sn,i=1,3)/))) then

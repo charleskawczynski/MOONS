@@ -101,9 +101,9 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(B%x%GF(1)%f,m%g(1),fringeDir)
-         case (2); call initFringe_Sergey(B%y%GF(1)%f,m%g(1),fringeDir)
-         case (3); call initFringe_Sergey(B%z%GF(1)%f,m%g(1),fringeDir)
+         case (1); call initFringe_Sergey(B%x%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (2); call initFringe_Sergey(B%y%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (3); call initFringe_Sergey(B%z%BF(1)%GF%f,m%B(1)%g,fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
@@ -176,26 +176,26 @@
          Bstretch = 0.45_cp   ! stretching parameter
          Bshift = 12.5_cp     ! shift parameter
          do i=1,s(dir)
-           d = m%g(t)%c(dir)%hc(i)-Bshift*Bstretch
+           d = m%B(t)%g%c(dir)%hc(i)-Bshift*Bstretch
            Btemp(i) = 0.5_cp*(1.0_cp-tanh(d))
          enddo
 
-         call init_CC(temp,B%GF(t)%s(fringe_dir))
-         do i=1,B%GF(t)%s(fringe_dir)
-           temp%hc(i) = 0.5_cp*(1.0_cp-tanh(m%g(t)%c(dir)%hc(i)-Bshift*Bstretch))
+         call init_CC(temp,B%BF(t)%GF%s(fringe_dir))
+         do i=1,B%BF(t)%GF%s(fringe_dir)
+           temp%hc(i) = 0.5_cp*(1.0_cp-tanh(m%B(t)%g%c(dir)%hc(i)-Bshift*Bstretch))
          enddo
 
          select case (fringe_dir)
-         case (1); do t=1,m%s;do i=1,B%GF(t)%s(fringe_dir); B%GF(t)%f(i,:,:)=temp%hc(i);enddo;enddo
-         case (2); do t=1,m%s;do i=1,B%GF(t)%s(fringe_dir); B%GF(t)%f(:,i,:)=temp%hc(i);enddo;enddo
-         case (3); do t=1,m%s;do i=1,B%GF(t)%s(fringe_dir); B%GF(t)%f(:,:,i)=temp%hc(i);enddo;enddo
+         case (1); do t=1,m%s;do i=1,B%BF(t)%GF%s(fringe_dir); B%BF(t)%GF%f(i,:,:)=temp%hc(i);enddo;enddo
+         case (2); do t=1,m%s;do i=1,B%BF(t)%GF%s(fringe_dir); B%BF(t)%GF%f(:,i,:)=temp%hc(i);enddo;enddo
+         case (3); do t=1,m%s;do i=1,B%BF(t)%GF%s(fringe_dir); B%BF(t)%GF%f(:,:,i)=temp%hc(i);enddo;enddo
          case default; stop 'Error: dir must = 1,2,3 in initFringe.'
          end select
 
          select case (fringe_dir)
-         case (1); do i=1,B%GF(t)%s(dir); B%GF(t)%f(i,:,:) = Btemp(i); enddo
-         case (2); do i=1,B%GF(t)%s(dir); B%GF(t)%f(:,i,:) = Btemp(i); enddo
-         case (3); do i=1,B%GF(t)%s(dir); B%GF(t)%f(:,:,i) = Btemp(i); enddo
+         case (1); do i=1,B%BF(t)%GF%s(dir); B%BF(t)%GF%f(i,:,:) = Btemp(i); enddo
+         case (2); do i=1,B%BF(t)%GF%s(dir); B%BF(t)%GF%f(:,i,:) = Btemp(i); enddo
+         case (3); do i=1,B%BF(t)%GF%s(dir); B%BF(t)%GF%f(:,:,i) = Btemp(i); enddo
          case default; stop 'Error: dir must = 1,2,3 in initFringe.'
          end select
          call delete(temp)
@@ -213,14 +213,14 @@
          Bstretch = 0.45_cp   ! stretching parameter
          Bshift = 12.5_cp     ! shift parameter
          do t=1,m%s
-           call init(temp,m%g(t)%c(fringe_dir)%hn,m%g(t)%c(fringe_dir)%sn)
-           do i=1,B%GF(t)%s(fringe_dir)
-             temp%hc(i) = 0.5_cp*(1.0_cp-tanh(m%g(t)%c(dir)%hc(i)-Bshift*Bstretch))
+           call init(temp,m%B(t)%g%c(fringe_dir)%hn,m%B(t)%g%c(fringe_dir)%sn)
+           do i=1,B%BF(t)%GF%s(fringe_dir)
+             temp%hc(i) = 0.5_cp*(1.0_cp-tanh(m%B(t)%g%c(dir)%hc(i)-Bshift*Bstretch))
            enddo
            select case (fringe_dir)
-           case (1); do i=1,B%GF(t)%s(fringe_dir); B%GF(t)%f(i,:,:)=temp%hc(i);enddo
-           case (2); do i=1,B%GF(t)%s(fringe_dir); B%GF(t)%f(:,i,:)=temp%hc(i);enddo
-           case (3); do i=1,B%GF(t)%s(fringe_dir); B%GF(t)%f(:,:,i)=temp%hc(i);enddo
+           case (1); do i=1,B%BF(t)%GF%s(fringe_dir); B%BF(t)%GF%f(i,:,:)=temp%hc(i);enddo
+           case (2); do i=1,B%BF(t)%GF%s(fringe_dir); B%BF(t)%GF%f(:,i,:)=temp%hc(i);enddo
+           case (3); do i=1,B%BF(t)%GF%s(fringe_dir); B%BF(t)%GF%f(:,:,i)=temp%hc(i);enddo
            case default; stop 'Error: dir must = 1:3 in initFringe_ALEX_SF in init_B0_field.f90.'
            end select
            call delete(temp)
@@ -237,25 +237,25 @@
          ka = 1.0_cp
          select case (currentDir)
          case (1)
-           do t=1,m%s; do i=1,B%y%GF(t)%s(1);do j=1,B%y%GF(t)%s(2);do k=1,B%y%GF(t)%s(3)
-             B%y%GF(1)%f(i,j,k) = cos(ka*m%g(t)%c(3)%hc(k))*cosh(ka*m%g(t)%c(2)%hc(j))/cosh(ka)
+           do t=1,m%s; do i=1,B%y%BF(t)%GF%s(1);do j=1,B%y%BF(t)%GF%s(2);do k=1,B%y%BF(t)%GF%s(3)
+             B%y%BF(1)%GF%f(i,j,k) = cos(ka*m%B(t)%g%c(3)%hc(k))*cosh(ka*m%B(t)%g%c(2)%hc(j))/cosh(ka)
            enddo;enddo;enddo; enddo
-           do t=1,m%s; do i=1,B%z%GF(t)%s(1);do j=1,B%z%GF(t)%s(2);do k=1,B%z%GF(t)%s(3)
-             B%z%GF(1)%f(i,j,k) =-sin(ka*m%g(t)%c(3)%hc(k))*sinh(ka*m%g(t)%c(2)%hc(j))/cosh(ka)
+           do t=1,m%s; do i=1,B%z%BF(t)%GF%s(1);do j=1,B%z%BF(t)%GF%s(2);do k=1,B%z%BF(t)%GF%s(3)
+             B%z%BF(1)%GF%f(i,j,k) =-sin(ka*m%B(t)%g%c(3)%hc(k))*sinh(ka*m%B(t)%g%c(2)%hc(j))/cosh(ka)
            enddo;enddo;enddo; enddo
          case (2)
-           do t=1,m%s; do i=1,B%x%GF(t)%s(1);do j=1,B%x%GF(t)%s(2);do k=1,B%x%GF(t)%s(3)
-             B%x%GF(1)%f(i,j,k) =-sin(ka*m%g(t)%c(1)%hc(i))*sinh(ka*m%g(t)%c(3)%hc(k))/cosh(ka)
+           do t=1,m%s; do i=1,B%x%BF(t)%GF%s(1);do j=1,B%x%BF(t)%GF%s(2);do k=1,B%x%BF(t)%GF%s(3)
+             B%x%BF(1)%GF%f(i,j,k) =-sin(ka*m%B(t)%g%c(1)%hc(i))*sinh(ka*m%B(t)%g%c(3)%hc(k))/cosh(ka)
            enddo;enddo;enddo; enddo
-           do t=1,m%s; do i=1,B%z%GF(t)%s(1);do j=1,B%z%GF(t)%s(2);do k=1,B%z%GF(t)%s(3)
-             B%z%GF(1)%f(i,j,k) = cos(ka*m%g(t)%c(1)%hc(i))*cosh(ka*m%g(t)%c(3)%hc(k))/cosh(ka)
+           do t=1,m%s; do i=1,B%z%BF(t)%GF%s(1);do j=1,B%z%BF(t)%GF%s(2);do k=1,B%z%BF(t)%GF%s(3)
+             B%z%BF(1)%GF%f(i,j,k) = cos(ka*m%B(t)%g%c(1)%hc(i))*cosh(ka*m%B(t)%g%c(3)%hc(k))/cosh(ka)
            enddo;enddo;enddo; enddo
          case (3)
-           do t=1,m%s; do i=1,B%x%GF(t)%s(1);do j=1,B%x%GF(t)%s(2);do k=1,B%x%GF(t)%s(3)
-             B%x%GF(1)%f(i,j,k) = cos(ka*m%g(t)%c(2)%hc(j))*cosh(ka*m%g(t)%c(1)%hc(i))/cosh(ka)
+           do t=1,m%s; do i=1,B%x%BF(t)%GF%s(1);do j=1,B%x%BF(t)%GF%s(2);do k=1,B%x%BF(t)%GF%s(3)
+             B%x%BF(1)%GF%f(i,j,k) = cos(ka*m%B(t)%g%c(2)%hc(j))*cosh(ka*m%B(t)%g%c(1)%hc(i))/cosh(ka)
            enddo;enddo;enddo; enddo
-           do t=1,m%s; do i=1,B%y%GF(t)%s(1);do j=1,B%y%GF(t)%s(2);do k=1,B%y%GF(t)%s(3)
-             B%y%GF(1)%f(i,j,k) =-sin(ka*m%g(t)%c(2)%hc(j))*sinh(ka*m%g(t)%c(1)%hc(i))/cosh(ka)
+           do t=1,m%s; do i=1,B%y%BF(t)%GF%s(1);do j=1,B%y%BF(t)%GF%s(2);do k=1,B%y%BF(t)%GF%s(3)
+             B%y%BF(1)%GF%f(i,j,k) =-sin(ka*m%B(t)%g%c(2)%hc(j))*sinh(ka*m%B(t)%g%c(1)%hc(i))/cosh(ka)
            enddo;enddo;enddo; enddo
          case default; stop 'Error: applied_dir must = 1:3 in initField_Bandaru in init_Bfield.f90.'
          end select

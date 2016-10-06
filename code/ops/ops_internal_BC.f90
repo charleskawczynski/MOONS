@@ -176,7 +176,7 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in internal_BC_Face_SF in ops_internal_BC.f90'
 #endif
          do i=1,D%s
-         call IBC(Face_t%GF(D%sd(i)%g_R2_id),EE_shape_I(Face_t,D,i),1,2,Face_t%CC_along)
+         call IBC(Face_t%BF(D%sd(i)%g_R2_id)%GF,EE_shape_I(Face_t,D,i),1,2,Face_t%CC_along)
          enddo
        end subroutine
 

@@ -48,12 +48,12 @@
          ! Make all possible/necessary subdomains:
          if (m_R2%s.gt.m_R1%s) then
            do k=1,m_R2%s; do j=1,m_R1%s
-             call init(temp,m_R1%g(j),m_R2%g(k),j,k)
+             call init(temp,m_R1%B(j)%g,m_R2%B(k)%g,j,k)
              if (all(temp%defined)) call add(D,temp)
            enddo; enddo
          else
            do k=1,m_R1%s; do j=1,m_R2%s
-             call init(temp,m_R1%g(k),m_R2%g(j),k,j)
+             call init(temp,m_R1%B(k)%g,m_R2%B(j)%g,k,j)
              if (all(temp%defined)) call add(D,temp)
            enddo; enddo
          endif

@@ -176,9 +176,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -195,6 +195,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields\
 	$(SRC_DIR)$(PS)fields$(PS)default\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
@@ -250,9 +251,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)triDiag.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)stitch_face.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)stitch_edge.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)stitch_corner.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
 	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
@@ -276,17 +274,18 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_divide.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
+	$(SRC_DIR)$(PS)block$(PS)block.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
+	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)block_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
-	$(SRC_DIR)$(PS)block$(PS)block.f90\
-	$(SRC_DIR)$(PS)block$(PS)block_domain.f90\
-	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
@@ -312,10 +311,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)clock$(PS)stop_clock.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
 	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_faces.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_edges.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches_corners.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)apply_stitches.f90\
 	$(SRC_DIR)$(PS)geometric_region$(PS)geometric_region.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\

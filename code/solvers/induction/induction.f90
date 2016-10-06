@@ -638,8 +638,8 @@
          integer :: t,i,j,k
          real(cp) :: tol
          tol = 10.0_cp**(-10.0_cp)
-         do t=1,m%s; do k=1,S%GF(t)%s(3);do j=1,S%GF(t)%s(2);do i=1,S%GF(t)%s(1)
-         if (abs(m%g(t)%c(2)%hn(j)-1.0_cp).lt.tol) S%GF(t)%f(i,j,k) = sigma_insulate
+         do t=1,m%s; do k=1,S%BF(t)%GF%s(3);do j=1,S%BF(t)%GF%s(2);do i=1,S%BF(t)%GF%s(1)
+         if (abs(m%B(t)%g%c(2)%hn(j)-1.0_cp).lt.tol) S%BF(t)%GF%f(i,j,k) = sigma_insulate
          enddo; enddo; enddo; enddo
        end subroutine
 

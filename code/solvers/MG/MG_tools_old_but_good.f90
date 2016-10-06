@@ -163,9 +163,9 @@
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call restrict(temp1%GF(i)%f,  u%GF(i)%f  ,g%c(1),1,u%GF(i)%s    ,temp1%GF(i)%s,1,0,0)
-          call restrict(temp2%GF(i)%f,temp1%GF(i)%f,g%c(2),2,temp1%GF(i)%s,temp2%GF(i)%s,0,1,0)
-          call restrict(  r%GF(i)%f,  temp2%GF(i)%f,g%c(3),3,temp2%GF(i)%s,r%GF(i)%s    ,0,0,1)
+          call restrict(temp1%BF(i)%GF%f,  u%BF(i)%GF%f  ,g%c(1),1,u%BF(i)%GF%s    ,temp1%BF(i)%GF%s,1,0,0)
+          call restrict(temp2%BF(i)%GF%f,temp1%BF(i)%GF%f,g%c(2),2,temp1%BF(i)%GF%s,temp2%BF(i)%GF%s,0,1,0)
+          call restrict(  r%BF(i)%GF%f,  temp2%BF(i)%GF%f,g%c(3),3,temp2%BF(i)%GF%s,r%BF(i)%GF%s    ,0,0,1)
         enddo
       end subroutine
 
@@ -290,9 +290,9 @@
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call prolongate(temp1%GF(i)%f,  u%GF(i)%f  ,fg%c(1),1,u%GF(i)%s    ,temp1%GF(i)%s,1,0,0)
-          call prolongate(temp2%GF(i)%f,temp1%GF(i)%f,fg%c(2),2,temp1%GF(i)%s,temp2%GF(i)%s,0,1,0)
-          call prolongate(  p%GF(i)%f,  temp2%GF(i)%f,fg%c(3),3,temp2%GF(i)%s,p%GF(i)%s    ,0,0,1)
+          call prolongate(temp1%BF(i)%GF%f,  u%BF(i)%GF%f  ,fg%c(1),1,u%BF(i)%GF%s    ,temp1%BF(i)%GF%s,1,0,0)
+          call prolongate(temp2%BF(i)%GF%f,temp1%BF(i)%GF%f,fg%c(2),2,temp1%BF(i)%GF%s,temp2%BF(i)%GF%s,0,1,0)
+          call prolongate(  p%BF(i)%GF%f,  temp2%BF(i)%GF%f,fg%c(3),3,temp2%BF(i)%GF%s,p%BF(i)%GF%s    ,0,0,1)
         enddo
       end subroutine
 

@@ -160,10 +160,10 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,AcrossB%s
-           call cross(AcrossB%GF(i)%f,&
-           Ax%GF(i)%f,Ay%GF(i)%f,Az%GF(i)%f,&
-           Bx%GF(i)%f,By%GF(i)%f,Bz%GF(i)%f,&
-           Ax%GF(i)%s,Ay%GF(i)%s,Az%GF(i)%s,dir)
+           call cross(AcrossB%BF(i)%GF%f,&
+           Ax%BF(i)%GF%f,Ay%BF(i)%GF%f,Az%BF(i)%GF%f,&
+           Bx%BF(i)%GF%f,By%BF(i)%GF%f,Bz%BF(i)%GF%f,&
+           Ax%BF(i)%GF%s,Ay%BF(i)%GF%s,Az%BF(i)%GF%s,dir)
          enddo
        end subroutine
 

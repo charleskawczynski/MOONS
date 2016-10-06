@@ -126,13 +126,8 @@
          type(grid),intent(in) :: g
          integer,dimension(2),intent(in) :: f
          integer,intent(in) :: e
-         logical,dimension(2) :: L1,L2
          logical :: L
-         L1(1) = is_Dirichlet(GF%b%f(f(1))%b).and.(.not.g%st_faces(f(1))%TF).and.(.not.is_periodic(GF%b%f(f(2))%b))
-         L1(2) = is_Dirichlet(GF%b%f(f(2))%b).and.(.not.g%st_faces(f(2))%TF).and.(.not.is_periodic(GF%b%f(f(1))%b))
-         L2(1) = g%st_faces(f(1))%TF.and.g%st_faces(f(2))%TF
-         L2(2) = .not.g%st_edges(e)%TF
-         L = any(L1).or.all(L2)
+         L = .true.
        end function
 
        subroutine apply_edge_SF(U,m)
@@ -145,37 +140,37 @@
          if (U%is_CC) then
            do i=1,m%s; do k = 1,3
            e = edges_given_dir(k); a = adj_dir_given_dir(k)
-           f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_CC(U%GF(i),m%g(i),e(1),a(1),a(2),k,1)
-           f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_CC(U%GF(i),m%g(i),e(2),a(1),a(2),k,2)
-           f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_CC(U%GF(i),m%g(i),e(3),a(1),a(2),k,3)
-           f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_CC(U%GF(i),m%g(i),e(4),a(1),a(2),k,4)
+           f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(1),a(1),a(2),k,1)
+           f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(2),a(1),a(2),k,2)
+           f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(3),a(1),a(2),k,3)
+           f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(4),a(1),a(2),k,4)
            enddo; enddo
          elseif (U%is_Node) then
            do i=1,m%s; do k = 1,3
            e = edges_given_dir(k); a = adj_dir_given_dir(k)
-           f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_N(U%GF(i),m%g(i),e(1),a(1),a(2),k,1)
-           f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_N(U%GF(i),m%g(i),e(2),a(1),a(2),k,2)
-           f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_N(U%GF(i),m%g(i),e(3),a(1),a(2),k,3)
-           f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_N(U%GF(i),m%g(i),e(4),a(1),a(2),k,4)
+           f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_N(U%BF(i)%GF,m%B(i)%g,e(1),a(1),a(2),k,1)
+           f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_N(U%BF(i)%GF,m%B(i)%g,e(2),a(1),a(2),k,2)
+           f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_N(U%BF(i)%GF,m%B(i)%g,e(3),a(1),a(2),k,3)
+           f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_N(U%BF(i)%GF,m%B(i)%g,e(4),a(1),a(2),k,4)
            enddo; enddo
          elseif (U%is_Face) then
            do i=1,m%s; do k = 1,3
            e = edges_given_dir(k); a = adj_dir_given_dir(k)
            if (U%face.eq.k) then
-             f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_CC(U%GF(i),m%g(i),e(1),a(1),a(2),k,1)
-             f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_CC(U%GF(i),m%g(i),e(2),a(1),a(2),k,2)
-             f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_CC(U%GF(i),m%g(i),e(3),a(1),a(2),k,3)
-             f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_CC(U%GF(i),m%g(i),e(4),a(1),a(2),k,4)
+         f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(1),a(1),a(2),k,1)
+         f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(2),a(1),a(2),k,2)
+         f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(3),a(1),a(2),k,3)
+         f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_CC(U%BF(i)%GF,m%B(i)%g,e(4),a(1),a(2),k,4)
            elseif (U%face.eq.a(1)) then
-             f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_F1(U%GF(i),m%g(i),e(1),a(2),k,1)
-             f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_F1(U%GF(i),m%g(i),e(2),a(2),k,2)
-             f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_F1(U%GF(i),m%g(i),e(3),a(2),k,3)
-             f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_F1(U%GF(i),m%g(i),e(4),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(2),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(3),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(4),a(2),k,4)
            elseif (U%face.eq.a(2)) then
-             f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_F2(U%GF(i),m%g(i),e(1),a(1),k,1)
-             f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_F2(U%GF(i),m%g(i),e(2),a(1),k,2)
-             f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_F2(U%GF(i),m%g(i),e(3),a(1),k,3)
-             f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_F2(U%GF(i),m%g(i),e(4),a(1),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(1),a(1),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(2),a(1),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(3),a(1),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(4),a(1),k,4)
            else; stop 'Error: unhandled exception (1) in apply_BCs_edges.f90'
            endif
            enddo; enddo
@@ -183,20 +178,20 @@
            do i=1,m%s; do k = 1,3
            e = edges_given_dir(k); a = adj_dir_given_dir(k)
            if (U%edge.eq.k) then
-             f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_N(U%GF(i),m%g(i),e(1),a(1),a(2),k,1)
-             f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_N(U%GF(i),m%g(i),e(2),a(1),a(2),k,2)
-             f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_N(U%GF(i),m%g(i),e(3),a(1),a(2),k,3)
-             f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_N(U%GF(i),m%g(i),e(4),a(1),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_N(U%BF(i)%GF,m%B(i)%g,e(1),a(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_N(U%BF(i)%GF,m%B(i)%g,e(2),a(1),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_N(U%BF(i)%GF,m%B(i)%g,e(3),a(1),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_N(U%BF(i)%GF,m%B(i)%g,e(4),a(1),a(2),k,4)
            elseif (U%edge.eq.a(1)) then
-             f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_F2(U%GF(i),m%g(i),e(1),a(1),k,1)
-             f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_F2(U%GF(i),m%g(i),e(2),a(1),k,2)
-             f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_F2(U%GF(i),m%g(i),e(3),a(1),k,3)
-             f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_F2(U%GF(i),m%g(i),e(4),a(1),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(1),a(1),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(2),a(1),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(3),a(1),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_F2(U%BF(i)%GF,m%B(i)%g,e(4),a(1),k,4)
            elseif (U%edge.eq.a(2)) then
-             f = adj_faces_given_edge(e(1)); if (BC_TF(U%GF(i),m%g(i),f,e(1))) call a_F1(U%GF(i),m%g(i),e(1),a(2),k,1)
-             f = adj_faces_given_edge(e(2)); if (BC_TF(U%GF(i),m%g(i),f,e(2))) call a_F1(U%GF(i),m%g(i),e(2),a(2),k,2)
-             f = adj_faces_given_edge(e(3)); if (BC_TF(U%GF(i),m%g(i),f,e(3))) call a_F1(U%GF(i),m%g(i),e(3),a(2),k,3)
-             f = adj_faces_given_edge(e(4)); if (BC_TF(U%GF(i),m%g(i),f,e(4))) call a_F1(U%GF(i),m%g(i),e(4),a(2),k,4)
+             f = adj_faces_given_edge(e(1)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(1))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(1),a(2),k,1)
+             f = adj_faces_given_edge(e(2)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(2))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(2),a(2),k,2)
+             f = adj_faces_given_edge(e(3)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(3))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(3),a(2),k,3)
+             f = adj_faces_given_edge(e(4)); if (BC_TF(U%BF(i)%GF,m%B(i)%g,f,e(4))) call a_F1(U%BF(i)%GF,m%B(i)%g,e(4),a(2),k,4)
            else; stop 'Error: unhandled exception (2) in apply_BCs_edges.f90'
            endif
            enddo; enddo

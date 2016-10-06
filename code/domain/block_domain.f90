@@ -38,17 +38,17 @@
          type(block),intent(in) :: B
          integer :: i
          call delete(BD)
-         do i=1,6;  call add(BD%fg(i),B%B,B%fg(i),1,i); enddo
-         do i=1,12; call add(BD%eg(i),B%B,B%eg(i),1,i); enddo
-         do i=1,8;  call add(BD%cg(i),B%B,B%cg(i),1,i); enddo
+         do i=1,6;  call add(BD%fg(i),B%g,B%fg(i),1,i); enddo
+         do i=1,12; call add(BD%eg(i),B%g,B%eg(i),1,i); enddo
+         do i=1,8;  call add(BD%cg(i),B%g,B%cg(i),1,i); enddo
 
-         do i=1,6;  call add(BD%fb(i),B%B,B%fb(i),1,i); enddo
-         do i=1,12; call add(BD%eb(i),B%B,B%eb(i),1,i); enddo
-         do i=1,8;  call add(BD%cb(i),B%B,B%cb(i),1,i); enddo
+         do i=1,6;  call add(BD%fb(i),B%g,B%fb(i),1,i); enddo
+         do i=1,12; call add(BD%eb(i),B%g,B%eb(i),1,i); enddo
+         do i=1,8;  call add(BD%cb(i),B%g,B%cb(i),1,i); enddo
 
-         do i=1,6;  call add(BD%fi(i),B%B,B%fi(i),1,i); enddo
-         do i=1,12; call add(BD%ei(i),B%B,B%ei(i),1,i); enddo
-         do i=1,8;  call add(BD%ci(i),B%B,B%ci(i),1,i); enddo
+         do i=1,6;  call add(BD%fi(i),B%g,B%fi(i),1,i); enddo
+         do i=1,12; call add(BD%ei(i),B%g,B%ei(i),1,i); enddo
+         do i=1,8;  call add(BD%ci(i),B%g,B%ci(i),1,i); enddo
        end subroutine
 
        subroutine init_block_domain_copy(BD_out,BD_in)

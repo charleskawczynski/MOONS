@@ -54,7 +54,7 @@
          real(cp) :: Gamma_v
          integer :: N_w,N_v,N_extra
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
 
          Gamma_v = 7.0_cp
          tf = 1.0_cp
@@ -149,7 +149,7 @@
          integer :: N_conduct
          real(cp) :: t_insulate,t_conduct,t_layer
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
 
          N_conduct = 10
          t_layer = (1.0_cp/Ha)

@@ -38,10 +38,10 @@
            call C0_N1_tensor(U,x,y,z)
            do i=1,m%s; do k=1,3
            e = edges_given_dir(k)
-           if (m%g(i)%st_edges(e(1))%TF) call app_E(U%GF(i),U%GF(m%g(i)%st_edges(e(1))%ID),1,k,x,y,z)
-           if (m%g(i)%st_edges(e(2))%TF) call app_E(U%GF(i),U%GF(m%g(i)%st_edges(e(2))%ID),2,k,x,y,z)
-           if (m%g(i)%st_edges(e(3))%TF) call app_E(U%GF(i),U%GF(m%g(i)%st_edges(e(3))%ID),3,k,x,y,z)
-           if (m%g(i)%st_edges(e(4))%TF) call app_E(U%GF(i),U%GF(m%g(i)%st_edges(e(4))%ID),4,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(1))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(1))%ID),1,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(2))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(2))%ID),2,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(3))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(3))%ID),3,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(4))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(4))%ID),4,k,x,y,z)
            enddo; enddo
          endif
        end subroutine

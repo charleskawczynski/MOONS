@@ -3,7 +3,6 @@
       use mesh_mod
       use mesh_domain_mod
       use apply_BCs_mod
-      use apply_Stitches_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -66,7 +65,6 @@
             call subtract(Ax,res) ! LU = Ax - Dx
             call subtract(res,f,Ax)
             call multiply(x,Dinv,res)
-            call apply_Stitches(x,m)
             call apply_BCs(x,m)
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
@@ -141,7 +139,6 @@
             call multiply(x,0.1_cp)
             call multiply(res,(1.0_cp-0.1_cp))
             call add(x,res) ! x^n+1 = x^n w + (1-w) Dinv (b - LUx)
-            ! call apply_Stitches(x,m)
             call apply_BCs(x,m)
             if (x%is_Face) call embedFace(x,x_interior,MD_interior)
 

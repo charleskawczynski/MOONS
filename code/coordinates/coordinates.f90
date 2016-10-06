@@ -29,19 +29,18 @@
         type(triDiag) :: stagCC2N,stagN2CC
         type(triDiag),dimension(2) :: colCC,colN
         type(triDiag),dimension(2) :: colCC_centered
-         ! Properties
         real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
-        integer :: N                                    ! Number of cells
-        real(cp) :: hmin,hmax                           ! Min/Max value of domain
-        real(cp) :: amin,amax                           ! absolute Min/Max value of domain (including ghost)
-        real(cp) :: dhMin,dhMax,maxRange                ! Smallest spatial step/Maximum range
-        integer :: sn,sc                                ! size of hn/hc
         real(cp),dimension(:),allocatable :: hn         ! Cell corner coordinates
         real(cp),dimension(:),allocatable :: hc         ! Cell center coordinates
         real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
         real(cp),dimension(:),allocatable :: dhc        ! Difference in cell center coordinates
+        real(cp) :: hmin,hmax                           ! Min/Max value of domain
+        real(cp) :: amin,amax                           ! absolute Min/Max value of domain (including ghost)
+        real(cp) :: dhMin,dhMax,maxRange                ! Smallest spatial step/Maximum range
         real(cp) :: dhn_e,dhc_e                         ! dhn(end),dhc(end)
         real(cp) :: hn_e,hc_e                           ! hn(end),hc(end)
+        integer :: N                                    ! Number of cells
+        integer :: sn,sc                                ! size of hn/hc
         logical :: defined = .false.
         logical :: stencils_defined = .false.
         logical,dimension(2) :: stencils_modified = .false.
@@ -72,52 +71,11 @@
       ! ********************* ESSENTIALS *************************
       ! **********************************************************
 
-      subroutine initCopy(c,d)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        type(coordinates),intent(in) :: d
-        call delete(c)
-        if (.not.d%defined) stop 'Error: trying to copy undefined coordinate in coordinates.f90'
-
-        if (.not.allocated(d%alpha)) stop 'Error: d%alpha not allocated in coordinates.f90'
-        if (.not.allocated(d%beta))  stop 'Error: d%beta  not allocated in coordinates.f90'
-        if (.not.allocated(d%hn))    stop 'Error: d%hn    not allocated in coordinates.f90'
-        if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
-        if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
-        if (.not.allocated(d%dhc))   stop 'Error: d%dhc   not allocated in coordinates.f90'
-        allocate(c%alpha(size(d%alpha))); c%alpha = d%alpha
-        allocate(c%beta(size(d%beta)));   c%beta  = d%beta
-        allocate(c%hn(size(d%hn)));       c%hn    = d%hn
-        allocate(c%hc(size(d%hc)));       c%hc    = d%hc
-        allocate(c%dhn(size(d%dhn)));     c%dhn   = d%dhn
-        allocate(c%dhc(size(d%dhc)));     c%dhc   = d%dhc
-
-        call init(c%stagCC2N,d%stagCC2N)
-        call init(c%stagN2CC,d%stagN2CC)
-        call init(c%colCC(1),d%colCC(1))
-        call init(c%colCC(2),d%colCC(2))
-        call init(c%colN(1),d%colN(1))
-        call init(c%colN(2),d%colN(2))
-        call init(c%colCC_centered(1),d%colCC_centered(1))
-        call init(c%colCC_centered(2),d%colCC_centered(2))
-
-        c%hc_e = d%hc_e
-        c%hn_e = d%hn_e
-        c%dhc_e = d%dhc_e
-        c%dhn_e = d%dhn_e
-        c%sn = d%sn
-        c%sc = d%sc
-        c%defined = d%defined
-        c%stencils_defined = d%stencils_defined
-        c%stencils_modified = d%stencils_modified
-        call initProps(c)
-      end subroutine
-
       subroutine initCoordinates(c,hn,sn)
         ! Here is a picture how coordinates are initialized for different cases:
         ! 
         ! 
-        ! ----------------------------- 1) 1 interior cell  + 2 ghost (typical):
+        ! ----------------------------- 1) 1 or more interior cells  + 2 ghost (typical):
         ! 
         !         hn(1)     hn(2)     hn(3)     hn(4)
         !          |-----------------------------|
@@ -208,6 +166,47 @@
         call init_stencils(c)
         c%stencils_modified = .false.
         c%defined = .true.
+      end subroutine
+
+      subroutine initCopy(c,d)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(coordinates),intent(in) :: d
+        call delete(c)
+        if (.not.d%defined) stop 'Error: trying to copy undefined coordinate in coordinates.f90'
+
+        if (.not.allocated(d%alpha)) stop 'Error: d%alpha not allocated in coordinates.f90'
+        if (.not.allocated(d%beta))  stop 'Error: d%beta  not allocated in coordinates.f90'
+        if (.not.allocated(d%hn))    stop 'Error: d%hn    not allocated in coordinates.f90'
+        if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
+        if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
+        if (.not.allocated(d%dhc))   stop 'Error: d%dhc   not allocated in coordinates.f90'
+        allocate(c%alpha(size(d%alpha))); c%alpha = d%alpha
+        allocate(c%beta(size(d%beta)));   c%beta  = d%beta
+        allocate(c%hn(size(d%hn)));       c%hn    = d%hn
+        allocate(c%hc(size(d%hc)));       c%hc    = d%hc
+        allocate(c%dhn(size(d%dhn)));     c%dhn   = d%dhn
+        allocate(c%dhc(size(d%dhc)));     c%dhc   = d%dhc
+
+        call init(c%stagCC2N,d%stagCC2N)
+        call init(c%stagN2CC,d%stagN2CC)
+        call init(c%colCC(1),d%colCC(1))
+        call init(c%colCC(2),d%colCC(2))
+        call init(c%colN(1),d%colN(1))
+        call init(c%colN(2),d%colN(2))
+        call init(c%colCC_centered(1),d%colCC_centered(1))
+        call init(c%colCC_centered(2),d%colCC_centered(2))
+
+        c%hc_e = d%hc_e
+        c%hn_e = d%hn_e
+        c%dhc_e = d%dhc_e
+        c%dhn_e = d%dhn_e
+        c%sn = d%sn
+        c%sc = d%sc
+        c%defined = d%defined
+        c%stencils_defined = d%stencils_defined
+        c%stencils_modified = d%stencils_modified
+        call initProps(c)
       end subroutine
 
       subroutine deleteCoordinates(c)

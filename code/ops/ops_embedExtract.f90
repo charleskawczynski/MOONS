@@ -129,7 +129,7 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in extractCC_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EX(CC_i%GF(MD%D%sd(i)%g_R1_id),CC_t%GF(MD%D%sd(i)%g_R2_id),EE_shape(CC_i,MD,i),'extractCC_SF')
+         call EX(CC_i%BF(MD%D%sd(i)%g_R1_id)%GF,CC_t%BF(MD%D%sd(i)%g_R2_id)%GF,EE_shape(CC_i,MD,i),'extractCC_SF')
          enddo
        end subroutine
        subroutine extractCC_VF(CC_i,CC_t,MD)
@@ -137,16 +137,9 @@
          type(VF),intent(inout) :: CC_i
          type(VF),intent(in) :: CC_t
          type(mesh_domain),intent(in) :: MD
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.CC_i%is_CC) stop 'Error: CC data not found (1) in extractCC_VF in ops_embedExtract.f90'
-         if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in extractCC_VF in ops_embedExtract.f90'
-#endif
-         do i=1,MD%D%s
-         call EX(CC_i%x%GF(MD%D%sd(i)%g_R1_id),CC_t%x%GF(MD%D%sd(i)%g_R2_id),EE_shape(CC_i%x,MD,i),'extractCC_VF')
-         call EX(CC_i%y%GF(MD%D%sd(i)%g_R1_id),CC_t%y%GF(MD%D%sd(i)%g_R2_id),EE_shape(CC_i%y,MD,i),'extractCC_VF')
-         call EX(CC_i%z%GF(MD%D%sd(i)%g_R1_id),CC_t%z%GF(MD%D%sd(i)%g_R2_id),EE_shape(CC_i%z,MD,i),'extractCC_VF')
-         enddo
+         call extractCC_SF(CC_i%x,CC_t%x,MD)
+         call extractCC_SF(CC_i%y,CC_t%y,MD)
+         call extractCC_SF(CC_i%z,CC_t%z,MD)
        end subroutine
 
        subroutine extractFace_SF(face_i,face_t,MD) ! Extracts Lorentz force from induction to momentum
@@ -160,7 +153,7 @@
          if (.not.face_i%is_Face) stop 'Error: face data not found (2) in extractFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EX(face_i%GF(MD%D%sd(i)%g_R1_id),face_t%GF(MD%D%sd(i)%g_R2_id),EE_shape(face_i,MD,i),'extractFace_SF')
+         call EX(face_i%BF(MD%D%sd(i)%g_R1_id)%GF,face_t%BF(MD%D%sd(i)%g_R2_id)%GF,EE_shape(face_i,MD,i),'extractFace_SF')
          enddo
        end subroutine
        subroutine extractFace_VF(face_i,face_t,MD) ! Extracts Lorentz force from induction to momentum
@@ -168,17 +161,9 @@
          type(VF),intent(inout) :: face_i
          type(VF),intent(in) :: face_t
          type(mesh_domain),intent(in) :: MD
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.face_t%is_Face) stop 'Error: face data not found (1) in extractFace_VF in ops_embedExtract.f90'
-         if (.not.face_i%is_Face) stop 'Error: face data not found (2) in extractFace_VF in ops_embedExtract.f90'
-#endif
-         do i=1,MD%D%s
-         call EX(face_i%x%GF(MD%D%sd(i)%g_R1_id),face_t%x%GF(MD%D%sd(i)%g_R2_id),EE_shape(face_i%x,MD,i),'extractFace_VF')
-         call EX(face_i%y%GF(MD%D%sd(i)%g_R1_id),face_t%y%GF(MD%D%sd(i)%g_R2_id),EE_shape(face_i%y,MD,i),'extractFace_VF')
-         call EX(face_i%z%GF(MD%D%sd(i)%g_R1_id),face_t%z%GF(MD%D%sd(i)%g_R2_id),EE_shape(face_i%z,MD,i),'extractFace_VF')
-         enddo
-         ! stop 'Done in extractFace_VF in ops_embedExtract.f90'
+         call extractFace_SF(face_i%x,face_t%x,MD)
+         call extractFace_SF(face_i%y,face_t%y,MD)
+         call extractFace_SF(face_i%z,face_t%z,MD)
        end subroutine
 
        subroutine extractEdge_SF(edge_i,edge_t,MD) ! Auxiliary (energy budget)
@@ -192,7 +177,7 @@
          if (.not.edge_t%is_Edge) stop 'Error: edge data not found (2) in extractEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EX(edge_i%GF(MD%D%sd(i)%g_R1_id),edge_t%GF(MD%D%sd(i)%g_R2_id),EE_shape(edge_i,MD,i),'extractEdge_SF')
+         call EX(edge_i%BF(MD%D%sd(i)%g_R1_id)%GF,edge_t%BF(MD%D%sd(i)%g_R2_id)%GF,EE_shape(edge_i,MD,i),'extractEdge_SF')
          enddo
        end subroutine
        subroutine extractEdge_VF(edge_i,edge_t,MD) ! Auxiliary (energy budget)
@@ -200,16 +185,9 @@
          type(VF),intent(inout) :: edge_i
          type(VF),intent(in) :: edge_t
          type(mesh_domain),intent(in) :: MD
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.edge_i%is_Edge) stop 'Error: edge data not found (1) in extractEdge_VF in ops_embedExtract.f90'
-         if (.not.edge_t%is_Edge) stop 'Error: edge data not found (2) in extractEdge_VF in ops_embedExtract.f90'
-#endif
-         do i=1,MD%D%s
-         call EX(edge_i%x%GF(MD%D%sd(i)%g_R1_id),edge_t%x%GF(MD%D%sd(i)%g_R2_id),EE_shape(edge_i%x,MD,i),'extractEdge_VF')
-         call EX(edge_i%y%GF(MD%D%sd(i)%g_R1_id),edge_t%y%GF(MD%D%sd(i)%g_R2_id),EE_shape(edge_i%y,MD,i),'extractEdge_VF')
-         call EX(edge_i%z%GF(MD%D%sd(i)%g_R1_id),edge_t%z%GF(MD%D%sd(i)%g_R2_id),EE_shape(edge_i%z,MD,i),'extractEdge_VF')
-         enddo
+         call extractEdge_SF(edge_i%x,edge_t%x,MD)
+         call extractEdge_SF(edge_i%y,edge_t%y,MD)
+         call extractEdge_SF(edge_i%z,edge_t%z,MD)
        end subroutine
 
        ! *********************************************************************************
@@ -250,7 +228,7 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EM(CC_t%GF(MD%D%sd(i)%g_R2_id),CC_i%GF(MD%D%sd(i)%g_R1_id),EE_shape(CC_t,MD,i),'embedCC_SF')
+         call EM(CC_t%BF(MD%D%sd(i)%g_R2_id)%GF,CC_i%BF(MD%D%sd(i)%g_R1_id)%GF,EE_shape(CC_t,MD,i),'embedCC_SF')
          enddo
        end subroutine
        subroutine embedCC_VF(CC_t,CC_i,MD)
@@ -258,16 +236,9 @@
          type(VF),intent(inout) :: CC_t
          type(VF),intent(in) :: CC_i
          type(mesh_domain),intent(in) :: MD
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.CC_i%is_CC) stop 'Error: CC data not found (1) in embedCC_VF in ops_embedExtract.f90'
-         if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_VF in ops_embedExtract.f90'
-#endif
-         do i=1,MD%D%s
-         call EM(CC_t%x%GF(MD%D%sd(i)%g_R2_id),CC_i%x%GF(MD%D%sd(i)%g_R1_id),EE_shape(CC_t%x,MD,i),'embedCC_VF')
-         call EM(CC_t%y%GF(MD%D%sd(i)%g_R2_id),CC_i%y%GF(MD%D%sd(i)%g_R1_id),EE_shape(CC_t%y,MD,i),'embedCC_VF')
-         call EM(CC_t%z%GF(MD%D%sd(i)%g_R2_id),CC_i%z%GF(MD%D%sd(i)%g_R1_id),EE_shape(CC_t%z,MD,i),'embedCC_VF')
-         enddo
+         call embedCC_SF(CC_t%x,CC_i%x,MD)
+         call embedCC_SF(CC_t%y,CC_i%y,MD)
+         call embedCC_SF(CC_t%z,CC_i%z,MD)
        end subroutine
 
        subroutine embedFace_SF(Face_t,Face_i,MD)
@@ -281,7 +252,7 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EM(Face_t%GF(MD%D%sd(i)%g_R2_id),Face_i%GF(MD%D%sd(i)%g_R1_id),EE_shape(Face_t,MD,i),'embedFace_SF')
+         call EM(Face_t%BF(MD%D%sd(i)%g_R2_id)%GF,Face_i%BF(MD%D%sd(i)%g_R1_id)%GF,EE_shape(Face_t,MD,i),'embedFace_SF')
          enddo
        end subroutine
        subroutine embedFace_VF(Face_t,Face_i,MD)
@@ -289,16 +260,9 @@
          type(VF),intent(inout) :: Face_t
          type(VF),intent(in) :: Face_i
          type(mesh_domain),intent(in) :: MD
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.Face_i%is_Face) stop 'Error: Face data not found (1) in embedFace_VF in ops_embedExtract.f90'
-         if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_VF in ops_embedExtract.f90'
-#endif
-         do i=1,MD%D%s
-         call EM(Face_t%x%GF(MD%D%sd(i)%g_R2_id),Face_i%x%GF(MD%D%sd(i)%g_R1_id),EE_shape(Face_t%x,MD,i),'embedFace_VF')
-         call EM(Face_t%y%GF(MD%D%sd(i)%g_R2_id),Face_i%y%GF(MD%D%sd(i)%g_R1_id),EE_shape(Face_t%y,MD,i),'embedFace_VF')
-         call EM(Face_t%z%GF(MD%D%sd(i)%g_R2_id),Face_i%z%GF(MD%D%sd(i)%g_R1_id),EE_shape(Face_t%z,MD,i),'embedFace_VF')
-         enddo
+         call embedFace_SF(face_t%x,face_i%x,MD)
+         call embedFace_SF(face_t%y,face_i%y,MD)
+         call embedFace_SF(face_t%z,face_i%z,MD)
        end subroutine
 
        subroutine embedEdge_SF(Edge_t,Edge_i,MD) ! Embeds velocity from momentum into induction
@@ -312,7 +276,7 @@
          if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EM(Edge_t%GF(MD%D%sd(i)%g_R2_id),Edge_i%GF(MD%D%sd(i)%g_R1_id),EE_shape(Edge_t,MD,i),'embedFace_VF')
+         call EM(Edge_t%BF(MD%D%sd(i)%g_R2_id)%GF,Edge_i%BF(MD%D%sd(i)%g_R1_id)%GF,EE_shape(Edge_t,MD,i),'embedFace_VF')
          enddo
        end subroutine
        subroutine embedEdge_VF(Edge_t,Edge_i,MD) ! Embeds velocity from momentum into induction
@@ -320,16 +284,9 @@
          type(VF),intent(inout) :: Edge_t
          type(VF),intent(in) :: Edge_i
          type(mesh_domain),intent(in) :: MD
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.edge_t%is_Edge) stop 'Error: edge data not found (1) in embedEdge_VF in ops_embedExtract.f90'
-         if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_VF in ops_embedExtract.f90'
-#endif
-         do i=1,MD%D%s
-         call EM(Edge_t%x%GF(MD%D%sd(i)%g_R2_id),Edge_i%x%GF(MD%D%sd(i)%g_R1_id),EE_shape(Edge_t%x,MD,i),'embedEdge_VF')
-         call EM(Edge_t%y%GF(MD%D%sd(i)%g_R2_id),Edge_i%y%GF(MD%D%sd(i)%g_R1_id),EE_shape(Edge_t%y,MD,i),'embedEdge_VF')
-         call EM(Edge_t%z%GF(MD%D%sd(i)%g_R2_id),Edge_i%z%GF(MD%D%sd(i)%g_R1_id),EE_shape(Edge_t%z,MD,i),'embedEdge_VF')
-         enddo
+         call embedEdge_SF(Edge_t%x,Edge_i%x,MD)
+         call embedEdge_SF(Edge_t%y,Edge_i%y,MD)
+         call embedEdge_SF(Edge_t%z,Edge_i%z,MD)
        end subroutine
 
        ! *********************************************************************************

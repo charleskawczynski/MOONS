@@ -5,6 +5,7 @@
         use mesh_domain_mod
         use BCs_mod
         use GF_mod
+        use block_field_mod
         implicit none
         private
 
@@ -46,7 +47,7 @@
 
         type SF
           integer :: s ! Number of subdomains in domain decomposition
-          type(grid_field),dimension(:),allocatable :: GF
+          type(block_field),dimension(:),allocatable :: BF
           logical,dimension(3) :: CC_along
           logical,dimension(3) :: N_along
           logical :: is_CC,is_Node,is_face,is_edge
@@ -163,8 +164,8 @@
           type(SF),intent(in) :: f2
           integer :: i
           call delete(f1)
-          allocate(f1%GF(f2%s)); f1%s = f2%s
-          do i=1,f1%s; call init(f1%GF(i),f2%GF(i)); enddo
+          allocate(f1%BF(f2%s)); f1%s = f2%s
+          do i=1,f1%s; call init(f1%BF(i)%GF,f2%BF(i)%GF); enddo
           f1%numEl = f2%numEl
           f1%numPhysEl = f2%numPhysEl
           f1%is_CC = f2%is_CC
@@ -198,9 +199,9 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          if (allocated(f%GF)) then
-            do i=1,f%s; call delete(f%GF(i)); enddo
-            deallocate(f%GF)
+          if (allocated(f%BF)) then
+            do i=1,f%s; call delete(f%BF(i)%GF); enddo
+            deallocate(f%BF)
           endif
           f%s = 0
           f%numEl = 0
@@ -212,7 +213,7 @@
           type(SF),intent(in) :: f
           integer,intent(in) :: un
           integer :: i
-          do i=1,f%s; call display(f%GF(i),un); enddo
+          do i=1,f%s; call display(f%BF(i)%GF,un); enddo
         end subroutine
 
         subroutine print_SF(f)
@@ -231,7 +232,7 @@
           write(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
           write(un,*) f%face,f%edge,f%numEl,f%numPhysEl
           write(un,*) f%vol
-          do i=1,f%s; call export(f%GF(i),un); enddo
+          do i=1,f%s; call export(f%BF(i)%GF,un); enddo
         end subroutine
 
         subroutine import_SF(f,un)
@@ -245,8 +246,8 @@
           read(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
           read(un,*) f%face,f%edge,f%numEl,f%numPhysEl
           read(un,*) f%vol
-          allocate(f%GF(f%s))
-          do i=1,f%s; call import(f%GF(i),un); enddo
+          allocate(f%BF(f%s))
+          do i=1,f%s; call import(f%BF(i)%GF,un); enddo
         end subroutine
 
         subroutine export_wrapper_SF(f,dir,name)
@@ -356,8 +357,8 @@
           f%numEl = 0
           f%numPhysEl = 0
           do i=1,f%s
-          f%numEl = f%numEl + f%GF(i)%s(1)*f%GF(i)%s(2)*f%GF(i)%s(3)
-          f%numPhysEl = f%numPhysEl + (f%GF(i)%s(1)-2)*(f%GF(i)%s(2)-2)*(f%GF(i)%s(3)-2)
+          f%numEl = f%numEl + f%BF(i)%GF%s(1)*f%BF(i)%GF%s(2)*f%BF(i)%GF%s(3)
+          f%numPhysEl = f%numPhysEl + (f%BF(i)%GF%s(1)-2)*(f%BF(i)%GF%s(2)-2)*(f%BF(i)%GF%s(3)-2)
           enddo
         end subroutine
 
@@ -394,8 +395,8 @@
           type(mesh),intent(in) :: m
           integer :: i
           call delete(f)
-          allocate(f%GF(m%s)); f%s = m%s
-          do i=1,f%s; call init_CC(f%GF(i),m%g(i)); enddo
+          allocate(f%BF(m%s)); f%s = m%s
+          do i=1,f%s; call init_CC(f%BF(i)%GF,m%B(i)%g); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_CC = .true.
@@ -428,8 +429,8 @@
           integer,intent(in) :: dir
           integer :: i
           call delete(f)
-          allocate(f%GF(m%s)); f%s = m%s
-          do i=1,f%s; call init_Face(f%GF(i),m%g(i),dir); enddo
+          allocate(f%BF(m%s)); f%s = m%s
+          do i=1,f%s; call init_Face(f%BF(i)%GF,m%B(i)%g,dir); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_face = .true.
@@ -465,8 +466,8 @@
           integer,intent(in) :: dir
           integer :: i
           call delete(f)
-          allocate(f%GF(m%s)); f%s = m%s
-          do i=1,f%s; call init_Edge(f%GF(i),m%g(i),dir); enddo
+          allocate(f%BF(m%s)); f%s = m%s
+          do i=1,f%s; call init_Edge(f%BF(i)%GF,m%B(i)%g,dir); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_edge = .true.
@@ -501,8 +502,8 @@
           type(mesh),intent(in) :: m
           integer :: i
           call delete(f)
-          allocate(f%GF(m%s)); f%s = m%s
-          do i=1,f%s; call init_Node(f%GF(i),m%g(i)); enddo
+          allocate(f%BF(m%s)); f%s = m%s
+          do i=1,f%s; call init_Node(f%BF(i)%GF,m%B(i)%g); enddo
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_node = .true.
@@ -533,7 +534,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call init(f%GF(i)%b,g%GF(i)%b); enddo
+          do i=1,f%s; call init(f%BF(i)%GF%b,g%BF(i)%GF%b); enddo
         end subroutine
 
         subroutine init_BC_vals_SF(f)
@@ -541,13 +542,13 @@
           type(SF),intent(inout) :: f
           integer :: i
           if (f%is_CC) then
-            do i=1,f%s; call init_BCs(f%GF(i),.true.,.false.); enddo
+            do i=1,f%s; call init_BCs(f%BF(i)%GF,.true.,.false.); enddo
           elseif (f%is_Node) then
-            do i=1,f%s; call init_BCs(f%GF(i),.false.,.true.); enddo
+            do i=1,f%s; call init_BCs(f%BF(i)%GF,.false.,.true.); enddo
           else
             stop 'Error: no datatype found in init_BC_vals_SF in SF.f90'
           endif
-          f%all_Neumann = all((/(f%GF(i)%b%all_Neumann,i=1,f%s)/))
+          f%all_Neumann = all((/(f%BF(i)%GF%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
         end subroutine
 
@@ -555,7 +556,7 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call init_Dirichlet(f%GF(i)%b); enddo
+          do i=1,f%s; call init_Dirichlet(f%BF(i)%GF%b); enddo
         end subroutine
 
         subroutine init_BC_val_SF(f,val)
@@ -563,8 +564,8 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: val
           integer :: i
-          do i=1,f%s; call init_BCs(f%GF(i),val); enddo
-          f%all_Neumann = all((/(f%GF(i)%b%all_Neumann,i=1,f%s)/))
+          do i=1,f%s; call init_BCs(f%BF(i)%GF,val); enddo
+          f%all_Neumann = all((/(f%BF(i)%GF%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
         end subroutine
 
@@ -573,7 +574,7 @@
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init(f%GF(i)%b,m%g(i),f%GF(i)%s); enddo
+          do i=1,f%s; call init(f%BF(i)%GF%b,m%B(i)%g,f%BF(i)%GF%s); enddo
         end subroutine
 
         subroutine init_BC_props_SF(f)
@@ -585,7 +586,7 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          f%all_Neumann = all((/(f%GF(i)%b%all_Neumann,i=1,f%s)/))
+          f%all_Neumann = all((/(f%BF(i)%GF%b%all_Neumann,i=1,f%s)/))
         end subroutine
 
         subroutine volume_SF(u,m)
@@ -599,44 +600,44 @@
           call assign(u,0.0_cp)
           if (u%is_CC) then
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                 (m%g(t)%c(2)%dhn(j))*&
-                                 (m%g(t)%c(3)%dhn(k))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
+                                 (m%B(t)%g%c(2)%dhn(j))*&
+                                 (m%B(t)%g%c(3)%dhn(k))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           elseif (u%is_Node) then
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                 (m%g(t)%c(2)%dhc(j-1))*&
-                                 (m%g(t)%c(3)%dhc(k-1))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
+                                 (m%B(t)%g%c(2)%dhc(j-1))*&
+                                 (m%B(t)%g%c(3)%dhc(k-1))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           elseif (u%is_Face) then
           select case (u%face)
           case (1);
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                 (m%g(t)%c(2)%dhn(j))*&
-                                 (m%g(t)%c(3)%dhn(k))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
+                                 (m%B(t)%g%c(2)%dhn(j))*&
+                                 (m%B(t)%g%c(3)%dhn(k))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           case (2);
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                 (m%g(t)%c(2)%dhc(j-1))*&
-                                 (m%g(t)%c(3)%dhn(k))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
+                                 (m%B(t)%g%c(2)%dhc(j-1))*&
+                                 (m%B(t)%g%c(3)%dhn(k))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           case (3);
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                 (m%g(t)%c(2)%dhn(j))*&
-                                 (m%g(t)%c(3)%dhc(k-1))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
+                                 (m%B(t)%g%c(2)%dhn(j))*&
+                                 (m%B(t)%g%c(3)%dhc(k-1))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
@@ -645,26 +646,26 @@
           select case (u%edge)
           case (1);
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhn(i))*&
-                                 (m%g(t)%c(2)%dhc(j-1))*&
-                                 (m%g(t)%c(3)%dhc(k-1))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
+                                 (m%B(t)%g%c(2)%dhc(j-1))*&
+                                 (m%B(t)%g%c(3)%dhc(k-1))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           case (2);
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                 (m%g(t)%c(2)%dhn(j))*&
-                                 (m%g(t)%c(3)%dhc(k-1))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
+                                 (m%B(t)%g%c(2)%dhn(j))*&
+                                 (m%B(t)%g%c(3)%dhc(k-1))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           case (3);
           !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%GF(t)%s(3)-1; do j=2,u%GF(t)%s(2)-1; do i=2,u%GF(t)%s(1)-1
-              u%GF(t)%f(i,j,k) = (m%g(t)%c(1)%dhc(i-1))*&
-                                 (m%g(t)%c(2)%dhc(j-1))*&
-                                 (m%g(t)%c(3)%dhn(k))
+          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
+                                 (m%B(t)%g%c(2)%dhc(j-1))*&
+                                 (m%B(t)%g%c(3)%dhn(k))
           enddo; enddo; enddo; enddo
           !$OMP END PARALLEL DO
           case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
@@ -695,20 +696,20 @@
          select case (dir)
          case (1)
            !$OMP PARALLEL DO
-           do t=1,m%s; do i=1,x%GF(t)%s(1)
-             x_mean%GF(t)%f(i,:,:) = plane_mean(x,i,m,t,dir)
+           do t=1,m%s; do i=1,x%BF(t)%GF%s(1)
+             x_mean%BF(t)%GF%f(i,:,:) = plane_mean(x,i,m,t,dir)
            enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO
-           do t=1,m%s; do j=1,x%GF(t)%s(2)
-             x_mean%GF(t)%f(:,j,:) = plane_mean(x,j,m,t,dir)
+           do t=1,m%s; do j=1,x%BF(t)%GF%s(2)
+             x_mean%BF(t)%GF%f(:,j,:) = plane_mean(x,j,m,t,dir)
            enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO
-           do t=1,m%s; do k=1,x%GF(t)%s(3)
-             x_mean%GF(t)%f(:,:,k) = plane_mean(x,k,m,t,dir)
+           do t=1,m%s; do k=1,x%BF(t)%GF%s(3)
+             x_mean%BF(t)%GF%f(:,:,k) = plane_mean(x,k,m,t,dir)
            enddo; enddo
            !$OMP END PARALLEL DO
          case default; stop 'Error: dir must = 1,2,3 in mean_along_dir in SF.f90'
@@ -736,25 +737,25 @@
          select case (dir)
          case (1)
            !$OMP PARALLEL DO REDUCTION(+:temp)
-           do k=2,m%g(t)%c(3)%sc-1; do j=2,m%g(t)%c(2)%sc-1
-             temp = temp + x_CC%GF(t)%f(p,j,k)*m%vol(t)%f(p,j,k)/m%g(t)%c(1)%dhn(p)
+           do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1
+             temp = temp + x_CC%BF(t)%GF%f(p,j,k)*m%vol(t)%f(p,j,k)/m%B(t)%g%c(1)%dhn(p)
            enddo; enddo
            !$OMP END PARALLEL DO
          case (2)
            !$OMP PARALLEL DO REDUCTION(+:temp)
-           do k=2,m%g(t)%c(3)%sc-1; do i=2,m%g(t)%c(1)%sc-1
-             temp = temp + x_CC%GF(t)%f(i,p,k)*m%vol(t)%f(i,p,k)/m%g(t)%c(2)%dhn(p)
+           do k=2,m%B(t)%g%c(3)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
+             temp = temp + x_CC%BF(t)%GF%f(i,p,k)*m%vol(t)%f(i,p,k)/m%B(t)%g%c(2)%dhn(p)
            enddo; enddo
            !$OMP END PARALLEL DO
          case (3)
            !$OMP PARALLEL DO REDUCTION(+:temp)
-           do j=2,m%g(t)%c(2)%sc-1; do i=2,m%g(t)%c(1)%sc-1
-             temp = temp + x_CC%GF(t)%f(i,j,p)*m%vol(t)%f(i,j,p)/m%g(t)%c(3)%dhn(p)
+           do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
+             temp = temp + x_CC%BF(t)%GF%f(i,j,p)*m%vol(t)%f(i,j,p)/m%B(t)%g%c(3)%dhn(p)
            enddo; enddo
            !$OMP END PARALLEL DO
          case default; stop 'Error: dir must = 1,2,3 in plane_mean in SF.f90'
          end select
-         x_mean = temp/m%g(t)%c(dir)%maxRange
+         x_mean = temp/m%B(t)%g%c(dir)%maxRange
        end function
 
         subroutine print_BCs_SF(f,name)
@@ -782,7 +783,7 @@
           integer :: i
           write(un,*) ' ------ BCs for ' // name // ' ------ '
           do i=1,f%s
-            call display(f%GF(i)%b,un)
+            call display(f%BF(i)%GF%b,un)
           enddo
           write(un,*) ' ------------------------------------ '
         end subroutine
@@ -798,7 +799,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call assign(f%GF(i),g%GF(i)); enddo
+          do i=1,f%s; call assign(f%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
         subroutine assign_SF_S(f,g)
@@ -806,7 +807,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call assign(f%GF(i),g); enddo
+          do i=1,f%s; call assign(f%BF(i)%GF,g); enddo
         end subroutine
         
         subroutine assign_negative_SF_SF(f,g)
@@ -814,7 +815,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call assign_negative(f%GF(i),g%GF(i)); enddo
+          do i=1,f%s; call assign_negative(f%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
       ! ------------------- ADD ------------------------
@@ -824,7 +825,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call add(f%GF(i),g%GF(i)); enddo
+          do i=1,f%s; call add(f%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
         subroutine add_SF_SF_SF(f,g,r)
@@ -832,7 +833,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g,r
           integer :: i
-          do i=1,f%s; call add(f%GF(i),g%GF(i),r%GF(i)); enddo
+          do i=1,f%s; call add(f%BF(i)%GF,g%BF(i)%GF,r%BF(i)%GF); enddo
         end subroutine
 
         subroutine add_SF_SF_SF_SF(f,g,r,q)
@@ -840,7 +841,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g,r,q
           integer :: i
-          do i=1,f%s; call add(f%GF(i),g%GF(i),r%GF(i),q%GF(i)); enddo
+          do i=1,f%s; call add(f%BF(i)%GF,g%BF(i)%GF,r%BF(i)%GF,q%BF(i)%GF); enddo
         end subroutine
 
         subroutine add_SF_S(f,g)
@@ -848,7 +849,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call add(f%GF(i),g); enddo
+          do i=1,f%s; call add(f%BF(i)%GF,g); enddo
         end subroutine
 
         subroutine add_S_SF(g2,f)
@@ -856,7 +857,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call add(g2,f%GF(i)); enddo
+          do i=1,f%s; call add(g2,f%BF(i)%GF); enddo
         end subroutine
 
         subroutine add_SF_SF9(A,B1,B2,B3,B4,B5,B6,B7,B8,B9)
@@ -864,9 +865,9 @@
           type(SF),intent(inout) :: A
           type(SF),intent(in) :: B1,B2,B3,B4,B5,B6,B7,B8,B9
           integer :: i
-          do i=1,A%s; call add(A%GF(i),B1%GF(i),B2%GF(i),B3%GF(i),&
-                                       B4%GF(i),B5%GF(i),B6%GF(i),&
-                                       B7%GF(i),B8%GF(i),B9%GF(i)); enddo
+          do i=1,A%s; call add(A%BF(i)%GF,B1%BF(i)%GF,B2%BF(i)%GF,B3%BF(i)%GF,&
+                                       B4%BF(i)%GF,B5%BF(i)%GF,B6%BF(i)%GF,&
+                                       B7%BF(i)%GF,B8%BF(i)%GF,B9%BF(i)%GF); enddo
         end subroutine
 
        ! ------------------- ADD PRODUCT ------------------------
@@ -877,7 +878,7 @@
           type(SF),intent(in) :: g
           real(cp),intent(in) :: r
           integer :: i
-          do i=1,f%s; call add_product(f%GF(i),g%GF(i),r); enddo
+          do i=1,f%s; call add_product(f%BF(i)%GF,g%BF(i)%GF,r); enddo
         end subroutine
 
         subroutine add_product_SF_SF_SF(f,g,r)
@@ -886,7 +887,7 @@
           type(SF),intent(in) :: g
           type(SF),intent(in) :: r
           integer :: i
-          do i=1,f%s; call add_product(f%GF(i),g%GF(i),r%GF(i)); enddo
+          do i=1,f%s; call add_product(f%BF(i)%GF,g%BF(i)%GF,r%BF(i)%GF); enddo
         end subroutine
 
       ! ------------------- SUBTRACT ------------------------
@@ -896,7 +897,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call subtract(f%GF(i),g%GF(i)); enddo
+          do i=1,f%s; call subtract(f%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
         subroutine subtract_SF_SF_SF(f,g,q)
@@ -904,7 +905,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g,q
           integer :: i
-          do i=1,f%s; call subtract(f%GF(i),g%GF(i),q%GF(i)); enddo
+          do i=1,f%s; call subtract(f%BF(i)%GF,g%BF(i)%GF,q%BF(i)%GF); enddo
         end subroutine
 
         subroutine subtract_SF_S(f,g)
@@ -912,7 +913,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call subtract(f%GF(i),g); enddo
+          do i=1,f%s; call subtract(f%BF(i)%GF,g); enddo
         end subroutine
 
         subroutine subtract_S_SF(g2,f)
@@ -920,7 +921,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call subtract(g2,f%GF(i)); enddo
+          do i=1,f%s; call subtract(g2,f%BF(i)%GF); enddo
         end subroutine
 
       ! ------------------- MULTIPLY ------------------------
@@ -930,7 +931,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call multiply(f%GF(i),g%GF(i)); enddo
+          do i=1,f%s; call multiply(f%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
         subroutine multiply_SF_SF_SF(f,g,q)
@@ -938,7 +939,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g,q
           integer :: i
-          do i=1,f%s; call multiply(f%GF(i),g%GF(i),q%GF(i)); enddo
+          do i=1,f%s; call multiply(f%BF(i)%GF,g%BF(i)%GF,q%BF(i)%GF); enddo
         end subroutine
 
         subroutine multiply_SF_SF_S(f,g,q)
@@ -947,7 +948,7 @@
           type(SF),intent(in) :: g
           real(cp),intent(in) :: q
           integer :: i
-          do i=1,f%s; call multiply(f%GF(i),g%GF(i),q); enddo
+          do i=1,f%s; call multiply(f%BF(i)%GF,g%BF(i)%GF,q); enddo
         end subroutine
 
         subroutine multiply_SF_S(f,g)
@@ -955,7 +956,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call multiply(f%GF(i),g); enddo
+          do i=1,f%s; call multiply(f%BF(i)%GF,g); enddo
         end subroutine
 
         subroutine multiply_S_SF(g2,f)
@@ -963,7 +964,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call multiply(f%GF(i),g2); enddo
+          do i=1,f%s; call multiply(f%BF(i)%GF,g2); enddo
         end subroutine
 
       ! ------------------- DIVIDE ------------------------
@@ -973,7 +974,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call divide(f%GF(i),g%GF(i)); enddo
+          do i=1,f%s; call divide(f%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
         subroutine divide_SF_SF_SF(f,g,q)
@@ -981,7 +982,7 @@
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g,q
           integer :: i
-          do i=1,f%s; call divide(f%GF(i),g%GF(i),q%GF(i)); enddo
+          do i=1,f%s; call divide(f%BF(i)%GF,g%BF(i)%GF,q%BF(i)%GF); enddo
         end subroutine
 
         subroutine divide_SF_S_SF(f,g,q)
@@ -990,7 +991,7 @@
           type(SF),intent(in) :: q
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call divide(f%GF(i),g,q%GF(i)); enddo
+          do i=1,f%s; call divide(f%BF(i)%GF,g,q%BF(i)%GF); enddo
         end subroutine
 
         subroutine divide_SF_S(f,g)
@@ -998,7 +999,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g
           integer :: i
-          do i=1,f%s; call divide(f%GF(i),g); enddo
+          do i=1,f%s; call divide(f%BF(i)%GF,g); enddo
         end subroutine
 
         subroutine divide_S_SF(g2,f)
@@ -1006,7 +1007,7 @@
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: g2
           integer :: i
-          do i=1,f%s; call divide(g2,f%GF(i)); enddo
+          do i=1,f%s; call divide(g2,f%BF(i)%GF); enddo
         end subroutine
 
       ! ------------------- OTHER ------------------------
@@ -1015,21 +1016,21 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call divide(1.0_cp,f%GF(i)); enddo
+          do i=1,f%s; call divide(1.0_cp,f%BF(i)%GF); enddo
         end subroutine
 
         subroutine square_SF(f)
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          do i=1,f%s; call square(f%GF(i)); enddo
+          do i=1,f%s; call square(f%BF(i)%GF); enddo
         end subroutine
 
         subroutine swap_SF(f,g,q)
           implicit none
           type(SF),intent(inout) :: f,g,q
           integer :: i
-          do i=1,f%s; call swap(f%GF(i),g%GF(i),q%GF(i)); enddo
+          do i=1,f%s; call swap(f%BF(i)%GF,g%BF(i)%GF,q%BF(i)%GF); enddo
         end subroutine
 
         function min_SF(f) result(m)
@@ -1039,7 +1040,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = minval((/m,min(f%GF(i))/))
+            m = minval((/m,min(f%BF(i)%GF)/))
           enddo
         end function
 
@@ -1050,7 +1051,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = maxval((/m,max(f%GF(i))/))
+            m = maxval((/m,max(f%BF(i)%GF)/))
           enddo
         end function
 
@@ -1062,7 +1063,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = minval((/m,min(f%GF(i),pad)/))
+            m = minval((/m,min(f%BF(i)%GF,pad)/))
           enddo
         end function
 
@@ -1074,7 +1075,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = maxval((/m,max(f%GF(i),pad)/))
+            m = maxval((/m,max(f%BF(i)%GF,pad)/))
           enddo
         end function
 
@@ -1085,7 +1086,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = minval(abs((/m,minabs(f%GF(i))/)))
+            m = minval(abs((/m,minabs(f%BF(i)%GF)/)))
           enddo
         end function
 
@@ -1096,7 +1097,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = maxval(abs((/m,maxabs(f%GF(i))/)))
+            m = maxval(abs((/m,maxabs(f%BF(i)%GF)/)))
           enddo
         end function
 
@@ -1107,7 +1108,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,a%s
-            m = maxval((/m,maxabsdiff(a%GF(i),b%GF(i))/))
+            m = maxval((/m,maxabsdiff(a%BF(i)%GF,b%BF(i)%GF)/))
           enddo
         end function
 
@@ -1119,7 +1120,7 @@
           m = sum(a)
           s = 0
           do i=1,a%s
-            s = s + size(a%GF(i))
+            s = s + size(a%BF(i)%GF)
           enddo
           m = m/real(s,cp)
         end function
@@ -1131,7 +1132,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,a%s
-            m = m + sum(a%GF(i))
+            m = m + sum(a%BF(i)%GF)
           enddo
         end function
 
@@ -1143,7 +1144,7 @@
           integer :: i
           m = 0.0_cp
           do i=1,a%s
-            m = m + sum(a%GF(i),pad)
+            m = m + sum(a%BF(i)%GF,pad)
           enddo
         end function
 
@@ -1160,21 +1161,21 @@
           implicit none
           type(SF),intent(inout) :: f
           integer :: t
-          do t=1,f%s; call zero_ghost_xmin_xmax(f%GF(t)); enddo
+          do t=1,f%s; call zero_ghost_xmin_xmax(f%BF(t)%GF); enddo
         end subroutine
 
         subroutine zero_ghost_ymin_ymax_SF(f)
           implicit none
           type(SF),intent(inout) :: f
           integer :: t
-          do t=1,f%s; call zero_ghost_ymin_ymax(f%GF(t)); enddo
+          do t=1,f%s; call zero_ghost_ymin_ymax(f%BF(t)%GF); enddo
         end subroutine
 
         subroutine zero_ghost_zmin_zmax_SF(f)
           implicit none
           type(SF),intent(inout) :: f
           integer :: t
-          do t=1,f%s; call zero_ghost_zmin_zmax(f%GF(t)); enddo
+          do t=1,f%s; call zero_ghost_zmin_zmax(f%BF(t)%GF); enddo
         end subroutine
 
       end module
