@@ -88,15 +88,15 @@
          call delete(B%g)
          
          if (allocated(B%fg)) then; do i=1,6;  call delete(B%fg(i)); enddo; deallocate(B%fg); endif
-         if (allocated(B%fb)) then; do i=1,12; call delete(B%fb(i)); enddo; deallocate(B%fb); endif
-         if (allocated(B%fi)) then; do i=1,8;  call delete(B%fi(i)); enddo; deallocate(B%fi); endif
+         if (allocated(B%fb)) then; do i=1,6;  call delete(B%fb(i)); enddo; deallocate(B%fb); endif
+         if (allocated(B%fi)) then; do i=1,6;  call delete(B%fi(i)); enddo; deallocate(B%fi); endif
 
-         if (allocated(B%eg)) then; do i=1,6;  call delete(B%eg(i)); enddo; deallocate(B%eg); endif
+         if (allocated(B%eg)) then; do i=1,12; call delete(B%eg(i)); enddo; deallocate(B%eg); endif
          if (allocated(B%eb)) then; do i=1,12; call delete(B%eb(i)); enddo; deallocate(B%eb); endif
-         if (allocated(B%ei)) then; do i=1,8;  call delete(B%ei(i)); enddo; deallocate(B%ei); endif
+         if (allocated(B%ei)) then; do i=1,12; call delete(B%ei(i)); enddo; deallocate(B%ei); endif
 
-         if (allocated(B%cg)) then; do i=1,6;  call delete(B%cg(i)); enddo; deallocate(B%cg); endif
-         if (allocated(B%cb)) then; do i=1,12; call delete(B%cb(i)); enddo; deallocate(B%cb); endif
+         if (allocated(B%cg)) then; do i=1,8;  call delete(B%cg(i)); enddo; deallocate(B%cg); endif
+         if (allocated(B%cb)) then; do i=1,8;  call delete(B%cb(i)); enddo; deallocate(B%cb); endif
          if (allocated(B%ci)) then; do i=1,8;  call delete(B%ci(i)); enddo; deallocate(B%ci); endif
        end subroutine
 
