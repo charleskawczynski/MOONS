@@ -6,7 +6,10 @@
        private
        public :: overlap
        public :: init,delete,display,print,export,import ! Essentials
-       public :: is_overlap,inside,init_props
+
+       public :: inside,init_props
+       public :: is_overlap_physical,is_overlap_any
+       public :: is_overlap
 
        interface init;          module procedure init_overlap;              end interface
        interface init;          module procedure init_copy_overlap;         end interface
@@ -16,10 +19,9 @@
        interface export;        module procedure export_overlap;            end interface
        interface import;        module procedure import_overlap;            end interface
 
-       interface is_overlap;    module procedure is_overlap_real;           end interface
-       interface is_overlap;    module procedure is_overlap_coordinates;    end interface
        interface inside;        module procedure inside_OL;                 end interface
        interface init_props;    module procedure init_props_OL;             end interface
+       interface is_overlap;    module procedure is_overlap_coordinates;    end interface
 
        type overlap
          ! i1(1) and i1(2) are indexes for start and end of overlapping region 1
@@ -105,10 +107,24 @@
          type(coordinates),intent(in) :: R1,R2
          real(cp),intent(in) :: tol
          logical :: L
-         L = is_overlap_real(R1%hmin,R1%hmax,R2%hmin,R2%hmax,tol)
+         L = is_overlap_any(R1,R2,tol)
        end function
 
-       function is_overlap_real(R1_hmin,R1_hmax,R2_hmin,R2_hmax,tol) result(L_any)
+       function is_overlap_any(R1,R2,tol) result(L)
+         type(coordinates),intent(in) :: R1,R2
+         real(cp),intent(in) :: tol
+         logical :: L
+         L = is_overlap_general(R1%amin,R1%amax,R2%amin,R2%amax,tol)
+       end function
+
+       function is_overlap_physical(R1,R2,tol) result(L)
+         type(coordinates),intent(in) :: R1,R2
+         real(cp),intent(in) :: tol
+         logical :: L
+         L = is_overlap_general(R1%amin,R1%amax,R2%amin,R2%amax,tol)
+       end function
+
+       function is_overlap_general(R1_hmin,R1_hmax,R2_hmin,R2_hmax,tol) result(L_any)
          ! L = overlapp
          ! 6 possibilities:
          ! 

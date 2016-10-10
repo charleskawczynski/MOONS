@@ -1,9 +1,11 @@
       module block_field_mod
         use current_precision_mod
         use grid_mod
+        use data_location_mod
         use GF_mod
         use block_mod
         use BCs_mod
+        use boundary_conditions_mod
         implicit none
         private
 
@@ -20,7 +22,7 @@
         type block_field
           type(grid_field) :: GF ! bulk
           type(BCs) :: b
-          ! type(boundary_conditions) :: BCs%GF%Dirichlet
+          type(boundary_conditions) :: BCs_
           ! type(stitches) :: st
         end type
 
@@ -37,6 +39,7 @@
 
        interface init_BCs;           module procedure init_BC_val;                    end interface
        interface init_BCs;           module procedure init_BC_vals;                   end interface
+       interface init_BCs;           module procedure init_BC_block_DL;               end interface
 
        contains
 
@@ -125,6 +128,14 @@
          type(block_field),intent(inout) :: BF
          real(cp),intent(in) :: val
          call init(BF%b,val)
+       end subroutine
+
+       subroutine init_BC_block_DL(BF,B,DL)
+         implicit none
+         type(block_field),intent(inout) :: BF
+         type(block),intent(in) :: B
+         type(data_location),intent(in) :: DL
+         call init(BF%BCs_,B,DL)
        end subroutine
 
        subroutine init_BC_vals(BF,is_CC,is_Node)

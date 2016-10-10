@@ -40,6 +40,8 @@
        use ops_embedExtract_mod
 
        use apply_BCs_mod
+       use apply_BCs_embed_mod
+       use boundary_conditions_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -150,26 +152,25 @@
 
          call init(mom%B,mom%m%B(1)%g)
          call init(mom%MB,mom%B)
-         call export_mesh(mom%MB%m,str(DT%meshes),'block_mom',0)
 
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
-         call init_Face(mom%Ustar     ,m,0.0_cp)
-         call init_Face(mom%Unm1      ,m,0.0_cp)
-         call init_Face(mom%temp_F    ,m,0.0_cp)
+         call init(mom%Ustar     ,mom%U); call assign(mom%Ustar,0.0_cp)
+         call init(mom%Unm1      ,mom%U); call assign(mom%Unm1,0.0_cp)
+         call init(mom%temp_F    ,mom%U); call assign(mom%temp_F,0.0_cp)
          call init_Edge(mom%temp_E    ,m,0.0_cp)
          call init_CC(mom%p           ,m,0.0_cp)
-         call init_CC(mom%divU        ,m,0.0_cp)
-         call init_CC(mom%U_CC        ,m,0.0_cp)
-         call init_CC(mom%temp_CC     ,m,0.0_cp)
-         call init_CC(mom%Fo_grid     ,m,0.0_cp)
-         call init_CC(mom%Co_grid     ,m,0.0_cp)
-         call init_CC(mom%Re_grid     ,m,0.0_cp)
-         call init_CC(mom%KE_adv      ,m,0.0_cp)
-         call init_CC(mom%KE_diff     ,m,0.0_cp)
-         call init_CC(mom%KE_pres     ,m,0.0_cp)
-         call init_CC(mom%KE_transient,m,0.0_cp)
-         call init_CC(mom%KE_jCrossB  ,m,0.0_cp)
+         call init(mom%divU        ,mom%p); call assign(mom%divU,0.0_cp)
+         call init(mom%U_CC        ,mom%p); call assign(mom%U_CC,0.0_cp)
+         call init(mom%temp_CC     ,mom%p); call assign(mom%temp_CC,0.0_cp)
+         call init(mom%Fo_grid     ,mom%p); call assign(mom%Fo_grid,0.0_cp)
+         call init(mom%Co_grid     ,mom%p); call assign(mom%Co_grid,0.0_cp)
+         call init(mom%Re_grid     ,mom%p); call assign(mom%Re_grid,0.0_cp)
+         call init(mom%KE_adv      ,mom%p); call assign(mom%KE_adv,0.0_cp)
+         call init(mom%KE_diff     ,mom%p); call assign(mom%KE_diff,0.0_cp)
+         call init(mom%KE_pres     ,mom%p); call assign(mom%KE_pres,0.0_cp)
+         call init(mom%KE_transient,mom%p); call assign(mom%KE_transient,0.0_cp)
+         call init(mom%KE_jCrossB  ,mom%p); call assign(mom%KE_jCrossB,0.0_cp)
 
          call init_CC(mom%vol_CC,m)
          call volume(mom%vol_CC,m)
@@ -193,6 +194,23 @@
          call init_Ufield(mom%U,m,mom%SP%restartU,str(DT%U_f))
          call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
          write(*,*) '     Field initialized'
+
+         call export_mesh(mom%MB%m,str(DT%meshes),'block_mom',0)
+         write(*,*) '     GH 1'
+         call init(mom%p%BF(1)%BCs_,10.0_cp)
+         write(*,*) '     GH 2'
+         call assign(mom%p,0.5_cp)
+         write(*,*) '     GH 3'
+         call init_Dirichlet(mom%p%BF(1)%BCs_,mom%m%B(1),4)
+         write(*,*) '     GH 5'
+         call init_Neumann(mom%p%BF(1)%BCs_,mom%m%B(1),6)
+         write(*,*) '     GH 6'
+         call init_props(mom%p%BF(1)%BCs_)
+         ! call init_Periodic(mom%p%BF(1)%BCs_,mom%m%B(1),2)
+         call apply_BCs_faces_em(mom%p,mom%m)
+         write(*,*) '     GH 7'
+         call export_raw(mom%m,mom%p,str(DT%U_f),'p_test',0)
+         stop 'Done in momentum.f90'
 
          call apply_BCs(mom%U,m)
          ! call apply_stitches(mom%U,m)

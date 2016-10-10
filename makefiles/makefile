@@ -176,9 +176,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -210,6 +210,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)ops\
 	$(SRC_DIR)$(PS)probes\
 	$(SRC_DIR)$(PS)solvers\
+	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)solvers$(PS)BEM\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT\
@@ -235,6 +236,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
 	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
+	$(SRC_DIR)$(PS)fields$(PS)data_location.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
 	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
@@ -274,17 +276,22 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_divide.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
+	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
+	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)face_domain.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)boundary_conditions.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
-	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
-	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
-	$(SRC_DIR)$(PS)domain$(PS)block_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
@@ -318,7 +325,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_implicit.f90\
@@ -327,6 +333,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_embed.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_internal_BC.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90\

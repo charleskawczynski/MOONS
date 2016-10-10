@@ -57,6 +57,9 @@
        public :: adj_faces_given_dir
        public :: adj_dir_given_dir
        public :: dir_given_face
+       public :: adj_dir_given_face
+       public :: opp_face_given_face
+       public :: nhat_given_face
 
        contains
 
@@ -117,6 +120,18 @@
          end select
        end function
 
+       function adj_dir_given_face(face) result (a)
+         implicit none
+         integer,intent(in) :: face
+         integer,dimension(2) :: a
+         select case (face)
+         case (1,2); a = (/2,3/)
+         case (3,4); a = (/3,1/)
+         case (5,6); a = (/1,2/)
+         case default; stop 'Error: face must = 1:6 in adj_dir_given_face in face_edge_corner_indexing.f90'
+         end select
+       end function
+
        function normal_faces_given_dir(dir) result (f)
          implicit none
          integer,intent(in) :: dir
@@ -138,6 +153,36 @@
          case (2); f = (/1,2,5,6/)
          case (3); f = (/1,2,3,4/)
          case default; stop 'Error: dir must = 1,2,3 in normal_faces_given_dir in face_edge_corner_indexing.f90'
+         end select
+       end function
+
+       function opp_face_given_face(face) result (f_opp)
+         implicit none
+         integer,intent(in) :: face
+         integer :: f_opp
+         select case (face)
+         case(1); f_opp = 2
+         case(2); f_opp = 1
+         case(3); f_opp = 4
+         case(4); f_opp = 3
+         case(5); f_opp = 6
+         case(6); f_opp = 5
+         case default; stop 'Error: bad case in opp_face_given_face in face_edge_corner_indexing.f90'
+         end select
+       end function
+
+       function nhat_given_face(face) result (nhat)
+         implicit none
+         integer,intent(in) :: face
+         real(cp) :: nhat
+         select case (face)
+         case(1); nhat = -1.0_cp
+         case(2); nhat =  1.0_cp
+         case(3); nhat = -1.0_cp
+         case(4); nhat =  1.0_cp
+         case(5); nhat = -1.0_cp
+         case(6); nhat =  1.0_cp
+         case default; stop 'Error: bad case in nhat_given_face in face_edge_corner_indexing.f90'
          end select
        end function
 

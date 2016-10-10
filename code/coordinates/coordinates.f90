@@ -731,7 +731,7 @@
         s = c%sn
         if (s.gt.2) then ! 3 or more nodes, remove all but boundary surface
         if (dir.eq.-1) then; do i=1,s-2; call pop(c);  enddo; endif
-        if (dir.eq.1) then;  do i=1,s-2; call snip(c); enddo; endif
+        if (dir.eq. 1) then; do i=1,s-2; call snip(c); enddo; endif
         elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
         else; stop 'Error: bad case in get_ghost_c in coordinates.f90'
         endif
@@ -746,7 +746,7 @@
         s = c%sn
         if (s.gt.2) then ! 3 or more nodes, remove all but boundary surface
         if (dir.eq.-1) then; do i=1,s-2; call pop(c);  enddo; call snip(c); endif
-        if (dir.eq.1) then;  do i=1,s-2; call snip(c); enddo; call pop(c);  endif
+        if (dir.eq. 1) then; do i=1,s-2; call snip(c); enddo; call pop(c);  endif
         elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
         else; stop 'Error: bad case in get_boundary_c in coordinates.f90'
         endif
@@ -761,7 +761,7 @@
         s = c%sn
         if (s.gt.3) then ! 3 or more nodes, remove all but boundary surface
         if (dir.eq.-1) then; do i=1,s-3; call pop(c);  enddo; call snip(c); endif
-        if (dir.eq.1) then;  do i=1,s-3; call snip(c); enddo; call pop(c);  endif
+        if (dir.eq. 1) then; do i=1,s-3; call snip(c); enddo; call pop(c);  endif
         elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
         else; stop 'Error: bad case in get_interior_c in coordinates.f90'
         endif

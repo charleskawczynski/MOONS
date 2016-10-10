@@ -70,10 +70,10 @@
          implicit none
          type(mesh),intent(inout) :: m
          type(grid),intent(in) :: g
-         integer :: i,k
          call delete(m)
          allocate(m%B(1))
-         call init(m%B(1)%g,g); m%s = 1
+         call init(m%B(1),g)
+         m%s = 1
          call initProps(m)
          call insist_allocated_mesh(m,'init_grid')
        end subroutine
@@ -109,12 +109,12 @@
            call delete(m)
            m%s = temp%s + 1
            allocate(m%B(m%s))
-           do i=1,temp%s; call init(m%B(i)%g,temp%B(i)%g); enddo
-           call init(m%B(m%s)%g,g)
+           do i=1,temp%s; call init(m%B(i),temp%B(i)); enddo
+           call init(m%B(m%s),g)
            call delete(temp)
          else
            allocate(m%B(1))
-           call init(m%B(1)%g,g); m%s = 1
+           call init(m%B(1),g); m%s = 1
          endif
          call initProps(m)
          call insist_allocated_mesh(m,'addGrid')
@@ -151,7 +151,7 @@
          if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in initmeshCopy in mesh.f90'
          m_out%s = m_in%s
          allocate(m_out%B(m_in%s))
-         do i=1,m_in%s; call init(m_out%B(i)%g,m_in%B(i)%g) ;enddo
+         do i=1,m_in%s; call init(m_out%B(i),m_in%B(i)); enddo
          call initProps(m_out)
        end subroutine
 
@@ -179,6 +179,7 @@
          type(mesh),intent(inout) :: m
          integer :: i,j
          call insist_allocated_mesh(m,'initProps_mesh')
+         do i=1,m%s; call init_FEC(m%B(i)); enddo
          if (m%s.gt.1) then
            do j=1,3
              m%hmin(j)  = minval( (/(m%B(i)%g%c(j)%hmin  , i=2,m%s)/) )
@@ -217,6 +218,7 @@
          implicit none
          type(mesh),intent(inout) :: m
          real(cp) :: tol
+         integer :: i
          call insist_allocated_mesh(m,'patch_grids')
          call remove_stitches(m)
          if (m%s.gt.1) then

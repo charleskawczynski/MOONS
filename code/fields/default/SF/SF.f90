@@ -1,6 +1,7 @@
       module SF_mod
         use current_precision_mod
         use IO_tools_mod
+        use data_location_mod
         use mesh_mod
         use mesh_domain_mod
         use BCs_mod
@@ -51,6 +52,7 @@
           logical,dimension(3) :: CC_along
           logical,dimension(3) :: N_along
           logical :: is_CC,is_Node,is_face,is_edge
+          type(data_location) :: DL
           logical :: all_neumann ! If necessary to subtract mean
           integer :: face = 0 ! Direction of face data
           integer :: edge = 0 ! Direction of edge data
@@ -84,11 +86,11 @@
         interface init_Edge;           module procedure init_SF_Edge_assign;    end interface
 
         interface init_BCs;            module procedure init_BC_vals_SF;        end interface
+        interface init_BCs;            module procedure init_BCs_SF_SF;         end interface
         interface init_BC_Dirichlet;   module procedure init_BC_Dirichlet_SF;   end interface
         interface init_BCs;            module procedure init_BC_val_SF;         end interface
-        interface init_BCs;            module procedure init_BCs_SF_SF;         end interface
-        interface init_BC_props;       module procedure init_BC_props_SF;       end interface
         interface init_BC_mesh;        module procedure init_BC_mesh_SF;        end interface
+        interface init_BC_props;       module procedure init_BC_props_SF;       end interface
 
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
@@ -177,6 +179,7 @@
           f1%edge = f2%edge
           f1%CC_along = f2%CC_along
           f1%N_along = f2%N_along
+          call init(f1%DL,f2%DL)
         end subroutine
 
         subroutine init_SF_copy_mesh(f1,f2,m)
@@ -203,6 +206,7 @@
             do i=1,f%s; call delete(f%BF(i)); enddo
             deallocate(f%BF)
           endif
+          call delete(f%DL)
           f%s = 0
           f%numEl = 0
           f%numPhysEl = 0
@@ -213,6 +217,7 @@
           type(SF),intent(in) :: f
           integer,intent(in) :: un
           integer :: i
+          call display(f%DL,un)
           do i=1,f%s; call display(f%BF(i),un); enddo
         end subroutine
 
@@ -233,6 +238,7 @@
           write(un,*) f%face,f%edge,f%numEl,f%numPhysEl
           write(un,*) f%vol
           do i=1,f%s; call export(f%BF(i),un); enddo
+          call export(f%DL,un)
         end subroutine
 
         subroutine import_SF(f,un)
@@ -248,6 +254,7 @@
           read(un,*) f%vol
           allocate(f%BF(f%s))
           do i=1,f%s; call import(f%BF(i),un); enddo
+          call import(f%DL,un)
         end subroutine
 
         subroutine export_wrapper_SF(f,dir,name)
@@ -400,6 +407,7 @@
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_CC = .true.
+          call init_CC(f%DL)
           call init_CC_N_along(f)
         end subroutine
 
@@ -435,6 +443,7 @@
           call computeNumEl(f)
           f%is_face = .true.
           f%face = dir
+          call init_Face(f%DL,dir)
           call init_CC_N_along(f)
         end subroutine
 
@@ -472,6 +481,7 @@
           call computeNumEl(f)
           f%is_edge = .true.
           f%edge = dir
+          call init_edge(f%DL,dir)
           call init_CC_N_along(f)
         end subroutine
 
@@ -507,6 +517,7 @@
           call deleteDataLocation(f)
           call computeNumEl(f)
           f%is_node = .true.
+          call init_Node(f%DL)
           call init_CC_N_along(f)
         end subroutine
 
@@ -529,13 +540,9 @@
           call init_Node(f,m); call assign(f,val)
         end subroutine
 
-        subroutine init_BCs_SF_SF(f,g)
-          implicit none
-          type(SF),intent(inout) :: f
-          type(SF),intent(in) :: g
-          integer :: i
-          do i=1,f%s; call init(f%BF(i)%b,g%BF(i)%b); enddo
-        end subroutine
+        ! ***********************************************************
+        ! *************************** BCS ***************************
+        ! ***********************************************************
 
         subroutine init_BC_vals_SF(f)
           implicit none
@@ -550,6 +557,14 @@
           endif
           f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
+        end subroutine
+
+        subroutine init_BCs_SF_SF(f,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: g
+          integer :: i
+          do i=1,f%s; call init(f%BF(i)%b,g%BF(i)%b); enddo
         end subroutine
 
         subroutine init_BC_Dirichlet_SF(f)
@@ -575,6 +590,7 @@
           type(mesh),intent(in) :: m
           integer :: i
           do i=1,f%s; call init(f%BF(i)%b,m%B(i)%g,f%BF(i)%GF%s); enddo
+          do i=1,f%s; call init_BCs(f%BF(i),m%B(i),f%DL); enddo
         end subroutine
 
         subroutine init_BC_props_SF(f)
@@ -588,6 +604,10 @@
           integer :: i
           f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
         end subroutine
+
+        ! ***********************************************************
+        ! ***********************************************************
+        ! ***********************************************************
 
         subroutine volume_SF(u,m)
           ! Computes

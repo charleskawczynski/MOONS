@@ -3,6 +3,7 @@
        use IO_tools_mod
        use datatype_conversion_mod
        use subdomain_mod
+       use data_location_mod
        use grid_mod
        use mesh_mod
        implicit none
@@ -10,7 +11,8 @@
        private
        public :: domain
        public :: init,delete,display,print,export,import ! Essentials
-       public :: add
+
+       public :: add,init_props
 
        interface init;        module procedure init_domain_mesh;      end interface
        interface init;        module procedure init_domain_grid;      end interface
@@ -27,9 +29,12 @@
        interface add;         module procedure add_subdomain;         end interface
        interface add;         module procedure add_domain_grid;       end interface
 
+       interface init_props;  module procedure init_props_domain;     end interface
+
        type domain
          integer :: s ! Number of subdomains
          type(subdomain),dimension(:),allocatable :: sd
+         logical :: defined = .false.
        end type
 
        contains
@@ -57,6 +62,7 @@
              if (all(temp%defined)) call add(D,temp)
            enddo; enddo
          endif
+         D%defined = size(D%sd).gt.0
        end subroutine
 
        subroutine init_domain_grid(D,g_R1,g_R2,g_id_1,g_id_2)
@@ -66,6 +72,17 @@
          integer,intent(in) :: g_id_1,g_id_2
          call delete(D)
          call add(D,g_R1,g_R2,g_id_1,g_id_2)
+         D%defined = size(D%sd).gt.0
+       end subroutine
+
+       subroutine init_props_domain(D,DL)
+         implicit none
+         type(domain),intent(inout) :: D
+         type(data_location),intent(in) :: DL
+         integer :: i
+         if (D%defined) then
+           do i=1,D%s; call init_props(D%sd(i),DL); enddo
+         endif
        end subroutine
 
        subroutine init_domain_copy(D_out,D_in)
@@ -80,6 +97,7 @@
            do i=1,D_in%s; call init(D_out%sd(i),D_in%sd(i)); enddo
          else; stop 'Error: trying to copy un-initialized subdomain in domain.f90'
          endif
+         D_out%defined = D_in%defined
        end subroutine
 
        subroutine delete_domain(D)
@@ -91,6 +109,7 @@
            deallocate(D%sd)
          endif
          D%s = 0
+         D%defined = .false.
        end subroutine
 
        subroutine print_domain(D,name)
@@ -125,6 +144,8 @@
          type(domain),intent(in) :: D
          integer,intent(in) :: un
          integer :: i
+         write(un,*) 'D%defined'
+         write(un,*) D%defined
          write(un,*) 'D%s'
          write(un,*) D%s
          do i=1,D%s; call export(D%sd(i),un); enddo
@@ -146,6 +167,8 @@
          integer,intent(in) :: un
          integer :: i
          call delete(D)
+         read(un,*)
+         read(un,*) D%defined
          read(un,*)
          read(un,*) D%s
          allocate(D%sd(D%s))
@@ -175,6 +198,7 @@
          call init(temp,g_R1,g_R2,g_id_1,g_id_2)
          if (all(temp%defined)) call add(D,temp)
          call delete(temp)
+         D%defined = size(D%sd).gt.0
        end subroutine
 
        subroutine add_subdomain(D,sd)
@@ -196,6 +220,7 @@
            call init(D%sd(D%s),sd)
            call delete(temp)
          endif
+         D%defined = size(D%sd).gt.0
        end subroutine
 
        end module

@@ -37,17 +37,17 @@
          call delete(MB%m)
          call delete(MB%B)
          call init(MB%m,B%g)
-         do i=1,6;  call add(MB%m,B%fb(i));  enddo
-         do i=1,6;  call add(MB%m,B%fg(i)); enddo
-         do i=1,6;  call add(MB%m,B%fi(i)); enddo
+         ! do i=1,6;  call add(MB%m,B%fg(i)); enddo
+         ! do i=1,6;  call add(MB%m,B%fb(i)); enddo
+         ! do i=1,6;  call add(MB%m,B%fi(i)); enddo
 
-         do i=1,12; call add(MB%m,B%eb(i));  enddo
-         do i=1,12; call add(MB%m,B%eg(i)); enddo
-         do i=1,12; call add(MB%m,B%ei(i)); enddo
+         ! do i=1,12; call add(MB%m,B%eg(i)); enddo
+         ! do i=1,12; call add(MB%m,B%eb(i)); enddo
+         ! do i=1,12; call add(MB%m,B%ei(i)); enddo
 
-         do i=1,8;  call add(MB%m,B%cb(i));  enddo
-         do i=1,8;  call add(MB%m,B%cg(i)); enddo
-         do i=1,8;  call add(MB%m,B%ci(i)); enddo
+         ! do i=1,8;  call add(MB%m,B%cg(i)); enddo
+         ! do i=1,8;  call add(MB%m,B%cb(i)); enddo
+         ! do i=1,8;  call add(MB%m,B%ci(i)); enddo
        end subroutine
 
        subroutine init_mesh_block_copy(MB_out,MB_in)

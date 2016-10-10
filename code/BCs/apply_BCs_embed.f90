@@ -1,9 +1,12 @@
-       module apply_BCs_faces_mod
+       module apply_BCs_embed_mod
        use current_precision_mod
        use check_BCs_mod
+       use face_edge_corner_indexing_mod
+       use apply_BCs_faces_bridge_mod
        use overlap_mod
        use mesh_mod
        use domain_mod
+       use data_location_mod
        use GF_mod
        use SF_mod
        use VF_mod
@@ -11,7 +14,9 @@
        implicit none
 
        private
-       public :: apply_BCs_faces
+       public :: apply_BCs_faces_em
+       interface apply_BCs_faces_em;     module procedure apply_BCs_faces_SF;    end interface
+       interface apply_BCs_faces_em;     module procedure apply_BCs_faces_VF;    end interface
 
        contains
 
@@ -19,120 +24,71 @@
        ! ***************************** LOW-LEVEL ROUTINE *********************************
        ! *********************************************************************************
 
-       subroutine apply_BCs_faces_VF(U)
+       subroutine apply_BCs_faces_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
-         call apply_BCs_faces_SF(U%x)
-         call apply_BCs_faces_SF(U%y)
-         call apply_BCs_faces_SF(U%z)
+         type(mesh),intent(in) :: m
+         call apply_BCs_faces_SF(U%x,m)
+         call apply_BCs_faces_SF(U%y,m)
+         call apply_BCs_faces_SF(U%z,m)
        end subroutine
-       subroutine apply_BCs_faces_SF(U)
+       subroutine apply_BCs_faces_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
+         type(mesh),intent(in) :: m
 #ifdef _DEBUG_APPLY_BCS_FACES_
          call check_defined(U)
 #endif
-         if (U%is_CC) then;       call apply_BCs_faces_CC(U)
-         elseif (U%is_Node) then; call apply_BCs_faces_Node(U)
-         elseif (U%is_Face) then; call apply_BCs_faces_Face(U)
-         elseif (U%is_Edge) then; call apply_BCs_faces_Edge(U)
-         else; stop 'Error: bad data input to apply_BCs_faces_SF in apply_BCs_faces.f90'
+         if (U%is_CC) then;       call apply_BCs_faces_CC(U,m)
+         elseif (U%is_Node) then; call apply_BCs_faces_Node(U,m)
+         elseif (U%is_Face) then; call apply_BCs_faces_Face(U,m)
+         elseif (U%is_Edge) then; call apply_BCs_faces_Edge(U,m)
+         else; stop 'Error: bad data input to apply_BCs_faces_SF in apply_BCs_embed.f90'
          endif
        end subroutine
 
        subroutine apply_BCs_faces_CC(U)
          implicit none
          type(SF),intent(inout) :: U
-         integer :: i
-#ifdef _DEBUG_APPLY_BCS_FACES_
-         if (.not.U%is_CC) stop 'Error: CC data not found (1) in apply_BCs_faces_CC in apply_BCs_faces.f90'
-#endif
-         ! call Dirichlet_C(bulk,surf,G,I,S,p)
-         call EM(U%GF(D%sd(i)%g_R2_id),U%GF(D%sd(i)%g_R1_id),EE_shape(U,D,i),'embedCC_SF')
-         if (U%BCs%Dirichlet%defined) then
-           do i=1,U%BCs%Dirichlet%s
-           call Dirichlet_C(U%BF(U%BCs%Dirichlet%sd(i)%g_R2_id)%b,&
-                            U%BF(U%BCs%Dirichlet%sd(i)%g_R1_id)%f,&
-                            G,I,S,1)
-           enddo
-         endif
-       end subroutine
-       subroutine embedCC_VF(CC_t,CC_i,D)
-         implicit none
-         type(VF),intent(inout) :: CC_t
-         type(VF),intent(in) :: CC_i
-         type(domain),intent(in) :: D
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.CC_i%is_CC) stop 'Error: CC data not found (1) in embedCC_VF in ops_embedExtract.f90'
-         if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_VF in ops_embedExtract.f90'
-#endif
-         do i=1,D%s
-         call EM(CC_t%x%GF(D%sd(i)%g_R2_id),CC_i%x%GF(D%sd(i)%g_R1_id),EE_shape(CC_t%x,D,i),'embedCC_VF')
-         call EM(CC_t%y%GF(D%sd(i)%g_R2_id),CC_i%y%GF(D%sd(i)%g_R1_id),EE_shape(CC_t%y,D,i),'embedCC_VF')
-         call EM(CC_t%z%GF(D%sd(i)%g_R2_id),CC_i%z%GF(D%sd(i)%g_R1_id),EE_shape(CC_t%z,D,i),'embedCC_VF')
+         integer :: t,i
+         do t=1,U%s
+         do i=1,U%BF(t)%BCs_%P_D%N
+         call U%BF(t)%BCs_%P_D%SP(i)%P(U%BF(t)%GF,&
+                                       U%BF(t)%BCs_%f(U%BF(t)%BCs_%D%g%sd(i)%g_R1_id),&
+                                       U%BF(t)%BCs_%D,i)
+         enddo
+         do i=1,U%BF(t)%BCs_%P_N%N
+         call U%BF(t)%BCs_%P_N%SP(i)%P(U%BF(t)%GF,&
+                                       U%BF(t)%BCs_%f(U%BF(t)%BCs_%N%g%sd(i)%g_R1_id),&
+                                       U%BF(t)%BCs_%N,i)
+         enddo
          enddo
        end subroutine
-
-       subroutine embedFace_SF(Face_t,Face_i,D)
+       subroutine apply_BCs_faces_Node(U,m)
          implicit none
-         type(SF),intent(inout) :: Face_t
-         type(SF),intent(in) :: Face_i
-         type(domain),intent(in) :: D
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.Face_i%is_Face) stop 'Error: Face data not found (1) in embedFace_SF in ops_embedExtract.f90'
-         if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
-#endif
-         do i=1,D%s
-         call EM(Face_t%GF(D%sd(i)%g_R2_id),Face_i%GF(D%sd(i)%g_R1_id),EE_shape(Face_t,D,i),'embedFace_SF')
+         type(SF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         integer :: t
+         do t=1,m%s
+         ! call Dirichlet_N(U%BF(t),m%B(t)); call Neumann_N(U%BF(t),m%B(t))
          enddo
        end subroutine
-       subroutine embedFace_VF(Face_t,Face_i,D)
+       subroutine apply_BCs_faces_Face(U,m)
          implicit none
-         type(VF),intent(inout) :: Face_t
-         type(VF),intent(in) :: Face_i
-         type(domain),intent(in) :: D
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.Face_i%is_Face) stop 'Error: Face data not found (1) in embedFace_VF in ops_embedExtract.f90'
-         if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_VF in ops_embedExtract.f90'
-#endif
-         do i=1,D%s
-         call EM(Face_t%x%GF(D%sd(i)%g_R2_id),Face_i%x%GF(D%sd(i)%g_R1_id),EE_shape(Face_t%x,D,i),'embedFace_VF')
-         call EM(Face_t%y%GF(D%sd(i)%g_R2_id),Face_i%y%GF(D%sd(i)%g_R1_id),EE_shape(Face_t%y,D,i),'embedFace_VF')
-         call EM(Face_t%z%GF(D%sd(i)%g_R2_id),Face_i%z%GF(D%sd(i)%g_R1_id),EE_shape(Face_t%z,D,i),'embedFace_VF')
+         type(SF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         integer :: t
+         do t=1,m%s
+         ! call Dirichlet_F(U%BF(t),m%B(t)); call Neumann_F(U%BF(t),m%B(t))
          enddo
        end subroutine
-
-       subroutine embedEdge_SF(Edge_t,Edge_i,D) ! Embeds velocity from momentum into induction
+       subroutine apply_BCs_faces_Edge(U,m)
          implicit none
-         type(SF),intent(inout) :: Edge_t
-         type(SF),intent(in) :: Edge_i
-         type(domain),intent(in) :: D
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.edge_t%is_Edge) stop 'Error: edge data not found (1) in embedEdge_SF in ops_embedExtract.f90'
-         if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
-#endif
-         do i=1,D%s
-         call EM(Edge_t%GF(D%sd(i)%g_R2_id),Edge_i%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t,D,i),'embedFace_VF')
-         enddo
-       end subroutine
-       subroutine embedEdge_VF(Edge_t,Edge_i,D) ! Embeds velocity from momentum into induction
-         implicit none
-         type(VF),intent(inout) :: Edge_t
-         type(VF),intent(in) :: Edge_i
-         type(domain),intent(in) :: D
-         integer :: i
-#ifdef _DEBUG_EMBEDEXTRACT_
-         if (.not.edge_t%is_Edge) stop 'Error: edge data not found (1) in embedEdge_VF in ops_embedExtract.f90'
-         if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_VF in ops_embedExtract.f90'
-#endif
-         do i=1,D%s
-         call EM(Edge_t%x%GF(D%sd(i)%g_R2_id),Edge_i%x%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t%x,D,i),'embedEdge_VF')
-         call EM(Edge_t%y%GF(D%sd(i)%g_R2_id),Edge_i%y%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t%y,D,i),'embedEdge_VF')
-         call EM(Edge_t%z%GF(D%sd(i)%g_R2_id),Edge_i%z%GF(D%sd(i)%g_R1_id),EE_shape(Edge_t%z,D,i),'embedEdge_VF')
+         type(SF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         integer :: t
+         do t=1,m%s
+         ! call Dirichlet_E(U%BF(t),m%B(t)); call Neumann_E(U%BF(t),m%B(t))
          enddo
        end subroutine
 
@@ -158,29 +114,29 @@
        !   integer :: g_R1_id,g_R2_id
        ! end type
 
-       function EE_shape(f,D,i) result(s)
+       function EE_shape(DL,D,i) result(s)
          implicit none
-         type(SF),intent(in) :: f
+         type(data_location),intent(in) :: DL
          type(domain),intent(in) :: D
          integer,intent(in) :: i
          type(overlap),dimension(3) :: s
-         if (f%is_Face) then
-           select case (f%face)
-           case (1); s = (/D%sd(i)%NB(1),D%sd(i)%CE(2),D%sd(i)%CE(3)/)
-           case (2); s = (/D%sd(i)%CE(1),D%sd(i)%NB(2),D%sd(i)%CE(3)/)
-           case (3); s = (/D%sd(i)%CE(1),D%sd(i)%CE(2),D%sd(i)%NB(3)/)
+         if (is_Face(DL)) then
+           select case (DL%face)
+           case (1); s = (/D%sd(i)%NB(1),D%sd(i)%CI(2),D%sd(i)%CI(3)/)
+           case (2); s = (/D%sd(i)%CI(1),D%sd(i)%NB(2),D%sd(i)%CI(3)/)
+           case (3); s = (/D%sd(i)%CI(1),D%sd(i)%CI(2),D%sd(i)%NB(3)/)
            case default; stop 'Error: f%face must = 1,2,3 in ops_embedExtract.f90'
            end select
-         elseif (f%is_Edge) then
-           select case (f%edge)
-           case (1); s = (/D%sd(i)%CE(1),D%sd(i)%NB(2),D%sd(i)%NB(3)/)
-           case (2); s = (/D%sd(i)%NB(1),D%sd(i)%CE(2),D%sd(i)%NB(3)/)
-           case (3); s = (/D%sd(i)%NB(1),D%sd(i)%NB(2),D%sd(i)%CE(3)/)
+         elseif (is_Edge(DL)) then
+           select case (DL%edge)
+           case (1); s = (/D%sd(i)%CI(1),D%sd(i)%NB(2),D%sd(i)%NB(3)/)
+           case (2); s = (/D%sd(i)%NB(1),D%sd(i)%CI(2),D%sd(i)%NB(3)/)
+           case (3); s = (/D%sd(i)%NB(1),D%sd(i)%NB(2),D%sd(i)%CI(3)/)
            case default; stop 'Error: f%edge must = 1,2,3 in ops_embedExtract.f90'
            end select
-         elseif (f%is_CC) then
-           s = (/D%sd(i)%CE(1),D%sd(i)%CE(2),D%sd(i)%CE(3)/)
-         elseif (f%is_Node) then
+         elseif (is_CC(DL)) then
+           s = (/D%sd(i)%CI(1),D%sd(i)%CI(2),D%sd(i)%CI(3)/)
+         elseif (is_Node(DL)) then
            s = (/D%sd(i)%NB(1),D%sd(i)%NB(2),D%sd(i)%NB(3)/)
          else; stop 'Error: no type found in ops_embedExtract.f90'
          endif
