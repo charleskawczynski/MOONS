@@ -325,6 +325,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_embed.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_implicit.f90\
@@ -333,7 +334,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_embed.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_internal_BC.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90\

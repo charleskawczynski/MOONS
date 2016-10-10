@@ -10,6 +10,7 @@
        use mesh_mod
        use check_BCs_mod
        use face_mod
+       use apply_BCs_embed_mod
        use apply_BCs_faces_raw_mod
        use face_edge_corner_indexing_mod
        implicit none
@@ -42,9 +43,10 @@
          ! do k = 1,6; call apply_face(U,m,k); enddo
 
          ! For periodic in x:
-         do k = 3,6; call apply_face(U,m,k); enddo
-         call apply_face(U,m,1)
-         call apply_face(U,m,2)
+         ! do k = 3,6; call apply_face(U,m,k); enddo
+         ! call apply_face(U,m,1)
+         ! call apply_face(U,m,2)
+         call apply_BCs_faces_em(U)
        end subroutine
 
        subroutine apply_face(U,m,f)

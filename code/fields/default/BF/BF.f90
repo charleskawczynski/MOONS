@@ -138,33 +138,4 @@
          call init(BF%BCs_,B,DL)
        end subroutine
 
-       subroutine init_BC_vals(BF,is_CC,is_Node)
-         implicit none
-         type(block_field),intent(inout) :: BF
-         logical,intent(in) :: is_CC,is_Node
-         logical,dimension(2) :: L
-         L = (/is_CC,is_Node/)
-         if (count(L).gt.1) then
-           stop 'Error: more than one datatype in init_BC_vals in GF.f90'
-         endif
-         if (is_Node) then
-           call init(BF%b,BF%GF%f(2,:,:),1)
-           call init(BF%b,BF%GF%f(:,2,:),3)
-           call init(BF%b,BF%GF%f(:,:,2),5)
-           call init(BF%b,BF%GF%f(BF%GF%s(1)-1,:,:),2)
-           call init(BF%b,BF%GF%f(:,BF%GF%s(2)-1,:),4)
-           call init(BF%b,BF%GF%f(:,:,BF%GF%s(3)-1),6)
-         elseif (is_CC) then
-           call init(BF%b,0.5_cp*(BF%GF%f(1,:,:)+BF%GF%f(2,:,:)),1)
-           call init(BF%b,0.5_cp*(BF%GF%f(:,1,:)+BF%GF%f(:,2,:)),3)
-           call init(BF%b,0.5_cp*(BF%GF%f(:,:,1)+BF%GF%f(:,:,2)),5)
-           call init(BF%b,0.5_cp*(BF%GF%f(BF%GF%s(1),:,:)+BF%GF%f(BF%GF%s(1)-1,:,:)),2)
-           call init(BF%b,0.5_cp*(BF%GF%f(:,BF%GF%s(2),:)+BF%GF%f(:,BF%GF%s(2)-1,:)),4)
-           call init(BF%b,0.5_cp*(BF%GF%f(:,:,BF%GF%s(3))+BF%GF%f(:,:,BF%GF%s(3)-1)),6)
-         else
-           stop 'Error: field-based BC init is only available for N / CC data.'
-         endif
-       end subroutine
-
-
       end module

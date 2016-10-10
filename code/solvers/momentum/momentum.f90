@@ -207,7 +207,7 @@
          write(*,*) '     GH 6'
          call init_props(mom%p%BF(1)%BCs_)
          ! call init_Periodic(mom%p%BF(1)%BCs_,mom%m%B(1),2)
-         call apply_BCs_faces_em(mom%p,mom%m)
+         call apply_BCs_faces_em(mom%p)
          write(*,*) '     GH 7'
          call export_raw(mom%m,mom%p,str(DT%U_f),'p_test',0)
          stop 'Done in momentum.f90'

@@ -1,6 +1,5 @@
        module single_procedure_mod
        use IO_tools_mod
-       use face_domain_mod
        use GF_mod
        use apply_BCs_faces_bridge_mod
 
