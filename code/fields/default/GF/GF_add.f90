@@ -27,13 +27,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = a%f + b%f
@@ -47,13 +43,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = b%f(i,j,k) + c%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = b%f(i,j,k) + c%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = b%f + c%f
@@ -67,13 +59,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = b%f(i,j,k) + c%f(i,j,k) + d%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = b%f(i,j,k) + c%f(i,j,k) + d%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = b%f + c%f + d%f
@@ -87,13 +75,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) + b(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) + b(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = a%f + b
@@ -107,13 +91,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) + b
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) + b
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = a%f + b
@@ -127,13 +107,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) + g2
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) + g2
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = a%f + g2
@@ -147,15 +123,11 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,A%s(3)
-            do j=1,A%s(2)
-              do i=1,A%s(1)
-                A%f(i,j,k) = B1%f(i,j,k)+B2%f(i,j,k)+B3%f(i,j,k)+&
-                             B4%f(i,j,k)+B5%f(i,j,k)+B6%f(i,j,k)+&
-                             B7%f(i,j,k)+B8%f(i,j,k)+B9%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,A%s(3); do j=1,A%s(2); do i=1,A%s(1)
+          A%f(i,j,k) = B1%f(i,j,k)+B2%f(i,j,k)+B3%f(i,j,k)+&
+                       B4%f(i,j,k)+B5%f(i,j,k)+B6%f(i,j,k)+&
+                       B7%f(i,j,k)+B8%f(i,j,k)+B9%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           A%f = B1%f+B2%f+B3%f+&
@@ -174,13 +146,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = a%f + b%f*c
@@ -194,13 +162,9 @@
           integer :: i,j,k
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) + b%f(i,j,k)*c%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1) ! No intrinsic matrix-matrix mult.

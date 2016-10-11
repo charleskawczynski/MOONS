@@ -47,7 +47,7 @@
          call add(FD%b,B%fb(face),B%g,face,1)
          call add(FD%i,B%fi(face),B%g,face,1)
          call add(FD%i_opp,B%fi(opp_face_given_face(face)),B%g,face,1)
-         FD%nhat = nhat_given_face(face)
+         FD%nhat(face) = nhat_given_face(face)
          FD%dh(face) = B%fg(face)%c(dir_given_face(face))%dhn(1)
        end subroutine
 

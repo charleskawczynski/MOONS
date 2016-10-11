@@ -48,8 +48,6 @@
        use VF_mod
        use check_BCs_mod
        use apply_BCs_faces_mod
-       use apply_BCs_edges_mod
-       use apply_BCs_corners_mod
        use mesh_mod
        implicit none
 
@@ -81,7 +79,7 @@
          ! if (m%s.gt.1) call apply_stitches_edges(U,m)
          ! if (m%s.gt.1) call apply_stitches_corners(U,m)
          call apply_BCs_faces(U,m)
-         if (m%s.gt.1) call apply_BCs_edges(U,m)
+         ! if (m%s.gt.1) call apply_BCs_edges(U,m)
          ! call apply_BCs_coners(U,m)
        end subroutine
 

@@ -47,7 +47,7 @@
        use SF_mod
        use VF_mod
        use bctype_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use grid_mod
        use mesh_mod
        implicit none

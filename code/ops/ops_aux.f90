@@ -663,25 +663,25 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%b%f(1)%b)).and.(.not.is_periodic(f%BF(i)%b%f(1)%b))
+             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(1))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(1)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             L = (.not.is_Neumann(f%BF(i)%b%f(2)%b)).and.(.not.is_periodic(f%BF(i)%b%f(2)%b))
+             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(2))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(2)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%b%f(3)%b)).and.(.not.is_periodic(f%BF(i)%b%f(3)%b))
+             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(3))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(3)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             L = (.not.is_Neumann(f%BF(i)%b%f(4)%b)).and.(.not.is_periodic(f%BF(i)%b%f(4)%b))
+             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(4))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(4)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%b%f(5)%b)).and.(.not.is_periodic(f%BF(i)%b%f(5)%b))
+             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(5))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(5)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             L = (.not.is_Neumann(f%BF(i)%b%f(6)%b)).and.(.not.is_periodic(f%BF(i)%b%f(6)%b))
+             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(6))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(6)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
            enddo
          endif
@@ -698,25 +698,25 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%b%f(1)%b)).and.(.not.is_periodic(u%BF(i)%b%f(1)%b))
+             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(1))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(1)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             L = (.not.is_Neumann(u%BF(i)%b%f(2)%b)).and.(.not.is_periodic(u%BF(i)%b%f(2)%b))
+             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(2))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(2)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%b%f(3)%b)).and.(.not.is_periodic(u%BF(i)%b%f(3)%b))
+             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(3))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(3)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             L = (.not.is_Neumann(u%BF(i)%b%f(4)%b)).and.(.not.is_periodic(u%BF(i)%b%f(4)%b))
+             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(4))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(4)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%b%f(5)%b)).and.(.not.is_periodic(u%BF(i)%b%f(5)%b))
+             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(5))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(5)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             L = (.not.is_Neumann(u%BF(i)%b%f(6)%b)).and.(.not.is_periodic(u%BF(i)%b%f(6)%b))
+             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(6))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(6)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
            enddo
          endif

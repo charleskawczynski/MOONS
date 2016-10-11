@@ -10,19 +10,11 @@
 
        public :: init_FEC
 
-       type adjacent_faces
-         integer,dimension(2) :: f
-       end type
-
        type block
          type(grid) :: g                                 ! Bulk
          type(grid),dimension(:),allocatable :: fg,fb,fi ! Faces (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: eg,eb,ei ! Edges (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: cg,cb,ci ! Corners (boundary,ghost,interior)
-         real(cp),dimension(6) :: f_dh,f_nhat
-         real(cp),dimension(12) :: e_dh,e_nhat
-         real(cp),dimension(8) :: c_dh,c_nhat
-         type(adjacent_faces),dimension(6) :: a
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -47,10 +39,8 @@
          implicit none
          type(block),intent(inout) :: B
          type(grid),intent(in) :: g
-         integer :: i
          call delete(B)
          call init(B%g,g)
-         ! call init_FEC(B)
        end subroutine
 
        subroutine init_FEC_block(B)
@@ -67,13 +57,6 @@
          i = 8;allocate(B%cg(i)); do i=1,8;  call get_corner_g(B%cg(i),B%g,i); enddo
          i = 8;allocate(B%cb(i)); do i=1,8;  call get_corner_b(B%cb(i),B%g,i); enddo
          i = 8;allocate(B%ci(i)); do i=1,8;  call get_corner_i(B%ci(i),B%g,i); enddo
-
-         B%f_dh(1) = B%g%c(1)%dhn(1); B%f_nhat(1) = -1.0_cp; B%a(1)%f = (/2,3/)
-         B%f_dh(2) = B%g%c(1)%dhn_e;  B%f_nhat(2) =  1.0_cp; B%a(2)%f = (/2,3/)
-         B%f_dh(3) = B%g%c(2)%dhn(1); B%f_nhat(3) = -1.0_cp; B%a(3)%f = (/1,3/)
-         B%f_dh(4) = B%g%c(2)%dhn_e;  B%f_nhat(4) =  1.0_cp; B%a(4)%f = (/1,3/)
-         B%f_dh(5) = B%g%c(3)%dhn(1); B%f_nhat(5) = -1.0_cp; B%a(5)%f = (/1,2/)
-         B%f_dh(6) = B%g%c(3)%dhn_e;  B%f_nhat(6) =  1.0_cp; B%a(6)%f = (/1,2/)
        end subroutine
 
        subroutine init_block_copy(B_out,B_in)
@@ -106,16 +89,11 @@
          do i=1,8;  call init(B_out%cg(i),B_in%cg(i)); enddo
          do i=1,8;  call init(B_out%cb(i),B_in%cb(i)); enddo
          do i=1,8;  call init(B_out%ci(i),B_in%ci(i)); enddo
-
-         B_out%f_dh = B_in%f_dh
-         B_out%f_nhat = B_in%f_nhat
-         do i=1,6; B_out%a(i)%f = B_in%a(i)%f; enddo
        end subroutine
 
        subroutine delete_block(B)
          implicit none
          type(block),intent(inout) :: B
-         integer :: i
          call delete(B%g)
          call delete_FEC_block(B)
        end subroutine
@@ -191,9 +169,6 @@
          do i=1,8;  call export(B%cg(i),un); enddo
          do i=1,8;  call export(B%cb(i),un); enddo
          do i=1,8;  call export(B%ci(i),un); enddo
-
-         do i=1,6; write(un,*) B%f_dh(i);   enddo
-         do i=1,6; write(un,*) B%f_nhat(i); enddo
        end subroutine
 
        subroutine import_block(B,un)
@@ -213,9 +188,6 @@
          do i=1,8;  call import(B%cg(i),un); enddo
          do i=1,8;  call import(B%cb(i),un); enddo
          do i=1,8;  call import(B%ci(i),un); enddo
-
-         do i=1,6; read(un,*) B%f_dh(i);   enddo
-         do i=1,6; read(un,*) B%f_nhat(i); enddo
        end subroutine
 
        subroutine export_block_wrapper(B,dir,name)

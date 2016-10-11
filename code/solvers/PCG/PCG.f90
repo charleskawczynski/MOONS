@@ -3,7 +3,6 @@
       use string_mod
       use IO_SF_mod
       use mesh_mod
-      use apply_BCs_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod

@@ -136,7 +136,7 @@
        subroutine remove_stitches(m)
          implicit none
          type(mesh),intent(inout) :: m
-         integer :: i,k
+         integer :: i
          do i=1,m%s
          enddo
        end subroutine
@@ -218,7 +218,6 @@
          implicit none
          type(mesh),intent(inout) :: m
          real(cp) :: tol
-         integer :: i
          call insist_allocated_mesh(m,'patch_grids')
          call remove_stitches(m)
          if (m%s.gt.1) then

@@ -33,21 +33,9 @@
          implicit none
          type(mesh_block),intent(inout) :: MB
          type(block),intent(in) :: B
-         integer :: i
          call delete(MB%m)
          call delete(MB%B)
          call init(MB%m,B%g)
-         ! do i=1,6;  call add(MB%m,B%fg(i)); enddo
-         ! do i=1,6;  call add(MB%m,B%fb(i)); enddo
-         ! do i=1,6;  call add(MB%m,B%fi(i)); enddo
-
-         ! do i=1,12; call add(MB%m,B%eg(i)); enddo
-         ! do i=1,12; call add(MB%m,B%eb(i)); enddo
-         ! do i=1,12; call add(MB%m,B%ei(i)); enddo
-
-         ! do i=1,8;  call add(MB%m,B%cg(i)); enddo
-         ! do i=1,8;  call add(MB%m,B%cb(i)); enddo
-         ! do i=1,8;  call add(MB%m,B%ci(i)); enddo
        end subroutine
 
        subroutine init_mesh_block_copy(MB_out,MB_in)
@@ -76,8 +64,8 @@
        subroutine print_mesh_block(MB)
          implicit none
          type(mesh_block),intent(in) :: MB
-         call display(MB%B,6)
-         call display(MB%m,6)
+         call print(MB%B)
+         call print(MB%m)
        end subroutine
 
        subroutine export_mesh_block(MB,un)

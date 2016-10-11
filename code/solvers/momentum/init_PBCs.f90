@@ -3,7 +3,7 @@
        use BC_funcs_mod
        use grid_mod
        use mesh_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use SF_mod
        implicit none
 
@@ -22,56 +22,61 @@
          type(mesh),intent(in) :: m
          call init_BC_mesh(p,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
-         call Neumann_BCs(p) ! Default
+         call Neumann_BCs(p,m) ! Default
          p%all_Neumann = .true. ! Needs to be adjusted manually
 
          select case (preDefinedP_BCs)
          case (0) ! Pure Neumann default
-         case (1); call flow_past_2D_square(p)
-         case (2); call duct_flow_2D(p)
-         case (3); call duct_flow_2D_2domains(p)
-         case (4); call periodic_duct_flow(p)
+         case (1); call flow_past_2D_square(p,m)
+         case (2); call duct_flow_2D(p,m)
+         case (3); call duct_flow_2D_2domains(p,m)
+         case (4); call periodic_duct_flow(p,m)
          case default; stop 'Error: preDefinedP_BCs must = 1:5 in init_PBCs in init_PBCs.f90.'
          end select
-         call make_periodic(p,periodic_dir)
+         call make_periodic(p,m,periodic_dir)
+         call init_BC_props(p)
        end subroutine
 
-       subroutine flow_past_2D_square(p)
+       subroutine flow_past_2D_square(p,m)
          implicit none
          type(SF),intent(inout) :: p
+         type(mesh),intent(in) :: m
          p%all_Neumann = .false.
-         call init_Dirichlet(p%BF(5)%b,2)
-         call init_Dirichlet(p%BF(7)%b,2)
-         call init_Dirichlet(p%BF(8)%b,2)
-         call init_Dirichlet(p%BF(5)%b%e(8+3)%b)
-         call init_Dirichlet(p%BF(8)%b%e(8+3)%b)
-         call init_Dirichlet(p%BF(8)%b%e(8+4)%b)
-         call init_Dirichlet(p%BF(7)%b%e(8+4)%b)
+         call init_Dirichlet(p%BF(5)%BCs,m%B(5),2)
+         call init_Dirichlet(p%BF(7)%BCs,m%B(7),2)
+         call init_Dirichlet(p%BF(8)%BCs,m%B(8),2)
+         ! call init_Dirichlet(p%BF(5)%BCs%e(8+3)%BCs)
+         ! call init_Dirichlet(p%BF(8)%BCs%e(8+3)%BCs)
+         ! call init_Dirichlet(p%BF(8)%BCs%e(8+4)%BCs)
+         ! call init_Dirichlet(p%BF(7)%BCs%e(8+4)%BCs)
        end subroutine
 
-       subroutine duct_flow_2D(p)
+       subroutine duct_flow_2D(p,m)
          implicit none
          type(SF),intent(inout) :: p
+         type(mesh),intent(in) :: m
          p%all_Neumann = .false.
-         call init_Dirichlet(p%BF(1)%b,2)
+         call init_Dirichlet(p%BF(1)%BCs,m%B(1),2)
        end subroutine
 
-       subroutine periodic_duct_flow(p)
+       subroutine periodic_duct_flow(p,m)
          implicit none
          type(SF),intent(inout) :: p
+         type(mesh),intent(in) :: m
          p%all_Neumann = .true.
-         call init_periodic(p%BF(1)%b,1)
-         call init_periodic(p%BF(1)%b,2)
+         call init_periodic(p%BF(1)%BCs,m%B(1),1)
+         call init_periodic(p%BF(1)%BCs,m%B(1),2)
        end subroutine
 
-       subroutine duct_flow_2D_2domains(p)
+       subroutine duct_flow_2D_2domains(p,m)
          implicit none
          type(SF),intent(inout) :: p
+         type(mesh),intent(in) :: m
          p%all_Neumann = .false.
-         call init_Dirichlet(p%BF(1)%b,2)
-         call init_Dirichlet(p%BF(2)%b,2)
-         ! call init_Dirichlet(p%BF(1)%b%e(8+4)%b)
-         ! call init_Dirichlet(p%BF(2)%b%e(8+3)%b)
+         call init_Dirichlet(p%BF(1)%BCs,m%B(1),2)
+         call init_Dirichlet(p%BF(2)%BCs,m%B(2),2)
+         ! call init_Dirichlet(p%BF(1)%BCs%e(8+4)%BCs)
+         ! call init_Dirichlet(p%BF(2)%BCs%e(8+3)%BCs)
        end subroutine
 
        end module

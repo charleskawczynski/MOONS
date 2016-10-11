@@ -13,22 +13,22 @@
        public :: apply_Periodic_C_implicit
        public :: apply_Periodic_N_implicit
 
-       public :: apply_Symmetric_C_implict
-       public :: apply_Symmetric_N_implict
+       public :: apply_Symmetric_C_implicit
+       public :: apply_Symmetric_N_implicit
 
-       public :: apply_Antisymmetric_C_implict
-       public :: apply_Antisymmetric_N_implict
+       public :: apply_Antisymmetric_C_implicit
+       public :: apply_Antisymmetric_N_implicit
 
        public :: apply_Robin_C_implicit
        public :: apply_Robin_N_implicit
 
        contains
 
-       subroutine apply_Dirichlet_C_implicit(ug,ui,bvals,x,y,p)
+       subroutine apply_Dirichlet_C_implicit(ug,ui,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
-         real(cp),dimension(x,y),intent(in) :: ui,bvals
+         real(cp),dimension(x,y),intent(in) :: ui
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
@@ -42,11 +42,11 @@
 
 #endif
        end subroutine
-       subroutine apply_Dirichlet_N_implicit(ug,ub,ui,bvals,x,y,p)
+       subroutine apply_Dirichlet_N_implicit(ug,ub,ui,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug,ub
-         real(cp),dimension(x,y),intent(in) :: ui,bvals
+         real(cp),dimension(x,y),intent(in) :: ui
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO

@@ -3,7 +3,7 @@
        use BC_funcs_mod
        use grid_mod
        use mesh_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use SF_mod
        implicit none
 
@@ -22,23 +22,25 @@
          type(mesh),intent(in) :: m
          call init_BC_mesh(phi,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
-         call Dirichlet_BCs(phi)
+         call Dirichlet_BCs(phi,m)
 
          phi%all_Neumann = .false. ! Needs to be adjusted manually
 
          select case (preDefinedphi_BCs)
          case (0)
-         case (1); call periodic_duct_flow(phi)
+         case (1); call periodic_duct_flow(phi,m)
          case default; stop 'Error: preDefinedphi_BCs must = 1:5 in init_phiBCs in init_phiBCs.f90.'
          end select
-         call make_periodic(phi,periodic_dir)
+         call make_periodic(phi,m,periodic_dir)
+         call init_BC_props(phi)
        end subroutine
 
-       subroutine periodic_duct_flow(phi)
+       subroutine periodic_duct_flow(phi,m)
          implicit none
          type(SF),intent(inout) :: phi
-         call init_periodic(phi%BF(1)%b,1)
-         call init_periodic(phi%BF(1)%b,2)
+         type(mesh),intent(in) :: m
+         call init_periodic(phi%BF(1)%BCs,m%B(1),1)
+         call init_periodic(phi%BF(1)%BCs,m%B(1),2)
        end subroutine
 
        end module

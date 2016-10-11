@@ -1,7 +1,7 @@
        module level_set_mod
        use current_precision_mod
        
-       use BCs_mod
+       use boundary_conditions_mod
        use mesh_mod
        use SF_mod
        use VF_mod

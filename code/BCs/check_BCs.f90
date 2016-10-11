@@ -16,19 +16,8 @@
          implicit none
          type(SF),intent(in) :: U
          integer :: i,k
-         ! do i=1,U%s
-         ! if (.not.defined(U%BF(i)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
-         ! enddo
          do i=1,U%s
-           do k=1,6
-             if (.not.is_defined(U%BF(i)%b%f(k)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
-           enddo
-           do k=1,12
-             if (.not.is_defined(U%BF(i)%b%e(k)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
-           enddo
-           do k=1,6
-             if (.not.is_defined(U%BF(i)%b%c(k)%b)) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
-           enddo
+         if (.not.U%BF(i)%BCs%BCL%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
          enddo
        end subroutine
 

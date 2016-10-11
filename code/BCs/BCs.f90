@@ -1,4 +1,4 @@
-       module BCs_mod
+       module boundary_conditions_mod
        ! Making BCs is a 3 step process:
        ! 
        !       1) Set grid / shape

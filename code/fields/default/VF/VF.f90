@@ -34,6 +34,7 @@
         public :: init_Edge_compliment
 
         public :: init_BCs
+        public :: init_BC_props
         public :: volume
         public :: multiply_volume
 
@@ -96,6 +97,7 @@
         interface print_BCs;         module procedure print_BCs_VF;             end interface
         interface init_BCs;          module procedure init_BCs_VF_VF;           end interface
         interface export_BCs;        module procedure export_BCs_VF;            end interface
+        interface init_BC_props;     module procedure init_BC_props_VF;         end interface
 
         ! COMPUTATION ROUTINES
 
@@ -272,6 +274,14 @@
           call init_BCs(f%x,g%x)
           call init_BCs(f%y,g%y)
           call init_BCs(f%z,g%z)
+        end subroutine
+
+        subroutine init_BC_props_VF(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          call init_BC_props(f%x)
+          call init_BC_props(f%y)
+          call init_BC_props(f%z)
         end subroutine
 
         subroutine export_BCs_VF(f,dir,name)

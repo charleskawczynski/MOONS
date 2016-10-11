@@ -4,7 +4,7 @@
         use data_location_mod
         use mesh_mod
         use mesh_domain_mod
-        use BCs_mod
+        use boundary_conditions_mod
         use GF_mod
         use block_field_mod
         implicit none
@@ -85,7 +85,6 @@
         interface init_Face;           module procedure init_SF_Face_assign;    end interface
         interface init_Edge;           module procedure init_SF_Edge_assign;    end interface
 
-        interface init_BCs;            module procedure init_BC_vals_SF;        end interface
         interface init_BCs;            module procedure init_BCs_SF_SF;         end interface
         interface init_BC_Dirichlet;   module procedure init_BC_Dirichlet_SF;   end interface
         interface init_BCs;            module procedure init_BC_val_SF;         end interface
@@ -544,34 +543,20 @@
         ! *************************** BCS ***************************
         ! ***********************************************************
 
-        subroutine init_BC_vals_SF(f)
-          implicit none
-          type(SF),intent(inout) :: f
-          integer :: i
-          if (f%is_CC) then
-            do i=1,f%s; call init_BCs(f%BF(i),.true.,.false.); enddo
-          elseif (f%is_Node) then
-            do i=1,f%s; call init_BCs(f%BF(i),.false.,.true.); enddo
-          else
-            stop 'Error: no datatype found in init_BC_vals_SF in SF.f90'
-          endif
-          f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
-          call init_BC_props(f)
-        end subroutine
-
         subroutine init_BCs_SF_SF(f,g)
           implicit none
           type(SF),intent(inout) :: f
           type(SF),intent(in) :: g
           integer :: i
-          do i=1,f%s; call init(f%BF(i)%b,g%BF(i)%b); enddo
+          do i=1,f%s; call init(f%BF(i)%BCs,g%BF(i)%BCs); enddo
         end subroutine
 
-        subroutine init_BC_Dirichlet_SF(f)
+        subroutine init_BC_Dirichlet_SF(f,m)
           implicit none
           type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init_Dirichlet(f%BF(i)%b); enddo
+          do i=1,f%s; call init_Dirichlet(f%BF(i)%BCs,m%B(i)); enddo
         end subroutine
 
         subroutine init_BC_val_SF(f,val)
@@ -580,7 +565,7 @@
           real(cp),intent(in) :: val
           integer :: i
           do i=1,f%s; call init_BCs(f%BF(i),val); enddo
-          f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
+          f%all_Neumann = all((/(f%BF(i)%BCs%BCL%all_Neumann,i=1,f%s)/))
           call init_BC_props(f)
         end subroutine
 
@@ -589,20 +574,16 @@
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init(f%BF(i)%b,m%B(i)%g,f%BF(i)%GF%s); enddo
           do i=1,f%s; call init_BCs(f%BF(i),m%B(i),f%DL); enddo
         end subroutine
 
         subroutine init_BC_props_SF(f)
-          ! THIS IS BROKEN. Technically, all_Neumann should be true for
-          ! periodic 1-cell cases, but this fix is not even enough. If 
-          ! any boundaries are Dirichlet but stitched together, then 
-          ! all_Neumann should also be true. The mesh, after stitching
-          ! is required to make a fully comprehensive init_BC_props_SF.
           implicit none
           type(SF),intent(inout) :: f
           integer :: i
-          f%all_Neumann = all((/(f%BF(i)%b%all_Neumann,i=1,f%s)/))
+          do i=1,f%s
+            call init_BC_props(f%BF(i))
+          enddo
         end subroutine
 
         ! ***********************************************************
@@ -610,101 +591,15 @@
         ! ***********************************************************
 
         subroutine volume_SF(u,m)
-          ! Computes
-          ! 
-          !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
-          implicit none
-          type(SF),intent(inout) :: u
-          type(mesh),intent(in) :: m
-          integer :: i,j,k,t
-          call assign(u,0.0_cp)
-          if (u%is_CC) then
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
-                                 (m%B(t)%g%c(2)%dhn(j))*&
-                                 (m%B(t)%g%c(3)%dhn(k))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          elseif (u%is_Node) then
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
-                                 (m%B(t)%g%c(2)%dhc(j-1))*&
-                                 (m%B(t)%g%c(3)%dhc(k-1))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          elseif (u%is_Face) then
-          select case (u%face)
-          case (1);
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
-                                 (m%B(t)%g%c(2)%dhn(j))*&
-                                 (m%B(t)%g%c(3)%dhn(k))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          case (2);
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
-                                 (m%B(t)%g%c(2)%dhc(j-1))*&
-                                 (m%B(t)%g%c(3)%dhn(k))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          case (3);
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
-                                 (m%B(t)%g%c(2)%dhn(j))*&
-                                 (m%B(t)%g%c(3)%dhc(k-1))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
-          end select
-          elseif (u%is_Edge) then
-          select case (u%edge)
-          case (1);
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
-                                 (m%B(t)%g%c(2)%dhc(j-1))*&
-                                 (m%B(t)%g%c(3)%dhc(k-1))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          case (2);
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
-                                 (m%B(t)%g%c(2)%dhn(j))*&
-                                 (m%B(t)%g%c(3)%dhc(k-1))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          case (3);
-          !$OMP PARALLEL DO SHARED(m)
-          do t=1,m%s; do k=2,u%BF(t)%GF%s(3)-1; do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-              u%BF(t)%GF%f(i,j,k) = (m%B(t)%g%c(1)%dhc(i-1))*&
-                                 (m%B(t)%g%c(2)%dhc(j-1))*&
-                                 (m%B(t)%g%c(3)%dhn(k))
-          enddo; enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-          case default; stop 'Error: SF has no face location in volume_SF in ops_aux.f90'
-          end select
-          else; stop 'Error: SF has no location in volume_SF in ops_aux.f90'
-          endif
-          u%vol = sum(u)
-        end subroutine
-
-        subroutine volume_SF_new(u,m)
           ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
           implicit none
           type(SF),intent(inout) :: u
           type(mesh),intent(in) :: m
-          integer :: t
+          integer :: i
           call assign(u,0.0_cp)
-          ! do t=1,m%s
-          !   call volume(u%BF(t),m%B(t),u%is_CC,u%is_Node,u%is_Face,u%is_Edge,u%face,u%edge)
-          ! enddo
+          do i=1,m%s
+            call volume(u%BF(i),m%B(i),u%DL)
+          enddo
           u%vol = sum(u)
         end subroutine
 
@@ -816,7 +711,7 @@
           integer :: i
           write(un,*) ' ------ BCs for ' // name // ' ------ '
           do i=1,f%s
-            call display(f%BF(i)%b,un)
+            call display(f%BF(i)%BCs,un)
           enddo
           write(un,*) ' ------------------------------------ '
         end subroutine

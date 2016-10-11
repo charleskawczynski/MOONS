@@ -5,7 +5,7 @@
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use PCG_aux_mod
       use export_raw_processed_mod
       use is_nan_mod

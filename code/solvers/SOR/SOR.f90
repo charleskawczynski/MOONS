@@ -13,7 +13,7 @@
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
-      !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
+      !     u_bcs        = boundary conditions for u. Refer to boundary_conditions_mod for more info.
       !     m            = contains mesh information (dhc,dhn)
       !     norm         = Ln norms of residual
       !     displayTF    = print residuals to screen (T,F)
@@ -23,7 +23,7 @@
       use grid_mod
       use mesh_mod
       use apply_BCs_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod

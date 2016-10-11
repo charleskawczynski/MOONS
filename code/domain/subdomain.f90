@@ -2,6 +2,7 @@
        use current_precision_mod
        use overlap_mod
        use grid_mod
+       use face_edge_corner_indexing_mod
        use data_location_mod
        use coordinates_mod
 
@@ -37,8 +38,9 @@
          type(overlap),dimension(3) :: CI
          type(overlap),dimension(3) :: NB
          type(overlap),dimension(3) :: NI
+         type(overlap),dimension(3) :: NG
 
-         type(overlap),dimension(3) :: OL_DL
+         type(overlap),dimension(3) :: OL_DL,OL_DL_phys
          integer,dimension(2) :: i_2D
          integer :: i_1D
 
@@ -67,12 +69,14 @@
            do i=1,3; call define_CI(SD,g_R1%c(i),g_R2%c(i),i,tol); enddo
            do i=1,3; call define_NB(SD,g_R1%c(i),g_R2%c(i),i,tol); enddo
            do i=1,3; call define_NI(SD,g_R1%c(i),g_R2%c(i),i,tol); enddo
+           do i=1,3; call define_NG(SD,g_R1%c(i),g_R2%c(i),i,tol); enddo
            SD%g_R1_id = g_R1_id
            SD%g_R2_id = g_R2_id
            do i=1,3; call init_props(SD%CE(i)); enddo
            do i=1,3; call init_props(SD%CI(i)); enddo
            do i=1,3; call init_props(SD%NB(i)); enddo
            do i=1,3; call init_props(SD%NI(i)); enddo
+           do i=1,3; call init_props(SD%NG(i)); enddo
          endif
        end subroutine
 
@@ -86,8 +90,10 @@
            call init(SD_out%CI(i),SD_in%CI(i))
            call init(SD_out%NB(i),SD_in%NB(i))
            call init(SD_out%NI(i),SD_in%NI(i))
+           call init(SD_out%NG(i),SD_in%NG(i))
          enddo
          SD_out%OL_DL = SD_in%OL_DL
+         SD_out%OL_DL_phys = SD_in%OL_DL_phys
          SD_out%i_2D = SD_in%i_2D
          SD_out%i_1D = SD_in%i_1D
          SD_out%g_R1_id = SD_in%g_R1_id
@@ -104,6 +110,9 @@
            call delete(SD%CI(i))
            call delete(SD%NB(i))
            call delete(SD%NI(i))
+           call delete(SD%NG(i))
+           call delete(SD%OL_DL(i))
+           call delete(SD%OL_DL_phys(i))
          enddo
          SD%g_R1_id = 0
          SD%g_R2_id = 0
@@ -125,6 +134,8 @@
          write(u,*) 'NB_i1(2) = ',(/(SD%NB(i)%i1(2),i=1,3)/)
          write(u,*) 'NI_i1(1) = ',(/(SD%NI(i)%i1(1),i=1,3)/)
          write(u,*) 'NI_i1(2) = ',(/(SD%NI(i)%i1(2),i=1,3)/)
+         write(u,*) 'NG_i1(1) = ',(/(SD%NG(i)%i1(1),i=1,3)/)
+         write(u,*) 'NG_i1(2) = ',(/(SD%NG(i)%i1(2),i=1,3)/)
 
          write(u,*) ''
          write(u,*) 'CE_i2(1) = ',(/(SD%CE(i)%i2(1),i=1,3)/)
@@ -135,10 +146,14 @@
          write(u,*) 'NB_i2(2) = ',(/(SD%NB(i)%i2(2),i=1,3)/)
          write(u,*) 'NI_i2(1) = ',(/(SD%NI(i)%i2(1),i=1,3)/)
          write(u,*) 'NI_i2(2) = ',(/(SD%NI(i)%i2(2),i=1,3)/)
+         write(u,*) 'NG_i2(1) = ',(/(SD%NG(i)%i2(1),i=1,3)/)
+         write(u,*) 'NG_i2(2) = ',(/(SD%NG(i)%i2(2),i=1,3)/)
 
          write(u,*) ''
          write(u,*) 'OL_DL(1) = ',(/(SD%OL_DL(i)%i2(1),i=1,3)/)
          write(u,*) 'OL_DL(2) = ',(/(SD%OL_DL(i)%i2(2),i=1,3)/)
+         write(u,*) 'OL_DL_phys(1) = ',(/(SD%OL_DL_phys(i)%i2(1),i=1,3)/)
+         write(u,*) 'OL_DL_phys(2) = ',(/(SD%OL_DL_phys(i)%i2(2),i=1,3)/)
          write(u,*) 'g_R1_id = ',SD%g_R1_id
          write(u,*) 'g_R2_id = ',SD%g_R2_id
          write(u,*) 'defined = ',SD%defined
@@ -162,6 +177,7 @@
          do i=1,3; call export(SD%CI(i),u); enddo
          do i=1,3; call export(SD%NB(i),u); enddo
          do i=1,3; call export(SD%NI(i),u); enddo
+         do i=1,3; call export(SD%NG(i),u); enddo
          write(u,*) 'g_R1_id = '; write(u,*) SD%g_R1_id
          write(u,*) 'g_R2_id = '; write(u,*) SD%g_R2_id
          write(u,*) 'defined = '; write(u,*) SD%defined
@@ -178,6 +194,7 @@
          do i=1,3; call import(SD%CI(i),u); enddo
          do i=1,3; call import(SD%NB(i),u); enddo
          do i=1,3; call import(SD%NI(i),u); enddo
+         do i=1,3; call import(SD%NG(i),u); enddo
          read(u,*); read(u,*) SD%g_R1_id
          read(u,*); read(u,*) SD%g_R2_id
          read(u,*); read(u,*) SD%defined
@@ -213,6 +230,22 @@
          do i=1,R1%sn   ;if (inside(R1%hn(i),R2%amin,R2%amax,tol)) SD%NI(dir)%i1(2)=i;enddo
          do i=R2%sn,1,-1;if (inside(R2%hn(i),R1%amin,R1%amax,tol)) SD%NI(dir)%i2(1)=i;enddo
          do i=1,R2%sn   ;if (inside(R2%hn(i),R1%amin,R1%amax,tol)) SD%NI(dir)%i2(2)=i;enddo
+       end subroutine
+
+       subroutine define_NG(SD,R1,R2,dir,tol)
+         implicit none
+         type(subdomain),intent(inout) :: SD
+         type(coordinates),intent(in) :: R1,R2
+         integer,intent(in) :: dir
+         real(cp),intent(in) :: tol
+         ! Overlap is end-to-end unless found elsewhere:
+         SD%NG(dir)%i1(1) = R1%sn; SD%NG(dir)%i1(2) = 1
+         SD%NG(dir)%i2(1) = R2%sn; SD%NG(dir)%i2(2) = 1
+         ! Look for overlap at other ends:
+         if (inside(R1%hc(1),R2%amin,R2%amax,tol)) SD%NG(dir)%i1(2)=R1%sn
+         if (inside(R2%hc(1),R1%amin,R1%amax,tol)) SD%NG(dir)%i2(2)=R2%sn
+         if (inside(R1%hc(R1%sc),R2%amin,R2%amax,tol)) SD%NG(dir)%i1(1)=1
+         if (inside(R2%hc(R2%sc),R1%amin,R1%amax,tol)) SD%NG(dir)%i2(1)=1
        end subroutine
 
        subroutine define_CI(SD,R1,R2,dir,tol)
@@ -273,23 +306,28 @@
          logical,dimension(3) :: L
          integer :: i,C
          if (is_Face(DL)) then
-           select case (DL%face)
-           case (1); SD%OL_DL = (/SD%NB(1),SD%CI(2),SD%CI(3)/)
-           case (2); SD%OL_DL = (/SD%CI(1),SD%NB(2),SD%CI(3)/)
-           case (3); SD%OL_DL = (/SD%CI(1),SD%CI(2),SD%NB(3)/)
-           case default; stop 'Error: f%face must = 1,2,3 in init_props_subdomain in subdomain.f90'
-           end select
+          SD%OL_DL = (/(SD%CI(i),i=1,3)/)
+          SD%OL_DL(DL%face) = SD%NG(DL%face)
          elseif (is_Edge(DL)) then
-           select case (DL%edge)
-           case (1); SD%OL_DL = (/SD%CI(1),SD%NB(2),SD%NB(3)/)
-           case (2); SD%OL_DL = (/SD%NB(1),SD%CI(2),SD%NB(3)/)
-           case (3); SD%OL_DL = (/SD%NB(1),SD%NB(2),SD%CI(3)/)
-           case default; stop 'Error: f%edge must = 1,2,3 in init_props_subdomain in subdomain.f90'
-           end select
+          SD%OL_DL = (/(SD%NG(i),i=1,3)/)
+          SD%OL_DL(DL%edge) = SD%CI(DL%edge)
          elseif (is_CC(DL)) then
-           SD%OL_DL = (/SD%CI(1),SD%CI(2),SD%CI(3)/)
+          SD%OL_DL = (/(SD%CI(i),i=1,3)/)
          elseif (is_Node(DL)) then
-           SD%OL_DL = (/SD%NB(1),SD%NB(2),SD%NB(3)/)
+          SD%OL_DL = (/(SD%NG(i),i=1,3)/)
+         else; stop 'Error: no type found in init_props_subdomain in subdomain.f90'
+         endif
+ 
+         if (is_Face(DL)) then
+          SD%OL_DL_phys = (/(SD%CE(i),i=1,3)/)
+          SD%OL_DL_phys(DL%face) = SD%NB(DL%face)
+         elseif (is_Edge(DL)) then
+          SD%OL_DL_phys = (/(SD%NB(i),i=1,3)/)
+          SD%OL_DL_phys(DL%edge) = SD%CE(DL%edge)
+         elseif (is_CC(DL)) then
+          SD%OL_DL_phys = (/(SD%CE(i),i=1,3)/)
+         elseif (is_Node(DL)) then
+          SD%OL_DL_phys = (/(SD%NB(i),i=1,3)/)
          else; stop 'Error: no type found in init_props_subdomain in subdomain.f90'
          endif
 
@@ -299,9 +337,9 @@
          C = count(L)
              if (C.eq.0) then ! 3D overlap
          elseif (C.eq.1) then ! 2D overlap
-         if (L(1)) SD%i_2D = (/2,3/)
-         if (L(2)) SD%i_2D = (/1,3/)
-         if (L(3)) SD%i_2D = (/1,2/)
+         if (L(1)) SD%i_2D = adj_dir_given_dir(1)
+         if (L(2)) SD%i_2D = adj_dir_given_dir(2)
+         if (L(3)) SD%i_2D = adj_dir_given_dir(3)
          elseif (C.eq.2) then ! 1D overlap
          if (L(1)) SD%i_1D = 1
          if (L(2)) SD%i_1D = 2

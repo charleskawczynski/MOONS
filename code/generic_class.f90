@@ -3,6 +3,7 @@
 
        implicit none
        private
+       public :: OBJ_CLASS
        public :: init,delete,display,print,export,import ! essentials
 
        type OBJ_CLASS
@@ -29,9 +30,10 @@
          type(OBJ_CLASS),intent(inout) :: OBJ
        end subroutine
 
-       subroutine init_copy_OBJ(OBJ)
+       subroutine init_copy_OBJ(OBJ,OBJ_in)
          implicit none
          type(OBJ_CLASS),intent(inout) :: OBJ
+         type(OBJ_CLASS),intent(in) :: OBJ_in
        end subroutine
 
        subroutine delete_OBJ(OBJ)

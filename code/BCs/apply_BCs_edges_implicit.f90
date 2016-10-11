@@ -80,7 +80,7 @@
        use SF_mod
        use VF_mod
        use bctype_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use block_field_mod
        use grid_mod
        use mesh_mod

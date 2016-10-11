@@ -12,7 +12,7 @@
 
        type single_procedure
          integer :: ID
-         procedure(apply_BC_op),pointer,nopass :: P
+         procedure(apply_face_BC_op),pointer,nopass :: P
          logical :: defined = .false.
        end type
 
@@ -28,13 +28,12 @@
 
        interface insist_defined; module procedure insist_defined_SP; end interface
 
-
        contains
 
        subroutine init_SP(SP,P,ID)
          implicit none
          type(single_procedure),intent(inout) :: SP
-         procedure(apply_BC_op) :: P
+         procedure(apply_face_BC_op) :: P
          integer,intent(in) :: ID
          call delete(SP)
          SP%P => P

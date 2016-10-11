@@ -4,7 +4,7 @@
        use mesh_mod
        use SF_mod
        use VF_mod
-       use BCs_mod
+       use boundary_conditions_mod
        implicit none
 
        private

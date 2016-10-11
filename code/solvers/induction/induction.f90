@@ -41,7 +41,7 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use apply_BCs_mod
        use ops_advect_mod
        use induction_solver_mod

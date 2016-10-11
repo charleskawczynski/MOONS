@@ -53,9 +53,9 @@
          call init_BC_mesh(psi%x,m);    call init_BCs(psi%x,0.0_cp)
          call init_BC_mesh(psi%y,m);    call init_BCs(psi%y,0.0_cp)
          call init_BC_mesh(psi%z,m);    call init_BCs(psi%z,0.0_cp)
-         call init_BC_Dirichlet(psi%x); call init_BC_props(psi%x)
-         call init_BC_Dirichlet(psi%y); call init_BC_props(psi%y)
-         call init_BC_Dirichlet(psi%z); call init_BC_props(psi%z)
+         call init_BC_Dirichlet(psi%x,m); call init_BC_props(psi%x)
+         call init_BC_Dirichlet(psi%y,m); call init_BC_props(psi%y)
+         call init_BC_Dirichlet(psi%z,m); call init_BC_props(psi%z)
 
          ! Make sure that Lap_uniform_VF does not 
          call prec_Lap_VF(prec_psi,m)

@@ -8,7 +8,7 @@
        public :: procedure_array
        public :: init,delete,display,print,export,import
 
-       public :: add
+       public :: add,remove,check_unique
 
        type procedure_array
          type(single_procedure),dimension(:),allocatable :: SP
@@ -29,6 +29,9 @@
        interface insist_defined; module procedure insist_defined_PA; end interface
 
        interface add;            module procedure add_PA;            end interface
+       interface remove;         module procedure remove_PA;         end interface
+       interface check_unique;   module procedure check_unique_PA;   end interface
+
 
        contains
 
@@ -48,7 +51,7 @@
          type(procedure_array),intent(inout) :: PA
          type(procedure_array),intent(in) :: PA_in
          integer :: i
-         ! call insist_defined(PA_in,'init_copy_PA')
+         call insist_defined(PA_in,'init_copy_PA')
          call delete(PA)
          call init(PA,PA_in%N)
          do i=1,PA%N
@@ -75,8 +78,10 @@
          type(procedure_array),intent(in) :: PA
          integer,intent(in) :: un
          integer :: i
+         write(un,*) ' ***************** PROCEDURE ARRAY ***************** '
          write(un,*) 'PA%N = ',PA%N
          do i=1,PA%N; call display(PA%SP(i),un); enddo
+         write(un,*) ' *************************************************** '
        end subroutine
 
        subroutine print_PA(PA)
@@ -132,7 +137,7 @@
        subroutine add_PA(PA,P,ID)
          implicit none
          type(procedure_array),intent(inout) :: PA
-         procedure(apply_BC_op) :: P
+         procedure(apply_face_BC_op) :: P
          integer,intent(in) :: ID
          type(procedure_array) :: temp
          integer :: i
@@ -148,6 +153,44 @@
            call init(PA%SP(1),P,ID)
          endif
          PA%defined = .true.
+       end subroutine
+
+       subroutine remove_PA(PA,ID)
+         implicit none
+         type(procedure_array),intent(inout) :: PA
+         integer,intent(in) :: ID
+         type(procedure_array) :: temp
+         integer :: i
+         if (PA%defined) then
+           call delete(temp)
+           do i=1,PA%N
+             if (PA%SP(i)%ID.ne.ID) call add(temp,PA%SP(i)%P,PA%SP(i)%ID)
+           enddo
+           call init(PA,temp)
+         else; call delete(PA)
+         endif
+       end subroutine
+
+       subroutine check_unique_PA(PA,caller)
+         implicit none
+         type(procedure_array),intent(in) :: PA
+         character(len=*),intent(in) :: caller
+         integer :: i,j,violating_ID
+         logical :: unique_set
+         unique_set = .true.
+         do i=1,PA%N; do j=i,PA%N
+         if (i.ne.j) then
+         if (PA%SP(i)%ID.eq.PA%SP(j)%ID) then
+           unique_set = .false.
+           violating_ID = i
+         endif
+         endif
+         enddo; enddo
+         if (.not.unique_set) then
+           write(*,*) 'Error: too many BCs in procedure_array in ',caller,'in procedure_array.f90'
+           write(*,*) 'violating_ID = ',violating_ID
+           stop 'Done'
+         endif
        end subroutine
 
        ! subroutine apply_PA(PA,BF,B)

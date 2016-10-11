@@ -10,7 +10,7 @@
         interface assign;                   module procedure assign_GF_R;            end interface
         interface assign_negative;          module procedure assign_negative_GF_GF;  end interface
 
-      contains
+        contains
 
         subroutine assign_GF_GF(a,b)
           implicit none
@@ -19,13 +19,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = b%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = b%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = b%f
@@ -39,13 +35,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = b(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = b(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = b
@@ -59,13 +51,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = b
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = b
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = b
@@ -79,13 +67,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = -b%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = -b%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = -b%f

@@ -8,7 +8,7 @@
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
-      !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
+      !     u_bcs        = boundary conditions for u. Refer to boundary_conditions_mod for more info.
       !     g            = contains grid information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
@@ -21,7 +21,7 @@
       use current_precision_mod
       use coordinates_mod
       use grid_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use solverSettings_mod
       use applyBCs_mod
       use norms_mod

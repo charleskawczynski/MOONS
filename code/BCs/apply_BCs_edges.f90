@@ -82,7 +82,7 @@
        use VF_mod
        use bctype_mod
        use block_field_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use grid_mod
        use mesh_mod
        use face_edge_corner_indexing_mod

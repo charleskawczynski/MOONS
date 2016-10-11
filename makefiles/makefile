@@ -136,6 +136,7 @@ FC_DEBUG += -D_DEBUG_TF_
 FC_DEBUG += -D_DEBUG_DEL_
 FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
 FC_DEBUG += -D_DEBUG_INTERP_
+FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 
@@ -151,7 +152,8 @@ FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERNAL_BC_
-FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
+# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
+FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_
 FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_EDGES_RAW_
 # Corners are likely not worth it:
 # FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_CORNERS_RAW_
@@ -176,9 +178,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -263,11 +265,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)corner.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)edge.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)BCs.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign.f90\
@@ -276,13 +273,17 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_divide.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)face_domain.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge_implicit.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)boundary_conditions.f90\
@@ -328,10 +329,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_embed.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_implicit.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_corners.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\

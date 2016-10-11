@@ -7,7 +7,7 @@
        use dir_tree_mod
        use string_mod
        use path_mod
-       use BCs_mod
+       use boundary_conditions_mod
        use export_raw_processed_mod
        use ops_embedExtract_mod
        use domain_mod
@@ -54,12 +54,12 @@
          call init_BC_mesh(x_surface%z,m_surface) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          do i=1,m_surface%s
-           call init_Neumann(x_surface%x%BF(i)%b)
-           call init_Neumann(x_surface%y%BF(i)%b)
-           call init_Neumann(x_surface%z%BF(i)%b)
-           call init(x_surface%x%BF(i)%b,0.0_cp)
-           call init(x_surface%y%BF(i)%b,0.0_cp)
-           call init(x_surface%z%BF(i)%b,0.0_cp)
+           call init_Neumann(x_surface%x%BF(i)%BCs,m%B(i))
+           call init_Neumann(x_surface%y%BF(i)%BCs,m%B(i))
+           call init_Neumann(x_surface%z%BF(i)%BCs,m%B(i))
+           call init(x_surface%x%BF(i)%BCs,0.0_cp)
+           call init(x_surface%y%BF(i)%BCs,0.0_cp)
+           call init(x_surface%z%BF(i)%BCs,0.0_cp)
          enddo
 
          ! Changes values on surface from volume

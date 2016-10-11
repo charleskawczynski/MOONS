@@ -18,7 +18,7 @@
       use current_precision_mod
       use mesh_mod
       use apply_BCs_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use string_mod
       use norms_mod
       use ops_discrete_mod

@@ -19,14 +19,15 @@
 
        type bctype
          private
-         logical :: Dirichlet
-         logical :: Neumann
-         logical :: Robin
-         logical :: Periodic
-         logical :: symmetric
-         logical :: antisymmetric
-         logical :: defined
-         real(cp) :: meanVal
+         logical :: Dirichlet = .false.
+         logical :: Neumann = .false.
+         logical :: Robin = .false.
+         logical :: Periodic = .false.
+         logical :: symmetric = .false.
+         logical :: antisymmetric = .false.
+         logical :: defined = .false.
+         real(cp) :: meanVal = 0.0_cp
+         character(len=1) :: BCT = 'X'
        end type
 
        interface init;                module procedure init_copy_b;            end interface
@@ -99,6 +100,7 @@
          b_out%symmetric = b_in%symmetric
          b_out%antisymmetric = b_in%antisymmetric
          b_out%defined = b_in%defined
+         b_out%BCT = b_in%BCT
        end subroutine
 
        subroutine delete_bctype(b)
@@ -111,6 +113,7 @@
          b%symmetric = .false.
          b%antisymmetric = .false.
          b%defined = .false.
+         b%BCT = 'X'
        end subroutine
 
        subroutine display_bctype(b,un)
@@ -122,7 +125,7 @@
 
          if (.not.b%defined) then 
            write(un,*) 'defined = ',b%defined
-           stop 'Error: trying to export bctype before fully defined in bctype.f90'
+           stop 'Error: trying to export bctype before defined in bctype.f90'
          endif
          if (L) then
            write(un,*) 'Dirichlet = ',b%Dirichlet
@@ -137,7 +140,6 @@
            ! if (b%Periodic)      write(un,*) 'Periodic'
            ! if (b%symmetric)     write(un,*) 'Symmetric'
            ! if (b%antisymmetric) write(un,*) 'Antisymmetric'
-
            write(un,'(A,T1)',advance='no') get_bctype(b)
          endif
 
@@ -164,6 +166,7 @@
          write(un,*) 'antisymmetric';  write(un,*) b%antisymmetric
          write(un,*) 'defined';        write(un,*) b%defined
          write(un,*) 'meanVal';        write(un,*) b%meanVal
+         write(un,*) 'BCT';            write(un,*) b%BCT
        end subroutine
 
        subroutine import_bctype(b,un)
@@ -178,6 +181,7 @@
          read(un,*); read(un,*) b%antisymmetric
          read(un,*); read(un,*) b%defined
          read(un,*); read(un,*) b%meanVal
+         read(un,*); read(un,*) b%BCT
        end subroutine
 
        ! **********************************************************
@@ -187,32 +191,32 @@
        subroutine init_Dirichlet_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Dirichlet = .true.; b%defined = .true.
+         call delete(b); b%Dirichlet = .true.; b%defined = .true.; b%BCT = 'D'
        end subroutine
        subroutine init_Neumann_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Neumann = .true.; b%defined = .true.
+         call delete(b); b%Neumann = .true.; b%defined = .true.; b%BCT = 'N'
        end subroutine
        subroutine init_Robin_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Robin = .true.; b%defined = .true.
+         call delete(b); b%Robin = .true.; b%defined = .true.; b%BCT = 'R'
        end subroutine
        subroutine init_Periodic_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Periodic = .true.; b%defined = .true.
+         call delete(b); b%Periodic = .true.; b%defined = .true.; b%BCT = 'P'
        end subroutine
        subroutine init_symmetric_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%symmetric = .true.; b%defined = .true.
+         call delete(b); b%symmetric = .true.; b%defined = .true.; b%BCT = 'S'
        end subroutine
        subroutine init_antisymmetric_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%antisymmetric = .true.; b%defined = .true.
+         call delete(b); b%antisymmetric = .true.; b%defined = .true.; b%BCT = 'A'
        end subroutine
 
        function get_Dirichlet_b(b) result(L)
@@ -256,8 +260,8 @@
          implicit none
          type(bctype),intent(in) :: b
          character(len=1) :: BCT
-         if (.not.b%defined) stop 'Error: trying to get bctype before fully defined in bctype.f90'
          BCT = 'X'
+         ! BCT = b%BCT
          if (b%Dirichlet)     BCT = 'D'
          if (b%Neumann)       BCT = 'N'
          if (b%Robin)         BCT = 'R'

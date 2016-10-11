@@ -1,7 +1,6 @@
       module GF_base_mod
         use current_precision_mod
         use grid_mod
-        use BCs_mod
         implicit none
         private
 

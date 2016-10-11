@@ -3,8 +3,8 @@
        use SF_mod
        use VF_mod
        use apply_BCs_faces_implicit_mod
-       use apply_BCs_edges_implicit_mod
-       ! use apply_BCs_corners_implicit_mod
+       use apply_BCs_embed_mod
+       use check_BCs_mod
        use mesh_mod
        implicit none
 
@@ -29,15 +29,10 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         ! call apply_BCs_faces_implicit(U,m)
-         ! call apply_BCs_edges_implicit(U,m)
-         ! call apply_BCs_corners_implicit(U,m)
-
-         call apply_BCs_faces_implicit(U,m)
-         if (m%s.gt.1) call apply_BCs_edges_implicit(U,m)
-         ! call apply_BCs_coners_implicit(U,m)
-         ! if (m%s.gt.1) call apply_stitches_corners(U,m)
-
+#ifdef _DEBUG_APPLY_BCS_
+       call check_defined(U)
+#endif
+         call apply_BCs_faces_em(U)
        end subroutine
 
        end module 
