@@ -258,9 +258,7 @@
 
        subroutine subtract_phys_mean_SF(u)
          ! Subtracts the physical mean from scalar field u
-         ! 
          !      u = u - mean(u)
-         ! 
          ! Where this mean operation is only in the interior
          implicit none
          type(SF),intent(inout) :: u
@@ -272,9 +270,7 @@
 
        subroutine subtract_phys_mean_vol_SF(u,vol,temp)
          ! Subtracts the physical mean from scalar field u
-         ! 
          !      u = u - mean(u)
-         ! 
          ! Where this mean operation is only in the interior
          implicit none
          type(SF),intent(inout) :: u,temp
@@ -286,8 +282,7 @@
        end subroutine
 
        function phys_mean_vol_SF(u,vol,temp) result(meanU)
-         ! Computes physical mean from scalar field u
-         !      mean(u*volume)
+         ! Computes physical mean from scalar field u: mean(u*volume)
          implicit none
          type(SF),intent(inout) :: u,temp
          type(SF),intent(in) :: vol
@@ -297,8 +292,7 @@
        end function
 
        function phys_mean_SF(u) result(meanU)
-         ! Computes physical mean from scalar field u
-         !      mean(u)
+         ! Computes physical mean from scalar field u: mean(u)
          implicit none
          type(SF),intent(in) :: u
          real(cp) :: meanU

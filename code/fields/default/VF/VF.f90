@@ -35,8 +35,12 @@
 
         public :: init_BCs
         public :: init_BC_props
-        public :: volume
         public :: multiply_volume
+
+        public :: volume
+        public :: sine_waves
+        public :: cosine_waves
+        public :: random_noise
 
         public :: dot_product,dot
 
@@ -88,8 +92,12 @@
         interface init_Face;         module procedure init_VF_Face_assign;      end interface
         interface init_Edge;         module procedure init_VF_Edge_assign;      end interface
         interface init_Node;         module procedure init_VF_Node_assign;      end interface
-        interface volume;            module procedure volume_VF;                end interface
         interface multiply_volume;   module procedure multiply_volume_VF;       end interface
+
+        interface volume;            module procedure volume_VF;                end interface
+        interface sine_waves;        module procedure sine_waves_VF;            end interface
+        interface cosine_waves;      module procedure cosine_waves_VF;          end interface
+        interface random_noise;      module procedure random_noise_VF;          end interface
 
         interface dot_product;       module procedure dot_product_VF;           end interface
         interface dot;               module procedure dot_VF_SF;                end interface
@@ -298,6 +306,32 @@
           type(VF),intent(inout) :: u
           type(mesh),intent(in) :: m
           call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
+        end subroutine
+
+        subroutine sine_waves_VF(u,m,wavenum,phi)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          real(cp),dimension(3),intent(in) :: wavenum,phi
+          call sine_waves(u%x,m,wavenum,phi)
+          call sine_waves(u%y,m,wavenum,phi)
+          call sine_waves(u%z,m,wavenum,phi)
+        end subroutine
+
+        subroutine cosine_waves_VF(u,m,wavenum,phi)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          real(cp),dimension(3),intent(in) :: wavenum,phi
+          call cosine_waves(u%x,m,wavenum,phi)
+          call cosine_waves(u%y,m,wavenum,phi)
+          call cosine_waves(u%z,m,wavenum,phi)
+        end subroutine
+
+        subroutine random_noise_VF(u)
+          implicit none
+          type(VF),intent(inout) :: u
+          call random_noise(u%x); call random_noise(u%y); call random_noise(u%z)
         end subroutine
 
         subroutine multiply_volume_VF(u,m)

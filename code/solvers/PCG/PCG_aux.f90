@@ -16,10 +16,6 @@
       interface zeroGhostPoints_conditional; module procedure zeroGhostPoints_conditional_SF;  end interface
       interface zeroGhostPoints_conditional; module procedure zeroGhostPoints_conditional_VF;  end interface
 
-      public :: assign_ghost_if_periodic
-      interface assign_ghost_if_periodic;    module procedure assign_ghost_if_periodic_SF;     end interface
-      interface assign_ghost_if_periodic;    module procedure assign_ghost_if_periodic_VF;     end interface
-
       contains
 
       subroutine modify_forcing1_SF(f_mod,f,m,x)
@@ -85,44 +81,6 @@
         endif
       end subroutine
 
-      subroutine assign_ghost_if_periodic_SF(xg,x,m)
-        implicit none
-        type(SF),intent(inout) :: xg
-        type(SF),intent(in) :: x
-        type(mesh),intent(in) :: m
-        integer :: i
-        if (x%CC_along(1).and.(.not.m%plane_x)) then
-        do i=1,m%s
-          if (is_periodic(xg%BF(i)%BCs%bct_f(1))) then
-            xg%BF(i)%GF%f(1,:,:) = x%BF(i)%GF%f(1,:,:)
-          endif
-          if (is_periodic(xg%BF(i)%BCs%bct_f(2))) then
-            xg%BF(i)%GF%f(xg%BF(i)%GF%s(1),:,:) = x%BF(i)%GF%f(x%BF(i)%GF%s(1),:,:)
-          endif
-        enddo
-        endif
-        if (x%CC_along(2).and.(.not.m%plane_y)) then
-        do i=1,m%s
-          if (is_periodic(xg%BF(i)%BCs%bct_f(3))) then
-            xg%BF(i)%GF%f(:,1,:) = x%BF(i)%GF%f(:,1,:)
-          endif
-          if (is_periodic(xg%BF(i)%BCs%bct_f(4))) then
-            xg%BF(i)%GF%f(:,xg%BF(i)%GF%s(2),:) = x%BF(i)%GF%f(:,x%BF(i)%GF%s(2),:)
-          endif
-        enddo
-        endif
-        if (x%CC_along(3).and.(.not.m%plane_z)) then
-        do i=1,m%s
-          if (is_periodic(xg%BF(i)%BCs%bct_f(5))) then
-            xg%BF(i)%GF%f(:,:,1) = x%BF(i)%GF%f(:,:,1)
-          endif
-          if (is_periodic(xg%BF(i)%BCs%bct_f(6))) then
-            xg%BF(i)%GF%f(:,:,xg%BF(i)%GF%s(3)) = x%BF(i)%GF%f(:,:,x%BF(i)%GF%s(3))
-          endif
-        enddo
-        endif
-      end subroutine
-
       subroutine modify_forcing1_VF(f_mod,f,m,x)
         implicit none
         type(VF),intent(inout) :: f_mod
@@ -132,16 +90,6 @@
         call modify_forcing1_SF(f_mod%x,f%x,m,x%x)
         call modify_forcing1_SF(f_mod%y,f%y,m,x%y)
         call modify_forcing1_SF(f_mod%z,f%z,m,x%z)
-      end subroutine
-
-      subroutine assign_ghost_if_periodic_VF(xg,x,m)
-        implicit none
-        type(VF),intent(inout) :: xg
-        type(VF),intent(in) :: x
-        type(mesh),intent(in) :: m
-        call assign_ghost_if_periodic_SF(xg%x,x%x,m)
-        call assign_ghost_if_periodic_SF(xg%y,x%y,m)
-        call assign_ghost_if_periodic_SF(xg%z,x%z,m)
       end subroutine
 
       subroutine zeroGhostPoints_conditional_SF(x,m)

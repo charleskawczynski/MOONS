@@ -1,5 +1,8 @@
       module GF_aux_mod
         use GF_base_mod
+        use GF_assign_mod
+        use grid_mod
+        use data_location_mod
         use current_precision_mod
         implicit none
         private
@@ -30,7 +33,7 @@
         interface zero_ghost_ymin_ymax;     module procedure zero_ghost_ymin_ymax_GF;end interface
         interface zero_ghost_zmin_zmax;     module procedure zero_ghost_zmin_zmax_GF;end interface
 
-      contains
+        contains
 
         subroutine square_GF(a)
           implicit none
@@ -38,13 +41,9 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                a%f(i,j,k) = a%f(i,j,k) * a%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = a%f(i,j,k) * a%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           a%f = a%f*a%f
@@ -57,15 +56,11 @@
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
           !$OMP PARALLEL DO
-          do k=1,a%s(3)
-            do j=1,a%s(2)
-              do i=1,a%s(1)
-                c%f(i,j,k) = a%f(i,j,k)
-                a%f(i,j,k) = b%f(i,j,k)
-                b%f(i,j,k) = c%f(i,j,k)
-              enddo
-            enddo
-          enddo
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          c%f(i,j,k) = a%f(i,j,k)
+          a%f(i,j,k) = b%f(i,j,k)
+          b%f(i,j,k) = c%f(i,j,k)
+          enddo; enddo; enddo
           !$OMP END PARALLEL DO
 #else
           c%f = a%f
@@ -142,7 +137,7 @@
           mTemp = 0.0_cp
           !$OMP PARALLEL DO REDUCTION(+:mTemp)
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
-            mTemp = mTemp + a%f(i,j,k)
+          mTemp = mTemp + a%f(i,j,k)
           enddo; enddo; enddo
           !$OMP END PARALLEL DO
           m = mTemp
@@ -162,7 +157,7 @@
           mTemp = 0.0_cp
           !$OMP PARALLEL DO REDUCTION(+:mTemp)
           do k=1+pad,a%s(3)-pad; do j=1+pad,a%s(2)-pad; do i=1+pad,a%s(1)-pad
-            mTemp = mTemp + a%f(i,j,k)
+          mTemp = mTemp + a%f(i,j,k)
           enddo; enddo; enddo
           !$OMP END PARALLEL DO
           m = mTemp
@@ -180,8 +175,8 @@
 
 #endif
           do k=1,f%s(3); do j=1,f%s(2)
-            f%f(1,j,k) = 0.0_cp
-            f%f(f%s(1),j,k) = 0.0_cp
+          f%f(1,j,k) = 0.0_cp
+          f%f(f%s(1),j,k) = 0.0_cp
           enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
@@ -198,8 +193,8 @@
 
 #endif
           do k=1,f%s(3); do i=1,f%s(1)
-            f%f(i,1,k) = 0.0_cp
-            f%f(i,f%s(2),k) = 0.0_cp
+          f%f(i,1,k) = 0.0_cp
+          f%f(i,f%s(2),k) = 0.0_cp
           enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
@@ -216,8 +211,8 @@
 
 #endif
           do j=1,f%s(2); do i=1,f%s(1)
-            f%f(i,j,1) = 0.0_cp
-            f%f(i,j,f%s(3)) = 0.0_cp
+          f%f(i,j,1) = 0.0_cp
+          f%f(i,j,f%s(3)) = 0.0_cp
           enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO

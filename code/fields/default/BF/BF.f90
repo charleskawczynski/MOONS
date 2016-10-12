@@ -5,6 +5,7 @@
         use GF_mod
         use block_mod
         use boundary_conditions_mod
+        use procedure_array_mod
         implicit none
         private
 
@@ -17,12 +18,25 @@
         public :: init_Node
 
         public :: init_BCs,init_BC_props
+
         public :: volume
+        public :: cosine_waves
+        public :: sine_waves
+        public :: random_noise
+
+        public :: plane_sum_x
+        public :: plane_sum_y
+        public :: plane_sum_z
+
+        ! public :: assign_plane_x
+        ! public :: assign_plane_y
+        ! public :: assign_plane_z
 
         type block_field
           type(grid_field) :: GF ! bulk
           type(boundary_conditions) :: BCs
           ! type(stitches) :: st
+          type(procedure_array) :: zero_wall
         end type
 
        interface init_CC;            module procedure init_CC_BF;                     end interface
@@ -41,6 +55,17 @@
        interface init_BC_props;      module procedure init_BC_props_BF;               end interface
 
        interface volume;             module procedure volume_BF;                      end interface
+       interface cosine_waves;       module procedure cosine_waves_BF;                end interface
+       interface sine_waves;         module procedure sine_waves_BF;                  end interface
+       interface random_noise;       module procedure random_noise_BF;                end interface
+
+       interface plane_sum_x;        module procedure plane_sum_x_BF;                 end interface
+       interface plane_sum_y;        module procedure plane_sum_y_BF;                 end interface
+       interface plane_sum_z;        module procedure plane_sum_z_BF;                 end interface
+
+       ! interface assign_plane_x;     module procedure assign_plane_x_BF;              end interface
+       ! interface assign_plane_y;     module procedure assign_plane_y_BF;              end interface
+       ! interface assign_plane_z;     module procedure assign_plane_z_BF;              end interface
 
        contains
 
@@ -145,90 +170,63 @@
          call init_props(BF%BCs)
        end subroutine
 
-       subroutine volume_BF(u,B,DL)
-         ! Computes
-         ! 
-         !   volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+       subroutine volume_BF(u,B,DL) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
          implicit none
          type(block_field),intent(inout) :: u
          type(block),intent(in) :: B
          type(data_location),intent(in) :: DL
-         integer :: i,j,k
-         call assign(u%GF,0.0_cp)
-         if (is_CC(DL)) then
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhn(i)*&
-                             B%g%c(2)%dhn(j)*&
-                             B%g%c(3)%dhn(k)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         elseif (is_Node(DL)) then
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhc(i-1)*&
-                             B%g%c(2)%dhc(j-1)*&
-                             B%g%c(3)%dhc(k-1)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         elseif (is_Face(DL)) then
-         select case (DL%face)
-         case (1);
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhc(i-1)*&
-                             B%g%c(2)%dhn(j)*&
-                             B%g%c(3)%dhn(k)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (2);
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhn(i)*&
-                             B%g%c(2)%dhc(j-1)*&
-                             B%g%c(3)%dhn(k)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (3);
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhn(i)*&
-                             B%g%c(2)%dhn(j)*&
-                             B%g%c(3)%dhc(k-1)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case default; stop 'Error: bad face location in volume_SF in ops_aux.f90'
-         end select
-         elseif (is_Edge(DL)) then
-         select case (DL%edge)
-         case (1);
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhn(i)*&
-                             B%g%c(2)%dhc(j-1)*&
-                             B%g%c(3)%dhc(k-1)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (2);
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhc(i-1)*&
-                             B%g%c(2)%dhn(j)*&
-                             B%g%c(3)%dhc(k-1)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case (3);
-         !$OMP PARALLEL DO SHARED(B)
-         do k=2,u%GF%s(3)-1; do j=2,u%GF%s(2)-1; do i=2,u%GF%s(1)-1
-             u%GF%f(i,j,k) = B%g%c(1)%dhc(i-1)*&
-                             B%g%c(2)%dhc(j-1)*&
-                             B%g%c(3)%dhn(k)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         case default; stop 'Error: bad edge location in volume_BF in BF.f90'
-         end select
-         else; stop 'Error: bad location in volume_BF in BF.f90'
-         endif
+         call volume(u%GF,B%g,DL)
        end subroutine
+
+       subroutine sine_waves_BF(u,B,wavenum,phi,DL)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         type(data_location),intent(in) :: DL
+         real(cp),dimension(3),intent(in) :: wavenum,phi
+         call sine_waves(u%GF,B%g,wavenum,phi,DL)
+       end subroutine
+
+       subroutine cosine_waves_BF(u,B,wavenum,phi,DL)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         type(data_location),intent(in) :: DL
+         real(cp),dimension(3),intent(in) :: wavenum,phi
+         call cosine_waves(u%GF,B%g,wavenum,phi,DL)
+       end subroutine
+
+       subroutine random_noise_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call random_noise(u%GF)
+       end subroutine
+
+       function plane_sum_x_BF(u,B,p) result(PS)
+         implicit none
+         type(block_field),intent(in) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: p
+         real(cp) :: PS
+         PS = plane_sum_x(u%GF,B%g,p)
+       end function
+
+       function plane_sum_y_BF(u,B,p) result(PS)
+         implicit none
+         type(block_field),intent(in) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: p
+         real(cp) :: PS
+         PS = plane_sum_y(u%GF,B%g,p)
+       end function
+
+       function plane_sum_z_BF(u,B,p) result(PS)
+         implicit none
+         type(block_field),intent(in) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: p
+         real(cp) :: PS
+         PS = plane_sum_z(u%GF,B%g,p)
+       end function
 
       end module

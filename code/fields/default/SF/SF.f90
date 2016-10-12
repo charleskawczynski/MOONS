@@ -20,6 +20,14 @@
         public :: init_Edge
         
         public :: volume
+        public :: sine_waves
+        public :: cosine_waves
+        public :: random_noise
+
+        public :: plane_sum_x
+        public :: plane_sum_y
+        public :: plane_sum_z
+
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
         public :: N0_C1_tensor
@@ -94,10 +102,18 @@
         interface print_BCs;           module procedure print_BCs_SF;           end interface
         interface export_BCs;          module procedure export_BCs_SF;          end interface
 
-        interface volume;              module procedure volume_SF;              end interface
         interface multiply_volume;     module procedure multiply_volume_SF;     end interface
         interface mean_along_dir;      module procedure mean_along_dir_SF;      end interface
         interface subtract_mean_along_dir;  module procedure subtract_mean_along_dir_SF;  end interface
+
+        interface volume;              module procedure volume_SF;              end interface
+        interface sine_waves;          module procedure sine_waves_SF;          end interface
+        interface cosine_waves;        module procedure cosine_waves_SF;        end interface
+        interface random_noise;        module procedure random_noise_SF;        end interface
+
+        interface plane_sum_x;         module procedure plane_sum_x_SF;         end interface
+        interface plane_sum_y;         module procedure plane_sum_y_SF;         end interface
+        interface plane_sum_z;         module procedure plane_sum_z_SF;         end interface
 
         interface zero_ghost_xmin_xmax;module procedure zero_ghost_xmin_xmax_SF;end interface
         interface zero_ghost_ymin_ymax;module procedure zero_ghost_ymin_ymax_SF;end interface
@@ -590,8 +606,7 @@
         ! ***********************************************************
         ! ***********************************************************
 
-        subroutine volume_SF(u,m)
-          ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+        subroutine volume_SF(u,m) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
           implicit none
           type(SF),intent(inout) :: u
           type(mesh),intent(in) :: m
@@ -602,6 +617,64 @@
           enddo
           u%vol = sum(u)
         end subroutine
+
+        subroutine sine_waves_SF(u,m,wavenum,phi)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          real(cp),dimension(3),intent(in) :: wavenum,phi
+          integer :: i
+          do i=1,m%s; call sine_waves(u%BF(i),m%B(i),wavenum,phi,u%DL); enddo
+        end subroutine
+
+        subroutine cosine_waves_SF(u,m,wavenum,phi)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          real(cp),dimension(3),intent(in) :: wavenum,phi
+          integer :: i
+          do i=1,m%s; call cosine_waves(u%BF(i),m%B(i),wavenum,phi,u%DL); enddo
+        end subroutine
+
+        subroutine random_noise_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call random_noise(u%BF(i)); enddo
+        end subroutine
+
+        function plane_sum_x_SF(u,m,p) result(SP)
+          implicit none
+          type(SF),intent(in) :: u
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: p
+          integer :: i
+          real(cp) :: SP
+          SP = 0.0_cp
+          do i=1,m%s; SP = SP + plane_sum_x(u%BF(i),m%B(i),p); enddo
+        end function
+
+        function plane_sum_y_SF(u,m,p) result(SP)
+          implicit none
+          type(SF),intent(in) :: u
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: p
+          integer :: i
+          real(cp) :: SP
+          SP = 0.0_cp
+          do i=1,m%s; SP = SP + plane_sum_y(u%BF(i),m%B(i),p); enddo
+        end function
+
+        function plane_sum_z_SF(u,m,p) result(SP)
+          implicit none
+          type(SF),intent(in) :: u
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: p
+          integer :: i
+          real(cp) :: SP
+          SP = 0.0_cp
+          do i=1,m%s; SP = SP + plane_sum_z(u%BF(i),m%B(i),p); enddo
+        end function
 
         subroutine multiply_volume_SF(f,m)
           implicit none

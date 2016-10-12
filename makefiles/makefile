@@ -143,6 +143,7 @@ FC_DEBUG += -D_DEBUG_IO_TOOLS_
 # **************** OPTIMIZE/PARALLELIZE *********************
 FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_GF_
+FC_OPTIMIZE += -D_PARALLELIZE_GF_SURFACE_
 FC_OPTIMIZE += -D_PARALLELIZE_SF_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
@@ -153,7 +154,7 @@ FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERNAL_BC_
 # FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
-FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_
+# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_
 FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_EDGES_RAW_
 # Corners are likely not worth it:
 # FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_CORNERS_RAW_
@@ -178,9 +179,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -266,12 +267,15 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_add.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_subtract.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_divide.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign_plane.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_plane_sum.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\

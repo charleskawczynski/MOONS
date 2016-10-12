@@ -1,6 +1,7 @@
        module grid_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use current_precision_mod
+       use face_edge_corner_indexing_mod
        use IO_tools_mod
        use coordinates_mod
        implicit none
@@ -225,8 +226,8 @@
          type(grid),intent(in) :: g_in
          integer,intent(in) :: face
          call init(g,g_in)
-         if (f_min(face)) call get_ghost(g%c(get_dir_from_face(face)),-1)
-         if (f_max(face)) call get_ghost(g%c(get_dir_from_face(face)), 1)
+         if (min_face(face)) call get_ghost(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_ghost(g%c(dir_given_face(face)), 1)
        end subroutine
        subroutine get_face_grid_b(g,g_in,face)
          implicit none
@@ -234,8 +235,8 @@
          type(grid),intent(in) :: g_in
          integer,intent(in) :: face
          call init(g,g_in)
-         if (f_min(face)) call get_boundary(g%c(get_dir_from_face(face)),-1)
-         if (f_max(face)) call get_boundary(g%c(get_dir_from_face(face)), 1)
+         if (min_face(face)) call get_boundary(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_boundary(g%c(dir_given_face(face)), 1)
        end subroutine
        subroutine get_face_grid_i(g,g_in,face)
          implicit none
@@ -243,8 +244,8 @@
          type(grid),intent(in) :: g_in
          integer,intent(in) :: face
          call init(g,g_in)
-         if (f_min(face)) call get_interior(g%c(get_dir_from_face(face)),-1)
-         if (f_max(face)) call get_interior(g%c(get_dir_from_face(face)), 1)
+         if (min_face(face)) call get_interior(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_interior(g%c(dir_given_face(face)), 1)
        end subroutine
 
        subroutine get_edge_grid_b(g,g_in,edge)
@@ -254,7 +255,7 @@
          integer,intent(in) :: edge
          type(grid) :: temp
          integer,dimension(2) :: f
-         f = get_f12_from_edge(edge)
+         f = adj_faces_given_edge(edge)
          call get_face_b(temp,g_in,f(1))
          call get_face_b(g,temp,f(2))
        end subroutine
@@ -265,7 +266,7 @@
          integer,intent(in) :: edge
          type(grid) :: temp
          integer,dimension(2) :: f
-         f = get_f12_from_edge(edge)
+         f = adj_faces_given_edge(edge)
          call get_face_g(temp,g_in,f(1))
          call get_face_g(g,temp,f(2))
        end subroutine
@@ -276,7 +277,7 @@
          integer,intent(in) :: edge
          type(grid) :: temp
          integer,dimension(2) :: f
-         f = get_f12_from_edge(edge)
+         f = adj_faces_given_edge(edge)
          call get_face_i(temp,g_in,f(1))
          call get_face_i(g,temp,f(2))
        end subroutine
@@ -288,7 +289,7 @@
          integer,intent(in) :: corner
          type(grid) :: A,B
          integer,dimension(3) :: f
-         f = get_f123_from_corner(corner)
+         f = adj_faces_given_corner(corner)
          call get_face_b(A,g_in,f(1))
          call get_face_b(B,A,f(2))
          call get_face_b(g,B,f(3))
@@ -300,7 +301,7 @@
          integer,intent(in) :: corner
          type(grid) :: A,B
          integer,dimension(3) :: f
-         f = get_f123_from_corner(corner)
+         f = adj_faces_given_corner(corner)
          call get_face_g(A,g_in,f(1))
          call get_face_g(B,A,f(2))
          call get_face_g(g,B,f(3))
@@ -312,74 +313,10 @@
          integer,intent(in) :: corner
          type(grid) :: A,B
          integer,dimension(3) :: f
-         f = get_f123_from_corner(corner)
+         f = adj_faces_given_corner(corner)
          call get_face_i(A,g_in,f(1))
          call get_face_i(B,A,f(2))
          call get_face_i(g,B,f(3))
        end subroutine
-
-
-       function get_dir_from_face(face) result(dir)
-        implicit none
-        integer,intent(in) :: face
-        integer :: dir
-        select case (face)
-        case (1,2); dir = 1
-        case (3,4); dir = 2
-        case (5,6); dir = 3
-        case default; stop 'Error: face must = 1:6 in get_dir_from_dir in grid_to_FEC.f90'
-        end select
-       end function
-
-       function get_f12_from_edge(edge) result(f)
-        implicit none
-        integer,intent(in) :: edge
-        integer,dimension(2) :: f
-        select case (edge)
-        case (1);  f(1) = 3;  f(2) = 5 ! 3,4 , 5,6 minmin
-        case (2);  f(1) = 3;  f(2) = 6 ! 3,4 , 5,6 
-        case (3);  f(1) = 4;  f(2) = 5 ! 3,4 , 5,6
-        case (4);  f(1) = 4;  f(2) = 6 ! 3,4 , 5,6 maxmax
-        case (5);  f(1) = 1;  f(2) = 5 ! 1,2 , 5,6 minmin
-        case (6);  f(1) = 1;  f(2) = 6 ! 1,2 , 5,6 
-        case (7);  f(1) = 2;  f(2) = 5 ! 1,2 , 5,6
-        case (8);  f(1) = 2;  f(2) = 6 ! 1,2 , 5,6 maxmax
-        case (9);  f(1) = 1;  f(2) = 3 ! 1,2 , 3,4 minmin
-        case (10); f(1) = 1;  f(2) = 4 ! 1,2 , 3,4 
-        case (11); f(1) = 2;  f(2) = 3 ! 1,2 , 3,4
-        case (12); f(1) = 2;  f(2) = 4 ! 1,2 , 3,4 maxmax
-        case default; stop 'Error: bad case in get_f12_from_edge in grid_to_FEC.f90'
-        end select
-       end function
-
-       function get_f123_from_corner(corner) result(f)
-        implicit none
-        integer,intent(in) :: corner
-        integer,dimension(3) :: f
-        select case (corner)
-        case (1); f(1) = 1; f(2) = 3; f(3) = 5
-        case (2); f(1) = 2; f(2) = 3; f(3) = 5
-        case (3); f(1) = 1; f(2) = 4; f(3) = 5
-        case (4); f(1) = 1; f(2) = 3; f(3) = 6
-        case (5); f(1) = 1; f(2) = 4; f(3) = 6
-        case (6); f(1) = 2; f(2) = 3; f(3) = 6
-        case (7); f(1) = 2; f(2) = 4; f(3) = 5
-        case (8); f(1) = 2; f(2) = 4; f(3) = 6
-        case default; stop 'Error: bad case in get_f123_from_corner in grid_to_FEC.f90'
-        end select
-       end function
-
-       function f_min(face) result(L)
-        implicit none
-        integer,intent(in) :: face
-        logical :: L
-        L = (face.eq.1).or.(face.eq.3).or.(face.eq.5)
-       end function
-       function f_max(face) result(L)
-        implicit none
-        integer,intent(in) :: face
-        logical :: L
-        L = (face.eq.2).or.(face.eq.4).or.(face.eq.6)
-       end function
 
        end module

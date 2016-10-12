@@ -40,7 +40,7 @@
         integer,dimension(:),allocatable :: temp
         integer :: i
         call delete(S,i)
-        call init(S%A(i),f)
+        call init(S%A(i),f,size(f))
         if (.not.allocated(S%elem)) then
           allocate(S%elem(1)); S%elem = i
         else
@@ -107,7 +107,7 @@
         do j=1,S%s
           write(*,*) 'Element = ',S%elem(j)
           rowSum = 0.0_cp
-          do i=3,S%A(j)%s-2
+          do i=3,S%A(j)%N-2
             rowSum = rowSum +S%A(j)%f(i-1) + S%A(j)%f(i-1) + S%A(j)%f(i-1)
           enddo
           write(*,*) 'sum(row) = ',rowSum

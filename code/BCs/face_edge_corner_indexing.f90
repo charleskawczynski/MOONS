@@ -1,52 +1,6 @@
        module face_edge_corner_indexing_mod
-         ! This module provides routines to obtain indexes for BC
-         ! and stitch data structures so that consistent indexing
-         ! is used. A figure below illustrates the convention used.
-         ! 
-         !        z                          x                          y                        
-         !        ^    6                     ^    2                     ^    4                   
-         !        2---------4                2---------4                2---------4              
-         !        |         |                |         |                |         |              
-         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2            
-         !        |         |                |         |                |         |              
-         !        1---------3-> y            1---------3-> z            1---------3-> x          
-         !             5                          1                          3                   
-         ! 
-         !          e_pad=0                    e_pad=4                     e_pad=8
-         ! 
-         ! Or, in general,
-         ! 
-         !        d2               
-         !        ^                
-         !        2---------4      
-         !        |         |      
-         !        |   dir   |      
-         !        |         |      
-         !        1---------3-> d1 
-         !                                   
-         ! For corners, we have
-         ! 
-         !            y                                   
-         !            ^                                   
-         !            |                                   
-         !            |                                   
-         !            5----------------------4            
-         !           /|                     /|            
-         !          / |                    / |            
-         !         /  |                   /  |            
-         !        8----------------------2   |            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        |   1------------------|---7---->x      
-         !        |  /                   |  /             
-         !        | /                    | /              
-         !        |/                     |/               
-         !        3----------------------6                
-         !       /                                        
-         !      /                                         
-         !     z                                          
-         ! 
+       ! This module provides routines to obtain indexes for various things.
+       ! The figure at the bottom of this document illustrates the convention used.
        use current_precision_mod
        implicit none
 
@@ -60,6 +14,9 @@
        public :: adj_dir_given_face
        public :: opp_face_given_face
        public :: nhat_given_face
+       public :: adj_faces_given_corner
+       public :: min_face
+       public :: max_face
 
        contains
 
@@ -96,6 +53,23 @@
          end select
        end function
 
+       function adj_faces_given_corner(corner) result(faces)
+        implicit none
+        integer,intent(in) :: corner
+        integer,dimension(3) :: faces
+        select case (corner)
+        case (1); faces = (/1,3,5/)
+        case (2); faces = (/2,3,5/)
+        case (3); faces = (/1,4,5/)
+        case (4); faces = (/1,3,6/)
+        case (5); faces = (/1,4,6/)
+        case (6); faces = (/2,3,6/)
+        case (7); faces = (/2,4,5/)
+        case (8); faces = (/2,4,6/)
+        case default; stop 'Error: bad case in adj_faces_given_corner in face_edge_corner_indexing.f90'
+        end select
+       end function
+
        function edges_given_dir(dir) result (edges)
          implicit none
          integer,intent(in) :: dir
@@ -114,7 +88,7 @@
          integer,dimension(2) :: a
          select case (dir)
          case (1); a = (/2,3/)
-         case (2); a = (/3,1/)
+         case (2); a = (/1,3/)
          case (3); a = (/1,2/)
          case default; stop 'Error: dir must = 1,2,3 in adj_dir_given_dir in face_edge_corner_indexing.f90'
          end select
@@ -186,4 +160,71 @@
          end select
        end function
 
+       function min_face(face) result(L)
+        implicit none
+        integer,intent(in) :: face
+        logical :: L
+        select case (face)
+        case(1,3,5); L = .true.
+        case(2,4,6); L = .false.
+        case default; stop 'Error: bad case in min_face in face_edge_corner_indexing.f90'
+        end select
+       end function
+
+       function max_face(face) result(L)
+        implicit none
+        integer,intent(in) :: face
+        logical :: L
+        L = .not.min_face(face)
+       end function
+
+
+         ! This module provides routines to obtain indexes for BC
+         ! and stitch data structures so that consistent indexing
+         ! is used. A figure below illustrates the convention used.
+         ! 
+         !        z                          x                          y                        
+         !        ^    6                     ^    2                     ^    4                   
+         !        2---------4                2---------4                2---------4              
+         !        |         |                |         |                |         |              
+         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2            
+         !        |         |                |         |                |         |              
+         !        1---------3-> y            1---------3-> z            1---------3-> x          
+         !             5                          1                          3                   
+         ! 
+         !          e_pad=0                    e_pad=4                     e_pad=8
+         ! 
+         ! Or, in general,
+         ! 
+         !        d2               
+         !        ^                
+         !        2---------4      
+         !        |         |      
+         !        |   dir   |      
+         !        |         |      
+         !        1---------3-> d1 
+         !                                   
+         ! For corners, we have
+         ! 
+         !            y                                   
+         !            ^                                   
+         !            |                                   
+         !            |                                   
+         !            5----------------------4            
+         !           /|                     /|            
+         !          / |                    / |            
+         !         /  |                   /  |            
+         !        8----------------------2   |            
+         !        |   |                  |   |            
+         !        |   |                  |   |            
+         !        |   |                  |   |            
+         !        |   1------------------|---7---->x      
+         !        |  /                   |  /             
+         !        | /                    | /              
+         !        |/                     |/               
+         !        3----------------------6                
+         !       /                                        
+         !      /                                         
+         !     z                                          
+         ! 
        end module

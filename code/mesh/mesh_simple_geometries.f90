@@ -54,9 +54,9 @@
          integer,dimension(3) :: N
          integer :: i
          real(cp) :: Ha,Re
-         Ha = 45.0_cp; Re = 1000.0_cp
+         Ha = 5.0_cp; Re = 1000.0_cp
          call delete(m)
-         N = (/64,64,64/); hmin = -0.5_cp; hmax = 0.5_cp
+         N = (/10,20,30/); hmin = -1.0_cp; hmax = 1.0_cp
          ! beta = reynoldsBL(Re,hmin,hmax)
          beta = HartmannBL(Ha,hmin,hmax)
 

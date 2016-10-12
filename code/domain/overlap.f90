@@ -10,6 +10,10 @@
        public :: inside,init_props
        public :: is_overlap_physical,is_overlap_any
        public :: is_overlap
+       public :: valid_range
+       public :: get_N_overlap
+       public :: get_C_overlap
+       public :: compare
 
        interface init;          module procedure init_overlap;              end interface
        interface init;          module procedure init_copy_overlap;         end interface
@@ -19,9 +23,14 @@
        interface export;        module procedure export_overlap;            end interface
        interface import;        module procedure import_overlap;            end interface
 
-       interface inside;        module procedure inside_OL;                 end interface
+       interface compare;       module procedure compare_overlap;           end interface
+
        interface init_props;    module procedure init_props_OL;             end interface
        interface is_overlap;    module procedure is_overlap_coordinates;    end interface
+       interface valid_range;   module procedure valid_range_overlap;       end interface
+       interface get_N_overlap; module procedure get_N_overlap_OL;          end interface
+       interface get_C_overlap; module procedure get_C_overlap_OL;          end interface
+       interface inside;        module procedure inside_OL;                 end interface
 
        type overlap
          ! i1(1) and i1(2) are indexes for start and end of overlapping region 1
@@ -32,8 +41,18 @@
          !                            |----------------R1----------------|
          !     |-------------R2---------------|
          !                           i2(2)     i2(2)
-         integer,dimension(2) :: i1,i2
-         integer :: iR                 ! = i1(2)-i1(1)+1 = i2(2)-i2(1)+1 (range of indexes)
+         ! 
+         integer,dimension(2) :: i1 = 0 ! index for region 1
+         integer,dimension(2) :: i2 = 0 ! index for region 2
+         integer :: iR = 0              ! index range
+         logical :: success = .false.   ! successful overlap, there are "bad" cases!
+
+         ! Consider R1 is CC and R2 is node data:
+         !                       i1(1)=i1(2)
+         !                            |      <-- (R1)
+         !     |-------------R2---------------|
+         !                       i2(2)=i2(2)
+         ! Clearly, CI indexes are not valid
        end type
 
        contains
@@ -44,7 +63,7 @@
          integer,dimension(2),intent(in) :: i1,i2
          OL%i1 = i1
          OL%i2 = i2
-         call init_props(OL)
+         call init_props(OL,'init_overlap')
        end subroutine
 
        subroutine init_copy_overlap(a,b)
@@ -54,12 +73,15 @@
          a%i1 = b%i1
          a%i2 = b%i2
          a%iR = b%iR
+         a%success = b%success
        end subroutine
 
-       subroutine init_props_OL(OL)
+       subroutine init_props_OL(OL,caller)
          implicit none
          type(overlap),intent(inout) :: OL
+         character(len=*),intent(in) :: caller
          OL%iR = OL%i1(2) - OL%i1(1) + 1
+         OL%success = .not.any((/OL%i1(1).eq.0,OL%i1(2).eq.0,OL%i2(1).eq.0,OL%i2(2).eq.0/))
        end subroutine
 
        subroutine delete_overlap(OL)
@@ -68,6 +90,7 @@
          OL%i1 = 0
          OL%i2 = 0
          OL%iR = 0
+         OL%success = .false.
        end subroutine
 
        subroutine print_overlap(OL)
@@ -103,7 +126,118 @@
          read(u,*) ; read(u,*) OL%iR
        end subroutine
 
+       function compare_overlap(a,b) result(L_all)
+         implicit none
+         type(overlap),intent(in) :: a
+         type(overlap),intent(in) :: b
+         logical :: L_all
+         logical,dimension(6) :: L
+         L(1) = a%i1(1) - b%i1(1).eq.0
+         L(2) = a%i2(1) - b%i2(1).eq.0
+         L(3) = a%i1(2) - b%i1(2).eq.0
+         L(4) = a%i2(2) - b%i2(2).eq.0
+         L(5) = a%iR - b%iR.eq.0
+         L(6) = a%success .eqv. b%success
+         L_all = all(L)
+       end function
+
+       ! ************************************************************************
+       ! ****************************** GET OVERLAP *****************************
+       ! ************************************************************************
+
+       function get_N_overlap_OL(c,tol,caller,p) result (OL)
+         implicit none
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: p
+         type(overlap) :: OL
+         if (p.ge.0) then
+           if ((c(1)%sn-p.gt.0).and.(c(2)%sn-p.gt.0)) then;OL = get_N_overlap_OL_blind(c,tol,caller,p)
+           else;                                           OL = get_N_overlap_OL_blind(c,tol,caller,0)
+           endif
+         else; write(*,*) 'Error: bad input to get_N_overlap_OL from ',caller,' in overlap.f90'; stop 'Done'
+         endif
+       end function
+       function get_N_overlap_OL_blind(c,tol,caller,p) result (OL)
+         implicit none
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: p
+         type(overlap) :: OL
+         integer :: i,j,p1,p2
+         OL%i1 = 0; OL%i2 = 0
+         p1 = p; p2 = p
+         if (p.gt.0) then
+         if (c(1)%sc.eq.1) p1 = 0
+         if (c(2)%sc.eq.1) p2 = 0
+         else; p1 = 0; p2 = 0
+         endif
+         do i=c(1)%sn-p1,1+p1,-1; do j=1+p2,c(2)%sn-p2
+         if (inside_OL(c(2)%hn(j),c(1)%hn(i),c(1)%hn(i),tol)) then
+           if (OL%i1(1).eq.0) then; OL%i1(1) = i; else; OL%i1(1) = minval((/OL%i1(1),i/));endif
+           if (OL%i1(2).eq.0) then; OL%i1(2) = i; else; OL%i1(2) = maxval((/OL%i1(2),i/));endif
+           if (OL%i2(1).eq.0) then; OL%i2(1) = j; else; OL%i2(1) = minval((/OL%i2(1),j/));endif
+           if (OL%i2(2).eq.0) then; OL%i2(2) = j; else; OL%i2(2) = maxval((/OL%i2(2),j/));endif
+         endif
+         enddo; enddo
+         call init_props(OL,caller)
+       end function
+
+       function get_C_overlap_OL(c,tol,caller,p) result (OL)
+         implicit none
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: p
+         type(overlap) :: OL
+         if (p.ge.0) then
+           if ((c(1)%sc-p.gt.0).and.(c(2)%sc-p.gt.0)) then;OL = get_C_overlap_OL_blind(c,tol,caller,p)
+           else;                                           OL = get_C_overlap_OL_blind(c,tol,caller,0)
+           endif
+         else; write(*,*) 'Error: bad input to get_C_overlap_OL from ',caller,' in overlap.f90'; stop 'Done'
+         endif
+       end function
+       function get_C_overlap_OL_blind(c,tol,caller,p) result (OL)
+         implicit none
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: p
+         type(overlap) :: OL
+         integer :: i,j,p1,p2
+         OL%i1 = 0; OL%i2 = 0
+         p1 = p; p2 = p
+         if (p.gt.0) then
+         if (c(1)%sc.eq.1) p1 = 0
+         if (c(2)%sc.eq.1) p2 = 0
+         else; p1 = 0; p2 = 0
+         endif
+         do i=c(1)%sc-p1,1+p1,-1; do j=1+p2,c(2)%sc-p2
+         if (inside_OL(c(2)%hc(j),c(1)%hc(i),c(1)%hc(i),tol)) then
+           if (OL%i1(1).eq.0) then; OL%i1(1) = i; else; OL%i1(1) = minval((/OL%i1(1),i/));endif
+           if (OL%i1(2).eq.0) then; OL%i1(2) = i; else; OL%i1(2) = maxval((/OL%i1(2),i/));endif
+           if (OL%i2(1).eq.0) then; OL%i2(1) = j; else; OL%i2(1) = minval((/OL%i2(1),j/));endif
+           if (OL%i2(2).eq.0) then; OL%i2(2) = j; else; OL%i2(2) = maxval((/OL%i2(2),j/));endif
+         endif
+         enddo; enddo
+         call init_props(OL,caller)
+       end function
+
+       ! ************************* VALID OVERLAP RANGE? *************************
+
+       function valid_range_overlap(OL) result (L)
+         implicit none
+         type(overlap),intent(in) :: OL
+         logical :: L
+         L = (OL%i1(2) - OL%i1(1) + 1).eq.(OL%i2(2) - OL%i2(1) + 1)
+       end function
+
+       ! ************************* DOES AN OVERLAP EXIST? *************************
+
        function is_overlap_coordinates(R1,R2,tol) result(L)
+         implicit none
          type(coordinates),intent(in) :: R1,R2
          real(cp),intent(in) :: tol
          logical :: L
@@ -111,6 +245,7 @@
        end function
 
        function is_overlap_any(R1,R2,tol) result(L)
+         implicit none
          type(coordinates),intent(in) :: R1,R2
          real(cp),intent(in) :: tol
          logical :: L
@@ -118,6 +253,7 @@
        end function
 
        function is_overlap_physical(R1,R2,tol) result(L)
+         implicit none
          type(coordinates),intent(in) :: R1,R2
          real(cp),intent(in) :: tol
          logical :: L
@@ -146,6 +282,7 @@
          !       6)
          !               |---R2---|      |-------R2-------|
          !             |-----R1-----|      |-----R1-----|
+         implicit none
          real(cp),intent(in) :: R1_hmin,R1_hmax,R2_hmin,R2_hmax
          real(cp),intent(in) :: tol
          logical,dimension(6) :: L

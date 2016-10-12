@@ -33,9 +33,17 @@
          implicit none
          type(mesh_block),intent(inout) :: MB
          type(block),intent(in) :: B
+         type(block) :: temp
+         integer :: i
          call delete(MB%m)
          call delete(MB%B)
          call init(MB%m,B%g)
+         ! call init(temp,B%g)
+         ! call init_FEC(temp)
+         ! do i=1,6; call add(MB%m,temp%fg(i)); enddo
+         ! do i=1,6; call add(MB%m,temp%fb(i)); enddo
+         ! do i=1,6; call add(MB%m,temp%fi(i)); enddo
+         ! call delete(temp)
        end subroutine
 
        subroutine init_mesh_block_copy(MB_out,MB_in)

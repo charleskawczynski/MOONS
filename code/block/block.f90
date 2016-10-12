@@ -66,6 +66,7 @@
          integer :: i
          call delete(B_out)
          call init(B_out%g,B_in%g)
+         ! call inisist_allocated(B_in,'init_block_copy')
          i = 6;allocate(B_out%fg(i))
          i = 6;allocate(B_out%fb(i))
          i = 6;allocate(B_out%fi(i))

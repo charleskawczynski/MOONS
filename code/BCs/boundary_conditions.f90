@@ -547,6 +547,11 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          call init_props(BC%face_BCs,BC%DL)
+         ! call print(BC%PA_face_BCs)
+         ! call sort(BC%PA_face_BCs,(/1,2,3,4,3,4/),6)
+         call sort(BC%PA_face_BCs,(/1,2,5,6,3,4/),6)
+         ! call print(BC%PA_face_BCs)
+         ! stop 'Done in boundary_conditions.f90'
        end subroutine
 
        end module
