@@ -317,7 +317,36 @@
          type(mesh_domain),intent(in) :: MD
          integer,intent(in) :: i
          type(overlap),dimension(3) :: s
-         s = MD%D%sd(i)%phys_all
+         if (f%is_Face) then
+           select case (f%face)
+           case (1); s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%CE_all(3)/)
+           case (2); s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%CE_all(3)/)
+           case (3); s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%NB_all(3)/)
+           case default; stop 'Error: f%face must = 1,2,3 in ops_embedExtract.f90'
+           end select
+         elseif (f%is_Edge) then
+           select case (f%edge)
+           case (1); s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%NB_all(3)/)
+           case (2); s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%NB_all(3)/)
+           case (3); s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%CE_all(3)/)
+           case default; stop 'Error: f%edge must = 1,2,3 in ops_embedExtract.f90'
+           end select
+         elseif (f%is_CC) then
+           s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%CE_all(3)/)
+         elseif (f%is_Node) then
+           s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%NB_all(3)/)
+         else; stop 'Error: no type found in ops_embedExtract.f90'
+         endif
        end function
 
+       ! function EE_shape(f,MD,i) result(s)
+       !   implicit none
+       !   type(SF),intent(in) :: f
+       !   type(mesh_domain),intent(in) :: MD
+       !   integer,intent(in) :: i
+       !   type(overlap),dimension(3) :: s
+       !   call print(MD%D%sd(i),'EE_shape')
+       !   stop 'Done in ops_embedExtract.f90'
+       !   s = MD%D%sd(i)%phys_all
+       ! end function
        end module

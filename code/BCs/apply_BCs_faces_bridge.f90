@@ -28,20 +28,13 @@
        public :: apply_face_BC_op
 
        public :: Dirichlet_C
-!        public :: Dirichlet_N
-!        public :: Neumann_C
-!        public :: Neumann_N
-!        public :: Periodic_C
-!        public :: Periodic_N
-!        public :: Robin_C
-!        public :: Robin_N
-
-       public :: s_sp,i_sd_specific
-
-       logical :: global = .false.
-       integer :: i_sd_specific = 0
-       ! integer,dimension(3) :: s_sp = (/47,47,47/)
-       integer,dimension(3) :: s_sp = (/47,48,47/)
+       public :: Dirichlet_N
+       public :: Neumann_C
+       public :: Neumann_N
+       public :: Periodic_C
+       public :: Periodic_N
+       public :: Robin_C
+       public :: Robin_N
 
        abstract interface
          subroutine apply_face_BC_op(GF,surf,FSD,face)
@@ -67,11 +60,11 @@
          type(face_SD),intent(in) :: FSD
          integer,intent(in) :: face
          call F_Dirichlet_C_GF(GF,surf,&
-                               FSD%G(face)%C(1:3)%i2(1),&
-                               FSD%G(face)%C(1:3)%i2(2),&
-                               FSD%I(face)%C(1:3)%i2(1),&
-                               FSD%I(face)%C(1:3)%i2(2),&
-                               FSD%i_2D,&
+                               FSD%G(face)%M(1:3)%i2(1),&
+                               FSD%G(face)%M(1:3)%i2(2),&
+                               FSD%I(face)%M(1:3)%i2(1),&
+                               FSD%I(face)%M(1:3)%i2(2),&
+                               FSD%i_2D(face)%i,&
                                0)
        end subroutine
        subroutine F_Dirichlet_C_GF(bulk,surf,G1,G2,I1,I2,iR,p)
@@ -88,308 +81,228 @@
                                 surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
-!        subroutine Dirichlet_N(GF,surf,sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(subdomain),intent(in) :: sd
-!          call F_Dirichlet_N_GF(GF,surf,&
-!                                sd%NG(1:3)%i2(1),&
-!                                sd%NG(1:3)%i2(2),&
-!                                sd%NB(1:3)%i2(1),&
-!                                sd%NB(1:3)%i2(2),&
-!                                sd%NI(1:3)%i2(1),&
-!                                sd%NI(1:3)%i2(2),&
-!                                sd%i_2D,&
-!                                0)
-!        end subroutine
-!        subroutine F_Dirichlet_N_GF(bulk,surf,G1,G2,B1,B2,I1,I2,iR,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,B1,B2,I1,I2
-!          integer,dimension(2),intent(in) :: iR
-!          integer,intent(in) :: p
-!          ! call apply_Dirichlet_N(ug,ub,ui,bvals,x,y,p)
-!          call apply_Dirichlet_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                                 bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
-!                                 bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                                 surf%f,&
-!                                 surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Dirichlet_N(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Dirichlet_N_GF(GF,surf,&
+                               FSD%G(face)%M(1:3)%i2(1),&
+                               FSD%G(face)%M(1:3)%i2(2),&
+                               FSD%B(face)%M(1:3)%i2(1),&
+                               FSD%B(face)%M(1:3)%i2(2),&
+                               FSD%I(face)%M(1:3)%i2(1),&
+                               FSD%I(face)%M(1:3)%i2(2),&
+                               FSD%i_2D(face)%i,&
+                               0)
+       end subroutine
+       subroutine F_Dirichlet_N_GF(bulk,surf,G1,G2,B1,B2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,B1,B2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Dirichlet_N(ug,ub,ui,bvals,x,y,p)
+         call apply_Dirichlet_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                                bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
+                                bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                surf%f,&
+                                surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
-!        ! *********************************************************************************
-!        ! *********************************** NEUMANN *************************************
-!        ! *********************************************************************************
+       ! *********************************************************************************
+       ! *********************************** NEUMANN *************************************
+       ! *********************************************************************************
 
-!        subroutine Neumann_C(GF,surf,sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(face_domain),intent(in) :: sd
-!          call F_Neumann_C_GF(GF,surf,&
-!                              sd%CG%(1:3)%i2(1),&
-!                              sd%CG%(1:3)%i2(2),&
-!                              sd%CI%(1:3)%i2(1),&
-!                              sd%CI%(1:3)%i2(2),&
-!                              sd%i_2D,&
-!                              FD%dh(FD%g%sd(i_sd)%g_R1_id),&
-!                              FD%nhat(FD%g%sd(i_sd)%g_R1_id),&
-!                              0)
-!        end subroutine
-!        subroutine F_Neumann_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,I1,I2
-!          integer,dimension(2),intent(in) :: iR
-!          real(cp),intent(in) :: dh,nhat
-!          integer,intent(in) :: p
-!          ! call apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
-!          call apply_Neumann_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                               bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                               surf%f,&
-!                               dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Neumann_C(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Neumann_C_GF(GF,surf,&
+                             FSD%G(face)%M(1:3)%i2(1),&
+                             FSD%G(face)%M(1:3)%i2(2),&
+                             FSD%I(face)%M(1:3)%i2(1),&
+                             FSD%I(face)%M(1:3)%i2(2),&
+                             FSD%i_2D(face)%i,&
+                             FSD%dh(face),&
+                             FSD%nhat(face),&
+                             0)
+       end subroutine
+       subroutine F_Neumann_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         real(cp),intent(in) :: dh,nhat
+         integer,intent(in) :: p
+         ! call apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
+         call apply_Neumann_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                              bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                              surf%f,&
+                              dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
-!        subroutine Neumann_N(GF,surf,FD,i_sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(face_domain),intent(in) :: FD
-!          integer,intent(in) :: i_sd
-!          integer,dimension(3) :: s
-!          s = shape(GF%f)
-!          if ((i_sd.eq.i_sd_specific).and.(all((/s(1).eq.s_sp(1),s(2).eq.s_sp(2),s(3).eq.s_sp(3)/))).or.global) then
-!          write(*,*) ' ------------ Neumann_N ------------ '
-!          write(*,*) 'i_sd = ',i_sd
-!          write(*,*) 'shape(GF%f) = ',shape(GF%f)
-!          write(*,*) 'shape(surf%f) = ',shape(surf%f)
-!          write(*,*) 'maxval(surf%f) = ',maxval(surf%f)
-!          write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(1)
-!          write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(2)
-!          write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(1)
-!          write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(2)
-!          write(*,*) 'FD%b%sd(i_sd)%OL_DL(1:3)%i1(1) = ',FD%b%sd(i_sd)%OL_DL(1:3)%i1(1)
-!          write(*,*) 'FD%b%sd(i_sd)%OL_DL(1:3)%i1(2) = ',FD%b%sd(i_sd)%OL_DL(1:3)%i1(2)
-!          write(*,*) 'FD%b%sd(i_sd)%i_2D = ',FD%b%sd(i_sd)%i_2D
-!          write(*,*) 'FD%dh(FD%g%sd(i_sd)%g_R1_id) = ',FD%dh(FD%g%sd(i_sd)%g_R1_id)
-!          write(*,*) 'FD%nhat(FD%g%sd(i_sd)%g_R1_id) = ',FD%nhat(FD%g%sd(i_sd)%g_R1_id)
-!          endif
-!          call F_Neumann_N_GF(GF,surf,&
-!                              FD%g%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                              FD%g%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                              FD%i%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                              FD%i%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                              FD%b%sd(i_sd)%i_2D,&
-!                              FD%dh(FD%g%sd(i_sd)%g_R1_id),&
-!                              FD%nhat(FD%g%sd(i_sd)%g_R1_id),&
-!                              0)
-!        end subroutine
-!        subroutine F_Neumann_N_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,I1,I2
-!          real(cp),intent(in) :: dh,nhat
-!          integer,dimension(2),intent(in) :: iR
-!          integer,intent(in) :: p
-!          ! call apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
-!          call apply_Neumann_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                               bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                               surf%f,&
-!                               dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Neumann_N(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Neumann_N_GF(GF,surf,&
+                             FSD%G(face)%M(1:3)%i2(1),&
+                             FSD%G(face)%M(1:3)%i2(2),&
+                             FSD%I(face)%M(1:3)%i2(1),&
+                             FSD%I(face)%M(1:3)%i2(2),&
+                             FSD%i_2D(face)%i,&
+                             FSD%dh(face),&
+                             FSD%nhat(face),&
+                             0)
+       end subroutine
+       subroutine F_Neumann_N_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         real(cp),intent(in) :: dh,nhat
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
+         call apply_Neumann_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                              bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                              surf%f,&
+                              dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
-!        ! *********************************************************************************
-!        ! ********************************** PERIODIC *************************************
-!        ! *********************************************************************************
+       ! *********************************************************************************
+       ! ********************************** PERIODIC *************************************
+       ! *********************************************************************************
 
-!        subroutine Periodic_C(GF,surf,FD,i_sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(face_domain),intent(in) :: FD
-!          integer,intent(in) :: i_sd
-!          integer,dimension(3) :: s
-!          s = shape(GF%f)
-!          if ((i_sd.eq.i_sd_specific).and.(all((/s(1).eq.s_sp(1),s(2).eq.s_sp(2),s(3).eq.s_sp(3)/))).or.global) then
-!            write(*,*) ' ------------ Periodic_C ------------ '
-!            write(*,*) 'i_sd = ',i_sd
-!            write(*,*) 'FD%b%sd(i_sd)%i_2D = ',FD%b%sd(i_sd)%i_2D
-!            write(*,*) 'shape(GF%f) = ',shape(GF%f)
-!            write(*,*) 'shape(surf%f) = ',shape(surf%f)
-!            write(*,*) 'maxval(surf%f) = ',maxval(surf%f)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%iR = ',FD%g%sd(i_sd)%OL_DL(1:3)%iR
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%iR = ',FD%i%sd(i_sd)%OL_DL(1:3)%iR
-!          endif
-!          call F_Periodic_C_GF(GF,surf,&
-!                               FD%g%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                               FD%g%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                               FD%i_opp%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                               FD%i_opp%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                               FD%b%sd(i_sd)%i_2D,&
-!                               0)
-!        end subroutine
-!        subroutine F_Periodic_C_GF(bulk,surf,G1,G2,I1,I2,iR,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,I1,I2
-!          integer,dimension(2),intent(in) :: iR
-!          integer,intent(in) :: p
-!          ! apply_Periodic_C(ug,ui_opp,x,y,p)
-!          call apply_Periodic_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                                bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                                surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Periodic_C(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Periodic_C_GF(GF,surf,&
+                              FSD%G(face)%M(1:3)%i2(1),&
+                              FSD%G(face)%M(1:3)%i2(2),&
+                              FSD%I_OPP(face)%M(1:3)%i2(1),&
+                              FSD%I_OPP(face)%M(1:3)%i2(2),&
+                              FSD%i_2D(face)%i,&
+                              0)
+       end subroutine
+       subroutine F_Periodic_C_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! apply_Periodic_C(ug,ui_opp,x,y,p)
+         call apply_Periodic_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                               bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                               surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
-!        subroutine Periodic_N(GF,surf,FD,i_sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(face_domain),intent(in) :: FD
-!          integer,intent(in) :: i_sd
-!          integer,dimension(3) :: s
-!          s = shape(GF%f)
-!          if ((i_sd.eq.i_sd_specific).and.(all((/s(1).eq.s_sp(1),s(2).eq.s_sp(2),s(3).eq.s_sp(3)/))).or.global) then
-!            write(*,*) ' ------------ Periodic_N ------------ '
-!            write(*,*) 'i_sd = ',i_sd
-!            write(*,*) 'FD%b%sd(i_sd)%i_2D = ',FD%b%sd(i_sd)%i_2D
-!            write(*,*) 'shape(GF%f) = ',shape(GF%f)
-!            write(*,*) 'shape(surf%f) = ',shape(surf%f)
-!            write(*,*) 'maxval(surf%f) = ',maxval(surf%f)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%iR = ',FD%g%sd(i_sd)%OL_DL(1:3)%iR
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%iR = ',FD%i%sd(i_sd)%OL_DL(1:3)%iR
-!          endif
-!          call F_Periodic_N_GF(GF,surf,&
-!                               FD%g%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                               FD%g%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                               FD%i_opp%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                               FD%i_opp%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                               FD%b%sd(i_sd)%i_2D,&
-!                               0)
-!        end subroutine
-!        subroutine F_Periodic_N_GF(bulk,surf,G1,G2,I1,I2,iR,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,I1,I2
-!          integer,dimension(2),intent(in) :: iR
-!          integer,intent(in) :: p
-!          ! call apply_Periodic_N(ug,ui_opp,x,y,p)
-!          call apply_Periodic_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                                bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                                surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Periodic_N(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Periodic_N_GF(GF,surf,&
+                              FSD%G(face)%M(1:3)%i2(1),&
+                              FSD%G(face)%M(1:3)%i2(2),&
+                              FSD%I_OPP(face)%M(1:3)%i2(1),&
+                              FSD%I_OPP(face)%M(1:3)%i2(2),&
+                              FSD%i_2D(face)%i,&
+                              0)
+       end subroutine
+       subroutine F_Periodic_N_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Periodic_N(ug,ui_opp,x,y,p)
+         call apply_Periodic_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                               bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                               surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
-!        ! *********************************************************************************
-!        ! ************************************ ROBIN **************************************
-!        ! *********************************************************************************
+       ! *********************************************************************************
+       ! ************************************ ROBIN **************************************
+       ! *********************************************************************************
 
-!        subroutine Robin_C(GF,surf,FD,i_sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(face_domain),intent(in) :: FD
-!          integer,intent(in) :: i_sd
-!          integer,dimension(3) :: s
-!          s = shape(GF%f)
-!          if ((i_sd.eq.i_sd_specific).and.(all((/s(1).eq.s_sp(1),s(2).eq.s_sp(2),s(3).eq.s_sp(3)/))).or.global) then
-!            write(*,*) ' ------------ Robin_C ------------ '
-!            write(*,*) 'i_sd = ',i_sd
-!            write(*,*) 'FD%b%sd(i_sd)%i_2D = ',FD%b%sd(i_sd)%i_2D
-!            write(*,*) 'shape(GF%f) = ',shape(GF%f)
-!            write(*,*) 'shape(surf%f) = ',shape(surf%f)
-!            write(*,*) 'maxval(surf%f) = ',maxval(surf%f)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%iR = ',FD%g%sd(i_sd)%OL_DL(1:3)%iR
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%iR = ',FD%i%sd(i_sd)%OL_DL(1:3)%iR
-!          endif
-!          call F_Robin_C_GF(GF,surf,&
-!                            FD%g%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                            FD%g%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                            FD%i%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                            FD%i%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                            FD%b%sd(i_sd)%i_2D,&
-!                            FD%dh(FD%g%sd(i_sd)%g_R1_id),&
-!                            FD%nhat(FD%g%sd(i_sd)%g_R1_id),&
-!                            0)
-!        end subroutine
-!        subroutine F_Robin_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,I1,I2
-!          integer,dimension(2),intent(in) :: iR
-!          real(cp),intent(in) :: dh,nhat
-!          integer,intent(in) :: p
-!          ! call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
-!          call apply_Robin_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                             bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                             surf%f,&
-!                             dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Robin_C(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Robin_C_GF(GF,surf,&
+                           FSD%G(face)%M(1:3)%i2(1),&
+                           FSD%G(face)%M(1:3)%i2(2),&
+                           FSD%I(face)%M(1:3)%i2(1),&
+                           FSD%I(face)%M(1:3)%i2(2),&
+                           FSD%i_2D(face)%i,&
+                           FSD%dh(face),&
+                           FSD%nhat(face),&
+                           0)
+       end subroutine
+       subroutine F_Robin_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         real(cp),intent(in) :: dh,nhat
+         integer,intent(in) :: p
+         ! call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
+         call apply_Robin_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                            bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                            surf%f,&
+                            dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
-!        subroutine Robin_N(GF,surf,FD,i_sd)
-!          implicit none
-!          type(grid_field),intent(inout) :: GF
-!          type(grid_field),intent(in) :: surf
-!          type(face_domain),intent(in) :: FD
-!          integer,intent(in) :: i_sd
-!          integer,dimension(3) :: s
-!          s = shape(GF%f)
-!          if ((i_sd.eq.i_sd_specific).and.(all((/s(1).eq.s_sp(1),s(2).eq.s_sp(2),s(3).eq.s_sp(3)/))).or.global) then
-!            write(*,*) ' ------------ Robin_N ------------ '
-!            write(*,*) 'i_sd = ',i_sd
-!            write(*,*) 'FD%b%sd(i_sd)%i_2D = ',FD%b%sd(i_sd)%i_2D
-!            write(*,*) 'shape(GF%f) = ',shape(GF%f)
-!            write(*,*) 'shape(surf%f) = ',shape(surf%f)
-!            write(*,*) 'maxval(surf%f) = ',maxval(surf%f)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%g%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(1) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(1)
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%i2(2) = ',FD%i%sd(i_sd)%OL_DL(1:3)%i2(2)
-!            write(*,*) 'FD%g%sd(i_sd)%OL_DL(1:3)%iR = ',FD%g%sd(i_sd)%OL_DL(1:3)%iR
-!            write(*,*) 'FD%i%sd(i_sd)%OL_DL(1:3)%iR = ',FD%i%sd(i_sd)%OL_DL(1:3)%iR
-!          endif
-!          call F_Robin_N_GF(GF,surf,&
-!                            FD%g%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                            FD%g%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                            FD%i%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                            FD%i%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                            FD%b%sd(i_sd)%OL_DL(1:3)%i2(1),&
-!                            FD%b%sd(i_sd)%OL_DL(1:3)%i2(2),&
-!                            FD%b%sd(i_sd)%i_2D,&
-!                            FD%dh(FD%g%sd(i_sd)%g_R1_id),&
-!                            FD%nhat(FD%g%sd(i_sd)%g_R1_id),&
-!                            0)
-!        end subroutine
-!        subroutine F_Robin_N_GF(bulk,surf,G1,G2,I1,I2,B1,B2,iR,dh,nhat,p)
-!          implicit none
-!          type(grid_field),intent(inout) :: bulk
-!          type(grid_field),intent(in) :: surf
-!          integer,dimension(3),intent(in) :: G1,G2,I1,I2,B1,B2
-!          integer,dimension(2),intent(in) :: iR
-!          real(cp),intent(in) :: dh,nhat
-!          integer,intent(in) :: p
-!          ! call apply_Robin_N(ug,ui,ub,bvals,dh,nhat,x,y,p)
-!          call apply_Robin_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-!                             bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-!                             bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
-!                             surf%f,&
-!                             dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
-!        end subroutine
+       subroutine Robin_N(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Robin_N_GF(GF,surf,&
+                           FSD%G(face)%M(1:3)%i2(1),&
+                           FSD%G(face)%M(1:3)%i2(2),&
+                           FSD%I(face)%M(1:3)%i2(1),&
+                           FSD%I(face)%M(1:3)%i2(2),&
+                           FSD%B(face)%M(1:3)%i2(1),&
+                           FSD%B(face)%M(1:3)%i2(2),&
+                           FSD%i_2D(face)%i,&
+                           FSD%dh(face),&
+                           FSD%nhat(face),&
+                           0)
+       end subroutine
+       subroutine F_Robin_N_GF(bulk,surf,G1,G2,I1,I2,B1,B2,iR,dh,nhat,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2,B1,B2
+         integer,dimension(2),intent(in) :: iR
+         real(cp),intent(in) :: dh,nhat
+         integer,intent(in) :: p
+         ! call apply_Robin_N(ug,ui,ub,bvals,dh,nhat,x,y,p)
+         call apply_Robin_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                            bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                            bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
+                            surf%f,&
+                            dh,nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
 
        end module

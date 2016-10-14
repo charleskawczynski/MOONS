@@ -5,7 +5,6 @@
         use GF_mod
         use block_mod
         use boundary_conditions_mod
-        use procedure_array_mod
         implicit none
         private
 
@@ -36,7 +35,6 @@
           type(grid_field) :: GF ! bulk
           type(boundary_conditions) :: BCs
           ! type(stitches) :: st
-          type(procedure_array) :: zero_wall
         end type
 
        interface init_CC;            module procedure init_CC_BF;                     end interface

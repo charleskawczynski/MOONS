@@ -39,9 +39,6 @@
        interface get_ghost_N;   module procedure get_ghost_N_overlap;       end interface
        interface get_boundary_N;module procedure get_boundary_N_overlap;    end interface
        interface get_interior_N;module procedure get_interior_N_overlap;    end interface
-       ! interface get_ghost_C;   module procedure get_ghost_C_overlap;       end interface
-       ! interface get_boundary_C;module procedure get_boundary_C_overlap;    end interface
-       ! interface get_interior_C;module procedure get_interior_C_overlap;    end interface
 
        interface get_p_from_boundary_N;module procedure get_p_from_boundary_N_OL;    end interface
        interface get_p_from_boundary_C;module procedure get_p_from_boundary_C_OL;    end interface
@@ -88,7 +85,7 @@
          integer,dimension(2),intent(in) :: i1,i2
          OL%i1 = i1
          OL%i2 = i2
-         call init_props(OL,'init_overlap')
+         call init_props(OL)
        end subroutine
 
        subroutine init_copy_overlap(a,b)
@@ -101,10 +98,9 @@
          a%success = b%success
        end subroutine
 
-       subroutine init_props_OL(OL,caller)
+       subroutine init_props_OL(OL)
          implicit none
          type(overlap),intent(inout) :: OL
-         character(len=*),intent(in) :: caller
          OL%iR = OL%i1(2) - OL%i1(1) + 1
          OL%success = .not.any((/OL%i1(1).eq.0,OL%i1(2).eq.0,OL%i2(1).eq.0,OL%i2(2).eq.0/))
        end subroutine
@@ -245,9 +241,8 @@
            G%i1(1) = G%i1(2)+1-p ! move to far right side. Too far! go p back!
            G%i1(2) = G%i1(1) ! copy end
            endif
-           ! call print(OL)
-           ! write(*,*) ' -------------------------------------------------- '
          endif
+         call init_props(G)
        end function
 
        function get_p_from_boundary_C_OL(OL,c,tol,caller,p) result(G)
@@ -257,8 +252,8 @@
          real(cp),intent(in) :: tol
          character(len=*),intent(in) :: caller
          integer,intent(in) :: p
-         type(overlap) :: G,G0
-         call init(G,OL); call init(G0,G)
+         type(overlap) :: G
+         call init(G,OL)
          if (p.lt.1) stop 'Error: p must be > 1 in get_p_from_boundary_N_overlap in overlap.f90'
          if (G%iR.eq.2) then ! Surface overlap
            if (p.gt.G%iR) stop 'Error: bad input to get_p_from_boundary_N_overlap in overlap.f90'
@@ -274,12 +269,7 @@
            G%i1(2) = G%i1(1) ! copy end
            endif
          endif
-         if (.not.compare(G0,G)) write(*,*) ' -------------------------------------------------- '
-         if (.not.compare(G0,G)) write(*,*) 'caller,p = ',caller,p
-         if (.not.compare(G0,G)) call print(G0)
-         if (.not.compare(G0,G)) call print(G)
-         if (.not.compare(G0,G)) write(*,*) ' -------------------------------------------------- '
-         call delete(G0)
+         call init_props(G)
        end function
 
        ! ************************************************************************
@@ -323,7 +313,7 @@
            if (OL%i2(2).eq.0) then; OL%i2(2) = j; else; OL%i2(2) = maxval((/OL%i2(2),j/));endif
          endif
          enddo; enddo
-         call init_props(OL,caller)
+         call init_props(OL)
        end function
 
        function get_C_overlap_OL(c,tol,caller,p) result (OL)
@@ -363,7 +353,7 @@
            if (OL%i2(2).eq.0) then; OL%i2(2) = j; else; OL%i2(2) = maxval((/OL%i2(2),j/));endif
          endif
          enddo; enddo
-         call init_props(OL,caller)
+         call init_props(OL)
        end function
 
        ! ************************* VALID OVERLAP RANGE? *************************

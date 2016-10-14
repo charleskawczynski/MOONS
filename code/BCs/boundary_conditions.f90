@@ -8,8 +8,8 @@
        !             call init_Neumann(BCs);   call init_Neumann(BCs,face)
        !             call init_periodic(BCs);  call init_periodic(BCs,face)
        !       3) Set values
-       !             call init(BCs,0.0)       (default)
-       !             call init(BCs,0.0,face)
+       !             call init(BCs,0.0_cp)       (default)
+       !             call init(BCs,0.0_cp,face)
        !             call init(BCs,vals,face)
        ! 
        ! The convention for the faces is:
@@ -156,6 +156,7 @@
          elseif (is_Edge(DL)) then; do i=1,8; call init_Edge(BC%c(i),B%cb(i),DL%edge); enddo
          endif
          call init(BC%f_BCs,B%g,B%f)
+         call init_mixed(BC%f_BCs,DL)
          call init_vals_all_S(BC,0.0_cp)
          BC%BCL%GFs_defined = .true.
          call define_logicals(BC)
@@ -179,7 +180,7 @@
          call init(BC_out%face_BCs,BC_in%face_BCs)
          call init(BC_out%f_BCs,BC_in%f_BCs)
          call init(BC_out%PA_face_BCs,BC_in%PA_face_BCs)
-         call init(BC_out%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
+         ! call init(BC_out%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
          call init(BC_out%DL,BC_in%DL)
          ! call init(BC_out%B,BC_in%B)
          call init(BC_out%BCL,BC_in%BCL)
@@ -350,7 +351,7 @@
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
          call remove(BC%PA_face_BCs,face)
-         ! call add(BC%PA_face_BCs,Dirichlet_N,face)
+         call add(BC%PA_face_BCs,Dirichlet_N,face)
          endif
 
          if (CC_along(BC%DL,dir_given_face(face))) then
@@ -383,11 +384,11 @@
          call init(BC%face_BCs,B,face)
          if (CC_along(BC%DL,dir_given_face(face))) then
            call remove(BC%PA_face_BCs,face)
-           ! call add(BC%PA_face_BCs,Neumann_C,face)
+           call add(BC%PA_face_BCs,Neumann_C,face)
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
            call remove(BC%PA_face_BCs,face)
-           ! call add(BC%PA_face_BCs,Neumann_N,face)
+           call add(BC%PA_face_BCs,Neumann_N,face)
          endif
 
          if (CC_along(BC%DL,dir_given_face(face))) then
@@ -417,8 +418,8 @@
          call check_prereq(BC)
          call init_Robin(BC%bct_f(face))
          call init(BC%face_BCs,B,face)
-         ! if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_C,face)
-         ! if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_N,face)
+         if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_C,face)
+         if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_N,face)
 
          if (CC_along(BC%DL,dir_given_face(face))) then
          ! call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
@@ -447,8 +448,8 @@
          call check_prereq(BC)
          call init_Periodic(BC%bct_f(face))
          call init(BC%face_BCs,B,face)
-         ! if (CC_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_C,face)
-         ! if ( N_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_N,face)
+         if (CC_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_C,face)
+         if ( N_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_N,face)
 
          if (CC_along(BC%DL,dir)) then
            ! call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
@@ -557,6 +558,7 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          call init_props(BC%face_BCs,BC%DL)
+         call init_mixed(BC%f_BCs,BC%DL)
          ! call print(BC%PA_face_BCs)
          ! call sort(BC%PA_face_BCs,(/1,2,3,4,3,4/),6)
          ! call sort(BC%PA_face_BCs,(/1,2,5,6,3,4/),6)

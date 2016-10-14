@@ -2,7 +2,6 @@
        use IO_tools_mod
        use block_mod
        use domain_mod
-       use subdomain_mod
        use mesh_mod
        implicit none
 

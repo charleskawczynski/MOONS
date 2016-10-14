@@ -113,11 +113,11 @@
           allocate(mg(j)%res(N(1),N(2),N(3)))
           allocate(mg(j)%e(N(1),N(2),N(3)))
 
-          mg(j)%u    = real(0.0,cp)
-          mg(j)%f    = real(0.0,cp)
-          mg(j)%lapU = real(0.0,cp)
-          mg(j)%res  = real(0.0,cp)
-          mg(j)%e    = real(0.0,cp)
+          mg(j)%u    = 0.0_cp
+          mg(j)%f    = 0.0_cp
+          mg(j)%lapU = 0.0_cp
+          mg(j)%res  = 0.0_cp
+          mg(j)%e    = 0.0_cp
         enddo
 
         ! ******************** Initialize norm/ss ********************
@@ -299,7 +299,7 @@
             call lap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             mg(1)%res = mg(1)%lapu - mg(1)%f
             call zeroGhostPoints(mg(1)%res)
-            call compute(norm,real(0.0,cp),mg(1)%res)
+            call compute(norm,0.0_cp,mg(1)%res)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
 
@@ -323,7 +323,7 @@
           call lap(mg(1)%lapu,u,g)
           mg(1)%res = mg(1)%lapu - mg(1)%f
           call zeroGhostPoints(mg(1)%res)
-          call compute(norm,real(0.0,cp),mg(1)%res)
+          call compute(norm,0.0_cp,mg(1)%res)
           call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
       end subroutine

@@ -481,10 +481,10 @@
          cond(3) = SD%g_R1_id.eq.6
          cond(4) = same_point(SD%hmax_R1(3),1.0_cp)
          cond(5) = (SD%sn_R1(3).eq.2).or.(SD%sn_R2(3).eq.2)
-         if (cond(3)) then
-           call print(SD,'Face(face=2) data')
-           stop 'Done in subdomain.f90'
-         endif
+         ! if (cond(3)) then
+         !   call print(SD,'Face(face=2) data')
+         !   stop 'Done in subdomain.f90'
+         ! endif
        end subroutine
 
        end module

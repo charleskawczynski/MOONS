@@ -31,8 +31,8 @@
          tw = 0.5_cp
          include_vacuum = .false.
          finite_Rem = .false.
-         ! sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
-         sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
+         sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
+         ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-2.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l

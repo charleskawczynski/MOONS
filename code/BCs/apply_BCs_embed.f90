@@ -37,47 +37,24 @@
 #ifdef _DEBUG_APPLY_BCS_FACES_
          call check_defined(U)
 #endif
-         ! write(*,*) '************************************************ APPLYING BCS'
          do t=1,U%s
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_
          !$OMP PARALLEL DO
 
 #endif
-         ! write(*,*) ' ----------------------------------------------------- '
          do i=1,U%BF(t)%BCs%PA_face_BCs%N
-
-!          U%BF(t)%BCs%f(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID),&
-         ! call U%BF(t)%BCs%PA_face_BCs%SP(i)%P(&
-         ! U%BF(t)%GF,&
-         ! U%BF(t)%BCs%f(U%BF(t)%BCs%face_BCs%boundary%sd(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)%g_R1_id),&
-         ! U%BF(t)%BCs%face_BCs,&
-         ! U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)
-
          call U%BF(t)%BCs%PA_face_BCs%SP(i)%P(&
          U%BF(t)%GF,&
          U%BF(t)%BCs%f(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID),&
          U%BF(t)%BCs%f_BCs,&
          U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)
-         ! Dirichlet_C(GF,surf,FSD,face)
-         ! write(*,*) 'applied BC to face ',U%BF(t)%BCs%face_BCs%g%sd(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)%g_R1_id
          enddo
-         ! write(*,*) ' ----------------------------------------------------- '
-
-         ! do i=1,U%BF(t)%BCs%PA_face_BCs%N
-         ! call U%BF(t)%BCs%PA_face_BCs%SP(i)%P(U%BF(t))
-         ! enddo
-
-         ! do i=1,U%BF(t)%BCs%PA_face_BCs%N
-         ! call U%BF(t)%BCs%PA_face_BCs%SP(i)%P(U%BF(t)%GF,U%BF(t)%GF,U%BF(t)%BCs%f(),)
-         ! enddo
 
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_
         !$OMP END PARALLEL DO
 
 #endif
          enddo
-         ! write(*,*) '************************************************ DONE APPLYING BCS'
-         ! if (is_Face(U%DL).and.(U%face.eq.2)) stop 'Done in apply_BCs_embed.f90'
        end subroutine
 
        subroutine apply_BCs_faces_imp_VF(U)

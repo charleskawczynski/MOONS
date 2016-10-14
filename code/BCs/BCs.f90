@@ -8,8 +8,8 @@
        !             call init_Neumann(BCs);   call init_Neumann(BCs,face)
        !             call init_periodic(BCs);  call init_periodic(BCs,face)
        !       3) Set values
-       !             call init(BCs,0.0)       (default)
-       !             call init(BCs,0.0,face)
+       !             call init(BCs,0.0_cp)       (default)
+       !             call init(BCs,0.0_cp,face)
        !             call init(BCs,vals,face)
        ! 
        ! The convention for the faces is:

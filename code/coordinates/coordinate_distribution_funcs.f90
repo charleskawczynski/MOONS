@@ -239,7 +239,7 @@
          !      hmin     = minimum value
          !      hmax     = maximum value
          !      N        = N segments of dh
-         !      tau      = 0.0 <= tau <= infinity = stretching factor
+         !      tau      = 0.0_cp <= tau <= infinity = stretching factor
          ! 
          !      tau = 0            --> no stretching
          !      tau = large values --> strong stretching

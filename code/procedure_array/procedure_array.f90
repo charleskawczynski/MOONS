@@ -54,7 +54,7 @@
          type(procedure_array),intent(in) :: PA_in
          integer :: i
          call insist_defined(PA_in,'init_copy_PA')
-         call insist_allocated(PA_in,'init_copy_PA')
+         ! call insist_allocated(PA_in,'init_copy_PA')
          call delete(PA)
          call init(PA,PA_in%N)
          do i=1,PA%N
@@ -272,7 +272,7 @@
          type(procedure_array),intent(in) :: PA
          character(len=*),intent(in) :: caller
          if (.not.allocated(PA%SP)) then
-           write(*,*) 'Error: PA must be allocated in ',caller,'in procedure_array.f90'
+           write(*,*) 'Error: PA must be allocated in ',caller,' in procedure_array.f90'
            stop 'Done'
          endif
        end subroutine

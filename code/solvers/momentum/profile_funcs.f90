@@ -608,7 +608,7 @@
        !   call myCellCenter2Face(v,temp,g,2)
        !   v = -v
        !   deallocate(psi)
-       !   w = 0.0
+       !   w = 0.0_cp
        !   deallocate(tempx,tempy,tempz,temp)
        !   deallocate(xn,yn,zn)
        !   deallocate(xc,yc,zc)
