@@ -11,9 +11,22 @@
        public :: is_overlap_physical,is_overlap_any
        public :: is_overlap
        public :: valid_range
+
        public :: get_N_overlap
        public :: get_C_overlap
+
+       public :: get_ghost_N
+       public :: get_boundary_N
+       public :: get_interior_N
+       ! public :: get_ghost_C
+       ! public :: get_boundary_C
+       ! public :: get_interior_C
+
+       public :: get_p_from_boundary_N
+       public :: get_p_from_boundary_C
+
        public :: compare
+       public :: same_point
 
        interface init;          module procedure init_overlap;              end interface
        interface init;          module procedure init_copy_overlap;         end interface
@@ -23,13 +36,25 @@
        interface export;        module procedure export_overlap;            end interface
        interface import;        module procedure import_overlap;            end interface
 
-       interface compare;       module procedure compare_overlap;           end interface
+       interface get_ghost_N;   module procedure get_ghost_N_overlap;       end interface
+       interface get_boundary_N;module procedure get_boundary_N_overlap;    end interface
+       interface get_interior_N;module procedure get_interior_N_overlap;    end interface
+       ! interface get_ghost_C;   module procedure get_ghost_C_overlap;       end interface
+       ! interface get_boundary_C;module procedure get_boundary_C_overlap;    end interface
+       ! interface get_interior_C;module procedure get_interior_C_overlap;    end interface
 
+       interface get_p_from_boundary_N;module procedure get_p_from_boundary_N_OL;    end interface
+       interface get_p_from_boundary_C;module procedure get_p_from_boundary_C_OL;    end interface
+
+       interface get_N_overlap; module procedure get_N_overlap_OL;          end interface
+       interface get_C_overlap; module procedure get_C_overlap_OL;          end interface
+
+       interface compare;       module procedure compare_overlap;           end interface
+       interface same_point;    module procedure same_point_OL;             end interface
+       interface same_point;    module procedure same_point_OL_2;           end interface
        interface init_props;    module procedure init_props_OL;             end interface
        interface is_overlap;    module procedure is_overlap_coordinates;    end interface
        interface valid_range;   module procedure valid_range_overlap;       end interface
-       interface get_N_overlap; module procedure get_N_overlap_OL;          end interface
-       interface get_C_overlap; module procedure get_C_overlap_OL;          end interface
        interface inside;        module procedure inside_OL;                 end interface
 
        type overlap
@@ -139,6 +164,122 @@
          L(5) = a%iR - b%iR.eq.0
          L(6) = a%success .eqv. b%success
          L_all = all(L)
+       end function
+
+       ! ************************************************************************
+       ! *************************** BOUNDARY OVERLAPS **************************
+       ! ************************************************************************
+
+       function get_ghost_N_overlap(OL,c,tol) result(G)
+         implicit none
+         type(overlap),intent(in) :: OL
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         type(overlap) :: G
+         call init(G,OL)
+         if (G%iR.eq.2) then
+               if (inside_OL(c(1)%hn(1),c(2)%hn(1),c(2)%hn(1),tol)) then
+           G%i2(2)=G%i2(1); G%i1(2)=G%i1(1)
+           elseif (inside_OL(c(1)%hn(c(1)%sn),c(2)%hn(c(2)%sn),c(2)%hn(c(2)%sn),tol)) then
+           G%i2(1)=G%i2(2); G%i1(1)=G%i1(2)
+           endif
+         endif
+       end function
+
+       function get_boundary_N_overlap(OL,c,tol) result(G)
+         implicit none
+         type(overlap),intent(in) :: OL
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         type(overlap) :: G
+         call init(G,OL)
+         if (G%iR.eq.2) then
+               if (inside_OL(c(1)%hn(1),c(2)%hn(1),c(2)%hn(1),tol)) then
+           G%i2(2)=G%i2(1); G%i1(2)=G%i1(1)
+           elseif (inside_OL(c(1)%hn(c(1)%sn),c(2)%hn(c(2)%sn),c(2)%hn(c(2)%sn),tol)) then
+           G%i2(1)=G%i2(2); G%i1(1)=G%i1(2)
+           endif
+         endif
+       end function
+
+       function get_interior_N_overlap(OL,c,p,tol) result(G)
+         implicit none
+         type(overlap),intent(in) :: OL
+         type(coordinates),dimension(2),intent(in) :: c
+         integer,intent(in) :: p
+         real(cp),intent(in) :: tol
+         type(overlap) :: G
+         call init(G,OL)
+         if (G%iR.eq.2) then
+               if (inside_OL(c(1)%hn(2),c(2)%hn(2),c(2)%hn(2),tol)) then
+           G%i2(1)=G%i2(2); G%i1(1)=G%i1(2)
+           elseif (inside_OL(c(1)%hn(c(1)%sn-1),c(2)%hn(c(2)%sn-1),c(2)%hn(c(2)%sn-1),tol)) then
+           G%i2(2)=G%i2(1); G%i1(2)=G%i1(1)
+           endif
+         endif
+       end function
+
+       function get_p_from_boundary_N_OL(OL,c,tol,caller,p) result(G)
+         implicit none
+         type(overlap),intent(in) :: OL
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: p
+         type(overlap) :: G
+         call init(G,OL)
+         if (p.lt.1) stop 'Error: p must be > 1 in get_p_from_boundary_N_overlap in overlap.f90'
+         if (G%iR.eq.3) then ! Surface overlap
+           ! write(*,*) ' -------------------------------------------------- '
+           ! write(*,*) 'caller,p = ',caller,p
+           ! call print(OL)
+           if (p.gt.G%iR) stop 'Error: bad input to get_p_from_boundary_N_overlap in overlap.f90'
+               if (inside_OL(c(1)%hn(p),c(2)%hn(p),c(2)%hn(p),tol)) then
+           G%i2(2) = G%i2(1)-1+p ! move to far left side. Too far! go p back!
+           G%i2(1) = G%i2(2) ! copy end
+           G%i1(2) = G%i1(1)-1+p ! move to far left side. Too far! go p back!
+           G%i1(1) = G%i1(2) ! copy end
+           elseif (inside_OL(c(1)%hn(c(1)%sn+1-p),c(2)%hn(c(2)%sn+1-p),c(2)%hn(c(2)%sn+1-p),tol)) then
+           G%i2(1) = G%i2(2)+1-p ! move to far right side. Too far! go p back!
+           G%i2(2) = G%i2(1) ! copy end
+           G%i1(1) = G%i1(2)+1-p ! move to far right side. Too far! go p back!
+           G%i1(2) = G%i1(1) ! copy end
+           endif
+           ! call print(OL)
+           ! write(*,*) ' -------------------------------------------------- '
+         endif
+       end function
+
+       function get_p_from_boundary_C_OL(OL,c,tol,caller,p) result(G)
+         implicit none
+         type(overlap),intent(in) :: OL
+         type(coordinates),dimension(2),intent(in) :: c
+         real(cp),intent(in) :: tol
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: p
+         type(overlap) :: G,G0
+         call init(G,OL); call init(G0,G)
+         if (p.lt.1) stop 'Error: p must be > 1 in get_p_from_boundary_N_overlap in overlap.f90'
+         if (G%iR.eq.2) then ! Surface overlap
+           if (p.gt.G%iR) stop 'Error: bad input to get_p_from_boundary_N_overlap in overlap.f90'
+               if (inside_OL(c(1)%hc(p),c(2)%hc(p),c(2)%hc(p),tol)) then
+           G%i2(2) = G%i2(1)-1+p ! move to far left side. Too far! go p back!
+           G%i2(1) = G%i2(2) ! copy end
+           G%i1(2) = G%i1(1)-1+p ! move to far left side. Too far! go p back!
+           G%i1(1) = G%i1(2) ! copy end
+           elseif (inside_OL(c(1)%hc(c(1)%sc+1-p),c(2)%hc(c(2)%sc+1-p),c(2)%hc(c(2)%sc+1-p),tol)) then
+           G%i2(1) = G%i2(2)+1-p ! move to far right side. Too far! go p back!
+           G%i2(2) = G%i2(1) ! copy end
+           G%i1(1) = G%i1(2)+1-p ! move to far right side. Too far! go p back!
+           G%i1(2) = G%i1(1) ! copy end
+           endif
+         endif
+         if (.not.compare(G0,G)) write(*,*) ' -------------------------------------------------- '
+         if (.not.compare(G0,G)) write(*,*) 'caller,p = ',caller,p
+         if (.not.compare(G0,G)) call print(G0)
+         if (.not.compare(G0,G)) call print(G)
+         if (.not.compare(G0,G)) write(*,*) ' -------------------------------------------------- '
+         call delete(G0)
        end function
 
        ! ************************************************************************
@@ -294,6 +435,19 @@
          L(5) = (R1_hmin.gt.R2_hmin).and.(R1_hmax.lt.R2_hmax)
          L(6) = (R2_hmin.gt.R1_hmin).and.(R2_hmax.lt.R1_hmax)
          L_any = any(L)
+       end function
+
+       function same_point_OL_2(p1,p2) result(L)
+         real(cp),intent(in) :: p1,p2
+         logical :: L
+         L = inside_OL(p1,p2,p2,10.0_cp**(-10.0_cp))
+       end function
+
+       function same_point_OL(p1,p2,tol) result(L)
+         real(cp),intent(in) :: p1,p2
+         real(cp),intent(in) :: tol
+         logical :: L
+         L = inside_OL(p1,p2,p2,tol)
        end function
 
        function inside_OL(p,hmin,hmax,tol) result(L_any)

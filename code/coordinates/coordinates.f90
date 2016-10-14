@@ -18,6 +18,7 @@
       public :: pop,snip
 
       ! For getting surface / edge corner
+      public :: get_GI
       public :: get_ghost,get_boundary,get_interior
 
 #ifdef _DEBUG_COORDINATES_
@@ -60,6 +61,8 @@
 
       interface pop;               module procedure pop_coordinates;        end interface
       interface snip;              module procedure snip_coordinates;       end interface
+
+      interface get_GI;            module procedure get_GI_c;               end interface
 
       interface get_ghost;         module procedure get_ghost_c;            end interface
       interface get_boundary;      module procedure get_boundary_c;         end interface
@@ -722,6 +725,21 @@
       ! ************* GET GHOST / BOUNDARY / FIRST INTERIOR *************
       ! *****************************************************************
 
+      subroutine get_GI_c(c,dir)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        integer,intent(in) :: dir
+        integer :: i,s
+        if ((dir.ne.1).and.(dir.ne.-1)) stop 'Error: dir must = 1,-1 in get_GI_c in coordinates.f90'
+        s = c%sn
+        if (s.gt.3) then ! 3 or more nodes, remove all but boundary surface
+        if (dir.eq.-1) then; do i=1,s-3; call pop(c);  enddo; endif
+        if (dir.eq. 1) then; do i=1,s-3; call snip(c); enddo; endif
+        elseif ((s.eq.3).or.(s.eq.2).or.(s.eq.1)) then
+        else; stop 'Error: bad case in get_GI_c in coordinates.f90'
+        endif
+      end subroutine
+
       subroutine get_ghost_c(c,dir)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -762,7 +780,8 @@
         if (s.gt.3) then ! 3 or more nodes, remove all but boundary surface
         if (dir.eq.-1) then; do i=1,s-3; call pop(c);  enddo; call snip(c); endif
         if (dir.eq. 1) then; do i=1,s-3; call snip(c); enddo; call pop(c);  endif
-        elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
+        elseif (s.eq.3) then ! 2 cells, cannot choose which node to remove
+        elseif ((s.eq.2).or.(s.eq.1)) then ! 1 cell, cannot choose which node to remove
         else; stop 'Error: bad case in get_interior_c in coordinates.f90'
         endif
       end subroutine

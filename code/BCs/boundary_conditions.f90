@@ -42,6 +42,7 @@
        use block_mod
        use face_domain_mod
        use domain_mod
+       use face_SD_mod
        use GF_mod
        use bctype_mod
        use BC_logicals_mod
@@ -49,6 +50,9 @@
        use table_mod
        use procedure_array_mod
        use apply_BCs_faces_bridge_mod
+       use face_Dirichlet_C_mod
+       use face_Dirichlet_N_mod
+       use face_Neumann_C_mod
        use apply_BCs_faces_bridge_implicit_mod
        implicit none
 
@@ -79,6 +83,7 @@
          type(bctype),dimension(8) :: bct_c              ! for self-documenting output
 
          type(face_domain) :: face_BCs                   ! indexes         for face BCs
+         type(face_SD) :: f_BCs
          type(procedure_array) :: PA_face_BCs            ! procedure array for face BCs
          type(procedure_array) :: PA_face_implicit_BCs   ! procedure array for face BCs
          type(data_location) :: DL                       ! data location (C,N,F,E)
@@ -150,6 +155,7 @@
          elseif (is_Face(DL)) then; do i=1,8; call init_Face(BC%c(i),B%cb(i),DL%face); enddo
          elseif (is_Edge(DL)) then; do i=1,8; call init_Edge(BC%c(i),B%cb(i),DL%edge); enddo
          endif
+         call init(BC%f_BCs,B%g,B%f)
          call init_vals_all_S(BC,0.0_cp)
          BC%BCL%GFs_defined = .true.
          call define_logicals(BC)
@@ -171,6 +177,7 @@
          do i=1,12; call init(BC_out%e(i),BC_in%e(i)); enddo
          do i=1,8;  call init(BC_out%c(i),BC_in%c(i)); enddo
          call init(BC_out%face_BCs,BC_in%face_BCs)
+         call init(BC_out%f_BCs,BC_in%f_BCs)
          call init(BC_out%PA_face_BCs,BC_in%PA_face_BCs)
          call init(BC_out%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
          call init(BC_out%DL,BC_in%DL)
@@ -185,6 +192,7 @@
          if (allocated(BC%f)) then; do i=1,size(BC%f); call delete(BC%f(i)); enddo; deallocate(BC%f); endif
          if (allocated(BC%e)) then; do i=1,size(BC%e); call delete(BC%e(i)); enddo; deallocate(BC%e); endif
          if (allocated(BC%c)) then; do i=1,size(BC%c); call delete(BC%c(i)); enddo; deallocate(BC%c); endif
+         call delete(BC%f_BCs)
          call delete(BC%face_BCs)
          call delete(BC%PA_face_BCs)
          call delete(BC%PA_face_implicit_BCs)
@@ -342,16 +350,16 @@
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
          call remove(BC%PA_face_BCs,face)
-         call add(BC%PA_face_BCs,Dirichlet_N,face)
+         ! call add(BC%PA_face_BCs,Dirichlet_N,face)
          endif
 
          if (CC_along(BC%DL,dir_given_face(face))) then
          call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
+         ! call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
          call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
+         ! call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
          endif
          call define_logicals(BC)
          BC%BCL%BCT_defined = .true.
@@ -375,20 +383,20 @@
          call init(BC%face_BCs,B,face)
          if (CC_along(BC%DL,dir_given_face(face))) then
            call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Neumann_C,face)
+           ! call add(BC%PA_face_BCs,Neumann_C,face)
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
            call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Neumann_N,face)
+           ! call add(BC%PA_face_BCs,Neumann_N,face)
          endif
 
          if (CC_along(BC%DL,dir_given_face(face))) then
          call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Neumann_C_implicit,face)
+         ! call add(BC%PA_face_implicit_BCs,Neumann_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
          call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Neumann_N_implicit,face)
+         ! call add(BC%PA_face_implicit_BCs,Neumann_N_implicit,face)
          endif
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
@@ -409,14 +417,14 @@
          call check_prereq(BC)
          call init_Robin(BC%bct_f(face))
          call init(BC%face_BCs,B,face)
-         if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_C,face)
-         if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_N,face)
+         ! if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_C,face)
+         ! if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_N,face)
 
          if (CC_along(BC%DL,dir_given_face(face))) then
-         call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
+         ! call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir_given_face(face))) then
-         call add(BC%PA_face_implicit_BCs,Robin_N_implicit,face)
+         ! call add(BC%PA_face_implicit_BCs,Robin_N_implicit,face)
          endif
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
@@ -434,17 +442,19 @@
          type(boundary_conditions),intent(inout) :: BC
          type(block),intent(in) :: B
          integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Periodic(BC%bct_f(face))
          call init(BC%face_BCs,B,face)
-         if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Periodic_C,face)
-         if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Periodic_N,face)
+         ! if (CC_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_C,face)
+         ! if ( N_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_N,face)
 
-         if (CC_along(BC%DL,dir_given_face(face))) then
-           call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
+         if (CC_along(BC%DL,dir)) then
+           ! call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
          endif
-         if ( N_along(BC%DL,dir_given_face(face))) then
-           call add(BC%PA_face_implicit_BCs,Periodic_N_implicit,face)
+         if ( N_along(BC%DL,dir)) then
+           ! 
          endif
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
@@ -549,7 +559,8 @@
          call init_props(BC%face_BCs,BC%DL)
          ! call print(BC%PA_face_BCs)
          ! call sort(BC%PA_face_BCs,(/1,2,3,4,3,4/),6)
-         call sort(BC%PA_face_BCs,(/1,2,5,6,3,4/),6)
+         ! call sort(BC%PA_face_BCs,(/1,2,5,6,3,4/),6)
+         call sort(BC%PA_face_BCs,(/3,4,5,6,1,2/),6)
          ! call print(BC%PA_face_BCs)
          ! stop 'Done in boundary_conditions.f90'
        end subroutine

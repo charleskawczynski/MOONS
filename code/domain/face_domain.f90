@@ -30,6 +30,7 @@
        type face_domain
          type(domain) :: g,b,i,i_opp ! ghost, boundary,interior, opposite interior
          real(cp),dimension(6) :: dh,nhat
+         type(domain) :: boundary
        end type
 
        contains
@@ -43,10 +44,11 @@
          type(face_domain),intent(inout) :: FD
          type(block),intent(in) :: B
          integer,intent(in) :: face
-         call add(FD%g,B%fg(face),B%g,face,1)
-         call add(FD%b,B%fb(face),B%g,face,1)
-         call add(FD%i,B%fi(face),B%g,face,1)
-         call add(FD%i_opp,B%fi(opp_face_given_face(face)),B%g,face,1)
+         call add(FD%boundary,B%f(face),B%g,face,1)
+         ! call add(FD%g,B%fg(face),B%g,face,1)
+         ! call add(FD%b,B%fb(face),B%g,face,1)
+         ! call add(FD%i,B%fi(face),B%g,face,1)
+         ! call add(FD%i_opp,B%fi(opp_face_given_face(face)),B%g,face,1)
          FD%nhat(face) = nhat_given_face(face)
          FD%dh(face) = B%fg(face)%c(dir_given_face(face))%dhn(1)
        end subroutine
@@ -56,10 +58,11 @@
          type(face_domain),intent(inout) :: FD_out
          type(face_domain),intent(in) :: FD_in
          call delete(FD_out)
-         call init(FD_out%g,FD_in%g)
-         call init(FD_out%b,FD_in%b)
-         call init(FD_out%i,FD_in%i)
-         call init(FD_out%i_opp,FD_in%i_opp)
+         call init(FD_out%boundary,FD_in%boundary)
+         ! call init(FD_out%g,FD_in%g)
+         ! call init(FD_out%b,FD_in%b)
+         ! call init(FD_out%i,FD_in%i)
+         ! call init(FD_out%i_opp,FD_in%i_opp)
          FD_out%dh = FD_in%dh
          FD_out%nhat = FD_in%nhat
        end subroutine
@@ -67,10 +70,11 @@
        subroutine delete_face_domain(FD)
          implicit none
          type(face_domain),intent(inout) :: FD
-         call delete(FD%g)
-         call delete(FD%b)
-         call delete(FD%i)
-         call delete(FD%i_opp)
+         call delete(FD%boundary)
+         ! call delete(FD%g)
+         ! call delete(FD%b)
+         ! call delete(FD%i)
+         ! call delete(FD%i_opp)
          FD%dh = 0.0_cp
          FD%nhat = 0.0_cp
        end subroutine
@@ -79,20 +83,22 @@
          implicit none
          type(face_domain),intent(in) :: FD
          character(len=*),intent(in) :: name
-         call print(FD%g,name)
-         call print(FD%b,name)
-         call print(FD%i,name)
-         call print(FD%i_opp,name)
+         call print(FD%boundary,name)
+         ! call print(FD%g,name)
+         ! call print(FD%b,name)
+         ! call print(FD%i,name)
+         ! call print(FD%i_opp,name)
        end subroutine
 
        subroutine display_face_domain(FD,un)
          implicit none
          type(face_domain),intent(inout) :: FD
          integer,intent(in) :: un
-         call display(FD%g,un)
-         call display(FD%b,un)
-         call display(FD%i,un)
-         call display(FD%i_opp,un)
+         call display(FD%boundary,un)
+         ! call display(FD%g,un)
+         ! call display(FD%b,un)
+         ! call display(FD%i,un)
+         ! call display(FD%i_opp,un)
          write(un,*) 'dh = ',FD%dh
          write(un,*) 'nhat = ',FD%nhat
        end subroutine
@@ -101,10 +107,11 @@
          implicit none
          type(face_domain),intent(in) :: FD
          integer,intent(in) :: un
-         call export(FD%g,un)
-         call export(FD%b,un)
-         call export(FD%i,un)
-         call export(FD%i_opp,un)
+         call export(FD%boundary,un)
+         ! call export(FD%g,un)
+         ! call export(FD%b,un)
+         ! call export(FD%i,un)
+         ! call export(FD%i_opp,un)
          write(un,*) 'FD%dh = ';    write(un,*) FD%dh
          write(un,*) 'FD%nhat = ';  write(un,*) FD%nhat
        end subroutine
@@ -123,10 +130,11 @@
          implicit none
          type(face_domain),intent(inout) :: FD
          integer,intent(in) :: un
-         call import(FD%g,un)
-         call import(FD%b,un)
-         call import(FD%i,un)
-         call import(FD%i_opp,un)
+         call import(FD%boundary,un)
+         ! call import(FD%g,un)
+         ! call import(FD%b,un)
+         ! call import(FD%i,un)
+         ! call import(FD%i_opp,un)
          read(un,*); read(un,*) FD%dh
          read(un,*); read(un,*) FD%nhat
        end subroutine
@@ -147,10 +155,11 @@
          implicit none
          type(face_domain),intent(inout) :: FD
          type(data_location),intent(in) :: DL
-         call init_props(FD%g,DL)
-         call init_props(FD%b,DL)
-         call init_props(FD%i,DL)
-         call init_props(FD%i_opp,DL)
+         call init_props(FD%boundary,DL)
+         ! call init_props(FD%g,DL)
+         ! call init_props(FD%b,DL)
+         ! call init_props(FD%i,DL)
+         ! call init_props(FD%i_opp,DL)
        end subroutine
 
        end module

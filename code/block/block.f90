@@ -12,6 +12,7 @@
 
        type block
          type(grid) :: g                                 ! Bulk
+         type(grid),dimension(:),allocatable :: f        ! Faces (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: fg,fb,fi ! Faces (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: eg,eb,ei ! Edges (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: cg,cb,ci ! Corners (boundary,ghost,interior)
@@ -48,6 +49,7 @@
          type(block),intent(inout) :: B
          integer :: i
          call delete_FEC_block(B)
+         i = 6;allocate(B%f(i));  do i=1,6;  call get_face_GI( B%f(i),B%g,i);  enddo
          i = 6;allocate(B%fg(i)); do i=1,6;  call get_face_g(  B%fg(i),B%g,i); enddo
          i = 6;allocate(B%fb(i)); do i=1,6;  call get_face_b(  B%fb(i),B%g,i); enddo
          i = 6;allocate(B%fi(i)); do i=1,6;  call get_face_i(  B%fi(i),B%g,i); enddo
@@ -67,6 +69,7 @@
          call delete(B_out)
          call init(B_out%g,B_in%g)
          ! call inisist_allocated(B_in,'init_block_copy')
+         i = 6;allocate(B_out%f(i))
          i = 6;allocate(B_out%fg(i))
          i = 6;allocate(B_out%fb(i))
          i = 6;allocate(B_out%fi(i))
@@ -79,6 +82,7 @@
          i = 8;allocate(B_out%cb(i))
          i = 8;allocate(B_out%ci(i))
 
+         do i=1,6;  call init(B_out%f(i),B_in%f(i)); enddo
          do i=1,6;  call init(B_out%fg(i),B_in%fg(i)); enddo
          do i=1,6;  call init(B_out%fb(i),B_in%fb(i)); enddo
          do i=1,6;  call init(B_out%fi(i),B_in%fi(i)); enddo
@@ -103,6 +107,7 @@
          implicit none
          type(block),intent(inout) :: B
          integer :: i
+         if (allocated(B%f)) then; do i=1,6;  call delete(B%f(i)); enddo; deallocate(B%f); endif
          if (allocated(B%fg)) then; do i=1,6;  call delete(B%fg(i)); enddo; deallocate(B%fg); endif
          if (allocated(B%fb)) then; do i=1,6;  call delete(B%fb(i)); enddo; deallocate(B%fb); endif
          if (allocated(B%fi)) then; do i=1,6;  call delete(B%fi(i)); enddo; deallocate(B%fi); endif
@@ -122,6 +127,7 @@
          integer,intent(in) :: un
          integer :: i
          call display(B%g,un)
+         do i=1,6;  call display(B%f(i),un); enddo
          do i=1,6;  call display(B%fg(i),un); enddo
          do i=1,6;  call display(B%fb(i),un); enddo
          do i=1,6;  call display(B%fi(i),un); enddo
@@ -140,6 +146,7 @@
          type(block),intent(in) :: B
          integer :: i
          call print(B%g)
+         do i=1,6;  call print(B%f(i)); enddo
          do i=1,6;  call print(B%fg(i)); enddo
          do i=1,6;  call print(B%fb(i)); enddo
          do i=1,6;  call print(B%fi(i)); enddo
@@ -159,6 +166,7 @@
          integer,intent(in) :: un
          integer :: i
          call export(B%g,un)
+         do i=1,6;  call export(B%f(i),un); enddo
          do i=1,6;  call export(B%fg(i),un); enddo
          do i=1,6;  call export(B%fb(i),un); enddo
          do i=1,6;  call export(B%fi(i),un); enddo
@@ -178,6 +186,7 @@
          integer,intent(in) :: un
          integer :: i
          call import(B%g,un)
+         do i=1,6;  call import(B%f(i),un); enddo
          do i=1,6;  call import(B%fg(i),un); enddo
          do i=1,6;  call import(B%fb(i),un); enddo
          do i=1,6;  call import(B%fi(i),un); enddo

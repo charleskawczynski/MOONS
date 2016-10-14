@@ -94,7 +94,6 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_STENCILS_O2_
 # FCFLAGS += -D_STENCILS_O4_
 
-FCFLAGS += -fopenmp
 
 ifeq ($(OS_USED),'OS_WINDOWS')
 	FCFLAGS += -D_OS_WINDOWS_
@@ -141,10 +140,11 @@ FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
+# FCFLAGS += -fopenmp
 FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_GF_
-FC_OPTIMIZE += -D_PARALLELIZE_GF_SURFACE_
-FC_OPTIMIZE += -D_PARALLELIZE_SF_
+FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_
+FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_SUM_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
 # FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
@@ -190,6 +190,7 @@ VPATH =\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
+	$(SRC_DIR)$(PS)BCs$(PS)face\
 	$(SRC_DIR)$(PS)clock\
 	$(SRC_DIR)$(PS)convergence_rate\
 	$(SRC_DIR)$(PS)coordinates\
@@ -279,12 +280,18 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\
+	$(SRC_DIR)$(PS)domain$(PS)sub_domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)face_SD.f90\
 	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)face_domain.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)face$(PS)face_Dirichlet_C.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)face$(PS)face_Dirichlet_N.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)face$(PS)face_Neumann_C.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge_implicit.f90\

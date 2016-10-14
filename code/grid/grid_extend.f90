@@ -26,7 +26,8 @@
        ! public :: ext_app_cluster       ! Not yet implemented
 
        public :: ext_app_Roberts_C2F,ext_app_Roberts_C2F_IO     ! ext_app_Roberts_B(g,g_in,L,N,dir)
-
+       public :: ext_prep_Roberts_C2F_IO
+       public :: ext_prep_Roberts_C2F
 
        contains
 
@@ -183,6 +184,34 @@
          call delete(gg)
        end subroutine
 
+       subroutine ext_prep_Roberts_C2F_IO(g,L,N,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         real(cp),intent(in) :: L
+         integer,intent(in) :: N,dir
+         type(grid) :: temp
+         call init(temp,g); call ext_prep_Roberts_C2F(g,temp,L,N,dir); call delete(temp)
+       end subroutine
+       subroutine ext_prep_Roberts_C2F(g,g_in,L,N,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         real(cp),intent(in) :: L
+         integer,intent(in) :: N,dir
+         real(cp) :: beta,hmin
+         type(gridGenerator) :: gg
+         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_B in extend_grid.f90'
+         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
+         hmin = g_in%c(dir)%hmin
+         beta = beta_dh_big(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         call snip(gg,dir); call snip(gg,dir)
+         call prep(gg,(/robertsLeft(hmin-L,hmin,N,beta)/),dir)
+         call prepGhost(gg,dir)
+         call init(g,gg%g%c(dir)%hn,dir)
+         call initProps(g)
+         call delete(gg)
+       end subroutine
+
        ! ******************************************************************** Append
 
        subroutine ext_app_uniform_IO(g,N,dir)
@@ -307,7 +336,6 @@
          type(grid) :: temp
          call init(temp,g); call ext_app_Roberts_C2F(g,temp,L,N,dir); call delete(temp)
        end subroutine
-
        subroutine ext_app_Roberts_C2F(g,g_in,L,N,dir)
          implicit none
          type(grid),intent(inout) :: g

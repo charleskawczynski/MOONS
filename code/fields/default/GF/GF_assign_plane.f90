@@ -25,7 +25,7 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p
-#ifdef _PARALLELIZE_GF_SURFACE_
+#ifdef _PARALLELIZE_GF_PLANE_
           integer :: j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3); do j=1,a%s(2)
@@ -41,7 +41,7 @@
           type(grid_field),intent(inout) :: a
           type(grid_field),intent(in) :: b
           integer,intent(in) :: p_a,p_b
-#ifdef _PARALLELIZE_GF_SURFACE_
+#ifdef _PARALLELIZE_GF_PLANE_
           integer :: j,k
           !$OMP PARALLEL DO
           do k=1,a%s(3); do j=1,a%s(2)
@@ -62,7 +62,7 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p
-#ifdef _PARALLELIZE_GF_SURFACE_
+#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,k
           !$OMP PARALLEL DO
           do k=1,a%s(3); do i=1,a%s(1)
@@ -78,7 +78,7 @@
           type(grid_field),intent(inout) :: a
           type(grid_field),intent(in) :: b
           integer,intent(in) :: p_a,p_b
-#ifdef _PARALLELIZE_GF_SURFACE_
+#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,k
           !$OMP PARALLEL DO
           do k=1,a%s(3); do i=1,a%s(1)
@@ -99,7 +99,7 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p
-#ifdef _PARALLELIZE_GF_SURFACE_
+#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,j
           !$OMP PARALLEL DO
           do j=1,a%s(2); do i=1,a%s(1)
@@ -115,7 +115,7 @@
           type(grid_field),intent(inout) :: a
           type(grid_field),intent(in) :: b
           integer,intent(in) :: p_a,p_b
-#ifdef _PARALLELIZE_GF_SURFACE_
+#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,j
           !$OMP PARALLEL DO
           do j=1,a%s(2); do i=1,a%s(1)

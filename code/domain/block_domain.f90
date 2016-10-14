@@ -21,6 +21,7 @@
        interface import;      module procedure import_block_domain_wrapper; end interface
 
        type block_domain
+         type(domain),dimension(6) :: f   ! Faces, includes first exterior and first interior cells
          type(domain),dimension(6) :: fg,fb,fi   ! Faces
          type(domain),dimension(12) :: eg,eb,ei  ! Edges
          type(domain),dimension(8) :: cg,cb,ci   ! Corners
@@ -38,6 +39,8 @@
          type(block),intent(in) :: B
          integer :: i
          call delete(BD)
+         do i=1,6;  call add(BD%f(i),B%g,B%f(i),1,i); enddo
+
          do i=1,6;  call add(BD%fg(i),B%g,B%fg(i),1,i); enddo
          do i=1,12; call add(BD%eg(i),B%g,B%eg(i),1,i); enddo
          do i=1,8;  call add(BD%cg(i),B%g,B%cg(i),1,i); enddo
@@ -57,6 +60,8 @@
          type(block_domain),intent(in) :: BD_in
          integer :: i
          call delete(BD_out)
+         do i=1,6;  call init(BD_out%f(i),BD_in%f(i)); enddo
+
          do i=1,6;  call init(BD_out%fg(i),BD_in%fg(i)); enddo
          do i=1,12; call init(BD_out%eg(i),BD_in%eg(i)); enddo
          do i=1,8;  call init(BD_out%cg(i),BD_in%cg(i)); enddo
@@ -74,6 +79,8 @@
          implicit none
          type(block_domain),intent(inout) :: BD
          integer :: i
+         do i=1,6;  call delete(BD%f(i)); enddo
+
          do i=1,6;  call delete(BD%fg(i)); enddo
          do i=1,12; call delete(BD%eg(i)); enddo
          do i=1,8;  call delete(BD%cg(i)); enddo
@@ -93,6 +100,8 @@
          type(block_domain),intent(in) :: BD
          character(len=*),intent(in) :: name
          integer :: i
+         do i=1,6;  call print(BD%f(i),name); enddo
+
          do i=1,6;  call print(BD%fg(i),name); enddo
          do i=1,12; call print(BD%eg(i),name); enddo
          do i=1,8;  call print(BD%cg(i),name); enddo
@@ -111,6 +120,8 @@
          type(block_domain),intent(inout) :: BD
          integer,intent(in) :: un
          integer :: i
+         do i=1,6;  call display(BD%f(i),un); enddo
+
          do i=1,6;  call display(BD%fg(i),un); enddo
          do i=1,12; call display(BD%eg(i),un); enddo
          do i=1,8;  call display(BD%cg(i),un); enddo
@@ -129,6 +140,8 @@
          type(block_domain),intent(in) :: BD
          integer,intent(in) :: un
          integer :: i
+         do i=1,6;  call export(BD%f(i),un); enddo
+
          do i=1,6;  call export(BD%fg(i),un); enddo
          do i=1,12; call export(BD%eg(i),un); enddo
          do i=1,8;  call export(BD%cg(i),un); enddo
@@ -157,6 +170,8 @@
          type(block_domain),intent(inout) :: BD
          integer,intent(in) :: un
          integer :: i
+         do i=1,6;  call import(BD%f(i),un); enddo
+
          do i=1,6;  call import(BD%fg(i),un); enddo
          do i=1,12; call import(BD%eg(i),un); enddo
          do i=1,8;  call import(BD%cg(i),un); enddo

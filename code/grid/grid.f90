@@ -13,6 +13,7 @@
        public :: initProps
        public :: snip,pop
 
+       public :: get_face_GI
        public :: get_face_b,   get_face_g,   get_face_i
        public :: get_edge_b,   get_edge_g,   get_edge_i
        public :: get_corner_b, get_corner_g, get_corner_i
@@ -45,16 +46,18 @@
        interface snip;               module procedure snip_grid;               end interface
        interface pop;                module procedure pop_grid;                end interface
 
-       interface get_face_b;         module procedure get_face_grid_b;         end interface
-       interface get_edge_b;         module procedure get_edge_grid_b;         end interface
-       interface get_corner_b;       module procedure get_corner_grid_b;       end interface
+       interface get_face_GI;         module procedure get_face_grid_GI;       end interface
 
        interface get_face_g;         module procedure get_face_grid_g;         end interface
-       interface get_edge_g;         module procedure get_edge_grid_g;         end interface
-       interface get_corner_g;       module procedure get_corner_grid_g;       end interface
-
+       interface get_face_b;         module procedure get_face_grid_b;         end interface
        interface get_face_i;         module procedure get_face_grid_i;         end interface
+
+       interface get_edge_g;         module procedure get_edge_grid_g;         end interface
+       interface get_edge_b;         module procedure get_edge_grid_b;         end interface
        interface get_edge_i;         module procedure get_edge_grid_i;         end interface
+
+       interface get_corner_g;       module procedure get_corner_grid_g;       end interface
+       interface get_corner_b;       module procedure get_corner_grid_b;       end interface
        interface get_corner_i;       module procedure get_corner_grid_i;       end interface
 
        contains
@@ -219,6 +222,16 @@
        ! ******************** GET SURFACE / EDGE / CORNER ********************
        ! *********************************************************************
        ! *********************************************************************
+
+       subroutine get_face_grid_GI(g,g_in,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: face
+         call init(g,g_in)
+         if (min_face(face)) call get_GI(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_GI(g%c(dir_given_face(face)), 1)
+       end subroutine
 
        subroutine get_face_grid_g(g,g_in,face)
          implicit none
