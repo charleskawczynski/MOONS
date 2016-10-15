@@ -165,7 +165,7 @@
          type(grid),intent(in) :: g1,g2
          integer,intent(in) :: dir,p
          real(cp),intent(in) :: tol
-         call init(OL_inout,get_C_overlap((/g1%c(dir),g2%c(dir)/),tol,'define_C',p))
+         call init(OL_inout,get_C_overlap((/g1%c(dir),g2%c(dir)/),tol,p))
        end subroutine
 
        subroutine define_N(OL_inout,g1,g2,dir,tol,p)
@@ -174,7 +174,7 @@
          type(grid),intent(in) :: g1,g2
          integer,intent(in) :: dir,p
          real(cp),intent(in) :: tol
-         call init(OL_inout,get_N_overlap((/g1%c(dir),g2%c(dir)/),tol,'define_N',p))
+         call init(OL_inout,get_N_overlap((/g1%c(dir),g2%c(dir)/),tol,p))
        end subroutine
 
        subroutine p_from_boundary_C(OL_out,OL_in,g1,g2,dir,tol,p)
@@ -184,7 +184,7 @@
          type(grid),intent(in) :: g1,g2
          integer,intent(in) :: dir,p
          real(cp),intent(in) :: tol
-         call init(OL_out,get_p_from_boundary_C(OL_in,(/g1%c(dir),g2%c(dir)/),tol,'p_from_boundary_C',p))
+         call init(OL_out,get_p_from_boundary_C(OL_in,(/g1%c(dir),g2%c(dir)/),tol,p))
        end subroutine
 
        subroutine p_from_boundary_N(OL_out,OL_in,g1,g2,dir,tol,p)
@@ -194,7 +194,7 @@
          type(grid),intent(in) :: g1,g2
          integer,intent(in) :: dir,p
          real(cp),intent(in) :: tol
-         call init(OL_out,get_p_from_boundary_N(OL_in,(/g1%c(dir),g2%c(dir)/),tol,'p_from_boundary_N',p))
+         call init(OL_out,get_p_from_boundary_N(OL_in,(/g1%c(dir),g2%c(dir)/),tol,p))
        end subroutine
 
        ! *********************************************************************

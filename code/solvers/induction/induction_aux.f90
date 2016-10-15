@@ -10,7 +10,6 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
-       use ops_internal_BC_mod
        use probe_mod
        use ops_norms_mod
 

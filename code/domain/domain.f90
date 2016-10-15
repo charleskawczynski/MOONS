@@ -2,7 +2,7 @@
        use current_precision_mod
        use IO_tools_mod
        use datatype_conversion_mod
-       use subdomain_mod
+       use physical_sub_domain_mod
        use data_location_mod
        use grid_mod
        use mesh_mod
@@ -14,26 +14,26 @@
 
        public :: add,init_props
 
-       interface init;        module procedure init_domain_mesh;      end interface
-       interface init;        module procedure init_domain_grid;      end interface
-       interface init;        module procedure init_domain_copy;      end interface
-       interface delete;      module procedure delete_domain;         end interface
-       interface display;     module procedure display_domain;        end interface
-       interface display;     module procedure display_domain_wrapper;end interface
-       interface print;       module procedure print_domain;          end interface
-       interface export;      module procedure export_domain;         end interface
-       interface import;      module procedure import_domain;         end interface
-       interface export;      module procedure export_domain_wrapper; end interface
-       interface import;      module procedure import_domain_wrapper; end interface
+       interface init;        module procedure init_domain_mesh;           end interface
+       interface init;        module procedure init_domain_grid;           end interface
+       interface init;        module procedure init_domain_copy;           end interface
+       interface delete;      module procedure delete_domain;              end interface
+       interface display;     module procedure display_domain;             end interface
+       interface display;     module procedure display_domain_wrapper;     end interface
+       interface print;       module procedure print_domain;               end interface
+       interface export;      module procedure export_domain;              end interface
+       interface import;      module procedure import_domain;              end interface
+       interface export;      module procedure export_domain_wrapper;      end interface
+       interface import;      module procedure import_domain_wrapper;      end interface
 
-       interface add;         module procedure add_subdomain;         end interface
-       interface add;         module procedure add_domain_grid;       end interface
+       interface add;         module procedure add_physical_sub_domain;    end interface
+       interface add;         module procedure add_domain_grid;            end interface
 
-       interface init_props;  module procedure init_props_domain;     end interface
+       interface init_props;  module procedure init_props_domain;          end interface
 
        type domain
-         integer :: s ! Number of subdomains
-         type(subdomain),dimension(:),allocatable :: sd
+         integer :: s ! Number of physical_sub_domains
+         type(physical_sub_domain),dimension(:),allocatable :: sd
          logical :: defined = .false.
        end type
 
@@ -47,10 +47,10 @@
          implicit none
          type(domain),intent(inout) :: D
          type(mesh),intent(in) :: m_R1,m_R2
-         type(subdomain) :: temp
+         type(physical_sub_domain) :: temp
          integer :: j,k
          call delete(D)
-         ! Make all possible/necessary subdomains:
+         ! Make all possible/necessary physical_sub_domains:
          if (m_R2%s.gt.m_R1%s) then
            do k=1,m_R2%s; do j=1,m_R1%s
              call init(temp,m_R1%B(j)%g,m_R2%B(k)%g,j,k)
@@ -95,7 +95,7 @@
            D_out%s = D_in%s
            allocate(D_out%sd(D_out%s))
            do i=1,D_in%s; call init(D_out%sd(i),D_in%sd(i)); enddo
-         else; stop 'Error: trying to copy un-initialized subdomain in domain.f90'
+         else; stop 'Error: trying to copy un-initialized physical_sub_domain in domain.f90'
          endif
          D_out%defined = D_in%defined
        end subroutine
@@ -117,7 +117,7 @@
          type(domain),intent(in) :: D
          character(len=*),intent(in) :: name
          integer :: i
-         write(*,*) 'N-subdomains = ',D%s
+         write(*,*) 'N-physical_sub_domains = ',D%s
          do i=1,D%s; call print(D%sd(i),name//'_'//int2str(i)); enddo
        end subroutine
 
@@ -194,17 +194,17 @@
          type(domain),intent(inout) :: D
          type(grid),intent(in) :: g_R1,g_R2
          integer,intent(in) :: g_id_1,g_id_2
-         type(subdomain) :: temp
+         type(physical_sub_domain) :: temp
          call init(temp,g_R1,g_R2,g_id_1,g_id_2)
          if (all(temp%defined)) call add(D,temp)
          call delete(temp)
          D%defined = size(D%sd).gt.0
        end subroutine
 
-       subroutine add_subdomain(D,sd)
+       subroutine add_physical_sub_domain(D,sd)
          implicit none
          type(domain),intent(inout) :: D
-         type(subdomain),intent(in) :: sd
+         type(physical_sub_domain),intent(in) :: sd
          type(domain) :: temp
          integer :: i
          if (.not.allocated(D%sd)) then

@@ -23,9 +23,7 @@
        use init_J_interior_mod
        use init_Sigma_mod
        use ops_embedExtract_mod
-       use ops_internal_BC_mod
        use geometric_region_mod
-       use BEM_solver_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -214,10 +212,7 @@
          call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
          call embedEdge(ind%sigmaInv_edge,sigma_temp_E,MD_sigma)
          call delete(sigma_temp_E)
-         ! call insulate_lid(ind%sigmaInv_edge,ind%m,1.0_cp/sig_local_over_sig_f)
 
-         ! call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
-         ! call treatInterface(ind%sigmaInv_edge,.false.) ! Logical = take_high_value
          if (ind%SP%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
@@ -619,28 +614,6 @@
          call delete(vars(i))
          enddo
          call close_and_message(un,str(DT%e_budget),'E_M_budget_terms')
-       end subroutine
-
-       subroutine insulate_lid(S,m,sigma_insulate)
-         implicit none
-         type(VF),intent(inout) :: S
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: sigma_insulate
-         call insulate_lid_SF(S%x,m,sigma_insulate)
-         call insulate_lid_SF(S%z,m,sigma_insulate)
-       end subroutine
-
-       subroutine insulate_lid_SF(S,m,sigma_insulate)
-         implicit none
-         type(SF),intent(inout) :: S
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: sigma_insulate
-         integer :: t,i,j,k
-         real(cp) :: tol
-         tol = 10.0_cp**(-10.0_cp)
-         do t=1,m%s; do k=1,S%BF(t)%GF%s(3);do j=1,S%BF(t)%GF%s(2);do i=1,S%BF(t)%GF%s(1)
-         if (abs(m%B(t)%g%c(2)%hn(j)-1.0_cp).lt.tol) S%BF(t)%GF%f(i,j,k) = sigma_insulate
-         enddo; enddo; enddo; enddo
        end subroutine
 
        end module

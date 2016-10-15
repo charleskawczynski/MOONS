@@ -6,7 +6,7 @@
        use coordinate_stretch_parameters_mod
        use grid_mod
        use grid_genHelper_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_mod
        implicit none
 

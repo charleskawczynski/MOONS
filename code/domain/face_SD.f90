@@ -57,8 +57,7 @@
          call delete(FSD)
          do i=1,6
            dir = dir_given_face(i)
-           call init(temp,g_b(i),g,i,0,tol,0) ! Seems okay
-           ! call init(temp,g,g_b(i),0,i,tol,0) ! Seems broken
+           call init(temp,g_b(i),g,i,0,tol,0)
            call init(FSD%G(i),temp)
            call init(FSD%B(i),temp)
            call init(FSD%I(i),temp)

@@ -28,6 +28,7 @@
        type physical_sub_domain
          type(sub_domain) :: total
          type(sub_domain) :: physical
+         logical :: defined = .false.
        end type
 
        contains
@@ -45,6 +46,8 @@
          tol = 10.0_cp**(-12.0_cp)
          call init(PS%total,g_R1,g_R2,g_R1_id,g_R2_id,tol,0)
          call init(PS%physical,g_R1,g_R2,g_R1_id,g_R2_id,tol,1)
+         ! PS%defined = PS%total%defined.and.PS%physical%defined
+         PS%defined = PS%physical%defined
        end subroutine
 
        subroutine init_copy_physical_sub_domain(PS,PS_in)
@@ -53,6 +56,7 @@
          type(physical_sub_domain),intent(in) :: PS_in
          call init(PS%total,PS_in%total)
          call init(PS%physical,PS_in%physical)
+         PS%defined = PS_in%defined
        end subroutine
 
        subroutine delete_physical_sub_domain(PS)
@@ -60,6 +64,7 @@
          type(physical_sub_domain),intent(inout) :: PS
          call delete(PS%total)
          call delete(PS%physical)
+         PS%defined = .false.
        end subroutine
 
        subroutine display_physical_sub_domain(PS,name,u)
@@ -68,6 +73,7 @@
          character(len=*),intent(in) :: name
          integer,intent(in) :: u
          write(u,*) ' ********** physical_sub_domain ************ '//name
+         write(u,*) 'defined = ',PS%defined
          call display(PS%total,name,u)
          call display(PS%physical,name,u)
          write(u,*) ' ********************************* '
@@ -84,6 +90,7 @@
          implicit none
          type(physical_sub_domain),intent(in) :: PS
          integer,intent(in) :: u
+         write(u,*) 'defined = '; write(u,*) PS%defined
          call export(PS%total,u)
          call export(PS%physical,u)
        end subroutine
@@ -92,6 +99,7 @@
          implicit none
          type(physical_sub_domain),intent(inout) :: PS
          integer,intent(in) :: u
+         read(u,*); read(u,*) PS%defined
          call import(PS%total,u)
          call import(PS%physical,u)
        end subroutine

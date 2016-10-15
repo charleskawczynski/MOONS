@@ -2,7 +2,6 @@
        use current_precision_mod
        use apply_BCs_faces_raw_mod
        use GF_mod
-       use face_domain_mod
        use face_SD_mod
 
        ! From apply_BCs_faces_raw.f90:

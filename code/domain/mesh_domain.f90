@@ -1,7 +1,7 @@
        module mesh_domain_mod
        use IO_tools_mod
-       use domain_mod
-       use subdomain_mod
+       use physical_domain_mod
+       use physical_sub_domain_mod
        use mesh_mod
        implicit none
 
@@ -24,7 +24,7 @@
        interface init_other;  module procedure init_other_mesh_domain;     end interface
 
        type mesh_domain
-         type(domain) :: D
+         type(physical_domain) :: D
          type(mesh) :: m_R1,m_R2
        end type
 
@@ -119,7 +119,7 @@
        subroutine add_subdomain(MD,sd)
          implicit none
          type(mesh_domain),intent(inout) :: MD
-         type(subdomain),intent(in) :: sd
+         type(physical_sub_domain),intent(in) :: sd
          call add(MD%D,sd)
        end subroutine
 

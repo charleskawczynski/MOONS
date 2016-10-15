@@ -29,14 +29,14 @@
           do i=1,m%s
             ! if (.not.m%B(i)%g%st_faces(1)%TF) then
               if (is_Neumann(x%BF(i)%BCs%bct_f(1))) then
-                f_mod%BF(i)%GF%f(2,:,:) = f%BF(i)%GF%f(2,:,:)/2.0_cp
+                f_mod%BF(i)%GF%f(2,:,:) = f%BF(i)%GF%f(2,:,:)*0.5_cp
               elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(1))) then
                 f_mod%BF(i)%GF%f(2,:,:) = 0.0_cp
               endif
             ! endif
             ! if (.not.m%B(i)%g%st_faces(2)%TF) then
               if (is_Neumann(x%BF(i)%BCs%bct_f(2))) then
-                f_mod%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:) = f%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:)/2.0_cp
+                f_mod%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:) = f%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:)*0.5_cp
               elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(2))) then
                 f_mod%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:) = 0.0_cp
               endif
@@ -47,14 +47,14 @@
           do i=1,m%s
             ! if (.not.m%B(i)%g%st_faces(3)%TF) then
               if (is_Neumann(x%BF(i)%BCs%bct_f(3))) then
-                f_mod%BF(i)%GF%f(:,2,:) = f%BF(i)%GF%f(:,2,:)/2.0_cp
+                f_mod%BF(i)%GF%f(:,2,:) = f%BF(i)%GF%f(:,2,:)*0.5_cp
               elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(3))) then
                 f_mod%BF(i)%GF%f(:,2,:) = 0.0_cp
               endif
             ! endif
             ! if (.not.m%B(i)%g%st_faces(4)%TF) then
               if (is_Neumann(x%BF(i)%BCs%bct_f(4))) then
-                f_mod%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:) = f%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:)/2.0_cp
+                f_mod%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:) = f%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:)*0.5_cp
               elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(4))) then
                 f_mod%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:) = 0.0_cp
               endif
@@ -65,14 +65,14 @@
           do i=1,m%s
             ! if (.not.m%B(i)%g%st_faces(5)%TF) then
               if (is_Neumann(x%BF(i)%BCs%bct_f(5))) then
-                f_mod%BF(i)%GF%f(:,:,2) = f%BF(i)%GF%f(:,:,2)/2.0_cp
+                f_mod%BF(i)%GF%f(:,:,2) = f%BF(i)%GF%f(:,:,2)*0.5_cp
               elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(5))) then
                 f_mod%BF(i)%GF%f(:,:,2) = 0.0_cp
               endif
             ! endif
             ! if (.not.m%B(i)%g%st_faces(6)%TF) then
               if (is_Neumann(x%BF(i)%BCs%bct_f(6))) then
-                f_mod%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1) = f%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1)/2.0_cp
+                f_mod%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1) = f%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1)*0.5_cp
               elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(6))) then
                 f_mod%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1) = 0.0_cp
               endif

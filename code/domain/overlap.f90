@@ -15,13 +15,6 @@
        public :: get_N_overlap
        public :: get_C_overlap
 
-       public :: get_ghost_N
-       public :: get_boundary_N
-       public :: get_interior_N
-       ! public :: get_ghost_C
-       ! public :: get_boundary_C
-       ! public :: get_interior_C
-
        public :: get_p_from_boundary_N
        public :: get_p_from_boundary_C
 
@@ -35,10 +28,6 @@
        interface display;       module procedure display_overlap;           end interface
        interface export;        module procedure export_overlap;            end interface
        interface import;        module procedure import_overlap;            end interface
-
-       interface get_ghost_N;   module procedure get_ghost_N_overlap;       end interface
-       interface get_boundary_N;module procedure get_boundary_N_overlap;    end interface
-       interface get_interior_N;module procedure get_interior_N_overlap;    end interface
 
        interface get_p_from_boundary_N;module procedure get_p_from_boundary_N_OL;    end interface
        interface get_p_from_boundary_C;module procedure get_p_from_boundary_C_OL;    end interface
@@ -166,69 +155,16 @@
        ! *************************** BOUNDARY OVERLAPS **************************
        ! ************************************************************************
 
-       function get_ghost_N_overlap(OL,c,tol) result(G)
+       function get_p_from_boundary_N_OL(OL,c,tol,p) result(G)
          implicit none
          type(overlap),intent(in) :: OL
          type(coordinates),dimension(2),intent(in) :: c
          real(cp),intent(in) :: tol
-         type(overlap) :: G
-         call init(G,OL)
-         if (G%iR.eq.2) then
-               if (inside_OL(c(1)%hn(1),c(2)%hn(1),c(2)%hn(1),tol)) then
-           G%i2(2)=G%i2(1); G%i1(2)=G%i1(1)
-           elseif (inside_OL(c(1)%hn(c(1)%sn),c(2)%hn(c(2)%sn),c(2)%hn(c(2)%sn),tol)) then
-           G%i2(1)=G%i2(2); G%i1(1)=G%i1(2)
-           endif
-         endif
-       end function
-
-       function get_boundary_N_overlap(OL,c,tol) result(G)
-         implicit none
-         type(overlap),intent(in) :: OL
-         type(coordinates),dimension(2),intent(in) :: c
-         real(cp),intent(in) :: tol
-         type(overlap) :: G
-         call init(G,OL)
-         if (G%iR.eq.2) then
-               if (inside_OL(c(1)%hn(1),c(2)%hn(1),c(2)%hn(1),tol)) then
-           G%i2(2)=G%i2(1); G%i1(2)=G%i1(1)
-           elseif (inside_OL(c(1)%hn(c(1)%sn),c(2)%hn(c(2)%sn),c(2)%hn(c(2)%sn),tol)) then
-           G%i2(1)=G%i2(2); G%i1(1)=G%i1(2)
-           endif
-         endif
-       end function
-
-       function get_interior_N_overlap(OL,c,p,tol) result(G)
-         implicit none
-         type(overlap),intent(in) :: OL
-         type(coordinates),dimension(2),intent(in) :: c
-         integer,intent(in) :: p
-         real(cp),intent(in) :: tol
-         type(overlap) :: G
-         call init(G,OL)
-         if (G%iR.eq.2) then
-               if (inside_OL(c(1)%hn(2),c(2)%hn(2),c(2)%hn(2),tol)) then
-           G%i2(1)=G%i2(2); G%i1(1)=G%i1(2)
-           elseif (inside_OL(c(1)%hn(c(1)%sn-1),c(2)%hn(c(2)%sn-1),c(2)%hn(c(2)%sn-1),tol)) then
-           G%i2(2)=G%i2(1); G%i1(2)=G%i1(1)
-           endif
-         endif
-       end function
-
-       function get_p_from_boundary_N_OL(OL,c,tol,caller,p) result(G)
-         implicit none
-         type(overlap),intent(in) :: OL
-         type(coordinates),dimension(2),intent(in) :: c
-         real(cp),intent(in) :: tol
-         character(len=*),intent(in) :: caller
          integer,intent(in) :: p
          type(overlap) :: G
          call init(G,OL)
          if (p.lt.1) stop 'Error: p must be > 1 in get_p_from_boundary_N_overlap in overlap.f90'
          if (G%iR.eq.3) then ! Surface overlap
-           ! write(*,*) ' -------------------------------------------------- '
-           ! write(*,*) 'caller,p = ',caller,p
-           ! call print(OL)
            if (p.gt.G%iR) stop 'Error: bad input to get_p_from_boundary_N_overlap in overlap.f90'
                if (inside_OL(c(1)%hn(p),c(2)%hn(p),c(2)%hn(p),tol)) then
            G%i2(2) = G%i2(1)-1+p ! move to far left side. Too far! go p back!
@@ -245,12 +181,11 @@
          call init_props(G)
        end function
 
-       function get_p_from_boundary_C_OL(OL,c,tol,caller,p) result(G)
+       function get_p_from_boundary_C_OL(OL,c,tol,p) result(G)
          implicit none
          type(overlap),intent(in) :: OL
          type(coordinates),dimension(2),intent(in) :: c
          real(cp),intent(in) :: tol
-         character(len=*),intent(in) :: caller
          integer,intent(in) :: p
          type(overlap) :: G
          call init(G,OL)
@@ -276,25 +211,23 @@
        ! ****************************** GET OVERLAP *****************************
        ! ************************************************************************
 
-       function get_N_overlap_OL(c,tol,caller,p) result (OL)
+       function get_N_overlap_OL(c,tol,p) result (OL)
          implicit none
          type(coordinates),dimension(2),intent(in) :: c
          real(cp),intent(in) :: tol
-         character(len=*),intent(in) :: caller
          integer,intent(in) :: p
          type(overlap) :: OL
          if (p.ge.0) then
-           if ((c(1)%sn-p.gt.0).and.(c(2)%sn-p.gt.0)) then;OL = get_N_overlap_OL_blind(c,tol,caller,p)
-           else;                                           OL = get_N_overlap_OL_blind(c,tol,caller,0)
+           if ((c(1)%sn-p.gt.0).and.(c(2)%sn-p.gt.0)) then;OL = get_N_overlap_OL_blind(c,tol,p)
+           else;                                           OL = get_N_overlap_OL_blind(c,tol,0)
            endif
-         else; write(*,*) 'Error: bad input to get_N_overlap_OL from ',caller,' in overlap.f90'; stop 'Done'
+         else; stop 'Error: bad input to get_N_overlap_OL in overlap.f90'
          endif
        end function
-       function get_N_overlap_OL_blind(c,tol,caller,p) result (OL)
+       function get_N_overlap_OL_blind(c,tol,p) result (OL)
          implicit none
          type(coordinates),dimension(2),intent(in) :: c
          real(cp),intent(in) :: tol
-         character(len=*),intent(in) :: caller
          integer,intent(in) :: p
          type(overlap) :: OL
          integer :: i,j,p1,p2
@@ -316,25 +249,23 @@
          call init_props(OL)
        end function
 
-       function get_C_overlap_OL(c,tol,caller,p) result (OL)
+       function get_C_overlap_OL(c,tol,p) result (OL)
          implicit none
          type(coordinates),dimension(2),intent(in) :: c
          real(cp),intent(in) :: tol
-         character(len=*),intent(in) :: caller
          integer,intent(in) :: p
          type(overlap) :: OL
          if (p.ge.0) then
-           if ((c(1)%sc-p.gt.0).and.(c(2)%sc-p.gt.0)) then;OL = get_C_overlap_OL_blind(c,tol,caller,p)
-           else;                                           OL = get_C_overlap_OL_blind(c,tol,caller,0)
+           if ((c(1)%sc-p.gt.0).and.(c(2)%sc-p.gt.0)) then;OL = get_C_overlap_OL_blind(c,tol,p)
+           else;                                           OL = get_C_overlap_OL_blind(c,tol,0)
            endif
-         else; write(*,*) 'Error: bad input to get_C_overlap_OL from ',caller,' in overlap.f90'; stop 'Done'
+         else; stop 'Error: bad input to get_C_overlap_OL in overlap.f90'
          endif
        end function
-       function get_C_overlap_OL_blind(c,tol,caller,p) result (OL)
+       function get_C_overlap_OL_blind(c,tol,p) result (OL)
          implicit none
          type(coordinates),dimension(2),intent(in) :: c
          real(cp),intent(in) :: tol
-         character(len=*),intent(in) :: caller
          integer,intent(in) :: p
          type(overlap) :: OL
          integer :: i,j,p1,p2

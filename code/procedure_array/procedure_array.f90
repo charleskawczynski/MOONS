@@ -265,6 +265,10 @@
          do i=1,PA%N
          call insist_defined(PA%SP(i),caller)
          enddo
+         ! if (.not.PA%defined) then
+         !   write(*,*) 'Error: PA must be defined in ',caller,' in procedure_array.f90'
+         !   stop 'Done'
+         ! endif
        end subroutine
 
        subroutine insist_allocated_PA(PA,caller)

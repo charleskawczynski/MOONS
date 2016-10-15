@@ -5,7 +5,7 @@
        use grid_connect_mod
        use coordinate_stretch_parameters_mod
        use grid_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_mod
        implicit none
 
@@ -171,7 +171,7 @@
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
          real(cp) :: tw,tf
@@ -193,7 +193,7 @@
          call ext_Roberts_B_IO(g,tw,N_w,2)
          call ext_Roberts_B_IO(g,tw,N_w,3)
 
-         ! Define domain for electrical conductivity
+         ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
          call initProps(m_sigma)
          call patch(m_sigma)
@@ -235,7 +235,7 @@
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
          real(cp) :: tw
@@ -246,11 +246,11 @@
          N_w = 3
          ! Wall
          call ext_Roberts_near_IO(g,tw,N_w,2) ! Comment / uncomment for Shercliff / Hunt flow
-         ! Define domain for electrical conductivity
+         ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
          call initProps(m_sigma)
          call patch(m_sigma)
-         ! Define domain for magnetic field domain
+         ! Define mesh_domain for magnetic field mesh_domain
          call add(m_ind,g)
          call initProps(m_ind)
          call patch(m_ind)
@@ -264,18 +264,18 @@
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
          integer :: N_w
          call delete(m_ind)
          call init(g,m_mom%B(1)%g)
          N_w = 3
-         ! Define domain for electrical conductivity
+         ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
          call initProps(m_sigma)
          call patch(m_sigma)
-         ! Define domain for magnetic field domain
+         ! Define mesh_domain for magnetic field mesh_domain
          call add(m_ind,g)
          call initProps(m_ind)
          call patch(m_ind)

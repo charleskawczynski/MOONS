@@ -129,7 +129,9 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in extractCC_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EX(CC_i%BF(MD%D%sd(i)%g_R1_id)%GF,CC_t%BF(MD%D%sd(i)%g_R2_id)%GF,EE_shape(CC_i,MD,i),'extractCC_SF')
+         call EX(CC_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
+                 CC_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
+                 EE_shape(CC_i,MD,i),'extractCC_SF')
          enddo
        end subroutine
        subroutine extractCC_VF(CC_i,CC_t,MD)
@@ -153,7 +155,9 @@
          if (.not.face_i%is_Face) stop 'Error: face data not found (2) in extractFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EX(face_i%BF(MD%D%sd(i)%g_R1_id)%GF,face_t%BF(MD%D%sd(i)%g_R2_id)%GF,EE_shape(face_i,MD,i),'extractFace_SF')
+         call EX(face_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
+                 face_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
+                 EE_shape(face_i,MD,i),'extractFace_SF')
          enddo
        end subroutine
        subroutine extractFace_VF(face_i,face_t,MD) ! Extracts Lorentz force from induction to momentum
@@ -177,7 +181,9 @@
          if (.not.edge_t%is_Edge) stop 'Error: edge data not found (2) in extractEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EX(edge_i%BF(MD%D%sd(i)%g_R1_id)%GF,edge_t%BF(MD%D%sd(i)%g_R2_id)%GF,EE_shape(edge_i,MD,i),'extractEdge_SF')
+         call EX(edge_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
+                 edge_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
+                 EE_shape(edge_i,MD,i),'extractEdge_SF')
          enddo
        end subroutine
        subroutine extractEdge_VF(edge_i,edge_t,MD) ! Auxiliary (energy budget)
@@ -228,7 +234,9 @@
          if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EM(CC_t%BF(MD%D%sd(i)%g_R2_id)%GF,CC_i%BF(MD%D%sd(i)%g_R1_id)%GF,EE_shape(CC_t,MD,i),'embedCC_SF')
+         call EM(CC_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
+                 CC_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
+                 EE_shape(CC_t,MD,i),'embedCC_SF')
          enddo
        end subroutine
        subroutine embedCC_VF(CC_t,CC_i,MD)
@@ -252,7 +260,9 @@
          if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EM(Face_t%BF(MD%D%sd(i)%g_R2_id)%GF,Face_i%BF(MD%D%sd(i)%g_R1_id)%GF,EE_shape(Face_t,MD,i),'embedFace_SF')
+         call EM(Face_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
+                 Face_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
+                 EE_shape(Face_t,MD,i),'embedFace_SF')
          enddo
        end subroutine
        subroutine embedFace_VF(Face_t,Face_i,MD)
@@ -276,7 +286,9 @@
          if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
 #endif
          do i=1,MD%D%s
-         call EM(Edge_t%BF(MD%D%sd(i)%g_R2_id)%GF,Edge_i%BF(MD%D%sd(i)%g_R1_id)%GF,EE_shape(Edge_t,MD,i),'embedFace_VF')
+         call EM(Edge_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
+                 Edge_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
+                 EE_shape(Edge_t,MD,i),'embedFace_VF')
          enddo
        end subroutine
        subroutine embedEdge_VF(Edge_t,Edge_i,MD) ! Embeds velocity from momentum into induction
@@ -317,24 +329,31 @@
          type(mesh_domain),intent(in) :: MD
          integer,intent(in) :: i
          type(overlap),dimension(3) :: s
+         integer :: j
+         ! s = MD%D%sd(i)%physical%M
+         ! if (f%is_Face) then
+         !   s = MD%D%sd(i)%physical%CE_all
+         !   s(f%face) = MD%D%sd(i)%physical%NB_all(f%face)
+         ! elseif (f%is_Edge) then
+         !   s = MD%D%sd(i)%physical%NB_all
+         !   s(f%edge) = MD%D%sd(i)%physical%CE_all(f%edge)
+         ! elseif (f%is_CC) then
+         !   s = MD%D%sd(i)%physical%CE_all
+         ! elseif (f%is_Node) then
+         !   s = MD%D%sd(i)%physical%NB_all
+         ! else; stop 'Error: no type found in ops_embedExtract.f90'
+         ! endif
+
          if (f%is_Face) then
-           select case (f%face)
-           case (1); s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%CE_all(3)/)
-           case (2); s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%CE_all(3)/)
-           case (3); s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%NB_all(3)/)
-           case default; stop 'Error: f%face must = 1,2,3 in ops_embedExtract.f90'
-           end select
+           do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
+           call init(s(f%face),MD%D%sd(i)%physical%N(f%face))
          elseif (f%is_Edge) then
-           select case (f%edge)
-           case (1); s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%NB_all(3)/)
-           case (2); s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%NB_all(3)/)
-           case (3); s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%CE_all(3)/)
-           case default; stop 'Error: f%edge must = 1,2,3 in ops_embedExtract.f90'
-           end select
+           do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
+           call init(s(f%edge),MD%D%sd(i)%physical%C(f%edge))
          elseif (f%is_CC) then
-           s = (/MD%D%sd(i)%CE_all(1),MD%D%sd(i)%CE_all(2),MD%D%sd(i)%CE_all(3)/)
+           do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
          elseif (f%is_Node) then
-           s = (/MD%D%sd(i)%NB_all(1),MD%D%sd(i)%NB_all(2),MD%D%sd(i)%NB_all(3)/)
+           do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
          else; stop 'Error: no type found in ops_embedExtract.f90'
          endif
        end function
@@ -347,6 +366,6 @@
        !   type(overlap),dimension(3) :: s
        !   call print(MD%D%sd(i),'EE_shape')
        !   stop 'Done in ops_embedExtract.f90'
-       !   s = MD%D%sd(i)%phys_all
+       !   s = MD%D%sd(i)%physical%phys_all
        ! end function
        end module

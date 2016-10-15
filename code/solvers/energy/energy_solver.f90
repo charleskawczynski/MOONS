@@ -4,7 +4,6 @@
        use SF_mod
        use VF_mod
        use TF_mod
-       use domain_mod
        use norms_mod
        use ops_aux_mod
        use ops_interp_mod

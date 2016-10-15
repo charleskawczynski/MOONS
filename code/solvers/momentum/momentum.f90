@@ -190,23 +190,16 @@
          if (mom%SP%solveMomentum) call print_BCs(mom%p,'p')
          if (mom%SP%solveMomentum) call export_BCs(mom%p,str(DT%U_BCs),'p')
 
-         ! Use mom%m later, for no just m
          call init_Ufield(mom%U,m,mom%SP%restartU,str(DT%U_f))
          call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
          write(*,*) '     Field initialized'
          
          call export_mesh(mom%MB%m,str(DT%meshes),'mesh_block',0)
          write(*,*) '     about to apply p BCs'
-         ! stop 'Done in momentum.f90'
-         ! call random_noise(mom%p); call export_raw(mom%m,mom%p,str(DT%U_f),'p_before',0)
          call apply_BCs(mom%p,m)
-         ! call export_raw(mom%m,mom%p,str(DT%U_f),'p_after',0)
          write(*,*) '     P BCs applied'
          write(*,*) '     about to apply U BCs'
-         ! call random_noise(mom%U); call export_raw(mom%m,mom%U,str(DT%U_f),'U_before',0)
          call apply_BCs(mom%U,m)
-         ! call export_raw(mom%m,mom%U,str(DT%U_f),'U_after',0)
-         ! stop 'Done in momentum.f90'
          write(*,*) '     U BCs applied'
 
          call face2CellCenter(mom%U_CC,mom%U,mom%m)

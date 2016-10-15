@@ -329,7 +329,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%CI_all(dir),get_C_overlap((/R1,R2/),tol,'define_CI_all',0))
+         call init(SD%CI_all(dir),get_C_overlap((/R1,R2/),tol,0))
        end subroutine
 
        subroutine define_NI_all(SD,R1,R2,dir,tol)
@@ -338,7 +338,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%NI_all(dir),get_N_overlap((/R1,R2/),tol,'define_NI_all',0))
+         call init(SD%NI_all(dir),get_N_overlap((/R1,R2/),tol,0))
        end subroutine
 
        subroutine define_CE_all(SD,R1,R2,dir,tol)
@@ -347,7 +347,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%CE_all(dir),get_C_overlap((/R1,R2/),tol,'define_CE_all',1))
+         call init(SD%CE_all(dir),get_C_overlap((/R1,R2/),tol,1))
        end subroutine
 
        subroutine define_NB_all(SD,R1,R2,dir,tol)
@@ -356,7 +356,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%NB_all(dir),get_N_overlap((/R1,R2/),tol,'define_NB_all',1))
+         call init(SD%NB_all(dir),get_N_overlap((/R1,R2/),tol,1))
        end subroutine
 
        ! *********************************************************************
@@ -384,7 +384,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%NG(dir),get_p_from_boundary_N(SD%NI_all(dir),(/R1,R2/),tol,'define_NG',1))
+         call init(SD%NG(dir),get_p_from_boundary_N(SD%NI_all(dir),(/R1,R2/),tol,1))
        end subroutine
 
        subroutine define_CG(SD,R1,R2,dir,tol)
@@ -393,7 +393,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%CG(dir),get_p_from_boundary_C(SD%CI_all(dir),(/R1,R2/),tol,'define_CG',1))
+         call init(SD%CG(dir),get_p_from_boundary_C(SD%CI_all(dir),(/R1,R2/),tol,1))
        end subroutine
 
        subroutine define_NB(SD,R1,R2,dir,tol)
@@ -402,7 +402,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%NB(dir),get_p_from_boundary_N(SD%NI_all(dir),(/R1,R2/),tol,'define_NB',2))
+         call init(SD%NB(dir),get_p_from_boundary_N(SD%NI_all(dir),(/R1,R2/),tol,2))
        end subroutine
 
        subroutine define_NI(SD,R1,R2,dir,tol)
@@ -411,7 +411,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%NI(dir),get_p_from_boundary_N(SD%NI_all(dir),(/R1,R2/),tol,'define_NI',3))
+         call init(SD%NI(dir),get_p_from_boundary_N(SD%NI_all(dir),(/R1,R2/),tol,3))
        end subroutine
 
        subroutine define_CI(SD,R1,R2,dir,tol)
@@ -420,7 +420,7 @@
          type(coordinates),intent(in) :: R1,R2
          integer,intent(in) :: dir
          real(cp),intent(in) :: tol
-         call init(SD%CI(dir),get_p_from_boundary_C(SD%CI_all(dir),(/R1,R2/),tol,'define_CI',2))
+         call init(SD%CI(dir),get_p_from_boundary_C(SD%CI_all(dir),(/R1,R2/),tol,2))
        end subroutine
 
        ! **********************************************************************

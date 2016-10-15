@@ -140,7 +140,7 @@ FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
-# FCFLAGS += -fopenmp
+FCFLAGS += -fopenmp
 FC_OPTIMIZE += -g -O3
 FC_OPTIMIZE += -D_PARALLELIZE_GF_
 FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_
@@ -190,7 +190,6 @@ VPATH =\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
-	$(SRC_DIR)$(PS)BCs$(PS)face\
 	$(SRC_DIR)$(PS)clock\
 	$(SRC_DIR)$(PS)convergence_rate\
 	$(SRC_DIR)$(PS)coordinates\
@@ -215,7 +214,6 @@ VPATH =\
 	$(SRC_DIR)$(PS)probes\
 	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)procedure_array\
-	$(SRC_DIR)$(PS)solvers$(PS)BEM\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT\
 	$(SRC_DIR)$(PS)solvers$(PS)GS\
@@ -283,15 +281,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)domain$(PS)sub_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)face_SD.f90\
-	$(SRC_DIR)$(PS)domain$(PS)subdomain.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
-	$(SRC_DIR)$(PS)domain$(PS)domain.f90\
-	$(SRC_DIR)$(PS)domain$(PS)face_domain.f90\
+	$(SRC_DIR)$(PS)domain$(PS)physical_domain.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face$(PS)face_Dirichlet_C.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face$(PS)face_Dirichlet_N.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face$(PS)face_Neumann_C.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge_implicit.f90\
@@ -343,8 +337,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_internal_BC.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_BEM.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
@@ -370,7 +362,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)BEM$(PS)BEM_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\

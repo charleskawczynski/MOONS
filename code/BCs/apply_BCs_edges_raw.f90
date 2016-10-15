@@ -42,23 +42,22 @@
        !                           ---------------------------->
        ! 
        use current_precision_mod
-       use coordinates_mod
-       use GF_mod
-       use SF_mod
-       use VF_mod
-       use bctype_mod
-       use boundary_conditions_mod
-       use grid_mod
-       use mesh_mod
        implicit none
 
        private
+       public :: apply_Dirichlet_C
+       public :: apply_Neumann_C
+       public :: apply_Periodic_C
+
+       public :: apply_Dirichlet_N
+       public :: apply_Neumann_N
+       public :: apply_Periodic_N
+
+       public :: apply_Dirichlet_F
+       public :: apply_Neumann_F
+       public :: apply_Periodic_F
 
        real(cp),parameter :: root2 = sqrt(2.0_cp)
-
-       public :: apply_Dirichlet_C, apply_Dirichlet_N, apply_Dirichlet_F
-       public :: apply_Neumann_C,   apply_Neumann_N,   apply_Neumann_F
-       public :: apply_Periodic_C,  apply_Periodic_N,  apply_Periodic_F
 
        contains
 

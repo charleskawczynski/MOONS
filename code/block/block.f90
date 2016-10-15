@@ -12,10 +12,9 @@
 
        type block
          type(grid) :: g                                 ! Bulk
-         type(grid),dimension(:),allocatable :: f        ! Faces (boundary,ghost,interior)
-         type(grid),dimension(:),allocatable :: fg,fb,fi ! Faces (boundary,ghost,interior)
-         type(grid),dimension(:),allocatable :: eg,eb,ei ! Edges (boundary,ghost,interior)
-         type(grid),dimension(:),allocatable :: cg,cb,ci ! Corners (boundary,ghost,interior)
+         type(grid),dimension(:),allocatable :: f,fb ! Faces (boundary,ghost,interior)
+         type(grid),dimension(:),allocatable :: e,eb ! Edges (boundary,ghost,interior)
+         type(grid),dimension(:),allocatable :: c,cb ! Corners (boundary,ghost,interior)
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -49,16 +48,12 @@
          type(block),intent(inout) :: B
          integer :: i
          call delete_FEC_block(B)
-         i = 6;allocate(B%f(i));  do i=1,6;  call get_face_GI( B%f(i),B%g,i);  enddo
-         i = 6;allocate(B%fg(i)); do i=1,6;  call get_face_g(  B%fg(i),B%g,i); enddo
-         i = 6;allocate(B%fb(i)); do i=1,6;  call get_face_b(  B%fb(i),B%g,i); enddo
-         i = 6;allocate(B%fi(i)); do i=1,6;  call get_face_i(  B%fi(i),B%g,i); enddo
-         i =12;allocate(B%eg(i)); do i=1,12; call get_edge_g(  B%eg(i),B%g,i); enddo
-         i =12;allocate(B%eb(i)); do i=1,12; call get_edge_b(  B%eb(i),B%g,i); enddo
-         i =12;allocate(B%ei(i)); do i=1,12; call get_edge_i(  B%ei(i),B%g,i); enddo
-         i = 8;allocate(B%cg(i)); do i=1,8;  call get_corner_g(B%cg(i),B%g,i); enddo
-         i = 8;allocate(B%cb(i)); do i=1,8;  call get_corner_b(B%cb(i),B%g,i); enddo
-         i = 8;allocate(B%ci(i)); do i=1,8;  call get_corner_i(B%ci(i),B%g,i); enddo
+         i=6;  allocate(B%f(i));  do i=1,6; call get_face_GI( B%f(i), B%g,i); enddo
+         i=6;  allocate(B%fb(i)); do i=1,6; call get_face_b(  B%fb(i),B%g,i); enddo
+         i=12; allocate(B%e(i));  do i=1,12;call get_edge_g(  B%e(i), B%g,i); enddo
+         i=12; allocate(B%eb(i)); do i=1,12;call get_edge_b(  B%eb(i),B%g,i); enddo
+         i=8;  allocate(B%c(i));  do i=1,8; call get_corner_g(B%c(i), B%g,i); enddo
+         i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
        end subroutine
 
        subroutine init_block_copy(B_out,B_in)
@@ -69,31 +64,23 @@
          call delete(B_out)
          call init(B_out%g,B_in%g)
          ! call inisist_allocated(B_in,'init_block_copy')
-         i = 6;allocate(B_out%f(i))
-         i = 6;allocate(B_out%fg(i))
-         i = 6;allocate(B_out%fb(i))
-         i = 6;allocate(B_out%fi(i))
+         i=6; allocate(B_out%f(i))
+         i=6; allocate(B_out%fb(i))
 
-         i =12;allocate(B_out%eg(i))
-         i =12;allocate(B_out%eb(i))
-         i =12;allocate(B_out%ei(i))
+         i=12; allocate(B_out%e(i))
+         i=12; allocate(B_out%eb(i))
 
-         i = 8;allocate(B_out%cg(i))
-         i = 8;allocate(B_out%cb(i))
-         i = 8;allocate(B_out%ci(i))
+         i=8; allocate(B_out%c(i))
+         i=8; allocate(B_out%cb(i))
 
          do i=1,6;  call init(B_out%f(i),B_in%f(i)); enddo
-         do i=1,6;  call init(B_out%fg(i),B_in%fg(i)); enddo
          do i=1,6;  call init(B_out%fb(i),B_in%fb(i)); enddo
-         do i=1,6;  call init(B_out%fi(i),B_in%fi(i)); enddo
 
-         do i=1,12; call init(B_out%eg(i),B_in%eg(i)); enddo
+         do i=1,12; call init(B_out%e(i),B_in%e(i)); enddo
          do i=1,12; call init(B_out%eb(i),B_in%eb(i)); enddo
-         do i=1,12; call init(B_out%ei(i),B_in%ei(i)); enddo
 
-         do i=1,8;  call init(B_out%cg(i),B_in%cg(i)); enddo
+         do i=1,8;  call init(B_out%c(i),B_in%c(i)); enddo
          do i=1,8;  call init(B_out%cb(i),B_in%cb(i)); enddo
-         do i=1,8;  call init(B_out%ci(i),B_in%ci(i)); enddo
        end subroutine
 
        subroutine delete_block(B)
@@ -108,17 +95,13 @@
          type(block),intent(inout) :: B
          integer :: i
          if (allocated(B%f)) then; do i=1,6;  call delete(B%f(i)); enddo; deallocate(B%f); endif
-         if (allocated(B%fg)) then; do i=1,6;  call delete(B%fg(i)); enddo; deallocate(B%fg); endif
          if (allocated(B%fb)) then; do i=1,6;  call delete(B%fb(i)); enddo; deallocate(B%fb); endif
-         if (allocated(B%fi)) then; do i=1,6;  call delete(B%fi(i)); enddo; deallocate(B%fi); endif
 
-         if (allocated(B%eg)) then; do i=1,12; call delete(B%eg(i)); enddo; deallocate(B%eg); endif
+         if (allocated(B%e)) then; do i=1,12; call delete(B%e(i)); enddo; deallocate(B%e); endif
          if (allocated(B%eb)) then; do i=1,12; call delete(B%eb(i)); enddo; deallocate(B%eb); endif
-         if (allocated(B%ei)) then; do i=1,12; call delete(B%ei(i)); enddo; deallocate(B%ei); endif
 
-         if (allocated(B%cg)) then; do i=1,8;  call delete(B%cg(i)); enddo; deallocate(B%cg); endif
+         if (allocated(B%c)) then; do i=1,8;  call delete(B%c(i)); enddo; deallocate(B%c); endif
          if (allocated(B%cb)) then; do i=1,8;  call delete(B%cb(i)); enddo; deallocate(B%cb); endif
-         if (allocated(B%ci)) then; do i=1,8;  call delete(B%ci(i)); enddo; deallocate(B%ci); endif
        end subroutine
 
        subroutine display_block(B,un)
@@ -128,17 +111,13 @@
          integer :: i
          call display(B%g,un)
          do i=1,6;  call display(B%f(i),un); enddo
-         do i=1,6;  call display(B%fg(i),un); enddo
          do i=1,6;  call display(B%fb(i),un); enddo
-         do i=1,6;  call display(B%fi(i),un); enddo
 
-         do i=1,12; call display(B%eg(i),un); enddo
+         do i=1,12; call display(B%e(i),un); enddo
          do i=1,12; call display(B%eb(i),un); enddo
-         do i=1,12; call display(B%ei(i),un); enddo
 
-         do i=1,8;  call display(B%cg(i),un); enddo
+         do i=1,8;  call display(B%c(i),un); enddo
          do i=1,8;  call display(B%cb(i),un); enddo
-         do i=1,8;  call display(B%ci(i),un); enddo
        end subroutine
 
        subroutine print_block(B)
@@ -147,17 +126,13 @@
          integer :: i
          call print(B%g)
          do i=1,6;  call print(B%f(i)); enddo
-         do i=1,6;  call print(B%fg(i)); enddo
          do i=1,6;  call print(B%fb(i)); enddo
-         do i=1,6;  call print(B%fi(i)); enddo
 
          do i=1,12; call print(B%eb(i)); enddo
-         do i=1,12; call print(B%eg(i)); enddo
-         do i=1,12; call print(B%ei(i)); enddo
+         do i=1,12; call print(B%e(i)); enddo
 
-         do i=1,8;  call print(B%cg(i)); enddo
+         do i=1,8;  call print(B%c(i)); enddo
          do i=1,8;  call print(B%cb(i)); enddo
-         do i=1,8;  call print(B%ci(i)); enddo
        end subroutine
 
        subroutine export_block(B,un)
@@ -167,17 +142,13 @@
          integer :: i
          call export(B%g,un)
          do i=1,6;  call export(B%f(i),un); enddo
-         do i=1,6;  call export(B%fg(i),un); enddo
          do i=1,6;  call export(B%fb(i),un); enddo
-         do i=1,6;  call export(B%fi(i),un); enddo
 
-         do i=1,12; call export(B%eg(i),un); enddo
+         do i=1,12; call export(B%e(i),un); enddo
          do i=1,12; call export(B%eb(i),un); enddo
-         do i=1,12; call export(B%ei(i),un); enddo
 
-         do i=1,8;  call export(B%cg(i),un); enddo
+         do i=1,8;  call export(B%c(i),un); enddo
          do i=1,8;  call export(B%cb(i),un); enddo
-         do i=1,8;  call export(B%ci(i),un); enddo
        end subroutine
 
        subroutine import_block(B,un)
@@ -187,17 +158,13 @@
          integer :: i
          call import(B%g,un)
          do i=1,6;  call import(B%f(i),un); enddo
-         do i=1,6;  call import(B%fg(i),un); enddo
          do i=1,6;  call import(B%fb(i),un); enddo
-         do i=1,6;  call import(B%fi(i),un); enddo
 
-         do i=1,12; call import(B%eg(i),un); enddo
+         do i=1,12; call import(B%e(i),un); enddo
          do i=1,12; call import(B%eb(i),un); enddo
-         do i=1,12; call import(B%ei(i),un); enddo
 
-         do i=1,8;  call import(B%cg(i),un); enddo
+         do i=1,8;  call import(B%c(i),un); enddo
          do i=1,8;  call import(B%cb(i),un); enddo
-         do i=1,8;  call import(B%ci(i),un); enddo
        end subroutine
 
        subroutine export_block_wrapper(B,dir,name)
