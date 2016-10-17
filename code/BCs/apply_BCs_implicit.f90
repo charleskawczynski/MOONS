@@ -32,7 +32,7 @@
 #ifdef _DEBUG_APPLY_BCS_
        call check_defined(U)
 #endif
-         call apply_BCs_faces_em(U)
+         call apply_BCs_faces_implicit(U,m)
        end subroutine
 
        end module 

@@ -66,8 +66,8 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%numEl
-        call noise(u); call zeroGhostPoints(u)
-        call noise(v); call zeroGhostPoints(v)
+        call random_noise(u); call zeroGhostPoints(u)
+        call random_noise(v); call zeroGhostPoints(v)
         call init_BCs(u,x)
         call init_BCs(v,x)
         call operator(Au,u,k,m,MFP,tempk)
@@ -101,8 +101,8 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%x%numEl+x%y%numEl+x%z%numEl
-        call noise(u); call zeroGhostPoints(u)
-        call noise(v); call zeroGhostPoints(v)
+        call random_noise(u); call zeroGhostPoints(u)
+        call random_noise(v); call zeroGhostPoints(v)
         call init_BCs(u,x)
         call init_BCs(v,x)
         call operator(Au,u,k,m,MFP,tempk)

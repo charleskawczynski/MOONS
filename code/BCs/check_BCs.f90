@@ -15,7 +15,7 @@
        subroutine check_defined(U)
          implicit none
          type(SF),intent(in) :: U
-         integer :: i,k
+         integer :: i
          do i=1,U%s
          if (.not.U%BF(i)%BCs%BCL%defined) stop 'Error: bad bctype in check_BCs in check_BCs.f90'
          enddo

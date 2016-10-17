@@ -14,9 +14,11 @@
        public :: snip,pop
 
        public :: get_face_GI
-       public :: get_face_b,   get_face_g,   get_face_i
-       public :: get_edge_b,   get_edge_g,   get_edge_i
-       public :: get_corner_b, get_corner_g, get_corner_i
+       public :: get_edge_GI
+       public :: get_corner_GI
+       public :: get_face_b ! ,   get_face_g,   get_face_i
+       public :: get_edge_b ! ,   get_edge_g,   get_edge_i
+       public :: get_corner_b ! , get_corner_g, get_corner_i
 
 #ifdef _DEBUG_COORDINATES_
        public :: checkGrid
@@ -46,7 +48,9 @@
        interface snip;               module procedure snip_grid;               end interface
        interface pop;                module procedure pop_grid;                end interface
 
-       interface get_face_GI;         module procedure get_face_grid_GI;       end interface
+       interface get_face_GI;        module procedure get_face_GI_grid;        end interface
+       interface get_edge_GI;        module procedure get_edge_GI_grid;        end interface
+       interface get_corner_GI;      module procedure get_corner_GI_grid;      end interface
 
        interface get_face_g;         module procedure get_face_grid_g;         end interface
        interface get_face_b;         module procedure get_face_grid_b;         end interface
@@ -223,7 +227,7 @@
        ! *********************************************************************
        ! *********************************************************************
 
-       subroutine get_face_grid_GI(g,g_in,face)
+       subroutine get_face_GI_grid(g,g_in,face)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
@@ -231,6 +235,31 @@
          call init(g,g_in)
          if (min_face(face)) call get_GI(g%c(dir_given_face(face)),-1)
          if (max_face(face)) call get_GI(g%c(dir_given_face(face)), 1)
+       end subroutine
+
+       subroutine get_edge_GI_grid(g,g_in,edge)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: edge
+         type(grid) :: temp
+         integer,dimension(2) :: f
+         f = adj_faces_given_edge(edge)
+         call get_face_GI(temp,g_in,f(1))
+         call get_face_GI(g,temp,f(2))
+       end subroutine
+
+       subroutine get_corner_GI_grid(g,g_in,corner)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: corner
+         type(grid) :: A,B
+         integer,dimension(3) :: f
+         f = adj_faces_given_corner(corner)
+         call get_face_GI(A,g_in,f(1))
+         call get_face_GI(B,A,f(2))
+         call get_face_GI(g,B,f(3))
        end subroutine
 
        subroutine get_face_grid_g(g,g_in,face)

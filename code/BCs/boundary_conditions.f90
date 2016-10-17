@@ -156,27 +156,29 @@
          call define_logicals(BC)
        end subroutine
 
-       subroutine init_BCs_copy(BC_out,BC_in)
+       subroutine init_BCs_copy(BC,BC_in)
          implicit none
-         type(boundary_conditions),intent(inout) :: BC_out
+         type(boundary_conditions),intent(inout) :: BC
          type(boundary_conditions),intent(in) :: BC_in
          integer :: i
 #ifdef _DEBUG_BOUNDARY_CONDITIONS_
          call insist_allocated(BC_in,'init_BCs_copy')
 #endif
-         call delete(BC_out)
-         allocate(BC_out%f(6))
-         allocate(BC_out%e(12))
-         allocate(BC_out%c(8))
-         do i=1,6;  call init(BC_out%f(i),BC_in%f(i)); enddo
-         do i=1,12; call init(BC_out%e(i),BC_in%e(i)); enddo
-         do i=1,8;  call init(BC_out%c(i),BC_in%c(i)); enddo
-         call init(BC_out%f_BCs,BC_in%f_BCs)
-         call init(BC_out%PA_face_BCs,BC_in%PA_face_BCs)
-         ! call init(BC_out%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
-         call init(BC_out%DL,BC_in%DL)
-         ! call init(BC_out%B,BC_in%B)
-         call init(BC_out%BCL,BC_in%BCL)
+         call delete(BC)
+         allocate(BC%f(6))
+         allocate(BC%e(12))
+         allocate(BC%c(8))
+         do i=1,6;  call init(BC%f(i),BC_in%f(i)); call assign(BC%f(i),BC_in%f(i)); enddo
+         do i=1,12; call init(BC%e(i),BC_in%e(i)); call assign(BC%e(i),BC_in%e(i)); enddo
+         do i=1,8;  call init(BC%c(i),BC_in%c(i)); call assign(BC%c(i),BC_in%c(i)); enddo
+         call init(BC%BCL,BC_in%BCL)
+         call init(BC%DL,BC_in%DL)
+         call init(BC%f_BCs,BC_in%f_BCs)
+         call init(BC%PA_face_BCs,BC_in%PA_face_BCs)
+         call init(BC%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
+         do i=1,6;  call init(BC%bct_f(i),BC_in%bct_f(i)); enddo
+         ! do i=1,12; call init(BC%bct_e(i),BC_in%bct_e(i)); enddo
+         ! do i=1,8;  call init(BC%bct_c(i),BC_in%bct_c(i)); enddo
        end subroutine
 
        subroutine delete_BCs(BC)
@@ -186,6 +188,9 @@
          if (allocated(BC%f)) then; do i=1,size(BC%f); call delete(BC%f(i)); enddo; deallocate(BC%f); endif
          if (allocated(BC%e)) then; do i=1,size(BC%e); call delete(BC%e(i)); enddo; deallocate(BC%e); endif
          if (allocated(BC%c)) then; do i=1,size(BC%c); call delete(BC%c(i)); enddo; deallocate(BC%c); endif
+         do i=1,6;  call delete(BC%bct_f(i)); enddo
+         do i=1,12; call delete(BC%bct_e(i)); enddo
+         do i=1,8;  call delete(BC%bct_c(i)); enddo
          call delete(BC%f_BCs)
          call delete(BC%PA_face_BCs)
          call delete(BC%PA_face_implicit_BCs)
@@ -542,13 +547,10 @@
        subroutine init_props_BCs(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
+         call define_logicals_BCs(BC)
          call init_mixed(BC%f_BCs,BC%DL)
-         ! call print(BC%PA_face_BCs)
-         ! call sort(BC%PA_face_BCs,(/1,2,3,4,3,4/),6)
-         ! call sort(BC%PA_face_BCs,(/1,2,5,6,3,4/),6)
          call sort(BC%PA_face_BCs,(/3,4,5,6,1,2/),6)
-         ! call print(BC%PA_face_BCs)
-         ! stop 'Done in boundary_conditions.f90'
+         call sort(BC%PA_face_implicit_BCs,(/3,4,5,6,1,2/),6)
        end subroutine
 
        end module

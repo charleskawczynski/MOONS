@@ -13,8 +13,8 @@
        public :: CC_along,N_along
 
        type data_location
-         logical :: C,N,E,F            ! cell center, cell corner, cell edge, cell face
-         integer :: face,edge          ! face direction, edge direction
+         logical :: C,N,E,F = .false.        ! cell center, cell corner, cell edge, cell face
+         integer :: face,edge = 0            ! face direction, edge direction
          logical,dimension(3) :: CC_along = .false.
          logical,dimension(3) :: N_along = .false.
          logical :: defined = .false.

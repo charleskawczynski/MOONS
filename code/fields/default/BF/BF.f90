@@ -23,9 +23,22 @@
         public :: sine_waves
         public :: random_noise
 
+        public :: square,abs
+        public :: insist_amax_lt_tol
+        public :: assign_ghost
+
         public :: plane_sum_x
         public :: plane_sum_y
         public :: plane_sum_z
+
+        ! GF_symmetry_error_mod
+        public :: symmetry_error_x
+        public :: symmetry_error_y
+        public :: symmetry_error_z
+
+        public :: symmetry_local_x
+        public :: symmetry_local_y
+        public :: symmetry_local_z
 
         ! public :: assign_plane_x
         ! public :: assign_plane_y
@@ -57,9 +70,23 @@
        interface sine_waves;         module procedure sine_waves_BF;                  end interface
        interface random_noise;       module procedure random_noise_BF;                end interface
 
+       interface square;             module procedure square_BF;                      end interface
+       interface abs;                module procedure abs_BF;                         end interface
+       interface insist_amax_lt_tol; module procedure insist_amax_lt_tol_BF;          end interface
+
+       interface assign_ghost;       module procedure assign_ghost_BF;                end interface
+
        interface plane_sum_x;        module procedure plane_sum_x_BF;                 end interface
        interface plane_sum_y;        module procedure plane_sum_y_BF;                 end interface
        interface plane_sum_z;        module procedure plane_sum_z_BF;                 end interface
+
+       interface symmetry_error_x;   module procedure symmetry_error_x_BF;            end interface
+       interface symmetry_error_y;   module procedure symmetry_error_y_BF;            end interface
+       interface symmetry_error_z;   module procedure symmetry_error_z_BF;            end interface
+
+       interface symmetry_local_x;   module procedure symmetry_local_x_BF;            end interface
+       interface symmetry_local_y;   module procedure symmetry_local_y_BF;            end interface
+       interface symmetry_local_z;   module procedure symmetry_local_z_BF;            end interface
 
        ! interface assign_plane_x;     module procedure assign_plane_x_BF;              end interface
        ! interface assign_plane_y;     module procedure assign_plane_y_BF;              end interface
@@ -101,12 +128,12 @@
          call init_Node(BF%GF,B%g)
        end subroutine
 
-       subroutine init_block_field_copy(b_out,b_in)
+       subroutine init_block_field_copy(BF,BF_in)
          implicit none
-         type(block_field),intent(inout) :: b_out
-         type(block_field),intent(in) :: b_in
-         call init(b_out%GF,b_in%GF)
-         if (b_in%BCs%BCL%defined) call init(b_out%BCs,b_in%BCs)
+         type(block_field),intent(inout) :: BF
+         type(block_field),intent(in) :: BF_in
+         call init(BF%GF,BF_in%GF)
+         if (BF_in%BCs%BCL%defined) call init(BF%BCs,BF_in%BCs)
        end subroutine
 
        subroutine delete_block_field(BF)
@@ -200,6 +227,32 @@
          call random_noise(u%GF)
        end subroutine
 
+       subroutine square_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call square(u%GF)
+       end subroutine
+
+       subroutine abs_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call abs(u%GF)
+       end subroutine
+
+       subroutine insist_amax_lt_tol_BF(u,caller)
+         implicit none
+         type(block_field),intent(in) :: u
+         character(len=*),intent(in) :: caller
+         call insist_amax_lt_tol(u%GF,caller)
+       end subroutine
+
+       subroutine assign_ghost_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         call assign_ghost(u%GF,val)
+       end subroutine
+
        function plane_sum_x_BF(u,B,p) result(PS)
          implicit none
          type(block_field),intent(in) :: u
@@ -226,5 +279,44 @@
          real(cp) :: PS
          PS = plane_sum_z(u%GF,B%g,p)
        end function
+
+       function symmetry_error_x_BF(u) result(SE)
+         implicit none
+         type(block_field),intent(in) :: u
+         real(cp) :: SE
+         SE = symmetry_error_x(u%GF)
+       end function
+
+       function symmetry_error_y_BF(u) result(SE)
+         implicit none
+         type(block_field),intent(in) :: u
+         real(cp) :: SE
+         SE = symmetry_error_y(u%GF)
+       end function
+
+       function symmetry_error_z_BF(u) result(SE)
+         implicit none
+         type(block_field),intent(in) :: u
+         real(cp) :: SE
+         SE = symmetry_error_z(u%GF)
+       end function
+
+       subroutine symmetry_local_x_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call symmetry_local_x(u%GF)
+       end subroutine
+
+       subroutine symmetry_local_y_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call symmetry_local_y(u%GF)
+       end subroutine
+
+       subroutine symmetry_local_z_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call symmetry_local_z(u%GF)
+       end subroutine
 
       end module

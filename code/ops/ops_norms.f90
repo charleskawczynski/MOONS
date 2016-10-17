@@ -313,7 +313,7 @@
          implicit none
          real(cp),intent(inout) :: e
          type(SF),intent(in) :: u
-         e = maxabs(u)
+         e = amax(u)
        end subroutine
 
        subroutine Linf_VF(e,u)
@@ -324,7 +324,7 @@
          implicit none
          real(cp),intent(inout) :: e
          type(VF),intent(in) :: u
-         e = maxabs(u)
+         e = amax(u)
        end subroutine
 
        end module

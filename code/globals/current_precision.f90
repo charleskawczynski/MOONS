@@ -5,10 +5,10 @@
       public :: cp,li
 
 #ifdef _QUAD_PRECISION_
-       ! integer,parameter :: cp = selected_real_kind(32) ! Quad precision
+       integer,parameter :: cp = selected_real_kind(32) ! Quad precision
 #else
 #ifdef _SINGLE_PRECISION_
-       ! integer,parameter :: cp = selected_real_kind(8)  ! Single precision
+       integer,parameter :: cp = selected_real_kind(8)  ! Single precision
 #else
        integer,parameter :: cp = selected_real_kind(14) ! Double precision (default)
 #endif

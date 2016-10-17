@@ -52,7 +52,7 @@
        SP%stop_after_mesh_export    = .false.     ! 
 
        SP%export_meshes             = .false.     ! Export all meshes before starting simulation
-       SP%export_mat_props          = .true.     ! Export material properties before starting simulation
+       SP%export_mat_props          = .false.     ! Export material properties before starting simulation
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction

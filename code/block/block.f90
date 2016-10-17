@@ -11,7 +11,7 @@
        public :: init_FEC
 
        type block
-         type(grid) :: g                                 ! Bulk
+         type(grid) :: g                             ! Bulk
          type(grid),dimension(:),allocatable :: f,fb ! Faces (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: e,eb ! Edges (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: c,cb ! Corners (boundary,ghost,interior)
@@ -48,11 +48,12 @@
          type(block),intent(inout) :: B
          integer :: i
          call delete_FEC_block(B)
-         i=6;  allocate(B%f(i));  do i=1,6; call get_face_GI( B%f(i), B%g,i); enddo
+         i=6;  allocate(B%f(i));  do i=1,6; call get_face_GI(B%f(i),B%g,i);   enddo
+         i=12; allocate(B%e(i));  do i=1,12;call get_edge_GI(B%e(i),B%g,i);   enddo
+         i=8;  allocate(B%c(i));  do i=1,8; call get_corner_GI(B%c(i),B%g,i); enddo
+
          i=6;  allocate(B%fb(i)); do i=1,6; call get_face_b(  B%fb(i),B%g,i); enddo
-         i=12; allocate(B%e(i));  do i=1,12;call get_edge_g(  B%e(i), B%g,i); enddo
          i=12; allocate(B%eb(i)); do i=1,12;call get_edge_b(  B%eb(i),B%g,i); enddo
-         i=8;  allocate(B%c(i));  do i=1,8; call get_corner_g(B%c(i), B%g,i); enddo
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
        end subroutine
 
@@ -64,23 +65,14 @@
          call delete(B_out)
          call init(B_out%g,B_in%g)
          ! call inisist_allocated(B_in,'init_block_copy')
-         i=6; allocate(B_out%f(i))
-         i=6; allocate(B_out%fb(i))
+         i=6; allocate(B_out%f(i));  do i=1,6;  call init(B_out%f(i),B_in%f(i));   enddo
+         i=6; allocate(B_out%fb(i)); do i=1,6;  call init(B_out%fb(i),B_in%fb(i)); enddo
 
-         i=12; allocate(B_out%e(i))
-         i=12; allocate(B_out%eb(i))
+         i=12; allocate(B_out%e(i)); do i=1,12; call init(B_out%e(i),B_in%e(i)); enddo
+         i=12; allocate(B_out%eb(i));do i=1,12; call init(B_out%eb(i),B_in%eb(i)); enddo
 
-         i=8; allocate(B_out%c(i))
-         i=8; allocate(B_out%cb(i))
-
-         do i=1,6;  call init(B_out%f(i),B_in%f(i)); enddo
-         do i=1,6;  call init(B_out%fb(i),B_in%fb(i)); enddo
-
-         do i=1,12; call init(B_out%e(i),B_in%e(i)); enddo
-         do i=1,12; call init(B_out%eb(i),B_in%eb(i)); enddo
-
-         do i=1,8;  call init(B_out%c(i),B_in%c(i)); enddo
-         do i=1,8;  call init(B_out%cb(i),B_in%cb(i)); enddo
+         i=8; allocate(B_out%c(i));  do i=1,8;  call init(B_out%c(i),B_in%c(i)); enddo
+         i=8; allocate(B_out%cb(i)); do i=1,8;  call init(B_out%cb(i),B_in%cb(i)); enddo
        end subroutine
 
        subroutine delete_block(B)

@@ -33,7 +33,7 @@
        subroutine apply_BCs_faces_SF(U)
          implicit none
          type(SF),intent(inout) :: U
-         integer :: t,i,face
+         integer :: t,i
 #ifdef _DEBUG_APPLY_BCS_FACES_
          call check_defined(U)
 #endif
@@ -50,6 +50,8 @@
          U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)
          enddo
 
+         ! if (is_CC(U%DL)) stop 'Done in apply_BCs_embed.f90'
+
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_
         !$OMP END PARALLEL DO
 
@@ -60,9 +62,9 @@
        subroutine apply_BCs_faces_imp_VF(U)
          implicit none
          type(VF),intent(inout) :: U
-         call apply_BCs_faces_SF(U%x)
-         call apply_BCs_faces_SF(U%y)
-         call apply_BCs_faces_SF(U%z)
+         call apply_BCs_faces_implicit_em(U%x)
+         call apply_BCs_faces_implicit_em(U%y)
+         call apply_BCs_faces_implicit_em(U%z)
        end subroutine
 
        subroutine apply_BCs_faces_imp_SF(U)
@@ -72,13 +74,24 @@
 #ifdef _DEBUG_APPLY_BCS_FACES_
          call check_defined(U)
 #endif
-         ! do t=1,U%s
-         ! do i=1,U%BF(t)%BCs%PA_face_implicit_BCs%N
-         ! call U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%P(U%BF(t)%GF,&
-         !                               U%BF(t)%BCs%f(U%BF(t)%BCs%face_BCs%g%sd(i)%g_R1_id),&
-         !                               U%BF(t)%BCs%face_BCs,i)
-         ! enddo
-         ! enddo
+         do t=1,U%s
+#ifdef _PARALLELIZE_APPLY_BCS_FACES_
+         !$OMP PARALLEL DO
+
+#endif
+         do i=1,U%BF(t)%BCs%PA_face_implicit_BCs%N
+         call U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%P(&
+         U%BF(t)%GF,&
+         U%BF(t)%BCs%f(U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%ID),&
+         U%BF(t)%BCs%f_BCs,&
+         U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%ID)
+         enddo
+
+#ifdef _PARALLELIZE_APPLY_BCS_FACES_
+        !$OMP END PARALLEL DO
+
+#endif
+         enddo
        end subroutine
 
        end module

@@ -28,10 +28,15 @@
         public :: plane_sum_y
         public :: plane_sum_z
 
+        public :: symmetry_error_x,symmetry_local_x
+        public :: symmetry_error_y,symmetry_local_y
+        public :: symmetry_error_z,symmetry_local_z
+
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
         public :: N0_C1_tensor
         public :: C0_N1_tensor
+        public :: assign_ghost
 
         public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
@@ -47,8 +52,8 @@
         public :: invert
         public :: add_product,swap
         ! Auxiliary
-        public :: square,min,max,minabs,maxabs
-        public :: maxabsdiff,mean,sum
+        public :: square,min,max,amin,amax
+        public :: amax_diff,mean,sum,abs,insist_amax_lt_tol
 
         public :: zero_ghost_xmin_xmax
         public :: zero_ghost_ymin_ymax
@@ -110,10 +115,19 @@
         interface sine_waves;          module procedure sine_waves_SF;          end interface
         interface cosine_waves;        module procedure cosine_waves_SF;        end interface
         interface random_noise;        module procedure random_noise_SF;        end interface
+        interface assign_ghost;        module procedure assign_ghost_SF;        end interface
 
         interface plane_sum_x;         module procedure plane_sum_x_SF;         end interface
         interface plane_sum_y;         module procedure plane_sum_y_SF;         end interface
         interface plane_sum_z;         module procedure plane_sum_z_SF;         end interface
+
+        interface symmetry_error_x;    module procedure symmetry_error_x_SF;    end interface
+        interface symmetry_error_y;    module procedure symmetry_error_y_SF;    end interface
+        interface symmetry_error_z;    module procedure symmetry_error_z_SF;    end interface
+
+        interface symmetry_local_x;    module procedure symmetry_local_x_SF;    end interface
+        interface symmetry_local_y;    module procedure symmetry_local_y_SF;    end interface
+        interface symmetry_local_z;    module procedure symmetry_local_z_SF;    end interface
 
         interface zero_ghost_xmin_xmax;module procedure zero_ghost_xmin_xmax_SF;end interface
         interface zero_ghost_ymin_ymax;module procedure zero_ghost_ymin_ymax_SF;end interface
@@ -154,16 +168,18 @@
         interface divide;              module procedure divide_S_SF;            end interface
 
         interface invert;              module procedure invert_SF;              end interface
-
         interface square;              module procedure square_SF;              end interface
+        interface abs;                 module procedure abs_SF;                 end interface
+        interface insist_amax_lt_tol;  module procedure insist_amax_lt_tol_SF;  end interface
+
         interface swap;                module procedure swap_SF;                end interface
         interface min;                 module procedure min_SF;                 end interface
         interface max;                 module procedure max_SF;                 end interface
         interface min;                 module procedure min_pad_SF;             end interface
         interface max;                 module procedure max_pad_SF;             end interface
-        interface minabs;              module procedure minabs_SF;              end interface
-        interface maxabs;              module procedure maxabs_SF;              end interface
-        interface maxabsdiff;          module procedure maxabsdiff_SF;          end interface
+        interface amin;                module procedure amin_SF;                end interface
+        interface amax;                module procedure amax_SF;                end interface
+        interface amax_diff;           module procedure amax_diff_SF;           end interface
         interface mean;                module procedure mean_SF;                end interface
         interface sum;                 module procedure sum_SF;                 end interface
         interface sum;                 module procedure sum_SF_pad;             end interface
@@ -182,6 +198,7 @@
           integer :: i
           call delete(f1)
           allocate(f1%BF(f2%s)); f1%s = f2%s
+          call init(f1%DL,f2%DL)
           do i=1,f1%s; call init(f1%BF(i),f2%BF(i)); enddo
           f1%numEl = f2%numEl
           f1%numPhysEl = f2%numPhysEl
@@ -194,7 +211,6 @@
           f1%edge = f2%edge
           f1%CC_along = f2%CC_along
           f1%N_along = f2%N_along
-          call init(f1%DL,f2%DL)
         end subroutine
 
         subroutine init_SF_copy_mesh(f1,f2,m)
@@ -643,6 +659,14 @@
           do i=1,u%s; call random_noise(u%BF(i)); enddo
         end subroutine
 
+        subroutine assign_ghost_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call assign_ghost(u%BF(i),val); enddo
+        end subroutine
+
         function plane_sum_x_SF(u,m,p) result(SP)
           implicit none
           type(SF),intent(in) :: u
@@ -675,6 +699,54 @@
           SP = 0.0_cp
           do i=1,m%s; SP = SP + plane_sum_z(u%BF(i),m%B(i),p); enddo
         end function
+
+        function symmetry_error_x_SF(u) result(SE)
+          implicit none
+          type(SF),intent(in) :: u
+          integer :: i
+          real(cp) :: SE
+          SE = 0.0_cp
+          do i=1,u%s; SE = SE + symmetry_error_x(u%BF(i)); enddo
+        end function
+
+        function symmetry_error_y_SF(u) result(SE)
+          implicit none
+          type(SF),intent(in) :: u
+          integer :: i
+          real(cp) :: SE
+          SE = 0.0_cp
+          do i=1,u%s; SE = SE + symmetry_error_y(u%BF(i)); enddo
+        end function
+
+        function symmetry_error_z_SF(u) result(SE)
+          implicit none
+          type(SF),intent(in) :: u
+          integer :: i
+          real(cp) :: SE
+          SE = 0.0_cp
+          do i=1,u%s; SE = SE + symmetry_error_z(u%BF(i)); enddo
+        end function
+
+        subroutine symmetry_local_x_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call symmetry_local_x(u%BF(i)); enddo
+        end subroutine
+
+        subroutine symmetry_local_y_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call symmetry_local_y(u%BF(i)); enddo
+        end subroutine
+
+        subroutine symmetry_local_z_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call symmetry_local_z(u%BF(i)); enddo
+        end subroutine
 
         subroutine multiply_volume_SF(f,m)
           implicit none
@@ -1027,6 +1099,21 @@
           do i=1,f%s; call square(f%BF(i)%GF); enddo
         end subroutine
 
+        subroutine abs_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call abs(u%BF(i)); enddo
+        end subroutine
+
+        subroutine insist_amax_lt_tol_SF(u,caller)
+          implicit none
+          type(SF),intent(in) :: u
+          character(len=*),intent(in) :: caller
+          integer :: i
+          do i=1,u%s; call insist_amax_lt_tol(u%BF(i),caller); enddo
+        end subroutine
+
         subroutine swap_SF(f,g,q)
           implicit none
           type(SF),intent(inout) :: f,g,q
@@ -1080,36 +1167,36 @@
           enddo
         end function
 
-        function minabs_SF(f) result(m)
+        function amin_SF(f) result(m)
           implicit none
           type(SF),intent(in) :: f
           real(cp) :: m
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = minval(abs((/m,minabs(f%BF(i)%GF)/)))
+            m = minval(abs((/m,amin(f%BF(i)%GF)/)))
           enddo
         end function
 
-        function maxabs_SF(f) result(m)
+        function amax_SF(f) result(m)
           implicit none
           type(SF),intent(in) :: f
           real(cp) :: m
           integer :: i
           m = 0.0_cp
           do i=1,f%s
-            m = maxval(abs((/m,maxabs(f%BF(i)%GF)/)))
+            m = maxval(abs((/m,amax(f%BF(i)%GF)/)))
           enddo
         end function
 
-        function maxabsdiff_SF(a,b) result(m)
+        function amax_diff_SF(a,b) result(m)
           implicit none
           type(SF),intent(in) :: a,b
           real(cp) :: m
           integer :: i
           m = 0.0_cp
           do i=1,a%s
-            m = maxval((/m,maxabsdiff(a%BF(i)%GF,b%BF(i)%GF)/))
+            m = maxval((/m,amax_diff(a%BF(i)%GF,b%BF(i)%GF)/))
           enddo
         end function
 

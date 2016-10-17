@@ -41,6 +41,11 @@
         public :: sine_waves
         public :: cosine_waves
         public :: random_noise
+        public :: assign_ghost
+
+        public :: symmetry_error_x,symmetry_local_x
+        public :: symmetry_error_y,symmetry_local_y
+        public :: symmetry_error_z,symmetry_local_z
 
         public :: dot_product,dot
 
@@ -53,8 +58,8 @@
         public :: add,subtract
         public :: multiply,divide
         public :: add_product
-        public :: square,invert
-        public :: mean,max,minabs,maxabs
+        public :: square,invert,abs,insist_amax_lt_tol
+        public :: mean,max,amin,amax
         ! public :: sum
         public :: assignX,assignY,assignZ
 
@@ -98,6 +103,16 @@
         interface sine_waves;        module procedure sine_waves_VF;            end interface
         interface cosine_waves;      module procedure cosine_waves_VF;          end interface
         interface random_noise;      module procedure random_noise_VF;          end interface
+
+        interface symmetry_error_x;    module procedure symmetry_error_x_VF;    end interface
+        interface symmetry_error_y;    module procedure symmetry_error_y_VF;    end interface
+        interface symmetry_error_z;    module procedure symmetry_error_z_VF;    end interface
+
+        interface symmetry_local_x;    module procedure symmetry_local_x_VF;    end interface
+        interface symmetry_local_y;    module procedure symmetry_local_y_VF;    end interface
+        interface symmetry_local_z;    module procedure symmetry_local_z_VF;    end interface
+
+        interface assign_ghost;        module procedure assign_ghost_VF;        end interface
 
         interface dot_product;       module procedure dot_product_VF;           end interface
         interface dot;               module procedure dot_VF_SF;                end interface
@@ -155,10 +170,13 @@
         interface invert;            module procedure invert_VF;                end interface
         interface mean;              module procedure mean_VF;                  end interface
         interface max;               module procedure max_VF;                   end interface
-        interface maxabs;            module procedure maxabs_VF;                end interface
-        interface minabs;            module procedure minabs_VF;                end interface
+        interface amax;              module procedure amax_VF;                  end interface
+        interface amin;              module procedure amin_VF;                  end interface
 
         interface square;            module procedure square_VF;                end interface
+        interface abs;               module procedure abs_VF;                   end interface
+        interface insist_amax_lt_tol;module procedure insist_amax_lt_tol_VF;    end interface
+
         ! interface sum;               module procedure vectorSum;             end interface
 
         contains
@@ -768,24 +786,39 @@
           m = maxval((/max(f%x),max(f%y),max(f%z)/))
         end function
 
-        function minabs_VF(f) result (m)
+        function amin_VF(f) result (m)
           implicit none
           type(VF),intent(in) :: f
           real(cp) :: m
-          m = minval((/abs(minabs(f%x)),abs(minabs(f%y)),abs(minabs(f%z))/))
+          m = minval((/abs(amin(f%x)),abs(amin(f%y)),abs(amin(f%z))/))
         end function
 
-        function maxabs_VF(f) result (m)
+        function amax_VF(f) result (m)
           implicit none
           type(VF),intent(in) :: f
           real(cp) :: m
-          m = maxval((/abs(maxabs(f%x)),abs(maxabs(f%y)),abs(maxabs(f%z))/))
+          m = maxval((/abs(amax(f%x)),abs(amax(f%y)),abs(amax(f%z))/))
         end function
 
         subroutine square_VF(f)
           implicit none
           type(VF),intent(inout) :: f
           call square(f%x); call square(f%y); call square(f%z)
+        end subroutine
+
+        subroutine abs_VF(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          call abs(f%x); call abs(f%y); call abs(f%z)
+        end subroutine
+
+        subroutine insist_amax_lt_tol_VF(f,caller)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: caller
+          call insist_amax_lt_tol(f%x,caller//'_x')
+          call insist_amax_lt_tol(f%y,caller//'_y')
+          call insist_amax_lt_tol(f%z,caller//'_z')
         end subroutine
 
         ! subroutine vectorSum(f,g)
@@ -811,6 +844,60 @@
           type(VF),intent(inout) :: temp
           call multiply(temp,B,C)
           call add(A,temp%x,temp%y,temp%z)
+        end subroutine
+
+        function symmetry_error_x_VF(A) result(SE)
+          implicit none
+          type(VF),intent(in) :: A
+          real(cp) :: SE
+          SE = symmetry_error_x(A%x) + symmetry_error_x(A%y) + symmetry_error_x(A%z)
+        end function
+
+        function symmetry_error_y_VF(A) result(SE)
+          implicit none
+          type(VF),intent(in) :: A
+          real(cp) :: SE
+          SE = symmetry_error_y(A%x) + symmetry_error_y(A%y) + symmetry_error_y(A%z)
+        end function
+
+        function symmetry_error_z_VF(A) result(SE)
+          implicit none
+          type(VF),intent(in) :: A
+          real(cp) :: SE
+          SE = symmetry_error_z(A%x) + symmetry_error_z(A%y) + symmetry_error_z(A%z)
+        end function
+
+        subroutine symmetry_local_x_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call symmetry_local_x(A%x)
+          call symmetry_local_x(A%y)
+          call symmetry_local_x(A%z)
+        end subroutine
+
+        subroutine symmetry_local_y_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call symmetry_local_y(A%x)
+          call symmetry_local_y(A%y)
+          call symmetry_local_y(A%z)
+        end subroutine
+
+        subroutine symmetry_local_z_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call symmetry_local_z(A%x)
+          call symmetry_local_z(A%y)
+          call symmetry_local_z(A%z)
+        end subroutine
+
+        subroutine assign_ghost_VF(A,val)
+          implicit none
+          type(VF),intent(inout) :: A
+          real(cp),intent(in) :: val
+          call assign_ghost(A%x,val)
+          call assign_ghost(A%y,val)
+          call assign_ghost(A%z,val)
         end subroutine
 
       end module

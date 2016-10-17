@@ -198,6 +198,7 @@
         integer :: i,diffType
         ! integer :: pad1,pad2
         ! integer,dimension(2) :: faces
+        ! d%assign(lapU,u,m,2,1,0)
 
         diffType = getDiffType(f,dfdh,dir)
         do i=1,m%s
@@ -206,7 +207,9 @@
           ! if (m%B(i)%g%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
           call diff_tree_search(dfdh%BF(i)%GF,f%BF(i)%GF,m%B(i)%g,n,dir,pad,genType,diffType,0,0)
         enddo
-        if ((genType.eq.1).and.(pad.gt.0)) then
+        if (n.eq.2) then; call assign_ghost(dfdh,0.0_cp)
+        elseif ((genType.eq.1).and.(pad.gt.0)) then
+          if (n.eq.2) write(*,*) 'n,pad,dir,genType = ',n,pad,dir,genType
           select case (dir)
           case (1); call zero_ghost_ymin_ymax(dfdh)
                     call zero_ghost_zmin_zmax(dfdh)

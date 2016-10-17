@@ -68,6 +68,7 @@
          real(cp),dimension(x,y),intent(in) :: ui,bvals
          real(cp),intent(in) :: dh,nhat
          integer :: i,j
+
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 

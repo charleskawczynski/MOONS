@@ -37,6 +37,7 @@
        use mesh_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
+       use export_raw_processed_mod
        use VF_mod
        use SF_mod
        use index_mapping_mod
@@ -74,6 +75,16 @@
        interface stabilityTerms;          module procedure stabilityTerms_SF;         end interface
        interface stabilityTerms;          module procedure stabilityTerms_VF;         end interface
 
+       public :: check_symmetry_x
+       interface check_symmetry_x;        module procedure check_symmetry_x_SF;       end interface
+       interface check_symmetry_x;        module procedure check_symmetry_x_VF;       end interface
+       public :: check_symmetry_y
+       interface check_symmetry_y;        module procedure check_symmetry_y_SF;       end interface
+       interface check_symmetry_y;        module procedure check_symmetry_y_VF;       end interface
+       public :: check_symmetry_z
+       interface check_symmetry_z;        module procedure check_symmetry_z_SF;       end interface
+       interface check_symmetry_z;        module procedure check_symmetry_z_VF;       end interface
+
        public :: zeroGhostPoints
        interface zeroGhostPoints;         module procedure zeroGhostPoints_GF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
@@ -99,12 +110,6 @@
        interface assign_first_interior_cell; module procedure assign_first_interior_cell_GF; end interface
        interface assign_first_interior_cell; module procedure assign_first_interior_cell_SF; end interface
 
-       public :: sineWaves
-       interface sineWaves;               module procedure sineWaves_SF;              end interface
-
-       public :: cosineWaves
-       interface cosineWaves;             module procedure cosineWaves_SF;            end interface
-
        public :: assign_gradGhost
        interface assign_gradGhost;        module procedure assign_gradGhost_SF;       end interface
        interface assign_gradGhost;        module procedure assign_gradGhost_GF;       end interface
@@ -121,11 +126,6 @@
        public :: displayGlobalMinMax
        interface displayGlobalMinMax;     module procedure displayGlobalMinMax_SF;    end interface
        interface displayGlobalMinMax;     module procedure displayGlobalMinMax_VF;    end interface
-
-       public :: noise
-       interface noise;                   module procedure noise_GF;                  end interface
-       interface noise;                   module procedure noise_SF;                  end interface
-       interface noise;                   module procedure noise_VF;                  end interface
 
        public :: unitVector
        interface unitVector;              module procedure unitVector_SF;             end interface
@@ -409,184 +409,6 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine noise_GF(f,s)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: s
-         integer :: i,j,k
-         real(cp) :: r
-         !$OMP PARALLEL DO
-         do k=1,s(3); do j=1,s(2); do i=1,s(1)
-         call random_number(r)
-         f(i,j,k) = r
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-       end subroutine
-
-       subroutine sineWaves_SF(f,m,wavenum,phi)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         real(cp),dimension(3),intent(in) :: wavenum,phi
-         integer :: i,j,k,t
-         if (f%is_CC) then
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hn(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hn(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hn(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (f%is_Node) then
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hn(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hn(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hn(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (f%is_Face) then
-         select case (f%face)
-         case (1)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hn(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hc(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hc(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hc(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hn(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hc(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hc(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hc(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hn(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_GF'
-         end select
-         elseif (f%is_Edge) then
-         select case (f%face)
-         case (1)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hc(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hn(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hn(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hn(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hc(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hn(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = sin(wavenum(1)*PI*(m%B(t)%g%c(1)%hn(i) - phi(1)))*&
-                                   sin(wavenum(2)*PI*(m%B(t)%g%c(2)%hn(j) - phi(2)))*&
-                                   sin(wavenum(3)*PI*(m%B(t)%g%c(3)%hc(k) - phi(3)))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_GF'
-         end select
-         else; stop 'Error: bad input to sineWaves_GF in ops_aux.f90'
-         endif
-       end subroutine
-
-       subroutine cosineWaves_SF(f,m,wavenum)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         real(cp),dimension(3),intent(in) :: wavenum
-         integer :: i,j,k,t
-         if (f%is_CC) then
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hn(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hn(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hn(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (f%is_Node) then
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hn(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hn(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hn(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         elseif (f%is_Face) then
-         select case (f%face)
-         case (1)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hn(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hc(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hc(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hc(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hn(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hc(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hc(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hc(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hn(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in cosineWaves_GF'
-         end select
-         elseif (f%is_Edge) then
-         select case (f%face)
-         case (1)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hc(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hn(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hn(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hn(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hc(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hn(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do t=1,f%s; do k=1,f%BF(t)%GF%s(3); do j=1,f%BF(t)%GF%s(2); do i=1,f%BF(t)%GF%s(1)
-             f%BF(t)%GF%f(i,j,k) = cos(wavenum(1)*PI*m%B(t)%g%c(1)%hn(i))*&
-                                   cos(wavenum(2)*PI*m%B(t)%g%c(2)%hn(j))*&
-                                   cos(wavenum(3)*PI*m%B(t)%g%c(3)%hc(k))
-           enddo; enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: face must = 1,2,3 in sineWaves_GF'
-         end select
-         else; stop 'Error: bad input to sineWaves_GF in ops_aux.f90'
-         endif
-       end subroutine
-
       function dot_product_VF(A,B,m,x,temp) result(dot)
         implicit none
         type(mesh),intent(in) :: m
@@ -614,6 +436,111 @@
        ! ******************************* SCALAR ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
+
+        subroutine check_symmetry_x_SF(m,u,dir,name,pad)
+          implicit none
+          type(SF),intent(in) :: u
+          type(mesh),intent(in) :: m
+          character(len=*),intent(in) :: dir,name
+          integer,intent(in) :: pad
+          type(SF) :: temp
+          real(cp) :: tol,e
+          call init(temp,u)
+          call assign(temp,u)
+          call abs(temp) ! optional
+          call symmetry_local_x(temp)
+          tol = 10.0_cp**(-15.0_cp); e = amax(temp)
+          if (e.gt.tol) then
+            call export_raw(m,u,dir,name,pad)
+            call export_raw(m,temp,dir,name//'_symm',pad)
+            write(*,*) 'Symmetry broken in ',name, ' in check_symmetry_x_SF in SF.f90'
+            write(*,*) 'Symmetry error,tol = ',e,tol
+            call delete(temp)
+            stop 'Done'
+          else; call delete(temp)
+          endif
+        end subroutine
+
+        subroutine check_symmetry_y_SF(m,u,dir,name,pad)
+          implicit none
+          type(SF),intent(in) :: u
+          type(mesh),intent(in) :: m
+          character(len=*),intent(in) :: dir,name
+          integer,intent(in) :: pad
+          type(SF) :: temp
+          real(cp) :: tol,e
+          call init(temp,u)
+          call assign(temp,u)
+          call abs(temp) ! optional
+          call symmetry_local_y(temp)
+          tol = 10.0_cp**(-15.0_cp); e = amax(temp)
+          if (e.gt.tol) then
+            call export_raw(m,u,dir,name,pad)
+            call export_raw(m,temp,dir,name//'_symm',pad)
+            write(*,*) 'Symmetry broken in ',name, ' in check_symmetry_y_SF in SF.f90'
+            write(*,*) 'Symmetry error,tol = ',e,tol
+            call delete(temp)
+            stop 'Done'
+          else; call delete(temp)
+          endif
+        end subroutine
+
+        subroutine check_symmetry_z_SF(m,u,dir,name,pad)
+          implicit none
+          type(SF),intent(in) :: u
+          type(mesh),intent(in) :: m
+          character(len=*),intent(in) :: dir,name
+          integer,intent(in) :: pad
+          type(SF) :: temp
+          real(cp) :: tol,e
+          call init(temp,u)
+          call assign(temp,u)
+          call abs(temp) ! optional
+          call symmetry_local_z(temp)
+          tol = 10.0_cp**(-15.0_cp); e = amax(temp)
+          if (e.gt.tol) then
+            call export_raw(m,u,dir,name,pad)
+            call export_raw(m,temp,dir,name//'_symm',pad)
+            write(*,*) 'Symmetry broken in ',name, ' in check_symmetry_z_SF in SF.f90'
+            write(*,*) 'Symmetry error,tol = ',e,tol
+            call delete(temp)
+            stop 'Done'
+          else; call delete(temp)
+          endif
+        end subroutine
+
+        subroutine check_symmetry_x_VF(m,A,dir,name,pad)
+          implicit none
+          type(mesh),intent(in) :: m
+          type(VF),intent(in) :: A
+          character(len=*),intent(in) :: dir,name
+          integer,intent(in) :: pad
+          call check_symmetry_x(m,A%x,dir,name//'_x',pad)
+          call check_symmetry_x(m,A%y,dir,name//'_y',pad)
+          call check_symmetry_x(m,A%z,dir,name//'_z',pad)
+        end subroutine
+
+        subroutine check_symmetry_y_VF(m,A,dir,name,pad)
+          implicit none
+          type(mesh),intent(in) :: m
+          type(VF),intent(in) :: A
+          character(len=*),intent(in) :: dir,name
+          integer,intent(in) :: pad
+          call check_symmetry_y(m,A%x,dir,name//'_x',pad)
+          call check_symmetry_y(m,A%y,dir,name//'_y',pad)
+          call check_symmetry_y(m,A%z,dir,name//'_z',pad)
+        end subroutine
+
+        subroutine check_symmetry_z_VF(m,A,dir,name,pad)
+          implicit none
+          type(mesh),intent(in) :: m
+          type(VF),intent(in) :: A
+          character(len=*),intent(in) :: dir,name
+          integer,intent(in) :: pad
+          call check_symmetry_z(m,A%x,dir,name//'_x',pad)
+          call check_symmetry_z(m,A%y,dir,name//'_y',pad)
+          call check_symmetry_z(m,A%z,dir,name//'_z',pad)
+        end subroutine
 
        subroutine zeroGhostPoints_SF(f)
          implicit none
@@ -755,13 +682,6 @@
          character(len=*),intent(in) :: name
          integer,intent(in) :: un
          write(un,*) 'Min/Max ('//name//') = ',min(u),max(u)
-       end subroutine
-
-       subroutine noise_SF(U)
-         implicit none
-         type(SF),intent(inout) :: U
-         integer :: i
-         do i=1,U%s; call noise(U%BF(i)%GF%f,U%BF(i)%GF%s); enddo
        end subroutine
 
        subroutine unitVector_SF(U,un)
@@ -933,12 +853,6 @@
          call displayGlobalMinMax(U%x,name//'_x',un)
          call displayGlobalMinMax(U%y,name//'_y',un)
          call displayGlobalMinMax(U%z,name//'_z',un)
-       end subroutine
-
-       subroutine noise_VF(U)
-         implicit none
-         type(VF),intent(inout) :: U
-         call noise(U%x); call noise(U%y); call noise(U%z)
        end subroutine
 
        end module

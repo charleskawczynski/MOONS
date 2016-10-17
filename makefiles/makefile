@@ -127,7 +127,6 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # FC_DEBUG += -D_DEBUG_APPLY_STITCHES
 # FC_DEBUG += -D_STENCILS_SUPPRESS_WARNING_
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
-FC_DEBUG += -D_DEBUG_INTERNAL_BC_
 FC_DEBUG += -D_DEBUG_GF_
 FC_DEBUG += -D_DEBUG_SF_
 FC_DEBUG += -D_DEBUG_VF_
@@ -147,15 +146,15 @@ FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_
 FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_SUM_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
-# FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
-FC_OPTIMIZE += -D_PARALLELIZE_INTERNAL_BC_
-# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
 # FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_
-FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_EDGES_RAW_
+# FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
+
+# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
+# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_EDGES_RAW_
 # Corners are likely not worth it:
 # FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_CORNERS_RAW_
 
@@ -240,6 +239,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)data_location.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
+	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
 	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
 	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
 	$(SRC_DIR)$(PS)IO$(PS)inquire_funcs.f90\
@@ -274,7 +274,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign_plane.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign_ghost.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_plane_sum.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry_error.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\
@@ -338,10 +340,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
+	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\

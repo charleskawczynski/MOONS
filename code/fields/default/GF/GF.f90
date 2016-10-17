@@ -12,6 +12,8 @@
         use GF_distributions_mod
         use GF_assign_plane_mod
         use GF_plane_sum_mod
+        use GF_symmetry_error_mod
+        use GF_assign_ghost_mod
 
         implicit none
         private
@@ -35,10 +37,11 @@
         public :: plane_sum_y
         public :: plane_sum_z
 
+        ! GF_symmetry_error_mod
         ! GF_assign_plane
-        public :: assign_plane_x
-        public :: assign_plane_y
-        public :: assign_plane_z
+        public :: symmetry_error_x,assign_plane_x,symmetry_local_x
+        public :: symmetry_error_y,assign_plane_y,symmetry_local_y
+        public :: symmetry_error_z,assign_plane_z,symmetry_local_z
 
         ! GF_assign_mod
         public :: assign,assign_negative
@@ -46,9 +49,17 @@
         public :: multiply,divide
         public :: add_product,swap
 
+        public :: assign_ghost
+        public :: assign_ghost_xmin
+        public :: assign_ghost_ymin
+        public :: assign_ghost_zmin
+        public :: assign_ghost_xmax
+        public :: assign_ghost_ymax
+        public :: assign_ghost_zmax
+
         ! GF_aux_mod
-        public :: square,min,max,minabs,maxabs
-        public :: maxabsdiff,mean,sum,size
+        public :: abs,insist_amax_lt_tol,square,min,max,amin,amax
+        public :: amax_diff,mean,sum,size
 
         public :: zero_ghost_xmin_xmax
         public :: zero_ghost_ymin_ymax

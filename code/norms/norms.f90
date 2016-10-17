@@ -24,7 +24,9 @@
        public :: compute
 
        type norms
-         real(cp) :: L1,L2,Linf
+         real(cp) :: L1 = 0.0_cp
+         real(cp) :: L2 = 0.0_cp
+         real(cp) :: Linf = 0.0_cp
        end type
 
        interface init;            module procedure init_norms;             end interface
@@ -47,14 +49,18 @@
        subroutine init_norms(e)
          implicit none
          type(norms),intent(inout) :: e
-         e%L1 = 0.0_cp; e%L2 = 0.0_cp; e%Linf = 0.0_cp
+         e%L1 = 0.0_cp
+         e%L2 = 0.0_cp
+         e%Linf = 0.0_cp
        end subroutine
 
-       subroutine print_copy(eCopy,e)
+       subroutine print_copy(e,e_in)
          implicit none
-         type(norms),intent(inout) :: eCopy
-         type(norms),intent(in) :: e
-         eCopy%L1 = e%L1; eCopy%L2 = e%L2; eCopy%Linf = e%Linf
+         type(norms),intent(inout) :: e
+         type(norms),intent(in) :: e_in
+         e%L1 = e_in%L1
+         e%L2 = e_in%L2
+         e%Linf = e_in%Linf
        end subroutine
 
        ! **************************************************************
@@ -100,7 +106,7 @@
          type(SF),intent(in) :: u,vol
          call Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/vol%vol
          call Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/vol%vol
-         e%Linf = maxabs(u)
+         e%Linf = amax(u)
        end subroutine
 
        subroutine compute_norms_vol_VF(e,u,vol)
@@ -109,7 +115,7 @@
          type(VF),intent(in) :: u,vol
          call Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/vol%x%vol
          call Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/vol%x%vol
-         e%Linf = maxabs(u)
+         e%Linf = amax(u)
        end subroutine
 
        subroutine compute_norms_SF(e,u)
@@ -119,7 +125,7 @@
          call Ln(e%L1,u,1.0_cp)
          call Ln(e%L2,u,2.0_cp)
          e%L2 = e%L2**0.5_cp
-         e%Linf = maxabs(u)
+         e%Linf = amax(u)
        end subroutine
 
        subroutine compute_norms_VF(e,u)
@@ -129,7 +135,7 @@
          call Ln(e%L1,u,1.0_cp)
          call Ln(e%L2,u,2.0_cp)
          e%L2 = e%L2**0.5_cp
-         e%Linf = maxabs(u)
+         e%Linf = amax(u)
        end subroutine
 
        end module

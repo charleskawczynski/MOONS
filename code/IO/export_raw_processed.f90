@@ -74,7 +74,7 @@
          DL = get_DL(x,'export_raw_VF')
 
          tol = 10.0_cp**(-15.0_cp)
-         t = (/maxabs(x%x),maxabs(x%y),maxabs(x%z)/)
+         t = (/amax(x%x),amax(x%y),amax(x%z)/)
          L = (/(t(j).lt.tol,j=1,3)/)
 
          if (.not.export_planar) then ! export all components
@@ -164,7 +164,7 @@
          DL = 'np' ! "p" means "processed" (interpolated to node)
 
          tol = 10.0_cp**(-15.0_cp)
-         t = (/maxabs(x%x),maxabs(x%y),maxabs(x%z)/)
+         t = (/amax(x%x),amax(x%y),amax(x%z)/)
          L = (/(t(j).lt.tol,j=1,3)/)
 
          if (.not.export_planar) then

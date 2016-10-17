@@ -88,7 +88,7 @@
          do i=1,6; call init(FSD%G(i),FSD_in%G(i)); enddo
          do i=1,6; call init(FSD%B(i),FSD_in%B(i)); enddo
          do i=1,6; call init(FSD%I(i),FSD_in%I(i)); enddo
-         do i=1,6; call init(FSD%I(i),FSD_in%I_OPP(i)); enddo
+         do i=1,6; call init(FSD%I_OPP(i),FSD_in%I_OPP(i)); enddo
          do i=1,6; FSD%i_2D(i)%i = FSD_in%i_2D(i)%i; enddo
          FSD%dh = FSD_in%dh
          FSD%nhat = FSD_in%nhat

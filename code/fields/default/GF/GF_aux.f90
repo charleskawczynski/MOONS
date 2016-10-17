@@ -7,27 +7,30 @@
         implicit none
         private
 
-        public :: square,swap
-        public :: min,max,minabs,maxabs
-        public :: maxabsdiff,mean,sum,size
+        public :: square,abs,swap
+        public :: min,max,amin,amax
+        public :: amax_diff,mean,sum,size
+        public :: insist_amax_lt_tol
 
         public :: zero_ghost_xmin_xmax
         public :: zero_ghost_ymin_ymax
         public :: zero_ghost_zmin_zmax
 
         interface square;                   module procedure square_GF;              end interface
+        interface abs;                      module procedure abs_GF;                 end interface
         interface swap;                     module procedure swap_GF;                end interface
         interface min;                      module procedure min_GF;                 end interface
         interface max;                      module procedure max_GF;                 end interface
         interface min;                      module procedure min_pad_GF;             end interface
         interface max;                      module procedure max_pad_GF;             end interface
-        interface minabs;                   module procedure minabs_GF;              end interface
-        interface maxabs;                   module procedure maxabs_GF;              end interface
-        interface maxabsdiff;               module procedure maxabsdiff_GF;          end interface
+        interface amin;                     module procedure amin_GF;                end interface
+        interface amax;                     module procedure amax_GF;                end interface
+        interface amax_diff;                module procedure amax_diff_GF;           end interface
         interface mean;                     module procedure mean_GF;                end interface
         interface sum;                      module procedure sum_GF;                 end interface
         interface sum;                      module procedure sum_GF_pad;             end interface
         interface size;                     module procedure size_GF;                end interface
+        interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_GF;  end interface
 
         interface zero_ghost_xmin_xmax;     module procedure zero_ghost_xmin_xmax_GF;end interface
         interface zero_ghost_ymin_ymax;     module procedure zero_ghost_ymin_ymax_GF;end interface
@@ -47,6 +50,21 @@
           !$OMP END PARALLEL DO
 #else
           a%f = a%f*a%f
+#endif
+        end subroutine
+
+        subroutine abs_GF(a)
+          implicit none
+          type(grid_field),intent(inout) :: a
+#ifdef _PARALLELIZE_GF_
+          integer :: i,j,k
+          !$OMP PARALLEL DO
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          a%f(i,j,k) = abs(a%f(i,j,k))
+          enddo; enddo; enddo
+          !$OMP END PARALLEL DO
+#else
+          a%f = abs(a%f)
 #endif
         end subroutine
 
@@ -99,21 +117,21 @@
           m = maxval(a%f(1+pad:a%s(1)-pad,1+pad:a%s(2)-pad,1+pad:a%s(3)-pad))
         end function
 
-        function minabs_GF(a) result(m)
+        function amin_GF(a) result(m)
           implicit none
           type(grid_field),intent(in) :: a
           real(cp) :: m
           m = minval(abs(a%f))
         end function
 
-        function maxabs_GF(a) result(m)
+        function amax_GF(a) result(m)
           implicit none
           type(grid_field),intent(in) :: a
           real(cp) :: m
           m = maxval(abs(a%f))
         end function
 
-        function maxabsdiff_GF(a,b) result(m)
+        function amax_diff_GF(a,b) result(m)
           implicit none
           type(grid_field),intent(in) :: a,b
           real(cp) :: m
@@ -226,5 +244,20 @@
           integer :: s
           s = a%s_1D
         end function
+
+        subroutine insist_amax_lt_tol_GF(U,caller)
+          implicit none
+          type(grid_field),intent(in) :: U
+          character(len=*),intent(in) :: caller
+          real(cp) :: tol,amx_U
+          tol = 10.0_cp**(-10.0_cp)
+          amx_U = amax(U)
+          if (.not.(amx_U.lt.tol)) then
+            write(*,*) 'Error: tol > amax(U) in ',caller,' in insist_above_tol_GF in GF_aux.f90'
+            write(*,*) 'tol = ',tol
+            write(*,*) 'amax(U) = ',amx_U
+            stop 'Done'
+          endif
+        end subroutine
 
       end module
