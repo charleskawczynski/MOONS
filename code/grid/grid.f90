@@ -16,9 +16,9 @@
        public :: get_face_GI
        public :: get_edge_GI
        public :: get_corner_GI
-       public :: get_face_b ! ,   get_face_g,   get_face_i
-       public :: get_edge_b ! ,   get_edge_g,   get_edge_i
-       public :: get_corner_b ! , get_corner_g, get_corner_i
+       public :: get_face_b
+       public :: get_edge_b
+       public :: get_corner_b
 
 #ifdef _DEBUG_COORDINATES_
        public :: checkGrid
@@ -52,17 +52,9 @@
        interface get_edge_GI;        module procedure get_edge_GI_grid;        end interface
        interface get_corner_GI;      module procedure get_corner_GI_grid;      end interface
 
-       interface get_face_g;         module procedure get_face_grid_g;         end interface
        interface get_face_b;         module procedure get_face_grid_b;         end interface
-       interface get_face_i;         module procedure get_face_grid_i;         end interface
-
-       interface get_edge_g;         module procedure get_edge_grid_g;         end interface
        interface get_edge_b;         module procedure get_edge_grid_b;         end interface
-       interface get_edge_i;         module procedure get_edge_grid_i;         end interface
-
-       interface get_corner_g;       module procedure get_corner_grid_g;       end interface
        interface get_corner_b;       module procedure get_corner_grid_b;       end interface
-       interface get_corner_i;       module procedure get_corner_grid_i;       end interface
 
        contains
 
@@ -262,15 +254,6 @@
          call get_face_GI(g,B,f(3))
        end subroutine
 
-       subroutine get_face_grid_g(g,g_in,face)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: face
-         call init(g,g_in)
-         if (min_face(face)) call get_ghost(g%c(dir_given_face(face)),-1)
-         if (max_face(face)) call get_ghost(g%c(dir_given_face(face)), 1)
-       end subroutine
        subroutine get_face_grid_b(g,g_in,face)
          implicit none
          type(grid),intent(inout) :: g
@@ -280,16 +263,6 @@
          if (min_face(face)) call get_boundary(g%c(dir_given_face(face)),-1)
          if (max_face(face)) call get_boundary(g%c(dir_given_face(face)), 1)
        end subroutine
-       subroutine get_face_grid_i(g,g_in,face)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: face
-         call init(g,g_in)
-         if (min_face(face)) call get_interior(g%c(dir_given_face(face)),-1)
-         if (max_face(face)) call get_interior(g%c(dir_given_face(face)), 1)
-       end subroutine
-
        subroutine get_edge_grid_b(g,g_in,edge)
          implicit none
          type(grid),intent(inout) :: g
@@ -301,29 +274,6 @@
          call get_face_b(temp,g_in,f(1))
          call get_face_b(g,temp,f(2))
        end subroutine
-       subroutine get_edge_grid_g(g,g_in,edge)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: edge
-         type(grid) :: temp
-         integer,dimension(2) :: f
-         f = adj_faces_given_edge(edge)
-         call get_face_g(temp,g_in,f(1))
-         call get_face_g(g,temp,f(2))
-       end subroutine
-       subroutine get_edge_grid_i(g,g_in,edge)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: edge
-         type(grid) :: temp
-         integer,dimension(2) :: f
-         f = adj_faces_given_edge(edge)
-         call get_face_i(temp,g_in,f(1))
-         call get_face_i(g,temp,f(2))
-       end subroutine
-
        subroutine get_corner_grid_b(g,g_in,corner)
          implicit none
          type(grid),intent(inout) :: g
@@ -335,30 +285,6 @@
          call get_face_b(A,g_in,f(1))
          call get_face_b(B,A,f(2))
          call get_face_b(g,B,f(3))
-       end subroutine
-       subroutine get_corner_grid_g(g,g_in,corner)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: corner
-         type(grid) :: A,B
-         integer,dimension(3) :: f
-         f = adj_faces_given_corner(corner)
-         call get_face_g(A,g_in,f(1))
-         call get_face_g(B,A,f(2))
-         call get_face_g(g,B,f(3))
-       end subroutine
-       subroutine get_corner_grid_i(g,g_in,corner)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: corner
-         type(grid) :: A,B
-         integer,dimension(3) :: f
-         f = adj_faces_given_corner(corner)
-         call get_face_i(A,g_in,f(1))
-         call get_face_i(B,A,f(2))
-         call get_face_i(g,B,f(3))
        end subroutine
 
        end module

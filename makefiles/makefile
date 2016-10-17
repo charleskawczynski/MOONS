@@ -146,11 +146,13 @@ FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_
 FC_OPTIMIZE += -D_PARALLELIZE_GF_PLANE_SUM_
 FC_OPTIMIZE += -D_PARALLELIZE_DEL_
 FC_OPTIMIZE += -D_PARALLELIZE_INTERP_
+FC_OPTIMIZE += -D_PARALLELIZE_CROSS_PRODUCT_GF_
 
 FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
-# FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_
+FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_
+
 # FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
 
 # FC_OPTIMIZE += -D_PARALLELIZE_APPLY_BCS_FACES_RAW_
@@ -273,8 +275,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_divide.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_cross_product.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign_plane.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign_ghost.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_assign_wall.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_plane_sum.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry_error.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
@@ -293,6 +297,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge_implicit.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_assign_plane.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_assign_plane.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\

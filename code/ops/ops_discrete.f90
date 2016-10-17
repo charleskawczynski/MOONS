@@ -42,13 +42,6 @@
        implicit none
 
        private
-
-       public :: cross
-       interface cross;           module procedure collocatedCross_GF;        end interface
-       interface cross;           module procedure collocatedCross_SF;        end interface
-       interface cross;           module procedure collocatedCross_VF;        end interface
-       interface cross;           module procedure collocatedCross_TF;        end interface
-
        public :: lap
        interface lap;             module procedure lapUniformCoeff_SF;        end interface
        interface lap;             module procedure lapUniformCoeff_VF;        end interface
@@ -93,79 +86,9 @@
 
        ! *********************************************************************************
        ! *********************************************************************************
-       ! ***************************** REAL FIELD ROUTINES *******************************
-       ! *********************************************************************************
-       ! *********************************************************************************
-
-       subroutine collocatedCross_GF(AcrossB,Ax,Ay,Az,Bx,By,Bz,sx,sy,sz,dir)
-         ! This routine computes the ith component of A x B on a collocated mesh
-         ! dir = (1,2,3)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: AcrossB
-         real(cp),dimension(:,:,:),intent(in) :: Ax,Ay,Az,Bx,By,Bz
-         integer,dimension(3),intent(in) :: sx,sy,sz
-         integer,intent(in) :: dir
-         integer :: i,j,k
-#ifdef _DEBUG_DISCRETE_OPS_
-         integer,dimension(3) :: sAx,sAy,sAz,sBx,sBy,sBz
-         sAx = shape(Ax); sAy = shape(Ay); sAz = shape(Az)
-         sBx = shape(Bx); sBy = shape(By); sBz = shape(Bz)
-         if (sAx(1).ne.sBx(1)) stop 'Error: sAx(1).ne.sBx(1) in collocatedCross_GF in ops_discrete.f90'
-         if (sAx(2).ne.sBx(2)) stop 'Error: sAx(2).ne.sBx(2) in collocatedCross_GF in ops_discrete.f90'
-         if (sAx(3).ne.sBx(3)) stop 'Error: sAx(3).ne.sBx(3) in collocatedCross_GF in ops_discrete.f90'
-
-         if (sAy(1).ne.sBy(1)) stop 'Error: sAy(1).ne.sBy(1) in collocatedCross_GF in ops_discrete.f90'
-         if (sAy(2).ne.sBy(2)) stop 'Error: sAy(2).ne.sBy(2) in collocatedCross_GF in ops_discrete.f90'
-         if (sAy(3).ne.sBy(3)) stop 'Error: sAy(3).ne.sBy(3) in collocatedCross_GF in ops_discrete.f90'
-
-         if (sAz(1).ne.sBz(1)) stop 'Error: sAz(1).ne.sBz(1) in collocatedCross_GF in ops_discrete.f90'
-         if (sAz(2).ne.sBz(2)) stop 'Error: sAz(2).ne.sBz(2) in collocatedCross_GF in ops_discrete.f90'
-         if (sAz(3).ne.sBz(3)) stop 'Error: sAz(3).ne.sBz(3) in collocatedCross_GF in ops_discrete.f90'
-#endif
-         select case (dir)
-         case (1)
-           !$OMP PARALLEL DO
-           do k=1,sy(3); do j=1,sy(2); do i=1,sy(1)
-             AcrossB(i,j,k) = Ay(i,j,k)*Bz(i,j,k) - Az(i,j,k)*By(i,j,k)
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do k=1,sz(3); do j=1,sz(2); do i=1,sz(1)
-             AcrossB(i,j,k) = -(Ax(i,j,k)*Bz(i,j,k) - Az(i,j,k)*Bx(i,j,k))
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do k=1,sx(3); do j=1,sx(2); do i=1,sx(1)
-             AcrossB(i,j,k) = Ax(i,j,k)*By(i,j,k) - Ay(i,j,k)*Bx(i,j,k)
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: dir must = 1,2,3 in collocatedCross_GF in ops_discrete.f90.'
-         end select
-       end subroutine
-
-       ! *********************************************************************************
-       ! *********************************************************************************
        ! *************************** SCALAR FIELD ROUTINES *******************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine collocatedCross_SF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
-         ! This routine computes the ith component of A x B on a collocated mesh
-         ! dir = (1,2,3)
-         implicit none
-         type(SF),intent(inout) :: AcrossB
-         type(SF),intent(in) :: Ax,Ay,Az,Bx,By,Bz
-         integer,intent(in) :: dir
-         integer :: i
-         do i=1,AcrossB%s
-           call cross(AcrossB%BF(i)%GF%f,&
-           Ax%BF(i)%GF%f,Ay%BF(i)%GF%f,Az%BF(i)%GF%f,&
-           Bx%BF(i)%GF%f,By%BF(i)%GF%f,Bz%BF(i)%GF%f,&
-           Ax%BF(i)%GF%s,Ay%BF(i)%GF%s,Az%BF(i)%GF%s,dir)
-         enddo
-       end subroutine
 
        subroutine lapUniformCoeff_SF(lapU,u,m)
          implicit none
@@ -379,37 +302,6 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine collocatedCross_VF(AcrossB,A,B)
-         ! NOTE: The diagonal are not used. The diagonal is:
-         !       Ax,Bx for dir = 1
-         !       Ay,By for dir = 2
-         !       Az,Bz for dir = 3
-         implicit none
-         type(VF),intent(inout) :: AcrossB
-         type(VF),intent(in) :: A,B
-         call cross(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,1)
-         call cross(AcrossB%y,A%x,A%y,A%z,B%x,B%y,B%z,2)
-         call cross(AcrossB%z,A%x,A%y,A%z,B%x,B%y,B%z,3)
-       end subroutine
-
-       subroutine collocatedCross_TF(AcrossB,A,B)
-         ! First index refers to vector direction.
-         ! Second index refers to vector location.
-         !      For example, in A%x%y, the direction of the vector
-         !      will be in x, and it will be located on whatever 
-         !      location is defined by the y-component (y-face for face data
-         !      or y-edge for edge data).
-         ! Since this is a collocated operation, the second
-         ! index should be the same (data should be collocated).
-         ! NOTE: The diagonal, xx,yy,zz are not used.
-         implicit none
-         type(VF),intent(inout) :: AcrossB
-         type(TF),intent(in) :: A,B
-         call cross(AcrossB%x,A%x%x,A%y%x,A%z%x,B%x%x,B%y%x,B%z%x,1)
-         call cross(AcrossB%y,A%x%y,A%y%y,A%z%y,B%x%y,B%y%y,B%z%y,2)
-         call cross(AcrossB%z,A%x%z,A%y%z,A%z%z,B%x%z,B%y%z,B%z%z,3)
-       end subroutine
 
        subroutine lapUniformCoeff_VF(lapU,u,m)
          implicit none

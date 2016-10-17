@@ -100,9 +100,7 @@
          type(mesh),intent(in) :: m
          type(TF),intent(inout) :: temp_B_E
          call face2Edge_no_diag(temp_B_E,B_F,m)
-         call cross(AcrossB_E%x,A_E%x%x,A_E%y%x,A_E%z%x,temp_B_E%x%x,temp_B_E%y%x,temp_B_E%z%x,1)
-         call cross(AcrossB_E%y,A_E%x%y,A_E%y%y,A_E%z%y,temp_B_E%x%y,temp_B_E%y%y,temp_B_E%z%y,2)
-         call cross(AcrossB_E%z,A_E%x%z,A_E%y%z,A_E%z%z,temp_B_E%x%z,temp_B_E%y%z,temp_B_E%z%z,3)
+         call cross_product(AcrossB_E,A_E,temp_B_E)
        end subroutine
 
        end module

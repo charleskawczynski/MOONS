@@ -62,6 +62,7 @@
         public :: add,subtract
         public :: multiply,divide
         public :: square
+        public :: cross_product
         public :: transpose
         ! public :: sum
         ! public :: assignX,assignY,assignZ
@@ -126,6 +127,7 @@
         interface divide;        module procedure divide_S_TF;              end interface
 
         interface square;        module procedure square_TF;                end interface
+        interface cross_product; module procedure cross_product_TF;         end interface
         interface transpose;     module procedure transpose_TF_TF;          end interface
         interface transpose;     module procedure transpose_TF_SF;          end interface
         ! interface sum;           module procedure vectorSum;             end interface
@@ -311,6 +313,24 @@
           implicit none
           type(TF),intent(inout) :: f
           call square(f%x); call square(f%y); call square(f%z)
+        end subroutine
+
+        subroutine cross_product_TF(AcrossB,A,B)
+          ! First index refers to vector direction.
+          ! Second index refers to vector location.
+          !      For example, in A%x%y, the direction of the vector
+          !      will be in x, and it will be located on whatever 
+          !      location is defined by the y-component (y-face for face data
+          !      or y-edge for edge data).
+          ! Since this is a collocated operation, the second
+          ! index should be the same (data should be collocated).
+          ! NOTE: The diagonal, xx,yy,zz are not used.
+          implicit none
+          type(VF),intent(inout) :: AcrossB
+          type(TF),intent(in) :: A,B
+          call cross_product_x(AcrossB%x,A%y%x,A%z%x,B%y%x,B%z%x)
+          call cross_product_y(AcrossB%y,A%x%y,A%z%y,B%x%y,B%z%y)
+          call cross_product_z(AcrossB%z,A%x%z,A%y%z,B%x%z,B%y%z)
         end subroutine
 
         subroutine transpose_TF_SF(f,g)

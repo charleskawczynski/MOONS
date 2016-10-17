@@ -45,12 +45,10 @@
          do i=1,U%BF(t)%BCs%PA_face_BCs%N
          call U%BF(t)%BCs%PA_face_BCs%SP(i)%P(&
          U%BF(t)%GF,&
-         U%BF(t)%BCs%f(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID),&
+         U%BF(t)%BCs%face%b(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID),&
          U%BF(t)%BCs%f_BCs,&
          U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)
          enddo
-
-         ! if (is_CC(U%DL)) stop 'Done in apply_BCs_embed.f90'
 
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_
         !$OMP END PARALLEL DO
@@ -82,7 +80,7 @@
          do i=1,U%BF(t)%BCs%PA_face_implicit_BCs%N
          call U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%P(&
          U%BF(t)%GF,&
-         U%BF(t)%BCs%f(U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%ID),&
+         U%BF(t)%BCs%face%b(U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%ID),&
          U%BF(t)%BCs%f_BCs,&
          U%BF(t)%BCs%PA_face_implicit_BCs%SP(i)%ID)
          enddo

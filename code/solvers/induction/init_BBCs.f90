@@ -39,7 +39,7 @@
          select case (preDefinedB_BCs)
          case (0); 
          case (1); call pseudo_vacuum(B,m)
-         case (2); call initBandaru(B,m)
+         case (2); call initBandaru(B)
          case (3); call periodic_duct_flow(B,m)
          case (4); call thin_wall(B,m,cw)
          case (5); call thin_wall_LDC(B,m,cw)
@@ -58,12 +58,12 @@
          integer :: i
          call Dirichlet_BCs(B,m)
          do i=1,m%s
-           call init_Neumann(B%x%BF(i)%BCs,m%B(i),1); call init(B%x%BF(i)%BCs,0.0_cp,1)
-           call init_Neumann(B%x%BF(i)%BCs,m%B(i),2); call init(B%x%BF(i)%BCs,0.0_cp,2)
-           call init_Neumann(B%y%BF(i)%BCs,m%B(i),3); call init(B%y%BF(i)%BCs,0.0_cp,3)
-           call init_Neumann(B%y%BF(i)%BCs,m%B(i),4); call init(B%y%BF(i)%BCs,0.0_cp,4)
-           call init_Neumann(B%z%BF(i)%BCs,m%B(i),5); call init(B%z%BF(i)%BCs,0.0_cp,5)
-           call init_Neumann(B%z%BF(i)%BCs,m%B(i),6); call init(B%z%BF(i)%BCs,0.0_cp,6)
+           call init_Neumann(B%x%BF(i)%BCs,1); call init(B%x%BF(i)%BCs,0.0_cp,1)
+           call init_Neumann(B%x%BF(i)%BCs,2); call init(B%x%BF(i)%BCs,0.0_cp,2)
+           call init_Neumann(B%y%BF(i)%BCs,3); call init(B%y%BF(i)%BCs,0.0_cp,3)
+           call init_Neumann(B%y%BF(i)%BCs,4); call init(B%y%BF(i)%BCs,0.0_cp,4)
+           call init_Neumann(B%z%BF(i)%BCs,5); call init(B%z%BF(i)%BCs,0.0_cp,5)
+           call init_Neumann(B%z%BF(i)%BCs,6); call init(B%z%BF(i)%BCs,0.0_cp,6)
          enddo
        end subroutine
 
@@ -73,18 +73,17 @@
          type(mesh),intent(in) :: m
          integer :: i,k
          do i=1,m%s
-           do k=1,2; call init_periodic(B%x%BF(i)%BCs,m%B(i),k); enddo
-           do k=1,2; call init_periodic(B%y%BF(i)%BCs,m%B(i),k); enddo
-           do k=1,2; call init_periodic(B%z%BF(i)%BCs,m%B(i),k); enddo
+           do k=1,2; call init_periodic(B%x%BF(i)%BCs,k); enddo
+           do k=1,2; call init_periodic(B%y%BF(i)%BCs,k); enddo
+           do k=1,2; call init_periodic(B%z%BF(i)%BCs,k); enddo
          enddo
        end subroutine
 
-       subroutine initBandaru(B,m)
+       subroutine initBandaru(B)
          implicit none
          type(VF),intent(inout) :: B
-         type(mesh),intent(in) :: m
-         call init_Neumann(B%x%BF(1)%BCs,m%B(1),5)
-         call init_Neumann(B%x%BF(1)%BCs,m%B(1),6)
+         call init_Neumann(B%x%BF(1)%BCs,5)
+         call init_Neumann(B%x%BF(1)%BCs,6)
          call init(B%x%BF(1)%BCs,0.0_cp,5)
          call init(B%x%BF(1)%BCs,0.0_cp,6)
        end subroutine
@@ -97,20 +96,20 @@
          integer :: i,j
          call pseudo_vacuum(B,m)
          do i=1,m%s
-           j=3;call init_Robin(B%x%BF(i)%BCs,m%B(i),j); call init(B%x%BF(i)%BCs,cw,j)
-           j=4;call init_Robin(B%x%BF(i)%BCs,m%B(i),j); call init(B%x%BF(i)%BCs,cw,j)
-           j=5;call init_Robin(B%x%BF(i)%BCs,m%B(i),j); call init(B%x%BF(i)%BCs,cw,j)
-           j=6;call init_Robin(B%x%BF(i)%BCs,m%B(i),j); call init(B%x%BF(i)%BCs,cw,j)
+           j=3;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
+           j=4;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
+           j=5;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
+           j=6;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
 
-           j=1;call init_Robin(B%y%BF(i)%BCs,m%B(i),j); call init(B%y%BF(i)%BCs,cw,j)
-           j=2;call init_Robin(B%y%BF(i)%BCs,m%B(i),j); call init(B%y%BF(i)%BCs,cw,j)
-           j=5;call init_Robin(B%y%BF(i)%BCs,m%B(i),j); call init(B%y%BF(i)%BCs,cw,j)
-           j=6;call init_Robin(B%y%BF(i)%BCs,m%B(i),j); call init(B%y%BF(i)%BCs,cw,j)
+           j=1;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
+           j=2;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
+           j=5;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
+           j=6;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
 
-           j=1;call init_Robin(B%z%BF(i)%BCs,m%B(i),j); call init(B%z%BF(i)%BCs,cw,j)
-           j=2;call init_Robin(B%z%BF(i)%BCs,m%B(i),j); call init(B%z%BF(i)%BCs,cw,j)
-           j=3;call init_Robin(B%z%BF(i)%BCs,m%B(i),j); call init(B%z%BF(i)%BCs,cw,j)
-           j=4;call init_Robin(B%z%BF(i)%BCs,m%B(i),j); call init(B%z%BF(i)%BCs,cw,j)
+           j=1;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
+           j=2;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
+           j=3;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
+           j=4;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
          enddo
        end subroutine
 
@@ -123,18 +122,18 @@
          integer :: i
          do i=1,m%s
            select case (face)
-           case (1); call init_Robin(B%y%BF(i)%BCs,m%B(i),face); call init(B%y%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,m%B(i),face); call init(B%z%BF(i)%BCs,cw,face)
-           case (2); call init_Robin(B%y%BF(i)%BCs,m%B(i),face); call init(B%y%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,m%B(i),face); call init(B%z%BF(i)%BCs,cw,face)
-           case (3); call init_Robin(B%x%BF(i)%BCs,m%B(i),face); call init(B%x%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,m%B(i),face); call init(B%z%BF(i)%BCs,cw,face)
-           case (4); call init_Robin(B%x%BF(i)%BCs,m%B(i),face); call init(B%x%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,m%B(i),face); call init(B%z%BF(i)%BCs,cw,face)
-           case (5); call init_Robin(B%y%BF(i)%BCs,m%B(i),face); call init(B%y%BF(i)%BCs,cw,face)
-                     call init_Robin(B%x%BF(i)%BCs,m%B(i),face); call init(B%x%BF(i)%BCs,cw,face)
-           case (6); call init_Robin(B%x%BF(i)%BCs,m%B(i),face); call init(B%x%BF(i)%BCs,cw,face)
-                     call init_Robin(B%y%BF(i)%BCs,m%B(i),face); call init(B%y%BF(i)%BCs,cw,face)
+           case (1); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
+           case (2); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
+           case (3); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
+           case (4); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
+           case (5); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
+                     call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
+           case (6); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
+                     call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
            case default; stop 'Error: face must = 1:6 in thin_wall_face in init_BBCs.f90'
            end select
          enddo

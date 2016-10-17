@@ -71,7 +71,7 @@
                            g%c(3)%dhc(k-1)
           enddo; enddo; enddo
           !$OMP END PARALLEL DO
-          case default; stop 'Error: bad face location in volume_SF in GF_distributions.f90'
+          case default; stop 'Error: bad face location in volume_GF in GF_distributions.f90'
           end select
           elseif (is_Edge(DL)) then
           select case (DL%edge)

@@ -46,6 +46,7 @@
        use BC_logicals_mod
        use IO_tools_mod
        use table_mod
+       use boundary_mod
        use procedure_array_mod
        use apply_BCs_faces_bridge_mod
        use apply_BCs_faces_bridge_implicit_mod
@@ -60,7 +61,8 @@
        public :: init_Neumann
        public :: init_Robin
        public :: init_periodic
-       public :: init_antisymmetry
+       public :: init_symmetric
+       public :: init_antisymmetric
 
        public :: getAllNeumann
        public :: getDirichlet
@@ -69,19 +71,23 @@
        public :: init_props
 
        type boundary_conditions
-         ! BC values:
-         type(grid_field),dimension(:),allocatable :: f  ! BC values size = 6
-         type(grid_field),dimension(:),allocatable :: e  ! BC values size = 12
-         type(grid_field),dimension(:),allocatable :: c  ! BC values size = 8
-         type(bctype),dimension(6) :: bct_f              ! for self-documenting output
-         type(bctype),dimension(12) :: bct_e             ! for self-documenting output
-         type(bctype),dimension(8) :: bct_c              ! for self-documenting output
-
-         type(face_SD) :: f_BCs
+         ! FACES
+         type(boundary) :: face                          ! BC values and type
          type(procedure_array) :: PA_face_BCs            ! procedure array for face BCs
          type(procedure_array) :: PA_face_implicit_BCs   ! procedure array for face BCs
+         type(face_SD) :: f_BCs                          ! stores indexes for slicing
+         ! EDGES
+         type(boundary) :: edge                          ! BC values and type
+         type(procedure_array) :: PA_edges_BCs           ! procedure array for face BCs
+         type(procedure_array) :: PA_edges_implicit_BCs  ! procedure array for face BCs
+         ! type(edge_SD) :: e_BCs                        ! Not yet developed
+         ! CORNERS
+         type(boundary) :: corner                        ! BC values and type
+         type(procedure_array) :: PA_corners_BCs         ! procedure array for face BCs
+         type(procedure_array) :: PA_corners_implicit_BCs! procedure array for face BCs
+         ! type(corner_SD) :: c_BCs                      ! Not yet developed
+         ! OTHER
          type(data_location) :: DL                       ! data location (C,N,F,E)
-
          type(BC_logicals) :: BCL
        end type
 
@@ -109,8 +115,10 @@
        interface init_Robin;          module procedure init_Robin_face;         end interface
        interface init_periodic;       module procedure init_periodic_all;       end interface
        interface init_periodic;       module procedure init_periodic_face;      end interface
-       interface init_antisymmetry;   module procedure init_antisymmetry_all;   end interface
-       interface init_antisymmetry;   module procedure init_antisymmetry_face;  end interface
+       interface init_symmetric;      module procedure init_symmetric_all;      end interface
+       interface init_symmetric;      module procedure init_symmetric_face;     end interface
+       interface init_antisymmetric;  module procedure init_antisymmetric_all;  end interface
+       interface init_antisymmetric;  module procedure init_antisymmetric_face; end interface
 
        interface define_logicals;     module procedure define_logicals_BCs;     end interface
        interface insist_allocated;    module procedure insist_allocated_BCs;    end interface
@@ -128,28 +136,15 @@
          type(boundary_conditions),intent(inout) :: BC
          type(block),intent(in) :: B
          type(data_location),intent(in) :: DL
-         integer :: i
          call delete(BC)
-         allocate(BC%f(6))
-         allocate(BC%e(12))
-         allocate(BC%c(8))
+         call init(BC%face,B,DL,6,'face')
+         ! call init(BC%edge,B,DL,12,'edge')
+         ! call init(BC%corner,B,DL,8,'corner')
+
          call init(BC%DL,DL)
-               if (is_CC(DL)) then; do i=1,6; call init_CC(  BC%f(i),B%fb(i)); enddo
-         elseif (is_Node(DL)) then; do i=1,6; call init_Node(BC%f(i),B%fb(i)); enddo
-         elseif (is_Face(DL)) then; do i=1,6; call init_Face(BC%f(i),B%fb(i),DL%face); enddo
-         elseif (is_Edge(DL)) then; do i=1,6; call init_Edge(BC%f(i),B%fb(i),DL%edge); enddo
-         endif
-               if (is_CC(DL)) then; do i=1,12; call init_CC(  BC%e(i),B%eb(i)); enddo
-         elseif (is_Node(DL)) then; do i=1,12; call init_Node(BC%e(i),B%eb(i)); enddo
-         elseif (is_Face(DL)) then; do i=1,12; call init_Face(BC%e(i),B%eb(i),DL%face); enddo
-         elseif (is_Edge(DL)) then; do i=1,12; call init_Edge(BC%e(i),B%eb(i),DL%edge); enddo
-         endif
-               if (is_CC(DL)) then; do i=1,8; call init_CC(  BC%c(i),B%cb(i)); enddo
-         elseif (is_Node(DL)) then; do i=1,8; call init_Node(BC%c(i),B%cb(i)); enddo
-         elseif (is_Face(DL)) then; do i=1,8; call init_Face(BC%c(i),B%cb(i),DL%face); enddo
-         elseif (is_Edge(DL)) then; do i=1,8; call init_Edge(BC%c(i),B%cb(i),DL%edge); enddo
-         endif
          call init(BC%f_BCs,B%g,B%f)
+         ! call init(BC%e_BCs,B%g,B%e)
+         ! call init(BC%c_BCs,B%g,B%c)
          call init_mixed(BC%f_BCs,DL)
          call init_vals_all_S(BC,0.0_cp)
          BC%BCL%GFs_defined = .true.
@@ -160,37 +155,26 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          type(boundary_conditions),intent(in) :: BC_in
-         integer :: i
 #ifdef _DEBUG_BOUNDARY_CONDITIONS_
          call insist_allocated(BC_in,'init_BCs_copy')
 #endif
          call delete(BC)
-         allocate(BC%f(6))
-         allocate(BC%e(12))
-         allocate(BC%c(8))
-         do i=1,6;  call init(BC%f(i),BC_in%f(i)); call assign(BC%f(i),BC_in%f(i)); enddo
-         do i=1,12; call init(BC%e(i),BC_in%e(i)); call assign(BC%e(i),BC_in%e(i)); enddo
-         do i=1,8;  call init(BC%c(i),BC_in%c(i)); call assign(BC%c(i),BC_in%c(i)); enddo
+         call init(BC%face,BC_in%face)
+         ! call init(BC%edge,BC_in%edge)
+         ! call init(BC%corner,BC_in%corner)
          call init(BC%BCL,BC_in%BCL)
          call init(BC%DL,BC_in%DL)
          call init(BC%f_BCs,BC_in%f_BCs)
          call init(BC%PA_face_BCs,BC_in%PA_face_BCs)
          call init(BC%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
-         do i=1,6;  call init(BC%bct_f(i),BC_in%bct_f(i)); enddo
-         ! do i=1,12; call init(BC%bct_e(i),BC_in%bct_e(i)); enddo
-         ! do i=1,8;  call init(BC%bct_c(i),BC_in%bct_c(i)); enddo
        end subroutine
 
        subroutine delete_BCs(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         integer :: i
-         if (allocated(BC%f)) then; do i=1,size(BC%f); call delete(BC%f(i)); enddo; deallocate(BC%f); endif
-         if (allocated(BC%e)) then; do i=1,size(BC%e); call delete(BC%e(i)); enddo; deallocate(BC%e); endif
-         if (allocated(BC%c)) then; do i=1,size(BC%c); call delete(BC%c(i)); enddo; deallocate(BC%c); endif
-         do i=1,6;  call delete(BC%bct_f(i)); enddo
-         do i=1,12; call delete(BC%bct_e(i)); enddo
-         do i=1,8;  call delete(BC%bct_c(i)); enddo
+         call delete(BC%face)
+         call delete(BC%edge)
+         call delete(BC%corner)
          call delete(BC%f_BCs)
          call delete(BC%PA_face_BCs)
          call delete(BC%PA_face_implicit_BCs)
@@ -202,10 +186,9 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          real(cp),intent(in) :: val
-         integer :: i
-         do i=1,6;  call assign(BC%f(i),val); enddo
-         do i=1,12; call assign(BC%e(i),val); enddo
-         do i=1,8;  call assign(BC%c(i),val); enddo
+         call init(BC%face,val)
+         call init(BC%edge,val)
+         call init(BC%corner,val)
          call define_logicals(BC)
          BC%BCL%vals_defined = .true.
        end subroutine
@@ -215,7 +198,8 @@
          type(boundary_conditions),intent(inout) :: BC
          type(grid_field),intent(in) :: vals
          integer,intent(in) :: face
-         call assign(BC%f(face),vals)
+         ! call assign(BC%face(ID)%b,vals)
+         call assign(BC%face%b(face),vals)
          BC%BCL%vals_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -225,7 +209,8 @@
          type(boundary_conditions),intent(inout) :: BC
          real(cp),intent(in) :: val
          integer,intent(in) :: face
-         call assign(BC%f(face),val)
+         ! call assign(BC%face(ID)%b,val)
+         call assign(BC%face%b(face),val)
          BC%BCL%vals_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -234,20 +219,10 @@
          implicit none
          type(boundary_conditions),intent(in) :: BC
          integer,intent(in) :: un
-         integer :: i,col_width,precision
          if (BC%BCL%defined) then
-           precision = 4; col_width = 10
-           call export_table('Faces   :',(/(i,i=1,6)/),col_width,un)
-           call export_table('Type    :',(/(get_bctype(BC%bct_f(i)),i=1,6)/),col_width,un)
-           call export_table('meanVal :',(/(get_mean_value(BC%bct_f(i)),i=1,6)/),col_width,precision,un)
-           ! precision = 1; col_width = 5
-           ! call export_table('Edges   :',(/(i,i=1,12)/),col_width,un)
-           ! call export_table('Type    :',(/(get_bctype(BC%bct_e(i)),i=1,12)/),col_width,un)
-           ! call export_table('meanVal :',(/(get_mean_value(BC%bct_e(i)),i=1,12)/),col_width,precision,un)
-           ! col_width = 10
-           ! call export_table('Corners :',(/(i,i=1,8)/),col_width,un)
-           ! call export_table('Type    :',(/(get_bctype(BC%bct_c(i)%b),i=1,8)/),col_width,un)
-           ! call export_table('meanVal :',(/(get_mean_value(BC%bct_c(i)),i=1,8)/),col_width,precision,un)
+           call display(BC%face,un)
+           ! call display(BC%edge)
+           ! call display(BC%corner)
          endif
        end subroutine
 
@@ -261,17 +236,13 @@
          implicit none
          type(boundary_conditions),intent(in) :: BC
          integer,intent(in) :: un
-         integer :: i
          call insist_allocated(BC,'export_BCs')
          write(un,*) 'defined'
          write(un,*) BC%BCL%defined
          if (BC%BCL%defined) then
-           do i=1,6;  call export(BC%f(i),un); enddo
-           do i=1,12; call export(BC%e(i),un); enddo
-           do i=1,8;  call export(BC%c(i),un); enddo
-           do i=1,6;  call export(BC%bct_f(i),un); enddo
-           do i=1,12; call export(BC%bct_e(i),un); enddo
-           do i=1,8;  call export(BC%bct_c(i),un); enddo
+           call export(BC%face,un)
+           ! call export(BC%edge,un)
+           ! call export(BC%corner,un)
            call export(BC%PA_face_BCs,un)
            call export(BC%PA_face_implicit_BCs,un)
            call export(BC%BCL,un)
@@ -284,16 +255,12 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          integer,intent(in) :: un
-         integer :: i
          read(un,*) 
          read(un,*) BC%BCL%defined
          if (BC%BCL%defined) then
-           do i=1,6;  call import(BC%f(i),un); enddo
-           do i=1,12; call import(BC%e(i),un); enddo
-           do i=1,8;  call import(BC%c(i),un); enddo
-           do i=1,6;  call import(BC%bct_f(i),un); enddo
-           do i=1,12; call import(BC%bct_e(i),un); enddo
-           do i=1,8;  call import(BC%bct_c(i),un); enddo
+           call import(BC%face,un)
+           ! call export(BC%edge,un)
+           ! call export(BC%corner,un)
            call import(BC%PA_face_BCs,un)
            call import(BC%PA_face_implicit_BCs,un)
            call import(BC%BCL,un)
@@ -326,33 +293,34 @@
        ! ********************************* INIT FACES **********************************
        ! *******************************************************************************
 
-       subroutine init_Dirichlet_all(BC,B)
+       subroutine init_Dirichlet_all(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer :: i
-         do i=1,6; call init_Dirichlet_face(BC,B,i); enddo
+         do i=1,6; call init_Dirichlet_face(BC,i); enddo
        end subroutine
-       subroutine init_Dirichlet_face(BC,B,face)
+       subroutine init_Dirichlet_face(BC,face)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer,intent(in) :: face
-         call init_Dirichlet(BC%bct_f(face))
-         if (CC_along(BC%DL,dir_given_face(face))) then
+         integer :: dir
+         dir = dir_given_face(face)
+
+         call init_Dirichlet(BC%face,face)
+         if (CC_along(BC%DL,dir)) then
          call remove(BC%PA_face_BCs,face)
          call add(BC%PA_face_BCs,Dirichlet_C,face)
          endif
-         if ( N_along(BC%DL,dir_given_face(face))) then
+         if ( N_along(BC%DL,dir)) then
          call remove(BC%PA_face_BCs,face)
          call add(BC%PA_face_BCs,Dirichlet_N,face)
          endif
 
-         if (CC_along(BC%DL,dir_given_face(face))) then
+         if (CC_along(BC%DL,dir)) then
          call remove(BC%PA_face_implicit_BCs,face)
          call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
          endif
-         if ( N_along(BC%DL,dir_given_face(face))) then
+         if ( N_along(BC%DL,dir)) then
          call remove(BC%PA_face_implicit_BCs,face)
          call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
          endif
@@ -360,21 +328,18 @@
          BC%BCL%BCT_defined = .true.
        end subroutine
 
-       subroutine init_Neumann_all(BC,B)
+       subroutine init_Neumann_all(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer :: i
-         do i=1,6; call init_Neumann(BC,B,i); enddo
-         BC%BCL%BCT_defined = .true.
+         do i=1,6; call init_Neumann(BC,i); enddo
        end subroutine
-       subroutine init_Neumann_face(BC,B,face)
+       subroutine init_Neumann_face(BC,face)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer,intent(in) :: face
          call check_prereq(BC)
-         call init_Neumann(BC%bct_f(face))
+         call init_Neumann(BC%face,face)
          if (CC_along(BC%DL,dir_given_face(face))) then
            call remove(BC%PA_face_BCs,face)
            call add(BC%PA_face_BCs,Neumann_C,face)
@@ -396,20 +361,18 @@
          call define_logicals(BC)
        end subroutine
 
-       subroutine init_Robin_all(BC,B)
+       subroutine init_Robin_all(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer :: i
-         do i=1,6; call init_Robin_face(BC,B,i); enddo
+         do i=1,6; call init_Robin_face(BC,i); enddo
        end subroutine
-       subroutine init_Robin_face(BC,B,face)
+       subroutine init_Robin_face(BC,face)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer,intent(in) :: face
          call check_prereq(BC)
-         call init_Robin(BC%bct_f(face))
+         call init_Robin(BC%face,face)
          if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_C,face)
          if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_N,face)
 
@@ -423,22 +386,20 @@
          call define_logicals(BC)
        end subroutine
 
-       subroutine init_Periodic_all(BC,B)
+       subroutine init_Periodic_all(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer :: i
-         do i=1,6; call init_Periodic_face(BC,B,i); enddo
+         do i=1,6; call init_Periodic_face(BC,i); enddo
        end subroutine
-       subroutine init_Periodic_face(BC,B,face)
+       subroutine init_Periodic_face(BC,face)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer,intent(in) :: face
          integer :: dir
          dir = dir_given_face(face)
          call check_prereq(BC)
-         call init_Periodic(BC%bct_f(face))
+         call init_Periodic(BC%face,face)
          if (CC_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_C,face)
          if ( N_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_N,face)
 
@@ -452,20 +413,33 @@
          call define_logicals(BC)
        end subroutine
 
-       subroutine init_antisymmetry_all(BC,B)
+       subroutine init_symmetric_all(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer :: i
-         do i=1,6; call init_antisymmetry_face(BC,B,i); enddo
+         do i=1,6; call init_symmetric_face(BC,i); enddo
        end subroutine
-       subroutine init_antisymmetry_face(BC,B,face)
+       subroutine init_symmetric_face(BC,face)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
          integer,intent(in) :: face
          call check_prereq(BC)
-         call init_antisymmetric(BC%bct_f(face))
+         call init_symmetric(BC%face,face)
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine init_antisymmetric_all(BC)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer :: i
+         do i=1,6; call init_antisymmetric_face(BC,i); enddo
+       end subroutine
+       subroutine init_antisymmetric_face(BC,face)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer,intent(in) :: face
+         call check_prereq(BC)
+         call init_antisymmetric(BC%face,face)
          call define_logicals(BC)
        end subroutine
 
@@ -487,15 +461,8 @@
          implicit none
          type(boundary_conditions),intent(in) :: BC
          character(len=*),intent(in) :: caller
-         logical,dimension(3) :: L
-         L(1) = allocated(BC%f).and.(size(BC%f).eq.6)
-         L(2) = allocated(BC%e).and.(size(BC%e).eq.12)
-         L(3) = allocated(BC%c).and.(size(BC%c).eq.8)
-         if (.not.all(L)) then
-           write(*,*) 'Error: trying to copy unallocated BCs in '//caller//'in boundary_conditions.f90'
-           write(*,*) 'size(BC%f) = ',size(BC%f)
-           write(*,*) 'size(BC%e) = ',size(BC%e)
-           write(*,*) 'size(BC%c) = ',size(BC%c)
+         if (.not.BC%BCL%defined) then
+           write(*,*) 'Error: BC not defined in '//caller//' in boundary_conditions.f90'
            stop 'Done'
          endif
        end subroutine
@@ -503,23 +470,22 @@
        subroutine define_logicals_BCs(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         integer :: i
          logical,dimension(3) :: L
          BC%BCL%defined = BC%BCL%GFs_defined.and.BC%BCL%BCT_defined.and.BC%BCL%vals_defined
 
-         L(1) = all((/(is_Dirichlet(BC%bct_f(i)),i=1,6)/))
-         L(2) = all((/(is_Dirichlet(BC%bct_e(i)),i=1,12)/))
-         L(3) = all((/(is_Dirichlet(BC%bct_c(i)),i=1,8)/))
+         L(1) = BC%face%BCL%all_Dirichlet
+         L(2) = BC%edge%BCL%all_Dirichlet
+         L(3) = BC%corner%BCL%all_Dirichlet
          BC%BCL%all_Dirichlet = all(L)
 
-         L(1) = all((/(is_Robin(BC%bct_f(i)),i=1,6)/))
-         L(2) = all((/(is_Robin(BC%bct_e(i)),i=1,12)/))
-         L(3) = all((/(is_Robin(BC%bct_c(i)),i=1,8)/))
+         L(1) = BC%face%BCL%all_Robin
+         L(2) = BC%edge%BCL%all_Robin
+         L(3) = BC%corner%BCL%all_Robin
          BC%BCL%all_Robin = all(L)
 
-         L(1) = all((/(is_Neumann(BC%bct_f(i)),i=1,6)/))
-         L(2) = all((/(is_Neumann(BC%bct_e(i)),i=1,12)/))
-         L(3) = all((/(is_Neumann(BC%bct_c(i)),i=1,8)/))
+         L(1) = BC%face%BCL%all_Neumann
+         L(2) = BC%edge%BCL%all_Neumann
+         L(3) = BC%corner%BCL%all_Neumann
          BC%BCL%all_Neumann = all(L)
        end subroutine
 

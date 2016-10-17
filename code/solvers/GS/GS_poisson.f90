@@ -76,7 +76,6 @@
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         integer :: i,t
-        
         call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)

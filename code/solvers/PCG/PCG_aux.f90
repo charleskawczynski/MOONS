@@ -28,16 +28,16 @@
         if (f%N_along(1).and.(.not.m%plane_x)) then
           do i=1,m%s
             ! if (.not.m%B(i)%g%st_faces(1)%TF) then
-              if (is_Neumann(x%BF(i)%BCs%bct_f(1))) then
+              if (is_Neumann(x%BF(i)%BCs%face%bct(1))) then
                 f_mod%BF(i)%GF%f(2,:,:) = f%BF(i)%GF%f(2,:,:)*0.5_cp
-              elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(1))) then
+              elseif (is_Dirichlet(x%BF(i)%BCs%face%bct(1))) then
                 f_mod%BF(i)%GF%f(2,:,:) = 0.0_cp
               endif
             ! endif
             ! if (.not.m%B(i)%g%st_faces(2)%TF) then
-              if (is_Neumann(x%BF(i)%BCs%bct_f(2))) then
+              if (is_Neumann(x%BF(i)%BCs%face%bct(2))) then
                 f_mod%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:) = f%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:)*0.5_cp
-              elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(2))) then
+              elseif (is_Dirichlet(x%BF(i)%BCs%face%bct(2))) then
                 f_mod%BF(i)%GF%f(f%BF(i)%GF%s(1)-1,:,:) = 0.0_cp
               endif
             ! endif
@@ -46,16 +46,16 @@
         if (f%N_along(2).and.(.not.m%plane_y)) then
           do i=1,m%s
             ! if (.not.m%B(i)%g%st_faces(3)%TF) then
-              if (is_Neumann(x%BF(i)%BCs%bct_f(3))) then
+              if (is_Neumann(x%BF(i)%BCs%face%bct(3))) then
                 f_mod%BF(i)%GF%f(:,2,:) = f%BF(i)%GF%f(:,2,:)*0.5_cp
-              elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(3))) then
+              elseif (is_Dirichlet(x%BF(i)%BCs%face%bct(3))) then
                 f_mod%BF(i)%GF%f(:,2,:) = 0.0_cp
               endif
             ! endif
             ! if (.not.m%B(i)%g%st_faces(4)%TF) then
-              if (is_Neumann(x%BF(i)%BCs%bct_f(4))) then
+              if (is_Neumann(x%BF(i)%BCs%face%bct(4))) then
                 f_mod%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:) = f%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:)*0.5_cp
-              elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(4))) then
+              elseif (is_Dirichlet(x%BF(i)%BCs%face%bct(4))) then
                 f_mod%BF(i)%GF%f(:,f%BF(i)%GF%s(2)-1,:) = 0.0_cp
               endif
             ! endif
@@ -64,16 +64,16 @@
         if (f%N_along(3).and.(.not.m%plane_z)) then
           do i=1,m%s
             ! if (.not.m%B(i)%g%st_faces(5)%TF) then
-              if (is_Neumann(x%BF(i)%BCs%bct_f(5))) then
+              if (is_Neumann(x%BF(i)%BCs%face%bct(5))) then
                 f_mod%BF(i)%GF%f(:,:,2) = f%BF(i)%GF%f(:,:,2)*0.5_cp
-              elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(5))) then
+              elseif (is_Dirichlet(x%BF(i)%BCs%face%bct(5))) then
                 f_mod%BF(i)%GF%f(:,:,2) = 0.0_cp
               endif
             ! endif
             ! if (.not.m%B(i)%g%st_faces(6)%TF) then
-              if (is_Neumann(x%BF(i)%BCs%bct_f(6))) then
+              if (is_Neumann(x%BF(i)%BCs%face%bct(6))) then
                 f_mod%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1) = f%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1)*0.5_cp
-              elseif (is_Dirichlet(x%BF(i)%BCs%bct_f(6))) then
+              elseif (is_Dirichlet(x%BF(i)%BCs%face%bct(6))) then
                 f_mod%BF(i)%GF%f(:,:,f%BF(i)%GF%s(3)-1) = 0.0_cp
               endif
             ! endif
@@ -99,20 +99,20 @@
         integer :: i
         if (x%N_along(1)) then
           do i=1,m%s
-            if ((.not.is_periodic(x%BF(i)%BCs%bct_f(1)))) x%BF(i)%GF%f(1,:,:) = 0.0_cp
-            if ((.not.is_periodic(x%BF(i)%BCs%bct_f(2)))) x%BF(i)%GF%f(x%BF(i)%GF%s(1),:,:) = 0.0_cp
+            if ((.not.is_periodic(x%BF(i)%BCs%face%bct(1)))) x%BF(i)%GF%f(1,:,:) = 0.0_cp
+            if ((.not.is_periodic(x%BF(i)%BCs%face%bct(2)))) x%BF(i)%GF%f(x%BF(i)%GF%s(1),:,:) = 0.0_cp
           enddo
         endif
         if (x%N_along(2)) then
           do i=1,m%s
-            if ((.not.is_periodic(x%BF(i)%BCs%bct_f(3)))) x%BF(i)%GF%f(:,1,:) = 0.0_cp
-            if ((.not.is_periodic(x%BF(i)%BCs%bct_f(4)))) x%BF(i)%GF%f(:,x%BF(i)%GF%s(2),:) = 0.0_cp
+            if ((.not.is_periodic(x%BF(i)%BCs%face%bct(3)))) x%BF(i)%GF%f(:,1,:) = 0.0_cp
+            if ((.not.is_periodic(x%BF(i)%BCs%face%bct(4)))) x%BF(i)%GF%f(:,x%BF(i)%GF%s(2),:) = 0.0_cp
           enddo
         endif
         if (x%N_along(3)) then
           do i=1,m%s
-            if ((.not.is_periodic(x%BF(i)%BCs%bct_f(5)))) x%BF(i)%GF%f(:,:,1) = 0.0_cp
-            if ((.not.is_periodic(x%BF(i)%BCs%bct_f(6)))) x%BF(i)%GF%f(:,:,x%BF(i)%GF%s(3)) = 0.0_cp
+            if ((.not.is_periodic(x%BF(i)%BCs%face%bct(5)))) x%BF(i)%GF%f(:,:,1) = 0.0_cp
+            if ((.not.is_periodic(x%BF(i)%BCs%face%bct(6)))) x%BF(i)%GF%f(:,:,x%BF(i)%GF%s(3)) = 0.0_cp
           enddo
         endif
       end subroutine

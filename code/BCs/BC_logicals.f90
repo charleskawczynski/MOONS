@@ -14,6 +14,8 @@
          logical :: all_Dirichlet = .false.
          logical :: all_Neumann = .false.
          logical :: all_Robin = .false.
+         logical :: all_symmetric = .false.
+         logical :: all_antisymmetric = .false.
        end type
 
        interface init;           module procedure init_copy_BCL;      end interface
@@ -42,6 +44,8 @@
          BCL%all_Dirichlet = BCL_in%all_Dirichlet
          BCL%all_Neumann = BCL_in%all_Neumann
          BCL%all_Robin = BCL_in%all_Robin
+         BCL%all_symmetric = BCL_in%all_symmetric
+         BCL%all_antisymmetric = BCL_in%all_antisymmetric
        end subroutine
 
        subroutine delete_BCL(BCL)
@@ -54,6 +58,8 @@
          BCL%all_Dirichlet = .false.
          BCL%all_Neumann = .false.
          BCL%all_Robin = .false.
+         BCL%all_symmetric = .false.
+         BCL%all_antisymmetric = .false.
        end subroutine
 
        subroutine display_BCL(BCL,un)
@@ -67,6 +73,8 @@
          write(un,*) 'all_Dirichlet = ',BCL%all_Dirichlet
          write(un,*) 'all_Neumann = ',BCL%all_Neumann
          write(un,*) 'all_Robin = ',BCL%all_Robin
+         write(un,*) 'all_symmetric = ',BCL%all_symmetric
+         write(un,*) 'all_antisymmetric = ',BCL%all_antisymmetric
        end subroutine
 
        subroutine print_BCL(BCL)
@@ -79,13 +87,15 @@
          implicit none
          type(BC_logicals),intent(in) :: BCL
          integer,intent(in) :: un
-         write(un,*) 'defined = ';      write(un,*) BCL%defined
-         write(un,*) 'GFs_defined = ';  write(un,*) BCL%GFs_defined
-         write(un,*) 'BCT_defined = ';  write(un,*) BCL%BCT_defined
-         write(un,*) 'vals_defined = '; write(un,*) BCL%vals_defined
-         write(un,*) 'all_Dirichlet = ';write(un,*) BCL%all_Dirichlet
-         write(un,*) 'all_Neumann = ';  write(un,*) BCL%all_Neumann
-         write(un,*) 'all_Robin = ';    write(un,*) BCL%all_Robin
+         write(un,*) 'defined = ';           write(un,*) BCL%defined
+         write(un,*) 'GFs_defined = ';       write(un,*) BCL%GFs_defined
+         write(un,*) 'BCT_defined = ';       write(un,*) BCL%BCT_defined
+         write(un,*) 'vals_defined = ';      write(un,*) BCL%vals_defined
+         write(un,*) 'all_Dirichlet = ';     write(un,*) BCL%all_Dirichlet
+         write(un,*) 'all_Neumann = ';       write(un,*) BCL%all_Neumann
+         write(un,*) 'all_Robin = ';         write(un,*) BCL%all_Robin
+         write(un,*) 'all_symmetric = ';     write(un,*) BCL%all_symmetric
+         write(un,*) 'all_antisymmetric = '; write(un,*) BCL%all_antisymmetric
        end subroutine
 
        subroutine import_BCL(BCL,un)
@@ -99,6 +109,8 @@
          read(un,*); read(un,*) BCL%all_Dirichlet
          read(un,*); read(un,*) BCL%all_Neumann
          read(un,*); read(un,*) BCL%all_Robin
+         read(un,*); read(un,*) BCL%all_symmetric
+         read(un,*); read(un,*) BCL%all_antisymmetric
        end subroutine
 
        subroutine export_BCL_wrapper(BCL,dir,name)
@@ -120,9 +132,5 @@
          call import(BCL,un)
          call close_and_message(un,dir,name)
        end subroutine
-
-       ! ****************************************************************
-       ! **************************** OTHER *****************************
-       ! ****************************************************************
 
        end module

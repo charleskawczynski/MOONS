@@ -33,7 +33,6 @@
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         integer :: k
 #ifdef _DEBUG_APPLY_BCS_
        call check_defined(U)
 #endif

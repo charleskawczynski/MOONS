@@ -28,19 +28,18 @@
 
          select case (preDefinedphi_BCs)
          case (0)
-         case (1); call periodic_duct_flow(phi,m)
+         case (1); call periodic_duct_flow(phi)
          case default; stop 'Error: preDefinedphi_BCs must = 1:5 in init_phiBCs in init_phiBCs.f90.'
          end select
          call make_periodic(phi,m,periodic_dir)
          call init_BC_props(phi)
        end subroutine
 
-       subroutine periodic_duct_flow(phi,m)
+       subroutine periodic_duct_flow(phi)
          implicit none
          type(SF),intent(inout) :: phi
-         type(mesh),intent(in) :: m
-         call init_periodic(phi%BF(1)%BCs,m%B(1),1)
-         call init_periodic(phi%BF(1)%BCs,m%B(1),2)
+         call init_periodic(phi%BF(1)%BCs,1)
+         call init_periodic(phi%BF(1)%BCs,2)
        end subroutine
 
        end module

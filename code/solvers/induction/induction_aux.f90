@@ -66,7 +66,7 @@
          if (finite_Rem) then; call add(temp_F,B0,B); call face2Face_no_diag(temp_F2_TF,temp_F,m,temp_CC)
          else;                                        call face2Face_no_diag(temp_F2_TF,B0    ,m,temp_CC)
          endif
-         call cross(temp_F,temp_F1_TF,temp_F2_TF)
+         call cross_product(temp_F,temp_F1_TF,temp_F2_TF)
          call extractFace(jCrossB,temp_F,D_fluid)
          call zeroGhostPoints(jCrossB)
          call multiply(jCrossB,Ha**2.0_cp/Re)

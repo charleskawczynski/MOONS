@@ -1,18 +1,16 @@
-       module single_procedure_mod
+       module single_procedure_assign_plane_mod
        use IO_tools_mod
-       use GF_mod
-       use apply_BCs_faces_bridge_mod
+       use GF_assign_ghost_mod
 
        implicit none
        private
-       public :: single_procedure
+       public :: single_procedure_assign_plane
        public :: init,delete,display,print,export,import
-
        public :: insist_defined
 
-       type single_procedure
+       type single_procedure_assign_plane
          integer :: ID
-         procedure(apply_face_BC_op),pointer,nopass :: P
+         procedure(assign_plane_op),pointer,nopass :: P
          logical :: defined = .false.
        end type
 
@@ -32,8 +30,8 @@
 
        subroutine init_SP(SP,P,ID)
          implicit none
-         type(single_procedure),intent(inout) :: SP
-         procedure(apply_face_BC_op) :: P
+         type(single_procedure_assign_plane),intent(inout) :: SP
+         procedure(assign_plane_op) :: P
          integer,intent(in) :: ID
          call delete(SP)
          SP%P => P
@@ -43,8 +41,8 @@
 
        subroutine init_copy_SP(SP,SP_in)
          implicit none
-         type(single_procedure),intent(inout) :: SP
-         type(single_procedure),intent(in) :: SP_in
+         type(single_procedure_assign_plane),intent(inout) :: SP
+         type(single_procedure_assign_plane),intent(in) :: SP_in
          call insist_defined(SP_in,'init_copy_SP')
          call delete(SP)
          SP%P => SP_in%P
@@ -54,7 +52,7 @@
 
        subroutine delete_SP(SP)
          implicit none
-         type(single_procedure),intent(inout) :: SP
+         type(single_procedure_assign_plane),intent(inout) :: SP
          nullify(SP%P)
          SP%ID = 0
          SP%defined = .false.
@@ -62,34 +60,34 @@
 
        subroutine display_SP(SP,un)
          implicit none
-         type(single_procedure),intent(in) :: SP
+         type(single_procedure_assign_plane),intent(in) :: SP
          integer,intent(in) :: un
          write(un,*) 'ID = ',SP%ID
        end subroutine
 
        subroutine print_SP(SP)
          implicit none
-         type(single_procedure),intent(in) :: SP
+         type(single_procedure_assign_plane),intent(in) :: SP
          call display(SP,6)
        end subroutine
 
        subroutine export_SP(SP,un)
          implicit none
-         type(single_procedure),intent(in) :: SP
+         type(single_procedure_assign_plane),intent(in) :: SP
          integer,intent(in) :: un
          write(un,*) 'ID = '; write(un,*) SP%ID
        end subroutine
 
        subroutine import_SP(SP,un)
          implicit none
-         type(single_procedure),intent(inout) :: SP
+         type(single_procedure_assign_plane),intent(inout) :: SP
          integer,intent(in) :: un
          read(un,*); read(un,*) SP%ID
        end subroutine
 
        subroutine export_SP_wrapper(SP,dir,name)
          implicit none
-         type(single_procedure),intent(in) :: SP
+         type(single_procedure_assign_plane),intent(in) :: SP
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = new_and_open(dir,name)
@@ -99,7 +97,7 @@
 
        subroutine import_SP_wrapper(SP,dir,name)
          implicit none
-         type(single_procedure),intent(inout) :: SP
+         type(single_procedure_assign_plane),intent(inout) :: SP
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
@@ -109,10 +107,10 @@
 
        subroutine insist_defined_SP(SP,caller)
          implicit none
-         type(single_procedure),intent(in) :: SP
+         type(single_procedure_assign_plane),intent(in) :: SP
          character(len=*),intent(in) :: caller
          if (.not.SP%defined) then
-         write(*,*) 'Error: SP is not defined in ',caller,' in single_procedure.f90'
+         write(*,*) 'Error: SP is not defined in ',caller,' in single_procedure_assign_plane.f90'
          stop 'Done'
          endif
        end subroutine

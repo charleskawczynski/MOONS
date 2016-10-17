@@ -37,9 +37,13 @@
         public :: N0_C1_tensor
         public :: C0_N1_tensor
         public :: assign_ghost
+        public :: assign_wall
 
         public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
+        public :: cross_product_x
+        public :: cross_product_y
+        public :: cross_product_z
 
         ! Monitoring
         public :: print_BCs
@@ -58,6 +62,7 @@
         public :: zero_ghost_xmin_xmax
         public :: zero_ghost_ymin_ymax
         public :: zero_ghost_zmin_zmax
+
 
         type SF
           integer :: s ! Number of subdomains in domain decomposition
@@ -116,6 +121,7 @@
         interface cosine_waves;        module procedure cosine_waves_SF;        end interface
         interface random_noise;        module procedure random_noise_SF;        end interface
         interface assign_ghost;        module procedure assign_ghost_SF;        end interface
+        interface assign_wall;         module procedure assign_wall_SF;         end interface
 
         interface plane_sum_x;         module procedure plane_sum_x_SF;         end interface
         interface plane_sum_y;         module procedure plane_sum_y_SF;         end interface
@@ -133,6 +139,9 @@
         interface zero_ghost_ymin_ymax;module procedure zero_ghost_ymin_ymax_SF;end interface
         interface zero_ghost_zmin_zmax;module procedure zero_ghost_zmin_zmax_SF;end interface
 
+        interface cross_product_x;     module procedure cross_product_x_SF;     end interface
+        interface cross_product_y;     module procedure cross_product_y_SF;     end interface
+        interface cross_product_z;     module procedure cross_product_z_SF;     end interface
 
         ! COMPUTATION ROUTINES:
 
@@ -191,41 +200,41 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-        subroutine init_SF_copy(f1,f2)
+        subroutine init_SF_copy(f,f_in)
           implicit none
-          type(SF),intent(inout) :: f1
-          type(SF),intent(in) :: f2
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: f_in
           integer :: i
-          call delete(f1)
-          allocate(f1%BF(f2%s)); f1%s = f2%s
-          call init(f1%DL,f2%DL)
-          do i=1,f1%s; call init(f1%BF(i),f2%BF(i)); enddo
-          f1%numEl = f2%numEl
-          f1%numPhysEl = f2%numPhysEl
-          f1%is_CC = f2%is_CC
-          f1%is_node = f2%is_node
-          f1%is_face = f2%is_face
-          f1%is_edge = f2%is_edge
+          call delete(f)
+          allocate(f%BF(f_in%s)); f%s = f_in%s
+          call init(f%DL,f_in%DL)
+          do i=1,f%s; call init(f%BF(i),f_in%BF(i)); enddo
+          f%numEl = f_in%numEl
+          f%numPhysEl = f_in%numPhysEl
+          f%is_CC = f_in%is_CC
+          f%is_node = f_in%is_node
+          f%is_face = f_in%is_face
+          f%is_edge = f_in%is_edge
 
-          f1%face = f2%face
-          f1%edge = f2%edge
-          f1%CC_along = f2%CC_along
-          f1%N_along = f2%N_along
+          f%face = f_in%face
+          f%edge = f_in%edge
+          f%CC_along = f_in%CC_along
+          f%N_along = f_in%N_along
         end subroutine
 
-        subroutine init_SF_copy_mesh(f1,f2,m)
+        subroutine init_SF_copy_mesh(f,f_in,m)
           implicit none
-          type(SF),intent(inout) :: f1
-          type(SF),intent(in) :: f2
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: f_in
           type(mesh),intent(in) :: m
           type(SF) :: temp
-          if (f2%is_CC) then;       call init_CC(temp,m)
-          elseif (f2%is_Node) then; call init_Node(temp,m)
-          elseif (f2%is_Face) then; call init_Face(temp,m,f2%face)
-          elseif (f2%is_Edge) then; call init_Edge(temp,m,f2%edge)
+          if (f_in%is_CC) then;       call init_CC(temp,m)
+          elseif (f_in%is_Node) then; call init_Node(temp,m)
+          elseif (f_in%is_Face) then; call init_Face(temp,m,f_in%face)
+          elseif (f_in%is_Edge) then; call init_Edge(temp,m,f_in%edge)
           else; stop 'Error: bad datatype in init_SF_copy_mesh in SF.f90'
           endif
-          call init(f1,temp)
+          call init(f,temp)
           call delete(temp)
         end subroutine
 
@@ -583,12 +592,11 @@
           do i=1,f%s; call init(f%BF(i)%BCs,g%BF(i)%BCs); enddo
         end subroutine
 
-        subroutine init_BC_Dirichlet_SF(f,m)
+        subroutine init_BC_Dirichlet_SF(f)
           implicit none
           type(SF),intent(inout) :: f
-          type(mesh),intent(in) :: m
           integer :: i
-          do i=1,f%s; call init_Dirichlet(f%BF(i)%BCs,m%B(i)); enddo
+          do i=1,f%s; call init_Dirichlet(f%BF(i)%BCs); enddo
         end subroutine
 
         subroutine init_BC_val_SF(f,val)
@@ -665,6 +673,14 @@
           real(cp),intent(in) :: val
           integer :: i
           do i=1,u%s; call assign_ghost(u%BF(i),val); enddo
+        end subroutine
+
+        subroutine assign_wall_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call assign_wall(u%BF(i),val); enddo
         end subroutine
 
         function plane_sum_x_SF(u,m,p) result(SP)
@@ -1264,6 +1280,34 @@
           type(SF),intent(inout) :: f
           integer :: t
           do t=1,f%s; call zero_ghost_zmin_zmax(f%BF(t)%GF); enddo
+        end subroutine
+
+        subroutine cross_product_x_SF(ACrossB,Ay,Az,By,Bz)
+          implicit none
+          type(SF),intent(inout) :: ACrossB
+          type(SF),intent(in) :: Ay,Az,By,Bz
+          integer :: t
+          do t=1,ACrossB%s
+            call cross_product_x(ACrossB%BF(t),Ay%BF(t),Az%BF(t),By%BF(t),Bz%BF(t))
+          enddo
+        end subroutine
+        subroutine cross_product_y_SF(ACrossB,Ax,Az,Bx,Bz)
+          implicit none
+          type(SF),intent(inout) :: ACrossB
+          type(SF),intent(in) :: Ax,Az,Bx,Bz
+          integer :: t
+          do t=1,ACrossB%s
+            call cross_product_y(ACrossB%BF(t),Ax%BF(t),Az%BF(t),Bx%BF(t),Bz%BF(t))
+          enddo
+        end subroutine
+        subroutine cross_product_z_SF(ACrossB,Ax,Ay,Bx,By)
+          implicit none
+          type(SF),intent(inout) :: ACrossB
+          type(SF),intent(in) :: Ax,Ay,Bx,By
+          integer :: t
+          do t=1,ACrossB%s
+            call cross_product_z(ACrossB%BF(t),Ax%BF(t),Ay%BF(t),Bx%BF(t),By%BF(t))
+          enddo
         end subroutine
 
       end module

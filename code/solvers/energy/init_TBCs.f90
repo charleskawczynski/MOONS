@@ -55,58 +55,53 @@
 
          select case (preDefinedT_BCs)
          case (0) ! Default insulating
-         case (1); call initFixedBCs(T,m)
-                   call hotFaceBC(T,m,hotFace)
-         case (2); call initInsulatingBCs(T,m)
-                   call hotFaceBC(T,m,hotFace)
-                   call coldFaceBC(T,m,coldFace)
-         case (3); call duct_for_Yi(T,m)
+         case (1); call initFixedBCs(T)
+                   call hotFaceBC(T,hotFace)
+         case (2); call initInsulatingBCs(T)
+                   call hotFaceBC(T,hotFace)
+                   call coldFaceBC(T,coldFace)
+         case (3); call duct_for_Yi(T)
          case default; stop 'Error: preDefinedT_BCs must = 1 in init_TBCs in init_TBCs.f90.'
          end select
          call make_periodic(T,m,periodic_dir)
        end subroutine
 
-       subroutine initInsulatingBCs(T,m)
+       subroutine initInsulatingBCs(T)
          implicit none
          type(SF),intent(inout) :: T
-         type(mesh),intent(in) :: m
-         call init_Neumann(T%BF(1)%BCs,m%B(1))
+         call init_Neumann(T%BF(1)%BCs)
          call init(T%BF(1)%BCs,0.0_cp)
        end subroutine
 
-       subroutine duct_for_Yi(T,m)
+       subroutine duct_for_Yi(T)
          implicit none
          type(SF),intent(inout) :: T
-         type(mesh),intent(in) :: m
-         call init_Neumann(T%BF(1)%BCs,m%B(1),1); call init(T%BF(1)%BCs,-1.0_cp)
-         call init_Neumann(T%BF(1)%BCs,m%B(1),2)
-         call init_Neumann(T%BF(1)%BCs,m%B(1),4)
-         call init_Dirichlet(T%BF(1)%BCs,m%B(1),3)
+         call init_Neumann(T%BF(1)%BCs,1); call init(T%BF(1)%BCs,-1.0_cp)
+         call init_Neumann(T%BF(1)%BCs,2)
+         call init_Neumann(T%BF(1)%BCs,4)
+         call init_Dirichlet(T%BF(1)%BCs,3)
        end subroutine
 
-       subroutine hotFaceBC(T,m,face)
+       subroutine hotFaceBC(T,face)
          implicit none
          type(SF),intent(inout) :: T
-         type(mesh),intent(in) :: m
          integer,intent(in) :: face
-         call init_Dirichlet(T%BF(1)%BCs,m%B(1),face)
+         call init_Dirichlet(T%BF(1)%BCs,face)
          call init(T%BF(1)%BCs,1.0_cp,face)
        end subroutine
 
-       subroutine coldFaceBC(T,m,face)
+       subroutine coldFaceBC(T,face)
          implicit none
          type(SF),intent(inout) :: T
-         type(mesh),intent(in) :: m
          integer,intent(in) :: face
-         call init_Dirichlet(T%BF(1)%BCs,m%B(1),face)
+         call init_Dirichlet(T%BF(1)%BCs,face)
          call init(T%BF(1)%BCs,0.0_cp,face)
        end subroutine
 
-       subroutine initFixedBCs(T,m)
+       subroutine initFixedBCs(T)
          implicit none
          type(SF),intent(inout) :: T
-         type(mesh),intent(in) :: m
-         call init_Dirichlet(T%BF(1)%BCs,m%B(1))
+         call init_Dirichlet(T%BF(1)%BCs)
          call init(T%BF(1)%BCs,0.0_cp)
        end subroutine
 

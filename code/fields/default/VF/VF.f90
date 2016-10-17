@@ -48,6 +48,7 @@
         public :: symmetry_error_z,symmetry_local_z
 
         public :: dot_product,dot
+        public :: cross_product
 
         ! Monitoring
         public :: print_BCs
@@ -116,6 +117,8 @@
 
         interface dot_product;       module procedure dot_product_VF;           end interface
         interface dot;               module procedure dot_VF_SF;                end interface
+
+        interface cross_product;     module procedure cross_product_VF;         end interface
 
         interface print_BCs;         module procedure print_BCs_VF;             end interface
         interface init_BCs;          module procedure init_BCs_VF_VF;           end interface
@@ -844,6 +847,15 @@
           type(VF),intent(inout) :: temp
           call multiply(temp,B,C)
           call add(A,temp%x,temp%y,temp%z)
+        end subroutine
+
+        subroutine cross_product_VF(ACrossB,A,B)
+          implicit none
+          type(VF),intent(inout) :: ACrossB
+          type(VF),intent(in) :: A,B
+          call cross_product_x(ACrossB%x,A%y,A%z,B%y,B%z)
+          call cross_product_y(ACrossB%y,A%x,A%z,B%x,B%z)
+          call cross_product_z(ACrossB%z,A%x,A%y,B%x,B%y)
         end subroutine
 
         function symmetry_error_x_VF(A) result(SE)

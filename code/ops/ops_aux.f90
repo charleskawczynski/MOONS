@@ -54,10 +54,6 @@
        interface dot_product;             module procedure dot_product_SF;            end interface
        interface dot_product;             module procedure dot_product_VF;            end interface
 
-       public :: collocatedMagnitude
-       interface collocatedMagnitude;     module procedure collocatedMagnitude_GF;    end interface
-       interface collocatedMagnitude;     module procedure collocatedMagnitude_VF;    end interface
-
        public :: boundaryFlux
        interface boundaryFlux;            module procedure boundaryFlux_VF;           end interface
        interface boundaryFlux;            module procedure boundaryFlux_VF_SD;        end interface
@@ -86,7 +82,6 @@
        interface check_symmetry_z;        module procedure check_symmetry_z_VF;       end interface
 
        public :: zeroGhostPoints
-       interface zeroGhostPoints;         module procedure zeroGhostPoints_GF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
 
@@ -105,14 +100,6 @@
        interface zeroInterior;            module procedure zeroInterior_GF;           end interface
        interface zeroInterior;            module procedure zeroInterior_VF;           end interface
        interface zeroInterior;            module procedure zeroInterior_SF;           end interface
-
-       public :: assign_first_interior_cell
-       interface assign_first_interior_cell; module procedure assign_first_interior_cell_GF; end interface
-       interface assign_first_interior_cell; module procedure assign_first_interior_cell_SF; end interface
-
-       public :: assign_gradGhost
-       interface assign_gradGhost;        module procedure assign_gradGhost_SF;       end interface
-       interface assign_gradGhost;        module procedure assign_gradGhost_GF;       end interface
 
        public :: treatInterface
        interface treatInterface;          module procedure treatInterface_GF;         end interface
@@ -133,9 +120,6 @@
        public :: deleteUnitVector
        interface deleteUnitVector;        module procedure deleteUnitVector_SF;       end interface
 
-       ! public :: get_multi_index
-       ! interface get_multi_index;         module procedure get_multi_index_SF;        end interface
-
        contains
 
        ! *********************************************************************************
@@ -143,21 +127,6 @@
        ! ********************************* REAL ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine collocatedMagnitude_GF(mag,x,y,z,s) ! Finished
-         implicit none
-         real(cp),dimension(:,:,:),intent(in) :: x,y,z
-         real(cp),dimension(:,:,:),intent(inout) :: mag
-         integer,dimension(3),intent(in) :: s
-         integer :: i,j,k
-         !$OMP PARALLEL DO
-         do k=1,s(3); do j=1,s(2); do i=1,s(1)
-           mag(i,j,k) = sqrt(x(i,j,k)**2.0_cp +&
-                             y(i,j,k)**2.0_cp +&
-                             z(i,j,k)**2.0_cp)
-         enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-       end subroutine
 
        subroutine stabilityTerms_GF(fo,fi,g,n,s,dir) ! Finished
          ! Computes
@@ -299,15 +268,6 @@
          meanU = sum(u,1)/real(u%numPhysEl,cp)
        end function
 
-       subroutine zeroGhostPoints_GF(f,s)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: s
-         f(1,:,:) = 0.0_cp; f(s(1),:,:) = 0.0_cp
-         f(:,1,:) = 0.0_cp; f(:,s(2),:) = 0.0_cp
-         f(:,:,1) = 0.0_cp; f(:,:,s(3)) = 0.0_cp
-       end subroutine
-
        subroutine zeroWall_GF(f,s,face)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -335,56 +295,6 @@
          f(i,j,k) = 0.0_cp
          enddo; enddo; enddo
          ! $OMP END PARALLEL DO
-       end subroutine
-
-       subroutine assign_first_interior_cell_GF(a,b,s,px,py,pz)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: a
-         real(cp),dimension(:,:,:),intent(in) :: b
-         integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: px,py,pz
-         integer :: i,j,k
-         i=2
-         ! $OMP PARALLEL DO
-         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; a(i,j,k) = b(i,j,k); enddo; enddo
-         ! $OMP END PARALLEL DO
-         ! $OMP PARALLEL DO
-         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; a(i,j,k) = b(i,j,k); enddo; enddo
-         ! $OMP END PARALLEL DO
-         j=2
-         ! $OMP PARALLEL DO
-         do k=2+pz,s(3)-1-pz; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
-         ! $OMP END PARALLEL DO
-         ! $OMP PARALLEL DO
-         do k=2+pz,s(3)-1-pz; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
-         ! $OMP END PARALLEL DO
-         k=2
-         ! $OMP PARALLEL DO
-         do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
-         ! $OMP END PARALLEL DO
-         ! $OMP PARALLEL DO
-         do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px; a(i,j,k) = b(i,j,k); enddo; enddo
-         ! $OMP END PARALLEL DO
-       end subroutine
-
-       subroutine assign_gradGhost_SF(CC,F)
-         implicit none
-         type(SF),intent(inout) :: CC
-         type(VF),intent(in) :: F
-         integer :: i
-         do i=1,CC%s
-         call assign_gradGhost_GF(CC%BF(i)%GF%f,F%x%BF(i)%GF%f,F%y%BF(i)%GF%f,F%z%BF(i)%GF%f,CC%BF(i)%GF%s)
-         enddo
-       end subroutine
-
-       subroutine assign_gradGhost_GF(CC,Fx,Fy,Fz,s)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: CC
-         real(cp),dimension(:,:,:),intent(in) :: Fx,Fy,Fz
-         integer,dimension(3),intent(in) :: s
-         CC(1,:,:) = Fx(2,:,:); CC(s(1),:,:) = Fx(s(1),:,:)
-         CC(:,1,:) = Fy(:,2,:); CC(:,s(2),:) = Fy(:,s(2),:)
-         CC(:,:,1) = Fz(:,:,2); CC(:,:,s(3)) = Fz(:,:,s(3))
        end subroutine
 
        subroutine treatInterface_GF(f,s,take_high_value)
@@ -545,33 +455,14 @@
        subroutine zeroGhostPoints_SF(f)
          implicit none
          type(SF),intent(inout) :: f
-         integer :: i
-         do i=1,f%s; call zeroGhostPoints(f%BF(i)%GF%f,f%BF(i)%GF%s); enddo
+         call assign_ghost(f,0.0_cp)
        end subroutine
 
        subroutine zeroWall_SF(f,m)
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         integer :: i
-         if (f%N_along(1)) then
-           do i=1,m%s
-             call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
-           enddo
-         endif
-         if (f%N_along(2)) then
-           do i=1,m%s
-             call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
-           enddo
-         endif
-         if (f%N_along(3)) then
-           do i=1,m%s
-             call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
-           enddo
-         endif
+         call assign_wall(f,0.0_cp)
        end subroutine
 
        subroutine zeroWall_conditional_SF(f,m)
@@ -584,25 +475,25 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(1))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(1)))
+             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(1)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(2))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(2)))
+             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(2)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(3))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(3)))
+             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(3)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(4))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(4)))
+             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(4)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(5))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(5)))
+             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(5)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             L = (.not.is_Neumann(f%BF(i)%BCs%bct_f(6))).and.(.not.is_periodic(f%BF(i)%BCs%bct_f(6)))
+             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(6)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
            enddo
          endif
@@ -619,25 +510,25 @@
          integer :: i
          if (f%N_along(1)) then
            do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(1))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(1)))
+             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(1)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(2))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(2)))
+             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(2)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
            enddo
          endif
          if (f%N_along(2)) then
            do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(3))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(3)))
+             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(3)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(4))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(4)))
+             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(4)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
            enddo
          endif
          if (f%N_along(3)) then
            do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(5))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(5)))
+             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(5)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             L = (.not.is_Neumann(u%BF(i)%BCs%bct_f(6))).and.(.not.is_periodic(u%BF(i)%BCs%bct_f(6)))
+             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(6)))
              if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
            enddo
          endif
@@ -649,15 +540,6 @@
          integer :: i,x,y,z
          call C0_N1_tensor(f,x,y,z)
          do i=1,f%s; call zeroInterior(f%BF(i)%GF%f,f%BF(i)%GF%s,x,y,z); enddo
-       end subroutine
-
-       subroutine assign_first_interior_cell_SF(a,b)
-         implicit none
-         type(SF),intent(inout) :: a
-         type(SF),intent(inout) :: b
-         integer :: i,x,y,z
-         call C0_N1_tensor(a,x,y,z)
-         do i=1,a%s; call assign_first_interior_cell(a%BF(i)%GF%f,b%BF(i)%GF%f,a%BF(i)%GF%s,x,y,z); enddo
        end subroutine
 
        subroutine treatInterface_SF(f,take_high_value)
@@ -723,19 +605,6 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine collocatedMagnitude_VF(mag,V)
-         implicit none
-         type(SF),intent(inout) :: mag
-         type(VF),intent(in) :: V
-         integer :: i
-         do i=1,mag%s
-           call collocatedMagnitude(mag%BF(i)%GF%f,V%x%BF(i)%GF%f,&
-                                                V%y%BF(i)%GF%f,&
-                                                V%z%BF(i)%GF%f,&
-                                                V%x%BF(i)%GF%s)
-         enddo
-       end subroutine
 
        subroutine zeroWall_VF(V,m)
          implicit none

@@ -1,4 +1,4 @@
-       module face_SD_mod
+       module edge_SD_mod
        use current_precision_mod
        use overlap_mod
        use grid_mod
@@ -11,32 +11,32 @@
        implicit none
 
        private
-       public :: face_SD
+       public :: edge_SD
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: init_mixed
 
-       interface init;       module procedure init_face_SD;        end interface
-       interface init;       module procedure init_copy_face_SD;   end interface
-       interface delete;     module procedure delete_face_SD;      end interface
-       interface display;    module procedure display_face_SD;     end interface
-       interface print;      module procedure print_face_SD;       end interface
-       interface export;     module procedure export_face_SD;      end interface
-       interface import;     module procedure import_face_SD;      end interface
+       interface init;       module procedure init_edge_SD;        end interface
+       interface init;       module procedure init_copy_edge_SD;   end interface
+       interface delete;     module procedure delete_edge_SD;      end interface
+       interface display;    module procedure display_edge_SD;     end interface
+       interface print;      module procedure print_edge_SD;       end interface
+       interface export;     module procedure export_edge_SD;      end interface
+       interface import;     module procedure import_edge_SD;      end interface
 
-       interface init_mixed; module procedure init_mixed_face_SD;  end interface
+       interface init_mixed; module procedure init_mixed_edge_SD;  end interface
 
-       type index_2D
-         integer,dimension(2) :: i = 0
+       type d
+         real(cp),dimension(2) :: dh,nhat = 0.0_cp
        end type
 
-       type face_SD
-         type(sub_domain),dimension(6) :: G
-         type(sub_domain),dimension(6) :: B ! C is non-sense here
-         type(sub_domain),dimension(6) :: I
-         type(sub_domain),dimension(6) :: I_OPP
-         type(index_2D),dimension(6) :: i_2D
-         real(cp),dimension(6) :: dh,nhat = 0.0_cp
+       type edge_SD
+         type(sub_domain),dimension(12) :: G
+         type(sub_domain),dimension(12) :: B ! C is non-sense here
+         type(sub_domain),dimension(12) :: Ay
+         type(sub_domain),dimension(12) :: Az
+         type(sub_domain),dimension(12) :: I
+         integer,dimension(12) :: i_1D
        end type
 
        contains
@@ -45,9 +45,9 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_face_SD(FSD,g,g_b)
+       subroutine init_edge_SD(FSD,g,g_b)
          implicit none
-         type(face_SD),intent(inout) :: FSD
+         type(edge_SD),intent(inout) :: FSD
          type(grid),intent(in) :: g
          type(grid),dimension(6),intent(in) :: g_b
          type(sub_domain) :: temp
@@ -80,10 +80,10 @@
          call delete(temp)
        end subroutine
 
-       subroutine init_copy_face_SD(FSD,FSD_in)
+       subroutine init_copy_edge_SD(FSD,FSD_in)
          implicit none
-         type(face_SD),intent(inout) :: FSD
-         type(face_SD),intent(in) :: FSD_in
+         type(edge_SD),intent(inout) :: FSD
+         type(edge_SD),intent(in) :: FSD_in
          integer :: i
          do i=1,6; call init(FSD%G(i),FSD_in%G(i)); enddo
          do i=1,6; call init(FSD%B(i),FSD_in%B(i)); enddo
@@ -94,9 +94,9 @@
          FSD%nhat = FSD_in%nhat
        end subroutine
 
-       subroutine delete_face_SD(FSD)
+       subroutine delete_edge_SD(FSD)
          implicit none
-         type(face_SD),intent(inout) :: FSD
+         type(edge_SD),intent(inout) :: FSD
          integer :: i
          do i=1,6; call delete(FSD%G(i)); enddo
          do i=1,6; call delete(FSD%B(i)); enddo
@@ -107,13 +107,13 @@
          FSD%nhat = 0.0_cp
        end subroutine
 
-       subroutine display_face_SD(FSD,name,u)
+       subroutine display_edge_SD(FSD,name,u)
          implicit none
-         type(face_SD),intent(in) :: FSD
+         type(edge_SD),intent(in) :: FSD
          character(len=*),intent(in) :: name
          integer,intent(in) :: u
          integer :: i
-         write(u,*) ' ************************* face_SD ************************* '//name
+         write(u,*) ' ************************* edge_SD ************************* '//name
          do i=1,6; call display(FSD%G(i),'G face '//int2str(i),u); enddo
          do i=1,6; call display(FSD%B(i),'B face '//int2str(i),u); enddo
          do i=1,6; call display(FSD%I(i),'I face '//int2str(i),u); enddo
@@ -124,19 +124,19 @@
          write(u,*) ' *********************************************************** '
        end subroutine
 
-       subroutine print_face_SD(FSD,name)
+       subroutine print_edge_SD(FSD,name)
          implicit none
-         type(face_SD),intent(in) :: FSD
+         type(edge_SD),intent(in) :: FSD
          character(len=*),intent(in) :: name
          call display(FSD,name,6)
        end subroutine
 
-       subroutine export_face_SD(FSD,u)
+       subroutine export_edge_SD(FSD,u)
          implicit none
-         type(face_SD),intent(in) :: FSD
+         type(edge_SD),intent(in) :: FSD
          integer,intent(in) :: u
          integer :: i
-         write(u,*) ' ********** face_SD ************ '
+         write(u,*) ' ********** edge_SD ************ '
          do i=1,6; call export(FSD%G(i),u); enddo
          do i=1,6; call export(FSD%B(i),u); enddo
          do i=1,6; call export(FSD%I(i),u); enddo
@@ -148,9 +148,9 @@
          write(u,*) ' ********************************* '
        end subroutine
 
-       subroutine import_face_SD(FSD,u)
+       subroutine import_edge_SD(FSD,u)
          implicit none
-         type(face_SD),intent(inout) :: FSD
+         type(edge_SD),intent(inout) :: FSD
          integer,intent(in) :: u
          integer :: i
          read(u,*);
@@ -164,9 +164,9 @@
          read(u,*);
        end subroutine
 
-       subroutine init_mixed_face_SD(FSD,DL)
+       subroutine init_mixed_edge_SD(FSD,DL)
          implicit none
-         type(face_SD),intent(inout) :: FSD
+         type(edge_SD),intent(inout) :: FSD
          type(data_location),intent(in) :: DL
          integer :: i
          do i=1,6; call init_mixed(FSD%G(i)%M,FSD%G(i)%C,FSD%G(i)%N,DL); enddo

@@ -245,26 +245,23 @@
        subroutine deleteMomentum(mom)
          implicit none
          type(momentum),intent(inout) :: mom
-         call delete(mom%U_E)
          call delete(mom%U)
+         call delete(mom%U_E)
          call delete(mom%Unm1)
          call delete(mom%Ustar)
          call delete(mom%temp_F)
          call delete(mom%p)
          call delete(mom%temp_CC)
-
          call delete(mom%divU)
          call delete(mom%U_CC)
          call delete(mom%Fo_grid)
          call delete(mom%Co_grid)
          call delete(mom%Re_grid)
-
          call delete(mom%KE_adv)
          call delete(mom%KE_diff)
          call delete(mom%KE_pres)
          call delete(mom%KE_transient)
          call delete(mom%KE_jCrossB)
-
          call delete(mom%probe_divU)
          call delete(mom%probe_KE)
          call delete(mom%probe_KE_2C)
@@ -273,11 +270,9 @@
          call delete(mom%MB)
          call delete(mom%B)
          call delete(mom%vol_CC)
-
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
          call delete(mom%GS_p)
-
          call delete(mom%TMP)
          call delete(mom%ISP_P)
          call delete(mom%ISP_U)

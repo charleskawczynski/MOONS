@@ -1,4 +1,4 @@
-      module GF_assign_ghost_mod
+      module GF_assign_wall_mod
         use current_precision_mod
         use GF_base_mod
         use GF_assign_plane_mod
@@ -15,55 +15,55 @@
 
         private
         public :: assign_plane_op
-        public :: assign_ghost_xmin
-        public :: assign_ghost_ymin
-        public :: assign_ghost_zmin
-        public :: assign_ghost_xmax
-        public :: assign_ghost_ymax
-        public :: assign_ghost_zmax
+        public :: assign_wall_xmin
+        public :: assign_wall_ymin
+        public :: assign_wall_zmin
+        public :: assign_wall_xmax
+        public :: assign_wall_ymax
+        public :: assign_wall_zmax
 
         contains
 
-        subroutine assign_ghost_xmin(U,val)
+        subroutine assign_wall_xmin(U,val)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: val
-          call assign_plane_x(U,val,1)
+          call assign_plane_x(U,val,2)
         end subroutine
 
-        subroutine assign_ghost_xmax(U,val)
+        subroutine assign_wall_xmax(U,val)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: val
-          call assign_plane_x(U,val,U%s(1))
+          call assign_plane_x(U,val,U%s(1)-1)
         end subroutine
 
-        subroutine assign_ghost_ymin(U,val)
+        subroutine assign_wall_ymin(U,val)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: val
-          call assign_plane_y(U,val,1)
+          call assign_plane_y(U,val,2)
         end subroutine
 
-        subroutine assign_ghost_ymax(U,val)
+        subroutine assign_wall_ymax(U,val)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: val
-          call assign_plane_y(U,val,U%s(2))
+          call assign_plane_y(U,val,U%s(2)-1)
         end subroutine
 
-        subroutine assign_ghost_zmin(U,val)
+        subroutine assign_wall_zmin(U,val)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: val
-          call assign_plane_z(U,val,1)
+          call assign_plane_z(U,val,2)
         end subroutine
 
-        subroutine assign_ghost_zmax(U,val)
+        subroutine assign_wall_zmax(U,val)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: val
-          call assign_plane_z(U,val,U%s(3))
+          call assign_plane_z(U,val,U%s(3)-1)
         end subroutine
 
       end module

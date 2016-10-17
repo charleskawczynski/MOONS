@@ -68,23 +68,21 @@
 #endif
        end subroutine
 
-       subroutine embed_GF(A,B,AB,caller)
+       subroutine embed_GF(A,B,AB)
          implicit none
          type(grid_field),intent(inout) :: A
          type(grid_field),intent(in) :: B
          type(overlap),dimension(3),intent(in) :: AB
-         character(len=*),intent(in) :: caller
          call embedExtract_GF_raw(A,B,AB(1:3)%i2(1),&
                                       AB(1:3)%i2(2),&
                                       AB(1:3)%i1(1),&
                                       AB(1:3)%i1(2))
        end subroutine
-       subroutine extract_GF(A,B,AB,caller)
+       subroutine extract_GF(A,B,AB)
          implicit none
          type(grid_field),intent(inout) :: A
          type(grid_field),intent(in) :: B
          type(overlap),dimension(3),intent(in) :: AB
-         character(len=*),intent(in) :: caller
          call embedExtract_GF_raw(A,B,AB(1:3)%i1(1),&
                                       AB(1:3)%i1(2),&
                                       AB(1:3)%i2(1),&
@@ -131,7 +129,7 @@
          do i=1,MD%D%s
          call EX(CC_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
                  CC_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
-                 EE_shape(CC_i,MD,i),'extractCC_SF')
+                 EE_shape(CC_i,MD,i))
          enddo
        end subroutine
        subroutine extractCC_VF(CC_i,CC_t,MD)
@@ -157,7 +155,7 @@
          do i=1,MD%D%s
          call EX(face_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
                  face_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
-                 EE_shape(face_i,MD,i),'extractFace_SF')
+                 EE_shape(face_i,MD,i))
          enddo
        end subroutine
        subroutine extractFace_VF(face_i,face_t,MD) ! Extracts Lorentz force from induction to momentum
@@ -183,7 +181,7 @@
          do i=1,MD%D%s
          call EX(edge_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
                  edge_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
-                 EE_shape(edge_i,MD,i),'extractEdge_SF')
+                 EE_shape(edge_i,MD,i))
          enddo
        end subroutine
        subroutine extractEdge_VF(edge_i,edge_t,MD) ! Auxiliary (energy budget)
@@ -236,7 +234,7 @@
          do i=1,MD%D%s
          call EM(CC_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
                  CC_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
-                 EE_shape(CC_t,MD,i),'embedCC_SF')
+                 EE_shape(CC_t,MD,i))
          enddo
        end subroutine
        subroutine embedCC_VF(CC_t,CC_i,MD)
@@ -262,7 +260,7 @@
          do i=1,MD%D%s
          call EM(Face_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
                  Face_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
-                 EE_shape(Face_t,MD,i),'embedFace_SF')
+                 EE_shape(Face_t,MD,i))
          enddo
        end subroutine
        subroutine embedFace_VF(Face_t,Face_i,MD)
@@ -288,7 +286,7 @@
          do i=1,MD%D%s
          call EM(Edge_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
                  Edge_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
-                 EE_shape(Edge_t,MD,i),'embedFace_VF')
+                 EE_shape(Edge_t,MD,i))
          enddo
        end subroutine
        subroutine embedEdge_VF(Edge_t,Edge_i,MD) ! Embeds velocity from momentum into induction

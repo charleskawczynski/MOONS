@@ -1,9 +1,13 @@
       module block_field_mod
         use current_precision_mod
         use grid_mod
+        use bctype_mod
         use data_location_mod
         use GF_mod
         use block_mod
+        use data_location_mod
+        use procedure_array_mod
+        use procedure_array_assign_plane_mod
         use boundary_conditions_mod
         implicit none
         private
@@ -26,6 +30,7 @@
         public :: square,abs
         public :: insist_amax_lt_tol
         public :: assign_ghost
+        public :: assign_wall
 
         public :: plane_sum_x
         public :: plane_sum_y
@@ -44,22 +49,35 @@
         ! public :: assign_plane_y
         ! public :: assign_plane_z
 
+        public :: cross_product_x
+        public :: cross_product_y
+        public :: cross_product_z
+
         type block_field
           type(grid_field) :: GF ! bulk
           type(boundary_conditions) :: BCs
+          type(data_location) :: DL
           ! type(stitches) :: st
+          type(procedure_array_assign_plane) :: PA_assign_ghost
+          type(procedure_array_assign_plane) :: PA_assign_wall
+
+          type(procedure_array_assign_plane) :: PA_assign_wall_not_periodic
+          type(procedure_array_assign_plane) :: PA_assign_wall_Neumann
+          type(procedure_array_assign_plane) :: PA_assign_wall_Dirichlet
+          ! type(procedure_array) :: assign_wall
+          ! type(procedure_array) :: multiply_wall
         end type
 
        interface init_CC;            module procedure init_CC_BF;                     end interface
        interface init_Face;          module procedure init_Face_BF;                   end interface
        interface init_Edge;          module procedure init_Edge_BF;                   end interface
        interface init_Node;          module procedure init_Node_BF;                   end interface
-       interface init;               module procedure init_block_field_copy;          end interface
-       interface delete;             module procedure delete_block_field;             end interface
-       interface display;            module procedure display_block_field;            end interface
-       interface print;              module procedure print_block_field;              end interface
-       interface export;             module procedure export_block_field;             end interface
-       interface import;             module procedure import_block_field;             end interface
+       interface init;               module procedure init_copy_BF;                   end interface
+       interface delete;             module procedure delete_BF;                      end interface
+       interface display;            module procedure display_BF;                     end interface
+       interface print;              module procedure print_BF;                       end interface
+       interface export;             module procedure export_BF;                      end interface
+       interface import;             module procedure import_BF;                      end interface
 
        interface init_BCs;           module procedure init_BC_val;                    end interface
        interface init_BCs;           module procedure init_BC_block_DL;               end interface
@@ -69,12 +87,16 @@
        interface cosine_waves;       module procedure cosine_waves_BF;                end interface
        interface sine_waves;         module procedure sine_waves_BF;                  end interface
        interface random_noise;       module procedure random_noise_BF;                end interface
+       interface cross_product_x;    module procedure cross_product_x_BF;             end interface
+       interface cross_product_y;    module procedure cross_product_y_BF;             end interface
+       interface cross_product_z;    module procedure cross_product_z_BF;             end interface
 
        interface square;             module procedure square_BF;                      end interface
        interface abs;                module procedure abs_BF;                         end interface
        interface insist_amax_lt_tol; module procedure insist_amax_lt_tol_BF;          end interface
 
        interface assign_ghost;       module procedure assign_ghost_BF;                end interface
+       interface assign_wall;        module procedure assign_wall_BF;                 end interface
 
        interface plane_sum_x;        module procedure plane_sum_x_BF;                 end interface
        interface plane_sum_y;        module procedure plane_sum_y_BF;                 end interface
@@ -103,6 +125,9 @@
          type(block_field),intent(inout) :: BF
          type(block),intent(in) :: B
          call init_CC(BF%GF,B%g)
+         call init_CC(BF%DL)
+         call set_assign_ghost_all_faces(BF)
+         call set_assign_wall(BF)
        end subroutine
 
        subroutine init_Face_BF(BF,B,dir)
@@ -111,6 +136,9 @@
          type(block),intent(in) :: B
          integer,intent(in) :: dir
          call init_Face(BF%GF,B%g,dir)
+         call init_Face(BF%DL,dir)
+         call set_assign_ghost_all_faces(BF)
+         call set_assign_wall(BF)
        end subroutine
 
        subroutine init_Edge_BF(BF,B,dir)
@@ -119,6 +147,9 @@
          type(block),intent(in) :: B
          integer,intent(in) :: dir
          call init_Edge(BF%GF,B%g,dir)
+         call init_Edge(BF%DL,dir)
+         call set_assign_ghost_all_faces(BF)
+         call set_assign_wall(BF)
        end subroutine
 
        subroutine init_Node_BF(BF,B)
@@ -126,51 +157,105 @@
          type(block_field),intent(inout) :: BF
          type(block),intent(in) :: B
          call init_Node(BF%GF,B%g)
+         call init_Node(BF%DL)
+         call set_assign_ghost_all_faces(BF)
+         call set_assign_wall(BF)
        end subroutine
 
-       subroutine init_block_field_copy(BF,BF_in)
+       subroutine set_assign_ghost_all_faces(BF)
+         implicit none
+         type(block_field),intent(inout) :: BF
+         call delete(BF%PA_assign_ghost)
+         call add(BF%PA_assign_ghost,assign_ghost_xmin,1)
+         call add(BF%PA_assign_ghost,assign_ghost_xmax,2)
+         call add(BF%PA_assign_ghost,assign_ghost_ymin,3)
+         call add(BF%PA_assign_ghost,assign_ghost_ymax,4)
+         call add(BF%PA_assign_ghost,assign_ghost_zmin,5)
+         call add(BF%PA_assign_ghost,assign_ghost_zmax,6)
+       end subroutine
+
+       subroutine set_assign_wall(BF)
+         implicit none
+         type(block_field),intent(inout) :: BF
+         if (BF%BCs%BCL%defined) then
+           if (N_along(BF%DL,1).and.(.not.is_Neumann(BF%BCs%face%bct(1)))) then
+           call add(BF%PA_assign_wall,assign_wall_xmin,1); endif
+           if (N_along(BF%DL,2).and.(.not.is_Neumann(BF%BCs%face%bct(2)))) then
+           call add(BF%PA_assign_wall,assign_wall_xmax,2); endif
+           if (N_along(BF%DL,3).and.(.not.is_Neumann(BF%BCs%face%bct(3)))) then
+           call add(BF%PA_assign_wall,assign_wall_ymin,3); endif
+           if (N_along(BF%DL,4).and.(.not.is_Neumann(BF%BCs%face%bct(4)))) then
+           call add(BF%PA_assign_wall,assign_wall_ymax,4); endif
+           if (N_along(BF%DL,5).and.(.not.is_Neumann(BF%BCs%face%bct(5)))) then
+           call add(BF%PA_assign_wall,assign_wall_zmin,5); endif
+           if (N_along(BF%DL,6).and.(.not.is_Neumann(BF%BCs%face%bct(6)))) then
+           call add(BF%PA_assign_wall,assign_wall_zmax,6); endif
+         else
+           if (N_along(BF%DL,1)) then; call add(BF%PA_assign_wall,assign_wall_xmin,1)
+                                       call add(BF%PA_assign_wall,assign_wall_xmax,2)
+           endif
+           if (N_along(BF%DL,2)) then; call add(BF%PA_assign_wall,assign_wall_ymin,3)
+                                       call add(BF%PA_assign_wall,assign_wall_ymax,4)
+           endif
+           if (N_along(BF%DL,3)) then; call add(BF%PA_assign_wall,assign_wall_zmin,5)
+                                       call add(BF%PA_assign_wall,assign_wall_zmax,6)
+           endif
+         endif
+       end subroutine
+
+       subroutine init_copy_BF(BF,BF_in)
          implicit none
          type(block_field),intent(inout) :: BF
          type(block_field),intent(in) :: BF_in
          call init(BF%GF,BF_in%GF)
          if (BF_in%BCs%BCL%defined) call init(BF%BCs,BF_in%BCs)
+         call init(BF%PA_assign_ghost,BF_in%PA_assign_ghost)
+         if (BF%PA_assign_wall%defined) call init(BF%PA_assign_wall,BF_in%PA_assign_wall)
+         call init(BF%DL,BF_in%DL)
        end subroutine
 
-       subroutine delete_block_field(BF)
+       subroutine delete_BF(BF)
          implicit none
          type(block_field),intent(inout) :: BF
          call delete(BF%GF)
+         call delete(BF%DL)
          call delete(BF%BCs)
+         call delete(BF%PA_assign_ghost)
+         call delete(BF%PA_assign_wall)
        end subroutine
 
-       subroutine display_block_field(BF,un)
+       subroutine display_BF(BF,un)
          implicit none
          type(block_field),intent(in) :: BF
          integer,intent(in) :: un
          call display(BF%GF,un)
+         call display(BF%DL,un)
          call display(BF%BCs,un)
        end subroutine
 
-       subroutine print_block_field(BF)
+       subroutine print_BF(BF)
          implicit none
          type(block_field),intent(in) :: BF
          call print(BF%GF)
+         call print(BF%DL)
          call print(BF%BCs)
        end subroutine
 
-       subroutine export_block_field(BF,un)
+       subroutine export_BF(BF,un)
          implicit none
          type(block_field),intent(in) :: BF
          integer,intent(in) :: un
          call export(BF%GF,un)
+         call export(BF%DL,un)
          call export(BF%BCs,un)
        end subroutine
 
-       subroutine import_block_field(BF,un)
+       subroutine import_BF(BF,un)
          implicit none
          type(block_field),intent(inout) :: BF
          integer,intent(in) :: un
          call import(BF%GF,un)
+         call import(BF%DL,un)
          call import(BF%BCs,un)
        end subroutine
 
@@ -227,6 +312,25 @@
          call random_noise(u%GF)
        end subroutine
 
+       subroutine cross_product_x_BF(AcrossB,Ay,Az,By,Bz)
+         implicit none
+         type(block_field),intent(inout) :: AcrossB
+         type(block_field),intent(in) :: Ay,Az,By,Bz
+         call cross_product_x(AcrossB%GF,Ay%GF,Az%GF,By%GF,Bz%GF)
+       end subroutine
+       subroutine cross_product_y_BF(AcrossB,Ax,Az,Bx,Bz)
+         implicit none
+         type(block_field),intent(inout) :: AcrossB
+         type(block_field),intent(in) :: Ax,Az,Bx,Bz
+         call cross_product_y(AcrossB%GF,Ax%GF,Az%GF,Bx%GF,Bz%GF)
+       end subroutine
+       subroutine cross_product_z_BF(AcrossB,Ax,Ay,Bx,By)
+         implicit none
+         type(block_field),intent(inout) :: AcrossB
+         type(block_field),intent(in) :: Ax,Ay,Bx,By
+         call cross_product_z(AcrossB%GF,Ax%GF,Ay%GF,Bx%GF,By%GF)
+       end subroutine
+
        subroutine square_BF(u)
          implicit none
          type(block_field),intent(inout) :: u
@@ -250,7 +354,36 @@
          implicit none
          type(block_field),intent(inout) :: u
          real(cp),intent(in) :: val
-         call assign_ghost(u%GF,val)
+         integer :: i
+#ifdef _PARALLELIZE_BF_
+         !$OMP PARALLEL DO
+
+#endif
+         do i=1,u%PA_assign_ghost%N
+         call u%PA_assign_ghost%SP(i)%P(u%GF,val)
+#ifdef _PARALLELIZE_BF_
+         !$OMP END PARALLEL DO
+
+#endif
+         enddo
+       end subroutine
+
+       subroutine assign_wall_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         integer :: i
+#ifdef _PARALLELIZE_BF_
+         !$OMP PARALLEL DO
+
+#endif
+         do i=1,u%PA_assign_wall%N
+         call u%PA_assign_wall%SP(i)%P(u%GF,val)
+#ifdef _PARALLELIZE_BF_
+         !$OMP END PARALLEL DO
+
+#endif
+         enddo
        end subroutine
 
        function plane_sum_x_BF(u,B,p) result(PS)

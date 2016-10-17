@@ -36,14 +36,14 @@
          case (1); call LDC_1_domain(U)
          case (2); call LDC_4_domains(U)
          case (3); call LDC_9_domains(U)
-         case (4); call flow_over_2D_square(U,m)
-         case (5); call duct_flow_2D_2domains(U,m)
-         case (6); call Tylers_geometry(U,m)
-         case (7); call duct_flow(U,m)
-         case (8); call channel_flow_1domain(U,m)
+         case (4); call flow_over_2D_square(U)
+         case (5); call duct_flow_2D_2domains(U)
+         case (6); call Tylers_geometry(U)
+         case (7); call duct_flow(U)
+         case (8); call channel_flow_1domain(U)
          case (9); call cylinder_driven_cavity(U,m,1)
          case (10); call fully_developed_duct_flow(U,m,1)
-         case (11); call periodic_duct_flow(U,m)
+         case (11); call periodic_duct_flow(U)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
@@ -75,62 +75,57 @@
          ! call init(U%x%BF(9)%BCs%e(8+2),1.0_cp)
        end subroutine
 
-       subroutine duct_flow(U,m)
+       subroutine duct_flow(U)
          implicit none
          type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
          ! Inlet (uniform)
          call init(U%x%BF(1)%BCs,1.0_cp,1)
          ! Outlet (fully developed)
-         call init_Neumann(U%x%BF(1)%BCs,m%B(1),2)
-         call init_Neumann(U%y%BF(1)%BCs,m%B(1),2)
-         call init_Neumann(U%z%BF(1)%BCs,m%B(1),2)
+         call init_Neumann(U%x%BF(1)%BCs,2)
+         call init_Neumann(U%y%BF(1)%BCs,2)
+         call init_Neumann(U%z%BF(1)%BCs,2)
        end subroutine
 
-       subroutine periodic_duct_flow(U,m)
+       subroutine periodic_duct_flow(U)
          implicit none
          type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
          ! Inlet (periodic)
-         call init_periodic(U%x%BF(1)%BCs,m%B(1),1)
-         call init_periodic(U%y%BF(1)%BCs,m%B(1),1)
-         call init_periodic(U%z%BF(1)%BCs,m%B(1),1)
+         call init_periodic(U%x%BF(1)%BCs,1)
+         call init_periodic(U%y%BF(1)%BCs,1)
+         call init_periodic(U%z%BF(1)%BCs,1)
          ! Outlet (periodic)
-         call init_periodic(U%x%BF(1)%BCs,m%B(1),2)
-         call init_periodic(U%y%BF(1)%BCs,m%B(1),2)
-         call init_periodic(U%z%BF(1)%BCs,m%B(1),2)
+         call init_periodic(U%x%BF(1)%BCs,2)
+         call init_periodic(U%y%BF(1)%BCs,2)
+         call init_periodic(U%z%BF(1)%BCs,2)
        end subroutine
 
-       subroutine duct_flow_2D_2domains(U,m)
+       subroutine duct_flow_2D_2domains(U)
          implicit none
          type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
          ! Inlet (uniform)
          call init(U%x%BF(1)%BCs,1.0_cp,1)
          call init(U%x%BF(2)%BCs,1.0_cp,1)
          ! call init(U%x%BF(1)%BCs%e(8+2),1.0_cp)
          ! call init(U%x%BF(2)%BCs%e(8+1),1.0_cp)
          ! Outlet (fully developed)
-         call init_Neumann(U%x%BF(1)%BCs,m%B(1),2)
-         call init_Neumann(U%x%BF(2)%BCs,m%B(1),2)
+         call init_Neumann(U%x%BF(1)%BCs,2)
+         call init_Neumann(U%x%BF(2)%BCs,2)
 
        end subroutine
 
-       subroutine channel_flow_1domain(U,m)
+       subroutine channel_flow_1domain(U)
          implicit none
          type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
          ! Inlet (uniform)
          call init(U%x%BF(1)%BCs,1.0_cp,1)
          ! Outlet (fully developed)
-         call init_Neumann(U%x%BF(1)%BCs,m%B(1),2)
-         call init_Neumann(U%y%BF(1)%BCs,m%B(1),2)
+         call init_Neumann(U%x%BF(1)%BCs,2)
+         call init_Neumann(U%y%BF(1)%BCs,2)
        end subroutine
 
-       subroutine flow_over_2D_square(U,m)
+       subroutine flow_over_2D_square(U)
          implicit none
          type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
          ! 16 edges total must be defined here with velocity of 1
          ! Inlet (uniform)
          call init(U%x%BF(1)%BCs,1.0_cp,1)
@@ -151,35 +146,34 @@
               ! call init(U%x%BF(5)%BCs%e(8+2),1.0_cp); call init(U%x%BF(7)%BCs%e(8+1),1.0_cp)
               ! call init(U%x%BF(5)%BCs%e(8+4),1.0_cp); call init(U%x%BF(7)%BCs%e(8+3),1.0_cp)
          ! Outlet (fully developed and v=0)
-         call init_Neumann(U%x%BF(5)%BCs,m%B(1),2)
-         call init_Neumann(U%x%BF(7)%BCs,m%B(1),2)
-         call init_Neumann(U%x%BF(8)%BCs,m%B(1),2)
+         call init_Neumann(U%x%BF(5)%BCs,2)
+         call init_Neumann(U%x%BF(7)%BCs,2)
+         call init_Neumann(U%x%BF(8)%BCs,2)
        end subroutine
 
-       subroutine Tylers_geometry(U,m)
+       subroutine Tylers_geometry(U)
          implicit none
          type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
          integer :: i
          ! THIS NEEDS TO BE FIXED
          do i=4,6
-           call init_Neumann(U%x%BF(i)%BCs,m%B(1),2)
-           call init_Neumann(U%y%BF(i)%BCs,m%B(1),2)
-           call init_Neumann(U%z%BF(i)%BCs,m%B(1),2)
+           call init_Neumann(U%x%BF(i)%BCs,2)
+           call init_Neumann(U%y%BF(i)%BCs,2)
+           call init_Neumann(U%z%BF(i)%BCs,2)
          enddo
-         call init_Neumann(U%x%BF(10)%BCs,m%B(1),2); call init_Neumann(U%x%BF(14)%BCs,m%B(1),2)
-         call init_Neumann(U%y%BF(10)%BCs,m%B(1),2); call init_Neumann(U%y%BF(14)%BCs,m%B(1),2)
-         call init_Neumann(U%z%BF(10)%BCs,m%B(1),2); call init_Neumann(U%z%BF(14)%BCs,m%B(1),2)
+         call init_Neumann(U%x%BF(10)%BCs,2); call init_Neumann(U%x%BF(14)%BCs,2)
+         call init_Neumann(U%y%BF(10)%BCs,2); call init_Neumann(U%y%BF(14)%BCs,2)
+         call init_Neumann(U%z%BF(10)%BCs,2); call init_Neumann(U%z%BF(14)%BCs,2)
          call init(U%x%BF(1)%BCs,1.0_cp,1)
 
-         call init_Neumann(U%x%BF(1)%BCs,m%B(1),6)
-         call init_Neumann(U%y%BF(1)%BCs,m%B(1),6)
-         call init_Neumann(U%z%BF(1)%BCs,m%B(1),6)
+         call init_Neumann(U%x%BF(1)%BCs,6)
+         call init_Neumann(U%y%BF(1)%BCs,6)
+         call init_Neumann(U%z%BF(1)%BCs,6)
 
          call init(U%x%BF(1)%BCs,1.0_cp,1)
-         call init_Neumann(U%x%BF(14)%BCs,m%B(1),1)
-         call init_Neumann(U%y%BF(14)%BCs,m%B(1),1)
-         call init_Neumann(U%z%BF(14)%BCs,m%B(1),1)
+         call init_Neumann(U%x%BF(14)%BCs,1)
+         call init_Neumann(U%y%BF(14)%BCs,1)
+         call init_Neumann(U%z%BF(14)%BCs,1)
        end subroutine
 
        subroutine cylinder_driven_cavity(U,m,face)
