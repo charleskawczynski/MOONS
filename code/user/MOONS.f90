@@ -52,7 +52,7 @@
          real(cp) :: tw,sig_local_over_sig_f
 
          ! ************************************************************** Parallel + directory + input parameters
-         ! call omp_set_num_threads(12) ! Set number of openMP threads
+         call omp_set_num_threads(12) ! Set number of openMP threads
 
          call init(DT,dir_target)  ! Initialize + make directory tree
 

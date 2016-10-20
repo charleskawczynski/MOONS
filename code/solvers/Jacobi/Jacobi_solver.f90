@@ -16,7 +16,6 @@
       implicit none
 
       real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
-      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
 
       private
       public :: solve_Jacobi
@@ -70,7 +69,7 @@
             if (mod(i,n_skip_check_res).eq.0) then
               call compute(norm,res,vol)
 #ifdef _EXPORT_JAC_SF_CONVERGENCE_
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+              write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
               flush(un)
 #endif
@@ -86,7 +85,7 @@
             call zeroGhostPoints(res)
             call compute(norm,res,vol)
             call print(norm,'Jacobi_SF Residuals for '//name)
-            write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+            write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                norm0%L1,norm0%L2,norm0%Linf,i-1
             write(*,*) 'Jacobi_SF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'Jacobi_SF exit condition = ',norm%L2/norm0%L2
@@ -146,7 +145,7 @@
             if (mod(i,n_skip_check_res).eq.0) then
               call compute(norm,res,vol)
 #ifdef _EXPORT_JAC_VF_CONVERGENCE_
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+              write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
               flush(un)
 #endif
@@ -162,7 +161,7 @@
             call zeroGhostPoints(res)
             call compute(norm,res,vol)
             call print(norm,'Jacobi_VF Residuals for '//name)
-            write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+            write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                norm0%L1,norm0%L2,norm0%Linf,i-1
             write(*,*) 'Jacobi_VF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'Jacobi_VF exit condition = ',norm%L2/norm0%L2

@@ -28,7 +28,6 @@
       implicit none
 
       real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
-      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
 
       private
       public :: solve_GS
@@ -96,7 +95,7 @@
               call zeroGhostPoints(res)
               call compute(norm,res,vol)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
+              write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                        norm0%L1,norm0%L2,norm0%Linf,i-1
 #endif
               if ((norm%L2/norm0%L2.lt.tol).or.(norm%L2.lt.tol_abs)) then; i_earlyExit=1; exit; endif
@@ -116,7 +115,7 @@
             call subtract(res,lapu,f)
             call zeroGhostPoints(res)
             call compute(norm,res,vol); call print(norm,'GS_SF Residuals for '//name)
-            write(un,norm_fmt) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
+            write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                      norm0%L1,norm0%L2,norm0%Linf,i-1+i_earlyExit
             write(*,*) 'GS_SF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'GS_SF exit condition = ',norm%L2/norm0%L2
@@ -180,7 +179,7 @@
               call zeroGhostPoints(res)
               call compute(norm,res,vol)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+              write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
 #endif
               if ((norm%L2/norm0%L2.lt.tol).or.(norm%L2.lt.tol_abs)) then; i_earlyExit=1; exit; endif
@@ -200,7 +199,7 @@
             call subtract(res,lapu,f)
             call zeroGhostPoints(res)
             call compute(norm,res,vol); call print(norm,'GS_SF Residuals for '//name)
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+              write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
             write(*,*) 'GS_VF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'GS_VF exit condition = ',norm%L2/norm0%L2

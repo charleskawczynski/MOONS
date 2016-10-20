@@ -87,7 +87,7 @@
          write(*,*) 'Error: NaN in data in probe: ',str(p%name)
          stop 'Divergence error. Sorry!'
          endif
-         write(p%un,'(2'//arrfmt//')') p%t,p%d
+         write(p%un,*) p%t,p%d
          flush(p%un)
        end subroutine
 

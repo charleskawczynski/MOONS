@@ -41,7 +41,10 @@
         public :: sine_waves
         public :: cosine_waves
         public :: random_noise
-        public :: assign_ghost
+
+        public :: assign_ghost_XPeriodic
+        public :: assign_wall_Dirichlet
+        public :: multiply_wall_Neumann
 
         public :: symmetry_error_x,symmetry_local_x
         public :: symmetry_error_y,symmetry_local_y
@@ -113,7 +116,12 @@
         interface symmetry_local_y;    module procedure symmetry_local_y_VF;    end interface
         interface symmetry_local_z;    module procedure symmetry_local_z_VF;    end interface
 
-        interface assign_ghost;        module procedure assign_ghost_VF;        end interface
+        interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_VF; end interface
+        interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_VF2;end interface
+        interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_VF;  end interface
+        interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_VF2; end interface
+        interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_VF;  end interface
+        interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_VF2; end interface
 
         interface dot_product;       module procedure dot_product_VF;           end interface
         interface dot;               module procedure dot_VF_SF;                end interface
@@ -903,13 +911,59 @@
           call symmetry_local_z(A%z)
         end subroutine
 
-        subroutine assign_ghost_VF(A,val)
+        subroutine assign_ghost_XPeriodic_VF(A,val)
           implicit none
           type(VF),intent(inout) :: A
           real(cp),intent(in) :: val
-          call assign_ghost(A%x,val)
-          call assign_ghost(A%y,val)
-          call assign_ghost(A%z,val)
+          call assign_ghost_XPeriodic(A%x,val)
+          call assign_ghost_XPeriodic(A%y,val)
+          call assign_ghost_XPeriodic(A%z,val)
         end subroutine
+        subroutine assign_ghost_XPeriodic_VF2(A,val,A_with_BCs)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: A_with_BCs
+          real(cp),intent(in) :: val
+          call assign_ghost_XPeriodic(A%x,val,A_with_BCs%x)
+          call assign_ghost_XPeriodic(A%y,val,A_with_BCs%y)
+          call assign_ghost_XPeriodic(A%z,val,A_with_BCs%z)
+        end subroutine
+
+        subroutine assign_wall_Dirichlet_VF(A,val)
+          implicit none
+          type(VF),intent(inout) :: A
+          real(cp),intent(in) :: val
+          call assign_wall_Dirichlet(A%x,val)
+          call assign_wall_Dirichlet(A%y,val)
+          call assign_wall_Dirichlet(A%z,val)
+        end subroutine
+        subroutine assign_wall_Dirichlet_VF2(A,val,A_with_BCs)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: A_with_BCs
+          real(cp),intent(in) :: val
+          call assign_wall_Dirichlet(A%x,val,A_with_BCs%x)
+          call assign_wall_Dirichlet(A%y,val,A_with_BCs%y)
+          call assign_wall_Dirichlet(A%z,val,A_with_BCs%z)
+        end subroutine
+
+        subroutine multiply_wall_Neumann_VF(A,val)
+          implicit none
+          type(VF),intent(inout) :: A
+          real(cp),intent(in) :: val
+          call multiply_wall_Neumann(A%x,val)
+          call multiply_wall_Neumann(A%y,val)
+          call multiply_wall_Neumann(A%z,val)
+        end subroutine
+        subroutine multiply_wall_Neumann_VF2(A,val,A_with_BCs)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: A_with_BCs
+          real(cp),intent(in) :: val
+          call multiply_wall_Neumann(A%x,val,A_with_BCs%x)
+          call multiply_wall_Neumann(A%y,val,A_with_BCs%y)
+          call multiply_wall_Neumann(A%z,val,A_with_BCs%z)
+        end subroutine
+
 
       end module

@@ -1,18 +1,18 @@
-       module procedure_array_assign_plane_mod
+       module procedure_array_plane_op_mod
        use IO_tools_mod
-       use single_procedure_assign_plane_mod
+       use single_procedure_plane_op_mod
        use GF_assign_ghost_mod
 
        implicit none
        private
-       public :: procedure_array_assign_plane
+       public :: procedure_array_plane_op
        public :: init,delete,display,print,export,import
 
        public :: add,remove,check_unique,sort
 
-       type procedure_array_assign_plane
+       type procedure_array_plane_op
          integer :: N
-         type(single_procedure_assign_plane),dimension(:),allocatable :: SP
+         type(single_procedure_plane_op),dimension(:),allocatable :: SP
          logical :: defined = .false.
        end type
 
@@ -39,10 +39,10 @@
 
        subroutine init_PA(PA,N)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(inout) :: PA
          integer,intent(in) :: N
          call delete(PA)
-         if (N.lt.1) stop 'Error: N must > 1 in init_PA in procedure_array_assign_plane.f90'
+         if (N.lt.1) stop 'Error: N must > 1 in init_PA in procedure_array_plane_op.f90'
          allocate(PA%SP(N))
          PA%N = N
          PA%defined = .false.
@@ -50,8 +50,8 @@
 
        subroutine init_copy_PA(PA,PA_in)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
-         type(procedure_array_assign_plane),intent(in) :: PA_in
+         type(procedure_array_plane_op),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA_in
          integer :: i
          call insist_defined(PA_in,'init_copy_PA')
          call insist_allocated(PA_in,'init_copy_PA')
@@ -66,7 +66,7 @@
 
        subroutine delete_PA(PA)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(inout) :: PA
          integer :: i
          if (allocated(PA%SP)) then
            do i=1,size(PA%SP); call delete(PA%SP(i)); enddo
@@ -78,7 +78,7 @@
 
        subroutine display_PA(PA,un)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          integer,intent(in) :: un
          integer :: i
          write(un,*) ' ***************** PROCEDURE ARRAY ***************** '
@@ -89,13 +89,13 @@
 
        subroutine print_PA(PA)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          call display(PA,6)
        end subroutine
 
        subroutine export_PA(PA,un)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          integer,intent(in) :: un
          integer :: i
          write(un,*) 'PA%N = '
@@ -105,7 +105,7 @@
 
        subroutine import_PA(PA,un)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(inout) :: PA
          integer,intent(in) :: un
          integer :: i
          read(un,*) 
@@ -115,7 +115,7 @@
 
        subroutine export_PA_wrapper(PA,dir,name)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = new_and_open(dir,name)
@@ -125,7 +125,7 @@
 
        subroutine import_PA_wrapper(PA,dir,name)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(inout) :: PA
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
@@ -139,10 +139,10 @@
 
        subroutine add_PA(PA,P,ID)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
-         procedure(assign_plane_op) :: P
+         type(procedure_array_plane_op),intent(inout) :: PA
+         procedure(plane_op) :: P
          integer,intent(in) :: ID
-         type(procedure_array_assign_plane) :: temp
+         type(procedure_array_plane_op) :: temp
          integer :: i
          if (PA%defined) then
            call init(temp,PA)
@@ -160,16 +160,16 @@
 
        subroutine add_PA_SP(PA,SP)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
-         type(single_procedure_assign_plane),intent(in) :: SP
+         type(procedure_array_plane_op),intent(inout) :: PA
+         type(single_procedure_plane_op),intent(in) :: SP
          call add(PA,SP%P,SP%ID)
        end subroutine
 
        subroutine remove_PA(PA,ID)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(inout) :: PA
          integer,intent(in) :: ID
-         type(procedure_array_assign_plane) :: temp
+         type(procedure_array_plane_op) :: temp
          integer :: i
          if (PA%defined) then
            call delete(temp)
@@ -184,7 +184,7 @@
 
        subroutine check_unique_PA(PA,caller)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          character(len=*),intent(in) :: caller
          integer :: i,j,violating_ID
          logical :: unique_set
@@ -198,7 +198,7 @@
          endif
          enddo; enddo
          if (.not.unique_set) then
-           write(*,*) 'Error: too many BCs in procedure_array_assign_plane in ',caller,'in procedure_array_assign_plane.f90'
+           write(*,*) 'Error: too many BCs in procedure_array_plane_op in ',caller,'in procedure_array_plane_op.f90'
            write(*,*) 'violating_ID = ',violating_ID
            stop 'Done'
          endif
@@ -214,12 +214,12 @@
          integer :: i,j,s
          s = size(a)
          if ((N.lt.1).or.(s.ne.N)) then
-           write(*,*) 'Error: bad array size in ',caller,' in procedure_array_assign_plane.f90'; stop 'Done'
+           write(*,*) 'Error: bad array size in ',caller,' in procedure_array_plane_op.f90'; stop 'Done'
          endif
          i_order = (/(i,i=1,N)/)
          do i=1,N; L(i) = any((/(a(j).eq.i_order(i),j=1,N)/)); enddo
          if (.not.all(L)) then
-           write(*,*) 'Error: non-unique array in ',caller,' in procedure_array_assign_plane.f90'
+           write(*,*) 'Error: non-unique array in ',caller,' in procedure_array_plane_op.f90'
            write(*,*) 'N = ',N
            write(*,*) 'a = ',a
            stop 'Done'
@@ -228,13 +228,13 @@
 
        subroutine sort_PA(PA,order,N)
          implicit none
-         type(procedure_array_assign_plane),intent(inout) :: PA
+         type(procedure_array_plane_op),intent(inout) :: PA
          integer,intent(in) :: N
          integer,dimension(N),intent(in) :: order
-         type(procedure_array_assign_plane) :: temp
+         type(procedure_array_plane_op) :: temp
          integer :: i,j
          if ((PA%N.ne.N).or.(size(PA%SP).ne.N)) then
-           stop 'Error: bad array size in sort_PA in procedure_array_assign_plane.f90'
+           stop 'Error: bad array size in sort_PA in procedure_array_plane_op.f90'
          endif
          call check_unique(PA,'sort_PA')
          call check_unique_array(order,N,'sort_PA')
@@ -248,24 +248,24 @@
 
        subroutine insist_defined_PA(PA,caller)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          character(len=*),intent(in) :: caller
          integer :: i
          do i=1,PA%N
          call insist_defined(PA%SP(i),caller)
          enddo
          if (.not.PA%defined) then
-           write(*,*) 'Error: PA must be defined in ',caller,' in procedure_array_assign_plane.f90'
+           write(*,*) 'Error: PA must be defined in ',caller,' in procedure_array_plane_op.f90'
            stop 'Done'
          endif
        end subroutine
 
        subroutine insist_allocated_PA(PA,caller)
          implicit none
-         type(procedure_array_assign_plane),intent(in) :: PA
+         type(procedure_array_plane_op),intent(in) :: PA
          character(len=*),intent(in) :: caller
          if (.not.allocated(PA%SP)) then
-           write(*,*) 'Error: PA must be allocated in ',caller,' in procedure_array_assign_plane.f90'
+           write(*,*) 'Error: PA must be allocated in ',caller,' in procedure_array_plane_op.f90'
            stop 'Done'
          endif
        end subroutine

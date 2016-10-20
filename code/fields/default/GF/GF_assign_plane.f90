@@ -2,8 +2,8 @@
         use GF_base_mod
         use current_precision_mod
         implicit none
-        private
 
+        private
         public :: assign_plane_x
         public :: assign_plane_y
         public :: assign_plane_z

@@ -21,7 +21,6 @@
 
 #ifdef _EXPORT_PSE_CONVERGENCE_
       real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
-      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
 #endif
 
       contains
@@ -56,7 +55,7 @@
 #ifdef _EXPORT_PSE_CONVERGENCE_
           if (n.eq.1) call compute(norm_res0,r,vol)
           call compute(norm,r,vol)
-          write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
         enddo
@@ -104,7 +103,7 @@
 #ifdef _EXPORT_PSE_CONVERGENCE_
           if (n.eq.1) call compute(norm_res0,r,vol)
           call compute(norm,r,vol)
-          write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
         enddo

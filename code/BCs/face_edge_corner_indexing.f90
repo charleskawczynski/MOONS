@@ -6,8 +6,10 @@
 
        private
        public :: dir_given_face
+       public :: dir_given_edge
        public :: adj_dir_given_dir
        public :: adj_dir_given_face
+       public :: adj_dir_given_edge
 
        public :: adj_faces_given_edge
        public :: adj_faces_given_corner
@@ -23,6 +25,7 @@
        public :: corners_given_face
 
        public :: nhat_given_face
+       public :: nhat_given_edge
 
        contains
 
@@ -38,7 +41,19 @@
          case (1,2); dir = 1
          case (3,4); dir = 2
          case (5,6); dir = 3
-         case default; stop 'Error: face must = 1:6 in dir_given_face in apply_BCs_faces.f90'
+         case default; stop 'Error: face must = 1:6 in dir_given_face in face_edge_corner_indexing.f90'
+         end select
+       end function
+
+       function dir_given_edge(edge) result(dir)
+         implicit none
+         integer,intent(in) :: edge
+         integer :: dir
+         select case (edge)
+         case (1:4);  dir = 1
+         case (5:8);  dir = 2
+         case (9:12); dir = 3
+         case default; stop 'Error: face must = 1:12 in dir_given_edge in face_edge_corner_indexing.f90'
          end select
        end function
 
@@ -63,6 +78,18 @@
          case (3,4); a = (/3,1/)
          case (5,6); a = (/1,2/)
          case default; stop 'Error: face must = 1:6 in adj_dir_given_face in face_edge_corner_indexing.f90'
+         end select
+       end function
+
+       function adj_dir_given_edge(edge) result (dir)
+         implicit none
+         integer,intent(in) :: edge
+         integer,dimension(2) :: dir
+         select case (edge)
+         case (1:4);  dir = (/2,3/)
+         case (5:8);  dir = (/1,3/)
+         case (9:12); dir = (/1,2/)
+         case default; stop 'Error: edge must = 1:12 in adj_dir_given_edge in face_edge_corner_indexing.f90'
          end select
        end function
 
@@ -233,6 +260,15 @@
          case(6); nhat =  1.0_cp
          case default; stop 'Error: bad case in nhat_given_face in face_edge_corner_indexing.f90'
          end select
+       end function
+
+       function nhat_given_edge(edge) result (nhat)
+         implicit none
+         integer,intent(in) :: edge
+         real(cp),dimension(2) :: nhat
+         integer,dimension(2) :: faces
+         faces = adj_faces_given_edge(edge)
+         nhat = (/nhat_given_face(faces(1)),nhat_given_face(faces(2))/)
        end function
 
          ! This module provides routines to obtain indexes for BC

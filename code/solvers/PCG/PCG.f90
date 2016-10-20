@@ -154,7 +154,6 @@
         call init(PCG%z,PCG%tempx)
         call init(PCG%Minv,PCG%tempx)
         call init(PCG%ISP,ISP)
-
         call init(PCG%norm)
         call assign(PCG%k,k)
         call assign(PCG%Minv,Minv)

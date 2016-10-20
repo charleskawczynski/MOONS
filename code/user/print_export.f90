@@ -8,6 +8,11 @@
        public :: init,delete,export,import
        public :: update
 
+       integer :: i_default_info = 1
+       integer :: i_default_transient_0D = 2
+       integer :: i_default_transient_2D = 4
+       integer :: i_default_solution = 6
+
        interface init;               module procedure init_PE;             end interface
        interface delete;             module procedure delete_PE;           end interface
        interface export;             module procedure export_PE;           end interface
@@ -42,10 +47,10 @@
          PE%transient_0D = .false.
          PE%transient_2D = .false.
          PE%solution = .false.
-         PE%i_info = 1
-         PE%i_transient_0D = 2
-         PE%i_transient_2D = 4
-         PE%i_solution = 6
+         PE%i_info = i_default_info
+         PE%i_transient_0D = i_default_transient_0D
+         PE%i_transient_2D = i_default_transient_2D
+         PE%i_solution = i_default_solution
 
          PE%export_planar = export_planar
          call init(PE%dir,dir)
@@ -59,10 +64,10 @@
          PE%transient_0D = .false.
          PE%transient_2D = .false.
          PE%solution = .false.
-         PE%i_info = 1
-         PE%i_transient_0D = 2
-         PE%i_transient_2D = 4
-         PE%i_solution = 6
+         PE%i_info = i_default_info
+         PE%i_transient_0D = i_default_transient_0D
+         PE%i_transient_2D = i_default_transient_2D
+         PE%i_solution = i_default_solution
          call delete(PE%dir)
          call delete(PE%name)
        end subroutine
@@ -92,10 +97,10 @@
          close(un)
 
          ! The following is a safegaurd against a bad import:
-         if ((PE%i_info.lt.0).or.(PE%i_info.gt.6)) PE%i_info = 1
-         if ((PE%i_transient_0D.lt.0).or.(PE%i_transient_0D.gt.6)) PE%i_transient_0D = 2
-         if ((PE%i_transient_2D.lt.0).or.(PE%i_transient_2D.gt.6)) PE%i_transient_2D = 4
-         if ((PE%i_solution.lt.0).or.(PE%i_solution.gt.6)) PE%i_solution = 6
+         if ((PE%i_info.lt.0).or.(PE%i_info.gt.6)) PE%i_info = i_default_info
+         if ((PE%i_transient_0D.lt.0).or.(PE%i_transient_0D.gt.6)) PE%i_transient_0D = i_default_transient_0D
+         if ((PE%i_transient_2D.lt.0).or.(PE%i_transient_2D.gt.6)) PE%i_transient_2D = i_default_transient_2D
+         if ((PE%i_solution.lt.0).or.(PE%i_solution.gt.6)) PE%i_solution = i_default_solution
        end subroutine
 
        subroutine update_PE(PE,n_step)

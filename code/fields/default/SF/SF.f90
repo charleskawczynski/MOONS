@@ -36,8 +36,10 @@
         public :: mean_along_dir,subtract_mean_along_dir
         public :: N0_C1_tensor
         public :: C0_N1_tensor
-        public :: assign_ghost
-        public :: assign_wall
+
+        public :: assign_ghost_XPeriodic
+        public :: assign_wall_Dirichlet
+        public :: multiply_wall_Neumann
 
         public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
@@ -120,8 +122,13 @@
         interface sine_waves;          module procedure sine_waves_SF;          end interface
         interface cosine_waves;        module procedure cosine_waves_SF;        end interface
         interface random_noise;        module procedure random_noise_SF;        end interface
-        interface assign_ghost;        module procedure assign_ghost_SF;        end interface
-        interface assign_wall;         module procedure assign_wall_SF;         end interface
+
+        interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF; end interface
+        interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF2;end interface
+        interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_SF;  end interface
+        interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_SF2; end interface
+        interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_SF;  end interface
+        interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_SF2; end interface
 
         interface plane_sum_x;         module procedure plane_sum_x_SF;         end interface
         interface plane_sum_y;         module procedure plane_sum_y_SF;         end interface
@@ -667,20 +674,52 @@
           do i=1,u%s; call random_noise(u%BF(i)); enddo
         end subroutine
 
-        subroutine assign_ghost_SF(u,val)
+        subroutine assign_ghost_XPeriodic_SF(u,val)
           implicit none
           type(SF),intent(inout) :: u
           real(cp),intent(in) :: val
           integer :: i
-          do i=1,u%s; call assign_ghost(u%BF(i),val); enddo
+          do i=1,u%s; call assign_ghost_XPeriodic(u%BF(i),val); enddo
+        end subroutine
+        subroutine assign_ghost_XPeriodic_SF2(u,val,u_with_BCs)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          type(SF),intent(in) :: u_with_BCs
+          integer :: i
+          do i=1,u%s; call assign_ghost_XPeriodic(u%BF(i),val,u_with_BCs%BF(i)); enddo
         end subroutine
 
-        subroutine assign_wall_SF(u,val)
+        subroutine assign_wall_Dirichlet_SF(u,val)
           implicit none
           type(SF),intent(inout) :: u
           real(cp),intent(in) :: val
           integer :: i
-          do i=1,u%s; call assign_wall(u%BF(i),val); enddo
+          do i=1,u%s; call assign_wall_Dirichlet(u%BF(i),val); enddo
+        end subroutine
+        subroutine assign_wall_Dirichlet_SF2(u,val,u_with_BCs)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          type(SF),intent(in) :: u_with_BCs
+          integer :: i
+          do i=1,u%s; call assign_wall_Dirichlet(u%BF(i),val,u_with_BCs%BF(i)); enddo
+        end subroutine
+
+        subroutine multiply_wall_Neumann_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call multiply_wall_Neumann(u%BF(i),val); enddo
+        end subroutine
+        subroutine multiply_wall_Neumann_SF2(u,val,u_with_BCs)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          type(SF),intent(in) :: u_with_BCs
+          integer :: i
+          do i=1,u%s; call multiply_wall_Neumann(u%BF(i),val,u_with_BCs%BF(i)); enddo
         end subroutine
 
         function plane_sum_x_SF(u,m,p) result(SP)

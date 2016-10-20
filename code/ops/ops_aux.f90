@@ -455,14 +455,14 @@
        subroutine zeroGhostPoints_SF(f)
          implicit none
          type(SF),intent(inout) :: f
-         call assign_ghost(f,0.0_cp)
+         call assign_ghost_XPeriodic(f,0.0_cp)
        end subroutine
 
        subroutine zeroWall_SF(f,m)
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         call assign_wall(f,0.0_cp)
+         call assign_wall_Dirichlet(f,0.0_cp)
        end subroutine
 
        subroutine zeroWall_conditional_SF(f,m)
@@ -471,32 +471,33 @@
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         logical :: L
-         integer :: i
-         if (f%N_along(1)) then
-           do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(1)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(2)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
-           enddo
-         endif
-         if (f%N_along(2)) then
-           do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(3)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(4)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
-           enddo
-         endif
-         if (f%N_along(3)) then
-           do i=1,m%s
-             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(5)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(6)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
-           enddo
-         endif
+         ! logical :: L
+         ! integer :: i
+         call assign_wall_Dirichlet(f,0.0_cp)
+         ! if (f%N_along(1)) then
+         !   do i=1,m%s
+         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(1)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
+         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(2)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
+         !   enddo
+         ! endif
+         ! if (f%N_along(2)) then
+         !   do i=1,m%s
+         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(3)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
+         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(4)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
+         !   enddo
+         ! endif
+         ! if (f%N_along(3)) then
+         !   do i=1,m%s
+         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(5)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
+         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(6)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
+         !   enddo
+         ! endif
        end subroutine
 
        subroutine zeroWall_conditional_SF2(f,m,u)
@@ -508,30 +509,31 @@
          type(mesh),intent(in) :: m
          logical :: L
          integer :: i
-         if (f%N_along(1)) then
-           do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(1)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(2)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
-           enddo
-         endif
-         if (f%N_along(2)) then
-           do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(3)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(4)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
-           enddo
-         endif
-         if (f%N_along(3)) then
-           do i=1,m%s
-             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(5)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-             L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(6)))
-             if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
-           enddo
-         endif
+         call assign_wall_Dirichlet(f,0.0_cp,u)
+         ! if (f%N_along(1)) then
+         !   do i=1,m%s
+         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(1)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
+         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(2)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
+         !   enddo
+         ! endif
+         ! if (f%N_along(2)) then
+         !   do i=1,m%s
+         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(3)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
+         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(4)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
+         !   enddo
+         ! endif
+         ! if (f%N_along(3)) then
+         !   do i=1,m%s
+         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(5)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
+         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(6)))
+         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
+         !   enddo
+         ! endif
        end subroutine
 
        subroutine zeroInterior_SF(f)

@@ -5,7 +5,7 @@
         implicit none
 
         abstract interface
-          subroutine assign_plane_op(GF,val)
+          subroutine plane_op(GF,val)
             import grid_field,cp
             implicit none
             type(grid_field),intent(inout) :: GF
@@ -14,7 +14,7 @@
         end interface
 
         private
-        public :: assign_plane_op
+        public :: plane_op
         public :: assign_ghost_xmin
         public :: assign_ghost_ymin
         public :: assign_ghost_zmin

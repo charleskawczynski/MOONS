@@ -26,17 +26,16 @@
 
        interface init_mixed; module procedure init_mixed_edge_SD;  end interface
 
-       type d
+       type b_data
          real(cp),dimension(2) :: dh,nhat = 0.0_cp
        end type
 
        type edge_SD
          type(sub_domain),dimension(12) :: G
          type(sub_domain),dimension(12) :: B ! C is non-sense here
-         type(sub_domain),dimension(12) :: Ay
-         type(sub_domain),dimension(12) :: Az
          type(sub_domain),dimension(12) :: I
          integer,dimension(12) :: i_1D
+         type(b_data),dimension(12) :: BD
        end type
 
        contains
@@ -50,32 +49,40 @@
          type(edge_SD),intent(inout) :: FSD
          type(grid),intent(in) :: g
          type(grid),dimension(6),intent(in) :: g_b
-         type(sub_domain) :: temp
+         type(sub_domain) :: temp,A_temp,B_temp
          real(cp) :: tol
-         integer :: i,dir,i_opp
+         integer :: i
+         integer,dimension(2) :: d
          tol = 10.0_cp**(-12.0_cp)
          call delete(FSD)
-         do i=1,6
-           dir = dir_given_face(i)
+         do i=1,12
+           d = adj_dir_given_edge(i)
            call init(temp,g_b(i),g,i,0,tol,0)
            call init(FSD%G(i),temp)
            call init(FSD%B(i),temp)
            call init(FSD%I(i),temp)
-           call init(FSD%I_OPP(i),temp)
-           call p_from_boundary_C(FSD%G(i)%C(dir),temp%C(dir),g,g_b(i),dir,tol,1)
-           call p_from_boundary_C(FSD%I(i)%C(dir),temp%C(dir),g,g_b(i),dir,tol,2)
+           call init(A_temp,temp)
+           call init(B_temp,temp)
 
-           call p_from_boundary_N(FSD%G(i)%N(dir),temp%N(dir),g,g_b(i),dir,tol,1)
-           call p_from_boundary_N(FSD%B(i)%N(dir),temp%N(dir),g,g_b(i),dir,tol,2)
-           call p_from_boundary_N(FSD%I(i)%N(dir),temp%N(dir),g,g_b(i),dir,tol,3)
-           FSD%dh(i) = get_dh_boundary((/g,g_b(i)/),dir)
-           FSD%nhat(i) = nhat_given_face(i)
-           FSD%i_2D(i)%i = adj_dir_given_face(i)
-         enddo
+           call p_from_boundary_C(B_temp%C(d(1)),A_temp%C(d(1)),g,g_b(i),d(1),tol,1)
+           call p_from_boundary_C(A_temp%C(d(2)),B_temp%C(d(2)),g,g_b(i),d(2),tol,1)
+           call p_from_boundary_N(B_temp%N(d(1)),A_temp%N(d(1)),g,g_b(i),d(1),tol,1)
+           call p_from_boundary_N(A_temp%N(d(2)),B_temp%N(d(2)),g,g_b(i),d(2),tol,1)
+           call init(FSD%G(i),A_temp); call init(A_temp,temp)
 
-         do i=1,6
-           i_opp = opp_face_given_face(i)
-           call init(FSD%I_OPP(i_opp),FSD%I(i))
+           call p_from_boundary_N(A_temp%N(d(1)),B_temp%N(d(1)),g,g_b(i),d(1),tol,2)
+           call p_from_boundary_N(A_temp%N(d(2)),B_temp%N(d(2)),g,g_b(i),d(2),tol,2)
+           call init(FSD%B(i),A_temp); call init(A_temp,temp)
+
+           call p_from_boundary_C(B_temp%C(d(1)),A_temp%C(d(1)),g,g_b(i),d(1),tol,2)
+           call p_from_boundary_C(A_temp%C(d(2)),B_temp%C(d(2)),g,g_b(i),d(2),tol,2)
+           call p_from_boundary_N(B_temp%N(d(1)),A_temp%N(d(1)),g,g_b(i),d(1),tol,2)
+           call p_from_boundary_N(A_temp%N(d(2)),B_temp%N(d(2)),g,g_b(i),d(2),tol,2)
+           call init(FSD%I(i),A_temp); call init(A_temp,temp)
+
+           FSD%BD(i)%dh=(/get_dh_boundary((/g,g_b(i)/),d(1)),get_dh_boundary((/g,g_b(i)/),d(2))/)
+           FSD%BD(i)%nhat = nhat_given_edge(i)
+           FSD%i_1D(i) = dir_given_edge(i)
          enddo
          call delete(temp)
        end subroutine
@@ -85,26 +92,24 @@
          type(edge_SD),intent(inout) :: FSD
          type(edge_SD),intent(in) :: FSD_in
          integer :: i
-         do i=1,6; call init(FSD%G(i),FSD_in%G(i)); enddo
-         do i=1,6; call init(FSD%B(i),FSD_in%B(i)); enddo
-         do i=1,6; call init(FSD%I(i),FSD_in%I(i)); enddo
-         do i=1,6; call init(FSD%I_OPP(i),FSD_in%I_OPP(i)); enddo
-         do i=1,6; FSD%i_2D(i)%i = FSD_in%i_2D(i)%i; enddo
-         FSD%dh = FSD_in%dh
-         FSD%nhat = FSD_in%nhat
+         do i=1,12; call init(FSD%G(i),FSD_in%G(i)); enddo
+         do i=1,12; call init(FSD%B(i),FSD_in%B(i)); enddo
+         do i=1,12; call init(FSD%I(i),FSD_in%I(i)); enddo
+         do i=1,12; FSD%i_1D(i) = FSD_in%i_1D(i); enddo
+         do i=1,12; FSD%BD(i)%nhat = FSD_in%BD(i)%nhat; enddo
+         do i=1,12; FSD%BD(i)%dh = FSD_in%BD(i)%dh; enddo
        end subroutine
 
        subroutine delete_edge_SD(FSD)
          implicit none
          type(edge_SD),intent(inout) :: FSD
          integer :: i
-         do i=1,6; call delete(FSD%G(i)); enddo
-         do i=1,6; call delete(FSD%B(i)); enddo
-         do i=1,6; call delete(FSD%I(i)); enddo
-         do i=1,6; call delete(FSD%I_OPP(i)); enddo
-         do i=1,6; FSD%i_2D(i)%i = 0; enddo
-         FSD%dh = 0.0_cp
-         FSD%nhat = 0.0_cp
+         do i=1,12; call delete(FSD%G(i)); enddo
+         do i=1,12; call delete(FSD%B(i)); enddo
+         do i=1,12; call delete(FSD%I(i)); enddo
+         do i=1,12; FSD%i_1D(i) = 0; enddo
+         do i=1,12; FSD%BD(i)%nhat = 0.0_cp; enddo
+         do i=1,12; FSD%BD(i)%dh = 0.0_cp; enddo
        end subroutine
 
        subroutine display_edge_SD(FSD,name,u)
@@ -114,13 +119,12 @@
          integer,intent(in) :: u
          integer :: i
          write(u,*) ' ************************* edge_SD ************************* '//name
-         do i=1,6; call display(FSD%G(i),'G face '//int2str(i),u); enddo
-         do i=1,6; call display(FSD%B(i),'B face '//int2str(i),u); enddo
-         do i=1,6; call display(FSD%I(i),'I face '//int2str(i),u); enddo
-         do i=1,6; call display(FSD%I_OPP(i),'I_OPP face '//int2str(i),u); enddo
-         write(u,*) 'dh = ',FSD%dh
-         write(u,*) 'nhat = ',FSD%nhat
-         do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
+         do i=1,12; call display(FSD%G(i),'G face '//int2str(i),u); enddo
+         do i=1,12; call display(FSD%B(i),'B face '//int2str(i),u); enddo
+         do i=1,12; call display(FSD%I(i),'I face '//int2str(i),u); enddo
+         write(u,*) 'i_1D = ',FSD%i_1D
+         do i=1,12; write(u,*) 'nhat = '; write(u,*) FSD%BD(i)%nhat; enddo
+         do i=1,12; write(u,*) 'dh = '; write(u,*) FSD%BD(i)%dh; enddo
          write(u,*) ' *********************************************************** '
        end subroutine
 
@@ -137,14 +141,12 @@
          integer,intent(in) :: u
          integer :: i
          write(u,*) ' ********** edge_SD ************ '
-         do i=1,6; call export(FSD%G(i),u); enddo
-         do i=1,6; call export(FSD%B(i),u); enddo
-         do i=1,6; call export(FSD%I(i),u); enddo
-         do i=1,6; call export(FSD%I_OPP(i),u); enddo
-         write(u,*) 'dh = ';      write(u,*) FSD%dh
-         write(u,*) 'nhat = ';    write(u,*) FSD%nhat
-         do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
-         do i=1,6; call export(FSD%I_OPP(i),u); enddo
+         do i=1,12; call export(FSD%G(i),u); enddo
+         do i=1,12; call export(FSD%B(i),u); enddo
+         do i=1,12; call export(FSD%I(i),u); enddo
+         write(u,*) 'i_1D = '; write(u,*) FSD%i_1D
+         do i=1,12; write(u,*) 'nhat = '; write(u,*) FSD%BD(i)%nhat; enddo
+         do i=1,12; write(u,*) 'dh = '; write(u,*) FSD%BD(i)%dh; enddo
          write(u,*) ' ********************************* '
        end subroutine
 
@@ -154,13 +156,12 @@
          integer,intent(in) :: u
          integer :: i
          read(u,*);
-         do i=1,6; call import(FSD%G(i),u); enddo
-         do i=1,6; call import(FSD%B(i),u); enddo
-         do i=1,6; call import(FSD%I(i),u); enddo
-         do i=1,6; call import(FSD%I_OPP(i),u); enddo
-         read(u,*); write(u,*) FSD%dh
-         read(u,*); write(u,*) FSD%nhat
-         do i=1,6; read(u,*); read(u,*) FSD%i_2D(i)%i; enddo
+         do i=1,12; call import(FSD%G(i),u); enddo
+         do i=1,12; call import(FSD%B(i),u); enddo
+         do i=1,12; call import(FSD%I(i),u); enddo
+         read(u,*); read(u,*) FSD%i_1D
+         do i=1,12; read(u,*); read(u,*) FSD%BD(i)%nhat; enddo
+         do i=1,12; read(u,*); read(u,*) FSD%BD(i)%dh; enddo
          read(u,*);
        end subroutine
 
@@ -169,10 +170,9 @@
          type(edge_SD),intent(inout) :: FSD
          type(data_location),intent(in) :: DL
          integer :: i
-         do i=1,6; call init_mixed(FSD%G(i)%M,FSD%G(i)%C,FSD%G(i)%N,DL); enddo
-         do i=1,6; call init_mixed(FSD%B(i)%M,FSD%B(i)%C,FSD%B(i)%N,DL); enddo
-         do i=1,6; call init_mixed(FSD%I(i)%M,FSD%I(i)%C,FSD%I(i)%N,DL); enddo
-         do i=1,6; call init_mixed(FSD%I_OPP(i)%M,FSD%I_OPP(i)%C,FSD%I(i)%N,DL); enddo
+         do i=1,12; call init_mixed(FSD%G(i)%M,FSD%G(i)%C,FSD%G(i)%N,DL); enddo
+         do i=1,12; call init_mixed(FSD%B(i)%M,FSD%B(i)%C,FSD%B(i)%N,DL); enddo
+         do i=1,12; call init_mixed(FSD%I(i)%M,FSD%I(i)%C,FSD%I(i)%N,DL); enddo
        end subroutine
 
        end module
