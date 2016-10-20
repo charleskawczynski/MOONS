@@ -39,7 +39,6 @@
         public :: plane_sum_y
         public :: plane_sum_z
 
-        ! GF_symmetry_error_mod
         public :: symmetry_error_x
         public :: symmetry_error_y
         public :: symmetry_error_z
@@ -47,10 +46,6 @@
         public :: symmetry_local_x
         public :: symmetry_local_y
         public :: symmetry_local_z
-
-        ! public :: assign_plane_x
-        ! public :: assign_plane_y
-        ! public :: assign_plane_z
 
         public :: cross_product_x
         public :: cross_product_y
@@ -111,10 +106,6 @@
        interface symmetry_local_x;       module procedure symmetry_local_x_BF;         end interface
        interface symmetry_local_y;       module procedure symmetry_local_y_BF;         end interface
        interface symmetry_local_z;       module procedure symmetry_local_z_BF;         end interface
-
-       ! interface assign_plane_x;         module procedure assign_plane_x_BF;           end interface
-       ! interface assign_plane_y;         module procedure assign_plane_y_BF;           end interface
-       ! interface assign_plane_z;         module procedure assign_plane_z_BF;           end interface
 
        contains
 

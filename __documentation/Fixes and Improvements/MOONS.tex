@@ -84,8 +84,6 @@ University of California Los Angeles, USA\\
 \item Finalize energy budget in code
 \item restart  mesh? to make energy budget easier?
 \item restart solution to make easier
-\item brainstorm what to plot
-\item way to detect $\delta_{Ha}$?
 \item Use thin wall BC for driven cavity
 \item 2nd order forward diff may be necessary to get higher accuracy since the BC is partly Neumann.
 \item Remove color: symbols. filled/empty = RV/PV. Arrows for components. (left,up,right) = (z,y,x)
@@ -138,7 +136,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \subsection{BEM}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item Make coordinates capable of handling a zero-cell, two ghost point mesh \Checkmark
 \item Make ops capable of handling a zero-cell mesh
 \item stitching is needed so that diffusion can traverse between different grids.
 \item need to look into methods to solve equation
@@ -159,7 +156,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \setlength\itemsep{-1em}
 \item Gaps in mesh generation + grid stretch-parameter match. Needs to be generalized, simple + easy to use.
 \item Make a uniform grid option for boundary layers (maybe make a function for this)
-\item betaRobertsRight(hmin,hmax,L,dh) - is this dh on the left side or right side? I think betaRoberts routines need a dh1 or dhend input, because when connecting, betaRobertsRight makes stretching occur on right-side, but needs dh on right side, which is a problem for con\_APP\_Roberts\_R.
 \end{itemize}
 
 \subsection{SF / VF / TF}
@@ -177,7 +173,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \item Fix IO\_tools.f90. Pick better names and separate into IO tools and conversion (int2str, etc.)
 \item Re-consider HDF5
 \item Figure out how to view time in tecplot as animation runs
-\item FIX THE NAME OF THE PROBES. THEY ARE TOTALLY INCONSISTENT.
 \end{itemize}
 
 \subsection{Exception handling}
@@ -201,7 +196,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \item Try to incorporate anti-symmetric BCs again...
 \item Remove allocation in lap\_centered. May require changing matrix-free operator interface. Brainstorm.
 \item Look to improve performance of apply\_edges
-\item Consider replacing applyBCs with assign using embedExtract
 \item Profile to find latest bottle necks
 \item Try out pre-processor directive '-ftree -parallelize -loops=n' = split loops into n-threads
 \item Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
@@ -210,7 +204,7 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \subsection{Makefile}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item Need to clean up directory. Many unused and old files exist in folders and knowing which files are grabbed by the compiler is not clear. Maybe consider making an "old" folder for backed-up old files.
+\item 
 \end{itemize}
 
 \subsection{Complex Geometry}
@@ -265,14 +259,12 @@ velocity (likely u=0 inside). More tests could be done this way.
 \begin{itemize}
 \setlength\itemsep{-1em}
 \item Need to re-develop restart capability... This will require some thought.
-\item This is complex. What should be restarted and what should be re-configured?
+\item Restart capability is complex. What should be restarted and what should be re-configured?
 \item Can every module have a "natural" restart capability? YES! \Checkmark But they require more thought for solvers.
 \item Should source terms in momentum solver be fixed? This way, restart can be used with a parameter.
 \item Should the momentum\_solver be picked with a compiler flag?
 \item momentum import + override inputs? or inputs imported so MHD solver parameters stay the same?
 \item Decide on format of input file (what parameters will be set in input file and what will be coded)
-\item Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
-\item rethink how to use printPhysicalMinMax in momentum,induction,energy display routines
 \end{itemize}
 
 \section{Ideas}
@@ -297,7 +289,6 @@ velocity (likely u=0 inside). More tests could be done this way.
 \item Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
 \item Use hgiher order time marching methods! (RK4 maybe?)
 \item Consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
-\item Consider passing MFP into PCG solver, this way, different coefficients can be used with the same PCG object.
 \end{itemize}
 
 \subsection{Dimensionless Groups}
@@ -332,28 +323,24 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \begin{itemize}
 \setlength\itemsep{-1em}
 \item delete emails and organize dropbox
-\item look into optical Nand gates
-\item get veggie / fruit recipes
-\item get tablet for refrigerator?
 \item prep / post tutoring flyers
-\item convert to charleskawczynski ?
 \item organize photos and make slideshow
 \item delete duplicate photos
 \item return Christa's sketchers (if possible)
-\item look up transient solution on workstation, delete results
 \end{itemize}
 
 \section{Today}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item look at workstation results
-\item write up new matrix for first paper
-\item Start presentation for Thursday.
 \item how many flops does my code achieve?
 \item what parameter space can I explore for plasma disruptions?
-\item Fix datarace.
 % 
-\item rethink MOONS apply\_BCs routines, consider using embed extract routines instead
+\item
+\item look at workstation results
+\item write up new matrix for first paper
+\item
+% 
+\item Fix datarace.
 \item rethink MOONS derivative routines, any better hash approaches?
 \item modify stencils to account for periodic BCs
 \item Clean up files not compiled in code directory
@@ -365,12 +352,10 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \section{Code changes to make}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item put check back into coordinate stretch parameter matching
 \item in sim params, change post-process only to skip solver loop and include a "post process" logical
 \item add restart to PE, and use this to separate tec export and restart export
 \item make "array" class and use it in coordinates and triDiag (maybe)
 \item delete more matlab scripts / convert to python
-\item remove apply\_stitches\_mod from ops\_advect.f90 and momentum\_solver.f90
 \end{itemize}
 
 \end{document}

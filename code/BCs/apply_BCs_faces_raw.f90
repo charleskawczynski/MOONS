@@ -61,12 +61,12 @@
 #endif
        end subroutine
 
-       subroutine apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
+       subroutine apply_Neumann_C(ug,ui,bvals,dh_nhat,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
          real(cp),dimension(x,y),intent(in) :: ui,bvals
-         real(cp),intent(in) :: dh,nhat
+         real(cp),intent(in) :: dh_nhat
          integer :: i,j
 
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
@@ -74,26 +74,26 @@
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ui(i,j) + nhat*bvals(i,j)*dh
+         ug(i,j) = ui(i,j) + bvals(i,j)*dh_nhat
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO
 
 #endif
        end subroutine
-       subroutine apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
+       subroutine apply_Neumann_N(ug,ui,bvals,dh_nhat,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
          real(cp),dimension(x,y),intent(in) :: ui,bvals
-         real(cp),intent(in) :: dh,nhat
+         real(cp),intent(in) :: dh_nhat
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ui(i,j) + 2.0_cp*bvals(i,j)*dh*nhat
+         ug(i,j) = ui(i,j) + 2.0_cp*bvals(i,j)*dh_nhat
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO
@@ -212,40 +212,40 @@
 #endif
        end subroutine
 
-       subroutine apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
+       subroutine apply_Robin_C(ug,ui,bvals,dh_nhat,x,y,p)
          ! u + c du/dh = 0
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
          real(cp),dimension(x,y),intent(in) :: ui,bvals ! c = bvals
-         real(cp),intent(in) :: dh,nhat
+         real(cp),intent(in) :: dh_nhat
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ui(i,j)*(2.0_cp*bvals(i,j)/dh*nhat-1.0_cp)/(2.0_cp*bvals(i,j)/dh*nhat+1.0_cp)
+         ug(i,j) = ui(i,j)*(2.0_cp*bvals(i,j)/dh_nhat-1.0_cp)/(2.0_cp*bvals(i,j)/dh_nhat+1.0_cp)
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO
 
 #endif
        end subroutine
-       subroutine apply_Robin_N(ug,ui,ub,bvals,dh,nhat,x,y,p)
+       subroutine apply_Robin_N(ug,ui,ub,bvals,dh_nhat,x,y,p)
          ! u + c du/dh = 0
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
          real(cp),dimension(x,y),intent(in) :: ui,ub,bvals ! c = bvals
-         real(cp),intent(in) :: dh,nhat
+         real(cp),intent(in) :: dh_nhat
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ui(i,j) + ub(i,j)*(2.0_cp*dh/bvals(i,j)*nhat)
+         ug(i,j) = ui(i,j) + ub(i,j)*(2.0_cp*dh_nhat/bvals(i,j))
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO
