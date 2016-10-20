@@ -2,6 +2,7 @@
 # matlab crashes:
 *.log
 *.pdf
+*.dat
 *.out
 *.aux
 *.blg
