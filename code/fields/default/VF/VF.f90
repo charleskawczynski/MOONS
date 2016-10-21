@@ -43,6 +43,7 @@
         public :: random_noise
 
         public :: assign_ghost_XPeriodic
+        public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
 
@@ -118,6 +119,8 @@
 
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_VF; end interface
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_VF2;end interface
+        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_VF; end interface
+        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_VF2;end interface
         interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_VF;  end interface
         interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_VF2; end interface
         interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_VF;  end interface
@@ -927,6 +930,24 @@
           call assign_ghost_XPeriodic(A%x,val,A_with_BCs%x)
           call assign_ghost_XPeriodic(A%y,val,A_with_BCs%y)
           call assign_ghost_XPeriodic(A%z,val,A_with_BCs%z)
+        end subroutine
+
+        subroutine assign_ghost_N_XPeriodic_VF(A,val)
+          implicit none
+          type(VF),intent(inout) :: A
+          real(cp),intent(in) :: val
+          call assign_ghost_N_XPeriodic(A%x,val)
+          call assign_ghost_N_XPeriodic(A%y,val)
+          call assign_ghost_N_XPeriodic(A%z,val)
+        end subroutine
+        subroutine assign_ghost_N_XPeriodic_VF2(A,val,A_with_BCs)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: A_with_BCs
+          real(cp),intent(in) :: val
+          call assign_ghost_N_XPeriodic(A%x,val,A_with_BCs%x)
+          call assign_ghost_N_XPeriodic(A%y,val,A_with_BCs%y)
+          call assign_ghost_N_XPeriodic(A%z,val,A_with_BCs%z)
         end subroutine
 
         subroutine assign_wall_Dirichlet_VF(A,val)

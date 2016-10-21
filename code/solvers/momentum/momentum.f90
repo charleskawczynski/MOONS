@@ -413,7 +413,6 @@
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
-         ! call assign(mom%Unm1,mom%U) ! If Unm1 is needed
 
          select case(mom%SP%solveUMethod)
          case (1)
@@ -425,6 +424,7 @@
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
 
          case (3)
+           call assign(mom%Unm1,mom%U) ! If Unm1 is needed
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%TMP%dt,mom%Ustar,&
            mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)

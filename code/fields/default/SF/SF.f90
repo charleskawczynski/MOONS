@@ -38,6 +38,7 @@
         public :: C0_N1_tensor
 
         public :: assign_ghost_XPeriodic
+        public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
 
@@ -125,6 +126,8 @@
 
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF; end interface
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF2;end interface
+        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF; end interface
+        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF2;end interface
         interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_SF;  end interface
         interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_SF2; end interface
         interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_SF;  end interface
@@ -688,6 +691,22 @@
           type(SF),intent(in) :: u_with_BCs
           integer :: i
           do i=1,u%s; call assign_ghost_XPeriodic(u%BF(i),val,u_with_BCs%BF(i)); enddo
+        end subroutine
+
+        subroutine assign_ghost_N_XPeriodic_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call assign_ghost_N_XPeriodic(u%BF(i),val); enddo
+        end subroutine
+        subroutine assign_ghost_N_XPeriodic_SF2(u,val,u_with_BCs)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          type(SF),intent(in) :: u_with_BCs
+          integer :: i
+          do i=1,u%s; call assign_ghost_N_XPeriodic(u%BF(i),val,u_with_BCs%BF(i)); enddo
         end subroutine
 
         subroutine assign_wall_Dirichlet_SF(u,val)

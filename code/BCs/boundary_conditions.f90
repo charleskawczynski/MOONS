@@ -400,14 +400,22 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Periodic(BC%face,face)
-         if (CC_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_C,face)
-         if ( N_along(BC%DL,dir)) call add(BC%PA_face_BCs,Periodic_N,face)
+         if (CC_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Periodic_C,face)
+         endif
+         if ( N_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Periodic_N,face)
+         endif
 
          if (CC_along(BC%DL,dir)) then
+           call remove(BC%PA_face_implicit_BCs,face)
            call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir)) then
-           ! 
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Periodic_N_implicit,face)
          endif
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)

@@ -240,7 +240,11 @@
 
          call init_Node(e,m)
          do t = 1,e%s
+#ifdef _PARALLELIZE_RICHARDSONEXTRAPOLATION_
            !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
+
+#endif
+
            do k=2,e%BF(t)%GF%s(3)-1
              k1 = 2 + (k-2)*r1(3); k2 = 2 + (k-2)*r2(3)
              do j=2,e%BF(t)%GF%s(2)-1
@@ -249,7 +253,10 @@
                i1 = 2 + (i-2)*r1(1); i2 = 2 + (i-2)*r2(1)
              e%BF(t)%GF%f(i,j,k) = f2%BF(t)%GF%f(i2,j2,k2) - f1%BF(t)%GF%f(i1,j1,k1)
            enddo;enddo;enddo
+#ifdef _PARALLELIZE_RICHARDSONEXTRAPOLATION_
            !$OMP END PARALLEL DO
+
+#endif
          enddo
          call zeroGhostPoints(e)
          if (plotTF) call export_3D_1C(m,e,dir,'MG_Error_'//name,0)

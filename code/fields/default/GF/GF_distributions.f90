@@ -30,75 +30,123 @@
           integer :: i,j,k
           call assign(u,0.0_cp)
           if (is_CC(DL)) then
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhn(i)*&
                            g%c(2)%dhn(j)*&
                            g%c(3)%dhn(k)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           elseif (is_Node(DL)) then
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhc(i-1)*&
                            g%c(2)%dhc(j-1)*&
                            g%c(3)%dhc(k-1)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           elseif (is_Face(DL)) then
           select case (DL%face)
           case (1);
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhc(i-1)*&
                            g%c(2)%dhn(j)*&
                            g%c(3)%dhn(k)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           case (2);
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhn(i)*&
                            g%c(2)%dhc(j-1)*&
                            g%c(3)%dhn(k)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           case (3);
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhn(i)*&
                            g%c(2)%dhn(j)*&
                            g%c(3)%dhc(k-1)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           case default; stop 'Error: bad face location in volume_GF in GF_distributions.f90'
           end select
           elseif (is_Edge(DL)) then
           select case (DL%edge)
           case (1);
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhn(i)*&
                            g%c(2)%dhc(j-1)*&
                            g%c(3)%dhc(k-1)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           case (2);
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhc(i-1)*&
                            g%c(2)%dhn(j)*&
                            g%c(3)%dhc(k-1)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           case (3);
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
+
+#endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
               u%f(i,j,k) = g%c(1)%dhc(i-1)*&
                            g%c(2)%dhc(j-1)*&
                            g%c(3)%dhn(k)
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
           case default; stop 'Error: bad edge location in volume_GF in GF_distributions.f90'
           end select
           else; stop 'Error: bad location in volume_GF in GF_distributions.f90'
@@ -113,75 +161,123 @@
           type(data_location),intent(in) :: DL
           integer :: i,j,k
           if (is_CC(DL)) then
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           elseif (is_Node(DL)) then
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           elseif (is_Face(DL)) then
           select case (DL%face)
           case (1)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hc(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hc(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (2)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hc(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hc(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (3)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hc(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hc(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case default; stop 'Error: face must = 1,2,3 in sine_waves_GF in GF_distributions.f90'
           end select
           elseif (is_Edge(DL)) then
           select case (DL%edge)
           case (1)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hc(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (2)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hc(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (3)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
               f%f(i,j,k) = sin(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                            sin(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                            sin(wavenum(3)*PI*(g%c(3)%hc(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case default; stop 'Error: face must = 1,2,3 in sine_waves_GF in GF_distributions.f90'
           end select
           else; stop 'Error: bad input to sine_waves_GF in GF_distributions.f90'
@@ -196,75 +292,123 @@
           type(data_location),intent(in) :: DL
           integer :: i,j,k
           if (is_CC(DL)) then
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           elseif (is_Node(DL)) then
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           elseif (is_Face(DL)) then
           select case (DL%face)
           case (1)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hc(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hc(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (2)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hc(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hc(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (3)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hc(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hc(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case default; stop 'Error: face must = 1,2,3 in cosineWaves_GF in GF_distributions.f90'
           end select
           elseif (is_Edge(DL)) then
           select case (DL%edge)
           case (1)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hc(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (2)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hc(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hn(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case (3)
-            !$OMP PARALLEL DO
+#ifdef _PARALLELIZE_GF_
+            !$OMP PARALLEL DO SHARED(g)
+
+#endif
             do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
             f%f(i,j,k) = cos(wavenum(1)*PI*(g%c(1)%hn(i) - phi(1)))*&
                          cos(wavenum(2)*PI*(g%c(2)%hn(j) - phi(2)))*&
                          cos(wavenum(3)*PI*(g%c(3)%hc(k) - phi(3)))
             enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
             !$OMP END PARALLEL DO
+
+#endif
           case default; stop 'Error: face must = 1,2,3 in cosineWaves_GF in GF_distributions.f90'
           end select
           else; stop 'Error: bad input to cosineWaves_GF in GF_distributions.f90'
@@ -276,12 +420,18 @@
           type(grid_field),intent(inout) :: f
           integer :: i,j,k
           real(cp) :: r
+#ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO PRIVATE(r)
+
+#endif
           do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
           call random_number(r)
           f%f(i,j,k) = r
           enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
+
+#endif
         end subroutine
 
       end module

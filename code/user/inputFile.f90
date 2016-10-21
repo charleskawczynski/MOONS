@@ -25,7 +25,7 @@
          logical,intent(inout) :: finite_Rem,include_vacuum
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
-         Re         = 100.0_cp
+         Re         = 400.0_cp
          Ha         = 10.0_cp
          Rem        = 1.0_cp
          tw = 0.5_cp
@@ -51,9 +51,11 @@
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
-         time  = 30.0_cp
+         ! time  = 30.0_cp
+         time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
-         dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
+         ! dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
+         dtime = 2.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
 
          ! dtime = 1.0_cp*10.0_cp**(-5.0_cp)*Rem*sig_local_over_sig_f ! Explicit time marching estimate
 

@@ -100,7 +100,7 @@
              call print(sc)
              call export(sc,coupled%t)
              if (SP%solveMomentum) then
-               call import(mom%ISP_U) !; call init(mom%PCG_U%ISP,mom%ISP_U)
+               call import(mom%ISP_U); call init(mom%PCG_U%ISP,mom%ISP_U)
                call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
              endif
              if (SP%solveInduction) then

@@ -6,7 +6,6 @@
       use ops_discrete_mod
       use ops_aux_mod
       use boundary_conditions_mod
-      use PCG_aux_mod
       use export_raw_processed_mod
       use is_nan_mod
       use SF_mod
@@ -53,10 +52,13 @@
         call multiply(r,b,vol)
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! RHS MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        if (.not.x%is_CC) call modify_forcing1(r,m,x)
+        if (.not.x%is_CC) then
+          call assign_wall_Dirichlet(r,0.0_cp,x)
+          call multiply_wall_Neumann(r,0.5_cp,x)
+        endif
         call assign(p,0.0_cp)
         call apply_BCs(p,m) ! p has BCs for x
-        call zeroGhostPoints_conditional(p,m)
+        call assign_ghost_N_XPeriodic(p,0.0_cp)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
         call zeroWall_conditional(Ax,m,x) ! Does nothing in PPE
@@ -85,7 +87,7 @@
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
-            call zeroGhostPoints_conditional(p,m)
+            call assign_ghost_N_XPeriodic(p,0.0_cp)
             call add_product(x,p,alpha) ! x = x + alpha p
             call apply_BCs(x,m) ! Needed for PPE
             N_iter = N_iter + 1
@@ -125,7 +127,7 @@
             if (x%all_Neumann) call subtract_physical_mean(r)
             call subtract(r,Ax)
             call zeroWall_conditional(r,m,x) ! Does nothing in PPE
-            call zeroGhostPoints_conditional(r,m)
+            call assign_ghost_N_XPeriodic(r,0.0_cp,x)
             call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
             write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                               norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit
@@ -166,10 +168,13 @@
         call multiply(r,b,vol)
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        call modify_forcing1(r,m,x)
+        if (.not.x%is_CC) then
+          call assign_wall_Dirichlet(r,0.0_cp,x)
+          call multiply_wall_Neumann(r,0.5_cp,x)
+        endif
         call assign(p,0.0_cp)
         call apply_BCs(p,m) ! p has BCs for x
-        call zeroGhostPoints_conditional(p,m)
+        call assign_ghost_N_XPeriodic(p,0.0_cp)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
         call zeroWall_conditional(Ax,m,x)
@@ -196,7 +201,7 @@
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
-            call zeroGhostPoints_conditional(p,m)
+            call assign_ghost_N_XPeriodic(p,0.0_cp)
             call add_product(x,p,alpha) ! x = x + alpha p
             call apply_BCs(x,m) ! Needed for PPE
             N_iter = N_iter + 1
@@ -235,7 +240,7 @@
             ! if (x%all_Neumann) call subtract_physical_mean(r)
             call subtract(r,Ax)
             call zeroWall_conditional(r,m,x)
-            call zeroGhostPoints_conditional(r,m)
+            call assign_ghost_N_XPeriodic(r,0.0_cp,x)
             call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
             write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
                                               norm_res0%L1,norm_res0%L2,norm_res0%Linf,i-1+i_earlyExit

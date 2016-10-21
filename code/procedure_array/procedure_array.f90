@@ -145,12 +145,14 @@
          type(procedure_array) :: temp
          integer :: i
          if (PA%defined) then
-           call init(temp,PA)
-           call init(PA,temp%N+1)
-           do i=1,temp%N; call init(PA%SP(i),temp%SP(i)); enddo
-           i = PA%N
-           call init(PA%SP(i),P,ID)
-           call delete(temp)
+           if (.not.in_set_array((/(PA%SP(i)%ID,i=1,PA%N)/),ID,PA%N,'add_PA')) then
+             call init(temp,PA)
+             call init(PA,temp%N+1)
+             do i=1,temp%N; call init(PA%SP(i),temp%SP(i)); enddo
+             i = PA%N
+             call init(PA%SP(i),P,ID)
+             call delete(temp)
+           endif
          else
            call init(PA,1)
            call init(PA%SP(1),P,ID)
@@ -198,8 +200,9 @@
          endif
          enddo; enddo
          if (.not.unique_set) then
-           write(*,*) 'Error: too many BCs in procedure_array in ',caller,'in procedure_array.f90'
+           write(*,*) 'Error: too many BCs in procedure_array in ',caller,' in procedure_array.f90'
            write(*,*) 'violating_ID = ',violating_ID
+           call print(PA)
            stop 'Done'
          endif
        end subroutine
@@ -209,22 +212,46 @@
          integer,intent(in) :: N
          integer,dimension(N),intent(in) :: a
          character(len=*),intent(in) :: caller
-         integer,dimension(N) :: i_order
-         logical,dimension(N) :: L
-         integer :: i,j,s
-         s = size(a)
-         if ((N.lt.1).or.(s.ne.N)) then
-           write(*,*) 'Error: bad array size in ',caller,' in procedure_array.f90'; stop 'Done'
-         endif
-         i_order = (/(i,i=1,N)/)
-         do i=1,N; L(i) = any((/(a(j).eq.i_order(i),j=1,N)/)); enddo
-         if (.not.all(L)) then
+         if (.not.unique_array(a,N,caller)) then
            write(*,*) 'Error: non-unique array in ',caller,' in procedure_array.f90'
            write(*,*) 'N = ',N
            write(*,*) 'a = ',a
            stop 'Done'
          endif
        end subroutine
+
+       function unique_array(a,N,caller) result(L_all)
+         implicit none
+         integer,intent(in) :: N
+         integer,dimension(N),intent(in) :: a
+         character(len=*),intent(in) :: caller
+         logical,dimension(N) :: match
+         logical :: L_all
+         integer :: i,j
+         if ((N.lt.1).or.(size(a).ne.N)) then
+           write(*,*) 'Error: bad array size in ',caller,' in procedure_array.f90'; stop 'Done'
+         endif
+         match = .false.
+         do i=1,N;do j=1,N
+         if (i.ne.j) match(i) = a(j).eq.a(i)
+         enddo; enddo
+         L_all = .not.any(match)
+       end function
+
+       function in_set_array(a,i,N,caller) result(L_any)
+         implicit none
+         integer,intent(in) :: N,i
+         integer,dimension(N),intent(in) :: a
+         character(len=*),intent(in) :: caller
+         logical,dimension(N) :: L
+         logical :: L_any
+         integer :: j
+         if ((N.lt.1).or.(size(a).ne.N)) then
+           write(*,*) 'Error: bad array size in ',caller,' in procedure_array.f90'; stop 'Done'
+         endif
+         do j=1,N; L(j) = a(j).eq.i; enddo
+         L_any = any(L)
+       end function
 
        subroutine sort_PA(PA,order,N)
          implicit none
@@ -233,17 +260,18 @@
          integer,dimension(N),intent(in) :: order
          type(procedure_array) :: temp
          integer :: i,j
-         if ((PA%N.ne.N).or.(size(PA%SP).ne.N)) then
-           stop 'Error: bad array size in sort_PA in procedure_array.f90'
+         if (PA%N.lt.1) then
+           call delete(PA)
+         else
+           call check_unique(PA,'sort_PA')
+           call check_unique_array(order,N,'sort_PA')
+           call init(temp,PA)
+           call delete(PA)
+           do i=1,N; do j=1,temp%N
+             if (temp%SP(j)%ID.eq.order(i)) call add(PA,temp%SP(j))
+           enddo; enddo
+           call delete(temp)
          endif
-         call check_unique(PA,'sort_PA')
-         call check_unique_array(order,N,'sort_PA')
-         call init(temp,PA)
-         call delete(PA)
-         do i=1,N; do j=1,N
-           if (temp%SP(j)%ID.eq.order(i)) call add(PA,temp%SP(j))
-         enddo; enddo
-         call delete(temp)
        end subroutine
 
        subroutine insist_defined_PA(PA,caller)

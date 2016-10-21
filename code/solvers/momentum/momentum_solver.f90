@@ -75,7 +75,7 @@
          call zeroGhostPoints(temp_CC)
          call solve(PPE_PCG,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
-         call subtract(temp_F%x,1.0_cp) ! mpg
+         ! call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
          call subtract(U,temp_F) ! U = Ustar - grad(p)
          call apply_BCs(U,m)

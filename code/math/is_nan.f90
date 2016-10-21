@@ -23,4 +23,16 @@
        end function
 #endif
 
+      ! subroutine check_nans_nans(f,caller)
+      !   implicit none
+      !   real(cp),intent(in) :: f
+      !   character(len=*),intent(in) :: caller
+      !   if (is_nan(f)) then
+      !     write(*,*) 'Error: NaN in ',caller,' in nan.f90'
+      !     write(*,*) 'f = ',f
+      !     stop 'Done'
+      !   endif
+      ! end subroutine
+
+
        end module
