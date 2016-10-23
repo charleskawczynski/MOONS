@@ -1,4 +1,5 @@
        module data_location_mod
+       ! Compiler flags: (_DEBUG_DATA_LOCATION_)
        implicit none
 
        private
@@ -174,7 +175,9 @@
          implicit none
          type(data_location),intent(in) :: DL
          logical :: L
+#ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'is_CC_DL')
+#endif
          L = DL%C
        end function
 
@@ -182,7 +185,9 @@
          implicit none
          type(data_location),intent(in) :: DL
          logical :: L
+#ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'is_Node_DL')
+#endif
          L = DL%N
        end function
 
@@ -190,7 +195,9 @@
          implicit none
          type(data_location),intent(in) :: DL
          logical :: L
+#ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'is_Edge_DL')
+#endif
          L = DL%E
        end function
 
@@ -198,7 +205,9 @@
          implicit none
          type(data_location),intent(in) :: DL
          logical :: L
+#ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'is_Face_DL')
+#endif
          L = DL%F
        end function
 
@@ -207,7 +216,10 @@
          type(data_location),intent(in) :: DL
          integer,intent(in) :: dir
          logical :: L
+#ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'CC_along_DL')
+         call insist_valid_dir(DL,dir,'init_Edge_DL')
+#endif
          L = DL%CC_along(dir)
        end function
 
@@ -216,7 +228,10 @@
          type(data_location),intent(in) :: DL
          integer,intent(in) :: dir
          logical :: L
+#ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'N_along_DL')
+         call insist_valid_dir(DL,dir,'init_Edge_DL')
+#endif
          L = DL%N_along(dir)
        end function
 

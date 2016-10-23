@@ -86,7 +86,6 @@
        interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
 
        public :: zeroWall
-       interface zeroWall;                module procedure zeroWall_GF;               end interface
        interface zeroWall;                module procedure zeroWall_SF;               end interface
        interface zeroWall;                module procedure zeroWall_VF;               end interface
         
@@ -95,11 +94,6 @@
        interface zeroWall_conditional;    module procedure zeroWall_conditional_VF;   end interface
        interface zeroWall_conditional;    module procedure zeroWall_conditional_SF2;  end interface
        interface zeroWall_conditional;    module procedure zeroWall_conditional_VF2;  end interface
-
-       public :: zeroInterior
-       interface zeroInterior;            module procedure zeroInterior_GF;           end interface
-       interface zeroInterior;            module procedure zeroInterior_VF;           end interface
-       interface zeroInterior;            module procedure zeroInterior_SF;           end interface
 
        public :: treatInterface
        interface treatInterface;          module procedure treatInterface_GF;         end interface
@@ -268,35 +262,6 @@
          meanU = sum(u,1)/real(u%numPhysEl,cp)
        end function
 
-       subroutine zeroWall_GF(f,s,face)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: face
-         select case (face)
-         case (1); f(2,:,:) = 0.0_cp
-         case (3); f(:,2,:) = 0.0_cp
-         case (5); f(:,:,2) = 0.0_cp
-         case (2); f(s(1)-1,:,:) = 0.0_cp
-         case (4); f(:,s(2)-1,:) = 0.0_cp
-         case (6); f(:,:,s(3)-1) = 0.0_cp
-         case default; stop 'Error: face must = 1:6 in zeroWall_GF in ops_aux.f90'
-         end select
-       end subroutine
-
-       subroutine zeroInterior_GF(f,s,px,py,pz)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: s
-         integer,intent(in) :: px,py,pz
-         integer :: i,j,k
-         ! $OMP PARALLEL DO
-         do k=2+pz,s(3)-1-pz; do j=2+py,s(2)-1-py; do i=2+px,s(1)-1-px
-         f(i,j,k) = 0.0_cp
-         enddo; enddo; enddo
-         ! $OMP END PARALLEL DO
-       end subroutine
-
        subroutine treatInterface_GF(f,s,take_high_value)
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
@@ -327,6 +292,7 @@
         real(cp) :: dot
         call multiply(temp,A,B)
         call zeroWall_conditional(temp,m,x)
+        call assign_wall_Dirichlet(temp,0.0_cp,x)
         dot = sum(temp%x,1) + sum(temp%y,1) + sum(temp%z,1)
       end function
 
@@ -471,33 +437,7 @@
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
-         ! logical :: L
-         ! integer :: i
          call assign_wall_Dirichlet(f,0.0_cp)
-         ! if (f%N_along(1)) then
-         !   do i=1,m%s
-         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(1)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(2)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
-         !   enddo
-         ! endif
-         ! if (f%N_along(2)) then
-         !   do i=1,m%s
-         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(3)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(4)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
-         !   enddo
-         ! endif
-         ! if (f%N_along(3)) then
-         !   do i=1,m%s
-         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(5)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-         !     L = (.not.is_Neumann(f%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(f%BF(i)%BCs%face%bct(6)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
-         !   enddo
-         ! endif
        end subroutine
 
        subroutine zeroWall_conditional_SF2(f,m,u)
@@ -507,41 +447,7 @@
          type(SF),intent(inout) :: f
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
-         logical :: L
-         integer :: i
          call assign_wall_Dirichlet(f,0.0_cp,u)
-         ! if (f%N_along(1)) then
-         !   do i=1,m%s
-         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(1))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(1)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,1)
-         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(2))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(2)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,2)
-         !   enddo
-         ! endif
-         ! if (f%N_along(2)) then
-         !   do i=1,m%s
-         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(3))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(3)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,3)
-         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(4))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(4)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,4)
-         !   enddo
-         ! endif
-         ! if (f%N_along(3)) then
-         !   do i=1,m%s
-         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(5))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(5)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,5)
-         !     L = (.not.is_Neumann(u%BF(i)%BCs%face%bct(6))).and.(.not.is_periodic(u%BF(i)%BCs%face%bct(6)))
-         !     if (L) call zeroWall(f%BF(i)%GF%f,f%BF(i)%GF%s,6)
-         !   enddo
-         ! endif
-       end subroutine
-
-       subroutine zeroInterior_SF(f)
-         implicit none
-         type(SF),intent(inout) :: f
-         integer :: i,x,y,z
-         call C0_N1_tensor(f,x,y,z)
-         do i=1,f%s; call zeroInterior(f%BF(i)%GF%f,f%BF(i)%GF%s,x,y,z); enddo
        end subroutine
 
        subroutine treatInterface_SF(f,take_high_value)
@@ -687,14 +593,6 @@
          call zeroGhostPoints(f%x)
          call zeroGhostPoints(f%y)
          call zeroGhostPoints(f%z)
-       end subroutine
-
-       subroutine zeroInterior_VF(f)
-         implicit none
-         type(VF),intent(inout) :: f
-         call zeroInterior(f%x)
-         call zeroInterior(f%y)
-         call zeroInterior(f%z)
        end subroutine
 
        subroutine treatInterface_VF(f,take_high_value)

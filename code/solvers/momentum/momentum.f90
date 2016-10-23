@@ -194,7 +194,7 @@
          call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
          write(*,*) '     Field initialized'
          
-         call export_mesh(mom%MB%m,str(DT%meshes),'mesh_block',0)
+         ! call export_mesh(mom%MB%m,str(DT%meshes),'mesh_block',0)
          write(*,*) '     about to apply p BCs'
          call apply_BCs(mom%p,m)
          write(*,*) '     P BCs applied'

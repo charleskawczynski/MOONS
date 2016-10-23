@@ -25,7 +25,8 @@
          logical,intent(inout) :: finite_Rem,include_vacuum
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
-         Re         = 400.0_cp
+         ! Re         = 100.0_cp
+         Re         = 10.0_cp
          Ha         = 10.0_cp
          Rem        = 1.0_cp
          tw = 0.5_cp
@@ -47,7 +48,7 @@
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
          call init(ISP_B  ,   5  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
          call init(ISP_U  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
-         call init(ISP_p  ,   5  , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
+         call init(ISP_p  ,  100 , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
@@ -55,7 +56,8 @@
          time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
-         dtime = 2.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
+         dtime = 5.0_cp*10.0_cp**(-6.0_cp) ! Implicit time marching
+         ! dtime = get_dt_NME(21)
 
          ! dtime = 1.0_cp*10.0_cp**(-5.0_cp)*Rem*sig_local_over_sig_f ! Explicit time marching estimate
 
@@ -101,49 +103,45 @@
          if (.not.SP%restartT) call export(ISP_T)
        end subroutine
 
-!          Re         = 400.0_cp
-!          Ha         = 100.0_cp
-!          Rem        = 1.0_cp
-!          tw = 0.5_cp
-!          dt_eng     = 1.0_cp*10.0_cp**(-4.0_cp)
-!          dt_mom     = 1.0_cp*10.0_cp**(-4.0_cp)
-!          dt_ind     = 1.0_cp*10.0_cp**(-4.0_cp)
-!          include_vacuum = .true.
-!          N_ind         = 100      ! Number of iterations to solve induction equation (if iterative solver is used)
-!          N_PPE         = 5        ! Number of iterations to solve PPE steps
-!          N_cleanB      = 5        ! Number of iterations to solve Poisson equation to clean B
-!          tol_ind       = 10.0_cp**(-6.0_cp)
-!          tol_PPE       = 10.0_cp**(-10.0_cp)
-!          tol_cleanB    = 10.0_cp**(-10.0_cp)
-
-!          ! sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
-!          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
-!          sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
-!          ! sig_local_over_sig_f = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
-!          ! sig_local_over_sig_f = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
-!          ! sig_local_over_sig_f = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
-
-!          Gr         = 10.0_cp**(8.0_cp)
-!          Pr         = 0.01_cp
-!          Fr         = 1.0_cp
-!          Ec         = 0.0_cp
-!          finite_Rem = .true.
-!          t          = 10.0_cp
-!          n_dt_start = 0
-!          n_dt_stop = ceiling(t/dt_mom)
-!          ! n_dt_stop       = 1000000000
-!          if (n_dt_stop.lt.1) stop 'Error: n_dt_stop<1 in inputFile.f90'
-!          N_nrg         = 10       ! Number of iterations to solve energy    equation (if iterative solver is used)
-!          N_mom         = 10       ! Number of iterations to solve momentum  equation (if iterative solver is used)
-!          ! Stopping criteria for iterative solvers:
-!          !         ||Ax - b||
-!          !         ----------- < tol
-!          !         ||Ax⁰ - b||
-!          ! NOTE: tol must be > 10^(-10)
-!          ! For the PPE, div(u) -> 0 as t-> infinity.
-!          ! Which means b and r⁰ -> 0 as t-> infinity.
-!          tol_nrg       = 10.0_cp**(-10.0_cp)
-!          tol_mom       = 10.0_cp**(-10.0_cp)
-
+       function get_dt_NME(NME) result(dtime)
+         implicit none
+         integer,intent(in) :: NME
+         real(cp) :: dtime
+         select case (NME)
+         case (1);  dtime = 5.0_cp*10.0_cp**(-5.0_cp) ! checked
+         case (2);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (3);  dtime = 5.0_cp*10.0_cp**(-5.0_cp)
+         case (4);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (5);  dtime = 5.0_cp*10.0_cp**(-5.0_cp)
+         case (6);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (7);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (8);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (9);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (10); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (11); dtime = 5.0_cp*10.0_cp**(-6.0_cp)
+         case (12); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (13); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (14); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (15); dtime = 5.0_cp*10.0_cp**(-6.0_cp)
+         case (16); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (17); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (18); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (19); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (20); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (21); dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! checked
+         case (22); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (23); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (24); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (25); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (26); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (27); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (28); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (29); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (30); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (31); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (32); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case default; stop 'Error: bad NME in inputFile.f90'
+         end select
+       end function
 
        end module

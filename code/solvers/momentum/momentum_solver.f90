@@ -64,12 +64,12 @@
          call add(Ustar,temp_F)
 
          call multiply(Ustar,dt)
+         call assign_wall_Dirichlet(Ustar,0.0_cp,U)
          call add(Ustar,U)
          call assign(Unm1,U)
 
          call solve(mom_PCG,U,Ustar,m,compute_norms) ! Solve for Ustar
 
-         call zeroWall_conditional(U,m)
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
          call zeroGhostPoints(temp_CC)

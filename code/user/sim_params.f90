@@ -3,12 +3,14 @@
 
      type sim_params
        logical :: restart_all
-       logical :: post_process_only
-       logical :: export_analytic
 
-       logical :: stopBeforeSolve
+       logical :: post_process_only ! depricated
+       logical :: stop_before_solve
+       logical :: post_process
+       logical :: skip_solver_loop
        logical :: stop_after_mesh_export
 
+       logical :: export_analytic
        logical :: export_meshes
        logical :: export_mat_props
        logical :: export_cell_volume
@@ -45,12 +47,14 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        SP%restart_all               = .false.     ! restart sim (requires no code changes)
-       SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
-       SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
 
-       SP%stopBeforeSolve           = .false.     ! Just export ICs, do not run simulation
+       SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
+       SP%post_process              = .false.     ! Skip solver loop and just post-process results
+       SP%skip_solver_loop          = .false.     ! Skip solver loop
+       SP%stop_before_solve           = .false.     ! Just export ICs, do not run simulation
        SP%stop_after_mesh_export    = .false.     ! 
 
+       SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
        SP%export_meshes             = .false.     ! Export all meshes before starting simulation
        SP%export_mat_props          = .false.     ! Export material properties before starting simulation
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
@@ -69,7 +73,7 @@
        SP%restartB0                 = .false.     ! restart B0 field
 
        SP%solveTMethod              = 5           ! Refer to energy.f90
-       SP%solveUMethod              = 3           ! Refer to momentum.f90
+       SP%solveUMethod              = 1           ! Refer to momentum.f90
        SP%solveBMethod              = 1           ! Refer to induction.f90
 
        SP%addJCrossB                = .false.      ! add JCrossB      to momentum equation
@@ -78,35 +82,37 @@
        SP%addGravity                = .false.     ! add Gravity      to momentum equation
       end subroutine
 
-     subroutine init_sim_params_copy(SP_out,SP_in)
+     subroutine init_sim_params_copy(SP,SP_in)
        implicit none
-       type(sim_params),intent(inout) :: SP_out
+       type(sim_params),intent(inout) :: SP
        type(sim_params),intent(in) :: SP_in
-       SP_out%restart_all = SP_in%restart_all
-       SP_out%stopBeforeSolve = SP_in%stopBeforeSolve
-       SP_out%stop_after_mesh_export = SP_in%stop_after_mesh_export
-       SP_out%post_process_only = SP_in%post_process_only
-       SP_out%export_meshes = SP_in%export_meshes
-       SP_out%export_mat_props = SP_in%export_mat_props
-       SP_out%export_ICs = SP_in%export_ICs
-       SP_out%export_planar = SP_in%export_planar
-       SP_out%export_cell_volume = SP_in%export_cell_volume
-       SP_out%export_analytic = SP_in%export_analytic
-       SP_out%coupled_time_step = SP_in%coupled_time_step
-       SP_out%solveEnergy = SP_in%solveEnergy
-       SP_out%solveMomentum = SP_in%solveMomentum
-       SP_out%solveInduction = SP_in%solveInduction
-       SP_out%solveTMethod = SP_in%solveTMethod
-       SP_out%solveUMethod = SP_in%solveUMethod
-       SP_out%solveBMethod = SP_in%solveBMethod
-       SP_out%addJCrossB = SP_in%addJCrossB
-       SP_out%addBuoyancy = SP_in%addBuoyancy
-       SP_out%addGravity = SP_in%addGravity
-       SP_out%add_Q2D_JCrossB = SP_in%add_Q2D_JCrossB
-       SP_out%restartT = SP_in%restartT
-       SP_out%restartU = SP_in%restartU
-       SP_out%restartB = SP_in%restartB
-       SP_out%restartB0 = SP_in%restartB0
+       SP%restart_all = SP_in%restart_all
+       SP%stop_before_solve = SP_in%stop_before_solve
+       SP%stop_after_mesh_export = SP_in%stop_after_mesh_export
+       SP%post_process = SP_in%post_process
+       SP%skip_solver_loop = SP_in%skip_solver_loop
+       SP%post_process_only = SP_in%post_process_only
+       SP%export_meshes = SP_in%export_meshes
+       SP%export_mat_props = SP_in%export_mat_props
+       SP%export_ICs = SP_in%export_ICs
+       SP%export_planar = SP_in%export_planar
+       SP%export_cell_volume = SP_in%export_cell_volume
+       SP%export_analytic = SP_in%export_analytic
+       SP%coupled_time_step = SP_in%coupled_time_step
+       SP%solveEnergy = SP_in%solveEnergy
+       SP%solveMomentum = SP_in%solveMomentum
+       SP%solveInduction = SP_in%solveInduction
+       SP%solveTMethod = SP_in%solveTMethod
+       SP%solveUMethod = SP_in%solveUMethod
+       SP%solveBMethod = SP_in%solveBMethod
+       SP%addJCrossB = SP_in%addJCrossB
+       SP%addBuoyancy = SP_in%addBuoyancy
+       SP%addGravity = SP_in%addGravity
+       SP%add_Q2D_JCrossB = SP_in%add_Q2D_JCrossB
+       SP%restartT = SP_in%restartT
+       SP%restartU = SP_in%restartU
+       SP%restartB = SP_in%restartB
+       SP%restartB0 = SP_in%restartB0
       end subroutine
 
      end module

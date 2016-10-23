@@ -126,6 +126,7 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
 # FC_DEBUG += -D_DEBUG_APPLY_STITCHES
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
+FC_DEBUG += -D_DEBUG_DATA_LOCATION_
 FC_DEBUG += -D_DEBUG_GF_
 FC_DEBUG += -D_DEBUG_SF_
 FC_DEBUG += -D_DEBUG_VF_
@@ -374,7 +375,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90\

@@ -211,19 +211,19 @@
            if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%bct(1)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_xmin,1)
            endif
-           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%bct(2)))) then
+           if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%bct(2)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_xmax,2)
            endif
-           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%bct(3)))) then
+           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%bct(3)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_ymin,3)
            endif
-           if (N_along(BF%DL,4).and.(is_Dirichlet(BF%BCs%face%bct(4)))) then
+           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%bct(4)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_ymax,4)
            endif
-           if (N_along(BF%DL,5).and.(is_Dirichlet(BF%BCs%face%bct(5)))) then
+           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%bct(5)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_zmin,5)
            endif
-           if (N_along(BF%DL,6).and.(is_Dirichlet(BF%BCs%face%bct(6)))) then
+           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%bct(6)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_zmax,6)
            endif
          else
@@ -249,15 +249,15 @@
          if (BF%BCs%BCL%defined) then
            if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%bct(1)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmin,1); endif
-           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%bct(2)))) then
+           if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%bct(2)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmax,2); endif
-           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%bct(3)))) then
+           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%bct(3)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_ymin,3); endif
-           if (N_along(BF%DL,4).and.(is_Neumann(BF%BCs%face%bct(4)))) then
+           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%bct(4)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_ymax,4); endif
-           if (N_along(BF%DL,5).and.(is_Neumann(BF%BCs%face%bct(5)))) then
+           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%bct(5)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_zmin,5); endif
-           if (N_along(BF%DL,6).and.(is_Neumann(BF%BCs%face%bct(6)))) then
+           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%bct(6)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_zmax,6); endif
          else
            if (N_along(BF%DL,1)) then; call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmin,1)
@@ -353,6 +353,9 @@
          implicit none
          type(block_field),intent(inout) :: BF
          call init_props(BF%BCs)
+         call set_assign_ghost_all_faces(BF)
+         call set_assign_wall_Dirichlet(BF)
+         call set_multiply_wall_Neumann(BF)
        end subroutine
 
        subroutine volume_BF(u,B,DL) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)

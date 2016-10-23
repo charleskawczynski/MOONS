@@ -61,7 +61,7 @@
         call assign_ghost_N_XPeriodic(p,0.0_cp)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
-        call zeroWall_conditional(Ax,m,x) ! Does nothing in PPE
+        call assign_wall_Dirichlet(Ax,0.0_cp,x) ! Does nothing in PPE
         call subtract(r,Ax)
         if (x%all_Neumann) call subtract_physical_mean(r)
         ! ----------------------------------------------------------
@@ -126,7 +126,7 @@
             call multiply(r,b,vol)
             if (x%all_Neumann) call subtract_physical_mean(r)
             call subtract(r,Ax)
-            call zeroWall_conditional(r,m,x) ! Does nothing in PPE
+            call assign_wall_Dirichlet(r,0.0_cp,x) ! Does nothing in PPE
             call assign_ghost_N_XPeriodic(r,0.0_cp,x)
             call compute(norm,r); call print(norm,'PCG_SF Residuals for '//name)
             write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&
@@ -177,7 +177,7 @@
         call assign_ghost_N_XPeriodic(p,0.0_cp)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call multiply(Ax,vol)
-        call zeroWall_conditional(Ax,m,x)
+        call assign_wall_Dirichlet(Ax,0.0_cp,x) ! Does nothing in PPE
         call subtract(r,Ax)
         ! ----------------------------------------------------------
 
@@ -239,7 +239,7 @@
             call multiply(r,b,vol)
             ! if (x%all_Neumann) call subtract_physical_mean(r)
             call subtract(r,Ax)
-            call zeroWall_conditional(r,m,x)
+            call assign_wall_Dirichlet(r,0.0_cp,x)
             call assign_ghost_N_XPeriodic(r,0.0_cp,x)
             call compute(norm,r); call print(norm,'PCG_VF Residuals for '//name)
             write(un,*) N_iter,sqrt(res_norm)/norm_res0%L2,norm%L1,norm%L2,norm%Linf,&

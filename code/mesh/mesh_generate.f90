@@ -33,14 +33,19 @@
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! non-uniform no walls
-         call cube(m_mom)
-         call init(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
+         ! call cube(m_mom)
+         ! call init(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
 
          ! non-uniform with walls
          ! call cube(m_mom)
          ! call extend_cube(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
+
+         ! Simple 2D straight duct
+         call straight_duct_fluid(m_mom)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
 
          ! call flow_past_square(m_mom)
          ! call flow_past_square(m_ind)
@@ -56,9 +61,6 @@
 
          ! call matrix_export_mesh(m_mom)
 
-         ! call straight_duct_fluid(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(MD_sigma,m_mom,m_ind)
 
          ! call ins_sep_channel_Tyler(m_mom)
          ! call ins_sep_channel_Tyler(m_mom)

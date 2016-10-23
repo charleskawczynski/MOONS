@@ -352,10 +352,21 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \section{Code changes to make}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item in sim params, change post-process only to skip solver loop and include a "post process" logical
 \item add restart to PE, and use this to separate tec export and restart export
 \item make "array" class and use it in coordinates and triDiag (maybe)
 \item delete more matlab scripts / convert to python
+\end{itemize}
+
+\section{Before starting next NME simulations}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Need to checkout a lot of old files on workstation.
+\item I introduced the "outside" parallelization, which still has a datarace.
+\item However, the new geometry was introduced since the last commit, and the grid\_extend, which is needed in the new geometry.
+\item Look for any other things that are needed, and checkout what is necessary to return to a safe version.
+\item Once ready, start new NME on workstation
+\item Then start writing new paper, this will likely take as long as the sims themselves if all run in parallel (only 8)
+\item Start new sims and continue with current version on my PC.
 \end{itemize}
 
 \end{document}

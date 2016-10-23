@@ -125,8 +125,8 @@
          call print(mesh_ind)
 
          ! ******************** PREP TIME START/STOP ********************
-         if (SP%stopBeforeSolve) then
-           stop 'Exported ICs. Turn off stopBeforeSolve in sim_params.f90 to run sim.'
+         if (SP%stop_before_solve) then
+           stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
          if (.not.SP%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,coupled)
 
