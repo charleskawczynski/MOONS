@@ -57,7 +57,7 @@
         public :: add,subtract
         public :: multiply,divide
         public :: invert
-        public :: add_product,swap
+        public :: add_product,product_add,swap
         ! Auxiliary
         public :: square,min,max,amin,amax
         public :: amax_diff,mean,sum,abs,insist_amax_lt_tol
@@ -168,6 +168,8 @@
 
         interface add_product;         module procedure add_product_SF_SF_S;    end interface
         interface add_product;         module procedure add_product_SF_SF_SF;   end interface
+        interface product_add;         module procedure product_add_SF_SF_S;    end interface
+        interface product_add;         module procedure product_add_SF_SF_SF;   end interface
 
         interface multiply;            module procedure multiply_SF_SF;         end interface
         interface multiply;            module procedure multiply_SF_SF_SF;      end interface
@@ -1035,6 +1037,24 @@
           type(SF),intent(in) :: r
           integer :: i
           do i=1,f%s; call add_product(f%BF(i)%GF,g%BF(i)%GF,r%BF(i)%GF); enddo
+        end subroutine
+
+        subroutine product_add_SF_SF_S(f,r,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          real(cp),intent(in) :: r
+          type(SF),intent(in) :: g
+          integer :: i
+          do i=1,f%s; call product_add(f%BF(i)%GF,r,g%BF(i)%GF); enddo
+        end subroutine
+
+        subroutine product_add_SF_SF_SF(f,r,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(SF),intent(in) :: r
+          type(SF),intent(in) :: g
+          integer :: i
+          do i=1,f%s; call product_add(f%BF(i)%GF,r%BF(i)%GF,g%BF(i)%GF); enddo
         end subroutine
 
       ! ------------------- SUBTRACT ------------------------

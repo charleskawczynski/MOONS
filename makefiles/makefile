@@ -277,6 +277,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_subtract.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_divide.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_add_product.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_product_add.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_cross_product.f90\

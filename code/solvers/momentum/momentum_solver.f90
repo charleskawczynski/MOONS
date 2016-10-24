@@ -57,6 +57,7 @@
          call multiply(Ustar,-1.0_cp) ! Because advect_div gives positive
 
          call lap(temp_F,U,m)
+         ! call lap_centered(temp_F,U,m)
          call multiply(temp_F,0.5_cp/Re)
          call add(Ustar,temp_F)
 

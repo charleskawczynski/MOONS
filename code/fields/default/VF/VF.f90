@@ -63,6 +63,7 @@
         public :: add,subtract
         public :: multiply,divide
         public :: add_product
+        public :: product_add
         public :: square,invert,abs,insist_amax_lt_tol
         public :: mean,max,amin,amax
         ! public :: sum
@@ -158,6 +159,7 @@
         interface add;               module procedure add_S_VF;                 end interface
 
         interface add_product;       module procedure add_product_VF_VF_S;      end interface
+        interface product_add;       module procedure product_add_VF_VF_S;      end interface
 
         interface subtract;          module procedure subtract_VF_VF;           end interface
         interface subtract;          module procedure subtract_VF_VF_VF;        end interface
@@ -633,7 +635,18 @@
           type(VF),intent(inout) :: f
           type(VF),intent(in) :: g
           real(cp),intent(in) :: r
-          call add_product(f%x,g%x,r); call add_product(f%y,g%y,r); call add_product(f%z,g%z,r)
+          call add_product(f%x,g%x,r)
+          call add_product(f%y,g%y,r)
+          call add_product(f%z,g%z,r)
+        end subroutine
+        subroutine product_add_VF_VF_S(f,r,g)
+          implicit none
+          type(VF),intent(inout) :: f
+          real(cp),intent(in) :: r
+          type(VF),intent(in) :: g
+          call product_add(f%x,r,g%x)
+          call product_add(f%y,r,g%y)
+          call product_add(f%z,r,g%z)
         end subroutine
 
       ! ------------------- SUBTRACT ------------------------

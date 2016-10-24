@@ -124,7 +124,6 @@
         suppress_warning = tempk%is_CC
         call lap_centered(Ax,x,m) ! Involves dynamic allocations
         ! call lap(Ax,x,m)
-        call zeroGhostPoints(Ax)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -142,7 +141,6 @@
         call apply_BCs_implicit(x,m)
         call lap_centered(Ax,x,m) ! Involves dynamic allocations
         ! call lap(Ax,x,m)
-        call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine Lap_nonuniform_props_explicit(Ax,x,k,m,MFP,tempk)
@@ -191,7 +189,6 @@
         call curl(Ax,tempk,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
-        call zeroGhostPoints(Ax)
       end subroutine
       subroutine ind_diffusion(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -208,7 +205,6 @@
         call curl(Ax,tempk,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
-        call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine nrg_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -225,7 +221,6 @@
         call div(Ax,tempk,m)
         call multiply(Ax,MFP%c_nrg)
         call add(Ax,x)
-        call zeroGhostPoints(Ax)
       end subroutine
       subroutine nrg_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
@@ -242,7 +237,6 @@
         call div(Ax,tempk,m)
         call multiply(Ax,MFP%c_nrg)
         call add(Ax,x)
-        call zeroGhostPoints(Ax)
       end subroutine
 
       subroutine mom_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -266,7 +260,6 @@
         call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
-        call zeroGhostPoints(Ax)
       end subroutine
       subroutine mom_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
@@ -290,7 +283,6 @@
         call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
-        call zeroGhostPoints(Ax)
       end subroutine
 
       end module

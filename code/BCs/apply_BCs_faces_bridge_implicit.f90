@@ -151,22 +151,22 @@
          call F_Neumann_N_GF(GF,surf,&
                              FSD%G(face)%M(1:3)%i2(1),&
                              FSD%G(face)%M(1:3)%i2(2),&
-                             FSD%B(face)%M(1:3)%i2(1),&
-                             FSD%B(face)%M(1:3)%i2(2),&
+                             FSD%I(face)%M(1:3)%i2(1),&
+                             FSD%I(face)%M(1:3)%i2(2),&
                              FSD%i_2D(face)%i,&
                              0)
        end subroutine
-       subroutine F_Neumann_N_GF(bulk,surf,G1,G2,B1,B2,iR,p)
+       subroutine F_Neumann_N_GF(bulk,surf,G1,G2,I1,I2,iR,p)
          implicit none
          type(grid_field),intent(inout) :: bulk
          type(grid_field),intent(in) :: surf
-         integer,dimension(3),intent(in) :: G1,G2,B1,B2
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
          ! call apply_Neumann_N_implicit(ug,ub,x,y,p)
          call apply_Neumann_N_implicit(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
-                              bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
-                              surf%s(iR(1)),surf%s(iR(2)),p)
+                                       bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                       surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        ! *********************************************************************************

@@ -4,6 +4,8 @@
         use GF_base_mod
         use GF_assign_mod
         use GF_add_mod
+        use GF_add_product_mod
+        use GF_product_add_mod
         use GF_subtract_mod
         use GF_multiply_mod
         use GF_divide_mod
@@ -54,7 +56,9 @@
         public :: assign,assign_negative
         public :: add,subtract
         public :: multiply,divide
-        public :: add_product,swap
+        public :: swap
+        public :: add_product
+        public :: product_add
 
         public :: assign_ghost_xmin,assign_wall_xmin,multiply_wall_xmin
         public :: assign_ghost_ymin,assign_wall_ymin,multiply_wall_ymin

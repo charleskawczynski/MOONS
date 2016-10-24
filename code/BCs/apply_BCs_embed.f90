@@ -72,6 +72,7 @@
 #ifdef _DEBUG_APPLY_BCS_FACES_
          call check_defined(U)
 #endif
+
          do t=1,U%s
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_
          !$OMP PARALLEL DO

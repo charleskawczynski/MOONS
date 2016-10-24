@@ -326,9 +326,10 @@ Which means the equation is
 Note that the mean must be subtracted from the RHS AFTER dividing by the factor of 2. To apply this division correctly with applying BCs, we may use the following definition for $u_g$ to achieve solving the same equation:
 \begin{equation}
   \boxed{
-  u_g = u_b + n\theta \Delta x
+  u_g = u_b
   }
 \end{equation}
+and move the BC values to the RHS to get:
 \begin{equation}
    \frac{u_g - 2 u_b + u_i}{\Delta x^2} = f_b
    \qquad \rightarrow \qquad

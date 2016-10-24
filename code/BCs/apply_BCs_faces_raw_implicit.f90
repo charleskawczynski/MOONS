@@ -80,18 +80,18 @@
 
 #endif
        end subroutine
-       subroutine apply_Neumann_N_implicit(ug,ub,x,y,p)
+       subroutine apply_Neumann_N_implicit(ug,ui,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
-         real(cp),dimension(x,y),intent(in) :: ub
+         real(cp),dimension(x,y),intent(in) :: ui
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ub(i,j)
+         ug(i,j) = ui(i,j)
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO

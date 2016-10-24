@@ -47,7 +47,7 @@
 
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
          call init(ISP_B  ,   5  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
-         call init(ISP_U  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
+         call init(ISP_U  ,  40  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
          call init(ISP_p  ,  100 , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')

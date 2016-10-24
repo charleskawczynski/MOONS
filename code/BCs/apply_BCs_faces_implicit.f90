@@ -15,22 +15,21 @@
        private
        public :: apply_BCs_faces_implicit
 
-
-       interface apply_BCs_faces_implicit;  module procedure apply_BCs_faces_VF;     end interface
-       interface apply_BCs_faces_implicit;  module procedure apply_BCs_faces_SF;     end interface
+       interface apply_BCs_faces_implicit;  module procedure apply_BCs_faces_implicit_VF;     end interface
+       interface apply_BCs_faces_implicit;  module procedure apply_BCs_faces_implicit_SF;     end interface
 
        contains
 
-       subroutine apply_BCs_faces_VF(U,m)
+       subroutine apply_BCs_faces_implicit_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call apply_BCs_faces_SF(U%x,m)
-         call apply_BCs_faces_SF(U%y,m)
-         call apply_BCs_faces_SF(U%z,m)
+         call apply_BCs_faces_implicit(U%x,m)
+         call apply_BCs_faces_implicit(U%y,m)
+         call apply_BCs_faces_implicit(U%z,m)
        end subroutine
 
-       subroutine apply_BCs_faces_SF(U,m)
+       subroutine apply_BCs_faces_implicit_SF(U,m)
          implicit none
          type(SF),intent(inout) :: U
          type(mesh),intent(in) :: m

@@ -73,7 +73,7 @@
        SP%restartB0                 = .false.     ! restart B0 field
 
        SP%solveTMethod              = 5           ! Refer to energy.f90
-       SP%solveUMethod              = 1           ! Refer to momentum.f90
+       SP%solveUMethod              = 3           ! Refer to momentum.f90
        SP%solveBMethod              = 1           ! Refer to induction.f90
 
        SP%addJCrossB                = .false.      ! add JCrossB      to momentum equation
