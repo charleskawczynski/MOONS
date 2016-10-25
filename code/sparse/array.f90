@@ -6,6 +6,8 @@
       public :: array
       public :: init,delete,display,print,export,import
 
+      public :: add
+
       type array
         integer :: N
         real(cp),dimension(:),allocatable :: f
@@ -21,6 +23,7 @@
       interface import;             module procedure import_array;               end interface
 
       interface insist_allocated;   module procedure insist_allocated_array;     end interface
+      interface add;                module procedure add_array;                  end interface
 
       contains
 
@@ -121,6 +124,18 @@
          write(*,*) 'Error: input array is not allocated in ',caller,' in array.f90'
          stop 'Done'
         endif
+      end subroutine
+
+      subroutine add_array(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+        call insist_allocated(A,'add_array (1)')
+        call insist_allocated(B,'add_array (2)')
+        if (A%N.ne.B%N) then
+          stop 'Error: size mismatch in add_array in array.f90'
+        endif
+        A%f = A%f + B%f
       end subroutine
 
       end module

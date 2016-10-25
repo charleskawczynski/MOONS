@@ -7,51 +7,28 @@
         implicit none
         private
 
-        public :: square,abs,swap
+        public :: swap
+        public :: abs
         public :: min,max,amin,amax
-        public :: amax_diff,mean,sum,size
+        public :: mean,sum,size
+
         public :: insist_amax_lt_tol
 
-        public :: zero_ghost_xmin_xmax
-        public :: zero_ghost_ymin_ymax
-        public :: zero_ghost_zmin_zmax
-
-        interface square;                   module procedure square_GF;              end interface
-        interface abs;                      module procedure abs_GF;                 end interface
         interface swap;                     module procedure swap_GF;                end interface
+        interface abs;                      module procedure abs_GF;                 end interface
         interface min;                      module procedure min_GF;                 end interface
         interface max;                      module procedure max_GF;                 end interface
         interface min;                      module procedure min_pad_GF;             end interface
         interface max;                      module procedure max_pad_GF;             end interface
         interface amin;                     module procedure amin_GF;                end interface
         interface amax;                     module procedure amax_GF;                end interface
-        interface amax_diff;                module procedure amax_diff_GF;           end interface
         interface mean;                     module procedure mean_GF;                end interface
         interface sum;                      module procedure sum_GF;                 end interface
         interface sum;                      module procedure sum_GF_pad;             end interface
         interface size;                     module procedure size_GF;                end interface
         interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_GF;  end interface
 
-        interface zero_ghost_xmin_xmax;     module procedure zero_ghost_xmin_xmax_GF;end interface
-        interface zero_ghost_ymin_ymax;     module procedure zero_ghost_ymin_ymax_GF;end interface
-        interface zero_ghost_zmin_zmax;     module procedure zero_ghost_zmin_zmax_GF;end interface
-
         contains
-
-        subroutine square_GF(a)
-          implicit none
-          type(grid_field),intent(inout) :: a
-#ifdef _PARALLELIZE_GF_
-          integer :: i,j,k
-          !$OMP PARALLEL DO
-          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
-          a%f(i,j,k) = a%f(i,j,k) * a%f(i,j,k)
-          enddo; enddo; enddo
-          !$OMP END PARALLEL DO
-#else
-          a%f = a%f*a%f
-#endif
-        end subroutine
 
         subroutine abs_GF(a)
           implicit none
@@ -131,13 +108,6 @@
           m = maxval(abs(a%f))
         end function
 
-        function amax_diff_GF(a,b) result(m)
-          implicit none
-          type(grid_field),intent(in) :: a,b
-          real(cp) :: m
-          m = maxval(abs(a%f-b%f))
-        end function
-
         function mean_GF(a) result(m)
           implicit none
           type(grid_field),intent(in) :: a
@@ -183,60 +153,6 @@
           m = sum(a%f(1+pad:a%s(1)-1,1+pad:a%s(2)-1,1+pad:a%s(3)-1))
 #endif
         end function
-
-        subroutine zero_ghost_xmin_xmax_GF(f)
-          implicit none
-          type(grid_field),intent(inout) :: f
-          integer :: j,k
-#ifdef _PARALLELIZE_GF_
-          !$OMP PARALLEL DO
-
-#endif
-          do k=1,f%s(3); do j=1,f%s(2)
-          f%f(1,j,k) = 0.0_cp
-          f%f(f%s(1),j,k) = 0.0_cp
-          enddo; enddo
-#ifdef _PARALLELIZE_GF_
-          !$OMP END PARALLEL DO
-
-#endif
-        end subroutine
-
-        subroutine zero_ghost_ymin_ymax_GF(f)
-          implicit none
-          type(grid_field),intent(inout) :: f
-          integer :: i,k
-#ifdef _PARALLELIZE_GF_
-          !$OMP PARALLEL DO
-
-#endif
-          do k=1,f%s(3); do i=1,f%s(1)
-          f%f(i,1,k) = 0.0_cp
-          f%f(i,f%s(2),k) = 0.0_cp
-          enddo; enddo
-#ifdef _PARALLELIZE_GF_
-          !$OMP END PARALLEL DO
-
-#endif
-        end subroutine
-
-        subroutine zero_ghost_zmin_zmax_GF(f)
-          implicit none
-          type(grid_field),intent(inout) :: f
-          integer :: i,j
-#ifdef _PARALLELIZE_GF_
-          !$OMP PARALLEL DO
-
-#endif
-          do j=1,f%s(2); do i=1,f%s(1)
-          f%f(i,j,1) = 0.0_cp
-          f%f(i,j,f%s(3)) = 0.0_cp
-          enddo; enddo
-#ifdef _PARALLELIZE_GF_
-          !$OMP END PARALLEL DO
-
-#endif
-        end subroutine
 
         function size_GF(a) result(s)
           implicit none

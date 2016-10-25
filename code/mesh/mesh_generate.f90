@@ -28,9 +28,9 @@
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! Uniform with walls
-         ! call cube_uniform(m_mom)
-         ! call extend_cube_uniform(m_ind,m_mom)
-         ! call init(MD_sigma,m_mom,m_ind)
+         call cube_uniform(m_mom)
+         call extend_cube_uniform(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
 
          ! non-uniform no walls
          ! call cube(m_mom)
@@ -43,9 +43,9 @@
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! Simple 2D straight duct
-         call straight_duct_fluid(m_mom)
-         call init(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
+         ! call straight_duct_fluid(m_mom)
+         ! call init(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
 
          ! call flow_past_square(m_mom)
          ! call flow_past_square(m_ind)

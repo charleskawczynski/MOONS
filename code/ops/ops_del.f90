@@ -212,12 +212,12 @@
         if ((genType.eq.1).and.(pad.gt.0)) then
           if (n.eq.2) write(*,*) 'n,pad,dir,genType = ',n,pad,dir,genType
           select case (dir)
-          case (1); call zero_ghost_ymin_ymax(dfdh)
-                    call zero_ghost_zmin_zmax(dfdh)
-          case (2); call zero_ghost_xmin_xmax(dfdh)
-                    call zero_ghost_zmin_zmax(dfdh)
-          case (3); call zero_ghost_xmin_xmax(dfdh)
-                    call zero_ghost_ymin_ymax(dfdh)
+          case (1); call assign_ghost_ymin_ymax(dfdh,0.0_cp)
+                    call assign_ghost_zmin_zmax(dfdh,0.0_cp)
+          case (2); call assign_ghost_xmin_xmax(dfdh,0.0_cp)
+                    call assign_ghost_zmin_zmax(dfdh,0.0_cp)
+          case (3); call assign_ghost_xmin_xmax(dfdh,0.0_cp)
+                    call assign_ghost_ymin_ymax(dfdh,0.0_cp)
           case default; stop 'Error: dir must = 1,2,3 in delGen_T in ops_del.f90.'
           end select
         endif

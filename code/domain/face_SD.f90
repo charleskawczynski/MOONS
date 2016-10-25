@@ -32,7 +32,7 @@
 
        type face_SD
          type(sub_domain),dimension(6) :: G
-         type(sub_domain),dimension(6) :: B ! C is non-sense here
+         type(sub_domain),dimension(6) :: B ! B%C is non-sense here
          type(sub_domain),dimension(6) :: I
          type(sub_domain),dimension(6) :: I_OPP
          type(index_2D),dimension(6) :: i_2D

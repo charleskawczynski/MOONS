@@ -64,7 +64,7 @@
 
         call operator(Ax,x,k,m,MFP,tempk)
         call subtract(r,Ax)
-        if (.not.x%is_CC) call multiply_wall_Neumann(r,0.5_cp,x)
+        call multiply_wall_Neumann(r,0.5_cp,x)
         call multiply(r,vol)
         call compute(res_norm0,r)
         call check_nans(res_norm0%L2,res_norm0,name//' PCG_SF res_norm0%L2')
@@ -81,7 +81,7 @@
           skip_loop = .false.
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
-            if (.not.x%is_CC) call multiply_wall_Neumann(Ax,0.5_cp,x)
+            call multiply_wall_Neumann(Ax,0.5_cp,x)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
             call assign_ghost_N_XPeriodic(p,0.0_cp)
@@ -169,7 +169,7 @@
 
         call operator(Ax,x,k,m,MFP,tempk)
         call subtract(r,Ax)
-        if (.not.x%is_CC) call multiply_wall_Neumann(r,0.5_cp,x)
+        call multiply_wall_Neumann(r,0.5_cp,x)
         call multiply(r,vol)
         call compute(res_norm0,r)
         call check_nans(res_norm0%L2,res_norm0,name//' PCG_VF res_norm0%L2')
@@ -185,7 +185,7 @@
         if (.not.sqrt(res_norm0%L2).lt.ISP%tol_abs) then ! Only do PCG if necessary!
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
-            if (.not.x%is_CC) call multiply_wall_Neumann(Ax,0.5_cp,x)
+            call multiply_wall_Neumann(Ax,0.5_cp,x)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
             call assign_ghost_N_XPeriodic(p,0.0_cp)

@@ -40,6 +40,10 @@
         public :: plane_sum_y
         public :: plane_sum_z
 
+        public :: assign_ghost_xmin_xmax
+        public :: assign_ghost_ymin_ymax
+        public :: assign_ghost_zmin_zmax
+
         public :: symmetry_error_x
         public :: symmetry_error_y
         public :: symmetry_error_z
@@ -78,6 +82,7 @@
        interface init_BCs;                 module procedure init_BC_block_DL;             end interface
        interface init_BC_props;            module procedure init_BC_props_BF;             end interface
 
+       interface volume;                   module procedure volume_DL_BF;                 end interface
        interface volume;                   module procedure volume_BF;                    end interface
        interface cosine_waves;             module procedure cosine_waves_BF;              end interface
        interface sine_waves;               module procedure sine_waves_BF;                end interface
@@ -102,6 +107,10 @@
        interface plane_sum_x;              module procedure plane_sum_x_BF;               end interface
        interface plane_sum_y;              module procedure plane_sum_y_BF;               end interface
        interface plane_sum_z;              module procedure plane_sum_z_BF;               end interface
+
+       interface assign_ghost_xmin_xmax;   module procedure assign_ghost_xmin_xmax_BF;    end interface
+       interface assign_ghost_ymin_ymax;   module procedure assign_ghost_ymin_ymax_BF;    end interface
+       interface assign_ghost_zmin_zmax;   module procedure assign_ghost_zmin_zmax_BF;    end interface
 
        interface symmetry_error_x;         module procedure symmetry_error_x_BF;          end interface
        interface symmetry_error_y;         module procedure symmetry_error_y_BF;          end interface
@@ -358,12 +367,19 @@
          call set_multiply_wall_Neumann(BF)
        end subroutine
 
-       subroutine volume_BF(u,B,DL) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+       subroutine volume_DL_BF(u,B,DL) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
          implicit none
          type(block_field),intent(inout) :: u
          type(block),intent(in) :: B
          type(data_location),intent(in) :: DL
          call volume(u%GF,B%g,DL)
+       end subroutine
+
+       subroutine volume_BF(u,B) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         call volume(u%GF,B%g)
        end subroutine
 
        subroutine sine_waves_BF(u,B,wavenum,phi,DL)
@@ -433,6 +449,7 @@
          type(block_field),intent(inout) :: u
          real(cp),intent(in) :: val
          integer :: i
+         if (u%PA_assign_ghost_XPeriodic%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -444,6 +461,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
        subroutine assign_ghost_XPeriodic_BF2(u,val,u_with_BCs)
          implicit none
@@ -451,6 +469,7 @@
          real(cp),intent(in) :: val
          type(block_field),intent(in) :: u_with_BCs
          integer :: i
+         if (u%PA_assign_ghost_XPeriodic%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -462,6 +481,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
 
        subroutine assign_ghost_N_XPeriodic_BF(u,val)
@@ -469,6 +489,7 @@
          type(block_field),intent(inout) :: u
          real(cp),intent(in) :: val
          integer :: i
+         if (u%PA_assign_ghost_N_XPeriodic%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -480,6 +501,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
        subroutine assign_ghost_N_XPeriodic_BF2(u,val,u_with_BCs)
          implicit none
@@ -487,6 +509,7 @@
          real(cp),intent(in) :: val
          type(block_field),intent(in) :: u_with_BCs
          integer :: i
+         if (u%PA_assign_ghost_N_XPeriodic%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -498,6 +521,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
 
        subroutine assign_wall_Dirichlet_BF(u,val)
@@ -505,6 +529,7 @@
          type(block_field),intent(inout) :: u
          real(cp),intent(in) :: val
          integer :: i
+         if (u%PA_assign_wall_Dirichlet%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -516,6 +541,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
 
        subroutine assign_wall_Dirichlet_BF2(u,val,u_with_BCs)
@@ -524,6 +550,7 @@
          type(block_field),intent(in) :: u_with_BCs
          real(cp),intent(in) :: val
          integer :: i
+         if (u%PA_assign_wall_Dirichlet%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -535,6 +562,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
 
        subroutine multiply_wall_Neumann_BF(u,val)
@@ -542,6 +570,7 @@
          type(block_field),intent(inout) :: u
          real(cp),intent(in) :: val
          integer :: i
+         if (u%PA_multiply_wall_Neumann%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -553,6 +582,7 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
        end subroutine
 
        subroutine multiply_wall_Neumann_BF2(u,val,u_with_BCs)
@@ -561,6 +591,7 @@
          type(block_field),intent(in) :: u_with_BCs
          real(cp),intent(in) :: val
          integer :: i
+         if (u%PA_multiply_wall_Neumann%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -572,6 +603,26 @@
          !$OMP END PARALLEL DO
 
 #endif
+         endif
+       end subroutine
+
+       subroutine assign_ghost_xmin_xmax_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         call assign_ghost_xmin_xmax(u%GF,val)
+       end subroutine
+       subroutine assign_ghost_ymin_ymax_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         call assign_ghost_ymin_ymax(u%GF,val)
+       end subroutine
+       subroutine assign_ghost_zmin_zmax_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         call assign_ghost_zmin_zmax(u%GF,val)
        end subroutine
 
        function plane_sum_x_BF(u,B,p) result(PS)

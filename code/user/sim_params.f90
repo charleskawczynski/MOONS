@@ -51,11 +51,11 @@
        SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
        SP%post_process              = .false.     ! Skip solver loop and just post-process results
        SP%skip_solver_loop          = .false.     ! Skip solver loop
-       SP%stop_before_solve           = .false.     ! Just export ICs, do not run simulation
+       SP%stop_before_solve         = .false.     ! Just export ICs, do not run simulation
        SP%stop_after_mesh_export    = .false.     ! 
 
        SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
-       SP%export_meshes             = .false.     ! Export all meshes before starting simulation
+       SP%export_meshes             = .true.     ! Export all meshes before starting simulation
        SP%export_mat_props          = .false.     ! Export material properties before starting simulation
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
@@ -65,7 +65,7 @@
 
        SP%solveEnergy               = .false.     ! Solve energy    equation
        SP%solveMomentum             = .true.      ! Solve momentum  equation
-       SP%solveInduction            = .false.      ! Solve induction equation
+       SP%solveInduction            = .true.      ! Solve induction equation
 
        SP%restartT                  = .false.     ! restart T  field
        SP%restartU                  = .false.     ! restart U  field
@@ -73,10 +73,10 @@
        SP%restartB0                 = .false.     ! restart B0 field
 
        SP%solveTMethod              = 5           ! Refer to energy.f90
-       SP%solveUMethod              = 3           ! Refer to momentum.f90
+       SP%solveUMethod              = 1           ! Refer to momentum.f90
        SP%solveBMethod              = 1           ! Refer to induction.f90
 
-       SP%addJCrossB                = .false.      ! add JCrossB      to momentum equation
+       SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation
        SP%addBuoyancy               = .false.     ! add Buoyancy     to momentum equation
        SP%addGravity                = .false.     ! add Gravity      to momentum equation

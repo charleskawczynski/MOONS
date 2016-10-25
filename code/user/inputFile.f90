@@ -26,10 +26,11 @@
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
          ! Re         = 100.0_cp
-         Re         = 10.0_cp
+         Re         = 100.0_cp
          Ha         = 10.0_cp
          Rem        = 1.0_cp
-         tw = 0.5_cp
+         tw         = 0.5_cp
+
          include_vacuum = .false.
          finite_Rem = .false.
          sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
@@ -46,17 +47,19 @@
          Ec         = 0.0_cp
 
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
-         call init(ISP_B  ,   5  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
+         call init(ISP_B  ,  10  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
          call init(ISP_U  ,  40  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
-         call init(ISP_p  ,  100 , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
+         call init(ISP_p  ,   5  , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
-         ! time  = 30.0_cp
-         time  = 100.0_cp
+         ! BMC 102
+         time  = 30.0_cp
+         dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
+
+         ! time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
-         ! dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
-         dtime = 5.0_cp*10.0_cp**(-6.0_cp) ! Implicit time marching
+         ! dtime = 5.0_cp*10.0_cp**(-6.0_cp) ! Implicit time marching
          ! dtime = get_dt_NME(21)
 
          ! dtime = 1.0_cp*10.0_cp**(-5.0_cp)*Rem*sig_local_over_sig_f ! Explicit time marching estimate

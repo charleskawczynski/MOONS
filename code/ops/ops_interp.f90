@@ -85,6 +85,7 @@
        
        public :: node2Face            ! call node2Face(face,node,m,faceDir)              *
        public :: node2Edge            ! call node2Edge(edge,node,m,edgeDir)              *
+       public :: node2CellCenter      ! call node2CellCenter(CC,node,m,E_x,F_y)          *
 
        ! ****************** Raw interpolation / extrapolation routines ******************
 
@@ -113,6 +114,7 @@
 
        interface node2Edge;           module procedure node2Edge_SF;          end interface
        interface node2Face;           module procedure node2Face_SF;          end interface
+       interface node2CellCenter;     module procedure node2CellCenter_SF;    end interface
 
        interface edge2Face;           module procedure edge2Face_SF;          end interface
        interface edge2CellCenter;     module procedure edge2CellCenter_SF;    end interface
@@ -506,6 +508,16 @@
                    call edge2Face(face,tempEyxx,m,1,faceDir)
          case default; stop 'Error: faceDir must = 1,2,3 in node2Face_SF in ops_interp.f90'
          end select
+       end subroutine
+
+       subroutine node2CellCenter_SF(CC,node,m,E_x,F_y)
+         implicit none
+         type(SF),intent(inout) :: CC,E_x,F_y
+         type(SF),intent(in) :: node
+         type(mesh),intent(in) :: m
+         call node2Edge(E_x,node,m,1)
+         call edge2Face(F_y,E_x,m,1,2)
+         call face2CellCenter(CC,F_y,m,2)
        end subroutine
 
        subroutine node2Edge_SF(edge,node,m,edgeDir)

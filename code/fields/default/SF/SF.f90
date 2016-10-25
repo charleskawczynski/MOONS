@@ -60,12 +60,11 @@
         public :: add_product,product_add,swap
         ! Auxiliary
         public :: square,min,max,amin,amax
-        public :: amax_diff,mean,sum,abs,insist_amax_lt_tol
+        public :: mean,sum,abs,insist_amax_lt_tol
 
-        public :: zero_ghost_xmin_xmax
-        public :: zero_ghost_ymin_ymax
-        public :: zero_ghost_zmin_zmax
-
+        public :: assign_ghost_xmin_xmax
+        public :: assign_ghost_ymin_ymax
+        public :: assign_ghost_zmin_zmax
 
         type SF
           integer :: s ! Number of subdomains in domain decomposition
@@ -145,9 +144,9 @@
         interface symmetry_local_y;    module procedure symmetry_local_y_SF;    end interface
         interface symmetry_local_z;    module procedure symmetry_local_z_SF;    end interface
 
-        interface zero_ghost_xmin_xmax;module procedure zero_ghost_xmin_xmax_SF;end interface
-        interface zero_ghost_ymin_ymax;module procedure zero_ghost_ymin_ymax_SF;end interface
-        interface zero_ghost_zmin_zmax;module procedure zero_ghost_zmin_zmax_SF;end interface
+        interface assign_ghost_xmin_xmax;module procedure assign_ghost_xmin_xmax_SF;end interface
+        interface assign_ghost_ymin_ymax;module procedure assign_ghost_ymin_ymax_SF;end interface
+        interface assign_ghost_zmin_zmax;module procedure assign_ghost_zmin_zmax_SF;end interface
 
         interface cross_product_x;     module procedure cross_product_x_SF;     end interface
         interface cross_product_y;     module procedure cross_product_y_SF;     end interface
@@ -200,7 +199,6 @@
         interface max;                 module procedure max_pad_SF;             end interface
         interface amin;                module procedure amin_SF;                end interface
         interface amax;                module procedure amax_SF;                end interface
-        interface amax_diff;           module procedure amax_diff_SF;           end interface
         interface mean;                module procedure mean_SF;                end interface
         interface sum;                 module procedure sum_SF;                 end interface
         interface sum;                 module procedure sum_SF_pad;             end interface
@@ -836,31 +834,17 @@
         end subroutine
 
        subroutine mean_along_dir_SF(x_mean,x,m,dir)
+         ! Computes  L⁻¹ ∫∫ x_CC dA in plane p along direction dir in grid t
          implicit none
          type(SF),intent(inout) :: x_mean
          type(SF),intent(in) :: x
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
-         integer :: t,i,j,k
+         integer :: t
          select case (dir)
-         case (1)
-           !$OMP PARALLEL DO
-           do t=1,m%s; do i=1,x%BF(t)%GF%s(1)
-             x_mean%BF(t)%GF%f(i,:,:) = plane_mean(x,i,m,t,dir)
-           enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do t=1,m%s; do j=1,x%BF(t)%GF%s(2)
-             x_mean%BF(t)%GF%f(:,j,:) = plane_mean(x,j,m,t,dir)
-           enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do t=1,m%s; do k=1,x%BF(t)%GF%s(3)
-             x_mean%BF(t)%GF%f(:,:,k) = plane_mean(x,k,m,t,dir)
-           enddo; enddo
-           !$OMP END PARALLEL DO
+         case (1); do t=1,m%s; call mean_along_x(x_mean%BF(t)%GF,x%BF(t)%GF,m%B(t)%g); enddo
+         case (2); do t=1,m%s; call mean_along_y(x_mean%BF(t)%GF,x%BF(t)%GF,m%B(t)%g); enddo
+         case (3); do t=1,m%s; call mean_along_z(x_mean%BF(t)%GF,x%BF(t)%GF,m%B(t)%g); enddo
          case default; stop 'Error: dir must = 1,2,3 in mean_along_dir in SF.f90'
          end select
        end subroutine
@@ -873,39 +857,6 @@
          call mean_along_dir(x_temp,x,m,dir)
          call subtract(x,x_temp)
        end subroutine
-
-       function plane_mean(x_CC,p,m,t,dir) result(x_mean)
-         ! Computes  L⁻¹ ∫∫ x_CC dA in plane p along direction dir in grid t
-         implicit none
-         type(SF),intent(in) :: x_CC
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: dir,p,t
-         real(cp) :: x_mean,temp
-         integer :: i,j,k
-         temp = 0.0_cp
-         select case (dir)
-         case (1)
-           !$OMP PARALLEL DO REDUCTION(+:temp)
-           do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1
-             temp = temp + x_CC%BF(t)%GF%f(p,j,k)*m%vol(t)%f(p,j,k)/m%B(t)%g%c(1)%dhn(p)
-           enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO REDUCTION(+:temp)
-           do k=2,m%B(t)%g%c(3)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
-             temp = temp + x_CC%BF(t)%GF%f(i,p,k)*m%vol(t)%f(i,p,k)/m%B(t)%g%c(2)%dhn(p)
-           enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO REDUCTION(+:temp)
-           do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
-             temp = temp + x_CC%BF(t)%GF%f(i,j,p)*m%vol(t)%f(i,j,p)/m%B(t)%g%c(3)%dhn(p)
-           enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: dir must = 1,2,3 in plane_mean in SF.f90'
-         end select
-         x_mean = temp/m%B(t)%g%c(dir)%maxRange
-       end function
 
         subroutine print_BCs_SF(f,name)
           implicit none
@@ -1283,17 +1234,6 @@
           enddo
         end function
 
-        function amax_diff_SF(a,b) result(m)
-          implicit none
-          type(SF),intent(in) :: a,b
-          real(cp) :: m
-          integer :: i
-          m = 0.0_cp
-          do i=1,a%s
-            m = maxval((/m,amax_diff(a%BF(i)%GF,b%BF(i)%GF)/))
-          enddo
-        end function
-
         function mean_SF(a) result(m)
           implicit none
           type(SF),intent(in) :: a
@@ -1339,25 +1279,26 @@
           dot = sum(temp)
         end function
 
-        subroutine zero_ghost_xmin_xmax_SF(f)
+        subroutine assign_ghost_xmin_xmax_SF(f,val)
           implicit none
           type(SF),intent(inout) :: f
+          real(cp),intent(in) :: val
           integer :: t
-          do t=1,f%s; call zero_ghost_xmin_xmax(f%BF(t)%GF); enddo
+          do t=1,f%s; call assign_ghost_xmin_xmax(f%BF(t),val); enddo
         end subroutine
-
-        subroutine zero_ghost_ymin_ymax_SF(f)
+        subroutine assign_ghost_ymin_ymax_SF(f,val)
           implicit none
           type(SF),intent(inout) :: f
+          real(cp),intent(in) :: val
           integer :: t
-          do t=1,f%s; call zero_ghost_ymin_ymax(f%BF(t)%GF); enddo
+          do t=1,f%s; call assign_ghost_ymin_ymax(f%BF(t),val); enddo
         end subroutine
-
-        subroutine zero_ghost_zmin_zmax_SF(f)
+        subroutine assign_ghost_zmin_zmax_SF(f,val)
           implicit none
           type(SF),intent(inout) :: f
+          real(cp),intent(in) :: val
           integer :: t
-          do t=1,f%s; call zero_ghost_zmin_zmax(f%BF(t)%GF); enddo
+          do t=1,f%s; call assign_ghost_zmin_zmax(f%BF(t),val); enddo
         end subroutine
 
         subroutine cross_product_x_SF(ACrossB,Ay,Az,By,Bz)

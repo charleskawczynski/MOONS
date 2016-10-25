@@ -51,20 +51,17 @@
          integer :: i,j,k,t
          ! if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_VF in ops_Ln_norms.f90'
          if (u%is_CC) then
-         eTemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,u%s; do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
-           eTemp = eTemp + (u%BF(t)%GF%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         e = eTemp
+         e = 0.0_cp
+         do t=1,m%s
+           e = e + Ln(u%BF(t)%GF,n,m%vol(t))
+         enddo
          elseif (u%is_Node) then
          eTemp = 0.0_cp ! temp is necessary for reduction
          !$OMP PARALLEL DO REDUCTION(+:eTemp)
          do t=1,u%s; do k=3,m%B(t)%g%c(3)%sn-2; do j=3,m%B(t)%g%c(2)%sn-2; do i=3,m%B(t)%g%c(1)%sn-2
            eTemp = eTemp + (u%BF(t)%GF%f(i,j,k)**n)*m%B(t)%g%c(1)%dhc(i-1)*&
-                                                 m%B(t)%g%c(2)%dhc(j-1)*&
-                                                 m%B(t)%g%c(3)%dhc(k-1)
+                                                    m%B(t)%g%c(2)%dhc(j-1)*&
+                                                    m%B(t)%g%c(3)%dhc(k-1)
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          e = eTemp
@@ -72,58 +69,44 @@
          endif
        end subroutine
 
-       subroutine Ln_mesh_VF(e,u,n,m)
-         ! Computes
-         ! 
-         !   L(n) = ∫∫∫ | u(i,j,k)ⁿ | dx dy dz
-         ! 
+       subroutine Ln_mesh_VF(e,u,n,m) ! Computes: L(n) = ∫∫∫ | u(i,j,k)ⁿ | dx dy dz
          implicit none
          real(cp),intent(inout) :: e
          type(VF),intent(in) :: u
          real(cp),intent(in) :: n
          type(mesh),intent(in) :: m
-         real(cp) :: eTemp
-         integer :: i,j,k,t
+         integer :: t
          if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_VF in ops_Ln_norms.f90'
-         eTemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,m%s; do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
-           eTemp = eTemp + (u%x%BF(t)%GF%f(i,j,k)**n+&
-                            u%y%BF(t)%GF%f(i,j,k)**n+&
-                            u%z%BF(t)%GF%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         e = eTemp
+         e = 0.0_cp
+         do t=1,m%s
+           e = e + Ln(u%x%BF(t)%GF,&
+                      u%y%BF(t)%GF,&
+                      u%z%BF(t)%GF,&
+                      n,m%vol(t))
+         enddo
        end subroutine
 
-       subroutine Ln_mesh_TF(e,u,n,m)
-         ! Computes
-         ! 
-         !   L(n) = ∫∫∫ | u(i,j,k)ⁿ | dx dy dz
-         ! 
+       subroutine Ln_mesh_TF(e,u,n,m) ! Computes: L(n) = ∫∫∫ | u(i,j,k)ⁿ | dx dy dz
          implicit none
          real(cp),intent(inout) :: e
          type(TF),intent(in) :: u
          real(cp),intent(in) :: n
          type(mesh),intent(in) :: m
-         real(cp) :: eTemp
-         integer :: i,j,k,t
+         integer :: t
          if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_TF in ops_Ln_norms.f90'
-         eTemp = 0.0_cp ! temp is necessary for reduction
-         !$OMP PARALLEL DO REDUCTION(+:eTemp)
-         do t=1,m%s; do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
-           eTemp = eTemp + (u%x%x%BF(t)%GF%f(i,j,k)**n+&
-                            u%x%y%BF(t)%GF%f(i,j,k)**n+&
-                            u%x%z%BF(t)%GF%f(i,j,k)**n+&
-                            u%y%x%BF(t)%GF%f(i,j,k)**n+&
-                            u%y%y%BF(t)%GF%f(i,j,k)**n+&
-                            u%y%z%BF(t)%GF%f(i,j,k)**n+&
-                            u%z%x%BF(t)%GF%f(i,j,k)**n+&
-                            u%z%y%BF(t)%GF%f(i,j,k)**n+&
-                            u%z%z%BF(t)%GF%f(i,j,k)**n)*m%vol(t)%f(i,j,k)
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
-         e = eTemp
+         e = 0.0_cp
+         do t=1,m%s
+           e = e + Ln(u%x%x%BF(t)%GF,&
+                      u%x%y%BF(t)%GF,&
+                      u%x%z%BF(t)%GF,&
+                      u%y%x%BF(t)%GF,&
+                      u%y%y%BF(t)%GF,&
+                      u%y%z%BF(t)%GF,&
+                      u%z%x%BF(t)%GF,&
+                      u%z%y%BF(t)%GF,&
+                      u%z%z%BF(t)%GF,&
+                      n,m%vol(t))
+         enddo
        end subroutine
 
        subroutine Ln_mesh_SF_D(e,u,n,m,MD)

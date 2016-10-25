@@ -158,20 +158,14 @@
        subroutine init_volume(m)
          implicit none
          type(mesh),intent(inout) :: m
-         integer :: i,j,k,t
+         integer :: t
          if (allocated(m%vol)) then
            do t=1,m%s; call delete(m%vol(t)); enddo
            deallocate(m%vol)
          endif
          allocate(m%vol(m%s))
          do t=1,m%s; call init_CC(m%vol(t),m%B(t)%g); enddo
-         !$OMP PARALLEL DO SHARED(m)
-         do t=1,m%s; do k=2,m%B(t)%g%c(3)%sc-1; do j=2,m%B(t)%g%c(2)%sc-1; do i=2,m%B(t)%g%c(1)%sc-1
-           m%vol(t)%f(i,j,k) = (m%B(t)%g%c(1)%dhn(i))*&
-                               (m%B(t)%g%c(2)%dhn(j))*&
-                               (m%B(t)%g%c(3)%dhn(k))
-         enddo; enddo; enddo; enddo
-         !$OMP END PARALLEL DO
+         do t=1,m%s; call volume(m%vol(t),m%B(t)%g); enddo
        end subroutine
 
        subroutine initProps_mesh(m)

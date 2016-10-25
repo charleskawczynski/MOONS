@@ -12,6 +12,8 @@
         public :: init_Edge
         public :: init_Node
 
+        public :: insist_shape_match
+
         type grid_field
           integer :: s_1D                            ! size
           integer,dimension(3) :: s                  ! Dimension
@@ -29,6 +31,8 @@
         interface init_Face;                module procedure init_GF_Face;           end interface
         interface init_Edge;                module procedure init_GF_Edge;           end interface
         interface init_Node;                module procedure init_GF_Node;           end interface
+
+        interface insist_shape_match;       module procedure insist_shape_match_GF;  end interface
 
        contains
 
@@ -157,6 +161,24 @@
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
             read(un,*) a%f(i,j,k)
           enddo; enddo; enddo
+        end subroutine
+
+        ! *******************************************************************************
+
+        subroutine insist_shape_match_GF(A,B,caller)
+          implicit none
+          type(grid_field),intent(in) :: A,B
+          character(len=*),intent(in) :: caller
+          logical,dimension(3) :: L
+          L(1) = A%s(1).ne.B%s(1)
+          L(2) = A%s(2).ne.B%s(2)
+          L(3) = A%s(3).ne.B%s(3)
+          if (any(L)) then
+            write(*,*) 'Error: shape mismatch in ',caller,' in GF_base.f90'
+            write(*,*) 'A%s = ',A%s
+            write(*,*) 'B%s = ',B%s
+            stop 'Done'
+          endif
         end subroutine
 
       end module
