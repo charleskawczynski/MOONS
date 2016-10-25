@@ -358,9 +358,15 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \item change stencils.f90 to sparse\_mult and use L,D,U only (so that stencils must be combined at beginning)
 \item consider making 3D stencil, so that the diagonal can be combined, this won't be too complicated
 \item delete more matlab scripts / convert to python
-\item move all routines that use i,j,k indexes to GF and make all of these callable from BF, then SF.
 \item Make GF folder more structured, consider 3D,2D,1D, or assign, mult, subtract, etc. Additionally, there is the base, aux etc. This same structure might be appropriate to mirror in BF.f90 and SF.f90.
 \item migrate to using DL only: (make CC,N,F,E private in SF and VF, then replace with DL)
+\item move all routines that use i,j,k indexes to GF and make all of these callable from BF, then SF.
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item preconditioners
+\item interp
+\item del
+\end{itemize}
 \end{itemize}
 
 \section{Before starting next NME simulations}

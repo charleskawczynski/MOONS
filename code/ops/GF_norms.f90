@@ -20,11 +20,12 @@
 
        contains
 
-       function Ln_GF_1(u,n) result(e)
+       subroutine Ln_GF_1(e,u,n)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u
          real(cp),intent(in) :: n
-         real(cp) :: e,temp
+         real(cp) :: temp
          integer :: i,j,k
          temp = 0.0_cp
 #ifdef _PARALLELIZE_GF_NORMS_
@@ -39,13 +40,14 @@
 
 #endif
          e = temp
-       end function
+       end subroutine
 
-       function Ln_GF_3(u_x,u_y,u_z,n) result(e)
+       subroutine Ln_GF_3(e,u_x,u_y,u_z,n)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u_x,u_y,u_z
          real(cp),intent(in) :: n
-         real(cp) :: e,temp
+         real(cp) :: temp
          integer :: i,j,k
          temp = 0.0_cp
 #ifdef _DEBUG_GF_NORMS_
@@ -67,13 +69,14 @@
 
 #endif
          e = temp
-       end function
+       end subroutine
 
-       function Ln_GF_9(u_xx,u_xy,u_xz,u_yx,u_yy,u_yz,u_zx,u_zy,u_zz,n) result(e)
+       subroutine Ln_GF_9(e,u_xx,u_xy,u_xz,u_yx,u_yy,u_yz,u_zx,u_zy,u_zz,n)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u_xx,u_xy,u_xz,u_yx,u_yy,u_yz,u_zx,u_zy,u_zz
          real(cp),intent(in) :: n
-         real(cp) :: e,temp
+         real(cp) :: temp
          integer :: i,j,k
          temp = 0.0_cp
 #ifdef _DEBUG_GF_NORMS_
@@ -110,13 +113,13 @@
 
 #endif
          e = temp
-       end function
+       end subroutine
 
-       function Linf_GF(u) result(e)
+       subroutine Linf_GF(e,u)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u
-         real(cp) :: e
          e = amax(u)
-       end function
+       end subroutine
 
        end module

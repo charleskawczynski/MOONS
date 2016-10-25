@@ -141,18 +141,18 @@
          enddo
        end subroutine
 
-       subroutine initmeshCopy(m_out,m_in)
+       subroutine initmeshCopy(m,m_in)
          implicit none
-         type(mesh),intent(inout) :: m_out
+         type(mesh),intent(inout) :: m
          type(mesh),intent(in) :: m_in
          integer :: i
          call insist_allocated_mesh(m_in,'initmeshCopy')
-         call delete(m_out)
+         call delete(m)
          if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in initmeshCopy in mesh.f90'
-         m_out%s = m_in%s
-         allocate(m_out%B(m_in%s))
-         do i=1,m_in%s; call init(m_out%B(i),m_in%B(i)); enddo
-         call initProps(m_out)
+         m%s = m_in%s
+         allocate(m%B(m_in%s))
+         do i=1,m_in%s; call init(m%B(i),m_in%B(i)); enddo
+         call initProps(m)
        end subroutine
 
        subroutine init_volume(m)

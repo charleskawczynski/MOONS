@@ -18,23 +18,23 @@
 
        contains
 
-       subroutine compute_TKE(K_energy,U_CC,vol)
+       subroutine compute_TKE(K_energy,U_CC,m)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(VF),intent(in) :: U_CC
-         type(SF),intent(in) :: vol
-         call Ln(K_energy,U_CC,2.0_cp,vol)
+         type(mesh),intent(in) :: m
+         call Ln(K_energy,U_CC,2.0_cp,m)
          K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 
-       subroutine compute_TKE_2C(K_energy,A,B,vol,temp)
+       subroutine compute_TKE_2C(K_energy,A,B,m,temp)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(SF),intent(inout) :: temp
          type(SF),intent(in) :: A,B
-         type(SF),intent(in) :: vol
+         type(mesh),intent(in) :: m
          call add(temp,A,B)
-         call Ln(K_energy,temp,2.0_cp,vol)
+         call Ln(K_energy,temp,2.0_cp,m)
          K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 

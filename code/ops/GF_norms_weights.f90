@@ -17,14 +17,16 @@
 
        contains
 
-       function Ln_weights_1_GF(u,n,vol) result(e)
+       subroutine Ln_weights_1_GF(e,u,n,vol,caller)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u,vol
          real(cp),intent(in) :: n
-         real(cp) :: e,temp
+         character(len=*),intent(in) :: caller
+         real(cp) :: temp
          integer :: i,j,k
 #ifdef _DEBUG_GF_NORMS_
-         call insist_shape_match(u,vol,'Ln_weights_GF')
+         call insist_shape_match(u,vol,'Ln_weights_1_GF->'//caller)
 #endif
          temp = 0.0_cp
 #ifdef _PARALLELIZE_GF_NORMS_
@@ -39,13 +41,14 @@
 
 #endif
          e = temp
-       end function
+       end subroutine
 
-       function Ln_weights_3_GF(u_x,u_y,u_z,n,vol) result(e)
+       subroutine Ln_weights_3_GF(e,u_x,u_y,u_z,n,vol)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u_x,u_y,u_z,vol
          real(cp),intent(in) :: n
-         real(cp) :: e,temp
+         real(cp) :: temp
          integer :: i,j,k
 #ifdef _DEBUG_GF_NORMS_
          call insist_shape_match(u_x,u_y,'Ln_weights_3_GF (1)')
@@ -66,13 +69,14 @@
 
 #endif
          e = temp
-       end function
+       end subroutine
 
-       function Ln_weights_9_GF(u_xx,u_xy,u_xz,u_yx,u_yy,u_yz,u_zx,u_zy,u_zz,n,vol) result(e)
+       subroutine Ln_weights_9_GF(e,u_xx,u_xy,u_xz,u_yx,u_yy,u_yz,u_zx,u_zy,u_zz,n,vol)
          implicit none
+         real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u_xx,u_xy,u_xz,u_yx,u_yy,u_yz,u_zx,u_zy,u_zz,vol
          real(cp),intent(in) :: n
-         real(cp) :: e,temp
+         real(cp) :: temp
          integer :: i,j,k
 #ifdef _DEBUG_GF_NORMS_
          call insist_shape_match(u_xx,u_xy,'Ln_weights_9_GF (1)')
@@ -105,6 +109,6 @@
 
 #endif
          e = temp
-       end function
+       end subroutine
 
        end module

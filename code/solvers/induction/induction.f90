@@ -74,7 +74,6 @@
          ! --- Scalar fields ---
          type(SF) :: sigmaInv_CC
          type(SF) :: divB,divJ,phi,temp_CC_SF         ! CC data
-         type(SF) :: vol_CC
 
          ! --- Solvers ---
          type(PCG_solver_VF) :: PCG_B
@@ -135,7 +134,7 @@
          real(cp),intent(in) :: Rem,sig_local_over_sig_f
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: sigma,prec_cleanB
+         type(SF) :: sigma,prec_cleanB,vol_CC
          type(VF) :: prec_induction,sigma_temp_E
          write(*,*) 'Initializing induction:'
 
@@ -175,11 +174,12 @@
          call init_Node(ind%divJ         ,m,0.0_cp)
          call init_CC(ind%sigmaInv_CC    ,m,0.0_cp)
 
-         call init_CC(ind%vol_CC,m)
-         call volume(ind%vol_CC,m)
+         call init_CC(vol_CC,m)
+         call volume(vol_CC,m)
          if (ind%SP%export_cell_volume) then
-           call export_raw(ind%m,ind%vol_CC,str(DT%meshes),'ind_cell_volume',0)
+           call export_raw(ind%m,vol_CC,str(DT%meshes),'ind_cell_volume',0)
          endif
+         call delete(vol_CC)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -291,7 +291,6 @@
          call delete(ind%temp_F1)
          call delete(ind%temp_F2)
          call delete(ind%sigmaInv_edge)
-         call delete(ind%vol_CC)
 
          call delete(ind%divB)
          call delete(ind%divJ)

@@ -75,7 +75,6 @@
          type(SF) :: p,divU,temp_CC
          type(SF) :: Fo_grid,Co_grid,Re_grid
          type(SF) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
-         type(SF) :: vol_CC
 
          type(GS_Poisson_SF) :: GS_p
 
@@ -131,7 +130,7 @@
          real(cp),intent(in) :: Re,Ha,Gr,Fr
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: prec_PPE
+         type(SF) :: prec_PPE,vol_CC
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
 
@@ -172,11 +171,12 @@
          call init_CC(mom%KE_transient,m,0.0_cp)
          call init_CC(mom%KE_jCrossB  ,m,0.0_cp)
 
-         call init_CC(mom%vol_CC,m)
-         call volume(mom%vol_CC,m)
+         call init_CC(vol_CC,m)
+         call volume(vol_CC,m)
          if (mom%SP%export_cell_volume) then
-           call export_raw(mom%m,mom%vol_CC,str(DT%meshes),'mom_cell_volume',0)
+           call export_raw(mom%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
          endif
+         call delete(vol_CC)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -269,7 +269,6 @@
          call delete(mom%m)
          call delete(mom%MB)
          call delete(mom%B)
-         call delete(mom%vol_CC)
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
          call delete(mom%GS_p)
@@ -394,14 +393,13 @@
          implicit none
          type(momentum),intent(inout) :: mom
          real(cp) :: temp
-         call compute_TKE(temp,mom%U_CC,mom%vol_CC)
+         call compute_TKE(temp,mom%U_CC,mom%m)
          call export(mom%probe_KE,mom%TMP%t,temp)
          if (mom%m%plane_xyz) then
-           call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%vol_CC,mom%temp_CC)
+           call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,mom%temp_CC)
            call export(mom%probe_KE_2C,mom%TMP%t,temp)
          endif
          call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP%t,temp)
-         ! call Ln(temp,mom%divU,2.0_cp,mom%vol_CC); call export(mom%probe_divU,mom%TMP%t,temp)
        end subroutine
 
        ! ******************* SOLVER ****************************

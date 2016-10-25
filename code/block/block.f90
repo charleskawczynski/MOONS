@@ -1,6 +1,8 @@
        module block_mod
        use current_precision_mod
        use grid_mod
+       use GF_mod
+       use data_location_mod
        use IO_tools_mod
        implicit none
 
@@ -11,10 +13,11 @@
        public :: init_FEC
 
        type block
-         type(grid) :: g                             ! Bulk
-         type(grid),dimension(:),allocatable :: f,fb ! Faces (boundary,ghost,interior)
-         type(grid),dimension(:),allocatable :: e,eb ! Edges (boundary,ghost,interior)
-         type(grid),dimension(:),allocatable :: c,cb ! Corners (boundary,ghost,interior)
+         type(grid) :: g                                  ! Bulk
+         type(grid),dimension(:),allocatable :: f,fb      ! Faces (boundary,ghost,interior)
+         type(grid),dimension(:),allocatable :: e,eb      ! Edges (boundary,ghost,interior)
+         type(grid),dimension(:),allocatable :: c,cb      ! Corners (boundary,ghost,interior)
+         type(grid_field),dimension(:),allocatable :: vol ! index must match volume_ID in data_location
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -41,6 +44,32 @@
          type(grid),intent(in) :: g
          call delete(B)
          call init(B%g,g)
+         call init_vol_block(B)
+       end subroutine
+
+       subroutine init_vol_block(B)
+         implicit none
+         type(block),intent(inout) :: B
+         type(data_location) :: DL
+         allocate(B%vol(8))
+         call init_CC(B%vol(1),B%g)
+         call init_Node(B%vol(2),B%g)
+         call init_Face(B%vol(3),B%g,1)
+         call init_Face(B%vol(4),B%g,2)
+         call init_Face(B%vol(5),B%g,3)
+         call init_Edge(B%vol(6),B%g,1)
+         call init_Edge(B%vol(7),B%g,2)
+         call init_Edge(B%vol(8),B%g,3)
+
+         call init_CC(DL);     call volume(B%vol(1),B%g,DL)
+         call init_Node(DL);   call volume(B%vol(2),B%g,DL)
+         call init_Face(DL,1); call volume(B%vol(3),B%g,DL)
+         call init_Face(DL,2); call volume(B%vol(4),B%g,DL)
+         call init_Face(DL,3); call volume(B%vol(5),B%g,DL)
+         call init_Edge(DL,1); call volume(B%vol(6),B%g,DL)
+         call init_Edge(DL,2); call volume(B%vol(7),B%g,DL)
+         call init_Edge(DL,3); call volume(B%vol(8),B%g,DL)
+         call delete(DL)
        end subroutine
 
        subroutine init_FEC_block(B)
@@ -57,28 +86,39 @@
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
        end subroutine
 
-       subroutine init_block_copy(B_out,B_in)
+       subroutine init_block_copy(B,B_in)
          implicit none
-         type(block),intent(inout) :: B_out
+         type(block),intent(inout) :: B
          type(block),intent(in) :: B_in
          integer :: i
-         call delete(B_out)
-         call init(B_out%g,B_in%g)
+         call delete(B)
+         call init(B%g,B_in%g)
          ! call inisist_allocated(B_in,'init_block_copy')
-         i=6; allocate(B_out%f(i));  do i=1,6;  call init(B_out%f(i),B_in%f(i));   enddo
-         i=6; allocate(B_out%fb(i)); do i=1,6;  call init(B_out%fb(i),B_in%fb(i)); enddo
+         i=6; allocate(B%f(i));  do i=1,6;  call init(B%f(i),B_in%f(i));   enddo
+         i=6; allocate(B%fb(i)); do i=1,6;  call init(B%fb(i),B_in%fb(i)); enddo
 
-         i=12; allocate(B_out%e(i)); do i=1,12; call init(B_out%e(i),B_in%e(i)); enddo
-         i=12; allocate(B_out%eb(i));do i=1,12; call init(B_out%eb(i),B_in%eb(i)); enddo
+         i=12; allocate(B%e(i)); do i=1,12; call init(B%e(i),B_in%e(i)); enddo
+         i=12; allocate(B%eb(i));do i=1,12; call init(B%eb(i),B_in%eb(i)); enddo
 
-         i=8; allocate(B_out%c(i));  do i=1,8;  call init(B_out%c(i),B_in%c(i)); enddo
-         i=8; allocate(B_out%cb(i)); do i=1,8;  call init(B_out%cb(i),B_in%cb(i)); enddo
+         i=8; allocate(B%c(i));  do i=1,8;  call init(B%c(i),B_in%c(i)); enddo
+         i=8; allocate(B%cb(i)); do i=1,8;  call init(B%cb(i),B_in%cb(i)); enddo
+
+         allocate(B%vol(8))
+         do i=1,8;
+          call init(B%vol(i),B_in%vol(i))
+          call assign(B%vol(i),B_in%vol(i))
+         enddo
        end subroutine
 
        subroutine delete_block(B)
          implicit none
          type(block),intent(inout) :: B
+         integer :: i
          call delete(B%g)
+         if (allocated(B%vol)) then
+           do i=1,8; call delete(B%vol(i)); enddo
+           deallocate(B%vol)
+         endif
          call delete_FEC_block(B)
        end subroutine
 
@@ -110,6 +150,8 @@
 
          do i=1,8;  call display(B%c(i),un); enddo
          do i=1,8;  call display(B%cb(i),un); enddo
+         call display(B%vol(1),un)
+         call display(B%vol(2),un)
        end subroutine
 
        subroutine print_block(B)
@@ -125,6 +167,8 @@
 
          do i=1,8;  call print(B%c(i)); enddo
          do i=1,8;  call print(B%cb(i)); enddo
+         call print(B%vol(1))
+         call print(B%vol(2))
        end subroutine
 
        subroutine export_block(B,un)
@@ -141,6 +185,8 @@
 
          do i=1,8;  call export(B%c(i),un); enddo
          do i=1,8;  call export(B%cb(i),un); enddo
+         call export(B%vol(1),un)
+         call export(B%vol(2),un)
        end subroutine
 
        subroutine import_block(B,un)
@@ -157,6 +203,8 @@
 
          do i=1,8;  call import(B%c(i),un); enddo
          do i=1,8;  call import(B%cb(i),un); enddo
+         call import(B%vol(1),un)
+         call import(B%vol(2),un)
        end subroutine
 
        subroutine export_block_wrapper(B,dir,name)

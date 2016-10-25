@@ -13,12 +13,15 @@
 
        public :: CC_along,N_along
 
+       public :: vol_ID
+
        type data_location
          logical :: C,N,E,F = .false.        ! cell center, cell corner, cell edge, cell face
          integer :: face,edge = 0            ! face direction, edge direction
          logical,dimension(3) :: CC_along = .false.
          logical,dimension(3) :: N_along = .false.
-         logical :: defined = .false.
+         logical :: defined = .false.        ! 
+         integer :: volume_ID = 0            ! face direction, edge direction
        end type
 
        interface init;                module procedure init_copy_DL;            end interface
@@ -35,6 +38,8 @@
        interface CC_along;            module procedure CC_along_DL;             end interface
        interface N_along;             module procedure N_along_DL;              end interface
 
+       interface vol_ID;              module procedure volume_ID_DL;            end interface
+
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
        interface print;               module procedure print_DL;                end interface
@@ -47,21 +52,22 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_copy_DL(DL_out,DL_in)
+       subroutine init_copy_DL(DL,DL_in)
          implicit none
-         type(data_location),intent(inout) :: DL_out
+         type(data_location),intent(inout) :: DL
          type(data_location),intent(in) :: DL_in
-         call delete(DL_out)
+         call delete(DL)
          call insist_defined(DL_in,'init_copy_DL')
-         DL_out%C = DL_in%C
-         DL_out%N = DL_in%N
-         DL_out%E = DL_in%E
-         DL_out%F = DL_in%F
-         DL_out%face = DL_in%face
-         DL_out%edge = DL_in%edge
-         DL_out%defined = DL_in%defined
-         DL_out%CC_along = DL_in%CC_along
-         DL_out%N_along = DL_in%N_along
+         DL%C = DL_in%C
+         DL%N = DL_in%N
+         DL%E = DL_in%E
+         DL%F = DL_in%F
+         DL%face = DL_in%face
+         DL%edge = DL_in%edge
+         DL%defined = DL_in%defined
+         DL%CC_along = DL_in%CC_along
+         DL%N_along = DL_in%N_along
+         DL%volume_ID = DL_in%volume_ID
        end subroutine
 
        subroutine init_CC_DL(DL)
@@ -70,6 +76,7 @@
          call delete(DL)
          DL%C = .true.
          DL%defined = .true.
+         DL%volume_ID = 1
          call init_CC_N_along(DL,'init_CC_DL')
        end subroutine
 
@@ -79,19 +86,8 @@
          call delete(DL)
          DL%N = .true.
          DL%defined = .true.
+         DL%volume_ID = 2
          call init_CC_N_along(DL,'init_Node_DL')
-       end subroutine
-
-       subroutine init_Edge_DL(DL,dir)
-         implicit none
-         type(data_location),intent(inout) :: DL
-         integer,intent(in) :: dir
-         call delete(DL)
-         DL%E = .true.
-         call insist_valid_dir(DL,dir,'init_Edge_DL')
-         DL%edge = dir
-         DL%defined = .true.
-         call init_CC_N_along(DL,'init_Edge_DL')
        end subroutine
 
        subroutine init_Face_DL(DL,dir)
@@ -103,7 +99,21 @@
          call insist_valid_dir(DL,dir,'init_Face_DL')
          DL%face = dir
          DL%defined = .true.
+         DL%volume_ID = 2+dir
          call init_CC_N_along(DL,'init_Face_DL')
+       end subroutine
+
+       subroutine init_Edge_DL(DL,dir)
+         implicit none
+         type(data_location),intent(inout) :: DL
+         integer,intent(in) :: dir
+         call delete(DL)
+         DL%E = .true.
+         call insist_valid_dir(DL,dir,'init_Edge_DL')
+         DL%edge = dir
+         DL%defined = .true.
+         DL%volume_ID = 5+dir
+         call init_CC_N_along(DL,'init_Edge_DL')
        end subroutine
 
        subroutine delete_DL(DL)
@@ -118,6 +128,7 @@
          DL%face = 0
          DL%edge = 0
          DL%defined = .false.
+         DL%volume_ID = 0
        end subroutine
 
        subroutine display_DL(DL,un)
@@ -133,6 +144,7 @@
          write(un,*) 'defined = ',DL%defined
          write(un,*) 'CC_along = ',DL%CC_along
          write(un,*) 'N_along = ',DL%N_along
+         write(un,*) 'volume_ID = ',DL%volume_ID
        end subroutine
 
        subroutine print_DL(DL)
@@ -145,15 +157,16 @@
          implicit none
          type(data_location),intent(in) :: DL
          integer,intent(in) :: un
-         write(un,*) 'defined = '; write(un,*) DL%defined
-         write(un,*) 'C = ';       write(un,*) DL%C
-         write(un,*) 'N = ';       write(un,*) DL%N
-         write(un,*) 'E = ';       write(un,*) DL%E
-         write(un,*) 'F = ';       write(un,*) DL%F
-         write(un,*) 'face = ';    write(un,*) DL%face
-         write(un,*) 'edge = ';    write(un,*) DL%edge
-         write(un,*) 'CC_along = ';write(un,*) DL%CC_along
-         write(un,*) 'N_along = '; write(un,*) DL%N_along
+         write(un,*) 'defined = ';   write(un,*) DL%defined
+         write(un,*) 'C = ';         write(un,*) DL%C
+         write(un,*) 'N = ';         write(un,*) DL%N
+         write(un,*) 'E = ';         write(un,*) DL%E
+         write(un,*) 'F = ';         write(un,*) DL%F
+         write(un,*) 'face = ';      write(un,*) DL%face
+         write(un,*) 'edge = ';      write(un,*) DL%edge
+         write(un,*) 'CC_along = ';  write(un,*) DL%CC_along
+         write(un,*) 'N_along = ';   write(un,*) DL%N_along
+         write(un,*) 'volume_ID = '; write(un,*) DL%volume_ID
        end subroutine
 
        subroutine import_DL(DL,un)
@@ -169,7 +182,18 @@
          read(un,*); read(un,*) DL%edge
          read(un,*); read(un,*) DL%CC_along
          read(un,*); read(un,*) DL%N_along
+         read(un,*); read(un,*) DL%volume_ID
        end subroutine
+
+       function volume_ID_DL(DL) result(volume_ID)
+         implicit none
+         type(data_location),intent(in) :: DL
+         integer :: volume_ID
+#ifdef _DEBUG_DATA_LOCATION_
+         call insist_defined(DL,'volume_ID_DL')
+#endif
+         volume_ID = DL%volume_ID
+       end function
 
        function is_CC_DL(DL) result(L)
          implicit none
