@@ -1,5 +1,6 @@
       module preconditioners_mod
       use current_precision_mod
+      use GF_diagonals_mod
       use mesh_mod
       use SF_mod
       use VF_mod
@@ -35,20 +36,10 @@
         implicit none
         type(SF),intent(inout) :: diag
         type(mesh),intent(in) :: m
-        integer :: i,j,k,t,pnx,pny,pnz
-        integer,dimension(3) :: p
-        call assign(diag,0.0_cp)
-        p = getPad(diag); pnx = p(1); pny = p(2); pnz = p(3)
-        !$OMP PARALLEL DO
-        do t=1,m%s; do k=2,diag%BF(t)%GF%s(3)-1; do j=2,diag%BF(t)%GF%s(2)-1; do i=2,diag%BF(t)%GF%s(1)-1
-        diag%BF(t)%GF%f(i,j,k) = m%B(t)%g%c(1)%stagN2CC%D(  i  )*m%B(t)%g%c(1)%stagCC2N%U( i-1 ) + &
-                                 m%B(t)%g%c(1)%stagN2CC%U(i-pnx)*m%B(t)%g%c(1)%stagCC2N%D(i-pnx) + &
-                                 m%B(t)%g%c(2)%stagN2CC%D(  j  )*m%B(t)%g%c(2)%stagCC2N%U( j-1 ) + &
-                                 m%B(t)%g%c(2)%stagN2CC%U(j-pny)*m%B(t)%g%c(2)%stagCC2N%D(j-pny) + &
-                                 m%B(t)%g%c(3)%stagN2CC%D(  k  )*m%B(t)%g%c(3)%stagCC2N%U( k-1 ) + &
-                                 m%B(t)%g%c(3)%stagN2CC%U(k-pnz)*m%B(t)%g%c(3)%stagCC2N%D(k-pnz)
-        enddo; enddo; enddo; enddo
-        !$OMP END PARALLEL DO
+        integer :: t
+        do t=1,m%s
+          call laplacian_diagonal(diag%BF(t)%GF,m%B(t)%g,diag%DL)
+        enddo
       end subroutine
       subroutine prec_Lap_SF(Minv,m)
         ! Computes Laplacian diagonal preconditioner: Minv = diag( V ∇•(∇) )⁻¹, V = cell volume
@@ -121,34 +112,17 @@
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: c
         type(VF) :: vol
-        integer :: i,j,k,t
+        integer :: t
         call assign(Minv,0.0_cp)
-
-        !$OMP PARALLEL DO
-        do t=1,m%s; do k=2,Minv%x%BF(t)%GF%s(3)-1; do j=2,Minv%x%BF(t)%GF%s(2)-1; do i=2,Minv%x%BF(t)%GF%s(1)-1
-        Minv%x%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(2)%stagN2CC%D(j)*sig%z%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(2)%stagCC2N%U(j-1) - &
-                                    m%B(t)%g%c(2)%stagN2CC%U(j)*sig%z%BF(t)%GF%f(i,j+1,k)*m%B(t)%g%c(2)%stagCC2N%D( j ) - &
-                                    m%B(t)%g%c(3)%stagN2CC%D(k)*sig%y%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(3)%stagCC2N%U(k-1) - &
-                                    m%B(t)%g%c(3)%stagN2CC%U(k)*sig%y%BF(t)%GF%f(i,j,k+1)*m%B(t)%g%c(3)%stagCC2N%D( k )
-        enddo; enddo; enddo; enddo
-        !$OMP END PARALLEL DO
-        !$OMP PARALLEL DO
-        do t=1,m%s; do k=2,Minv%y%BF(t)%GF%s(3)-1; do j=2,Minv%y%BF(t)%GF%s(2)-1; do i=2,Minv%y%BF(t)%GF%s(1)-1
-        Minv%y%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(1)%stagN2CC%D(i)*sig%z%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(1)%stagCC2N%U(i-1) - &
-                                    m%B(t)%g%c(1)%stagN2CC%U(i)*sig%z%BF(t)%GF%f(i+1,j,k)*m%B(t)%g%c(1)%stagCC2N%D( i ) - &
-                                    m%B(t)%g%c(3)%stagN2CC%D(k)*sig%x%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(3)%stagCC2N%U(k-1) - &
-                                    m%B(t)%g%c(3)%stagN2CC%U(k)*sig%x%BF(t)%GF%f(i,j,k+1)*m%B(t)%g%c(3)%stagCC2N%D( k )
-        enddo; enddo; enddo; enddo
-        !$OMP END PARALLEL DO
-        !$OMP PARALLEL DO
-        do t=1,m%s; do k=2,Minv%z%BF(t)%GF%s(3)-1; do j=2,Minv%z%BF(t)%GF%s(2)-1; do i=2,Minv%z%BF(t)%GF%s(1)-1
-        Minv%z%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(1)%stagN2CC%D(i)*sig%y%BF(t)%GF%f(i, j ,k)*m%B(t)%g%c(1)%stagCC2N%U(i-1) - &
-                                    m%B(t)%g%c(1)%stagN2CC%U(i)*sig%y%BF(t)%GF%f(i+1,j,k)*m%B(t)%g%c(1)%stagCC2N%D( i ) - &
-                                    m%B(t)%g%c(2)%stagN2CC%D(j)*sig%x%BF(t)%GF%f(i, j ,k)*m%B(t)%g%c(2)%stagCC2N%U(j-1) - &
-                                    m%B(t)%g%c(2)%stagN2CC%U(j)*sig%x%BF(t)%GF%f(i,j+1,k)*m%B(t)%g%c(2)%stagCC2N%D( j )
-        enddo; enddo; enddo; enddo
-        !$OMP END PARALLEL DO
-
+        do t=1,m%s
+          call curl_curl_diagonal(Minv%x%BF(t)%GF,&
+                                  Minv%y%BF(t)%GF,&
+                                  Minv%z%BF(t)%GF,&
+                                  m%B(t)%g,&
+                                  sig%x%BF(t)%GF,&
+                                  sig%y%BF(t)%GF,&
+                                  sig%z%BF(t)%GF)
+        enddo
         call multiply(Minv,c)
         call add(Minv,1.0_cp)
         call init(vol,Minv)
@@ -158,29 +132,5 @@
         call invert(Minv)
         call zeroGhostPoints(Minv)
       end subroutine
-
-      function getPad(f) result(p)
-        implicit none
-        type(SF),intent(in) :: f
-        integer,dimension(3) :: p
-        if (f%is_CC) then;       p(1) = 0; p(2) = 0; p(3) = 0
-        elseif (f%is_Node) then; p(1) = 1; p(2) = 1; p(3) = 1
-        elseif (f%is_Face) then
-          select case (f%face)
-          case (1); p(1) = 1; p(2) = 0; p(3) = 0
-          case (2); p(1) = 0; p(2) = 1; p(3) = 0
-          case (3); p(1) = 0; p(2) = 0; p(3) = 1
-          case default; stop 'Error: face must = 1,2,3 in getPad in preconditioners.f90'
-          end select
-        elseif (f%is_Edge) then
-          select case (f%edge)
-          case (1); p(1) = 0; p(2) = 1; p(3) = 1
-          case (2); p(1) = 1; p(2) = 0; p(3) = 1
-          case (3); p(1) = 1; p(2) = 1; p(3) = 0
-          case default; stop 'Error: edge must = 1,2,3 in getPad in preconditioners.f90'
-          end select
-        else; stop 'Error: bad input to getPad in preconditioners.f90'
-        endif
-      end function
 
       end module

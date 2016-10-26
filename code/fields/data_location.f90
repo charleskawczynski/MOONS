@@ -16,15 +16,20 @@
 
        public :: CC_along,N_along
 
+       public :: CC_eye
+       public :: N_eye
+
        public :: vol_ID
 
        type data_location
-         logical :: C,N,E,F = .false.        ! cell center, cell corner, cell edge, cell face
-         integer :: face,edge = 0            ! face direction, edge direction
-         logical,dimension(3) :: CC_along = .false.
-         logical,dimension(3) :: N_along = .false.
-         logical :: defined = .false.        ! 
-         integer :: volume_ID = 0            ! face direction, edge direction
+         logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
+         integer :: face,edge = 0                    ! face direction, edge direction
+         logical,dimension(3) :: CC_along = .false.  ! 
+         logical,dimension(3) :: N_along = .false.   ! 
+         integer,dimension(3) :: CC_eye = 0          ! 
+         integer,dimension(3) :: N_eye = 0           ! 
+         logical :: defined = .false.                ! 
+         integer :: volume_ID = 0                    ! face direction, edge direction
        end type
 
        interface init;                module procedure init_copy_DL;            end interface
@@ -45,6 +50,9 @@
        interface N_along;             module procedure N_along_DL;              end interface
 
        interface vol_ID;              module procedure volume_ID_DL;            end interface
+
+       interface CC_eye;              module procedure CC_eye_DL;               end interface
+       interface N_eye;               module procedure N_eye_DL;                end interface
 
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
@@ -74,6 +82,8 @@
          DL%CC_along = DL_in%CC_along
          DL%N_along = DL_in%N_along
          DL%volume_ID = DL_in%volume_ID
+         DL%CC_eye = DL_in%CC_eye
+         DL%N_eye = DL_in%N_eye
        end subroutine
 
        subroutine init_CC_DL(DL)
@@ -84,6 +94,8 @@
          DL%defined = .true.
          DL%volume_ID = 1
          call init_CC_N_along(DL,'init_CC_DL')
+         DL%N_eye = (/0,0,0/)
+         DL%CC_eye = (/1,1,1/)
        end subroutine
 
        subroutine init_Node_DL(DL)
@@ -94,6 +106,8 @@
          DL%defined = .true.
          DL%volume_ID = 2
          call init_CC_N_along(DL,'init_Node_DL')
+         DL%N_eye = (/1,1,1/)
+         DL%CC_eye = (/0,0,0/)
        end subroutine
 
        subroutine init_Face_DL(DL,dir)
@@ -107,6 +121,11 @@
          DL%defined = .true.
          DL%volume_ID = 2+dir
          call init_CC_N_along(DL,'init_Face_DL')
+         select case (dir)
+         case (1); DL%N_eye = (/1,0,0/); DL%CC_eye = (/0,1,1/)
+         case (2); DL%N_eye = (/0,1,0/); DL%CC_eye = (/1,0,1/)
+         case (3); DL%N_eye = (/0,0,1/); DL%CC_eye = (/1,1,0/)
+         end select
        end subroutine
 
        subroutine init_Edge_DL(DL,dir)
@@ -120,6 +139,11 @@
          DL%defined = .true.
          DL%volume_ID = 5+dir
          call init_CC_N_along(DL,'init_Edge_DL')
+         select case (dir)
+         case (1); DL%N_eye = (/0,1,1/); DL%CC_eye = (/1,0,0/)
+         case (2); DL%N_eye = (/1,0,1/); DL%CC_eye = (/0,1,0/)
+         case (3); DL%N_eye = (/1,1,0/); DL%CC_eye = (/0,0,1/)
+         end select
        end subroutine
 
        subroutine delete_DL(DL)
@@ -135,6 +159,8 @@
          DL%edge = 0
          DL%defined = .false.
          DL%volume_ID = 0
+         DL%N_eye = 0
+         DL%CC_eye = 0
        end subroutine
 
        subroutine display_DL(DL,un)
@@ -190,6 +216,26 @@
          read(un,*); read(un,*) DL%N_along
          read(un,*); read(un,*) DL%volume_ID
        end subroutine
+
+       function CC_eye_DL(DL) result(I)
+         implicit none
+         type(data_location),intent(in) :: DL
+         integer,dimension(3) :: I
+#ifdef _DEBUG_DATA_LOCATION_
+         call insist_defined(DL,'CC_eye_DL')
+#endif
+         I = DL%CC_eye
+       end function
+
+       function N_eye_DL(DL) result(I)
+         implicit none
+         type(data_location),intent(in) :: DL
+         integer,dimension(3) :: I
+#ifdef _DEBUG_DATA_LOCATION_
+         call insist_defined(DL,'N_eye_DL')
+#endif
+         I = DL%N_eye
+       end function
 
        function volume_ID_DL(DL) result(volume_ID)
          implicit none
