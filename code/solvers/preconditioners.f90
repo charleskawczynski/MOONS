@@ -42,11 +42,11 @@
         !$OMP PARALLEL DO
         do t=1,m%s; do k=2,diag%BF(t)%GF%s(3)-1; do j=2,diag%BF(t)%GF%s(2)-1; do i=2,diag%BF(t)%GF%s(1)-1
         diag%BF(t)%GF%f(i,j,k) = m%B(t)%g%c(1)%stagN2CC%D(  i  )*m%B(t)%g%c(1)%stagCC2N%U( i-1 ) + &
-                              m%B(t)%g%c(1)%stagN2CC%U(i-pnx)*m%B(t)%g%c(1)%stagCC2N%D(i-pnx) + &
-                              m%B(t)%g%c(2)%stagN2CC%D(  j  )*m%B(t)%g%c(2)%stagCC2N%U( j-1 ) + &
-                              m%B(t)%g%c(2)%stagN2CC%U(j-pny)*m%B(t)%g%c(2)%stagCC2N%D(j-pny) + &
-                              m%B(t)%g%c(3)%stagN2CC%D(  k  )*m%B(t)%g%c(3)%stagCC2N%U( k-1 ) + &
-                              m%B(t)%g%c(3)%stagN2CC%U(k-pnz)*m%B(t)%g%c(3)%stagCC2N%D(k-pnz)
+                                 m%B(t)%g%c(1)%stagN2CC%U(i-pnx)*m%B(t)%g%c(1)%stagCC2N%D(i-pnx) + &
+                                 m%B(t)%g%c(2)%stagN2CC%D(  j  )*m%B(t)%g%c(2)%stagCC2N%U( j-1 ) + &
+                                 m%B(t)%g%c(2)%stagN2CC%U(j-pny)*m%B(t)%g%c(2)%stagCC2N%D(j-pny) + &
+                                 m%B(t)%g%c(3)%stagN2CC%D(  k  )*m%B(t)%g%c(3)%stagCC2N%U( k-1 ) + &
+                                 m%B(t)%g%c(3)%stagN2CC%U(k-pnz)*m%B(t)%g%c(3)%stagCC2N%D(k-pnz)
         enddo; enddo; enddo; enddo
         !$OMP END PARALLEL DO
       end subroutine
@@ -126,26 +126,26 @@
 
         !$OMP PARALLEL DO
         do t=1,m%s; do k=2,Minv%x%BF(t)%GF%s(3)-1; do j=2,Minv%x%BF(t)%GF%s(2)-1; do i=2,Minv%x%BF(t)%GF%s(1)-1
-        Minv%x%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(2)%stagN2CC%D(j)*sig%z%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(2)%stagCC2N%U(j-1) - & ! i,j-1,k is wrong
-                                 m%B(t)%g%c(2)%stagN2CC%U(j)*sig%z%BF(t)%GF%f(i,j+1,k)*m%B(t)%g%c(2)%stagCC2N%D( j ) - & ! i,j-1,k is wrong
-                                 m%B(t)%g%c(3)%stagN2CC%D(k)*sig%y%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(3)%stagCC2N%U(k-1) - &
-                                 m%B(t)%g%c(3)%stagN2CC%U(k)*sig%y%BF(t)%GF%f(i,j,k+1)*m%B(t)%g%c(3)%stagCC2N%D( k )
+        Minv%x%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(2)%stagN2CC%D(j)*sig%z%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(2)%stagCC2N%U(j-1) - &
+                                    m%B(t)%g%c(2)%stagN2CC%U(j)*sig%z%BF(t)%GF%f(i,j+1,k)*m%B(t)%g%c(2)%stagCC2N%D( j ) - &
+                                    m%B(t)%g%c(3)%stagN2CC%D(k)*sig%y%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(3)%stagCC2N%U(k-1) - &
+                                    m%B(t)%g%c(3)%stagN2CC%U(k)*sig%y%BF(t)%GF%f(i,j,k+1)*m%B(t)%g%c(3)%stagCC2N%D( k )
         enddo; enddo; enddo; enddo
         !$OMP END PARALLEL DO
         !$OMP PARALLEL DO
         do t=1,m%s; do k=2,Minv%y%BF(t)%GF%s(3)-1; do j=2,Minv%y%BF(t)%GF%s(2)-1; do i=2,Minv%y%BF(t)%GF%s(1)-1
         Minv%y%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(1)%stagN2CC%D(i)*sig%z%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(1)%stagCC2N%U(i-1) - &
-                                 m%B(t)%g%c(1)%stagN2CC%U(i)*sig%z%BF(t)%GF%f(i+1,j,k)*m%B(t)%g%c(1)%stagCC2N%D( i ) - &
-                                 m%B(t)%g%c(3)%stagN2CC%D(k)*sig%x%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(3)%stagCC2N%U(k-1) - &
-                                 m%B(t)%g%c(3)%stagN2CC%U(k)*sig%x%BF(t)%GF%f(i,j,k+1)*m%B(t)%g%c(3)%stagCC2N%D( k )
+                                    m%B(t)%g%c(1)%stagN2CC%U(i)*sig%z%BF(t)%GF%f(i+1,j,k)*m%B(t)%g%c(1)%stagCC2N%D( i ) - &
+                                    m%B(t)%g%c(3)%stagN2CC%D(k)*sig%x%BF(t)%GF%f(i,j, k )*m%B(t)%g%c(3)%stagCC2N%U(k-1) - &
+                                    m%B(t)%g%c(3)%stagN2CC%U(k)*sig%x%BF(t)%GF%f(i,j,k+1)*m%B(t)%g%c(3)%stagCC2N%D( k )
         enddo; enddo; enddo; enddo
         !$OMP END PARALLEL DO
         !$OMP PARALLEL DO
         do t=1,m%s; do k=2,Minv%z%BF(t)%GF%s(3)-1; do j=2,Minv%z%BF(t)%GF%s(2)-1; do i=2,Minv%z%BF(t)%GF%s(1)-1
         Minv%z%BF(t)%GF%f(i,j,k) = -m%B(t)%g%c(1)%stagN2CC%D(i)*sig%y%BF(t)%GF%f(i, j ,k)*m%B(t)%g%c(1)%stagCC2N%U(i-1) - &
-                                 m%B(t)%g%c(1)%stagN2CC%U(i)*sig%y%BF(t)%GF%f(i+1,j,k)*m%B(t)%g%c(1)%stagCC2N%D( i ) - &
-                                 m%B(t)%g%c(2)%stagN2CC%D(j)*sig%x%BF(t)%GF%f(i, j ,k)*m%B(t)%g%c(2)%stagCC2N%U(j-1) - &
-                                 m%B(t)%g%c(2)%stagN2CC%U(j)*sig%x%BF(t)%GF%f(i,j+1,k)*m%B(t)%g%c(2)%stagCC2N%D( j )
+                                    m%B(t)%g%c(1)%stagN2CC%U(i)*sig%y%BF(t)%GF%f(i+1,j,k)*m%B(t)%g%c(1)%stagCC2N%D( i ) - &
+                                    m%B(t)%g%c(2)%stagN2CC%D(j)*sig%x%BF(t)%GF%f(i, j ,k)*m%B(t)%g%c(2)%stagCC2N%U(j-1) - &
+                                    m%B(t)%g%c(2)%stagN2CC%U(j)*sig%x%BF(t)%GF%f(i,j+1,k)*m%B(t)%g%c(2)%stagCC2N%D( j )
         enddo; enddo; enddo; enddo
         !$OMP END PARALLEL DO
 

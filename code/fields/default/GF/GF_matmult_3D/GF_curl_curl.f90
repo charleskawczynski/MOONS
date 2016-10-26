@@ -12,11 +12,11 @@
 
         contains
 
-        subroutine curl_curl_x_GF(C,X,Y,Z,sig_inv,stencil)
+        subroutine curl_curl_x_GF(C,X,Y,Z,L,D,U)
           implicit none
           type(grid_field),intent(inout) :: C
-          type(grid_field),intent(in) :: X,Y,Z,sig_inv
-          type(stencil_3D) :: stencil
+          type(grid_field),intent(in) :: X,Y,Z,D
+          type(grid_field),dimension(3),intent(in) :: L,U
           integer :: i,j,k
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
@@ -24,13 +24,19 @@
 #endif
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
-          U%f(i+1, j , k )*stencil%x_L(i)
-          U%f(i-1, j , k )*stencil%x_D(i)
-          U%f( i ,j+1, k )*stencil%y_L(j)
-          U%f( i ,j-1, k )*stencil%y_D(j)
-          U%f( i , j ,k+1)*stencil%z_L(k)
-          U%f( i , j ,k-1)*stencil%z_D(k)
-          U%f( i , j , k )*stencil%D(i)
+          X%f( i ,j+1, k )*U(1)%f(i,j,k)+&
+          X%f( i ,j-1, k )*L(1)%f(i,j,k)+&
+          X%f( i , j ,k+1)*U(1)%f(i,j,k)+&
+          X%f( i , j ,k-1)*L(1)%f(i,j,k)+&
+          X%f( i , j , k )*D%f(i,j,k)+&
+          Y%f(i+1, j , k )*U(2)%f(i,j,k)+&
+          Y%f(i-1, j , k )*L(2)%f(i,j,k)+&
+          Y%f( i ,j+1, k )*U(2)%f(i,j,k)+&
+          Y%f( i ,j-1, k )*L(2)%f(i,j,k)+&
+          Z%f(i+1, j , k )*U(3)%f(i,j,k)+&
+          Z%f(i-1, j , k )*L(3)%f(i,j,k)+&
+          Z%f( i , j ,k+1)*U(3)%f(i,j,k)+&
+          Z%f( i , j ,k-1)*L(3)%f(i,j,k)
           enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
@@ -38,11 +44,11 @@
 #endif
         end subroutine
 
-        subroutine curl_curl_y_GF(C,X,Y,Z,sig_inv,stencil)
+        subroutine curl_curl_y_GF(C,X,Y,Z,L,D,U)
           implicit none
           type(grid_field),intent(inout) :: C
-          type(grid_field),intent(in) :: X,Y,Z,sig_inv
-          type(stencil_3D) :: stencil
+          type(grid_field),intent(in) :: X,Y,Z,D
+          type(grid_field),dimension(3),intent(in) :: L,U
           integer :: i,j,k
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
@@ -50,13 +56,19 @@
 #endif
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
-          U%f(i+1, j , k )*stencil%x_L(i)
-          U%f(i-1, j , k )*stencil%x_D(i)
-          U%f( i ,j+1, k )*stencil%y_L(j)
-          U%f( i ,j-1, k )*stencil%y_D(j)
-          U%f( i , j ,k+1)*stencil%z_L(k)
-          U%f( i , j ,k-1)*stencil%z_D(k)
-          U%f( i , j , k )*stencil%D(i)
+          X%f(i+1, j , k )*U(1)%f(i,j,k)+&
+          X%f(i-1, j , k )*L(1)%f(i,j,k)+&
+          X%f( i ,j+1, k )*U(1)%f(i,j,k)+&
+          X%f( i ,j-1, k )*L(1)%f(i,j,k)+&
+          Y%f(i+1, j , k )*U(2)%f(i,j,k)+&
+          Y%f(i-1, j , k )*L(2)%f(i,j,k)+&
+          Y%f( i , j ,k+1)*U(2)%f(i,j,k)+&
+          Y%f( i , j ,k-1)*L(2)%f(i,j,k)+&
+          Y%f( i , j , k )*D%f(i,j,k)+&
+          Z%f( i ,j+1, k )*U(3)%f(i,j,k)+&
+          Z%f( i ,j-1, k )*L(3)%f(i,j,k)+&
+          Z%f( i , j ,k+1)*U(3)%f(i,j,k)+&
+          Z%f( i , j ,k-1)*L(3)%f(i,j,k)
           enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
@@ -64,11 +76,11 @@
 #endif
         end subroutine
 
-        subroutine curl_curl_z_GF(C,X,Y,Z,stencil)
+        subroutine curl_curl_z_GF(C,X,Y,Z,L,D,U)
           implicit none
           type(grid_field),intent(inout) :: C
-          type(grid_field),intent(in) :: X,Y,Z
-          type(stencil_3D) :: stencil
+          type(grid_field),intent(in) :: X,Y,Z,D
+          type(grid_field),dimension(3),intent(in) :: L,U
           integer :: i,j,k
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
@@ -76,13 +88,19 @@
 #endif
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
-          U%f(i+1, j , k )*stencil%x_L(i)
-          U%f(i-1, j , k )*stencil%x_D(i)
-          U%f( i ,j+1, k )*stencil%y_L(j)
-          U%f( i ,j-1, k )*stencil%y_D(j)
-          U%f( i , j ,k+1)*stencil%z_L(k)
-          U%f( i , j ,k-1)*stencil%z_D(k)
-          U%f( i , j , k )*stencil%D(i)
+          X%f(i+1, j , k )*U(1)%f(i,j,k)+&
+          X%f(i-1, j , k )*L(1)%f(i,j,k)+&
+          X%f( i , j ,k+1)*U(1)%f(i,j,k)+&
+          X%f( i , j ,k-1)*L(1)%f(i,j,k)+&
+          Y%f( i ,j+1, k )*U(2)%f(i,j,k)+&
+          Y%f( i ,j-1, k )*L(2)%f(i,j,k)+&
+          Y%f( i , j ,k+1)*U(2)%f(i,j,k)+&
+          Y%f( i , j ,k-1)*L(2)%f(i,j,k)+&
+          Z%f(i+1, j , k )*U(3)%f(i,j,k)+&
+          Z%f(i-1, j , k )*L(3)%f(i,j,k)+&
+          Z%f( i ,j+1, k )*U(3)%f(i,j,k)+&
+          Z%f( i ,j-1, k )*L(3)%f(i,j,k)+&
+          Z%f( i , j , k )*D%f(i,j,k)
           enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO

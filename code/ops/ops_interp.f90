@@ -213,8 +213,8 @@
 #endif
            do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
            t = i*p(1) + j*p(2) + k*p(3)
-           f(i+p(1),j+p(2),k+p(3)) = g(i+p(1),j+p(2),k+p(3))*gd%c(dir)%alpha(t) + &
-                                     g(i,j,k)*gd%c(dir)%beta(t)
+           f(i+p(1),j+p(2),k+p(3)) = g(i+p(1),j+p(2),k+p(3))*gd%c(dir)%theta%D%f(t) + &
+                                     g(i,j,k)*gd%c(dir)%theta%U%f(t)
            enddo; enddo; enddo
 #ifdef _PARALLELIZE_INTERP_
            !$OMP END DO

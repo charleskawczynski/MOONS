@@ -1,12 +1,12 @@
       module array_mod
       use current_precision_mod
       implicit none
-
       private
       public :: array
       public :: init,delete,display,print,export,import
 
-      public :: add
+      public :: assign,add
+      public :: insist_allocated
 
       type array
         integer :: N
@@ -14,8 +14,9 @@
       end type
 
       interface init;               module procedure init_array_size;            end interface
+      interface init;               module procedure init_array_value;           end interface
       interface init;               module procedure init_array;                 end interface
-      interface init;               module procedure init_array_Copy;            end interface
+      interface init;               module procedure init_array_copy;            end interface
       interface delete;             module procedure delete_array;               end interface
       interface display;            module procedure display_array;              end interface
       interface print;              module procedure print_array;                end interface
@@ -23,7 +24,9 @@
       interface import;             module procedure import_array;               end interface
 
       interface insist_allocated;   module procedure insist_allocated_array;     end interface
+      interface check_bounds;       module procedure check_bounds_array;         end interface
       interface add;                module procedure add_array;                  end interface
+      interface assign;             module procedure assign_array;               end interface
 
       contains
 
@@ -33,10 +36,24 @@
         implicit none
         type(array),intent(inout) :: A
         integer,intent(in) :: N
+#ifdef _DEBUG_ARRAY_
         if (N.lt.1) stop 'Error: array size must be > 0 in init_array in array.f90'
+#endif
         call delete(A)
         A%N = N
         allocate(A%f(N))
+      end subroutine
+
+      subroutine init_array_value(A,v,i)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: v
+        integer,intent(in) :: i
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'init_array_value')
+        call check_bounds(A,i,'init_array_value')
+#endif
+        A%f(i) = v
       end subroutine
 
       subroutine init_array(A,f,N)
@@ -45,6 +62,7 @@
         integer,intent(in) :: N
         real(cp),dimension(N),intent(in) :: f
         call delete(A)
+#ifdef _DEBUG_ARRAY_
         if (N.ne.size(f)) then
           write(*,*) 'Error: bad size input to init_array in array.f90'
           write(*,*) 'N = ',N
@@ -52,20 +70,22 @@
           write(*,*) 'f = ',f
           stop 'Done'
         endif
+#endif
         call init(A,N)
         A%f = f
       end subroutine
 
-      subroutine init_array_copy(A_out,A_in)
+      subroutine init_array_copy(A,A_in)
         implicit none
-        type(array),intent(inout) :: A_out
+        type(array),intent(inout) :: A
         type(array),intent(in) :: A_in
-        if (.not.allocated(A_in%f)) stop 'Error: input array is not allocated in array.f90'
+#ifdef _DEBUG_ARRAY_
         call insist_allocated(A_in,'init_array_copy')
-        call delete(A_out)
-        A_out%N = A_in%N
-        allocate(A_out%f(A_out%N))
-        A_out%f = A_in%f
+#endif
+        call delete(A)
+        A%N = A_in%N
+        allocate(A%f(A%N))
+        A%f = A_in%f
       end subroutine
 
       subroutine delete_array(A)
@@ -80,7 +100,9 @@
         type(array),intent(in) :: A
         integer,intent(in) :: un
         integer :: i
+#ifdef _DEBUG_ARRAY_
         call insist_allocated(A,'display_array')
+#endif
         write(un,*) 'A%N = ',A%N
         write(un,*) 'f = '
         do i=1,A%N; write(un,*) A%f(i); enddo
@@ -97,7 +119,9 @@
         type(array),intent(in) :: A
         integer,intent(in) :: un
         integer :: i
+#ifdef _DEBUG_ARRAY_
         call insist_allocated(A,'export_array')
+#endif
         write(un,*) 'A%N = '; write(un,*) A%N
         write(un,*) 'f = '
         do i=1,A%N; write(un,*) A%f(i); enddo
@@ -126,15 +150,42 @@
         endif
       end subroutine
 
+      subroutine check_bounds_array(A,i,caller)
+        implicit none
+        type(array),intent(in) :: A
+        integer,intent(in) :: i
+        character(len=*),intent(in) :: caller
+        logical,dimension(2) :: L
+        L(1) = i.ge.1
+        L(2) = i.le.A%N
+        if (.not.all(L)) then
+         write(*,*) 'Error: bounds error in ',caller,' in array.f90'
+         stop 'Done'
+        endif
+      end subroutine
+
+      subroutine assign_array(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(B,'assign_array (2)')
+#endif
+        if (.not.allocated(A%f)) call init(A,B%N)
+        A%f = B%f
+      end subroutine
+
       subroutine add_array(A,B)
         implicit none
         type(array),intent(inout) :: A
         type(array),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
         call insist_allocated(A,'add_array (1)')
         call insist_allocated(B,'add_array (2)')
         if (A%N.ne.B%N) then
           stop 'Error: size mismatch in add_array in array.f90'
         endif
+#endif
         A%f = A%f + B%f
       end subroutine
 

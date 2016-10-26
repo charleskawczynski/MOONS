@@ -2,6 +2,7 @@
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
       use current_precision_mod
       use triDiag_mod
+      use sparse_mod
       use IO_tools_mod
       implicit none
 
@@ -30,7 +31,7 @@
         type(triDiag) :: stagCC2N,stagN2CC
         type(triDiag),dimension(2) :: colCC,colN
         type(triDiag),dimension(2) :: colCC_centered
-        real(cp),dimension(:),allocatable :: alpha,beta ! Interpolation coefficients
+        type(sparse) :: theta                           ! Interpolation coefficients
         real(cp),dimension(:),allocatable :: hn         ! Cell corner coordinates
         real(cp),dimension(:),allocatable :: hc         ! Cell center coordinates
         real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
@@ -178,14 +179,12 @@
         call delete(c)
         if (.not.d%defined) stop 'Error: trying to copy undefined coordinate in coordinates.f90'
 
-        if (.not.allocated(d%alpha)) stop 'Error: d%alpha not allocated in coordinates.f90'
-        if (.not.allocated(d%beta))  stop 'Error: d%beta  not allocated in coordinates.f90'
+        call insist_allocated(d%theta,'initCopy coordinates')
         if (.not.allocated(d%hn))    stop 'Error: d%hn    not allocated in coordinates.f90'
         if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
         if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
         if (.not.allocated(d%dhc))   stop 'Error: d%dhc   not allocated in coordinates.f90'
-        allocate(c%alpha(size(d%alpha))); c%alpha = d%alpha
-        allocate(c%beta(size(d%beta)));   c%beta  = d%beta
+        call init(c%theta,d%theta)
         allocate(c%hn(size(d%hn)));       c%hn    = d%hn
         allocate(c%hc(size(d%hc)));       c%hc    = d%hc
         allocate(c%dhn(size(d%dhn)));     c%dhn   = d%dhn
@@ -219,8 +218,7 @@
         if (allocated(c%hc)) deallocate(c%hc)
         if (allocated(c%dhn)) deallocate(c%dhn)
         if (allocated(c%dhc)) deallocate(c%dhc)
-        if (allocated(c%alpha)) deallocate(c%alpha)
-        if (allocated(c%beta)) deallocate(c%beta)
+        call delete(c%theta)
         call delete(c%stagCC2N); call delete(c%stagN2CC)
         call delete(c%colCC(1)); call delete(c%colN(1))
         call delete(c%colCC(2)); call delete(c%colN(2))
@@ -654,21 +652,22 @@
       subroutine init_interpStencil(c)
         implicit none
         type(coordinates),intent(inout) :: c
+        real(cp),dimension(2) :: v
         integer :: t
+        call delete(c%theta)
         if (c%sc.gt.1) then
-          if (allocated(c%alpha)) deallocate(c%alpha)
-          if (allocated(c%beta)) deallocate(c%beta)
-          allocate(c%alpha(c%sc-1))
-          allocate(c%beta(c%sc-1))
-          do t=1,size(c%alpha)
-            c%alpha(t) = (c%hn(t+1) - c%hc(t))/(c%hc(t+1) - c%hc(t))
-            c%beta(t) = 1.0_cp - c%alpha(t)
+          call init(c%theta,c%sc-1)
+          do t=1,c%theta%D%N
+            v(1) = (c%hn(t+1) - c%hc(t))/(c%hc(t+1) - c%hc(t))
+            call init(c%theta%D,v(1),t)
+            v(2) = 1.0_cp - c%theta%D%f(t)
+            call init(c%theta%U,v(2),t)
           enddo
+          call init_L(c%theta,(/0.0_cp/),1)
         elseif (c%sc.eq.1) then
-          if (allocated(c%alpha)) deallocate(c%alpha)
-          if (allocated(c%beta)) deallocate(c%beta)
-          allocate(c%alpha(1)); c%alpha(1) = 0.0_cp
-          allocate(c%beta(1)); c%beta(1) = 1.0_cp
+          call init_D(c%theta,(/0.0_cp/),1)
+          call init_U(c%theta,(/1.0_cp/),1)
+          call init_L(c%theta,(/0.0_cp/),1)
         else; stop 'Error: c%sc must > 1 in init_interpStencil in coordinates.f90'
         endif
       end subroutine

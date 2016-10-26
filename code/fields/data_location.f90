@@ -11,6 +11,9 @@
        public :: init_Face, is_Face
        public :: init_Edge, is_Edge
 
+       public :: get_Face
+       public :: get_Edge
+
        public :: CC_along,N_along
 
        public :: vol_ID
@@ -34,6 +37,9 @@
        interface is_Node;             module procedure is_Node_DL;              end interface
        interface is_Face;             module procedure is_Face_DL;              end interface
        interface is_Edge;             module procedure is_Edge_DL;              end interface
+
+       interface get_Face;            module procedure get_Face_DL;             end interface
+       interface get_Edge;            module procedure get_Edge_DL;             end interface
 
        interface CC_along;            module procedure CC_along_DL;             end interface
        interface N_along;             module procedure N_along_DL;              end interface
@@ -235,6 +241,28 @@
          L = DL%F
        end function
 
+       function get_Face_DL(DL) result(dir)
+         implicit none
+         type(data_location),intent(in) :: DL
+         integer :: dir
+#ifdef _DEBUG_DATA_LOCATION_
+         call insist_defined(DL,'get_Face_DL')
+         call insist_valid_dir(DL,dir,'get_Face_DL')
+#endif
+         dir = DL%face
+       end function
+
+       function get_Edge_DL(DL) result(dir)
+         implicit none
+         type(data_location),intent(in) :: DL
+         integer :: dir
+#ifdef _DEBUG_DATA_LOCATION_
+         call insist_defined(DL,'get_Edge_DL')
+         call insist_valid_dir(DL,dir,'get_Edge_DL')
+#endif
+         dir = DL%edge
+       end function
+
        function CC_along_DL(DL,dir) result(L)
          implicit none
          type(data_location),intent(in) :: DL
@@ -242,7 +270,7 @@
          logical :: L
 #ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'CC_along_DL')
-         call insist_valid_dir(DL,dir,'init_Edge_DL')
+         call insist_valid_dir(DL,dir,'CC_along_DL')
 #endif
          L = DL%CC_along(dir)
        end function
@@ -254,7 +282,7 @@
          logical :: L
 #ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'N_along_DL')
-         call insist_valid_dir(DL,dir,'init_Edge_DL')
+         call insist_valid_dir(DL,dir,'N_along_DL')
 #endif
          L = DL%N_along(dir)
        end function

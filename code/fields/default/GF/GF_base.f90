@@ -1,6 +1,7 @@
       module GF_base_mod
         use current_precision_mod
         use grid_mod
+        use data_location_mod
         implicit none
         private
 
@@ -20,6 +21,7 @@
           real(cp),dimension(:,:,:),allocatable :: f ! field
         end type
 
+        interface init;                     module procedure init_DL_GF;             end interface
         interface init;                     module procedure init_GF_copy;           end interface
         interface delete;                   module procedure delete_GF;              end interface
         interface display;                  module procedure display_GF;             end interface
@@ -39,6 +41,19 @@
         ! **********************************************************
         ! ********************* ESSENTIALS *************************
         ! **********************************************************
+
+        subroutine init_DL_GF(a,g,DL)
+          implicit none
+          type(grid_field),intent(inout) :: a
+          type(data_location),intent(in) :: DL
+          type(grid),intent(in) :: g
+          if (is_CC(DL)) then; call init_CC(a,g)
+          elseif (is_Node(DL)) then; call init_Node(a,g)
+          elseif (is_Face(DL)) then; call init_Face(a,g,get_face(DL))
+          elseif (is_Edge(DL)) then; call init_Edge(a,g,get_edge(DL))
+          else; stop 'Erorr: bad input to init_DL_GF in GF_base.f90'
+          endif
+        end subroutine
 
         subroutine init_GF_shape(a,Nx,Ny,Nz)
           implicit none
