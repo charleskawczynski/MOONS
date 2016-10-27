@@ -2,6 +2,9 @@
        use current_precision_mod
        use grid_mod
        use GF_mod
+       use sparse_mod
+       use stencil_mod
+       use stencil_field_mod
        use data_location_mod
        use IO_tools_mod
        implicit none
@@ -18,6 +21,8 @@
          type(grid),dimension(:),allocatable :: e,eb      ! Edges (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: c,cb      ! Corners (boundary,ghost,interior)
          type(grid_field),dimension(:),allocatable :: vol ! index must match volume_ID in data_location
+         type(stencil_field),dimension(3) :: curl_curl
+         type(stencil_field),dimension(3) :: lap_F_VF
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -45,6 +50,63 @@
          call delete(B)
          call init(B%g,g)
          call init_vol_block(B)
+         ! call init_curl_curl_stencil_block(B)
+         call init_Laplacian_stencil_block(B)
+       end subroutine
+
+       subroutine init_curl_curl_stencil_block(B)
+         implicit none
+         type(block),intent(inout) :: B
+         type(stencil) :: S
+         type(data_location) :: DL
+         integer :: dir
+         dir = 1; call init_Face(DL,dir)
+         call init(S%S(1),B%g%c(1)%stagN2CC)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call combine_diag(S,DL)
+         call init(B%curl_curl(dir),S,B%g,DL)
+
+         dir = 2; call init_Face(DL,dir)
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagN2CC)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call combine_diag(S,DL)
+         call init(B%curl_curl(dir),S,B%g,DL)
+
+         dir = 3; call init_Face(DL,dir)
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagN2CC)
+         call combine_diag(S,DL)
+         call init(B%curl_curl(dir),S,B%g,DL)
+         call delete(DL)
+         call delete(S)
+       end subroutine
+
+       subroutine init_Laplacian_stencil_block(B)
+         implicit none
+         type(block),intent(inout) :: B
+         type(stencil) :: S
+         type(data_location) :: DL
+         integer :: dir
+         dir = 1; call init_Face(DL,dir)
+         call init(S%S(1),B%g%c(1)%colN(2))
+         call init(S%S(2),B%g%c(2)%colCC(2))
+         call init(S%S(3),B%g%c(3)%colCC(2))
+         call init(B%lap_F_VF(dir),S,B%g,DL)
+         dir = 2; call init_Face(DL,dir)
+         call init(S%S(1),B%g%c(1)%colCC(2))
+         call init(S%S(2),B%g%c(2)%colN(2))
+         call init(S%S(3),B%g%c(3)%colCC(2))
+         call init(B%lap_F_VF(dir),S,B%g,DL)
+         dir = 3; call init_Face(DL,dir)
+         call init(S%S(1),B%g%c(1)%colCC(2))
+         call init(S%S(2),B%g%c(2)%colCC(2))
+         call init(S%S(3),B%g%c(3)%colN(2))
+         call init(B%lap_F_VF(dir),S,B%g,DL)
+         call delete(DL)
+         call delete(S)
        end subroutine
 
        subroutine init_vol_block(B)

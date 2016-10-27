@@ -127,6 +127,7 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # FC_DEBUG += -D_DEBUG_APPLY_STITCHES
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_DATA_LOCATION_
+FC_DEBUG += -D_DEBUG_ARRAY_
 FC_DEBUG += -D_DEBUG_GF_
 FC_DEBUG += -D_DEBUG_OPS_NORMS_
 FC_DEBUG += -D_DEBUG_SF_
@@ -266,6 +267,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
 	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\

@@ -6,6 +6,9 @@
       public :: sparse
       public :: init,delete,display,print,export,import
 
+      public :: consecutive_stag_CC
+      public :: consecutive_stag_N
+
       public :: init_L,init_D,init_U
       public :: check
       public :: insist_allocated
@@ -14,21 +17,25 @@
         type(array) :: L,D,U
       end type
 
-      interface init;                module procedure init_sparse_size;         end interface
-      interface init;                module procedure init_sparse_3;            end interface
-      interface init;                module procedure init_sparse_1;            end interface
-      interface init;                module procedure init_Copy;                end interface
-      interface init_L;              module procedure init_sparse_L;            end interface
-      interface init_D;              module procedure init_sparse_D;            end interface
-      interface init_U;              module procedure init_sparse_U;            end interface
-      interface delete;              module procedure delete_sparse;            end interface
-      interface print;               module procedure print_sparse;             end interface
-      interface display;             module procedure display_sparse;           end interface
-      interface import;              module procedure import_sparse;            end interface
-      interface export;              module procedure export_sparse;            end interface
+      interface init;                module procedure init_sparse_size;           end interface
+      interface init;                module procedure init_sparse_3;              end interface
+      interface init;                module procedure init_sparse_3_array;        end interface
+      interface init;                module procedure init_sparse_1;              end interface
+      interface init;                module procedure init_Copy;                  end interface
+      interface init_L;              module procedure init_sparse_L;              end interface
+      interface init_D;              module procedure init_sparse_D;              end interface
+      interface init_U;              module procedure init_sparse_U;              end interface
+      interface delete;              module procedure delete_sparse;              end interface
+      interface print;               module procedure print_sparse;               end interface
+      interface display;             module procedure display_sparse;             end interface
+      interface import;              module procedure import_sparse;              end interface
+      interface export;              module procedure export_sparse;              end interface
 
-      interface check;               module procedure check_sparse;             end interface
-      interface insist_allocated;    module procedure insist_allocated_sparse;  end interface
+      interface check;               module procedure check_sparse;               end interface
+      interface insist_allocated;    module procedure insist_allocated_sparse;    end interface
+
+      interface consecutive_stag_CC; module procedure consecutive_stag_CC_sparse; end interface
+      interface consecutive_stag_N;  module procedure consecutive_stag_N_sparse;  end interface
 
       contains
 
@@ -40,6 +47,16 @@
         call init(S%L,N)
         call init(S%D,N)
         call init(S%U,N)
+      end subroutine
+
+      subroutine init_sparse_3_array(S,L,D,U)
+        implicit none
+        type(sparse),intent(inout) :: S
+        type(array),intent(in) :: L,D,U
+        call delete(S)
+        call init(S%L,L)
+        call init(S%D,D)
+        call init(S%U,U)
       end subroutine
 
       subroutine init_sparse_3(S,L,D,U,N_L,N_D,N_U)
@@ -174,6 +191,66 @@
         call insist_allocated(S%L,caller//' sparse(L)')
         call insist_allocated(S%D,caller//' sparse(D)')
         call insist_allocated(S%U,caller//' sparse(U)')
+      end subroutine
+
+      subroutine consecutive_stag_CC_sparse(S,CC,N)
+        implicit none
+        type(sparse),intent(inout) :: S
+        type(sparse),intent(in) :: CC,N
+        type(array) :: L_CC,U_CC
+        type(array) :: L_N,U_N
+        type(array),dimension(2) :: D_CC,D_N,D_combined
+        type(array) :: L,D,U
+        integer :: e
+
+        call init(L_CC,CC%D%f,CC%D%N)
+        call init(D_CC(1),(/CC%D%f,0.0_cp/),CC%D%N+1)
+        call init(D_CC(2),(/0.0_cp,CC%U%f/),CC%U%N+1)
+        call init(U_CC,CC%U%f,CC%U%N)
+
+        e = N%D%N; call init(L_N   ,N%D%f(2:e),N%D%N-1)
+        e = N%D%N; call init(D_N(1),N%D%f(2:e),N%D%N-1)
+        e = N%U%N; call init(D_N(2),N%U%f(1:e-1),N%U%N-1)
+        e = N%U%N; call init(U_N   ,N%U%f(1:e-1),N%U%N-1)
+
+        call multiply(L,L_CC,L_N)
+        call multiply(U,U_CC,U_N)
+
+        call multiply(D_combined(1),D_CC(1),D_N(1))
+        call multiply(D_combined(2),D_CC(2),D_N(2))
+        call add(D,D_combined(1),D_combined(2))
+
+        call init(S,L,D,U)
+      end subroutine
+
+      subroutine consecutive_stag_N_sparse(S,CC,N)
+        implicit none
+        type(sparse),intent(inout) :: S
+        type(sparse),intent(in) :: CC,N
+        type(array) :: L_CC,U_CC
+        type(array) :: L_N,U_N
+        type(array),dimension(2) :: D_CC,D_N,D_combined
+        type(array) :: L,D,U
+        integer :: e
+
+        call init(L_CC,CC%D%f,CC%D%N)
+        call init(D_CC(1),(/CC%D%f,0.0_cp/),CC%D%N+1)
+        call init(D_CC(2),(/0.0_cp,CC%U%f/),CC%U%N+1)
+        call init(U_CC,CC%U%f,CC%U%N)
+
+        e = N%D%N; call init(L_N   ,N%D%f(2:e),N%D%N-1)
+        e = N%D%N; call init(D_N(1),N%D%f(2:e),N%D%N-1)
+        e = N%U%N; call init(D_N(2),N%U%f(1:e-1),N%U%N-1)
+        e = N%U%N; call init(U_N   ,N%U%f(1:e-1),N%U%N-1)
+
+        call multiply(L,L_CC,L_N)
+        call multiply(U,U_CC,U_N)
+
+        call multiply(D_combined(1),D_CC(1),D_N(1))
+        call multiply(D_combined(2),D_CC(2),D_N(2))
+        call add(D,D_combined(1),D_combined(2))
+
+        call init(S,L,D,U)
       end subroutine
 
       end module

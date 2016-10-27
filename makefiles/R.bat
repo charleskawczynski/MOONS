@@ -1,0 +1,2 @@
+cls
+gmake run

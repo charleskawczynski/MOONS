@@ -5,7 +5,7 @@
       public :: array
       public :: init,delete,display,print,export,import
 
-      public :: assign,add
+      public :: assign,add,multiply
       public :: insist_allocated
 
       type array
@@ -23,10 +23,15 @@
       interface export;             module procedure export_array;               end interface
       interface import;             module procedure import_array;               end interface
 
-      interface insist_allocated;   module procedure insist_allocated_array;     end interface
-      interface check_bounds;       module procedure check_bounds_array;         end interface
-      interface add;                module procedure add_array;                  end interface
       interface assign;             module procedure assign_array;               end interface
+      interface add;                module procedure add_array;                  end interface
+      interface add;                module procedure add_array_2;                end interface
+      interface multiply;           module procedure multiply_array;             end interface
+      interface multiply;           module procedure multiply_array_2;           end interface
+
+      interface check_bounds;       module procedure check_bounds_array;         end interface
+      interface insist_allocated;   module procedure insist_allocated_array;     end interface
+      interface insist_equal_sizes; module procedure insist_equal_sizes_array;   end interface
 
       contains
 
@@ -140,12 +145,78 @@
 
       ! ***************************************************************
 
+      subroutine assign_array(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(B,'assign_array (2)')
+#endif
+        if (.not.allocated(A%f)) call init(A,B%N)
+        A%f = B%f
+      end subroutine
+
+      subroutine add_array(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'add_array (A)')
+        call insist_allocated(B,'add_array (B)')
+        call insist_equal_sizes(A,B,'add_array')
+#endif
+        A%f = A%f + B%f
+      end subroutine
+      subroutine add_array_2(A,B,C)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B,C
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'add_array (A)')
+        call insist_allocated(B,'add_array (B)')
+        call insist_allocated(C,'add_array (C)')
+        call insist_equal_sizes(A,B,'add_array (A,B)')
+        call insist_equal_sizes(A,C,'add_array (A,C)')
+#endif
+        A%f = B%f + C%f
+      end subroutine
+
+      subroutine multiply_array(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'multiply_array (A)')
+        call insist_allocated(B,'multiply_array (B)')
+        call insist_equal_sizes(A,B,'multiply_array')
+#endif
+        A%f = A%f*B%f
+      end subroutine
+      subroutine multiply_array_2(A,B,C)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B,C
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'multiply_array (A)')
+        call insist_allocated(B,'multiply_array (B)')
+        call insist_allocated(C,'multiply_array (C)')
+        call insist_equal_sizes(A,B,'multiply_array (A,B)')
+        call insist_equal_sizes(A,C,'multiply_array (A,C)')
+#endif
+        A%f = B%f*C%f
+      end subroutine
+
+      ! ***************************************************************
+      ! *********************** DEBUG *********************************
+      ! ***************************************************************
+
       subroutine insist_allocated_array(A,caller)
         implicit none
         type(array),intent(in) :: A
         character(len=*),intent(in) :: caller
         if (.not.allocated(A%f)) then
          write(*,*) 'Error: input array is not allocated in ',caller,' in array.f90'
+         write(*,*) 'A%N = ',A%N
          stop 'Done'
         endif
       end subroutine
@@ -164,29 +235,26 @@
         endif
       end subroutine
 
-      subroutine assign_array(A,B)
+      subroutine insist_equal_sizes_array(A,B,caller)
         implicit none
-        type(array),intent(inout) :: A
-        type(array),intent(in) :: B
+        type(array),intent(in) :: A,B
+        character(len=*),intent(in) :: caller
 #ifdef _DEBUG_ARRAY_
-        call insist_allocated(B,'assign_array (2)')
-#endif
-        if (.not.allocated(A%f)) call init(A,B%N)
-        A%f = B%f
-      end subroutine
-
-      subroutine add_array(A,B)
-        implicit none
-        type(array),intent(inout) :: A
-        type(array),intent(in) :: B
-#ifdef _DEBUG_ARRAY_
-        call insist_allocated(A,'add_array (1)')
-        call insist_allocated(B,'add_array (2)')
+        call insist_allocated(A,'insist_equal_sizes_array in '//caller//' (A)')
+        call insist_allocated(B,'insist_equal_sizes_array in '//caller//' (B)')
         if (A%N.ne.B%N) then
-          stop 'Error: size mismatch in add_array in array.f90'
+          write(*,*) 'Error: N mismatch in ',caller,' in array.f90'
+          write(*,*) 'A%N = ',A%N
+          write(*,*) 'B%N = ',B%N
+          stop 'Done'
+        endif
+        if (size(A%f).ne.size(B%f)) then
+          write(*,*) 'Error: size mismatch in ',caller,' in array.f90'
+          write(*,*) 'A%N = ',size(A%f)
+          write(*,*) 'B%N = ',size(B%f)
+          stop 'Done'
         endif
 #endif
-        A%f = A%f + B%f
       end subroutine
 
       end module

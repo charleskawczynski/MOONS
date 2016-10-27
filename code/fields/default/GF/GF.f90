@@ -20,6 +20,7 @@
         use GF_cross_product_mod
         use GF_multiply_wall_mod
         use GF_square_mod
+        use GF_laplacian_mod
         use GF_mean_along_dir_mod
 
         implicit none
@@ -38,6 +39,7 @@
         public :: sine_waves
         public :: cosine_waves
         public :: random_noise
+        public :: laplacian
 
         ! GF_surface_flux_mod
         public :: plane_sum_x

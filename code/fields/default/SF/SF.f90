@@ -48,6 +48,8 @@
         public :: cross_product_y
         public :: cross_product_z
 
+        public :: laplacian_test_SF_VF
+
         ! Monitoring
         public :: print_BCs
         public :: export_BCs
@@ -675,6 +677,17 @@
           type(SF),intent(inout) :: u
           integer :: i
           do i=1,u%s; call random_noise(u%BF(i)); enddo
+        end subroutine
+
+        subroutine laplacian_test_SF_VF(lapX,lapY,lapZ,X,Y,Z,m)
+          implicit none
+          type(SF),intent(inout) :: lapX,lapY,lapZ
+          type(SF),intent(in) :: X,Y,Z
+          type(mesh),intent(in) :: m
+          integer :: i
+          do i=1,m%s; call laplacian_test_BF_VF(lapX%BF(i),lapY%BF(i),lapZ%BF(i),&
+                                                X%BF(i),Y%BF(i),Z%BF(i),&
+                                                m%B(i)); enddo
         end subroutine
 
         subroutine assign_ghost_XPeriodic_SF(u,val)

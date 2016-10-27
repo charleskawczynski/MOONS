@@ -56,6 +56,8 @@
         public :: cross_product_y
         public :: cross_product_z
 
+        public :: laplacian_test_BF_VF
+
         type block_field
           type(grid_field) :: GF ! bulk
           type(boundary_conditions) :: BCs
@@ -689,6 +691,16 @@
          implicit none
          type(block_field),intent(inout) :: u
          call symmetry_local_z(u%GF)
+       end subroutine
+
+       subroutine laplacian_test_BF_VF(lapX,lapY,lapZ,X,Y,Z,B)
+         implicit none
+         type(block_field),intent(inout) :: lapX,lapY,lapZ
+         type(block_field),intent(in) :: X,Y,Z
+         type(block),intent(in) :: B
+         call laplacian(lapX%GF,X%GF,B%lap_F_VF(1)%L,B%lap_F_VF(1)%D,B%lap_F_VF(1)%U)
+         call laplacian(lapY%GF,Y%GF,B%lap_F_VF(2)%L,B%lap_F_VF(2)%D,B%lap_F_VF(2)%U)
+         call laplacian(lapZ%GF,Z%GF,B%lap_F_VF(3)%L,B%lap_F_VF(3)%D,B%lap_F_VF(3)%U)
        end subroutine
 
       end module

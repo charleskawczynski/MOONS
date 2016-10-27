@@ -18,7 +18,7 @@
       type stencil_field
         type(grid_field),dimension(3) :: L,U  ! lower and upper diagonal fields
         type(grid_field) :: D                 ! diagonal field
-        type(stencil) :: S                    ! 1D stencil
+        type(stencil) :: S                    ! 3D stencil in sparse format for 1D loops
       end type
 
       interface init;               module procedure init_stencil_field;              end interface
@@ -43,7 +43,6 @@
         type(data_location),intent(in) :: DL
         call delete(SF)
         call init(SF%S,S)
-        call combine_diag(SF%S)
         call set_GF(SF,g,DL)
       end subroutine
 
@@ -57,21 +56,22 @@
         do i=1,3; call init(SF%L(i),g,DL); enddo
         do i=1,3; call init(SF%U(i),g,DL); enddo
         call init(SF%D,g,DL)
-
+        call assign(SF%D,0.0_cp)
+        do t=1,3; call assign(SF%L(t),0.0_cp); enddo
+        do t=1,3; call assign(SF%U(t),0.0_cp); enddo
         t = 1
-        s=SF%L(t)%s;do k=1,s(3);do j=1,s(2);do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(i);enddo;enddo;enddo
-        s=SF%U(t)%s;do k=1,s(3);do j=1,s(2);do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(i);enddo;enddo;enddo
+        s=SF%L(t)%s;do k=1,s(3);do j=1,s(2);do i=2,s(1)-1;SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(i-1);enddo;enddo;enddo
+        s=SF%U(t)%s;do k=1,s(3);do j=1,s(2);do i=2,s(1)-1;SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(i-1);enddo;enddo;enddo
         t = 2
-        s=SF%L(t)%s;do k=1,s(3);do j=1,s(2);do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(i);enddo;enddo;enddo
-        s=SF%U(t)%s;do k=1,s(3);do j=1,s(2);do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(i);enddo;enddo;enddo
+        s=SF%L(t)%s;do k=1,s(3);do j=2,s(2)-1;do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(j-1);enddo;enddo;enddo
+        s=SF%U(t)%s;do k=1,s(3);do j=2,s(2)-1;do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(j-1);enddo;enddo;enddo
         t = 3
-        s=SF%L(t)%s;do k=1,s(3);do j=1,s(2);do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(i);enddo;enddo;enddo
-        s=SF%U(t)%s;do k=1,s(3);do j=1,s(2);do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(i);enddo;enddo;enddo
-
+        s=SF%L(t)%s;do k=2,s(3)-1;do j=1,s(2);do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(k-1);enddo;enddo;enddo
+        s=SF%U(t)%s;do k=2,s(3)-1;do j=1,s(2);do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(k-1);enddo;enddo;enddo
         s = SF%D%s
-        do k=1,s(3); do j=1,s(2); do i=1,s(1)
-          SF%D%f(i,j,k) = SF%S%D%f(i)
-        enddo; enddo; enddo
+        do k=1,s(3);do j=1,s(2);do i=2,s(1)-1;SF%D%f(i,j,k)=SF%D%f(i,j,k)+SF%S%S(1)%D%f(i-1);enddo;enddo;enddo
+        do k=1,s(3);do j=2,s(2)-1;do i=1,s(1);SF%D%f(i,j,k)=SF%D%f(i,j,k)+SF%S%S(2)%D%f(j-1);enddo;enddo;enddo
+        do k=2,s(3)-1;do j=1,s(2);do i=1,s(1);SF%D%f(i,j,k)=SF%D%f(i,j,k)+SF%S%S(3)%D%f(k-1);enddo;enddo;enddo
       end subroutine
 
       subroutine multiply_stencil_field_SF(SF,U)

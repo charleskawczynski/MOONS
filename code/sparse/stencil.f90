@@ -2,6 +2,7 @@
       use array_mod
       use sparse_mod
       use current_precision_mod
+      use data_location_mod
       implicit none
       private
       public :: stencil
@@ -32,15 +33,16 @@
 
       contains
 
-      subroutine init_stencil(S,X,Y,Z)
+      subroutine init_stencil(S,X,Y,Z,DL)
         implicit none
         type(stencil),intent(inout) :: S
         type(sparse),intent(in) :: X,Y,Z
+        type(data_location),intent(in) :: DL
         call delete(S)
         call init(S%S(1),X)
         call init(S%S(2),Y)
         call init(S%S(3),Z)
-        call combine_diag(S)
+        call combine_diag(S,DL)
       end subroutine
 
       subroutine init_Copy(S,S_in)
@@ -51,7 +53,6 @@
         call init(S%S(1),S_in%S(1))
         call init(S%S(2),S_in%S(2))
         call init(S%S(3),S_in%S(3))
-        call init(S%D,S_in%D)
       end subroutine
 
       subroutine init_stencil_X(S,X)
@@ -132,12 +133,13 @@
         call insist_allocated(S%S(1),caller//' S(1)')
         call insist_allocated(S%S(2),caller//' S(2)')
         call insist_allocated(S%S(3),caller//' S(3)')
-        call insist_allocated(S%D,caller//' D')
       end subroutine
 
-      subroutine combine_diag_stencil(S)
+      subroutine combine_diag_stencil(S,DL)
         implicit none
         type(stencil),intent(inout) :: S
+        type(data_location),intent(in) :: DL
+        type(array) :: D_temp,U_temp
 #ifdef _DEBUG_STENCIL_
         call insist_allocated(S,'combine_diag_stencil')
 #endif

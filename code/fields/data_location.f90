@@ -293,7 +293,6 @@
          integer :: dir
 #ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'get_Face_DL')
-         call insist_valid_dir(DL,dir,'get_Face_DL')
 #endif
          dir = DL%face
        end function
@@ -304,7 +303,6 @@
          integer :: dir
 #ifdef _DEBUG_DATA_LOCATION_
          call insist_defined(DL,'get_Edge_DL')
-         call insist_valid_dir(DL,dir,'get_Edge_DL')
 #endif
          dir = DL%edge
        end function
@@ -369,8 +367,11 @@
           integer,intent(in) :: dir
           character(len=*),intent(in) :: caller
           if ((dir.ne.1).and.(dir.ne.2).and.(dir.ne.3)) then
+            write(*,*) '-------------------------------------------------------------'
             call print(DL)
             write(*,*) 'Error: dir must = 1,2,3 in ',caller,' in data_location.f90'
+            write(*,*) 'dir = ',dir
+            write(*,*) '-------------------------------------------------------------'
             stop 'Done'
           endif
         end subroutine

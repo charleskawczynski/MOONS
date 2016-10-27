@@ -2,6 +2,8 @@
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
       use current_precision_mod
       use sparse_mod
+      use derivative_stencils_mod
+      ! use interp_stencils_mod
       use IO_tools_mod
       implicit none
 
@@ -802,9 +804,10 @@
         call stencil_colN_2(c)
         call stencil_stagCC2N(c)
         call stencil_stagN2CC(c)
+
+        ! call init(c%theta,interpolation_stencil(c%hc,c%hn,c%sc,c%sn))
+        ! call init(c%stagCC2N,staggered_CC2N(c%dhc,c%sc))
         
-        ! call check(c%lapCC)
-        ! call check(c%lapN)
         ! call check(c%stagCC2N)
         ! call check(c%stagN2CC)
         ! call check(c%colCC)

@@ -69,6 +69,8 @@
         ! public :: sum
         public :: assignX,assignY,assignZ
 
+        public :: laplacian_test_VF_VF
+
         type VF
           ! integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
@@ -366,6 +368,14 @@
           implicit none
           type(VF),intent(inout) :: u
           call random_noise(u%x); call random_noise(u%y); call random_noise(u%z)
+        end subroutine
+
+        subroutine laplacian_test_VF_VF(lapU,U,m)
+          implicit none
+          type(VF),intent(inout) :: lapU
+          type(VF),intent(in) :: U
+          type(mesh),intent(in) :: m
+          call laplacian_test_SF_VF(lapU%x,lapU%y,lapU%z,U%x,U%y,U%z,m)
         end subroutine
 
         subroutine multiply_volume_VF(u,m)
