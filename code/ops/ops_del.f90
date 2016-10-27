@@ -32,7 +32,7 @@
       use mesh_mod
       use GF_mod
       use SF_mod
-      use triDiag_mod
+      use sparse_mod
       use stencils_mod
       implicit none
 
@@ -60,7 +60,7 @@
         procedure(stencils_stag) :: operator
         type(grid_field),intent(inout) :: dfdh
         type(grid_field),intent(in) :: f
-        type(triDiag),intent(in) :: T
+        type(sparse),intent(in) :: T
         integer,intent(in) :: dir,pad,gt
         integer :: i,j,k
         select case (dir)
@@ -108,7 +108,7 @@
         procedure(stencils_col) :: operator
         type(grid_field),intent(inout) :: dfdh
         type(grid_field),intent(in) :: f
-        type(triDiag),intent(in) :: T
+        type(sparse),intent(in) :: T
         integer,intent(in) :: dir,pad,pad1,pad2
         integer :: i,j,k
         select case (dir)

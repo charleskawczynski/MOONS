@@ -1,7 +1,6 @@
       module coordinates_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
       use current_precision_mod
-      use triDiag_mod
       use sparse_mod
       use IO_tools_mod
       implicit none
@@ -27,10 +26,9 @@
 #endif
 
       type coordinates
-        ! Stencils for del (ops_del.f90)
-        type(triDiag) :: stagCC2N,stagN2CC
-        type(triDiag),dimension(2) :: colCC,colN
-        type(triDiag),dimension(2) :: colCC_centered
+        type(sparse) :: stagCC2N,stagN2CC               ! Derivative coefficients
+        type(sparse),dimension(2) :: colCC,colN         ! Derivative coefficients
+        type(sparse),dimension(2) :: colCC_centered     ! Derivative coefficients
         type(sparse) :: theta                           ! Interpolation coefficients
         real(cp),dimension(:),allocatable :: hn         ! Cell corner coordinates
         real(cp),dimension(:),allocatable :: hc         ! Cell center coordinates
@@ -326,11 +324,11 @@
           D = 0.0_cp; U = 0.0_cp
           D = -(/(1.0_cp/dh(i),i=1,s-1)/)
           U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call initD(c%stagCC2N,D)
-          call initU(c%stagCC2N,U)
-          call initL(c%stagCC2N,U*0.0_cp)
+          call init_D(c%stagCC2N,D,s-1)
+          call init_U(c%stagCC2N,U,s-1)
+          call init_L(c%stagCC2N,U*0.0_cp,s-1)
           deallocate(D,U,dh)
-        else; call init(c%stagCC2N,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%stagCC2N,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
       end subroutine
 
@@ -356,9 +354,9 @@
           L(s-2) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
           D(s-2) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
           U(s-2) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
-          call init(c%colN(1),L,D,U)
+          call init(c%colN(1),L,D,U,s-2)
           deallocate(L,D,U,dh)
-        else; call init(c%colN(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%colN(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
         c%stencils_modified = .false.
       end subroutine
@@ -387,9 +385,9 @@
           L(s-2) =  2.0_cp/(dh(i-2)*(dh(i-1)+dh(i-2)))
           D(s-2) = -2.0_cp/(dh(i-1)*dh(i-2))
           U(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i-2)))
-          call init(c%colN(2),L,D,U)
+          call init(c%colN(2),L,D,U,s-2)
           deallocate(L,D,U,dh)
-        else; call init(c%colN(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%colN(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
         c%stencils_modified = .false.
       end subroutine
@@ -408,11 +406,11 @@
           D = 0.0_cp; U = 0.0_cp
           D = -(/(1.0_cp/dh(i),i=1,s-1)/)
           U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call initD(c%stagN2CC,D)
-          call initU(c%stagN2CC,U)
-          call initL(c%stagN2CC,U*0.0_cp)
+          call init_D(c%stagN2CC,D,s-1)
+          call init_U(c%stagN2CC,U,s-1)
+          call init_L(c%stagN2CC,U*0.0_cp,s-1)
           deallocate(D,U,dh)
-        else; call init(c%stagN2CC,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%stagN2CC,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
       end subroutine
 
@@ -441,9 +439,9 @@
           L(s-2) = (-0.5_cp*dh(i)/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i)))))
           D(s-2) = ((-dh(i-1)+(0.5_cp*dh(i)))/(dh(i-1)*(0.5_cp*dh(i))))
           U(s-2) = (dh(i-1)/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i)))))
-          call init(c%colCC(1),L,D,U)
+          call init(c%colCC(1),L,D,U,s-2)
           deallocate(L,D,U,dh)
-        else; call init(c%colCC(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%colCC(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
         c%stencils_modified = .false.
       end subroutine
@@ -463,9 +461,9 @@
           L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
           D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
           U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
-          call init(c%colCC_centered(1),L,D,U)
+          call init(c%colCC_centered(1),L,D,U,s-2)
           deallocate(L,D,U,dh)
-        else; call init(c%colCC_centered(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%colCC_centered(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
       end subroutine
 
@@ -494,9 +492,9 @@
           L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i))))
           D(s-2) = -2.0_cp/(dh(i-1)*(0.5_cp*dh(i)))
           U(s-2) =  2.0_cp/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i))))
-          call init(c%colCC(2),L,D,U)
+          call init(c%colCC(2),L,D,U,s-2)
           deallocate(L,D,U,dh)
-        else; call init(c%colCC(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%colCC(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
         c%stencils_modified = .false.
       end subroutine
@@ -516,9 +514,9 @@
           L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
           D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
           U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-          call init(c%colCC_centered(2),L,D,U)
+          call init(c%colCC_centered(2),L,D,U,s-2)
           deallocate(L,D,U,dh)
-        else; call init(c%colCC_centered(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/))
+        else; call init(c%colCC_centered(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
       end subroutine
 
@@ -553,14 +551,14 @@
         if (c%sc.gt.2) then
           s = c%sc; allocate(dh(s-1)); dh = c%dhc
           if (hmin) then; i = 2
-            c%colCC(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colCC(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colCC(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+            c%colCC(2)%L%f(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+            c%colCC(2)%D%f(1) = -2.0_cp/(dh(i-1)*dh(i))
+            c%colCC(2)%U%f(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
           endif
           if (hmax) then; i = s-1
-            c%colCC(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colCC(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colCC(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+            c%colCC(2)%L%f(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+            c%colCC(2)%D%f(s-2) = -2.0_cp/(dh(i-1)*dh(i))
+            c%colCC(2)%U%f(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
           endif
           deallocate(dh)
         else
@@ -578,14 +576,14 @@
         if (c%sc.gt.2) then
           s = c%sc; allocate(dh(s-1)); dh = c%dhc
           if (hmin) then; i = 2
-            c%colCC(1)%L(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colCC(1)%D(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colCC(1)%U(1) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
+            c%colCC(1)%L%f(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+            c%colCC(1)%D%f(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+            c%colCC(1)%U%f(1) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
           endif
           if (hmax) then; i = s-1
-            c%colCC(1)%L(s-2) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colCC(1)%D(s-2) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colCC(1)%U(s-2) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
+            c%colCC(1)%L%f(s-2) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+            c%colCC(1)%D%f(s-2) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+            c%colCC(1)%U%f(s-2) = (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))
           endif
           deallocate(dh)
         else
@@ -603,14 +601,14 @@
         if (c%sn.gt.2) then
           s = c%sn; allocate(dh(s-1)); dh = c%dhn
           if (hmin) then; i = 2
-            c%colN(2)%L(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colN(2)%D(1) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colN(2)%U(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+            c%colN(2)%L%f(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+            c%colN(2)%D%f(1) = -2.0_cp/(dh(i-1)*dh(i))
+            c%colN(2)%U%f(1) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
           endif
           if (hmax) then; i = s-1
-            c%colN(2)%L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
-            c%colN(2)%D(s-2) = -2.0_cp/(dh(i-1)*dh(i))
-            c%colN(2)%U(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
+            c%colN(2)%L%f(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
+            c%colN(2)%D%f(s-2) = -2.0_cp/(dh(i-1)*dh(i))
+            c%colN(2)%U%f(s-2) =  2.0_cp/(dh( i )*(dh(i-1)+dh(i)))
           endif
           deallocate(dh)
         else
@@ -628,14 +626,14 @@
         if (c%sn.gt.2) then
           s = c%sn; allocate(dh(s-1)); dh = c%dhn
           if (hmin) then; i = 2
-            c%colN(1)%L(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colN(1)%D(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colN(1)%U(1) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
+            c%colN(1)%L%f(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+            c%colN(1)%D%f(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+            c%colN(1)%U%f(1) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
           endif
           if (hmax) then; i = s-1
-            c%colN(1)%L(s-2) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
-            c%colN(1)%D(s-2) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
-            c%colN(1)%U(s-2) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
+            c%colN(1)%L%f(s-2) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
+            c%colN(1)%D%f(s-2) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
+            c%colN(1)%U%f(s-2) =  (dh(i-1)/(dh( i )*(dh(i-1)+dh(i))))
           endif
           deallocate(dh)
         else

@@ -15,7 +15,8 @@
       end type
 
       interface init;                module procedure init_sparse_size;         end interface
-      interface init;                module procedure init_sparse;              end interface
+      interface init;                module procedure init_sparse_3;            end interface
+      interface init;                module procedure init_sparse_1;            end interface
       interface init;                module procedure init_Copy;                end interface
       interface init_L;              module procedure init_sparse_L;            end interface
       interface init_D;              module procedure init_sparse_D;            end interface
@@ -41,7 +42,7 @@
         call init(S%U,N)
       end subroutine
 
-      subroutine init_sparse(S,L,D,U,N_L,N_D,N_U)
+      subroutine init_sparse_3(S,L,D,U,N_L,N_D,N_U)
         implicit none
         type(sparse),intent(inout) :: S
         integer,intent(in) :: N_L,N_D,N_U
@@ -52,6 +53,19 @@
         call init(S%L,L,N_L)
         call init(S%D,D,N_D)
         call init(S%U,U,N_U)
+      end subroutine
+
+      subroutine init_sparse_1(S,L,D,U,N)
+        implicit none
+        type(sparse),intent(inout) :: S
+        integer,intent(in) :: N
+        real(cp),dimension(N),intent(in) :: L
+        real(cp),dimension(N),intent(in) :: D
+        real(cp),dimension(N),intent(in) :: U
+        call delete(S)
+        call init(S%L,L,N)
+        call init(S%D,D,N)
+        call init(S%U,U,N)
       end subroutine
 
       subroutine init_Copy(S,S_in)

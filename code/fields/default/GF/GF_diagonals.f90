@@ -24,12 +24,12 @@
         p = N_eye(DL); pnx = p(1); pny = p(2); pnz = p(3)
         !$OMP PARALLEL DO
         do k=2,diag%s(3)-1; do j=2,diag%s(2)-1; do i=2,diag%s(1)-1
-        diag%f(i,j,k) = g%c(1)%stagN2CC%D(  i  )*g%c(1)%stagCC2N%U( i-1 ) + &
-                        g%c(1)%stagN2CC%U(i-pnx)*g%c(1)%stagCC2N%D(i-pnx) + &
-                        g%c(2)%stagN2CC%D(  j  )*g%c(2)%stagCC2N%U( j-1 ) + &
-                        g%c(2)%stagN2CC%U(j-pny)*g%c(2)%stagCC2N%D(j-pny) + &
-                        g%c(3)%stagN2CC%D(  k  )*g%c(3)%stagCC2N%U( k-1 ) + &
-                        g%c(3)%stagN2CC%U(k-pnz)*g%c(3)%stagCC2N%D(k-pnz)
+        diag%f(i,j,k) = g%c(1)%stagN2CC%D%f(  i  )*g%c(1)%stagCC2N%U%f( i-1 ) + &
+                        g%c(1)%stagN2CC%U%f(i-pnx)*g%c(1)%stagCC2N%D%f(i-pnx) + &
+                        g%c(2)%stagN2CC%D%f(  j  )*g%c(2)%stagCC2N%U%f( j-1 ) + &
+                        g%c(2)%stagN2CC%U%f(j-pny)*g%c(2)%stagCC2N%D%f(j-pny) + &
+                        g%c(3)%stagN2CC%D%f(  k  )*g%c(3)%stagCC2N%U%f( k-1 ) + &
+                        g%c(3)%stagN2CC%U%f(k-pnz)*g%c(3)%stagCC2N%D%f(k-pnz)
         enddo; enddo; enddo
         !$OMP END PARALLEL DO
       end subroutine
@@ -46,26 +46,26 @@
         call assign(diag_z,0.0_cp)
         !$OMP PARALLEL DO
         do k=2,diag_x%s(3)-1; do j=2,diag_x%s(2)-1; do i=2,diag_x%s(1)-1
-        diag_x%f(i,j,k) = -g%c(2)%stagN2CC%D(j)*sig_z%f(i,j, k )*g%c(2)%stagCC2N%U(j-1) - &
-                           g%c(2)%stagN2CC%U(j)*sig_z%f(i,j+1,k)*g%c(2)%stagCC2N%D( j ) - &
-                           g%c(3)%stagN2CC%D(k)*sig_y%f(i,j, k )*g%c(3)%stagCC2N%U(k-1) - &
-                           g%c(3)%stagN2CC%U(k)*sig_y%f(i,j,k+1)*g%c(3)%stagCC2N%D( k )
+        diag_x%f(i,j,k) = -g%c(2)%stagN2CC%D%f(j)*sig_z%f(i,j, k )*g%c(2)%stagCC2N%U%f(j-1) - &
+                           g%c(2)%stagN2CC%U%f(j)*sig_z%f(i,j+1,k)*g%c(2)%stagCC2N%D%f( j ) - &
+                           g%c(3)%stagN2CC%D%f(k)*sig_y%f(i,j, k )*g%c(3)%stagCC2N%U%f(k-1) - &
+                           g%c(3)%stagN2CC%U%f(k)*sig_y%f(i,j,k+1)*g%c(3)%stagCC2N%D%f( k )
         enddo; enddo; enddo
         !$OMP END PARALLEL DO
         !$OMP PARALLEL DO
         do k=2,diag_y%s(3)-1; do j=2,diag_y%s(2)-1; do i=2,diag_y%s(1)-1
-        diag_y%f(i,j,k) = -g%c(1)%stagN2CC%D(i)*sig_z%f(i,j, k )*g%c(1)%stagCC2N%U(i-1) - &
-                           g%c(1)%stagN2CC%U(i)*sig_z%f(i+1,j,k)*g%c(1)%stagCC2N%D( i ) - &
-                           g%c(3)%stagN2CC%D(k)*sig_x%f(i,j, k )*g%c(3)%stagCC2N%U(k-1) - &
-                           g%c(3)%stagN2CC%U(k)*sig_x%f(i,j,k+1)*g%c(3)%stagCC2N%D( k )
+        diag_y%f(i,j,k) = -g%c(1)%stagN2CC%D%f(i)*sig_z%f(i,j, k )*g%c(1)%stagCC2N%U%f(i-1) - &
+                           g%c(1)%stagN2CC%U%f(i)*sig_z%f(i+1,j,k)*g%c(1)%stagCC2N%D%f( i ) - &
+                           g%c(3)%stagN2CC%D%f(k)*sig_x%f(i,j, k )*g%c(3)%stagCC2N%U%f(k-1) - &
+                           g%c(3)%stagN2CC%U%f(k)*sig_x%f(i,j,k+1)*g%c(3)%stagCC2N%D%f( k )
         enddo; enddo; enddo
         !$OMP END PARALLEL DO
         !$OMP PARALLEL DO
         do k=2,diag_z%s(3)-1; do j=2,diag_z%s(2)-1; do i=2,diag_z%s(1)-1
-        diag_z%f(i,j,k) = -g%c(1)%stagN2CC%D(i)*sig_y%f(i, j ,k)*g%c(1)%stagCC2N%U(i-1) - &
-                           g%c(1)%stagN2CC%U(i)*sig_y%f(i+1,j,k)*g%c(1)%stagCC2N%D( i ) - &
-                           g%c(2)%stagN2CC%D(j)*sig_x%f(i, j ,k)*g%c(2)%stagCC2N%U(j-1) - &
-                           g%c(2)%stagN2CC%U(j)*sig_x%f(i,j+1,k)*g%c(2)%stagCC2N%D( j )
+        diag_z%f(i,j,k) = -g%c(1)%stagN2CC%D%f(i)*sig_y%f(i, j ,k)*g%c(1)%stagCC2N%U%f(i-1) - &
+                           g%c(1)%stagN2CC%U%f(i)*sig_y%f(i+1,j,k)*g%c(1)%stagCC2N%D%f( i ) - &
+                           g%c(2)%stagN2CC%D%f(j)*sig_x%f(i, j ,k)*g%c(2)%stagCC2N%U%f(j-1) - &
+                           g%c(2)%stagN2CC%U%f(j)*sig_x%f(i,j+1,k)*g%c(2)%stagCC2N%D%f( j )
         enddo; enddo; enddo
         !$OMP END PARALLEL DO
       end subroutine
