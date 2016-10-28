@@ -250,6 +250,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
 	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)data_location.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
 	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
@@ -265,7 +266,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\

@@ -32,6 +32,11 @@
          call extend_cube_uniform(m_ind,m_mom)
          call init(MD_sigma,m_mom,m_ind)
 
+         ! For analyzing mesh and stencils
+         ! call matrix_export_mesh(m_mom)
+         ! call extend_cube_uniform(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
+
          ! non-uniform no walls
          ! call cube(m_mom)
          ! call init(m_ind,m_mom)
@@ -58,8 +63,6 @@
 
          ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,MD_sigma)
-
-         ! call matrix_export_mesh(m_mom)
 
 
          ! call ins_sep_channel_Tyler(m_mom)

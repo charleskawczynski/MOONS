@@ -29,6 +29,7 @@
         ! GF_base_mod
         public :: grid_field
         public :: init,delete,display,print,export,import ! Essentials
+        public :: print_physical
         public :: init_CC
         public :: init_Face
         public :: init_Edge

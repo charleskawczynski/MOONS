@@ -130,18 +130,17 @@
       subroutine print_sparse(S)
         implicit none
         type(sparse),intent(in) :: S
-        call display(S%L,6)
-        call display(S%D,6)
-        call display(S%U,6)
+        call display_sparse(S,6)
       end subroutine
 
       subroutine display_sparse(S,un)
         implicit none
         type(sparse),intent(in) :: S
         integer,intent(in) :: un
-        call display(S%L,un)
-        call display(S%D,un)
-        call display(S%U,un)
+        write(un,*) '---------------------------- L'; call display(S%L,un)
+        write(un,*) '---------------------------- D'; call display(S%D,un)
+        write(un,*) '---------------------------- U'; call display(S%U,un)
+        write(un,*) '----------------------------'
       end subroutine
 
       subroutine export_sparse(S,un)
@@ -231,17 +230,16 @@
         type(array) :: L_N,U_N
         type(array),dimension(2) :: D_CC,D_N,D_combined
         type(array) :: L,D,U
-        integer :: e
 
-        call init(L_CC,CC%D%f,CC%D%N)
-        call init(D_CC(1),(/CC%D%f,0.0_cp/),CC%D%N+1)
-        call init(D_CC(2),(/0.0_cp,CC%U%f/),CC%U%N+1)
-        call init(U_CC,CC%U%f,CC%U%N)
+        call init(L_CC,CC%D)
+        call init(D_CC(1),CC%D); call append(D_CC(1),0.0_cp)
+        call init(D_CC(2),CC%U); call insert(D_CC(2),0.0_cp)
+        call init(U_CC,CC%U)
 
-        e = N%D%N; call init(L_N   ,N%D%f(2:e),N%D%N-1)
-        e = N%D%N; call init(D_N(1),N%D%f(2:e),N%D%N-1)
-        e = N%U%N; call init(D_N(2),N%U%f(1:e-1),N%U%N-1)
-        e = N%U%N; call init(U_N   ,N%U%f(1:e-1),N%U%N-1)
+        call init(L_N,N%D); call snip(L_N)
+        call init(D_N(1),N%D); call snip(D_N(1))
+        call init(D_N(2),N%U); call pop(D_N(2))
+        call init(U_N,N%U); call pop(U_N)
 
         call multiply(L,L_CC,L_N)
         call multiply(U,U_CC,U_N)

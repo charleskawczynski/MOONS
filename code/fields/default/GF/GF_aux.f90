@@ -1,6 +1,7 @@
       module GF_aux_mod
         use GF_base_mod
         use GF_assign_mod
+        use GF_subtract_mod
         use grid_mod
         use data_location_mod
         use current_precision_mod
@@ -27,6 +28,7 @@
         interface sum;                      module procedure sum_GF_pad;             end interface
         interface size;                     module procedure size_GF;                end interface
         interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_GF;  end interface
+        interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_GF_2;end interface
 
         contains
 
@@ -174,6 +176,28 @@
             write(*,*) 'amax(U) = ',amx_U
             stop 'Done'
           endif
+        end subroutine
+
+        subroutine insist_amax_lt_tol_GF_2(A,B,caller)
+          implicit none
+          type(grid_field),intent(in) :: A,B
+          character(len=*),intent(in) :: caller
+          type(grid_field) :: C
+          real(cp) :: tol,amx_C
+          tol = 10.0_cp**(-10.0_cp)
+          call init(C,A)
+          call subtract(C,A,B)
+          amx_C = amax(C)
+          if (.not.(amx_C.lt.tol)) then
+            write(*,*) '-------------------------------------------- A'; call print_physical(A)
+            write(*,*) '-------------------------------------------- B'; call print_physical(B)
+            write(*,*) '--------------------------------------------'
+            write(*,*) 'Error: tol > amax(C) in ',caller,' in insist_above_tol_GF in GF_aux.f90'
+            write(*,*) 'tol = ',tol
+            write(*,*) 'amax(C) = ',amx_C
+            stop 'Done'
+          endif
+          call delete(C)
         end subroutine
 
       end module

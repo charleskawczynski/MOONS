@@ -51,27 +51,33 @@
         type(stencil_field),intent(inout) :: SF
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
+        type(grid_field),dimension(3) :: D
         integer :: i,j,k,t
         integer,dimension(3) :: s
         do i=1,3; call init(SF%L(i),g,DL); enddo
         do i=1,3; call init(SF%U(i),g,DL); enddo
         call init(SF%D,g,DL)
-        call assign(SF%D,0.0_cp)
         do t=1,3; call assign(SF%L(t),0.0_cp); enddo
         do t=1,3; call assign(SF%U(t),0.0_cp); enddo
-        t = 1
-        s=SF%L(t)%s;do k=1,s(3);do j=1,s(2);do i=2,s(1)-1;SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(i-1);enddo;enddo;enddo
-        s=SF%U(t)%s;do k=1,s(3);do j=1,s(2);do i=2,s(1)-1;SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(i-1);enddo;enddo;enddo
-        t = 2
-        s=SF%L(t)%s;do k=1,s(3);do j=2,s(2)-1;do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(j-1);enddo;enddo;enddo
-        s=SF%U(t)%s;do k=1,s(3);do j=2,s(2)-1;do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(j-1);enddo;enddo;enddo
-        t = 3
-        s=SF%L(t)%s;do k=2,s(3)-1;do j=1,s(2);do i=1,s(1);SF%L(t)%f(i,j,k)=SF%S%S(t)%L%f(k-1);enddo;enddo;enddo
-        s=SF%U(t)%s;do k=2,s(3)-1;do j=1,s(2);do i=1,s(1);SF%U(t)%f(i,j,k)=SF%S%S(t)%U%f(k-1);enddo;enddo;enddo
+        call assign(SF%D,0.0_cp)
         s = SF%D%s
-        do k=1,s(3);do j=1,s(2);do i=2,s(1)-1;SF%D%f(i,j,k)=SF%D%f(i,j,k)+SF%S%S(1)%D%f(i-1);enddo;enddo;enddo
-        do k=1,s(3);do j=2,s(2)-1;do i=1,s(1);SF%D%f(i,j,k)=SF%D%f(i,j,k)+SF%S%S(2)%D%f(j-1);enddo;enddo;enddo
-        do k=2,s(3)-1;do j=1,s(2);do i=1,s(1);SF%D%f(i,j,k)=SF%D%f(i,j,k)+SF%S%S(3)%D%f(k-1);enddo;enddo;enddo
+
+        do i=2,s(1)-1; call assign_plane_x(SF%L(1),SF%S%S(1)%L%f(i-1),i); enddo
+        do i=2,s(1)-1; call assign_plane_x(SF%U(1),SF%S%S(1)%U%f(i-1),i); enddo
+        do j=2,s(2)-1; call assign_plane_y(SF%L(2),SF%S%S(2)%L%f(j-1),j); enddo
+        do j=2,s(2)-1; call assign_plane_y(SF%U(2),SF%S%S(2)%U%f(j-1),j); enddo
+        do k=2,s(3)-1; call assign_plane_z(SF%L(3),SF%S%S(3)%L%f(k-1),k); enddo
+        do k=2,s(3)-1; call assign_plane_z(SF%U(3),SF%S%S(3)%U%f(k-1),k); enddo
+
+        ! Combine diagonals:
+        do i=1,3; call init(D(i),g,DL); enddo
+        do i=2,s(1)-1; call assign_plane_x(D(1),SF%S%S(1)%D%f(i-1),i); enddo
+        do j=2,s(2)-1; call assign_plane_y(D(2),SF%S%S(2)%D%f(j-1),j); enddo
+        do k=2,s(3)-1; call assign_plane_z(D(3),SF%S%S(3)%D%f(k-1),k); enddo
+        call assign(SF%D,D(1))
+        call    add(SF%D,D(2))
+        call    add(SF%D,D(3))
+        do i=1,3; call delete(D(i)); enddo
       end subroutine
 
       subroutine multiply_stencil_field_SF(SF,U)
@@ -99,24 +105,24 @@
         type(stencil_field),intent(in) :: SF_in
         integer :: i
         call delete(SF)
-        call init(SF%S,SF_in%S)
         do i=1,3
           call init(SF%L(i),SF_in%L(i))
           call init(SF%U(i),SF_in%U(i))
         enddo
         call init(SF%D,SF_in%D)
+        call init(SF%S,SF_in%S)
       end subroutine
 
       subroutine delete_stencil_field(SF)
         implicit none
         type(stencil_field),intent(inout) :: SF
         integer :: i
-        call delete(SF%S)
         do i=1,3
           call delete(SF%L(i))
           call delete(SF%U(i))
         enddo
         call delete(SF%D)
+        call delete(SF%S)
       end subroutine
 
       subroutine print_stencil_field(SF)

@@ -1,5 +1,6 @@
       module stencil_mod
       use array_mod
+      use face_edge_corner_indexing_mod
       use sparse_mod
       use current_precision_mod
       use data_location_mod
@@ -9,12 +10,10 @@
       public :: init,delete,display,print,export,import
 
       public :: init_X,init_Y,init_Z
-      public :: combine_diag
       public :: insist_allocated
 
       type stencil
         type(sparse),dimension(3) :: S  ! Sparse 1D stencil
-        type(array) :: D                ! Combined diagonal
       end type
 
       interface init;               module procedure init_stencil;              end interface
@@ -29,7 +28,6 @@
       interface export;             module procedure export_stencil;            end interface
 
       interface insist_allocated;   module procedure insist_allocated_stencil;  end interface
-      interface combine_diag;       module procedure combine_diag_stencil;      end interface
 
       contains
 
@@ -42,7 +40,6 @@
         call init(S%S(1),X)
         call init(S%S(2),Y)
         call init(S%S(3),Z)
-        call combine_diag(S,DL)
       end subroutine
 
       subroutine init_Copy(S,S_in)
@@ -82,7 +79,6 @@
         call delete(S%S(1))
         call delete(S%S(2))
         call delete(S%S(3))
-        call delete(S%D)
       end subroutine
 
       subroutine print_stencil(S)
@@ -91,7 +87,6 @@
         call print(S%S(1))
         call print(S%S(2))
         call print(S%S(3))
-        call print(S%D)
       end subroutine
 
       subroutine display_stencil(S,un)
@@ -101,7 +96,6 @@
         call display(S%S(1),un)
         call display(S%S(2),un)
         call display(S%S(3),un)
-        call display(S%D,un)
       end subroutine
 
       subroutine export_stencil(S,un)
@@ -111,7 +105,6 @@
         call export(S%S(1),un)
         call export(S%S(2),un)
         call export(S%S(3),un)
-        call export(S%D,un)
       end subroutine
 
       subroutine import_stencil(S,un)
@@ -121,7 +114,6 @@
         call import(S%S(1),un)
         call import(S%S(2),un)
         call import(S%S(3),un)
-        call import(S%D,un)
       end subroutine
 
       ! *********************************************************************
@@ -133,19 +125,6 @@
         call insist_allocated(S%S(1),caller//' S(1)')
         call insist_allocated(S%S(2),caller//' S(2)')
         call insist_allocated(S%S(3),caller//' S(3)')
-      end subroutine
-
-      subroutine combine_diag_stencil(S,DL)
-        implicit none
-        type(stencil),intent(inout) :: S
-        type(data_location),intent(in) :: DL
-        type(array) :: D_temp,U_temp
-#ifdef _DEBUG_STENCIL_
-        call insist_allocated(S,'combine_diag_stencil')
-#endif
-        call assign(S%D,S%S(1)%D)
-        call    add(S%D,S%S(2)%D)
-        call    add(S%D,S%S(3)%D)
       end subroutine
 
       end module

@@ -13,6 +13,7 @@
         public :: init_Edge
         public :: init_Node
 
+        public :: print_physical
         public :: insist_shape_match
 
         type grid_field
@@ -25,6 +26,7 @@
         interface init;                     module procedure init_GF_copy;           end interface
         interface delete;                   module procedure delete_GF;              end interface
         interface display;                  module procedure display_GF;             end interface
+        interface display;                  module procedure display_pad_GF;         end interface
         interface print;                    module procedure print_GF;               end interface
         interface export;                   module procedure export_GF;              end interface
         interface import;                   module procedure import_GF;              end interface
@@ -34,6 +36,7 @@
         interface init_Edge;                module procedure init_GF_Edge;           end interface
         interface init_Node;                module procedure init_GF_Node;           end interface
 
+        interface print_physical;           module procedure print_physical_GF;      end interface
         interface insist_shape_match;       module procedure insist_shape_match_GF;  end interface
 
        contains
@@ -139,10 +142,29 @@
           endif
         end subroutine
 
+        subroutine display_pad_GF(a,p,un)
+          implicit none
+          type(grid_field),intent(in) :: a
+          integer,intent(in) :: un,p
+          integer :: i,j,k
+          if (allocated(a%f)) then
+            write(*,*) 'shape(f) = ',a%s
+            do k=1+p,a%s(3)-p; do j=1+p,a%s(2)-p; do i=1+p,a%s(1)-p
+              write(un,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
+            enddo; enddo; enddo
+          endif
+        end subroutine
+
         subroutine print_GF(a)
           implicit none
           type(grid_field),intent(in) :: a
           call display(a,6)
+        end subroutine
+
+        subroutine print_physical_GF(a)
+          implicit none
+          type(grid_field),intent(in) :: a
+          call display(a,1,6)
         end subroutine
 
         subroutine export_GF(a,un)

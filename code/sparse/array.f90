@@ -6,10 +6,13 @@
       public :: init,delete,display,print,export,import
 
       public :: assign,add,multiply
+      public :: insert,append
+      public :: pop,snip
+
       public :: insist_allocated
 
       type array
-        integer :: N
+        integer :: N = 0
         real(cp),dimension(:),allocatable :: f
       end type
 
@@ -28,6 +31,11 @@
       interface add;                module procedure add_array_2;                end interface
       interface multiply;           module procedure multiply_array;             end interface
       interface multiply;           module procedure multiply_array_2;           end interface
+
+      interface insert;             module procedure insert_element_array;       end interface
+      interface append;             module procedure append_element_array;       end interface
+      interface pop;                module procedure pop_element_array;          end interface
+      interface snip;               module procedure snip_element_array;         end interface
 
       interface check_bounds;       module procedure check_bounds_array;         end interface
       interface insist_allocated;   module procedure insist_allocated_array;     end interface
@@ -88,9 +96,11 @@
         call insist_allocated(A_in,'init_array_copy')
 #endif
         call delete(A)
-        A%N = A_in%N
-        allocate(A%f(A%N))
-        A%f = A_in%f
+        if (A_in%N.ne.0) then
+          A%N = A_in%N
+          allocate(A%f(A%N))
+          A%f = A_in%f
+        endif
       end subroutine
 
       subroutine delete_array(A)
@@ -204,6 +214,58 @@
         call insist_equal_sizes(A,C,'multiply_array (A,C)')
 #endif
         A%f = B%f*C%f
+      end subroutine
+
+      subroutine append_element_array(A,value)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: value
+        type(array) :: temp
+        call init(temp,A)
+        call init(A,(/temp%f,value/),temp%N+1)
+        call delete(temp)
+      end subroutine
+
+      subroutine insert_element_array(A,value)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: value
+        type(array) :: temp
+        call init(temp,A)
+        call init(A,(/value,temp%f/),temp%N+1)
+        call delete(temp)
+      end subroutine
+
+      subroutine pop_element_array(A)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array) :: temp
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'pop_element_array')
+#endif
+        if (A%N.eq.1) then
+          call delete(A)
+        else
+          call init(temp,A)
+          call init(A,(/temp%f(1:temp%N-1)/),temp%N-1)
+          call delete(temp)
+        endif
+      end subroutine
+
+      subroutine snip_element_array(A)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array) :: temp
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'snip_element_array')
+#endif
+        if (A%N.eq.1) then
+          call delete(A)
+        else
+          call init(temp,A)
+          call init(A,(/temp%f(2:temp%N)/),temp%N-1)
+          call delete(temp)
+        endif
       end subroutine
 
       ! ***************************************************************

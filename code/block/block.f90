@@ -7,6 +7,7 @@
        use stencil_field_mod
        use data_location_mod
        use IO_tools_mod
+       use GF_diagonals_mod
        implicit none
 
        private
@@ -51,7 +52,7 @@
          call init(B%g,g)
          call init_vol_block(B)
          ! call init_curl_curl_stencil_block(B)
-         call init_Laplacian_stencil_block(B)
+         ! call init_Laplacian_stencil_block(B)
        end subroutine
 
        subroutine init_curl_curl_stencil_block(B)
@@ -64,21 +65,18 @@
          call init(S%S(1),B%g%c(1)%stagN2CC)
          call init(S%S(2),B%g%c(2)%stagCC2N)
          call init(S%S(3),B%g%c(3)%stagCC2N)
-         call combine_diag(S,DL)
          call init(B%curl_curl(dir),S,B%g,DL)
 
          dir = 2; call init_Face(DL,dir)
          call init(S%S(1),B%g%c(1)%stagCC2N)
          call init(S%S(2),B%g%c(2)%stagN2CC)
          call init(S%S(3),B%g%c(3)%stagCC2N)
-         call combine_diag(S,DL)
          call init(B%curl_curl(dir),S,B%g,DL)
 
          dir = 3; call init_Face(DL,dir)
          call init(S%S(1),B%g%c(1)%stagCC2N)
          call init(S%S(2),B%g%c(2)%stagCC2N)
          call init(S%S(3),B%g%c(3)%stagN2CC)
-         call combine_diag(S,DL)
          call init(B%curl_curl(dir),S,B%g,DL)
          call delete(DL)
          call delete(S)
@@ -92,17 +90,17 @@
          integer :: dir
          dir = 1; call init_Face(DL,dir)
          call init(S%S(1),B%g%c(1)%colN(2))
-         call init(S%S(2),B%g%c(2)%colCC(2))
-         call init(S%S(3),B%g%c(3)%colCC(2))
+         call init(S%S(2),B%g%c(2)%colCC_centered(2))
+         call init(S%S(3),B%g%c(3)%colCC_centered(2))
          call init(B%lap_F_VF(dir),S,B%g,DL)
          dir = 2; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%colCC(2))
+         call init(S%S(1),B%g%c(1)%colCC_centered(2))
          call init(S%S(2),B%g%c(2)%colN(2))
-         call init(S%S(3),B%g%c(3)%colCC(2))
+         call init(S%S(3),B%g%c(3)%colCC_centered(2))
          call init(B%lap_F_VF(dir),S,B%g,DL)
          dir = 3; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%colCC(2))
-         call init(S%S(2),B%g%c(2)%colCC(2))
+         call init(S%S(1),B%g%c(1)%colCC_centered(2))
+         call init(S%S(2),B%g%c(2)%colCC_centered(2))
          call init(S%S(3),B%g%c(3)%colN(2))
          call init(B%lap_F_VF(dir),S,B%g,DL)
          call delete(DL)
@@ -146,6 +144,7 @@
          i=6;  allocate(B%fb(i)); do i=1,6; call get_face_b(  B%fb(i),B%g,i); enddo
          i=12; allocate(B%eb(i)); do i=1,12;call get_edge_b(  B%eb(i),B%g,i); enddo
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
+         call init_Laplacian_stencil_block(B)
        end subroutine
 
        subroutine init_block_copy(B,B_in)
@@ -155,6 +154,8 @@
          integer :: i
          call delete(B)
          call init(B%g,B_in%g)
+         do i=1,3; call init(B%lap_F_VF(i),B_in%lap_F_VF(i)); enddo
+
          ! call inisist_allocated(B_in,'init_block_copy')
          i=6; allocate(B%f(i));  do i=1,6;  call init(B%f(i),B_in%f(i));   enddo
          i=6; allocate(B%fb(i)); do i=1,6;  call init(B%fb(i),B_in%fb(i)); enddo
@@ -181,6 +182,7 @@
            do i=1,8; call delete(B%vol(i)); enddo
            deallocate(B%vol)
          endif
+         do i=1,3; call delete(B%lap_F_VF(i)); enddo
          call delete_FEC_block(B)
        end subroutine
 
