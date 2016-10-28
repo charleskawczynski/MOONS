@@ -16,6 +16,7 @@
 
       type sparse
         type(array) :: L,D,U
+        logical :: staggered = .false.
       end type
 
       interface init;                module procedure init_sparse_size;           end interface
@@ -49,6 +50,7 @@
         call init(S%L,N)
         call init(S%D,N)
         call init(S%U,N)
+        S%staggered = S%L%N.eq.1
       end subroutine
 
       subroutine init_sparse_3_array(S,L,D,U)
@@ -59,6 +61,7 @@
         call init(S%L,L)
         call init(S%D,D)
         call init(S%U,U)
+        S%staggered = S%L%N.eq.1
       end subroutine
 
       subroutine init_sparse_3(S,L,D,U,N_L,N_D,N_U)
@@ -72,6 +75,7 @@
         call init(S%L,L,N_L)
         call init(S%D,D,N_D)
         call init(S%U,U,N_U)
+        S%staggered = S%L%N.eq.1
       end subroutine
 
       subroutine init_sparse_1(S,L,D,U,N)
@@ -85,6 +89,7 @@
         call init(S%L,L,N)
         call init(S%D,D,N)
         call init(S%U,U,N)
+        S%staggered = S%L%N.eq.1
       end subroutine
 
       subroutine init_Copy(S,S_in)
@@ -95,6 +100,7 @@
         call init(S%L,S_in%L)
         call init(S%D,S_in%D)
         call init(S%U,S_in%U)
+        S%staggered = S_in%staggered
       end subroutine
 
       subroutine init_sparse_L(S,L,N)
@@ -103,6 +109,7 @@
         integer,intent(in) :: N
         real(cp),dimension(N),intent(in) :: L
         call init(S%L,L,N)
+        S%staggered = S%L%N.eq.1
       end subroutine
 
       subroutine init_sparse_D(S,D,N)
@@ -127,6 +134,7 @@
         call delete(S%L)
         call delete(S%D)
         call delete(S%U)
+        S%staggered = .false.
       end subroutine
 
       subroutine print_sparse(S)
@@ -231,6 +239,7 @@
         call add(D,D_combined(1),D_combined(2))
 
         call init(S,L,D,U)
+        S%staggered = .false.
       end subroutine
 
       subroutine consecutive_stag_N_sparse(S,CC,N)
@@ -260,6 +269,7 @@
         call add(D,D_combined(1),D_combined(2))
 
         call init(S,L,D,U)
+        S%staggered = .false.
       end subroutine
 
       end module

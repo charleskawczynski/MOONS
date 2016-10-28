@@ -10,6 +10,7 @@
         use procedure_array_mod
         use procedure_array_plane_op_mod
         use boundary_conditions_mod
+        use GF_curl_curl_mod
         implicit none
         private
 
@@ -712,26 +713,26 @@
          call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,&
          B%curl_curlX(1)%D,&
          B%curl_curlX(1)%L,&
-         B%curl_curlY(1)%L,&
-         B%curl_curlZ(1)%L,&
          B%curl_curlX(1)%U,&
+         B%curl_curlY(1)%L,&
          B%curl_curlY(1)%U,&
+         B%curl_curlZ(1)%L,&
          B%curl_curlZ(1)%U)
          call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,&
          B%curl_curlY(2)%D,&
          B%curl_curlX(2)%L,&
-         B%curl_curlY(2)%L,&
-         B%curl_curlZ(2)%L,&
          B%curl_curlX(2)%U,&
+         B%curl_curlY(2)%L,&
          B%curl_curlY(2)%U,&
+         B%curl_curlZ(2)%L,&
          B%curl_curlZ(2)%U)
          call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,&
          B%curl_curlZ(3)%D,&
          B%curl_curlX(3)%L,&
-         B%curl_curlY(3)%L,&
-         B%curl_curlZ(3)%L,&
          B%curl_curlX(3)%U,&
+         B%curl_curlY(3)%L,&
          B%curl_curlY(3)%U,&
+         B%curl_curlZ(3)%L,&
          B%curl_curlZ(3)%U)
        end subroutine
 

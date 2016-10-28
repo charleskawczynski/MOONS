@@ -22,7 +22,6 @@
          integer,intent(in) :: dir
          call applyGhost(gg,dir)
          call init(g,gg%g%c(dir)%hn,dir)
-         ! call init_Stencils(gg%g%c(dir))
          call init(g%c(dir),gg%g%c(dir))
          call initProps(g)
          call delete(gg)
@@ -101,7 +100,6 @@
        !   call app(gg,(/uniformLeft(hmax,dh2,N_uniform)/),dir)
        !   call applyGhost(gg,dir)
        !   call init(g,gg%g%c(dir)%hn,dir,2)
-       !   call init_Stencils(gg%g%c(dir))
        !   call init(g%c(dir),gg%g%c(dir))
        !   call delete(gg)
        ! end subroutine

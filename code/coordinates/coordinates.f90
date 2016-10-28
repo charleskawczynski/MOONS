@@ -317,19 +317,16 @@
       subroutine stencil_stagCC2N(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: D,U,dh
+        real(cp),dimension(:),allocatable :: L,D,U,dh
         integer :: i,s
         if (c%sc.gt.1) then
           s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(D(s-1)); allocate(U(s-1))
-          D = 0.0_cp; U = 0.0_cp
+          allocate(L(1),D(s-1),U(s-1),dh(s-1)); dh = c%dhc
+          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
           D = -(/(1.0_cp/dh(i),i=1,s-1)/)
           U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call init_D(c%stagCC2N,D,s-1)
-          call init_U(c%stagCC2N,U,s-1)
-          call init_L(c%stagCC2N,U*0.0_cp,s-1)
-          deallocate(D,U,dh)
+          call init(c%stagCC2N,L,D,U,1,s-1,s-1)
+          deallocate(L,D,U,dh)
         else; call init(c%stagCC2N,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
       end subroutine
@@ -399,19 +396,16 @@
       subroutine stencil_stagN2CC(c)
         implicit none
         type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: D,U,dh
+        real(cp),dimension(:),allocatable :: L,D,U,dh
         integer :: i,s
         if (c%sn.gt.1) then
           s = c%sn
-          allocate(dh(s-1)); dh = c%dhn
-          allocate(D(s-1)); allocate(U(s-1))
-          D = 0.0_cp; U = 0.0_cp
+          allocate(L(1),D(s-1),U(s-1),dh(s-1)); dh = c%dhn
+          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
           D = -(/(1.0_cp/dh(i),i=1,s-1)/)
           U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call init_D(c%stagN2CC,D,s-1)
-          call init_U(c%stagN2CC,U,s-1)
-          call init_L(c%stagN2CC,U*0.0_cp,s-1)
-          deallocate(D,U,dh)
+          call init(c%stagN2CC,L,D,U,1,s-1,s-1)
+          deallocate(L,D,U,dh)
         else; call init(c%stagN2CC,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
       end subroutine

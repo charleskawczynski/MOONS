@@ -27,12 +27,12 @@
         integer :: i
         call check_valid_size(s,'staggered_CC2N')
         if (s.gt.1) then
-          allocate(L(s-2)); L = 0.0_cp
+          allocate(L( 1 )); L = 0.0_cp
           allocate(D(s-2)); D = 0.0_cp
           allocate(U(s-2)); U = 0.0_cp
           D = -(/(1.0_cp/dh(i),i=1,s-1)/)
           U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call init(SP,L,D,U,s-1)
+          call init(SP,L,D,U,1,s-1,s-1)
           deallocate(L,D,U)
         else
           call init(SP,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
@@ -113,12 +113,12 @@
         integer :: i
         call check_valid_size(s,'staggered_N2CC')
         if (s.gt.1) then
-          allocate(L(s-2)); L = 0.0_cp
+          allocate(L( 1 )); L = 0.0_cp
           allocate(D(s-2)); D = 0.0_cp
           allocate(U(s-2)); U = 0.0_cp
           D = -(/(1.0_cp/dh(i),i=1,s-1)/)
           U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call init(SP,L,D,U,s-1)
+          call init(SP,L,D,U,1,s-1,s-1)
           deallocate(L,D,U)
         else
           call init(SP,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
