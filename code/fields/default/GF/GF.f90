@@ -21,6 +21,7 @@
         use GF_multiply_wall_mod
         use GF_square_mod
         use GF_laplacian_mod
+        use GF_curl_curl_mod
         use GF_mean_along_dir_mod
 
         implicit none
@@ -41,6 +42,9 @@
         public :: cosine_waves
         public :: random_noise
         public :: laplacian
+        public :: curl_curl_x
+        public :: curl_curl_y
+        public :: curl_curl_z
 
         ! GF_surface_flux_mod
         public :: plane_sum_x

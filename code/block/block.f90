@@ -22,7 +22,9 @@
          type(grid),dimension(:),allocatable :: e,eb      ! Edges (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: c,cb      ! Corners (boundary,ghost,interior)
          type(grid_field),dimension(:),allocatable :: vol ! index must match volume_ID in data_location
-         type(stencil_field),dimension(3) :: curl_curl
+         type(stencil_field),dimension(3) :: curl_curlX   ! X component data
+         type(stencil_field),dimension(3) :: curl_curlY   ! Y component data
+         type(stencil_field),dimension(3) :: curl_curlZ   ! Z component data
          type(stencil_field),dimension(3) :: lap_F_VF
        end type
 
@@ -57,26 +59,124 @@
          implicit none
          type(block),intent(inout) :: B
          type(stencil) :: S
-         type(data_location) :: DL
-         integer :: dir
-         dir = 1; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%stagN2CC)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
-         call init(B%curl_curl(dir),S,B%g,DL)
-
-         dir = 2; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%stagCC2N)
-         call init(S%S(2),B%g%c(2)%stagN2CC)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
-         call init(B%curl_curl(dir),S,B%g,DL)
-
-         dir = 3; call init_Face(DL,dir)
+         type(data_location),dimension(3) :: DL
+         integer :: dir,i
+         dir = 1 ! X-component result
+         do i=1,3; call init_Face(DL(i),i); enddo
+         ! X-component terms
+         call init(S%S(1),B%g%c(1)%colN(1)); call assign(S%S(1),0.0_cp)
+         call init(S%S(2),B%g%c(2)%colCC_centered(2))
+         call init(S%S(3),B%g%c(3)%colCC_centered(2))
+         call init(B%curl_curlX(dir),S,B%g,DL(1))
+         ! Y-component terms
          call init(S%S(1),B%g%c(1)%stagCC2N)
          call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagN2CC)
-         call init(B%curl_curl(dir),S,B%g,DL)
-         call delete(DL)
+         call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
+         call init(B%curl_curlY(dir),S,B%g,DL(2))
+         ! Z-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+
+         dir = 2 ! Y-component result
+         ! X-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
+         call init(B%curl_curlX(dir),S,B%g,DL(1))
+         ! Y-component terms
+         call init(S%S(1),B%g%c(1)%colCC_centered(2))
+         call init(S%S(2),B%g%c(2)%colN(2)); call assign(S%S(2),0.0_cp)
+         call init(S%S(3),B%g%c(3)%colCC_centered(2))
+         call init(B%curl_curlY(dir),S,B%g,DL(2))
+         ! Z-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+
+         dir = 3 ! Z-component result
+         ! X-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlX(dir),S,B%g,DL(1))
+         ! Y-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlY(dir),S,B%g,DL(2))
+         ! Z-component terms
+         call init(S%S(1),B%g%c(1)%colCC_centered(2))
+         call init(S%S(2),B%g%c(2)%colCC_centered(2))
+         call init(S%S(3),B%g%c(3)%colN(2)); call assign(S%S(3),0.0_cp)
+         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+
+         do i=1,3; call delete(DL(i)); enddo
+         call delete(S)
+       end subroutine
+
+       subroutine init_curl_curl_stencil_block_non_uniform(B,sig_inv_x,sig_inv_y,sig_inv_z)
+         implicit none
+         type(block),intent(inout) :: B
+         type(grid_field),intent(in) :: sig_inv_x,sig_inv_y,sig_inv_z
+         type(stencil) :: S
+         type(data_location),dimension(3) :: DL
+         integer :: dir,i
+         dir = 1 ! X-component result
+         do i=1,3; call init_Face(DL(i),i); enddo
+         ! X-component terms
+         call init(S%S(1),B%g%c(1)%colN(1)); call assign(S%S(1),0.0_cp)
+         call init(S%S(2),B%g%c(2)%colCC_centered(2))
+         call init(S%S(3),B%g%c(3)%colCC_centered(2))
+         call init(B%curl_curlX(dir),S,B%g,DL(1))
+         ! Y-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
+         call init(B%curl_curlY(dir),S,B%g,DL(2))
+         ! Z-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+
+         dir = 2 ! Y-component result
+         ! X-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
+         call init(B%curl_curlX(dir),S,B%g,DL(1))
+         ! Y-component terms
+         call init(S%S(1),B%g%c(1)%colCC_centered(2))
+         call init(S%S(2),B%g%c(2)%colN(2)); call assign(S%S(2),0.0_cp)
+         call init(S%S(3),B%g%c(3)%colCC_centered(2))
+         call init(B%curl_curlY(dir),S,B%g,DL(2))
+         ! Z-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+
+         dir = 3 ! Z-component result
+         ! X-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlX(dir),S,B%g,DL(1))
+         ! Y-component terms
+         call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
+         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(B%curl_curlY(dir),S,B%g,DL(2))
+         ! Z-component terms
+         call init(S%S(1),B%g%c(1)%colCC_centered(2))
+         call init(S%S(2),B%g%c(2)%colCC_centered(2))
+         call init(S%S(3),B%g%c(3)%colN(2)); call assign(S%S(3),0.0_cp)
+         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+
+         do i=1,3; call delete(DL(i)); enddo
          call delete(S)
        end subroutine
 

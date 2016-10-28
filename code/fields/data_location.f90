@@ -11,6 +11,11 @@
        public :: init_Face, is_Face
        public :: init_Edge, is_Edge
 
+       public :: DL_CC
+       public :: DL_Node
+       public :: DL_Face
+       public :: DL_Edge
+
        public :: get_Face
        public :: get_Edge
 
@@ -37,6 +42,11 @@
        interface init_Node;           module procedure init_Node_DL;            end interface
        interface init_Face;           module procedure init_Face_DL;            end interface
        interface init_Edge;           module procedure init_Edge_DL;            end interface
+
+       interface DL_CC;               module procedure DL_CC_DL;                end interface
+       interface DL_Node;             module procedure DL_Node_DL;              end interface
+       interface DL_Face;             module procedure DL_Face_DL;              end interface
+       interface DL_Edge;             module procedure DL_Edge_DL;              end interface
 
        interface is_CC;               module procedure is_CC_DL;                end interface
        interface is_Node;             module procedure is_Node_DL;              end interface
@@ -285,6 +295,32 @@
          call insist_defined(DL,'is_Face_DL')
 #endif
          L = DL%F
+       end function
+
+       function DL_CC_DL() result(DL)
+         implicit none
+         type(data_location) :: DL
+         call init_CC(DL)
+       end function
+
+       function DL_Node_DL() result(DL)
+         implicit none
+         type(data_location) :: DL
+         call init_Node(DL)
+       end function
+
+       function DL_Edge_DL(dir) result(DL)
+         implicit none
+         integer,intent(in) :: dir
+         type(data_location) :: DL
+         call init_Edge(DL,dir)
+       end function
+
+       function DL_Face_DL(dir) result(DL)
+         implicit none
+         integer,intent(in) :: dir
+         type(data_location) :: DL
+         call init_Face(DL,dir)
        end function
 
        function get_Face_DL(DL) result(dir)

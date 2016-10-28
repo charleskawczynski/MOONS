@@ -8,6 +8,7 @@
 
       public :: consecutive_stag_CC
       public :: consecutive_stag_N
+      public :: assign
 
       public :: init_L,init_D,init_U
       public :: check
@@ -36,6 +37,7 @@
 
       interface consecutive_stag_CC; module procedure consecutive_stag_CC_sparse; end interface
       interface consecutive_stag_N;  module procedure consecutive_stag_N_sparse;  end interface
+      interface assign;              module procedure assign_sparse;              end interface
 
       contains
 
@@ -190,6 +192,15 @@
         call insist_allocated(S%L,caller//' sparse(L)')
         call insist_allocated(S%D,caller//' sparse(D)')
         call insist_allocated(S%U,caller//' sparse(U)')
+      end subroutine
+
+      subroutine assign_sparse(S,val)
+        implicit none
+        type(sparse),intent(inout) :: S
+        real(cp),intent(in) :: val
+        call assign(S%L,val)
+        call assign(S%D,val)
+        call assign(S%U,val)
       end subroutine
 
       subroutine consecutive_stag_CC_sparse(S,CC,N)

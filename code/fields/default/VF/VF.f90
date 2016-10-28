@@ -70,6 +70,7 @@
         public :: assignX,assignY,assignZ
 
         public :: laplacian_test_VF_VF
+        public :: curl_curl_test_VF_VF
 
         type VF
           ! integer :: s = 3  ! number of components
@@ -376,6 +377,14 @@
           type(VF),intent(in) :: U
           type(mesh),intent(in) :: m
           call laplacian_test_SF_VF(lapU%x,lapU%y,lapU%z,U%x,U%y,U%z,m)
+        end subroutine
+
+        subroutine curl_curl_test_VF_VF(curl_curlU,U,m)
+          implicit none
+          type(VF),intent(inout) :: curl_curlU
+          type(VF),intent(in) :: U
+          type(mesh),intent(in) :: m
+          call curl_curl_test_SF_VF(curl_curlU%x,curl_curlU%y,curl_curlU%z,U%x,U%y,U%z,m)
         end subroutine
 
         subroutine multiply_volume_VF(u,m)

@@ -27,6 +27,7 @@
       interface import;             module procedure import_array;               end interface
 
       interface assign;             module procedure assign_array;               end interface
+      interface assign;             module procedure assign_array_cp;            end interface
       interface add;                module procedure add_array;                  end interface
       interface add;                module procedure add_array_2;                end interface
       interface multiply;           module procedure multiply_array;             end interface
@@ -160,10 +161,20 @@
         type(array),intent(inout) :: A
         type(array),intent(in) :: B
 #ifdef _DEBUG_ARRAY_
-        call insist_allocated(B,'assign_array (2)')
+        call insist_allocated(B,'assign_array')
 #endif
         if (.not.allocated(A%f)) call init(A,B%N)
         A%f = B%f
+      end subroutine
+
+      subroutine assign_array_cp(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'assign_array_cp')
+#endif
+        A%f = B
       end subroutine
 
       subroutine add_array(A,B)

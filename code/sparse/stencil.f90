@@ -31,11 +31,10 @@
 
       contains
 
-      subroutine init_stencil(S,X,Y,Z,DL)
+      subroutine init_stencil(S,X,Y,Z)
         implicit none
         type(stencil),intent(inout) :: S
         type(sparse),intent(in) :: X,Y,Z
-        type(data_location),intent(in) :: DL
         call delete(S)
         call init(S%S(1),X)
         call init(S%S(2),Y)

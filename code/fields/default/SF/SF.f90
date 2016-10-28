@@ -49,6 +49,7 @@
         public :: cross_product_z
 
         public :: laplacian_test_SF_VF
+        public :: curl_curl_test_SF_VF
 
         ! Monitoring
         public :: print_BCs
@@ -686,6 +687,17 @@
           type(mesh),intent(in) :: m
           integer :: i
           do i=1,m%s; call laplacian_test_BF_VF(lapX%BF(i),lapY%BF(i),lapZ%BF(i),&
+                                                X%BF(i),Y%BF(i),Z%BF(i),&
+                                                m%B(i)); enddo
+        end subroutine
+
+        subroutine curl_curl_test_SF_VF(CX,CY,CZ,X,Y,Z,m)
+          implicit none
+          type(SF),intent(inout) :: CX,CY,CZ
+          type(SF),intent(in) :: X,Y,Z
+          type(mesh),intent(in) :: m
+          integer :: i
+          do i=1,m%s; call curl_curl_test_BF_VF(CX%BF(i),CY%BF(i),CZ%BF(i),&
                                                 X%BF(i),Y%BF(i),Z%BF(i),&
                                                 m%B(i)); enddo
         end subroutine

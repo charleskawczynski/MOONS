@@ -57,6 +57,7 @@
         public :: cross_product_z
 
         public :: laplacian_test_BF_VF
+        public :: curl_curl_test_BF_VF
 
         type block_field
           type(grid_field) :: GF ! bulk
@@ -701,6 +702,37 @@
          call laplacian(lapX%GF,X%GF,B%lap_F_VF(1)%L,B%lap_F_VF(1)%D,B%lap_F_VF(1)%U)
          call laplacian(lapY%GF,Y%GF,B%lap_F_VF(2)%L,B%lap_F_VF(2)%D,B%lap_F_VF(2)%U)
          call laplacian(lapZ%GF,Z%GF,B%lap_F_VF(3)%L,B%lap_F_VF(3)%D,B%lap_F_VF(3)%U)
+       end subroutine
+
+       subroutine curl_curl_test_BF_VF(CX,CY,CZ,X,Y,Z,B)
+         implicit none
+         type(block_field),intent(inout) :: CX,CY,CZ
+         type(block_field),intent(in) :: X,Y,Z
+         type(block),intent(in) :: B
+         call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,&
+         B%curl_curlX(1)%D,&
+         B%curl_curlX(1)%L,&
+         B%curl_curlY(1)%L,&
+         B%curl_curlZ(1)%L,&
+         B%curl_curlX(1)%U,&
+         B%curl_curlY(1)%U,&
+         B%curl_curlZ(1)%U)
+         call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,&
+         B%curl_curlY(2)%D,&
+         B%curl_curlX(2)%L,&
+         B%curl_curlY(2)%L,&
+         B%curl_curlZ(2)%L,&
+         B%curl_curlX(2)%U,&
+         B%curl_curlY(2)%U,&
+         B%curl_curlZ(2)%U)
+         call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,&
+         B%curl_curlZ(3)%D,&
+         B%curl_curlX(3)%L,&
+         B%curl_curlY(3)%L,&
+         B%curl_curlZ(3)%L,&
+         B%curl_curlX(3)%U,&
+         B%curl_curlY(3)%U,&
+         B%curl_curlZ(3)%U)
        end subroutine
 
       end module
