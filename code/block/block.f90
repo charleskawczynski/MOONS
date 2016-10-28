@@ -51,8 +51,6 @@
          call delete(B)
          call init(B%g,g)
          call init_vol_block(B)
-         ! call init_curl_curl_stencil_block(B)
-         ! call init_Laplacian_stencil_block(B)
        end subroutine
 
        subroutine init_curl_curl_stencil_block(B)
@@ -145,6 +143,7 @@
          i=12; allocate(B%eb(i)); do i=1,12;call get_edge_b(  B%eb(i),B%g,i); enddo
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
          call init_Laplacian_stencil_block(B)
+         call init_curl_curl_stencil_block(B)
        end subroutine
 
        subroutine init_block_copy(B,B_in)

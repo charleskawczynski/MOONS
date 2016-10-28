@@ -18,10 +18,13 @@ print 'Number of compiled lines:'
 print ''
 
 files = IO.get_all_files_in_path(make_dir)
-make_file = make_dir+files[0]
+make_file = [x for x in files if 'makefile' in x]
+make_file = make_dir+make_file[0]
+print 'makefile = '+make_file
+print ''
+
 f = IO.get_file_contents(make_file)
 compiled_files = filter(None, f.split('\n'))
-
 
 compiled_files = [x for x in compiled_files if x.endswith('.f90\\') or x.endswith('.f90') and '$(SRC_DIR)' in x]
 compiled_files = [x[:-1] if x.endswith('\\') else x for x in compiled_files]
