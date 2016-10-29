@@ -62,6 +62,62 @@
         call assign(SF%D,0.0_cp)
         s = SF%D%s
 
+        if(.not.SF%S%S(1)%staggered) then
+          do i=2,s(1)-1;call assign_plane_x(SF%L(1),SF%S%S(1)%L%f(i-1),i);enddo
+        endif
+        if(.not.SF%S%S(2)%staggered) then
+          do j=2,s(2)-1;call assign_plane_y(SF%L(2),SF%S%S(2)%L%f(j-1),j);enddo
+        endif
+        if(.not.SF%S%S(3)%staggered) then
+          do k=2,s(3)-1;call assign_plane_z(SF%L(3),SF%S%S(3)%L%f(k-1),k);enddo
+        endif
+
+        do i=2,s(1)-1; call assign_plane_x(SF%U(1),SF%S%S(1)%U%f(i-1),i); enddo
+        do j=2,s(2)-1; call assign_plane_y(SF%U(2),SF%S%S(2)%U%f(j-1),j); enddo
+        do k=2,s(3)-1; call assign_plane_z(SF%U(3),SF%S%S(3)%U%f(k-1),k); enddo
+
+        ! Set lower to diagonal (convenient for implementation):
+        if (SF%S%S(1)%staggered) then
+          do i=2,s(1)-1; call assign_plane_x(SF%L(1),SF%S%S(1)%D%f(i-1),i); enddo
+        endif
+        if (SF%S%S(2)%staggered) then
+          do j=2,s(2)-1; call assign_plane_y(SF%L(2),SF%S%S(2)%D%f(j-1),j); enddo
+        endif
+        if (SF%S%S(3)%staggered) then
+          do k=2,s(3)-1; call assign_plane_z(SF%L(3),SF%S%S(3)%D%f(k-1),k); enddo
+        endif
+
+        ! Combine diagonals if collocated:
+        do i=1,3; call init(D(i),g,DL); enddo
+        if (.not.SF%S%S(1)%staggered) then
+        do i=2,s(1)-1; call assign_plane_x(D(1),SF%S%S(1)%D%f(i-1),i); enddo; call add(SF%D,D(1))
+        endif
+        if (.not.SF%S%S(2)%staggered) then
+        do j=2,s(2)-1; call assign_plane_y(D(2),SF%S%S(2)%D%f(j-1),j); enddo; call add(SF%D,D(2))
+        endif
+        if (.not.SF%S%S(3)%staggered) then
+        do k=2,s(3)-1; call assign_plane_z(D(3),SF%S%S(3)%D%f(k-1),k); enddo; call add(SF%D,D(3))
+        endif
+
+        do i=1,3; call delete(D(i)); enddo
+      end subroutine
+
+      subroutine set_GF_SF_new_but_not_working(SF,g,DL)
+        implicit none
+        type(stencil_field),intent(inout) :: SF
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        type(grid_field),dimension(3) :: D
+        integer :: i,j,k,t
+        integer,dimension(3) :: s
+        do i=1,3; call init(SF%L(i),g,DL); enddo
+        do i=1,3; call init(SF%U(i),g,DL); enddo
+        call init(SF%D,g,DL)
+        do t=1,3; call assign(SF%L(t),0.0_cp); enddo
+        do t=1,3; call assign(SF%U(t),0.0_cp); enddo
+        call assign(SF%D,0.0_cp)
+        s = SF%D%s
+
         do i=2,SF%S%S(1)%L%N; call assign_plane_x(SF%L(1),SF%S%S(1)%L%f(i-1),i); enddo
         do i=2,SF%S%S(1)%U%N; call assign_plane_x(SF%U(1),SF%S%S(1)%U%f(i-1),i); enddo
         do j=2,SF%S%S(2)%L%N; call assign_plane_y(SF%L(2),SF%S%S(2)%L%f(j-1),j); enddo

@@ -19,14 +19,13 @@
         s = sc
         call check_valid_size(s,'interpolation_stencil')
         if (s.gt.1) then
-          allocate(L(s-1)); L = 0.0_cp
+          allocate(L( 1 )); L = 0.0_cp
           allocate(D(s-1)); D = 0.0_cp
           allocate(U(s-1)); U = 0.0_cp
           D = -(/( (hn(i+1) - hc(i))/(hc(i+1) - hc(i)) ,i=1,s-1)/)
           U =  (/( 1.0_cp - D(i) ,i=1,s-1)/)
-          call init(SP,L,D,U,s-1)
+          call init(SP,L,D,U,1,s-1,s-1)
           deallocate(L,D,U)
-          call init_L(SP,(/0.0_cp/),1) ! Lower is not needed
         else
           call init(SP,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
         endif
