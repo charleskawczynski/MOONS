@@ -3,6 +3,7 @@
        use grid_mod
        use GF_mod
        use sparse_mod
+       use face_edge_corner_indexing_mod
        use stencil_mod
        use stencil_field_mod
        use data_location_mod
@@ -15,6 +16,8 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: init_FEC
+       ! public :: init_stencil_curl_curl
+       ! public :: init_stencil_Laplacian
 
        type block
          type(grid) :: g                                  ! Bulk
@@ -55,61 +58,61 @@
          call init_vol_block(B)
        end subroutine
 
-       subroutine init_curl_curl_stencil_block(B)
+       subroutine init_curl_curl_stencil_block_full(B)
          implicit none
          type(block),intent(inout) :: B
          type(stencil) :: S
          type(data_location),dimension(3) :: DL
          integer :: dir,i
-         dir = 1 ! X-component result
          do i=1,3; call init_Face(DL(i),i); enddo
+         dir = 1 ! X-component result
          ! X-component terms
          call init(S%S(1),B%g%c(1)%colN(1)); call assign(S%S(1),0.0_cp)
-         call init(S%S(2),B%g%c(2)%colCC_centered(2))
-         call init(S%S(3),B%g%c(3)%colCC_centered(2))
+         call init(S%S(2),B%g%c(2)%colCC_centered(2)); call multiply(S%S(2),-1.0_cp)
+         call init(S%S(3),B%g%c(3)%colCC_centered(2)); call multiply(S%S(3),-1.0_cp)
          call init(B%curl_curlX(dir),S,B%g,DL(1))
          ! Y-component terms
          call init(S%S(1),B%g%c(1)%stagCC2N)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagN2CC)
          call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
          call init(B%curl_curlY(dir),S,B%g,DL(2))
          ! Z-component terms
          call init(S%S(1),B%g%c(1)%stagCC2N)
          call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagN2CC)
          call init(B%curl_curlZ(dir),S,B%g,DL(3))
 
          dir = 2 ! Y-component result
          ! X-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N)
+         call init(S%S(1),B%g%c(1)%stagN2CC)
          call init(S%S(2),B%g%c(2)%stagCC2N)
          call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
          call init(B%curl_curlX(dir),S,B%g,DL(1))
          ! Y-component terms
-         call init(S%S(1),B%g%c(1)%colCC_centered(2))
+         call init(S%S(1),B%g%c(1)%colCC_centered(2)); call multiply(S%S(1),-1.0_cp)
          call init(S%S(2),B%g%c(2)%colN(2)); call assign(S%S(2),0.0_cp)
-         call init(S%S(3),B%g%c(3)%colCC_centered(2))
+         call init(S%S(3),B%g%c(3)%colCC_centered(2)); call multiply(S%S(3),-1.0_cp)
          call init(B%curl_curlY(dir),S,B%g,DL(2))
          ! Z-component terms
          call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
          call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagN2CC)
          call init(B%curl_curlZ(dir),S,B%g,DL(3))
 
          dir = 3 ! Z-component result
          ! X-component terms
          call init(S%S(1),B%g%c(1)%stagCC2N)
          call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
+         call init(S%S(3),B%g%c(3)%stagN2CC)
          call init(B%curl_curlX(dir),S,B%g,DL(1))
          ! Y-component terms
          call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
+         call init(S%S(2),B%g%c(2)%stagN2CC)
          call init(S%S(3),B%g%c(3)%stagCC2N)
          call init(B%curl_curlY(dir),S,B%g,DL(2))
          ! Z-component terms
-         call init(S%S(1),B%g%c(1)%colCC_centered(2))
-         call init(S%S(2),B%g%c(2)%colCC_centered(2))
+         call init(S%S(1),B%g%c(1)%colCC_centered(2)); call multiply(S%S(1),-1.0_cp)
+         call init(S%S(2),B%g%c(2)%colCC_centered(2)); call multiply(S%S(2),-1.0_cp)
          call init(S%S(3),B%g%c(3)%colN(2)); call assign(S%S(3),0.0_cp)
          call init(B%curl_curlZ(dir),S,B%g,DL(3))
 
@@ -117,92 +120,73 @@
          call delete(S)
        end subroutine
 
-       subroutine init_curl_curl_stencil_block_non_uniform(B,sig_inv_x,sig_inv_y,sig_inv_z)
+       subroutine init_curl_curl_stencil_block_not_working(B)
          implicit none
          type(block),intent(inout) :: B
-         type(grid_field),intent(in) :: sig_inv_x,sig_inv_y,sig_inv_z
-         type(stencil) :: S
-         type(data_location),dimension(3) :: DL
-         integer :: dir,i
-         dir = 1 ! X-component result
-         do i=1,3; call init_Face(DL(i),i); enddo
-         ! X-component terms
-         call init(S%S(1),B%g%c(1)%colN(1)); call assign(S%S(1),0.0_cp)
-         call init(S%S(2),B%g%c(2)%colCC_centered(2))
-         call init(S%S(3),B%g%c(3)%colCC_centered(2))
-         call init(B%curl_curlX(dir),S,B%g,DL(1))
-         ! Y-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
-         call init(B%curl_curlY(dir),S,B%g,DL(2))
-         ! Z-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N)
-         call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
-         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+         type(stencil_field),dimension(3) :: lap_F_VF
+         integer :: i
+         do i=1,3; call init_face_laplacian_SF(lap_F_VF(i),B%g,DL_Face(i)); enddo
+         ! B%curl_curlX(1)%D_3D,& ! used
+         ! B%curl_curlX(1)%L,&    ! used
+         ! B%curl_curlX(1)%U,&    ! used
 
-         dir = 2 ! Y-component result
-         ! X-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagCC2N); call assign(S%S(3),0.0_cp)
-         call init(B%curl_curlX(dir),S,B%g,DL(1))
-         ! Y-component terms
-         call init(S%S(1),B%g%c(1)%colCC_centered(2))
-         call init(S%S(2),B%g%c(2)%colN(2)); call assign(S%S(2),0.0_cp)
-         call init(S%S(3),B%g%c(3)%colCC_centered(2))
-         call init(B%curl_curlY(dir),S,B%g,DL(2))
-         ! Z-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
-         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+         ! B%curl_curlY(2)%D_3D,& ! used
+         ! B%curl_curlY(2)%L,&    ! used
+         ! B%curl_curlY(2)%U,&    ! used
 
-         dir = 3 ! Z-component result
-         ! X-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N)
-         call init(S%S(2),B%g%c(2)%stagCC2N); call assign(S%S(2),0.0_cp)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
-         call init(B%curl_curlX(dir),S,B%g,DL(1))
-         ! Y-component terms
-         call init(S%S(1),B%g%c(1)%stagCC2N); call assign(S%S(1),0.0_cp)
-         call init(S%S(2),B%g%c(2)%stagCC2N)
-         call init(S%S(3),B%g%c(3)%stagCC2N)
-         call init(B%curl_curlY(dir),S,B%g,DL(2))
-         ! Z-component terms
-         call init(S%S(1),B%g%c(1)%colCC_centered(2))
-         call init(S%S(2),B%g%c(2)%colCC_centered(2))
-         call init(S%S(3),B%g%c(3)%colN(2)); call assign(S%S(3),0.0_cp)
-         call init(B%curl_curlZ(dir),S,B%g,DL(3))
+         ! B%curl_curlZ(3)%D_3D,& ! used
+         ! B%curl_curlZ(3)%L,&    ! used
+         ! B%curl_curlZ(3)%U)     ! used
 
-         do i=1,3; call delete(DL(i)); enddo
-         call delete(S)
+         call init(B%curl_curlX(1),lap_F_VF(1))
+         call init(B%curl_curlY(2),lap_F_VF(2))
+         call init(B%curl_curlZ(3),lap_F_VF(3))
+
+           call init(B%curl_curlX(2),lap_F_VF(1)) ! for successful copy
+           call init(B%curl_curlX(3),lap_F_VF(1)) ! for successful copy
+           call init(B%curl_curlY(1),lap_F_VF(2)) ! for successful copy
+           call init(B%curl_curlY(3),lap_F_VF(2)) ! for successful copy
+           call init(B%curl_curlZ(1),lap_F_VF(3)) ! for successful copy
+           call init(B%curl_curlZ(2),lap_F_VF(3)) ! for successful copy
+
+         do i=1,3; call multiply(B%curl_curlX(1)%L(i),-1.0_cp); enddo
+         do i=1,3; call multiply(B%curl_curlX(1)%D(i),-1.0_cp); enddo
+         do i=1,3; call multiply(B%curl_curlX(1)%U(i),-1.0_cp); enddo
+
+         do i=1,3; call multiply(B%curl_curlY(2)%L(i),-1.0_cp); enddo
+         do i=1,3; call multiply(B%curl_curlY(2)%D(i),-1.0_cp); enddo
+         do i=1,3; call multiply(B%curl_curlY(2)%U(i),-1.0_cp); enddo
+
+         do i=1,3; call multiply(B%curl_curlZ(3)%L(i),-1.0_cp); enddo
+         do i=1,3; call multiply(B%curl_curlZ(3)%D(i),-1.0_cp); enddo
+         do i=1,3; call multiply(B%curl_curlZ(3)%U(i),-1.0_cp); enddo
+
+         call assign(B%curl_curlX(1)%D(1),0.0_cp); call init_3D_diagonal(B%curl_curlX(1))
+         call assign(B%curl_curlY(2)%D(2),0.0_cp); call init_3D_diagonal(B%curl_curlY(2))
+         call assign(B%curl_curlZ(3)%D(3),0.0_cp); call init_3D_diagonal(B%curl_curlZ(3))
+
+         do i=1,3; call delete(lap_F_VF(i)); enddo
+       end subroutine
+
+       subroutine init_curl_curl_stencil_block(B)
+         implicit none
+         type(block),intent(inout) :: B
+         integer :: i
+         do i=1,3; call init_face_laplacian_SF(B%curl_curlX(i),B%g,DL_Face(1)); enddo
+         do i=1,3; call init_face_laplacian_SF(B%curl_curlY(i),B%g,DL_Face(2)); enddo
+         do i=1,3; call init_face_laplacian_SF(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
+
+         ! do i=1,3; call multiply(B%curl_curlX(i),-1.0_cp); enddo
+         ! do i=1,3; call multiply(B%curl_curlY(i),-1.0_cp); enddo
+         ! do i=1,3; call multiply(B%curl_curlZ(i),-1.0_cp); enddo
        end subroutine
 
        subroutine init_Laplacian_stencil_block(B)
          implicit none
          type(block),intent(inout) :: B
-         type(stencil) :: S
-         type(data_location) :: DL
-         integer :: dir
-         dir = 1; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%colN(2))
-         call init(S%S(2),B%g%c(2)%colCC_centered(2))
-         call init(S%S(3),B%g%c(3)%colCC_centered(2))
-         call init(B%lap_F_VF(dir),S,B%g,DL)
-         dir = 2; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%colCC_centered(2))
-         call init(S%S(2),B%g%c(2)%colN(2))
-         call init(S%S(3),B%g%c(3)%colCC_centered(2))
-         call init(B%lap_F_VF(dir),S,B%g,DL)
-         dir = 3; call init_Face(DL,dir)
-         call init(S%S(1),B%g%c(1)%colCC_centered(2))
-         call init(S%S(2),B%g%c(2)%colCC_centered(2))
-         call init(S%S(3),B%g%c(3)%colN(2))
-         call init(B%lap_F_VF(dir),S,B%g,DL)
-         call delete(DL)
-         call delete(S)
+         call init_face_laplacian_SF(B%lap_F_VF(1),B%g,DL_Face(1))
+         call init_face_laplacian_SF(B%lap_F_VF(2),B%g,DL_Face(2))
+         call init_face_laplacian_SF(B%lap_F_VF(3),B%g,DL_Face(3))
        end subroutine
 
        subroutine init_vol_block(B)
@@ -254,6 +238,9 @@
          call delete(B)
          call init(B%g,B_in%g)
          do i=1,3; call init(B%lap_F_VF(i),B_in%lap_F_VF(i)); enddo
+         do i=1,3; call init(B%curl_curlX(i),B_in%curl_curlX(i)); enddo
+         do i=1,3; call init(B%curl_curlY(i),B_in%curl_curlY(i)); enddo
+         do i=1,3; call init(B%curl_curlZ(i),B_in%curl_curlZ(i)); enddo
 
          ! call inisist_allocated(B_in,'init_block_copy')
          i=6; allocate(B%f(i));  do i=1,6;  call init(B%f(i),B_in%f(i));   enddo
@@ -282,6 +269,9 @@
            deallocate(B%vol)
          endif
          do i=1,3; call delete(B%lap_F_VF(i)); enddo
+         do i=1,3; call delete(B%curl_curlX(i)); enddo
+         do i=1,3; call delete(B%curl_curlY(i)); enddo
+         do i=1,3; call delete(B%curl_curlZ(i)); enddo
          call delete_FEC_block(B)
        end subroutine
 

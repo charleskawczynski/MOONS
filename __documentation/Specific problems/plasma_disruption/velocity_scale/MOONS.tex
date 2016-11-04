@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{../../../useful_commands.tex}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}        
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Plasma Disruption Scales}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Velocity}
+We best know the time rate change of $\B^0$. 
+\begin{equation}
+	\frac{B^0}{\tau} \sim \frac{J}{\sigma L}
+\end{equation}
+This will induce $\J$ and interact with $\B^0$ resulting in an imbalance in the momentum equation:
+\begin{equation}
+	\frac{U}{t} \sim \rho^{-1} J B
+\end{equation}
+The time to create an eddy of length $L$ we'll call the eddy turnover time $t=L/U$
+\begin{equation}
+	\frac{U^2}{L} \sim \rho^{-1} \left(\frac{B^0}{\tau} \sigma L \right) B
+\end{equation}
+Resulting in
+\begin{equation}
+	U \sim {B^0} B L \sqrt{\frac{\sigma}{\rho \tau}}
+\end{equation}
+In terms of PD for ITER,
+\begin{equation}\begin{aligned}
+	\B^0 = 5 \text{ [T]} \\
+	\tau = 0.045 \text{ [s]} \\
+	\rho = 450 \text{ [kg/m$^3$]} \\
+	\sigma = 250 \text{ [$\Omega$ m]} \\
+	\mu_m = 4 \pi \times 10^{-7} \text{ [H m$^{-1}$]} \\
+	L = 10 \text{ [m]} \\
+\end{aligned}\end{equation}
+These values result in
+\begin{equation}\begin{aligned}
+	U = B^0 L \sqrt{\frac{\sigma}{\rho \tau}} = \text{ [m/s]} \\
+	U = (5 T) (10 m) \sqrt{\frac{(250 \Omega m)}{(450 kg/m^3) (0.045 s)}} = \text{ [m/s]} \\
+	Re_m = U L \mu_m \sigma =  \\
+	Re_m = U (10 m) (4 \pi \times 10^{-7} H/m) (250 \Omega m) =  \\
+\end{aligned}\end{equation}
+
+\end{document}

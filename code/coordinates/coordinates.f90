@@ -176,6 +176,7 @@
         implicit none
         type(coordinates),intent(inout) :: c
         type(coordinates),intent(in) :: d
+        integer :: i
         call delete(c)
         if (.not.d%defined) stop 'Error: trying to copy undefined coordinate in coordinates.f90'
 
@@ -184,20 +185,17 @@
         if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
         if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
         if (.not.allocated(d%dhc))   stop 'Error: d%dhc   not allocated in coordinates.f90'
-        call init(c%theta,d%theta)
         allocate(c%hn(size(d%hn)));       c%hn    = d%hn
         allocate(c%hc(size(d%hc)));       c%hc    = d%hc
         allocate(c%dhn(size(d%dhn)));     c%dhn   = d%dhn
         allocate(c%dhc(size(d%dhc)));     c%dhc   = d%dhc
 
+        call init(c%theta,d%theta)
         call init(c%stagCC2N,d%stagCC2N)
         call init(c%stagN2CC,d%stagN2CC)
-        call init(c%colCC(1),d%colCC(1))
-        call init(c%colCC(2),d%colCC(2))
-        call init(c%colN(1),d%colN(1))
-        call init(c%colN(2),d%colN(2))
-        call init(c%colCC_centered(1),d%colCC_centered(1))
-        call init(c%colCC_centered(2),d%colCC_centered(2))
+        do i=1,2; call init(c%colCC(i),d%colCC(i)); enddo
+        do i=1,2; call init(c%colCC_centered(i),d%colCC_centered(i)); enddo
+        do i=1,2; call init(c%colN(i),d%colN(i)); enddo
 
         c%hc_e = d%hc_e
         c%hn_e = d%hn_e
@@ -214,14 +212,17 @@
       subroutine deleteCoordinates(c)
         implicit none
         type(coordinates),intent(inout) :: c
+        integer :: i
         if (allocated(c%hn)) deallocate(c%hn)
         if (allocated(c%hc)) deallocate(c%hc)
         if (allocated(c%dhn)) deallocate(c%dhn)
         if (allocated(c%dhc)) deallocate(c%dhc)
         call delete(c%theta)
-        call delete(c%stagCC2N); call delete(c%stagN2CC)
-        call delete(c%colCC(1)); call delete(c%colN(1))
-        call delete(c%colCC(2)); call delete(c%colN(2))
+        call delete(c%stagCC2N)
+        call delete(c%stagN2CC)
+        do i=1,2; call delete(c%colCC_centered(i)); enddo
+        do i=1,2; call delete(c%colN(i)); enddo
+        do i=1,2; call delete(c%colCC(i)); enddo
         c%dhc_e = 0.0_cp
         c%dhn_e = 0.0_cp
         c%defined = .false.
@@ -801,6 +802,13 @@
 
         ! call init(c%theta,interpolation_stencil(c%hc,c%hn,c%sc,c%sn))
         ! call init(c%stagCC2N,staggered_CC2N(c%dhc,c%sc))
+        ! call init(c%stagN2CC,staggered_N2CC(c%dhn,c%sn))
+        ! call init(c%colCC_centered(1),collocated_CC_1_centered(c%dhc,c%sc))
+        ! call init(c%colCC_centered(2),collocated_CC_2_centered(c%dhc,c%sc))
+        ! call init(c%colCC(1),collocated_CC_1(c%dhc,c%sc))
+        ! call init(c%colCC(2),collocated_CC_2(c%dhc,c%sc))
+        ! call init(c%colN(1),collocated_Node_1(c%dhn,c%sn))
+        ! call init(c%colN(2),collocated_Node_2(c%dhn,c%sn))
         
         ! call check(c%stagCC2N)
         ! call check(c%stagN2CC)

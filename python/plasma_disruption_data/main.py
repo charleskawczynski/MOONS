@@ -14,8 +14,8 @@ clear = lambda: os.system('cls')
 clear()
 PS = '\\'
 transient_L = False
-transient_0D_L = True
-export_3D_L = False
+transient_0D_L = False
+export_3D_L = True
 export_1D_L = False
 
 # ************************************ GET DIRECTORIES **************************************

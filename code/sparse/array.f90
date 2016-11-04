@@ -28,8 +28,10 @@
 
       interface assign;             module procedure assign_array;               end interface
       interface assign;             module procedure assign_array_cp;            end interface
+      interface assign;             module procedure assign_array_element;       end interface
       interface add;                module procedure add_array;                  end interface
       interface add;                module procedure add_array_2;                end interface
+      interface multiply;           module procedure multiply_array_cp;          end interface
       interface multiply;           module procedure multiply_array;             end interface
       interface multiply;           module procedure multiply_array_2;           end interface
 
@@ -176,6 +178,17 @@
 #endif
         A%f = B
       end subroutine
+      subroutine assign_array_element(A,B,i)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: B
+        integer,intent(in) :: i
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'assign_array_element')
+        call check_bounds_array(A,i,'assign_array_element')
+#endif
+        A%f(i) = B
+      end subroutine
 
       subroutine add_array(A,B)
         implicit none
@@ -202,6 +215,15 @@
         A%f = B%f + C%f
       end subroutine
 
+      subroutine multiply_array_cp(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'multiply_array_cp (A)')
+#endif
+        A%f = A%f*B
+      end subroutine
       subroutine multiply_array(A,B)
         implicit none
         type(array),intent(inout) :: A

@@ -150,7 +150,7 @@
           if (allocated(a%f)) then
             write(*,*) 'shape(f) = ',a%s
             do k=1+p,a%s(3)-p; do j=1+p,a%s(2)-p; do i=1+p,a%s(1)-p
-              write(un,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
+              write(un,*) 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
             enddo; enddo; enddo
           endif
         end subroutine

@@ -5,6 +5,8 @@
        implicit none
 
        private
+       public :: eye_given_dir
+
        public :: dir_given_face
        public :: dir_given_edge
        public :: adj_dir_given_dir
@@ -28,6 +30,22 @@
        public :: nhat_given_edge
 
        contains
+
+       ! *************************************************************************
+       ! ******************************** GET EYE ********************************
+       ! *************************************************************************
+
+       function eye_given_dir(dir) result(eye)
+         implicit none
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         select case (dir)
+         case (1); eye = (/1,0,0/)
+         case (2); eye = (/0,1,0/)
+         case (3); eye = (/0,0,1/)
+         case default; stop 'Error: dir must = 1:3 in eye_given_dir in face_edge_corner_indexing.f90'
+         end select
+       end function
 
        ! *************************************************************************
        ! ******************************** GET DIR ********************************
