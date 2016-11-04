@@ -5,6 +5,7 @@
        use sparse_mod
        use face_edge_corner_indexing_mod
        use stencil_mod
+       use stencil_3D_mod
        use stencil_field_mod
        use data_location_mod
        use IO_tools_mod
@@ -28,7 +29,8 @@
          type(stencil_field),dimension(3) :: curl_curlX   ! X component data
          type(stencil_field),dimension(3) :: curl_curlY   ! Y component data
          type(stencil_field),dimension(3) :: curl_curlZ   ! Z component data
-         type(stencil_field),dimension(3) :: lap_F_VF
+         ! type(stencil_field),dimension(3) :: lap_F_VF
+         type(stencil_3D),dimension(3) :: lap_VF
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -123,31 +125,20 @@
        subroutine init_curl_curl_stencil_block_not_working(B)
          implicit none
          type(block),intent(inout) :: B
-         type(stencil_field),dimension(3) :: lap_F_VF
+         type(stencil_field),dimension(3) :: temp
          integer :: i
-         do i=1,3; call init_face_laplacian_SF(lap_F_VF(i),B%g,DL_Face(i)); enddo
-         ! B%curl_curlX(1)%D_3D,& ! used
-         ! B%curl_curlX(1)%L,&    ! used
-         ! B%curl_curlX(1)%U,&    ! used
+         do i=1,3; call init_face_laplacian_SF(temp(i),B%g,DL_Face(i)); enddo
 
-         ! B%curl_curlY(2)%D_3D,& ! used
-         ! B%curl_curlY(2)%L,&    ! used
-         ! B%curl_curlY(2)%U,&    ! used
+         call init(B%curl_curlX(1),temp(1))
+         call init(B%curl_curlY(2),temp(2))
+         call init(B%curl_curlZ(3),temp(3))
 
-         ! B%curl_curlZ(3)%D_3D,& ! used
-         ! B%curl_curlZ(3)%L,&    ! used
-         ! B%curl_curlZ(3)%U)     ! used
-
-         call init(B%curl_curlX(1),lap_F_VF(1))
-         call init(B%curl_curlY(2),lap_F_VF(2))
-         call init(B%curl_curlZ(3),lap_F_VF(3))
-
-           call init(B%curl_curlX(2),lap_F_VF(1)) ! for successful copy
-           call init(B%curl_curlX(3),lap_F_VF(1)) ! for successful copy
-           call init(B%curl_curlY(1),lap_F_VF(2)) ! for successful copy
-           call init(B%curl_curlY(3),lap_F_VF(2)) ! for successful copy
-           call init(B%curl_curlZ(1),lap_F_VF(3)) ! for successful copy
-           call init(B%curl_curlZ(2),lap_F_VF(3)) ! for successful copy
+           call init(B%curl_curlX(2),temp(1)) ! for successful copy
+           call init(B%curl_curlX(3),temp(1)) ! for successful copy
+           call init(B%curl_curlY(1),temp(2)) ! for successful copy
+           call init(B%curl_curlY(3),temp(2)) ! for successful copy
+           call init(B%curl_curlZ(1),temp(3)) ! for successful copy
+           call init(B%curl_curlZ(2),temp(3)) ! for successful copy
 
          do i=1,3; call multiply(B%curl_curlX(1)%L(i),-1.0_cp); enddo
          do i=1,3; call multiply(B%curl_curlX(1)%D(i),-1.0_cp); enddo
@@ -165,7 +156,7 @@
          call assign(B%curl_curlY(2)%D(2),0.0_cp); call init_3D_diagonal(B%curl_curlY(2))
          call assign(B%curl_curlZ(3)%D(3),0.0_cp); call init_3D_diagonal(B%curl_curlZ(3))
 
-         do i=1,3; call delete(lap_F_VF(i)); enddo
+         do i=1,3; call delete(temp(i)); enddo
        end subroutine
 
        subroutine init_curl_curl_stencil_block(B)
@@ -184,9 +175,22 @@
        subroutine init_Laplacian_stencil_block(B)
          implicit none
          type(block),intent(inout) :: B
-         call init_face_laplacian_SF(B%lap_F_VF(1),B%g,DL_Face(1))
-         call init_face_laplacian_SF(B%lap_F_VF(2),B%g,DL_Face(2))
-         call init_face_laplacian_SF(B%lap_F_VF(3),B%g,DL_Face(3))
+         ! call init_face_laplacian_SF(B%lap_F_VF(1),B%g,DL_Face(1))
+         ! call init_face_laplacian_SF(B%lap_F_VF(2),B%g,DL_Face(2))
+         ! call init_face_laplacian_SF(B%lap_F_VF(3),B%g,DL_Face(3))
+
+         call init(B%lap_VF(1),B%g,DL_Face(1))
+         call init(B%lap_VF(2),B%g,DL_Face(2))
+         call init(B%lap_VF(3),B%g,DL_Face(3))
+         call assign_consecutive(B%lap_VF(1))
+         call assign_consecutive(B%lap_VF(2))
+         call assign_consecutive(B%lap_VF(3))
+         call add_diagonals(B%lap_VF(1))
+         call add_diagonals(B%lap_VF(2))
+         call add_diagonals(B%lap_VF(3))
+         call clean(B%lap_VF(1))
+         call clean(B%lap_VF(2))
+         call clean(B%lap_VF(3))
        end subroutine
 
        subroutine init_vol_block(B)
@@ -237,7 +241,8 @@
          integer :: i
          call delete(B)
          call init(B%g,B_in%g)
-         do i=1,3; call init(B%lap_F_VF(i),B_in%lap_F_VF(i)); enddo
+         ! do i=1,3; call init(B%lap_F_VF(i),B_in%lap_F_VF(i)); enddo
+         do i=1,3; call init(B%lap_VF(i),B_in%lap_VF(i)); enddo
          do i=1,3; call init(B%curl_curlX(i),B_in%curl_curlX(i)); enddo
          do i=1,3; call init(B%curl_curlY(i),B_in%curl_curlY(i)); enddo
          do i=1,3; call init(B%curl_curlZ(i),B_in%curl_curlZ(i)); enddo
@@ -268,7 +273,8 @@
            do i=1,8; call delete(B%vol(i)); enddo
            deallocate(B%vol)
          endif
-         do i=1,3; call delete(B%lap_F_VF(i)); enddo
+         ! do i=1,3; call delete(B%lap_F_VF(i)); enddo
+         do i=1,3; call delete(B%lap_VF(i)); enddo
          do i=1,3; call delete(B%curl_curlX(i)); enddo
          do i=1,3; call delete(B%curl_curlY(i)); enddo
          do i=1,3; call delete(B%curl_curlZ(i)); enddo

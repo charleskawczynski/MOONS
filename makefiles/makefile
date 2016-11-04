@@ -140,6 +140,8 @@ FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 FC_DEBUG += -D_DEBUG_GF_NORMS_
+FC_DEBUG += -D_DEBUG_STENCIL_1D_
+FC_DEBUG += -D_DEBUG_STENCIL_3D_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 FCFLAGS += -fopenmp
@@ -186,9 +188,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -246,11 +248,11 @@ VPATH =\
 # **************** SOURCE FILES *********************
 SRCS_F =\
 	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
 	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)data_location.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
 	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
@@ -307,6 +309,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_laplacian.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_curl_curl.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
+	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
+	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
+	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_field.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\

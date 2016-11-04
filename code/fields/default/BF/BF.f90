@@ -700,9 +700,9 @@
          type(block_field),intent(inout) :: lapX,lapY,lapZ
          type(block_field),intent(in) :: X,Y,Z
          type(block),intent(in) :: B
-         call laplacian(lapX%GF,X%GF,B%lap_F_VF(1)%L,B%lap_F_VF(1)%D_3D,B%lap_F_VF(1)%U)
-         call laplacian(lapY%GF,Y%GF,B%lap_F_VF(2)%L,B%lap_F_VF(2)%D_3D,B%lap_F_VF(2)%U)
-         call laplacian(lapZ%GF,Z%GF,B%lap_F_VF(3)%L,B%lap_F_VF(3)%D_3D,B%lap_F_VF(3)%U)
+         call laplacian(lapX%GF,X%GF,B%lap_VF(1)%S(1:3)%SF%L,B%lap_VF(1)%D_3D,B%lap_VF(1)%S(1:3)%SF%U)
+         call laplacian(lapY%GF,Y%GF,B%lap_VF(2)%S(1:3)%SF%L,B%lap_VF(2)%D_3D,B%lap_VF(2)%S(1:3)%SF%U)
+         call laplacian(lapZ%GF,Z%GF,B%lap_VF(3)%S(1:3)%SF%L,B%lap_VF(3)%D_3D,B%lap_VF(3)%S(1:3)%SF%U)
        end subroutine
 
        subroutine curl_curl_test_BF_VF(CX,CY,CZ,X,Y,Z,B)
@@ -710,33 +710,30 @@
          type(block_field),intent(inout) :: CX,CY,CZ
          type(block_field),intent(in) :: X,Y,Z
          type(block),intent(in) :: B
-          ! call curl_curl(C,X,Y,Z,D,X_L,X_U,Y_D,Y_U,Z_D,Z_U)
          call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,&
-         B%curl_curlX(1)%D_3D,& ! used
-         B%curl_curlX(1)%L,& ! used
-         B%curl_curlX(1)%U,& ! used
+         B%curl_curlX(1)%D_3D,&
+         B%curl_curlX(1)%L,&
+         B%curl_curlX(1)%U,&
          B%curl_curlY(1)%D,&
          B%curl_curlY(1)%U,&
          B%curl_curlZ(1)%D,&
          B%curl_curlZ(1)%U)
-         ! call curl_curl(C,X,Y,Z,D,X_D,X_U,Y_L,Y_U,Z_D,Z_U)
          call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,&
-         B%curl_curlY(2)%D_3D,& ! used
+         B%curl_curlY(2)%D_3D,&
          B%curl_curlX(2)%D,&
          B%curl_curlX(2)%U,&
-         B%curl_curlY(2)%L,& ! used
-         B%curl_curlY(2)%U,& ! used
+         B%curl_curlY(2)%L,&
+         B%curl_curlY(2)%U,&
          B%curl_curlZ(2)%D,&
          B%curl_curlZ(2)%U)
-         ! call curl_curl(C,X,Y,Z,D,X_D,X_U,Y_D,Y_U,Z_L,Z_U)
          call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,&
-         B%curl_curlZ(3)%D_3D,& ! used
+         B%curl_curlZ(3)%D_3D,&
          B%curl_curlX(3)%D,&
          B%curl_curlX(3)%U,&
          B%curl_curlY(3)%D,&
          B%curl_curlY(3)%U,&
-         B%curl_curlZ(3)%L,& ! used
-         B%curl_curlZ(3)%U)  ! used
+         B%curl_curlZ(3)%L,&
+         B%curl_curlZ(3)%U)
        end subroutine
 
        subroutine curl_curl_test_BF_VF_lap(CX,CY,CZ,X,Y,Z,B)

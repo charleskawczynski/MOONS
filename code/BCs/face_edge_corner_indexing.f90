@@ -5,6 +5,11 @@
        implicit none
 
        private
+       public :: insist_valid_dir,   valid_dir
+       public :: insist_valid_face,  valid_face
+       public :: insist_valid_edge,  valid_edge
+       public :: insist_valid_corner,valid_corner
+
        public :: eye_given_dir
 
        public :: dir_given_face
@@ -30,6 +35,94 @@
        public :: nhat_given_edge
 
        contains
+
+       ! *************************************************************************
+       ! ********************************* VALID *********************************
+       ! *************************************************************************
+
+       subroutine insist_valid_dir(dir,caller)
+         implicit none
+         integer,intent(in) :: dir
+         character(len=*),intent(in) :: caller
+         if (.not.valid_dir(dir)) then
+         write(*,*) 'Error: invalid dir in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'dir = ',dir
+         stop 'DONE'
+         endif
+       end subroutine
+
+       subroutine insist_valid_face(face,caller)
+         implicit none
+         integer,intent(in) :: face
+         character(len=*),intent(in) :: caller
+         if (.not.valid_face(face)) then
+         write(*,*) 'Error: invalid face in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'face = ',face
+         stop 'DONE'
+         endif
+       end subroutine
+
+       subroutine insist_valid_edge(edge,caller)
+         implicit none
+         integer,intent(in) :: edge
+         character(len=*),intent(in) :: caller
+         if (.not.valid_edge(edge)) then
+         write(*,*) 'Error: invalid edge in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'edge = ',edge
+         stop 'DONE'
+         endif
+       end subroutine
+
+       subroutine insist_valid_corner(corner,caller)
+         implicit none
+         integer,intent(in) :: corner
+         character(len=*),intent(in) :: caller
+         if (.not.valid_corner(corner)) then
+         write(*,*) 'Error: invalid corner in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'corner = ',corner
+         stop 'DONE'
+         endif
+       end subroutine
+
+       function valid_dir(dir) result(L)
+         implicit none
+         integer,intent(in) :: dir
+         logical :: L
+         select case (dir)
+         case (1:3); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
+       function valid_face(face) result(L)
+         implicit none
+         integer,intent(in) :: face
+         logical :: L
+         select case (face)
+         case (1:6); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
+       function valid_edge(edge) result(L)
+         implicit none
+         integer,intent(in) :: edge
+         logical :: L
+         select case (edge)
+         case (1:12); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
+       function valid_corner(corner) result(L)
+         implicit none
+         integer,intent(in) :: corner
+         logical :: L
+         select case (corner)
+         case (1:8); L = .true.
+         case default; L = .false.
+         end select
+       end function
 
        ! *************************************************************************
        ! ******************************** GET EYE ********************************

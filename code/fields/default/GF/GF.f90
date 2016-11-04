@@ -92,4 +92,6 @@
         public :: cross_product_y
         public :: cross_product_z
 
+        public :: insist_allocated
+
       end module

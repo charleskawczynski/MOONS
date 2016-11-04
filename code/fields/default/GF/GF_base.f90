@@ -15,6 +15,7 @@
 
         public :: print_physical
         public :: insist_shape_match
+        public :: insist_allocated
 
         type grid_field
           integer :: s_1D                            ! size
@@ -38,6 +39,7 @@
 
         interface print_physical;           module procedure print_physical_GF;      end interface
         interface insist_shape_match;       module procedure insist_shape_match_GF;  end interface
+        interface insist_allocated;         module procedure insist_allocated_GF;    end interface
 
        contains
 
@@ -214,6 +216,16 @@
             write(*,*) 'Error: shape mismatch in ',caller,' in GF_base.f90'
             write(*,*) 'A%s = ',A%s
             write(*,*) 'B%s = ',B%s
+            stop 'Done'
+          endif
+        end subroutine
+
+        subroutine insist_allocated_GF(A,caller)
+          implicit none
+          type(grid_field),intent(in) :: A
+          character(len=*),intent(in) :: caller
+          if (.not.allocated(A%f)) then
+            write(*,*) 'Error: GF not allocated in ',caller,' in GF_base.f90'
             stop 'Done'
           endif
         end subroutine

@@ -26,20 +26,18 @@
 #endif
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
-          X%f(i+1, j , k )*X_U(1)%f(i,j,k)+&
-          X%f(i-1, j , k )*X_L(1)%f(i,j,k)+&
           X%f( i ,j+1, k )*X_U(2)%f(i,j,k)+&
           X%f( i ,j-1, k )*X_L(2)%f(i,j,k)+&
           X%f( i , j ,k+1)*X_U(3)%f(i,j,k)+&
           X%f( i , j ,k-1)*X_L(3)%f(i,j,k)+&
-          ! Y%f( i , j , k )*Y_U(1)%f(i,j,k)+&
-          ! Y%f(i-1, j , k )*Y_D(1)%f(i,j,k)+&
-          ! Y%f( i ,j+1, k )*Y_U(2)%f(i,j,k)+&
-          ! Y%f(i-1,j+1, k )*Y_D(2)%f(i,j,k)+&
-          ! Z%f( i , j , k )*Z_U(1)%f(i,j,k)+&
-          ! Z%f(i-1, j , k )*Z_D(1)%f(i,j,k)+&
-          ! Z%f( i , j ,k+1)*Z_U(3)%f(i,j,k)+&
-          ! Z%f(i-1, j ,k+1)*Z_D(3)%f(i,j,k)+&
+          Y%f( i , j , k )*Y_U(1)%f(i,j,k)+&
+          Y%f(i-1, j , k )*Y_D(1)%f(i,j,k)+&
+          Y%f( i ,j+1, k )*Y_U(2)%f(i,j,k)+&
+          Y%f(i-1,j+1, k )*Y_D(2)%f(i,j,k)+&
+          Z%f( i , j , k )*Z_U(1)%f(i,j,k)+&
+          Z%f(i-1, j , k )*Z_D(1)%f(i,j,k)+&
+          Z%f( i , j ,k+1)*Z_U(3)%f(i,j,k)+&
+          Z%f(i-1, j ,k+1)*Z_D(3)%f(i,j,k)+&
           X%f( i , j , k )*D%f(i,j,k)
           enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
