@@ -37,9 +37,9 @@
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
         call delete(SF)
-        call init(SF%L,g,DL)
-        call init(SF%D,g,DL)
-        call init(SF%U,g,DL)
+        call init(SF%L,g,DL); call assign(SF%L,0.0_cp)
+        call init(SF%D,g,DL); call assign(SF%D,0.0_cp)
+        call init(SF%U,g,DL); call assign(SF%U,0.0_cp)
       end subroutine
 
       subroutine init_Copy(SF,S_in)

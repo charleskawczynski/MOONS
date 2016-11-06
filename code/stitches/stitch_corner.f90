@@ -12,8 +12,10 @@
       public :: init,delete
 
       type stitch_corner
-        logical,dimension(3) :: minmax,maxmin
-        logical :: minmin,maxmax
+        logical,dimension(3) :: minmax = .false.
+        logical,dimension(3) :: maxmin = .false.
+        logical :: minmin = .false.
+        logical :: maxmax = .false.
         integer,dimension(3) :: minmax_id,maxmin_id
         integer :: minmin_id,maxmax_id
       end type

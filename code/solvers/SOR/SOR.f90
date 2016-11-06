@@ -51,7 +51,7 @@
         real(cp) :: omega
         type(SF) :: vol
         integer,dimension(3) :: gt,s
-        logical :: setCoeff
+        logical :: setCoeff = .false.
       end type
       
       interface init;        module procedure initSOR;       end interface

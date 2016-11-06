@@ -188,9 +188,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
+# FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -267,7 +267,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)stencil.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
@@ -312,7 +311,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)stencil_field.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)domain$(PS)sub_domain.f90\

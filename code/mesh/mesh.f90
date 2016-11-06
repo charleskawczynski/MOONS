@@ -37,7 +37,10 @@
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
-         logical :: plane_x,plane_y,plane_z,plane_xyz
+         logical :: plane_x = .false.
+         logical :: plane_y = .false.
+         logical :: plane_z = .false.
+         logical :: plane_xyz = .false.
          type(grid_field),dimension(:),allocatable :: vol
          type(simple_int_tensor),dimension(3) :: int_tensor
        end type

@@ -58,7 +58,8 @@
 
         integer :: n_iter
         integer :: n_levels
-        logical :: displayTF,MG_init
+        logical :: displayTF = .false.
+        logical :: MG_init = .false.
       end type
 
       interface init;       module procedure initMultiGrid;    end interface

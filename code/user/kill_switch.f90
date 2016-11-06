@@ -12,7 +12,7 @@
        interface import;             module procedure import_KS;           end interface
 
        type kill_switch
-         logical :: terminate_loop
+         logical :: terminate_loop = .false.
          integer :: un
          type(string) :: dir,name
        end type

@@ -73,6 +73,9 @@
         public :: mean_along_y
         public :: mean_along_z
 
+        public :: assign_ghost_all
+        public :: multiply_plane
+        public :: assign_plane
         public :: assign_ghost_xmin,assign_wall_xmin,multiply_wall_xmin
         public :: assign_ghost_ymin,assign_wall_ymin,multiply_wall_ymin
         public :: assign_ghost_zmin,assign_wall_zmin,multiply_wall_zmin

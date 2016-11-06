@@ -38,7 +38,7 @@
         integer :: iterPerMin
         integer :: iterPerHour
         integer :: iterPerDay
-        logical :: frozen_elapsed ! For when elapsed is returned negative
+        logical :: frozen_elapsed = .false. ! For when elapsed is returned negative
         integer :: un_plot,un_info
        end type
 

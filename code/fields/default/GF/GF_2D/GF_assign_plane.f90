@@ -4,6 +4,9 @@
         implicit none
 
         private
+        public :: assign_plane
+        interface assign_plane;      module procedure assign_plane_GF;       end interface
+
         public :: assign_plane_x
         public :: assign_plane_y
         public :: assign_plane_z
@@ -22,6 +25,26 @@
         interface assign_2_planes_z; module procedure assign_2_planes_z_S;   end interface
 
         contains
+
+        ! *******************************************************************
+        ! *******************************************************************
+        ! *******************************************************************
+
+        subroutine assign_plane_GF(a,b,p,dir)
+          implicit none
+          type(grid_field),intent(inout) :: a
+          real(cp),intent(in) :: b
+          integer,intent(in) :: p,dir
+          select case(dir)
+          case (1); call assign_plane_x(a,b,p)
+          case (2); call assign_plane_y(a,b,p)
+          case (3); call assign_plane_z(a,b,p)
+          case default
+          write(*,*) 'Error: dir must = 1:3 in assign_plane_GF in GF_assign_plane.f90'
+          write(*,*) 'dir = ',dir
+          stop 'Done'
+          end select
+        end subroutine
 
         ! *******************************************************************
         ! *******************************************************************

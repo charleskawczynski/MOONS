@@ -50,7 +50,8 @@
         type(norms) :: norm
         type(solverSettings) :: ss
         integer :: nLevels
-        logical :: displayTF,MG_init
+        logical :: displayTF = .false.
+        logical :: MG_init = .false.
       end type
 
       interface init;       module procedure initMultiGrid;    end interface

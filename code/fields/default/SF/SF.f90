@@ -76,7 +76,7 @@
           logical,dimension(3) :: N_along
           logical :: is_CC,is_Node,is_face,is_edge
           type(data_location) :: DL
-          logical :: all_neumann ! If necessary to subtract mean
+          logical :: all_neumann = .false. ! If necessary to subtract mean
           integer :: face = 0 ! Direction of face data
           integer :: edge = 0 ! Direction of edge data
           integer :: numEl,numPhysEl ! Number of physical elements, number of physical elements

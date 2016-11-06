@@ -6,7 +6,7 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        type stitch
-         logical :: TF
+         logical :: TF = .false.
          integer :: ID
        end type
 

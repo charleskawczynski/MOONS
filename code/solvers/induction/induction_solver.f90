@@ -196,8 +196,8 @@
 
            ! call lap_centered(temp_F2,B,m); call multiply(temp_F2,-1.0_cp)
 
-           call laplacian_test_VF_VF(temp_F2,B,m); call multiply(temp_F2,-1.0_cp)
-           ! call curl_curl_test_VF_VF(temp_F2,B,m)
+           ! call laplacian_test_VF_VF(temp_F2,B,m); call multiply(temp_F2,-1.0_cp)
+           call curl_curl_test_VF_VF(temp_F2,B,m)
            ! call curl_curl_test_VF_VF(temp_F2,B,m); call multiply(temp_F2,-1.0_cp)
 
            ! call curl_curl_test_VF_VF(temp_diff,B,m)

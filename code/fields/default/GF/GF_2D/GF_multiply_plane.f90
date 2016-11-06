@@ -4,6 +4,9 @@
         implicit none
 
         private
+        public :: multiply_plane
+        interface multiply_plane;      module procedure multiply_plane_GF_S;     end interface
+
         public :: multiply_plane_x
         public :: multiply_plane_y
         public :: multiply_plane_z
@@ -15,6 +18,27 @@
         interface multiply_plane_z;    module procedure multiply_plane_z_GF_GF;  end interface
 
         contains
+
+        ! *******************************************************************
+        ! *******************************************************************
+        ! *******************************************************************
+
+        subroutine multiply_plane_GF_S(a,b,p,dir)
+          implicit none
+          type(grid_field),intent(inout) :: a
+          real(cp),intent(in) :: b
+          integer,intent(in) :: p,dir
+          select case(dir)
+          case (1); call multiply_plane_x(a,b,p)
+          case (2); call multiply_plane_y(a,b,p)
+          case (3); call multiply_plane_z(a,b,p)
+          case default
+          write(*,*) 'Error: dir must = 1:3 in multiply_plane_GF_S in GF_multiply_plane.f90'
+          write(*,*) 'dir = ',dir
+          stop 'Done'
+          end select
+        end subroutine
+
 
         ! *******************************************************************
         ! *******************************************************************

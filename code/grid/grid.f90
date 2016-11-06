@@ -27,7 +27,7 @@
        type grid
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
          real(cp) :: volume
-         logical :: defined
+         logical :: defined = .false.
        end type
 
        interface init;               module procedure initGridCopy;            end interface

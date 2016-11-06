@@ -21,17 +21,17 @@
        interface update;             module procedure update_PE;           end interface
 
        type print_export
-         logical :: solution
-         logical :: info
-         logical :: transient_0D
-         logical :: transient_2D
+         logical :: solution = .false.
+         logical :: info = .false.
+         logical :: transient_0D = .false.
+         logical :: transient_2D = .false.
 
          integer :: i_solution
          integer :: i_info
          integer :: i_transient_0D
          integer :: i_transient_2D
 
-         logical :: export_planar
+         logical :: export_planar = .false.
          integer :: un
          type(string) :: dir,name
        end type

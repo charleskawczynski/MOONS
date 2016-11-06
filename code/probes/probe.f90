@@ -25,7 +25,7 @@
          real(cp) :: d                        ! data
          real(cp) :: t                        ! time
          integer :: un                        ! file unit
-         logical :: restart                   ! restart probe (append existing)
+         logical :: restart = .false.         ! restart probe (append existing)
          real(cp) :: NaN,infinity             ! for checking divergent data
        end type
 

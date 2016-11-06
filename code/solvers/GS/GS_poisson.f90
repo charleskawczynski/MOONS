@@ -40,7 +40,7 @@
         integer :: un,N_iter
         type(norms) :: norm
         type(string) :: name
-        logical :: setCoeff
+        logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
 
         type(SF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
@@ -52,7 +52,7 @@
         integer :: un,N_iter
         type(norms) :: norm
         type(string) :: name
-        logical :: setCoeff
+        logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
           
         type(VF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
