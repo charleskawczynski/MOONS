@@ -1,6 +1,7 @@
       module GF_base_mod
         use current_precision_mod
         use grid_mod
+        use IO_tools_mod
         use data_location_mod
         implicit none
         private
@@ -31,6 +32,10 @@
         interface print;                    module procedure print_GF;               end interface
         interface export;                   module procedure export_GF;              end interface
         interface import;                   module procedure import_GF;              end interface
+
+        interface export;                   module procedure export_wrapper_GF_DL;   end interface
+        interface export;                   module procedure export_wrapper_GF;      end interface
+
 
         interface init_CC;                  module procedure init_GF_CC;             end interface
         interface init_Face;                module procedure init_GF_Face;           end interface
@@ -203,6 +208,53 @@
         end subroutine
 
         ! *******************************************************************************
+
+        subroutine export_wrapper_GF(a,hx,hy,hz,un,name)
+          implicit none
+          type(grid_field),intent(in) :: a
+          real(cp),dimension(:),intent(in) :: hx,hy,hz
+          integer,intent(in) :: un
+          character(len=*),intent(in) :: name
+          integer :: i,j,k
+#ifdef _DEBUG_GF_
+          call insist_allocated_GF(a,'export_wrapper_GF')
+#endif
+          write(un,*) 'TITLE = "3D Field"'
+          write(un,*) 'VARIABLES = "x","y","z","',name,'"'
+          write(un,*) 'ZONE,I=',a%s(1),',J=',a%s(2),',K=',a%s(3)
+          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
+          write(un,*) hx(i),hy(j),hz(k),a%f(i,j,k)
+          enddo; enddo; enddo
+        end subroutine
+
+        subroutine export_wrapper_GF_DL(a,g,dir,name,DL)
+          implicit none
+          type(grid_field),intent(in) :: a
+          type(grid),intent(in) :: g
+          character(len=*),intent(in) :: dir,name
+          type(data_location),intent(in) :: DL
+          integer :: un
+          un = new_and_open(dir,name)
+          if (is_CC(DL)) then
+            call export(a,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,un,name)
+          elseif (is_Node(DL)) then
+            call export(a,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,un,name)
+          elseif (is_Face(DL)) then
+            select case(get_Face(DL))
+            case (1); call export(a,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,un,name)
+            case (2); call export(a,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,un,name)
+            case (3); call export(a,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,un,name)
+            end select
+          elseif (is_Edge(DL)) then
+            select case(get_Face(DL))
+            case (1); call export(a,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,un,name)
+            case (2); call export(a,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,un,name)
+            case (3); call export(a,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,un,name)
+            end select
+          else; stop 'Error: bad input to export_wrapper_DL_GF in GF_base.f90'
+          endif
+          call close_and_message(un,dir,name)
+        end subroutine
 
         subroutine insist_shape_match_GF(A,B,caller)
           implicit none

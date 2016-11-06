@@ -192,7 +192,6 @@
         call insist_allocated(ST,'assign_mixed_stencil_3D')
 #endif
         s = ST%D_3D%s ! size of dir(2)
-
         d = dir(1)
         do i=1,s(d)-1
           D1 = ST%S(d)%stag_CC2N%D%f(i)
@@ -216,36 +215,6 @@
           call multiply_plane(ST%D1_U2,U2,i,d)
           call multiply_plane(ST%U1_U2,U2,i,d)
         enddo
-
-        ! x = eye_given_dir(dir(1))
-        ! do k=1+x(3),s(3); do j=1+x(2),s(2); do i=1+x(1),s(1)
-        !   t = i*x(1)+j*x(2)+k*x(3)
-        !   D1 = ST%S(dir(1))%stag_CC2N%D%f(t)
-        !   U1 = ST%S(dir(1))%stag_CC2N%U%f(t-1)
-        !   ST%U1_U2%f(i,j,k) = U1
-        !   ST%D1_U2%f(i,j,k) = D1
-        !   ST%U1_D2%f(i,j,k) = U1
-        !   ST%D1_D2%f(i,j,k) = D1
-        ! enddo; enddo; enddo
-        ! x = eye_given_dir(dir(2))
-        ! do k=1+x(3),s(3); do j=1+x(2),s(2); do i=1+x(1),s(1)
-        !   t = i*x(1)+j*x(2)+k*x(3)
-        !   D2 = ST%S(dir(2))%stag_N2CC%D%f(t)
-        !   U2 = ST%S(dir(2))%stag_N2CC%U%f(t-1)
-        !   ST%U1_U2%f(i,j,k) = ST%U1_U2%f(i,j,k)*U2
-        !   ST%D1_U2%f(i,j,k) = ST%D1_U2%f(i,j,k)*U2
-        !   ST%U1_D2%f(i,j,k) = ST%U1_D2%f(i,j,k)*D2
-        !   ST%D1_D2%f(i,j,k) = ST%D1_D2%f(i,j,k)*D2
-        ! enddo; enddo; enddo
-
-        ! ST%U1_U2%f = U1*U2
-        ! ST%D1_U2%f = D1*U2
-        ! ST%U1_D2%f = U1*D2
-        ! ST%D1_D2%f = D1*D2
-        ! call assign_ghost_all(ST%U1_U2,0.0_cp)
-        ! call assign_ghost_all(ST%D1_U2,0.0_cp)
-        ! call assign_ghost_all(ST%U1_D2,0.0_cp)
-        ! call assign_ghost_all(ST%D1_D2,0.0_cp)
       end subroutine
 
       ! *********************************************************************
