@@ -59,7 +59,7 @@
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call assign_wall_Dirichlet(Ax,0.0_cp,x) ! Does nothing in PPE
         call subtract(r,Ax)
-        if (x%all_Neumann) call subtract_physical_mean(r)
+        if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx)
         ! ----------------------------------------------------------
 
         call operator(Ax,x,k,m,MFP,tempk)
@@ -165,6 +165,7 @@
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call assign_wall_Dirichlet(Ax,0.0_cp,x) ! Does nothing in PPE
         call subtract(r,Ax)
+        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx)
         ! ----------------------------------------------------------
 
         call operator(Ax,x,k,m,MFP,tempk)
