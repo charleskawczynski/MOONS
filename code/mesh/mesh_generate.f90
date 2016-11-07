@@ -22,32 +22,37 @@
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
          type(dir_tree),intent(in) :: DT
-         ! Uniform no walls
+         ! 3D cube uniform no walls
          ! call cube_uniform(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! Uniform with walls
-         call cube_uniform(m_mom)
-         call extend_cube_uniform(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
+         ! 3D cube uniform with walls
+         ! call cube_uniform(m_mom)
+         ! call extend_cube_uniform(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
 
          ! For analyzing mesh and stencils
          ! call matrix_export_mesh(m_mom)
          ! call extend_cube_uniform(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! non-uniform no walls
+         ! 3D cube non-uniform no walls
          ! call cube(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! non-uniform with walls
+         ! square non-uniform no walls
+         call square(m_mom)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
+
+         ! 3D cube non-uniform with walls
          ! call cube(m_mom)
          ! call extend_cube(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! Simple 2D straight duct
+         ! 2D straight duct
          ! call straight_duct_fluid(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)

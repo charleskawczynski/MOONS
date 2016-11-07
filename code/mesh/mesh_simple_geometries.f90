@@ -11,6 +11,7 @@
 
        private
        public :: cube_uniform,cube
+       public :: square
        public :: extend_cube_uniform,extend_cube
        public :: matrix_export_mesh
 
@@ -69,6 +70,29 @@
          ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          ! i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         call add(m,g)
+         call initProps(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine square(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         real(cp) :: Ha,Re
+         Ha = 5.0_cp; Re = 400.0_cp
+         call delete(m)
+         N = (/45,45,1/); hmin = -0.5_cp; hmax = 0.5_cp
+         beta = reynoldsBL(Re,hmin,hmax)
+         ! beta = HartmannBL(Ha,hmin,hmax)
+
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
          call initProps(m)
          call patch(m)

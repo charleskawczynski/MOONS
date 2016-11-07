@@ -8,8 +8,8 @@
        public :: init,delete,export,import
        public :: update
 
-       integer :: i_default_info = 1
-       integer :: i_default_transient_0D = 1
+       integer :: i_default_info = 2
+       integer :: i_default_transient_0D = 2
        integer :: i_default_transient_2D = 4
        integer :: i_default_solution = 6
 
