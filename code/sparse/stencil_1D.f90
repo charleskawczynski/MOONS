@@ -220,7 +220,7 @@
           call assign_staggered_CC2N(ST)
         elseif (N_along(ST%DL,ST%dir)) then
           call assign_staggered_N2CC(ST)
-        else; stop 'Error: bad input to assign_staggered_stencil_1D in stencil_1D.f90'
+        else; stop 'Error: bad input to assign_staggered_S1D in stencil_1D.f90'
         endif
       end subroutine
 
@@ -230,7 +230,7 @@
         integer :: i,j,k,t,dir
         integer,dimension(3) :: x,s
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_staggered_CC2N_stencil_1D')
+        call insist_allocated(ST,'assign_staggered_CC2N_S1D')
 #endif
         dir = ST%dir
         x = eye_given_dir(dir)
@@ -249,7 +249,7 @@
         integer :: i,j,k,t,dir
         integer,dimension(3) :: x,s
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_staggered_N2CC_stencil_1D')
+        call insist_allocated(ST,'assign_staggered_N2CC_S1D')
 #endif
         dir = ST%dir
         x = eye_given_dir(dir)
@@ -273,66 +273,58 @@
           call assign_consecutive_CC(ST)
         elseif (N_along(ST%DL,ST%dir)) then
           call assign_consecutive_N(ST)
-        else; stop 'Error: bad input to assign_consecutive_stencil_1D in stencil_1D.f90'
+        else; stop 'Error: bad input to assign_consecutive_S1D in stencil_1D.f90'
         endif
       end subroutine
 
       subroutine assign_consecutive_CC_S1D(ST)
         implicit none
         type(stencil_1D),intent(inout) :: ST
-        integer :: i,j,k,t,dir
-        real(cp) :: DC_1,UC_1,k_1
-        real(cp) :: DC_2,DN_2,UC_2,UN_2,k_2
-        integer,dimension(3) :: x,s
+        integer :: i,d
+        real(cp) :: DC_1,UC_1
+        real(cp) :: DC_2,DN_2,UC_2,UN_2
+        integer,dimension(3) :: s
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_consecutive_CC_stencil_1D')
+        call insist_allocated(ST,'assign_consecutive_CC_S1D')
 #endif
-        dir = ST%dir
-        x = eye_given_dir(dir)
         s = ST%SF%D%s
-        do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-          t = i*x(1)+j*x(2)+k*x(3)
-          DC_1 = ST%stag_CC2N%D%f(t-1)
-          UC_1 = ST%stag_CC2N%U%f(t-1)
-          DC_2 = ST%stag_CC2N%D%f(t)
-          UC_2 = ST%stag_CC2N%U%f(t)
-          DN_2 = ST%stag_N2CC%D%f(t)
-          UN_2 = ST%stag_N2CC%U%f(t)
-          k_1 = 1.0_cp ! sig%f(i,j,k)
-          k_2 = 1.0_cp ! sig%f(i+x(1),j+x(2),k+x(3))
-          ST%SF%L%f(i,j,k) = DC_1*DN_2*k_1
-          ST%SF%D%f(i,j,k) = DN_2*UC_1*k_1 + DC_2*UN_2*k_2
-          ST%SF%U%f(i,j,k) = UC_2*UN_2*k_2
-        enddo; enddo; enddo
+        d = ST%dir
+        do i=2,s(d)-1 ! Verified on 11/7/2016 to vary within machine accuracy of Laplacian
+          DC_1 = ST%stag_CC2N%D%f(i-1)
+          UC_1 = ST%stag_CC2N%U%f(i-1)
+          DC_2 = ST%stag_CC2N%D%f(i)
+          UC_2 = ST%stag_CC2N%U%f(i)
+          DN_2 = ST%stag_N2CC%D%f(i)
+          UN_2 = ST%stag_N2CC%U%f(i)
+          call assign_plane(ST%SF%L,DC_1*DN_2             ,i,d)
+          call assign_plane(ST%SF%D,DN_2*UC_1 + DC_2*UN_2 ,i,d)
+          call assign_plane(ST%SF%U,UC_2*UN_2             ,i,d)
+        enddo
       end subroutine
 
       subroutine assign_consecutive_N_S1D(ST)
         implicit none
         type(stencil_1D),intent(inout) :: ST
-        integer :: i,j,k,t,dir
-        real(cp) :: DC_1,DN_1,UC_1,UN_1,k_1
-        real(cp) :: DN_2,UN_2,k_2
-        integer,dimension(3) :: x,s
+        integer :: i,d
+        real(cp) :: DC_1,DN_1,UC_1,UN_1
+        real(cp) :: DN_2,UN_2
+        integer,dimension(3) :: s
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_consecutive_N_stencil_1D')
+        call insist_allocated(ST,'assign_consecutive_N_S1D')
 #endif
-        dir = ST%dir
-        x = eye_given_dir(dir)
         s = ST%SF%D%s
-        do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-          t = i*x(1)+j*x(2)+k*x(3)
-          DC_1 = ST%stag_CC2N%D%f(t-1)
-          UC_1 = ST%stag_CC2N%U%f(t-1)
-          DN_1 = ST%stag_N2CC%D%f(t-1)
-          UN_1 = ST%stag_N2CC%U%f(t-1)
-          DN_2 = ST%stag_N2CC%D%f(t)
-          UN_2 = ST%stag_N2CC%U%f(t)
-          k_1 = 1.0_cp ! sig%f(i,j,k)
-          k_2 = 1.0_cp ! sig%f(i+x(1),j+x(2),k+x(3))
-          ST%SF%L%f(i,j,k) = DC_1*DN_1*k_1
-          ST%SF%D%f(i,j,k) = DN_2*UC_1*k_1 + DC_1*UN_1*k_2
-          ST%SF%U%f(i,j,k) = UC_1*UN_2*k_2
-        enddo; enddo; enddo
+        d = ST%dir
+        do i=2,s(d)-1 ! Verified on 11/7/2016 to vary within machine accuracy of Laplacian
+          DC_1 = ST%stag_CC2N%D%f(i-1)
+          UC_1 = ST%stag_CC2N%U%f(i-1)
+          DN_1 = ST%stag_N2CC%D%f(i-1)
+          UN_1 = ST%stag_N2CC%U%f(i-1)
+          DN_2 = ST%stag_N2CC%D%f(i)
+          UN_2 = ST%stag_N2CC%U%f(i)
+          call assign_plane(ST%SF%L,DC_1*DN_1            , i,d)
+          call assign_plane(ST%SF%D,DN_2*UC_1 + DC_1*UN_1, i,d)
+          call assign_plane(ST%SF%U,UC_1*UN_2            , i,d)
+        enddo
       end subroutine
 
       subroutine assign_consecutive_S1D_VP(ST,sig)
@@ -343,7 +335,7 @@
           call assign_consecutive_CC(ST,sig)
         elseif (N_along(ST%DL,ST%dir)) then
           call assign_consecutive_N(ST,sig)
-        else; stop 'Error: bad input to assign_consecutive_stencil_1D in stencil_1D.f90'
+        else; stop 'Error: bad input to assign_consecutive_S1D_VP in stencil_1D.f90'
         endif
       end subroutine
 
@@ -351,60 +343,82 @@
         implicit none
         type(stencil_1D),intent(inout) :: ST
         type(grid_field),intent(in) :: sig
-        integer :: i,j,k,t,dir
-        real(cp) :: DC_1,UC_1,k_1
-        real(cp) :: DC_2,DN_2,UC_2,UN_2,k_2
-        integer,dimension(3) :: x,s
+        integer :: i,d
+        real(cp) :: DC_1,UC_1
+        real(cp) :: DC_2,DN_2,UC_2,UN_2
+        integer,dimension(3) :: s
+        type(grid_field),dimension(2) :: temp
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_consecutive_CC_stencil_1D')
+        call insist_allocated(ST,'assign_consecutive_CC_S1D_VP')
 #endif
-        dir = ST%dir
-        x = eye_given_dir(dir)
+        do i=1,2; call init(temp(i),sig); enddo
+        do i=1,2; call assign(temp(i),0.0_cp); enddo
+
         s = ST%SF%D%s
-        do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-          t = i*x(1)+j*x(2)+k*x(3)
-          DC_1 = ST%stag_CC2N%D%f(t-1)
-          UC_1 = ST%stag_CC2N%U%f(t-1)
-          DC_2 = ST%stag_CC2N%D%f(t)
-          UC_2 = ST%stag_CC2N%U%f(t)
-          DN_2 = ST%stag_N2CC%D%f(t)
-          UN_2 = ST%stag_N2CC%U%f(t)
-          k_1 = sig%f(i,j,k)
-          k_2 = sig%f(i+x(1),j+x(2),k+x(3))
-          ST%SF%L%f(i,j,k) = DC_1*DN_2*k_1
-          ST%SF%D%f(i,j,k) = DN_2*UC_1*k_1 + DC_2*UN_2*k_2
-          ST%SF%U%f(i,j,k) = UC_2*UN_2*k_2
-        enddo; enddo; enddo
+        d = ST%dir
+        do i=2,s(d)-1
+          DC_1 = ST%stag_CC2N%D%f(i-1)
+          UC_1 = ST%stag_CC2N%U%f(i-1)
+          DC_2 = ST%stag_CC2N%D%f(i)
+          UC_2 = ST%stag_CC2N%U%f(i)
+          DN_2 = ST%stag_N2CC%D%f(i)
+          UN_2 = ST%stag_N2CC%U%f(i)
+
+          call assign_plane(  ST%SF%L,sig                , i,i,d)
+          call multiply_plane(ST%SF%L,DC_1*DN_2          , i,d)
+
+          call assign_plane(temp(1),sig                  , i,i,d)
+          call assign_plane(temp(2),sig                  , i,i+1,d)
+          call multiply_plane(temp(1),DN_2*UC_1          , i,d)
+          call multiply_plane(temp(2),DC_2*UN_2          , i,d)
+          call assign_plane(ST%SF%D,temp(1)              , i,i,d)
+          call add_plane(   ST%SF%D,temp(2)              , i,i,d)
+
+          call assign_plane(  ST%SF%U,sig                , i,i,d)
+          call multiply_plane(ST%SF%U,UC_2*UN_2          , i,d)
+        enddo
+        do i=1,2; call delete(temp(i)); enddo
       end subroutine
 
       subroutine assign_consecutive_N_S1D_VP(ST,sig)
         implicit none
         type(stencil_1D),intent(inout) :: ST
         type(grid_field),intent(in) :: sig
-        integer :: i,j,k,t,dir
-        real(cp) :: DC_1,DN_1,UC_1,UN_1,k_1
-        real(cp) :: DN_2,UN_2,k_2
-        integer,dimension(3) :: x,s
+        integer :: i,d
+        real(cp) :: DC_1,DN_1,UC_1,UN_1
+        real(cp) :: DN_2,UN_2
+        integer,dimension(3) :: s
+        type(grid_field),dimension(2) :: temp
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_consecutive_N_stencil_1D')
+        call insist_allocated(ST,'assign_consecutive_N_S1D_VP')
 #endif
-        dir = ST%dir
-        x = eye_given_dir(dir)
+        do i=1,2; call init(temp(i),sig); enddo
+        do i=1,2; call assign(temp(i),0.0_cp); enddo
+
         s = ST%SF%D%s
-        do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-          t = i*x(1)+j*x(2)+k*x(3)
-          DC_1 = ST%stag_CC2N%D%f(t-1)
-          UC_1 = ST%stag_CC2N%U%f(t-1)
-          DN_1 = ST%stag_N2CC%D%f(t-1)
-          UN_1 = ST%stag_N2CC%U%f(t-1)
-          DN_2 = ST%stag_N2CC%D%f(t)
-          UN_2 = ST%stag_N2CC%U%f(t)
-          k_1 = sig%f(i,j,k)
-          k_2 = sig%f(i+x(1),j+x(2),k+x(3))
-          ST%SF%L%f(i,j,k) = DC_1*DN_1*k_1
-          ST%SF%D%f(i,j,k) = DN_2*UC_1*k_1 + DC_1*UN_1*k_2
-          ST%SF%U%f(i,j,k) = UC_1*UN_2*k_2
-        enddo; enddo; enddo
+        d = ST%dir
+        do i=2,s(d)-1
+          DC_1 = ST%stag_CC2N%D%f(i-1)
+          UC_1 = ST%stag_CC2N%U%f(i-1)
+          DN_1 = ST%stag_N2CC%D%f(i-1)
+          UN_1 = ST%stag_N2CC%U%f(i-1)
+          DN_2 = ST%stag_N2CC%D%f(i)
+          UN_2 = ST%stag_N2CC%U%f(i)
+
+          call assign_plane(  ST%SF%L,sig                , i,i,d)
+          call multiply_plane(ST%SF%L,DC_1*DN_1          , i,d)
+
+          call assign_plane(temp(1),sig                  , i,i,d)
+          call assign_plane(temp(2),sig                  , i,i+1,d)
+          call multiply_plane(temp(1),DC_1*UN_1          , i,d)
+          call multiply_plane(temp(2),DN_2*UC_1          , i,d)
+          call assign_plane(ST%SF%D,temp(1)              , i,i,d)
+          call add_plane(   ST%SF%D,temp(2)              , i,i,d)
+
+          call assign_plane(  ST%SF%U,sig                , i,i,d)
+          call multiply_plane(ST%SF%U,UC_1*UN_2          , i,d)
+        enddo
+        do i=1,2; call delete(temp(i)); enddo
       end subroutine
 
       ! *********************************************************************
@@ -415,7 +429,7 @@
         implicit none
         type(stencil_1D),intent(inout) :: ST
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_zero_stencil_1D')
+        call insist_allocated(ST,'assign_zero_S1D')
 #endif
         call assign(ST%SF,0.0_cp)
       end subroutine

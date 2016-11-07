@@ -125,6 +125,7 @@
         interface sine_waves;          module procedure sine_waves_SF;          end interface
         interface cosine_waves;        module procedure cosine_waves_SF;        end interface
         interface random_noise;        module procedure random_noise_SF;        end interface
+        interface random_noise;        module procedure random_noise_SF_dir;    end interface
 
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF; end interface
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF2;end interface
@@ -678,6 +679,14 @@
           type(SF),intent(inout) :: u
           integer :: i
           do i=1,u%s; call random_noise(u%BF(i)); enddo
+        end subroutine
+
+        subroutine random_noise_SF_dir(u,dir)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer,intent(in) :: dir
+          integer :: i
+          do i=1,u%s; call random_noise(u%BF(i),dir); enddo
         end subroutine
 
         subroutine laplacian_test_SF_VF(lapX,lapY,lapZ,X,Y,Z,m)

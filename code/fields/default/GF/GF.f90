@@ -12,6 +12,7 @@
         use GF_aux_mod
         use GF_distributions_mod
         use GF_assign_plane_mod
+        use GF_add_plane_mod
         use GF_plane_sum_mod
         use GF_symmetry_error_mod
         use GF_assign_ghost_mod
@@ -53,9 +54,9 @@
 
         ! GF_symmetry_error_mod
         ! GF_assign_plane
-        public :: symmetry_error_x,assign_plane_x,symmetry_local_x
-        public :: symmetry_error_y,assign_plane_y,symmetry_local_y
-        public :: symmetry_error_z,assign_plane_z,symmetry_local_z
+        public :: symmetry_error_x,assign_plane_x,add_plane_x,symmetry_local_x
+        public :: symmetry_error_y,assign_plane_y,add_plane_y,symmetry_local_y
+        public :: symmetry_error_z,assign_plane_z,add_plane_z,symmetry_local_z
 
         public :: multiply_plane_x
         public :: multiply_plane_y
@@ -75,6 +76,7 @@
 
         public :: assign_ghost_all
         public :: multiply_plane
+        public :: add_plane
         public :: assign_plane
         public :: assign_ghost_xmin,assign_wall_xmin,multiply_wall_xmin
         public :: assign_ghost_ymin,assign_wall_ymin,multiply_wall_ymin

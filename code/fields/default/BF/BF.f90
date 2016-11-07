@@ -91,6 +91,7 @@
        interface cosine_waves;             module procedure cosine_waves_BF;              end interface
        interface sine_waves;               module procedure sine_waves_BF;                end interface
        interface random_noise;             module procedure random_noise_BF;              end interface
+       interface random_noise;             module procedure random_noise_BF_dir;          end interface
        interface cross_product_x;          module procedure cross_product_x_BF;           end interface
        interface cross_product_y;          module procedure cross_product_y_BF;           end interface
        interface cross_product_z;          module procedure cross_product_z_BF;           end interface
@@ -408,6 +409,13 @@
          implicit none
          type(block_field),intent(inout) :: u
          call random_noise(u%GF)
+       end subroutine
+
+       subroutine random_noise_BF_dir(u,dir)
+         implicit none
+         type(block_field),intent(inout) :: u
+         integer,intent(in) :: dir
+         call random_noise(u%GF,dir)
        end subroutine
 
        subroutine cross_product_x_BF(AcrossB,Ay,Az,By,Bz)

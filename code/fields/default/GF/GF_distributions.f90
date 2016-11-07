@@ -14,11 +14,12 @@
 
         real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
-        interface volume;        module procedure volume_DL_GF;      end interface
-        interface volume;        module procedure volume_GF;         end interface
-        interface sine_waves;    module procedure sine_waves_GF;     end interface
-        interface cosine_waves;  module procedure cosine_waves_GF;   end interface
-        interface random_noise;  module procedure random_noise_GF;   end interface
+        interface volume;        module procedure volume_DL_GF;          end interface
+        interface volume;        module procedure volume_GF;             end interface
+        interface sine_waves;    module procedure sine_waves_GF;         end interface
+        interface cosine_waves;  module procedure cosine_waves_GF;       end interface
+        interface random_noise;  module procedure random_noise_GF;       end interface
+        interface random_noise;  module procedure random_noise_GF_dir;   end interface
 
         contains
 
@@ -455,6 +456,33 @@
           !$OMP END PARALLEL DO
 
 #endif
+        end subroutine
+
+        subroutine random_noise_GF_dir(f,dir)
+          implicit none
+          type(grid_field),intent(inout) :: f
+          integer,intent(in) :: dir
+          real(cp) :: r
+          integer :: i,j,k
+          select case(dir)
+          case (1)
+            do i=1,f%s(1)
+            call random_number(r)
+            f%f(i,:,:) = r
+            enddo
+          case (2)
+            do j=1,f%s(2)
+            call random_number(r)
+            f%f(:,j,:) = r
+            enddo
+          case (3)
+            do k=1,f%s(3)
+            call random_number(r)
+            f%f(:,:,k) = r
+            enddo
+          case default
+          write(*,*) 'Error: dir must = 1:3 in random_noise_GF_dir in GF_distributions.f90'
+          end select
         end subroutine
 
       end module
