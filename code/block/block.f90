@@ -96,24 +96,6 @@
          call clean(B%curl_curlZ(3))
        end subroutine
 
-       subroutine init_curl_curl_stencil_block_laplacian(B)
-         implicit none
-         type(block),intent(inout) :: B
-         integer :: i
-         do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(1)); enddo
-         do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(2)); enddo
-         do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
-         call assign_consecutive(B%curl_curlX(1))
-         call assign_consecutive(B%curl_curlY(2))
-         call assign_consecutive(B%curl_curlZ(3))
-         call add_diagonals(B%curl_curlX(1))
-         call add_diagonals(B%curl_curlY(2))
-         call add_diagonals(B%curl_curlZ(3))
-         call clean(B%curl_curlX(1))
-         call clean(B%curl_curlY(2))
-         call clean(B%curl_curlZ(3))
-       end subroutine
-
        subroutine init_Laplacian_stencil_block(B)
          implicit none
          type(block),intent(inout) :: B
@@ -179,7 +161,6 @@
          integer :: i
          call delete(B)
          call init(B%g,B_in%g)
-         ! do i=1,3; call init(B%lap_F_VF(i),B_in%lap_F_VF(i)); enddo
          do i=1,3; call init(B%lap_VF(i),B_in%lap_VF(i)); enddo
          do i=1,3; call init(B%curl_curlX(i),B_in%curl_curlX(i)); enddo
          do i=1,3; call init(B%curl_curlY(i),B_in%curl_curlY(i)); enddo
@@ -211,7 +192,6 @@
            do i=1,8; call delete(B%vol(i)); enddo
            deallocate(B%vol)
          endif
-         ! do i=1,3; call delete(B%lap_F_VF(i)); enddo
          do i=1,3; call delete(B%lap_VF(i)); enddo
          do i=1,3; call delete(B%curl_curlX(i)); enddo
          do i=1,3; call delete(B%curl_curlY(i)); enddo

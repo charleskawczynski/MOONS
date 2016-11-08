@@ -116,13 +116,20 @@
                      sig_local_over_sig_f,finite_Rem,Rem,TMP_B,ISP_B,ISP_phi,DT)
          endif
 
+         ! Clean up constructor copies
+         call delete(mesh_mom)
+         call delete(mesh_ind)
+         call delete(mesh_ind_interior)
+         call delete(MD_fluid)
+         call delete(MD_sigma)
+
          ! ********************* EXPORT RAW ICs *************************
            ! if (SP%export_ICs) call export_tec(nrg,DT)
            if (SP%export_ICs) call export_tec(ind,DT)
            if (SP%export_ICs) call export_tec(mom,DT,mom%temp_F)
 
-         call print(mesh_mom)
-         call print(mesh_ind)
+         call print(mom%m)
+         call print(ind%m)
 
          ! ******************** PREP TIME START/STOP ********************
          if (SP%stop_before_solve) then
@@ -165,13 +172,7 @@
          call delete(nrg)
          call delete(mom)
          call delete(ind)
-         call delete(MD_fluid)
-         call delete(MD_sigma)
          call delete(DT)
-
-         call delete(mesh_mom)
-         call delete(mesh_ind)
-         call delete(mesh_ind_interior)
 
          call delete(coupled)
          call delete(TMP_U); call delete(TMP_B); call delete(TMP_T)

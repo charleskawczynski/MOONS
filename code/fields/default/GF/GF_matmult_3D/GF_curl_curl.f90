@@ -43,15 +43,15 @@
           X%f( i , j ,k+1)*X_U(3)%f(i,j,k)+&
           X%f( i , j ,k-1)*X_L(3)%f(i,j,k)+&
           ! 
-          Y%f(i-1, j , k )*Y_D1_D2%f(i-1,j-1,k)+&
-          Y%f(i-1,j+1, k )*Y_D1_U2%f(i-1,j-1,k)+&
-          Y%f( i , j , k )*Y_U1_D2%f(i-1,j-1,k)+&
-          Y%f( i ,j+1, k )*Y_U1_U2%f(i-1,j-1,k)+&
+          Y%f(i-1, j , k )*Y_D1_D2%f(i-1,j,k)+&
+          Y%f(i-1,j+1, k )*Y_D1_U2%f(i-1,j,k)+&
+          Y%f( i , j , k )*Y_U1_D2%f(i-1,j,k)+&
+          Y%f( i ,j+1, k )*Y_U1_U2%f(i-1,j,k)+&
           ! 
-          Z%f(i-1, j , k )*Z_D1_D2%f(i-1,j,k-1)+&
-          Z%f(i-1, j ,k+1)*Z_D1_U2%f(i-1,j,k-1)+&
-          Z%f( i , j , k )*Z_U1_D2%f(i-1,j,k-1)+&
-          Z%f( i , j ,k+1)*Z_U1_U2%f(i-1,j,k-1)+&
+          Z%f(i-1, j , k )*Z_D1_D2%f(i-1,j,k)+&
+          Z%f(i-1, j ,k+1)*Z_D1_U2%f(i-1,j,k)+&
+          Z%f( i , j , k )*Z_U1_D2%f(i-1,j,k)+&
+          Z%f( i , j ,k+1)*Z_U1_U2%f(i-1,j,k)+&
           ! 
           X%f( i , j , k )*D%f(i,j,k)
           enddo; enddo; enddo
@@ -84,20 +84,20 @@
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
           ! 
-          X%f( i ,j-1, k )*X_D1_D2%f(i-1,j-1,k)+&
-          X%f(i+1,j-1, k )*X_D1_U2%f(i-1,j-1,k)+&
-          X%f( i , j , k )*X_U1_D2%f(i-1,j-1,k)+&
-          X%f(i+1, j , k )*X_U1_U2%f(i-1,j-1,k)+&
+          X%f( i ,j-1, k )*X_D1_D2%f(i,j-1,k)+&
+          X%f(i+1,j-1, k )*X_D1_U2%f(i,j-1,k)+&
+          X%f( i , j , k )*X_U1_D2%f(i,j-1,k)+&
+          X%f(i+1, j , k )*X_U1_U2%f(i,j-1,k)+&
           ! 
           Y%f(i+1, j , k )*Y_U(1)%f(i,j,k)+&
           Y%f(i-1, j , k )*Y_L(1)%f(i,j,k)+&
           Y%f( i , j ,k+1)*Y_U(3)%f(i,j,k)+&
           Y%f( i , j ,k-1)*Y_L(3)%f(i,j,k)+&
           ! 
-          Z%f( i ,j-1, k )*Z_D1_D2%f(i,j-1,k-1)+&
-          Z%f( i ,j-1,k+1)*Z_D1_U2%f(i,j-1,k-1)+&
-          Z%f( i , j , k )*Z_U1_D2%f(i,j-1,k-1)+&
-          Z%f( i , j ,k+1)*Z_U1_U2%f(i,j-1,k-1)+&
+          Z%f( i ,j-1, k )*Z_D1_D2%f(i,j-1,k)+&
+          Z%f( i ,j-1,k+1)*Z_D1_U2%f(i,j-1,k)+&
+          Z%f( i , j , k )*Z_U1_D2%f(i,j-1,k)+&
+          Z%f( i , j ,k+1)*Z_U1_U2%f(i,j-1,k)+&
           ! 
           Y%f( i , j , k )*D%f(i,j,k)
           enddo; enddo; enddo
@@ -130,15 +130,15 @@
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
           ! 
-          X%f( i , j ,k-1)*X_D1_D2%f(i-1,j,k-1)+&
-          X%f(i+1, j ,k-1)*X_D1_U2%f(i-1,j,k-1)+&
-          X%f( i , j , k )*X_U1_D2%f(i-1,j,k-1)+&
-          X%f(i+1, j , k )*X_U1_U2%f(i-1,j,k-1)+&
+          X%f( i , j ,k-1)*X_D1_D2%f(i,j,k-1)+&
+          X%f(i+1, j ,k-1)*X_D1_U2%f(i,j,k-1)+&
+          X%f( i , j , k )*X_U1_D2%f(i,j,k-1)+&
+          X%f(i+1, j , k )*X_U1_U2%f(i,j,k-1)+&
           ! 
-          Y%f( i , j ,k-1)*Y_D1_D2%f(i,j-1,k-1)+&
-          Y%f( i ,j+1,k-1)*Y_D1_U2%f(i,j-1,k-1)+&
-          Y%f( i , j , k )*Y_U1_D2%f(i,j-1,k-1)+&
-          Y%f( i ,j+1, k )*Y_U1_U2%f(i,j-1,k-1)+&
+          Y%f( i , j ,k-1)*Y_D1_D2%f(i,j,k-1)+&
+          Y%f( i ,j+1,k-1)*Y_D1_U2%f(i,j,k-1)+&
+          Y%f( i , j , k )*Y_U1_D2%f(i,j,k-1)+&
+          Y%f( i ,j+1, k )*Y_U1_U2%f(i,j,k-1)+&
           ! 
           Z%f(i+1, j , k )*Z_U(1)%f(i,j,k)+&
           Z%f(i-1, j , k )*Z_L(1)%f(i,j,k)+&

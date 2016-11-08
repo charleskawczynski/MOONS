@@ -227,39 +227,41 @@
       subroutine assign_staggered_CC2N_S1D(ST)
         implicit none
         type(stencil_1D),intent(inout) :: ST
-        integer :: i,j,k,t,dir
-        integer,dimension(3) :: x,s
+        integer :: i,dir
+        real(cp) :: D,U
+        integer,dimension(3) :: s
 #ifdef _DEBUG_STENCIL_1D_
         call insist_allocated(ST,'assign_staggered_CC2N_S1D')
 #endif
-        dir = ST%dir
-        x = eye_given_dir(dir)
         s = ST%SF%D%s
-        do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-          t = i*x(1)+j*x(2)+k*x(3)
-          ST%SF%L%f(i,j,k) = 0.0_cp
-          ST%SF%D%f(i,j,k) = ST%stag_CC2N%D%f(t-1)
-          ST%SF%U%f(i,j,k) = ST%stag_CC2N%U%f(t-1)
-        enddo; enddo; enddo
+        dir = ST%dir
+        do i=2,s(dir)-1
+          D = ST%stag_CC2N%D%f(i-1)
+          U = ST%stag_CC2N%U%f(i-1)
+          call assign_plane(ST%SF%L,0.0_cp    ,i,dir)
+          call assign_plane(ST%SF%D,D         ,i,dir)
+          call assign_plane(ST%SF%U,U         ,i,dir)
+        enddo
       end subroutine
 
       subroutine assign_staggered_N2CC_S1D(ST)
         implicit none
         type(stencil_1D),intent(inout) :: ST
-        integer :: i,j,k,t,dir
-        integer,dimension(3) :: x,s
+        integer :: i,dir
+        real(cp) :: D,U
+        integer,dimension(3) :: s
 #ifdef _DEBUG_STENCIL_1D_
         call insist_allocated(ST,'assign_staggered_N2CC_S1D')
 #endif
-        dir = ST%dir
-        x = eye_given_dir(dir)
         s = ST%SF%D%s
-        do k=2,s(3)-1; do j=2,s(2)-1; do i=2,s(1)-1
-          t = i*x(1)+j*x(2)+k*x(3)
-          ST%SF%L%f(i,j,k) = 0.0_cp
-          ST%SF%D%f(i,j,k) = ST%stag_N2CC%D%f(t-1)
-          ST%SF%U%f(i,j,k) = ST%stag_N2CC%U%f(t-1)
-        enddo; enddo; enddo
+        dir = ST%dir
+        do i=2,s(dir)-1
+          D = ST%stag_N2CC%D%f(i-1)
+          U = ST%stag_N2CC%U%f(i-1)
+          call assign_plane(ST%SF%L,0.0_cp  ,i,dir)
+          call assign_plane(ST%SF%D,D       ,i,dir)
+          call assign_plane(ST%SF%U,U       ,i,dir)
+        enddo
       end subroutine
 
       ! *********************************************************************

@@ -25,9 +25,9 @@
          logical,intent(inout) :: finite_Rem,include_vacuum
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
-         Re         = 400.0_cp
+         Re         = 1000.0_cp
          ! Re         = 100.0_cp
-         Ha         = 10.0_cp
+         Ha         = 100.0_cp
          Rem        = 1.0_cp
          tw         = 0.5_cp
 
@@ -57,7 +57,7 @@
          ! time  = 30.0_cp
          time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
-         dtime = 1.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
+         dtime = 3.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
 
          ! time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching

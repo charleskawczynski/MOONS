@@ -65,7 +65,7 @@
 
        SP%solveEnergy               = .false.     ! Solve energy    equation
        SP%solveMomentum             = .true.      ! Solve momentum  equation
-       SP%solveInduction            = .false.      ! Solve induction equation
+       SP%solveInduction            = .true.      ! Solve induction equation
 
        SP%restartT                  = .false.     ! restart T  field
        SP%restartU                  = .false.     ! restart U  field
@@ -76,7 +76,7 @@
        SP%solveUMethod              = 1           ! Refer to momentum.f90
        SP%solveBMethod              = 1           ! Refer to induction.f90
 
-       SP%addJCrossB                = .false.      ! add JCrossB      to momentum equation
+       SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation
        SP%addBuoyancy               = .false.     ! add Buoyancy     to momentum equation
        SP%addGravity                = .false.     ! add Gravity      to momentum equation
