@@ -28,9 +28,9 @@
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! 3D cube uniform with walls
-         ! call cube_uniform(m_mom)
-         ! call extend_cube_uniform(m_ind,m_mom)
-         ! call init(MD_sigma,m_mom,m_ind)
+         call cube_uniform(m_mom)
+         call extend_cube_uniform(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
 
          ! For analyzing mesh and stencils
          ! call matrix_export_mesh(m_mom)
@@ -43,9 +43,9 @@
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! 3D cube non-uniform, uniform walls
-         call cube(m_mom)
-         call extend_cube_uniform(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
+         ! call cube(m_mom)
+         ! call extend_cube_uniform(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
 
          ! square non-uniform no walls
          ! call square(m_mom)

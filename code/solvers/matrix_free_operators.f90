@@ -184,9 +184,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call curl(tempk,x,m)
-        call multiply(tempk,k)
-        call curl(Ax,tempk,m)
+        call curl_curl_test_VF_VF(Ax,x,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
       end subroutine
@@ -200,9 +198,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x,m)
-        call curl(tempk,x,m)
-        call multiply(tempk,k)
-        call curl(Ax,tempk,m)
+        call curl_curl_test_VF_VF(Ax,x,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
       end subroutine

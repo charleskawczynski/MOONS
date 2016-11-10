@@ -118,7 +118,7 @@
          endif
 
          call init_Laplacian(mom%m)
-         call init_curl_curl(ind%m,ind%sigmaInv_edge,ind%sigmaInv_face)
+         call init_curl_curl(ind%m,ind%sigmaInv_edge)
 
          ! Clean up constructor copies
          call delete(mesh_mom)

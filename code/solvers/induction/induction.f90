@@ -69,7 +69,6 @@
          type(VF) :: B,B0,B_interior,temp_F1,temp_F2  ! Face data
          type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
-         type(VF) :: sigmaInv_face
          type(VF) :: J_interior,curlUCrossB,curlE
 
          ! --- Scalar fields ---
@@ -167,7 +166,6 @@
          call init_Face(ind%curlE        ,m,0.0_cp)
          call init_Edge(ind%temp_E       ,m,0.0_cp)
          call init_Edge(ind%sigmaInv_edge,m,0.0_cp)
-         call init_Face(ind%sigmaInv_face,m,0.0_cp)
          call init_Face(ind%temp_F1      ,m,0.0_cp)
          call init_Face(ind%temp_F2      ,m,0.0_cp)
          call init_CC(ind%phi            ,m,0.0_cp)
@@ -214,9 +212,7 @@
          call assign(sigma_temp_E,1.0_cp)
          call assign(sigma_temp_F,1.0_cp)
          call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
-         call assign(ind%sigmaInv_face,1.0_cp/sig_local_over_sig_f)
          call embedEdge(ind%sigmaInv_edge,sigma_temp_E,MD_sigma)
-         call embedFace(ind%sigmaInv_face,sigma_temp_F,MD_sigma)
          call delete(sigma_temp_E)
          call delete(sigma_temp_F)
 
@@ -298,7 +294,6 @@
          call delete(ind%temp_F1)
          call delete(ind%temp_F2)
          call delete(ind%sigmaInv_edge)
-         call delete(ind%sigmaInv_face)
 
          call delete(ind%divB)
          call delete(ind%divJ)

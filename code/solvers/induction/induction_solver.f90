@@ -183,53 +183,15 @@
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_induction
-         type(VF) :: temp_diff
          integer :: i
-         logical :: test_noise
-         test_noise = .true.
-         call init(temp_diff,temp_F2)
          do i=1,N_induction
            call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
-
-           if (test_noise) call assign(B,0.0_cp)
-           ! if (test_noise) call random_noise(B%x)
-
-           ! Test Diagoanl
-           ! if (test_noise) call random_noise(B%x,1)
-           ! if (test_noise) call random_noise(B%y,2)
-           ! if (test_noise) call random_noise(B%z,3)
-
-           ! Test off-Diagoanl directional
-           ! if (test_noise) call random_noise(B%y,1)
-
-           ! Test off-Diagoanl directionless
-           ! if (test_noise) call random_noise(B%y)
-
-           ! Test all
-           if (test_noise) call random_noise(B)
-
-           call curl(J,B,m)
-           call multiply(temp_E,J,sigmaInv_E)
-           call curl(temp_F2,temp_E,m)
-
-           call assign_ghost_XPeriodic(temp_F2,0.0_cp)
-           call curl_curl_test_VF_VF(temp_diff,B,m)
-           call assign_ghost_XPeriodic(temp_diff,0.0_cp)
-
-           call subtract(temp_diff,temp_F2)
-           ! write(*,*) 'amax(temp_diff%x) = ',amax(temp_diff%x)
-           write(*,*) 'amax(temp_diff) = ',amax(temp_diff)
-           call export_raw(m,temp_diff,'out/LDC/','curl_curl_diff',0)
-           call export_raw(m,B,'out/LDC/','B',0)
-           call insist_amax_lt_tol(temp_diff,'curl_curl_diff')
-           if (test_noise) stop 'Done in induction_solver.f90'
-
+           call curl_curl_test_VF_VF(temp_F2,B,m)
            call subtract(temp_F1,temp_F2)
            call multiply(temp_F1,dt)
            call add(B,temp_F1)
            call apply_BCs(B,m)
          enddo
-         call delete(temp_diff)
        end subroutine
 
        subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,&

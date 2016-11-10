@@ -37,14 +37,12 @@
          do i=1,m%s; call init_curl_curl(m%B(i)); enddo
        end subroutine
 
-       subroutine init_curl_curl_mesh_VP(m,sig,sig_F)
+       subroutine init_curl_curl_mesh_VP(m,sig)
          implicit none
          type(mesh),intent(inout) :: m
-         type(VF),intent(in) :: sig,sig_F
+         type(VF),intent(in) :: sig
          integer :: i
-         do i=1,m%s; call init_curl_curl(m%B(i),&
-          (/sig%x%BF(i)%GF,sig%y%BF(i)%GF,sig%z%BF(i)%GF/),&
-          (/sig_F%x%BF(i)%GF,sig_F%y%BF(i)%GF,sig_F%z%BF(i)%GF/)); enddo
+         do i=1,m%s; call init_curl_curl(m%B(i),(/sig%x%BF(i)%GF,sig%y%BF(i)%GF,sig%z%BF(i)%GF/)); enddo
        end subroutine
 
        end module

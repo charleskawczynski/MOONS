@@ -101,10 +101,10 @@
          call clean(B%curl_curlZ(3))
        end subroutine
 
-       subroutine init_curl_curl_SB_VP(B,sig,sig_F)
+       subroutine init_curl_curl_SB_VP(B,sig)
          implicit none
          type(block),intent(inout) :: B
-         type(grid_field),dimension(3),intent(in) :: sig,sig_F
+         type(grid_field),dimension(3),intent(in) :: sig
          integer :: i
          do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(i)); enddo
          do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(i)); enddo

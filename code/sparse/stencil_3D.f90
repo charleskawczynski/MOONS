@@ -236,6 +236,7 @@
       end subroutine
 
       subroutine assign_mixed_S3D_VP(ST,dir,sig)
+        ! Verified on 11/10/2016 to vary within machine accuracy of mixed terms in curl-curl operator
         implicit none
         type(stencil_3D),intent(inout) :: ST
         integer,dimension(2),intent(in) :: dir
@@ -247,16 +248,6 @@
         call insist_allocated(ST,'assign_mixed_S3D_VP')
 #endif
         s = ST%D_3D%s
-        d_sig = orth_dir(dir)
-        write(*,*) 'dir=',dir
-        write(*,*) 'orth_dir(dir)=',orth_dir(dir)
-        write(*,*) 's=',s
-        write(*,*) 'ST%S(dir(1))%stag_CC2N%D%N=',ST%S(dir(1))%stag_CC2N%D%N
-        write(*,*) 'ST%S(dir(2))%stag_CC2N%D%N=',ST%S(dir(2))%stag_CC2N%D%N
-        write(*,*) 'ST%S(dir(1))%stag_N2CC%D%N=',ST%S(dir(1))%stag_N2CC%D%N
-        write(*,*) 'ST%S(dir(2))%stag_N2CC%D%N=',ST%S(dir(2))%stag_N2CC%D%N
-        write(*,*) 'sig%s=',sig(d_sig)%s
-
         d = dir(1); N = ST%S(d)%stag_CC2N%D%N
         do i=1,N
           D1 = ST%S(d)%stag_CC2N%D%f(i)
@@ -268,7 +259,6 @@
           call assign_plane(ST%U1_D2,U1,i+1,d)
           call assign_plane(ST%U1_U2,U1,i+1,d)
         enddo
-
         d = dir(2); N = ST%S(d)%stag_N2CC%D%N
         do i=1,N
           D2 = ST%S(d)%stag_N2CC%D%f(i)
@@ -280,7 +270,6 @@
           call multiply_plane(ST%D1_U2,U2,i,d)
           call multiply_plane(ST%U1_U2,U2,i,d)
         enddo
-
         d_sig = orth_dir(dir)
         d = dir(2)
         do i=2,s(d)-1
