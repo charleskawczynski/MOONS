@@ -240,7 +240,7 @@
         type(stencil_3D),intent(inout) :: ST
         integer,dimension(2),intent(in) :: dir
         type(grid_field),dimension(3),intent(in) :: sig
-        integer :: i,d,d_sig
+        integer :: i,d,d_sig,N
         real(cp) :: D1,D2,U1,U2
         integer,dimension(3) :: s
 #ifdef _DEBUG_STENCIL_3D_
@@ -248,60 +248,38 @@
 #endif
         s = ST%D_3D%s
         d_sig = orth_dir(dir)
+        write(*,*) 'dir=',dir
+        write(*,*) 'orth_dir(dir)=',orth_dir(dir)
+        write(*,*) 's=',s
+        write(*,*) 'ST%S(dir(1))%stag_CC2N%D%N=',ST%S(dir(1))%stag_CC2N%D%N
+        write(*,*) 'ST%S(dir(2))%stag_CC2N%D%N=',ST%S(dir(2))%stag_CC2N%D%N
+        write(*,*) 'ST%S(dir(1))%stag_N2CC%D%N=',ST%S(dir(1))%stag_N2CC%D%N
+        write(*,*) 'ST%S(dir(2))%stag_N2CC%D%N=',ST%S(dir(2))%stag_N2CC%D%N
+        write(*,*) 'sig%s=',sig(d_sig)%s
 
-         ! ! X-component result:
-         ! call assign_mixed(B%curl_curlY(1),(/1,2/),sig)
-         ! call assign_mixed(B%curl_curlZ(1),(/1,3/),sig)
-        ! write(*,*) 'dir=',dir                         ! 1           2
-        ! write(*,*) 'orth_dir(dir)=',orth_dir(dir)     ! 3
-        ! write(*,*) 's=',s                             ! 69          70          69
-        ! write(*,*) 'ST%S(dir(1))%stag_CC2N%D%N=',ST%S(dir(1))%stag_CC2N%D%N
-        ! write(*,*) 'ST%S(dir(2))%stag_CC2N%D%N=',ST%S(dir(2))%stag_CC2N%D%N
-        ! write(*,*) 'ST%S(dir(1))%stag_N2CC%D%N=',ST%S(dir(1))%stag_N2CC%D%N
-        ! write(*,*) 'ST%S(dir(2))%stag_N2CC%D%N=',ST%S(dir(2))%stag_N2CC%D%N
-        ! write(*,*) 'sig%s=',sig(d_sig)%s              ! 70          70          69
-        ! stop 'Done in stencil_3D.f90'
-
-        ! dir=           1           2
-        ! orth_dir(dir)=           3
-        ! s=          70          69          69
-        ! ST%S(dir(1))%stag_CC2N%D%N=          68
-        ! ST%S(dir(2))%stag_CC2N%D%N=          68
-        ! ST%S(dir(1))%stag_N2CC%D%N=          69
-        ! ST%S(dir(2))%stag_N2CC%D%N=          69
-        ! sig%s=          70          70          69
-
-        d = dir(1)
-        do i=2,s(d)-1
-          D1 = ST%S(d)%stag_CC2N%D%f(i-1)
-          call assign_plane(ST%D1_D2,D1,i,d)
-          call assign_plane(ST%D1_U2,D1,i,d)
+        d = dir(1); N = ST%S(d)%stag_CC2N%D%N
+        do i=1,N
+          D1 = ST%S(d)%stag_CC2N%D%f(i)
+          call assign_plane(ST%D1_D2,D1,i+1,d)
+          call assign_plane(ST%D1_U2,D1,i+1,d)
         enddo
-        do i=2,s(d)-1
-          U1 = ST%S(d)%stag_CC2N%U%f(i-1)
-          call assign_plane(ST%U1_D2,U1,i,d)
-          call assign_plane(ST%U1_U2,U1,i,d)
-        enddo
-        d = dir(2)
-        do i=2,s(d)
-          D2 = ST%S(d)%stag_N2CC%D%f(i-1)
-          call multiply_plane(ST%D1_D2,D2,i-1,d)
-          call multiply_plane(ST%U1_D2,D2,i-1,d)
-        enddo
-        do i=2,s(d)
-          U2 = ST%S(d)%stag_N2CC%U%f(i-1)
-          call multiply_plane(ST%D1_U2,U2,i-1,d)
-          call multiply_plane(ST%U1_U2,U2,i-1,d)
+        do i=1,N
+          U1 = ST%S(d)%stag_CC2N%U%f(i)
+          call assign_plane(ST%U1_D2,U1,i+1,d)
+          call assign_plane(ST%U1_U2,U1,i+1,d)
         enddo
 
-        ! B( i ,j+1, k )*U1_U2   Ux/Uy*kz(i-1/2,j+1, k ) + 
-        ! B(i-1,j+1, k )*D1_U2   Dx/Uy*kz(i-1/2,j+1, k ) + 
-        ! B( i , j , k )*U1_D2   Ux/Dy*kz(i-1/2, j , k )   + 
-        ! B(i-1, j , k )*D1_D2   Dx/Dy*kz(i-1/2, j , k )
-        ! Y%f(i-1, j , k )*Y%D1_D2%f(i,j,k)
-        ! Y%f(i-1,j+1, k )*Y%D1_U2%f(i,j,k)
-        ! Y%f( i , j , k )*Y%U1_D2%f(i,j,k)
-        ! Y%f( i ,j+1, k )*Y%U1_U2%f(i,j,k)
+        d = dir(2); N = ST%S(d)%stag_N2CC%D%N
+        do i=1,N
+          D2 = ST%S(d)%stag_N2CC%D%f(i)
+          call multiply_plane(ST%D1_D2,D2,i,d)
+          call multiply_plane(ST%U1_D2,D2,i,d)
+        enddo
+        do i=1,N
+          U2 = ST%S(d)%stag_N2CC%U%f(i)
+          call multiply_plane(ST%D1_U2,U2,i,d)
+          call multiply_plane(ST%U1_U2,U2,i,d)
+        enddo
 
         d_sig = orth_dir(dir)
         d = dir(2)

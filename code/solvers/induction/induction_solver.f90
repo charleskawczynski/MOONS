@@ -193,8 +193,20 @@
 
            if (test_noise) call assign(B,0.0_cp)
            ! if (test_noise) call random_noise(B%x)
-           if (test_noise) call random_noise(B%y,2)
-           ! if (test_noise) call random_noise(B)
+
+           ! Test Diagoanl
+           ! if (test_noise) call random_noise(B%x,1)
+           ! if (test_noise) call random_noise(B%y,2)
+           ! if (test_noise) call random_noise(B%z,3)
+
+           ! Test off-Diagoanl directional
+           ! if (test_noise) call random_noise(B%y,1)
+
+           ! Test off-Diagoanl directionless
+           ! if (test_noise) call random_noise(B%y)
+
+           ! Test all
+           if (test_noise) call random_noise(B)
 
            call curl(J,B,m)
            call multiply(temp_E,J,sigmaInv_E)

@@ -106,10 +106,6 @@
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig,sig_F
          integer :: i
-         do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(1)); enddo
-         do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(2)); enddo
-         do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
-
          do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(i)); enddo
          do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(i)); enddo
          do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(i)); enddo

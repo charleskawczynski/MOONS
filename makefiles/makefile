@@ -79,8 +79,8 @@ FCFLAGS += -std=gnu
 
 # Precision (most files contain this)
 # FCFLAGS += -D_SINGLE_PRECISION_
-FCFLAGS += -D_DOUBLE_PRECISION_
-# FCFLAGS += -D_QUAD_PRECISION_
+# FCFLAGS += -D_DOUBLE_PRECISION_
+FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
