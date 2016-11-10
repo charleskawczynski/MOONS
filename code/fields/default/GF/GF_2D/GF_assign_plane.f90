@@ -72,15 +72,17 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: j,k
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do k=1,a%s(3); do j=1,a%s(2)
           a%f(p,j,k) = b
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(p,:,:) = b
+
 #endif
         end subroutine
         subroutine assign_plane_x_GF_GF(a,b,p_a,p_b)
@@ -88,15 +90,20 @@
           type(grid_field),intent(inout) :: a
           type(grid_field),intent(in) :: b
           integer,intent(in) :: p_a,p_b
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: j,k
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,1,'assign_plane_x_GF_GF')
+#endif
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do k=1,a%s(3); do j=1,a%s(2)
           a%f(p_a,j,k) = b%f(p_b,j,k)
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(p_a,:,:) = b%f(p_b,:,:)
+
 #endif
         end subroutine
         subroutine assign_2_planes_x_S(a,b,p_1,p_2)
@@ -104,17 +111,18 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p_1,p_2
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: j,k
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do k=1,a%s(3); do j=1,a%s(2)
           a%f(p_1,j,k) = b
           a%f(p_2,j,k) = b
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(p_1,:,:) = b
-          a%f(p_2,:,:) = b
+
 #endif
         end subroutine
 
@@ -127,15 +135,17 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,k
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do k=1,a%s(3); do i=1,a%s(1)
           a%f(i,p,k) = b
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(:,p,:) = b
+
 #endif
         end subroutine
         subroutine assign_plane_y_GF_GF(a,b,p_a,p_b)
@@ -143,15 +153,20 @@
           type(grid_field),intent(inout) :: a
           type(grid_field),intent(in) :: b
           integer,intent(in) :: p_a,p_b
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,k
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,2,'assign_plane_y_GF_GF')
+#endif
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do k=1,a%s(3); do i=1,a%s(1)
           a%f(i,p_a,k) = b%f(i,p_b,k)
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(:,p_a,:) = b%f(:,p_b,:)
+
 #endif
         end subroutine
         subroutine assign_2_planes_y_S(a,b,p_1,p_2)
@@ -159,17 +174,18 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p_1,p_2
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,k
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do k=1,a%s(3); do i=1,a%s(1)
           a%f(i,p_1,k) = b
           a%f(i,p_2,k) = b
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(:,p_1,:) = b
-          a%f(:,p_2,:) = b
+
 #endif
         end subroutine
 
@@ -182,15 +198,17 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,j
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do j=1,a%s(2); do i=1,a%s(1)
           a%f(i,j,p) = b
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(:,:,p) = b
+
 #endif
         end subroutine
         subroutine assign_plane_z_GF_GF(a,b,p_a,p_b)
@@ -198,15 +216,20 @@
           type(grid_field),intent(inout) :: a
           type(grid_field),intent(in) :: b
           integer,intent(in) :: p_a,p_b
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,j
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,3,'assign_plane_z_GF_GF')
+#endif
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do j=1,a%s(2); do i=1,a%s(1)
           a%f(i,j,p_a) = b%f(i,j,p_b)
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(:,:,p_a) = b%f(:,:,p_b)
+
 #endif
         end subroutine
         subroutine assign_2_planes_z_S(a,b,p_1,p_2)
@@ -214,17 +237,18 @@
           type(grid_field),intent(inout) :: a
           real(cp),intent(in) :: b
           integer,intent(in) :: p_1,p_2
-#ifdef _PARALLELIZE_GF_PLANE_
           integer :: i,j
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP PARALLEL DO
+
+#endif
           do j=1,a%s(2); do i=1,a%s(1)
           a%f(i,j,p_1) = b
           a%f(i,j,p_2) = b
           enddo; enddo
+#ifdef _PARALLELIZE_GF_PLANE_
           !$OMP END PARALLEL DO
-#else
-          a%f(:,:,p_1) = b
-          a%f(:,:,p_2) = b
+
 #endif
         end subroutine
 

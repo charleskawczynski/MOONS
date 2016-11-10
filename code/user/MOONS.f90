@@ -6,6 +6,7 @@
 
        use version_mod
        use mesh_mod
+       use mesh_stencils_mod
        use mesh_domain_mod
        use mesh_generate_mod
        use VF_mod
@@ -115,6 +116,9 @@
            call init(ind,mesh_ind,SP,MD_fluid,MD_sigma,include_vacuum,&
                      sig_local_over_sig_f,finite_Rem,Rem,TMP_B,ISP_B,ISP_phi,DT)
          endif
+
+         call init_Laplacian(mom%m)
+         call init_curl_curl(ind%m,ind%sigmaInv_edge,ind%sigmaInv_face)
 
          ! Clean up constructor copies
          call delete(mesh_mom)

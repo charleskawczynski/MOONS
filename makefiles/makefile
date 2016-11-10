@@ -79,8 +79,8 @@ FCFLAGS += -std=gnu
 
 # Precision (most files contain this)
 # FCFLAGS += -D_SINGLE_PRECISION_
-# FCFLAGS += -D_DOUBLE_PRECISION_
-FCFLAGS += -D_QUAD_PRECISION_
+FCFLAGS += -D_DOUBLE_PRECISION_
+# FCFLAGS += -D_QUAD_PRECISION_
 
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
@@ -348,6 +348,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_g.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90\

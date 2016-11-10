@@ -24,6 +24,9 @@
           type(grid),intent(in) :: g
           integer :: i
           real(cp) :: temp
+#ifdef _DEBUG_GF_
+          call insist_shape_match(u,u_mean,'mean_along_x_GF')
+#endif
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g) PRIVATE(temp)
 
@@ -45,6 +48,9 @@
           type(grid),intent(in) :: g
           integer :: j
           real(cp) :: temp
+#ifdef _DEBUG_GF_
+          call insist_shape_match(u,u_mean,'mean_along_y_GF')
+#endif
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g) PRIVATE(temp)
 
@@ -66,6 +72,9 @@
           type(grid),intent(in) :: g
           integer :: k
           real(cp) :: temp
+#ifdef _DEBUG_GF_
+          call insist_shape_match(u,u_mean,'mean_along_z_GF')
+#endif
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g) PRIVATE(temp)
 

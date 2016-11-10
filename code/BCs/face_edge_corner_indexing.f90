@@ -17,6 +17,7 @@
        public :: adj_dir_given_dir
        public :: adj_dir_given_face
        public :: adj_dir_given_edge
+       public :: orth_dir
 
        public :: adj_faces_given_edge
        public :: adj_faces_given_corner
@@ -201,6 +202,30 @@
          case (5:8);  dir = (/1,3/)
          case (9:12); dir = (/1,2/)
          case default; stop 'Error: edge must = 1:12 in adj_dir_given_edge in face_edge_corner_indexing.f90'
+         end select
+       end function
+
+       function orth_dir(dir) result(d)
+         implicit none
+         integer,dimension(2),intent(in) :: dir
+         integer :: d
+         select case (dir(1))
+         case (1); select case (dir(2))
+                   case (2); d = 3
+                   case (3); d = 2
+                   case default; stop 'Error: dir(1)=1, but dir(2)!=2,3 in orth_dir in face_edge_corner_indexing.f90'
+                   end select
+         case (2); select case (dir(2))
+                   case (1); d = 3
+                   case (3); d = 1
+                   case default; stop 'Error: dir(1)=2, but dir(2)!=1,3 in orth_dir in face_edge_corner_indexing.f90'
+                   end select
+         case (3); select case (dir(2))
+                   case (1); d = 2
+                   case (2); d = 1
+                   case default; stop 'Error: dir(1)=3, but dir(2)!=1,2 in orth_dir in face_edge_corner_indexing.f90'
+                   end select
+         case default; stop 'Error: dir(1)!=1,2,3 in orth_dir in face_edge_corner_indexing.f90'
          end select
        end function
 

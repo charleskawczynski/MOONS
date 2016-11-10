@@ -16,14 +16,13 @@
 
         contains
 
-        subroutine curl_curl_x_GF(C,X,Y,Z,g,D,X_L,X_U,&
+        subroutine curl_curl_x_GF(C,X,Y,Z,D,X_L,X_U,&
           Y_D1_D2,Z_D1_D2,&
           Y_D1_U2,Z_D1_U2,&
           Y_U1_D2,Z_U1_D2,&
           Y_U1_U2,Z_U1_U2)
           implicit none
           type(grid_field),intent(inout) :: C
-          type(grid),intent(in) :: g
           type(grid_field),intent(in) :: X,Y,Z,D
           type(grid_field),dimension(3),intent(in) :: X_L,X_U
           type(grid_field),intent(in) :: Y_D1_D2,Z_D1_D2
@@ -43,15 +42,15 @@
           X%f( i , j ,k+1)*X_U(3)%f(i,j,k)+&
           X%f( i , j ,k-1)*X_L(3)%f(i,j,k)+&
           ! 
-          Y%f(i-1, j , k )*Y_D1_D2%f(i-1,j,k)+&
-          Y%f(i-1,j+1, k )*Y_D1_U2%f(i-1,j,k)+&
-          Y%f( i , j , k )*Y_U1_D2%f(i-1,j,k)+&
-          Y%f( i ,j+1, k )*Y_U1_U2%f(i-1,j,k)+&
+          Y%f(i-1, j , k )*Y_D1_D2%f(i,j,k)+&
+          Y%f(i-1,j+1, k )*Y_D1_U2%f(i,j,k)+&
+          Y%f( i , j , k )*Y_U1_D2%f(i,j,k)+&
+          Y%f( i ,j+1, k )*Y_U1_U2%f(i,j,k)+&
           ! 
-          Z%f(i-1, j , k )*Z_D1_D2%f(i-1,j,k)+&
-          Z%f(i-1, j ,k+1)*Z_D1_U2%f(i-1,j,k)+&
-          Z%f( i , j , k )*Z_U1_D2%f(i-1,j,k)+&
-          Z%f( i , j ,k+1)*Z_U1_U2%f(i-1,j,k)+&
+          Z%f(i-1, j , k )*Z_D1_D2%f(i,j,k)+&
+          Z%f(i-1, j ,k+1)*Z_D1_U2%f(i,j,k)+&
+          Z%f( i , j , k )*Z_U1_D2%f(i,j,k)+&
+          Z%f( i , j ,k+1)*Z_U1_U2%f(i,j,k)+&
           ! 
           X%f( i , j , k )*D%f(i,j,k)
           enddo; enddo; enddo
@@ -61,14 +60,13 @@
 #endif
         end subroutine
 
-        subroutine curl_curl_y_GF(C,X,Y,Z,g,D,Y_L,Y_U,&
+        subroutine curl_curl_y_GF(C,X,Y,Z,D,Y_L,Y_U,&
           X_D1_D2,Z_D1_D2,&
           X_D1_U2,Z_D1_U2,&
           X_U1_D2,Z_U1_D2,&
           X_U1_U2,Z_U1_U2)
           implicit none
           type(grid_field),intent(inout) :: C
-          type(grid),intent(in) :: g
           type(grid_field),intent(in) :: X,Y,Z,D
           type(grid_field),dimension(3),intent(in) :: Y_L,Y_U
           type(grid_field),intent(in) :: X_D1_D2,Z_D1_D2
@@ -84,20 +82,20 @@
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
           ! 
-          X%f( i ,j-1, k )*X_D1_D2%f(i,j-1,k)+&
-          X%f(i+1,j-1, k )*X_D1_U2%f(i,j-1,k)+&
-          X%f( i , j , k )*X_U1_D2%f(i,j-1,k)+&
-          X%f(i+1, j , k )*X_U1_U2%f(i,j-1,k)+&
+          X%f( i ,j-1, k )*X_D1_D2%f(i,j,k)+&
+          X%f(i+1,j-1, k )*X_D1_U2%f(i,j,k)+&
+          X%f( i , j , k )*X_U1_D2%f(i,j,k)+&
+          X%f(i+1, j , k )*X_U1_U2%f(i,j,k)+&
           ! 
           Y%f(i+1, j , k )*Y_U(1)%f(i,j,k)+&
           Y%f(i-1, j , k )*Y_L(1)%f(i,j,k)+&
           Y%f( i , j ,k+1)*Y_U(3)%f(i,j,k)+&
           Y%f( i , j ,k-1)*Y_L(3)%f(i,j,k)+&
           ! 
-          Z%f( i ,j-1, k )*Z_D1_D2%f(i,j-1,k)+&
-          Z%f( i ,j-1,k+1)*Z_D1_U2%f(i,j-1,k)+&
-          Z%f( i , j , k )*Z_U1_D2%f(i,j-1,k)+&
-          Z%f( i , j ,k+1)*Z_U1_U2%f(i,j-1,k)+&
+          Z%f( i ,j-1, k )*Z_D1_D2%f(i,j,k)+&
+          Z%f( i ,j-1,k+1)*Z_D1_U2%f(i,j,k)+&
+          Z%f( i , j , k )*Z_U1_D2%f(i,j,k)+&
+          Z%f( i , j ,k+1)*Z_U1_U2%f(i,j,k)+&
           ! 
           Y%f( i , j , k )*D%f(i,j,k)
           enddo; enddo; enddo
@@ -107,14 +105,13 @@
 #endif
         end subroutine
 
-        subroutine curl_curl_z_GF(C,X,Y,Z,g,D,Z_L,Z_U,&
+        subroutine curl_curl_z_GF(C,X,Y,Z,D,Z_L,Z_U,&
           X_D1_D2,Y_D1_D2,&
           X_D1_U2,Y_D1_U2,&
           X_U1_D2,Y_U1_D2,&
           X_U1_U2,Y_U1_U2)
           implicit none
           type(grid_field),intent(inout) :: C
-          type(grid),intent(in) :: g
           type(grid_field),intent(in) :: X,Y,Z,D
           type(grid_field),dimension(3),intent(in) :: Z_L,Z_U
           type(grid_field),intent(in) :: X_D1_D2,Y_D1_D2
@@ -130,15 +127,15 @@
           do k=2,C%s(3)-1; do j=2,C%s(2)-1; do i=2,C%s(1)-1
           C%f( i , j , k ) = &
           ! 
-          X%f( i , j ,k-1)*X_D1_D2%f(i,j,k-1)+&
-          X%f(i+1, j ,k-1)*X_D1_U2%f(i,j,k-1)+&
-          X%f( i , j , k )*X_U1_D2%f(i,j,k-1)+&
-          X%f(i+1, j , k )*X_U1_U2%f(i,j,k-1)+&
+          X%f( i , j ,k-1)*X_D1_D2%f(i,j,k)+&
+          X%f(i+1, j ,k-1)*X_D1_U2%f(i,j,k)+&
+          X%f( i , j , k )*X_U1_D2%f(i,j,k)+&
+          X%f(i+1, j , k )*X_U1_U2%f(i,j,k)+&
           ! 
-          Y%f( i , j ,k-1)*Y_D1_D2%f(i,j,k-1)+&
-          Y%f( i ,j+1,k-1)*Y_D1_U2%f(i,j,k-1)+&
-          Y%f( i , j , k )*Y_U1_D2%f(i,j,k-1)+&
-          Y%f( i ,j+1, k )*Y_U1_U2%f(i,j,k-1)+&
+          Y%f( i , j ,k-1)*Y_D1_D2%f(i,j,k)+&
+          Y%f( i ,j+1,k-1)*Y_D1_U2%f(i,j,k)+&
+          Y%f( i , j , k )*Y_U1_D2%f(i,j,k)+&
+          Y%f( i ,j+1, k )*Y_U1_U2%f(i,j,k)+&
           ! 
           Z%f(i+1, j , k )*Z_U(1)%f(i,j,k)+&
           Z%f(i-1, j , k )*Z_L(1)%f(i,j,k)+&

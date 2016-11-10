@@ -238,9 +238,9 @@
         do i=2,s(dir)-1
           D = ST%stag_CC2N%D%f(i-1)
           U = ST%stag_CC2N%U%f(i-1)
-          call assign_plane(ST%SF%L,0.0_cp    ,i,dir)
-          call assign_plane(ST%SF%D,D         ,i,dir)
-          call assign_plane(ST%SF%U,U         ,i,dir)
+          call assign_plane(ST%SF%L,0.0_cp ,i,dir)
+          call assign_plane(ST%SF%D,D      ,i,dir)
+          call assign_plane(ST%SF%U,U      ,i,dir)
         enddo
       end subroutine
 
@@ -332,12 +332,16 @@
       subroutine assign_consecutive_S1D_VP(ST,sig)
         implicit none
         type(stencil_1D),intent(inout) :: ST
-        type(grid_field),intent(in) :: sig
-        if (CC_along(ST%DL,ST%dir)) then
-          call assign_consecutive_CC(ST,sig)
-        elseif (N_along(ST%DL,ST%dir)) then
-          call assign_consecutive_N(ST,sig)
-        else; stop 'Error: bad input to assign_consecutive_S1D_VP in stencil_1D.f90'
+        type(grid_field),dimension(3),intent(in) :: sig
+        integer :: dir
+        if (is_Face(ST%DL)) then;     dir = orth_dir((/ST%dir,get_Face(ST%DL)/)) ! sig on edge?
+        elseif (is_Edge(ST%DL)) then; dir = orth_dir((/ST%dir,get_Edge(ST%DL)/)) ! sig on face?
+        elseif (is_CC(ST%DL)) then;   dir = ST%dir ! sig on face
+        elseif (is_Node(ST%DL)) then; dir = ST%dir ! sig on edge
+        else; stop 'Error: bad DL in assign_consecutive_S1D_VP in stencil_1D.f90'
+        endif
+        if (CC_along(ST%DL,ST%dir)) then;    call assign_consecutive_CC(ST,sig(dir))  ! sig on face?
+        elseif (N_along(ST%DL,ST%dir)) then; call assign_consecutive_N( ST,sig(dir))  ! sig on face?
         endif
       end subroutine
 
@@ -376,7 +380,7 @@
           call assign_plane(ST%SF%D,temp(1)              , i,i,d)
           call add_plane(   ST%SF%D,temp(2)              , i,i,d)
 
-          call assign_plane(  ST%SF%U,sig                , i,i,d)
+          call assign_plane(  ST%SF%U,sig                , i,i+1,d)
           call multiply_plane(ST%SF%U,UC_2*UN_2          , i,d)
         enddo
         do i=1,2; call delete(temp(i)); enddo
@@ -417,7 +421,7 @@
           call assign_plane(ST%SF%D,temp(1)              , i,i,d)
           call add_plane(   ST%SF%D,temp(2)              , i,i,d)
 
-          call assign_plane(  ST%SF%U,sig                , i,i,d)
+          call assign_plane(  ST%SF%U,sig                , i,i+1,d)
           call multiply_plane(ST%SF%U,UC_1*UN_2          , i,d)
         enddo
         do i=1,2; call delete(temp(i)); enddo

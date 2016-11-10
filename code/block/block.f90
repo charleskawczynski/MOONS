@@ -16,8 +16,8 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: init_FEC
-       ! public :: init_stencil_curl_curl
-       ! public :: init_stencil_Laplacian
+       public :: init_curl_curl
+       public :: init_Laplacian
 
        type block
          type(grid) :: g                                  ! Bulk
@@ -43,6 +43,10 @@
        interface import;             module procedure import_block_wrapper;     end interface
 
        interface init_FEC;           module procedure init_FEC_block;           end interface
+       interface init_curl_curl;     module procedure init_curl_curl_SB;        end interface
+       interface init_curl_curl;     module procedure init_curl_curl_SB_VP;     end interface
+       interface init_Laplacian;     module procedure init_Laplacian_SB;        end interface
+       interface init_Laplacian;     module procedure init_Laplacian_SB_VP;     end interface
 
        contains
 
@@ -59,7 +63,7 @@
          call init_vol_block(B)
        end subroutine
 
-       subroutine init_curl_curl_stencil_block(B)
+       subroutine init_curl_curl_SB(B)
          implicit none
          type(block),intent(inout) :: B
          integer :: i
@@ -96,7 +100,45 @@
          call clean(B%curl_curlZ(3))
        end subroutine
 
-       subroutine init_Laplacian_stencil_block(B)
+       subroutine init_curl_curl_SB_VP(B,sig,sig_F)
+         implicit none
+         type(block),intent(inout) :: B
+         type(grid_field),dimension(3),intent(in) :: sig,sig_F
+         integer :: i
+         do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(1)); enddo
+         do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(2)); enddo
+         do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
+         ! Term-component = result-component:
+         call assign_consecutive(B%curl_curlX(1)%S(2),sig)
+         call assign_consecutive(B%curl_curlX(1)%S(3),sig)
+         call multiply(B%curl_curlX(1),-1.0_cp)
+         call add_diagonals(B%curl_curlX(1))
+         call assign_consecutive(B%curl_curlY(2)%S(1),sig)
+         call assign_consecutive(B%curl_curlY(2)%S(3),sig)
+         call multiply(B%curl_curlY(2),-1.0_cp)
+         call add_diagonals(B%curl_curlY(2))
+         call assign_consecutive(B%curl_curlZ(3)%S(1),sig)
+         call assign_consecutive(B%curl_curlZ(3)%S(2),sig)
+         call multiply(B%curl_curlZ(3),-1.0_cp)
+         call add_diagonals(B%curl_curlZ(3))
+
+         ! X-component result:
+         call assign_mixed(B%curl_curlY(1),(/1,2/),sig)
+         call assign_mixed(B%curl_curlZ(1),(/1,3/),sig)
+         ! Y-component result:
+         call assign_mixed(B%curl_curlX(2),(/2,1/),sig)
+         call assign_mixed(B%curl_curlZ(2),(/2,3/),sig)
+         ! Z-component result:
+         call assign_mixed(B%curl_curlX(3),(/3,1/),sig)
+         call assign_mixed(B%curl_curlY(3),(/3,2/),sig)
+
+         ! Deallocate unecessary data for run-time:
+         call clean(B%curl_curlX(1))
+         call clean(B%curl_curlY(2))
+         call clean(B%curl_curlZ(3))
+       end subroutine
+
+       subroutine init_Laplacian_SB(B)
          implicit none
          type(block),intent(inout) :: B
          call init(B%lap_VF(1),B%g,DL_Face(1))
@@ -105,6 +147,24 @@
          call assign_consecutive(B%lap_VF(1))
          call assign_consecutive(B%lap_VF(2))
          call assign_consecutive(B%lap_VF(3))
+         call add_diagonals(B%lap_VF(1))
+         call add_diagonals(B%lap_VF(2))
+         call add_diagonals(B%lap_VF(3))
+         call clean(B%lap_VF(1))
+         call clean(B%lap_VF(2))
+         call clean(B%lap_VF(3))
+       end subroutine
+
+       subroutine init_Laplacian_SB_VP(B,sig)
+         implicit none
+         type(block),intent(inout) :: B
+         type(grid_field),dimension(3),intent(in) :: sig
+         call init(B%lap_VF(1),B%g,DL_Face(1))
+         call init(B%lap_VF(2),B%g,DL_Face(2))
+         call init(B%lap_VF(3),B%g,DL_Face(3))
+         call assign_consecutive(B%lap_VF(1),sig)
+         call assign_consecutive(B%lap_VF(2),sig)
+         call assign_consecutive(B%lap_VF(3),sig)
          call add_diagonals(B%lap_VF(1))
          call add_diagonals(B%lap_VF(2))
          call add_diagonals(B%lap_VF(3))
@@ -150,8 +210,6 @@
          i=6;  allocate(B%fb(i)); do i=1,6; call get_face_b(  B%fb(i),B%g,i); enddo
          i=12; allocate(B%eb(i)); do i=1,12;call get_edge_b(  B%eb(i),B%g,i); enddo
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
-         call init_Laplacian_stencil_block(B)
-         call init_curl_curl_stencil_block(B)
        end subroutine
 
        subroutine init_block_copy(B,B_in)

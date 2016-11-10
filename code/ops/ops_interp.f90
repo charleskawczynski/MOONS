@@ -29,6 +29,7 @@
        !                        -------> edgeDir
        ! 
        use current_precision_mod
+       use face_edge_corner_indexing_mod
        use grid_mod
        use mesh_mod
        use apply_BCs_mod
@@ -64,7 +65,6 @@
        ! Base interpolation
        public :: interp               ! call interp(f,m,gd,dir)
        public :: extrap               ! call extrap(f,m,gd,dir)
-       public :: orthogonalDirection
 
        ! Derived interpolations (* = has vector interface)
        public :: face2Face            ! call face2Face(faceAve,f,m,dir,aveLoc)
@@ -332,16 +332,10 @@
          implicit none
          integer,dimension(3),intent(in) :: s_in,s_out
          integer,intent(in) :: dir
-         select case (dir)
-         case (1); if (s_in(2).ne.s_out(2)) call printShape(s_in,s_out,dir)
-                   if (s_in(3).ne.s_out(3)) call printShape(s_in,s_out,dir)
-         case (2); if (s_in(1).ne.s_out(1)) call printShape(s_in,s_out,dir)
-                   if (s_in(3).ne.s_out(3)) call printShape(s_in,s_out,dir)
-         case (3); if (s_in(1).ne.s_out(1)) call printShape(s_in,s_out,dir)
-                   if (s_in(2).ne.s_out(2)) call printShape(s_in,s_out,dir)
-         case default
-           stop 'Error: dir must = 1,2,3 in interpO2.'
-         end select
+         integer,dimension(2) :: a
+         a = adj_dir_given_dir(dir)
+         if (s_in(a(1)).ne.s_out(a(1))) call printShape(s_in,s_out,dir)
+         if (s_in(a(2)).ne.s_out(a(2))) call printShape(s_in,s_out,dir)
        end subroutine
 
        subroutine printShape(s_in,s_out,dir)
@@ -398,7 +392,7 @@
          integer,intent(in) :: edgeDir,faceDir
          integer :: orthDir
          if (edgeDir.ne.faceDir) then ! Requires 1 interpolation (no allocations)
-           orthDir = orthogonalDirection(edgeDir,faceDir)
+           orthDir = orth_dir((/edgeDir,faceDir/))
            call interp(edge,face,m,orthDir)
          else ! Requires 3 interpolations ()
            stop 'Error: use face2Edge_SF_3 for edgeDir = faceDir in face2Edge_SF_1 in ops_interp.f90'
@@ -478,15 +472,15 @@
          type(SF),intent(in) :: cellCenter
          type(mesh),intent(in) :: m
          integer,intent(in) :: edgeDir
+         integer :: d_F2E,d_C2F
          select case (edgeDir)
-         case(1); call cellCenter2Face(tempF,cellCenter,m,2)
-                  call face2Edge(edge,tempF,m,2,1)
-         case(2); call cellCenter2Face(tempF,cellCenter,m,1)
-                  call face2Edge(edge,tempF,m,1,2)
-         case(3); call cellCenter2Face(tempF,cellCenter,m,1)
-                  call face2Edge(edge,tempF,m,1,3)
+         case(1); d_F2E = 2; d_C2F = 2
+         case(2); d_F2E = 1; d_C2F = 1
+         case(3); d_F2E = 1; d_C2F = 1
          case default; stop 'Error: edgeDir must = 1,2,3 in cellCenter2Edge_SF in ops_interp.f90'
          end select
+         call cellCenter2Face(tempF,cellCenter,m,d_C2F)
+         call face2Edge(edge,tempF,m,d_F2E,edgeDir)
        end subroutine
 
        ! ****************************************************************************************
@@ -499,15 +493,15 @@
          type(SF),intent(in) :: node
          type(mesh),intent(in) :: m
          integer,intent(in) :: faceDir
+         integer :: d
          select case (faceDir)
-         case (1); call node2Edge(tempEyxx,node,m,2)
-                   call edge2Face(face,tempEyxx,m,2,faceDir)
-         case (2); call node2Edge(tempEyxx,node,m,1)
-                   call edge2Face(face,tempEyxx,m,1,faceDir)
-         case (3); call node2Edge(tempEyxx,node,m,1)
-                   call edge2Face(face,tempEyxx,m,1,faceDir)
+         case (1); d = 2
+         case (2); d = 1
+         case (3); d = 1
          case default; stop 'Error: faceDir must = 1,2,3 in node2Face_SF in ops_interp.f90'
          end select
+         call node2Edge(tempEyxx,node,m,d)
+         call edge2Face(face,tempEyxx,m,d,faceDir)
        end subroutine
 
        subroutine node2CellCenter_SF(CC,node,m,E_x,F_y)
@@ -541,7 +535,7 @@
          integer,intent(in) :: faceDir,edgeDir
          integer :: orthDir
          if (edgeDir.ne.faceDir) then ! Requires 1 interpolation (no allocations)
-           orthDir = orthogonalDirection(edgeDir,faceDir)
+           orthDir = orth_dir((/edgeDir,faceDir/))
            call interp(face,edge,m,orthDir)
          else ! Requires 3 interpolations ()
            stop 'Error: edgeDir=faceDir, need more temps for this interp in edge2Face_SF in ops_interp.f90'
@@ -841,35 +835,5 @@
          call edge2Face(face%z%x,edge%z,m,3,1)
          call edge2Face(face%z%y,edge%z,m,3,2)
        end subroutine
-
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-       ! *********************************** AUXILIARY ROUTINES *********************************
-       ! ****************************************************************************************
-       ! ****************************************************************************************
-
-       function orthogonalDirection(dir1,dir2) result(orthDir)
-         implicit none
-         integer,intent(in) :: dir1,dir2
-         integer :: orthDir
-         select case (dir1)
-         case (1); select case (dir2)
-                   case (2); orthDir = 3
-                   case (3); orthDir = 2
-                   case default; stop 'Error: bad input to orthogonalDirection'
-                   end select
-         case (2); select case (dir2)
-                   case (1); orthDir = 3
-                   case (3); orthDir = 1
-                   case default; stop 'Error: bad input to orthogonalDirection'
-                   end select
-         case (3); select case (dir2)
-                   case (1); orthDir = 2
-                   case (2); orthDir = 1
-                   case default; stop 'Error: bad input to orthogonalDirection'
-                   end select
-         case default; stop 'Error: bad input to orthogonalDirection'
-         end select
-       end function
 
        end module

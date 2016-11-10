@@ -45,27 +45,27 @@
          type(simple_int_tensor),dimension(3) :: int_tensor
        end type
 
-       interface init;           module procedure init_grid;           end interface
-       interface init;           module procedure initmeshCopy;        end interface
-       interface add;            module procedure addGrid;             end interface
-       interface delete;         module procedure deletemesh;          end interface
-       interface initProps;      module procedure initProps_mesh;      end interface
+       interface init;           module procedure init_grid;              end interface
+       interface init;           module procedure initmeshCopy;           end interface
+       interface add;            module procedure addGrid;                end interface
+       interface delete;         module procedure deletemesh;             end interface
+       interface initProps;      module procedure initProps_mesh;         end interface
 
-       interface patch;          module procedure patch_grids;         end interface
+       interface patch;          module procedure patch_grids;            end interface
 
-       interface restrict;       module procedure restrictmesh1;       end interface
-       interface restrict;       module procedure restrictmesh3;       end interface
-       interface restrict_x;     module procedure restrictmesh_x;      end interface
-       interface restrict_xy;    module procedure restrictmesh_xy;     end interface
+       interface restrict;       module procedure restrictmesh1;          end interface
+       interface restrict;       module procedure restrictmesh3;          end interface
+       interface restrict_x;     module procedure restrictmesh_x;         end interface
+       interface restrict_xy;    module procedure restrictmesh_xy;        end interface
 
-       interface print;          module procedure print_mesh;          end interface
-       interface display;        module procedure display_mesh;        end interface
-       interface export;         module procedure export_mesh;         end interface
-       interface import;         module procedure import_mesh;         end interface
-       interface export;         module procedure export_wrapper;      end interface
-       interface import;         module procedure import_wrapper;      end interface
+       interface print;          module procedure print_mesh;             end interface
+       interface display;        module procedure display_mesh;           end interface
+       interface export;         module procedure export_mesh;            end interface
+       interface import;         module procedure import_mesh;            end interface
+       interface export;         module procedure export_wrapper;         end interface
+       interface import;         module procedure import_wrapper;         end interface
 
-       interface compare;        module procedure compare_mesh;        end interface
+       interface compare;        module procedure compare_mesh;           end interface
 
        contains
 

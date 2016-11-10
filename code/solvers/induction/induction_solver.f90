@@ -192,8 +192,9 @@
            call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
 
            if (test_noise) call assign(B,0.0_cp)
-           ! if (test_noise) call random_noise(B%y)
-           if (test_noise) call random_noise(B)
+           ! if (test_noise) call random_noise(B%x)
+           if (test_noise) call random_noise(B%y,1)
+           ! if (test_noise) call random_noise(B)
 
            call curl(J,B,m)
            call multiply(temp_E,J,sigmaInv_E)
@@ -205,8 +206,8 @@
 
            call subtract(temp_diff,temp_F2)
            write(*,*) 'amax(temp_diff%x) = ',amax(temp_diff%x)
-           call export_raw(m,B,'out/LDC/','B',0)
            call export_raw(m,temp_diff,'out/LDC/','curl_curl_diff',0)
+           call export_raw(m,B,'out/LDC/','B',0)
            call insist_amax_lt_tol(temp_diff,'curl_curl_diff')
            if (test_noise) stop 'Done in induction_solver.f90'
 

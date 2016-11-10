@@ -96,10 +96,11 @@
         type(array),intent(inout) :: A
         type(array),intent(in) :: A_in
 #ifdef _DEBUG_ARRAY_
-        call insist_allocated(A_in,'init_array_copy')
+        ! call insist_allocated(A_in,'init_array_copy')
+
 #endif
         call delete(A)
-        if (A_in%N.ne.0) then
+        if (A_in%N.gt.0) then
           A%N = A_in%N
           allocate(A%f(A%N))
           A%f = A_in%f

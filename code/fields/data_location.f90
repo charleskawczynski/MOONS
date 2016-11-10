@@ -81,7 +81,7 @@
          type(data_location),intent(inout) :: DL
          type(data_location),intent(in) :: DL_in
          call delete(DL)
-         call insist_defined(DL_in,'init_copy_DL')
+         ! call insist_defined(DL_in,'init_copy_DL')
          DL%C = DL_in%C
          DL%N = DL_in%N
          DL%E = DL_in%E

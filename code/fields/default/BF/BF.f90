@@ -718,7 +718,7 @@
          type(block_field),intent(inout) :: CX,CY,CZ
          type(block_field),intent(in) :: X,Y,Z
          type(block),intent(in) :: B
-         call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,B%g,&
+         call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,&
          B%curl_curlX(1)%D_3D,&
          B%curl_curlX(1)%S(1:3)%SF%L,&
          B%curl_curlX(1)%S(1:3)%SF%U,&
@@ -726,7 +726,7 @@
          B%curl_curlY(1)%D1_U2,B%curl_curlZ(1)%D1_U2,&
          B%curl_curlY(1)%U1_D2,B%curl_curlZ(1)%U1_D2,&
          B%curl_curlY(1)%U1_U2,B%curl_curlZ(1)%U1_U2)
-         call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,B%g,&
+         call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,&
          B%curl_curlY(2)%D_3D,&
          B%curl_curlY(2)%S(1:3)%SF%L,&
          B%curl_curlY(2)%S(1:3)%SF%U,&
@@ -734,7 +734,7 @@
          B%curl_curlX(2)%D1_U2,B%curl_curlZ(2)%D1_U2,&
          B%curl_curlX(2)%U1_D2,B%curl_curlZ(2)%U1_D2,&
          B%curl_curlX(2)%U1_U2,B%curl_curlZ(2)%U1_U2)
-         call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,B%g,&
+         call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,&
          B%curl_curlZ(3)%D_3D,&
          B%curl_curlZ(3)%S(1:3)%SF%L,&
          B%curl_curlZ(3)%S(1:3)%SF%U,&
