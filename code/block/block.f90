@@ -70,6 +70,7 @@
          do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(1)); enddo
          do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(2)); enddo
          do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
+
          ! Term-component = result-component:
          call assign_consecutive(B%curl_curlX(1)%S(2))
          call assign_consecutive(B%curl_curlX(1)%S(3))
@@ -108,6 +109,10 @@
          do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(1)); enddo
          do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(2)); enddo
          do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
+
+         do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(i)); enddo
+         do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(i)); enddo
+         do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(i)); enddo
          ! Term-component = result-component:
          call assign_consecutive(B%curl_curlX(1)%S(2),sig)
          call assign_consecutive(B%curl_curlX(1)%S(3),sig)

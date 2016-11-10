@@ -193,7 +193,7 @@
 
            if (test_noise) call assign(B,0.0_cp)
            ! if (test_noise) call random_noise(B%x)
-           if (test_noise) call random_noise(B%y,1)
+           if (test_noise) call random_noise(B%y,2)
            ! if (test_noise) call random_noise(B)
 
            call curl(J,B,m)
@@ -205,7 +205,8 @@
            call assign_ghost_XPeriodic(temp_diff,0.0_cp)
 
            call subtract(temp_diff,temp_F2)
-           write(*,*) 'amax(temp_diff%x) = ',amax(temp_diff%x)
+           ! write(*,*) 'amax(temp_diff%x) = ',amax(temp_diff%x)
+           write(*,*) 'amax(temp_diff) = ',amax(temp_diff)
            call export_raw(m,temp_diff,'out/LDC/','curl_curl_diff',0)
            call export_raw(m,B,'out/LDC/','B',0)
            call insist_amax_lt_tol(temp_diff,'curl_curl_diff')
