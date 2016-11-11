@@ -717,15 +717,6 @@
          call laplacian(lapZ%GF,Z%GF,B%lap_VF(3)%S(1:3)%SF%L,B%lap_VF(3)%D_3D,B%lap_VF(3)%S(1:3)%SF%U)
        end subroutine
 
-       ! subroutine modify_BS_VF(VF,multiply_by,then_add_to)
-       !   implicit none
-       !   type(stencil_3D),dimension(3),intent(inout) :: VF
-       !   real(cp),intent(in) :: multiply_by,then_add_to
-       !   integer :: i
-       !   do i=1,3; call multiply_diag(B%lap_VF(i),dt/Re); enddo
-       !   do i=1,3; call add_to_diag(VF(i),then_add_to); enddo
-       ! end subroutine
-
        subroutine laplacian_matrix_based_SF_BF(lap,U,B)
          implicit none
          type(block_field),intent(inout) :: lap

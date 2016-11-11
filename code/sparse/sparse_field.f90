@@ -9,6 +9,7 @@
       public :: init,delete,display,print,export,import
 
       public :: assign
+      public :: add
       public :: multiply
       public :: insist_allocated
 
@@ -25,6 +26,7 @@
       interface export;              module procedure export_SF;              end interface
 
       interface assign;              module procedure assign_SF;              end interface
+      interface add;                 module procedure add_SF;                 end interface
       interface multiply;            module procedure multiply_SF;            end interface
 
       interface insist_allocated;    module procedure insist_allocated_SF;    end interface
@@ -111,6 +113,15 @@
         call assign(SF%L,val)
         call assign(SF%D,val)
         call assign(SF%U,val)
+      end subroutine
+
+      subroutine add_SF(SF,val)
+        implicit none
+        type(sparse_field),intent(inout) :: SF
+        real(cp),intent(in) :: val
+        call add(SF%L,val)
+        call add(SF%D,val)
+        call add(SF%U,val)
       end subroutine
 
       subroutine multiply_SF(SF,val)

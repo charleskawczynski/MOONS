@@ -249,15 +249,18 @@
          call display(ind,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_ind')
 
-         write(*,*) '     About to assemble curl-curl matrix'
-         diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
-         call init_curl_curl(ind%m,ind%sigmaInv_edge)
-         call init_Laplacian_SF(ind%m)
-         ! call modify_curl_curl(ind%m,diffusion_treatment(1),diffusion_treatment(2))
-
          if (finite_Rem) then; ind%MFP_B%c_ind = ind%TMP%dt/ind%Rem
          else;                 ind%MFP_B%c_ind = ind%TMP%dt
          endif
+
+         write(*,*) '     About to assemble curl-curl matrix'
+         ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
+         diffusion_treatment = (/-ind%MFP_B%c_ind,1.0_cp/)    ! diffusion explicit
+         ! diffusion_treatment = (/ind%MFP_B%c_ind,1.0_cp/)     ! diffusion implicit
+         call init_curl_curl(ind%m,ind%sigmaInv_edge)
+         call init_Laplacian_SF(ind%m)
+         call multiply_curl_curl(ind%m,diffusion_treatment(1))
+         call add_curl_curl(ind%m,diffusion_treatment(2))
 
          call init(prec_induction,ind%B)
          call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)

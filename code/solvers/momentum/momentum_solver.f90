@@ -145,15 +145,11 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         ! call lap(temp_F1,U,m)
+         call multiply(Ustar,temp_F1,-dt) ! Because advect_div gives positive
          call laplacian_matrix_based(temp_F1,U,m) ! O(dx^1) near boundaries
-         call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
-         call add(Ustar,F)
+         call add_product(Ustar,F,dt)
          call zeroWall_conditional(Ustar,m,U)
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
          call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
          call solve(PCG,p,temp_CC,m,compute_norms)

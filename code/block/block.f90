@@ -9,7 +9,6 @@
        use data_location_mod
        use IO_tools_mod
        use GF_diagonals_mod
-       use block_stencil_mod
        use block_Laplacian_stencil_mod
        use block_curl_curl_stencil_mod
        implicit none
@@ -21,11 +20,8 @@
        public :: init_FEC
 
        public :: init_curl_curl
-       public :: modify_curl_curl
        public :: init_Laplacian_VF
        public :: init_Laplacian_SF
-       public :: modify_Laplacian_VF
-       public :: modify_Laplacian_SF
 
        type block
          type(grid) :: g                                  ! Bulk
@@ -55,15 +51,12 @@
 
        interface init_curl_curl;     module procedure init_curl_curl_SB;        end interface
        interface init_curl_curl;     module procedure init_curl_curl_SB_VP;     end interface
-       interface modify_curl_curl;   module procedure modify_curl_curl_SB;      end interface
 
        interface init_Laplacian_VF;  module procedure init_Laplacian_SB_VF;     end interface
        interface init_Laplacian_VF;  module procedure init_Laplacian_SB_VF_VP;  end interface
-       interface modify_Laplacian_VF;module procedure modify_Laplacian_SB_VF;   end interface
 
        interface init_Laplacian_SF;  module procedure init_Laplacian_SB_SF;     end interface
        interface init_Laplacian_SF;  module procedure init_Laplacian_SB_SF_VP;  end interface
-       interface modify_Laplacian_SF;module procedure modify_Laplacian_SB_SF;   end interface
 
        contains
 
@@ -285,13 +278,6 @@
          call init_Laplacian(B%lap_SF,B%g,sig)
        end subroutine
 
-       subroutine modify_Laplacian_SB_SF(B,multiply_by,add_to)
-         implicit none
-         type(block),intent(inout) :: B
-         real(cp),intent(in) :: multiply_by,add_to
-         call modify(B%lap_SF,multiply_by,add_to)
-       end subroutine
-
        subroutine init_Laplacian_SB_VF(B)
          implicit none
          type(block),intent(inout) :: B
@@ -303,13 +289,6 @@
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig
          call init_Laplacian(B%lap_VF,B%g,sig)
-       end subroutine
-
-       subroutine modify_Laplacian_SB_VF(B,multiply_by,add_to)
-         implicit none
-         type(block),intent(inout) :: B
-         real(cp),intent(in) :: multiply_by,add_to
-         call modify(B%lap_VF,multiply_by,add_to)
        end subroutine
 
        ! **********************************************************
@@ -327,15 +306,6 @@
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig
          call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g,sig)
-       end subroutine
-
-       subroutine modify_curl_curl_SB(B,multiply_by,add_to)
-         implicit none
-         type(block),intent(inout) :: B
-         real(cp),intent(in) :: multiply_by,add_to
-         call modify(B%curl_curlX(1),multiply_by,add_to)
-         call modify(B%curl_curlY(2),multiply_by,add_to)
-         call modify(B%curl_curlZ(3),multiply_by,add_to)
        end subroutine
 
        end module

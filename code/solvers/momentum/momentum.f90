@@ -211,9 +211,12 @@
          call init_Laplacian_VF(mom%m) ! for lap(U) in momentum
          ! diffusion_treatment = (/-mom%TMP%dt/mom%Re,1.0_cp/) ! diffusion explicit
          ! diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
-         ! diffusion_treatment = (/1.0_cp/mom%Re,0.0_cp/)    ! diffusion explicit
-         diffusion_treatment = (/1.0_cp,0.0_cp/)             ! no treatment (requires multiplication by dt/Re)
-         call modify_Laplacian_VF(mom%m,diffusion_treatment(1),diffusion_treatment(2))
+         diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
+         ! diffusion_treatment = (/1.0_cp,0.0_cp/)             ! no treatment (requires multiplication by dt/Re)
+         ! call modify_Laplacian_VF(mom%m,diffusion_treatment(1),diffusion_treatment(2))
+
+         call multiply_Laplacian_VF(mom%m,diffusion_treatment(1))
+         call add_Laplacian_VF(mom%m,diffusion_treatment(2))
 
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)

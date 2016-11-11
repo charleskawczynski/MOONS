@@ -16,6 +16,7 @@
       public :: assign_consecutive
       public :: assign_zero
 
+      public :: add
       public :: multiply
 
       public :: insist_allocated
@@ -55,9 +56,12 @@
 
       interface assign_zero;            module procedure assign_zero_S1D;              end interface
 
+      interface add;                    module procedure add_S1D;                      end interface
       interface multiply;               module procedure multiply_S1D;                 end interface
 
       interface insist_allocated;       module procedure insist_allocated_S1D;         end interface
+      interface insist_field_allocated; module procedure insist_field_allocated_S1D;   end interface
+
 
       contains
 
@@ -435,9 +439,19 @@
         implicit none
         type(stencil_1D),intent(inout) :: ST
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'assign_zero_S1D')
+        call insist_field_allocated(ST,'assign_zero_S1D')
 #endif
         call assign(ST%SF,0.0_cp)
+      end subroutine
+
+      subroutine add_S1D(ST,v)
+        implicit none
+        type(stencil_1D),intent(inout) :: ST
+        real(cp),intent(in) :: v
+#ifdef _DEBUG_STENCIL_1D_
+        call insist_field_allocated(ST,'add_S1D')
+#endif
+        call add(ST%SF,v)
       end subroutine
 
       subroutine multiply_S1D(ST,v)
@@ -445,7 +459,7 @@
         type(stencil_1D),intent(inout) :: ST
         real(cp),intent(in) :: v
 #ifdef _DEBUG_STENCIL_1D_
-        call insist_allocated(ST,'multiply_S1D')
+        call insist_field_allocated(ST,'multiply_S1D')
 #endif
         call multiply(ST%SF,v)
       end subroutine
@@ -460,6 +474,13 @@
         character(len=*),intent(in) :: caller
         call insist_allocated(ST%stag_CC2N,caller//' ST(1)')
         call insist_allocated(ST%stag_N2CC,caller//' ST(2)')
+        call insist_allocated(ST%SF,caller//' ST(3)')
+      end subroutine
+
+      subroutine insist_field_allocated_S1D(ST,caller)
+        implicit none
+        type(stencil_1D),intent(in) :: ST
+        character(len=*),intent(in) :: caller
         call insist_allocated(ST%SF,caller//' ST(3)')
       end subroutine
 

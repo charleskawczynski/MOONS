@@ -14,9 +14,11 @@
       public :: assign_consecutive
       public :: add_diagonals
 
+      public :: assign_mixed
+
       public :: add_to_diag
       public :: multiply_diag
-      public :: assign_mixed
+      public :: add
       public :: multiply
 
       public :: insist_allocated
@@ -51,7 +53,10 @@
 
       interface add_to_diag;        module procedure add_to_diag_S3D;              end interface
       interface multiply_diag;      module procedure multiply_diag_S3D;            end interface
+
+      interface add;                module procedure add_S3D;                      end interface
       interface multiply;           module procedure multiply_S3D;                 end interface
+
 
       interface insist_allocated;   module procedure insist_allocated_S3D;         end interface
 
@@ -298,6 +303,19 @@
         call multiply(ST%D_3D,v)
       end subroutine
 
+      subroutine add_S3D(ST,v)
+        implicit none
+        type(stencil_3D),intent(inout) :: ST
+        real(cp),intent(in) :: v
+        integer :: i
+        do i=1,3; call add(ST%S(i),v); enddo
+        call add(ST%D_3D,v)
+        call add(ST%U1_U2,v)
+        call add(ST%D1_U2,v)
+        call add(ST%U1_D2,v)
+        call add(ST%D1_D2,v)
+      end subroutine
+
       subroutine multiply_S3D(ST,v)
         implicit none
         type(stencil_3D),intent(inout) :: ST
@@ -305,6 +323,10 @@
         integer :: i
         do i=1,3; call multiply(ST%S(i),v); enddo
         call multiply(ST%D_3D,v)
+        call multiply(ST%U1_U2,v)
+        call multiply(ST%D1_U2,v)
+        call multiply(ST%U1_D2,v)
+        call multiply(ST%D1_D2,v)
       end subroutine
 
       ! *********************************************************************
