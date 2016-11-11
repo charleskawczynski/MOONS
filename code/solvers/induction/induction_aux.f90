@@ -6,6 +6,8 @@
        use ops_embedExtract_mod
        use mesh_domain_mod
        use mesh_mod
+       use export_raw_processed_mod
+       use IO_VF_mod
        use norms_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -122,6 +124,7 @@
          real(cp) :: temp
          call init_CC(temp_VF,m,MD)
          call extractCC(temp_VF,field,MD)
+         call assign_ghost_XPeriodic(temp_VF,0.0_cp)
          call Ln(temp,temp_VF,2.0_cp,m,MD)
          temp = 0.5_cp*temp
          call delete(temp_VF)
@@ -131,10 +134,11 @@
        subroutine compute_Total_Energy(energy,field,time,m)
          implicit none
          type(probe),intent(inout) :: energy
-         type(VF),intent(in) :: field
+         type(VF),intent(inout) :: field
          real(cp),intent(in) :: time
          type(mesh),intent(in) :: m
          real(cp) :: temp
+         call assign_ghost_XPeriodic(field,0.0_cp) ! norms now includes ghost points
          call Ln(temp,field,2.0_cp,m)
          temp = 0.5_cp*temp
          call export(energy,time,temp)

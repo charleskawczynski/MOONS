@@ -8,6 +8,10 @@
        public :: iter_solver_params
        public :: init,delete,export,import,display,print
 
+       real(cp) :: i_smooth = 0.02_cp
+       real(cp) :: i_buffer = 0.8_cp
+       real(cp) :: i_scale = 0.5_cp
+
        public :: check_res
        public :: exit_loop
        public :: update_check_res
@@ -17,8 +21,12 @@
          integer :: iter_max = 1                    ! Maximum iterations for iterative solver
          real(cp) :: tol_rel = 10.0_cp**(-10.0_cp)  ! relative tolerance for iterative solver
          real(cp) :: tol_abs = 10.0_cp**(-10.0_cp)  ! absolute tolerance for iterative solver
-         real(cp) :: smooth = 0.1_cp                ! smoothes out tanh curve to determine n_skip_check_res
-         real(cp) :: buffer = 0.8_cp                ! percentage of iter_last to start checking more frequently
+
+         ! smoothes out tanh curve to determine n_skip_check_res
+         real(cp) :: smooth                         ! (must be > 0) higher -> more step-like
+
+         real(cp) :: buffer                         ! percentage of iter_last to start checking more frequently
+         real(cp) :: scale                          ! scale amplitude to allow decreasing predictions
          integer :: n_skip_check_res = 1            ! number of iterations to skip before checking residual
          integer :: n_skip_check_res_max = 1        ! number of iterations to skip before checking residual
          integer :: un = 0                          ! file unit
@@ -55,8 +63,9 @@
          ISP%tol_rel = tol_rel
          ISP%tol_abs = tol_abs
          ISP%iter_last = 1
-         ISP%smooth = 0.1_cp
-         ISP%buffer = 0.8_cp
+         ISP%smooth = i_smooth
+         ISP%buffer = i_buffer
+         ISP%scale = i_scale
          ISP%n_skip_check_res = n_skip_check_res
          ISP%n_skip_check_res_max = n_skip_check_res
          call init(ISP%dir,dir)
@@ -74,6 +83,7 @@
          ISP%n_skip_check_res_max = ISP_in%n_skip_check_res_max
          ISP%smooth = ISP_in%smooth
          ISP%buffer = ISP_in%buffer
+         ISP%scale = ISP_in%scale
          ISP%un = ISP_in%un
          ISP%iter_last = ISP_in%iter_last
          call init(ISP%dir,ISP_in%dir)
@@ -87,8 +97,9 @@
          ISP%n_skip_check_res_max = 1
          ISP%iter_max = 1
          ISP%iter_last = 1
-         ISP%smooth = 0.1_cp
-         ISP%buffer = 0.8_cp
+         ISP%smooth = i_smooth
+         ISP%buffer = i_buffer
+         ISP%scale = i_scale
          ISP%tol_rel = 0.1_cp
          ISP%tol_abs = 10.0_cp**(-10.0_cp)
          call delete(ISP%dir)
@@ -108,6 +119,7 @@
          write(un,*) 'n_skip_check_res_max = '; write(un,*) ISP%n_skip_check_res_max
          write(un,*) 'smooth = ';               write(un,*) ISP%smooth
          write(un,*) 'buffer = ';               write(un,*) ISP%buffer
+         write(un,*) 'scale = ';                write(un,*) ISP%scale
          close(un)
        end subroutine
 
@@ -124,6 +136,7 @@
          read(un,*); read(un,*) ISP%n_skip_check_res_max
          read(un,*); read(un,*) ISP%smooth
          read(un,*); read(un,*) ISP%buffer
+         read(un,*); read(un,*) ISP%scale
          close(un)
        end subroutine
 
@@ -139,6 +152,7 @@
          write(un,*) 'n_skip_check_res_max = ',ISP%n_skip_check_res_max
          write(un,*) 'smooth = ',ISP%smooth
          write(un,*) 'buffer = ',ISP%buffer
+         write(un,*) 'scale = ',ISP%scale
        end subroutine
 
        subroutine print_ISP(ISP)
@@ -159,10 +173,18 @@
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
          integer,intent(in) :: iter
-         real(cp) :: n_skip_check
-         n_skip_check = (1.0_cp-tanh((real(iter,cp)-real(ISP%iter_last,cp)*ISP%iter_last))*ISP%smooth)
-         n_skip_check = 0.5_cp*n_skip_check*real(ISP%n_skip_check_res_max,cp)
-         ISP%n_skip_check_res = maxval((/1,abs(floor(n_skip_check))/))
+         real(cp) :: n_skip_check,theta,f,amplitude
+         theta = real(iter,cp) - real(ISP%iter_last,cp)*ISP%buffer
+         ! f is a down-ramp from 1 to zero with a shift (buffer) and slope (smoooth)
+         f = 0.5_cp*(1.0_cp-tanh(theta*ISP%smooth))
+         ! Modify amplitude, within bounds, based off last number of iterations
+         ! Also, the amplitude should be a fraction of the previous step, so
+         ! that the number of iterations can decrease.
+         amplitude = ISP%scale*minval((/real(ISP%n_skip_check_res_max,cp),real(ISP%iter_last,cp)/))
+         ! n_skip_check is a down-ramp from amplitude to 1
+         n_skip_check = 1.0_cp + f*(amplitude-1.0_cp)
+         ! Final result must be > 0
+         ISP%n_skip_check_res = maxval((/1,ceiling(n_skip_check)/))
        end subroutine
 
        subroutine update_last_iter_ISP(ISP,iter)

@@ -255,8 +255,8 @@
 
          write(*,*) '     About to assemble curl-curl matrix'
          ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
-         diffusion_treatment = (/-ind%MFP_B%c_ind,1.0_cp/)    ! diffusion explicit
-         ! diffusion_treatment = (/ind%MFP_B%c_ind,1.0_cp/)     ! diffusion implicit
+         ! diffusion_treatment = (/-ind%MFP_B%c_ind,1.0_cp/)    ! diffusion explicit
+         diffusion_treatment = (/ind%MFP_B%c_ind,1.0_cp/)     ! diffusion implicit
          call init_curl_curl(ind%m,ind%sigmaInv_edge)
          call init_Laplacian_SF(ind%m)
          call multiply_curl_curl(ind%m,diffusion_treatment(1))

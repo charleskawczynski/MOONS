@@ -55,8 +55,8 @@
          integer,dimension(3),intent(in) :: A1,A2,B1,B2
 #ifdef _PARALLELIZE_EMBEDEXTRACT_
          integer :: i,j,k
-         integer,dimension(3) :: suppress_warning
-         suppress_warning = B2 ! B2 is not needed for parallel computations
+         integer :: suppress_warning
+         suppress_warning = B2(1) ! B2 is not needed for parallel computations
          !$OMP PARALLEL DO
          do k=A1(3),A2(3);do j=A1(2),A2(2);do i=A1(1),A2(1)
          A%f(i,j,k) = B%f(B1(1)+(i-A1(1)),B1(2)+(j-A1(2)),B1(3)+(k-A1(3)))

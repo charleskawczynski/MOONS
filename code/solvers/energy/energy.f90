@@ -297,6 +297,7 @@
          implicit none
          type(energy),intent(inout) :: nrg
          real(cp) :: temp
+         call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
          call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP%t,temp)
        end subroutine
 

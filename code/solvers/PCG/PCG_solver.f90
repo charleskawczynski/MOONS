@@ -12,6 +12,7 @@
       use VF_mod
       use ops_norms_mod
       use IO_tools_mod
+      use IO_VF_mod
 
       use iter_solver_params_mod
       use matrix_free_params_mod
@@ -119,7 +120,7 @@
             if (x%all_Neumann) call subtract_physical_mean(r)
             call subtract(r,Ax)
             call assign_wall_Dirichlet(r,0.0_cp,x) ! Does nothing in PPE
-            call assign_ghost_N_XPeriodic(r,0.0_cp,x)
+            call assign_ghost_XPeriodic(r,0.0_cp,x)
             call compute(res_norm,r); call print(res_norm,'PCG_SF Residuals for '//name)
             call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
             write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max
@@ -199,6 +200,7 @@
               res_norm_L2 = dot_product(r,r,m,x,tempx)
               if (exit_loop(ISP,sqrt(res_norm_L2),res_norm0%L2)) then; i_earlyExit=1; exit; endif
             endif
+            call update_check_res(ISP,i)
 
 #ifdef _EXPORT_PCG_VF_CONVERGENCE_
             call compute(res_norm,r)
@@ -214,7 +216,7 @@
         call update_last_iter(ISP,i)
 
         call check_nans(res_norm_L2,res_norm0,name//' PCG_VF res_norm_L2')
-        
+
         if (compute_norms) then
           if (.not.skip_loop) then
             call operator_explicit(Ax,x,k,m,MFP,tempk)
@@ -223,7 +225,7 @@
             ! if (x%all_Neumann) call subtract_physical_mean(r)
             call subtract(r,Ax)
             call assign_wall_Dirichlet(r,0.0_cp,x)
-            call assign_ghost_N_XPeriodic(r,0.0_cp,x)
+            call assign_ghost_XPeriodic(r,0.0_cp,x)
             call compute(res_norm,r); call print(res_norm,'PCG_VF Residuals for '//name)
             call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
             write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max

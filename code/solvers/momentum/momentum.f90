@@ -414,6 +414,7 @@
            call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,mom%temp_CC)
            call export(mom%probe_KE_2C,mom%TMP%t,temp)
          endif
+         call assign_ghost_XPeriodic(mom%divU,0.0_cp)
          call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP%t,temp)
        end subroutine
 

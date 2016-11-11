@@ -80,12 +80,14 @@
          real(cp),intent(in) :: t,d
          p%t = t; p%d = d
          if (p%d.gt.p%infinity) then
-         write(*,*) 'Error: data>infinity in probe: ',str(p%name)
-         stop 'Divergence error. Sorry!'
+           write(*,*) 'Error: data>infinity in probe: ',str(p%name)
+           write(*,*) 'data = ',p%d
+           stop 'Divergence error. Sorry!'
          endif
          if (is_nan(p%d)) then
-         write(*,*) 'Error: NaN in data in probe: ',str(p%name)
-         stop 'Divergence error. Sorry!'
+           write(*,*) 'Error: NaN in data in probe: ',str(p%name)
+           write(*,*) 'data = ',p%d
+           stop 'Divergence error. Sorry!'
          endif
          write(p%un,*) p%t,p%d
          flush(p%un)

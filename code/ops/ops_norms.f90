@@ -82,10 +82,10 @@
          type(mesh),intent(in) :: m
          real(cp) :: temp
          integer :: t
+         e = 0.0_cp
 #ifdef _DEBUG_OPS_NORMS_
          if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_TF in ops_norms.f90.f90'
 #endif
-         e = 0.0_cp
          do t=1,m%s
            call Ln(temp,u%x%x%BF(t)%GF,&
                         u%x%y%BF(t)%GF,&
@@ -174,9 +174,9 @@
          real(cp),intent(in) :: n
          real(cp) :: temp
          integer :: t
+         e = 0.0_cp
          if (u%is_CC.or.u%is_Node) then; call Ln(e,u,n,vol%x)
          else
-           e = 0.0_cp
            do t=1,u%x%s
              call Ln(temp,u%x%BF(t)%GF,n,vol%x%BF(t)%GF,'Ln_vol_VF'); e = e + temp
              call Ln(temp,u%y%BF(t)%GF,n,vol%y%BF(t)%GF,'Ln_vol_VF'); e = e + temp
@@ -206,8 +206,8 @@
          real(cp),intent(in) :: n
          real(cp) :: temp
          integer :: t
+         e = 0.0_cp
          if (u%is_CC.or.u%is_Node) then
-           e = 0.0_cp
            do t=1,u%x%s
              call Ln(temp,u%x%BF(t)%GF,u%y%BF(t)%GF,u%z%BF(t)%GF,n); e = e + temp
            enddo

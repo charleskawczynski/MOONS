@@ -52,7 +52,6 @@
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
          do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
-
            call tic(sc)
            call update(PE,coupled%n_step)
 

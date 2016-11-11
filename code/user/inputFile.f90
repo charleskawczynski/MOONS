@@ -26,17 +26,17 @@
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
          ! Re         = 1000.0_cp
-         Re         = 100.0_cp
-         Ha         = 10.0_cp
+         Re         = 400.0_cp
+         Ha         = 100.0_cp
          Rem        = 1.0_cp
          tw         = 0.5_cp
 
-         include_vacuum = .false.
-         finite_Rem = .false.
-         sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
+         include_vacuum = .true.
+         finite_Rem = .true.
+         ! sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-2.0_cp) ! sigma* = sigma_wall/sigma_l
-         ! sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
+         sig_local_over_sig_f = 10.0_cp**(-3.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-4.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-5.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-6.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -47,16 +47,16 @@
          Ec         = 0.0_cp
 
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
-         call init(ISP_B  ,   5  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
+         call init(ISP_B  , 10000, 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
          call init(ISP_U  ,  40  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
          call init(ISP_p  ,   5  , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
          call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
 
          ! BMC 102
-         time  = 30.0_cp
+         time  = 10.0_cp
          ! time  = 100.0_cp
-         dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
+         dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
          ! dtime = 3.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
 
          ! time  = 100.0_cp
@@ -70,7 +70,7 @@
          call init(coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
          ! call init(coupled,1000000000,dtime,str(DT%TMP), 'TMP_coupled')
 
-         call init(TMP_B, coupled%n_step_stop, coupled%dt/100.0_cp, str(DT%TMP), 'TMP_B')
+         call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
          call init(TMP_U, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_U')
          call init(TMP_T, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_T')
 
