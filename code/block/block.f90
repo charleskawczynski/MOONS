@@ -9,6 +9,9 @@
        use data_location_mod
        use IO_tools_mod
        use GF_diagonals_mod
+       use block_stencil_mod
+       use block_Laplacian_stencil_mod
+       use block_curl_curl_stencil_mod
        implicit none
 
        private
@@ -16,8 +19,13 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: init_FEC
+
        public :: init_curl_curl
-       public :: init_Laplacian
+       public :: modify_curl_curl
+       public :: init_Laplacian_VF
+       public :: init_Laplacian_SF
+       public :: modify_Laplacian_VF
+       public :: modify_Laplacian_SF
 
        type block
          type(grid) :: g                                  ! Bulk
@@ -30,6 +38,7 @@
          type(stencil_3D),dimension(3) :: curl_curlY   ! Y component data
          type(stencil_3D),dimension(3) :: curl_curlZ   ! Z component data
          type(stencil_3D),dimension(3) :: lap_VF
+         type(stencil_3D) :: lap_SF
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -43,16 +52,20 @@
        interface import;             module procedure import_block_wrapper;     end interface
 
        interface init_FEC;           module procedure init_FEC_block;           end interface
+
        interface init_curl_curl;     module procedure init_curl_curl_SB;        end interface
        interface init_curl_curl;     module procedure init_curl_curl_SB_VP;     end interface
-       interface init_Laplacian;     module procedure init_Laplacian_SB;        end interface
-       interface init_Laplacian;     module procedure init_Laplacian_SB_VP;     end interface
+       interface modify_curl_curl;   module procedure modify_curl_curl_SB;      end interface
+
+       interface init_Laplacian_VF;  module procedure init_Laplacian_SB_VF;     end interface
+       interface init_Laplacian_VF;  module procedure init_Laplacian_SB_VF_VP;  end interface
+       interface modify_Laplacian_VF;module procedure modify_Laplacian_SB_VF;   end interface
+
+       interface init_Laplacian_SF;  module procedure init_Laplacian_SB_SF;     end interface
+       interface init_Laplacian_SF;  module procedure init_Laplacian_SB_SF_VP;  end interface
+       interface modify_Laplacian_SF;module procedure modify_Laplacian_SB_SF;   end interface
 
        contains
-
-       ! **********************************************************
-       ! ********************* ESSENTIALS *************************
-       ! **********************************************************
 
        subroutine init_block(B,g)
          implicit none
@@ -63,116 +76,6 @@
          call init_vol_block(B)
        end subroutine
 
-       subroutine init_curl_curl_SB(B)
-         implicit none
-         type(block),intent(inout) :: B
-         integer :: i
-         do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(1)); enddo
-         do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(2)); enddo
-         do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(3)); enddo
-
-         ! Term-component = result-component:
-         call assign_consecutive(B%curl_curlX(1)%S(2))
-         call assign_consecutive(B%curl_curlX(1)%S(3))
-         call multiply(B%curl_curlX(1),-1.0_cp)
-         call add_diagonals(B%curl_curlX(1))
-         call assign_consecutive(B%curl_curlY(2)%S(1))
-         call assign_consecutive(B%curl_curlY(2)%S(3))
-         call multiply(B%curl_curlY(2),-1.0_cp)
-         call add_diagonals(B%curl_curlY(2))
-         call assign_consecutive(B%curl_curlZ(3)%S(1))
-         call assign_consecutive(B%curl_curlZ(3)%S(2))
-         call multiply(B%curl_curlZ(3),-1.0_cp)
-         call add_diagonals(B%curl_curlZ(3))
-
-         ! X-component result:
-         call assign_mixed(B%curl_curlY(1),(/1,2/))
-         call assign_mixed(B%curl_curlZ(1),(/1,3/))
-         ! Y-component result:
-         call assign_mixed(B%curl_curlX(2),(/2,1/))
-         call assign_mixed(B%curl_curlZ(2),(/2,3/))
-         ! Z-component result:
-         call assign_mixed(B%curl_curlX(3),(/3,1/))
-         call assign_mixed(B%curl_curlY(3),(/3,2/))
-
-         ! Deallocate unecessary data for run-time:
-         call clean(B%curl_curlX(1))
-         call clean(B%curl_curlY(2))
-         call clean(B%curl_curlZ(3))
-       end subroutine
-
-       subroutine init_curl_curl_SB_VP(B,sig)
-         implicit none
-         type(block),intent(inout) :: B
-         type(grid_field),dimension(3),intent(in) :: sig
-         integer :: i
-         do i=1,3; call init(B%curl_curlX(i),B%g,DL_Face(i)); enddo
-         do i=1,3; call init(B%curl_curlY(i),B%g,DL_Face(i)); enddo
-         do i=1,3; call init(B%curl_curlZ(i),B%g,DL_Face(i)); enddo
-         ! Term-component = result-component:
-         call assign_consecutive(B%curl_curlX(1)%S(2),sig)
-         call assign_consecutive(B%curl_curlX(1)%S(3),sig)
-         call multiply(B%curl_curlX(1),-1.0_cp)
-         call add_diagonals(B%curl_curlX(1))
-         call assign_consecutive(B%curl_curlY(2)%S(1),sig)
-         call assign_consecutive(B%curl_curlY(2)%S(3),sig)
-         call multiply(B%curl_curlY(2),-1.0_cp)
-         call add_diagonals(B%curl_curlY(2))
-         call assign_consecutive(B%curl_curlZ(3)%S(1),sig)
-         call assign_consecutive(B%curl_curlZ(3)%S(2),sig)
-         call multiply(B%curl_curlZ(3),-1.0_cp)
-         call add_diagonals(B%curl_curlZ(3))
-
-         ! X-component result:
-         call assign_mixed(B%curl_curlY(1),(/1,2/),sig)
-         call assign_mixed(B%curl_curlZ(1),(/1,3/),sig)
-         ! Y-component result:
-         call assign_mixed(B%curl_curlX(2),(/2,1/),sig)
-         call assign_mixed(B%curl_curlZ(2),(/2,3/),sig)
-         ! Z-component result:
-         call assign_mixed(B%curl_curlX(3),(/3,1/),sig)
-         call assign_mixed(B%curl_curlY(3),(/3,2/),sig)
-
-         ! Deallocate unecessary data for run-time:
-         call clean(B%curl_curlX(1))
-         call clean(B%curl_curlY(2))
-         call clean(B%curl_curlZ(3))
-       end subroutine
-
-       subroutine init_Laplacian_SB(B)
-         implicit none
-         type(block),intent(inout) :: B
-         call init(B%lap_VF(1),B%g,DL_Face(1))
-         call init(B%lap_VF(2),B%g,DL_Face(2))
-         call init(B%lap_VF(3),B%g,DL_Face(3))
-         call assign_consecutive(B%lap_VF(1))
-         call assign_consecutive(B%lap_VF(2))
-         call assign_consecutive(B%lap_VF(3))
-         call add_diagonals(B%lap_VF(1))
-         call add_diagonals(B%lap_VF(2))
-         call add_diagonals(B%lap_VF(3))
-         call clean(B%lap_VF(1))
-         call clean(B%lap_VF(2))
-         call clean(B%lap_VF(3))
-       end subroutine
-
-       subroutine init_Laplacian_SB_VP(B,sig)
-         implicit none
-         type(block),intent(inout) :: B
-         type(grid_field),dimension(3),intent(in) :: sig
-         call init(B%lap_VF(1),B%g,DL_Face(1))
-         call init(B%lap_VF(2),B%g,DL_Face(2))
-         call init(B%lap_VF(3),B%g,DL_Face(3))
-         call assign_consecutive(B%lap_VF(1),sig)
-         call assign_consecutive(B%lap_VF(2),sig)
-         call assign_consecutive(B%lap_VF(3),sig)
-         call add_diagonals(B%lap_VF(1))
-         call add_diagonals(B%lap_VF(2))
-         call add_diagonals(B%lap_VF(3))
-         call clean(B%lap_VF(1))
-         call clean(B%lap_VF(2))
-         call clean(B%lap_VF(3))
-       end subroutine
 
        subroutine init_vol_block(B)
          implicit none
@@ -220,6 +123,7 @@
          integer :: i
          call delete(B)
          call init(B%g,B_in%g)
+         call init(B%lap_SF,B_in%lap_SF)
          do i=1,3; call init(B%lap_VF(i),B_in%lap_VF(i)); enddo
          do i=1,3; call init(B%curl_curlX(i),B_in%curl_curlX(i)); enddo
          do i=1,3; call init(B%curl_curlY(i),B_in%curl_curlY(i)); enddo
@@ -251,6 +155,7 @@
            do i=1,8; call delete(B%vol(i)); enddo
            deallocate(B%vol)
          endif
+         call delete(B%lap_SF)
          do i=1,3; call delete(B%lap_VF(i)); enddo
          do i=1,3; call delete(B%curl_curlX(i)); enddo
          do i=1,3; call delete(B%curl_curlY(i)); enddo
@@ -361,6 +266,76 @@
          un = open_to_read(dir,name)
          call import(B,un)
          call close_and_message(un,dir,name)
+       end subroutine
+
+       ! **********************************************************
+       ! ********************* LAPLACIAN **************************
+       ! **********************************************************
+
+       subroutine init_Laplacian_SB_SF(B)
+         implicit none
+         type(block),intent(inout) :: B
+         call init_Laplacian(B%lap_SF,B%g)
+       end subroutine
+
+       subroutine init_Laplacian_SB_SF_VP(B,sig)
+         implicit none
+         type(block),intent(inout) :: B
+         type(grid_field),dimension(3),intent(in) :: sig
+         call init_Laplacian(B%lap_SF,B%g,sig)
+       end subroutine
+
+       subroutine modify_Laplacian_SB_SF(B,multiply_by,add_to)
+         implicit none
+         type(block),intent(inout) :: B
+         real(cp),intent(in) :: multiply_by,add_to
+         call modify(B%lap_SF,multiply_by,add_to)
+       end subroutine
+
+       subroutine init_Laplacian_SB_VF(B)
+         implicit none
+         type(block),intent(inout) :: B
+         call init_Laplacian(B%lap_VF,B%g)
+       end subroutine
+
+       subroutine init_Laplacian_SB_VF_VP(B,sig)
+         implicit none
+         type(block),intent(inout) :: B
+         type(grid_field),dimension(3),intent(in) :: sig
+         call init_Laplacian(B%lap_VF,B%g,sig)
+       end subroutine
+
+       subroutine modify_Laplacian_SB_VF(B,multiply_by,add_to)
+         implicit none
+         type(block),intent(inout) :: B
+         real(cp),intent(in) :: multiply_by,add_to
+         call modify(B%lap_VF,multiply_by,add_to)
+       end subroutine
+
+       ! **********************************************************
+       ! ********************* CURL-CURL **************************
+       ! **********************************************************
+
+       subroutine init_curl_curl_SB(B)
+         implicit none
+         type(block),intent(inout) :: B
+         call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g)
+       end subroutine
+
+       subroutine init_curl_curl_SB_VP(B,sig)
+         implicit none
+         type(block),intent(inout) :: B
+         type(grid_field),dimension(3),intent(in) :: sig
+         call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g,sig)
+       end subroutine
+
+       subroutine modify_curl_curl_SB(B,multiply_by,add_to)
+         implicit none
+         type(block),intent(inout) :: B
+         real(cp),intent(in) :: multiply_by,add_to
+         call modify(B%curl_curlX(1),multiply_by,add_to)
+         call modify(B%curl_curlY(2),multiply_by,add_to)
+         call modify(B%curl_curlZ(3),multiply_by,add_to)
        end subroutine
 
        end module

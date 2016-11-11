@@ -69,8 +69,8 @@
         ! public :: sum
         public :: assignX,assignY,assignZ
 
-        public :: laplacian_test_VF_VF
-        public :: curl_curl_test_VF_VF
+        public :: laplacian_matrix_based
+        public :: curl_curl_matrix_based
 
         type VF
           ! integer :: s = 3  ! number of components
@@ -134,6 +134,9 @@
         interface dot;               module procedure dot_VF_SF;                end interface
 
         interface cross_product;     module procedure cross_product_VF;         end interface
+
+        interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_VF;  end interface
+        interface Laplacian_matrix_based;  module procedure Laplacian_matrix_based_VF;  end interface
 
         interface print_BCs;         module procedure print_BCs_VF;             end interface
         interface init_BCs;          module procedure init_BCs_VF_VF;           end interface
@@ -371,20 +374,20 @@
           call random_noise(u%x); call random_noise(u%y); call random_noise(u%z)
         end subroutine
 
-        subroutine laplacian_test_VF_VF(lapU,U,m)
+        subroutine laplacian_matrix_based_VF(lapU,U,m)
           implicit none
           type(VF),intent(inout) :: lapU
           type(VF),intent(in) :: U
           type(mesh),intent(in) :: m
-          call laplacian_test_SF_VF(lapU%x,lapU%y,lapU%z,U%x,U%y,U%z,m)
+          call laplacian_matrix_based(lapU%x,lapU%y,lapU%z,U%x,U%y,U%z,m)
         end subroutine
 
-        subroutine curl_curl_test_VF_VF(curl_curlU,U,m)
+        subroutine curl_curl_matrix_based_VF(curl_curlU,U,m)
           implicit none
           type(VF),intent(inout) :: curl_curlU
           type(VF),intent(in) :: U
           type(mesh),intent(in) :: m
-          call curl_curl_test_SF_VF(curl_curlU%x,curl_curlU%y,curl_curlU%z,U%x,U%y,U%z,m)
+          call curl_curl_matrix_based(curl_curlU%x,curl_curlU%y,curl_curlU%z,U%x,U%y,U%z,m)
         end subroutine
 
         subroutine multiply_volume_VF(u,m)

@@ -14,6 +14,7 @@
        use path_mod
        use dir_tree_mod
 
+       use mesh_stencils_mod
        use momentum_solver_mod
        use momentum_aux_mod
        use init_PBCs_mod
@@ -130,6 +131,7 @@
          real(cp),intent(in) :: Re,Ha,Gr,Fr
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
+         real(cp),dimension(2) :: diffusion_treatment
          type(SF) :: prec_PPE,vol_CC
          type(VF) :: prec_mom
          write(*,*) 'Initializing momentum:'
@@ -202,6 +204,17 @@
          call apply_BCs(mom%U,m)
          write(*,*) '     U BCs applied'
 
+         mom%MFP%c_mom = -0.5_cp*mom%TMP%dt/mom%Re
+
+         write(*,*) '     about to assemble Laplacian matrices'
+         call init_Laplacian_SF(mom%m) ! Must come before PPE solver init
+         call init_Laplacian_VF(mom%m) ! for lap(U) in momentum
+         ! diffusion_treatment = (/-mom%TMP%dt/mom%Re,1.0_cp/) ! diffusion explicit
+         ! diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
+         ! diffusion_treatment = (/1.0_cp/mom%Re,0.0_cp/)    ! diffusion explicit
+         diffusion_treatment = (/1.0_cp,0.0_cp/)             ! no treatment (requires multiplication by dt/Re)
+         call modify_Laplacian_VF(mom%m,diffusion_treatment(1),diffusion_treatment(2))
+
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
@@ -215,7 +228,6 @@
          call init(mom%GS_p,mom%p,mom%m,mom%ISP_P,str(DT%U_r),'p')
          write(*,*) '     GS solver initialized for p'
 
-         mom%MFP%c_mom = -0.5_cp*mom%TMP%dt/mom%Re
 
          call init(prec_mom,mom%U)
          call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)

@@ -15,8 +15,8 @@
       public :: add_diagonals
 
       public :: add_to_diag
-      public :: assign_mixed
       public :: multiply_diag
+      public :: assign_mixed
       public :: multiply
 
       public :: insist_allocated

@@ -57,8 +57,8 @@
         public :: cross_product_y
         public :: cross_product_z
 
-        public :: laplacian_test_BF_VF
-        public :: curl_curl_test_BF_VF
+        public :: laplacian_matrix_based
+        public :: curl_curl_matrix_based
 
         type block_field
           type(grid_field) :: GF ! bulk
@@ -124,6 +124,10 @@
        interface symmetry_local_x;         module procedure symmetry_local_x_BF;          end interface
        interface symmetry_local_y;         module procedure symmetry_local_y_BF;          end interface
        interface symmetry_local_z;         module procedure symmetry_local_z_BF;          end interface
+
+       interface laplacian_matrix_based;   module procedure laplacian_matrix_based_VF_BF; end interface
+       interface laplacian_matrix_based;   module procedure laplacian_matrix_based_SF_BF; end interface
+       interface curl_curl_matrix_based;   module procedure curl_curl_matrix_based_BF;    end interface
 
        contains
 
@@ -703,7 +707,7 @@
          call symmetry_local_z(u%GF)
        end subroutine
 
-       subroutine laplacian_test_BF_VF(lapX,lapY,lapZ,X,Y,Z,B)
+       subroutine laplacian_matrix_based_VF_BF(lapX,lapY,lapZ,X,Y,Z,B)
          implicit none
          type(block_field),intent(inout) :: lapX,lapY,lapZ
          type(block_field),intent(in) :: X,Y,Z
@@ -713,7 +717,24 @@
          call laplacian(lapZ%GF,Z%GF,B%lap_VF(3)%S(1:3)%SF%L,B%lap_VF(3)%D_3D,B%lap_VF(3)%S(1:3)%SF%U)
        end subroutine
 
-       subroutine curl_curl_test_BF_VF(CX,CY,CZ,X,Y,Z,B)
+       ! subroutine modify_BS_VF(VF,multiply_by,then_add_to)
+       !   implicit none
+       !   type(stencil_3D),dimension(3),intent(inout) :: VF
+       !   real(cp),intent(in) :: multiply_by,then_add_to
+       !   integer :: i
+       !   do i=1,3; call multiply_diag(B%lap_VF(i),dt/Re); enddo
+       !   do i=1,3; call add_to_diag(VF(i),then_add_to); enddo
+       ! end subroutine
+
+       subroutine laplacian_matrix_based_SF_BF(lap,U,B)
+         implicit none
+         type(block_field),intent(inout) :: lap
+         type(block_field),intent(in) :: U
+         type(block),intent(in) :: B
+         call laplacian(lap%GF,U%GF,B%lap_SF%S(1:3)%SF%L,B%lap_SF%D_3D,B%lap_SF%S(1:3)%SF%U)
+       end subroutine
+
+       subroutine curl_curl_matrix_based_BF(CX,CY,CZ,X,Y,Z,B)
          implicit none
          type(block_field),intent(inout) :: CX,CY,CZ
          type(block_field),intent(in) :: X,Y,Z

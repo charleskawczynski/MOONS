@@ -186,7 +186,7 @@
          integer :: i
          do i=1,N_induction
            call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
-           call curl_curl_test_VF_VF(temp_F2,B,m)
+           call curl_curl_matrix_based(temp_F2,B,m)
            call subtract(temp_F1,temp_F2)
            call multiply(temp_F1,dt)
            call add(B,temp_F1)

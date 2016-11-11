@@ -16,6 +16,7 @@
        use print_export_mod
        use export_now_mod
 
+       use mesh_stencils_mod
        use init_BBCs_mod
        use init_phiBCs_mod
        use init_Bfield_mod
@@ -133,6 +134,7 @@
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: Rem,sig_local_over_sig_f
          type(dir_tree),intent(in) :: DT
+         real(cp),dimension(2) :: diffusion_treatment
          integer :: temp_unit
          type(SF) :: sigma,prec_cleanB,vol_CC
          type(VF) :: prec_induction,sigma_temp_E,sigma_temp_F
@@ -219,6 +221,7 @@
          if (ind%SP%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
          write(*,*) '     Interface treated'
+
          ! *************************************************************
 
          call compute_J_ind(ind)
@@ -245,6 +248,12 @@
          temp_unit = new_and_open(str(DT%params),'info_ind')
          call display(ind,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_ind')
+
+         write(*,*) '     About to assemble curl-curl matrix'
+         diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
+         call init_curl_curl(ind%m,ind%sigmaInv_edge)
+         call init_Laplacian_SF(ind%m)
+         ! call modify_curl_curl(ind%m,diffusion_treatment(1),diffusion_treatment(2))
 
          if (finite_Rem) then; ind%MFP_B%c_ind = ind%TMP%dt/ind%Rem
          else;                 ind%MFP_B%c_ind = ind%TMP%dt

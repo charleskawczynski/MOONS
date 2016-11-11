@@ -48,8 +48,8 @@
         public :: cross_product_y
         public :: cross_product_z
 
-        public :: laplacian_test_SF_VF
-        public :: curl_curl_test_SF_VF
+        public :: laplacian_matrix_based
+        public :: curl_curl_matrix_based
 
         ! Monitoring
         public :: print_BCs
@@ -126,6 +126,10 @@
         interface cosine_waves;        module procedure cosine_waves_SF;        end interface
         interface random_noise;        module procedure random_noise_SF;        end interface
         interface random_noise;        module procedure random_noise_SF_dir;    end interface
+
+        interface laplacian_matrix_based; module procedure laplacian_matrix_based_SF_SF; end interface
+        interface laplacian_matrix_based; module procedure laplacian_matrix_based_VF_SF; end interface
+        interface curl_curl_matrix_based; module procedure curl_curl_matrix_based_SF;    end interface
 
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF; end interface
         interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_SF2;end interface
@@ -689,26 +693,35 @@
           do i=1,u%s; call random_noise(u%BF(i),dir); enddo
         end subroutine
 
-        subroutine laplacian_test_SF_VF(lapX,lapY,lapZ,X,Y,Z,m)
+        subroutine laplacian_matrix_based_SF_SF(lapU,U,m)
+          implicit none
+          type(SF),intent(inout) :: lapU
+          type(SF),intent(in) :: U
+          type(mesh),intent(in) :: m
+          integer :: i
+          do i=1,m%s; call laplacian_matrix_based(lapU%BF(i),U%BF(i),m%B(i)); enddo
+        end subroutine
+
+        subroutine laplacian_matrix_based_VF_SF(lapX,lapY,lapZ,X,Y,Z,m)
           implicit none
           type(SF),intent(inout) :: lapX,lapY,lapZ
           type(SF),intent(in) :: X,Y,Z
           type(mesh),intent(in) :: m
           integer :: i
-          do i=1,m%s; call laplacian_test_BF_VF(lapX%BF(i),lapY%BF(i),lapZ%BF(i),&
-                                                X%BF(i),Y%BF(i),Z%BF(i),&
-                                                m%B(i)); enddo
+          do i=1,m%s; call laplacian_matrix_based(lapX%BF(i),lapY%BF(i),lapZ%BF(i),&
+                                                  X%BF(i),Y%BF(i),Z%BF(i),&
+                                                  m%B(i)); enddo
         end subroutine
 
-        subroutine curl_curl_test_SF_VF(CX,CY,CZ,X,Y,Z,m)
+        subroutine curl_curl_matrix_based_SF(CX,CY,CZ,X,Y,Z,m)
           implicit none
           type(SF),intent(inout) :: CX,CY,CZ
           type(SF),intent(in) :: X,Y,Z
           type(mesh),intent(in) :: m
           integer :: i
-          do i=1,m%s; call curl_curl_test_BF_VF(CX%BF(i),CY%BF(i),CZ%BF(i),&
-                                                X%BF(i),Y%BF(i),Z%BF(i),&
-                                                m%B(i)); enddo
+          do i=1,m%s; call curl_curl_matrix_based(CX%BF(i),CY%BF(i),CZ%BF(i),&
+                                                  X%BF(i),Y%BF(i),Z%BF(i),&
+                                                  m%B(i)); enddo
         end subroutine
 
         subroutine assign_ghost_XPeriodic_SF(u,val)

@@ -89,8 +89,7 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
-        call grad(tempk,x,m)
-        call div(Ax,tempk,m)
+        call laplacian_matrix_based(Ax,x,m)
       end subroutine
       subroutine Lap_uniform_SF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -105,8 +104,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         call apply_BCs_implicit(x,m)
-        call grad(tempk,x,m)
-        call div(Ax,tempk,m)
+        call laplacian_matrix_based(Ax,x,m)
       end subroutine
 
       subroutine Lap_uniform_VF_explicit(Ax,x,k,m,MFP,tempk)
@@ -122,7 +120,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call laplacian_test_VF_VF(Ax,x,m)
+        call laplacian_matrix_based(Ax,x,m)
         ! call lap(Ax,x,m)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
@@ -139,7 +137,7 @@
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_test_VF_VF(Ax,x,m)
+        call laplacian_matrix_based(Ax,x,m)
         ! call lap(Ax,x,m)
       end subroutine
 
@@ -154,9 +152,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call laplacian_matrix_based(Ax,x,m)
       end subroutine
       subroutine Lap_nonuniform_props(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -170,9 +166,7 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         call apply_BCs_implicit(x,m)
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call laplacian_matrix_based(Ax,x,m)
       end subroutine
 
       subroutine ind_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -184,7 +178,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call curl_curl_test_VF_VF(Ax,x,m)
+        call curl_curl_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
       end subroutine
@@ -198,7 +192,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x,m)
-        call curl_curl_test_VF_VF(Ax,x,m)
+        call curl_curl_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%c_ind)
         call add(Ax,x)
       end subroutine
@@ -212,9 +206,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call laplacian_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%c_nrg)
         call add(Ax,x)
       end subroutine
@@ -228,9 +220,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x,m)
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call laplacian_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%c_nrg)
         call add(Ax,x)
       end subroutine
@@ -247,7 +237,7 @@
         logical :: suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call laplacian_test_VF_VF(Ax,x,m)
+        call laplacian_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
       end subroutine
@@ -264,7 +254,7 @@
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_test_VF_VF(Ax,x,m)
+        call laplacian_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%c_mom)
         call add(Ax,x)
       end subroutine
