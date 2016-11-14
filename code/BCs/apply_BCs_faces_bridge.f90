@@ -12,15 +12,23 @@
        !       call apply_Periodic_C(ug,ui_opp,x,y,p)
        !       call apply_Periodic_N(ug,ui_opp,x,y,p)
        !       call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
+       !       call apply_Symmetric_C(ug,ui,x,y,p)
+       !       call apply_Symmetric_N(ug,ui,x,y,p)
+       !       call apply_antisymmetric_C(ug,ui,x,y,p)
+       !       call apply_antisymmetric_N(ug,ui,x,y,p)
 
        ! From here:
-       !       call Dirichlet_C(BF,i_sd)
-       !       call Dirichlet_N(BF,i_sd)
-       !       call Neumann_C(BF,B,i_sd)
-       !       call Neumann_N(BF,B,i_sd)
-       !       call Periodic_C(BF,i_sd)
-       !       call Periodic_N(BF,i_sd)
-       !       call Robin_C(BF,B,i_sd)
+       !       call Dirichlet_C(GF,surf,FSD,face)
+       !       call Dirichlet_N(GF,surf,FSD,face)
+       !       call Neumann_C(GF,surf,FSD,face)
+       !       call Neumann_N(GF,surf,FSD,face)
+       !       call Periodic_C(GF,surf,FSD,face)
+       !       call Periodic_N(GF,surf,FSD,face)
+       !       call Robin_C(GF,surf,FSD,face)
+       !       call apply_Symmetric_C(GF,surf,FSD,face)
+       !       call apply_Symmetric_N(GF,surf,FSD,face)
+       !       call apply_antisymmetric_C(GF,surf,FSD,face)
+       !       call apply_antisymmetric_N(GF,surf,FSD,face)
 
        implicit none
        private
@@ -34,6 +42,10 @@
        public :: Periodic_N
        public :: Robin_C
        public :: Robin_N
+       public :: Symmetric_C
+       public :: Symmetric_N
+       public :: antisymmetric_C
+       public :: antisymmetric_N
 
        abstract interface
          subroutine apply_face_BC_op(GF,surf,FSD,face)
@@ -302,6 +314,122 @@
                             bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
                             surf%f,&
                             dh*nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
+
+       ! *********************************************************************************
+       ! ************************************ SYMMETRIC **********************************
+       ! *********************************************************************************
+
+       subroutine Symmetric_C(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Symmetric_C_GF(GF,surf,&
+                               FSD%G(face)%M(1:3)%i2(1),&
+                               FSD%G(face)%M(1:3)%i2(2),&
+                               FSD%I(face)%M(1:3)%i2(1),&
+                               FSD%I(face)%M(1:3)%i2(2),&
+                               FSD%i_2D(face)%i,&
+                               0)
+       end subroutine
+       subroutine F_Symmetric_C_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Symmetric_C(ug,ui,x,y,p)
+         call apply_Symmetric_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                                bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
+
+       subroutine Symmetric_N(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Symmetric_N_GF(GF,surf,&
+                               FSD%G(face)%M(1:3)%i2(1),&
+                               FSD%G(face)%M(1:3)%i2(2),&
+                               FSD%I(face)%M(1:3)%i2(1),&
+                               FSD%I(face)%M(1:3)%i2(2),&
+                               FSD%i_2D(face)%i,&
+                               0)
+       end subroutine
+       subroutine F_Symmetric_N_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Symmetric_N(ug,ui,x,y,p)
+         call apply_Symmetric_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                                bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
+
+       ! *********************************************************************************
+       ! ******************************* ANTI-SYMMETRIC **********************************
+       ! *********************************************************************************
+
+       subroutine antisymmetric_C(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_antisymmetric_C_GF(GF,surf,&
+                                    FSD%G(face)%M(1:3)%i2(1),&
+                                    FSD%G(face)%M(1:3)%i2(2),&
+                                    FSD%I(face)%M(1:3)%i2(1),&
+                                    FSD%I(face)%M(1:3)%i2(2),&
+                                    FSD%i_2D(face)%i,&
+                                    0)
+       end subroutine
+       subroutine F_antisymmetric_C_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_antisymmetric_C(ug,ui,x,y,p)
+         call apply_antisymmetric_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                                     bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                     surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
+
+       subroutine antisymmetric_N(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_antisymmetric_N_GF(GF,surf,&
+                                    FSD%G(face)%M(1:3)%i2(1),&
+                                    FSD%G(face)%M(1:3)%i2(2),&
+                                    FSD%I(face)%M(1:3)%i2(1),&
+                                    FSD%I(face)%M(1:3)%i2(2),&
+                                    FSD%i_2D(face)%i,&
+                                    0)
+       end subroutine
+       subroutine F_antisymmetric_N_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_antisymmetric_N(ug,ui,x,y,p)
+         call apply_antisymmetric_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                                     bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                     surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        end module

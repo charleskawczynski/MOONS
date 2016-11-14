@@ -305,25 +305,22 @@
          integer,intent(in) :: face
          integer :: dir
          dir = dir_given_face(face)
-
+         call check_prereq(BC)
          call init_Dirichlet(BC%face,face)
-         if (CC_along(BC%DL,dir)) then
-         call remove(BC%PA_face_BCs,face)
-         call add(BC%PA_face_BCs,Dirichlet_C,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-         call remove(BC%PA_face_BCs,face)
-         call add(BC%PA_face_BCs,Dirichlet_N,face)
-         endif
 
          if (CC_along(BC%DL,dir)) then
-         call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Dirichlet_C,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir)) then
-         call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Dirichlet_N,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
          endif
+
          call define_logicals(BC)
          BC%BCL%BCT_defined = .true.
        end subroutine
@@ -338,25 +335,24 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Neumann(BC%face,face)
-         if (CC_along(BC%DL,dir_given_face(face))) then
+
+         if (CC_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
            call add(BC%PA_face_BCs,Neumann_C,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Neumann_C_implicit,face)
          endif
-         if ( N_along(BC%DL,dir_given_face(face))) then
+         if ( N_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
            call add(BC%PA_face_BCs,Neumann_N,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Neumann_N_implicit,face)
          endif
 
-         if (CC_along(BC%DL,dir_given_face(face))) then
-         call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Neumann_C_implicit,face)
-         endif
-         if ( N_along(BC%DL,dir_given_face(face))) then
-         call remove(BC%PA_face_implicit_BCs,face)
-         call add(BC%PA_face_implicit_BCs,Neumann_N_implicit,face)
-         endif
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -371,17 +367,24 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Robin(BC%face,face)
-         if (CC_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_C,face)
-         if ( N_along(BC%DL,dir_given_face(face))) call add(BC%PA_face_BCs,Robin_N,face)
 
-         if (CC_along(BC%DL,dir_given_face(face))) then
-         call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
+         if (CC_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Robin_C,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
          endif
-         if ( N_along(BC%DL,dir_given_face(face))) then
-         call add(BC%PA_face_implicit_BCs,Robin_N_implicit,face)
+         if ( N_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Robin_N,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Robin_N_implicit,face)
          endif
+
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -400,23 +403,20 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Periodic(BC%face,face)
+
          if (CC_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
            call add(BC%PA_face_BCs,Periodic_C,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Periodic_N,face)
-         endif
-
-         if (CC_along(BC%DL,dir)) then
            call remove(BC%PA_face_implicit_BCs,face)
            call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Periodic_N_implicit,face)
+           call add(BC%PA_face_BCs,Periodic_N,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Periodic_N_implicit,face)
          endif
+
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -431,8 +431,25 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
          call check_prereq(BC)
-         call init_symmetric(BC%face,face)
+         call init_Symmetric(BC%face,face)
+
+         if (CC_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Symmetric_C,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Symmetric_C_implicit,face)
+         endif
+         if ( N_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,Symmetric_N,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,Symmetric_N_implicit,face)
+         endif
+
+         BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
 
@@ -446,8 +463,25 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
          call check_prereq(BC)
          call init_antisymmetric(BC%face,face)
+
+         if (CC_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,antisymmetric_C,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,antisymmetric_C_implicit,face)
+         endif
+         if ( N_along(BC%DL,dir)) then
+           call remove(BC%PA_face_BCs,face)
+           call add(BC%PA_face_BCs,antisymmetric_N,face)
+           call remove(BC%PA_face_implicit_BCs,face)
+           call add(BC%PA_face_implicit_BCs,antisymmetric_N_implicit,face)
+         endif
+
+         BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
 

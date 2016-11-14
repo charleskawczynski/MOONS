@@ -351,6 +351,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries_symmetric.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\

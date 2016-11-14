@@ -17,7 +17,7 @@
        public :: init_UBCs
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = no-slip
-       integer :: preDefinedU_BCs = 1 ! See init_UBCs for details
+       integer :: preDefinedU_BCs = 12 ! See init_UBCs for details
 
        contains
 
@@ -44,6 +44,7 @@
          case (9); call cylinder_driven_cavity(U,m,1)
          case (10); call fully_developed_duct_flow(U,m,1)
          case (11); call periodic_duct_flow(U)
+         case (12); call LDC_1_domain_symmetric_zmax(U)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
@@ -54,6 +55,15 @@
          implicit none
          type(VF),intent(inout) :: U
          call init(U%x%BF(1)%BCs,1.0_cp,4)
+       end subroutine
+
+       subroutine LDC_1_domain_symmetric_zmax(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         call init(U%x%BF(1)%BCs,1.0_cp,4)
+         call init_Symmetric(U%x%BF(1)%BCs,6)
+         call init_Symmetric(U%y%BF(1)%BCs,6)
+         call init_Symmetric(U%z%BF(1)%BCs,6)
        end subroutine
 
        subroutine LDC_4_domains(U)

@@ -16,8 +16,8 @@
        public :: apply_Symmetric_C
        public :: apply_Symmetric_N
 
-       public :: apply_Antisymmetric_C
-       public :: apply_Antisymmetric_N
+       public :: apply_antisymmetric_C
+       public :: apply_antisymmetric_N
 
        public :: apply_Robin_C
        public :: apply_Robin_N
@@ -175,7 +175,7 @@
 #endif
        end subroutine
 
-       subroutine apply_Antisymmetric_C(ug,ui,x,y,p)
+       subroutine apply_antisymmetric_C(ug,ui,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
@@ -193,7 +193,7 @@
 
 #endif
        end subroutine
-       subroutine apply_Antisymmetric_N(ug,ui,x,y,p)
+       subroutine apply_antisymmetric_N(ug,ui,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug

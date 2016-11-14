@@ -51,12 +51,12 @@
        SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
        SP%post_process              = .true.      ! Skip solver loop and just post-process results
        SP%skip_solver_loop          = .false.     ! Skip solver loop
-       SP%stop_before_solve         = .false.     ! Just export ICs, do not run simulation
+       SP%stop_before_solve         = .false.      ! Just export ICs, do not run simulation
        SP%stop_after_mesh_export    = .false.     ! 
 
        SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
-       SP%export_meshes             = .false.     ! Export all meshes before starting simulation
-       SP%export_mat_props          = .false.     ! Export material properties before starting simulation
+       SP%export_meshes             = .true.      ! Export all meshes before starting simulation
+       SP%export_mat_props          = .true.      ! Export material properties before starting simulation
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction

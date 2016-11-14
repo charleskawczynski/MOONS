@@ -11,7 +11,7 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 0
+       integer :: preDefinedB_BCs = 7
        real(cp) :: cw = 0.0_cp
        ! real(cp) :: cw = 0.05_cp
        ! real(cp) :: cw = 0.01_cp
@@ -44,11 +44,24 @@
          case (4); call thin_wall(B,m,cw)
          case (5); call thin_wall_LDC(B,m,cw)
          case (6); call thin_wall_Hunt(B,m,cw)
+         case (7); call symmetric_zmax(B,m)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
 
          call make_periodic(B,m,periodic_dir)
          call init_BC_props(B)
+       end subroutine
+
+       subroutine symmetric_zmax(B,m)
+         implicit none
+         type(VF),intent(inout) :: B
+         type(mesh),intent(in) :: m
+         integer :: i
+         do i=1,m%s
+           call init_AntiSymmetric(B%x%BF(i)%BCs,6)
+           call init_AntiSymmetric(B%y%BF(i)%BCs,6)
+           call init_Symmetric(B%z%BF(i)%BCs,6)
+         enddo
        end subroutine
 
        subroutine pseudo_vacuum(B,m)

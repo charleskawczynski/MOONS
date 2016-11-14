@@ -12,7 +12,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = dirichlet on all sides
-       integer :: preDefinedphi_BCs = 0 ! see cases in init_phiBCs
+       integer :: preDefinedphi_BCs = 2 ! see cases in init_phiBCs
        
        contains
 
@@ -29,6 +29,7 @@
          select case (preDefinedphi_BCs)
          case (0)
          case (1); call periodic_duct_flow(phi)
+         case (2); call symmetric_zmax(phi)
          case default; stop 'Error: preDefinedphi_BCs must = 1:5 in init_phiBCs in init_phiBCs.f90.'
          end select
          call make_periodic(phi,m,periodic_dir)
@@ -40,6 +41,12 @@
          type(SF),intent(inout) :: phi
          call init_periodic(phi%BF(1)%BCs,1)
          call init_periodic(phi%BF(1)%BCs,2)
+       end subroutine
+
+       subroutine symmetric_zmax(phi)
+         implicit none
+         type(SF),intent(inout) :: phi
+         call init_Symmetric(phi%BF(1)%BCs,6)
        end subroutine
 
        end module
