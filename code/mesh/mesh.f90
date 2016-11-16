@@ -21,6 +21,8 @@
        public :: restrict,restrict_x,restrict_xy
        public :: initProps
        public :: init_surface
+       public :: mirror_about_hmin
+       public :: mirror_about_hmax
        public :: compare
 
 #ifdef _DEBUG_COORDINATES_
@@ -45,27 +47,30 @@
          type(simple_int_tensor),dimension(3) :: int_tensor
        end type
 
-       interface init;           module procedure init_grid;              end interface
-       interface init;           module procedure initmeshCopy;           end interface
-       interface add;            module procedure addGrid;                end interface
-       interface delete;         module procedure deletemesh;             end interface
-       interface initProps;      module procedure initProps_mesh;         end interface
+       interface init;                 module procedure init_grid;              end interface
+       interface init;                 module procedure initmeshCopy;           end interface
+       interface add;                  module procedure addGrid;                end interface
+       interface delete;               module procedure deletemesh;             end interface
+       interface initProps;            module procedure initProps_mesh;         end interface
 
-       interface patch;          module procedure patch_grids;            end interface
+       interface patch;                module procedure patch_grids;            end interface
 
-       interface restrict;       module procedure restrictmesh1;          end interface
-       interface restrict;       module procedure restrictmesh3;          end interface
-       interface restrict_x;     module procedure restrictmesh_x;         end interface
-       interface restrict_xy;    module procedure restrictmesh_xy;        end interface
+       interface restrict;             module procedure restrictmesh1;          end interface
+       interface restrict;             module procedure restrictmesh3;          end interface
+       interface restrict_x;           module procedure restrictmesh_x;         end interface
+       interface restrict_xy;          module procedure restrictmesh_xy;        end interface
 
-       interface print;          module procedure print_mesh;             end interface
-       interface display;        module procedure display_mesh;           end interface
-       interface export;         module procedure export_mesh;            end interface
-       interface import;         module procedure import_mesh;            end interface
-       interface export;         module procedure export_wrapper;         end interface
-       interface import;         module procedure import_wrapper;         end interface
+       interface mirror_about_hmin;    module procedure mirror_about_hmin_m;    end interface
+       interface mirror_about_hmax;    module procedure mirror_about_hmax_m;    end interface
 
-       interface compare;        module procedure compare_mesh;           end interface
+       interface print;                module procedure print_mesh;             end interface
+       interface display;              module procedure display_mesh;           end interface
+       interface export;               module procedure export_mesh;            end interface
+       interface import;               module procedure import_mesh;            end interface
+       interface export;               module procedure export_wrapper;         end interface
+       interface import;               module procedure import_wrapper;         end interface
+
+       interface compare;              module procedure compare_mesh;           end interface
 
        contains
 
@@ -142,6 +147,22 @@
          integer :: i
          do i=1,m%s
          enddo
+       end subroutine
+
+       subroutine mirror_about_hmin_m(m,dir)
+         implicit none
+         type(mesh),intent(inout) :: m
+         integer,intent(in) :: dir
+         integer :: i
+         do i=1,m%s; call mirror_about_hmin(m%B(i),dir); enddo
+       end subroutine
+
+       subroutine mirror_about_hmax_m(m,dir)
+         implicit none
+         type(mesh),intent(inout) :: m
+         integer,intent(in) :: dir
+         integer :: i
+         do i=1,m%s; call mirror_about_hmax(m%B(i),dir); enddo
        end subroutine
 
        subroutine initmeshCopy(m,m_in)

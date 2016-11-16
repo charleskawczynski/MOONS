@@ -28,7 +28,7 @@
          integer :: i
          call delete(m)
          hmin = -1.0_cp; hmax = 1.0_cp; beta = HartmannBL(Ha,hmin,hmax)
-         hmin(3) = 0.0_cp
+         hmax(3) = 0.0_cp
          if (low_Ha(Ha)) then;      N = (/30,30,15/) ! For Ha = 20
          elseif (high_Ha(Ha)) then; N = (/32,32,16/) ! For Ha = 100
          else; stop 'Error: bad input to geometry in BC_sim_mom in mesh_simple_geometries.f90'

@@ -19,6 +19,7 @@
        use time_marching_params_mod
        use sim_params_mod
        use inputFile_mod
+       use export_raw_processed_symmetry_mod
 
        use energy_mod
        use momentum_mod

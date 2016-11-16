@@ -41,6 +41,8 @@
         public :: plane_sum_y
         public :: plane_sum_z
 
+        public :: mirror_about_hmin,mirror_about_hmax
+
         public :: assign_ghost_xmin_xmax
         public :: assign_ghost_ymin_ymax
         public :: assign_ghost_zmin_zmax
@@ -116,6 +118,9 @@
        interface assign_ghost_xmin_xmax;   module procedure assign_ghost_xmin_xmax_BF;    end interface
        interface assign_ghost_ymin_ymax;   module procedure assign_ghost_ymin_ymax_BF;    end interface
        interface assign_ghost_zmin_zmax;   module procedure assign_ghost_zmin_zmax_BF;    end interface
+
+       interface mirror_about_hmin;        module procedure mirror_about_hmin_BF;         end interface
+       interface mirror_about_hmax;        module procedure mirror_about_hmax_BF;         end interface
 
        interface symmetry_error_x;         module procedure symmetry_error_x_BF;          end interface
        interface symmetry_error_y;         module procedure symmetry_error_y_BF;          end interface
@@ -639,6 +644,21 @@
          type(block_field),intent(inout) :: u
          real(cp),intent(in) :: val
          call assign_ghost_zmin_zmax(u%GF,val)
+       end subroutine
+
+       subroutine mirror_about_hmin_BF(u,dir,mirror_sign)
+         implicit none
+         type(block_field),intent(inout) :: u
+         integer,intent(in) :: dir
+         real(cp),intent(in) :: mirror_sign
+         call mirror_about_hmin(u%GF,dir,mirror_sign)
+       end subroutine
+       subroutine mirror_about_hmax_BF(u,dir,mirror_sign)
+         implicit none
+         type(block_field),intent(inout) :: u
+         integer,intent(in) :: dir
+         real(cp),intent(in) :: mirror_sign
+         call mirror_about_hmax(u%GF,dir,mirror_sign)
        end subroutine
 
        function plane_sum_x_BF(u,B,p) result(PS)

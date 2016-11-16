@@ -26,6 +26,8 @@
         end type
 
         interface init;                     module procedure init_DL_GF;                   end interface
+        interface init;                     module procedure init_shape_GF;                end interface
+        interface init;                     module procedure init_shape_GF_2;              end interface
         interface init;                     module procedure init_GF_copy;                 end interface
         interface delete;                   module procedure delete_GF;                    end interface
         interface display;                  module procedure display_GF;                   end interface
@@ -36,7 +38,6 @@
 
         interface export;                   module procedure export_wrapper_GF_DL;         end interface
         interface export;                   module procedure export_wrapper_GF;            end interface
-
 
         interface init_CC;                  module procedure init_GF_CC;                   end interface
         interface init_Face;                module procedure init_GF_Face;                 end interface
@@ -67,7 +68,7 @@
           endif
         end subroutine
 
-        subroutine init_GF_shape(a,Nx,Ny,Nz)
+        subroutine init_shape_GF(a,Nx,Ny,Nz)
           implicit none
           type(grid_field),intent(inout) :: a
           integer,intent(in) :: Nx,Ny,Nz
@@ -77,11 +78,21 @@
           a%s_1D = a%s(1)*a%s(2)*a%s(3)
         end subroutine
 
+        subroutine init_shape_GF_2(a,s)
+          implicit none
+          type(grid_field),intent(inout) :: a
+          integer,dimension(3),intent(in) :: s
+          if (allocated(a%f)) deallocate(a%f)
+          allocate(a%f(s(1),s(2),s(3)))
+          a%s = shape(a%f)
+          a%s_1D = a%s(1)*a%s(2)*a%s(3)
+        end subroutine
+
         subroutine init_GF_CC(a,g)
           implicit none
           type(grid_field),intent(inout) :: a
           type(grid),intent(in) :: g
-          call init_GF_shape(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
+          call init_shape_GF(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sc)
         end subroutine
 
         subroutine init_GF_Face(a,g,dir)
@@ -90,9 +101,9 @@
           type(grid),intent(in) :: g
           integer,intent(in) :: dir
           select case (dir)
-          case (1); call init_GF_shape(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
-          case (2); call init_GF_shape(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
-          case (3); call init_GF_shape(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
+          case (1); call init_shape_GF(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sc)
+          case (2); call init_shape_GF(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sc)
+          case (3); call init_shape_GF(a,g%c(1)%sc,g%c(2)%sc,g%c(3)%sn)
           case default; stop 'Error: dir must = 1,2,3 in init_GF_Face in GF.f90'
           end select
         end subroutine
@@ -103,9 +114,9 @@
           type(grid),intent(in) :: g
           integer,intent(in) :: dir
           select case (dir)
-          case (1); call init_GF_shape(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
-          case (2); call init_GF_shape(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
-          case (3); call init_GF_shape(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
+          case (1); call init_shape_GF(a,g%c(1)%sc,g%c(2)%sn,g%c(3)%sn)
+          case (2); call init_shape_GF(a,g%c(1)%sn,g%c(2)%sc,g%c(3)%sn)
+          case (3); call init_shape_GF(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sc)
           case default; stop 'Error: dir must = 1,2,3 in init_GF_Face in GF.f90'
           end select
         end subroutine
@@ -114,7 +125,7 @@
           implicit none
           type(grid_field),intent(inout) :: a
           type(grid),intent(in) :: g
-          call init_GF_shape(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
+          call init_shape_GF(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
         end subroutine
 
         subroutine init_GF_copy(f1,f2)

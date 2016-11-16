@@ -32,6 +32,8 @@
         public :: symmetry_error_y,symmetry_local_y
         public :: symmetry_error_z,symmetry_local_z
 
+        public :: mirror_about_hmin,mirror_about_hmax
+
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
         public :: N0_C1_tensor
@@ -151,6 +153,9 @@
         interface symmetry_local_x;    module procedure symmetry_local_x_SF;    end interface
         interface symmetry_local_y;    module procedure symmetry_local_y_SF;    end interface
         interface symmetry_local_z;    module procedure symmetry_local_z_SF;    end interface
+
+        interface mirror_about_hmin;   module procedure mirror_about_hmin_SF;   end interface
+        interface mirror_about_hmax;   module procedure mirror_about_hmax_SF;   end interface
 
         interface assign_ghost_xmin_xmax;module procedure assign_ghost_xmin_xmax_SF;end interface
         interface assign_ghost_ymin_ymax;module procedure assign_ghost_ymin_ymax_SF;end interface
@@ -867,6 +872,23 @@
           type(SF),intent(inout) :: u
           integer :: i
           do i=1,u%s; call symmetry_local_z(u%BF(i)); enddo
+        end subroutine
+
+        subroutine mirror_about_hmin_SF(u,dir,mirror_sign)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer,intent(in) :: dir
+          real(cp),intent(in) :: mirror_sign
+          integer :: i
+          do i=1,u%s; call mirror_about_hmin(u%BF(i),dir,mirror_sign); enddo
+        end subroutine
+        subroutine mirror_about_hmax_SF(u,dir,mirror_sign)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer,intent(in) :: dir
+          real(cp),intent(in) :: mirror_sign
+          integer :: i
+          do i=1,u%s; call mirror_about_hmax(u%BF(i),dir,mirror_sign); enddo
         end subroutine
 
         subroutine multiply_volume_SF(f,m)

@@ -57,7 +57,6 @@
          type(VF) :: temp_CC2_VF           ! CC data
          ! --- Scalar fields ---
          type(SF) :: divQ                  ! CC data
-         type(SF) :: vol_CC
          type(SF) :: Q_source
 
          type(probe) :: probe_divQ
@@ -109,7 +108,7 @@
          real(cp),intent(in) :: Re,Pr,Ec,Ha
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: k_cc,prec_T
+         type(SF) :: k_cc,prec_T,vol_CC
          write(*,*) 'Initializing energy:'
          call init(nrg%TMP,TMP)
          call init(nrg%ISP_T,ISP_T)
@@ -136,11 +135,12 @@
 
          ! --- Scalar Fields ---
          call init_CC(nrg%divQ,m)
-         call init_CC(nrg%vol_CC,m)
-         call volume(nrg%vol_CC,m)
+         call init_CC(vol_CC,m)
+         call volume(vol_CC,m)
          if (nrg%SP%export_cell_volume) then
-           call export_raw(nrg%m,nrg%vol_CC,str(DT%meshes),'nrg_cell_volume',0)
+           call export_raw(nrg%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
          endif
+         call delete(vol_CC)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -196,7 +196,6 @@
          call delete(nrg%temp_CC2_VF)
 
          call delete(nrg%divQ)
-         call delete(nrg%vol_CC)
 
          call delete(nrg%probe_divQ)
          call delete(nrg%m)

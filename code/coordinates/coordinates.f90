@@ -1,6 +1,7 @@
       module coordinates_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
       use current_precision_mod
+      use array_mod
       use sparse_mod
       use derivative_stencils_mod
       ! use interp_stencils_mod
@@ -17,11 +18,14 @@
 
       ! For multi-grid
       public :: restrict
+      public :: prolongate
       public :: pop,snip
+      public :: mirror_about_hmin
+      public :: mirror_about_hmax
 
       ! For getting surface / edge corner
       public :: get_GI
-      public :: get_ghost,get_boundary,get_interior
+      public :: get_boundary
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkCoordinates
@@ -56,7 +60,12 @@
       interface export;            module procedure export_c;               end interface
       interface import;            module procedure import_c;               end interface
 
-      interface restrict;          module procedure restrictCoordinates;    end interface
+      interface restrict;          module procedure restrict_c;             end interface
+      interface prolongate;        module procedure prolongate_c;           end interface
+
+      interface mirror_about_hmin; module procedure mirror_about_hmin_c;    end interface
+      interface mirror_about_hmax; module procedure mirror_about_hmax_c;    end interface
+
       interface stitch_stencils;   module procedure stitch_stencils_c;      end interface
       interface init_stencils;     module procedure init_stencils_c;        end interface ! Private
 
@@ -64,10 +73,7 @@
       interface snip;              module procedure snip_coordinates;       end interface
 
       interface get_GI;            module procedure get_GI_c;               end interface
-
-      interface get_ghost;         module procedure get_ghost_c;            end interface
       interface get_boundary;      module procedure get_boundary_c;         end interface
-      interface get_interior;      module procedure get_interior_c;         end interface
       
       contains
 
@@ -671,7 +677,7 @@
       ! ***************** RESTRICTION (FOR MULTIGRID) *******************
       ! *****************************************************************
 
-      subroutine restrictCoordinates(r,c)
+      subroutine restrict_c(r,c)
         ! Restriction for bad cases should only be allowed ~1 time
         ! Multiple restrictions of this type can make the cells
         ! blow up in size and overlap.
@@ -688,6 +694,73 @@
             else; stop 'Error: coordinates must be even in restrictCoordinates in coordinates.f90'
           endif
         else; call init(r,c) ! return c
+        endif
+      end subroutine
+
+      ! *****************************************************************
+      ! ****************** PROLONGATE (FOR MULTIGRID) *******************
+      ! *****************************************************************
+
+      subroutine prolongate_c(p,c)
+        implicit none
+        type(coordinates),intent(inout) :: p
+        type(coordinates),intent(in) :: c
+        type(array),dimension(3) :: a
+        integer :: i
+        if (c%sn.gt.1) then ! Can't prolongate without interior!
+        elseif (c%sn.eq.2) then
+        elseif (c%sn.eq.3) then
+        elseif (c%sn.gt.3) then ! typical case
+          call init(a(1),c%hn(2:c%sn-1),c%sn-2)
+          call init(a(2),c%hc(2:c%sc-1),c%sc-2)
+          call init(a(3),a(1)%N+a(2)%N)
+          do i=1,a(1)%N; a(3)%f(2*i-1) = a(1)%f(i); enddo
+          do i=1,a(2)%N; a(3)%f(2*i)   = a(2)%f(i); enddo
+          call init(p,a(3)%f,a(3)%N)
+          call addGhostNodes(p)
+          do i=1,3; call delete(a(i)); enddo
+        endif
+      end subroutine
+
+      ! *****************************************************************
+      ! ******************** MIRROR (FOR SYMMETRY) **********************
+      ! *****************************************************************
+
+      subroutine mirror_about_hmin_c(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(array) :: a,m
+        if (c%sn.eq.1) then ! Can't mirror without interior!
+        elseif (c%sn.eq.2) then
+        elseif (c%sn.eq.3) then
+        elseif (c%sn.gt.3) then ! typical case
+          call init(m,c%hn(2:c%sn),c%sn-1)
+          call multiply(m,-1.0_cp)
+          call add(m,2.0_cp*c%hn(2))
+          call reverse(m)
+          call init(a,(/m%f,c%hn(3:c%sn)/),2*c%sn-1)
+          call init(c,a%f,a%N)
+          call delete(a)
+          call delete(m)
+        endif
+      end subroutine
+
+      subroutine mirror_about_hmax_c(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(array) :: a,m
+        if (c%sn.eq.1) then ! Can't mirror without interior!
+        elseif (c%sn.eq.2) then
+        elseif (c%sn.eq.3) then
+        elseif (c%sn.gt.3) then ! typical case
+          call init(m,c%hn(1:c%sn-1),c%sn-1)
+          call multiply(m,-1.0_cp)
+          call add(m,2.0_cp*c%hn(c%sn-1))
+          call reverse(m)
+          call init(a,(/c%hn(1:c%sn-2),m%f/),2*c%sn-3)
+          call init(c,a%f,a%N)
+          call delete(a)
+          call delete(m)
         endif
       end subroutine
 
@@ -734,21 +807,6 @@
         endif
       end subroutine
 
-      subroutine get_ghost_c(c,dir)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        integer,intent(in) :: dir
-        integer :: i,s
-        if ((dir.ne.1).and.(dir.ne.-1)) stop 'Error: dir must = 1,-1 in get_ghost_c in coordinates.f90'
-        s = c%sn
-        if (s.gt.2) then ! 3 or more nodes, remove all but boundary surface
-        if (dir.eq.-1) then; do i=1,s-2; call pop(c);  enddo; endif
-        if (dir.eq. 1) then; do i=1,s-2; call snip(c); enddo; endif
-        elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
-        else; stop 'Error: bad case in get_ghost_c in coordinates.f90'
-        endif
-      end subroutine
-
       subroutine get_boundary_c(c,dir)
         implicit none
         type(coordinates),intent(inout) :: c
@@ -761,22 +819,6 @@
         if (dir.eq. 1) then; do i=1,s-2; call snip(c); enddo; call pop(c);  endif
         elseif ((s.eq.2).or.(s.eq.1)) then ! single cell, cannot choose which node to remove
         else; stop 'Error: bad case in get_boundary_c in coordinates.f90'
-        endif
-      end subroutine
-
-      subroutine get_interior_c(c,dir)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        integer,intent(in) :: dir
-        integer :: i,s
-        if ((dir.ne.1).and.(dir.ne.-1)) stop 'Error: dir must = 1,-1 in get_interior_c in coordinates.f90'
-        s = c%sn
-        if (s.gt.3) then ! 3 or more nodes, remove all but boundary surface
-        if (dir.eq.-1) then; do i=1,s-3; call pop(c);  enddo; call snip(c); endif
-        if (dir.eq. 1) then; do i=1,s-3; call snip(c); enddo; call pop(c);  endif
-        elseif (s.eq.3) then ! 2 cells, cannot choose which node to remove
-        elseif ((s.eq.2).or.(s.eq.1)) then ! 1 cell, cannot choose which node to remove
-        else; stop 'Error: bad case in get_interior_c in coordinates.f90'
         endif
       end subroutine
 

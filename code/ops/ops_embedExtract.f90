@@ -6,6 +6,7 @@
 
        use current_precision_mod
        use overlap_mod
+       use face_edge_corner_indexing_mod
        use mesh_mod
        use mesh_domain_mod
        use GF_mod
@@ -321,12 +322,13 @@
        !   integer :: g_R1_id,g_R2_id
        ! end type
 
-       function EE_shape(f,MD,i) result(s)
+       function EE_shape_old(f,MD,i) result(s)
          implicit none
          type(SF),intent(in) :: f
          type(mesh_domain),intent(in) :: MD
          integer,intent(in) :: i
          type(overlap),dimension(3) :: s
+         integer,dimension(2) :: adj
          integer :: j
          ! s = MD%D%sd(i)%physical%M
          ! if (f%is_Face) then
@@ -343,10 +345,14 @@
          ! endif
 
          if (f%is_Face) then
-           do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
+           adj = adj_dir_given_dir(f%face)
+           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%C(adj(j))); enddo
+           ! do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
            call init(s(f%face),MD%D%sd(i)%physical%N(f%face))
          elseif (f%is_Edge) then
-           do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
+           adj = adj_dir_given_dir(f%edge)
+           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%N(adj(j))); enddo
+           ! do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
            call init(s(f%edge),MD%D%sd(i)%physical%C(f%edge))
          elseif (f%is_CC) then
            do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
@@ -356,14 +362,49 @@
          endif
        end function
 
-       ! function EE_shape(f,MD,i) result(s)
-       !   implicit none
-       !   type(SF),intent(in) :: f
-       !   type(mesh_domain),intent(in) :: MD
-       !   integer,intent(in) :: i
-       !   type(overlap),dimension(3) :: s
-       !   call print(MD%D%sd(i),'EE_shape')
-       !   stop 'Done in ops_embedExtract.f90'
-       !   s = MD%D%sd(i)%physical%phys_all
-       ! end function
+       function EE_shape(f,MD,i) result(s)
+         implicit none
+         type(SF),intent(in) :: f
+         type(mesh_domain),intent(in) :: MD
+         integer,intent(in) :: i
+         type(overlap),dimension(3) :: s
+         integer :: j
+         if (f%is_Face) then
+           select case(f%face)
+           case (1); call init(s(1),MD%D%sd(i)%physical%N(1))
+                     call init(s(2),MD%D%sd(i)%physical%C(2))
+                     call init(s(3),MD%D%sd(i)%total%C(3))
+           case (2); call init(s(1),MD%D%sd(i)%physical%C(1))
+                     call init(s(2),MD%D%sd(i)%physical%N(2))
+                     call init(s(3),MD%D%sd(i)%total%C(3))
+           case (3); call init(s(1),MD%D%sd(i)%physical%C(1))
+                     call init(s(2),MD%D%sd(i)%physical%C(2))
+                     call init(s(3),MD%D%sd(i)%total%N(3))
+           case default; stop 'Error: bad DL face in ops_embedExtract.f90'
+           end select
+         elseif (f%is_Edge) then
+           select case(f%edge)
+           case (1); call init(s(1),MD%D%sd(i)%physical%C(1))
+                     call init(s(2),MD%D%sd(i)%physical%N(2))
+                     call init(s(3),MD%D%sd(i)%total%N(3))
+           case (2); call init(s(1),MD%D%sd(i)%physical%N(1))
+                     call init(s(2),MD%D%sd(i)%physical%C(2))
+                     call init(s(3),MD%D%sd(i)%total%N(3))
+           case (3); call init(s(1),MD%D%sd(i)%physical%N(1))
+                     call init(s(2),MD%D%sd(i)%physical%N(2))
+                     call init(s(3),MD%D%sd(i)%total%C(3))
+           case default; stop 'Error: bad DL edge in ops_embedExtract.f90'
+           end select
+         elseif (f%is_CC) then
+           call init(s(1),MD%D%sd(i)%physical%C(1))
+           call init(s(2),MD%D%sd(i)%physical%C(2))
+           call init(s(3),MD%D%sd(i)%total%C(3))
+         elseif (f%is_Node) then
+           call init(s(1),MD%D%sd(i)%physical%N(1))
+           call init(s(2),MD%D%sd(i)%physical%N(2))
+           call init(s(3),MD%D%sd(i)%total%N(3))
+         else; stop 'Error: no type found in ops_embedExtract.f90'
+         endif
+       end function
+
        end module

@@ -28,6 +28,7 @@
        use IO_SF_mod
        use IO_VF_mod
        use export_raw_processed_mod
+       use export_raw_processed_symmetry_mod
        use print_export_mod
        use export_now_mod
 
@@ -397,7 +398,13 @@
            call export_raw(mom%m,mom%U,str(DT%U_f),'U',0)
            call export_raw(mom%m,mom%p,str(DT%U_f),'p',0)
            call export_processed(mom%m,mom%U,str(DT%U_f),'U',1)
+           if (mom%SP%export_symmetric) then
+            call export_processed(mom%m,mom%U,str(DT%U_f),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
+           endif
            call export_processed(mom%m,mom%p,str(DT%U_f),'p',1)
+           if (mom%SP%export_symmetric) then
+             call export_processed(mom%m,mom%p,str(DT%U_f),'p',1,6,1.0_cp)
+           endif
            call export_raw(mom%m,mom%divU,str(DT%U_f),'divU',1)
            ! call export_processed(mom%m,mom%temp_E,str(DT%U_f),'vorticity',1)
            write(*,*) '     finished'

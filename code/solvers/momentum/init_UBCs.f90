@@ -61,9 +61,9 @@
          implicit none
          type(VF),intent(inout) :: U
          call init(U%x%BF(1)%BCs,1.0_cp,4)
-         call init_Symmetric(U%x%BF(1)%BCs,6)
-         call init_Symmetric(U%y%BF(1)%BCs,6)
-         call init_Symmetric(U%z%BF(1)%BCs,6)
+         call init_Neumann(U%x%BF(1)%BCs,6)
+         call init_Neumann(U%y%BF(1)%BCs,6)
+         call init_Neumann(U%z%BF(1)%BCs,6)
        end subroutine
 
        subroutine LDC_4_domains(U)

@@ -67,11 +67,12 @@
          ! call flow_past_square(m_ind)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! call BC_sim_mom(m_mom,Ha)
-         ! call BC_sim_ind(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
-
          call BC_sim_mom_symmetric(m_mom,Ha)
          call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
+
+         ! call BC_sim_mom_symmetric(m_mom,Ha)
+         ! call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
+
          ! call BC_sim_mom_proper_insulate(m_mom,Ha,DT)
          ! call BC_sim_ind_proper_insulate(m_ind,m_mom,MD_sigma,DT,Ha,tw,include_vacuum)
 

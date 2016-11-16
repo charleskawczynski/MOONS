@@ -13,6 +13,9 @@
        public :: initProps
        public :: snip,pop
 
+       public :: mirror_about_hmin
+       public :: mirror_about_hmax
+
        public :: get_face_GI
        public :: get_edge_GI
        public :: get_corner_GI
@@ -47,6 +50,9 @@
 
        interface snip;               module procedure snip_grid;               end interface
        interface pop;                module procedure pop_grid;                end interface
+
+       interface mirror_about_hmin;  module procedure mirror_about_hmin_g;     end interface
+       interface mirror_about_hmax;  module procedure mirror_about_hmax_g;     end interface
 
        interface get_face_GI;        module procedure get_face_GI_grid;        end interface
        interface get_edge_GI;        module procedure get_edge_GI_grid;        end interface
@@ -193,6 +199,20 @@
          type(grid),intent(inout) :: g
          integer,intent(in) :: dir
          call pop(g%c(dir))
+       end subroutine
+
+       subroutine mirror_about_hmin_g(g,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call mirror_about_hmin(g%c(dir))
+       end subroutine
+
+       subroutine mirror_about_hmax_g(g,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call mirror_about_hmax(g%c(dir))
        end subroutine
 
        subroutine snip_grid(g,dir) ! Removes the first index from the grid

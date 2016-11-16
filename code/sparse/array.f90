@@ -9,6 +9,8 @@
       public :: insert,append
       public :: pop,snip
 
+      public :: reverse
+
       public :: insist_allocated
 
       type array
@@ -29,6 +31,7 @@
       interface assign;             module procedure assign_array;               end interface
       interface assign;             module procedure assign_array_cp;            end interface
       interface assign;             module procedure assign_array_element;       end interface
+      interface add;                module procedure add_array_cp;               end interface
       interface add;                module procedure add_array;                  end interface
       interface add;                module procedure add_array_2;                end interface
       interface multiply;           module procedure multiply_array_cp;          end interface
@@ -39,6 +42,8 @@
       interface append;             module procedure append_element_array;       end interface
       interface pop;                module procedure pop_element_array;          end interface
       interface snip;               module procedure snip_element_array;         end interface
+
+      interface reverse;            module procedure reverse_array;              end interface
 
       interface check_bounds;       module procedure check_bounds_array;         end interface
       interface insist_allocated;   module procedure insist_allocated_array;     end interface
@@ -191,6 +196,15 @@
         A%f(i) = B
       end subroutine
 
+      subroutine add_array_cp(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),intent(in) :: B
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'add_array_cp (A)')
+#endif
+        A%f = A%f + B
+      end subroutine
       subroutine add_array(A,B)
         implicit none
         type(array),intent(inout) :: A
@@ -207,11 +221,11 @@
         type(array),intent(inout) :: A
         type(array),intent(in) :: B,C
 #ifdef _DEBUG_ARRAY_
-        call insist_allocated(A,'add_array (A)')
-        call insist_allocated(B,'add_array (B)')
-        call insist_allocated(C,'add_array (C)')
-        call insist_equal_sizes(A,B,'add_array (A,B)')
-        call insist_equal_sizes(A,C,'add_array (A,C)')
+        call insist_allocated(A,'add_array_2 (A)')
+        call insist_allocated(B,'add_array_2 (B)')
+        call insist_allocated(C,'add_array_2 (C)')
+        call insist_equal_sizes(A,B,'add_array_2 (A,B)')
+        call insist_equal_sizes(A,C,'add_array_2 (A,C)')
 #endif
         A%f = B%f + C%f
       end subroutine
@@ -300,6 +314,15 @@
           call init(A,(/temp%f(2:temp%N)/),temp%N-1)
           call delete(temp)
         endif
+      end subroutine
+
+      subroutine reverse_array(A)
+        implicit none
+        type(array),intent(inout) :: A
+#ifdef _DEBUG_ARRAY_
+        call insist_allocated(A,'snip_element_array')
+#endif
+        A%f(1:A%N) = A%f(A%N:1:-1)
       end subroutine
 
       ! ***************************************************************

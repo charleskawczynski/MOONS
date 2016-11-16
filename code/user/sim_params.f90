@@ -16,6 +16,7 @@
        logical :: export_cell_volume
        logical :: export_ICs
        logical :: export_planar
+       logical :: export_symmetric
 
        logical :: solveEnergy
        logical :: solveMomentum
@@ -56,10 +57,11 @@
 
        SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
        SP%export_meshes             = .true.      ! Export all meshes before starting simulation
-       SP%export_mat_props          = .true.      ! Export material properties before starting simulation
+       SP%export_mat_props          = .false.      ! Export material properties before starting simulation
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
+       SP%export_symmetric          = .true.      ! 
 
        SP%coupled_time_step         = .true.      ! Ensures all time steps are equal to coupled%dt
 
@@ -98,6 +100,7 @@
        SP%export_planar = SP_in%export_planar
        SP%export_cell_volume = SP_in%export_cell_volume
        SP%export_analytic = SP_in%export_analytic
+       SP%export_symmetric = SP_in%export_symmetric
        SP%coupled_time_step = SP_in%coupled_time_step
        SP%solveEnergy = SP_in%solveEnergy
        SP%solveMomentum = SP_in%solveMomentum

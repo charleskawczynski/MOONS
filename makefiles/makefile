@@ -307,6 +307,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_mirror_about_plane.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_plane_sum.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_plane_mean.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_mean_along_dir.f90\
@@ -391,6 +392,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
+	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed_symmetry.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\

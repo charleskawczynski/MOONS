@@ -23,6 +23,9 @@
        public :: init_Laplacian_VF
        public :: init_Laplacian_SF
 
+       public :: mirror_about_hmin
+       public :: mirror_about_hmax
+
        type block
          type(grid) :: g                                  ! Bulk
          type(grid),dimension(:),allocatable :: f,fb      ! Faces (boundary,ghost,interior)
@@ -48,6 +51,9 @@
        interface import;             module procedure import_block_wrapper;     end interface
 
        interface init_FEC;           module procedure init_FEC_block;           end interface
+
+       interface mirror_about_hmin;  module procedure mirror_about_hmin_b;      end interface
+       interface mirror_about_hmax;  module procedure mirror_about_hmax_b;      end interface
 
        interface init_curl_curl;     module procedure init_curl_curl_SB;        end interface
        interface init_curl_curl;     module procedure init_curl_curl_SB_VP;     end interface
@@ -107,6 +113,19 @@
          i=6;  allocate(B%fb(i)); do i=1,6; call get_face_b(  B%fb(i),B%g,i); enddo
          i=12; allocate(B%eb(i)); do i=1,12;call get_edge_b(  B%eb(i),B%g,i); enddo
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
+       end subroutine
+
+       subroutine mirror_about_hmin_b(B,dir)
+         implicit none
+         type(block),intent(inout) :: B
+         integer,intent(in) :: dir
+         call mirror_about_hmin(B%g,dir)
+       end subroutine
+       subroutine mirror_about_hmax_b(B,dir)
+         implicit none
+         type(block),intent(inout) :: B
+         integer,intent(in) :: dir
+         call mirror_about_hmax(B%g,dir)
        end subroutine
 
        subroutine init_block_copy(B,B_in)

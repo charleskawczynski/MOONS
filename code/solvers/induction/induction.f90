@@ -13,6 +13,7 @@
        use string_mod
        use path_mod
        use export_raw_processed_mod
+       use export_raw_processed_symmetry_mod
        use print_export_mod
        use export_now_mod
 
@@ -429,10 +430,16 @@
            if (ind%SP%solveInduction) then
              write(*,*) 'export_tec_induction at ind%TMP%n_step = ',ind%TMP%n_step
              call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1)
+             if (ind%SP%export_symmetric) then
+               call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
+             endif
              call export_raw(ind%m,ind%B ,str(DT%B_f),'B',0)
              call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
              call export_raw(ind%m,ind%J ,str(DT%J_f),'J',0)
              call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1)
+             if (ind%SP%export_symmetric) then
+               call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
+             endif
              call export_raw(ind%m,ind%U_E%x  ,str(DT%B_f),'U_E_x',0)
              call export_raw(ind%m,ind%U_E%y  ,str(DT%B_f),'U_E_y',0)
              call export_raw(ind%m,ind%U_E%z  ,str(DT%B_f),'U_E_z',0)

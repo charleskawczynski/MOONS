@@ -24,6 +24,7 @@
         use GF_laplacian_mod
         use GF_curl_curl_mod
         use GF_mean_along_dir_mod
+        use GF_mirror_about_plane_mod
 
         implicit none
         private
@@ -73,6 +74,8 @@
         public :: mean_along_x
         public :: mean_along_y
         public :: mean_along_z
+
+        public :: mirror_about_hmin,mirror_about_hmax
 
         public :: assign_ghost_all
         public :: multiply_plane
