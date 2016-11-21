@@ -14,6 +14,8 @@
        use path_mod
        use print_export_mod
        use export_now_mod
+       use refine_mesh_mod
+
        use PCG_mod
        use PCG_solver_mod
        use matrix_free_params_mod
@@ -45,7 +47,7 @@
        private
        public :: energy
        public :: init,delete,display,print,export,import ! Essentials
-       public :: solve,exportTransient,export_tec
+       public :: solve,export_transient,export_tec
 
        type energy
          ! --- Vector fields ---
@@ -88,7 +90,7 @@
        interface import;             module procedure import_energy;           end interface
 
        interface solve;              module procedure solve_energy;            end interface
-       interface exportTransient;    module procedure energyExportTransient;   end interface
+       interface export_transient;   module procedure export_transient_nrg;    end interface
        interface export_tec;         module procedure export_tec_energy;       end interface
 
        contains
@@ -108,7 +110,7 @@
          real(cp),intent(in) :: Re,Pr,Ec,Ha
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: k_cc,prec_T,vol_CC
+         type(SF) :: k_cc,vol_CC
          write(*,*) 'Initializing energy:'
          call init(nrg%TMP,TMP)
          call init(nrg%ISP_T,ISP_T)
@@ -163,13 +165,9 @@
 
          call init(nrg%probe_divQ,str(DT%T),'probe_divQ',nrg%SP%restartT)
 
-         nrg%MFP%c_nrg = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
-         call init(prec_T,nrg%T)
-         call prec_lap_SF(prec_T,nrg%m)
-         ! call prec_identity_SF(prec_T) ! For ordinary CG
-         call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_T,nrg%m,&
+         nrg%MFP%coeff = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
+         call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
          nrg%ISP_T,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T),'T',.false.,.false.)
-         call delete(prec_T)
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
          call print(nrg)
@@ -292,7 +290,7 @@
          endif
        end subroutine
 
-       subroutine energyExportTransient(nrg)
+       subroutine export_transient_nrg(nrg)
          implicit none
          type(energy),intent(inout) :: nrg
          real(cp) :: temp
@@ -300,12 +298,13 @@
          call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP%t,temp)
        end subroutine
 
-       subroutine solve_energy(nrg,U,PE,EN,DT)
+       subroutine solve_energy(nrg,U,PE,EN,RM,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
+         type(refine_mesh),intent(in) :: RM
          type(dir_tree),intent(in) :: DT
 
          call assign(nrg%gravity%x,1.0_cp)
@@ -316,7 +315,7 @@
          case (1)
          call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-         
+
          case (2) ! O2 time marching
          call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
@@ -347,10 +346,13 @@
          if (PE%transient_0D) then
            call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
            call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
-           call exportTransient(nrg)
+           call export_transient(nrg)
          endif
 
          if (PE%info) call print(nrg)
+
+         ! if (RM%all%this) call prolongate(nrg)
+
          if (PE%solution.or.EN%T%this.or.EN%all%this) then
            call export(nrg,DT)
            call export_tec(nrg,DT)

@@ -20,15 +20,15 @@
        public :: get_dh_boundary    ! call get_dh_boundary(g1,g2,dir)
        public :: init_mixed
 
-       interface init;       module procedure init_sub_domain;        end interface
-       interface init;       module procedure init_copy_sub_domain;   end interface
-       interface delete;     module procedure delete_sub_domain;      end interface
-       interface display;    module procedure display_sub_domain;     end interface
-       interface print;      module procedure print_sub_domain;       end interface
-       interface export;     module procedure export_sub_domain;      end interface
-       interface import;     module procedure import_sub_domain;      end interface
+       interface init;            module procedure init_sub_domain;              end interface
+       interface init;            module procedure init_copy_sub_domain;         end interface
+       interface delete;          module procedure delete_sub_domain;            end interface
+       interface display;         module procedure display_sub_domain;           end interface
+       interface print;           module procedure print_sub_domain;             end interface
+       interface export;          module procedure export_sub_domain;            end interface
+       interface import;          module procedure import_sub_domain;            end interface
 
-       interface init_mixed; module procedure init_mixed_sub_domain;  end interface
+       interface init_mixed;      module procedure init_mixed_sub_domain;        end interface
 
        type sub_domain
          type(overlap),dimension(3) :: C ! cell center

@@ -15,6 +15,7 @@
       use Jacobi_solver_mod
       use matrix_mod
       use preconditioners_mod
+      use diagonals_mod
 
       implicit none
 
@@ -34,7 +35,7 @@
         real(cp) :: tol
         procedure(op_VF),pointer,nopass :: operator
       end type
-      
+
       interface init;        module procedure init_Jacobi;       end interface
       interface solve;       module procedure solve_Jacobi_VF;   end interface
       interface delete;      module procedure delete_Jacobi;     end interface
@@ -85,7 +86,7 @@
           call export_matrix(JAC%D,dir,'JAC_VF_diag_'//name)
         endif
 
-        call diag_Lap_VF(JAC%D,m)
+        call diag_Lap(JAC%D,m)
         call assign(JAC%Dinv,JAC%D)
         call invert(JAC%Dinv)
         call zeroghostpoints(JAC%Dinv)

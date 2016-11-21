@@ -9,6 +9,7 @@
         use data_location_mod
         use procedure_array_mod
         use procedure_array_plane_op_mod
+        use face_edge_corner_indexing_mod
         use boundary_conditions_mod
         use GF_curl_curl_mod
         implicit none
@@ -58,6 +59,10 @@
         public :: cross_product_x
         public :: cross_product_y
         public :: cross_product_z
+
+        public :: restrict
+        public :: prolongate
+        public :: reset_index_sets
 
         public :: laplacian_matrix_based
         public :: curl_curl_matrix_based
@@ -129,6 +134,12 @@
        interface symmetry_local_x;         module procedure symmetry_local_x_BF;          end interface
        interface symmetry_local_y;         module procedure symmetry_local_y_BF;          end interface
        interface symmetry_local_z;         module procedure symmetry_local_z_BF;          end interface
+
+       interface restrict;                 module procedure restrict_BF;                  end interface
+       interface restrict;                 module procedure restrict_reset_BF;            end interface
+       interface prolongate;               module procedure prolongate_BF;                end interface
+       interface prolongate;               module procedure prolongate_reset_BF;          end interface
+       interface reset_index_sets;         module procedure reset_index_sets_BF;          end interface
 
        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_VF_BF; end interface
        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_SF_BF; end interface
@@ -375,7 +386,7 @@
        subroutine init_BC_props_BF(BF)
          implicit none
          type(block_field),intent(inout) :: BF
-         call init_props(BF%BCs)
+         call init_props(BF%BCs )
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
@@ -727,6 +738,88 @@
          call symmetry_local_z(u%GF)
        end subroutine
 
+       subroutine restrict_BF(r,u,B,dir)
+         implicit none
+         type(block_field),intent(inout) :: r
+         type(block_field),intent(in) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         integer :: x,y,z
+         eye = eye_given_dir(dir)
+         x = eye(1); y = eye(2); z = eye(3)
+         if (CC_along(u%DL,dir))    then; call restrict_C(r%GF,u%GF,B%g,dir,x,y,z)
+         elseif (N_along(u%DL,dir)) then; call restrict_N(r%GF,u%GF,B%g,dir,x,y,z)
+         else; stop 'Error: bad DL in restrict_BF in BF.f90'
+         endif
+       end subroutine
+
+       subroutine restrict_reset_BF(u,B,dir)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         integer :: i,x,y,z
+         eye = eye_given_dir(dir)
+         x = eye(1); y = eye(2); z = eye(3)
+         if (CC_along(u%DL,dir))    then; call restrict_C(u%GF,B%g,dir,x,y,z)
+         elseif (N_along(u%DL,dir)) then; call restrict_N(u%GF,B%g,dir,x,y,z)
+         else; stop 'Error: bad DL in restrict_BF in BF.f90'
+         endif
+
+         if (u%BCs%BCL%defined) then
+         do i=1,6
+         if (dir_given_face(i).ne.dir) then ! only restrict BCs along surface tangent directions
+           if (CC_along(u%DL,dir))    then; call restrict_C(u%BCs%face%b(i),B%fb(i),dir,x,y,z)
+           elseif (N_along(u%DL,dir)) then; call restrict_N(u%BCs%face%b(i),B%fb(i),dir,x,y,z)
+           else; stop 'Error: bad DL in restrict_BF in BF.f90'
+           endif
+         endif
+         enddo
+         endif
+       end subroutine
+
+       subroutine prolongate_BF(r,u,B,dir)
+         implicit none
+         type(block_field),intent(inout) :: r
+         type(block_field),intent(in) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         integer :: x,y,z
+         eye = eye_given_dir(dir)
+         x = eye(1); y = eye(2); z = eye(3)
+         if (CC_along(u%DL,dir))    then; call prolongate_C(r%GF,u%GF,B%g,dir,x,y,z)
+         elseif (N_along(u%DL,dir)) then; call prolongate_N(r%GF,u%GF,B%g,dir,x,y,z)
+         else; stop 'Error: bad DL in prolongate_BF in BF.f90'
+         endif
+       end subroutine
+
+       subroutine prolongate_reset_BF(u,B,dir)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         integer :: x,y,z
+         eye = eye_given_dir(dir)
+         x = eye(1); y = eye(2); z = eye(3)
+             if (CC_along(u%DL,dir)) then; call prolongate_C(u%GF,B%g,dir,x,y,z)
+         elseif ( N_along(u%DL,dir)) then; call prolongate_N(u%GF,B%g,dir,x,y,z)
+         else; stop 'Error: bad DL in prolongate_BF in BF.f90'
+         endif
+         if (u%BCs%BCL%defined) call prolongate(u%BCs,B,dir)
+         if (u%BCs%BCL%defined) call reset_index_sets(u%BCs,B)
+       end subroutine
+
+       subroutine reset_index_sets_BF(u,B)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         if (u%BCs%BCL%defined) call reset_index_sets(u%BCs,B)
+       end subroutine
+
        subroutine laplacian_matrix_based_VF_BF(lapX,lapY,lapZ,X,Y,Z,B)
          implicit none
          type(block_field),intent(inout) :: lapX,lapY,lapZ
@@ -775,35 +868,5 @@
          B%curl_curlX(3)%U1_D2,B%curl_curlY(3)%U1_D2,&
          B%curl_curlX(3)%U1_U2,B%curl_curlY(3)%U1_U2)
        end subroutine
-
-       subroutine curl_curl_test_BF_VF_lap(CX,CY,CZ,X,Y,Z,B)
-         implicit none
-         type(block_field),intent(inout) :: CX,CY,CZ
-         type(block_field),intent(in) :: X,Y,Z
-         type(block),intent(in) :: B
-         call laplacian(CX%GF,X%GF,B%curl_curlX(1)%S(1:3)%SF%L,B%curl_curlX(1)%D_3D,B%curl_curlX(1)%S(1:3)%SF%U)
-         call laplacian(CY%GF,Y%GF,B%curl_curlY(2)%S(1:3)%SF%L,B%curl_curlY(2)%D_3D,B%curl_curlY(2)%S(1:3)%SF%U)
-         call laplacian(CZ%GF,Z%GF,B%curl_curlZ(3)%S(1:3)%SF%L,B%curl_curlZ(3)%D_3D,B%curl_curlZ(3)%S(1:3)%SF%U)
-       end subroutine
-
-
-       ! subroutine curl_curl_test_BF_VF(CX,CY,CZ,X,Y,Z,B)
-       !   implicit none
-       !   type(block_field),intent(inout) :: CX,CY,CZ
-       !   type(block_field),intent(in) :: X,Y,Z
-       !   type(block),intent(in) :: B
-       !   call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,&
-       !   B%curl_curlX(1)%L,&
-       !   B%curl_curlX(1)%D_3D,&
-       !   B%curl_curlX(1)%U)
-       !   call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,&
-       !   B%curl_curlY(2)%L,&
-       !   B%curl_curlY(2)%D_3D,&
-       !   B%curl_curlY(2)%U)
-       !   call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,&
-       !   B%curl_curlZ(3)%L,&
-       !   B%curl_curlZ(3)%D_3D,&
-       !   B%curl_curlZ(3)%U)
-       ! end subroutine
 
       end module

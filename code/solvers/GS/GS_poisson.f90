@@ -3,9 +3,9 @@
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, mesh (m) using the Gauss-Seidel (GS) method
-      ! 
+      !
       ! Note that the variant of Gauss-Seidel/GS called
-      ! "red-black" Gauss-Seidel is used, where the fields are 
+      ! "red-black" Gauss-Seidel is used, where the fields are
       ! traversed in a 3D checkerboarding manner.
       !
       ! Input:
@@ -13,7 +13,7 @@
       !     f            = RHS of above equation
       !     m            = contains mesh information (dhc,dhn)
       !     compute_norm    = print residuals to screen (T,F)
-      ! 
+      !
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_CONVERGENCE_)
       use current_precision_mod
       use mesh_mod
@@ -27,6 +27,7 @@
       use VF_mod
       use IO_tools_mod
       use preconditioners_mod
+      use diagonals_mod
       use GS_solver_mod
       use iter_solver_params_mod
       implicit none
@@ -54,11 +55,11 @@
         type(string) :: name
         logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
-          
+
         type(VF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gtx,gty,gtz,sx,sy,sz
       end type
-      
+
       interface init;         module procedure init_GS_SF;           end interface
       interface init;         module procedure init_GS_VF;           end interface
       interface delete;       module procedure delete_GS_SF;         end interface
@@ -107,7 +108,7 @@
         call init(GS%res,u)
         call init(GS%D_inv,u)
 
-        call diag_Lap_SF(GS%D_inv,m)
+        call diag_Lap(GS%D_inv,m)
         call invert(GS%D_inv)
 
         GS%N_iter = 1
@@ -121,7 +122,7 @@
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         integer :: i,t
-        
+
         call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)
@@ -157,7 +158,7 @@
         call init(GS%res,u)
         call init(GS%D_inv,u)
 
-        call diag_Lap_VF(GS%D_inv,m)
+        call diag_Lap(GS%D_inv,m)
         call invert(GS%D_inv)
 
         GS%N_iter = 1

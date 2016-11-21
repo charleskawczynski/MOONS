@@ -4,12 +4,13 @@
        use SF_mod
        use VF_mod
        use TF_mod
+       use data_location_mod
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
        use ops_interp_mod
        use time_marching_params_mod
-       
+
        implicit none
 
        private
@@ -43,7 +44,7 @@
          integer :: direction
          character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
          ! ------------- collect some info
-         DL = get_DL_SF(x,'export_raw_SF0')
+         DL = get_char(x%DL)
          if (x%is_Face) CD = get_CD(x%face,'export_raw_SF1')
          if (x%is_Edge) CD = get_CD(x%edge,'export_raw_SF2')
          ! ------------- begin export
@@ -71,7 +72,7 @@
          real(cp) :: tol
          integer :: j
          character(len=1) :: DL ! DL = direction letter, CD = component direction
-         DL = get_DL(x,'export_raw_VF')
+         DL = get_char(x%x%DL)
 
          tol = 10.0_cp**(-15.0_cp)
          t = (/amax(x%x),amax(x%y),amax(x%z)/)
@@ -176,7 +177,7 @@
            elseif (x%is_Node) then
              call export_3D_3C(m,temp_N,dir,name//DL,pad)
            elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m); 
+             call init_Edge(temp_1,m); call init_Node(temp_N,m);
              call face2Node(temp_N,x,m,temp_1)
              call export_3D_3C(m,temp_N,dir,name//DL,pad)
              call delete(temp_1); call delete(temp_N)
@@ -195,7 +196,7 @@
            elseif (x%is_Node) then
              call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
            elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m); 
+             call init_Edge(temp_1,m); call init_Node(temp_N,m);
              call face2Node(temp_N,x,m,temp_1)
              call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
              call delete(temp_1); call delete(temp_N)
@@ -293,7 +294,7 @@
 
        subroutine export_p_transient_VF_func(func,m,x,dir,name,pad,direction,TMP)
          implicit none
-         procedure(export_transient) :: func
+         procedure(export_unsteady) :: func
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
@@ -311,7 +312,7 @@
            elseif (x%is_Node) then
              call func(m,temp_N,dir,name//'np',pad,direction,TMP)
            elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m); 
+             call init_Edge(temp_1,m); call init_Node(temp_N,m);
              call face2Node(temp_N,x,m,temp_1)
              call func(m,temp_N,dir,name//'np',pad,direction,TMP)
              call delete(temp_1); call delete(temp_N)
@@ -338,28 +339,6 @@
          case default; write(*,*) 'Error: i must = 1,2,3 in '//caller
          stop 'Done in export_raw_processed.f90'
          end select
-       end function
-
-       function get_DL(x,caller) result(DL)
-         implicit none
-         type(VF),intent(in) :: x
-         character(len=*),intent(in) :: caller
-         character(len=1) :: DL
-               if (x%is_CC) then; DL = 'c'; elseif (x%is_Node) then; DL = 'n'
-         elseif (x%is_Face) then; DL = 'f'; elseif (x%is_Edge) then; DL = 'e'
-         else; write(*,*) 'Error: bad input type in '//caller; stop 'Done in export_raw_processed.f90'
-         endif
-       end function
-
-       function get_DL_SF(x,caller) result(DL)
-         implicit none
-         type(SF),intent(in) :: x
-         character(len=*),intent(in) :: caller
-         character(len=1) :: DL
-               if (x%is_CC) then; DL = 'c'; elseif (x%is_Node) then; DL = 'n'
-         elseif (x%is_Face) then; DL = 'f'; elseif (x%is_Edge) then; DL = 'e'
-         else; write(*,*) 'Error: bad input type in '//caller; stop 'Done in export_raw_processed.f90'
-         endif
        end function
 
        function get_plane_direction(m,caller) result(direction)

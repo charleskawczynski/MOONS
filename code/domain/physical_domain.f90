@@ -14,22 +14,28 @@
 
        public :: add,init_mixed
 
-       interface init;        module procedure init_physical_domain_mesh;      end interface
-       interface init;        module procedure init_physical_domain_grid;      end interface
-       interface init;        module procedure init_physical_domain_copy;      end interface
-       interface delete;      module procedure delete_physical_domain;         end interface
-       interface display;     module procedure display_physical_domain;        end interface
-       interface display;     module procedure display_physical_domain_wrapper;end interface
-       interface print;       module procedure print_physical_domain;          end interface
-       interface export;      module procedure export_physical_domain;         end interface
-       interface import;      module procedure import_physical_domain;         end interface
-       interface export;      module procedure export_physical_domain_wrapper; end interface
-       interface import;      module procedure import_physical_domain_wrapper; end interface
+       public :: pick_extrema_bot
+       public :: pick_extrema_top
 
-       interface add;         module procedure add_physical_sub_domain;        end interface
-       interface add;         module procedure add_physical_domain_grid;       end interface
+       interface init;             module procedure init_PD_mesh;            end interface
+       interface init;             module procedure init_PD_grid;            end interface
+       interface init;             module procedure init_PD_copy;            end interface
+       interface delete;           module procedure delete_PD;               end interface
+       interface display;          module procedure display_PD;              end interface
+       interface display;          module procedure display_PD_wrapper;      end interface
+       interface print;            module procedure print_PD;                end interface
+       interface export;           module procedure export_PD;               end interface
+       interface import;           module procedure import_PD;               end interface
+       interface export;           module procedure export_PD_wrapper;       end interface
+       interface import;           module procedure import_PD_wrapper;       end interface
 
-       interface init_mixed;  module procedure init_mixed_physical_domain;     end interface
+       interface add;              module procedure add_physical_sub_domain; end interface
+       interface add;              module procedure add_PD_grid;             end interface
+
+       interface init_mixed;       module procedure init_mixed_PD;           end interface
+
+       interface pick_extrema_bot; module procedure pick_extrema_bot_PD;     end interface
+       interface pick_extrema_top; module procedure pick_extrema_top_PD;     end interface
 
        type physical_domain
          integer :: s ! Number of physical_sub_domains
@@ -43,7 +49,7 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_physical_domain_mesh(D,m_R1,m_R2)
+       subroutine init_PD_mesh(D,m_R1,m_R2)
          implicit none
          type(physical_domain),intent(inout) :: D
          type(mesh),intent(in) :: m_R1,m_R2
@@ -65,7 +71,7 @@
          D%defined = size(D%sd).gt.0
        end subroutine
 
-       subroutine init_physical_domain_grid(D,g_R1,g_R2,g_id_1,g_id_2)
+       subroutine init_PD_grid(D,g_R1,g_R2,g_id_1,g_id_2)
          implicit none
          type(physical_domain),intent(inout) :: D
          type(grid),intent(in) :: g_R1,g_R2
@@ -75,7 +81,7 @@
          D%defined = size(D%sd).gt.0
        end subroutine
 
-       subroutine init_mixed_physical_domain(D,DL)
+       subroutine init_mixed_PD(D,DL)
          implicit none
          type(physical_domain),intent(inout) :: D
          type(data_location),intent(in) :: DL
@@ -85,7 +91,7 @@
          endif
        end subroutine
 
-       subroutine init_physical_domain_copy(D_out,D_in)
+       subroutine init_PD_copy(D_out,D_in)
          implicit none
          type(physical_domain),intent(inout) :: D_out
          type(physical_domain),intent(in) :: D_in
@@ -100,7 +106,7 @@
          D_out%defined = D_in%defined
        end subroutine
 
-       subroutine delete_physical_domain(D)
+       subroutine delete_PD(D)
          implicit none
          type(physical_domain),intent(inout) :: D
          integer :: i
@@ -112,7 +118,7 @@
          D%defined = .false.
        end subroutine
 
-       subroutine print_physical_domain(D,name)
+       subroutine print_PD(D,name)
          implicit none
          type(physical_domain),intent(in) :: D
          character(len=*),intent(in) :: name
@@ -121,7 +127,7 @@
          do i=1,D%s; call print(D%sd(i),name//'_'//int2str(i)); enddo
        end subroutine
 
-       subroutine display_physical_domain(D,un)
+       subroutine display_PD(D,un)
          implicit none
          type(physical_domain),intent(inout) :: D
          integer,intent(in) :: un
@@ -129,7 +135,7 @@
          do i=1,D%s; call display(D%sd(i),'SD_'//int2str(i),un); enddo
        end subroutine
 
-       subroutine display_physical_domain_wrapper(D,dir,name)
+       subroutine display_PD_wrapper(D,dir,name)
          implicit none
          type(physical_domain),intent(inout) :: D
          character(len=*),intent(in) :: dir,name
@@ -139,7 +145,7 @@
          call close_and_message(un,dir,name)
        end subroutine
 
-       subroutine export_physical_domain(D,un)
+       subroutine export_PD(D,un)
          implicit none
          type(physical_domain),intent(in) :: D
          integer,intent(in) :: un
@@ -151,7 +157,7 @@
          do i=1,D%s; call export(D%sd(i),un); enddo
        end subroutine
 
-       subroutine export_physical_domain_wrapper(D,dir,name)
+       subroutine export_PD_wrapper(D,dir,name)
          implicit none
          type(physical_domain),intent(in) :: D
          character(len=*),intent(in) :: dir,name
@@ -161,7 +167,7 @@
          call close_and_message(un,dir,name)
        end subroutine
 
-       subroutine import_physical_domain(D,un)
+       subroutine import_PD(D,un)
          implicit none
          type(physical_domain),intent(inout) :: D
          integer,intent(in) :: un
@@ -175,7 +181,7 @@
          do i=1,D%s; call import(D%sd(i),un); enddo
        end subroutine
 
-       subroutine import_physical_domain_wrapper(D,dir,name)
+       subroutine import_PD_wrapper(D,dir,name)
          implicit none
          type(physical_domain),intent(inout) :: D
          character(len=*),intent(in) :: dir,name
@@ -189,7 +195,7 @@
        ! **********************************************************
        ! **********************************************************
 
-       subroutine add_physical_domain_grid(D,g_R1,g_R2,g_id_1,g_id_2)
+       subroutine add_PD_grid(D,g_R1,g_R2,g_id_1,g_id_2)
          implicit none
          type(physical_domain),intent(inout) :: D
          type(grid),intent(in) :: g_R1,g_R2
@@ -221,6 +227,20 @@
            call delete(temp)
          endif
          D%defined = size(D%sd).gt.0
+       end subroutine
+
+       subroutine pick_extrema_bot_PD(D,i,dir)
+         implicit none
+         type(physical_domain),intent(inout) :: D
+         integer,intent(in) :: i,dir
+         call pick_extrema_bot(D%sd(i),dir)
+       end subroutine
+
+       subroutine pick_extrema_top_PD(D,i,dir)
+         implicit none
+         type(physical_domain),intent(inout) :: D
+         integer,intent(in) :: i,dir
+         call pick_extrema_top(D%sd(i),dir)
        end subroutine
 
        end module

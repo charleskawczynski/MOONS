@@ -54,6 +54,10 @@
         public :: dot_product,dot
         public :: cross_product
 
+        public :: restrict
+        public :: prolongate
+        public :: reset_index_sets
+
         ! Monitoring
         public :: print_BCs
         public :: export_BCs
@@ -75,131 +79,136 @@
         type VF
           ! integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
+
           logical :: is_CC,is_Node,is_Face,is_Edge
         end type
 
-        interface init;              module procedure init_VF_copy_VF;          end interface
-        interface init;              module procedure init_VF_copy_SF;          end interface
-        interface init;              module procedure init_VF_copy_VF_mesh;     end interface
-        interface delete;            module procedure delete_VF;                end interface
-        interface display;           module procedure display_VF;               end interface
-        interface print;             module procedure print_VF;                 end interface
-        interface export;            module procedure export_VF;                end interface
-        interface import;            module procedure import_VF;                end interface
-        interface export;            module procedure export_VF_wrapper;        end interface
-        interface import;            module procedure import_VF_wrapper;        end interface
+        interface init;                    module procedure init_VF_copy_VF;             end interface
+        interface init;                    module procedure init_VF_copy_SF;             end interface
+        interface init;                    module procedure init_VF_copy_VF_mesh;        end interface
+        interface delete;                  module procedure delete_VF;                   end interface
+        interface display;                 module procedure display_VF;                  end interface
+        interface print;                   module procedure print_VF;                    end interface
+        interface export;                  module procedure export_VF;                   end interface
+        interface import;                  module procedure import_VF;                   end interface
+        interface export;                  module procedure export_VF_wrapper;           end interface
+        interface import;                  module procedure import_VF_wrapper;           end interface
 
-        interface init_CC;           module procedure init_VF_CC;               end interface
-        interface init_Face;         module procedure init_VF_Face;             end interface
-        interface init_Edge;         module procedure init_VF_Edge;             end interface
-        interface init_Node;         module procedure init_VF_Node;             end interface
+        interface init_CC;                 module procedure init_VF_CC;                  end interface
+        interface init_Face;               module procedure init_VF_Face;                end interface
+        interface init_Edge;               module procedure init_VF_Edge;                end interface
+        interface init_Node;               module procedure init_VF_Node;                end interface
 
-        interface init_CC;           module procedure init_VF_CC_MD;            end interface
-        interface init_Face;         module procedure init_VF_Face_MD;          end interface
-        interface init_Edge;         module procedure init_VF_Edge_MD;          end interface
-        interface init_Node;         module procedure init_VF_Node_MD;          end interface
+        interface init_CC;                 module procedure init_VF_CC_MD;               end interface
+        interface init_Face;               module procedure init_VF_Face_MD;             end interface
+        interface init_Edge;               module procedure init_VF_Edge_MD;             end interface
+        interface init_Node;               module procedure init_VF_Node_MD;             end interface
 
-        interface init_Face_compliment; module procedure init_VF_Face_compliment;  end interface
-        interface init_Edge_compliment; module procedure init_VF_Edge_compliment;  end interface
+        interface init_Face_compliment;    module procedure init_VF_Face_compliment;     end interface
+        interface init_Edge_compliment;    module procedure init_VF_Edge_compliment;     end interface
 
-        interface init_CC;           module procedure init_VF_CC_assign;        end interface
-        interface init_Face;         module procedure init_VF_Face_assign;      end interface
-        interface init_Edge;         module procedure init_VF_Edge_assign;      end interface
-        interface init_Node;         module procedure init_VF_Node_assign;      end interface
-        interface multiply_volume;   module procedure multiply_volume_VF;       end interface
+        interface init_CC;                 module procedure init_VF_CC_assign;           end interface
+        interface init_Face;               module procedure init_VF_Face_assign;         end interface
+        interface init_Edge;               module procedure init_VF_Edge_assign;         end interface
+        interface init_Node;               module procedure init_VF_Node_assign;         end interface
+        interface multiply_volume;         module procedure multiply_volume_VF;          end interface
 
-        interface volume;            module procedure volume_VF;                end interface
-        interface sine_waves;        module procedure sine_waves_VF;            end interface
-        interface cosine_waves;      module procedure cosine_waves_VF;          end interface
-        interface random_noise;      module procedure random_noise_VF;          end interface
+        interface volume;                  module procedure volume_VF;                   end interface
+        interface sine_waves;              module procedure sine_waves_VF;               end interface
+        interface cosine_waves;            module procedure cosine_waves_VF;             end interface
+        interface random_noise;            module procedure random_noise_VF;             end interface
 
-        interface symmetry_error_x;    module procedure symmetry_error_x_VF;    end interface
-        interface symmetry_error_y;    module procedure symmetry_error_y_VF;    end interface
-        interface symmetry_error_z;    module procedure symmetry_error_z_VF;    end interface
+        interface symmetry_error_x;        module procedure symmetry_error_x_VF;         end interface
+        interface symmetry_error_y;        module procedure symmetry_error_y_VF;         end interface
+        interface symmetry_error_z;        module procedure symmetry_error_z_VF;         end interface
 
-        interface symmetry_local_x;    module procedure symmetry_local_x_VF;    end interface
-        interface symmetry_local_y;    module procedure symmetry_local_y_VF;    end interface
-        interface symmetry_local_z;    module procedure symmetry_local_z_VF;    end interface
+        interface symmetry_local_x;        module procedure symmetry_local_x_VF;         end interface
+        interface symmetry_local_y;        module procedure symmetry_local_y_VF;         end interface
+        interface symmetry_local_z;        module procedure symmetry_local_z_VF;         end interface
 
-        interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_VF; end interface
-        interface assign_ghost_XPeriodic; module procedure assign_ghost_XPeriodic_VF2;end interface
-        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_VF; end interface
-        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_VF2;end interface
-        interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_VF;  end interface
-        interface assign_wall_Dirichlet;  module procedure assign_wall_Dirichlet_VF2; end interface
-        interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_VF;  end interface
-        interface multiply_wall_Neumann;  module procedure multiply_wall_Neumann_VF2; end interface
+        interface assign_ghost_XPeriodic;  module procedure assign_ghost_XPeriodic_VF;   end interface
+        interface assign_ghost_XPeriodic;  module procedure assign_ghost_XPeriodic_VF2;  end interface
+        interface assign_ghost_N_XPeriodic;module procedure assign_ghost_N_XPeriodic_VF; end interface
+        interface assign_ghost_N_XPeriodic;module procedure assign_ghost_N_XPeriodic_VF2;end interface
+        interface assign_wall_Dirichlet;   module procedure assign_wall_Dirichlet_VF;    end interface
+        interface assign_wall_Dirichlet;   module procedure assign_wall_Dirichlet_VF2;   end interface
+        interface multiply_wall_Neumann;   module procedure multiply_wall_Neumann_VF;    end interface
+        interface multiply_wall_Neumann;   module procedure multiply_wall_Neumann_VF2;   end interface
 
-        interface dot_product;       module procedure dot_product_VF;           end interface
-        interface dot;               module procedure dot_VF_SF;                end interface
+        interface dot_product;             module procedure dot_product_VF;              end interface
+        interface dot;                     module procedure dot_VF_SF;                   end interface
 
-        interface cross_product;     module procedure cross_product_VF;         end interface
+        interface cross_product;           module procedure cross_product_VF;            end interface
 
-        interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_VF;  end interface
-        interface Laplacian_matrix_based;  module procedure Laplacian_matrix_based_VF;  end interface
+        interface restrict;                module procedure restrict_VF;                 end interface
+        interface restrict;                module procedure restrict_dir_VF;             end interface
+        interface prolongate;              module procedure prolongate_VF;               end interface
+        interface prolongate;              module procedure prolongate_dir_VF;           end interface
+        interface reset_index_sets;        module procedure reset_index_sets_VF;         end interface
 
-        interface print_BCs;         module procedure print_BCs_VF;             end interface
-        interface init_BCs;          module procedure init_BCs_VF_VF;           end interface
-        interface export_BCs;        module procedure export_BCs_VF;            end interface
-        interface init_BC_props;     module procedure init_BC_props_VF;         end interface
+        interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_VF;   end interface
+        interface Laplacian_matrix_based;  module procedure Laplacian_matrix_based_VF;   end interface
+
+        interface print_BCs;               module procedure print_BCs_VF;                end interface
+        interface init_BCs;                module procedure init_BCs_VF_VF;              end interface
+        interface export_BCs;              module procedure export_BCs_VF;               end interface
+        interface init_BC_props;           module procedure init_BC_props_VF;            end interface
 
         ! COMPUTATION ROUTINES
 
-        interface assignX;           module procedure assign_VF_VF_X;          end interface
-        interface assignY;           module procedure assign_VF_VF_Y;          end interface
-        interface assignZ;           module procedure assign_VF_VF_Z;          end interface
-        interface assignX;           module procedure assign_VF_S_X;           end interface
-        interface assignY;           module procedure assign_VF_S_Y;           end interface
-        interface assignZ;           module procedure assign_VF_S_Z;           end interface
+        interface assignX;                 module procedure assign_VF_VF_X;              end interface
+        interface assignY;                 module procedure assign_VF_VF_Y;              end interface
+        interface assignZ;                 module procedure assign_VF_VF_Z;              end interface
+        interface assignX;                 module procedure assign_VF_S_X;               end interface
+        interface assignY;                 module procedure assign_VF_S_Y;               end interface
+        interface assignZ;                 module procedure assign_VF_S_Z;               end interface
 
-        interface assign;            module procedure assign_VF_S;              end interface
-        interface assign;            module procedure assign_VF_SF;             end interface
-        interface assign;            module procedure assign_VF_VF;             end interface
-        interface assign_negative;   module procedure assign_negative_VF_VF;    end interface
+        interface assign;                  module procedure assign_VF_S;                 end interface
+        interface assign;                  module procedure assign_VF_SF;                end interface
+        interface assign;                  module procedure assign_VF_VF;                end interface
+        interface assign_negative;         module procedure assign_negative_VF_VF;       end interface
 
-        interface add;               module procedure add_VF_VF;                end interface
-        interface add;               module procedure add_VF_VF_VF;             end interface
-        interface add;               module procedure add_VF_SF;                end interface
-        interface add;               module procedure add_SF_VF;                end interface
-        interface add;               module procedure add_VF_S;                 end interface
-        interface add;               module procedure add_S_VF;                 end interface
+        interface add;                     module procedure add_VF_VF;                   end interface
+        interface add;                     module procedure add_VF_VF_VF;                end interface
+        interface add;                     module procedure add_VF_SF;                   end interface
+        interface add;                     module procedure add_SF_VF;                   end interface
+        interface add;                     module procedure add_VF_S;                    end interface
+        interface add;                     module procedure add_S_VF;                    end interface
 
-        interface add_product;       module procedure add_product_VF_VF_S;      end interface
-        interface product_add;       module procedure product_add_VF_VF_S;      end interface
+        interface add_product;             module procedure add_product_VF_VF_S;         end interface
+        interface product_add;             module procedure product_add_VF_VF_S;         end interface
 
-        interface subtract;          module procedure subtract_VF_VF;           end interface
-        interface subtract;          module procedure subtract_VF_VF_VF;        end interface
-        interface subtract;          module procedure subtract_VF_SF;           end interface
-        interface subtract;          module procedure subtract_VF_S;            end interface
-        interface subtract;          module procedure subtract_S_VF;            end interface
+        interface subtract;                module procedure subtract_VF_VF;              end interface
+        interface subtract;                module procedure subtract_VF_VF_VF;           end interface
+        interface subtract;                module procedure subtract_VF_SF;              end interface
+        interface subtract;                module procedure subtract_VF_S;               end interface
+        interface subtract;                module procedure subtract_S_VF;               end interface
 
-        interface multiply;          module procedure multiply_VF_VF;           end interface
-        interface multiply;          module procedure multiply_VF_VF_VF;        end interface
-        interface multiply;          module procedure multiply_VF_VF_SF;        end interface
-        interface multiply;          module procedure multiply_VF_VF_S;         end interface
-        interface multiply;          module procedure multiply_VF_SF;           end interface
-        interface multiply;          module procedure multiply_SF_VF;           end interface
-        interface multiply;          module procedure multiply_VF_S;            end interface
-        interface multiply;          module procedure multiply_VF_S3;           end interface
-        interface multiply;          module procedure multiply_S_VF;            end interface
+        interface multiply;                module procedure multiply_VF_VF;              end interface
+        interface multiply;                module procedure multiply_VF_VF_VF;           end interface
+        interface multiply;                module procedure multiply_VF_VF_SF;           end interface
+        interface multiply;                module procedure multiply_VF_VF_S;            end interface
+        interface multiply;                module procedure multiply_VF_SF;              end interface
+        interface multiply;                module procedure multiply_SF_VF;              end interface
+        interface multiply;                module procedure multiply_VF_S;               end interface
+        interface multiply;                module procedure multiply_VF_S3;              end interface
+        interface multiply;                module procedure multiply_S_VF;               end interface
 
-        interface divide;            module procedure divide_VF_VF;             end interface
-        interface divide;            module procedure divide_VF_SF;             end interface
-        interface divide;            module procedure divide_VF_S_VF;           end interface
-        interface divide;            module procedure divide_VF_S;              end interface
-        interface divide;            module procedure divide_S_VF;              end interface
+        interface divide;                  module procedure divide_VF_VF;                end interface
+        interface divide;                  module procedure divide_VF_SF;                end interface
+        interface divide;                  module procedure divide_VF_S_VF;              end interface
+        interface divide;                  module procedure divide_VF_S;                 end interface
+        interface divide;                  module procedure divide_S_VF;                 end interface
 
-        interface invert;            module procedure invert_VF;                end interface
-        interface mean;              module procedure mean_VF;                  end interface
-        interface max;               module procedure max_VF;                   end interface
-        interface amax;              module procedure amax_VF;                  end interface
-        interface amin;              module procedure amin_VF;                  end interface
+        interface invert;                  module procedure invert_VF;                   end interface
+        interface mean;                    module procedure mean_VF;                     end interface
+        interface max;                     module procedure max_VF;                      end interface
+        interface amax;                    module procedure amax_VF;                     end interface
+        interface amin;                    module procedure amin_VF;                     end interface
 
-        interface square;            module procedure square_VF;                end interface
-        interface abs;               module procedure abs_VF;                   end interface
-        interface insist_amax_lt_tol;module procedure insist_amax_lt_tol_VF;    end interface
-
-        ! interface sum;               module procedure vectorSum;             end interface
+        interface square;                  module procedure square_VF;                   end interface
+        interface abs;                     module procedure abs_VF;                      end interface
+        interface insist_amax_lt_tol;      module procedure insist_amax_lt_tol_VF;       end interface
 
         contains
 
@@ -439,7 +448,7 @@
           select case (dir)
           case (1); call init_Node(f%x,m);  call init_Face(f%y,m,3);call init_Face(f%z,m,2)
           case (2); call init_Face(f%x,m,3);call init_Node(f%y,m);  call init_Face(f%z,m,1)
-          case (3); call init_Face(f%x,m,2);call init_Face(f%y,m,1);call init_Node(f%z,m)  
+          case (3); call init_Face(f%x,m,2);call init_Face(f%y,m,1);call init_Node(f%z,m)
           case default; stop 'Error: dir must = 1,2,3 in init_VF_Edge_compliment in VF.f90'
           end select
           call delete_logicals(f)
@@ -470,7 +479,7 @@
           select case (dir)
           case (1); call init_CC  (f%x,m);  call init_Edge(f%y,m,3);call init_Edge(f%z,m,2)
           case (2); call init_Edge(f%x,m,3);call init_CC  (f%y,m);  call init_Edge(f%z,m,1)
-          case (3); call init_Edge(f%x,m,2);call init_Edge(f%y,m,1);call init_CC  (f%z,m)  
+          case (3); call init_Edge(f%x,m,2);call init_Edge(f%y,m,1);call init_CC  (f%z,m)
           case default; stop 'Error: dir must = 1,2,3 in init_VF_Face_compliment in VF.f90'
           end select
           call delete_logicals(f)
@@ -902,6 +911,53 @@
           call cross_product_x(ACrossB%x,A%y,A%z,B%y,B%z)
           call cross_product_y(ACrossB%y,A%x,A%z,B%x,B%z)
           call cross_product_z(ACrossB%z,A%x,A%y,B%x,B%y)
+        end subroutine
+
+        subroutine restrict_VF(A,m)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          call restrict(A%x,m)
+          call restrict(A%y,m)
+          call restrict(A%z,m)
+        end subroutine
+
+        subroutine restrict_dir_VF(A,m,dir)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          call restrict(A%x,m,dir)
+          call restrict(A%y,m,dir)
+          call restrict(A%z,m,dir)
+        end subroutine
+
+        subroutine prolongate_VF(A,m)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          call prolongate(A%x,m)
+          call prolongate(A%y,m)
+          call prolongate(A%z,m)
+        end subroutine
+
+        subroutine prolongate_dir_VF(A,m,dir)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          call prolongate(A%x,m,dir)
+          call prolongate(A%y,m,dir)
+          call prolongate(A%z,m,dir)
+        end subroutine
+
+        subroutine reset_index_sets_VF(A,m)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          call reset_index_sets(A%x,m)
+          call reset_index_sets(A%y,m)
+          call reset_index_sets(A%z,m)
         end subroutine
 
         function symmetry_error_x_VF(A) result(SE)

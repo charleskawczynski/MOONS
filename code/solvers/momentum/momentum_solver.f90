@@ -17,10 +17,10 @@
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
-       
+
        implicit none
        private
-       
+
        ! Routine names are besed on the following convention:
        ! 1) Time marching scheme (Explicit Euler, Diffusion-Implicit, etc.)
        ! 2) PPE method (Gauss-Seidel, SOR, multigrid, FFT, etc.)
@@ -145,10 +145,15 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F1,-dt) ! Because advect_div gives positive
-         call laplacian_matrix_based(temp_F1,U,m) ! O(dx^1) near boundaries
+         call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
+         ! call laplacian_matrix_based(temp_F1,U,m) ! O(dx^1) near boundaries
+         ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         call lap(temp_F1,U,m) ! O(dx^1) near boundaries
+         call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
-         call add_product(Ustar,F,dt)
+         call add(Ustar,F) ! Needs to be prolongated
+         call multiply(Ustar,dt)
+         call add(Ustar,U)
          call zeroWall_conditional(Ustar,m,U)
          call div(temp_CC,Ustar,m)
          call solve(PCG,p,temp_CC,m,compute_norms)

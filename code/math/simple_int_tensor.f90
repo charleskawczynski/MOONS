@@ -1,5 +1,6 @@
        module simple_int_tensor_mod
        use current_precision_mod
+       use face_edge_corner_indexing_mod
        implicit none
 
        private
@@ -18,12 +19,7 @@
          implicit none
          type(simple_int_tensor),intent(inout) :: T
          integer,intent(in) :: dir
-         select case (dir)
-         case (1); T%eye = (/1,0,0/)
-         case (2); T%eye = (/0,1,0/)
-         case (3); T%eye = (/0,0,1/)
-         case default; stop 'Error: dir must = 1,2,3 in simple_int_tensor.f90'
-         end select
+         T%eye = eye_given_dir(dir)
        end subroutine
 
        end module

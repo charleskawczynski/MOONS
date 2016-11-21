@@ -1,6 +1,6 @@
        module level_set_mod
        use current_precision_mod
-       
+
        use boundary_conditions_mod
        use mesh_mod
        use SF_mod
@@ -35,9 +35,9 @@
 
        implicit none
        private
-       
+
        public :: level_set,init,delete,solve
-       public :: export,exportTransient
+       public :: export,export_transient
 
        type level_set
          ! phi is a scalar field, but it must live on the cell face (like sigma on the cell edge)
@@ -53,7 +53,7 @@
        interface delete;              module procedure deletelevel_set;             end interface
        interface solve;               module procedure solve_level_set;             end interface
        interface export;              module procedure export_level_set;            end interface
-       interface exportTransient;     module procedure level_setExportTransient;    end interface
+       interface export_transient;     module procedure level_setexport_transient;    end interface
 
        contains
 
@@ -114,7 +114,7 @@
 
        ! ******************* EXPORT ****************************
 
-       subroutine level_setExportTransient(LS)
+       subroutine level_setexport_transient(LS)
          implicit none
          type(level_set),intent(inout) :: LS
        end subroutine

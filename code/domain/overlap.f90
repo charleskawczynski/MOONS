@@ -8,8 +8,13 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: inside,init_props
-       public :: is_overlap_physical,is_overlap_any
+       public :: is_overlap_physical
+       public :: is_overlap_any
        public :: is_overlap
+
+       public :: pick_extrema_top
+       public :: pick_extrema_bot
+
        public :: valid_range
 
        public :: get_N_overlap
@@ -21,27 +26,30 @@
        public :: compare
        public :: same_point
 
-       interface init;          module procedure init_overlap;              end interface
-       interface init;          module procedure init_copy_overlap;         end interface
-       interface delete;        module procedure delete_overlap;            end interface
-       interface print;         module procedure print_overlap;             end interface
-       interface display;       module procedure display_overlap;           end interface
-       interface export;        module procedure export_overlap;            end interface
-       interface import;        module procedure import_overlap;            end interface
+       interface init;                 module procedure init_overlap;                end interface
+       interface init;                 module procedure init_copy_overlap;           end interface
+       interface delete;               module procedure delete_overlap;              end interface
+       interface print;                module procedure print_overlap;               end interface
+       interface display;              module procedure display_overlap;             end interface
+       interface export;               module procedure export_overlap;              end interface
+       interface import;               module procedure import_overlap;              end interface
 
        interface get_p_from_boundary_N;module procedure get_p_from_boundary_N_OL;    end interface
        interface get_p_from_boundary_C;module procedure get_p_from_boundary_C_OL;    end interface
 
-       interface get_N_overlap; module procedure get_N_overlap_OL;          end interface
-       interface get_C_overlap; module procedure get_C_overlap_OL;          end interface
+       interface pick_extrema_bot;     module procedure pick_extrema_bot_OL;         end interface
+       interface pick_extrema_top;     module procedure pick_extrema_top_OL;         end interface
 
-       interface compare;       module procedure compare_overlap;           end interface
-       interface same_point;    module procedure same_point_OL;             end interface
-       interface same_point;    module procedure same_point_OL_2;           end interface
-       interface init_props;    module procedure init_props_OL;             end interface
-       interface is_overlap;    module procedure is_overlap_coordinates;    end interface
-       interface valid_range;   module procedure valid_range_overlap;       end interface
-       interface inside;        module procedure inside_OL;                 end interface
+       interface get_N_overlap;        module procedure get_N_overlap_OL;            end interface
+       interface get_C_overlap;        module procedure get_C_overlap_OL;            end interface
+
+       interface compare;              module procedure compare_overlap;             end interface
+       interface same_point;           module procedure same_point_OL;               end interface
+       interface same_point;           module procedure same_point_OL_2;             end interface
+       interface init_props;           module procedure init_props_OL;               end interface
+       interface is_overlap;           module procedure is_overlap_coordinates;      end interface
+       interface valid_range;          module procedure valid_range_overlap;         end interface
+       interface inside;               module procedure inside_OL;                   end interface
 
        type overlap
          ! i1(1) and i1(2) are indexes for start and end of overlapping region 1
@@ -52,7 +60,7 @@
          !                            |----------------R1----------------|
          !     |-------------R2---------------|
          !                           i2(2)     i2(2)
-         ! 
+         !
          integer,dimension(2) :: i1 = 0 ! index for region 1
          integer,dimension(2) :: i2 = 0 ! index for region 2
          integer :: iR = 0              ! index range
@@ -62,7 +70,7 @@
          !                       i1(1)=i1(2)
          !                            |      <-- (R1)
          !     |-------------R2---------------|
-         !                       i2(2)=i2(2)
+         !                       i2(1)=i2(2)
          ! Clearly, CI indexes are not valid
        end type
 
@@ -208,6 +216,30 @@
        end function
 
        ! ************************************************************************
+       ! ******************************** EXTREMA *******************************
+       ! ************************************************************************
+
+       subroutine pick_extrema_top_OL(A,B)
+         implicit none
+         type(overlap),intent(inout) :: A
+         type(overlap),intent(in) :: B
+         integer,dimension(2) :: i1,i2
+         i1(1) = A%i1(1); i1(2) = maxval((/A%i1(2),B%i1(2)/))
+         i2(1) = A%i2(1); i2(2) = maxval((/A%i2(2),B%i2(2)/))
+         call init(A,i1,i2)
+       end subroutine
+
+       subroutine pick_extrema_bot_OL(A,B)
+         implicit none
+         type(overlap),intent(inout) :: A
+         type(overlap),intent(in) :: B
+         integer,dimension(2) :: i1,i2
+         i1(1) = A%i1(1); i1(2) = minval((/A%i1(2),B%i1(2)/))
+         i2(1) = A%i2(1); i2(2) = minval((/A%i2(2),B%i2(2)/))
+         call init(A,i1,i2)
+       end subroutine
+
+       ! ************************************************************************
        ! ****************************** GET OVERLAP *****************************
        ! ************************************************************************
 
@@ -325,7 +357,7 @@
        function is_overlap_general(R1_hmin,R1_hmax,R2_hmin,R2_hmax,tol) result(L_any)
          ! L = overlapp
          ! 6 possibilities:
-         ! 
+         !
          !       1)
          !                 |-----R1-----|
          !             |-----R2-----|
@@ -374,7 +406,7 @@
        function inside_OL(p,hmin,hmax,tol) result(L_any)
          ! L = point_inside
          ! 3 possibilities:
-         ! 
+         !
          !       1)
          !                 *
          !             |-----R-----|
@@ -388,7 +420,7 @@
          !       4) not needed since this is a special case of 2 and 3
          !             *     (hmin = hmax)
          !             |
-         ! 
+         !
          real(cp),intent(in) :: p,hmin,hmax
          real(cp),intent(in) :: tol
          logical,dimension(3) :: L

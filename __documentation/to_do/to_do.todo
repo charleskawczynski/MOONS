@@ -1,0 +1,238 @@
+Long term to do:
+ ☐ Write prospectus, and refer to http://fire.pppl.gov/fpa\_annual\_meet.html
+ ☐ Code development and benchmarking
+ ☐ paper: full BC
+ ☐ paper: BC comparison
+ ☐ paper: moderate Rem Shercliff/Hunt flows, analytic soln/ perturbation analysis, secondary flow
+ ☐ paper: SK flow, analytic solutions / perturbation analysis for secondary flow
+ ☐ paper: LM MHD flows in the presence of plasma disruptions
+
+Papers:
+
+  Full BC:
+    ☐ Email Sergey and ask about sigma study, thin wall BC? Inform about symmetry condition
+    ☐ Start sigma study?
+    ☐ start organizing folder structure and latex directories
+    ☐ Plan figures to include
+    ☐ Setup high Ha cases
+    ☐ Start new sims on workstation
+    ☐ Begin post-processing results of latest sims
+    ☐ Filter transient data to compress output
+
+  BC comparison:
+    ☐ Include all BCs (RV,PV,TW), point out that PV is the insulating case of thin-walled BCs
+    ☐ Meet with Sergey to show energy budget terms before post-processing all sims.
+    ☐ Read Moreau book about energy transfer, write up some documentation for new implementation
+    ☐ Plot KB in vacuum in BC sim, see if that differs more / less then KBi_f.
+    ☐ Look into different forms of JxB ,e,g jxB = B•∇(B/μ) - ∇ (B²/μ)
+    ☐ Write a Python script to compare PV & RV BC sims
+    ☐ KE & ME eq.
+    ☐ Energy budget
+    ☐ Direct primitives (1-D)
+    ☐ qualitative plots (stream-traces)
+    ☐ Energy content - location of maximum energy
+    ☐ focus on difference between PV and RV
+    ☐ setup post-processing for J energy (don't need sigma since it's uniform through fluid-solid)
+    ☐ Finalize energy budget in code
+    ☐ restart  mesh? to make energy budget easier?
+    ☐ restart solution to make easier
+    ☐ Use thin wall BC for driven cavity
+    ☐ 2nd order forward diff may be necessary to get higher accuracy since the BC is partly Neumann.
+
+  Finite Rem Shercliff / Hunt Flow:
+    ☐ Read papers
+    ☐ Paper by Priede - Linear stability on Hunt flow ("not easy")
+    ☐ Perform systematic sims to show if secondary flow is physical or not. Params to vary
+    ☐ Magnetic Reynolds number (controls the magnitude of secondary flow)
+    ☐ Mesh density (to show results are not numerical)
+    ☐ Hartmann number (This is a factor in the source term for the secondary flow equation)
+    ☐ 3 sims: $Re = 100, Re_m = 1, Ha = 10, N_{cells} = (1,64,64), (1,96,96), (1,128,128)$
+    ☐ 3 sims: $Re = 100, Re_m = 100, Ha = 10, N_{cells} = (1,64,64), (1,96,96), (1,128,128)$
+
+  Plasma Disruption - LM MHD flows in its presence:
+    ☐ Read papers
+    ☐ Dimensional analysis
+
+  SK flow:
+    ☐ PRL: A new 2D fully coupled MHD model problem with closing currents for moderate Rem: description, flow regimes and stability.
+    ☐ First step of SK flow is descriptive - phases (linear, non-linear, decay)
+
+Prospectus:
+ ☐ Start writing introduction
+ ☐ PPT
+ ☐ Develop organization of prospectus document
+
+Code development:
+  BEM:
+  ☐ Make ops capable of handling a zero-cell mesh
+  ☐ stitching is needed so that diffusion can traverse between different grids.
+  ☐ need to look into methods to solve equation
+  ☐ need data structures to store solution
+  ☐ Think about data structures to store N^2 surface scalar fields
+
+  HPC scalability:
+  ☐ Add option for printing to screen vs write to file, introduce a .log file? (similar to HIMAG)
+
+  Mesh:
+  ☐ Gaps in grid generation needs to be better generalized for more situations.
+  ☐ Make a function to make grid in BL uniform
+
+  SF / VF / TF:
+  ☐ Remove is_CC from VF,TF. Make all objects depend on data_location.
+  ☐ Try to make data_location properties private again.
+  ☐ Make TF composed of 9 SF so that it can be composed of different sizes.
+  ☐ Try re-incorporating better parallelization for collocated / staggered VF / TF fields
+
+  IO:
+  ☐ export_raw_processed_mod - remove global vars (from sim params), check correct field is exported.
+  ☐ Re-consider HDF5
+
+  Exception handling:
+  ☐ Add face/node/CC/edge checks to ops (interp,advect, etc.).
+  ☐ IMPORTANT: del.f90 has no safe way to assign output with pad.
+
+  Improving Speed:
+  ☐ Remove allocation in lapcentered. May require changing matrix-free operator interface. Brainstorm.
+  ☐ Profile to find latest bottle necks
+  ☐ Try out pre-processor directive '-ftree -parallelize -loops=n' = split loops into n-threads
+  ☐ Consider pre-processor directives instead of if statements, this needs to be organized on a large level.
+
+  Makefile:
+
+
+  Complex Geometry:
+  ☐ Consider making an obstacle module (magnetic obstacle or something else).
+
+  Documentation / Passing down MOONS:
+  ☐ Continue fixing file names and folder names for better organization
+  ☐ Clean up / organize documentation.
+  ☐ Documentation for benchmark cases (methodology, format, execution)
+  ☐ Naming convention for all ops should be (Real,SF,VF) = (real(cp),scalarField,vectorField)
+  ☐ Convert matlab to python.
+  ☐ Document benchmark tests.
+  ☐ Try test-triven development approach
+
+  Benchmarks:
+  ☐ Make benchmarks and post-processing automatic. Consider using makefile definitions that override defaults
+  ☐ 3D LDC Hydro flow - grid refinement
+  ☐ 3D LDC Hydro flow, Re = 400, Re = 1000 (Guj and Stella)
+  ☐ 2D LDC Hydro flow, Re =  (Ghia)
+  ☐ 3D LDC MHD flow, Re = 100, Ha = 45 at low Re_m (Pattison)
+  ☐ 2D Channel MHD flow, Re = 200, Ha = 25.82, Re_m = 1 (Bandaru)
+  Benchmarks to consider adding:
+  ☐ 3D LDC hydro flow - turbulent (Re=2,000 and 3,200 compare with literature)
+  ☐ 2D kinematic MHD flow (Parker or Weiss)
+  ☐ 3D MHD Duct (Kenjeres)
+  ☐ 3D MHD Isotropic Turbulence decay (Knaepen)
+  ☐ 3D Duct MHD flow - DNS (Kinet, Knaepen, Molokov)
+  ☐ 2D LDC Hydro flow - grid refinement
+
+  Restart Capability:
+  ☐ Need to re-think restart capability. What should be restarted and what should be re-configured?
+  ☐ Should source terms in momentum solver be fixed? This way, restart can be used with a parameter.
+  ☐ Should the momentumsolver be picked with a compiler flag?
+  ☐ momentum import + override inputs? or inputs imported so MHD solver parameters stay the same?
+  ☐ Decide on format of input file (what parameters will be set in input file and what will be coded)
+
+  Misc:
+  ☐ Consider changing hn,hc to arrays
+  ☐ change stencils.f90 to sparse_mult and use L,D,U only (so that stencils must be combined at beginning)
+  ☐ move all routines that use i,j,k indexes to GF and make all of these callable from BF, then SF.
+  ☐ This may not be necessary for 1D operations, since GF requires 3D scalar info.
+
+Ideas:
+  Numerical Methods:
+  ☐ Refactor MG
+  ☐ Consider MG with Jacobi method, need to restrict material properties
+  ☐ Try changing smoother to Jacobi in MG and check convergence rate
+
+  New Features:
+  ☐ Implement an upwind scheme for the non-uniform grid.
+  ☐ Make pressure term 2nd order accurate in time (trap)
+  ☐ Make advection term 2nd order accurate in time (AB2)
+  ☐ Consider different time marching method (RK4 - eldredge)
+  ☐ Consider re-formulating using conservative higher order finite difference methods by Moin
+  ☐ Allow for compressibility!
+  ☐ Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
+  ☐ Use hgiher order time marching methods! (RK4 maybe?)
+  ☐ Make applyFaceBCs, applyEdgeBCs, applyCornerBCs.
+
+  Dimensionless Groups:
+  ☐ Elsasser number = ration of lorentz to coriolis forces = A = sigma B^2 / (2 rho Omega)
+  ☐ Ra = t_k t_nu / t_f^2 Where t_f is the free fall time  =  (H/(alpha g \Delta T))^(1/2)
+  ☐ Q = Chandrasekhar number = ratio of magneto-viscous diffusion time scales and the square of the alfven speed crossing time = t_eta t_nu / t_A^2
+  ☐ Eckmann number = ratio of rotation time to diffusion time  = t_Omega / t_nu = nu / (2 Omega H^2)
+  ☐ Convective Reynolds number = Re_c = t_nu / t_f
+
+
+  Miscellaneous:
+  ☐ Finish developing solverSettings estimateRemaining() subroutine
+  ☐ Look into Paul Roberts (UCLA)
+  ☐ Try comparing 1/Ha with cw for HIMAG vs MOONS and compare continuity of tangent(j)/sigma across interface
+  ☐ Member of committee for Naveen was in Geo-physics, Jonathon "Arnaud"? Look online about him and maybe we can collaborate.
+
+Non-work related:
+ ☐ delete emails and organize dropbox
+ ☐ prep / post tutoring flyers
+ ☐ organize photos and make slideshow
+ ☐ delete duplicate photos
+ ☐ return Christa's sketchers (if possible)
+
+Today:
+ ☐ how many flops does my code achieve?
+ ☐ what parameter space can I explore for plasma disruptions?
+ ☐ look at workstation results
+ ☐ write up new matrix for first paper
+ ☐ Fix datarace.
+ ☐ rethink MOONS derivative routines, any better hash approaches?
+ ☐ modify stencils to account for periodic BCs
+ ☐ Clean up files not compiled in code directory
+ ☐ get wine for Friday
+ ☐ read papers open in mendeley
+ ☐ fix mendeley links to files
+
+Code changes to make:
+ ☐ add restart to PE, and use this to separate tec export and restart export
+ ☐ make "array" class and use it in coordinates and triDiag (maybe)
+ ☐ change stencils.f90 to sparse\_mult and use L,D,U only (so that stencils must be combined at beginning)
+ ☐ delete more matlab scripts / convert to python
+ ☐ migrate to using DL only: (make CC,N,F,E private in SF and VF, then replace with DL)
+ ☐ make mirror for (coordinates,grid,mesh,GF,BF,SF,VF) for export\_raw\_symmetric(...,mirror dir)
+ ☐ make mirror for (coordinates,grid,mesh,GF,BF,SF,VF) for export\_raw\_antisymmetric(...,mirror dir)
+ ☐ Remove (get\_ghost,get\_interior) from coordinates
+ ☐ move all routines that use i,j,k indexes to GF and make all of these callable from BF, then SF.
+ ☐ This may not be necessary for 1D operations, since GF requires 3D scalar info.
+ ☐ preconditioners
+ ☐ interp
+ ☐ del
+
+Before starting next NME simulations:
+ ☐ Need to checkout a lot of old files on workstation.
+ ☐ I introduced the "outside" parallelization, which still has a datarace.
+ ☐ However, the new geometry was introduced since the last commit, and the grid\_extend, which is needed in the new geometry.
+ ☐ Look for any other things that are needed, and checkout what is necessary to return to a safe version.
+ ☐ Once ready, start new NME on workstation
+ ☐ Then start writing new paper, this will likely take as long as the sims themselves if all run in parallel (only 8)
+ ☐ Start new sims and continue with current version on my PC.
+ ☐ PCG is provably convergent for all SPD systems "https://e-reports-ext.llnl.gov/pdf/310656.pdf"
+
+Misc:
+ ☐ finish reading two papers (bandaru / MHD moving interfaces)
+ ☐ Update fix and improvements, then return here
+ ☐ Bring books over to Jon / Tyler
+ ☐ Look at solution from 2-day sim, make sure all looks okay
+ ☐ Change time to 400, or 100000 or something so that varying ISP is not missed.
+ ☐ copy over new Gamma_c sims
+ ☐ Push MOONS to github, pull on workstation + start new sim set (with proper sim ID)
+ ☐ Speak with Sergey about decision
+ ☐ \Gamma_c = 1 matches BETTER with PV BC case (uniform sigma) @created(16-11-17 12:10)
+ ☐ We should not be concerned with J_n not = 0 at \Gamma_c AFTER LINEAR INTERPOLATION since the currents do not behave linearly along n in this region. @created(16-11-17 12:11)
+ ☐ Practitioners will find this data, and study, more useful if they can compare uniform sigma
+ ☐ Work on the paper
+ ☐ Work prospectus presentation
+ ☐ Email abdou about prospectus reminder
+ ☐ Update FFT_Poisson_mod and all of its "leaves"
+
+
+＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+Archive:

@@ -26,14 +26,17 @@
 
        public :: vol_ID
 
+       public :: get_char
+       public :: defined
+
        type data_location
          logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
          integer :: face,edge = 0                    ! face direction, edge direction
-         logical,dimension(3) :: CC_along = .false.  ! 
-         logical,dimension(3) :: N_along = .false.   ! 
-         integer,dimension(3) :: CC_eye = 0          ! 
-         integer,dimension(3) :: N_eye = 0           ! 
-         logical :: defined = .false.                ! 
+         logical,dimension(3) :: CC_along = .false.  !
+         logical,dimension(3) :: N_along = .false.   !
+         integer,dimension(3) :: CC_eye = 0          !
+         integer,dimension(3) :: N_eye = 0           !
+         logical :: defined = .false.                !
          integer :: volume_ID = 0                    ! face direction, edge direction
        end type
 
@@ -63,6 +66,9 @@
 
        interface CC_eye;              module procedure CC_eye_DL;               end interface
        interface N_eye;               module procedure N_eye_DL;                end interface
+
+       interface get_char;            module procedure get_char_DL;             end interface
+       interface defined;             module procedure defined_DL;              end interface
 
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
@@ -395,6 +401,25 @@
           write(*,*) 'Error: dir must = 1,2,3 in ',caller,' in data_location.f90'
           stop 'Done'
           end select
+        end function
+
+        function defined_DL(DL) result(defined)
+          implicit none
+          type(data_location),intent(in) :: DL
+          logical :: defined
+          defined = DL%defined
+        end function
+
+        function get_char_DL(DL) result(c)
+          implicit none
+          type(data_location),intent(in) :: DL
+          character(len=1) :: c
+              if (DL%C) then; c = 'c'
+          elseif (DL%N) then; c = 'n'
+          elseif (DL%F) then; c = 'f'
+          elseif (DL%E) then; c = 'e'
+          else; stop 'Error: bad input type in get_char_DL in data_location.f90'
+          endif
         end function
 
         subroutine insist_valid_dir(DL,dir,caller)

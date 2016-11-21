@@ -1,11 +1,11 @@
        module ops_aux_mod
-       ! 
-       ! Directions are frequently used in this code. 
-       ! For clarity, some diagrams here show how the 
+       !
+       ! Directions are frequently used in this code.
+       ! For clarity, some diagrams here show how the
        ! directions are defined.
-       ! 
+       !
        ! faceDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -14,11 +14,11 @@
        !      faceDir --->  \  |      |
        !                     \ |      |
        !                      \|______|_____ x
-       ! 
-       ! 
-       ! 
+       !
+       !
+       !
        ! edgeDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -28,16 +28,18 @@
        !                     \ |      |
        !                      \|______|_____ x
        !                        -------> edgeDir
-       ! 
-       ! 
+       !
+       !
        use current_precision_mod
        use bctype_mod
+       use face_edge_corner_indexing_mod
        use ops_del_mod
        use grid_mod
        use mesh_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
        use export_raw_processed_mod
+       use GF_mod
        use VF_mod
        use SF_mod
        use index_mapping_mod
@@ -45,8 +47,6 @@
        implicit none
 
        private
-
-       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
        ! ----------------------------------- OTHER ROUTINES ------------------------------------
 
@@ -88,7 +88,7 @@
        public :: zeroWall
        interface zeroWall;                module procedure zeroWall_SF;               end interface
        interface zeroWall;                module procedure zeroWall_VF;               end interface
-        
+
        public :: zeroWall_conditional
        interface zeroWall_conditional;    module procedure zeroWall_conditional_SF;   end interface
        interface zeroWall_conditional;    module procedure zeroWall_conditional_VF;   end interface
@@ -122,38 +122,33 @@
        ! *********************************************************************************
        ! *********************************************************************************
 
-       subroutine stabilityTerms_GF(fo,fi,g,n,s,dir) ! Finished
+       subroutine stabilityTerms_GF(fo,fi,g,n,dir) ! Finished
          ! Computes
          !                     |  fi  |
          !    fo =  max( fo  , | ---- | )
          !                     | dh^n |
-         ! 
+         !
          implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: fo
-         real(cp),dimension(:,:,:),intent(in) :: fi
+         type(grid_field),intent(inout) :: fo
+         type(grid_field),intent(in) :: fi
          type(grid),intent(in) :: g
          integer,intent(in) :: n,dir
-         integer,dimension(3),intent(in) :: s
-         integer :: i,j,k,t,x,y,z
-         select case (dir)
-         case (1); x=1;y=0;z=0
-         case (2); x=0;y=1;z=0
-         case (3); x=0;y=0;z=1
-         case default; stop 'Error: dir must = 1,2,3 in stabilityTerms_GF in ops_aux.f90'
-         end select
+         integer,dimension(3) :: p
+         integer :: i,j,k,t
+         p = eye_given_dir(dir)
          !$OMP PARALLEL DO
-         do k=1,s(3); do j=1,s(2); do i=1,s(1)
-           t = i*x + j*y + k*z
-           fo(i,j,k) = maxval((/fo(i,j,k),abs(fi(i,j,k)/g%c(dir)%dhn(t)**real(n,cp))/))
+         do k=1,fo%s(3); do j=1,fo%s(2); do i=1,fo%s(1)
+           t = i*p(1) + j*p(2) + k*p(3)
+           fo%f(i,j,k) = maxval((/fo%f(i,j,k),abs(fi%f(i,j,k)/g%c(dir)%dhn(t)**real(n,cp))/))
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
 
        subroutine boundaryFlux_VF(BF,u,m)
          ! Computes
-         ! 
+         !
          !   BF = ∫∫ u•n dA
-         ! 
+         !
          implicit none
          type(VF),intent(in) :: u
          real(cp),intent(inout) :: BF
@@ -431,7 +426,7 @@
        end subroutine
 
        subroutine zeroWall_conditional_SF(f,m)
-         ! Sets wall coincident values to zero if 
+         ! Sets wall coincident values to zero if
          ! boundary conditions of u are NOT Neumann (bctype=3)
          implicit none
          type(SF),intent(inout) :: f
@@ -440,7 +435,7 @@
        end subroutine
 
        subroutine zeroWall_conditional_SF2(f,m,u)
-         ! Sets wall coincident values to zero if 
+         ! Sets wall coincident values to zero if
          ! boundary conditions of u are NOT Neumann (bctype=3)
          implicit none
          type(SF),intent(inout) :: f
@@ -503,7 +498,7 @@
          integer,intent(in) :: n,dir
          integer :: i
          call assign(fo,0.0_cp)
-         do i=1,fi%s; call stabilityTerms(fo%BF(i)%GF%f,fi%BF(i)%GF%f,m%B(i)%g,n,fi%BF(i)%GF%s,dir); enddo
+         do i=1,fi%s; call stabilityTerms(fo%BF(i)%GF,fi%BF(i)%GF,m%B(i)%g,n,dir); enddo
          call zeroGhostPoints(fo)
        end subroutine
 

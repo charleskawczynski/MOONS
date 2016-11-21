@@ -33,10 +33,10 @@
        real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       type FFTSolver
-        character(len=5) :: name
-        real(cp) :: dx2,dy2,dz2 ! Grid spacing (assumed uniform)
+        real(cp),dimension(3) :: dh2 ! Grid spacing (assumed uniform)
         integer :: Nx,Ny,Nz ! Number of cells
         type(SF) :: f,res
+        type(SF) :: coeff_x,coeff_y,coeff_z
         integer,dimension(3) :: s
       end type
       
@@ -51,16 +51,53 @@
         type(FFTSolver),intent(inout) :: FFT
         type(SF),intent(in) :: u
         type(mesh),intent(in) :: m
+        integer :: i,j,k,t
+        real(cp) :: cosi,cosj,cosk
         FFT%s = u%BF(1)%GF%s
-        FFT%dx2 = m%B(1)%g%c(1)%dhn(1)**2.0_cp
-        FFT%dy2 = m%B(1)%g%c(2)%dhn(1)**2.0_cp
-        FFT%dz2 = m%B(1)%g%c(3)%dhn(1)**2.0_cp
+        FFT%dh2(1) = m%B(1)%g%c(1)%dhn(1)**2.0_cp
+        FFT%dh2(2) = m%B(1)%g%c(2)%dhn(1)**2.0_cp
+        FFT%dh2(3) = m%B(1)%g%c(3)%dhn(1)**2.0_cp
         FFT%Nx = m%B(1)%g%c(1)%sc-2
         FFT%Ny = m%B(1)%g%c(2)%sc-2
         FFT%Nz = m%B(1)%g%c(3)%sc-2
         call init(FFT%f,u)
+        call init(FFT%coeff_x,u)
+        call init(FFT%coeff_y,u)
+        call init(FFT%coeff_z,u)
         call init(FFT%res,u)
-        FFT%name = 'FFT'
+
+        ! THESE FORMULAS ARE ONLY VALID WHEN DX1 = DX2 WHERE DIR = 3
+        !$OMP PARALLEL DO PRIVATE(cosj,cosk)
+        do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
+        cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
+        cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
+        if (.not.((i.eq.2).and.(j.eq.2))) then
+              FFT%coeff_x%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosj+cosk-2.0_cp)*FFT%dh2(1)
+        else; FFT%coeff_x%BF(t)%GF%f(i,j,k) = 1.0_cp
+        endif
+        enddo; enddo; enddo
+        !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO PRIVATE(cosi,cosk)
+        do k=2,FFT%s(3)-1; do j=1,FFT%s(2); do i=2,FFT%s(1)-1
+        cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
+        cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
+        if (.not.((i.eq.2).and.(k.eq.2))) then
+              FFT%coeff_y%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosi+cosk-2.0_cp)*FFT%dh2(2)
+        else; FFT%coeff_y%BF(t)%GF%f(i,j,k) = 1.0_cp
+        endif
+        enddo; enddo; enddo
+        !$OMP END PARALLEL DO
+        !$OMP PARALLEL DO PRIVATE(cosi,cosj)
+        do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
+        cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
+        cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
+        if (.not.((i.eq.2).and.(j.eq.2))) then
+              FFT%coeff_z%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosi+cosj-2.0_cp)*FFT%dh2(3)
+        else; FFT%coeff_z%BF(t)%GF%f(i,j,k) = 1.0_cp
+        endif
+        enddo; enddo; enddo
+        !$OMP END PARALLEL DO
+
       end subroutine
 
       subroutine deleteFFT(FFT)
@@ -68,6 +105,9 @@
         type(FFTSolver),intent(inout) :: FFT
         call delete(FFT%res)
         call delete(FFT%f)
+        call delete(FFT%coeff_x)
+        call delete(FFT%coeff_y)
+        call delete(FFT%coeff_z)
       end subroutine
 
       subroutine solveFFT_SF(FFT,u,f,vol,m,norm,displayTF,dir)
@@ -80,7 +120,6 @@
         logical,intent(in) :: displayTF
         integer,intent(in) :: dir
         integer :: i,j,k,t
-        real(cp) :: cosi,cosj,cosk
         integer,dimension(3) :: s
 
         call assign(FFT%f,f)
@@ -99,36 +138,23 @@
           stop 'Error: dir must = 1,2,3 in solveFFT in FFT_poisson.f90'
           end select
 
-          ! THESE FORMULAS ARE ONLY VALID WHEN DX1 = DX2 WHERE DIR = 3
           select case (dir)
           case (1)
-            !$OMP PARALLEL DO PRIVATE(cosj,cosk)
-            do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
-            cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
-            cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
-            if (.not.((i.eq.2).and.(j.eq.2))) then
-              u%BF(t)%GF%f(i,j,k) = 0.5_cp*FFT%f%BF(t)%GF%f(i,j,k)/(cosj+cosk-2.0_cp)*FFT%dy2
-            endif
+            !$OMP PARALLEL DO
+            do k=1,s(3); do j=2,s(2)-1; do i=2,s(1)-1
+              u%BF(t)%GF%f(i,j,k) = FFT%f%BF(t)%GF%f(i,j,k)*FFT%coeff_x%BF(t)%GF%f(i,j,k)
             enddo; enddo; enddo
             !$OMP END PARALLEL DO
           case (2)
-            !$OMP PARALLEL DO PRIVATE(cosi,cosk)
-            do k=2,FFT%s(3)-1; do j=1,FFT%s(2); do i=2,FFT%s(1)-1
-            cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
-            cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
-            if (.not.((i.eq.2).and.(k.eq.2))) then
-              u%BF(t)%GF%f(i,j,k) = 0.5_cp*FFT%f%BF(t)%GF%f(i,j,k)/(cosi+cosk-2.0_cp)*FFT%dx2
-            endif
+            !$OMP PARALLEL DO
+            do k=2,s(3)-1; do j=1,s(2); do i=2,s(1)-1
+              u%BF(t)%GF%f(i,j,k) = FFT%f%BF(t)%GF%f(i,j,k)*FFT%coeff_x%BF(t)%GF%f(i,j,k)
             enddo; enddo; enddo
             !$OMP END PARALLEL DO
           case (3)
-            !$OMP PARALLEL DO PRIVATE(cosi,cosj)
-            do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
-            cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
-            cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
-            if (.not.((i.eq.2).and.(j.eq.2))) then
-              u%BF(t)%GF%f(i,j,k) = 0.5_cp*FFT%f%BF(t)%GF%f(i,j,k)/(cosi+cosj-2.0_cp)*FFT%dx2
-            endif
+            !$OMP PARALLEL DO
+            do k=1,s(3); do j=2,s(2)-1; do i=2,s(1)-1
+              u%BF(t)%GF%f(i,j,k) = FFT%f%BF(t)%GF%f(i,j,k)*FFT%coeff_x%BF(t)%GF%f(i,j,k)
             enddo; enddo; enddo
             !$OMP END PARALLEL DO
           case default

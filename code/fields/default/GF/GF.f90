@@ -25,6 +25,8 @@
         use GF_curl_curl_mod
         use GF_mean_along_dir_mod
         use GF_mirror_about_plane_mod
+        use GF_restrict_mod
+        use GF_prolongate_mod
 
         implicit none
         private
@@ -32,6 +34,8 @@
         ! GF_base_mod
         public :: grid_field
         public :: init,delete,display,print,export,import ! Essentials
+        public :: print_info
+        public :: display_info
         public :: print_physical
         public :: init_CC
         public :: init_Face
@@ -100,6 +104,11 @@
         public :: cross_product_y
         public :: cross_product_z
 
+        public :: prolongate_C,restrict_C
+        public :: prolongate_N,restrict_N
+
         public :: insist_allocated
+        public :: insist_shape_staggered
+        public :: insist_shape_match
 
       end module

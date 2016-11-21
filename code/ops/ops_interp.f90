@@ -1,10 +1,10 @@
        module ops_interp_mod
-       ! Directions are frequently used in this code. 
-       ! For clarity, some diagrams here show how the 
+       ! Directions are frequently used in this code.
+       ! For clarity, some diagrams here show how the
        ! directions are defined.
-       ! 
+       !
        ! faceDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -13,11 +13,11 @@
        !      faceDir --->  \  |      |
        !                     \ |      |
        !                      \|______|_____ x
-       ! 
-       ! 
-       ! 
+       !
+       !
+       !
        ! edgeDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -27,7 +27,7 @@
        !                     \ |      |
        !                      \|______|_____ x
        !                        -------> edgeDir
-       ! 
+       !
        use current_precision_mod
        use face_edge_corner_indexing_mod
        use grid_mod
@@ -54,7 +54,7 @@
        !        node2Face_VF_VF(face,node,m,tempE)
        !        node2Face_VF_SF(face,node,m,tempE)
        !        edge2Node_VF(node,edge,m)
-       !        edge2CellCenter_VF(cellCenter,edge,m,tempF)       
+       !        edge2CellCenter_VF(cellCenter,edge,m,tempF)
 
        private
 
@@ -82,7 +82,7 @@
        public :: edge2Face_no_diag
        public :: edge2Node            ! call edge2Node(node,edge,m,edgeDir)              *
        public :: edge2CellCenter      ! call edge2CellCenter(cellCenter,edge,m,edgeDir)
-       
+
        public :: node2Face            ! call node2Face(face,node,m,faceDir)              *
        public :: node2Edge            ! call node2Edge(edge,node,m,edgeDir)              *
        public :: node2CellCenter      ! call node2CellCenter(CC,node,m,E_x,F_y)          *
@@ -153,21 +153,21 @@
 
        subroutine interpO2_GF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,p)
          ! interpO2 interpolates g from the primary grid to the
-         ! dual grid using a 2nd order accurate stencil for non-uniform 
+         ! dual grid using a 2nd order accurate stencil for non-uniform
          ! grids. f lives on the dual grid. It is expected that
          ! f lives between g.
-         ! 
+         !
          ! Reminder: f = interp(g)
-         ! 
+         !
          ! * = assigned in this routine. This way, the entire
-         ! array of f and g may be passed, without having to 
+         ! array of f and g may be passed, without having to
          ! index.
-         ! 
+         !
          ! Therefore, shape(g) = shape(f) + 1 along dir
          ! Otherwise, shape(g) = shape(f)
-         ! 
+         !
          ! Add internal checking of shape of f and g and grid
-         ! 
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          real(cp),dimension(:,:,:),intent(in) :: g
@@ -187,7 +187,7 @@
            !         g  f  g  f  g  f  g  f  g
            !         |--o--|--o--|--o--|--o--|   --> dir
            !            *     *     *     *
-           
+
 #ifdef _PARALLELIZE_INTERP_
            !$OMP PARALLEL DO
 
@@ -236,43 +236,43 @@
 
        subroutine extrapO2_GF(f,g,sf,sg,dir)
          ! extrapO2 extrapolates g from the primary grid to the
-         ! dual grid using a 2nd order accurate stencil for 
-         ! non-uniform grids. f lives on the dual grid. 
+         ! dual grid using a 2nd order accurate stencil for
+         ! non-uniform grids. f lives on the dual grid.
          ! It is expected that f lives between g.
-         ! 
+         !
          ! Reminder: f = extrap(g)
-         ! 
+         !
          ! For interpO2, this corresponds to the case:
          ! f(cc grid), g(node/face grid)
-         ! 
+         !
          !         f  g  f  g  f  g  f  g  f
          !         |--o--|--o--|--o--|--o--|    --> dir
          !         *                       *
-         ! 
+         !
          ! * = assigned in this routine. This way, the entire
-         ! array of f and g may be passed, without having to 
+         ! array of f and g may be passed, without having to
          ! index.
-         ! 
+         !
          ! Therefore, size(f) = size(g) + 1 along dir
          ! Otherwise, size(f) = size(g)
-         ! 
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(in) :: g
          real(cp),dimension(:,:,:),intent(inout) :: f
          integer,dimension(3),intent(in) :: sg,sf
          integer,intent(in) :: dir
-         ! Both cases are simple since the size of the 
+         ! Both cases are simple since the size of the
          ! first 2 cells are equal, we have
-         ! 
+         !
          ! f_ghost + f_boundary
          ! --------------------  = g    -->  f_ghost = 2g - f_boundary
          !          2
-         ! 
+         !
          ! BACKWARD EXTRAPOLATION (* = assigned)
          !         f  g  f  g  f  g  f  g  f
          !         |--o--|--o--|--o--|--o--|    --> dir
          !         *
-         ! 
+         !
          select case (dir)
          case (1); f(1,:,:) = 2.0_cp*g(1,:,:) - f(2,:,:)
          case (2); f(:,1,:) = 2.0_cp*g(:,1,:) - f(:,2,:)
@@ -371,20 +371,20 @@
 
        subroutine face2Edge_SF_1(edge,face,m,faceDir,edgeDir)
          ! Case dependent multiple-interpolation routine (requires 1 or 3 interpolations)
-         ! 
-         ! This routine moves 
+         !
+         ! This routine moves
          !       face data along direction faceDir
          !    to edge data along direction edgeDir
-         ! 
+         !
          ! edgeDir is defined as the direction along which the dimension is of size N+2
          ! faceDir is defined as the direction along which the dimension is of size N+1
-         ! 
+         !
          ! Where N is the number of cells.
-         ! 
+         !
          ! This means that there are 2 possible cases:
          !    edgeDir == faceDir       (requires 3 interpolations, 1 to cell center, 2 to edge)
          !    edgeDir ≠ faceDir        (requires 1 interpolation)
-         ! 
+         !
          implicit none
          type(SF),intent(inout) :: edge
          type(SF),intent(in)    :: face

@@ -1,9 +1,9 @@
       module matrix_free_operators_mod
       ! NOTES:
-      !      ONLY CENTERED DERIVATIVES SHOULD BE USED IN THIS 
+      !      ONLY CENTERED DERIVATIVES SHOULD BE USED IN THIS
       !      FILE SINCE IMPLICIT SOLVERS IN MOONS DEPEND ON BC
       !      IMPLICIT DERIVATIVES. SEE DOCUMENTATION.
-      !      
+      !
       use current_precision_mod
       use mesh_mod
       use SF_mod
@@ -175,7 +175,7 @@
 
       subroutine ind_diffusion_explicit(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
-        !        A = {I + c_ind ∇x(k∇x)}
+        !        A = {I + coeff ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
         type(VF),intent(in) :: k
@@ -189,7 +189,7 @@
       end subroutine
       subroutine ind_diffusion(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
-        !        A = {I + c_ind ∇x(k∇x)}
+        !        A = {I + coeff ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
         type(VF),intent(in) :: k
@@ -205,7 +205,7 @@
 
       subroutine nrg_diffusion_explicit(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_nrg ∇•(k∇)}
+        !        A = {I + coeff ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
         type(VF),intent(in) :: k
@@ -216,12 +216,12 @@
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call laplacian_matrix_based(Ax,x,m)
-        call multiply(Ax,MFP%c_nrg)
+        call multiply(Ax,MFP%coeff)
         call add(Ax,x)
       end subroutine
       subroutine nrg_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_nrg ∇•(k∇)}
+        !        A = {I + coeff ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
         type(VF),intent(in) :: k
@@ -233,13 +233,13 @@
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
         call laplacian_matrix_based(Ax,x,m)
-        call multiply(Ax,MFP%c_nrg)
+        call multiply(Ax,MFP%coeff)
         call add(Ax,x)
       end subroutine
 
       subroutine mom_diffusion_explicit(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_mom ∇•(∇)}
+        !        A = {I + coeff ∇•(∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
         type(VF),intent(in) :: k
@@ -250,12 +250,12 @@
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call laplacian_matrix_based(Ax,x,m)
-        call multiply(Ax,MFP%c_mom)
+        call multiply(Ax,MFP%coeff)
         call add(Ax,x)
       end subroutine
       subroutine mom_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
-        !        A = {I + c_mom ∇•(∇)}
+        !        A = {I + coeff ∇•(∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
         type(VF),intent(in) :: k
@@ -267,7 +267,7 @@
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
         call laplacian_matrix_based(Ax,x,m)
-        call multiply(Ax,MFP%c_mom)
+        call multiply(Ax,MFP%coeff)
         call add(Ax,x)
       end subroutine
 

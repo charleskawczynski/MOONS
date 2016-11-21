@@ -1,7 +1,7 @@
        module ops_embedExtract_mod
        ! Not all embed / extract routines are used for each method. For example,
        ! the CT method only uses embedEdge, and not embedCC or embedFace.
-       ! 
+       !
        ! Pre-processor directives: (_PARALLELIZE_EMBEDEXTRACT_,_DEBUG_EMBEDEXTRACT_)
 
        use current_precision_mod
@@ -368,41 +368,40 @@
          type(mesh_domain),intent(in) :: MD
          integer,intent(in) :: i
          type(overlap),dimension(3) :: s
-         integer :: j
          if (f%is_Face) then
            select case(f%face)
            case (1); call init(s(1),MD%D%sd(i)%physical%N(1))
                      call init(s(2),MD%D%sd(i)%physical%C(2))
-                     call init(s(3),MD%D%sd(i)%total%C(3))
+                     call init(s(3),MD%D%sd(i)%physical%C(3))
            case (2); call init(s(1),MD%D%sd(i)%physical%C(1))
                      call init(s(2),MD%D%sd(i)%physical%N(2))
-                     call init(s(3),MD%D%sd(i)%total%C(3))
+                     call init(s(3),MD%D%sd(i)%physical%C(3))
            case (3); call init(s(1),MD%D%sd(i)%physical%C(1))
                      call init(s(2),MD%D%sd(i)%physical%C(2))
-                     call init(s(3),MD%D%sd(i)%total%N(3))
+                     call init(s(3),MD%D%sd(i)%physical%N(3))
            case default; stop 'Error: bad DL face in ops_embedExtract.f90'
            end select
          elseif (f%is_Edge) then
            select case(f%edge)
            case (1); call init(s(1),MD%D%sd(i)%physical%C(1))
                      call init(s(2),MD%D%sd(i)%physical%N(2))
-                     call init(s(3),MD%D%sd(i)%total%N(3))
+                     call init(s(3),MD%D%sd(i)%physical%N(3))
            case (2); call init(s(1),MD%D%sd(i)%physical%N(1))
                      call init(s(2),MD%D%sd(i)%physical%C(2))
-                     call init(s(3),MD%D%sd(i)%total%N(3))
+                     call init(s(3),MD%D%sd(i)%physical%N(3))
            case (3); call init(s(1),MD%D%sd(i)%physical%N(1))
                      call init(s(2),MD%D%sd(i)%physical%N(2))
-                     call init(s(3),MD%D%sd(i)%total%C(3))
+                     call init(s(3),MD%D%sd(i)%physical%C(3))
            case default; stop 'Error: bad DL edge in ops_embedExtract.f90'
            end select
          elseif (f%is_CC) then
            call init(s(1),MD%D%sd(i)%physical%C(1))
            call init(s(2),MD%D%sd(i)%physical%C(2))
-           call init(s(3),MD%D%sd(i)%total%C(3))
+           call init(s(3),MD%D%sd(i)%physical%C(3))
          elseif (f%is_Node) then
            call init(s(1),MD%D%sd(i)%physical%N(1))
            call init(s(2),MD%D%sd(i)%physical%N(2))
-           call init(s(3),MD%D%sd(i)%total%N(3))
+           call init(s(3),MD%D%sd(i)%physical%N(3))
          else; stop 'Error: no type found in ops_embedExtract.f90'
          endif
        end function

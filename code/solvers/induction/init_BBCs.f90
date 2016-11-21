@@ -58,8 +58,10 @@
          type(mesh),intent(in) :: m
          integer :: i
          do i=1,m%s
-           call init_AntiSymmetric(B%x%BF(i)%BCs,6)
-           call init_AntiSymmetric(B%y%BF(i)%BCs,6)
+           ! call init_AntiSymmetric(B%x%BF(i)%BCs,6)
+           ! call init_AntiSymmetric(B%y%BF(i)%BCs,6)
+           call init_Dirichlet(B%x%BF(i)%BCs,6)
+           call init_Dirichlet(B%y%BF(i)%BCs,6)
            call init_Neumann(B%z%BF(i)%BCs,6)
          enddo
        end subroutine

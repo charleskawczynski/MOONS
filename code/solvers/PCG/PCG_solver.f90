@@ -62,7 +62,6 @@
         call subtract(r,Ax)
         if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx)
         ! ----------------------------------------------------------
-
         call operator(Ax,x,k,m,MFP,tempk)
         call subtract(r,Ax)
         call multiply_wall_Neumann(r,0.5_cp,x)
@@ -103,7 +102,7 @@
 #endif
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,m,x,tempx)
-            call product_add(p,rhokp1/rhok,z) ! p = p beta + z 
+            call product_add(p,rhokp1/rhok,z) ! p = p beta + z
             rhok = rhokp1
           enddo
         else; i=1; skip_loop = .true.
@@ -208,7 +207,7 @@
 #endif
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,m,x,tempx)
-            call product_add(p,rhokp1/rhok,z) ! p = p beta + z 
+            call product_add(p,rhokp1/rhok,z) ! p = p beta + z
             rhok = rhokp1
           enddo
         else; i=1; skip_loop = .true.

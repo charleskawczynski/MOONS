@@ -32,7 +32,10 @@
          integer :: i
          integer,dimension(3) :: N
          call delete(m)
-         N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
+         ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
+         ! N = 45; hmin = -1.0_cp; hmax = 1.0_cp
+         N = 32; hmin = -0.5_cp; hmax = 0.5_cp
+         ! N = 64; hmin = -0.5_cp; hmax = 0.5_cp
          ! hmin = -0.5_cp; hmax = 0.5_cp
          ! hmin(1) = -1.0_cp; hmax(1) = 1.0_cp
          ! hmin(3) = -0.5_cp; hmax(3) = 0.5_cp

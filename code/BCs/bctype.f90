@@ -123,7 +123,7 @@
          logical :: L
          L = .false. ! show all regardless
 
-         if (.not.b%defined) then 
+         if (.not.b%defined) then
            write(un,*) 'defined = ',b%defined
            stop 'Error: trying to export bctype before defined in bctype.f90'
          endif

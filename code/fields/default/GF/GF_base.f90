@@ -15,8 +15,11 @@
         public :: init_Edge
         public :: init_Node
 
+        public :: print_info
+        public :: display_info
         public :: print_physical
         public :: insist_shape_match
+        public :: insist_shape_staggered
         public :: insist_allocated
 
         type grid_field
@@ -45,8 +48,11 @@
         interface init_Node;                module procedure init_GF_Node;                 end interface
 
         interface print_physical;           module procedure print_physical_GF;            end interface
+        interface print_info;               module procedure print_info_GF;                end interface
+        interface display_info;             module procedure display_info_GF;              end interface
         interface insist_shape_match;       module procedure insist_shape_match_GF;        end interface
         interface insist_shape_match;       module procedure insist_shape_match_plane_GF;  end interface
+        interface insist_shape_staggered;   module procedure insist_shape_staggered_dir_GF;end interface
         interface insist_allocated;         module procedure insist_allocated_GF;          end interface
 
        contains
@@ -187,6 +193,20 @@
           call display(a,1,6)
         end subroutine
 
+        subroutine display_info_GF(a,un)
+          implicit none
+          type(grid_field),intent(in) :: a
+          integer,intent(in) :: un
+          write(un,*) 'shape(f) = ',a%s
+          ! write(un,*) 'size(f) = ',a%s_1D
+        end subroutine
+
+        subroutine print_info_GF(a)
+          implicit none
+          type(grid_field),intent(in) :: a
+          call display_info(a,6)
+        end subroutine
+
         subroutine export_GF(a,un)
           implicit none
           type(grid_field),intent(in) :: a
@@ -210,9 +230,9 @@
           integer,intent(in) :: un
           integer :: i,j,k
           call delete(a)
-          read(un,*) 
+          read(un,*)
           read(un,*) a%s
-          read(un,*) 
+          read(un,*)
           read(un,*) a%s_1D
           allocate(a%f(a%s(1),a%s(2),a%s(3)))
           do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
@@ -296,11 +316,26 @@
           L(1) = A%s(adj(1)).ne.B%s(adj(1))
           L(2) = A%s(adj(2)).ne.B%s(adj(2))
           if (any(L)) then
-            write(*,*) 'Error: shape mismatch in insist_shape_match_plane_GF in ',caller,' in GF_base.f90'
+            write(*,*) 'Error: shape mismatch in insist_shape_match_plane_GF'
+            write(*,*) 'in ',caller,' in GF_base.f90'
             write(*,*) 'A%s(adj(1)) = ',A%s(adj(1))
             write(*,*) 'A%s(adj(2)) = ',A%s(adj(2))
             write(*,*) 'B%s(adj(1)) = ',B%s(adj(1))
             write(*,*) 'B%s(adj(2)) = ',B%s(adj(2))
+            stop 'Done'
+          endif
+        end subroutine
+
+        subroutine insist_shape_staggered_dir_GF(C,N,dir,caller)
+          implicit none
+          type(grid_field),intent(in) :: C,N
+          integer,intent(in) :: dir
+          character(len=*),intent(in) :: caller
+          if (.not.(C%s(dir).eq.N%s(dir)-1)) then
+            write(*,*) 'Error: staggered shape mismatch in insist_shape_staggered_dir_GF'
+            write(*,*) 'in ',caller,' in GF_base.f90'
+            write(*,*) 'C%s(dir) = ',C%s(dir)
+            write(*,*) 'N%s(dir) = ',N%s(dir)
             stop 'Done'
           endif
         end subroutine

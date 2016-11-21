@@ -28,6 +28,9 @@
        public :: get_all_Dirichlet
        public :: get_All_Robin
 
+       public :: prolongate
+       public :: restrict
+
        type boundary
          integer :: n = 0
          type(grid_field),dimension(:),allocatable :: b      ! B values size = 6
@@ -71,6 +74,9 @@
        interface get_All_Neumann;     module procedure get_All_Neumann_B;         end interface
        interface get_all_Dirichlet;   module procedure get_all_Dirichlet_B;       end interface
        interface get_All_Robin;       module procedure get_All_Robin_B;           end interface
+
+       interface prolongate;          module procedure prolongate_B;              end interface
+       interface restrict;            module procedure restrict_B;                end interface
 
        contains
 
@@ -219,13 +225,13 @@
          type(boundary),intent(inout) :: B
          integer,intent(in) :: un
          integer :: i
-         read(un,*) 
+         read(un,*)
          read(un,*) B%BCL%defined
          if (B%BCL%defined) then
            do i=1,B%n; call import(B%b(i),un); enddo
            do i=1,B%n; call import(B%bct(i),un); enddo
            call import(B%BCL,un)
-           read(un,*) 
+           read(un,*)
            read(un,*) B%BCL%all_Dirichlet,B%BCL%all_Neumann,B%BCL%all_Robin
          endif
        end subroutine
@@ -389,5 +395,35 @@
          logical :: L
          L = B%BCL%all_Robin
        end function
+
+       subroutine restrict_B(B,g,DL,dir,x,y,z,n)
+         implicit none
+         integer,intent(in) :: n,dir,x,y,z
+         type(boundary),intent(inout) :: B
+         type(grid),dimension(n),intent(in) :: g
+         type(data_location),intent(in) :: DL
+         integer :: i
+         if (CC_along(DL,dir)) then
+           do i=1,B%n; call restrict_C(B%b(i),g(i),dir,x,y,z); enddo
+         elseif ( N_along(DL,dir)) then
+           do i=1,B%n; call restrict_N(B%b(i),g(i),dir,x,y,z); enddo
+         else; stop 'Error: bad DL in prolongate_B in boundary.f90'
+         endif
+       end subroutine
+
+       subroutine prolongate_B(B,g,DL,dir,x,y,z,n)
+         implicit none
+         integer,intent(in) :: n,dir,x,y,z
+         type(boundary),intent(inout) :: B
+         type(grid),dimension(n),intent(in) :: g
+         type(data_location),intent(in) :: DL
+         integer :: i
+         if (CC_along(DL,dir)) then
+           do i=1,B%n; call prolongate_C(B%b(i),g(i),dir,x,y,z); enddo
+         elseif ( N_along(DL,dir)) then
+           do i=1,B%n; call prolongate_N(B%b(i),g(i),dir,x,y,z); enddo
+         else; stop 'Error: bad DL in prolongate_B in boundary.f90'
+         endif
+       end subroutine
 
        end module

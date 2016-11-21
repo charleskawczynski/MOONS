@@ -8,7 +8,7 @@
        implicit none
 
        ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
-       ! 
+       !
        ! NOTE: Indexes have not been ordered for speed yet
 
        private
@@ -34,16 +34,16 @@
       subroutine restrictField1D_GF(r,u,c,dir,s,sr,x,y,z)
         ! This routine restricts the field u {fine grid} to r {coarse grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
-        ! These cases are determined internally. This 
-        ! restriction corresponds to the same restriction 
+        !
+        ! These cases are determined internally. This
+        ! restriction corresponds to the same restriction
         ! as the restrict routine in coordinates.f90.
-        ! 
+        !
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u     ! fine field
         real(cp),dimension(:,:,:),intent(inout) :: r  ! restricted field
@@ -81,7 +81,7 @@
            ! write(*,*) 'ri,ui,ui+x = ',i*(1-x)+x*i/2+x,i,i+x
           enddo
           ! stop 'printed CC restriction'
-          
+
           ! ! Linearly extrapolate to ghost points
           ! ! Is this necessary? Ghost nodes are ALWAYS defined in the smoother
           ! ! so why define them here? BUT this is a restriction operator.
@@ -149,16 +149,16 @@
       subroutine restrictField_SF(r,u,m,temp1,temp2)
         ! This routine restricts the field u {fine grid} to r {coarse grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
-        ! These cases are determined internally. This 
-        ! restriction corresponds to the same restriction 
+        !
+        ! These cases are determined internally. This
+        ! restriction corresponds to the same restriction
         ! as the restrict routine in coordinates.f90.
-        ! 
+        !
         implicit none
         type(SF),intent(in) :: u     ! fine field
         type(SF),intent(inout) :: r  ! restricted field
@@ -173,7 +173,7 @@
       end subroutine
 
       subroutine restrictField_SF_slow(r,u,m,m_rx,m_rxy)
-        ! This routine is specifically designed 
+        ! This routine is specifically designed
         ! for the coefficient, sigma.
         implicit none
         type(SF),intent(in) :: u
@@ -213,12 +213,12 @@
       subroutine prolongateField1D_GF(p,u,c,dir,s,sp,x,y,z)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
+        !
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u    ! size = s
         real(cp),dimension(:,:,:),intent(inout) :: p ! size = 2*s-1
@@ -311,12 +311,12 @@
       subroutine prolongateField_SF(p,u,mf,temp1,temp2)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
+        !
         implicit none
         type(SF),intent(in) :: u    ! size = s
         type(SF),intent(inout) :: p ! size = 2*s-1

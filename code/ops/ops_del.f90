@@ -1,9 +1,9 @@
       module ops_del_mod
-      ! Returns an n-derivative of the scalar field, f, 
+      ! Returns an n-derivative of the scalar field, f,
       ! along direction dir (1,2,3) which corresponds to (x,y,z).
-      ! 
+      !
       ! Flags: (fopenmp,_DEBUG_DEL_)
-      ! 
+      !
       ! Implementation:
       !      type(del) :: d
       !      type(SF) :: f,dfdh
@@ -12,7 +12,7 @@
       !      call d%assign  (dfdh,f,m,n,dir,pad) --> dfdh = d/dh (f), 0 if not defined.
       !      call d%add     (dfdh,f,m,n,dir,pad) --> dfdh = dfdh + d/dh (f)
       !      call d%subtract(dfdh,f,m,n,dir,pad) --> dfdh = dfdh - d/dh (f)
-      ! 
+      !
       ! INPUT:
       !     f            = f(x,y,z)
       !     m            = mesh containing grids
@@ -20,7 +20,7 @@
       !     dir          = direction along which to take the derivative (1,2,3)
       !     pad          = (1,0) = (exclude,include) boundary calc along derivative direction
       !                    |0000000|     |-------|
-      !                    |-------|  ,  |-------| Look at del for implementation details  
+      !                    |-------|  ,  |-------| Look at del for implementation details
       !                    |0000000|     |-------|
       !
       ! CharlieKawczynski@gmail.com
@@ -37,7 +37,7 @@
       implicit none
 
       private
-      public :: del 
+      public :: del
 
       type del
         contains
@@ -164,7 +164,7 @@
         integer,intent(in) :: n,dir,pad,genType,pad1,pad2
         integer,intent(in) :: diffType
 #ifdef _DEBUG_DEL_
-        call checkSideDimensions(f%s,dfdh%s,dir)
+        call insist_shape_match(dfdh,f,dir,'diff_tree_search')
 #endif
         select case (genType)
         case (1); select case (diffType)
@@ -280,25 +280,5 @@
           stop 'Error: diffType undetermined in ops_del.f90.'
         endif
       end function
-
-#ifdef _DEBUG_DEL_
-      subroutine checkSideDimensions(s1,s2,dir)
-        ! This routine makes sure that the shapes s1 and s2 
-        ! are equal for orthogonal directions to dir, which
-        ! must be the case for all derivatives in del.
-        implicit none
-        integer,dimension(3),intent(in) :: s1,s2
-        integer,intent(in) :: dir
-        select case (dir)
-        case (1); if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 1 in checkSideDimensions in ops_del.f90'
-                  if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 2 in checkSideDimensions in ops_del.f90'
-        case (2); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 3 in checkSideDimensions in ops_del.f90'
-                  if (s1(3).ne.s2(3)) stop 'Error: Shape mismatch 4 in checkSideDimensions in ops_del.f90'
-        case (3); if (s1(1).ne.s2(1)) stop 'Error: Shape mismatch 5 in checkSideDimensions in ops_del.f90'
-                  if (s1(2).ne.s2(2)) stop 'Error: Shape mismatch 6 in checkSideDimensions in ops_del.f90'
-        case default; stop 'Error: dir must = 1,2,3 in checkSideDimensions in ops_del.f90'
-        end select
-      end subroutine
-#endif
 
       end module

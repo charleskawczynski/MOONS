@@ -3,9 +3,9 @@
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, mesh (m) using the Gauss-Seidel (GS) method
-      ! 
+      !
       ! Note that the variant of Gauss-Seidel/GS called
-      ! "red-black" Gauss-Seidel is used, where the fields are 
+      ! "red-black" Gauss-Seidel is used, where the fields are
       ! traversed in a 3D checkerboarding manner.
       !
       ! Input:
@@ -13,7 +13,7 @@
       !     f            = RHS of above equation
       !     m            = contains mesh information (dhc,dhn)
       !     compute_norm = print residuals to screen (T,F)
-      ! 
+      !
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_SF_CONVERGENCE_)
       use current_precision_mod
       use mesh_mod

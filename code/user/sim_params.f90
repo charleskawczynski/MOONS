@@ -17,6 +17,7 @@
        logical :: export_ICs
        logical :: export_planar
        logical :: export_symmetric
+       logical :: export_mesh_block
 
        logical :: solveEnergy
        logical :: solveMomentum
@@ -38,7 +39,7 @@
        logical :: addGravity
        logical :: add_Q2D_JCrossB
      end type
-     
+
      interface init;    module procedure init_sim_params;        end interface
      interface init;    module procedure init_sim_params_copy;   end interface
 
@@ -53,7 +54,7 @@
        SP%post_process              = .true.      ! Skip solver loop and just post-process results
        SP%skip_solver_loop          = .false.     ! Skip solver loop
        SP%stop_before_solve         = .false.      ! Just export ICs, do not run simulation
-       SP%stop_after_mesh_export    = .false.     ! 
+       SP%stop_after_mesh_export    = .false.     !
 
        SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
        SP%export_meshes             = .true.      ! Export all meshes before starting simulation
@@ -61,13 +62,14 @@
        SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
        SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
-       SP%export_symmetric          = .true.      ! 
+       SP%export_symmetric          = .false.      !
+       SP%export_mesh_block         = .false.     ! Export mesh blocks to FECs
 
-       SP%coupled_time_step         = .true.      ! Ensures all time steps are equal to coupled%dt
+       SP%coupled_time_step         = .false.      ! Ensures all time steps are equal to coupled%dt
 
        SP%solveEnergy               = .false.     ! Solve energy    equation
        SP%solveMomentum             = .true.      ! Solve momentum  equation
-       SP%solveInduction            = .true.      ! Solve induction equation
+       SP%solveInduction            = .false.      ! Solve induction equation
 
        SP%restartT                  = .false.     ! restart T  field
        SP%restartU                  = .false.     ! restart U  field
@@ -78,7 +80,7 @@
        SP%solveUMethod              = 1           ! Refer to momentum.f90
        SP%solveBMethod              = 3           ! Refer to induction.f90
 
-       SP%addJCrossB                = .true.      ! add JCrossB      to momentum equation
+       SP%addJCrossB                = .false.      ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation
        SP%addBuoyancy               = .false.     ! add Buoyancy     to momentum equation
        SP%addGravity                = .false.     ! add Gravity      to momentum equation
@@ -101,6 +103,7 @@
        SP%export_cell_volume = SP_in%export_cell_volume
        SP%export_analytic = SP_in%export_analytic
        SP%export_symmetric = SP_in%export_symmetric
+       SP%export_mesh_block = SP_in%export_mesh_block
        SP%coupled_time_step = SP_in%coupled_time_step
        SP%solveEnergy = SP_in%solveEnergy
        SP%solveMomentum = SP_in%solveMomentum

@@ -16,6 +16,7 @@
        use export_raw_processed_symmetry_mod
        use print_export_mod
        use export_now_mod
+       use refine_mesh_mod
 
        use mesh_stencils_mod
        use init_BBCs_mod
@@ -58,7 +59,7 @@
        private
        public :: induction
        public :: init,delete,display,print,export,import ! Essentials
-       public :: solve,export_tec,exportTransient,compute_E_M_budget
+       public :: solve,export_tec,export_transient,compute_E_M_budget
        public :: compute_induction_energies
 
        type induction
@@ -115,7 +116,7 @@
 
        interface solve;                module procedure solve_induction;               end interface
        interface export_tec;           module procedure export_tec_induction;          end interface
-       interface exportTransient;      module procedure inductionExportTransient;      end interface
+       interface export_transient;      module procedure inductionexport_transient;      end interface
 
        contains
 
@@ -137,8 +138,8 @@
          type(dir_tree),intent(in) :: DT
          real(cp),dimension(2) :: diffusion_treatment
          integer :: temp_unit
-         type(SF) :: sigma,prec_cleanB,vol_CC
-         type(VF) :: prec_induction,sigma_temp_E,sigma_temp_F
+         type(SF) :: sigma,vol_CC
+         type(VF) :: sigma_temp_E,sigma_temp_F
          write(*,*) 'Initializing induction:'
 
          call init(ind%TMP,TMP)
@@ -250,32 +251,25 @@
          call display(ind,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_ind')
 
-         if (finite_Rem) then; ind%MFP_B%c_ind = ind%TMP%dt/ind%Rem
-         else;                 ind%MFP_B%c_ind = ind%TMP%dt
+         if (finite_Rem) then; ind%MFP_B%coeff = ind%TMP%dt/ind%Rem
+         else;                 ind%MFP_B%coeff = ind%TMP%dt
          endif
 
          write(*,*) '     About to assemble curl-curl matrix'
          ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
-         ! diffusion_treatment = (/-ind%MFP_B%c_ind,1.0_cp/)    ! diffusion explicit
-         diffusion_treatment = (/ind%MFP_B%c_ind,1.0_cp/)     ! diffusion implicit
+         ! diffusion_treatment = (/-ind%MFP_B%coeff,1.0_cp/)    ! diffusion explicit
+         diffusion_treatment = (/ind%MFP_B%coeff,1.0_cp/)     ! diffusion implicit
          call init_curl_curl(ind%m,ind%sigmaInv_edge)
          call init_Laplacian_SF(ind%m)
          call multiply_curl_curl(ind%m,diffusion_treatment(1))
          call add_curl_curl(ind%m,diffusion_treatment(2))
 
-         call init(prec_induction,ind%B)
-         call prec_ind_VF(prec_induction,ind%m,ind%sigmaInv_edge,ind%MFP_B%c_ind)
-         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_induction,ind%m,&
+         call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
          ind%ISP_B,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B_r),'B',.false.,.false.)
-         call delete(prec_induction)
-
          write(*,*) '     PCG Solver initialized for B'
 
-         call init(prec_cleanB,ind%phi)
-         call prec_lap_SF(prec_cleanB,ind%m)
-         call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_cleanB,&
+         call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,&
          ind%m,ind%ISP_phi,ind%MFP_B,ind%phi,ind%temp_F1,str(DT%B_r),'phi',.false.,.false.)
-         call delete(prec_cleanB)
          write(*,*) '     PCG Solver initialized for phi'
 
          call init(ind%JAC_B,Lap_uniform_VF_explicit,ind%B,ind%B_interior,&
@@ -460,7 +454,7 @@
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
        end subroutine
 
-       subroutine inductionExportTransient(ind)
+       subroutine inductionexport_transient(ind)
          implicit none
          type(induction),intent(inout) :: ind
          real(cp) :: temp
@@ -468,12 +462,13 @@
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP%t,temp)
        end subroutine
 
-       subroutine solve_induction(ind,U,PE,EN,DT)
+       subroutine solve_induction(ind,U,PE,EN,RM,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
+         type(refine_mesh),intent(in) :: RM
          type(dir_tree),intent(in) :: DT
 
          if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
@@ -517,13 +512,15 @@
 
          if ((PE%transient_0D.or.(ind%TMP%n_step.eq.0))) call compute_induction_energies(ind)
 
-         if (PE%transient_0D) then 
+         if (PE%transient_0D) then
            call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-           call exportTransient(ind)
+           call export_transient(ind)
          endif
 
          if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
          ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
+
+         ! if (RM%all%this) call prolongate(ind)
 
          if (PE%info) call print(ind)
          if (PE%solution.or.EN%B%this.or.EN%all%this) then

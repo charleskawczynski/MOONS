@@ -13,7 +13,7 @@
        use matrix_free_params_mod
        use preconditioners_mod
        use iter_solver_params_mod
-       
+
        implicit none
        private
 
@@ -40,7 +40,6 @@
          type(dir_tree),intent(in) :: DT
          type(VF) :: psi,omega,temp_dummy
          type(PCG_solver_VF) :: PCG
-         type(VF) :: prec_psi ! preconditioner
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          call init(ISP,1000,10.0_cp**(-12.0_cp),10.0_cp**(-15.0_cp),1,str(DT%ISP),'vorticity_streamfunction')
@@ -48,7 +47,6 @@
          call init_Edge(omega,m)
          call init_Edge(psi,m)
          call init_Edge(temp_dummy,m)
-         call init(prec_psi,psi)
 
          call init_BC_mesh(psi%x,m);    call init_BCs(psi%x,0.0_cp)
          call init_BC_mesh(psi%y,m);    call init_BCs(psi%y,0.0_cp)
@@ -57,9 +55,8 @@
          call init_BC_Dirichlet(psi%y); call init_BC_props(psi%y)
          call init_BC_Dirichlet(psi%z); call init_BC_props(psi%z)
 
-         ! Make sure that Lap_uniform_VF does not 
-         call prec_Lap_VF(prec_psi,m)
-         call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_psi,m,&
+         ! Make sure that Lap_uniform_VF does not
+         call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
          ISP,MFP,psi,temp_dummy,str(DT%U_r),'streamfunction',.false.,.false.)
 
          call compute_vorticity_streamfunction(PCG,psi,omega,U,m,.true.)
@@ -69,7 +66,6 @@
          call delete(omega)
          call delete(temp_dummy)
          call delete(psi)
-         call delete(prec_psi)
          call delete(PCG)
        end subroutine
 

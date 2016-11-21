@@ -25,6 +25,9 @@
        public :: mirror_about_hmax
        public :: compare
 
+       public :: restrict
+       public :: prolongate
+
 #ifdef _DEBUG_COORDINATES_
       public :: checkmesh
 #endif
@@ -39,6 +42,7 @@
          real(cp),dimension(3) :: hmax,hmin
          real(cp),dimension(3) :: dhmax,dhmin
          real(cp) :: dhmax_max,dhmin_min
+         logical :: defined = .false.
          logical :: plane_x = .false.
          logical :: plane_y = .false.
          logical :: plane_z = .false.
@@ -59,6 +63,9 @@
        interface restrict;             module procedure restrictmesh3;          end interface
        interface restrict_x;           module procedure restrictmesh_x;         end interface
        interface restrict_xy;          module procedure restrictmesh_xy;        end interface
+
+       interface restrict;             module procedure restrict_dir_m;         end interface
+       interface prolongate;           module procedure prolongate_dir_m;       end interface
 
        interface mirror_about_hmin;    module procedure mirror_about_hmin_m;    end interface
        interface mirror_about_hmax;    module procedure mirror_about_hmax_m;    end interface
@@ -84,6 +91,7 @@
          m%s = 1
          call initProps(m)
          call insist_allocated_mesh(m,'init_grid')
+         m%defined = .true.
        end subroutine
 
        subroutine init_surface(m,m_in)
@@ -126,6 +134,7 @@
          endif
          call initProps(m)
          call insist_allocated_mesh(m,'addGrid')
+         m%defined = .true.
        end subroutine
 
        subroutine deletemesh(m)
@@ -139,6 +148,7 @@
            do i=1,m%s; call delete(m%B(i)%g) ;enddo; deallocate(m%B)
          endif
          m%s = 0
+         m%defined = .false.
        end subroutine
 
        subroutine remove_stitches(m)
@@ -177,6 +187,7 @@
          allocate(m%B(m_in%s))
          do i=1,m_in%s; call init(m%B(i),m_in%B(i)); enddo
          call initProps(m)
+         m%defined = m_in%defined
        end subroutine
 
        subroutine init_volume(m)
@@ -388,6 +399,20 @@
          call insist_allocated_mesh(rm,'restrictmesh_xy (2)')
          do i = 1,m%s; call restrict(rm%B(i)%g%c(1),m%B(i)%g%c(1)) ;enddo
          do i = 1,m%s; call restrict(rm%B(i)%g%c(2),m%B(i)%g%c(2)) ;enddo
+       end subroutine
+
+       subroutine restrict_dir_m(m,dir)
+         type(mesh),intent(inout) :: m
+         integer,intent(in) :: dir
+         integer :: i
+         do i = 1,m%s; call restrict(m%B(i),dir) ;enddo
+       end subroutine
+
+       subroutine prolongate_dir_m(m,dir)
+         type(mesh),intent(inout) :: m
+         integer,intent(in) :: dir
+         integer :: i
+         do i = 1,m%s; call prolongate(m%B(i),dir) ;enddo
        end subroutine
 
        ! ---------------------------------------------- check mesh

@@ -1,25 +1,25 @@
       module TF_mod
-      ! Tensor fields are a bit difficult to think about.. So here's 
+      ! Tensor fields are a bit difficult to think about.. So here's
       ! a short description as to how they are constructed, used.
-      ! 
+      !
       ! TF = [VF_x,VF_y,VF_z]
-      ! 
+      !
       ! If TF is staggered, then realize that
-      ! 
+      !
       ! call init_Face(TF,m)
       !
       ! Implies
-      ! 
+      !
       ! TF = [ VF_x  , VF_y  , VF_z  ]
       !         ||      ||      ||
       !    x [(n,c,c),(n,c,c),(n,c,c)]
       !    y [(c,n,c),(c,n,c),(c,n,c)]
       !    z [(c,c,n),(c,c,n),(c,c,n)]
-      ! 
+      !
       ! That is to say that each "component" of the TF is a
       ! staggered vector field depending on initialization.
-      ! 
-      ! 
+      !
+      !
 
         ! Rules:
         ! a = a + b => call add(a,b)
@@ -45,7 +45,7 @@
         ! Initialization / Deletion (allocate/deallocate)
         public :: TF
         public :: init,delete
-        
+
         ! Grid initialization
         public :: init_CC
         public :: init_Face
@@ -64,73 +64,82 @@
         public :: square
         public :: cross_product
         public :: transpose
+
+        public :: restrict
+        public :: prolongate
         ! public :: sum
         ! public :: assignX,assignY,assignZ
 
         type TF
           integer :: s = 3  ! number of components
           type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
+
           logical :: is_CC,is_Node
         end type
 
-        interface init;          module procedure init_TF_copy_VF;          end interface
-        interface init;          module procedure init_TF_copy_TF;          end interface
-        interface init;          module procedure init_TF_copy_TF_mesh;     end interface
+        interface init;                module procedure init_TF_copy_VF;           end interface
+        interface init;                module procedure init_TF_copy_TF;           end interface
+        interface init;                module procedure init_TF_copy_TF_mesh;      end interface
 
-        interface init_CC;       module procedure init_TF_CC;               end interface
-        interface init_Face;     module procedure init_TF_Face;             end interface
-        interface init_Edge;     module procedure init_TF_Edge;             end interface
-        interface init_Node;     module procedure init_TF_Node;             end interface
+        interface init_CC;             module procedure init_TF_CC;                end interface
+        interface init_Face;           module procedure init_TF_Face;              end interface
+        interface init_Edge;           module procedure init_TF_Edge;              end interface
+        interface init_Node;           module procedure init_TF_Node;              end interface
 
-        interface init_CC;       module procedure init_TF_CC_MD;             end interface
-        interface init_Face;     module procedure init_TF_Face_MD;           end interface
-        interface init_Edge;     module procedure init_TF_Edge_MD;           end interface
-        interface init_Node;     module procedure init_TF_Node_MD;           end interface
+        interface init_CC;             module procedure init_TF_CC_MD;             end interface
+        interface init_Face;           module procedure init_TF_Face_MD;           end interface
+        interface init_Edge;           module procedure init_TF_Edge_MD;           end interface
+        interface init_Node;           module procedure init_TF_Node_MD;           end interface
 
-        interface init_Face_compliment;  module procedure init_TF_Face_compliment;  end interface
-        interface init_Edge_compliment;  module procedure init_TF_Edge_compliment;  end interface
+        interface init_Face_compliment;module procedure init_TF_Face_compliment;   end interface
+        interface init_Edge_compliment;module procedure init_TF_Edge_compliment;   end interface
 
-        interface init_CC;       module procedure init_TF_CC_assign;        end interface
-        interface init_Face;     module procedure init_TF_Face_assign;      end interface
-        interface init_Edge;     module procedure init_TF_Edge_assign;      end interface
-        interface init_Node;     module procedure init_TF_Node_assign;      end interface
+        interface init_CC;             module procedure init_TF_CC_assign;         end interface
+        interface init_Face;           module procedure init_TF_Face_assign;       end interface
+        interface init_Edge;           module procedure init_TF_Edge_assign;       end interface
+        interface init_Node;           module procedure init_TF_Node_assign;       end interface
 
-        interface delete;        module procedure delete_TF;                end interface
-        interface print;         module procedure print_TF;                 end interface
+        interface delete;              module procedure delete_TF;                 end interface
+        interface print;               module procedure print_TF;                  end interface
 
-        interface assign;        module procedure assign_TF_S;              end interface
-        interface assign;        module procedure assign_TF_VF;             end interface
-        interface assign;        module procedure assign_TF_TF;             end interface
+        interface assign;              module procedure assign_TF_S;               end interface
+        interface assign;              module procedure assign_TF_VF;              end interface
+        interface assign;              module procedure assign_TF_TF;              end interface
 
-        interface add;           module procedure add_TF_TF;                end interface
-        interface add;           module procedure add_TF_TF_TF;             end interface
-        interface add;           module procedure add_TF_VF;                end interface
-        interface add;           module procedure add_VF_TF;                end interface
-        interface add;           module procedure add_TF_S;                 end interface
-        interface add;           module procedure add_S_TF;                 end interface
-        interface add;           module procedure add_SF_TF;                end interface
+        interface add;                 module procedure add_TF_TF;                 end interface
+        interface add;                 module procedure add_TF_TF_TF;              end interface
+        interface add;                 module procedure add_TF_VF;                 end interface
+        interface add;                 module procedure add_VF_TF;                 end interface
+        interface add;                 module procedure add_TF_S;                  end interface
+        interface add;                 module procedure add_S_TF;                  end interface
+        interface add;                 module procedure add_SF_TF;                 end interface
 
-        interface subtract;      module procedure subtract_TF_TF;           end interface
-        interface subtract;      module procedure subtract_TF_VF;           end interface
-        interface subtract;      module procedure subtract_TF_S;            end interface
-        interface subtract;      module procedure subtract_S_TF;            end interface
+        interface subtract;            module procedure subtract_TF_TF;            end interface
+        interface subtract;            module procedure subtract_TF_VF;            end interface
+        interface subtract;            module procedure subtract_TF_S;             end interface
+        interface subtract;            module procedure subtract_S_TF;             end interface
 
-        interface multiply;      module procedure multiply_TF_TF;           end interface
-        interface multiply;      module procedure multiply_TF_VF;           end interface
-        interface multiply;      module procedure multiply_VF_TF;           end interface
-        interface multiply;      module procedure multiply_TF_S;            end interface
-        interface multiply;      module procedure multiply_S_TF;            end interface
+        interface multiply;            module procedure multiply_TF_TF;            end interface
+        interface multiply;            module procedure multiply_TF_VF;            end interface
+        interface multiply;            module procedure multiply_VF_TF;            end interface
+        interface multiply;            module procedure multiply_TF_S;             end interface
+        interface multiply;            module procedure multiply_S_TF;             end interface
 
-        interface divide;        module procedure divide_TF_TF;             end interface
-        interface divide;        module procedure divide_TF_VF;             end interface
-        interface divide;        module procedure divide_TF_S;              end interface
-        interface divide;        module procedure divide_S_TF;              end interface
+        interface divide;              module procedure divide_TF_TF;              end interface
+        interface divide;              module procedure divide_TF_VF;              end interface
+        interface divide;              module procedure divide_TF_S;               end interface
+        interface divide;              module procedure divide_S_TF;               end interface
 
-        interface square;        module procedure square_TF;                end interface
-        interface cross_product; module procedure cross_product_TF;         end interface
-        interface transpose;     module procedure transpose_TF_TF;          end interface
-        interface transpose;     module procedure transpose_TF_SF;          end interface
-        ! interface sum;           module procedure vectorSum;             end interface
+        interface square;              module procedure square_TF;                 end interface
+        interface cross_product;       module procedure cross_product_TF;          end interface
+
+        interface restrict;            module procedure restrict_TF;               end interface
+        interface restrict;            module procedure restrict_dir_TF;           end interface
+        interface prolongate;          module procedure prolongate_TF;             end interface
+        interface prolongate;          module procedure prolongate_dir_TF;         end interface
+
+        interface transpose;           module procedure transpose_TF_TF;           end interface
+        interface transpose;           module procedure transpose_TF_SF;           end interface
 
         contains
 
@@ -319,7 +328,7 @@
           ! First index refers to vector direction.
           ! Second index refers to vector location.
           !      For example, in A%x%y, the direction of the vector
-          !      will be in x, and it will be located on whatever 
+          !      will be in x, and it will be located on whatever
           !      location is defined by the y-component (y-face for face data
           !      or y-edge for edge data).
           ! Since this is a collocated operation, the second
@@ -331,6 +340,44 @@
           call cross_product_x(AcrossB%x,A%y%x,A%z%x,B%y%x,B%z%x)
           call cross_product_y(AcrossB%y,A%x%y,A%z%y,B%x%y,B%z%y)
           call cross_product_z(AcrossB%z,A%x%z,A%y%z,B%x%z,B%y%z)
+        end subroutine
+
+        subroutine restrict_TF(A,m)
+          implicit none
+          type(TF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          call restrict(A%x,m)
+          call restrict(A%y,m)
+          call restrict(A%z,m)
+        end subroutine
+
+        subroutine restrict_dir_TF(A,m,dir)
+          implicit none
+          type(TF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          call restrict(A%x,m,dir)
+          call restrict(A%y,m,dir)
+          call restrict(A%z,m,dir)
+        end subroutine
+
+        subroutine prolongate_TF(A,m)
+          implicit none
+          type(TF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          call prolongate(A%x,m)
+          call prolongate(A%y,m)
+          call prolongate(A%z,m)
+        end subroutine
+
+        subroutine prolongate_dir_TF(A,m,dir)
+          implicit none
+          type(TF),intent(inout) :: A
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          call prolongate(A%x,m,dir)
+          call prolongate(A%y,m,dir)
+          call prolongate(A%z,m,dir)
         end subroutine
 
         subroutine transpose_TF_SF(f,g)

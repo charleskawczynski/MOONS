@@ -19,6 +19,9 @@
 
        public :: init_FEC
 
+       public :: restrict
+       public :: prolongate
+
        public :: init_curl_curl
        public :: init_Laplacian_VF
        public :: init_Laplacian_SF
@@ -52,6 +55,9 @@
 
        interface init_FEC;           module procedure init_FEC_block;           end interface
 
+       interface restrict;           module procedure restrict_dir_b;           end interface
+       interface prolongate;         module procedure prolongate_dir_b;         end interface
+
        interface mirror_about_hmin;  module procedure mirror_about_hmin_b;      end interface
        interface mirror_about_hmax;  module procedure mirror_about_hmax_b;      end interface
 
@@ -75,11 +81,14 @@
          call init_vol_block(B)
        end subroutine
 
-
        subroutine init_vol_block(B)
          implicit none
          type(block),intent(inout) :: B
          type(data_location) :: DL
+         integer :: i
+         if (allocated(B%vol)) then
+         do i=1,8; call delete(B%vol(i)); enddo; deallocate(B%vol)
+         endif
          allocate(B%vol(8))
          call init_CC(B%vol(1),B%g)
          call init_Node(B%vol(2),B%g)
@@ -325,6 +334,40 @@
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig
          call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g,sig)
+       end subroutine
+
+       ! **********************************************************
+       ! ************************ MG ******************************
+       ! **********************************************************
+
+       subroutine restrict_dir_b(B,dir)
+         implicit none
+         type(block),intent(inout) :: B
+         integer,intent(in) :: dir
+         integer :: i
+         call restrict(B%g,dir)
+         call init_vol_block(B)
+         ! call init_FEC_block(B)
+         do i=1,6; call restrict(B%fb(i),dir); enddo
+         do i=1,12;call restrict(B%eb(i),dir); enddo
+         do i=1,8; call restrict(B%cb(i),dir); enddo
+         do i=1,6; call restrict(B%f(i),dir); enddo
+         do i=1,12;call restrict(B%e(i),dir); enddo
+         do i=1,8; call restrict(B%c(i),dir); enddo
+       end subroutine
+
+       subroutine prolongate_dir_b(B,dir)
+         implicit none
+         type(block),intent(inout) :: B
+         integer,intent(in) :: dir
+         call prolongate(B%g,dir)
+         call init_vol_block(B)
+         call init_FEC_block(B)
+         ! call init_Laplacian_VF(B)
+         call init_Laplacian_SF(B)
+
+         ! call init_Laplacian_SF(B)
+         ! call init_curl_curl(B)
        end subroutine
 
        end module

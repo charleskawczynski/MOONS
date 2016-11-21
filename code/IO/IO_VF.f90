@@ -18,11 +18,11 @@
       public :: export_2D_2C_transient
       public :: export_2D_3C_transient
       public :: import_3D_3C
-      
-      public :: export_transient
+
+      public :: export_unsteady
 
       abstract interface
-        subroutine export_transient(m,U,dir,name,pad,direction,TMP)
+        subroutine export_unsteady(m,U,dir,name,pad,direction,TMP)
           import mesh,VF,time_marching_params
           implicit none
           character(len=*),intent(in) :: dir,name

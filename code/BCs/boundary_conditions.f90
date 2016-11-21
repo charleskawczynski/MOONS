@@ -1,6 +1,6 @@
        module boundary_conditions_mod
        ! Making BCs is a 3 step process:
-       ! 
+       !
        !       1) Set the block
        !             call init(BCs,B)
        !       2) Set type (can use grid information)
@@ -11,13 +11,13 @@
        !             call init(BCs,0.0_cp)       (default)
        !             call init(BCs,0.0_cp,face)
        !             call init(BCs,vals,face)
-       ! 
+       !
        ! The convention for the faces is:
        !   face = {1:6} = {x_min,x_max,y_min,y_max,z_min,z_max}
-       ! 
-       ! 
-       ! 
-       ! 
+       !
+       !
+       !
+       !
        !              ^
        !              |
        !              |
@@ -33,7 +33,7 @@
        !         /
        !        /
        !       /
-       ! 
+       !
 
        use current_precision_mod
        use face_edge_corner_indexing_mod
@@ -70,7 +70,15 @@
 
        public :: init_props
 
+       public :: restrict
+       public :: prolongate
+       public :: reset_index_sets
+
        type boundary_conditions
+         ! GLOBAL LOGICALS (check here to see if BCs are defined)
+         type(BC_logicals) :: BCL
+         ! DATA LOCATION
+         type(data_location) :: DL                       ! data location (C,N,F,E)
          ! FACES
          type(boundary) :: face                          ! BC values and type
          type(procedure_array) :: PA_face_BCs            ! procedure array for face BCs
@@ -86,9 +94,6 @@
          type(procedure_array) :: PA_corners_BCs         ! procedure array for face BCs
          type(procedure_array) :: PA_corners_implicit_BCs! procedure array for face BCs
          ! type(corner_SD) :: c_BCs                      ! Not yet developed
-         ! OTHER
-         type(data_location) :: DL                       ! data location (C,N,F,E)
-         type(BC_logicals) :: BCL
        end type
 
        interface init;                module procedure init_GFs_BCs_DL;         end interface
@@ -124,6 +129,10 @@
        interface insist_allocated;    module procedure insist_allocated_BCs;    end interface
 
        interface init_props;          module procedure init_props_BCs;          end interface
+
+       interface restrict;            module procedure restrict_BCs;            end interface
+       interface prolongate;          module procedure prolongate_BCs;          end interface
+       interface reset_index_sets;    module procedure reset_index_sets_BCs;    end interface
 
        contains
 
@@ -255,7 +264,7 @@
          implicit none
          type(boundary_conditions),intent(inout) :: BC
          integer,intent(in) :: un
-         read(un,*) 
+         read(un,*)
          read(un,*) BC%BCL%defined
          if (BC%BCL%defined) then
            call import(BC%face,un)
@@ -264,7 +273,7 @@
            call import(BC%PA_face_BCs,un)
            call import(BC%PA_face_implicit_BCs,un)
            call import(BC%BCL,un)
-           read(un,*) 
+           read(un,*)
            read(un,*) BC%BCL%all_Dirichlet,BC%BCL%all_Neumann,BC%BCL%all_Robin
          endif
        end subroutine
@@ -559,6 +568,48 @@
          call init_mixed(BC%f_BCs,BC%DL)
          call sort(BC%PA_face_BCs,(/3,4,5,6,1,2/),6)
          call sort(BC%PA_face_implicit_BCs,(/3,4,5,6,1,2/),6)
+       end subroutine
+
+       subroutine restrict_BCs(BC,B,dir)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         type(block),intent(in) :: B
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         integer :: x,y,z
+         eye = eye_given_dir(dir)
+         x = eye(1); y = eye(2); z = eye(3)
+         if (BC%BCL%defined) then
+           call restrict(BC%face,B%fb,BC%DL,dir,x,y,z,BC%face%n)
+           ! call restrict(BC%edge,B%eb,BC%DL,dir,x,y,z,BC%edge%n)
+           ! call restrict(BC%face,B%cb,BC%DL,dir,x,y,z,BC%corner%n)
+         endif
+       end subroutine
+
+       subroutine prolongate_BCs(BC,B,dir)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         type(block),intent(in) :: B
+         integer,intent(in) :: dir
+         integer,dimension(3) :: eye
+         integer :: x,y,z
+         eye = eye_given_dir(dir)
+         x = eye(1); y = eye(2); z = eye(3)
+         if (BC%BCL%defined) then
+           call prolongate(BC%face,B%fb,BC%DL,dir,x,y,z,BC%face%n)
+           ! call prolongate(BC%edge,B%eb,BC%DL,dir,x,y,z,BC%edge%n)
+           ! call prolongate(BC%face,B%cb,BC%DL,dir,x,y,z,BC%corner%n)
+         endif
+       end subroutine
+
+       subroutine reset_index_sets_BCs(BC,B)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         type(block),intent(in) :: B
+         call init(BC%f_BCs,B%g,B%f)
+         ! call init(BC%e_BCs,B%g,B%e)
+         ! call init(BC%c_BCs,B%g,B%c)
+         call init_mixed(BC%f_BCs,BC%DL)
        end subroutine
 
        end module

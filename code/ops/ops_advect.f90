@@ -19,16 +19,16 @@
 
        subroutine advect_U(div,U,U_E,m,compute_U_E,temp_E,temp_CC)
          ! Computes
-         ! 
+         !
          !           d
          !  div_i = --- (u_j u_i)
          !          dx_j
-         ! 
+         !
          ! While minimizing interpolations.
          !           div_i, U, Ui          --> cell face.
          !           tempE and U_E         --> cell edge.
          !           temp_CC               --> cell center.
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: div
          type(VF),intent(in) :: U
@@ -71,9 +71,9 @@
 
        subroutine advect_B(adv,U_E,B_F,m,temp_E_TF,temp_E)
          ! Computes
-         ! 
+         !
          !      (∇ x ( u_edge x B_face )_edge)_face
-         ! 
+         !
          ! While minimizing interpolations.
          implicit none
          type(VF),intent(inout) :: adv,temp_E
@@ -87,11 +87,11 @@
 
        subroutine edgeCrossFace_E(AcrossB_E,A_E,B_F,m,temp_B_E)
          ! Computes
-         ! 
+         !
          !      ( u_edge x B_face )_edge
-         ! 
+         !
          ! While minimizing interpolations.
-         ! There is some memory abuse here however, 
+         ! There is some memory abuse here however,
          ! since the diagonals are not used..
          implicit none
          type(VF),intent(inout) :: AcrossB_E

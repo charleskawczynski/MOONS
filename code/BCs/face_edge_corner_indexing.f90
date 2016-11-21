@@ -5,11 +5,6 @@
        implicit none
 
        private
-       public :: insist_valid_dir,   valid_dir
-       public :: insist_valid_face,  valid_face
-       public :: insist_valid_edge,  valid_edge
-       public :: insist_valid_corner,valid_corner
-
        public :: eye_given_dir
 
        public :: dir_given_face
@@ -35,95 +30,12 @@
        public :: nhat_given_face
        public :: nhat_given_edge
 
+       public :: insist_valid_dir,   valid_dir
+       public :: insist_valid_face,  valid_face
+       public :: insist_valid_edge,  valid_edge
+       public :: insist_valid_corner,valid_corner
+
        contains
-
-       ! *************************************************************************
-       ! ********************************* VALID *********************************
-       ! *************************************************************************
-
-       subroutine insist_valid_dir(dir,caller)
-         implicit none
-         integer,intent(in) :: dir
-         character(len=*),intent(in) :: caller
-         if (.not.valid_dir(dir)) then
-         write(*,*) 'Error: invalid dir in ',caller,' in face_edge_corner_indexing.f90'
-         write(*,*) 'dir = ',dir
-         stop 'DONE'
-         endif
-       end subroutine
-
-       subroutine insist_valid_face(face,caller)
-         implicit none
-         integer,intent(in) :: face
-         character(len=*),intent(in) :: caller
-         if (.not.valid_face(face)) then
-         write(*,*) 'Error: invalid face in ',caller,' in face_edge_corner_indexing.f90'
-         write(*,*) 'face = ',face
-         stop 'DONE'
-         endif
-       end subroutine
-
-       subroutine insist_valid_edge(edge,caller)
-         implicit none
-         integer,intent(in) :: edge
-         character(len=*),intent(in) :: caller
-         if (.not.valid_edge(edge)) then
-         write(*,*) 'Error: invalid edge in ',caller,' in face_edge_corner_indexing.f90'
-         write(*,*) 'edge = ',edge
-         stop 'DONE'
-         endif
-       end subroutine
-
-       subroutine insist_valid_corner(corner,caller)
-         implicit none
-         integer,intent(in) :: corner
-         character(len=*),intent(in) :: caller
-         if (.not.valid_corner(corner)) then
-         write(*,*) 'Error: invalid corner in ',caller,' in face_edge_corner_indexing.f90'
-         write(*,*) 'corner = ',corner
-         stop 'DONE'
-         endif
-       end subroutine
-
-       function valid_dir(dir) result(L)
-         implicit none
-         integer,intent(in) :: dir
-         logical :: L
-         select case (dir)
-         case (1:3); L = .true.
-         case default; L = .false.
-         end select
-       end function
-
-       function valid_face(face) result(L)
-         implicit none
-         integer,intent(in) :: face
-         logical :: L
-         select case (face)
-         case (1:6); L = .true.
-         case default; L = .false.
-         end select
-       end function
-
-       function valid_edge(edge) result(L)
-         implicit none
-         integer,intent(in) :: edge
-         logical :: L
-         select case (edge)
-         case (1:12); L = .true.
-         case default; L = .false.
-         end select
-       end function
-
-       function valid_corner(corner) result(L)
-         implicit none
-         integer,intent(in) :: corner
-         logical :: L
-         select case (corner)
-         case (1:8); L = .true.
-         case default; L = .false.
-         end select
-       end function
 
        ! *************************************************************************
        ! ******************************** GET EYE ********************************
@@ -407,40 +319,129 @@
          nhat = (/nhat_given_face(faces(1)),nhat_given_face(faces(2))/)
        end function
 
+
+       ! *************************************************************************
+       ! ********************************* VALID *********************************
+       ! *************************************************************************
+
+       subroutine insist_valid_dir(dir,caller)
+         implicit none
+         integer,intent(in) :: dir
+         character(len=*),intent(in) :: caller
+         if (.not.valid_dir(dir)) then
+         write(*,*) 'Error: invalid dir in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'dir = ',dir
+         stop 'DONE'
+         endif
+       end subroutine
+
+       subroutine insist_valid_face(face,caller)
+         implicit none
+         integer,intent(in) :: face
+         character(len=*),intent(in) :: caller
+         if (.not.valid_face(face)) then
+         write(*,*) 'Error: invalid face in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'face = ',face
+         stop 'DONE'
+         endif
+       end subroutine
+
+       subroutine insist_valid_edge(edge,caller)
+         implicit none
+         integer,intent(in) :: edge
+         character(len=*),intent(in) :: caller
+         if (.not.valid_edge(edge)) then
+         write(*,*) 'Error: invalid edge in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'edge = ',edge
+         stop 'DONE'
+         endif
+       end subroutine
+
+       subroutine insist_valid_corner(corner,caller)
+         implicit none
+         integer,intent(in) :: corner
+         character(len=*),intent(in) :: caller
+         if (.not.valid_corner(corner)) then
+         write(*,*) 'Error: invalid corner in ',caller,' in face_edge_corner_indexing.f90'
+         write(*,*) 'corner = ',corner
+         stop 'DONE'
+         endif
+       end subroutine
+
+       function valid_dir(dir) result(L)
+         implicit none
+         integer,intent(in) :: dir
+         logical :: L
+         select case (dir)
+         case (1:3); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
+       function valid_face(face) result(L)
+         implicit none
+         integer,intent(in) :: face
+         logical :: L
+         select case (face)
+         case (1:6); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
+       function valid_edge(edge) result(L)
+         implicit none
+         integer,intent(in) :: edge
+         logical :: L
+         select case (edge)
+         case (1:12); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
+       function valid_corner(corner) result(L)
+         implicit none
+         integer,intent(in) :: corner
+         logical :: L
+         select case (corner)
+         case (1:8); L = .true.
+         case default; L = .false.
+         end select
+       end function
+
          ! This module provides routines to obtain indexes for BC
          ! and stitch data structures so that consistent indexing
          ! is used. A figure below illustrates the convention used.
-         ! 
+         !
          ! ************************************* DIRECTION *************************************
          ! SLICE PATTERN:
          ! Direction 1: x
          ! Direction 2: y
          ! Direction 3: z
-         ! 
+         !
          ! ID NUMBERS:
-         !            2                                   
-         !            y                                   
-         !            ^                                   
-         !            |                                   
-         !            |                                   
-         !            ------------------------            
-         !           /|                     /|            
-         !          / |                    / |            
-         !         /  |                   /  |            
-         !        ------------------------   |            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        |   |------------------|---|---->x 1    
-         !        |  /                   |  /             
-         !        | /                    | /              
-         !        |/                     |/               
-         !        ------------------------                
-         !       /                                        
-         !      /                                         
-         !     z                                          
-         !    3                                           
-         ! 
+         !            2
+         !            y
+         !            ^
+         !            |
+         !            |
+         !            ------------------------
+         !           /|                     /|
+         !          / |                    / |
+         !         /  |                   /  |
+         !        ------------------------   |
+         !        |   |                  |   |
+         !        |   |                  |   |
+         !        |   |                  |   |
+         !        |   |------------------|---|---->x 1
+         !        |  /                   |  /
+         !        | /                    | /
+         !        |/                     |/
+         !        ------------------------
+         !       /
+         !      /
+         !     z
+         !    3
+         !
          ! ************************************* FACES *************************************
          ! SLICE PATTERN:
          ! Face 1: X(1,:,:)
@@ -449,29 +450,29 @@
          ! Face 4: X(:,N,:)
          ! Face 5: X(:,:,1)
          ! Face 6: X(:,:,N)
-         ! 
+         !
          ! ID NUMBERS:
-         !            y                                   
-         !            ^                                   
-         !            |                                   
-         !            |                                   
-         !            ------------------------            
-         !           /|                     /|            
-         !          / |       4            / |            
-         !         /  |                   /  |            
-         !        ------------------------   |            
-         !        |   |          5       |   |            
-         !        | 1 |                  | 2 |            
-         !        |   |       6          |   |            
-         !        |   |------------------|---|---->x      
-         !        |  /                   |  /             
-         !        | /         3          | /              
-         !        |/                     |/               
-         !        ------------------------                
-         !       /                                        
-         !      /                                         
-         !     z                                          
-         ! 
+         !            y
+         !            ^
+         !            |
+         !            |
+         !            ------------------------
+         !           /|                     /|
+         !          / |       4            / |
+         !         /  |                   /  |
+         !        ------------------------   |
+         !        |   |          5       |   |
+         !        | 1 |                  | 2 |
+         !        |   |       6          |   |
+         !        |   |------------------|---|---->x
+         !        |  /                   |  /
+         !        | /         3          | /
+         !        |/                     |/
+         !        ------------------------
+         !       /
+         !      /
+         !     z
+         !
          ! ************************************ EDGES ************************************
          ! SLICE PATTERN:
          ! Edge 1:  X(:,1,1)
@@ -486,52 +487,52 @@
          ! Edge 10: X(1,N,:)
          ! Edge 11: X(N,1,:)
          ! Edge 12: X(N,N,:)
-         ! 
+         !
          ! ID NUMBERS:
-         !            y                                   
-         !            ^                                   
-         !            |                                   
-         !            |                                   
-         !            ----------3-------------            
-         !           /|                     /|            
-         !         10 |                   12 |            
-         !         /  |                   /  |            
-         !        ------------4-----------   |            
-         !        |   5                  |   6            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        7   |                  8   |            
-         !        |   |----------1-------|---|---->x      
-         !        |  /                   |  /             
-         !        | 9                    | 11              
-         !        |/                     |/               
-         !        -----------2------------                
-         !       /                                        
-         !      /                                         
-         !     z                                          
-         ! 
+         !            y
+         !            ^
+         !            |
+         !            |
+         !            ----------3-------------
+         !           /|                     /|
+         !         10 |                   12 |
+         !         /  |                   /  |
+         !        ------------4-----------   |
+         !        |   5                  |   6
+         !        |   |                  |   |
+         !        |   |                  |   |
+         !        7   |                  8   |
+         !        |   |----------1-------|---|---->x
+         !        |  /                   |  /
+         !        | 9                    | 11
+         !        |/                     |/
+         !        -----------2------------
+         !       /
+         !      /
+         !     z
+         !
          ! ALTERNATIVE, 2D VIEW
-         !        z                          x                          y                        
-         !        ^    6                     ^    2                     ^    4                   
-         !        2---------4                2---------4                2---------4              
-         !        |         |                |         |                |         |              
-         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2            
-         !        |         |                |         |                |         |              
-         !        1---------3-> y            1---------3-> z            1---------3-> x          
-         !             5                          1                          3                   
-         ! 
+         !        z                          x                          y
+         !        ^    6                     ^    2                     ^    4
+         !        2---------4                2---------4                2---------4
+         !        |         |                |         |                |         |
+         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2
+         !        |         |                |         |                |         |
+         !        1---------3-> y            1---------3-> z            1---------3-> x
+         !             5                          1                          3
+         !
          !          e_pad=0                    e_pad=4                     e_pad=8
-         ! 
+         !
          ! OR, IN GENERAL,
-         ! 
-         !        d2               
-         !        ^                
-         !        2---------4      
-         !        |         |      
-         !        |   dir   |      
-         !        |         |      
-         !        1---------3-> d1 
-         !                                   
+         !
+         !        d2
+         !        ^
+         !        2---------4
+         !        |         |
+         !        |   dir   |
+         !        |         |
+         !        1---------3-> d1
+         !
          ! ************************************ CORNERS ************************************
          ! SLICE PATTERN:
          ! Corner 1: X(1,1,1)
@@ -542,28 +543,28 @@
          ! Corner 6: X(N,1,N) ! 1 eye amongst N's
          ! Corner 7: X(N,N,1) ! 1 eye amongst N's
          ! Corner 8: X(N,N,N)
-         ! 
+         !
          ! ID NUMBERS:
-         !            y                                   
-         !            ^                                   
-         !            |                                   
-         !            |                                   
-         !            3----------------------7            
-         !           /|                     /|            
-         !          / |                    / |            
-         !         /  |                   /  |            
-         !        5----------------------8   |            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        |   |                  |   |            
-         !        |   1------------------|---2---->x      
-         !        |  /                   |  /             
-         !        | /                    | /              
-         !        |/                     |/               
-         !        4----------------------6                
-         !       /                                        
-         !      /                                         
-         !     z                                          
-         ! 
+         !            y
+         !            ^
+         !            |
+         !            |
+         !            3----------------------7
+         !           /|                     /|
+         !          / |                    / |
+         !         /  |                   /  |
+         !        5----------------------8   |
+         !        |   |                  |   |
+         !        |   |                  |   |
+         !        |   |                  |   |
+         !        |   1------------------|---2---->x
+         !        |  /                   |  /
+         !        | /                    | /
+         !        |/                     |/
+         !        4----------------------6
+         !       /
+         !      /
+         !     z
+         !
          ! *********************************************************************************
        end module

@@ -19,6 +19,7 @@
       ! For multi-grid
       public :: restrict
       public :: prolongate
+
       public :: pop,snip
       public :: mirror_about_hmin
       public :: mirror_about_hmax
@@ -61,7 +62,9 @@
       interface import;            module procedure import_c;               end interface
 
       interface restrict;          module procedure restrict_c;             end interface
+      interface restrict;          module procedure restrict_reset_c;       end interface
       interface prolongate;        module procedure prolongate_c;           end interface
+      interface prolongate;        module procedure prolongate_reset_c;     end interface
 
       interface mirror_about_hmin; module procedure mirror_about_hmin_c;    end interface
       interface mirror_about_hmax; module procedure mirror_about_hmax_c;    end interface
@@ -74,7 +77,7 @@
 
       interface get_GI;            module procedure get_GI_c;               end interface
       interface get_boundary;      module procedure get_boundary_c;         end interface
-      
+
       contains
 
       ! **********************************************************
@@ -83,46 +86,46 @@
 
       subroutine initCoordinates(c,hn,sn)
         ! Here is a picture how coordinates are initialized for different cases:
-        ! 
-        ! 
+        !
+        !
         ! ----------------------------- 1) 1 or more interior cells  + 2 ghost (typical):
-        ! 
+        !
         !         hn(1)     hn(2)     hn(3)     hn(4)
         !          |-----------------------------|
         !          |    .    |    .    |    .    |
         !          |-----------------------------|
         !          |   hc(1) |   hc(2) |   hc(3) |
         !        amin       hmin      hmax      amax
-        ! 
+        !
         ! ----------------------------- 2) 0 interior cells + 2 ghost:
         ! * This case does need special initialization because it is a special case of 1).
-        ! 
+        !
         !              hn(1)     hn(2)     hn(3)
         !               |-------------------|
         !               |    .    |    .    |
         !               |-------------------|
         !               |   hc(1) |   hc(2) |
         !             amin    hmin,hmax      amax
-        ! 
+        !
         ! ----------------------------- 3) 0 interior cells + 1 ghost:
-        ! 
+        !
         !                 hn(1)        hn(2)
         !                  |-------------|
         !                  |      .      |
         !                  |-------------|
         !                  |     hc(1)   |
         !              hmin,amin     hmax,amax
-        ! 
+        !
         ! ----------------------------- 4) 0 interior cells + 0 ghost (infinitely thin plane):
-        ! 
+        !
         !                    hn(1),hc(1)
         !                         |
         !                         .
         !                         |
         !                         |
         !                hmin,amin,hmax,amax
-        ! 
-        ! ----------------------------- 
+        !
+        ! -----------------------------
         implicit none
         type(coordinates),intent(inout) :: c
         integer,intent(in) :: sn
@@ -240,8 +243,10 @@
         type(coordinates),intent(in) :: c
         integer,intent(in) :: un
         write(un,*) ' ---------------- coordinates'
-        write(un,*) 'sn = ';  write(un,*) c%sn
-        write(un,*) 'hn = ';  write(un,*) c%hn
+        write(un,*) 'sc,sn = ',c%sc,c%sn
+        write(un,*) 'hmin,hmax = ',c%hmin,c%hmax
+        write(un,*) 'amin,amax = ',c%amin,c%amax
+        write(un,*) 'hn = ',c%hn
         ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
         ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
         ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
@@ -687,6 +692,7 @@
         type(coordinates),intent(inout) :: r
         type(coordinates),intent(in) :: c
         integer :: i
+        call init(r,c)
         if (c%sc.gt.3) then
           if (mod(c%sc,2).eq.0) then
             call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),c%sc/2)
@@ -695,6 +701,15 @@
           endif
         else; call init(r,c) ! return c
         endif
+      end subroutine
+
+      subroutine restrict_reset_c(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(coordinates) :: temp
+        call restrict(temp,c)
+        call init(c,temp)
+        call delete(temp)
       end subroutine
 
       ! *****************************************************************
@@ -707,19 +722,30 @@
         type(coordinates),intent(in) :: c
         type(array),dimension(3) :: a
         integer :: i
-        if (c%sn.gt.1) then ! Can't prolongate without interior!
+        call init(p,c)
+            if (c%sn.eq.1) then ! Can't prolongate without interior!
         elseif (c%sn.eq.2) then
         elseif (c%sn.eq.3) then
         elseif (c%sn.gt.3) then ! typical case
           call init(a(1),c%hn(2:c%sn-1),c%sn-2)
           call init(a(2),c%hc(2:c%sc-1),c%sc-2)
           call init(a(3),a(1)%N+a(2)%N)
+          ! call init(a(3),2*(a(1)%N-1)-1)
           do i=1,a(1)%N; a(3)%f(2*i-1) = a(1)%f(i); enddo
           do i=1,a(2)%N; a(3)%f(2*i)   = a(2)%f(i); enddo
           call init(p,a(3)%f,a(3)%N)
           call addGhostNodes(p)
           do i=1,3; call delete(a(i)); enddo
         endif
+      end subroutine
+
+      subroutine prolongate_reset_c(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(coordinates) :: temp
+        call prolongate(temp,c)
+        call init(c,temp)
+        call delete(temp)
       end subroutine
 
       ! *****************************************************************
@@ -851,7 +877,7 @@
         ! call init(c%colCC(2),collocated_CC_2(c%dhc,c%sc))
         ! call init(c%colN(1),collocated_Node_1(c%dhn,c%sn))
         ! call init(c%colN(2),collocated_Node_2(c%dhn,c%sn))
-        
+
         ! call check(c%stagCC2N)
         ! call check(c%stagN2CC)
         ! call check(c%colCC)

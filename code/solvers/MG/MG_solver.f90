@@ -1,12 +1,12 @@
       module MG_solver_mod
       ! type(mg),dimension(n_levels) :: mg
-      ! 
+      !
       ! call solve(operator,mg,x,b,m,n_levels,n,norm,compute_norms)
       ! solves Ax = b using multigrid method.
-      ! 
-      ! A is described by matrix-free 
+      !
+      ! A is described by matrix-free
       ! operations defined in routine "operator"
-      ! 
+      !
       ! Smoother      = Jacobi method
       ! Direct solver = Conjugate Gradient Method
 
@@ -138,7 +138,7 @@
           mg(j+1)%smooth%D,mg(j+1)%smooth%m,n,mg(j+1)%smooth%norm,mg(j+1)%compute_norms,&
           mg(j+1)%smooth%Ax,mg(j+1)%smooth%res)
 
-          ! The solution on any mesh above the 
+          ! The solution on any mesh above the
           ! base mesh is the error!
           call assign(mg(j+1)%e,mg(j+1)%x)
 

@@ -9,7 +9,12 @@
        private
        public :: grid
        public :: init,delete,display,print,export,import ! Essentials
-       public :: restrict,restrict_x,restrict_xy
+
+       public :: restrict_x,restrict_xy ! specifically for MG
+
+       public :: restrict
+       public :: prolongate
+
        public :: initProps
        public :: snip,pop
 
@@ -43,10 +48,14 @@
        interface import;             module procedure import_Grid;             end interface
 
        interface initProps;          module procedure initProps_grid;          end interface
+
        interface restrict;           module procedure restrictGrid1;           end interface
        interface restrict;           module procedure restrictGrid3;           end interface
        interface restrict_x;         module procedure restrictGrid_x;          end interface
        interface restrict_xy;        module procedure restrictGrid_xy;         end interface
+
+       interface restrict;           module procedure restrict_dir_g;          end interface
+       interface prolongate;         module procedure prolongate_dir_g;        end interface
 
        interface snip;               module procedure snip_grid;               end interface
        interface pop;                module procedure pop_grid;                end interface
@@ -164,7 +173,7 @@
          g%volume = g%c(1)%maxRange*g%c(2)%maxRange*g%c(3)%maxRange
          g%defined = all((/(g%c(i)%defined,i=1,3)/))
        end subroutine
-        
+
        ! ------------------- restrict (for multigrid) --------------
 
        subroutine restrictGrid1(r,g,dir)
@@ -193,6 +202,26 @@
          call restrict(r%c(1),g%c(1))
          call restrict(r%c(2),g%c(2))
        end subroutine
+
+       ! ***********************************************************
+       ! ******************* RESTRICT / PROLONGATE *****************
+       ! ***********************************************************
+
+       subroutine restrict_dir_g(g,dir)
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call restrict(g%c(dir))
+       end subroutine
+
+       subroutine prolongate_dir_g(g,dir)
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call prolongate(g%c(dir))
+       end subroutine
+
+       ! ***********************************************************
+       ! ***********************************************************
+       ! ***********************************************************
 
        subroutine pop_grid(g,dir) ! Removes the last index from the grid
          implicit none

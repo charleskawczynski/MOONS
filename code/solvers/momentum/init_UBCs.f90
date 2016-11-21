@@ -17,7 +17,7 @@
        public :: init_UBCs
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = no-slip
-       integer :: preDefinedU_BCs = 12 ! See init_UBCs for details
+       integer :: preDefinedU_BCs = 1 ! See init_UBCs for details
 
        contains
 
@@ -63,7 +63,8 @@
          call init(U%x%BF(1)%BCs,1.0_cp,4)
          call init_Neumann(U%x%BF(1)%BCs,6)
          call init_Neumann(U%y%BF(1)%BCs,6)
-         call init_Neumann(U%z%BF(1)%BCs,6)
+         ! call init_Neumann(U%z%BF(1)%BCs,6) ! Results in small flow through
+         call init_Dirichlet(U%z%BF(1)%BCs,6)
        end subroutine
 
        subroutine LDC_4_domains(U)

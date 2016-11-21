@@ -8,7 +8,7 @@
       public :: dir_tree
       public :: init,delete
       public :: make_dir_tree
-      
+
       interface init;     module procedure init_DT;     end interface
       interface delete;   module procedure delete_DT;   end interface
 
@@ -20,7 +20,7 @@
         type(path) :: e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
 
-        type(path) :: ISP,TMP,PE,export_now
+        type(path) :: ISP,TMP,PE,export_now,refine_mesh
         type(path) :: U,B,J,T
         type(path) :: U_e,B_e,J_e,T_e ! energy data
         type(path) :: U_f,B_f,J_f,T_f ! field data
@@ -60,6 +60,7 @@
         call init(DT%ISP         ,DT%params      ,'ISP'        ,str(DT%PS))
         call init(DT%PE          ,DT%params      ,'PE'         ,str(DT%PS))
         call init(DT%export_now  ,DT%params      ,'export_now' ,str(DT%PS))
+        call init(DT%refine_mesh ,DT%params      ,'refine_mesh',str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
         call init(DT%restart_sim ,DT%LDC         ,'restart'    ,str(DT%PS))
         call init(DT%U           ,DT%LDC         ,'Ufield'     ,str(DT%PS))
@@ -110,6 +111,7 @@
         call make_dir(str(DT%TMP))
         call make_dir(str(DT%PE))
         call make_dir(str(DT%export_now))
+        call make_dir(str(DT%refine_mesh))
         call make_dir(str(DT%e_budget))
         call make_dir(str(DT%e_budget_C))
         call make_dir(str(DT%e_budget_N))
@@ -158,6 +160,7 @@
         call delete(DT%TMP)
         call delete(DT%PE)
         call delete(DT%export_now)
+        call delete(DT%refine_mesh)
         call delete(DT%mat)
         call delete(DT%meshes)
         call delete(DT%e_budget)

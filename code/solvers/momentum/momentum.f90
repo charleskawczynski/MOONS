@@ -1,6 +1,6 @@
        module momentum_mod
        use current_precision_mod
-       
+
        use sim_params_mod
        use boundary_conditions_mod
        use block_mod
@@ -23,6 +23,7 @@
        use init_PField_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
+       use face_SD_mod
 
        use IO_tools_mod
        use IO_SF_mod
@@ -31,6 +32,7 @@
        use export_raw_processed_symmetry_mod
        use print_export_mod
        use export_now_mod
+       use refine_mesh_mod
 
        use norms_mod
        use ops_norms_mod
@@ -56,14 +58,15 @@
        use GS_Poisson_mod
        use E_K_Budget_mod
 
-       
+
        implicit none
        private
-       
+
        public :: momentum
        public :: init,delete,display,print,export,import ! Essentials
 
-       public :: solve,export_tec,exportTransient,compute_E_K_Budget
+       public :: solve,export_tec,export_transient,compute_E_K_Budget
+       public :: prolongate
 
        type momentum
          ! Tensor fields
@@ -75,8 +78,6 @@
          type(VF) :: temp_E
          ! Scalar fields
          type(SF) :: p,divU,temp_CC
-         type(SF) :: Fo_grid,Co_grid,Re_grid
-         type(SF) :: KE_adv,KE_diff,KE_pres,KE_transient,KE_jCrossB
 
          type(GS_Poisson_SF) :: GS_p
 
@@ -86,8 +87,6 @@
 
          ! Time step, Reynolds number, grid
          type(mesh) :: m
-         type(block) :: B
-         type(mesh_block) :: MB
          type(mesh) :: m_surface
 
          type(time_marching_params) :: TMP
@@ -104,8 +103,9 @@
          type(probe) :: probe_KE,probe_KE_2C,probe_divU
        end type
 
-       interface init;                module procedure initMomentum;               end interface
-       interface delete;              module procedure deleteMomentum;             end interface
+       interface init;                module procedure init_mom;                   end interface
+       interface delete;              module procedure delete_mom;                 end interface
+       interface prolongate;          module procedure prolongate_mom;             end interface
        interface display;             module procedure display_momentum;           end interface
        interface print;               module procedure print_momentum;             end interface
        interface export;              module procedure export_momentum;            end interface
@@ -113,7 +113,7 @@
 
        interface export_tec;          module procedure export_tec_momentum;        end interface
        interface export_tec;          module procedure export_tec_momentum_no_ext; end interface
-       interface exportTransient;     module procedure momentumExportTransient;    end interface
+       interface export_transient;    module procedure export_transient_mom;       end interface
        interface solve;               module procedure solve_momentum;             end interface
 
        contains
@@ -122,7 +122,7 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine initMomentum(mom,m,SP,TMP,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)
+       subroutine init_mom(mom,m,SP,TMP,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(mesh),intent(in) :: m
@@ -133,8 +133,8 @@
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          real(cp),dimension(2) :: diffusion_treatment
-         type(SF) :: prec_PPE,vol_CC
-         type(VF) :: prec_mom
+         type(SF) :: vol_CC
+         type(mesh_block) :: MB
          write(*,*) 'Initializing momentum:'
 
          call init(mom%TMP,TMP)
@@ -152,8 +152,17 @@
          call init(mom%SP,SP)
          call init(mom%m,m)
 
-         call init(mom%B,mom%m%B(1)%g)
-         call init(mom%MB,mom%B)
+         if (SP%export_mesh_block) then
+           call init(MB,mom%m%B(1))
+           call export_mesh(MB%m,str(DT%meshes),'mom_mesh_block',0)
+           call delete(MB)
+         endif
+         if (mom%SP%export_cell_volume) then
+           call init_CC(vol_CC,m)
+           call volume(vol_CC,m)
+           call export_raw(mom%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
+           call delete(vol_CC)
+         endif
 
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
@@ -165,21 +174,6 @@
          call init_CC(mom%divU        ,m,0.0_cp)
          call init_CC(mom%U_CC        ,m,0.0_cp)
          call init_CC(mom%temp_CC     ,m,0.0_cp)
-         call init_CC(mom%Fo_grid     ,m,0.0_cp)
-         call init_CC(mom%Co_grid     ,m,0.0_cp)
-         call init_CC(mom%Re_grid     ,m,0.0_cp)
-         call init_CC(mom%KE_adv      ,m,0.0_cp)
-         call init_CC(mom%KE_diff     ,m,0.0_cp)
-         call init_CC(mom%KE_pres     ,m,0.0_cp)
-         call init_CC(mom%KE_transient,m,0.0_cp)
-         call init_CC(mom%KE_jCrossB  ,m,0.0_cp)
-
-         call init_CC(vol_CC,m)
-         call volume(vol_CC,m)
-         if (mom%SP%export_cell_volume) then
-           call export_raw(mom%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
-         endif
-         call delete(vol_CC)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -196,8 +190,7 @@
          call init_Ufield(mom%U,m,mom%SP%restartU,str(DT%U_f))
          call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
          write(*,*) '     Field initialized'
-         
-         ! call export_mesh(mom%MB%m,str(DT%meshes),'mesh_block',0)
+
          write(*,*) '     about to apply p BCs'
          call apply_BCs(mom%p,m)
          write(*,*) '     P BCs applied'
@@ -205,7 +198,7 @@
          call apply_BCs(mom%U,m)
          write(*,*) '     U BCs applied'
 
-         mom%MFP%c_mom = -0.5_cp*mom%TMP%dt/mom%Re
+         mom%MFP%coeff = -0.5_cp*mom%TMP%dt/mom%Re
 
          write(*,*) '     about to assemble Laplacian matrices'
          call init_Laplacian_SF(mom%m) ! Must come before PPE solver init
@@ -233,20 +226,12 @@
          write(*,*) '     GS solver initialized for p'
 
 
-         call init(prec_mom,mom%U)
-         call prec_mom_VF(prec_mom,mom%m,mom%MFP%c_mom)
-         ! call prec_identity_VF(prec_mom) ! For ordinary CG
-         call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom,mom%m,&
+         call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&
          mom%ISP_U,mom%MFP,mom%U,mom%temp_E,str(DT%U_r),'U',.false.,.false.)
-         call delete(prec_mom)
          write(*,*) '     PCG solver initialized for U'
 
-         call init(prec_PPE,mom%p)
-         call prec_lap_SF(prec_PPE,mom%m)
-         ! call prec_identity_SF(prec_PPE) ! For ordinary CG
-         call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_PPE,mom%m,&
+         call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
          mom%ISP_P,mom%MFP,mom%p,mom%temp_F,str(DT%U_r),'p',.false.,.false.)
-         call delete(prec_PPE)
          write(*,*) '     PCG solver initialized for p'
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
@@ -258,7 +243,7 @@
          write(*,*) ''
        end subroutine
 
-       subroutine deleteMomentum(mom)
+       subroutine delete_mom(mom)
          implicit none
          type(momentum),intent(inout) :: mom
          call delete(mom%U)
@@ -270,21 +255,11 @@
          call delete(mom%temp_CC)
          call delete(mom%divU)
          call delete(mom%U_CC)
-         call delete(mom%Fo_grid)
-         call delete(mom%Co_grid)
-         call delete(mom%Re_grid)
-         call delete(mom%KE_adv)
-         call delete(mom%KE_diff)
-         call delete(mom%KE_pres)
-         call delete(mom%KE_transient)
-         call delete(mom%KE_jCrossB)
          call delete(mom%probe_divU)
          call delete(mom%probe_KE)
          call delete(mom%probe_KE_2C)
          call delete(mom%temp_E)
          call delete(mom%m)
-         call delete(mom%MB)
-         call delete(mom%B)
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
          call delete(mom%GS_p)
@@ -411,7 +386,7 @@
          endif
        end subroutine
 
-       subroutine momentumExportTransient(mom)
+       subroutine export_transient_mom(mom)
          implicit none
          type(momentum),intent(inout) :: mom
          real(cp) :: temp
@@ -427,12 +402,13 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,PE,EN,DT)
+       subroutine solve_momentum(mom,F,PE,EN,RM,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
+         type(refine_mesh),intent(in) :: RM
          type(dir_tree),intent(in) :: DT
 
          select case(mom%SP%solveUMethod)
@@ -470,12 +446,13 @@
          ! call computeKineticEnergy(mom,mom%m,F)
          if (PE%transient_0D) then
            call div(mom%divU,mom%U,mom%m)
-           call exportTransient(mom)
+           call export_transient(mom)
          endif
          ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
          if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
 
          if (PE%info) call print(mom)
+
          if (PE%solution.or.EN%U%this.or.EN%all%this) then
            ! call curl(mom%temp_E,mom%U,m)
            call export(mom,DT)
@@ -552,6 +529,35 @@
          enddo
          flush(un)
          call close_and_message(un,str(DT%e_budget),'E_K_budget_terms')
+       end subroutine
+
+       subroutine prolongate_mom(mom,F,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(VF),intent(inout) :: F
+         type(dir_tree),intent(in) :: DT
+         type(mesh_block) :: MB
+         integer :: i
+         call export_processed(mom%m,mom%U,str(DT%U_f),'U_before_prolongate',1)
+         do i=1,3
+           write(*,*) 'Prolongating momentum solver along direction ',i
+           call prolongate(mom%m,i)
+           call prolongate(mom%U_E,mom%m,i)
+           call prolongate(F,mom%m,i)
+           call prolongate(mom%U,mom%m,i)
+           call prolongate(mom%Ustar,mom%m,i)
+           call prolongate(mom%Unm1,mom%m,i)
+           call prolongate(mom%temp_F,mom%m,i)
+           call prolongate(mom%temp_E,mom%m,i)
+           call prolongate(mom%p,mom%m,i)
+           call prolongate(mom%divU,mom%m,i)
+           call prolongate(mom%U_CC,mom%m,i)
+           call prolongate(mom%temp_CC,mom%m,i)
+           call prolongate(mom%PCG_P,mom%m,i)
+         enddo
+         write(*,*) 'Finished momentum solver prolongation'
+         call apply_BCs(mom%U,mom%m)
+         call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated',1)
        end subroutine
 
        end module

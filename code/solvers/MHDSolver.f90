@@ -9,6 +9,7 @@
        use stop_clock_mod
        use print_export_mod
        use export_now_mod
+       use refine_mesh_mod
        use kill_switch_mod
 
        use time_marching_params_mod
@@ -18,7 +19,7 @@
        use energy_aux_mod
        use induction_aux_mod
        implicit none
-       
+
        private
        public :: MHDSolver
 
@@ -36,6 +37,7 @@
          type(VF) :: F ! Forces added to momentum equation
          type(print_export) :: PE
          type(export_now) :: EN
+         type(refine_mesh) :: RM
          type(kill_switch) :: KS
 
          call init(F,mom%U)
@@ -43,6 +45,7 @@
 
          call init(KS,str(DT%params),'kill_switch'); call export(KS)
          call init(EN,str(DT%export_now),'EN'); call export(EN)
+         call init(RM,str(DT%refine_mesh),'RM'); call export(RM)
          call init(PE,SP%export_planar,str(DT%PE),'PE'); call export(PE)
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
@@ -56,9 +59,10 @@
            call update(PE,coupled%n_step)
 
            ! if (SP%solveDensity)    call solve(dens,mom%U,  PE,EN,DT)
-           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,DT)
-           if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
-           if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
+           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,RM,DT)
+           if (SP%solveMomentum)  call solve(mom,F,      PE,EN,RM,DT)
+           if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,RM,DT)
+           if (RM%all%this) call prolongate(mom,F,DT)
 
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
@@ -90,10 +94,14 @@
            call update(EN)
            if (EN%any_next) call export(EN)
 
+           call import(RM)
+           call update(RM)
+           if (RM%any_next) call export(RM)
+
            call toc(sc)
            if (PE%info) then
-             ! oldest_modified_file violates intent, but this 
-             ! would be better to update outside the solvers, 
+             ! oldest_modified_file violates intent, but this
+             ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc)
@@ -132,8 +140,8 @@
          call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************
-         if (SP%solveMomentum)  call exportTransient(mom)
-         if (SP%solveInduction) call exportTransient(ind)
+         if (SP%solveMomentum)  call export_transient(mom)
+         if (SP%solveInduction) call export_transient(ind)
 
          if (SP%solveEnergy) then;    call export_tec(nrg,DT);   endif ! call export(nrg,DT); endif
          if (SP%solveMomentum) then;  call export_tec(mom,DT,F); endif ! call export(mom,DT); endif
