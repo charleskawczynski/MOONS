@@ -59,10 +59,22 @@
            call update(PE,coupled%n_step)
 
            ! if (SP%solveDensity)    call solve(dens,mom%U,  PE,EN,DT)
-           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,RM,DT)
-           if (SP%solveMomentum)  call solve(mom,F,      PE,EN,RM,DT)
-           if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,RM,DT)
-           if (RM%all%this) call prolongate(mom,F,DT)
+           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,DT)
+           if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
+           if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
+
+           if (RM%any_next) then
+             call prolongate(RM)
+             ! call prolongate(nrg,DT,RM,PE)
+             call prolongate(mom,F,DT,RM,PE)
+             ! call prolongate(ind,DT,RM,PE)
+
+             ! call prolongate(nrg%TMP)
+             call prolongate(mom%TMP)
+             ! call prolongate(ind%TMP)
+             call prolongate(coupled)
+             call reset_Nmax(sc,coupled%n_step_stop-coupled%n_step)
+           endif
 
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 

@@ -56,6 +56,7 @@
          ! BMC 102
          ! time  = 10.0_cp
          time  = 100.0_cp
+         ! dtime = 1.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
          dtime = 5.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
          ! dtime = 3.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
 

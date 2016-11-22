@@ -298,13 +298,12 @@
          call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP%t,temp)
        end subroutine
 
-       subroutine solve_energy(nrg,U,PE,EN,RM,DT)
+       subroutine solve_energy(nrg,U,PE,EN,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
-         type(refine_mesh),intent(in) :: RM
          type(dir_tree),intent(in) :: DT
 
          call assign(nrg%gravity%x,1.0_cp)
@@ -350,8 +349,6 @@
          endif
 
          if (PE%info) call print(nrg)
-
-         ! if (RM%all%this) call prolongate(nrg)
 
          if (PE%solution.or.EN%T%this.or.EN%all%this) then
            call export(nrg,DT)

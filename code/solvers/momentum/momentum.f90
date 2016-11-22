@@ -46,6 +46,7 @@
        use apply_BCs_mod
        use apply_BCs_embed_mod
        use boundary_conditions_mod
+       use divergence_clean_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -402,13 +403,12 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,PE,EN,RM,DT)
+       subroutine solve_momentum(mom,F,PE,EN,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
-         type(refine_mesh),intent(in) :: RM
          type(dir_tree),intent(in) :: DT
 
          select case(mom%SP%solveUMethod)
@@ -531,33 +531,53 @@
          call close_and_message(un,str(DT%e_budget),'E_K_budget_terms')
        end subroutine
 
-       subroutine prolongate_mom(mom,F,DT)
+       subroutine prolongate_mom(mom,F,DT,RM,PE)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(inout) :: F
          type(dir_tree),intent(in) :: DT
-         type(mesh_block) :: MB
+         type(refine_mesh),intent(in) :: RM
+         type(print_export),intent(in) :: PE
+         integer,dimension(3) :: dir
          integer :: i
-         call export_processed(mom%m,mom%U,str(DT%U_f),'U_before_prolongate',1)
+         call export_processed(mom%m,mom%U,str(DT%U_f),'U_SS_'//str(RM%level_last),1)
+
+         dir = 0
+         if (RM%x%this) dir(1) = 1
+         if (RM%y%this) dir(2) = 2
+         if (RM%z%this) dir(3) = 3
+         if (RM%x_plane%this) then; dir=(/1,2,3/); dir(1) = 0; endif
+         if (RM%y_plane%this) then; dir=(/1,2,3/); dir(2) = 0; endif
+         if (RM%z_plane%this) then; dir=(/1,2,3/); dir(3) = 0; endif
+         if (RM%all%this) dir = (/1,2,3/)
          do i=1,3
-           write(*,*) 'Prolongating momentum solver along direction ',i
-           call prolongate(mom%m,i)
-           call prolongate(mom%U_E,mom%m,i)
-           call prolongate(F,mom%m,i)
-           call prolongate(mom%U,mom%m,i)
-           call prolongate(mom%Ustar,mom%m,i)
-           call prolongate(mom%Unm1,mom%m,i)
-           call prolongate(mom%temp_F,mom%m,i)
-           call prolongate(mom%temp_E,mom%m,i)
-           call prolongate(mom%p,mom%m,i)
-           call prolongate(mom%divU,mom%m,i)
-           call prolongate(mom%U_CC,mom%m,i)
-           call prolongate(mom%temp_CC,mom%m,i)
-           call prolongate(mom%PCG_P,mom%m,i)
+           if (dir(i).ne.0) then
+             write(*,*) 'Prolongating momentum solver along direction ',i
+             call prolongate(mom%m,dir(i))
+             call prolongate(mom%U_E,mom%m,dir(i))
+             call prolongate(F,mom%m,dir(i))
+             call prolongate(mom%U,mom%m,dir(i))
+             call prolongate(mom%Ustar,mom%m,dir(i))
+             call prolongate(mom%Unm1,mom%m,dir(i))
+             call prolongate(mom%temp_F,mom%m,dir(i))
+             call prolongate(mom%temp_E,mom%m,dir(i))
+             call prolongate(mom%p,mom%m,dir(i))
+             call prolongate(mom%divU,mom%m,dir(i))
+             call prolongate(mom%U_CC,mom%m,dir(i))
+             call prolongate(mom%temp_CC,mom%m,dir(i))
+             call prolongate(mom%PCG_P,mom%m,dir(i))
+           endif
          enddo
          write(*,*) 'Finished momentum solver prolongation'
          call apply_BCs(mom%U,mom%m)
-         call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated',1)
+         call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
+
+         call assign(mom%Ustar,mom%U)
+         call boost(mom%PCG_P%ISP)
+         call div_clean_PCG(mom%PCG_P,mom%U,mom%p,mom%Ustar,mom%m,mom%temp_F,mom%temp_CC,.true.)
+         call reset(mom%PCG_P%ISP)
+
+         call export_processed(mom%m,mom%U,str(DT%U_f),'U_cleaned_'//str(RM%level),1)
        end subroutine
 
        end module

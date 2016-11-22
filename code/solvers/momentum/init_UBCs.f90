@@ -32,7 +32,7 @@
          call Dirichlet_BCs(U,m)
 
          select case (preDefinedU_BCs)
-         case (0); 
+         case (0);
          case (1); call LDC_1_domain(U)
          case (2); call LDC_4_domains(U)
          case (3); call LDC_9_domains(U)

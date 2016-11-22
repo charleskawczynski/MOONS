@@ -1,17 +1,22 @@
        module refine_mesh_mod
+       use datatype_conversion_mod
        use string_mod
+       use string_aux_mod
        use IO_tools_mod
        implicit none
        private
        public :: refine_mesh
        public :: init,delete,export,import
        public :: update
+       public :: prolongate
 
-       interface init;     module procedure init_EN;     end interface
-       interface delete;   module procedure delete_EN;   end interface
-       interface export;   module procedure export_EN;   end interface
-       interface import;   module procedure import_EN;   end interface
-       interface update;   module procedure update_EN;   end interface
+       interface init;        module procedure init_RM;         end interface
+       interface delete;      module procedure delete_RM;       end interface
+       interface export;      module procedure export_RM;       end interface
+       interface import;      module procedure import_RM;       end interface
+       interface update;      module procedure update_RM;       end interface
+
+       interface prolongate;  module procedure prolongate_RM;   end interface
 
        type step
          logical :: this = .false.
@@ -19,10 +24,14 @@
        end type
 
        type refine_mesh
-         type(step) :: U,B,T,all
-         type(string) :: dir,name
+         type(step) :: all,x,y,z
+         type(step) :: x_plane
+         type(step) :: y_plane
+         type(step) :: z_plane
+         type(string) :: dir,name,level,level_last
          logical :: any_next = .false.
          integer :: un
+         integer :: L,L_last
        end type
 
        contains
@@ -41,65 +50,101 @@
          s%next = .false.
        end subroutine
 
-       subroutine init_EN(EN,dir,name)
+       subroutine init_RM(RM,dir,name)
          implicit none
-         type(refine_mesh),intent(inout) :: EN
+         type(refine_mesh),intent(inout) :: RM
          character(len=*),intent(in) :: dir,name
-         call delete_step(EN%T)
-         call delete_step(EN%U)
-         call delete_step(EN%B)
-         call delete_step(EN%all)
-         EN%any_next = .false.
+         call delete_step(RM%all)
+         call delete_step(RM%x)
+         call delete_step(RM%y)
+         call delete_step(RM%z)
+         call delete_step(RM%x_plane)
+         call delete_step(RM%y_plane)
+         call delete_step(RM%z_plane)
+         RM%any_next = .false.
+         RM%L = 0
+         RM%L_last = 0
+         call init(RM%level,'0')
+         call init(RM%level_last,'0')
 
-         call init(EN%dir,dir)
-         call init(EN%name,name)
+         call init(RM%dir,dir)
+         call init(RM%name,name)
        end subroutine
 
-       subroutine delete_EN(EN)
+       subroutine delete_RM(RM)
          implicit none
-         type(refine_mesh),intent(inout) :: EN
-         call delete_step(EN%T)
-         call delete_step(EN%U)
-         call delete_step(EN%B)
-         call delete_step(EN%all)
-         EN%any_next = .false.
+         type(refine_mesh),intent(inout) :: RM
+         call delete_step(RM%all)
+         call delete_step(RM%x)
+         call delete_step(RM%y)
+         call delete_step(RM%z)
+         call delete_step(RM%x_plane)
+         call delete_step(RM%y_plane)
+         call delete_step(RM%z_plane)
+         RM%any_next = .false.
+         RM%L = 0
+         RM%L_last = 0
+         call init(RM%level,'0')
+         call init(RM%level_last,'0')
 
-         call delete(EN%dir)
-         call delete(EN%name)
+         call delete(RM%dir)
+         call delete(RM%name)
        end subroutine
 
-       subroutine export_EN(EN)
+       subroutine export_RM(RM)
          implicit none
-         type(refine_mesh),intent(inout) :: EN
+         type(refine_mesh),intent(inout) :: RM
          integer :: un
-         un = new_and_open(str(EN%dir),str(EN%name))
-         write(un,*) 'T_next = ';   write(un,*) EN%T%next
-         write(un,*) 'U_next = ';   write(un,*) EN%U%next
-         write(un,*) 'B_next = ';   write(un,*) EN%B%next
-         write(un,*) 'all_next = '; write(un,*) EN%all%next
+         un = new_and_open(str(RM%dir),str(RM%name))
+         write(un,*) 'all_next = ';     write(un,*) RM%all%next
+         write(un,*) 'x_next = ';       write(un,*) RM%x%next
+         write(un,*) 'y_next = ';       write(un,*) RM%y%next
+         write(un,*) 'z_next = ';       write(un,*) RM%z%next
+         write(un,*) 'x_plane_next = '; write(un,*) RM%x_plane%next
+         write(un,*) 'y_plane_next = '; write(un,*) RM%y_plane%next
+         write(un,*) 'z_plane_next = '; write(un,*) RM%z_plane%next
          close(un)
        end subroutine
 
-       subroutine import_EN(EN)
+       subroutine import_RM(RM)
          implicit none
-         type(refine_mesh),intent(inout) :: EN
+         type(refine_mesh),intent(inout) :: RM
          integer :: un
-         un = open_to_read(str(EN%dir),str(EN%name))
-         read(un,*) ; read(un,*) EN%T%next
-         read(un,*) ; read(un,*) EN%U%next
-         read(un,*) ; read(un,*) EN%B%next
-         read(un,*) ; read(un,*) EN%all%next
+         un = open_to_read(str(RM%dir),str(RM%name))
+         read(un,*) ; read(un,*) RM%all%next
+         read(un,*) ; read(un,*) RM%x%next
+         read(un,*) ; read(un,*) RM%y%next
+         read(un,*) ; read(un,*) RM%z%next
+         read(un,*) ; read(un,*) RM%x_plane%next
+         read(un,*) ; read(un,*) RM%y_plane%next
+         read(un,*) ; read(un,*) RM%z_plane%next
          close(un)
        end subroutine
 
-       subroutine update_EN(EN)
+       subroutine update_RM(RM)
          implicit none
-         type(refine_mesh),intent(inout) :: EN
-         EN%any_next = any((/EN%T%next,EN%U%next,EN%B%next,EN%all%next/))
-         call update_step(EN%T)
-         call update_step(EN%U)
-         call update_step(EN%B)
-         call update_step(EN%all)
+         type(refine_mesh),intent(inout) :: RM
+         RM%any_next = any((/RM%all%next,RM%x%next,RM%y%next,RM%z%next,&
+         RM%x_plane%next,RM%y_plane%next,RM%z_plane%next/))
+         call update_step(RM%all)
+         call update_step(RM%x)
+         call update_step(RM%y)
+         call update_step(RM%z)
+         call update_step(RM%x_plane)
+         call update_step(RM%y_plane)
+         call update_step(RM%z_plane)
+       end subroutine
+
+       subroutine prolongate_RM(RM)
+         implicit none
+         type(refine_mesh),intent(inout) :: RM
+         RM%L_last = RM%L
+         call init(RM%level_last,int2str(RM%L_last))
+         call remove_leading_zeros(RM%level_last)
+
+         RM%L = RM%L + 1
+         call init(RM%level,int2str(RM%L))
+         call remove_leading_zeros(RM%level)
        end subroutine
 
        end module

@@ -9,6 +9,7 @@
        public :: init,delete,export,import,display,print
        public :: iterate_step
        public :: couple_time_step
+       public :: prolongate
 
        type time_marching_params
          integer(li) :: n_step        ! nth time step
@@ -30,6 +31,8 @@
        interface iterate_step;     module procedure iterate_step_TMP;     end interface
 
        interface couple_time_step; module procedure couple_time_step_TMP; end interface
+
+       interface prolongate;       module procedure prolongate_TMP;       end interface
 
        contains
 
@@ -140,6 +143,15 @@
          TMP%n_step_start = coupled%n_step_start
          TMP%n_step_stop = coupled%n_step_stop
          TMP%n_step = coupled%n_step
+       end subroutine
+
+       subroutine prolongate_TMP(TMP)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         integer :: factor
+         factor = 4                               ! to address dt restriction: dt ~ 1/dx^2
+         TMP%dt = TMP%dt*1.0_cp/(real(factor,cp)) ! reduce dt for finer mesh
+         TMP%n_step_stop = TMP%n_step_stop*factor ! increase n_step_stop to reach final time
        end subroutine
 
        end module

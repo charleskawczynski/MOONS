@@ -17,6 +17,8 @@
        public :: update_check_res
        public :: update_last_iter
 
+       public :: boost,reset
+
        type iter_solver_params
          integer :: iter_max = 1                    ! Maximum iterations for iterative solver
          real(cp) :: tol_rel = 10.0_cp**(-10.0_cp)  ! relative tolerance for iterative solver
@@ -46,6 +48,9 @@
        interface exit_loop;         module procedure exit_loop_ISP;         end interface
        interface update_check_res;  module procedure update_check_res_ISP;  end interface
        interface update_last_iter;  module procedure update_last_iter_ISP;  end interface
+
+       interface boost;             module procedure boost_ISP;             end interface
+       interface reset;             module procedure reset_ISP;             end interface
 
        contains
 
@@ -192,6 +197,18 @@
          type(iter_solver_params),intent(inout) :: ISP
          integer,intent(in) :: iter
          ISP%iter_last = iter
+       end subroutine
+
+       subroutine boost_ISP(ISP)
+         implicit none
+         type(iter_solver_params),intent(inout) :: ISP
+         ISP%iter_max = 4*ISP%iter_max
+       end subroutine
+
+       subroutine reset_ISP(ISP)
+         implicit none
+         type(iter_solver_params),intent(inout) :: ISP
+         ISP%iter_max = ISP%iter_max/4
        end subroutine
 
        function exit_loop_ISP(ISP,res,res0) result(L)

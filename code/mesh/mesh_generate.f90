@@ -24,9 +24,9 @@
          logical,intent(in) :: include_vacuum
          type(dir_tree),intent(in) :: DT
          ! 3D cube uniform no walls
-         call cube_uniform(m_mom)
-         call init(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
+         ! call cube_uniform(m_mom)
+         ! call init(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
 
          ! 3D cube uniform with walls
          ! call cube_uniform(m_mom)
@@ -39,9 +39,9 @@
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! 3D cube non-uniform no walls
-         ! call cube(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(MD_sigma,m_mom,m_ind)
+         call cube(m_mom)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
 
          ! 3D cube non-uniform, uniform walls
          ! call cube(m_mom)

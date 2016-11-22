@@ -462,13 +462,12 @@
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP%t,temp)
        end subroutine
 
-       subroutine solve_induction(ind,U,PE,EN,RM,DT)
+       subroutine solve_induction(ind,U,PE,EN,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
-         type(refine_mesh),intent(in) :: RM
          type(dir_tree),intent(in) :: DT
 
          if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
@@ -519,8 +518,6 @@
 
          if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
          ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
-
-         ! if (RM%all%this) call prolongate(ind)
 
          if (PE%info) call print(ind)
          if (PE%solution.or.EN%B%this.or.EN%all%this) then

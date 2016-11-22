@@ -3,7 +3,6 @@
        use grid_mod
        use face_edge_corner_indexing_mod
        use GF_base_mod
-       use GF_extrap_mod
        use GF_assign_mod
        implicit none
 
@@ -24,29 +23,33 @@
          type(grid_field),intent(in) :: u    ! original field (size = s)
          type(grid),intent(in) :: g          ! fine grid
          integer,intent(in) :: dir,x,y,z     ! x,y,z = eye(dir)
-         real(cp) :: alpha,beta,node_interp
+         real(cp) :: alpha
          integer :: i,j,k,t
-         integer :: in_L,jn_L,kn_L
-         integer :: in_R,jn_R,kn_R
          if (mod(g%c(dir)%sc,2).eq.0) then
-           ! Starting from the physical boundaries, assign cell on LEFT  side of node:
-           ! Starting from the physical boundaries, assign cell on RIGHT side of node:
-           do k=1,u%s(3)-z
-           do j=1,u%s(2)-y
-           do i=1,u%s(1)-x
+           ! Starting from the physical boundaries odd locations have
+           ! weighting factors according to their cell size:
+           do k=1+z,u%s(3)-z
+           do j=1+y,u%s(2)-y
+           do i=1+x,u%s(1)-x
            t = i*x + j*y + k*z
-           in_L = (1+x)*i-x
-           jn_L = (1+y)*j-y
-           kn_L = (1+z)*k-z
-           in_R = (1+x)*i
-           jn_R = (1+y)*j
-           kn_R = (1+z)*k
-           node_interp = u%f(i+x,j+y,k+z)*g%c(dir)%theta%D%f(t) + &
-                         u%f( i , j , k )*g%c(dir)%theta%U%f(t)
-           p%f(in_L,jn_L,kn_L) = 0.5_cp*(u%f( i , j , k ) + node_interp)
-           p%f(in_R,jn_R,kn_R) = 0.5_cp*(u%f(i+x,j+y,k+z) + node_interp)
+           i_f = (1+x)*i-2*x
+           j_f = (1+y)*j-2*y
+           k_f = (1+z)*k-2*z
+           alpha = g%c(dir)%dhn(t)/(g%c(dir)%dhn(t)+g%c(dir)%dhn(t+1))
+           p%f(i_f,j_f,k_f) = u%f(i,j,k)*2.0_cp*alpha
            enddo; enddo; enddo
-           call extrap(p,dir) ! Extrapolate!
+           ! Starting from the physical boundaries, even locations have
+           ! weighting factors according to their cell size:
+           do k=1+z,u%s(3)-z
+           do j=1+y,u%s(2)-y
+           do i=1+x,u%s(1)-x
+           t = i*x + j*y + k*z
+           i_f = (1+x)*i-x
+           j_f = (1+y)*j-y
+           k_f = (1+z)*k-z
+           alpha = g%c(dir)%dhn(t+1)/(g%c(dir)%dhn(t)+g%c(dir)%dhn(t+1))
+           p%f(i_f,j_f,k_f) = u%f(i,j,k)*2.0_cp*alpha
+           enddo; enddo; enddo
          endif
        end subroutine
 

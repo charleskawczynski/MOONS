@@ -196,9 +196,9 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-# FCFLAGS += $(FC_DEBUG)
+FCFLAGS += $(FC_DEBUG)
 # FCFLAGS += $(FC_PROFILE)
-FCFLAGS += $(FC_OPTIMIZE)
+# FCFLAGS += $(FC_OPTIMIZE)
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -310,7 +310,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_interp.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict_const.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate_const.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
@@ -423,6 +425,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)divergence_clean.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\

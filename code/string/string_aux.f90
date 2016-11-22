@@ -88,7 +88,7 @@
         n = len(st)
         if (n.lt.1) stop 'Error: input string must be > 1 in string.f90'
         n_zeros = 0
-        do i=1,n
+        do i=1,n-1 ! do not remove the last character even if zero
           if (get_char(st,i).eq.'0') then; n_zeros = n_zeros + 1; else; exit; endif
         enddo
         call init(temp,n-n_zeros)
