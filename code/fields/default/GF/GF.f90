@@ -26,9 +26,7 @@
         use GF_mean_along_dir_mod
         use GF_mirror_about_plane_mod
         use GF_restrict_mod
-        use GF_restrict_const_mod
         use GF_prolongate_mod
-        use GF_prolongate_const_mod
 
         implicit none
         private
@@ -108,8 +106,6 @@
 
         public :: prolongate_C,restrict_C
         public :: prolongate_N,restrict_N
-        public :: prolongate_C_const,restrict_C_const
-        public :: prolongate_N_const,restrict_N_const
 
         public :: insist_allocated
         public :: insist_shape_staggered

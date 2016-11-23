@@ -12,8 +12,8 @@
       !     g            = contains grid information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
-      ! 
-      ! 
+      !
+      !
       ! There are 3 iteration numbers that must be set:
       !      1) Number of V-Cycles - defined by maxIterations in ss
       !      2) Iterations per cycle - call setIterationsPerLevel()
@@ -138,7 +138,7 @@
           endif
 
           ! RIGHT NOW ONLY HANDLES ZERO DIRICHLET AND ZERO NEUAMNN
-          ! FACE/EDGE-DATA IS NOT SUPPORTED AND CANNOT BE SIMPLY 
+          ! FACE/EDGE-DATA IS NOT SUPPORTED AND CANNOT BE SIMPLY
           ! SINCE THE NUMBER OF DATA POINTS DIFFERS BY 1 BETWEEN
           ! EACH DIRECTION FOR STAGGERED DATA.
           if ((s(1).eq.g_base%c(1)%sn).and.(getAllNeumann(mg(1)%u_bcs))) bctype = 4       ! Neumann wall coincident
@@ -376,7 +376,7 @@
           ! 6) Final smoothing sweeps
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
-          ! The solution on any grid above the 
+          ! The solution on any grid above the
           ! base grid is the error!
           mg(j+1)%e = mg(j+1)%u
 
@@ -387,8 +387,8 @@
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
-          ! The solution on any grid above the 
-          ! base grid is the correction on the 
+          ! The solution on any grid above the
+          ! base grid is the correction on the
           ! finer grid!
           mg(j+1)%e = mg(j+1)%u
         endif

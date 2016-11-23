@@ -421,7 +421,7 @@
          if (CC_along(DL,dir)) then
            do i=1,B%n; call prolongate_C(B%b(i),g(i),dir,x,y,z); enddo
          elseif ( N_along(DL,dir)) then
-           do i=1,B%n; call prolongate_N(B%b(i),g(i),dir,x,y,z); enddo
+           do i=1,B%n; call prolongate_N(B%b(i),dir,x,y,z); enddo
          else; stop 'Error: bad DL in prolongate_B in boundary.f90'
          endif
        end subroutine

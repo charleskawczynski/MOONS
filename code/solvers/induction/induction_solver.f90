@@ -1,12 +1,13 @@
        module induction_solver_mod
        ! Constrained Transport (CT) Method reference:
-       ! "Tóth, G. The divergence Constraint in Shock-Capturing 
+       ! "Tóth, G. The divergence Constraint in Shock-Capturing
        ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
        use current_precision_mod
        use mesh_mod
        use SF_mod
        use VF_mod
        use TF_mod
+       use curl_curl_B_mod
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
@@ -125,7 +126,7 @@
          D_conductor,dt,compute_norms,temp_CC,temp_F1,&
          temp_F2,temp_E,temp_E_TF,phi)
          ! This has not yet been tested and is likely flawed currently.
-         ! 
+         !
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:  B (above)
          ! Note:      J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
@@ -169,12 +170,6 @@
        end subroutine
 
        subroutine CT_Low_Rem(B,B0,U_E,J,sigmaInv_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
-         ! Solves:
-         ! Solves:    ∂B/∂t = ∇x(uxB⁰) - ∇x(σ⁻¹∇xB)
-         ! Computes:  B (above)
-         ! Note:      J = ∇xB    -> J does not have Rem⁻¹ !
-         ! Method:    Constrained Transport (CT)
-         ! Info:      cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Low Rem
          implicit none
          type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
          type(VF),intent(in) :: B0,sigmaInv_E
@@ -185,8 +180,29 @@
          integer,intent(in) :: N_induction
          integer :: i
          do i=1,N_induction
-           call curl_curl_matrix_based(temp_F2,B,m)
+           call curl_curl_B_matrix_free(temp_F2,J,B,sigmaInv_E,m,temp_E)
            call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
+           call multiply(temp_F1,dt)
+           call add_product(B,temp_F2,-dt)
+           call add(B,temp_F1)
+           call apply_BCs(B,m)
+         enddo
+       end subroutine
+
+       subroutine CT_Low_Rem_matrix_based(B,B0,U_E,J,sigmaInv_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
+         implicit none
+         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0,sigmaInv_E
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         integer,intent(in) :: N_induction
+         integer :: i
+         do i=1,N_induction
+           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
+           call curl_curl_B_matrix_based(temp_F2,B,m) ! A = -(I + curl(curl))
+           call multiply(temp_F2,-dt)
            call multiply(temp_F1,dt)
            call add(B,temp_F1,temp_F2)
            call apply_BCs(B,m)

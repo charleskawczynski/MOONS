@@ -163,7 +163,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%probe_divQ,str(DT%T),'probe_divQ',nrg%SP%restartT)
+         call init(nrg%probe_divQ,str(DT%T),'probe_divQ',nrg%SP%restartT,SP)
 
          nrg%MFP%coeff = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
@@ -295,7 +295,7 @@
          type(energy),intent(inout) :: nrg
          real(cp) :: temp
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
-         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP%t,temp)
+         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP,temp)
        end subroutine
 
        subroutine solve_energy(nrg,U,PE,EN,DT)

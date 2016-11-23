@@ -4,6 +4,7 @@
        use VF_mod
        use TF_mod
        use ops_embedExtract_mod
+       use time_marching_params_mod
        use mesh_domain_mod
        use mesh_mod
        use export_raw_processed_mod
@@ -113,11 +114,11 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_Total_Energy_Domain(energy,field,time,m,MD)
+       subroutine compute_Total_Energy_Domain(energy,field,TMP,m,MD)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
-         real(cp),intent(in) :: time
+         type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
          type(VF) :: temp_VF
@@ -128,20 +129,20 @@
          call Ln(temp,temp_VF,2.0_cp,m,MD)
          temp = 0.5_cp*temp
          call delete(temp_VF)
-         call export(energy,time,temp)
+         call export(energy,TMP,temp)
        end subroutine
 
-       subroutine compute_Total_Energy(energy,field,time,m)
+       subroutine compute_Total_Energy(energy,field,TMP,m)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(inout) :: field
-         real(cp),intent(in) :: time
+         type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          real(cp) :: temp
          call assign_ghost_XPeriodic(field,0.0_cp) ! norms now includes ghost points
          call Ln(temp,field,2.0_cp,m)
          temp = 0.5_cp*temp
-         call export(energy,time,temp)
+         call export(energy,TMP,temp)
        end subroutine
 
        subroutine embedVelocity_E(U_E_tot,U_E_in,D_fluid)

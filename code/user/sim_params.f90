@@ -1,13 +1,14 @@
      module sim_params_mod
+     use current_precision_mod
      implicit none
 
      type sim_params
        logical :: restart_all
 
-       logical :: post_process_only ! depricated
-       logical :: stop_before_solve
+       logical :: post_process_only        ! depricated
        logical :: post_process
        logical :: skip_solver_loop
+       logical :: stop_before_solve
        logical :: stop_after_mesh_export
 
        logical :: export_analytic
@@ -22,6 +23,12 @@
        logical :: solveEnergy
        logical :: solveMomentum
        logical :: solveInduction
+       logical :: matrix_based
+
+       integer :: n_max_refinements
+       integer :: n_history
+       real(cp) :: SS_tol
+       real(cp) :: SS_tol_final
 
        logical :: coupled_time_step
 
@@ -48,42 +55,48 @@
      subroutine init_sim_params(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       SP%restart_all               = .false.     ! restart sim (requires no code changes)
+       SP%restart_all            = .false.            ! restart sim (requires no code changes)
 
-       SP%post_process_only         = .false.     ! Skip solver loop and just post-process results
-       SP%post_process              = .true.      ! Skip solver loop and just post-process results
-       SP%skip_solver_loop          = .false.     ! Skip solver loop
-       SP%stop_before_solve         = .false.      ! Just export ICs, do not run simulation
-       SP%stop_after_mesh_export    = .false.     !
+       SP%post_process_only      = .false.            ! Skip solver loop and just post-process results
+       SP%post_process           = .true.             ! Skip solver loop and just post-process results
+       SP%skip_solver_loop       = .false.            ! Skip solver loop
+       SP%stop_before_solve      = .false.             ! Just export ICs, do not run simulation
+       SP%stop_after_mesh_export = .false.            !
 
-       SP%export_analytic           = .false.     ! Export analytic solutions (MOONS.f90)
-       SP%export_meshes             = .true.      ! Export all meshes before starting simulation
-       SP%export_mat_props          = .false.      ! Export material properties before starting simulation
-       SP%export_ICs                = .false.     ! Export Post-Processed ICs before starting simulation
-       SP%export_cell_volume        = .false.     ! Export cell volumes for each mesh
-       SP%export_planar             = .false.     ! Export 2D data when N_cell = 1 along given direction
-       SP%export_symmetric          = .false.      !
-       SP%export_mesh_block         = .false.     ! Export mesh blocks to FECs
+       SP%export_analytic        = .false.            ! Export analytic solutions (MOONS.f90)
+       SP%export_meshes          = .true.             ! Export all meshes before starting simulation
+       SP%export_mat_props       = .false.            ! Export material properties before starting simulation
+       SP%export_ICs             = .false.            ! Export Post-Processed ICs before starting simulation
+       SP%export_cell_volume     = .false.            ! Export cell volumes for each mesh
+       SP%export_planar          = .false.            ! Export 2D data when N_cell = 1 along given direction
+       SP%export_symmetric       = .false.             !
+       SP%export_mesh_block      = .false.            ! Export mesh blocks to FECs
 
-       SP%coupled_time_step         = .false.      ! Ensures all time steps are equal to coupled%dt
+       SP%coupled_time_step      = .false.             ! Ensures all time steps are equal to coupled%dt
 
-       SP%solveEnergy               = .false.     ! Solve energy    equation
-       SP%solveMomentum             = .true.      ! Solve momentum  equation
-       SP%solveInduction            = .false.      ! Solve induction equation
+       SP%solveEnergy            = .false.            ! Solve energy    equation
+       SP%solveMomentum          = .true.             ! Solve momentum  equation
+       SP%solveInduction         = .true.             ! Solve induction equation
+       SP%matrix_based           = .false.            ! Solve induction equation
 
-       SP%restartT                  = .false.     ! restart T  field
-       SP%restartU                  = .false.     ! restart U  field
-       SP%restartB                  = .false.     ! restart B  field
-       SP%restartB0                 = .false.     ! restart B0 field
+       SP%n_max_refinements      = 0                  ! Maximum number of mesh refinements after SS reached
+       SP%n_history              = 3                  ! number of points to check for SS
+       SP%SS_tol                 = 10.0_cp**(-3.0_cp) ! steady state tolerance
+       SP%SS_tol_final           = 10.0_cp**(-6.0_cp) ! steady state tolerance at finest mesh
 
-       SP%solveTMethod              = 5           ! Refer to energy.f90
-       SP%solveUMethod              = 1           ! Refer to momentum.f90
-       SP%solveBMethod              = 3           ! Refer to induction.f90
+       SP%restartT               = .false.            ! restart T  field
+       SP%restartU               = .false.            ! restart U  field
+       SP%restartB               = .false.            ! restart B  field
+       SP%restartB0              = .false.            ! restart B0 field
 
-       SP%addJCrossB                = .false.      ! add JCrossB      to momentum equation
-       SP%add_Q2D_JCrossB           = .false.     ! add Q2D JCrossB  to momentum equation
-       SP%addBuoyancy               = .false.     ! add Buoyancy     to momentum equation
-       SP%addGravity                = .false.     ! add Gravity      to momentum equation
+       SP%solveTMethod           = 5                  ! Refer to energy.f90
+       SP%solveUMethod           = 1                  ! Refer to momentum.f90
+       SP%solveBMethod           = 1                  ! Refer to induction.f90
+
+       SP%addJCrossB             = .true.             ! add JCrossB      to momentum equation
+       SP%add_Q2D_JCrossB        = .false.            ! add Q2D JCrossB  to momentum equation
+       SP%addBuoyancy            = .false.            ! add Buoyancy     to momentum equation
+       SP%addGravity             = .false.            ! add Gravity      to momentum equation
       end subroutine
 
      subroutine init_sim_params_copy(SP,SP_in)
@@ -108,6 +121,11 @@
        SP%solveEnergy = SP_in%solveEnergy
        SP%solveMomentum = SP_in%solveMomentum
        SP%solveInduction = SP_in%solveInduction
+       SP%matrix_based = SP_in%matrix_based
+       SP%n_max_refinements = SP_in%n_max_refinements
+       SP%n_history = SP_in%n_history
+       SP%SS_tol = SP_in%SS_tol
+       SP%SS_tol_final = SP_in%SS_tol_final
        SP%solveTMethod = SP_in%solveTMethod
        SP%solveUMethod = SP_in%solveUMethod
        SP%solveBMethod = SP_in%solveBMethod

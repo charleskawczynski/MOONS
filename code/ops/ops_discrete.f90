@@ -1,11 +1,11 @@
        module ops_discrete_mod
-       ! 
-       ! Directions are frequently used in this code. 
-       ! For clarity, some diagrams here show how the 
+       !
+       ! Directions are frequently used in this code.
+       ! For clarity, some diagrams here show how the
        ! directions are defined.
-       ! 
+       !
        ! faceDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -14,11 +14,11 @@
        !      faceDir --->  \  |      |
        !                     \ |      |
        !                      \|______|_____ x
-       ! 
-       ! 
-       ! 
+       !
+       !
+       !
        ! edgeDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -28,8 +28,8 @@
        !                     \ |      |
        !                      \|______|_____ x
        !                        -------> edgeDir
-       ! 
-       ! 
+       !
+       !
        use current_precision_mod
        use ops_del_mod
        use mesh_mod
@@ -68,7 +68,7 @@
        interface curl;            module procedure curl_SF;                   end interface
        interface curl;            module procedure curl_VF;                   end interface
        interface curl;            module procedure curl_TF;                   end interface
-       
+
        public :: curl_parallel
        interface curl_parallel;   module procedure curl_TF_Parallel;          end interface
 
@@ -251,7 +251,7 @@
          !
          !     if dir1 == dir2  --> Error (call Laplacian instead)
          !     if dir1 ≠ dir2   --> see below
-         ! 
+         !
          implicit none
          type(SF),intent(inout) :: mix,temp
          type(SF),intent(in) :: f
@@ -277,9 +277,9 @@
          !
          !     if dir1 == dir2  --> Error (call laplacian instead)
          !     if dir1 ≠ dir2   --> see below
-         ! 
+         !
          ! NOTE: k must live in same domain as df/dxi
-         ! 
+         !
          implicit none
          type(SF),intent(inout) :: mix,temp
          type(SF),intent(in) :: f,k
@@ -354,12 +354,12 @@
        subroutine divGrad_VF(divGradU,U,m,temp_TF)
          ! This routine achieves consecutive staggered derivatives
          ! to compute lap(U). If U lives on the cell face, then
-         ! 
+         !
          !            _          _
          !           |  CC E  E   |
          ! temp_TF = |  E  CC E   |
          !           |_ E  E  CC _|
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: divGradU
          type(VF),intent(in) :: U
@@ -420,9 +420,9 @@
        subroutine curlcurlCoeff_VF(curlcurlU,U,k,temp,m)
          ! Computes
          !     ∇x(k∇x)
-         ! 
+         !
          ! NOTE: curl(U) will live at the same location as k
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: curlcurlU
          type(VF),intent(inout) :: temp
@@ -436,9 +436,9 @@
        subroutine curlcurlUniform_VF(curlcurlU,U,temp,m)
          ! Computes
          !     ∇x∇x
-         ! 
+         !
          ! NOTE: curl(U) will live at the same location as k
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: curlcurlU
          type(VF),intent(inout) :: temp

@@ -151,7 +151,7 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2_GF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,p)
+       subroutine interpO2_GF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,x,y,z)
          ! interpO2 interpolates g from the primary grid to the
          ! dual grid using a 2nd order accurate stencil for non-uniform
          ! grids. f lives on the dual grid. It is expected that
@@ -174,8 +174,7 @@
          type(grid),intent(in) :: gd
          integer,dimension(3),intent(in) :: sg,sf
          logical,intent(in) :: f_N,f_C,g_N,g_C
-         integer,intent(in) :: dir
-         integer,dimension(3),intent(in) :: p
+         integer,intent(in) :: dir,x,y,z
          integer :: i,j,k,t
 
 #ifdef _DEBUG_INTERP_
@@ -193,8 +192,9 @@
 
 #endif
 
-           do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
-           f(i,j,k) = 0.5_cp*(g(i,j,k)+g(i+p(1),j+p(2),k+p(3)))
+           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
+           f(i,j,k) = 0.5_cp*(g( i , j , k )+&
+                              g(i+x,j+y,k+z))
            enddo; enddo; enddo
 #ifdef _PARALLELIZE_INTERP_
            !$OMP END PARALLEL DO
@@ -211,10 +211,10 @@
            !$OMP DO
 
 #endif
-           do k=1,sg(3)-p(3); do j=1,sg(2)-p(2); do i=1,sg(1)-p(1)
-           t = i*p(1) + j*p(2) + k*p(3)
-           f(i+p(1),j+p(2),k+p(3)) = g(i+p(1),j+p(2),k+p(3))*gd%c(dir)%theta%D%f(t) + &
-                                     g(i,j,k)*gd%c(dir)%theta%U%f(t)
+           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
+           t = i*x + j*y + k*z
+           f(i+x,j+y,k+z) = g(i+x,j+y,k+z)*gd%c(dir)%theta%D%f(t) + &
+                            g( i , j , k )*gd%c(dir)%theta%U%f(t)
            enddo; enddo; enddo
 #ifdef _PARALLELIZE_INTERP_
            !$OMP END DO
@@ -323,7 +323,9 @@
            call interp(f%BF(i)%GF%f,g%BF(i)%GF%f,m%B(i)%g,f%BF(i)%GF%s,g%BF(i)%GF%s,&
            f%N_along(dir),f%CC_along(dir),&
            g%N_along(dir),g%CC_along(dir),&
-           dir,m%int_tensor(dir)%eye)
+           dir,m%int_tensor(dir)%eye(1),&
+               m%int_tensor(dir)%eye(2),&
+               m%int_tensor(dir)%eye(3))
          enddo
        end subroutine
 

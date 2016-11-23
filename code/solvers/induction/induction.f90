@@ -27,6 +27,7 @@
        use init_Sigma_mod
        use ops_embedExtract_mod
        use geometric_region_mod
+       use divergence_clean_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -60,7 +61,8 @@
        public :: induction
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec,export_transient,compute_E_M_budget
-       public :: compute_induction_energies
+
+       public :: prolongate
 
        type induction
          ! --- Tensor fields ---
@@ -93,7 +95,7 @@
          type(probe) :: JE,JE_fluid
          type(probe) :: probe_divB,probe_divJ
 
-         type(mesh) :: m,m_surface
+         type(mesh) :: m
          type(mesh_domain) :: MD_fluid,MD_sigma ! Latter for vacuum case
 
          type(time_marching_params) :: TMP
@@ -116,7 +118,11 @@
 
        interface solve;                module procedure solve_induction;               end interface
        interface export_tec;           module procedure export_tec_induction;          end interface
-       interface export_transient;      module procedure inductionexport_transient;      end interface
+       interface export_transient;     module procedure export_transient_induction;    end interface
+
+       interface prolongate;           module procedure prolongate_ind;                end interface
+       interface set_MFP;              module procedure set_MFP_ind;                   end interface
+       interface init_matrix_based_ops;module procedure init_matrix_based_ops_ind;     end interface
 
        contains
 
@@ -228,19 +234,19 @@
 
          call compute_J_ind(ind)
 
-         call init(ind%probe_divB,str(DT%B_r),'transient_divB',ind%SP%restartB)
-         call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',ind%SP%restartB)
-         call init(ind%JE,str(DT%J_e),'JE',ind%SP%restartB)
-         call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',ind%SP%restartB)
-         call init(ind%ME(1),str(DT%B_e),'ME',ind%SP%restartB)
-         call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',ind%SP%restartB)
-         call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',ind%SP%restartB)
-         call init(ind%ME(2),str(DT%B_e),'ME0',ind%SP%restartB)
-         call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',ind%SP%restartB)
-         call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',ind%SP%restartB)
-         call init(ind%ME(3),str(DT%B_e),'ME1',ind%SP%restartB)
-         call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',ind%SP%restartB)
-         call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',ind%SP%restartB)
+         call init(ind%probe_divB,str(DT%B_r),'transient_divB',ind%SP%restartB,SP)
+         call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',ind%SP%restartB,SP)
+         call init(ind%JE,str(DT%J_e),'JE',ind%SP%restartB,SP)
+         call init(ind%JE_fluid,str(DT%J_e),'JE_fluid',ind%SP%restartB,SP)
+         call init(ind%ME(1),str(DT%B_e),'ME',ind%SP%restartB,SP)
+         call init(ind%ME_fluid(1),str(DT%B_e),'ME_fluid',ind%SP%restartB,SP)
+         call init(ind%ME_conductor(1),str(DT%B_e),'ME_conductor',ind%SP%restartB,SP)
+         call init(ind%ME(2),str(DT%B_e),'ME0',ind%SP%restartB,SP)
+         call init(ind%ME_fluid(2),str(DT%B_e),'ME0_fluid',ind%SP%restartB,SP)
+         call init(ind%ME_conductor(2),str(DT%B_e),'ME0_conductor',ind%SP%restartB,SP)
+         call init(ind%ME(3),str(DT%B_e),'ME1',ind%SP%restartB,SP)
+         call init(ind%ME_fluid(3),str(DT%B_e),'ME1_fluid',ind%SP%restartB,SP)
+         call init(ind%ME_conductor(3),str(DT%B_e),'ME1_conductor',ind%SP%restartB,SP)
 
          write(*,*) '     B/J probes initialized'
 
@@ -251,18 +257,8 @@
          call display(ind,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_ind')
 
-         if (finite_Rem) then; ind%MFP_B%coeff = ind%TMP%dt/ind%Rem
-         else;                 ind%MFP_B%coeff = ind%TMP%dt
-         endif
-
          write(*,*) '     About to assemble curl-curl matrix'
-         ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
-         ! diffusion_treatment = (/-ind%MFP_B%coeff,1.0_cp/)    ! diffusion explicit
-         diffusion_treatment = (/ind%MFP_B%coeff,1.0_cp/)     ! diffusion implicit
-         call init_curl_curl(ind%m,ind%sigmaInv_edge)
-         call init_Laplacian_SF(ind%m)
-         call multiply_curl_curl(ind%m,diffusion_treatment(1))
-         call add_curl_curl(ind%m,diffusion_treatment(2))
+         if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
 
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
          ind%ISP_B,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B_r),'B',.false.,.false.)
@@ -278,7 +274,6 @@
 
          write(*,*) '     Finished'
          ! if (restart_induction) call import(ind,DT)
-         call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
        end subroutine
 
        subroutine delete_induction(ind)
@@ -446,6 +441,35 @@
          endif
        end subroutine
 
+       subroutine export_transient_induction(ind)
+         implicit none
+         type(induction),intent(inout) :: ind
+         real(cp) :: temp
+         call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
+         call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP,temp)
+         call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP,temp)
+
+         call add(ind%temp_F1,ind%B,ind%B0)
+         call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
+         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP,ind%m,ind%MD_sigma)
+
+         call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
+         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP,ind%m,ind%MD_sigma)
+
+         call face2cellCenter(ind%temp_CC,ind%B,ind%m)
+         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP,ind%m)
+         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
+         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP,ind%m,ind%MD_sigma)
+
+         call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
+         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP,ind%m)
+         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
+       end subroutine
+
        subroutine compute_J_ind(ind)
          implicit none
          type(induction),intent(inout) :: ind
@@ -454,12 +478,26 @@
          call compute_J(ind%J,ind%B,ind%Rem,ind%m,ind%finite_Rem)
        end subroutine
 
-       subroutine inductionexport_transient(ind)
+       subroutine set_MFP_ind(ind)
          implicit none
          type(induction),intent(inout) :: ind
-         real(cp) :: temp
-         call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP%t,temp)
-         call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP%t,temp)
+         if (ind%finite_Rem) then; ind%MFP_B%coeff = ind%TMP%dt/ind%Rem
+         else;                     ind%MFP_B%coeff = ind%TMP%dt
+         endif
+       end subroutine
+
+       subroutine init_matrix_based_ops_ind(ind)
+         implicit none
+         type(induction),intent(inout) :: ind
+         real(cp),dimension(2) :: diffusion_treatment
+         call set_MFP(ind)
+         ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
+         diffusion_treatment = (/-ind%MFP_B%coeff,1.0_cp/)    ! diffusion explicit
+         ! diffusion_treatment = (/ind%MFP_B%coeff,1.0_cp/)     ! diffusion implicit
+         call init_curl_curl(ind%m,ind%sigmaInv_edge)
+         call init_Laplacian_SF(ind%m)
+         call multiply_curl_curl(ind%m,diffusion_treatment(1))
+         call add_curl_curl(ind%m,diffusion_treatment(2))
        end subroutine
 
        subroutine solve_induction(ind,U,PE,EN,DT)
@@ -509,12 +547,7 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if ((PE%transient_0D.or.(ind%TMP%n_step.eq.0))) call compute_induction_energies(ind)
-
-         if (PE%transient_0D) then
-           call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-           call export_transient(ind)
-         endif
+         if (PE%transient_0D) call export_transient(ind)
 
          if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
          ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
@@ -524,31 +557,6 @@
            ! call export(ind,DT)
            call export_tec(ind,DT)
          endif
-       end subroutine
-
-       subroutine compute_induction_energies(ind)
-         implicit none
-         type(induction),intent(inout) :: ind
-
-         call add(ind%temp_F1,ind%B,ind%B0)
-         call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
-         call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP%t,ind%m,ind%MD_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP%t,ind%m,ind%MD_sigma)
-
-         call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
-         call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP%t,ind%m,ind%MD_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP%t,ind%m,ind%MD_sigma)
-
-         call face2cellCenter(ind%temp_CC,ind%B,ind%m)
-         call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP%t,ind%m,ind%MD_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP%t,ind%m,ind%MD_sigma)
-
-         call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
-         call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP%t,ind%m)
-         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP%t,ind%m,ind%MD_fluid)
        end subroutine
 
        subroutine compute_E_M_budget(ind,U,MD_fluid,Re,Ha,DT)
@@ -629,6 +637,70 @@
          call delete(vars(i))
          enddo
          call close_and_message(un,str(DT%e_budget),'E_M_budget_terms')
+       end subroutine
+
+       subroutine prolongate_ind(ind,DT,RM,SS_reached)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         type(refine_mesh),intent(in) :: RM
+         logical,intent(in) :: SS_reached
+         integer,dimension(3) :: dir
+         real(cp),dimension(2) :: diffusion_treatment
+         integer :: i
+         call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
+
+         dir = get_dir(RM)
+         if (SS_reached) dir = (/1,2,3/)
+         do i=1,3
+           if (dir(i).ne.0) then
+             write(*,*) 'Prolongating induction solver along direction ',i
+             call prolongate(ind%m,dir(i))
+             call prolongate(ind%MD_fluid,dir(i))
+             call prolongate(ind%MD_sigma,dir(i))
+
+             call prolongate(ind%U_E,ind%m,dir(i))
+             call prolongate(ind%temp_E_TF,ind%m,dir(i))
+             call prolongate(ind%temp_F1_TF,ind%m,dir(i))
+             call prolongate(ind%temp_F2_TF,ind%m,dir(i))
+
+             call prolongate(ind%J,ind%m,dir(i))
+             call prolongate(ind%temp_E,ind%m,dir(i))
+             call prolongate(ind%B,ind%m,dir(i))
+             call prolongate(ind%B0,ind%m,dir(i))
+             call prolongate(ind%B_interior,ind%m,dir(i))
+             call prolongate(ind%temp_F1,ind%m,dir(i))
+             call prolongate(ind%temp_F2,ind%m,dir(i))
+             call prolongate(ind%temp_CC,ind%m,dir(i))
+             call prolongate(ind%sigmaInv_edge,ind%m,dir(i))
+             call prolongate(ind%J_interior,ind%m,dir(i))
+             call prolongate(ind%curlUCrossB,ind%m,dir(i))
+             call prolongate(ind%curlE,ind%m,dir(i))
+
+             call prolongate(ind%sigmaInv_CC,ind%m,dir(i))
+             call prolongate(ind%divB,ind%m,dir(i))
+             call prolongate(ind%divJ,ind%m,dir(i))
+             call prolongate(ind%phi,ind%m,dir(i))
+             call prolongate(ind%temp_CC_SF,ind%m,dir(i))
+
+             call prolongate(ind%PCG_B,ind%m,dir(i))
+             call prolongate(ind%PCG_cleanB,ind%m,dir(i))
+
+           endif
+         enddo
+         if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
+
+         write(*,*) 'Finished induction solver prolongation'
+         call apply_BCs(ind%B,ind%m)
+         call export_processed(ind%m,ind%B,str(DT%B_f),'B_prolongated_'//str(RM%level),1)
+
+         call assign(ind%temp_F1,ind%B)
+         call boost(ind%PCG_cleanB%ISP)
+         call div_clean_PCG(ind%PCG_cleanB,ind%B,ind%phi,&
+         ind%temp_F1,ind%m,ind%temp_F2,ind%temp_CC_SF,.true.)
+         call reset(ind%PCG_cleanB%ISP)
+
+         call export_processed(ind%m,ind%B,str(DT%B_f),'B_cleaned_'//str(RM%level),1)
        end subroutine
 
        end module

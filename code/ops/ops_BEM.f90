@@ -24,9 +24,9 @@
 
        function boundaryFlux_VF(u,m) result(BF)
          ! Computes
-         ! 
+         !
          !   BF = ∫∫ u•n dA
-         ! 
+         !
          implicit none
          type(VF),intent(in) :: u
          type(mesh),intent(in) :: m

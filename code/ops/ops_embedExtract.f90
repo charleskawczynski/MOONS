@@ -6,6 +6,7 @@
 
        use current_precision_mod
        use overlap_mod
+       use data_location_mod
        use face_edge_corner_indexing_mod
        use mesh_mod
        use mesh_domain_mod
@@ -322,46 +323,6 @@
        !   integer :: g_R1_id,g_R2_id
        ! end type
 
-       function EE_shape_old(f,MD,i) result(s)
-         implicit none
-         type(SF),intent(in) :: f
-         type(mesh_domain),intent(in) :: MD
-         integer,intent(in) :: i
-         type(overlap),dimension(3) :: s
-         integer,dimension(2) :: adj
-         integer :: j
-         ! s = MD%D%sd(i)%physical%M
-         ! if (f%is_Face) then
-         !   s = MD%D%sd(i)%physical%CE_all
-         !   s(f%face) = MD%D%sd(i)%physical%NB_all(f%face)
-         ! elseif (f%is_Edge) then
-         !   s = MD%D%sd(i)%physical%NB_all
-         !   s(f%edge) = MD%D%sd(i)%physical%CE_all(f%edge)
-         ! elseif (f%is_CC) then
-         !   s = MD%D%sd(i)%physical%CE_all
-         ! elseif (f%is_Node) then
-         !   s = MD%D%sd(i)%physical%NB_all
-         ! else; stop 'Error: no type found in ops_embedExtract.f90'
-         ! endif
-
-         if (f%is_Face) then
-           adj = adj_dir_given_dir(f%face)
-           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%C(adj(j))); enddo
-           ! do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
-           call init(s(f%face),MD%D%sd(i)%physical%N(f%face))
-         elseif (f%is_Edge) then
-           adj = adj_dir_given_dir(f%edge)
-           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%N(adj(j))); enddo
-           ! do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
-           call init(s(f%edge),MD%D%sd(i)%physical%C(f%edge))
-         elseif (f%is_CC) then
-           do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
-         elseif (f%is_Node) then
-           do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
-         else; stop 'Error: no type found in ops_embedExtract.f90'
-         endif
-       end function
-
        function EE_shape(f,MD,i) result(s)
          implicit none
          type(SF),intent(in) :: f
@@ -402,6 +363,31 @@
            call init(s(1),MD%D%sd(i)%physical%N(1))
            call init(s(2),MD%D%sd(i)%physical%N(2))
            call init(s(3),MD%D%sd(i)%physical%N(3))
+         else; stop 'Error: no type found in ops_embedExtract.f90'
+         endif
+       end function
+
+       function EE_shape_short(u,MD,i) result(s)
+         ! mesh_domain doesn't use mixed for versatility
+         implicit none
+         type(SF),intent(in) :: u
+         type(mesh_domain),intent(in) :: MD
+         integer,intent(in) :: i
+         type(overlap),dimension(3) :: s
+         integer,dimension(2) :: adj
+         integer :: j,f,e
+         if (is_Face(u%DL)) then
+           f = get_Face(u%DL); adj = adj_dir_given_dir(f)
+           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%C(adj(j))); enddo
+           call init(s(f),MD%D%sd(i)%physical%N(f))
+         elseif (is_Edge(u%DL)) then
+           e = get_Edge(u%DL); adj = adj_dir_given_dir(e)
+           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%N(adj(j))); enddo
+           call init(s(e),MD%D%sd(i)%physical%C(e))
+         elseif (is_CC(u%DL)) then
+           do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
+         elseif (is_Node(u%DL)) then
+           do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
          else; stop 'Error: no type found in ops_embedExtract.f90'
          endif
        end function

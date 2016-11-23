@@ -70,6 +70,7 @@
         public :: product_add
         public :: square,invert,abs,insist_amax_lt_tol
         public :: mean,max,amin,amax
+        public :: boundary_flux
         ! public :: sum
         public :: assignX,assignY,assignZ
 
@@ -205,6 +206,7 @@
         interface max;                     module procedure max_VF;                      end interface
         interface amax;                    module procedure amax_VF;                     end interface
         interface amin;                    module procedure amin_VF;                     end interface
+        interface boundary_flux;           module procedure boundary_flux_VF;            end interface
 
         interface square;                  module procedure square_VF;                   end interface
         interface abs;                     module procedure abs_VF;                      end interface
@@ -849,6 +851,14 @@
           type(VF),intent(in) :: f
           real(cp) :: m
           m = minval((/abs(amin(f%x)),abs(amin(f%y)),abs(amin(f%z))/))
+        end function
+
+        function boundary_flux_VF(f,m) result (BF)
+          implicit none
+          type(VF),intent(in) :: f
+          type(mesh),intent(in) :: m
+          real(cp) :: BF
+          BF = boundary_flux(f%x,f%y,f%z,m)
         end function
 
         function amax_VF(f) result (m)

@@ -17,6 +17,7 @@
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
+       use divergence_clean_mod
 
        implicit none
        private
@@ -73,7 +74,6 @@
 
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
          call solve(PPE_PCG,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          ! call subtract(temp_F%x,1.0_cp) ! mpg
@@ -117,7 +117,6 @@
 
          call div(temp_CC,U,m)
          call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
          call solve(PPE_GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          call multiply(temp_F,dt)
@@ -154,6 +153,7 @@
          call add(Ustar,F) ! Needs to be prolongated
          call multiply(Ustar,dt)
          call add(Ustar,U)
+         ! call div_clean_PCG(PCG,U,p,Ustar,m,temp_F1,temp_CC,compute_norms)
          call zeroWall_conditional(Ustar,m,U)
          call div(temp_CC,Ustar,m)
          call solve(PCG,p,temp_CC,m,compute_norms)
@@ -215,7 +215,6 @@
          call add(Ustar,U)
          call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
          call solve(GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          ! call subtract(temp_F%x,1.0_cp) ! mpg
@@ -248,7 +247,6 @@
          call add(Ustar,U)
          call div(temp_CC,Ustar,m)
          call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
          call solve(GS,p,temp_CC,m,compute_norms)
          call grad(temp_F,p,m)
          call subtract(temp_F,mpg)

@@ -89,8 +89,8 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
-        call laplacian_matrix_based(Ax,x,m)
+        call grad(tempk,x,m)
+        call div(Ax,tempk,m)
       end subroutine
       subroutine Lap_uniform_SF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -104,9 +104,9 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_matrix_based(Ax,x,m)
+        call grad(tempk,x,m)
+        call div(Ax,tempk,m)
       end subroutine
 
       subroutine Lap_uniform_VF_explicit(Ax,x,k,m,MFP,tempk)
@@ -122,7 +122,9 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call laplacian_matrix_based(Ax,x,m)
+        call lap_centered(Ax,x,m) ! Involves dynamic allocations
+        ! call lap(Ax,x,m)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -138,7 +140,9 @@
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_matrix_based(Ax,x,m)
+        call lap_centered(Ax,x,m) ! Involves dynamic allocations
+        ! call lap(Ax,x,m)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
 
       subroutine Lap_nonuniform_props_explicit(Ax,x,k,m,MFP,tempk)
@@ -152,9 +156,9 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
-        call laplacian_matrix_based(Ax,x,m)
+        call grad(tempk,x,m)
+        call multiply(tempk,k)
+        call div(Ax,tempk,m)
       end subroutine
       subroutine Lap_nonuniform_props(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -167,10 +171,10 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_matrix_based(Ax,x,m)
+        call grad(tempk,x,m)
+        call multiply(tempk,k)
+        call div(Ax,tempk,m)
       end subroutine
 
       subroutine ind_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -182,10 +186,12 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
-        call curl_curl_matrix_based(Ax,x,m)
+        call curl(tempk,x,m)
+        call multiply(tempk,k)
+        call curl(Ax,tempk,m)
+        call multiply(Ax,MFP%coeff)
+        call add(Ax,x)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
       subroutine ind_diffusion(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -196,11 +202,13 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call curl_curl_matrix_based(Ax,x,m)
+        call curl(tempk,x,m)
+        call multiply(tempk,k)
+        call curl(Ax,tempk,m)
+        call multiply(Ax,MFP%coeff)
+        call add(Ax,x)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
 
       subroutine nrg_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -212,12 +220,12 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
-        call laplacian_matrix_based(Ax,x,m)
+        call grad(tempk,x,m)
+        call multiply(tempk,k)
+        call div(Ax,tempk,m)
         call multiply(Ax,MFP%coeff)
         call add(Ax,x)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
       subroutine nrg_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
@@ -228,13 +236,13 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_matrix_based(Ax,x,m)
+        call grad(tempk,x,m)
+        call multiply(tempk,k)
+        call div(Ax,tempk,m)
         call multiply(Ax,MFP%coeff)
         call add(Ax,x)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
 
       subroutine mom_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -249,9 +257,16 @@
         logical :: suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call laplacian_matrix_based(Ax,x,m)
+        ! lap_centered is a very bad and expensive routine. It needs
+        ! to be updated (a VF is allocated and deallocated inside).
+        ! The reason this is not as simple as the laplacian operator
+        ! is because U is staggered, and so k (the intermediate location),
+        ! is staggered AND different for each component, which cannot be
+        ! achieved by a scalar field.
+        call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%coeff)
         call add(Ax,x)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
       subroutine mom_diffusion(Ax,x,k,m,MFP,tempk)
         ! Computes:
@@ -266,9 +281,16 @@
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)
-        call laplacian_matrix_based(Ax,x,m)
+        ! lap_centered is a very bad and expensive routine. It needs
+        ! to be updated (a VF is allocated and deallocated inside).
+        ! The reason this is not as simple as the laplacian operator
+        ! is because U is staggered, and so k (the intermediate location),
+        ! is staggered AND different for each component, which cannot be
+        ! achieved by a scalar field.
+        call lap_centered(Ax,x,m)
         call multiply(Ax,MFP%coeff)
         call add(Ax,x)
+        call assign_ghost_XPeriodic(Ax,0.0_cp)
       end subroutine
 
       end module

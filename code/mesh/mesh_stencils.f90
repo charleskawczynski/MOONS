@@ -8,7 +8,7 @@
        implicit none
 
        private
- 
+
        public :: init_Laplacian_SF
        interface init_Laplacian_SF;        module procedure init_Laplacian_SF_mesh;    end interface
        interface init_Laplacian_SF;        module procedure init_Laplacian_SF_mesh_VP; end interface
@@ -29,7 +29,7 @@
        public :: init_curl_curl
        interface init_curl_curl;           module procedure init_curl_curl_mesh;       end interface
        interface init_curl_curl;           module procedure init_curl_curl_mesh_VP;    end interface
- 
+
        public :: add_curl_curl
        public :: multiply_curl_curl
        interface add_curl_curl;            module procedure add_curl_curl_mesh;        end interface

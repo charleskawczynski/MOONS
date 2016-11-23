@@ -1,3 +1,7 @@
+# **************** RUN CONFIGURATION *******************
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
+# RELEASE = 'PROFILE'
 # ************* CLUSTER CONFIGURATION ******************
 CLUSTER = 'PC_CK'
 # CLUSTER = 'Workstation_CK'
@@ -82,6 +86,8 @@ FCFLAGS += -std=gnu
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
+FCFLAGS += -D_MATRIX_FREE_
+
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
 # FCFLAGS += -D_FFT_RADIX2_
@@ -156,6 +162,7 @@ FC_OPTIMIZE += -D_PARALLELIZE_Jacobi_
 FC_OPTIMIZE += -D_PARALLELIZE_SOR_
 FC_OPTIMIZE += -D_PARALLELIZE_EMBEDEXTRACT_
 FC_OPTIMIZE += -D_PARALLELIZE_GF_NORMS_
+FC_OPTIMIZE += -D_PARALLELIZE_PROLONGATE_
 
 # 2D OPERATIONS
 # Choose 1 of 2:
@@ -196,9 +203,15 @@ FC_PROFILE += -pg
 # FCFLAGS += -D_EXPORT_GS_CONVERGENCE_
 # FCFLAGS += -D_EXPORT_MG_CONVERGENCE_
 
-FCFLAGS += $(FC_DEBUG)
-# FCFLAGS += $(FC_PROFILE)
-# FCFLAGS += $(FC_OPTIMIZE)
+ifeq ($(RELEASE),'DEBUG')
+	FCFLAGS += $(FC_DEBUG)
+endif
+ifeq ($(RELEASE),'PROFILE')
+	FCFLAGS += $(FC_PROFILE)
+endif
+ifeq ($(RELEASE),'OPTIMIZE')
+	FCFLAGS += $(FC_OPTIMIZE)
+endif
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
@@ -310,9 +323,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_interp.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict_const.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate_const.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
@@ -445,6 +456,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)assign_B0_vs_t.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phiBCs.f90\

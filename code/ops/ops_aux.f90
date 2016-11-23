@@ -54,9 +54,9 @@
        interface dot_product;             module procedure dot_product_SF;            end interface
        interface dot_product;             module procedure dot_product_VF;            end interface
 
-       public :: boundaryFlux
-       interface boundaryFlux;            module procedure boundaryFlux_VF;           end interface
-       interface boundaryFlux;            module procedure boundaryFlux_VF_SD;        end interface
+       public :: flux
+       interface flux;                    module procedure flux_VF;                   end interface
+       interface flux;                    module procedure flux_VF_SD;                end interface
 
        public :: subtract_physical_mean
        interface subtract_physical_mean;  module procedure subtract_phys_mean_SF;     end interface
@@ -144,74 +144,19 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine boundaryFlux_VF(BF,u,m)
-         ! Computes
-         !
-         !   BF = ∫∫ u•n dA
-         !
+       function flux_VF(u,m) result(BF) ! Computes: BF = ∫∫ u•n dA
          implicit none
          type(VF),intent(in) :: u
-         real(cp),intent(inout) :: BF
          type(mesh),intent(in) :: m
-         real(cp) :: BFtemp
-         integer :: i,j,k,t
-         BFtemp = 0.0_cp ! temp is necessary for reduction
+         real(cp) :: BF
+         type(VF) :: temp
+         integer :: t
          BF = 0.0_cp
-         do t=1,m%s
-           ! if (.not.m%B(t)%g%st_faces(1)%TF) then
-             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%x%BF(t)%GF%s(3)-1; do j=2,u%x%BF(t)%GF%s(2)-1
-               BFtemp = BFtemp + u%x%BF(t)%GF%f(2,j,k)*m%B(t)%g%c(2)%dhn(j)*m%B(t)%g%c(3)%dhn(k)
-             enddo; enddo
-             !$OMP END PARALLEL DO
-             BF = BF + BFtemp; BFtemp = 0.0_cp
-           ! endif
-           ! if (.not.m%B(t)%g%st_faces(2)%TF) then
-             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%x%BF(t)%GF%s(3)-1; do j=2,u%x%BF(t)%GF%s(2)-1
-               BFtemp = BFtemp + u%x%BF(t)%GF%f(u%x%BF(t)%GF%s(1)-1,j,k)*m%B(t)%g%c(2)%dhn(j)*m%B(t)%g%c(3)%dhn(k)
-             enddo; enddo
-             !$OMP END PARALLEL DO
-             BF = BF + BFtemp; BFtemp = 0.0_cp
-           ! endif
-         enddo
-         do t=1,m%s
-           ! if (.not.m%B(t)%g%st_faces(3)%TF) then
-             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%y%BF(t)%GF%s(3)-1; do i=2,u%y%BF(t)%GF%s(1)-1
-               BFtemp = BFtemp + u%y%BF(t)%GF%f(i,2,k)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(3)%dhn(k)
-             enddo; enddo
-             !$OMP END PARALLEL DO
-             BF = BF + BFtemp; BFtemp = 0.0_cp
-           ! endif
-           ! if (.not.m%B(t)%g%st_faces(4)%TF) then
-             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%y%BF(t)%GF%s(3)-1; do i=2,u%y%BF(t)%GF%s(1)-1
-               BFtemp = BFtemp + u%y%BF(t)%GF%f(i,u%y%BF(t)%GF%s(2)-1,k)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(3)%dhn(k)
-             enddo; enddo
-             !$OMP END PARALLEL DO
-             BF = BF + BFtemp; BFtemp = 0.0_cp
-           ! endif
-         enddo
-         do t=1,m%s
-           ! if (.not.m%B(t)%g%st_faces(5)%TF) then
-             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do j=2,u%z%BF(t)%GF%s(2)-1; do i=2,u%z%BF(t)%GF%s(1)-1
-               BFtemp = BFtemp + u%z%BF(t)%GF%f(i,j,2)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(2)%dhn(j)
-             enddo; enddo
-             !$OMP END PARALLEL DO
-             BF = BF + BFtemp; BFtemp = 0.0_cp
-           ! endif
-           ! if (.not.m%B(t)%g%st_faces(6)%TF) then
-             !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do j=2,u%z%BF(t)%GF%s(2)-1; do i=2,u%z%BF(t)%GF%s(1)-1
-               BFtemp = BFtemp + u%z%BF(t)%GF%f(i,j,u%z%BF(t)%GF%s(3)-1)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(2)%dhn(j)
-             enddo; enddo
-             !$OMP END PARALLEL DO
-             BF = BF + BFtemp; BFtemp = 0.0_cp
-           ! endif
-         enddo
-       end subroutine
+         call init(temp,u); call assign(temp,u)
+         call assign_ghost_XPeriodic(temp,0.0_cp)
+         BF = boundary_flux(temp,m)
+         call delete(temp)
+       end function
 
        subroutine subtract_phys_mean_SF(u)
          ! Subtracts the physical mean from scalar field u
@@ -545,41 +490,22 @@
          call stabilityTerms(fo,fi%z,m,n,3)
        end subroutine
 
-       subroutine boundaryFlux_VF_SD(BF,f,m,MD)
+       function flux_VF_SD(f,m,MD) result(BF)
          implicit none
          type(VF),intent(in) :: f
-         real(cp),intent(inout) :: BF
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
+         real(cp) :: BF
          type(mesh) :: m_temp
          type(VF) :: temp
-         if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
+         if (.not.f%is_Face) stop 'Error: bad DL in flux_VF_SD in ops_aux.f90'
          call init_other(m_temp,m,MD)
          call init_Face(temp,m_temp)
          call extractFace(temp,f,MD)
-         call boundaryFlux(BF,temp,m_temp)
+         BF = flux(temp,m_temp)
          call delete(temp)
          call delete(m_temp)
-       end subroutine
-
-       ! is this right???
-       ! subroutine boundaryShear_VF(BF,f,m,temp_F,temp_F_TF)
-       !   implicit none
-       !   type(VF),intent(in) :: f
-       !   real(cp),intent(inout) :: BF
-       !   type(mesh),intent(in) :: m
-       !   type(VF),intent(inout) :: temp_F
-       !   type(TF),intent(inout) :: temp_F_TF
-       !   type(VF) :: temp
-       !   if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
-       !   call face2face(temp_F_TF,f,m)
-       !   call init_Face(temp,m)
-       !   call assign(temp%x,temp_F_TF%x%x)
-       !   call assign(temp%y,temp_F_TF%y%y)
-       !   call assign(temp%z,temp_F_TF%z%z)
-       !   call boundaryFlux(BF,temp,m)
-       !   call delete(temp)
-       ! end subroutine
+       end function
 
        subroutine zeroGhostPoints_VF(f)
          implicit none

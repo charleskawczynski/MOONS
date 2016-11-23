@@ -129,16 +129,16 @@
          implicit none
          type(face),intent(inout) :: f
          integer,intent(in) :: un
-         read(un,*) 
+         read(un,*)
          read(un,*) f%defined
          call delete(f)
          call import(f%b,un)
-         read(un,*) 
+         read(un,*)
          read(un,*) f%s
          allocate(f%vals(f%s(1),f%s(2)))
-         read(un,*) 
+         read(un,*)
          read(un,*) f%vals
-         read(un,*) 
+         read(un,*)
          read(un,*) f%def
        end subroutine
 

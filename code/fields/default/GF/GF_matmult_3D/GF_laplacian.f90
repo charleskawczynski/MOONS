@@ -14,6 +14,10 @@
           type(grid_field),dimension(3),intent(in) :: L,U
           type(grid_field),intent(in) :: D,X
           integer :: i,j,k
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in laplacian_GF in GF_laplacian.f90'
+#endif
+
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
 

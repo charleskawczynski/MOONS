@@ -27,6 +27,7 @@
         public :: plane_sum_x
         public :: plane_sum_y
         public :: plane_sum_z
+        public :: boundary_flux
 
         public :: symmetry_error_x,symmetry_local_x
         public :: symmetry_error_y,symmetry_local_y
@@ -150,6 +151,7 @@
         interface plane_sum_x;             module procedure plane_sum_x_SF;               end interface
         interface plane_sum_y;             module procedure plane_sum_y_SF;               end interface
         interface plane_sum_z;             module procedure plane_sum_z_SF;               end interface
+        interface boundary_flux;           module procedure boundary_flux_SF;             end interface
 
         interface symmetry_error_x;        module procedure symmetry_error_x_SF;          end interface
         interface symmetry_error_y;        module procedure symmetry_error_y_SF;          end interface
@@ -837,6 +839,16 @@
           real(cp) :: SP
           SP = 0.0_cp
           do i=1,m%s; SP = SP + plane_sum_z(u%BF(i),m%B(i),p); enddo
+        end function
+
+        function boundary_flux_SF(x,y,z,m) result(BF)
+          implicit none
+          type(SF),intent(in) :: x,y,z
+          type(mesh),intent(in) :: m
+          integer :: i
+          real(cp) :: BF
+          BF = 0.0_cp
+          do i=1,m%s; BF = BF + boundary_flux(x%BF(i),y%BF(i),z%BF(i),m%B(i)); enddo
         end function
 
         function symmetry_error_x_SF(u) result(SE)

@@ -64,7 +64,8 @@
 
 #endif
            do k=1,N%s(3)-z; do j=1,N%s(2)-y; do i=1,N%s(1)-x
-           C%f(i,j,k) = 0.5_cp*(N%f(i,j,k)+N%f(i+x,j+y,k+z))
+           C%f(i,j,k) = 0.5_cp*(N%f( i , j , k )+&
+                                N%f(i+x,j+y,k+z))
            enddo; enddo; enddo
 #ifdef _PARALLELIZE_INTERP_
            !$OMP END PARALLEL DO

@@ -9,6 +9,7 @@
        public :: init,delete,export,import
        public :: update
        public :: prolongate
+       public :: get_dir
 
        interface init;        module procedure init_RM;         end interface
        interface delete;      module procedure delete_RM;       end interface
@@ -17,6 +18,8 @@
        interface update;      module procedure update_RM;       end interface
 
        interface prolongate;  module procedure prolongate_RM;   end interface
+       interface get_dir;     module procedure get_dir_RM;      end interface
+
 
        type step
          logical :: this = .false.
@@ -31,7 +34,7 @@
          type(string) :: dir,name,level,level_last
          logical :: any_next = .false.
          integer :: un
-         integer :: L,L_last
+         integer :: i_level,i_level_last
        end type
 
        contains
@@ -62,8 +65,8 @@
          call delete_step(RM%y_plane)
          call delete_step(RM%z_plane)
          RM%any_next = .false.
-         RM%L = 0
-         RM%L_last = 0
+         RM%i_level = 0
+         RM%i_level_last = 0
          call init(RM%level,'0')
          call init(RM%level_last,'0')
 
@@ -82,8 +85,8 @@
          call delete_step(RM%y_plane)
          call delete_step(RM%z_plane)
          RM%any_next = .false.
-         RM%L = 0
-         RM%L_last = 0
+         RM%i_level = 0
+         RM%i_level_last = 0
          call init(RM%level,'0')
          call init(RM%level_last,'0')
 
@@ -138,13 +141,27 @@
        subroutine prolongate_RM(RM)
          implicit none
          type(refine_mesh),intent(inout) :: RM
-         RM%L_last = RM%L
-         call init(RM%level_last,int2str(RM%L_last))
+         RM%i_level_last = RM%i_level
+         call init(RM%level_last,int2str(RM%i_level_last))
          call remove_leading_zeros(RM%level_last)
 
-         RM%L = RM%L + 1
-         call init(RM%level,int2str(RM%L))
+         RM%i_level = RM%i_level + 1
+         call init(RM%level,int2str(RM%i_level))
          call remove_leading_zeros(RM%level)
        end subroutine
+
+       function get_dir_RM(RM) result(dir)
+        implicit none
+        type(refine_mesh),intent(in) :: RM
+        integer,dimension(3) :: dir
+         dir = 0
+         if (RM%x%this) then; dir(1) = 1; endif
+         if (RM%y%this) then; dir(2) = 2; endif
+         if (RM%z%this) then; dir(3) = 3; endif
+         if (RM%x_plane%this) then; dir=(/1,2,3/); dir(1) = 0; endif
+         if (RM%y_plane%this) then; dir=(/1,2,3/); dir(2) = 0; endif
+         if (RM%z_plane%this) then; dir=(/1,2,3/); dir(3) = 0; endif
+         if (RM%all%this) then; dir = (/1,2,3/); endif
+       end function
 
        end module

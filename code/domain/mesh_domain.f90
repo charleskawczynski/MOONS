@@ -11,6 +11,8 @@
        public :: init,delete,display,print,export,import ! Essentials
        public :: add,init_other
 
+       public :: prolongate
+
        interface init;             module procedure init_MD;               end interface
        interface init;             module procedure init_MD_copy;          end interface
        interface delete;           module procedure delete_MD;             end interface
@@ -23,6 +25,8 @@
 
        interface add;              module procedure add_subdomain;         end interface
        interface init_other;       module procedure init_other_MD;         end interface
+
+       interface prolongate;       module procedure prolongate_MD;         end interface
 
        type mesh_domain
          type(physical_domain) :: D
@@ -134,6 +138,15 @@
          elseif (compare(m,MD%m_R2)) then; call init(m_other,MD%m_R1)
          else; stop 'Error: case not found in init_other_MD in mesh_domain.f90'
          endif
+       end subroutine
+
+       subroutine prolongate_MD(MD,dir)
+         implicit none
+         type(mesh_domain),intent(inout) :: MD
+         integer,intent(in) :: dir
+         call prolongate(MD%m_R1,dir)
+         call prolongate(MD%m_R2,dir)
+         call init(MD%D,MD%m_R1,MD%m_R2)
        end subroutine
 
        end module

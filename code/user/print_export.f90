@@ -8,7 +8,7 @@
        public :: init,delete,export,import
        public :: update
 
-       integer :: i_default_info = 2
+       integer :: i_default_info = 1
        integer :: i_default_transient_0D = 2
        integer :: i_default_transient_2D = 4
        integer :: i_default_solution = 6
@@ -114,7 +114,7 @@
          ! temp(1:6) = (/((mod(n_step+1,10**i).eq.1).and.(n_step.ne.0),i=1,6)/)
 
          PE%info = temp(PE%i_info)
-         PE%transient_0D = temp(PE%i_transient_0D)
+         PE%transient_0D = temp(PE%i_transient_0D).or.(n_step.eq.0)
          PE%transient_2D = PE%export_planar.and.(temp(PE%i_transient_2D).or.n_step.eq.1)
          PE%solution = temp(PE%i_solution).and.(n_step.gt.1)
        end subroutine

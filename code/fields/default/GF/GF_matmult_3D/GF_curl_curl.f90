@@ -31,6 +31,10 @@
           type(grid_field),intent(in) :: Y_U1_U2,Z_U1_U2
           integer :: i,j,k
 
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in curl_curl_x_GF in GF_curl_curl.f90'
+#endif
+
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
 
@@ -74,6 +78,10 @@
           type(grid_field),intent(in) :: X_U1_D2,Z_U1_D2
           type(grid_field),intent(in) :: X_U1_U2,Z_U1_U2
           integer :: i,j,k
+
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in curl_curl_y_GF in GF_curl_curl.f90'
+#endif
 
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO
@@ -119,6 +127,10 @@
           type(grid_field),intent(in) :: X_U1_D2,Y_U1_D2
           type(grid_field),intent(in) :: X_U1_U2,Y_U1_U2
           integer :: i,j,k
+
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in curl_curl_z_GF in GF_curl_curl.f90'
+#endif
 
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO

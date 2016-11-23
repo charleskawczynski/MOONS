@@ -104,18 +104,19 @@
          type(probe) :: probe_KE,probe_KE_2C,probe_divU
        end type
 
-       interface init;                module procedure init_mom;                   end interface
-       interface delete;              module procedure delete_mom;                 end interface
-       interface prolongate;          module procedure prolongate_mom;             end interface
-       interface display;             module procedure display_momentum;           end interface
-       interface print;               module procedure print_momentum;             end interface
-       interface export;              module procedure export_momentum;            end interface
-       interface import;              module procedure import_momentum;            end interface
+       interface init;                 module procedure init_mom;                   end interface
+       interface delete;               module procedure delete_mom;                 end interface
+       interface prolongate;           module procedure prolongate_mom;             end interface
+       interface display;              module procedure display_momentum;           end interface
+       interface print;                module procedure print_momentum;             end interface
+       interface export;               module procedure export_momentum;            end interface
+       interface import;               module procedure import_momentum;            end interface
 
-       interface export_tec;          module procedure export_tec_momentum;        end interface
-       interface export_tec;          module procedure export_tec_momentum_no_ext; end interface
-       interface export_transient;    module procedure export_transient_mom;       end interface
-       interface solve;               module procedure solve_momentum;             end interface
+       interface export_tec;           module procedure export_tec_momentum;        end interface
+       interface export_tec;           module procedure export_tec_momentum_no_ext; end interface
+       interface export_transient;     module procedure export_transient_mom;       end interface
+       interface solve;                module procedure solve_momentum;             end interface
+       interface init_matrix_based_ops;module procedure init_matrix_based_ops_mom;  end interface
 
        contains
 
@@ -133,7 +134,6 @@
          real(cp),intent(in) :: Re,Ha,Gr,Fr
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         real(cp),dimension(2) :: diffusion_treatment
          type(SF) :: vol_CC
          type(mesh_block) :: MB
          write(*,*) 'Initializing momentum:'
@@ -199,27 +199,16 @@
          call apply_BCs(mom%U,m)
          write(*,*) '     U BCs applied'
 
-         mom%MFP%coeff = -0.5_cp*mom%TMP%dt/mom%Re
-
          write(*,*) '     about to assemble Laplacian matrices'
-         call init_Laplacian_SF(mom%m) ! Must come before PPE solver init
-         call init_Laplacian_VF(mom%m) ! for lap(U) in momentum
-         ! diffusion_treatment = (/-mom%TMP%dt/mom%Re,1.0_cp/) ! diffusion explicit
-         ! diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
-         diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
-         ! diffusion_treatment = (/1.0_cp,0.0_cp/)             ! no treatment (requires multiplication by dt/Re)
-         ! call modify_Laplacian_VF(mom%m,diffusion_treatment(1),diffusion_treatment(2))
-
-         call multiply_Laplacian_VF(mom%m,diffusion_treatment(1))
-         call add_Laplacian_VF(mom%m,diffusion_treatment(2))
+         if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
 
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%probe_divU,str(DT%U_r),'probe_divU',mom%SP%restartU)
-         call init(mom%probe_KE,str(DT%U_e),'KE',mom%SP%restartU)
-         if (m%plane_xyz) call init(mom%probe_KE_2C,str(DT%U_e),'KE_2C',mom%SP%restartU)
+         call init(mom%probe_divU,str(DT%U_r),'probe_divU',mom%SP%restartU,SP)
+         call init(mom%probe_KE,str(DT%U_e),'KE',mom%SP%restartU,SP)
+         if (m%plane_xyz) call init(mom%probe_KE_2C,str(DT%U_e),'KE_2C',mom%SP%restartU,SP)
          write(*,*) '     momentum probes initialized'
 
          ! Initialize interior solvers
@@ -392,13 +381,29 @@
          type(momentum),intent(inout) :: mom
          real(cp) :: temp
          call compute_TKE(temp,mom%U_CC,mom%m)
-         call export(mom%probe_KE,mom%TMP%t,temp)
+         call export(mom%probe_KE,mom%TMP,temp)
          if (mom%m%plane_xyz) then
            call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,mom%temp_CC)
-           call export(mom%probe_KE_2C,mom%TMP%t,temp)
+           call export(mom%probe_KE_2C,mom%TMP,temp)
          endif
-         call assign_ghost_XPeriodic(mom%divU,0.0_cp)
-         call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP%t,temp)
+         call div(mom%divU,mom%U,mom%m)
+         call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP,temp)
+       end subroutine
+
+       subroutine init_matrix_based_ops_mom(mom)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         real(cp),dimension(2) :: diffusion_treatment
+         mom%MFP%coeff = -0.5_cp*mom%TMP%dt/mom%Re
+         call init_Laplacian_SF(mom%m) ! Must come before PPE solver init
+         call init_Laplacian_VF(mom%m) ! for lap(U) in momentum
+         ! diffusion_treatment = (/-mom%TMP%dt/mom%Re,1.0_cp/) ! diffusion explicit
+         ! diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
+         diffusion_treatment = (/mom%TMP%dt/mom%Re,1.0_cp/)    ! diffusion explicit
+         ! diffusion_treatment = (/1.0_cp,0.0_cp/)             ! no treatment (requires multiplication by dt/Re)
+         ! call modify_Laplacian_VF(mom%m,diffusion_treatment(1),diffusion_treatment(2))
+         call multiply_Laplacian_VF(mom%m,diffusion_treatment(1))
+         call add_Laplacian_VF(mom%m,diffusion_treatment(2))
        end subroutine
 
        ! ******************* SOLVER ****************************
@@ -444,10 +449,8 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeKineticEnergy(mom,mom%m,F)
-         if (PE%transient_0D) then
-           call div(mom%divU,mom%U,mom%m)
-           call export_transient(mom)
-         endif
+         if (PE%transient_0D) call export_transient(mom)
+
          ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
          if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
 
@@ -531,25 +534,19 @@
          call close_and_message(un,str(DT%e_budget),'E_K_budget_terms')
        end subroutine
 
-       subroutine prolongate_mom(mom,F,DT,RM,PE)
+       subroutine prolongate_mom(mom,F,DT,RM,SS_reached)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(inout) :: F
          type(dir_tree),intent(in) :: DT
          type(refine_mesh),intent(in) :: RM
-         type(print_export),intent(in) :: PE
+         logical,intent(in) :: SS_reached
          integer,dimension(3) :: dir
          integer :: i
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_SS_'//str(RM%level_last),1)
 
-         dir = 0
-         if (RM%x%this) dir(1) = 1
-         if (RM%y%this) dir(2) = 2
-         if (RM%z%this) dir(3) = 3
-         if (RM%x_plane%this) then; dir=(/1,2,3/); dir(1) = 0; endif
-         if (RM%y_plane%this) then; dir=(/1,2,3/); dir(2) = 0; endif
-         if (RM%z_plane%this) then; dir=(/1,2,3/); dir(3) = 0; endif
-         if (RM%all%this) dir = (/1,2,3/)
+         dir = get_dir(RM)
+         if (SS_reached) dir = (/1,2,3/)
          do i=1,3
            if (dir(i).ne.0) then
              write(*,*) 'Prolongating momentum solver along direction ',i
@@ -569,6 +566,7 @@
            endif
          enddo
          write(*,*) 'Finished momentum solver prolongation'
+         if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
          call apply_BCs(mom%U,mom%m)
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
 

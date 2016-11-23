@@ -41,6 +41,7 @@
         public :: plane_sum_x
         public :: plane_sum_y
         public :: plane_sum_z
+        public :: boundary_flux
 
         public :: mirror_about_hmin,mirror_about_hmax
 
@@ -119,6 +120,7 @@
        interface plane_sum_x;              module procedure plane_sum_x_BF;               end interface
        interface plane_sum_y;              module procedure plane_sum_y_BF;               end interface
        interface plane_sum_z;              module procedure plane_sum_z_BF;               end interface
+       interface boundary_flux;            module procedure boundary_flux_BF;             end interface
 
        interface assign_ghost_xmin_xmax;   module procedure assign_ghost_xmin_xmax_BF;    end interface
        interface assign_ghost_ymin_ymax;   module procedure assign_ghost_ymin_ymax_BF;    end interface
@@ -699,6 +701,24 @@
          PS = plane_sum_z(u%GF,B%g,p)
        end function
 
+       function boundary_flux_BF(x,y,z,B) result(BF)
+         implicit none
+         type(block_field),intent(in) :: x,y,z
+         type(block),intent(in) :: B
+         real(cp) :: BF
+         logical,dimension(3) :: L
+         L(1) = is_Face(x%DL).and.(get_Face(x%DL).eq.1)
+         L(2) = is_Face(y%DL).and.(get_Face(y%DL).eq.2)
+         L(3) = is_Face(z%DL).and.(get_Face(z%DL).eq.3)
+         if (all(L)) then
+           BF = 0.0_cp
+           BF = BF + plane_sum_x(x%GF,B%g,2); BF = BF + plane_sum_x(x%GF,B%g,x%GF%s(1)-1)
+           BF = BF + plane_sum_y(y%GF,B%g,2); BF = BF + plane_sum_y(y%GF,B%g,y%GF%s(2)-1)
+           BF = BF + plane_sum_z(z%GF,B%g,2); BF = BF + plane_sum_z(z%GF,B%g,z%GF%s(3)-1)
+         else; stop 'Error: boundary flux only offered for face data in BF.f90'
+         endif
+       end function
+
        function symmetry_error_x_BF(u) result(SE)
          implicit none
          type(block_field),intent(in) :: u
@@ -791,7 +811,7 @@
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (CC_along(u%DL,dir))    then; call prolongate_C(r%GF,u%GF,B%g,dir,x,y,z)
-         elseif (N_along(u%DL,dir)) then; call prolongate_N(r%GF,u%GF,B%g,dir,x,y,z)
+         elseif (N_along(u%DL,dir)) then; call prolongate_N(r%GF,u%GF,x,y,z)
          else; stop 'Error: bad DL in prolongate_BF in BF.f90'
          endif
        end subroutine
@@ -806,7 +826,7 @@
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
              if (CC_along(u%DL,dir)) then; call prolongate_C(u%GF,B%g,dir,x,y,z)
-         elseif ( N_along(u%DL,dir)) then; call prolongate_N(u%GF,B%g,dir,x,y,z)
+         elseif ( N_along(u%DL,dir)) then; call prolongate_N(u%GF,dir,x,y,z)
          else; stop 'Error: bad DL in prolongate_BF in BF.f90'
          endif
          if (u%BCs%BCL%defined) call prolongate(u%BCs,B,dir)

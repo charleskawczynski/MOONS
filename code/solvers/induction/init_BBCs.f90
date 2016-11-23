@@ -11,7 +11,7 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 7
+       integer :: preDefinedB_BCs = 1
        real(cp) :: cw = 0.0_cp
        ! real(cp) :: cw = 0.05_cp
        ! real(cp) :: cw = 0.01_cp
@@ -37,7 +37,7 @@
          call Dirichlet_BCs(B,m)
 
          select case (preDefinedB_BCs)
-         case (0); 
+         case (0);
          case (1); call pseudo_vacuum(B,m)
          case (2); call initBandaru(B)
          case (3); call periodic_duct_flow(B,m)

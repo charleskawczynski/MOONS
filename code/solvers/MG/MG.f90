@@ -12,8 +12,8 @@
       !     m            = contains mesh information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
-      ! 
-      ! 
+      !
+      !
       ! There are 3 iteration numbers that must be set:
       !      1) Number of V-Cycles - defined by maxIterations in ss
       !      2) Iterations per cycle - call setIterationsPerLevel()
@@ -122,12 +122,12 @@
 
         ! ******************** Initialize intermediate fields ********************
         ! THIS NEEDS TO BE FIXED: need to use intermediate fields for each
-        ! Maybe call them 
+        ! Maybe call them
         !          temp_rpx (restricted/prolongated in x)
         !          temp_rpy (restricted/prolongated in y)
-        ! 
+        !
         ! Need to choose a convention, which mesh do these transition fields live?
-        ! 
+        !
         call init(mg(1)%m_rx,m_base)
         call init(mg(1)%m_rxy,m_base)
         do i = 1,mg(1)%nLevels
@@ -377,7 +377,7 @@
           ! 6) Final smoothing sweeps
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%m,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
-          ! The solution on any mesh above the 
+          ! The solution on any mesh above the
           ! base mesh is the error!
           call assign(mg(j+1)%e,mg(j+1)%u)
 
@@ -388,8 +388,8 @@
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%m,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
-          ! The solution on any mesh above the 
-          ! base mesh is the correction on the 
+          ! The solution on any mesh above the
+          ! base mesh is the correction on the
           ! finer mesh!
           call assign(mg(j+1)%e,mg(j+1)%u)
         endif

@@ -11,6 +11,7 @@
        use export_now_mod
        use refine_mesh_mod
        use kill_switch_mod
+       use probe_mod
 
        use time_marching_params_mod
        use energy_mod
@@ -39,6 +40,10 @@
          type(export_now) :: EN
          type(refine_mesh) :: RM
          type(kill_switch) :: KS
+         integer :: i
+         logical,dimension(2) :: steady_solution
+         logical :: continue_refinement
+         logical :: refine_mesh_now_all
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
@@ -58,23 +63,32 @@
            call tic(sc)
            call update(PE,coupled%n_step)
 
+           if (refine_mesh_now_all.or.RM%any_next) PE%transient_0D = .true.
+
            ! if (SP%solveDensity)    call solve(dens,mom%U,  PE,EN,DT)
            if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,DT)
            if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
            if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
 
-           if (RM%any_next) then
-             call prolongate(RM)
-             ! call prolongate(nrg,DT,RM,PE)
-             call prolongate(mom,F,DT,RM,PE)
-             ! call prolongate(ind,DT,RM,PE)
+           continue_refinement = RM%i_level.lt.SP%n_max_refinements
+           steady_solution(1) = steady(mom%probe_KE)
+           steady_solution(2) = steady(ind%ME_fluid(3))
+           refine_mesh_now_all = all(steady_solution).and.(continue_refinement)
+           if (PE%info) write(*,*) 'steady_solution = ',steady_solution
 
-             ! call prolongate(nrg%TMP)
-             call prolongate(mom%TMP)
-             ! call prolongate(ind%TMP)
+           if (refine_mesh_now_all.or.RM%any_next) then
+             call prolongate(RM)
+             ! call prolongate(nrg%TMP); call prolongate(nrg,DT,RM,refine_mesh_now_all)
+             call prolongate(mom%TMP); call prolongate(mom,F,DT,RM,refine_mesh_now_all)
+             call prolongate(ind%TMP); call prolongate(ind,DT,RM,refine_mesh_now_all)
              call prolongate(coupled)
              call reset_Nmax(sc,coupled%n_step_stop-coupled%n_step)
            endif
+
+           steady_solution(1) = steady_final(mom%probe_KE)
+           steady_solution(2) = steady_final(ind%ME_fluid(3))
+           if (PE%info) write(*,*) 'steady_final_solution = ',steady_solution
+           if (all(steady_solution).and.(.not.continue_refinement)) KS%terminate_loop = .true.
 
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 

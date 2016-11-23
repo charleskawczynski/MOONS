@@ -64,11 +64,11 @@
        interface init_curl_curl;     module procedure init_curl_curl_SB;        end interface
        interface init_curl_curl;     module procedure init_curl_curl_SB_VP;     end interface
 
-       interface init_Laplacian_VF;  module procedure init_Laplacian_SB_VF;     end interface
-       interface init_Laplacian_VF;  module procedure init_Laplacian_SB_VF_VP;  end interface
+       interface init_Laplacian_VF;  module procedure init_Laplacian_VF_SB;     end interface
+       interface init_Laplacian_VF;  module procedure init_Laplacian_VF_SB_VP;  end interface
 
-       interface init_Laplacian_SF;  module procedure init_Laplacian_SB_SF;     end interface
-       interface init_Laplacian_SF;  module procedure init_Laplacian_SB_SF_VP;  end interface
+       interface init_Laplacian_SF;  module procedure init_Laplacian_SF_SB;     end interface
+       interface init_Laplacian_SF;  module procedure init_Laplacian_SF_SB_VP;  end interface
 
        contains
 
@@ -293,30 +293,42 @@
        ! ********************* LAPLACIAN **************************
        ! **********************************************************
 
-       subroutine init_Laplacian_SB_SF(B)
+       subroutine init_Laplacian_SF_SB(B)
          implicit none
          type(block),intent(inout) :: B
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in init_Laplacian_SF_SB in block.f90'
+#endif
          call init_Laplacian(B%lap_SF,B%g)
        end subroutine
 
-       subroutine init_Laplacian_SB_SF_VP(B,sig)
+       subroutine init_Laplacian_SF_SB_VP(B,sig)
          implicit none
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in init_Laplacian_SF_SB_VP in block.f90'
+#endif
          call init_Laplacian(B%lap_SF,B%g,sig)
        end subroutine
 
-       subroutine init_Laplacian_SB_VF(B)
+       subroutine init_Laplacian_VF_SB(B)
          implicit none
          type(block),intent(inout) :: B
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in init_Laplacian_VF_SB in block.f90'
+#endif
          call init_Laplacian(B%lap_VF,B%g)
        end subroutine
 
-       subroutine init_Laplacian_SB_VF_VP(B,sig)
+       subroutine init_Laplacian_VF_SB_VP(B,sig)
          implicit none
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig
          call init_Laplacian(B%lap_VF,B%g,sig)
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in init_Laplacian_VF_SB_VP in block.f90'
+#endif
        end subroutine
 
        ! **********************************************************
@@ -326,6 +338,9 @@
        subroutine init_curl_curl_SB(B)
          implicit none
          type(block),intent(inout) :: B
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in init_curl_curl_SB in block.f90'
+#endif
          call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g)
        end subroutine
 
@@ -333,6 +348,9 @@
          implicit none
          type(block),intent(inout) :: B
          type(grid_field),dimension(3),intent(in) :: sig
+#ifdef _MATRIX_FREE_
+          stop 'Error: matrix free pre-processor defined in init_curl_curl_SB_VP in block.f90'
+#endif
          call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g,sig)
        end subroutine
 
@@ -344,16 +362,9 @@
          implicit none
          type(block),intent(inout) :: B
          integer,intent(in) :: dir
-         integer :: i
          call restrict(B%g,dir)
          call init_vol_block(B)
-         ! call init_FEC_block(B)
-         do i=1,6; call restrict(B%fb(i),dir); enddo
-         do i=1,12;call restrict(B%eb(i),dir); enddo
-         do i=1,8; call restrict(B%cb(i),dir); enddo
-         do i=1,6; call restrict(B%f(i),dir); enddo
-         do i=1,12;call restrict(B%e(i),dir); enddo
-         do i=1,8; call restrict(B%c(i),dir); enddo
+         call init_FEC_block(B)
        end subroutine
 
        subroutine prolongate_dir_b(B,dir)
@@ -363,11 +374,6 @@
          call prolongate(B%g,dir)
          call init_vol_block(B)
          call init_FEC_block(B)
-         ! call init_Laplacian_VF(B)
-         call init_Laplacian_SF(B)
-
-         ! call init_Laplacian_SF(B)
-         ! call init_curl_curl(B)
        end subroutine
 
        end module
