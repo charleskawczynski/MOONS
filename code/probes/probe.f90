@@ -71,6 +71,10 @@
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
          p%n_history = SP%n_history
+         if (p%n_history.lt.2) then
+          write(*,*) 'Error: probe history must > 2 for probe '//name
+          stop 'Done'
+         endif
          p%SS_tol = SP%SS_tol
          p%SS_tol_final = SP%SS_tol_final
          allocate(p%SS_reached(SP%n_history)); p%SS_reached = .false.

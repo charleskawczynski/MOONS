@@ -59,6 +59,8 @@ z_phys = [-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40,50,60,70,80,90,
 B_r = np.zeros((N_r,N_z,N_t))
 B_z = np.zeros((N_r,N_z,N_t))
 B_mean_vs_time = np.zeros(N_t)
+B_r_mean_vs_time = np.zeros(N_t)
+B_z_mean_vs_time = np.zeros(N_t)
 for t in range(0,N_t):
 	worksheet = xlrd.open_workbook(B_r_data_files[t]).sheet_by_index(0)
 	for r in R:
@@ -73,6 +75,8 @@ for t in range(0,N_t):
 for t in range(0,N_t):
 	Bmag = np.sqrt(B_r[:,:,t]**2.0+B_z[:,:,t]**2.0)
 	B_mean_vs_time[t] = np.sum(Bmag)/(N_r*N_z)
+	B_r_mean_vs_time[t] = np.sum(B_r[:,:,t])/(N_r*N_z)
+	B_z_mean_vs_time[t] = np.sum(B_z[:,:,t])/(N_r*N_z)
 
 # ************************** Time Dependent Animation ****************************
 if plot_transient_L:
@@ -170,6 +174,45 @@ if export_mean_1D_L:
 	for t in range(0,N_t):
 		t_s = str('%02d' % (t,))
 		L.append(str(T[t])+d+str(B_mean_vs_time[t]))
+	header = []
+	header.append('TITLE = "'+B_str+' vs '+T_str+' (Ulrickson)"')
+	header.append('VARIABLES = "'+T_str+'","'+B_str+'"')
+	header.append('ZONE, I = '+str(N_t)+' DATAPACKING = POINT \n')
+	f = open(file+'.dat', "w")
+	f.write('\n'.join(header))
+	f.write('\n'.join(L))
+	f.close()
+
+if export_mean_1D_L:
+	d = '\t \t'
+	B_str = 'B_r_mean [T]'
+	T_str = 't [micro s]'
+	file_name = B_str+' vs '+T_str
+	export_dir = '1D'+PS
+	file = export_dir+file_name
+	L = []
+	for t in range(0,N_t):
+		t_s = str('%02d' % (t,))
+		L.append(str(T[t])+d+str(B_r_mean_vs_time[t]))
+	header = []
+	header.append('TITLE = "'+B_str+' vs '+T_str+' (Ulrickson)"')
+	header.append('VARIABLES = "'+T_str+'","'+B_str+'"')
+	header.append('ZONE, I = '+str(N_t)+' DATAPACKING = POINT \n')
+	f = open(file+'.dat', "w")
+	f.write('\n'.join(header))
+	f.write('\n'.join(L))
+	f.close()
+
+	d = '\t \t'
+	B_str = 'B_z_mean [T]'
+	T_str = 't [micro s]'
+	file_name = B_str+' vs '+T_str
+	export_dir = '1D'+PS
+	file = export_dir+file_name
+	L = []
+	for t in range(0,N_t):
+		t_s = str('%02d' % (t,))
+		L.append(str(T[t])+d+str(B_z_mean_vs_time[t]))
 	header = []
 	header.append('TITLE = "'+B_str+' vs '+T_str+' (Ulrickson)"')
 	header.append('VARIABLES = "'+T_str+'","'+B_str+'"')

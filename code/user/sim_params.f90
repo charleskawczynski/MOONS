@@ -80,7 +80,7 @@
        SP%matrix_based           = .false.            ! Solve induction equation
 
        SP%n_max_refinements      = 0                  ! Maximum number of mesh refinements after SS reached
-       SP%n_history              = 3                  ! number of points to check for SS
+       SP%n_history              = 2                  ! number of points to check for SS
        SP%SS_tol                 = 10.0_cp**(-3.0_cp) ! steady state tolerance
        SP%SS_tol_final           = 10.0_cp**(-6.0_cp) ! steady state tolerance at finest mesh
 
