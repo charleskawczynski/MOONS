@@ -22,6 +22,7 @@
        use Jacobi_mod
        use induction_aux_mod
        use export_raw_processed_mod
+       use clean_divergence_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
 
@@ -41,16 +42,16 @@
 
        contains
 
-       subroutine CT_Finite_Rem(B,B0,U_E,J,sigmaInv_E,m,dt,&
+       subroutine CT_Finite_Rem(B,B0,U_E,J,F,sigmaInv_E,m,dt,&
          temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
-         ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
+         ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB) + F
          ! Computes:  B (above)
          ! Note:      J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:    Constrained Transport (CT)
          ! Info:      cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Finite Rem
          implicit none
          type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3
-         type(VF),intent(in) :: B0,sigmaInv_E,J
+         type(VF),intent(in) :: B0,sigmaInv_E,J,F
          type(TF),intent(inout) :: temp_E_TF
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
@@ -60,6 +61,7 @@
          call multiply(temp_E,J,sigmaInv_E)
          call curl(temp_F3,temp_E,m)
          call subtract(temp_F1,temp_F3)
+         call add(temp_F1,F)
          call multiply(temp_F1,dt)
          call add(B,temp_F1)
          call apply_BCs(B,m)
@@ -88,12 +90,7 @@
            call apply_BCs(B,m)
            call embedFace(B,B_interior,MD_sigma)
          enddo
-         ! Clean B
-         call div(SF_CC,B,m)
-         call solve(PCG_cleanB,phi,SF_CC,m,compute_norms)
-         call grad(VF_F1,phi,m)
-         call subtract(B,VF_F1)
-         call apply_BCs(B,m)
+         call clean_div(PCG_cleanB,B,phi,m,VF_F1,SF_CC,compute_norms)
          call embedFace(B,B_interior,MD_sigma)
        end subroutine
 
@@ -161,12 +158,7 @@
          call extractFace(temp,temp_F2,D_conductor)
          call embedFace(B,temp,D_conductor)
          call delete(temp)
-         ! Clean B
-         call div(temp_CC,B,m)
-         call solve(PCG_cleanB,phi,temp_CC,m,compute_norms)
-         call grad(temp_F1,phi,m)
-         call subtract(B,temp_F1)
-         call apply_BCs(B,m)
+         call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine CT_Low_Rem(B,B0,U_E,J,sigmaInv_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
@@ -209,9 +201,8 @@
          enddo
        end subroutine
 
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,m,&
-         dt,compute_norms,temp_F1,temp_F2,temp_E,&
-         temp_E_TF,temp_CC,phi)
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,F,m,&
+         dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:  B (above)
          ! Method:    Preconditioned Conjugate Gradient Method (induction equation)
@@ -221,7 +212,7 @@
          type(PCG_solver_VF),intent(inout) :: PCG_B
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
          type(VF),intent(inout) :: B
-         type(VF),intent(in) :: B0
+         type(VF),intent(in) :: B0,F
          type(TF),intent(in) :: U_E
          type(SF),intent(inout) :: temp_CC,phi
          type(TF),intent(inout) :: temp_E_TF
@@ -234,13 +225,9 @@
          call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
          call multiply(temp_F1,dt)
          call add(temp_F1,B)
+         call add_product(temp_F1,F,dt)
          call solve(PCG_B,B,temp_F1,m,compute_norms)
-         ! Clean B
-         call div(temp_CC,B,m)
-         call solve(PCG_cleanB,phi,temp_CC,m,compute_norms)
-         call grad(temp_F1,phi,m)
-         call subtract(B,temp_F1)
-         call apply_BCs(B,m)
+         call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        end module

@@ -48,7 +48,7 @@
          ! call extend_cube_uniform(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! square non-uniform no walls
+         ! 2D square non-uniform no walls
          ! call square(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)

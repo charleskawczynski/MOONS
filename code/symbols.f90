@@ -1,4 +1,7 @@
 Greek Letters
+alpha 						α
+beta 						β
+gamma 						γ
 Partial 					∂
 Sigma						σ
 Theta                       θ

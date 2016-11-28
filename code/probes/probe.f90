@@ -22,6 +22,7 @@
        public :: steady,steady_final
 
        type probe
+         ! private
          type(string) :: dir,name                              ! directory and name
          real(cp) :: d                                         ! data
          logical,dimension(:),allocatable :: SS_reached        ! d(data)/dt < tol history
@@ -137,12 +138,19 @@
          p%SS_reached(i) = p%SS_reached(i+1)
          p%SS_reached_final(i) = p%SS_reached_final(i+1)
          enddo
-
          p%d_data_dt = (d - p%d)/(TMP%t - p%t) ! Breaks if double exported data (TMP%t = p%t)
          p%SS_reached(p%n_history) = abs(p%d_data_dt).lt.p%SS_tol
          p%SS_reached_final(p%n_history) = abs(p%d_data_dt).lt.p%SS_tol_final
          p%t = TMP%t
          p%d = d
+         call check_nans_probe(p)
+         write(p%un,*) p%t,p%d,p%d_data_dt,abs(p%d_data_dt)
+         flush(p%un)
+       end subroutine
+
+       subroutine check_nans_probe(p)
+         implicit none
+         type(probe),intent(in) :: p
          if (p%d.gt.p%infinity) then
            write(*,*) 'Error: data>infinity in probe: ',str(p%name)
            write(*,*) 'data = ',p%d
@@ -153,10 +161,6 @@
            write(*,*) 'data = ',p%d
            stop 'Divergence error. Sorry!'
          endif
-         if (is_nan(p%d_data_dt)) p%d_data_dt = 0.0_cp
-         if (p%d_data_dt.gt.p%infinity) p%d_data_dt = 0.0_cp
-         write(p%un,*) p%t,p%d,p%d_data_dt,abs(p%d_data_dt)
-         flush(p%un)
        end subroutine
 
        function steady_probe(p) result(L)
@@ -170,7 +174,6 @@
          implicit none
          type(probe),intent(in) :: p
          logical :: L
-         integer :: i
          L = all(p%SS_reached_final)
        end function
 

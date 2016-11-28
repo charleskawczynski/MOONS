@@ -436,7 +436,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)divergence_clean.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\

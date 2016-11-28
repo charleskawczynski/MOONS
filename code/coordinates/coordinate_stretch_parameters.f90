@@ -6,6 +6,7 @@
        public :: RobertsBL
        public :: HartmannBL
        public :: ReynoldsBL
+       public :: Re_Ha_BL
 
        contains
 
@@ -57,7 +58,7 @@
          real(cp) :: tol
          tol = 10.0_cp**(-10.0_cp)
          if (Ha.lt.tol) then
-          stop 'Error: Reynolds number is nearly zero in ReynoldsBL in coordinate_stretch_parameters.f90'
+          stop 'Error: Hartmann number is nearly zero in HartmannBL in coordinate_stretch_parameters.f90'
          endif
          do i = 1,3
             beta(i) = robertsBL((hmax(i)-hmin(i))/Ha,hmin(i),hmax(i))
@@ -77,6 +78,19 @@
          endif
          do i=1,3
             beta(i) = robertsBL((hmax(i)-hmin(i))/sqrt(Re),hmin(i),hmax(i))
+         enddo
+       end function
+
+       function Re_Ha_BL(Re,Ha,hmin,hmax) result (beta)
+         implicit none
+         real(cp),dimension(3),intent(in) :: hmin,hmax
+         real(cp),intent(in) :: Re,Ha
+         real(cp),dimension(3) :: beta,temp1,temp2
+         integer :: i
+         temp1 = ReynoldsBL(Re,hmin,hmax)
+         temp2 = HartmannBL(Ha,hmin,hmax)
+         do i=1,3
+           beta(i) = minval((/temp1(i),temp2(i)/))
          enddo
        end function
 

@@ -46,7 +46,7 @@
        use apply_BCs_mod
        use apply_BCs_embed_mod
        use boundary_conditions_mod
-       use divergence_clean_mod
+       use clean_divergence_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -309,8 +309,10 @@
          call export(mom%MFP,un)
          call close_and_message(un,str(DT%restart),'mom_MFP')
 
-         call export(mom%U     ,str(DT%restart),'U')
-         call export(mom%p     ,str(DT%restart),'p')
+         if (.not.mom%SP%export_soln_only) then
+           call export(mom%U     ,str(DT%restart),'U')
+           call export(mom%p     ,str(DT%restart),'p')
+         endif
        end subroutine
 
        subroutine import_momentum(mom,DT)
@@ -334,8 +336,10 @@
          call import(mom%MFP,un)
          call close_and_message(un,str(DT%restart),'mom_MFP')
 
-         call import(mom%U     ,str(DT%restart),'U')
-         call import(mom%p     ,str(DT%restart),'p')
+         if (.not.mom%SP%export_soln_only) then
+           call import(mom%U     ,str(DT%restart),'U')
+           call import(mom%p     ,str(DT%restart),'p')
+         endif
        end subroutine
 
        ! **********************************************************
@@ -347,8 +351,10 @@
          type(momentum),intent(in) :: mom
          type(VF),intent(in) :: F
          type(dir_tree),intent(in) :: DT
+         if (.not.mom%SP%export_soln_only) then
          if (mom%SP%solveInduction.or.mom%SP%solveEnergy) then
            call export_raw(mom%m,F,str(DT%U_f),'F_external',0)
+         endif
          endif
          call export_tec_momentum_no_ext(mom,DT)
        end subroutine
@@ -360,19 +366,19 @@
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
-           call export_raw(mom%m,mom%U,str(DT%U_f),'U',0)
-           call export_raw(mom%m,mom%p,str(DT%U_f),'p',0)
            call export_processed(mom%m,mom%U,str(DT%U_f),'U',1)
-           if (mom%SP%export_symmetric) then
-            call export_processed(mom%m,mom%U,str(DT%U_f),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
+           if (.not.mom%SP%export_soln_only) then
+             call export_processed(mom%m,mom%p,str(DT%U_f),'p',1)
+             call export_raw(mom%m,mom%U,str(DT%U_f),'U',0)
+             call export_raw(mom%m,mom%p,str(DT%U_f),'p',0)
+             if (mom%SP%export_symmetric) then
+              call export_processed(mom%m,mom%U,str(DT%U_f),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
+              call export_processed(mom%m,mom%p,str(DT%U_f),'p',1,6,1.0_cp)
+             endif
+             call export_raw(mom%m,mom%divU,str(DT%U_f),'divU',1)
+             ! call export_processed(mom%m,mom%temp_E,str(DT%U_f),'vorticity',1)
+             write(*,*) '     finished'
            endif
-           call export_processed(mom%m,mom%p,str(DT%U_f),'p',1)
-           if (mom%SP%export_symmetric) then
-             call export_processed(mom%m,mom%p,str(DT%U_f),'p',1,6,1.0_cp)
-           endif
-           call export_raw(mom%m,mom%divU,str(DT%U_f),'divU',1)
-           ! call export_processed(mom%m,mom%temp_E,str(DT%U_f),'vorticity',1)
-           write(*,*) '     finished'
          endif
        end subroutine
 
@@ -572,7 +578,7 @@
 
          call assign(mom%Ustar,mom%U)
          call boost(mom%PCG_P%ISP)
-         call div_clean_PCG(mom%PCG_P,mom%U,mom%p,mom%Ustar,mom%m,mom%temp_F,mom%temp_CC,.true.)
+         call clean_div(mom%PCG_P,mom%U,mom%p,mom%Ustar,mom%m,mom%temp_F,mom%temp_CC,.true.)
          call reset(mom%PCG_P%ISP)
 
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_cleaned_'//str(RM%level),1)

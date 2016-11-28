@@ -26,13 +26,15 @@
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
          ! Re         = 1000.0_cp
-         Re         = 100.0_cp
-         Ha         = 10.0_cp
-         Rem        = 1.0_cp
+         Re         = 1.0_cp*pow(2)
+         ! Re         = 1.0_cp*pow(6)
+         ! Ha         = 4.0_cp*pow(3)
+         Ha         = 1.0_cp*pow(1)
+         Rem        = 1.0_cp*pow(0)
          tw         = 0.5_cp
 
          include_vacuum = .false.
-         finite_Rem = .false.
+         finite_Rem = .true.
          sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-2.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -48,18 +50,19 @@
 
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
          ! call init(ISP_B  , 10000, 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
-         call init(ISP_B  ,   5  , 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
-         call init(ISP_U  ,  40  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_U')
-         call init(ISP_p  ,   5  , 10.0_cp**(-6.0_cp) , 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_p')
-         call init(ISP_T  ,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_T')
-         call init(ISP_phi,   5  , 10.0_cp**(-10.0_cp), 1.0_cp*10.0_cp**(-13.0_cp), 100, str(DT%ISP),'ISP_phi')
+         call init(ISP_B  ,   5  , pow(-5),  pow(-7) , 100, str(DT%ISP),'ISP_B')
+         call init(ISP_U  ,  40  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_U')
+         call init(ISP_p  ,   5  , pow(-6) , pow(-13), 100, str(DT%ISP),'ISP_p')
+         call init(ISP_T  ,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_T')
+         call init(ISP_phi,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_phi')
 
          ! BMC 102
          ! time  = 10.0_cp
          time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
-         dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
+         dtime = 1.0_cp*pow(-4) ! Implicit time marching
+         dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp) ! Implicit time marching
          ! dtime = 3.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
 
          ! time  = 100.0_cp
@@ -73,7 +76,8 @@
          call init(coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
          ! call init(coupled,1000000000,dtime,str(DT%TMP), 'TMP_coupled')
 
-         call init(TMP_B, coupled%n_step_stop, coupled%dt/100.0_cp, str(DT%TMP), 'TMP_B')
+         !call init(TMP_B, coupled%n_step_stop, coupled%dt/pow(2), str(DT%TMP), 'TMP_B')
+         call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
          call init(TMP_U, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_U')
          call init(TMP_T, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_T')
 
@@ -111,43 +115,50 @@
          if (.not.SP%restartT) call export(ISP_T)
        end subroutine
 
+       function pow(i) result(p)
+         implicit none
+         integer,intent(in) :: i
+         real(cp) :: p
+         p = 10.0_cp**(real(i,cp))
+       end function
+
        function get_dt_NME(NME) result(dtime)
          implicit none
          integer,intent(in) :: NME
          real(cp) :: dtime
          select case (NME)
-         case (1);  dtime = 5.0_cp*10.0_cp**(-5.0_cp) ! checked
-         case (2);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (3);  dtime = 5.0_cp*10.0_cp**(-5.0_cp)
-         case (4);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (5);  dtime = 5.0_cp*10.0_cp**(-5.0_cp)
-         case (6);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (7);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (8);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (9);  dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (10); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (11); dtime = 5.0_cp*10.0_cp**(-6.0_cp)
-         case (12); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (13); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (14); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (15); dtime = 5.0_cp*10.0_cp**(-6.0_cp)
-         case (16); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (17); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (18); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (19); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (20); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (21); dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! checked
-         case (22); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (23); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (24); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (25); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (26); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (27); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (28); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (29); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (30); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (31); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
-         case (32); dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         case (1);  dtime = 5.0_cp*pow(-5) ! checked
+         case (2);  dtime = 1.0_cp*pow(-4)
+         case (3);  dtime = 5.0_cp*pow(-5)
+         case (4);  dtime = 1.0_cp*pow(-4)
+         case (5);  dtime = 5.0_cp*pow(-5)
+         case (6);  dtime = 1.0_cp*pow(-4)
+         case (7);  dtime = 1.0_cp*pow(-4)
+         case (8);  dtime = 1.0_cp*pow(-4)
+         case (9);  dtime = 1.0_cp*pow(-4)
+         case (10); dtime = 1.0_cp*pow(-4)
+         case (11); dtime = 5.0_cp*pow(-6)
+         case (12); dtime = 1.0_cp*pow(-4)
+         case (13); dtime = 1.0_cp*pow(-4)
+         case (14); dtime = 1.0_cp*pow(-4)
+         case (15); dtime = 5.0_cp*pow(-6)
+         case (16); dtime = 1.0_cp*pow(-4)
+         case (17); dtime = 1.0_cp*pow(-4)
+         case (18); dtime = 1.0_cp*pow(-4)
+         case (19); dtime = 1.0_cp*pow(-4)
+         case (20); dtime = 1.0_cp*pow(-4)
+         case (21); dtime = 1.0_cp*pow(-4) ! checked
+         case (22); dtime = 1.0_cp*pow(-4)
+         case (23); dtime = 1.0_cp*pow(-4)
+         case (24); dtime = 1.0_cp*pow(-4)
+         case (25); dtime = 1.0_cp*pow(-4)
+         case (26); dtime = 1.0_cp*pow(-4)
+         case (27); dtime = 1.0_cp*pow(-4)
+         case (28); dtime = 1.0_cp*pow(-4)
+         case (29); dtime = 1.0_cp*pow(-4)
+         case (30); dtime = 1.0_cp*pow(-4)
+         case (31); dtime = 1.0_cp*pow(-4)
+         case (32); dtime = 1.0_cp*pow(-4)
          case default; stop 'Error: bad NME in inputFile.f90'
          end select
        end function

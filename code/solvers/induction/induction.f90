@@ -17,6 +17,7 @@
        use print_export_mod
        use export_now_mod
        use refine_mesh_mod
+       use assign_B0_vs_t_mod
 
        use mesh_stencils_mod
        use init_BBCs_mod
@@ -27,7 +28,7 @@
        use init_Sigma_mod
        use ops_embedExtract_mod
        use geometric_region_mod
-       use divergence_clean_mod
+       use clean_divergence_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -72,6 +73,7 @@
          ! --- Vector fields ---
          type(VF) :: J,temp_E                         ! Edge data
          type(VF) :: B,B0,B_interior,temp_F1,temp_F2  ! Face data
+         type(VF) :: dB0dt
          type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
          type(VF) :: J_interior,curlUCrossB,curlE
@@ -142,7 +144,6 @@
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: Rem,sig_local_over_sig_f
          type(dir_tree),intent(in) :: DT
-         real(cp),dimension(2) :: diffusion_treatment
          integer :: temp_unit
          type(SF) :: sigma,vol_CC
          type(VF) :: sigma_temp_E,sigma_temp_F
@@ -170,6 +171,7 @@
          call init_Face(ind%temp_F2_TF   ,m,0.0_cp)
          call init_Face(ind%B            ,m,0.0_cp)
          call init_Face(ind%B0           ,m,0.0_cp)
+         call init_Face(ind%dB0dt        ,m,0.0_cp)
          call init_CC(ind%temp_CC        ,m,0.0_cp)
          call init_Edge(ind%J            ,m,0.0_cp)
          call init_Face(ind%curlUCrossB  ,m,0.0_cp)
@@ -196,6 +198,7 @@
          call init_BBCs(ind%B,m);                         write(*,*) '     B BCs initialized'
          call init_phiBCs(ind%phi,m);                     write(*,*) '     phi BCs initialized'
          call initBfield(ind%B,ind%B0,m,ind%SP%restartB,ind%SP%restartB0,str(DT%B_f))
+         ! call assign_B0_vs_t(ind%B0,ind%TMP)
          write(*,*) '     B-field initialized'
          ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B_f))
          ! call initJ_interior(ind%J_interior,m,ind%MD_sigma,str(DT%J_f))
@@ -287,6 +290,7 @@
          call delete(ind%B)
          call delete(ind%B_interior)
          call delete(ind%B0)
+         call delete(ind%dB0dt)
          call delete(ind%J)
          call delete(ind%J_interior)
          call delete(ind%curlUCrossB)
@@ -338,6 +342,8 @@
          write(un,*) 'tol_ind,tol_cleanB = ',ind%ISP_B%tol_rel,ind%ISP_phi%tol_rel
          write(un,*) 'nstep,ME = ',ind%TMP%n_step,ind%ME(1)%d
          write(un,*) 'include_vacuum = ',ind%include_vacuum
+         ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
+         ! call displayPhysicalMinMax(ind%B0,'B0',un)
          call displayPhysicalMinMax(ind%divB,'divB',un)
          call displayPhysicalMinMax(ind%divJ,'divJ',un)
          write(un,*) ''
@@ -370,12 +376,14 @@
          call export(ind%MFP_B,un)
          call close_and_message(un,str(DT%restart),'ind_MFP')
 
-         call export(ind%B      ,str(DT%restart),'B')
-         call export(ind%B0     ,str(DT%restart),'B0')
-         call export(ind%J      ,str(DT%restart),'J')
-         call export(ind%U_E%x  ,str(DT%restart),'U_E_x')
-         call export(ind%U_E%y  ,str(DT%restart),'U_E_y')
-         call export(ind%U_E%z  ,str(DT%restart),'U_E_z')
+         if (.not.ind%SP%export_soln_only) then
+           call export(ind%B      ,str(DT%restart),'B')
+           call export(ind%B0     ,str(DT%restart),'B0')
+           call export(ind%J      ,str(DT%restart),'J')
+           call export(ind%U_E%x  ,str(DT%restart),'U_E_x')
+           call export(ind%U_E%y  ,str(DT%restart),'U_E_y')
+           call export(ind%U_E%z  ,str(DT%restart),'U_E_z')
+         endif
        end subroutine
 
        subroutine import_induction(ind,DT)
@@ -397,12 +405,14 @@
          call import(ind%MFP_B,un)
          call close_and_message(un,str(DT%restart),'ind_MFP')
 
-         call import(ind%B      ,str(DT%restart),'B')
-         call import(ind%B0     ,str(DT%restart),'B0')
-         call import(ind%J      ,str(DT%restart),'J')
-         call import(ind%U_E%x  ,str(DT%restart),'U_E_x')
-         call import(ind%U_E%y  ,str(DT%restart),'U_E_y')
-         call import(ind%U_E%z  ,str(DT%restart),'U_E_z')
+         if (.not.ind%SP%export_soln_only) then
+           call import(ind%B      ,str(DT%restart),'B')
+           call import(ind%B0     ,str(DT%restart),'B0')
+           call import(ind%J      ,str(DT%restart),'J')
+           call import(ind%U_E%x  ,str(DT%restart),'U_E_x')
+           call import(ind%U_E%y  ,str(DT%restart),'U_E_y')
+           call import(ind%U_E%z  ,str(DT%restart),'U_E_z')
+         endif
        end subroutine
 
        ! **********************************************************
@@ -419,16 +429,15 @@
            if (ind%SP%solveInduction) then
              write(*,*) 'export_tec_induction at ind%TMP%n_step = ',ind%TMP%n_step
              call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1)
+             if (.not.ind%SP%export_soln_only) then
              if (ind%SP%export_symmetric) then
                call export_processed(ind%m,ind%B ,str(DT%B_f),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
+               call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
              endif
              call export_raw(ind%m,ind%B ,str(DT%B_f),'B',0)
              call export_raw(ind%m,ind%divB ,str(DT%B_f),'divB',0)
              call export_raw(ind%m,ind%J ,str(DT%J_f),'J',0)
              call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1)
-             if (ind%SP%export_symmetric) then
-               call export_processed(ind%m,ind%J ,str(DT%J_f),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
-             endif
              call export_raw(ind%m,ind%U_E%x  ,str(DT%B_f),'U_E_x',0)
              call export_raw(ind%m,ind%U_E%y  ,str(DT%B_f),'U_E_y',0)
              call export_raw(ind%m,ind%U_E%z  ,str(DT%B_f),'U_E_z',0)
@@ -436,6 +445,7 @@
              ! call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
              ! call export_processed(ind%m,ind%B ,str(DT%B_f),'B_final',1)
              ! call export_raw(ind%m,ind%B ,str(DT%B_f),'B_final',0)
+             endif
              write(*,*) '     finished'
            endif
          endif
@@ -511,6 +521,10 @@
          if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          elseif (ind%TMP%n_step.le.1) then; call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          endif
+         ! call assign_B0_vs_t(ind%B0,ind%TMP)
+         ! call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
+         ! call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
+         call assign(ind%dB0dt,0.0_cp)
 
          select case (ind%SP%solveBMethod)
          case (1)
@@ -518,12 +532,12 @@
          ind%ISP_B%iter_max,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
 
          case (2)
-         call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
+         call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
          ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
 
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
-         ind%m,ind%TMP%dt,PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
+         ind%dB0dt,ind%m,ind%TMP%dt,PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
 
          case (4)
@@ -646,7 +660,6 @@
          type(refine_mesh),intent(in) :: RM
          logical,intent(in) :: SS_reached
          integer,dimension(3) :: dir
-         real(cp),dimension(2) :: diffusion_treatment
          integer :: i
          call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
 
@@ -696,7 +709,7 @@
 
          call assign(ind%temp_F1,ind%B)
          call boost(ind%PCG_cleanB%ISP)
-         call div_clean_PCG(ind%PCG_cleanB,ind%B,ind%phi,&
+         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,&
          ind%temp_F1,ind%m,ind%temp_F2,ind%temp_CC_SF,.true.)
          call reset(ind%PCG_cleanB%ISP)
 

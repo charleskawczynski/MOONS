@@ -35,7 +35,8 @@
          ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
          ! N = 45; hmin = -1.0_cp; hmax = 1.0_cp
          ! N = 45
-         N = 13*2**2
+         ! N = 13*2**2
+         N = 13
          hmin = -1.0_cp
          hmax =  1.0_cp
          ! N = 64; hmin = -0.5_cp; hmax = 0.5_cp
@@ -46,7 +47,6 @@
          i= 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         ! call init(m,g)
          call add(m,g)
          call initProps(m)
          call patch(m)
@@ -61,12 +61,19 @@
          integer,dimension(3) :: N
          integer :: i
          real(cp) :: Ha,Re
-         Ha = 100.0_cp; Re = 400.0_cp
+         Ha = 4.0_cp*10.0_cp**(3.0_cp)
+         Re = 400.0_cp
          call delete(m)
          ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
-         N = 16; hmin = -0.5_cp; hmax = 0.5_cp
-         beta = ReynoldsBL(Re,hmin,hmax)
-         ! beta = HartmannBL(Ha,hmin,hmax)
+         ! N = 16; hmin = -0.5_cp; hmax = 0.5_cp
+         N = 80
+         N(3) = 200
+         hmin = -1.0_cp
+         hmax = 1.0_cp
+         hmin(3) = -5.0_cp
+         hmax(3) =  5.0_cp
+         ! beta = ReynoldsBL(Re,hmin,hmax)
+         beta = HartmannBL(Ha,hmin,hmax)
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
@@ -109,7 +116,8 @@
          call delete(m)
          call init(g,m_in%B(1)%g)
          ! N = 11
-         N = 3*2**2
+         N = 3
+         ! N = 3*2**2
          i = 1; call ext_uniform_IO(g,N(i),i)
          i = 2; call ext_uniform_IO(g,N(i),i)
          i = 3; call ext_uniform_IO(g,N(i),i)

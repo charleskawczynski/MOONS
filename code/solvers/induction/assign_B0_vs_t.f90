@@ -7,27 +7,95 @@
 
        private
        public :: assign_B0_vs_t
-
+       public :: assign_dB0_dt_vs_t
+       integer,parameter :: n_data_points = 58
+       real(cp),parameter :: micro_seconds_to_seconds = 10.0_cp**(-6.0_cp)
+       real(cp),parameter :: t_c = 0.00278_cp
        contains
 
        subroutine assign_B0_vs_t(B0,TMP)
          implicit none
          type(VF),intent(inout) :: B0
          type(time_marching_params),intent(in) :: TMP
-         real(cp),dimension(58) :: B_all,t_all
-         real(cp) :: B,t,t_total
-         integer :: i
-         t_total = (real(TMP%n_step_stop,cp)-real(TMP%n_step_start,cp))*TMP%dt
-         i = floor(real(TMP%n_step,cp)/real(TMP%n_step_stop,cp))
-         i = maxval((/i,1/))
-         i = minval((/i,58/))
-         call time(t_all); t = t_all(i)
-
-         call B_r_mean(B_all); B = B_all(i)
-         call assign(B0%y,B_all(i))
-         call B_z_mean(B_all); B = B_all(i)
-         call assign(B0%z,B_all(i))
+         real(cp),dimension(n_data_points) :: B_z_all,B_r_all,t_all
+         real(cp) :: B_max
+         ! Non-dimensionalize
+         call time(t_all)
+         t_all = t_all*micro_seconds_to_seconds/t_c
+         call assign(B0%x,1.0_cp)
+         call B_r_mean(B_r_all)
+         call B_z_mean(B_z_all)
+         B_max = maxval((/B_z_all,B_r_all/))
+         B_z_all = B_z_all/B_max
+         B_r_all = B_r_all/B_max
+         call assign(B0%y,get_B_from_t(t_all,B_r_all,TMP%t))
+         call assign(B0%z,get_B_from_t(t_all,B_z_all,TMP%t))
        end subroutine
 
+       subroutine assign_dB0_dt_vs_t(dB0_dt,TMP)
+         implicit none
+         type(VF),intent(inout) :: dB0_dt
+         type(time_marching_params),intent(in) :: TMP
+         real(cp),dimension(n_data_points) :: B_z_all,B_r_all,B_all,t_all
+         real(cp) :: B_max
+         call time(t_all)
+         t_all = t_all*micro_seconds_to_seconds/t_c
+         call assign(dB0_dt%x,0.0_cp)
+         call B_r_mean(B_all)
+         call B_z_mean(B_all)
+         B_max = maxval((/B_z_all,B_r_all/))
+         B_z_all = B_z_all/B_max
+         B_r_all = B_r_all/B_max
+         call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_all,TMP%t))
+         call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_all,TMP%t))
+       end subroutine
+
+       function get_dB0_dt_from_t(t_all,B_all,t) result(dB0_dt)
+         implicit none
+         real(cp),dimension(n_data_points),intent(in) :: t_all,B_all
+         real(cp),intent(in) :: t
+         real(cp) :: dB0_dt
+         integer :: i,n
+         n = n_data_points
+         dB0_dt = (B_all(2)-B_all(1))/(t_all(2)-t_all(1))
+         do i=1,n-1
+          if ((t.ge.t_all(i)).and.(t.le.t_all(i+1))) then
+           dB0_dt = (B_all(i+1)-B_all(i))/(t_all(i+1)-t_all(i))
+          endif
+         enddo
+         if (t.ge.t_all(n)) then
+          dB0_dt = (B_all(n)-B_all(n-1))/(t_all(n)-t_all(n-1))
+         endif
+       end function
+
+       function get_B_from_t(t_all,B_all,t) result(B)
+         implicit none
+         real(cp),dimension(n_data_points),intent(in) :: t_all,B_all
+         real(cp),intent(in) :: t
+         real(cp) :: B
+         integer :: i,n
+         n = n_data_points
+         B = B_all(1)
+         do i=1,n-1
+          if ((t.ge.t_all(i)).and.(t.le.t_all(i+1))) then
+           B = interp_simple(B_all(i),t_all(i),B_all(i+1),t_all(i+1),t)
+          endif
+         enddo
+         if (t.ge.t_all(n)) B = B_all(n)
+       end function
+
+       function interp_simple(B1,t1,B2,t2,t) result(B)
+         implicit none
+         real(cp),intent(in) :: B1,t1,B2,t2,t
+         real(cp) :: B
+         B = B1 + (B2-B1)*(t-t1)/(t2-t1)
+       end function
+
+       function pow(i) result(p)
+         implicit none
+         integer,intent(in) :: i
+         real(cp) :: p
+         p = 10.0_cp**(real(i,cp))
+       end function
 
        end module

@@ -72,9 +72,10 @@
 
            continue_refinement = RM%i_level.lt.SP%n_max_refinements
            steady_solution(1) = steady(mom%probe_KE)
-           steady_solution(2) = steady(ind%ME_fluid(3))
+           if (SP%solveInduction) steady_solution(2) = steady(ind%ME_fluid(3))
+           if (.not.SP%solveInduction) steady_solution(2) = .true.
            refine_mesh_now_all = all(steady_solution).and.(continue_refinement)
-           if (PE%info) write(*,*) 'steady_solution = ',steady_solution
+           ! if (PE%info) write(*,*) 'steady_solution = ',steady_solution
 
            if (refine_mesh_now_all.or.RM%any_next) then
              call prolongate(RM)
@@ -87,8 +88,8 @@
 
            steady_solution(1) = steady_final(mom%probe_KE)
            steady_solution(2) = steady_final(ind%ME_fluid(3))
-           if (PE%info) write(*,*) 'steady_final_solution = ',steady_solution
-           if (all(steady_solution).and.(.not.continue_refinement)) KS%terminate_loop = .true.
+           ! if (PE%info) write(*,*) 'steady_final_solution = ',steady_solution
+           ! if (all(steady_solution).and.(.not.continue_refinement)) KS%terminate_loop = .true.
 
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
@@ -166,9 +167,6 @@
          call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************
-         if (SP%solveMomentum)  call export_transient(mom)
-         if (SP%solveInduction) call export_transient(ind)
-
          if (SP%solveEnergy) then;    call export_tec(nrg,DT);   endif ! call export(nrg,DT); endif
          if (SP%solveMomentum) then;  call export_tec(mom,DT,F); endif ! call export(mom,DT); endif
          if (SP%solveInduction) then; call export_tec(ind,DT);   endif ! call export(ind,DT); endif

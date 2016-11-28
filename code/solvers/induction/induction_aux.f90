@@ -52,10 +52,10 @@
        subroutine compute_JCrossB(jCrossB,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
          temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
          ! computes
-         ! 
+         !
          !     finite Rem:  Ha^2/Re J x (B0 + B_induced)
          !     low    Rem:  Ha^2/Re J x (B0)
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: jCrossB,temp_F
          type(VF),intent(in) :: B,B0,J

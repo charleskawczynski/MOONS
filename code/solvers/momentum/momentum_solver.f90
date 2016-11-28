@@ -17,7 +17,7 @@
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
-       use divergence_clean_mod
+       use clean_divergence_mod
 
        implicit none
        private
@@ -152,15 +152,11 @@
          call add(Ustar,temp_F1)
          call add(Ustar,F) ! Needs to be prolongated
          call multiply(Ustar,dt)
-         call add(Ustar,U)
          ! call div_clean_PCG(PCG,U,p,Ustar,m,temp_F1,temp_CC,compute_norms)
          call zeroWall_conditional(Ustar,m,U)
-         call div(temp_CC,Ustar,m)
-         call solve(PCG,p,temp_CC,m,compute_norms)
-         call grad(temp_F1,p,m)
-         ! call subtract(temp_F1%x,1.0_cp) ! mpg
-         call subtract(U,Ustar,temp_F1)
-         call apply_BCs(U,m)
+         ! call add(Ustar,U)
+         call add(U,Ustar)
+         call clean_div(PCG,U,p,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_Donor_no_PPE(U,U_E,F,m,Re,dt,&
