@@ -45,9 +45,9 @@
         type(VF) :: tempk,k
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
         type(norms) :: norm
-        integer :: un,N_iter
+        integer :: un,un_convergence,N_iter
         type(iter_solver_params) :: ISP
-        type(string) :: name
+        type(string) :: dir,name
         procedure(preconditioner_SF),pointer,nopass :: prec
         procedure(op_SF),pointer,nopass :: operator
         procedure(op_SF_explicit),pointer,nopass :: operator_explicit
@@ -58,9 +58,9 @@
         type(VF) :: tempk,k
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
         type(norms) :: norm
-        integer :: un,N_iter
+        integer :: un,un_convergence,N_iter
         type(iter_solver_params) :: ISP
-        type(string) :: name
+        type(string) :: dir,name
         procedure(preconditioner_VF),pointer,nopass :: prec
         procedure(op_VF),pointer,nopass :: operator
         procedure(op_VF_explicit),pointer,nopass :: operator_explicit
@@ -102,14 +102,16 @@
         call init(PCG%norm)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
-        call init(PCG%name,name)
-        PCG%un = new_and_open(dir,'norm_PCG_SF_'//str(PCG%name))
+        call init(PCG%dir,dir)
+        call init(PCG%name,'norm_PCG_SF_'//name)
+        PCG%un = new_and_open(dir,str(PCG%name))
+        PCG%un_convergence = new_and_open(dir,str(PCG%name)//'_convergence')
         call tecHeader(str(PCG%name),PCG%un,.false.)
+        call tecHeader(str(PCG%name),PCG%un_convergence,.false.)
         PCG%prec => prec
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
         call assign(PCG%k,k)
-        ! call assign(PCG%Minv,Minv)
         call PCG%prec(PCG%Minv,m,k,MFP%coeff)
 
         call init(temp_Minv,PCG%Minv)
@@ -165,14 +167,16 @@
         call init(PCG%norm)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
-        call init(PCG%name,name)
-        PCG%un = new_and_open(dir,'norm_PCG_VF_'//str(PCG%name))
+        call init(PCG%dir,dir)
+        call init(PCG%name,'norm_PCG_VF_'//name)
+        PCG%un = new_and_open(dir,str(PCG%name))
+        PCG%un_convergence = new_and_open(dir,str(PCG%name)//'_convergence')
         call tecHeader(str(PCG%name),PCG%un,.true.)
+        call tecHeader(str(PCG%name),PCG%un_convergence,.true.)
         PCG%prec => prec
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
         call assign(PCG%k,k)
-        ! call assign(PCG%Minv,Minv)
         call PCG%prec(PCG%Minv,m,k,MFP%coeff)
 
         call init(temp_Minv,PCG%Minv)
@@ -204,7 +208,8 @@
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
         x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
-        PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
+        PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,&
+        PCG%z,PCG%Minv)
       end subroutine
 
       subroutine solve_PCG_VF(PCG,x,b,m,compute_norms)
@@ -216,7 +221,8 @@
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
         x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
-        PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,PCG%z,PCG%Minv)
+        PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,&
+        PCG%z,PCG%Minv)
       end subroutine
 
       subroutine delete_PCG_SF(PCG)
@@ -233,6 +239,10 @@
         call delete(PCG%Minv)
         call delete(PCG%MFP)
         PCG%N_iter = 1
+        call close_and_message(PCG%un,str(PCG%dir),str(PCG%name))
+        call close_and_message(PCG%un_convergence,str(PCG%dir),str(PCG%name)//'_convergence')
+        call delete(PCG%dir)
+        call delete(PCG%name)
       end subroutine
 
       subroutine delete_PCG_VF(PCG)
@@ -249,6 +259,10 @@
         call delete(PCG%Minv)
         call delete(PCG%MFP)
         PCG%N_iter = 1
+        call close_and_message(PCG%un,str(PCG%dir),str(PCG%name))
+        call close_and_message(PCG%un_convergence,str(PCG%dir),str(PCG%name)//'_convergence')
+        call delete(PCG%dir)
+        call delete(PCG%name)
       end subroutine
 
       subroutine tecHeader(name,un,VF)

@@ -4,7 +4,7 @@
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), grid (g)
       ! and using a Fast Fourier Transform (FFT) method.
-      ! 
+      !
       ! Although grids may have different spacing in each direction,
       ! grid sizes along each direction are assumed uniform.
       !
@@ -13,7 +13,7 @@
       !     f            = RHS of above equation
       !     u_bcs        = boundary conditions for u. Refer to boundary_conditions_mod for more info.
       !     g            = contains grid information (dhc,dhn)
-      ! 
+      !
       ! Flags: (_PARALLELIZE_FFT_)
       use current_precision_mod
       use mesh_mod
@@ -39,7 +39,7 @@
         type(SF) :: coeff_x,coeff_y,coeff_z
         integer,dimension(3) :: s
       end type
-      
+
       interface init;        module procedure initFFT;       end interface
       interface delete;      module procedure deleteFFT;     end interface
       interface solve;       module procedure solveFFT_SF;   end interface

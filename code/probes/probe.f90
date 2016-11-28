@@ -20,33 +20,38 @@
        public :: probe
        public :: init,delete,export
        public :: steady,steady_final
+       public :: get_data
 
        type probe
-         ! private
+         private
          type(string) :: dir,name                              ! directory and name
-         real(cp) :: d                                         ! data
          logical,dimension(:),allocatable :: SS_reached        ! d(data)/dt < tol history
          logical,dimension(:),allocatable :: SS_reached_final  ! d(data)/dt < tol history-finest mesh
-         real(cp) :: d_data_dt                                 ! change in data over time (Euler)
-         real(cp) :: t                                         ! time
-         real(cp) :: dt                                        ! delta time
-         integer :: un                                         ! file unit
+         real(cp) :: d = 0.0_cp                                ! data
+         real(cp) :: d_data_dt = 0.0_cp                        ! change in data over time (Euler)
+         real(cp) :: d_amax = 0.0_cp                            ! max(d) over time
+         real(cp) :: t = 0.0_cp                                ! time
+         real(cp) :: dt = 0.0_cp                               ! delta time
+         integer :: un = 0                                     ! file unit
+         integer :: n_step = 0                                 ! file unit
          logical :: restart = .false.                          ! restart probe (append existing)
-         real(cp) :: NaN,infinity                              ! for checking divergent data
-         real(cp) :: SS_tol                                    ! tolerance for checking for SS
-         real(cp) :: SS_tol_final                              ! tolerance for checking for SS
-         integer :: n_history                                  ! number of points to check SS
+         real(cp) :: NaN = 0.0_cp                              ! for checking divergent data
+         real(cp) :: infinity = huge(1.0_cp)                   ! for checking divergent data
+         real(cp) :: SS_tol = 0.0_cp                           ! tolerance for checking for SS
+         real(cp) :: SS_tol_final = 0.0_cp                     ! tolerance for checking for SS
+         integer :: n_history = 0                              ! number of points to check SS
        end type
 
-       interface init;        module procedure init_probe;           end interface
-       interface delete;      module procedure delete_probe;         end interface
-       interface delete;      module procedure delete_probe_many;    end interface
-       interface export;      module procedure export_probe;         end interface
-       interface import;      module procedure import_probe;         end interface
+       interface init;          module procedure init_probe;           end interface
+       interface delete;        module procedure delete_probe;         end interface
+       interface delete;        module procedure delete_probe_many;    end interface
+       interface export;        module procedure export_probe;         end interface
+       interface import;        module procedure import_probe;         end interface
 
-       interface export;      module procedure export_probe_data;    end interface
-       interface steady;      module procedure steady_probe;         end interface
-       interface steady_final;module procedure steady_final_probe;   end interface
+       interface export;        module procedure export_probe_data;    end interface
+       interface steady;        module procedure steady_probe;         end interface
+       interface steady_final;  module procedure steady_final_probe;   end interface
+       interface get_data;      module procedure get_data_probe;       end interface
 
        contains
 
@@ -69,6 +74,7 @@
            flush(p%un)
          elseif (p%restart) then
            p%un = open_to_append(dir,name)
+           ! call import(p,dir,name) ! obviously need this.
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
          p%n_history = SP%n_history
@@ -76,6 +82,8 @@
           write(*,*) 'Error: probe history must > 2 for probe '//name
           stop 'Done'
          endif
+
+         p%n_step = 0
          p%SS_tol = SP%SS_tol
          p%SS_tol_final = SP%SS_tol_final
          allocate(p%SS_reached(SP%n_history)); p%SS_reached = .false.
@@ -92,6 +100,7 @@
          call delete(p%name)
          p%n_history = 0
          p%SS_tol = 0.0_cp
+         p%d_amax = 0.0_cp
          p%SS_tol_final = 0.0_cp
          close(p%un)
        end subroutine
@@ -134,6 +143,7 @@
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: d
          integer :: i
+         p%d_amax = maxval((/p%d_amax,abs(d)/))
          do i=1,p%n_history-1
          p%SS_reached(i) = p%SS_reached(i+1)
          p%SS_reached_final(i) = p%SS_reached_final(i+1)
@@ -143,6 +153,11 @@
          p%SS_reached_final(p%n_history) = abs(p%d_data_dt).lt.p%SS_tol_final
          p%t = TMP%t
          p%d = d
+         if (p%n_step.eq.TMP%n_step) then
+          write(*,*) 'Error: cannot export probe '//str(p%name)//' consecutively.'
+          stop 'Done'
+         endif
+         p%n_step = TMP%n_step
          call check_nans_probe(p)
          write(p%un,*) p%t,p%d,p%d_data_dt,abs(p%d_data_dt)
          flush(p%un)
@@ -175,6 +190,13 @@
          type(probe),intent(in) :: p
          logical :: L
          L = all(p%SS_reached_final)
+       end function
+
+       function get_data_probe(p) result(d)
+         implicit none
+         type(probe),intent(in) :: p
+         real(cp) :: d
+         d = p%d
        end function
 
        end module

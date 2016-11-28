@@ -59,15 +59,16 @@
          ! BMC 102
          ! time  = 10.0_cp
          time  = 100.0_cp
-         ! dtime = 1.0_cp*10.0_cp**(-3.0_cp) ! Implicit time marching
-         ! dtime = 1.0_cp*10.0_cp**(-2.0_cp) ! Implicit time marching
-         dtime = 1.0_cp*pow(-4) ! Implicit time marching
-         dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp) ! Implicit time marching
-         ! dtime = 3.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
+         ! dtime = 1.0_cp*10.0_cp**(-3.0_cp)
+         ! dtime = 1.0_cp*10.0_cp**(-2.0_cp)
+         dtime = 1.0_cp*pow(-4)
+         ! dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
+         dtime = 1.0_cp*pow(-4)*3.0**(2.0_cp)
+         ! dtime = 3.0_cp*10.0_cp**(-4.0_cp)
 
          ! time  = 100.0_cp
-         ! dtime = 1.0_cp*10.0_cp**(-4.0_cp) ! Implicit time marching
-         ! dtime = 5.0_cp*10.0_cp**(-6.0_cp) ! Implicit time marching
+         ! dtime = 1.0_cp*10.0_cp**(-4.0_cp)
+         ! dtime = 5.0_cp*10.0_cp**(-6.0_cp)
          ! dtime = get_dt_NME(21)
 
          ! dtime = 1.0_cp*10.0_cp**(-5.0_cp)*Rem*sig_local_over_sig_f ! Explicit time marching estimate

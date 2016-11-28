@@ -19,6 +19,7 @@ mu_m0 = 4.0*PI*pow(-7) # [H/m]
 
 class mat_props:
 	sigma = 0.0
+	resistivity = 0.0
 	nu = 0.0
 	rho = 0.0
 	mu = 0.0
@@ -31,12 +32,22 @@ class mat_props:
 
 	def Lithium(self):
 		self.name = 'Lithium'
-		self.sigma = 2.8*pow(6)
-		# self.sigma = 1.1*pow(7)
+		self.sigma = 1.1*pow(7) # http://periodictable.com/Properties/A/ElectricalConductivity.an.html
 		self.nu = 8.5*pow(-7)
 		self.rho = 485.0
 		self.mu = self.nu*self.rho
-		self.Xi_m = 1.4*pow(-5)
+		self.Xi_m = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
+		self.K_m = self.Xi_m+1.0
+		self.mu_m = self.K_m*mu_m0
+		return self
+
+	def Lead_Lithium(self): # http://oa.upm.es/11738/1/INVE_MEM_2011_103029.pdf
+		self.name = 'LiPb'
+		self.sigma = 7.89*pow(5) # Gautam
+		self.rho = 9486.0 # Gautam
+		self.mu = 0.0022 # Gautam
+		self.nu = self.mu/self.rho
+		self.Xi_m = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
 		self.K_m = self.Xi_m+1.0
 		self.mu_m = self.K_m*mu_m0
 		return self

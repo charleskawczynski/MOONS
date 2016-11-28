@@ -271,7 +271,7 @@
          write(un,*) 't,dt = ',mom%TMP%t,mom%TMP%dt
          write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%solveUMethod,mom%ISP_U%iter_max,mom%ISP_P%iter_max
          write(un,*) 'tol_mom,tol_PPE = ',mom%ISP_U%tol_rel,mom%ISP_P%tol_rel
-         write(un,*) 'nstep,KE = ',mom%TMP%n_step,mom%probe_KE%d
+         write(un,*) 'nstep,KE = ',mom%TMP%n_step,get_data(mom%probe_KE)
          ! call displayPhysicalMinMax(mom%U,'U',un)
          call displayPhysicalMinMax(mom%divU,'divU',un)
          ! write(un,*) 'Kolmogorov Length = ',mom%L_eta
@@ -549,6 +549,7 @@
          logical,intent(in) :: SS_reached
          integer,dimension(3) :: dir
          integer :: i
+         write(*,*) '#################### Prolongating momentum solver ####################'
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_SS_'//str(RM%level_last),1)
 
          dir = get_dir(RM)
@@ -582,6 +583,7 @@
          call reset(mom%PCG_P%ISP)
 
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_cleaned_'//str(RM%level),1)
+         write(*,*) '#############################################################'
        end subroutine
 
        end module

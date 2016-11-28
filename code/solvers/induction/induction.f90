@@ -340,7 +340,7 @@
          write(un,*) 't,dt = ',ind%TMP%t,ind%TMP%dt
          write(un,*) 'solveBMethod,N_ind,N_cleanB = ',ind%SP%solveBMethod,ind%ISP_B%iter_max,ind%ISP_phi%iter_max
          write(un,*) 'tol_ind,tol_cleanB = ',ind%ISP_B%tol_rel,ind%ISP_phi%tol_rel
-         write(un,*) 'nstep,ME = ',ind%TMP%n_step,ind%ME(1)%d
+         write(un,*) 'nstep,ME = ',ind%TMP%n_step,get_data(ind%ME(1))
          write(un,*) 'include_vacuum = ',ind%include_vacuum
          ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
          ! call displayPhysicalMinMax(ind%B0,'B0',un)
@@ -661,6 +661,8 @@
          logical,intent(in) :: SS_reached
          integer,dimension(3) :: dir
          integer :: i
+         type(iter_solver_params) :: temp
+         write(*,*) '#################### Prolongating induction solver ####################'
          call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
 
          dir = get_dir(RM)
@@ -707,13 +709,24 @@
          call apply_BCs(ind%B,ind%m)
          call export_processed(ind%m,ind%B,str(DT%B_f),'B_prolongated_'//str(RM%level),1)
 
-         call assign(ind%temp_F1,ind%B)
-         call boost(ind%PCG_cleanB%ISP)
-         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,&
-         ind%temp_F1,ind%m,ind%temp_F2,ind%temp_CC_SF,.true.)
-         call reset(ind%PCG_cleanB%ISP)
+         call div(ind%divB,ind%B,ind%m)
+         call displayPhysicalMinMax(ind%divB,'divB_prolongated',6)
+
+         call random_noise(ind%B)
+         call init(temp,ind%PCG_cleanB%ISP)
+         call init(ind%PCG_cleanB%ISP,solve_exact(str(DT%B_r)))
+         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
+         call init(ind%PCG_cleanB%ISP,temp)
+         call delete(temp)
+
+         call div(ind%divB,ind%B,ind%m)
+         call displayPhysicalMinMax(ind%divB,'divB_cleaned',6)
+         call export_raw(ind%m,ind%divB,str(DT%B_f),'divB_cleaned_'//str(RM%level),0)
+         call export_raw(ind%m,ind%phi,str(DT%B_f),'phi_prolongate_'//str(RM%level),0)
 
          call export_processed(ind%m,ind%B,str(DT%B_f),'B_cleaned_'//str(RM%level),1)
+         write(*,*) '#############################################################'
+         stop 'Done'
        end subroutine
 
        end module

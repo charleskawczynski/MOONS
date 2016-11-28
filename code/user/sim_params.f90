@@ -26,6 +26,7 @@
        logical :: solveInduction
        logical :: matrix_based
 
+       logical :: dynamic_refinement
        integer :: n_max_refinements
        integer :: n_history
        real(cp) :: SS_tol
@@ -81,10 +82,11 @@
        SP%solveInduction         = .true.             ! Solve induction equation
        SP%matrix_based           = .false.            ! Solve induction equation
 
+       SP%dynamic_refinement     = .true.             ! Perform dynamic mesh refinement
        SP%n_max_refinements      = 2                  ! Maximum number of mesh refinements after SS reached
        SP%n_history              = 2                  ! number of points to check for SS
-       SP%SS_tol                 = 10.0_cp**(-15.0_cp) ! steady state tolerance
-       SP%SS_tol_final           = 10.0_cp**(-15.0_cp) ! steady state tolerance at finest mesh
+       SP%SS_tol                 = 10.0_cp**(-1.0_cp) ! steady state tolerance
+       SP%SS_tol_final           = 10.0_cp**(-4.0_cp) ! steady state tolerance at finest mesh
 
        SP%restartT               = .false.            ! restart T  field
        SP%restartU               = .false.            ! restart U  field
@@ -125,6 +127,7 @@
        SP%solveMomentum          = SP_in%solveMomentum
        SP%solveInduction         = SP_in%solveInduction
        SP%matrix_based           = SP_in%matrix_based
+       SP%dynamic_refinement     = SP_in%dynamic_refinement
        SP%n_max_refinements      = SP_in%n_max_refinements
        SP%n_history              = SP_in%n_history
        SP%SS_tol                 = SP_in%SS_tol

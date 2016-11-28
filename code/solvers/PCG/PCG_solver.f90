@@ -7,6 +7,7 @@
       use ops_aux_mod
       use boundary_conditions_mod
       use export_raw_processed_mod
+      use iter_solver_params_mod
       use is_nan_mod
       use SF_mod
       use VF_mod
@@ -27,7 +28,7 @@
       contains
 
       subroutine solve_PCG_SF(operator,operator_explicit,name,x,b,vol,k,m,&
-        MFP,ISP,res_norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
+        MFP,ISP,res_norm,compute_norms,un,un_convergence,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         procedure(op_SF) :: operator
         procedure(op_SF_explicit) :: operator_explicit
@@ -38,7 +39,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: res_norm
-        integer,intent(in) :: un
+        integer,intent(in) :: un,un_convergence
         type(iter_solver_params),intent(inout) :: ISP
         integer,intent(inout) :: N_iter
         logical,intent(in) :: compute_norms
@@ -47,7 +48,7 @@
         type(norms) :: res_norm0
         logical :: skip_loop
         integer :: i,i_earlyExit
-        real(cp) :: alpha,rhok,rhokp1,res_norm_L2 ! betak = rhokp1/rhok
+        real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
 
         call assign(r,b)
         ! ----------------------- MODIFY RHS -----------------------
@@ -67,17 +68,17 @@
         call multiply_wall_Neumann(r,0.5_cp,x)
         call multiply(r,vol)
         call compute(res_norm0,r)
-        call check_nans(res_norm0%L2,res_norm0,name//' PCG_SF res_norm0%L2')
+        call check_nans(res_norm0,res_norm,ISP,i,'check_nans before loop for '//name)
 
-#ifdef _EXPORT_PCG_SF_CONVERGENCE_
+        if (ISP%export_convergence) then
           call compute(res_norm,r)
-          res_norm_L2 = dot_product(r,r,m,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
-          call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
-#endif
+          res_norm%L2 = dot_product(r,r,m,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
+          call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
+        endif
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx); res_norm_L2 = abs(rhok); i_earlyExit = 0
-        if (.not.sqrt(res_norm0%L2).lt.ISP%tol_abs) then ! Only do PCG if necessary!
+        rhok = dot_product(r,z,m,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
+        if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           skip_loop = .false.
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
@@ -91,25 +92,30 @@
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
             if (check_res(ISP,i)) then
-              res_norm_L2 = dot_product(r,r,m,x,tempx)
-              if (exit_loop(ISP,sqrt(res_norm_L2),res_norm0%L2)) then; i_earlyExit=1; exit; endif
+              res_norm%L2 = dot_product(r,r,m,x,tempx)
+              call update_exit_loop(ISP,i,res_norm%L2,res_norm0%L2)
+              if (any(ISP%exit_loop)) then; i_earlyExit=1; exit; endif
+              if (ISP%solve_exact) then
+                call print_info('inside '//name,ISP,res_norm,res_norm0,i,i_earlyExit)
+              endif
             endif
             call update_check_res(ISP,i)
 
-#ifdef _EXPORT_PCG_SF_CONVERGENCE_
-            call compute(res_norm,r)
-            call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
-#endif
+            if (ISP%export_convergence) then
+              call compute(res_norm,r)
+              call export_norms(un_convergence,res_norm0,res_norm,N_iter,i,i_earlyExit)
+            endif
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,m,x,tempx)
             call product_add(p,rhokp1/rhok,z) ! p = p beta + z
             rhok = rhokp1
+            call update_exit_loop(ISP,i)
           enddo
         else; i=1; skip_loop = .true.
         endif
         call update_last_iter(ISP,i)
 
-        call check_nans(res_norm_L2,res_norm0,name//' PCG_SF res_norm_L2')
+        call check_nans(res_norm0,res_norm,ISP,i,'check_nans after loop for '//name)
 
         if (compute_norms) then
           if (.not.skip_loop) then
@@ -120,20 +126,18 @@
             call subtract(r,Ax)
             call assign_wall_Dirichlet(r,0.0_cp,x) ! Does nothing in PPE
             call assign_ghost_XPeriodic(r,0.0_cp,x)
-            call compute(res_norm,r); call print(res_norm,'PCG_SF Residuals for '//name)
-            call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
-            write(*,*) 'PCG_SF iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max
-            write(*,*) 'PCG_SF exit condition = ',sqrt(res_norm_L2)/res_norm0%L2
-            write(*,*) 'PCG_SF ISP%n_skip_check_res = ',ISP%n_skip_check_res
+            call compute(res_norm,r)
+            call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
+            call print_info(name,ISP,res_norm,res_norm0,i,i_earlyExit)
           else
-            write(*,*) 'PCG_SF skip_loop = ',skip_loop
+            write(*,*) name//' skip_loop = ',skip_loop
           endif
           write(*,*) ''
         endif
       end subroutine
 
       subroutine solve_PCG_VF(operator,operator_explicit,name,x,b,vol,k,m,&
-        MFP,ISP,res_norm,compute_norms,un,tempx,tempk,Ax,r,p,N_iter,z,Minv)
+        MFP,ISP,res_norm,compute_norms,un,un_convergence,tempx,tempk,Ax,r,p,N_iter,z,Minv)
         implicit none
         procedure(op_VF) :: operator
         procedure(op_VF_explicit) :: operator_explicit
@@ -146,14 +150,14 @@
         type(norms),intent(inout) :: res_norm
         type(iter_solver_params),intent(inout) :: ISP
         integer,intent(inout) :: N_iter
-        integer,intent(in) :: un
+        integer,intent(in) :: un,un_convergence
         logical,intent(in) :: compute_norms
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p,z
         logical :: skip_loop
         integer :: i,i_earlyExit
         type(norms) :: res_norm0
-        real(cp) :: alpha,rhok,rhokp1,res_norm_L2 ! betak = rhokp1/rhok
+        real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
         call assign(r,b)
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
@@ -173,17 +177,17 @@
         call multiply_wall_Neumann(r,0.5_cp,x)
         call multiply(r,vol)
         call compute(res_norm0,r)
-        call check_nans(res_norm0%L2,res_norm0,name//' PCG_VF res_norm0%L2')
+        call check_nans(res_norm0,res_norm,ISP,i,'check_nans before loop for '//name)
 
-#ifdef _EXPORT_PCG_VF_CONVERGENCE_
+        if (ISP%export_convergence) then
           call compute(res_norm,r)
-          res_norm_L2 = dot_product(r,r,m,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
-          call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
-#endif
+          res_norm%L2 = dot_product(r,r,m,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
+          call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
+        endif
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx); res_norm_L2 = abs(rhok); i_earlyExit = 0
-        if (.not.sqrt(res_norm0%L2).lt.ISP%tol_abs) then ! Only do PCG if necessary!
+        rhok = dot_product(r,z,m,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
+        if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x)
@@ -196,25 +200,27 @@
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
             if (check_res(ISP,i)) then
-              res_norm_L2 = dot_product(r,r,m,x,tempx)
-              if (exit_loop(ISP,sqrt(res_norm_L2),res_norm0%L2)) then; i_earlyExit=1; exit; endif
+              res_norm%L2 = dot_product(r,r,m,x,tempx)
+              call update_exit_loop(ISP,i,res_norm%L2,res_norm0%L2)
+              if (any(ISP%exit_loop)) then; i_earlyExit=1; exit; endif
             endif
             call update_check_res(ISP,i)
 
-#ifdef _EXPORT_PCG_VF_CONVERGENCE_
-            call compute(res_norm,r)
-            call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
-#endif
+            if (ISP%export_convergence) then
+              call compute(res_norm,r)
+              call export_norms(un_convergence,res_norm0,res_norm,N_iter,i,i_earlyExit)
+            endif
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,m,x,tempx)
             call product_add(p,rhokp1/rhok,z) ! p = p beta + z
             rhok = rhokp1
+            call update_exit_loop(ISP,i)
           enddo
         else; i=1; skip_loop = .true.
         endif
         call update_last_iter(ISP,i)
 
-        call check_nans(res_norm_L2,res_norm0,name//' PCG_VF res_norm_L2')
+        call check_nans(res_norm0,res_norm,ISP,i,'check_nans after loop for '//name)
 
         if (compute_norms) then
           if (.not.skip_loop) then
@@ -225,25 +231,22 @@
             call subtract(r,Ax)
             call assign_wall_Dirichlet(r,0.0_cp,x)
             call assign_ghost_XPeriodic(r,0.0_cp,x)
-            call compute(res_norm,r); call print(res_norm,'PCG_VF Residuals for '//name)
-            call export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
-            write(*,*) 'PCG_VF iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max
-            write(*,*) 'PCG_VF exit condition = ',sqrt(res_norm_L2)/res_norm0%L2
-            write(*,*) 'PCG_VF ISP%n_skip_check_res = ',ISP%n_skip_check_res
+            call compute(res_norm,r)
+            call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
+            call print_info(name,ISP,res_norm,res_norm0,i,i_earlyExit)
           else
-            write(*,*) 'PCG_VF skip_loop = ',skip_loop
+            write(*,*) name//' skip_loop = ',skip_loop
           endif
           write(*,*) ''
         endif
       end subroutine
 
-      subroutine export_norms(un,res_norm0,res_norm,res_norm_L2,N_iter,i,i_earlyExit)
+      subroutine export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
         implicit none
         integer,intent(in) :: un,N_iter,i,i_earlyExit
-        real(cp),intent(in) :: res_norm_L2
         type(norms),intent(in) :: res_norm0,res_norm
         write(un,*) N_iter,&
-                    sqrt(res_norm_L2)/res_norm0%L2,&
+                    sqrt(res_norm%L2)/res_norm0%L2,&
                     res_norm%L1,&
                     res_norm%L2,&
                     res_norm%Linf,&
@@ -254,17 +257,35 @@
         flush(un)
       end subroutine
 
-      subroutine check_nans(f,res_norm0,location)
+      subroutine check_nans(res_norm0,res_norm,ISP,i,location)
         implicit none
-        real(cp),intent(in) :: f
-        type(norms),intent(in) :: res_norm0
+        type(norms),intent(in) :: res_norm0,res_norm
+        type(iter_solver_params),intent(in) :: ISP
+        integer,intent(in) :: i
         character(len=*),intent(in) :: location
-        if (is_nan(f)) then
+        if (is_nan(res_norm%L2)) then
           write(*,*) 'Error: NaN in ',location
-          write(*,*) 'f = ',f
+          write(*,*) 'iterations_used = ',i
+          write(*,*) 'res_norm%L2 = ',res_norm%L2
+          call print(res_norm,'res_norm in '//location)
           call print(res_norm0,'res_norm0 in '//location)
-          stop 'Done';
+          call print(ISP)
+          stop 'Done'
         endif
+      end subroutine
+
+      subroutine print_info(name,ISP,res_norm,res_norm0,i,i_earlyExit)
+        implicit none
+        type(iter_solver_params),intent(in) :: ISP
+        type(norms),intent(in) :: res_norm,res_norm0
+        integer,intent(in) :: i,i_earlyExit
+        character(len=*),intent(in) :: name
+        write(*,*) '-------------- '//name//' --------------'
+        call print(res_norm0,res_norm,'res_norm0,res_norm')
+        call print_exit_loop(ISP)
+        write(*,*) 'iterations (executed/max) = ',i-1+i_earlyExit,ISP%iter_max
+        write(*,*) 'relative error = ',res_norm%L2/res_norm0%L2
+        write(*,*) '----------------------------------------'
       end subroutine
 
       end module
