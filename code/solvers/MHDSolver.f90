@@ -79,7 +79,10 @@
              if (SP%solveInduction) steady_solution(2) = steady(ind%ME_fluid(3))
              if (.not.SP%solveInduction) steady_solution(2) = .true.
              refine_mesh_now_all = all(steady_solution).and.(continue_refinement)
-             if (PE%info) write(*,*) 'steady_solution = ',steady_solution
+             if (PE%info) then
+               write(*,*) 'steady_solution = ',steady_solution
+               write(*,*) 'continue_refinement = ',continue_refinement
+             endif
 
              if (refine_mesh_now_all.or.RM%any_next) then
                call prolongate(RM)

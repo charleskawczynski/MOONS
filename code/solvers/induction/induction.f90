@@ -518,7 +518,6 @@
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
-
          if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          elseif (ind%TMP%n_step.le.1) then; call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          endif
@@ -558,6 +557,7 @@
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
          call iterate_step(ind%TMP)
+
 
          call compute_J_ind(ind)
 
@@ -665,28 +665,13 @@
          integer :: i
          type(iter_solver_params) :: temp
          write(*,*) '#################### Prolongating induction solver ####################'
-         ! call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
-
-         write(*,*) '-------------------------------- before prolongate before clean'
-         call random_noise(ind%B)
-         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
-         call div(ind%divB,ind%B,ind%m)
-         call displayPhysicalMinMax(ind%divB,'divB',6)
-         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
-         write(*,*) '-------------------------------- before prolongate after clean'
-         call div(ind%divB,ind%B,ind%m)
-         call displayPhysicalMinMax(ind%divB,'divB',6)
-         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
-         write(*,*) '--------------------------------'
-         write(*,*) '--------------------------------'
-         write(*,*) ''
-         write(*,*) ''
+         call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
 
          dir = get_dir(RM)
          if (SS_reached) dir = (/1,2,3/)
          do i=1,3
            if (dir(i).ne.0) then
-             ! write(*,*) 'Prolongating induction solver along direction ',i
+             write(*,*) 'Prolongating induction solver along direction ',i
              call prolongate(ind%m,dir(i))
              call prolongate(ind%MD_fluid,dir(i))
              call prolongate(ind%MD_sigma,dir(i))
@@ -697,6 +682,7 @@
              call prolongate(ind%temp_F2_TF,ind%m,dir(i))
 
              call prolongate(ind%J,ind%m,dir(i))
+             call prolongate(ind%dB0dt,ind%m,dir(i))
              call prolongate(ind%temp_E,ind%m,dir(i))
              call prolongate(ind%B,ind%m,dir(i))
              call prolongate(ind%B0,ind%m,dir(i))
@@ -717,66 +703,22 @@
 
              call prolongate(ind%PCG_B,ind%m,dir(i))
              call prolongate(ind%PCG_cleanB,ind%m,dir(i))
-
            endif
          enddo
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
-
-         ! call init_phiBCs(ind%PCG_cleanB%p,ind%m)
-         ! call init_BC_mesh(ind%PCG_cleanB%p,ind%m)
-         ! call Dirichlet_BCs(ind%PCG_cleanB%p,ind%m)
-         ! ind%PCG_cleanB%p%all_Neumann = .false. ! Needs to be adjusted manually
-         ! call init_BC_props(ind%PCG_cleanB%p)
-
-         write(*,*) '-------------------------------- after prolongate before clean'
-         call random_noise(ind%B)
-         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
-         call div(ind%divB,ind%B,ind%m)
-         call displayPhysicalMinMax(ind%divB,'divB',6)
-         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
-         write(*,*) '-------------------------------- after prolongate after clean'
-         call div(ind%divB,ind%B,ind%m)
-         call export_raw(ind%m,ind%divB,str(DT%B_f),'divB_cleaned_'//str(RM%level),0)
-         call displayPhysicalMinMax(ind%divB,'divB',6)
-         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
-         write(*,*) '--------------------------------'
-         write(*,*) '--------------------------------'
-
-
-         stop 'Done'
-
-
-
-
-
-
-
-
-
-
 
          write(*,*) 'Finished induction solver prolongation'
          call apply_BCs(ind%B,ind%m)
          call export_processed(ind%m,ind%B,str(DT%B_f),'B_prolongated_'//str(RM%level),1)
 
-         call div(ind%divB,ind%B,ind%m)
-         call displayPhysicalMinMax(ind%divB,'divB_prolongated',6)
-
-         call random_noise(ind%B)
          call init(temp,ind%PCG_cleanB%ISP)
          call init(ind%PCG_cleanB%ISP,solve_exact(str(DT%B_r)))
          call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
          call init(ind%PCG_cleanB%ISP,temp)
          call delete(temp)
 
-         call div(ind%divB,ind%B,ind%m)
-         call displayPhysicalMinMax(ind%divB,'divB_cleaned',6)
-         call export_raw(ind%m,ind%divB,str(DT%B_f),'divB_cleaned_'//str(RM%level),0)
-         call export_raw(ind%m,ind%phi,str(DT%B_f),'phi_prolongate_'//str(RM%level),0)
-
          call export_processed(ind%m,ind%B,str(DT%B_f),'B_cleaned_'//str(RM%level),1)
          write(*,*) '#############################################################'
-         stop 'Done'
        end subroutine
 
        end module

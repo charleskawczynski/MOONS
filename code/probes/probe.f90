@@ -89,6 +89,7 @@
          allocate(p%SS_reached(SP%n_history)); p%SS_reached = .false.
          allocate(p%SS_reached_final(SP%n_history)); p%SS_reached_final = .false.
          p%infinity = huge(1.0_cp)
+         p%d_amax = 0.0_cp
        end subroutine
 
        subroutine delete_probe(p)
@@ -142,15 +143,17 @@
          type(probe),intent(inout) :: p
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: d
+         real(cp) :: abs_d_data_dt
          integer :: i
          p%d_amax = maxval((/p%d_amax,abs(d)/))
+         abs_d_data_dt = abs(p%d_data_dt)
          do i=1,p%n_history-1
          p%SS_reached(i) = p%SS_reached(i+1)
          p%SS_reached_final(i) = p%SS_reached_final(i+1)
          enddo
          p%d_data_dt = (d - p%d)/(TMP%t - p%t) ! Breaks if double exported data (TMP%t = p%t)
-         p%SS_reached(p%n_history) = abs(p%d_data_dt).lt.p%SS_tol
-         p%SS_reached_final(p%n_history) = abs(p%d_data_dt).lt.p%SS_tol_final
+         p%SS_reached(p%n_history) = abs_d_data_dt.lt.p%SS_tol
+         p%SS_reached_final(p%n_history) = abs_d_data_dt.lt.p%SS_tol_final
          p%t = TMP%t
          p%d = d
          if (p%n_step.eq.TMP%n_step) then
@@ -159,7 +162,7 @@
          endif
          p%n_step = TMP%n_step
          call check_nans_probe(p)
-         write(p%un,*) p%t,p%d,p%d_data_dt,abs(p%d_data_dt)
+         write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt
          flush(p%un)
        end subroutine
 

@@ -239,8 +239,8 @@
         call delete(PCG%Minv)
         call delete(PCG%MFP)
         PCG%N_iter = 1
-        call close_and_message(PCG%un,str(PCG%dir),str(PCG%name))
-        call close_and_message(PCG%un_convergence,str(PCG%dir),str(PCG%name)//'_convergence')
+        close(PCG%un)
+        close(PCG%un_convergence)
         call delete(PCG%dir)
         call delete(PCG%name)
       end subroutine
@@ -259,8 +259,8 @@
         call delete(PCG%Minv)
         call delete(PCG%MFP)
         PCG%N_iter = 1
-        call close_and_message(PCG%un,str(PCG%dir),str(PCG%name))
-        call close_and_message(PCG%un_convergence,str(PCG%dir),str(PCG%name)//'_convergence')
+        close(PCG%un)
+        close(PCG%un_convergence)
         call delete(PCG%dir)
         call delete(PCG%name)
       end subroutine

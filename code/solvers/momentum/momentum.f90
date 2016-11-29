@@ -577,9 +577,8 @@
          call apply_BCs(mom%U,mom%m)
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
 
-         call assign(mom%Ustar,mom%U)
          call boost(mom%PCG_P%ISP)
-         call clean_div(mom%PCG_P,mom%U,mom%p,mom%Ustar,mom%m,mom%temp_F,mom%temp_CC,.true.)
+         call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
          call reset(mom%PCG_P%ISP)
 
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_cleaned_'//str(RM%level),1)

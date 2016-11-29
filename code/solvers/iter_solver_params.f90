@@ -29,7 +29,6 @@
          real(cp) :: tol_rel = 10.0_cp**(-10.0_cp)  ! relative tolerance for iterative solver
          real(cp) :: tol_abs = 10.0_cp**(-10.0_cp)  ! absolute tolerance for iterative solver
          logical :: export_convergence = .false.  ! exit condition
-         logical :: solve_exact = .false.  ! exit condition
          logical,dimension(3) :: exit_loop = .false.  ! exit condition
          real(cp) :: smooth                         ! (must be > 0) higher -> more step-like
          real(cp) :: buffer                     ! percentage of iter_last to start checking more frequently
@@ -83,7 +82,6 @@
          ISP%n_skip_check_res_max = n_skip_check_res
          ISP%exit_loop = .false.
          ISP%export_convergence = .false.
-         ISP%solve_exact = .false.
          call init(ISP%dir,dir)
          call init(ISP%name,name)
        end subroutine
@@ -104,7 +102,6 @@
          ISP%exit_loop = ISP_in%exit_loop
          ISP%iter_last = ISP_in%iter_last
          ISP%export_convergence = ISP_in%export_convergence
-         ISP%solve_exact = ISP_in%solve_exact
          call init(ISP%dir,ISP_in%dir)
          call init(ISP%name,ISP_in%name)
        end subroutine
@@ -240,7 +237,6 @@
          type(iter_solver_params),intent(inout) :: ISP
          ISP%iter_max = 4*ISP%iter_max
        end subroutine
-
        subroutine reset_ISP(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
@@ -272,12 +268,10 @@
          integer :: iter_max,n_skip_check_res
          tol_rel = 0.0_cp
          tol_abs = 10.0_cp*epsilon(1.0_cp)
-         tol_abs = 0.0_cp
-         iter_max = 1000
+         iter_max = 10000
          n_skip_check_res = 100
          call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,'solve_exact')
-         ISP%export_convergence = .true.
-         ISP%solve_exact = .true.
+         ISP%export_convergence = .false.
        end function
 
        end module

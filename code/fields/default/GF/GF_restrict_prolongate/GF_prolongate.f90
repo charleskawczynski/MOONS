@@ -31,7 +31,7 @@
          ! Starting from the physical boundaries, assign cell on RIGHT side of node:
 
 #ifdef _PARALLELIZE_PROLONGATE_
-           !$OMP PARALLEL DO PRIVATE(t,i_L,j_L,k_L,i_R,j_R,k_R)
+           !$OMP PARALLEL DO PRIVATE(t,i_L,j_L,k_L,i_R,j_R,k_R,node_interp)
 
 #endif
          do k=1,u%s(3)-z

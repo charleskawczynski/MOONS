@@ -10,7 +10,7 @@
        real(cp),parameter :: two = 2.0_cp
        real(cp),parameter :: four = 4.0_cp
        real(cp),parameter :: zero = 0.0_cp
-       
+
        abstract interface
          function func(beta,hmin,hmax,alpha,N,dh) result(f)
            import cp
@@ -101,13 +101,13 @@
 
 #ifdef _DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
        subroutine newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,debug)
-         ! Estimate the zero of T_root(beta) using Newton's method. 
+         ! Estimate the zero of T_root(beta) using Newton's method.
          ! Input:
          !   T_root:  the function to find a root of
          !   T_prime: function returning the derivative T_root'
          !   debug: logical, prints iterations if debug=.true.
          ! Returns:
-         !   the estimate beta satisfying T_root(beta)=0 (assumes Newton converged!) 
+         !   the estimate beta satisfying T_root(beta)=0 (assumes Newton converged!)
          !   the number of iterations iters
          implicit none
          real(cp),intent(inout) :: beta

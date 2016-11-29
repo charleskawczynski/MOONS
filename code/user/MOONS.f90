@@ -179,6 +179,8 @@
          call delete(TMP_U); call delete(TMP_B); call delete(TMP_T)
          call delete(ISP_U); call delete(ISP_B); call delete(ISP_T)
          call delete(ISP_P); call delete(ISP_phi)
+
+         write(*,*) ' ******************** LAST LINE EXECUTED ********************'
        end subroutine
 
        end module

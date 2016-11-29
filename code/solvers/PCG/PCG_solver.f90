@@ -95,9 +95,6 @@
               res_norm%L2 = dot_product(r,r,m,x,tempx)
               call update_exit_loop(ISP,i,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) then; i_earlyExit=1; exit; endif
-              if (ISP%solve_exact) then
-                call print_info('inside '//name,ISP,res_norm,res_norm0,i,i_earlyExit)
-              endif
             endif
             call update_check_res(ISP,i)
 

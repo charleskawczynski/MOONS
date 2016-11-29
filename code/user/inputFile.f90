@@ -62,8 +62,8 @@
          ! dtime = 1.0_cp*10.0_cp**(-3.0_cp)
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp)
          dtime = 1.0_cp*pow(-4)
-         ! dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
-         dtime = 1.0_cp*pow(-4)*3.0**(2.0_cp)
+         dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
+         ! dtime = 1.0_cp*pow(-4)*3.0**(2.0_cp)
          ! dtime = 3.0_cp*10.0_cp**(-4.0_cp)
 
          ! time  = 100.0_cp
