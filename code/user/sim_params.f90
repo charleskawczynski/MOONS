@@ -85,8 +85,8 @@
        SP%dynamic_refinement     = .true.             ! Perform dynamic mesh refinement
        SP%n_max_refinements      = 2                  ! Maximum number of mesh refinements after SS reached
        SP%n_history              = 2                  ! number of points to check for SS
-       SP%SS_tol                 = 10.0_cp**(-4.0_cp) ! steady state tolerance
-       SP%SS_tol_final           = 10.0_cp**(-6.0_cp) ! steady state tolerance at finest mesh
+       SP%SS_tol                 = 10.0_cp**(-1.0_cp) ! steady state tolerance
+       SP%SS_tol_final           = 10.0_cp**(-3.0_cp) ! steady state tolerance at finest mesh
 
        SP%restartT               = .false.            ! restart T  field
        SP%restartU               = .false.            ! restart U  field

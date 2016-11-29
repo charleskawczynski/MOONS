@@ -470,6 +470,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)user$(PS)inputFile.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90

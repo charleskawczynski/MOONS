@@ -12,6 +12,7 @@
        use refine_mesh_mod
        use kill_switch_mod
        use probe_mod
+       use dynamic_refine_mesh_mod
 
        use time_marching_params_mod
        use energy_mod
@@ -42,11 +43,11 @@
          type(kill_switch) :: KS
          integer :: i
          logical,dimension(2) :: steady_solution
-         logical :: continue_refinement
          logical :: refine_mesh_now_all
 
          call init(F,mom%U)
          call assign(F,0.0_cp)
+         refine_mesh_now_all = .false.
 
          call init(KS,str(DT%params),'kill_switch'); call export(KS)
          call init(EN,str(DT%export_now),'EN'); call export(EN)
@@ -72,32 +73,8 @@
            if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
            if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
 
-           ! if (SP%dynamic_refinement) call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled)
            if (SP%dynamic_refinement) then
-             continue_refinement = RM%i_level.lt.SP%n_max_refinements
-             steady_solution(1) = steady(mom%probe_KE)
-             if (SP%solveInduction) steady_solution(2) = steady(ind%ME_fluid(3))
-             if (.not.SP%solveInduction) steady_solution(2) = .true.
-             refine_mesh_now_all = all(steady_solution).and.(continue_refinement)
-             if (PE%info) then
-               write(*,*) 'steady_solution = ',steady_solution
-               write(*,*) 'continue_refinement = ',continue_refinement
-             endif
-
-             if (refine_mesh_now_all.or.RM%any_next) then
-               call prolongate(RM)
-               ! call prolongate(nrg%TMP); call prolongate(nrg,DT,RM,refine_mesh_now_all)
-               call prolongate(mom%TMP); call prolongate(mom,F,DT,RM,refine_mesh_now_all)
-               call prolongate(ind%TMP); call prolongate(ind,DT,RM,refine_mesh_now_all)
-               call prolongate(coupled)
-               call reset_Nmax(sc,coupled%n_step_stop-coupled%n_step)
-             endif
-             steady_solution(1) = steady_final(mom%probe_KE)
-             steady_solution(2) = steady_final(ind%ME_fluid(3))
-             if (PE%info) write(*,*) 'steady_final_solution = ',steady_solution
-             if (all(steady_solution).and.(.not.continue_refinement)) then
-               KS%terminate_loop = .true.
-             endif
+             call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,PE,RM,KS,refine_mesh_now_all)
            endif
 
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW

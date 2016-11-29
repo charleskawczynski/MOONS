@@ -62,6 +62,7 @@
          character(len=*),intent(in) :: name
          logical,intent(in) :: restart
          type(sim_params),intent(in) :: SP
+         type(string) :: s
          call delete(p)
          call init(p%dir,dir)
          call init(p%name,name)
@@ -69,7 +70,13 @@
          if (.not.p%restart) then
            p%un = new_and_open(dir,name)
            write(p%un,*) 'TITLE = "'//name//' probe"'
-           write(p%un,*) 'VARIABLES = t,'//name//',d('//name//')/dt,|d('//name//')/dt|'
+           call init(s,'VARIABLES = t')
+           call append(s,','//name)
+           call append(s,',d('//name//')/dt')
+           call append(s,',|d('//name//')/dt|')
+           call append(s,',|d('//name//')/dt|/max(d)')
+           write(p%un,*) str(s)
+           call delete(s)
            write(p%un,*) 'ZONE DATAPACKING = POINT'
            flush(p%un)
          elseif (p%restart) then
@@ -145,24 +152,25 @@
          real(cp),intent(in) :: d
          real(cp) :: abs_d_data_dt
          integer :: i
-         p%d_amax = maxval((/p%d_amax,abs(d)/))
-         abs_d_data_dt = abs(p%d_data_dt)
          do i=1,p%n_history-1
          p%SS_reached(i) = p%SS_reached(i+1)
          p%SS_reached_final(i) = p%SS_reached_final(i+1)
          enddo
          p%d_data_dt = (d - p%d)/(TMP%t - p%t) ! Breaks if double exported data (TMP%t = p%t)
-         p%SS_reached(p%n_history) = abs_d_data_dt.lt.p%SS_tol
-         p%SS_reached_final(p%n_history) = abs_d_data_dt.lt.p%SS_tol_final
+         abs_d_data_dt = abs(p%d_data_dt)
          p%t = TMP%t
          p%d = d
+         p%d_amax = maxval((/p%d_amax,p%d,abs(d)/))
+
+         p%SS_reached(p%n_history) = abs_d_data_dt/p%d_amax.lt.p%SS_tol
+         p%SS_reached_final(p%n_history) = abs_d_data_dt/p%d_amax.lt.p%SS_tol_final
          if (p%n_step.eq.TMP%n_step) then
           write(*,*) 'Error: cannot export probe '//str(p%name)//' consecutively.'
           stop 'Done'
          endif
          p%n_step = TMP%n_step
          call check_nans_probe(p)
-         write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt
+         write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt/p%d_amax
          flush(p%un)
        end subroutine
 
@@ -185,14 +193,14 @@
          implicit none
          type(probe),intent(in) :: p
          logical :: L
-         L = all(p%SS_reached)
+         L = all(p%SS_reached).and.(p%d.gt.0.0_cp).and.(p%d_data_dt.gt.0.0_cp)
        end function
 
        function steady_final_probe(p) result(L)
          implicit none
          type(probe),intent(in) :: p
          logical :: L
-         L = all(p%SS_reached_final)
+         L = all(p%SS_reached_final).and.(p%d.gt.0.0_cp).and.(p%d_data_dt.gt.0.0_cp)
        end function
 
        function get_data_probe(p) result(d)
