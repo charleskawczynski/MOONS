@@ -102,18 +102,21 @@
          elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%fb(i)); enddo
          elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%fb(i),DL%face); enddo
          elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%fb(i),DL%edge); enddo
+         else; stop 'Error: bad DL f in init_GFs_boundary_DL in boundary.f90'
          endif
          elseif (n.eq.12) then
                if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%eb(i)); enddo
          elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%eb(i)); enddo
          elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%eb(i),DL%face); enddo
          elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%eb(i),DL%edge); enddo
+         else; stop 'Error: bad DL e in init_GFs_boundary_DL in boundary.f90'
          endif
          elseif (n.eq.8) then
                if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%cb(i)); enddo
          elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%cb(i)); enddo
          elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%cb(i),DL%face); enddo
          elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%cb(i),DL%edge); enddo
+         else; stop 'Error: bad DL c in init_GFs_boundary_DL in boundary.f90'
          endif
          else; stop 'Error: bad input to init_GFs_boundary_DL in B.f90'
          endif
@@ -122,20 +125,23 @@
          call define_logicals(B)
        end subroutine
 
-       subroutine init_boundary_copy(B,BC_in)
+       subroutine init_boundary_copy(B,B_in)
          implicit none
          type(boundary),intent(inout) :: B
-         type(boundary),intent(in) :: BC_in
+         type(boundary),intent(in) :: B_in
          integer :: i
 #ifdef _DEBUG_boundary_
-         call insist_allocated(BC_in,'init_boundary_copy')
+         call insist_allocated(B_in,'init_boundary_copy')
 #endif
+
          call delete(B)
-         allocate(B%b(BC_in%n))
-         allocate(B%bct(BC_in%n))
-         do i=1,BC_in%n;  call init(B%b(i),BC_in%b(i)); call assign(B%b(i),BC_in%b(i)); enddo
-         do i=1,BC_in%n;  call init(B%bct(i),BC_in%bct(i)); enddo
-         call init(B%BCL,BC_in%BCL)
+         B%n = B_in%n
+         call init(B%name,B_in%name)
+         call init(B%BCL,B_in%BCL)
+         allocate(B%b(B_in%n))
+         allocate(B%bct(B_in%n))
+         do i=1,B_in%n;  call init(B%b(i),B_in%b(i)); call assign(B%b(i),B_in%b(i)); enddo
+         do i=1,B_in%n;  call init(B%bct(i),B_in%bct(i)); enddo
        end subroutine
 
        subroutine delete_boundary(B)
@@ -407,14 +413,14 @@
            do i=1,B%n; call restrict_C(B%b(i),g(i),dir,x,y,z); enddo
          elseif ( N_along(DL,dir)) then
            do i=1,B%n; call restrict_N(B%b(i),g(i),dir,x,y,z); enddo
-         else; stop 'Error: bad DL in prolongate_B in boundary.f90'
+         else; stop 'Error: bad DL in restrict_B in boundary.f90'
          endif
        end subroutine
 
        subroutine prolongate_B(B,g,DL,dir,x,y,z,n)
          implicit none
-         integer,intent(in) :: n,dir,x,y,z
          type(boundary),intent(inout) :: B
+         integer,intent(in) :: n,dir,x,y,z
          type(grid),dimension(n),intent(in) :: g
          type(data_location),intent(in) :: DL
          integer :: i

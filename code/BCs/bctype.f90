@@ -91,7 +91,9 @@
          implicit none
          type(bctype),intent(inout) :: b_out
          type(bctype),intent(in) :: b_in
-         if (.not.b_in%defined) stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
+         if (.not.b_in%defined) then
+           stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
+         endif
          b_out%meanVal = b_in%meanVal
          b_out%Dirichlet = b_in%Dirichlet
          b_out%Neumann = b_in%Neumann

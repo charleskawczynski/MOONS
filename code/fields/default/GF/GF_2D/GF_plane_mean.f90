@@ -28,7 +28,7 @@
           type(grid),intent(in) :: g
           integer,intent(in) :: p
           real(cp) :: F
-          F = plane_sum_x(U,g,p)/g%c(1)%maxRange
+          F = plane_sum_x(U,g,p,1.0_cp)/g%c(1)%maxRange
         end function
 
         function plane_mean_x_no_weights_GF(U,p) result(F)
@@ -36,7 +36,7 @@
           type(grid_field),intent(in) :: U
           integer,intent(in) :: p
           real(cp) :: F
-          F = plane_sum_x(U,p)/real(U%s(1),cp)
+          F = plane_sum_x(U,p,1.0_cp)/real(U%s(1),cp)
         end function
 
         ! *******************************************************************
@@ -49,7 +49,7 @@
           type(grid),intent(in) :: g
           integer,intent(in) :: p
           real(cp) :: F
-          F = plane_sum_y(U,g,p)/g%c(2)%maxRange
+          F = plane_sum_y(U,g,p,1.0_cp)/g%c(2)%maxRange
         end function
 
         function plane_mean_y_no_weights_GF(U,p) result(F)
@@ -57,7 +57,7 @@
           type(grid_field),intent(in) :: U
           integer,intent(in) :: p
           real(cp) :: F
-          F = plane_sum_y(U,p)/real(U%s(2),cp)
+          F = plane_sum_y(U,p,1.0_cp)/real(U%s(2),cp)
         end function
 
         ! *******************************************************************
@@ -70,7 +70,7 @@
           type(grid),intent(in) :: g
           integer,intent(in) :: p
           real(cp) :: F
-          F = plane_sum_z(U,g,p)/g%c(3)%maxRange
+          F = plane_sum_z(U,g,p,1.0_cp)/g%c(3)%maxRange
         end function
 
         function plane_mean_z_no_weights_GF(U,p) result(F)
@@ -78,7 +78,7 @@
           type(grid_field),intent(in) :: U
           integer,intent(in) :: p
           real(cp) :: F
-          F = plane_sum_z(U,p)/real(U%s(3),cp)
+          F = plane_sum_z(U,p,1.0_cp)/real(U%s(3),cp)
         end function
 
       end module

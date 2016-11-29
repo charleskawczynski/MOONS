@@ -54,7 +54,7 @@
          call init(ISP_U  ,  40  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_U')
          call init(ISP_p  ,   5  , pow(-6) , pow(-13), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_T')
-         call init(ISP_phi,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_phi')
+         call init(ISP_phi, 2000 , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_phi')
 
          ! BMC 102
          ! time  = 10.0_cp

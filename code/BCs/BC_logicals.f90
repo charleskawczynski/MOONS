@@ -37,28 +37,28 @@
          implicit none
          type(BC_logicals),intent(inout) :: BCL
          type(BC_logicals),intent(in) :: BCL_in
-         BCL%defined = BCL_in%defined
-         BCL%GFs_defined = BCL_in%GFs_defined
-         BCL%BCT_defined = BCL_in%BCT_defined
-         BCL%vals_defined = BCL_in%vals_defined
-         BCL%all_Dirichlet = BCL_in%all_Dirichlet
-         BCL%all_Neumann = BCL_in%all_Neumann
-         BCL%all_Robin = BCL_in%all_Robin
-         BCL%all_symmetric = BCL_in%all_symmetric
+         BCL%defined           = BCL_in%defined
+         BCL%GFs_defined       = BCL_in%GFs_defined
+         BCL%BCT_defined       = BCL_in%BCT_defined
+         BCL%vals_defined      = BCL_in%vals_defined
+         BCL%all_Dirichlet     = BCL_in%all_Dirichlet
+         BCL%all_Neumann       = BCL_in%all_Neumann
+         BCL%all_Robin         = BCL_in%all_Robin
+         BCL%all_symmetric     = BCL_in%all_symmetric
          BCL%all_antisymmetric = BCL_in%all_antisymmetric
        end subroutine
 
        subroutine delete_BCL(BCL)
          implicit none
          type(BC_logicals),intent(inout) :: BCL
-         BCL%defined = .false.
-         BCL%GFs_defined = .false.
-         BCL%BCT_defined = .false.
-         BCL%vals_defined = .false.
-         BCL%all_Dirichlet = .false.
-         BCL%all_Neumann = .false.
-         BCL%all_Robin = .false.
-         BCL%all_symmetric = .false.
+         BCL%defined           = .false.
+         BCL%GFs_defined       = .false.
+         BCL%BCT_defined       = .false.
+         BCL%vals_defined      = .false.
+         BCL%all_Dirichlet     = .false.
+         BCL%all_Neumann       = .false.
+         BCL%all_Robin         = .false.
+         BCL%all_symmetric     = .false.
          BCL%all_antisymmetric = .false.
        end subroutine
 
@@ -66,14 +66,14 @@
          implicit none
          type(BC_logicals),intent(in) :: BCL
          integer,intent(in) :: un
-         write(un,*) 'defined = ',BCL%defined
-         write(un,*) 'GFs_defined = ',BCL%GFs_defined
-         write(un,*) 'BCT_defined = ',BCL%BCT_defined
-         write(un,*) 'vals_defined = ',BCL%vals_defined
-         write(un,*) 'all_Dirichlet = ',BCL%all_Dirichlet
-         write(un,*) 'all_Neumann = ',BCL%all_Neumann
-         write(un,*) 'all_Robin = ',BCL%all_Robin
-         write(un,*) 'all_symmetric = ',BCL%all_symmetric
+         write(un,*) 'defined = ',          BCL%defined
+         write(un,*) 'GFs_defined = ',      BCL%GFs_defined
+         write(un,*) 'BCT_defined = ',      BCL%BCT_defined
+         write(un,*) 'vals_defined = ',     BCL%vals_defined
+         write(un,*) 'all_Dirichlet = ',    BCL%all_Dirichlet
+         write(un,*) 'all_Neumann = ',      BCL%all_Neumann
+         write(un,*) 'all_Robin = ',        BCL%all_Robin
+         write(un,*) 'all_symmetric = ',    BCL%all_symmetric
          write(un,*) 'all_antisymmetric = ',BCL%all_antisymmetric
        end subroutine
 

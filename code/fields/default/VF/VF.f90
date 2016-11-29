@@ -56,7 +56,6 @@
 
         public :: restrict
         public :: prolongate
-        public :: reset_index_sets
 
         ! Monitoring
         public :: print_BCs
@@ -145,7 +144,6 @@
         interface restrict;                module procedure restrict_dir_VF;             end interface
         interface prolongate;              module procedure prolongate_VF;               end interface
         interface prolongate;              module procedure prolongate_dir_VF;           end interface
-        interface reset_index_sets;        module procedure reset_index_sets_VF;         end interface
 
         interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_VF;   end interface
         interface Laplacian_matrix_based;  module procedure Laplacian_matrix_based_VF;   end interface
@@ -959,15 +957,6 @@
           call prolongate(A%x,m,dir)
           call prolongate(A%y,m,dir)
           call prolongate(A%z,m,dir)
-        end subroutine
-
-        subroutine reset_index_sets_VF(A,m)
-          implicit none
-          type(VF),intent(inout) :: A
-          type(mesh),intent(in) :: m
-          call reset_index_sets(A%x,m)
-          call reset_index_sets(A%y,m)
-          call reset_index_sets(A%z,m)
         end subroutine
 
         function symmetry_error_x_VF(A) result(SE)

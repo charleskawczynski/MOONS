@@ -94,27 +94,15 @@
          type(sub_domain),intent(in) :: SD
          character(len=*),intent(in) :: name
          integer,intent(in) :: u
-         integer :: i
          write(u,*) ' ---------- sub_domain ---------- '//name
          write(u,*) 'defined,g_R1_id,g_R2_id = ',SD%defined,SD%g_R1_id,SD%g_R2_id
          write(u,*) ''
-         write(u,*) 'C_iR = ',(/(SD%C(i)%iR,i=1,3)/)
-         write(u,*) 'N_iR = ',(/(SD%N(i)%iR,i=1,3)/)
-         write(u,*) ''
-         write(u,*) 'C_i1(1) = ',(/(SD%C(i)%i1(1),i=1,3)/)
-         write(u,*) 'C_i1(2) = ',(/(SD%C(i)%i1(2),i=1,3)/)
-         write(u,*) 'C_i2(1) = ',(/(SD%C(i)%i2(1),i=1,3)/)
-         write(u,*) 'C_i2(2) = ',(/(SD%C(i)%i2(2),i=1,3)/)
-         write(u,*) ''
-         write(u,*) 'N_i1(1) = ',(/(SD%N(i)%i1(1),i=1,3)/)
-         write(u,*) 'N_i1(2) = ',(/(SD%N(i)%i1(2),i=1,3)/)
-         write(u,*) 'N_i2(1) = ',(/(SD%N(i)%i2(1),i=1,3)/)
-         write(u,*) 'N_i2(2) = ',(/(SD%N(i)%i2(2),i=1,3)/)
-         write(u,*) ''
-         write(u,*) 'M_i1(1) = ',(/(SD%M(i)%i1(1),i=1,3)/)
-         write(u,*) 'M_i1(2) = ',(/(SD%M(i)%i1(2),i=1,3)/)
-         write(u,*) 'M_i2(1) = ',(/(SD%M(i)%i2(1),i=1,3)/)
-         write(u,*) 'M_i2(2) = ',(/(SD%M(i)%i2(2),i=1,3)/)
+         write(u,*) 'C:'
+         call display(SD%C,u)
+         write(u,*) 'N:'
+         call display(SD%N,u)
+         write(u,*) 'M:'
+         call display(SD%M,u)
          write(u,*) ' -------------------------------- '
        end subroutine
 
@@ -227,7 +215,7 @@
          elseif (is_CC(DL)) then
           do i=1,3; call init(M(i),C(i)); enddo
          elseif (is_Node(DL)) then
-          do i=1,3; call init(M(i),C(i)); enddo
+          do i=1,3; call init(M(i),N(i)); enddo
          else; stop 'Error: no type found in init_props_physical_overlap in physical_overlap.f90'
          endif
        end subroutine

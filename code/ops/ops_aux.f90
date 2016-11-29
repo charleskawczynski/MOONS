@@ -230,7 +230,6 @@
         type(VF),intent(inout) :: temp
         real(cp) :: dot
         call multiply(temp,A,B)
-        call zeroWall_conditional(temp,m,x)
         call assign_wall_Dirichlet(temp,0.0_cp,x)
         dot = sum(temp%x,1) + sum(temp%y,1) + sum(temp%z,1)
       end function
@@ -242,7 +241,7 @@
         type(SF),intent(inout) :: temp
         real(cp) :: dot
         call multiply(temp,A,B)
-        call zeroWall_conditional(temp,m,x)
+        call assign_wall_Dirichlet(temp,0.0_cp)
         dot = sum(temp,1)
       end function
 
@@ -457,7 +456,9 @@
          implicit none
          type(VF),intent(inout) :: V
          type(mesh),intent(in) :: m
-         call zeroWall(V%x,m); call zeroWall(V%y,m); call zeroWall(V%z,m)
+         call zeroWall(V%x,m)
+         call zeroWall(V%y,m)
+         call zeroWall(V%z,m)
        end subroutine
 
        subroutine zeroWall_conditional_VF2(V,m,U)
@@ -465,18 +466,18 @@
          type(VF),intent(inout) :: V
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
-         call zeroWall_conditional(V%x,m,U%x)
-         call zeroWall_conditional(V%y,m,U%y)
-         call zeroWall_conditional(V%z,m,U%z)
+         call assign_wall_Dirichlet(V%x,0.0_cp,U%x)
+         call assign_wall_Dirichlet(V%y,0.0_cp,U%y)
+         call assign_wall_Dirichlet(V%z,0.0_cp,U%z)
        end subroutine
 
        subroutine zeroWall_conditional_VF(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         call zeroWall_conditional(U%x,m)
-         call zeroWall_conditional(U%y,m)
-         call zeroWall_conditional(U%z,m)
+         call assign_wall_Dirichlet(U%x,0.0_cp)
+         call assign_wall_Dirichlet(U%y,0.0_cp)
+         call assign_wall_Dirichlet(U%z,0.0_cp)
        end subroutine
 
        subroutine stabilityTerms_VF(fo,fi,m,n)

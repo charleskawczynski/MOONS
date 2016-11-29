@@ -205,6 +205,11 @@
           ! faces = normal_faces_given_dir(dir)
           ! if (m%B(i)%g%st_faces(faces(1))%TF) then; pad1 = 1; else; pad1 = 0; endif
           ! if (m%B(i)%g%st_faces(faces(2))%TF) then; pad2 = 1; else; pad2 = 0; endif
+
+#ifdef _DEBUG_DEL_
+          call check_diff_shape(f%BF(i)%GF,dfdh%BF(i)%GF,dir)
+#endif
+
           call diff_tree_search(dfdh%BF(i)%GF,f%BF(i)%GF,m%B(i)%g,n,dir,pad,genType,diffType,0,0)
         enddo
         ! if (n.eq.2) then; call assign_ghost(dfdh,0.0_cp)
@@ -280,5 +285,21 @@
           stop 'Error: diffType undetermined in ops_del.f90.'
         endif
       end function
+
+      subroutine check_diff_shape(f,dfdh,dir)
+        implicit none
+        type(grid_field),intent(in) :: f,dfdh
+        integer,intent(in) :: dir
+            if (f%s(dir).eq.dfdh%s(dir)) then ! Collocated derivative (CC)
+        elseif (f%s(dir).eq.dfdh%s(dir)) then ! Collocated derivative (N)
+        elseif (f%s(dir).eq.dfdh%s(dir)-1) then ! Staggered derivative (CC->N)
+        elseif (f%s(dir).eq.dfdh%s(dir)+1) then ! Staggered derivative (N->CC)
+        else
+          write(*,*) 'dir = ',dir
+          write(*,*) 'f%s(dir) = ',f%s(dir)
+          write(*,*) 'dfdh%s(dir)+1 = ',dfdh%s(dir)+1
+          stop 'Error: check_diff_shape undetermined in ops_del.f90.'
+        endif
+      end subroutine
 
       end module

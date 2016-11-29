@@ -47,7 +47,6 @@
          logical :: plane_y = .false.
          logical :: plane_z = .false.
          logical :: plane_xyz = .false.
-         type(grid_field),dimension(:),allocatable :: vol
          type(simple_int_tensor),dimension(3) :: int_tensor
        end type
 
@@ -141,9 +140,6 @@
          implicit none
          type(mesh),intent(inout) :: m
          integer :: i
-         if (allocated(m%vol)) then
-           do i=1,m%s; call delete(m%vol(i)); enddo; deallocate(m%vol)
-         endif
          if (allocated(m%B)) then
            do i=1,m%s; call delete(m%B(i)%g) ;enddo; deallocate(m%B)
          endif
@@ -190,19 +186,6 @@
          m%defined = m_in%defined
        end subroutine
 
-       subroutine init_volume(m)
-         implicit none
-         type(mesh),intent(inout) :: m
-         integer :: t
-         if (allocated(m%vol)) then
-           do t=1,m%s; call delete(m%vol(t)); enddo
-           deallocate(m%vol)
-         endif
-         allocate(m%vol(m%s))
-         do t=1,m%s; call init_CC(m%vol(t),m%B(t)%g); enddo
-         do t=1,m%s; call volume(m%vol(t),m%B(t)%g); enddo
-       end subroutine
-
        subroutine initProps_mesh(m)
          implicit none
          type(mesh),intent(inout) :: m
@@ -240,7 +223,6 @@
          m%plane_z = all((/(m%B(i)%g%c(3)%N.eq.1,i=1,m%s)/))
          m%plane_xyz = any((/m%plane_x,m%plane_y,m%plane_z/))
          do i=1,3; call init(m%int_tensor(i),i); enddo
-         call init_volume(m)
        end subroutine
 
        subroutine patch_grids(m)
@@ -413,6 +395,7 @@
          integer,intent(in) :: dir
          integer :: i
          do i = 1,m%s; call prolongate(m%B(i),dir) ;enddo
+         call initProps(m)
        end subroutine
 
        ! ---------------------------------------------- check mesh

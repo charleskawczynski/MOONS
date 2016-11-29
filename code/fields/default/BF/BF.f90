@@ -63,7 +63,6 @@
 
         public :: restrict
         public :: prolongate
-        public :: reset_index_sets
 
         public :: laplacian_matrix_based
         public :: curl_curl_matrix_based
@@ -141,7 +140,6 @@
        interface restrict;                 module procedure restrict_reset_BF;            end interface
        interface prolongate;               module procedure prolongate_BF;                end interface
        interface prolongate;               module procedure prolongate_reset_BF;          end interface
-       interface reset_index_sets;         module procedure reset_index_sets_BF;          end interface
 
        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_VF_BF; end interface
        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_SF_BF; end interface
@@ -204,7 +202,7 @@
          type(block_field),intent(inout) :: BF
          call delete(BF%PA_assign_ghost_XPeriodic)
          call delete(BF%PA_assign_ghost_N_XPeriodic)
-         if (BF%BCs%BCL%defined) then
+         if (defined(BF%BCs)) then
          if(.not.is_Periodic(BF%BCs%face%bct(1)))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_xmin,1)
          if (N_along(BF%DL,1)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_xmin,1)
@@ -243,7 +241,7 @@
          implicit none
          type(block_field),intent(inout) :: BF
          call delete(BF%PA_assign_wall_Dirichlet)
-         if (BF%BCs%BCL%defined) then
+         if (defined(BF%BCs)) then
            if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%bct(1)))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_xmin,1)
            endif
@@ -282,7 +280,7 @@
          implicit none
          type(block_field),intent(inout) :: BF
          call delete(BF%PA_multiply_wall_Neumann)
-         if (BF%BCs%BCL%defined) then
+         if (defined(BF%BCs)) then
            if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%bct(1)))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmin,1); endif
            if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%bct(2)))) then
@@ -680,7 +678,7 @@
          type(block),intent(in) :: B
          integer,intent(in) :: p
          real(cp) :: PS
-         PS = plane_sum_x(u%GF,B%g,p)
+         PS = plane_sum_x(u%GF,B%g,p,1.0_cp)
        end function
 
        function plane_sum_y_BF(u,B,p) result(PS)
@@ -689,7 +687,7 @@
          type(block),intent(in) :: B
          integer,intent(in) :: p
          real(cp) :: PS
-         PS = plane_sum_y(u%GF,B%g,p)
+         PS = plane_sum_y(u%GF,B%g,p,1.0_cp)
        end function
 
        function plane_sum_z_BF(u,B,p) result(PS)
@@ -698,23 +696,36 @@
          type(block),intent(in) :: B
          integer,intent(in) :: p
          real(cp) :: PS
-         PS = plane_sum_z(u%GF,B%g,p)
+         PS = plane_sum_z(u%GF,B%g,p,1.0_cp)
        end function
 
        function boundary_flux_BF(x,y,z,B) result(BF)
          implicit none
          type(block_field),intent(in) :: x,y,z
          type(block),intent(in) :: B
+         type(block_field) :: temp_x,temp_y,temp_z
          real(cp) :: BF
          logical,dimension(3) :: L
          L(1) = is_Face(x%DL).and.(get_Face(x%DL).eq.1)
          L(2) = is_Face(y%DL).and.(get_Face(y%DL).eq.2)
          L(3) = is_Face(z%DL).and.(get_Face(z%DL).eq.3)
          if (all(L)) then
-           BF = 0.0_cp
-           BF = BF + plane_sum_x(x%GF,B%g,2); BF = BF + plane_sum_x(x%GF,B%g,x%GF%s(1)-1)
-           BF = BF + plane_sum_y(y%GF,B%g,2); BF = BF + plane_sum_y(y%GF,B%g,y%GF%s(2)-1)
-           BF = BF + plane_sum_z(z%GF,B%g,2); BF = BF + plane_sum_z(z%GF,B%g,z%GF%s(3)-1)
+         BF = 0.0_cp
+         call init(temp_x,x); call assign(temp_x%GF,x%GF)
+         call init(temp_y,y); call assign(temp_y%GF,y%GF)
+         call init(temp_z,z); call assign(temp_z%GF,z%GF)
+         call assign_ghost_XPeriodic(temp_x,0.0_cp)
+         call assign_ghost_XPeriodic(temp_y,0.0_cp)
+         call assign_ghost_XPeriodic(temp_z,0.0_cp)
+         BF = BF + plane_sum_x(temp_x%GF,2,-1.0_cp)
+         BF = BF + plane_sum_x(temp_x%GF,temp_x%GF%s(1)-1,1.0_cp)
+         BF = BF + plane_sum_y(temp_y%GF,2,-1.0_cp)
+         BF = BF + plane_sum_y(temp_y%GF,temp_y%GF%s(2)-1,1.0_cp)
+         BF = BF + plane_sum_z(temp_z%GF,2,-1.0_cp)
+         BF = BF + plane_sum_z(temp_z%GF,temp_z%GF%s(3)-1,1.0_cp)
+         call delete(temp_x)
+         call delete(temp_y)
+         call delete(temp_z)
          else; stop 'Error: boundary flux only offered for face data in BF.f90'
          endif
        end function
@@ -829,15 +840,8 @@
          elseif ( N_along(u%DL,dir)) then; call prolongate_N(u%GF,dir,x,y,z)
          else; stop 'Error: bad DL in prolongate_BF in BF.f90'
          endif
-         if (u%BCs%BCL%defined) call prolongate(u%BCs,B,dir)
-         if (u%BCs%BCL%defined) call reset_index_sets(u%BCs,B)
-       end subroutine
-
-       subroutine reset_index_sets_BF(u,B)
-         implicit none
-         type(block_field),intent(inout) :: u
-         type(block),intent(in) :: B
-         if (u%BCs%BCL%defined) call reset_index_sets(u%BCs,B)
+         call prolongate(u%BCs,B,dir)
+         if (defined(u%BCs)) call init_BC_props(u)
        end subroutine
 
        subroutine laplacian_matrix_based_VF_BF(lapX,lapY,lapZ,X,Y,Z,B)

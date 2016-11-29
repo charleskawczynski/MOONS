@@ -29,6 +29,7 @@
        use ops_embedExtract_mod
        use geometric_region_mod
        use clean_divergence_mod
+       use BC_funcs_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -532,6 +533,7 @@
          ind%ISP_B%iter_max,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
 
          case (2)
+
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
          ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
 
@@ -663,13 +665,28 @@
          integer :: i
          type(iter_solver_params) :: temp
          write(*,*) '#################### Prolongating induction solver ####################'
-         call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
+         ! call export_processed(ind%m,ind%B,str(DT%B_f),'B_SS_'//str(RM%level_last),1)
+
+         write(*,*) '-------------------------------- before prolongate before clean'
+         call random_noise(ind%B)
+         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
+         call div(ind%divB,ind%B,ind%m)
+         call displayPhysicalMinMax(ind%divB,'divB',6)
+         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
+         write(*,*) '-------------------------------- before prolongate after clean'
+         call div(ind%divB,ind%B,ind%m)
+         call displayPhysicalMinMax(ind%divB,'divB',6)
+         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
+         write(*,*) '--------------------------------'
+         write(*,*) '--------------------------------'
+         write(*,*) ''
+         write(*,*) ''
 
          dir = get_dir(RM)
          if (SS_reached) dir = (/1,2,3/)
          do i=1,3
            if (dir(i).ne.0) then
-             write(*,*) 'Prolongating induction solver along direction ',i
+             ! write(*,*) 'Prolongating induction solver along direction ',i
              call prolongate(ind%m,dir(i))
              call prolongate(ind%MD_fluid,dir(i))
              call prolongate(ind%MD_sigma,dir(i))
@@ -704,6 +721,39 @@
            endif
          enddo
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
+
+         ! call init_phiBCs(ind%PCG_cleanB%p,ind%m)
+         ! call init_BC_mesh(ind%PCG_cleanB%p,ind%m)
+         ! call Dirichlet_BCs(ind%PCG_cleanB%p,ind%m)
+         ! ind%PCG_cleanB%p%all_Neumann = .false. ! Needs to be adjusted manually
+         ! call init_BC_props(ind%PCG_cleanB%p)
+
+         write(*,*) '-------------------------------- after prolongate before clean'
+         call random_noise(ind%B)
+         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
+         call div(ind%divB,ind%B,ind%m)
+         call displayPhysicalMinMax(ind%divB,'divB',6)
+         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
+         write(*,*) '-------------------------------- after prolongate after clean'
+         call div(ind%divB,ind%B,ind%m)
+         call export_raw(ind%m,ind%divB,str(DT%B_f),'divB_cleaned_'//str(RM%level),0)
+         call displayPhysicalMinMax(ind%divB,'divB',6)
+         write(*,*) 'boundary_flux(B) = ',boundary_flux(ind%B,ind%m)
+         write(*,*) '--------------------------------'
+         write(*,*) '--------------------------------'
+
+
+         stop 'Done'
+
+
+
+
+
+
+
+
+
+
 
          write(*,*) 'Finished induction solver prolongation'
          call apply_BCs(ind%B,ind%m)

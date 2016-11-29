@@ -29,8 +29,10 @@
        interface init;                 module procedure init_overlap;                end interface
        interface init;                 module procedure init_copy_overlap;           end interface
        interface delete;               module procedure delete_overlap;              end interface
-       interface print;                module procedure print_overlap;               end interface
        interface display;              module procedure display_overlap;             end interface
+       interface display;              module procedure display3_overlap;            end interface
+       interface print;                module procedure print_overlap;               end interface
+       interface print;                module procedure print3_overlap;              end interface
        interface export;               module procedure export_overlap;              end interface
        interface import;               module procedure import_overlap;              end interface
 
@@ -124,6 +126,24 @@
          write(u,*) 'i1 = ',OL%i1
          write(u,*) 'i2 = ',OL%i2
          write(u,*) 'iR = ',OL%iR
+       end subroutine
+
+       subroutine display3_overlap(OL,un)
+         implicit none
+         type(overlap),dimension(3),intent(in) :: OL
+         integer,intent(in) :: un
+         integer :: i
+         write(un,*) '(1:3)%i1(1) = ',(/(OL(i)%i1(1),i=1,3)/)
+         write(un,*) '(1:3)%i1(2) = ',(/(OL(i)%i1(2),i=1,3)/)
+         write(un,*) '(1:3)%i2(1) = ',(/(OL(i)%i2(1),i=1,3)/)
+         write(un,*) '(1:3)%i2(2) = ',(/(OL(i)%i2(2),i=1,3)/)
+         write(un,*) '(1:3)%iR = ',(/(OL(i)%iR,i=1,3)/)
+       end subroutine
+
+       subroutine print3_overlap(OL)
+         implicit none
+         type(overlap),dimension(3),intent(in) :: OL
+         call display(OL,6)
        end subroutine
 
        subroutine export_overlap(OL,u)

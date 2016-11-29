@@ -69,10 +69,10 @@
        public :: getAllRobin
 
        public :: init_props
+       public :: defined
 
        public :: restrict
        public :: prolongate
-       public :: reset_index_sets
 
        type boundary_conditions
          ! GLOBAL LOGICALS (check here to see if BCs are defined)
@@ -112,6 +112,7 @@
        interface export;              module procedure export_BCs_wrapper;      end interface
        interface import;              module procedure import_BCs_wrapper;      end interface
 
+       interface defined;             module procedure defined_BCs;             end interface
        interface init_Dirichlet;      module procedure init_Dirichlet_all;      end interface
        interface init_Dirichlet;      module procedure init_Dirichlet_face;     end interface
        interface init_Neumann;        module procedure init_Neumann_all;        end interface
@@ -132,7 +133,6 @@
 
        interface restrict;            module procedure restrict_BCs;            end interface
        interface prolongate;          module procedure prolongate_BCs;          end interface
-       interface reset_index_sets;    module procedure reset_index_sets_BCs;    end interface
 
        contains
 
@@ -168,27 +168,44 @@
          call insist_allocated(BC_in,'init_BCs_copy')
 #endif
          call delete(BC)
-         call init(BC%face,BC_in%face)
-         ! call init(BC%edge,BC_in%edge)
-         ! call init(BC%corner,BC_in%corner)
          call init(BC%BCL,BC_in%BCL)
          call init(BC%DL,BC_in%DL)
-         call init(BC%f_BCs,BC_in%f_BCs)
+
+         call init(BC%face,BC_in%face)
          call init(BC%PA_face_BCs,BC_in%PA_face_BCs)
          call init(BC%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
+         call init(BC%f_BCs,BC_in%f_BCs)
+
+         ! call init(BC%edge,BC_in%edge)
+         ! call init(BC%PA_edges_BCs,BC_in%PA_edges_BCs)
+         ! call init(BC%PA_edges_implicit_BCs,BC_in%PA_edges_implicit_BCs)
+         ! call init(BC%e_BCs,BC_in%e_BCs)
+         ! call init(BC%corner,BC_in%corner)
+         ! call init(BC%PA_corners_BCs,BC_in%PA_corners_BCs)
+         ! call init(BC%PA_corners_implicit_BCs,BC_in%PA_corners_implicit_BCs)
+         ! call init(BC%c_BCs,BC_in%c_BCs)
        end subroutine
 
        subroutine delete_BCs(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
+         call delete(BC%DL)
+         call delete(BC%BCL)
+
          call delete(BC%face)
-         call delete(BC%edge)
-         call delete(BC%corner)
-         call delete(BC%f_BCs)
          call delete(BC%PA_face_BCs)
          call delete(BC%PA_face_implicit_BCs)
-         call delete(BC%BCL)
-         call define_logicals(BC)
+         call delete(BC%f_BCs)
+
+         call delete(BC%edge)
+         call delete(BC%PA_edges_BCs)
+         call delete(BC%PA_edges_implicit_BCs)
+         ! call delete(BC%e_BCs)
+
+         call delete(BC%corner)
+         call delete(BC%PA_corners_BCs)
+         call delete(BC%PA_corners_implicit_BCs)
+         ! call delete(BC%c_BCs)
        end subroutine
 
        subroutine init_vals_all_S(BC,val)
@@ -301,6 +318,13 @@
        ! *******************************************************************************
        ! ********************************* INIT FACES **********************************
        ! *******************************************************************************
+
+       function defined_BCs(BC) result(d)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
+         logical :: d
+         d = BC%BCL%defined
+       end function
 
        subroutine init_Dirichlet_all(BC)
          implicit none
@@ -564,7 +588,7 @@
        subroutine init_props_BCs(BC)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         call define_logicals_BCs(BC)
+         call define_logicals(BC)
          call init_mixed(BC%f_BCs,BC%DL)
          call sort(BC%PA_face_BCs,(/3,4,5,6,1,2/),6)
          call sort(BC%PA_face_implicit_BCs,(/3,4,5,6,1,2/),6)
@@ -583,6 +607,10 @@
            call restrict(BC%face,B%fb,BC%DL,dir,x,y,z,BC%face%n)
            ! call restrict(BC%edge,B%eb,BC%DL,dir,x,y,z,BC%edge%n)
            ! call restrict(BC%face,B%cb,BC%DL,dir,x,y,z,BC%corner%n)
+           call init(BC%f_BCs,B%g,B%f)
+           ! call init(BC%e_BCs,B%g,B%e)
+           ! call init(BC%c_BCs,B%g,B%c)
+           call init_props_BCs(BC)
          endif
        end subroutine
 
@@ -599,17 +627,11 @@
            call prolongate(BC%face,B%fb,BC%DL,dir,x,y,z,BC%face%n)
            ! call prolongate(BC%edge,B%eb,BC%DL,dir,x,y,z,BC%edge%n)
            ! call prolongate(BC%face,B%cb,BC%DL,dir,x,y,z,BC%corner%n)
+           call init(BC%f_BCs,B%g,B%f)
+           ! call init(BC%e_BCs,B%g,B%e)
+           ! call init(BC%c_BCs,B%g,B%c)
+           call init_props_BCs(BC)
          endif
-       end subroutine
-
-       subroutine reset_index_sets_BCs(BC,B)
-         implicit none
-         type(boundary_conditions),intent(inout) :: BC
-         type(block),intent(in) :: B
-         call init(BC%f_BCs,B%g,B%f)
-         ! call init(BC%e_BCs,B%g,B%e)
-         ! call init(BC%c_BCs,B%g,B%c)
-         call init_mixed(BC%f_BCs,BC%DL)
        end subroutine
 
        end module

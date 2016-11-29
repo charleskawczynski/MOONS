@@ -53,7 +53,6 @@
 
         public :: restrict
         public :: prolongate
-        public :: reset_index_sets
 
         public :: laplacian_matrix_based
         public :: curl_curl_matrix_based
@@ -178,7 +177,6 @@
         interface prolongate;              module procedure prolongate_SF;                end interface
         interface prolongate;              module procedure prolongate_reset_SF;          end interface
         interface prolongate;              module procedure prolongate_all_reset_SF;      end interface
-        interface reset_index_sets;        module procedure reset_index_sets_SF;          end interface
 
         ! COMPUTATION ROUTINES:
 
@@ -1475,14 +1473,6 @@
           type(mesh),intent(in) :: m
           integer :: i
           do i=1,3; call prolongate(u,m,i); enddo
-        end subroutine
-
-        subroutine reset_index_sets_SF(u,m)
-          implicit none
-          type(SF),intent(inout) :: u
-          type(mesh),intent(in) :: m
-          integer :: i
-          do i=1,m%s; call reset_index_sets(u%BF(i),m%B(i)); enddo
         end subroutine
 
       end module
