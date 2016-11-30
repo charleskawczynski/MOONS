@@ -25,12 +25,9 @@
          logical,intent(inout) :: finite_Rem,include_vacuum
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
-         ! Re         = 1000.0_cp
          Re         = 1.0_cp*pow(2)
-         ! Re         = 1.0_cp*pow(6)
-         ! Ha         = 4.0_cp*pow(3)
-         Ha         = 1.0_cp*pow(1)
-         Rem        = 1.0_cp*pow(0)
+         Ha         = 20.0_cp*pow(0)
+         Rem        = 5.0_cp*pow(0)
          tw         = 0.5_cp
 
          include_vacuum = .false.
@@ -54,7 +51,7 @@
          call init(ISP_U  ,  40  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_U')
          call init(ISP_p  ,   5  , pow(-6) , pow(-13), 100, str(DT%ISP),'ISP_p')
          call init(ISP_T  ,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_T')
-         call init(ISP_phi, 2000 , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_phi')
+         call init(ISP_phi,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_phi')
 
          ! BMC 102
          ! time  = 10.0_cp
@@ -62,9 +59,7 @@
          ! dtime = 1.0_cp*10.0_cp**(-3.0_cp)
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp)
          dtime = 1.0_cp*pow(-4)
-         dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
-         ! dtime = 1.0_cp*pow(-4)*3.0**(2.0_cp)
-         ! dtime = 3.0_cp*10.0_cp**(-4.0_cp)
+         ! dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
 
          ! time  = 100.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-4.0_cp)

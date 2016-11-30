@@ -66,7 +66,7 @@
        SP%stop_after_mesh_export = .false.            !
 
        SP%export_analytic        = .false.            ! Export analytic solutions (MOONS.f90)
-       SP%export_meshes          = .false.             ! Export all meshes before starting simulation
+       SP%export_meshes          = .true.             ! Export all meshes before starting simulation
        SP%export_mat_props       = .false.            ! Export material properties before starting simulation
        SP%export_ICs             = .false.            ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume     = .false.            ! Export cell volumes for each mesh
@@ -82,7 +82,7 @@
        SP%solveInduction         = .true.             ! Solve induction equation
        SP%matrix_based           = .false.            ! Solve induction equation
 
-       SP%dynamic_refinement     = .true.             ! Perform dynamic mesh refinement
+       SP%dynamic_refinement     = .false.             ! Perform dynamic mesh refinement
        SP%n_max_refinements      = 2                  ! Maximum number of mesh refinements after SS reached
        SP%n_history              = 2                  ! number of points to check for SS
        SP%SS_tol                 = 10.0_cp**(-1.0_cp) ! steady state tolerance

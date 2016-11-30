@@ -63,8 +63,8 @@
            dB0_dt = (B_all(i+1)-B_all(i))/(t_all(i+1)-t_all(i))
           endif
          enddo
-         if (t.ge.t_all(n)) then
-          dB0_dt = (B_all(n)-B_all(n-1))/(t_all(n)-t_all(n-1))
+         if (t.gt.t_all(n)) then
+          dB0_dt = 0.0_cp
          endif
        end function
 

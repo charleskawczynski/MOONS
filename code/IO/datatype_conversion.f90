@@ -7,6 +7,8 @@
 
       public :: log2Str,int2Str,int2Str2,num2Str,str2int,intLen
       public :: cp2str
+      interface int2Str;      module procedure int2Str_li;       end interface
+      interface int2Str;      module procedure int2Str_reg;      end interface
       ! public :: logical2Str,int2Str,int2Str2,float2Str,str2int,intLen ! change to this eventually
 
       contains
@@ -19,9 +21,17 @@
         s = trim(adjustl(s))
       end function
 
-      function int2Str(i) result(s) ! NOTE: the string length and the fmt must match!
+      function int2Str_reg(i) result(s) ! NOTE: the string length and the fmt must match!
         implicit none
         integer,intent(in) :: i
+        character(len=15) :: s
+        write(s,'(I15.15)') i
+        s = trim(adjustl(s))
+      end function
+
+      function int2Str_li(i) result(s) ! NOTE: the string length and the fmt must match!
+        implicit none
+        integer(li),intent(in) :: i
         character(len=15) :: s
         write(s,'(I15.15)') i
         s = trim(adjustl(s))

@@ -11,7 +11,7 @@
        real(cp),parameter :: two = 2.0_cp
        real(cp),parameter :: zero = 0.0_cp
        real(cp),parameter :: tol = 10.0_cp**(-12.0_cp)
-       
+
        contains
 
        ! ***************************************************************
@@ -21,9 +21,9 @@
        function uniform(hmin,hmax,N) result(hn)
          ! This routine returns a uniform grid from
          ! hmin to hmax using N+1 points.
-         ! 
+         !
          ! NOTE: hmin and hmax are included in the result.
-         ! 
+         !
          ! INPUT:
          !      hmin     = minimum value
          !      hmax     = maximum value
@@ -50,9 +50,9 @@
        subroutine linspace(hn,hmin,hmax,N)
          ! This routine returns a uniform grid from
          ! hmin to hmax using N+1 points.
-         ! 
+         !
          ! NOTE: hmin and hmax are included in the result.
-         ! 
+         !
          ! INPUT:
          !      hmin     = minimum value
          !      hmax     = maximum value
@@ -72,9 +72,9 @@
          ! from hstart with uniform step size dh.
          ! The size of the segment depends on the size
          ! of hn. dir is the positive or negative direction.
-         ! 
+         !
          ! NOTE: hstart is included in the result.
-         ! 
+         !
          ! INPUT:
          !      hstart   = start value
          !      dh       = step size
@@ -99,7 +99,7 @@
 
        function uniformLeft(hstart,dh,N) result(hn)
          ! Uses uniformDirection. Output:
-         ! 
+         !
          !                     |
          !    --|--|--|--|--|--|
          !                     |
@@ -113,7 +113,7 @@
 
        function uniformRight(hstart,dh,N) result(hn)
          ! Uses uniformDirection. Output:
-         ! 
+         !
          !                     |
          !                     |--|--|--|--|--|--
          !                     |
@@ -130,27 +130,27 @@
        ! ***************************************************************
 
        function transformation1(hmin,hmax,N,beta) result(hn)
-         ! This function returns the coordinates and differences of a Robert's 
-         ! stretching function as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
+         ! This function returns the coordinates and differences of a Robert's
+         ! stretching function as described in section 5.6 (page 333) of
+         ! Computational Fluid Mechanics and Heat Transfer,
          ! 2nd edition, J. Tannehill et al. (Transormation 1)
-         ! 
+         !
          ! INPUT:
          !      hmin     = minimum value
          !      hmax     = maximum value
          !      N        = N segments of dh
          !      beta     = 1.0 <= beta <= infinity = stretching factor
          !               = larger -> less stretching
-         ! 
+         !
          !    y=0                         y=h
          !                                 |
          !     |-|--|---|-------|----------|
          !     |------> y
-         ! 
+         !
          ! NOTE: I have abused notation a bit to provide consistent notation
          ! with the reference as well as generalize the returned grid
          ! so that it need not start at y=0.
-         ! 
+         !
          implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
@@ -176,11 +176,11 @@
        end function
 
        function transformation2(hmin,hmax,N,alpha,beta) result(hn)
-         ! This function returns the coordinates and differences of a Robert's 
-         ! stretching function as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
+         ! This function returns the coordinates and differences of a Robert's
+         ! stretching function as described in section 5.6 (page 333) of
+         ! Computational Fluid Mechanics and Heat Transfer,
          ! 2nd edition, J. Tannehill et al.
-         ! 
+         !
          ! INPUT:
          !      hmin     = minimum value
          !      hmax     = maximum value
@@ -189,21 +189,21 @@
          !      alpha    = 0.5    stretching at y=0 and y=hmax
          !      beta     = 1.0 <= beta <= infinity = stretching factor
          !               = larger -> less stretching
-         ! 
+         !
          ! Here is a picture illustration for alpha = 0:
-         ! 
+         !
          !                                y=h
          !                                 |
          !     |----------|-------|---|--|-|
          !     |------> y
-         ! 
+         !
          ! Note that this must be used in reverse for the lid driven
          ! cavity geometry for the 'front' and 'back' walls.
-         ! 
+         !
          ! NOTE: I have abused notation a bit to provide consistent notation
          ! with the reference as well as generalize the returned grid
          ! so that it need not start at y=0.
-         ! 
+         !
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
          real(cp),intent(in) :: hmin,hmax,alpha,beta
@@ -230,34 +230,34 @@
        end function
 
        function transformation3(hmin,hmax,N,yc,tau) result(hn)
-         ! This function returns the coordinates and differences of a Robert's 
-         ! stretching function as described in section 5.6 (page 333) of 
-         ! Computational Fluid Mechanics and Heat Transfer, 
+         ! This function returns the coordinates and differences of a Robert's
+         ! stretching function as described in section 5.6 (page 333) of
+         ! Computational Fluid Mechanics and Heat Transfer,
          ! 2nd edition, J. Tannehill et al. (Transormation 3)
-         ! 
+         !
          ! INPUT:
          !      hmin     = minimum value
          !      hmax     = maximum value
          !      N        = N segments of dh
          !      tau      = 0.0_cp <= tau <= infinity = stretching factor
-         ! 
+         !
          !      tau = 0            --> no stretching
          !      tau = large values --> strong stretching
-         ! 
+         !
          ! Here is a picture illustration for alpha = 0:
-         ! 
+         !
          !                                y=yc                        y=h
          !                                 |
          !     |----------|-------|---|--|-|-|--|---|-------|----------|
          !     |------> y
-         ! 
+         !
          ! Note that this must be used in reverse for the lid driven
          ! cavity geometry for the 'front' and 'back' walls.
-         ! 
+         !
          ! NOTE: I have abused notation a bit to provide consistent notation
          ! with the reference as well as generalize the returned grid
          ! so that it need not start at y=0.
-         ! 
+         !
          implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn

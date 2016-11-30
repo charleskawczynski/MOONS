@@ -1,5 +1,5 @@
        module grid_genHelper_mod
-       ! This module is operates on node data only, 
+       ! This module is operates on node data only,
        ! since it describes the physical domain.
        use current_precision_mod
        use face_edge_corner_indexing_mod
@@ -11,7 +11,7 @@
        type gridGenerator
          type(grid) :: g
        end type
-       
+
        public :: gridGenerator,init,delete
        public :: prep,app
        public :: mirror,shift

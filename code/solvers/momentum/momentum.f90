@@ -24,6 +24,7 @@
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use face_SD_mod
+       use datatype_conversion_mod
 
        use IO_tools_mod
        use IO_SF_mod
@@ -66,7 +67,7 @@
        public :: momentum
        public :: init,delete,display,print,export,import ! Essentials
 
-       public :: solve,export_tec,export_transient,compute_E_K_Budget
+       public :: solve,export_tec,compute_E_K_Budget
        public :: prolongate
 
        type momentum
@@ -114,9 +115,12 @@
 
        interface export_tec;           module procedure export_tec_momentum;        end interface
        interface export_tec;           module procedure export_tec_momentum_no_ext; end interface
-       interface export_transient;     module procedure export_transient_mom;       end interface
        interface solve;                module procedure solve_momentum;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_mom;  end interface
+
+       interface export_transient1;    module procedure export_transient1_mom;      end interface
+       interface export_transient2;    module procedure export_transient2_mom;      end interface
+       interface export_transient3;    module procedure export_transient3_mom;      end interface
 
        contains
 
@@ -382,7 +386,7 @@
          endif
        end subroutine
 
-       subroutine export_transient_mom(mom)
+       subroutine export_transient1_mom(mom)
          implicit none
          type(momentum),intent(inout) :: mom
          real(cp) :: temp
@@ -394,6 +398,21 @@
          endif
          call div(mom%divU,mom%U,mom%m)
          call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP,temp)
+       end subroutine
+
+       subroutine export_transient2_mom(mom,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(dir_tree),intent(in) :: DT
+         ! call export_processed(mom%m,mom%U,str(DT%U_t),'U_'//int2Str(mom%TMP%n_step),1)
+         ! call export_processed(mom%m,mom%p,str(DT%U_t),'p_'//int2Str(mom%TMP%n_step),1)
+         call export_processed(mom%m,mom%U,str(DT%U_t),'U_'//int2Str(mom%TMP%n_step),1)
+         call export_processed(mom%m,mom%p,str(DT%U_t),'p_'//int2Str(mom%TMP%n_step),1)
+       end subroutine
+
+       subroutine export_transient3_mom(mom)
+         implicit none
+         type(momentum),intent(inout) :: mom
        end subroutine
 
        subroutine init_matrix_based_ops_mom(mom)
@@ -455,10 +474,11 @@
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
          ! call computeKineticEnergy(mom,mom%m,F)
-         if (PE%transient_0D) call export_transient(mom)
+         if (PE%transient_0D) call export_transient1(mom)
+         if (PE%transient_2D) call export_transient2(mom,DT)
 
          ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
-         if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
+         ! if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
 
          if (PE%info) call print(mom)
 

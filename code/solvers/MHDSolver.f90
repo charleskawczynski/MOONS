@@ -63,6 +63,7 @@
          do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
            call tic(sc)
            call update(PE,coupled%n_step)
+           ! write(*,*) 'coupled%n_step = ',coupled%n_step
 
            if (SP%dynamic_refinement) then
              if (refine_mesh_now_all.or.RM%any_next) PE%transient_0D = .true.

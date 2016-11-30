@@ -18,6 +18,7 @@
        use export_now_mod
        use refine_mesh_mod
        use assign_B0_vs_t_mod
+       use datatype_conversion_mod
 
        use mesh_stencils_mod
        use init_BBCs_mod
@@ -62,7 +63,7 @@
        private
        public :: induction
        public :: init,delete,display,print,export,import ! Essentials
-       public :: solve,export_tec,export_transient,compute_E_M_budget
+       public :: solve,export_tec,compute_E_M_budget
 
        public :: prolongate
 
@@ -121,11 +122,14 @@
 
        interface solve;                module procedure solve_induction;               end interface
        interface export_tec;           module procedure export_tec_induction;          end interface
-       interface export_transient;     module procedure export_transient_induction;    end interface
 
        interface prolongate;           module procedure prolongate_ind;                end interface
        interface set_MFP;              module procedure set_MFP_ind;                   end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_ind;     end interface
+
+       interface export_transient1;    module procedure export_transient1_ind;         end interface
+       interface export_transient2;    module procedure export_transient2_ind;         end interface
+       interface export_transient3;    module procedure export_transient3_ind;         end interface
 
        contains
 
@@ -452,7 +456,7 @@
          endif
        end subroutine
 
-       subroutine export_transient_induction(ind)
+       subroutine export_transient1_ind(ind)
          implicit none
          type(induction),intent(inout) :: ind
          real(cp) :: temp
@@ -479,6 +483,19 @@
          call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
          call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP,ind%m)
          call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
+       end subroutine
+
+       subroutine export_transient2_ind(ind,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         call export_processed(ind%m,ind%B,str(DT%B_t),'B_'//int2str(ind%TMP%n_step),1)
+         call export_processed(ind%m,ind%J,str(DT%J_t),'J_'//int2str(ind%TMP%n_step),1)
+       end subroutine
+
+       subroutine export_transient3_ind(ind)
+         implicit none
+         type(induction),intent(inout) :: ind
        end subroutine
 
        subroutine compute_J_ind(ind)
@@ -521,10 +538,10 @@
          if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          elseif (ind%TMP%n_step.le.1) then; call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          endif
-         ! call assign_B0_vs_t(ind%B0,ind%TMP)
-         ! call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
-         ! call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
-         call assign(ind%dB0dt,0.0_cp)
+         call assign_B0_vs_t(ind%B0,ind%TMP)
+         call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
+         call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
+         ! call assign(ind%dB0dt,0.0_cp)
 
          select case (ind%SP%solveBMethod)
          case (1)
@@ -563,9 +580,10 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%transient_0D) call export_transient(ind)
+         if (PE%transient_0D) call export_transient1(ind)
+         if (PE%transient_2D) call export_transient2(ind,DT)
 
-         if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
+         ! if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
          ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
 
          if (PE%info) call print(ind)

@@ -75,6 +75,7 @@
            call append(s,',d('//name//')/dt')
            call append(s,',|d('//name//')/dt|')
            call append(s,',|d('//name//')/dt|/max(d)')
+           call append(s,',max(d)_used')
            write(p%un,*) str(s)
            call delete(s)
            write(p%un,*) 'ZONE DATAPACKING = POINT'
@@ -170,7 +171,11 @@
          endif
          p%n_step = TMP%n_step
          call check_nans_probe(p)
-         write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt/p%d_amax
+         if (p%d_amax.gt.0.0_cp) then
+           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt/p%d_amax,p%d_amax
+         else
+           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt,1.0_cp
+         endif
          flush(p%un)
        end subroutine
 

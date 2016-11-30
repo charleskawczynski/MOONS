@@ -78,6 +78,7 @@
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
+        call update_exit_loop(ISP,1,res_norm%L2,res_norm0%L2)
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           skip_loop = .false.
           do i=1,ISP%iter_max
@@ -184,6 +185,7 @@
         call multiply(z,Minv,r)
         call assign(p,z)
         rhok = dot_product(r,z,m,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
+        call update_exit_loop(ISP,1,res_norm%L2,res_norm0%L2)
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
