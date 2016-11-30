@@ -33,31 +33,47 @@
 #endif
 
       type coordinates
-        type(sparse) :: stagCC2N,stagN2CC               ! Derivative coefficients
-        type(sparse),dimension(2) :: colCC,colN         ! Derivative coefficients
-        type(sparse),dimension(2) :: colCC_centered     ! Derivative coefficients
-        type(sparse) :: theta                           ! Interpolation coefficients
-        real(cp),dimension(:),allocatable :: hn         ! Cell corner coordinates
-        real(cp),dimension(:),allocatable :: hc         ! Cell center coordinates
-        real(cp),dimension(:),allocatable :: dhn        ! Difference in cell corner coordinates
-        real(cp),dimension(:),allocatable :: dhc        ! Difference in cell center coordinates
-        real(cp) :: hmin,hmax                           ! Min/Max value of domain
-        real(cp) :: amin,amax                           ! absolute Min/Max value of domain (including ghost)
-        real(cp) :: dhMin,dhMax,maxRange                ! Smallest spatial step/Maximum range
-        real(cp) :: dhn_e,dhc_e                         ! dhn(end),dhc(end)
-        real(cp) :: hn_e,hc_e                           ! hn(end),hc(end)
-        integer :: N                                    ! Number of cells
-        integer :: sn,sc                                ! size of hn/hc
+        real(cp) :: hmin = 0.0_cp                   ! Min value of domain
+        real(cp) :: hmax = 0.0_cp                   ! Max value of domain
+        real(cp) :: amin = 0.0_cp                   ! absolute Min value of domain (includes ghost)
+        real(cp) :: amax = 0.0_cp                   ! absolute Max value of domain (includes ghost)
+        real(cp) :: maxRange = 0.0_cp               ! Maximum range
+        real(cp) :: dhMin = 0.0_cp                  ! hn(end),hc(end)
+        real(cp) :: dhMax = 0.0_cp                  ! hn(end),hc(end)
+        real(cp) :: dhc_e = 0.0_cp                  ! hn(end),hc(end)
+        real(cp) :: dhn_e = 0.0_cp                  ! hn(end),hc(end)
+        real(cp) :: hc_e = 0.0_cp                   ! hn(end),hc(end)
+        real(cp) :: hn_e = 0.0_cp                   ! hn(end),hc(end)
+        integer :: N = 0                            ! Number of cells
         logical :: defined = .false.
+
+        ! Requires global information (modified after initialization)
         logical :: stencils_defined = .false.
         logical,dimension(2) :: stencils_modified = .false.
+
+        ! Core:
+        type(sparse) :: stagCC2N,stagN2CC           ! Derivative coefficients
+        type(sparse),dimension(2) :: colCC,colN     ! Derivative coefficients
+        type(sparse),dimension(2) :: colCC_centered ! Derivative coefficients
+        type(sparse) :: theta                       ! Interpolation coefficients
+        ! type(array),dimension(2) :: h               ! Cell coordinates (1=N,2=C)
+        ! type(array),dimension(2) :: dh              ! Cell dh (1=N,2=C)
+        ! integer :: i_n = 0                          ! index for hn
+        ! integer :: i_c = 0                          ! index for hc
+        ! Depricated:
+        real(cp),dimension(:),allocatable :: hn     ! Cell corner coordinates
+        real(cp),dimension(:),allocatable :: hc     ! Cell center coordinates
+        integer :: sn = 0                           ! size of hn
+        integer :: sc = 0                           ! size of hc
+        real(cp),dimension(:),allocatable :: dhn    ! Difference in cell corner coordinates
+        real(cp),dimension(:),allocatable :: dhc    ! Difference in cell center coordinates
       end type
 
-      interface init;              module procedure initCoordinates;        end interface
-      interface init;              module procedure initCopy;               end interface
-      interface delete;            module procedure deleteCoordinates;      end interface
-      interface display;           module procedure display_coordinates;    end interface
-      interface print;             module procedure printCoordinates;       end interface
+      interface init;              module procedure init_c;                 end interface
+      interface init;              module procedure init_copy_c;            end interface
+      interface delete;            module procedure delete_c;               end interface
+      interface display;           module procedure display_c;              end interface
+      interface print;             module procedure print_c;                end interface
       interface export;            module procedure export_c;               end interface
       interface import;            module procedure import_c;               end interface
 
@@ -72,11 +88,14 @@
       interface stitch_stencils;   module procedure stitch_stencils_c;      end interface
       interface init_stencils;     module procedure init_stencils_c;        end interface ! Private
 
-      interface pop;               module procedure pop_coordinates;        end interface
-      interface snip;              module procedure snip_coordinates;       end interface
+      interface pop;               module procedure pop_c;                  end interface
+      interface snip;              module procedure snip_c;                 end interface
 
       interface get_GI;            module procedure get_GI_c;               end interface
       interface get_boundary;      module procedure get_boundary_c;         end interface
+
+      interface init_props;        module procedure init_props_c;           end interface
+      interface add_ghost_nodes;   module procedure add_ghost_nodes_c;      end interface
 
       contains
 
@@ -84,7 +103,7 @@
       ! ********************* ESSENTIALS *************************
       ! **********************************************************
 
-      subroutine initCoordinates(c,hn,sn)
+      subroutine init_c(c,hn,sn)
         ! Here is a picture how coordinates are initialized for different cases:
         !
         !
@@ -132,8 +151,8 @@
         real(cp),dimension(sn),intent(in) :: hn
         integer :: i
         call delete(c)
-        if (.not.(size(hn).gt.0)) stop 'Error: hn not allocated in initCoordinates in coordinates.f90'
-        if (.not.(size(hn).eq.sn)) stop 'Error: sn.ne.size(hn) in initCoordinates in coordinates.f90'
+        if (.not.(size(hn).gt.0)) stop 'Error: hn not allocated in init_c in coordinates.f90'
+        if (.not.(size(hn).eq.sn)) stop 'Error: sn.ne.size(hn) in init_c in coordinates.f90'
 
         ! Typical init
         c%sn = size(hn)
@@ -175,21 +194,23 @@
           c%dhc = 0.0_cp
         endif
         ! Additional information
-        call initProps(c)
+        call init_props(c)
         call init_stencils(c)
         c%stencils_modified = .false.
         c%defined = .true.
       end subroutine
 
-      subroutine initCopy(c,d)
+      subroutine init_copy_c(c,d)
         implicit none
         type(coordinates),intent(inout) :: c
         type(coordinates),intent(in) :: d
         integer :: i
         call delete(c)
-        if (.not.d%defined) stop 'Error: trying to copy undefined coordinate in coordinates.f90'
+        if (.not.d%defined) then
+          stop 'Error: trying to copy undefined coordinate in init_copy_c in coordinates.f90'
+        endif
 
-        call insist_allocated(d%theta,'initCopy coordinates')
+        call insist_allocated(d%theta,'init_copy_c coordinates')
         if (.not.allocated(d%hn))    stop 'Error: d%hn    not allocated in coordinates.f90'
         if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
         if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
@@ -215,10 +236,10 @@
         c%defined = d%defined
         c%stencils_defined = d%stencils_defined
         c%stencils_modified = d%stencils_modified
-        call initProps(c)
+        call init_props(c)
       end subroutine
 
-      subroutine deleteCoordinates(c)
+      subroutine delete_c(c)
         implicit none
         type(coordinates),intent(inout) :: c
         integer :: i
@@ -238,7 +259,7 @@
         c%stencils_defined = .false.
       end subroutine
 
-      subroutine display_coordinates(c,un)
+      subroutine display_c(c,un)
         implicit none
         type(coordinates),intent(in) :: c
         integer,intent(in) :: un
@@ -254,7 +275,7 @@
         ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
       end subroutine
 
-      subroutine printCoordinates(c)
+      subroutine print_c(c)
         implicit none
         type(coordinates),intent(in) :: c
         call display(c,6)
@@ -286,7 +307,7 @@
       ! **********************************************************
       ! **********************************************************
 
-      subroutine initProps(c)
+      subroutine init_props_c(c)
         implicit none
         type(coordinates),intent(inout) :: c
          ! Additional information
@@ -696,7 +717,7 @@
         if (c%sc.gt.3) then
           if (mod(c%sc,2).eq.0) then
             call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),c%sc/2)
-            call addGhostNodes(r)
+            call add_ghost_nodes(r)
             else; stop 'Error: coordinates must be even in restrictCoordinates in coordinates.f90'
           endif
         else; call init(r,c) ! return c
@@ -734,7 +755,7 @@
           do i=1,a(1)%N; a(3)%f(2*i-1) = a(1)%f(i); enddo
           do i=1,a(2)%N; a(3)%f(2*i)   = a(2)%f(i); enddo
           call init(p,a(3)%f,a(3)%N)
-          call addGhostNodes(p)
+          call add_ghost_nodes(p)
           do i=1,3; call delete(a(i)); enddo
         endif
       end subroutine
@@ -794,21 +815,21 @@
       ! ********************* POP / SNIP ROUTINES ***********************
       ! *****************************************************************
 
-      subroutine snip_coordinates(c) ! Removes the first index from the coordinates
+      subroutine snip_c(c) ! Removes the first index from the coordinates
         implicit none
         type(coordinates),intent(inout) :: c
         type(coordinates) :: temp
-        if (c%sn.eq.1) stop 'Error: no nodes to snip in snip_coordinates in coordinates.f90'
+        if (c%sn.eq.1) stop 'Error: no nodes to snip in snip_c in coordinates.f90'
         call init(temp,c%hn(2:c%sn-1),c%sn-1)
         call init(c,temp%hn,temp%sn)
         call delete(temp)
       end subroutine
 
-      subroutine pop_coordinates(c) ! Removes the last index from the coordinates
+      subroutine pop_c(c) ! Removes the last index from the coordinates
         implicit none
         type(coordinates),intent(inout) :: c
         type(coordinates) :: temp
-        if (c%sn.eq.1) stop 'Error: no nodes to snip in pop_coordinates in coordinates.f90'
+        if (c%sn.eq.1) stop 'Error: no nodes to snip in pop_c in coordinates.f90'
         call init(temp,c%hn(1:c%sn-1),c%sn-1)
         call init(c,temp%hn,temp%sn)
         call delete(temp)
@@ -886,7 +907,7 @@
         c%stencils_defined = .true.
       end subroutine
 
-      subroutine addGhostNodes(c)
+      subroutine add_ghost_nodes_c(c)
         implicit none
         type(coordinates),intent(inout) :: c
         if (c%sn.gt.1) then
@@ -911,7 +932,7 @@
         call check(c%colN(2))
         call check(c%stagCC2N)
         call check(c%stagN2CC)
-        write(*,*) 'step 0'; call check_consecutive(c)
+        write(*,*) 'step 0'; call insist_consecutive_c(c)
         write(*,*) 'step 1'; call check_stencilSymmetry(c,c%stagCC2N,'stagCC2N')
         write(*,*) 'step 2'; call check_stencilSymmetry(c,c%stagN2CC,'stagN2CC')
         write(*,*) 'step 3'; call check_stencilSymmetry(c,c%colCC(1),'colCC(1)')
@@ -924,7 +945,7 @@
         ! stop 'Done'
       end subroutine
 
-      subroutine check_consecutive(c)
+      subroutine insist_consecutive_c(c)
         implicit none
         type(coordinates),intent(in) :: c
         integer :: i

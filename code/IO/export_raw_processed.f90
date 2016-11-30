@@ -26,6 +26,9 @@
        interface export_processed;              module procedure export_processed_SF;               end interface
        interface export_processed;              module procedure export_processed_VF;               end interface
 
+       interface export_processed;              module procedure export_processed_transient_SF;     end interface
+       interface export_processed;              module procedure export_processed_transient_VF;     end interface
+
        interface export_processed_transient_2C; module procedure export_processed_transient_VF_2C;  end interface
        interface export_processed_transient_3C; module procedure export_processed_transient_VF_3C;  end interface
 
@@ -93,6 +96,43 @@
        ! *********************************** PROCESSED **************************************
        ! ************************************************************************************
 
+       subroutine export_processed_transient_SF(m,x,dir,name,pad,TMP)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: pad
+         type(time_marching_params),intent(in) :: TMP
+         type(SF) :: temp_1,temp_2,temp_N
+         integer :: direction
+         character(len=2) :: DL,CD ! DL = direction letter, CD = component direction
+         integer,dimension(3) :: i_f
+         DL = 'np'
+         if (.not.export_planar) then
+           if (x%is_CC) then
+             call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
+             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
+             call export_3D_1C_transient(m,temp_N,dir,name//DL,pad,TMP)
+             call delete(temp_1); call delete(temp_2); call delete(temp_N)
+           elseif (x%is_Node) then; call export_3D_1C_transient(m,x,dir,name//DL,pad,TMP)
+           elseif (x%is_Face) then
+             CD = get_CD(x%face,'export_processed_SF1')
+             call init_Node(temp_N,m); i_f = (/2,1,1/)
+             call init_Edge(temp_1,m,i_f(x%face))
+             call face2Node(temp_N,x,m,x%face,temp_1)
+             call export_3D_1C_transient(m,temp_N,dir,name//DL//'_'//CD,pad,TMP)
+             call delete(temp_1); call delete(temp_N)
+           elseif (x%is_Edge) then
+             CD = get_CD(x%edge,'export_processed_SF2')
+             call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
+             call export_3D_1C_transient(m,temp_N,dir,name//DL//'_'//CD,pad,TMP)
+             call delete(temp_N)
+           else; stop 'Error: bad input to export_p_SF_func (1) in export_processed.f90'
+           endif
+         else; stop 'Error: feature 1 not yet supported in export_processed.f90'
+         endif
+       end subroutine
+
        subroutine export_processed_SF(m,x,dir,name,pad)
          implicit none
          type(mesh),intent(in) :: m
@@ -146,6 +186,49 @@
              call delete(temp_N)
            else; stop 'Error: bad input to export_p_SF_func (2) in export_processed.f90'
            endif
+         endif
+       end subroutine
+
+       subroutine export_processed_transient_VF(m,x,dir,name,pad,TMP)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: x
+         character(len=*),intent(in) :: dir,name
+         integer,intent(in) :: pad
+         type(time_marching_params),intent(in) :: TMP
+         type(VF) :: temp_1,temp_2,temp_N
+         integer :: direction
+         character(len=2) :: DL ! DL = direction letter, CD = component direction
+         real(cp),dimension(3) :: t
+         logical,dimension(3) :: L
+         real(cp) :: tol
+         integer :: j
+         DL = 'np' ! "p" means "processed" (interpolated to node)
+
+         tol = 10.0_cp**(-15.0_cp)
+         t = (/amax(x%x),amax(x%y),amax(x%z)/)
+         L = (/(t(j).lt.tol,j=1,3)/)
+
+         if (.not.export_planar) then
+           if (x%is_CC) then
+             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
+             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
+             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
+             call delete(temp_1); call delete(temp_2); call delete(temp_N)
+           elseif (x%is_Node) then
+             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
+           elseif (x%is_Face) then
+             call init_Edge(temp_1,m); call init_Node(temp_N,m);
+             call face2Node(temp_N,x,m,temp_1)
+             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
+             call delete(temp_1); call delete(temp_N)
+           elseif (x%is_Edge) then
+             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
+             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
+             call delete(temp_N)
+           else; stop 'Error: bad input to export_processed_VF (1) in export_processed.f90'
+           endif
+         else; stop 'Error: feature 2 not yet supported in export_processed.f90'
          endif
        end subroutine
 

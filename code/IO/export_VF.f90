@@ -1,8 +1,8 @@
       module export_VF_mod
-      ! This module, along with exportRaw.f90 provide purely functional 
+      ! This module, along with exportRaw.f90 provide purely functional
       ! pipeline routines to export data given inputs. The possible mesh types
       ! can be checked in the getType_3D,getType_2D,getType_1D routines.
-      ! 
+      !
       use current_precision_mod
       use mesh_mod
       use VF_mod

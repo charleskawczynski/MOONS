@@ -74,8 +74,8 @@
            call append(s,','//name)
            call append(s,',d('//name//')/dt')
            call append(s,',|d('//name//')/dt|')
-           call append(s,',|d('//name//')/dt|/max(d)')
-           call append(s,',max(d)_used')
+           call append(s,',|d('//name//')/dt|/max(d)_used')
+           call append(s,',max(d)')
            write(p%un,*) str(s)
            call delete(s)
            write(p%un,*) 'ZONE DATAPACKING = POINT'
@@ -151,7 +151,7 @@
          type(probe),intent(inout) :: p
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: d
-         real(cp) :: abs_d_data_dt
+         real(cp) :: abs_d_data_dt,abs_d_data_dt_by_dmax
          integer :: i
          do i=1,p%n_history-1
          p%SS_reached(i) = p%SS_reached(i+1)
@@ -162,9 +162,10 @@
          p%t = TMP%t
          p%d = d
          p%d_amax = maxval((/p%d_amax,p%d,abs(d)/))
+         abs_d_data_dt_by_dmax = abs_d_data_dt/p%d_amax
 
-         p%SS_reached(p%n_history) = abs_d_data_dt/p%d_amax.lt.p%SS_tol
-         p%SS_reached_final(p%n_history) = abs_d_data_dt/p%d_amax.lt.p%SS_tol_final
+         p%SS_reached(p%n_history) = abs_d_data_dt_by_dmax.lt.p%SS_tol
+         p%SS_reached_final(p%n_history) = abs_d_data_dt_by_dmax.lt.p%SS_tol_final
          if (p%n_step.eq.TMP%n_step) then
           write(*,*) 'Error: cannot export probe '//str(p%name)//' consecutively.'
           stop 'Done'
@@ -172,9 +173,9 @@
          p%n_step = TMP%n_step
          call check_nans_probe(p)
          if (p%d_amax.gt.0.0_cp) then
-           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt/p%d_amax,p%d_amax
+           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt_by_dmax,p%d_amax
          else
-           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt,1.0_cp
+           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt,p%d_amax
          endif
          flush(p%un)
        end subroutine

@@ -2,6 +2,7 @@
 # RELEASE = 'DEBUG'
 RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
+# FORMAT_OUTPUT = 'FORMATTED'
 # ************* CLUSTER CONFIGURATION ******************
 CLUSTER = 'PC_CK'
 # CLUSTER = 'Workstation_CK'
@@ -105,6 +106,10 @@ ifeq ($(OS_USED),'OS_WINDOWS')
 	FCFLAGS += -D_OS_WINDOWS_
 else
 	FCFLAGS += -D_OS_LINUX_
+endif
+
+ifeq ($(FORMAT_OUTPUT),'FORMATTED')
+	FCFLAGS += -D_FORMAT_OUTPUT_
 endif
 
 # FCFLAGS += -D_DEL_PLANAR_X_

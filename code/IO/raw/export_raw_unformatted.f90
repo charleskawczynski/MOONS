@@ -28,7 +28,7 @@
         real(cp),dimension(b),intent(in) :: y
         real(cp),dimension(c),intent(in) :: z
         integer :: i,j,k
-        do k = 1+pad,c-pad; do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do k=1+pad,c-pad; do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),z(k),u(i,j,k),v(i,j,k),w(i,j,k)
         enddo; enddo; enddo
       end subroutine
@@ -41,7 +41,7 @@
         real(cp),dimension(b),intent(in) :: y
         real(cp),dimension(c),intent(in) :: z
         integer :: i,j,k
-        do k = 1+pad,c-pad; do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do k=1+pad,c-pad; do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),z(k),u(i,j,k),v(i,j,k)
         enddo; enddo; enddo
       end subroutine
@@ -54,7 +54,7 @@
         real(cp),dimension(b),intent(in) :: y
         real(cp),dimension(c),intent(in) :: z
         integer :: i,j,k
-        do k = 1+pad,c-pad; do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do k=1+pad,c-pad; do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),z(k),u(i,j,k)
         enddo; enddo; enddo
       end subroutine
@@ -67,7 +67,7 @@
         real(cp),dimension(b),intent(in) :: y
         real(cp),dimension(c),intent(in) :: z
         integer :: i,j,k
-        do k = 1+pad,c-pad; do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do k=1+pad,c-pad; do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),z(k),u
         enddo; enddo; enddo
       end subroutine
@@ -85,7 +85,7 @@
         real(cp),dimension(a),intent(in) :: x
         real(cp),dimension(b),intent(in) :: y
         integer :: i,j
-        do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),u(i,j),v(i,j),w(i,j)
         enddo; enddo
       end subroutine
@@ -97,7 +97,7 @@
         real(cp),dimension(a),intent(in) :: x
         real(cp),dimension(b),intent(in) :: y
         integer :: i,j
-        do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),u(i,j),v(i,j)
         enddo; enddo
       end subroutine
@@ -109,7 +109,7 @@
         real(cp),dimension(a),intent(in) :: x
         real(cp),dimension(b),intent(in) :: y
         integer :: i,j
-        do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),u(i,j)
         enddo; enddo
       end subroutine
@@ -121,7 +121,7 @@
         real(cp),dimension(a),intent(in) :: x
         real(cp),dimension(b),intent(in) :: y
         integer :: i,j
-        do j = 1+pad,b-pad; do i = 1+pad,a-pad
+        do j=1+pad,b-pad; do i=1+pad,a-pad
           write(un,*) x(i),y(j),u
         enddo; enddo
       end subroutine
@@ -138,7 +138,7 @@
         real(cp),dimension(a),intent(in) :: u,v,w
         real(cp),dimension(a),intent(in) :: x
         integer :: i
-        do i = 1+pad,a-pad
+        do i=1+pad,a-pad
           write(un,*) x(i),u(i),v(i),w(i)
         enddo
       end subroutine
@@ -149,7 +149,7 @@
         real(cp),dimension(a),intent(in) :: u,v
         real(cp),dimension(a),intent(in) :: x
         integer :: i
-        do i = 1+pad,a-pad
+        do i=1+pad,a-pad
           write(un,*) x(i),u(i),v(i)
         enddo
       end subroutine
@@ -160,7 +160,7 @@
         real(cp),dimension(a),intent(in) :: u
         real(cp),dimension(a),intent(in) :: x
         integer :: i
-        do i = 1+pad,a-pad
+        do i=1+pad,a-pad
           write(un,*) x(i),u(i)
         enddo
       end subroutine
@@ -171,7 +171,7 @@
         real(cp),intent(in) :: u
         real(cp),dimension(a),intent(in) :: x
         integer :: i
-        do i = 1+pad,a-pad
+        do i=1+pad,a-pad
           write(un,*) x(i),u
         enddo
       end subroutine

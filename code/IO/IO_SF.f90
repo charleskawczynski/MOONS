@@ -6,11 +6,14 @@
       use import_SF_mod
       use IO_tools_mod
       use fmt_mod
+      use time_marching_params_mod
+      use datatype_conversion_mod
       implicit none
 
       private
       public :: export_3D_1C,export_2D_1C
       public :: import_3D_1C
+      public :: export_3D_1C_transient
 
       public :: export_mesh
 
@@ -24,6 +27,19 @@
         type(SF),intent(in) :: U
         integer :: un
         un = new_and_open(dir,name)
+        call exp_3D_1C(m,pad,un,arrfmt,name,U)
+        call close_and_message(un,dir,name)
+      end subroutine
+
+      subroutine export_3D_1C_transient(m,U,dir,name,pad,TMP)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        type(mesh),intent(in) :: m
+        integer,intent(in) :: pad
+        type(SF),intent(in) :: U
+        type(time_marching_params),intent(in) :: TMP
+        integer :: un
+        un = new_and_open(dir,name//'_t='//int2str(TMP%n_step))
         call exp_3D_1C(m,pad,un,arrfmt,name,U)
         call close_and_message(un,dir,name)
       end subroutine

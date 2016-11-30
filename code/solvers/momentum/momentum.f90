@@ -406,8 +406,9 @@
          type(dir_tree),intent(in) :: DT
          ! call export_processed(mom%m,mom%U,str(DT%U_t),'U_'//int2Str(mom%TMP%n_step),1)
          ! call export_processed(mom%m,mom%p,str(DT%U_t),'p_'//int2Str(mom%TMP%n_step),1)
-         call export_processed(mom%m,mom%U,str(DT%U_t),'U_'//int2Str(mom%TMP%n_step),1)
-         call export_processed(mom%m,mom%p,str(DT%U_t),'p_'//int2Str(mom%TMP%n_step),1)
+         write(*,*) 'GH mom 1'; call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
+         write(*,*) 'GH mom 2'; call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP)
+         write(*,*) 'GH mom 3'
        end subroutine
 
        subroutine export_transient3_mom(mom)

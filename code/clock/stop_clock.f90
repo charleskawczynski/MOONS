@@ -40,7 +40,7 @@
         integer :: iterPerHour
         integer :: iterPerDay
         logical :: frozen_elapsed = .false. ! For when elapsed is returned negative
-        integer :: un_plot,un_info
+        integer :: un_plot
        end type
 
        interface init;      module procedure init_sc;         end interface
@@ -70,7 +70,6 @@
         call init(sc%name,name)
 
         sc%un_plot = new_and_open(dir,name//'_plot')
-        sc%un_info = new_and_open(dir,name//'_info')
 
         call init(vars,'VARIABLES = ')
         call append(vars,'t,')
@@ -110,7 +109,6 @@
         sc%iterPerHour = 0
         sc%iterPerDay = 0
         close(sc%un_plot)
-        close(sc%un_info)
         call delete(sc%dir)
         call delete(sc%name)
       end subroutine

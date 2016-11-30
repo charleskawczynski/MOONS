@@ -13,6 +13,7 @@
 
       private
       public :: export_3D_3C
+      public :: export_3D_3C_transient
       public :: export_2D_2C
       public :: export_2D_3C
       public :: export_2D_2C_transient
@@ -47,6 +48,19 @@
         call close_and_message(un,dir,name)
       end subroutine
 
+      subroutine export_3D_3C_transient(m,U,dir,name,pad,TMP)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        type(mesh),intent(in) :: m
+        integer,intent(in) :: pad
+        type(VF),intent(in) :: U
+        type(time_marching_params),intent(in) :: TMP
+        integer :: un
+        un = new_and_open(dir,name//'_t='//int2str(TMP%n_step))
+        call exp_3D_3C(m,pad,un,arrfmt,name,U)
+        call close_and_message(un,dir,name)
+      end subroutine
+
       subroutine export_2D_2C_transient(m,U,dir,name,pad,direction,TMP)
         implicit none
         character(len=*),intent(in) :: dir,name
@@ -55,7 +69,7 @@
         type(time_marching_params),intent(in) :: TMP
         type(VF),intent(in) :: U
         integer :: un
-        un = new_and_open(dir,name//cp2str(TMP%t))
+        un = new_and_open(dir,name//'_t='//int2str(TMP%n_step))
         call exp_2D_2C(m,pad,un,arrfmt,name,U,direction)
         call close_and_message(un,dir,name)
       end subroutine
@@ -68,7 +82,7 @@
         type(time_marching_params),intent(in) :: TMP
         type(VF),intent(in) :: U
         integer :: un
-        un = new_and_open(dir,name//cp2str(TMP%t))
+        un = new_and_open(dir,name//'_t='//int2str(TMP%n_step))
         call exp_2D_3C(m,pad,un,arrfmt,name,U,direction)
         call close_and_message(un,dir,name)
       end subroutine
