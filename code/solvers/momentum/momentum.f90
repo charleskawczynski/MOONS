@@ -404,11 +404,8 @@
          implicit none
          type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
-         ! call export_processed(mom%m,mom%U,str(DT%U_t),'U_'//int2Str(mom%TMP%n_step),1)
-         ! call export_processed(mom%m,mom%p,str(DT%U_t),'p_'//int2Str(mom%TMP%n_step),1)
-         write(*,*) 'GH mom 1'; call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
-         write(*,*) 'GH mom 2'; call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP)
-         write(*,*) 'GH mom 3'
+         call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
+         call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP)
        end subroutine
 
        subroutine export_transient3_mom(mom)
@@ -446,21 +443,17 @@
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
-
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
-
          case (3)
            call assign(mom%Unm1,mom%U) ! If Unm1 is needed
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%TMP%dt,mom%Ustar,&
            mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
-
          case (4)
            call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E)
-
          case default; stop 'Error: solveUMethod must = 1,2 in momentum.f90.'
          end select
          call iterate_step(mom%TMP)

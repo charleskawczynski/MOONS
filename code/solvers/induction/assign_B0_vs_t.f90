@@ -18,16 +18,11 @@
          type(VF),intent(inout) :: B0
          type(time_marching_params),intent(in) :: TMP
          real(cp),dimension(n_data_points) :: B_z_all,B_r_all,t_all
-         real(cp) :: B_max
          ! Non-dimensionalize
-         call time(t_all)
-         t_all = t_all*micro_seconds_to_seconds/t_c
+         call time_normalized(t_all)
+         call B_r_mean_normalized(B_r_all)
+         call B_z_mean_normalized(B_z_all)
          call assign(B0%x,1.0_cp)
-         call B_r_mean(B_r_all)
-         call B_z_mean(B_z_all)
-         B_max = maxval((/B_z_all,B_r_all/))
-         B_z_all = B_z_all/B_max
-         B_r_all = B_r_all/B_max
          call assign(B0%y,get_B_from_t(t_all,B_r_all,TMP%t))
          call assign(B0%z,get_B_from_t(t_all,B_z_all,TMP%t))
        end subroutine
@@ -36,18 +31,13 @@
          implicit none
          type(VF),intent(inout) :: dB0_dt
          type(time_marching_params),intent(in) :: TMP
-         real(cp),dimension(n_data_points) :: B_z_all,B_r_all,B_all,t_all
-         real(cp) :: B_max
-         call time(t_all)
-         t_all = t_all*micro_seconds_to_seconds/t_c
+         real(cp),dimension(n_data_points) :: B_z_all,B_r_all,t_all
+         call time_normalized(t_all)
+         call B_r_mean_normalized(B_r_all)
+         call B_z_mean_normalized(B_z_all)
          call assign(dB0_dt%x,0.0_cp)
-         call B_r_mean(B_all)
-         call B_z_mean(B_all)
-         B_max = maxval((/B_z_all,B_r_all/))
-         B_z_all = B_z_all/B_max
-         B_r_all = B_r_all/B_max
-         call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_all,TMP%t))
-         call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_all,TMP%t))
+         call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_r_all,TMP%t))
+         call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_z_all,TMP%t))
        end subroutine
 
        function get_dB0_dt_from_t(t_all,B_all,t) result(dB0_dt)

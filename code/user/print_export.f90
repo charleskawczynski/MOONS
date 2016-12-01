@@ -107,15 +107,16 @@
          implicit none
          type(print_export),intent(inout) :: PE
          integer(li),intent(in) :: n_step
-         logical,dimension(0:6) :: temp
+         logical,dimension(0:6) :: temp,temp2
          integer :: i
          temp(0) = .true.
          temp(1:6) = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
+         temp2(1:6) = (/((mod(n_step,2500).eq.1).and.(n_step.ne.1),i=1,6)/)
          ! temp(1:6) = (/((mod(n_step+1,10**i).eq.1).and.(n_step.ne.0),i=1,6)/)
 
          PE%info = temp(PE%i_info)
          PE%transient_0D = temp(PE%i_transient_0D).or.(n_step.eq.0)
-         PE%transient_2D = temp(PE%i_transient_2D).or.(n_step.eq.0)
+         PE%transient_2D = temp2(PE%i_transient_2D).or.(n_step.eq.0)
          ! PE%transient_2D = PE%export_planar.and.(temp(PE%i_transient_2D).or.n_step.eq.1)
          PE%solution = temp(PE%i_solution).and.(n_step.gt.1)
        end subroutine

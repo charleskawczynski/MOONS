@@ -118,7 +118,7 @@
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
-             call print(sc)
+             call print(sc,coupled)
              call export(sc,coupled%t)
              if (SP%solveMomentum) then
                call import(mom%ISP_U); call init(mom%PCG_U%ISP,mom%ISP_U)
@@ -142,8 +142,8 @@
              call import(KS)
            endif
          enddo
-         call print(sc)
-         call export(sc)
+         call print(sc,coupled)
+         call export(sc,coupled)
 
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************

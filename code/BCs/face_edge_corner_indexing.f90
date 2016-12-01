@@ -14,6 +14,8 @@
        public :: adj_dir_given_edge
        public :: orth_dir
 
+       public :: adj_shape_given_dir
+
        public :: adj_faces_given_edge
        public :: adj_faces_given_corner
        public :: normal_faces_given_dir
@@ -90,6 +92,19 @@
          case (2); a = (/1,3/)
          case (3); a = (/1,2/)
          case default; stop 'Error: dir must = 1,2,3 in adj_dir_given_dir in face_edge_corner_indexing.f90'
+         end select
+       end function
+
+       function adj_shape_given_dir(s,dir) result (a)
+         implicit none
+         integer,dimension(3),intent(in) :: s
+         integer,intent(in) :: dir
+         integer,dimension(2) :: a
+         select case (dir)
+         case (1); a = (/s(2),s(3)/)
+         case (2); a = (/s(1),s(3)/)
+         case (3); a = (/s(1),s(2)/)
+         case default; stop 'Error: dir must = 1,2,3 in adj_shape_given_dir in face_edge_corner_indexing.f90'
          end select
        end function
 

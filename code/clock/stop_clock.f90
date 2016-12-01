@@ -10,6 +10,7 @@
        use IO_tools_mod
        use clock_mod
        use string_mod
+       use time_marching_params_mod
        use unit_conversion_mod
        implicit none
 
@@ -151,24 +152,27 @@
         flush(sc%un_plot)
       end subroutine
 
-      subroutine export_sc_dir(sc)
+      subroutine export_sc_dir(sc,TMP)
         implicit none
         type(stop_clock),intent(in) :: sc
+        type(time_marching_params),intent(in) :: TMP
         integer :: un
         un = new_and_open(str(sc%dir),str(sc%name))
-        call export_sc(sc,un)
+        call export(sc,TMP,un)
         call close_and_message(un,str(sc%dir),str(sc%name))
       end subroutine
 
-      subroutine print_sc(sc)
+      subroutine print_sc(sc,TMP)
         implicit none
         type(stop_clock),intent(in) :: sc
-        call export_sc(sc,6)
+        type(time_marching_params),intent(in) :: TMP
+        call export(sc,TMP,6)
       end subroutine
 
-      subroutine export_sc(sc,un)
+      subroutine export_sc(sc,TMP,un)
         implicit none
         type(stop_clock),intent(in) :: sc
+        type(time_marching_params),intent(in) :: TMP
         integer,intent(in) :: un
         real(cp) :: temp
         character(len=1) :: u
@@ -185,6 +189,14 @@
 
         temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
         write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
+
+        temp = sc%iterPerHour*TMP%dt
+        write(un,*) 'Convective units / hour = ',temp
+
+        ! Or, as Eldredge did it:
+        ! CPU_TIME/(convective unit)
+        ! CPU_TIME/(convective unit)/unknown
+        ! Where unknowns = (3 momentum + 3 induction)*problem size
 
         write(un,*) ''
         write(un,*) '***************** ESTIMATED WALL CLOCK TIME INFO *******************'

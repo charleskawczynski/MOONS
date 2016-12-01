@@ -16,11 +16,15 @@ def Reynolds(mat,U,L): return U*L/mat.nu
 def magnetic_Reynolds(mat,U,L): return U*L*mat.mu_m*mat.sigma
 def Hartmann(mat,B,L): return B*L*np.sqrt(mat.sigma/(mat.rho*mat.nu))
 
+T = 700
 Li = mp.mat_props(); Li.Lithium()
-LiPb = mp.mat_props(); LiPb.Lead_Lithium()
+LiPb = mp.mat_props(); LiPb.Lead_Lithium(T)
+liq_lead = mp.mat_props(); liq_lead.liquid_lead(T)
 
 print '***************** CHOSEN MATERIAL PROPERTY *****************'
-mat = LiPb
+# mat = LiPb
+# mat = Li
+mat = liq_lead
 mat.print_MP()
 
 print '\n***************** KNOWN SCALES *****************'
@@ -29,6 +33,8 @@ L_p = 200.0*pow(-2)                  # [m]
 # L_r = 5.0*pow(-2)                   # [m]
 L = L_r/2
 L = L_p/2
+
+L = L/2 # 2 ducts
 # L = 100.0*pow(-3)
 # tau = abs(7069.62 - 45000.0)*pow(-6) # [s]
 tau = abs(45000.0)*pow(-6)           # [s]

@@ -63,8 +63,8 @@
          real(cp) :: Ha,Re
          ! Ha = 4.0_cp*10.0_cp**(3.0_cp)
          ! Re = 400.0_cp
-         Ha = 10.0_cp
-         Re = 50.0_cp
+         Ha = 20.0_cp
+         Re = 100.0_cp
          call delete(m)
          ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
          ! N = 16; hmin = -0.5_cp; hmax = 0.5_cp

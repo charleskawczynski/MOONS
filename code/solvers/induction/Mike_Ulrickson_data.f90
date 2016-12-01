@@ -5,15 +5,49 @@
      implicit none
 
      private
-     public :: time
-     public :: B_r_mean
-     public :: B_z_mean
+     public :: B_r_mean_normalized
+     public :: B_z_mean_normalized
+     public :: time_normalized
+
+     integer,parameter :: n_points = 58
+     real(cp),parameter :: micro_seconds_to_seconds = 10.0_cp**(-6.0_cp)
+     real(cp),parameter :: t_c = 0.00278_cp
 
      contains
 
+     subroutine B_r_mean_normalized(B)
+       implicit none
+       real(cp),dimension(n_points),intent(inout) :: B
+       real(cp),dimension(n_points) :: B_r,B_z
+       call B_r_mean(B); B = B/B_maxval(B_r,B_z)
+     end subroutine
+
+     subroutine B_z_mean_normalized(B)
+       implicit none
+       real(cp),dimension(n_points),intent(inout) :: B
+       real(cp),dimension(n_points) :: B_r,B_z
+       call B_z_mean(B); B = B/B_maxval(B_r,B_z)
+     end subroutine
+
+     subroutine time_normalized(t)
+       implicit none
+       real(cp),dimension(n_points),intent(inout) :: t
+       call time(t)
+       t = t*micro_seconds_to_seconds/t_c
+     end subroutine
+
+     function B_maxval(B_r,B_z) result(B_max)
+       implicit none
+       real(cp),dimension(n_points),intent(inout) :: B_r,B_z
+       real(cp) :: B_max
+       call B_z_mean(B_z)
+       call B_r_mean(B_r)
+       B_max = maxval((/B_r,B_z/))
+     end function
+
      subroutine B_z_mean(B)
        implicit none
-       real(cp),dimension(58),intent(inout) :: B
+       real(cp),dimension(n_points),intent(inout) :: B
        B(1) = 1.20628735198_cp
        B(2) = 1.20626523805_cp
        B(3) = 1.20707869737_cp
@@ -76,7 +110,7 @@
 
      subroutine B_r_mean(B)
        implicit none
-       real(cp),dimension(58),intent(inout) :: B
+       real(cp),dimension(n_points),intent(inout) :: B
        B(1) = 0.116585219499_cp
        B(2) = 0.116572322302_cp
        B(3) = 0.116736701655_cp
@@ -139,7 +173,7 @@
 
      subroutine time(t)
        implicit none
-       real(cp),dimension(58),intent(inout) :: t
+       real(cp),dimension(n_points),intent(inout) :: t
        t(1) = 0.0_cp
        t(2) = 1000.0_cp
        t(3) = 2000.0_cp

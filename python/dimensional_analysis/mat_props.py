@@ -9,6 +9,7 @@ from sympy import Symbol
 from sympy import *
 from itertools import *
 from math import factorial
+import numpy as np
 import os
 clear = lambda: os.system('cls')
 clear()
@@ -31,25 +32,50 @@ class mat_props:
 		return
 
 	def Lithium(self):
-		self.name = 'Lithium'
+		self.name  = 'Lithium'
 		self.sigma = 1.1*pow(7) # http://periodictable.com/Properties/A/ElectricalConductivity.an.html
-		self.nu = 8.5*pow(-7)
-		self.rho = 485.0
-		self.mu = self.nu*self.rho
-		self.Xi_m = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
-		self.K_m = self.Xi_m+1.0
-		self.mu_m = self.K_m*mu_m0
+		self.nu    = 8.5*pow(-7)
+		self.rho   = 485.0
+		self.mu    = self.nu*self.rho
+		self.Xi_m  = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
+		self.K_m   = self.Xi_m+1.0
+		self.mu_m  = self.K_m*mu_m0
 		return self
 
-	def Lead_Lithium(self): # http://oa.upm.es/11738/1/INVE_MEM_2011_103029.pdf
-		self.name = 'LiPb'
-		self.sigma = 7.89*pow(5) # Gautam
-		self.rho = 9486.0 # Gautam
-		self.mu = 0.0022 # Gautam
-		self.nu = self.mu/self.rho
-		self.Xi_m = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
-		self.K_m = self.Xi_m+1.0
-		self.mu_m = self.K_m*mu_m0
+	def Lead_Lithium(self,T): # http://oa.upm.es/11738/1/INVE_MEM_2011_103029.pdf
+		# Schulz, B. "Thermophysical properties of the Li (17) Pb (83) alloy."
+		# Fusion Engineering and Design 14.3 (1991): 199-205.
+		if (T<508) or (T>933):
+			raise Exception('Error: T not in range in Lead_Lithium.py')
+		self.name        = 'PbLi'
+		self.resistivity = 102.3*10**(-6)+10.54*10**(-8)*T
+		self.sigma       = 1/self.resistivity
+		# self.rho         = 9486.0 # Gautam
+		# self.mu          = 0.0022 # Gautam
+		self.rho         = 9.70*(1-72.1*10**(-6.0)*T) # For 80 at %Pb (T_m=533 K)
+		self.rho         = 11.47*(1-118.0*10**(-6.0)*T) # For 100 at %Pb (T_m=600 K)
+		R = 8.314 # Gas constant, check if universal or not.
+		self.mu          = 0.187*np.exp(11640/(R*T))
+		self.nu          = self.mu/self.rho
+		self.Xi_m        = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
+		self.K_m         = self.Xi_m+1.0
+		self.mu_m        = self.K_m*mu_m0
+		return self
+
+	def liquid_lead(self,T): # http://www.iaea.org/inis/collection/NCLCollectionStore/_Public/43/095/43095088.pdf
+		if (T<600) or (T>1200):
+			raise Exception('Error: T not in range in liquid_lead.py')
+		self.name        = 'liq_Pb'
+		self.resistivity = (67.0+0.0471*T)*10.0**-8.0
+		self.sigma       = 1.0/self.resistivity
+		self.nu          = 4.55*10.0**(-4.0)*np.exp(1069/T)
+		self.k           = 9.2 + 0.011*T
+		self.rho         = 11441 - 1.2795*T
+		self.mu          = self.nu*self.rho
+
+		self.Xi_m        = 0 # not given in ref.
+		self.K_m         = self.Xi_m+1.0
+		self.mu_m        = self.K_m*mu_m0
 		return self
 
 	def steel(self):
@@ -75,6 +101,7 @@ class mat_props:
 		print '[H] = [henry] = [(kg m^2)/(s^2 A^2)]'
 		print '[H/Ohm] = [s], [H] = [Ohm s]'
 		print '[S] = [1/Ohm]'
+		print '[m Pa = m N/m^2 = kg/(m*s^2)]'
 		print ''
 		print 'sigma = ' + str(self.sigma) + t+t +   ' [Ohm^-1 m^-1]'
 		print 'nu    = ' + str(self.nu)    + t+t+t + ' [m^2/s]'

@@ -27,7 +27,7 @@
          ! ***************** DEFAULT VALUES *****************
          Re         = 1.0_cp*pow(2)
          Ha         = 20.0_cp*pow(0)
-         Rem        = 5.0_cp*pow(0)
+         Rem        = 10.0_cp*pow(0)
          tw         = 0.5_cp
 
          include_vacuum = .false.
@@ -59,6 +59,7 @@
          ! dtime = 1.0_cp*10.0_cp**(-3.0_cp)
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp)
          dtime = 1.0_cp*pow(-4)
+         ! dtime = 1.0_cp*pow(-5)
          ! dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
 
          ! time  = 100.0_cp

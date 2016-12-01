@@ -98,6 +98,7 @@
          type(probe),dimension(3) :: ME,ME_fluid,ME_conductor ! 1 = total, 2 = applied, 3 induced
          type(probe) :: JE,JE_fluid
          type(probe) :: probe_divB,probe_divJ
+         type(probe),dimension(3) :: probe_dB0dt,probe_B0
 
          type(mesh) :: m
          type(mesh_domain) :: MD_fluid,MD_sigma ! Latter for vacuum case
@@ -242,6 +243,14 @@
 
          call compute_J_ind(ind)
 
+         call init(ind%probe_dB0dt(1),str(DT%B_e),'dB0dt_x',ind%SP%restartB,SP)
+         call init(ind%probe_dB0dt(2),str(DT%B_e),'dB0dt_y',ind%SP%restartB,SP)
+         call init(ind%probe_dB0dt(3),str(DT%B_e),'dB0dt_z',ind%SP%restartB,SP)
+
+         call init(ind%probe_B0(1),str(DT%B_e),'B0_x',ind%SP%restartB,SP)
+         call init(ind%probe_B0(2),str(DT%B_e),'B0_y',ind%SP%restartB,SP)
+         call init(ind%probe_B0(3),str(DT%B_e),'B0_z',ind%SP%restartB,SP)
+
          call init(ind%probe_divB,str(DT%B_r),'transient_divB',ind%SP%restartB,SP)
          call init(ind%probe_divJ,str(DT%J_r),'transient_divJ',ind%SP%restartB,SP)
          call init(ind%JE,str(DT%J_e),'JE',ind%SP%restartB,SP)
@@ -317,6 +326,8 @@
 
          call delete(ind%probe_divB)
          call delete(ind%probe_divJ)
+         call delete(ind%probe_dB0dt)
+         call delete(ind%probe_B0)
 
          call delete(ind%ME)
          call delete(ind%ME_fluid)
@@ -463,6 +474,13 @@
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP,temp)
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP,temp)
+         call Ln(temp,ind%dB0dt%x,2.0_cp,ind%m); call export(ind%probe_dB0dt(1),ind%TMP,temp)
+         call Ln(temp,ind%dB0dt%y,2.0_cp,ind%m); call export(ind%probe_dB0dt(2),ind%TMP,temp)
+         call Ln(temp,ind%dB0dt%z,2.0_cp,ind%m); call export(ind%probe_dB0dt(3),ind%TMP,temp)
+
+         call Ln(temp,ind%B0%x,2.0_cp,ind%m); call export(ind%probe_B0(1),ind%TMP,temp)
+         call Ln(temp,ind%B0%y,2.0_cp,ind%m); call export(ind%probe_B0(2),ind%TMP,temp)
+         call Ln(temp,ind%B0%z,2.0_cp,ind%m); call export(ind%probe_B0(3),ind%TMP,temp)
 
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
@@ -489,8 +507,8 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B_t),'B_'//int2str(ind%TMP%n_step),1)
-         call export_processed(ind%m,ind%J,str(DT%J_t),'J_'//int2str(ind%TMP%n_step),1)
+         call export_processed(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
+         call export_processed(ind%m,ind%J,str(DT%B_t),'J',1,ind%TMP)
        end subroutine
 
        subroutine export_transient3_ind(ind)
@@ -547,17 +565,13 @@
          case (1)
          call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
          ind%ISP_B%iter_max,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
-
          case (2)
-
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
          ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
-
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
          ind%dB0dt,ind%m,ind%TMP%dt,PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
          ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
-
          case (4)
          if (ind%TMP%n_step.le.1) then
            call compute_J_ind(ind)
@@ -570,7 +584,6 @@
          ind%B_interior,ind%curlE,ind%phi,ind%m,ind%MD_sigma,&
          ind%TMP%dt,ind%ISP_B%iter_max,PE%transient_0D,&
          ind%temp_CC_SF,ind%temp_F1)
-
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
          call iterate_step(ind%TMP)

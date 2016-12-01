@@ -29,6 +29,8 @@
        public :: get_char
        public :: defined
 
+       public :: get_coordinate_ind
+
        type data_location
          logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
          integer :: face,edge = 0                    ! face direction, edge direction
@@ -69,6 +71,7 @@
 
        interface get_char;            module procedure get_char_DL;             end interface
        interface defined;             module procedure defined_DL;              end interface
+       interface get_coordinate_ind;  module procedure get_coordinate_ind_DL;   end interface
 
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
@@ -408,6 +411,15 @@
           type(data_location),intent(in) :: DL
           logical :: defined
           defined = DL%defined
+        end function
+
+        function get_coordinate_ind_DL(DL) result(i)
+          implicit none
+          type(data_location),intent(in) :: DL
+          integer,dimension(3) :: i
+          ! CC_eye = 0 (N) and 1 (C)
+          ! get_coordinate_ind = 1 (N) and 2 (C)
+          i = CC_eye(DL)+1
         end function
 
         function get_char_DL(DL) result(c)

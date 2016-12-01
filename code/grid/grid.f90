@@ -1,6 +1,7 @@
        module grid_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use current_precision_mod
+       use data_location_mod
        use face_edge_corner_indexing_mod
        use IO_tools_mod
        use coordinates_mod
@@ -20,6 +21,8 @@
 
        public :: mirror_about_hmin
        public :: mirror_about_hmax
+
+       public :: get_shape
 
        public :: get_face_GI
        public :: get_edge_GI
@@ -62,6 +65,8 @@
 
        interface mirror_about_hmin;  module procedure mirror_about_hmin_g;     end interface
        interface mirror_about_hmax;  module procedure mirror_about_hmax_g;     end interface
+
+       interface get_shape;          module procedure get_shape_g;             end interface
 
        interface get_face_GI;        module procedure get_face_GI_grid;        end interface
        interface get_edge_GI;        module procedure get_edge_GI_grid;        end interface
@@ -243,6 +248,22 @@
          integer,intent(in) :: dir
          call mirror_about_hmax(g%c(dir))
        end subroutine
+
+       function get_shape_g(g,DL) result(s)
+         implicit none
+         type(grid),intent(in) :: g
+         type(data_location),intent(in) :: DL
+         integer,dimension(3) :: s
+         integer :: i
+         do i=1,3
+             if ( N_along(DL,i)) then; s(i) = g%c(i)%sn
+         elseif (CC_along(DL,i)) then; s(i) = g%c(i)%sc
+         !     if ( N_along(DL,i)) then; s(i) = g%c(i)%h(1)%N
+         ! elseif (CC_along(DL,i)) then; s(i) = g%c(i)%h(2)%N
+         else; stop 'Error: bad DL in get_shape_g in grid.f90'
+         endif
+         enddo
+       end function
 
        subroutine snip_grid(g,dir) ! Removes the first index from the grid
          implicit none

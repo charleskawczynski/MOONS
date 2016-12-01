@@ -153,11 +153,16 @@
          real(cp),intent(in) :: d
          real(cp) :: abs_d_data_dt,abs_d_data_dt_by_dmax
          integer :: i
+         logical :: L
          do i=1,p%n_history-1
          p%SS_reached(i) = p%SS_reached(i+1)
          p%SS_reached_final(i) = p%SS_reached_final(i+1)
          enddo
-         p%d_data_dt = (d - p%d)/(TMP%t - p%t) ! Breaks if double exported data (TMP%t = p%t)
+         ! Breaks if double exported data (TMP%t = p%t)
+         L = p%t.lt.10.0_cp**(-10.0_cp)
+         if (L) then; p%d_data_dt = 0.0_cp
+         else;        p%d_data_dt = (d - p%d)/(TMP%t - p%t)
+         endif
          abs_d_data_dt = abs(p%d_data_dt)
          p%t = TMP%t
          p%d = d
