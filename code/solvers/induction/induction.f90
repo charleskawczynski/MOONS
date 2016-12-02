@@ -474,13 +474,13 @@
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP,temp)
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP,temp)
-         call Ln(temp,ind%dB0dt%x,2.0_cp,ind%m); call export(ind%probe_dB0dt(1),ind%TMP,temp)
-         call Ln(temp,ind%dB0dt%y,2.0_cp,ind%m); call export(ind%probe_dB0dt(2),ind%TMP,temp)
-         call Ln(temp,ind%dB0dt%z,2.0_cp,ind%m); call export(ind%probe_dB0dt(3),ind%TMP,temp)
+         ! call Ln(temp,ind%dB0dt%x,2.0_cp,ind%m); call export(ind%probe_dB0dt(1),ind%TMP,temp)
+         ! call Ln(temp,ind%dB0dt%y,2.0_cp,ind%m); call export(ind%probe_dB0dt(2),ind%TMP,temp)
+         ! call Ln(temp,ind%dB0dt%z,2.0_cp,ind%m); call export(ind%probe_dB0dt(3),ind%TMP,temp)
 
-         call Ln(temp,ind%B0%x,2.0_cp,ind%m); call export(ind%probe_B0(1),ind%TMP,temp)
-         call Ln(temp,ind%B0%y,2.0_cp,ind%m); call export(ind%probe_B0(2),ind%TMP,temp)
-         call Ln(temp,ind%B0%z,2.0_cp,ind%m); call export(ind%probe_B0(3),ind%TMP,temp)
+         ! call Ln(temp,ind%B0%x,2.0_cp,ind%m); call export(ind%probe_B0(1),ind%TMP,temp)
+         ! call Ln(temp,ind%B0%y,2.0_cp,ind%m); call export(ind%probe_B0(2),ind%TMP,temp)
+         ! call Ln(temp,ind%B0%z,2.0_cp,ind%m); call export(ind%probe_B0(3),ind%TMP,temp)
 
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
@@ -556,10 +556,10 @@
          if (ind%SP%solveMomentum) then;    call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          elseif (ind%TMP%n_step.le.1) then; call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          endif
-         call assign_B0_vs_t(ind%B0,ind%TMP)
-         call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
-         call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
-         ! call assign(ind%dB0dt,0.0_cp)
+         ! call assign_B0_vs_t(ind%B0,ind%TMP)
+         ! call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
+         ! call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
+         call assign(ind%dB0dt,0.0_cp)
 
          select case (ind%SP%solveBMethod)
          case (1)

@@ -34,9 +34,9 @@
          call delete(m)
          ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
          ! N = 45; hmin = -1.0_cp; hmax = 1.0_cp
-         ! N = 45
+         N = 45
          ! N = 13*2**2
-         N = 13
+         ! N = 13
          hmin = -1.0_cp
          hmax =  1.0_cp
          ! N = 64; hmin = -0.5_cp; hmax = 0.5_cp
@@ -117,8 +117,8 @@
          integer,dimension(3) :: N
          call delete(m)
          call init(g,m_in%B(1)%g)
-         ! N = 11
-         N = 3
+         N = 11
+         ! N = 3
          ! N = 3*2**2
          i = 1; call ext_uniform_IO(g,N(i),i)
          i = 2; call ext_uniform_IO(g,N(i),i)

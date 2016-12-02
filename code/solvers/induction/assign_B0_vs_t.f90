@@ -23,6 +23,7 @@
          call B_r_mean_normalized(B_r_all)
          call B_z_mean_normalized(B_z_all)
          call assign(B0%x,1.0_cp)
+         ! call assign(B0%x,1.0_cp/B_maxval(B_r_all,B_z_all))
          call assign(B0%y,get_B_from_t(t_all,B_r_all,TMP%t))
          call assign(B0%z,get_B_from_t(t_all,B_z_all,TMP%t))
        end subroutine

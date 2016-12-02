@@ -7,6 +7,7 @@
      private
      public :: B_r_mean_normalized
      public :: B_z_mean_normalized
+     public :: B_maxval
      public :: time_normalized
 
      integer,parameter :: n_points = 58

@@ -75,7 +75,7 @@
        SP%export_mesh_block      = .false.            ! Export mesh blocks to FECs
        SP%export_soln_only       = .true.             ! Export mesh blocks to FECs
 
-       SP%coupled_time_step      = .true.             ! Ensures all time steps are equal to coupled%dt
+       SP%coupled_time_step      = .false.             ! Ensures all time steps are equal to coupled%dt
 
        SP%solveEnergy            = .false.            ! Solve energy    equation
        SP%solveMomentum          = .true.             ! Solve momentum  equation
@@ -95,7 +95,7 @@
 
        SP%solveTMethod           = 5                  ! Refer to energy.f90
        SP%solveUMethod           = 1                  ! Refer to momentum.f90
-       SP%solveBMethod           = 2                  ! Refer to induction.f90
+       SP%solveBMethod           = 1                  ! Refer to induction.f90
 
        SP%addJCrossB             = .true.             ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB        = .false.            ! add Q2D JCrossB  to momentum equation

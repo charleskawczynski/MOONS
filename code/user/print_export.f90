@@ -116,8 +116,8 @@
 
          PE%info = temp(PE%i_info)
          PE%transient_0D = temp(PE%i_transient_0D).or.(n_step.eq.0)
-         PE%transient_2D = temp2(PE%i_transient_2D).or.(n_step.eq.0)
-         ! PE%transient_2D = PE%export_planar.and.(temp(PE%i_transient_2D).or.n_step.eq.1)
+         ! PE%transient_2D = temp2(PE%i_transient_2D).or.(n_step.eq.0)
+         PE%transient_2D = PE%export_planar.and.(temp(PE%i_transient_2D).or.n_step.eq.1)
          PE%solution = temp(PE%i_solution).and.(n_step.gt.1)
        end subroutine
 

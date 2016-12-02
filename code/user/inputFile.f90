@@ -26,12 +26,12 @@
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
          Re         = 1.0_cp*pow(2)
-         Ha         = 20.0_cp*pow(0)
+         Ha         = 10.0_cp*pow(0)
          Rem        = 10.0_cp*pow(0)
          tw         = 0.5_cp
 
          include_vacuum = .false.
-         finite_Rem = .true.
+         finite_Rem = .false.
          sig_local_over_sig_f = 1.0_cp             ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-1.0_cp) ! sigma* = sigma_wall/sigma_l
          ! sig_local_over_sig_f = 10.0_cp**(-2.0_cp) ! sigma* = sigma_wall/sigma_l
@@ -55,10 +55,10 @@
 
          ! BMC 102
          ! time  = 10.0_cp
-         time  = 100.0_cp
+         time  = 30.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-3.0_cp)
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp)
-         dtime = 1.0_cp*pow(-4)
+         dtime = 1.0_cp*pow(-2)
          ! dtime = 1.0_cp*pow(-5)
          ! dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)
 
@@ -73,8 +73,8 @@
          call init(coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
          ! call init(coupled,1000000000,dtime,str(DT%TMP), 'TMP_coupled')
 
-         !call init(TMP_B, coupled%n_step_stop, coupled%dt/pow(2), str(DT%TMP), 'TMP_B')
-         call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
+         call init(TMP_B, coupled%n_step_stop, coupled%dt/pow(2), str(DT%TMP), 'TMP_B')
+         ! call init(TMP_B, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_B')
          call init(TMP_U, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_U')
          call init(TMP_T, coupled%n_step_stop, coupled%dt, str(DT%TMP), 'TMP_T')
 
