@@ -4,7 +4,7 @@
       use array_mod
       use sparse_mod
       use derivative_stencils_mod
-      ! use interp_stencils_mod
+      use interpolation_stencils_mod
       use IO_tools_mod
       implicit none
 
@@ -58,8 +58,6 @@
         type(sparse) :: theta                       ! Interpolation coefficients
         ! type(array),dimension(2) :: h               ! Cell coordinates (1=N,2=C)
         ! type(array),dimension(2) :: dh              ! Cell dh (1=N,2=C)
-        ! integer :: i_n = 0                          ! index for hn
-        ! integer :: i_c = 0                          ! index for hc
         ! Depricated:
         real(cp),dimension(:),allocatable :: hn     ! Cell corner coordinates
         real(cp),dimension(:),allocatable :: hc     ! Cell center coordinates
@@ -342,214 +340,6 @@
       end subroutine
 
       ! *****************************************************************
-      ! ********************** DERIVATIVE STENCILS **********************
-      ! *****************************************************************
-
-      ! ********************** NODE DATA STENCILS ***********************
-
-      subroutine stencil_stagCC2N(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U,dh
-        integer :: i,s
-        if (c%sc.gt.1) then
-          s = c%sc
-          allocate(L(1),D(s-1),U(s-1),dh(s-1)); dh = c%dhc
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          D = -(/(1.0_cp/dh(i),i=1,s-1)/)
-          U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call init(c%stagCC2N,L,D,U,1,s-1,s-1)
-          deallocate(L,D,U,dh)
-        else; call init(c%stagCC2N,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-      end subroutine
-
-      subroutine stencil_colN_1(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U,dh
-        integer :: i,s
-        if (c%sn.gt.3) then
-          s = c%sn
-          allocate(dh(s-1)); dh = c%dhn
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          i = 2 ! Front
-          L(1) = -(dh(i+1)+2.0_cp*dh(i))/(dh(i)*(dh(i+1)+dh(i)))
-          D(1) = (dh(i+1)+dh(i))/(dh(i+1)*dh(i))
-          U(1) = -dh(i)/(dh(i+1)*(dh(i+1)+dh(i)))
-          ! Interior
-          L(2:s-3) = -(/( (dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=3,s-2 )/)
-          D(2:s-3) =  (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))  ,i=3,s-2 )/)
-          U(2:s-3) =  (/( (dh(i-1)/(dh( i )*(dh(i-1)+dh(i)))) ,i=3,s-2 )/)
-          i = s-1 ! Back
-          L(s-2) = dh(i-1)/(dh(i-2)*(dh(i-1)+dh(i-2)))
-          D(s-2) = -(dh(i-1)+dh(i-2))/(dh(i-1)*dh(i-2))
-          U(s-2) = (2.0_cp*dh(i-1)+dh(i-2))/(dh(i-1)*(dh(i-1)+dh(i-2)))
-          call init(c%colN(1),L,D,U,s-2)
-          deallocate(L,D,U,dh)
-        else; call init(c%colN(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-        c%stencils_modified = .false.
-      end subroutine
-
-      subroutine stencil_colN_2(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U,dh
-        integer :: i,s
-        if (c%sn.gt.3) then
-          s = c%sn
-          allocate(dh(s-1)); dh = c%dhn
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Front
-          i = 2
-          L(1) =  2.0_cp/(dh( i )*(dh(i+1)+dh(i)))
-          D(1) = -2.0_cp/(dh(i+1)*dh(i))
-          U(1) =  2.0_cp/(dh(i+1)*(dh(i+1)+dh(i)))
-          ! Interior
-          L(2:s-3) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          D(2:s-3) =  (/(-2.0_cp/(dh(i-1)*dh(i))           ,i=3,s-2 )/)
-          U(2:s-3) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          ! Back
-          i = s-1
-          L(s-2) =  2.0_cp/(dh(i-2)*(dh(i-1)+dh(i-2)))
-          D(s-2) = -2.0_cp/(dh(i-1)*dh(i-2))
-          U(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i-2)))
-          call init(c%colN(2),L,D,U,s-2)
-          deallocate(L,D,U,dh)
-        else; call init(c%colN(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-        c%stencils_modified = .false.
-      end subroutine
-
-      ! *********************** CC DATA STENCILS ************************
-
-      subroutine stencil_stagN2CC(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U,dh
-        integer :: i,s
-        if (c%sn.gt.1) then
-          s = c%sn
-          allocate(L(1),D(s-1),U(s-1),dh(s-1)); dh = c%dhn
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          D = -(/(1.0_cp/dh(i),i=1,s-1)/)
-          U =  (/(1.0_cp/dh(i),i=1,s-1)/)
-          call init(c%stagN2CC,L,D,U,1,s-1,s-1)
-          deallocate(L,D,U,dh)
-        else; call init(c%stagN2CC,(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-      end subroutine
-
-      subroutine stencil_colCC_1(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U
-        real(cp),dimension(:),allocatable :: dh
-        integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Front, dh(i-1) => 0.5 dh(i-1)
-          i = 2
-          L(1) = (-(dh(i))/((0.5_cp*dh(i-1))*((0.5_cp*dh(i-1))+dh(i))))
-          D(1) = ((-(0.5_cp*dh(i-1))+dh(i))/((0.5_cp*dh(i-1))*dh(i)))
-          U(1) = ((0.5_cp*dh(i-1))/(dh(i)*((0.5_cp*dh(i-1))+dh(i))))
-          ! Interior
-          L(2:s-3) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=3,s-2 )/)
-          D(2:s-3) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=3,s-2 )/)
-          U(2:s-3) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=3,s-2 )/)
-          ! Back, dh(i) => 0.5 dh(i)
-          i = s-1
-          L(s-2) = (-0.5_cp*dh(i)/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i)))))
-          D(s-2) = ((-dh(i-1)+(0.5_cp*dh(i)))/(dh(i-1)*(0.5_cp*dh(i))))
-          U(s-2) = (dh(i-1)/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i)))))
-          call init(c%colCC(1),L,D,U,s-2)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-        c%stencils_modified = .false.
-      end subroutine
-
-      subroutine stencil_colCC_1_centered(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U
-        real(cp),dimension(:),allocatable :: dh
-        integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Interior
-          L(1:s-2) = (/( (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))   ,i=2,s-1 )/)
-          D(1:s-2) = (/( ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))   ,i=2,s-1 )/)
-          U(1:s-2) = (/( (dh(i-1)/(dh(i)*(dh(i-1)+dh(i))))    ,i=2,s-1 )/)
-          call init(c%colCC_centered(1),L,D,U,s-2)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC_centered(1),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-      end subroutine
-
-      subroutine stencil_colCC_2(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U
-        real(cp),dimension(:),allocatable :: dh
-        integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Front, dh(i-1) => 0.5 dh(i-1)
-          i = 2
-          L(1) =  2.0_cp/((0.5_cp*dh(i-1))*((0.5_cp*dh(i-1))+dh(i)))
-          D(1) = -2.0_cp/((0.5_cp*dh(i-1))*dh(i))
-          U(1) =  2.0_cp/(dh(i)*((0.5_cp*dh(i-1))+dh(i)))
-          ! Interior
-          L(2:s-3) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          D(2:s-3) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=3,s-2 )/)
-          U(2:s-3) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=3,s-2 )/)
-          ! Back, dh(i) => 0.5 dh(i)
-          i = s-1
-          L(s-2) =  2.0_cp/(dh(i-1)*(dh(i-1)+(0.5_cp*dh(i))))
-          D(s-2) = -2.0_cp/(dh(i-1)*(0.5_cp*dh(i)))
-          U(s-2) =  2.0_cp/((0.5_cp*dh(i))*(dh(i-1)+(0.5_cp*dh(i))))
-          call init(c%colCC(2),L,D,U,s-2)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-        c%stencils_modified = .false.
-      end subroutine
-
-      subroutine stencil_colCC_2_centered(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(:),allocatable :: L,D,U
-        real(cp),dimension(:),allocatable :: dh
-        integer :: i,s
-        if (c%sc.gt.2) then
-          s = c%sc
-          allocate(dh(s-1)); dh = c%dhc
-          allocate(L(s-2)); allocate(D(s-2)); allocate(U(s-2))
-          L = 0.0_cp; D = 0.0_cp; U = 0.0_cp
-          ! Interior
-          L(1:s-2) =  (/( 2.0_cp/(dh(i-1)*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-          D(1:s-2) = -(/( 2.0_cp/(dh(i-1)*dh(i))           ,i=2,s-1 )/)
-          U(1:s-2) =  (/( 2.0_cp/(dh( i )*(dh(i-1)+dh(i))) ,i=2,s-1 )/)
-          call init(c%colCC_centered(2),L,D,U,s-2)
-          deallocate(L,D,U,dh)
-        else; call init(c%colCC_centered(2),(/0.0_cp/),(/0.0_cp/),(/0.0_cp/),1)
-        endif
-      end subroutine
-
-      ! *****************************************************************
       ! ************************ STITCH STENCILS ************************
       ! *****************************************************************
 
@@ -668,34 +458,6 @@
         else
           write(*,*) 'Error: cannot stitch domains with single point'
           stop 'program stopped in coordinates.f90'
-        endif
-      end subroutine
-
-
-      ! *****************************************************************
-      ! ****************** INTERPOLATION COEFFICIENTS *******************
-      ! *****************************************************************
-
-      subroutine init_interpStencil(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        real(cp),dimension(2) :: v
-        integer :: t
-        call delete(c%theta)
-        if (c%sc.gt.1) then
-          call init(c%theta,c%sc-1)
-          do t=1,c%theta%D%N
-            v(1) = (c%hn(t+1) - c%hc(t))/(c%hc(t+1) - c%hc(t))
-            call init(c%theta%D,v(1),t)
-            v(2) = 1.0_cp - c%theta%D%f(t)
-            call init(c%theta%U,v(2),t)
-          enddo
-          call init_L(c%theta,(/0.0_cp/),1)
-        elseif (c%sc.eq.1) then
-          call init_D(c%theta,(/0.0_cp/),1)
-          call init_U(c%theta,(/1.0_cp/),1)
-          call init_L(c%theta,(/0.0_cp/),1)
-        else; stop 'Error: c%sc must > 1 in init_interpStencil in coordinates.f90'
         endif
       end subroutine
 
@@ -877,27 +639,16 @@
         implicit none
         type(coordinates),intent(inout) :: c
         ! Interpolation stencils
-        call init_interpStencil(c)
-
+        call init(c%theta,interpolation_stencil(c%hc,c%hn,c%sc,c%sn))
         ! Derivative stencils
-        call stencil_colCC_1(c)
-        call stencil_colCC_2(c)
-        call stencil_colCC_1_centered(c)
-        call stencil_colCC_2_centered(c)
-        call stencil_colN_1(c)
-        call stencil_colN_2(c)
-        call stencil_stagCC2N(c)
-        call stencil_stagN2CC(c)
-
-        ! call init(c%theta,interpolation_stencil(c%hc,c%hn,c%sc,c%sn))
-        ! call init(c%stagCC2N,staggered_CC2N(c%dhc,c%sc))
-        ! call init(c%stagN2CC,staggered_N2CC(c%dhn,c%sn))
-        ! call init(c%colCC_centered(1),collocated_CC_1_centered(c%dhc,c%sc))
-        ! call init(c%colCC_centered(2),collocated_CC_2_centered(c%dhc,c%sc))
-        ! call init(c%colCC(1),collocated_CC_1(c%dhc,c%sc))
-        ! call init(c%colCC(2),collocated_CC_2(c%dhc,c%sc))
-        ! call init(c%colN(1),collocated_Node_1(c%dhn,c%sn))
-        ! call init(c%colN(2),collocated_Node_2(c%dhn,c%sn))
+        call init(c%stagCC2N,staggered_CC2N(c%dhc,c%sc))
+        call init(c%stagN2CC,staggered_N2CC(c%dhn,c%sn))
+        call init(c%colCC_centered(1),collocated_CC_1_centered(c%dhc,c%sc))
+        call init(c%colCC_centered(2),collocated_CC_2_centered(c%dhc,c%sc))
+        call init(c%colCC(1),collocated_CC_1(c%dhc,c%sc))
+        call init(c%colCC(2),collocated_CC_2(c%dhc,c%sc))
+        call init(c%colN(1),collocated_Node_1(c%dhn,c%sn))
+        call init(c%colN(2),collocated_Node_2(c%dhn,c%sn))
 
         ! call check(c%stagCC2N)
         ! call check(c%stagN2CC)
