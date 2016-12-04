@@ -21,7 +21,7 @@
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
          call applyGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call init(g%c(dir),gg%g%c(dir))
          call initProps(g)
          call delete(gg)

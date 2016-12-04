@@ -54,9 +54,9 @@
         integer :: i,j,k,t
         real(cp) :: cosi,cosj,cosk
         FFT%s = u%BF(1)%GF%s
-        FFT%dh2(1) = m%B(1)%g%c(1)%dhn(1)**2.0_cp
-        FFT%dh2(2) = m%B(1)%g%c(2)%dhn(1)**2.0_cp
-        FFT%dh2(3) = m%B(1)%g%c(3)%dhn(1)**2.0_cp
+        FFT%dh2(1) = m%B(1)%g%c(1)%dhn%f(1)**2.0_cp
+        FFT%dh2(2) = m%B(1)%g%c(2)%dhn%f(1)**2.0_cp
+        FFT%dh2(3) = m%B(1)%g%c(3)%dhn%f(1)**2.0_cp
         FFT%Nx = m%B(1)%g%c(1)%sc-2
         FFT%Ny = m%B(1)%g%c(2)%sc-2
         FFT%Nz = m%B(1)%g%c(3)%sc-2

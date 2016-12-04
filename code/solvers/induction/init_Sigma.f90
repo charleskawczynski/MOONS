@@ -99,17 +99,17 @@
          select case (dir)
          case (1)
            do k=1,s(3);do j=1,s(2);do i=1,s(1)
-                r = sqrt((m%B(1)%g%c(2)%hc(j)-hc(2))**two + (m%B(1)%g%c(3)%hc(k)-hc(3))**two)
+                r = sqrt((m%B(1)%g%c(2)%hc%f(j)-hc(2))**two + (m%B(1)%g%c(3)%hc%f(k)-hc(3))**two)
                 if (r.lt.r0) sigmA%BF(1)%GF%f(i,j,k) = 1.0_cp
            enddo;enddo;enddo
          case (2)
            do k=1,s(3);do j=1,s(2);do i=1,s(1)
-                r = sqrt((m%B(1)%g%c(1)%hc(i)-hc(1))**two + (m%B(1)%g%c(3)%hc(k)-hc(3))**two)
+                r = sqrt((m%B(1)%g%c(1)%hc%f(i)-hc(1))**two + (m%B(1)%g%c(3)%hc%f(k)-hc(3))**two)
                 if (r.lt.r0) sigmA%BF(1)%GF%f(i,j,k) = 1.0_cp
            enddo;enddo;enddo
          case (3)
            do k=1,s(3);do j=1,s(2);do i=1,s(1)
-                r = sqrt((m%B(1)%g%c(1)%hc(i)-hc(1))**two + (m%B(1)%g%c(2)%hc(j)-hc(2))**two)
+                r = sqrt((m%B(1)%g%c(1)%hc%f(i)-hc(1))**two + (m%B(1)%g%c(2)%hc%f(j)-hc(2))**two)
                 if (r.lt.r0) sigmA%BF(1)%GF%f(i,j,k) = 1.0_cp
            enddo;enddo;enddo
          case default

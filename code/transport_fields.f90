@@ -27,7 +27,6 @@
        use init_J_interior_mod
        use init_Sigma_mod
        use ops_embedExtract_mod
-       use geometric_region_mod
        use divergence_clean_mod
 
        use iter_solver_params_mod

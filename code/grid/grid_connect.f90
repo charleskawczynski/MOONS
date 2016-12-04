@@ -28,7 +28,7 @@
          type(gridGenerator),intent(inout) :: gg
          integer,intent(in) :: dir
          call applyGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call delete(gg)
        end subroutine
 
@@ -43,7 +43,7 @@
          real(cp) :: dh
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_uniform in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
-         dh = gg%g%c(dir)%dhn(1)
+         dh = gg%g%c(dir)%dhn%f(1)
          call init(gg,(/uniformLeft(g_in%c(dir)%hmin,dh,N)/),dir)
          call process(g,gg,dir)
        end subroutine
@@ -59,7 +59,7 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_Roberts_L in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call init(gg,(/robertsLeft(hmin-L,hmin,N,beta)/),dir)
          call process(g,gg,dir)
        end subroutine
@@ -75,7 +75,7 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_Roberts_R in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call init(gg,(/robertsRight(hmin-L,hmin,N,beta)/),dir)
          call process(g,gg,dir)
        end subroutine
@@ -91,7 +91,7 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_Roberts_B in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call init(gg,(/robertsBoth(hmin-L,hmin,N,beta)/),dir)
          call process(g,gg,dir)
        end subroutine
@@ -107,7 +107,7 @@
          real(cp) :: dh
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_uniform in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
-         dh = gg%g%c(dir)%dhn(gg%g%c(dir)%sn-1)
+         dh = gg%g%c(dir)%dhn%f(gg%g%c(dir)%sn-1)
          call init(gg,(/uniformRight(g_in%c(dir)%hmax,dh,N)/),dir)
          call print(gg%g)
          call process(g,gg,dir)
@@ -140,7 +140,7 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_Roberts_R in extend_grid.f90'
          call init(g,g_in); call init(gg%g,g)
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn%f(1))
          call init(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
          call process(g,gg,dir)
        end subroutine

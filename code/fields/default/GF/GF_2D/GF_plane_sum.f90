@@ -36,14 +36,14 @@
           temp = 0.0_cp
           !$OMP PARALLEL DO SHARED(g), REDUCTION(+:temp)
           do k=1,U%s(3); do j=1,U%s(2)
-            temp = temp + U%f(p,j,k)*g%c(3)%dhn(k)*g%c(2)%dhn(j)*nhat
+            temp = temp + U%f(p,j,k)*g%c(3)%dhn%f(k)*g%c(2)%dhn%f(j)*nhat
           enddo; enddo
           !$OMP END PARALLEL DO
           F = temp
 #else
           F = 0.0_cp
           do k=1,U%s(3); do j=1,U%s(2)
-            F = F + U%f(p,j,k)*g%c(3)%dhn(k)*g%c(2)%dhn(j)*nhat
+            F = F + U%f(p,j,k)*g%c(3)%dhn%f(k)*g%c(2)%dhn%f(j)*nhat
           enddo; enddo
 #endif
         end function
@@ -89,14 +89,14 @@
           temp = 0.0_cp
           !$OMP PARALLEL DO SHARED(g), REDUCTION(+:temp)
           do k=1,U%s(3); do i=1,U%s(1)
-            temp = temp + U%f(i,p,k)*g%c(3)%dhn(k)*g%c(1)%dhn(i)*nhat
+            temp = temp + U%f(i,p,k)*g%c(3)%dhn%f(k)*g%c(1)%dhn%f(i)*nhat
           enddo; enddo
           !$OMP END PARALLEL DO
           F = temp
 #else
           F = 0.0_cp
           do k=1,U%s(3); do i=1,U%s(1)
-            F = F + U%f(i,p,k)*g%c(3)%dhn(k)*g%c(1)%dhn(i)*nhat
+            F = F + U%f(i,p,k)*g%c(3)%dhn%f(k)*g%c(1)%dhn%f(i)*nhat
           enddo; enddo
 #endif
         end function
@@ -142,14 +142,14 @@
           temp = 0.0_cp
           !$OMP PARALLEL DO SHARED(g), REDUCTION(+:temp)
           do j=1,U%s(2); do i=1,U%s(1)
-            temp = temp + U%f(i,j,p)*g%c(2)%dhn(j)*g%c(1)%dhn(i)*nhat
+            temp = temp + U%f(i,j,p)*g%c(2)%dhn%f(j)*g%c(1)%dhn%f(i)*nhat
           enddo; enddo
           !$OMP END PARALLEL DO
           F = temp
 #else
           F = 0.0_cp
           do j=1,U%s(2); do i=1,U%s(1)
-            F = F + U%f(i,j,p)*g%c(2)%dhn(j)*g%c(1)%dhn(i)*nhat
+            F = F + U%f(i,j,p)*g%c(2)%dhn%f(j)*g%c(1)%dhn%f(i)*nhat
           enddo; enddo
 #endif
         end function

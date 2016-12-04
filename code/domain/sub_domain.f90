@@ -194,8 +194,8 @@
          type(grid),dimension(2),intent(in) :: g
          integer,intent(in) :: dir
          real(cp) :: dh
-             if (g(1)%c(dir)%sn.eq.3) then; dh = g(1)%c(dir)%dhn(1)
-         elseif (g(2)%c(dir)%sn.eq.3) then; dh = g(2)%c(dir)%dhn(1)
+             if (g(1)%c(dir)%sn.eq.3) then; dh = g(1)%c(dir)%dhn%f(1)
+         elseif (g(2)%c(dir)%sn.eq.3) then; dh = g(2)%c(dir)%dhn%f(1)
          else; dh = 0.0_cp
          endif
        end function

@@ -35,7 +35,7 @@
            i_R = i*(1-x)+x*i/2+x
            j_R = i*(1-y)+y*j/2+y
            k_R = i*(1-z)+z*k/2+z
-           alpha = g%c(dir)%dhn(t)/(g%c(dir)%dhn(t)+g%c(dir)%dhn(t+1))
+           alpha = g%c(dir)%dhn%f(t)/(g%c(dir)%dhn%f(t)+g%c(dir)%dhn%f(t+1))
            beta  = 1.0_cp-alpha
            r%f(i_R,j_R,k_R) = u%f( i , j , k )*alpha + &
                               u%f(i+x,j+y,k+z)*beta
@@ -64,7 +64,7 @@
            i_R = i*(1-x)+x*i/2+x
            j_R = i*(1-y)+y*j/2+y
            k_R = i*(1-z)+z*k/2+z
-           alpha = g%c(dir)%dhn(t)/(g%c(dir)%dhn(t)+g%c(dir)%dhn(t-1))
+           alpha = g%c(dir)%dhn%f(t)/(g%c(dir)%dhn%f(t)+g%c(dir)%dhn%f(t-1))
            beta  = 1.0_cp-alpha
            r%f(i_R,j_R,k_R) = 0.5_cp*(u%f( i , j , k ) + &
                                       u%f(i-x,j-y,k-z)*alpha + &

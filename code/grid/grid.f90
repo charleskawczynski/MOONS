@@ -1,6 +1,7 @@
        module grid_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use current_precision_mod
+       use array_mod
        use data_location_mod
        use face_edge_corner_indexing_mod
        use IO_tools_mod
@@ -23,6 +24,7 @@
        public :: mirror_about_hmax
 
        public :: get_shape
+       public :: get_coordinates
 
        public :: get_face_GI
        public :: get_edge_GI
@@ -76,6 +78,8 @@
        interface get_edge_b;         module procedure get_edge_grid_b;         end interface
        interface get_corner_b;       module procedure get_corner_grid_b;       end interface
 
+       interface get_coordinates;    module procedure get_coordinates_g;       end interface
+
        contains
 
        ! **********************************************************
@@ -99,7 +103,7 @@
          integer,intent(in) :: dir
          integer :: i
          call init(g%c(dir),h,size(h))
-         if (all((/(allocated(g%c(i)%hn),i=1,3)/))) then
+         if (all((/(allocated(g%c(i)%hn%f),i=1,3)/))) then
            call initProps(g)
 #ifdef _DEBUG_COORDINATES_
            call checkGrid(g)
@@ -356,5 +360,19 @@
          call get_face_b(B,A,f(2))
          call get_face_b(g,B,f(3))
        end subroutine
+
+      subroutine get_coordinates_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hn)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hc)
+        else; stop 'Error: bad DL in get_coordinates_g in grid.f90'
+        endif
+        enddo
+      end subroutine
 
        end module

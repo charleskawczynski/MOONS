@@ -167,7 +167,7 @@
          Bshift = 10.0_cp    ! Fringe location
 
          do i=1,s(dir)
-           d = dble((g%c(dir)%hc(i)-Bshift)/Bstretch)
+           d = dble((g%c(dir)%hc%f(i)-Bshift)/Bstretch)
            Btemp(i) = (1.0_cp+tanh(d))/2.0_cp
          enddo; i2 = 0
          do i=1+(s(dir)-1)/2,s(dir)
@@ -206,32 +206,32 @@
          ka = 1.0_cp
          sx = shape(Bx); sy = shape(By); sz = shape(Bz)
          select case (currentDir)
-         case (1); 
+         case (1);
            do i=1,sy(1);do j=1,sy(2);do k=1,sy(3)
-             By(i,j,k) = cos(ka*g%c(3)%hc(k)) * &
-                         cosh(ka*g%c(2)%hc(j))/cosh(ka)
+             By(i,j,k) = cos(ka*g%c(3)%hc%f(k)) * &
+                         cosh(ka*g%c(2)%hc%f(j))/cosh(ka)
            enddo;enddo;enddo
            do i=1,sz(1);do j=1,sz(2);do k=1,sz(3)
-             Bz(i,j,k) =-sin(ka*g%c(3)%hc(k)) * &
-                         sinh(ka*g%c(2)%hc(j))/cosh(ka)
+             Bz(i,j,k) =-sin(ka*g%c(3)%hc%f(k)) * &
+                         sinh(ka*g%c(2)%hc%f(j))/cosh(ka)
            enddo;enddo;enddo
-         case (2); 
+         case (2);
            do i=1,sx(1);do j=1,sx(2);do k=1,sx(3)
-             Bx(i,j,k) =-sin(ka*g%c(1)%hc(i)) * &
-                         sinh(ka*g%c(3)%hc(k))/cosh(ka)
+             Bx(i,j,k) =-sin(ka*g%c(1)%hc%f(i)) * &
+                         sinh(ka*g%c(3)%hc%f(k))/cosh(ka)
            enddo;enddo;enddo
            do i=1,sz(1);do j=1,sz(2);do k=1,sz(3)
-             Bz(i,j,k) = cos(ka*g%c(1)%hc(i)) * &
-                         cosh(ka*g%c(3)%hc(k))/cosh(ka)
+             Bz(i,j,k) = cos(ka*g%c(1)%hc%f(i)) * &
+                         cosh(ka*g%c(3)%hc%f(k))/cosh(ka)
            enddo;enddo;enddo
-         case (3); 
+         case (3);
            do i=1,sx(1);do j=1,sx(2);do k=1,sx(3)
-             Bx(i,j,k) = cos(ka*g%c(2)%hc(j)) * &
-                         cosh(ka*g%c(1)%hc(i))/cosh(ka)
+             Bx(i,j,k) = cos(ka*g%c(2)%hc%f(j)) * &
+                         cosh(ka*g%c(1)%hc%f(i))/cosh(ka)
            enddo;enddo;enddo
            do i=1,sy(1);do j=1,sy(2);do k=1,sy(3)
-             By(i,j,k) =-sin(ka*g%c(2)%hc(j)) * &
-                         sinh(ka*g%c(1)%hc(i))/cosh(ka)
+             By(i,j,k) =-sin(ka*g%c(2)%hc%f(j)) * &
+                         sinh(ka*g%c(1)%hc%f(i))/cosh(ka)
            enddo;enddo;enddo
          case default
          stop 'Error: applied_dir must = 1,2,3 in initField_Bandaru_GF in init_Bfield.'
@@ -270,7 +270,7 @@
          Bshift = 12.5_cp     ! shift parameter
 
          do i=1,s(dir)
-           d = dble(g%c(dir)%hc(i)-Bshift*Bstretch)
+           d = dble(g%c(dir)%hc%f(i)-Bshift*Bstretch)
            Btemp(i) = 0.5_cp*(1.0_cp-tanh(d))
          enddo
 

@@ -1,6 +1,7 @@
       module GF_base_mod
         use current_precision_mod
         use grid_mod
+        use array_mod
         use face_edge_corner_indexing_mod
         use IO_tools_mod
         use data_location_mod
@@ -54,6 +55,7 @@
         interface insist_shape_match;       module procedure insist_shape_match_plane_GF;  end interface
         interface insist_shape_staggered;   module procedure insist_shape_staggered_dir_GF;end interface
         interface insist_allocated;         module procedure insist_allocated_GF;          end interface
+        interface get_coordinates;          module procedure get_coordinates_GF;           end interface
 
        contains
 
@@ -266,28 +268,28 @@
           type(grid),intent(in) :: g
           character(len=*),intent(in) :: dir,name
           type(data_location),intent(in) :: DL
-          integer :: un
+          type(array),dimension(3) :: h
+          integer :: un,i
           un = new_and_open(dir,name)
-          if (is_CC(DL)) then
-            call export(a,g%c(1)%hc,g%c(2)%hc,g%c(3)%hc,un,name)
-          elseif (is_Node(DL)) then
-            call export(a,g%c(1)%hn,g%c(2)%hn,g%c(3)%hn,un,name)
-          elseif (is_Face(DL)) then
-            select case(get_Face(DL))
-            case (1); call export(a,g%c(1)%hn,g%c(2)%hc,g%c(3)%hc,un,name)
-            case (2); call export(a,g%c(1)%hc,g%c(2)%hn,g%c(3)%hc,un,name)
-            case (3); call export(a,g%c(1)%hc,g%c(2)%hc,g%c(3)%hn,un,name)
-            end select
-          elseif (is_Edge(DL)) then
-            select case(get_Face(DL))
-            case (1); call export(a,g%c(1)%hc,g%c(2)%hn,g%c(3)%hn,un,name)
-            case (2); call export(a,g%c(1)%hn,g%c(2)%hc,g%c(3)%hn,un,name)
-            case (3); call export(a,g%c(1)%hn,g%c(2)%hn,g%c(3)%hc,un,name)
-            end select
-          else; stop 'Error: bad input to export_wrapper_DL_GF in GF_base.f90'
-          endif
+          call get_coordinates_GF(h,g,DL)
+          call export(a,h(1)%f,h(2)%f,h(3)%f,un,name)
           call close_and_message(un,dir,name)
+          do i=1,3; call delete(h(i)); enddo
         end subroutine
+
+       subroutine get_coordinates_GF(h,g,DL)
+         implicit none
+         type(array),dimension(3),intent(inout) :: h
+         type(grid),intent(in) :: g
+         type(data_location),intent(in) :: DL
+         integer :: i
+         do i=1,3
+             if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hn)
+         elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hc)
+         else; stop 'Error: bad DL in get_coordinates in GF_export.f90'
+         endif
+         enddo
+       end subroutine
 
         subroutine insist_shape_match_GF(A,B,caller)
           implicit none

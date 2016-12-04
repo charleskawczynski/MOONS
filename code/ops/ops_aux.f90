@@ -139,7 +139,7 @@
          !$OMP PARALLEL DO
          do k=1,fo%s(3); do j=1,fo%s(2); do i=1,fo%s(1)
            t = i*p(1) + j*p(2) + k*p(3)
-           fo%f(i,j,k) = maxval((/fo%f(i,j,k),abs(fi%f(i,j,k)/g%c(dir)%dhn(t)**real(n,cp))/))
+           fo%f(i,j,k) = maxval((/fo%f(i,j,k),abs(fi%f(i,j,k)/g%c(dir)%dhn%f(t)**real(n,cp))/))
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine

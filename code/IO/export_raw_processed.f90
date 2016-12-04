@@ -1,6 +1,7 @@
        module export_raw_processed_mod
        use current_precision_mod
        use mesh_mod
+       use string_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -45,22 +46,13 @@
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
          integer :: direction
-         character(len=1) :: DL,CD ! DL = direction letter, CD = component direction
-         ! ------------- collect some info
-         DL = get_char(x%DL)
-         if (x%is_Face) CD = get_CD(x%face,'export_raw_SF1')
-         if (x%is_Edge) CD = get_CD(x%edge,'export_raw_SF2')
-         ! ------------- begin export
-         if (.not.export_planar) then
-           if (x%is_CC.or.x%is_Node) then; call export_3D_1C(m,x,dir,name//DL,pad)
-           else;                           call export_3D_1C(m,x,dir,name//DL//'_'//CD,pad)
-           endif
-         else
-           direction = get_plane_direction(m,'export_raw_SF3')
-           if (x%is_CC.or.x%is_Node) then; call export_2D_1C(m,x,dir,name//DL,pad,direction)
-           else;                           call export_2D_1C(m,x,dir,name//DL//'_'//CD,pad,direction)
-           endif
+         type(string) :: s
+         call construct_filename(s,name,x%DL)
+         direction = get_plane_direction(m,'export_raw_SF')
+         if (.not.export_planar) then; call export_3D_1C(m,x,dir,str(s),pad)
+         else;                         call export_2D_1C(m,x,dir,str(s),pad,direction)
          endif
+         call delete(s)
        end subroutine
 
        subroutine export_raw_VF(m,x,dir,name,pad)
@@ -107,30 +99,14 @@
          integer :: direction
          character(len=2) :: DL,CD ! DL = direction letter, CD = component direction
          integer,dimension(3) :: i_f
-         DL = 'np'
+         type(string) :: s
+         call construct_filename(s,name,x%DL)
+         call location_to_node_SF(m,temp_N,x,temp_1,temp_2,x%DL)
          if (.not.export_planar) then
-           if (x%is_CC) then
-             call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call export_3D_1C_transient(m,temp_N,dir,name//DL,pad,TMP)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then; call export_3D_1C_transient(m,x,dir,name//DL,pad,TMP)
-           elseif (x%is_Face) then
-             CD = get_CD(x%face,'export_processed_SF1')
-             call init_Node(temp_N,m); i_f = (/2,1,1/)
-             call init_Edge(temp_1,m,i_f(x%face))
-             call face2Node(temp_N,x,m,x%face,temp_1)
-             call export_3D_1C_transient(m,temp_N,dir,name//DL//'_'//CD,pad,TMP)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             CD = get_CD(x%edge,'export_processed_SF2')
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-             call export_3D_1C_transient(m,temp_N,dir,name//DL//'_'//CD,pad,TMP)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_p_SF_func (1) in export_processed.f90'
-           endif
+         call export_3D_1C_transient(m,temp_N,dir,str(s),pad,TMP)
          else; stop 'Error: feature 1 not yet supported in export_processed.f90'
          endif
+         call delete(temp_N)
        end subroutine
 
        subroutine export_processed_SF(m,x,dir,name,pad)
@@ -141,52 +117,16 @@
          integer,intent(in) :: pad
          type(SF) :: temp_1,temp_2,temp_N
          integer :: direction
-         character(len=2) :: DL,CD ! DL = direction letter, CD = component direction
-         integer,dimension(3) :: i_f
-         DL = 'np'
-         if (x%is_Face) CD = get_CD(x%face,'export_processed_SF1')
-         if (x%is_Edge) CD = get_CD(x%edge,'export_processed_SF2')
-
+         type(string) :: s
+         call construct_filename(s,name,x%DL)
+         call location_to_node_SF(m,temp_N,x,temp_1,temp_2,x%DL)
          if (.not.export_planar) then
-           if (x%is_CC) then
-             call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call export_3D_1C(m,temp_N,dir,name//DL,pad)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then; call export_3D_1C(m,x,dir,name//DL,pad)
-           elseif (x%is_Face) then
-             call init_Node(temp_N,m); i_f = (/2,1,1/)
-             call init_Edge(temp_1,m,i_f(x%face))
-             call face2Node(temp_N,x,m,x%face,temp_1)
-             call export_3D_1C(m,temp_N,dir,name//DL//'_'//CD,pad)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-             call export_3D_1C(m,temp_N,dir,name//DL//'_'//CD,pad)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_p_SF_func (1) in export_processed.f90'
-           endif
-         else; direction = get_plane_direction(m,'export_processed_SF3')
-           if (x%is_CC) then
-             call init_Face(temp_1,m,1); call init_Edge(temp_2,m,3); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call export_2D_1C(m,temp_N,dir,name//'np',pad,direction)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then
-             call export_2D_1C(m,x,dir,name//'np',pad,direction)
-           elseif (x%is_Face) then
-             call init_Node(temp_N,m); i_f = (/2,1,1/)
-             call init_Edge(temp_1,m,i_f(x%face))
-             call face2Node(temp_N,x,m,x%face,temp_1)
-             call export_2D_1C(m,temp_N,dir,name//DL//'_'//CD,pad,direction)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m,x%edge)
-             call export_2D_1C(m,temp_N,dir,name//DL//'_'//CD,pad,direction)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_p_SF_func (2) in export_processed.f90'
-           endif
+           call export_3D_1C(m,temp_N,dir,str(s),pad)
+         else; direction = get_plane_direction(m,'export_processed_SF')
+           call export_2D_1C(m,temp_N,dir,str(s),pad,direction)
          endif
+         call delete(temp_N)
+         call delete(s)
        end subroutine
 
        subroutine export_processed_transient_VF(m,x,dir,name,pad,TMP)
@@ -204,30 +144,13 @@
          real(cp) :: tol
          integer :: j
          DL = 'np' ! "p" means "processed" (interpolated to node)
-
          tol = 10.0_cp**(-15.0_cp)
          t = (/amax(x%x),amax(x%y),amax(x%z)/)
          L = (/(t(j).lt.tol,j=1,3)/)
-
          if (.not.export_planar) then
-           if (x%is_CC) then
-             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then
-             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
-           elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m);
-             call face2Node(temp_N,x,m,temp_1)
-             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_processed_VF (1) in export_processed.f90'
-           endif
+           call location_to_node_VF(m,temp_N,x,temp_1,temp_2,x%x%DL)
+           call export_3D_3C_transient(m,temp_N,dir,name//DL,pad,TMP)
+           call delete(temp_N)
          else; stop 'Error: feature 2 not yet supported in export_processed.f90'
          endif
        end subroutine
@@ -251,45 +174,14 @@
          t = (/amax(x%x),amax(x%y),amax(x%z)/)
          L = (/(t(j).lt.tol,j=1,3)/)
 
+         call location_to_node_VF(m,temp_N,x,temp_1,temp_2,x%x%DL)
          if (.not.export_planar) then
-           if (x%is_CC) then
-             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call export_3D_3C(m,temp_N,dir,name//DL,pad)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then
-             call export_3D_3C(m,temp_N,dir,name//DL,pad)
-           elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m);
-             call face2Node(temp_N,x,m,temp_1)
-             call export_3D_3C(m,temp_N,dir,name//DL,pad)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call export_3D_3C(m,temp_N,dir,name//DL,pad)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_processed_VF (1) in export_processed.f90'
-           endif
-         else; direction = get_plane_direction(m,'export_processed_VF')
-           if (x%is_CC) then
-             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then
-             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
-           elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m);
-             call face2Node(temp_N,x,m,temp_1)
-             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_processed_VF (2) in export_processed.f90'
-           endif
+           call export_3D_3C(m,temp_N,dir,name//DL,pad)
+         else
+           direction = get_plane_direction(m,'export_processed_VF')
+           call export_2D_based_on_count(m,temp_N,dir,name,DL,pad,direction,L)
          endif
+         call delete(temp_N)
        end subroutine
 
        subroutine export_2D_based_on_count(m,x,dir,name,DL,pad,direction,L)
@@ -387,24 +279,70 @@
          if (.not.export_planar) then
            stop 'Error: trying to export 3D transient solution in export_p_transient_VF_func in export_processed.f90.'
          else
-           if (x%is_CC) then
-             call init_Face(temp_1,m); call init_Edge(temp_2,m); call init_Node(temp_N,m)
-             call cellcenter2Node(temp_N,x,m,temp_1,temp_2)
-             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
-             call delete(temp_1); call delete(temp_2); call delete(temp_N)
-           elseif (x%is_Node) then
-             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
-           elseif (x%is_Face) then
-             call init_Edge(temp_1,m); call init_Node(temp_N,m);
-             call face2Node(temp_N,x,m,temp_1)
-             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
-             call delete(temp_1); call delete(temp_N)
-           elseif (x%is_Edge) then
-             call init_Node(temp_N,m); call edge2Node(temp_N,x,m)
-             call func(m,temp_N,dir,name//'np',pad,direction,TMP)
-             call delete(temp_N)
-           else; stop 'Error: bad input to export_p_transient_VF_func (2) in export_processed.f90'
-           endif
+           call location_to_node_VF(m,temp_N,x,temp_1,temp_2,x%x%DL)
+           call func(m,temp_N,dir,name//'np',pad,direction,TMP)
+           call delete(temp_N)
+         endif
+       end subroutine
+
+       subroutine location_to_node_SF(m,N,x,E,F,DL)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: x
+         type(SF),intent(inout) :: N,E,F
+         type(data_location),intent(in) :: DL
+         integer,dimension(3) :: i
+         integer :: i_f,i_e
+         if (is_CC(DL)) then
+           call init_Face(F,m,1)
+           call init_Edge(E,m,3)
+           call init_Node(N,m)
+           call cellcenter2Node(N,x,m,F,E)
+           call delete(F)
+           call delete(E)
+         elseif (is_Node(DL)) then
+         call init_Node(N,m)
+         call assign(N,x)
+         elseif (is_Face(DL)) then
+           i = (/2,1,1/)
+           i_f = get_Face(DL)
+           call init_Edge(E,m,i(i_f))
+           call init_Node(N,m)
+           call face2Node(N,x,m,i_f,E)
+           call delete(E)
+         elseif (is_Edge(DL)) then
+           i_e = get_Edge(DL)
+           call init_Node(N,m)
+           call edge2Node(N,x,m,i_e)
+         else; stop 'Error: bad input to location_to_node in export_processed.f90'
+         endif
+       end subroutine
+
+       subroutine location_to_node_VF(m,N,x,E,F,DL)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: x
+         type(VF),intent(inout) :: N,E,F
+         type(data_location),intent(in) :: DL
+         if (is_CC(DL)) then
+           call init_Face(F,m)
+           call init_Edge(E,m)
+           call init_Node(N,m)
+           call cellcenter2Node(N,x,m,F,E)
+           call delete(F)
+           call delete(E)
+         elseif (is_Node(DL)) then
+         call init_Node(N,m)
+         call assign(N,x)
+         elseif (is_Face(DL)) then
+           call init_Edge(E,m)
+           call init_Node(N,m)
+           call face2Node(N,x,m,E)
+           call delete(E)
+         elseif (is_Edge(DL)) then
+           call init_Node(N,m)
+           call edge2Node(N,x,m)
+         else; stop 'Error: bad input to location_to_node in export_processed.f90'
          endif
        end subroutine
 
@@ -418,9 +356,13 @@
          integer,intent(in) :: i
          character(len=*),intent(in) :: caller
          character(len=1) :: CD
-         select case (i); case (1); CD = 'x'; case (2); CD = 'y'; case (3); CD = 'z'
-         case default; write(*,*) 'Error: i must = 1,2,3 in '//caller
-         stop 'Done in export_raw_processed.f90'
+         select case (i)
+         case (1); CD = 'x'
+         case (2); CD = 'y'
+         case (3); CD = 'z'
+         case default
+         write(*,*) 'Error: i must = 1,2,3 in '//caller//' in export_raw_processed.f90'
+         stop 'Done'
          end select
        end function
 
@@ -436,5 +378,25 @@
          stop 'Done in export_raw_processed.f90'
          endif
        end function
+
+       subroutine construct_filename(s,name,DL)
+         implicit none
+         type(string),intent(inout) :: s
+         type(data_location),intent(in) :: DL
+         character(len=*),intent(in) :: name
+         call delete(s)
+         call init(s,name//get_char(DL))
+             if (is_Face(DL)) then; call append(s,'_'//get_CD(DL%face,'construct_filename'))
+         elseif (is_Edge(DL)) then; call append(s,'_'//get_CD(DL%edge,'construct_filename'))
+         endif
+       end subroutine
+
+       subroutine construct_filename_processed(s,name)
+         implicit none
+         type(string),intent(inout) :: s
+         character(len=*),intent(in) :: name
+         call delete(s)
+         call init(s,name//'np')
+       end subroutine
 
        end module

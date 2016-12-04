@@ -194,12 +194,13 @@
          if (p.lt.1) stop 'Error: p must be > 1 in get_p_from_boundary_N_overlap in overlap.f90'
          if (G%iR.eq.3) then ! Surface overlap
            if (p.gt.G%iR) stop 'Error: bad input to get_p_from_boundary_N_overlap in overlap.f90'
-               if (inside_OL(c(1)%hn(p),c(2)%hn(p),c(2)%hn(p),tol)) then
+               if (inside_OL(c(1)%hn%f(p),c(2)%hn%f(p),c(2)%hn%f(p),tol)) then
            G%i2(2) = G%i2(1)-1+p ! move to far left side. Too far! go p back!
            G%i2(1) = G%i2(2) ! copy end
            G%i1(2) = G%i1(1)-1+p ! move to far left side. Too far! go p back!
            G%i1(1) = G%i1(2) ! copy end
-           elseif (inside_OL(c(1)%hn(c(1)%sn+1-p),c(2)%hn(c(2)%sn+1-p),c(2)%hn(c(2)%sn+1-p),tol)) then
+           elseif (inside_OL(c(1)%hn%f(c(1)%sn+1-p),c(2)%hn%f(c(2)%sn+1-p),&
+           c(2)%hn%f(c(2)%sn+1-p),tol)) then
            G%i2(1) = G%i2(2)+1-p ! move to far right side. Too far! go p back!
            G%i2(2) = G%i2(1) ! copy end
            G%i1(1) = G%i1(2)+1-p ! move to far right side. Too far! go p back!
@@ -220,12 +221,13 @@
          if (p.lt.1) stop 'Error: p must be > 1 in get_p_from_boundary_N_overlap in overlap.f90'
          if (G%iR.eq.2) then ! Surface overlap
            if (p.gt.G%iR) stop 'Error: bad input to get_p_from_boundary_N_overlap in overlap.f90'
-               if (inside_OL(c(1)%hc(p),c(2)%hc(p),c(2)%hc(p),tol)) then
+               if (inside_OL(c(1)%hc%f(p),c(2)%hc%f(p),c(2)%hc%f(p),tol)) then
            G%i2(2) = G%i2(1)-1+p ! move to far left side. Too far! go p back!
            G%i2(1) = G%i2(2) ! copy end
            G%i1(2) = G%i1(1)-1+p ! move to far left side. Too far! go p back!
            G%i1(1) = G%i1(2) ! copy end
-           elseif (inside_OL(c(1)%hc(c(1)%sc+1-p),c(2)%hc(c(2)%sc+1-p),c(2)%hc(c(2)%sc+1-p),tol)) then
+           elseif (inside_OL(c(1)%hc%f(c(1)%sc+1-p),c(2)%hc%f(c(2)%sc+1-p),&
+           c(2)%hc%f(c(2)%sc+1-p),tol)) then
            G%i2(1) = G%i2(2)+1-p ! move to far right side. Too far! go p back!
            G%i2(2) = G%i2(1) ! copy end
            G%i1(1) = G%i1(2)+1-p ! move to far right side. Too far! go p back!
@@ -291,7 +293,7 @@
          else; p1 = 0; p2 = 0
          endif
          do i=c(1)%sn-p1,1+p1,-1; do j=1+p2,c(2)%sn-p2
-         if (inside_OL(c(2)%hn(j),c(1)%hn(i),c(1)%hn(i),tol)) then
+         if (inside_OL(c(2)%hn%f(j),c(1)%hn%f(i),c(1)%hn%f(i),tol)) then
            if (OL%i1(1).eq.0) then; OL%i1(1) = i; else; OL%i1(1) = minval((/OL%i1(1),i/));endif
            if (OL%i1(2).eq.0) then; OL%i1(2) = i; else; OL%i1(2) = maxval((/OL%i1(2),i/));endif
            if (OL%i2(1).eq.0) then; OL%i2(1) = j; else; OL%i2(1) = minval((/OL%i2(1),j/));endif
@@ -329,7 +331,7 @@
          else; p1 = 0; p2 = 0
          endif
          do i=c(1)%sc-p1,1+p1,-1; do j=1+p2,c(2)%sc-p2
-         if (inside_OL(c(2)%hc(j),c(1)%hc(i),c(1)%hc(i),tol)) then
+         if (inside_OL(c(2)%hc%f(j),c(1)%hc%f(i),c(1)%hc%f(i),tol)) then
            if (OL%i1(1).eq.0) then; OL%i1(1) = i; else; OL%i1(1) = minval((/OL%i1(1),i/));endif
            if (OL%i1(2).eq.0) then; OL%i1(2) = i; else; OL%i1(2) = maxval((/OL%i1(2),i/));endif
            if (OL%i2(1).eq.0) then; OL%i2(1) = j; else; OL%i2(1) = minval((/OL%i2(1),j/));endif

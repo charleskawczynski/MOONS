@@ -3,11 +3,11 @@
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, boundary conditions for u (u_bcs), mesh (m)
-      ! and a number of iterations (n) using the iterative Successive Over 
+      ! and a number of iterations (n) using the iterative Successive Over
       ! Realxation (SOR) method
-      ! 
+      !
       ! Note that the variant of Gauss-Seidel/SOR called
-      ! "red-black" Gauss-Seidel is used, where the fields are 
+      ! "red-black" Gauss-Seidel is used, where the fields are
       ! traversed in a 3D checkerboarding manner.
       !
       ! Input:
@@ -17,7 +17,7 @@
       !     m            = contains mesh information (dhc,dhn)
       !     norm         = Ln norms of residual
       !     displayTF    = print residuals to screen (T,F)
-      ! 
+      !
       ! Flags: (_PARALLELIZE_SOR_,_EXPORT_SOR_CONVERGENCE_)
       use current_precision_mod
       use grid_mod
@@ -53,7 +53,7 @@
         integer,dimension(3) :: gt,s
         logical :: setCoeff = .false.
       end type
-      
+
       interface init;        module procedure initSOR;       end interface
       interface delete;      module procedure deleteSOR;     end interface
       interface solve;       module procedure solveSOR;      end interface
@@ -70,7 +70,7 @@
         type(mesh),intent(in) :: m
         integer,dimension(3) :: s
         integer :: Nx,Ny,Nz,i,t
-        
+
         s = u%BF(1)%GF%s
         SOR%s = s
         call init(SOR%p,m)
@@ -80,12 +80,12 @@
 
         if (u%is_CC) then
           do t=1,u%s; do i=1,3
-            call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
             SOR%gt(i) = 1
           enddo; enddo
         elseif(u%is_Node) then
           do t=1,u%s; do i=1,3
-            call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               SOR%gt(i) = 0
           enddo; enddo
         elseif (u%is_Face) then
@@ -103,7 +103,7 @@
           SOR%name = 'GS '
         else
           Nx = s(1); Ny = s(2); Nz = s(3)
-          SOR%omega = 2.0_cp/(1.0_cp + sqrt(1.0_cp - & 
+          SOR%omega = 2.0_cp/(1.0_cp + sqrt(1.0_cp - &
            ((cos(PI/real(Nx+1,cp)) + cos(PI/real(Ny+1,cp)) + &
              cos(PI/real(Nz+1,cp)))/3.0_cp)**2.0_cp))
           SOR%name = 'SOR'
@@ -195,7 +195,7 @@
 #ifdef _EXPORT_SOR_CONVERGENCE_
         close(NU)
 #endif
-        
+
         ! Subtract mean (for Pressure Poisson)
         ! Okay for SOR alone when comparing with u_exact, but not okay for MG
         ! This step is not necessary if mean(f) = 0 and all BCs are Neumann.
@@ -223,8 +223,12 @@
         integer :: i
         do i=1,m%s
           call redBlack(u%BF(i)%GF%f,f%BF(i)%GF%f,r%BF(i)%GF%f,u%BF(i)%GF%s,&
-          SOR%p%B(i)%g%c(1)%dhn,SOR%p%B(i)%g%c(2)%dhn,SOR%p%B(i)%g%c(3)%dhn,&
-          SOR%d%B(i)%g%c(1)%dhn,SOR%d%B(i)%g%c(2)%dhn,SOR%d%B(i)%g%c(3)%dhn,&
+          SOR%p%B(i)%g%c(1)%dhn%f,&
+          SOR%p%B(i)%g%c(2)%dhn%f,&
+          SOR%p%B(i)%g%c(3)%dhn%f,&
+          SOR%d%B(i)%g%c(1)%dhn%f,&
+          SOR%d%B(i)%g%c(2)%dhn%f,&
+          SOR%d%B(i)%g%c(3)%dhn%f,&
           SOR%omega,SOR%gt,odd)
         enddo
       end subroutine
@@ -273,8 +277,12 @@
         integer :: i
         do i=1,p%s
           call init_r(r%BF(i)%GF%f,r%BF(i)%GF%s,&
-            p%B(i)%g%c(1)%dhn,p%B(i)%g%c(2)%dhn,p%B(i)%g%c(3)%dhn,&
-            d%B(i)%g%c(1)%dhn,d%B(i)%g%c(2)%dhn,d%B(i)%g%c(3)%dhn,gt)
+            p%B(i)%g%c(1)%dhn%f,&
+            p%B(i)%g%c(2)%dhn%f,&
+            p%B(i)%g%c(3)%dhn%f,&
+            d%B(i)%g%c(1)%dhn%f,&
+            d%B(i)%g%c(2)%dhn%f,&
+            d%B(i)%g%c(3)%dhn%f,gt)
         enddo
       end subroutine
 
@@ -294,8 +302,8 @@
         do k=2,s(3)-1
           do j=2,s(2)-1
             do i=2,s(1)-1
-              r(i,j,k) = 1.0_cp/dxd(i-1+gt(1))*(1.0_cp/dxp(i) + 1.0_cp/dxp(i-1)) + & 
-                         1.0_cp/dyd(j-1+gt(2))*(1.0_cp/dyp(j) + 1.0_cp/dyp(j-1)) + & 
+              r(i,j,k) = 1.0_cp/dxd(i-1+gt(1))*(1.0_cp/dxp(i) + 1.0_cp/dxp(i-1)) + &
+                         1.0_cp/dyd(j-1+gt(2))*(1.0_cp/dyp(j) + 1.0_cp/dyp(j-1)) + &
                          1.0_cp/dzd(k-1+gt(3))*(1.0_cp/dzp(k) + 1.0_cp/dzp(k-1))
             enddo
           enddo
@@ -328,8 +336,8 @@
 !         do k=2+odd(3),s(3)-1,2
 !           do j=2+odd(2),s(2)-1,2
 !             do i=2+odd(1),s(1)-1,2
-!                 r = 1.0_cp/dxd(i-1+gt(1))*(sigma%x(i,j,k)/dxp(i) + sigma%x(i-1,j,k)/dxp(i-1)) + & 
-!                     1.0_cp/dyd(j-1+gt(2))*(sigma%y(i,j,k)/dyp(j) + sigma%y(i,j-1,k)/dyp(j-1)) + & 
+!                 r = 1.0_cp/dxd(i-1+gt(1))*(sigma%x(i,j,k)/dxp(i) + sigma%x(i-1,j,k)/dxp(i-1)) + &
+!                     1.0_cp/dyd(j-1+gt(2))*(sigma%y(i,j,k)/dyp(j) + sigma%y(i,j-1,k)/dyp(j-1)) + &
 !                     1.0_cp/dzd(k-1+gt(3))*(sigma%z(i,j,k)/dzp(k) + sigma%z(i,j,k-1)/dzp(k-1))
 
 !                 u(i,j,k) = u(i,j,k)*(1.0_cp-omega) + &

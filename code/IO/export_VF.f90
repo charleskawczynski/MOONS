@@ -7,8 +7,7 @@
       use mesh_mod
       use VF_mod
       use export_SF_mod
-      use export_g_mod
-      use exp_Tecplot_Zone_mod
+      use GF_export_mod
       use exp_Tecplot_Header_mod
       implicit none
 
@@ -32,12 +31,10 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
-        integer :: i,DT
+        integer :: i
         call exp_Header_3D_3C(un,name)
-        DT = getType_3D(m%B(1)%g,U%x%BF(1)%GF%s,name)
         do i=1,m%s
-          call exp_Zone_3I(un,U%x%BF(i)%GF%s-2*pad,i)
-          call exp_3D_3C_g(m%B(i)%g,DT,pad,un,arrfmt,U%x%BF(i)%GF%s,U%x%BF(i)%GF%f,U%y%BF(i)%GF%f,U%z%BF(i)%GF%f)
+          call exp_3D_3C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,U%z%BF(i)%GF)
         enddo
       end subroutine
 
@@ -47,29 +44,22 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: pad,un,dir
         character(len=*),intent(in) :: arrfmt,name
-        integer,dimension(2) :: s
-        integer :: i,DT
+        integer :: i
         call exp_Header_2D_2C(un,dir,name)
         select case (dir)
-        case(1); s = (/U%x%BF(1)%GF%s(2),U%x%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(2); s = (/U%x%BF(1)%GF%s(1),U%x%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(3); s = (/U%x%BF(1)%GF%s(1),U%x%BF(1)%GF%s(2)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
-        end select
-        select case (dir)
-        case(1); do i=1,m%s
-                   s = (/U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
-                   call exp_2D_2C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%y%BF(i)%GF%f(2,:,:),U%z%BF(i)%GF%f(2,:,:))
-                 enddo
-        case(2); do i=1,m%s
-                   s = (/U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
-                   call exp_2D_2C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(:,2,:),U%z%BF(i)%GF%f(:,2,:))
-                 enddo
-        case(3); do i=1,m%s
-                   s = (/U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2)/); call exp_Zone_2I(un,s-2*pad,i)
-                   call exp_2D_2C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(:,:,2),U%y%BF(i)%GF%f(:,:,2))
-                 enddo
-        case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
+        case(1)
+        do i=1,m%s
+        call exp_2D_2C_GF(m%B(i)%g,U%y%DL,i,pad,un,U%y%BF(i)%GF,U%z%BF(i)%GF,dir,2)
+        enddo
+        case(2)
+        do i=1,m%s
+        call exp_2D_2C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%z%BF(i)%GF,dir,2)
+        enddo
+        case(3)
+        do i=1,m%s
+        call exp_2D_2C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,dir,2)
+        enddo
+        case default; stop 'Error: dir must = 1:3 in exp_2D_2C in export_SF.f90'
         end select
       end subroutine
 
@@ -79,33 +69,11 @@
         type(mesh),intent(in) :: m
         integer,intent(in) :: pad,un,dir
         character(len=*),intent(in) :: arrfmt,name
-        integer,dimension(2) :: s
-        integer :: i,DT
+        integer :: i
         call exp_Header_2D_3C(un,dir,name)
-        select case (dir)
-        case(1); s = (/U%x%BF(1)%GF%s(2),U%x%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(2); s = (/U%x%BF(1)%GF%s(1),U%x%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(3); s = (/U%x%BF(1)%GF%s(1),U%x%BF(1)%GF%s(2)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case default; stop 'Error: dir must = 1,2,3 in exp_2D_3C in export_SF.f90'
-        end select
-        select case (dir)
-        case(1)
         do i=1,m%s
-          s = (/U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
-          call exp_2D_3C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(2,:,:),U%y%BF(i)%GF%f(2,:,:),U%z%BF(i)%GF%f(2,:,:))
+        call exp_2D_3C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,U%z%BF(i)%GF,dir,2)
         enddo
-        case(2)
-        do i=1,m%s
-          s = (/U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(3)/); call exp_Zone_2I(un,s-2*pad,i)
-          call exp_2D_3C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(:,2,:),U%y%BF(i)%GF%f(:,2,:),U%z%BF(i)%GF%f(:,2,:))
-        enddo
-        case(3)
-        do i=1,m%s
-          s = (/U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2)/); call exp_Zone_2I(un,s-2*pad,i)
-          call exp_2D_3C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(:,:,2),U%y%BF(i)%GF%f(:,:,2),U%z%BF(i)%GF%f(:,:,2))
-        enddo
-        case default; stop 'Error: dir must = 1,2,3 in exp_2D_3C in export_SF.f90'
-        end select
       end subroutine
 
       end module

@@ -221,8 +221,12 @@
         integer :: i
         do i=1,m%s
           call redBlack(u%BF(i)%GF%f,f%BF(i)%GF%f,D_inv%BF(i)%GF%f,u%BF(i)%GF%s,&
-          p%B(i)%g%c(1)%dhn,p%B(i)%g%c(2)%dhn,p%B(i)%g%c(3)%dhn,&
-          d%B(i)%g%c(1)%dhn,d%B(i)%g%c(2)%dhn,d%B(i)%g%c(3)%dhn,&
+          p%B(i)%g%c(1)%dhn%f,&
+          p%B(i)%g%c(2)%dhn%f,&
+          p%B(i)%g%c(3)%dhn%f,&
+          d%B(i)%g%c(1)%dhn%f,&
+          d%B(i)%g%c(2)%dhn%f,&
+          d%B(i)%g%c(3)%dhn%f,&
           gt,odd)
           call apply_BCs(u,m)
         enddo
@@ -241,8 +245,12 @@
                         f%x%BF(i)%GF%f,f%y%BF(i)%GF%f,f%z%BF(i)%GF%f,&
                         D_inv%x%BF(i)%GF%f,D_inv%y%BF(i)%GF%f,D_inv%z%BF(i)%GF%f,&
                         u%x%BF(i)%GF%s,u%y%BF(i)%GF%s,u%z%BF(i)%GF%s,&
-          p%B(i)%g%c(1)%dhn,p%B(i)%g%c(2)%dhn,p%B(i)%g%c(3)%dhn,&
-          d%B(i)%g%c(1)%dhn,d%B(i)%g%c(2)%dhn,d%B(i)%g%c(3)%dhn,&
+          p%B(i)%g%c(1)%dhn%f,&
+          p%B(i)%g%c(2)%dhn%f,&
+          p%B(i)%g%c(3)%dhn%f,&
+          d%B(i)%g%c(1)%dhn%f,&
+          d%B(i)%g%c(2)%dhn%f,&
+          d%B(i)%g%c(3)%dhn%f,&
           gtx,gty,gtz,odd)
           call apply_BCs(u,m)
         enddo

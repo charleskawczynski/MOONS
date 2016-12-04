@@ -6,7 +6,7 @@
       use current_precision_mod
       use mesh_mod
       use VF_mod
-      use import_g_mod
+      use GF_import_mod
       use import_SF_mod
       implicit none
 
@@ -28,12 +28,10 @@
         type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
-        integer :: i,DT
+        integer :: i
         read(un,*);read(un,*) ! Read tecplot header
-        DT = getType_3D(m%B(1)%g,U%x%BF(1)%GF%s,name)
         do i=1,m%s
-          read(un,*) ! Read tecplot header
-          call imp_3D_3C_g(m%B(i)%g,DT,pad,un,arrfmt,U%x%BF(i)%GF%s,U%x%BF(i)%GF%f,U%y%BF(i)%GF%f,U%z%BF(i)%GF%f)
+          call imp_3D_3C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,U%z%BF(i)%GF)
         enddo
       end subroutine
 
@@ -43,28 +41,22 @@
         type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un,dir
         character(len=*),intent(in) :: arrfmt,name
-        integer,dimension(2) :: s
-        integer :: i,DT
+        integer :: i
         read(un,*);read(un,*) ! Read tecplot header
+
         select case (dir)
-        case(1); s = (/U%x%BF(1)%GF%s(2),U%x%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(2); s = (/U%x%BF(1)%GF%s(1),U%x%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(3); s = (/U%x%BF(1)%GF%s(1),U%x%BF(1)%GF%s(2)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case default; stop 'Error: dir must = 1,2,3 in imp_2D_2C in import_SF.f90'
-        end select
-        select case (dir)
-        case(1); do i=1,m%s
-                   s = (/U%x%BF(i)%GF%s(2),U%x%BF(i)%GF%s(3)/); read(un,*)
-                   call imp_2D_2C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%y%BF(i)%GF%f(2,:,:),U%z%BF(i)%GF%f(2,:,:))
-                 enddo
-        case(2); do i=1,m%s
-                   s = (/U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(3)/); read(un,*)
-                   call imp_2D_2C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(:,2,:),U%z%BF(i)%GF%f(:,2,:))
-                 enddo
-        case(3); do i=1,m%s
-                   s = (/U%x%BF(i)%GF%s(1),U%x%BF(i)%GF%s(2)/); read(un,*)
-                   call imp_2D_2C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,U%x%BF(i)%GF%f(:,:,2),U%y%BF(i)%GF%f(:,:,2))
-                 enddo
+        case(1)
+        do i=1,m%s
+        call imp_2D_2C_GF(m%B(i)%g,U%y%DL,i,pad,un,U%y%BF(i)%GF,U%z%BF(i)%GF,dir,2)
+        enddo
+        case(2)
+        do i=1,m%s
+        call imp_2D_2C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%z%BF(i)%GF,dir,2)
+        enddo
+        case(3)
+        do i=1,m%s
+        call imp_2D_2C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,dir,2)
+        enddo
         case default; stop 'Error: dir must = 1,2,3 in imp_2D_2C in import_SF.f90'
         end select
       end subroutine

@@ -56,15 +56,15 @@
         type(sparse),dimension(2) :: colCC,colN     ! Derivative coefficients
         type(sparse),dimension(2) :: colCC_centered ! Derivative coefficients
         type(sparse) :: theta                       ! Interpolation coefficients
-        ! type(array),dimension(2) :: h               ! Cell coordinates (1=N,2=C)
-        ! type(array),dimension(2) :: dh              ! Cell dh (1=N,2=C)
-        ! Depricated:
-        real(cp),dimension(:),allocatable :: hn     ! Cell corner coordinates
-        real(cp),dimension(:),allocatable :: hc     ! Cell center coordinates
+        type(array) :: hn,hc                        ! Cell coordinates
+        type(array) :: dhn,dhc                      ! Cell coordinates spacing
         integer :: sn = 0                           ! size of hn
         integer :: sc = 0                           ! size of hc
-        real(cp),dimension(:),allocatable :: dhn    ! Difference in cell corner coordinates
-        real(cp),dimension(:),allocatable :: dhc    ! Difference in cell center coordinates
+        ! Depricated:
+        ! real(cp),dimension(:),allocatable :: hn     ! Cell corner coordinates
+        ! real(cp),dimension(:),allocatable :: hc     ! Cell center coordinates
+        ! real(cp),dimension(:),allocatable :: dhn    ! Difference in cell corner coordinates
+        ! real(cp),dimension(:),allocatable :: dhc    ! Difference in cell center coordinates
       end type
 
       interface init;              module procedure init_c;                 end interface
@@ -156,40 +156,40 @@
         c%sn = size(hn)
         if (c%sn.gt.2) then
           ! Node grid
-          allocate(c%hn(c%sn))
-          allocate(c%dhn(c%sn-1))
-          c%hn = hn
-          c%dhn = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
+          call init(c%hn,c%sn)
+          call init(c%dhn,c%sn-1)
+          c%hn%f = hn
+          c%dhn%f = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
           ! Cell center grid
           c%sc = c%sn-1
-          allocate(c%hc(c%sc))
-          allocate(c%dhc(c%sc-1))
-          c%hc = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
-          c%dhc = (/(c%hc(i+1)-c%hc(i),i=1,c%sc-1)/)
+          call init(c%hc,c%sc)
+          call init(c%dhc,c%sc-1)
+          c%hc%f = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
+          c%dhc%f = (/(c%hc%f(i+1)-c%hc%f(i),i=1,c%sc-1)/)
         elseif (c%sn.eq.2) then
           ! Node grid
-          allocate(c%hn(c%sn))
-          allocate(c%dhn(c%sn-1))
-          c%hn = hn
-          c%dhn = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
+          call init(c%hn,c%sn)
+          call init(c%dhn,c%sn-1)
+          c%hn%f = hn
+          c%dhn%f = (/(hn(i+1)-hn(i),i=1,c%sn-1)/)
           ! Cell center grid
           c%sc = c%sn-1
-          allocate(c%hc(c%sc))
-          allocate(c%dhc(1))
-          c%hc = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
-          c%dhc = 0.0_cp
+          call init(c%hc,c%sc)
+          call init(c%dhc,1)
+          c%hc%f = (/ ((hn(i+1)+hn(i))/2.0_cp,i=1,c%sn-1) /)
+          c%dhc%f = 0.0_cp
         elseif (c%sn.eq.1) then
           ! Node grid
-          allocate(c%hn(c%sn))
-          allocate(c%dhn(1))
-          c%hn = hn
-          c%dhn = 0.0_cp
+          call init(c%hn,c%sn)
+          call init(c%dhn,1)
+          c%hn%f = hn
+          c%dhn%f = 0.0_cp
           ! Cell center grid
           c%sc = 1
-          allocate(c%hc(c%sc))
-          allocate(c%dhc(1))
-          c%hc = c%hn
-          c%dhc = 0.0_cp
+          call init(c%hc,c%sc)
+          call init(c%dhc,1)
+          c%hc%f = c%hn%f
+          c%dhc%f = 0.0_cp
         endif
         ! Additional information
         call init_props(c)
@@ -209,15 +209,10 @@
         endif
 
         call insist_allocated(d%theta,'init_copy_c coordinates')
-        if (.not.allocated(d%hn))    stop 'Error: d%hn    not allocated in coordinates.f90'
-        if (.not.allocated(d%hc))    stop 'Error: d%hc    not allocated in coordinates.f90'
-        if (.not.allocated(d%dhn))   stop 'Error: d%dhn   not allocated in coordinates.f90'
-        if (.not.allocated(d%dhc))   stop 'Error: d%dhc   not allocated in coordinates.f90'
-        allocate(c%hn(size(d%hn)));       c%hn    = d%hn
-        allocate(c%hc(size(d%hc)));       c%hc    = d%hc
-        allocate(c%dhn(size(d%dhn)));     c%dhn   = d%dhn
-        allocate(c%dhc(size(d%dhc)));     c%dhc   = d%dhc
-
+        call init(c%hn,d%hn)
+        call init(c%hc,d%hc)
+        call init(c%dhn,d%dhn)
+        call init(c%dhc,d%dhc)
         call init(c%theta,d%theta)
         call init(c%stagCC2N,d%stagCC2N)
         call init(c%stagN2CC,d%stagN2CC)
@@ -241,10 +236,10 @@
         implicit none
         type(coordinates),intent(inout) :: c
         integer :: i
-        if (allocated(c%hn)) deallocate(c%hn)
-        if (allocated(c%hc)) deallocate(c%hc)
-        if (allocated(c%dhn)) deallocate(c%dhn)
-        if (allocated(c%dhc)) deallocate(c%dhc)
+        call delete(c%hn)
+        call delete(c%hc)
+        call delete(c%dhn)
+        call delete(c%dhc)
         call delete(c%theta)
         call delete(c%stagCC2N)
         call delete(c%stagN2CC)
@@ -265,7 +260,7 @@
         write(un,*) 'sc,sn = ',c%sc,c%sn
         write(un,*) 'hmin,hmax = ',c%hmin,c%hmax
         write(un,*) 'amin,amax = ',c%amin,c%amax
-        write(un,*) 'hn = ',c%hn
+        write(un,*) 'hn = ',c%hn%f
         ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
         ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
         ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
@@ -284,21 +279,19 @@
         type(coordinates),intent(in) :: c
         integer,intent(in) :: un
         write(un,*) ' ---------------- coordinates'
-        write(un,*) 'sn = ';  write(un,*) c%sn
-        write(un,*) 'hn = ';  write(un,*) c%hn
+        call export(c%hn,un)
       end subroutine
 
       subroutine import_c(c,un)
         implicit none
         type(coordinates),intent(inout) :: c
         integer,intent(in) :: un
-        real(cp),dimension(:),allocatable :: hn
-        integer :: sn
+        type(array) :: hn
         call delete(c)
         read(un,*)
-        read(un,*); read(un,*) sn; allocate(hn(sn))
-        read(un,*); read(un,*) hn; call init(c,hn,sn)
-        deallocate(hn)
+        call import(hn,un)
+        call init(c,hn%f,hn%N)
+        call delete(hn)
       end subroutine
 
       ! **********************************************************
@@ -309,33 +302,33 @@
         implicit none
         type(coordinates),intent(inout) :: c
          ! Additional information
-         c%dhMin = minval(c%dhn)
-         c%dhMax = maxval(c%dhn)
-         c%amin = c%hn(1)
-         c%amax = c%hn(c%sn)
-         c%hn_e = c%hn(c%sn)
-         c%hc_e = c%hc(c%sc)
+         c%dhMin = minval(c%dhn%f)
+         c%dhMax = maxval(c%dhn%f)
+         c%amin = c%hn%f(1)
+         c%amax = c%hn%f(c%sn)
+         c%hn_e = c%hn%f(c%sn)
+         c%hc_e = c%hc%f(c%sc)
          if (c%sn.gt.2) then ! Typical init
-           c%hmin = c%hn(2)
-           c%hmax = c%hn(c%sn-1) ! To account for ghost node
+           c%hmin = c%hn%f(2)
+           c%hmax = c%hn%f(c%sn-1) ! To account for ghost node
            c%maxRange = c%hmax-c%hmin
-           c%N = size(c%hc)-2
-           c%dhc_e = c%dhc(c%sc-1)
-           c%dhn_e = c%dhn(c%sn-1)
+           c%N = size(c%hc%f)-2
+           c%dhc_e = c%dhc%f(c%sc-1)
+           c%dhn_e = c%dhn%f(c%sn-1)
          elseif (c%sn.eq.2) then
-           c%hmin = c%hn(1)
-           c%hmax = c%hn(2)
+           c%hmin = c%hn%f(1)
+           c%hmax = c%hn%f(2)
            c%maxRange = c%hmax-c%hmin
            c%N = 0
-           c%dhc_e = c%dhc(1)
-           c%dhn_e = c%dhn(1)
+           c%dhc_e = c%dhc%f(1)
+           c%dhn_e = c%dhn%f(1)
          elseif (c%sn.eq.1) then
-           c%hmin = c%hn(1)
-           c%hmax = c%hn(1)
+           c%hmin = c%hn%f(1)
+           c%hmax = c%hn%f(1)
            c%maxRange = 0.0_cp
            c%N = 0
-           c%dhc_e = c%dhc(1)
-           c%dhn_e = c%dhn(1)
+           c%dhc_e = c%dhc%f(1)
+           c%dhn_e = c%dhn%f(1)
          endif
       end subroutine
 
@@ -368,7 +361,7 @@
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
         if (c%sc.gt.2) then
-          s = c%sc; allocate(dh(s-1)); dh = c%dhc
+          s = c%sc; allocate(dh(s-1)); dh = c%dhc%f
           if (hmin) then; i = 2
             c%colCC(2)%L%f(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
             c%colCC(2)%D%f(1) = -2.0_cp/(dh(i-1)*dh(i))
@@ -393,7 +386,7 @@
         logical,intent(in) :: hmin,hmax
         integer :: i,s
         if (c%sc.gt.2) then
-          s = c%sc; allocate(dh(s-1)); dh = c%dhc
+          s = c%sc; allocate(dh(s-1)); dh = c%dhc%f
           if (hmin) then; i = 2
             c%colCC(1)%L%f(1) = (-dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
             c%colCC(1)%D%f(1) = ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
@@ -418,7 +411,7 @@
         logical,intent(in) :: hmin,hmax
         integer :: i,s
         if (c%sn.gt.2) then
-          s = c%sn; allocate(dh(s-1)); dh = c%dhn
+          s = c%sn; allocate(dh(s-1)); dh = c%dhn%f
           if (hmin) then; i = 2
             c%colN(2)%L%f(1) =  2.0_cp/(dh(i-1)*(dh(i-1)+dh(i)))
             c%colN(2)%D%f(1) = -2.0_cp/(dh(i-1)*dh(i))
@@ -443,7 +436,7 @@
         real(cp),dimension(:),allocatable :: dh
         integer :: i,s
         if (c%sn.gt.2) then
-          s = c%sn; allocate(dh(s-1)); dh = c%dhn
+          s = c%sn; allocate(dh(s-1)); dh = c%dhn%f
           if (hmin) then; i = 2
             c%colN(1)%L%f(1) = -(dh(i)/(dh(i-1)*(dh(i-1)+dh(i))))
             c%colN(1)%D%f(1) =  ((-dh(i-1)+dh(i))/(dh(i-1)*dh(i)))
@@ -478,7 +471,7 @@
         call init(r,c)
         if (c%sc.gt.3) then
           if (mod(c%sc,2).eq.0) then
-            call init(r,(/(c%hn(2*i),i=1,c%sc/2)/),c%sc/2)
+            call init(r,(/(c%hn%f(2*i),i=1,c%sc/2)/),c%sc/2)
             call add_ghost_nodes(r)
             else; stop 'Error: coordinates must be even in restrictCoordinates in coordinates.f90'
           endif
@@ -510,8 +503,8 @@
         elseif (c%sn.eq.2) then
         elseif (c%sn.eq.3) then
         elseif (c%sn.gt.3) then ! typical case
-          call init(a(1),c%hn(2:c%sn-1),c%sn-2)
-          call init(a(2),c%hc(2:c%sc-1),c%sc-2)
+          call init(a(1),c%hn%f(2:c%sn-1),c%sn-2)
+          call init(a(2),c%hc%f(2:c%sc-1),c%sc-2)
           call init(a(3),a(1)%N+a(2)%N)
           ! call init(a(3),2*(a(1)%N-1)-1)
           do i=1,a(1)%N; a(3)%f(2*i-1) = a(1)%f(i); enddo
@@ -543,11 +536,11 @@
         elseif (c%sn.eq.2) then
         elseif (c%sn.eq.3) then
         elseif (c%sn.gt.3) then ! typical case
-          call init(m,c%hn(2:c%sn),c%sn-1)
+          call init(m,c%hn%f(2:c%sn),c%sn-1)
           call multiply(m,-1.0_cp)
-          call add(m,2.0_cp*c%hn(2))
+          call add(m,2.0_cp*c%hn%f(2))
           call reverse(m)
-          call init(a,(/m%f,c%hn(3:c%sn)/),2*c%sn-1)
+          call init(a,(/m%f,c%hn%f(3:c%sn)/),2*c%sn-1)
           call init(c,a%f,a%N)
           call delete(a)
           call delete(m)
@@ -562,11 +555,11 @@
         elseif (c%sn.eq.2) then
         elseif (c%sn.eq.3) then
         elseif (c%sn.gt.3) then ! typical case
-          call init(m,c%hn(1:c%sn-1),c%sn-1)
+          call init(m,c%hn%f(1:c%sn-1),c%sn-1)
           call multiply(m,-1.0_cp)
-          call add(m,2.0_cp*c%hn(c%sn-1))
+          call add(m,2.0_cp*c%hn%f(c%sn-1))
           call reverse(m)
-          call init(a,(/c%hn(1:c%sn-2),m%f/),2*c%sn-3)
+          call init(a,(/c%hn%f(1:c%sn-2),m%f/),2*c%sn-3)
           call init(c,a%f,a%N)
           call delete(a)
           call delete(m)
@@ -582,8 +575,8 @@
         type(coordinates),intent(inout) :: c
         type(coordinates) :: temp
         if (c%sn.eq.1) stop 'Error: no nodes to snip in snip_c in coordinates.f90'
-        call init(temp,c%hn(2:c%sn-1),c%sn-1)
-        call init(c,temp%hn,temp%sn)
+        call init(temp,c%hn%f(2:c%sn-1),c%sn-1)
+        call init(c,temp%hn%f,temp%sn)
         call delete(temp)
       end subroutine
 
@@ -592,8 +585,8 @@
         type(coordinates),intent(inout) :: c
         type(coordinates) :: temp
         if (c%sn.eq.1) stop 'Error: no nodes to snip in pop_c in coordinates.f90'
-        call init(temp,c%hn(1:c%sn-1),c%sn-1)
-        call init(c,temp%hn,temp%sn)
+        call init(temp,c%hn%f(1:c%sn-1),c%sn-1)
+        call init(c,temp%hn%f,temp%sn)
         call delete(temp)
       end subroutine
 
@@ -639,16 +632,16 @@
         implicit none
         type(coordinates),intent(inout) :: c
         ! Interpolation stencils
-        call init(c%theta,interpolation_stencil(c%hc,c%hn,c%sc,c%sn))
+        call init(c%theta,interpolation_stencil(c%hc%f,c%hn%f,c%sc,c%sn))
         ! Derivative stencils
-        call init(c%stagCC2N,staggered_CC2N(c%dhc,c%sc))
-        call init(c%stagN2CC,staggered_N2CC(c%dhn,c%sn))
-        call init(c%colCC_centered(1),collocated_CC_1_centered(c%dhc,c%sc))
-        call init(c%colCC_centered(2),collocated_CC_2_centered(c%dhc,c%sc))
-        call init(c%colCC(1),collocated_CC_1(c%dhc,c%sc))
-        call init(c%colCC(2),collocated_CC_2(c%dhc,c%sc))
-        call init(c%colN(1),collocated_Node_1(c%dhn,c%sn))
-        call init(c%colN(2),collocated_Node_2(c%dhn,c%sn))
+        call init(c%stagCC2N,staggered_CC2N(c%dhc%f,c%sc))
+        call init(c%stagN2CC,staggered_N2CC(c%dhn%f,c%sn))
+        call init(c%colCC_centered(1),collocated_CC_1_centered(c%dhc%f,c%sc))
+        call init(c%colCC_centered(2),collocated_CC_2_centered(c%dhc%f,c%sc))
+        call init(c%colCC(1),collocated_CC_1(c%dhc%f,c%sc))
+        call init(c%colCC(2),collocated_CC_2(c%dhc%f,c%sc))
+        call init(c%colN(1),collocated_Node_1(c%dhn%f,c%sn))
+        call init(c%colN(2),collocated_Node_2(c%dhn%f,c%sn))
 
         ! call check(c%stagCC2N)
         ! call check(c%stagN2CC)
@@ -662,7 +655,7 @@
         implicit none
         type(coordinates),intent(inout) :: c
         if (c%sn.gt.1) then
-        call init(c,(/c%hn(1)-c%dhn(1),c%hn,c%hn(c%sn)+(c%dhn(c%sn-1))/),c%sn+2)
+        call init(c,(/c%hn%f(1)-c%dhn%f(1),c%hn%f,c%hn%f(c%sn)+(c%dhn%f(c%sn-1))/),c%sn+2)
         else
           write(*,*) 'Trying to add ghost point to a single point'
           stop 'program stopped in coordinates.f90'
@@ -704,8 +697,8 @@
         if (c%sn.gt.1) then
           ! Check if consectutive
           do i=1,c%sn-1
-            if (c%hn(i+1)-c%hn(i).lt.c%dhMin/2.0_cp) then
-               write(*,*) 'i,dh',i,c%hn(i+1)-c%hn(i)
+            if (c%hn%f(i+1)-c%hn%f(i).lt.c%dhMin/2.0_cp) then
+               write(*,*) 'i,dh',i,c%hn%f(i+1)-c%hn%f(i)
                write(*,*) 'hn = ',c%hn
                stop 'Error: coordinates are not consecutive.'
             endif
@@ -713,11 +706,11 @@
           ! Check if cell centeres are in cell center
           tol = c%dhMin*1.0_cp**(-10.0_cp)
           do i=1,c%sn-1
-            if (abs((c%hc(i)-c%hn(i))-(c%hn(i+1)-c%hc(i))).gt.tol) then
+            if (abs((c%hc%f(i)-c%hn%f(i))-(c%hn%f(i+1)-c%hc%f(i))).gt.tol) then
                write(*,*) 'Cell centers are not centered'
                write(*,*) 'i = ',i
-               write(*,*) 'hn = ',c%hn
-               write(*,*) 'hc = ',c%hc
+               write(*,*) 'hn = ',c%hn%f
+               write(*,*) 'hc = ',c%hc%f
                stop 'Error: cell centeres are not in cell centers.'
             endif
           enddo

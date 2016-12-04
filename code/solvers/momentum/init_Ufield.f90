@@ -23,10 +23,10 @@
        !                            5 : Single Eddy (Weiss)
        !                            6 : Cylinder (Parker)
        !                            7 : Parabolic (1D) (Bandaru)
-       ! 
+       !
        integer :: ductDirection   = 1 ! (1,2,3) = (x,y,z)
        integer :: ductSign        = 1 ! (-1,1) = {(-x,-y,-z),(x,y,z)}
-       ! 
+       !
        ! integer :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
        ! integer :: vortexSign      = 1 ! (-1,1) = {clockwise from +, clockwise from -}
 
@@ -78,7 +78,7 @@
          ! stop 'Done'
          call delete(temp)
        end subroutine
-       
+
        subroutine initPreDefinedUfield(u,v,w,g)
          implicit none
          type(grid),intent(in) :: g
@@ -110,8 +110,8 @@
          v = 0.0d0; w = 0.0d0
          do j=1,g%c(2)%sc
           do k=1,g%c(3)%sc
-            u(:,j,k) = (2.0_cp - g%c(2)%hc(j)**2.0_cp - &
-                                       g%c(3)%hc(k)**2.0_cp)/2.0_cp
+            u(:,j,k) = (2.0_cp - g%c(2)%hc%f(j)**2.0_cp - &
+                                       g%c(3)%hc%f(k)**2.0_cp)/2.0_cp
           enddo
          enddo
        end subroutine
@@ -125,7 +125,7 @@
        subroutine initFullyDevelopedDuctFlow(u,v,w,g,dir,posNeg)
          ! This routine initializes a fully developed duct flow
          ! profile along direction dir.
-         ! 
+         !
          ! There is a copy of this routine inside initUBCs.
          ! THE MASTER COPY OF THIS ROUTINE SHOULD
          ! RESIDE IN INITIALIZE UFIELD, NOT
@@ -147,7 +147,7 @@
          hmax = (/g%c(1)%hmax,g%c(2)%hmax,g%c(3)%hmax/)
          Ni = (/g%c(1)%sc,g%c(2)%sc,g%c(3)%sc/)
 
-         ! For max number of iterations in 
+         ! For max number of iterations in
          ! infinite series solution:
          nMax = 100; mMax = 100
          F = 1.0_cp
@@ -158,24 +158,24 @@
            width = (hmax(2) - hmin(2))/2.0_cp
            height = (hmax(3) - hmin(3))/2.0_cp
            imax = Ni(2); jmax = Ni(3)
-           allocate(hx(imax)); hx = g%c(2)%hc
-           allocate(hy(jmax)); hy = g%c(3)%hc
+           allocate(hx(imax)); hx = g%c(2)%hc%f
+           allocate(hy(jmax)); hy = g%c(3)%hc%f
            allocate(u_temp(s(2),s(3)))
          case (2) ! v(x,z)
            s = g%c(2)%sn
            width = (hmax(1) - hmin(1))/2.0_cp
            height = (hmax(3) - hmin(3))/2.0_cp
            imax = Ni(1); jmax = Ni(3)
-           allocate(hx(imax)); hx = g%c(1)%hc
-           allocate(hy(jmax)); hy = g%c(3)%hc
+           allocate(hx(imax)); hx = g%c(1)%hc%f
+           allocate(hy(jmax)); hy = g%c(3)%hc%f
            allocate(u_temp(s(1),s(3)))
          case (3) ! w(x,y)
            s = g%c(3)%sn
            width = (hmax(1) - hmin(1))/2.0_cp
            height = (hmax(2) - hmin(2))/2.0_cp
            imax = Ni(1); jmax = Ni(2)
-           allocate(hx(imax)); hx = g%c(1)%hc
-           allocate(hy(jmax)); hy = g%c(2)%hc
+           allocate(hx(imax)); hx = g%c(1)%hc%f
+           allocate(hy(jmax)); hy = g%c(2)%hc%f
            allocate(u_temp(s(1),s(2)))
          case default
          stop 'Error: dir must = 1,2,3 in initFullyDevelopedDuctFlow.'
@@ -217,16 +217,16 @@
          Re = real(200.0,cp)
          v = 0.0d0; w = 0.0d0
          do k=1,g%c(3)%sc
-           u(:,:,k) = real(0.5,cp)*Re*(1.0_cp - g%c(3)%hc(k)**2.0_cp)
+           u(:,:,k) = real(0.5,cp)*Re*(1.0_cp - g%c(3)%hc%f(k)**2.0_cp)
          enddo
        end subroutine
-       
+
        subroutine isolatedEddy2D(u,v,w,g,dir,vsign)
          ! From
-         !      Weiss, N. O. The Expulsion of Magnetic Flux 
+         !      Weiss, N. O. The Expulsion of Magnetic Flux
          !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
          !      Sci. 293, 310–328 (1966).
-         ! 
+         !
          ! Computes
          !           U = curl(psi)
          ! Where
@@ -261,31 +261,31 @@
          case (1)
            u = 0.0_cp
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
-                v(i,j,k) =   cos(two*PI*g%c(2)%hn(j)) * &
-                             sin(two*PI*g%c(3)%hc(k))
+                v(i,j,k) =   cos(two*PI*g%c(2)%hn%f(j)) * &
+                             sin(two*PI*g%c(3)%hc%f(k))
            enddo;enddo;enddo
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
-                w(i,j,k) = - sin(two*PI*g%c(2)%hc(j)) * &
-                             cos(two*PI*g%c(3)%hn(k))
+                w(i,j,k) = - sin(two*PI*g%c(2)%hc%f(j)) * &
+                             cos(two*PI*g%c(3)%hn%f(k))
            enddo;enddo;enddo
          case (2)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
-                u(i,j,k) = - cos(two*PI*g%c(1)%hn(i)) * &
-                             sin(two*PI*g%c(3)%hc(k))
+                u(i,j,k) = - cos(two*PI*g%c(1)%hn%f(i)) * &
+                             sin(two*PI*g%c(3)%hc%f(k))
            enddo;enddo;enddo
            v = 0.0_cp
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
-                w(i,j,k) =   sin(two*PI*g%c(1)%hc(i)) * &
-                             cos(two*PI*g%c(3)%hn(k))
+                w(i,j,k) =   sin(two*PI*g%c(1)%hc%f(i)) * &
+                             cos(two*PI*g%c(3)%hn%f(k))
            enddo;enddo;enddo
          case (3)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
-                u(i,j,k) =   cos(two*PI*g%c(1)%hn(i)) * &
-                             sin(two*PI*g%c(2)%hc(j))
+                u(i,j,k) =   cos(two*PI*g%c(1)%hn%f(i)) * &
+                             sin(two*PI*g%c(2)%hc%f(j))
            enddo;enddo;enddo
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
-                v(i,j,k) = - sin(two*PI*g%c(1)%hc(i)) * &
-                             cos(two*PI*g%c(2)%hn(j))
+                v(i,j,k) = - sin(two*PI*g%c(1)%hc%f(i)) * &
+                             cos(two*PI*g%c(2)%hn%f(j))
            enddo;enddo;enddo
            w = 0.0_cp
          case default
@@ -302,10 +302,10 @@
 
        subroutine singleEddy2D(u,v,w,g,dir,vsign)
          ! From
-         !      Weiss, N. O. The Expulsion of Magnetic Flux 
+         !      Weiss, N. O. The Expulsion of Magnetic Flux
          !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
          !      Sci. 293, 310–328 (1966).
-         ! 
+         !
          ! Computes
          !           U = curl(psi)
          ! Where
@@ -342,28 +342,28 @@
          case (1)
            u = 0.0_cp
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
-                v(i,j,k) =   (real(32,cp)*g%c(3)%hc(k)/PI)*((one-four*g%c(3)%hc(k)**two)**three) * &
-                cos(PI*g%c(2)%hn(j))
+                v(i,j,k) =   (real(32,cp)*g%c(3)%hc%f(k)/PI)*((one-four*g%c(3)%hc%f(k)**two)**three) * &
+                cos(PI*g%c(2)%hn%f(j))
            enddo;enddo;enddo
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
-                w(i,j,k) = - ((one-four*g%c(3)%hn(k)**two)**four)*sin(PI*g%c(2)%hc(j))
+                w(i,j,k) = - ((one-four*g%c(3)%hn%f(k)**two)**four)*sin(PI*g%c(2)%hc%f(j))
            enddo;enddo;enddo
          case (2)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
-                u(i,j,k) = - ((one-four*g%c(1)%hn(i)**two)**four)*sin(PI*g%c(3)%hc(k))
+                u(i,j,k) = - ((one-four*g%c(1)%hn%f(i)**two)**four)*sin(PI*g%c(3)%hc%f(k))
            enddo;enddo;enddo
            v = 0.0_cp
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
-                w(i,j,k) =   (real(32,cp)*g%c(1)%hc(i)/PI)*((one-four*g%c(1)%hc(i)**two)**three) * &
-                cos(PI*g%c(3)%hn(k))
+                w(i,j,k) =   (real(32,cp)*g%c(1)%hc%f(i)/PI)*((one-four*g%c(1)%hc%f(i)**two)**three) * &
+                cos(PI*g%c(3)%hn%f(k))
            enddo;enddo;enddo
          case (3)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
-                u(i,j,k) =   (real(32,cp)*g%c(2)%hc(j)/PI)*((one-four*g%c(2)%hc(j)**two)**three) * &
-                cos(PI*g%c(1)%hn(i))
+                u(i,j,k) =   (real(32,cp)*g%c(2)%hc%f(j)/PI)*((one-four*g%c(2)%hc%f(j)**two)**three) * &
+                cos(PI*g%c(1)%hn%f(i))
            enddo;enddo;enddo
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
-                v(i,j,k) = - ((one-four*g%c(2)%hn(j)**two)**four)*sin(PI*g%c(1)%hc(i))
+                v(i,j,k) = - ((one-four*g%c(2)%hn%f(j)**two)**four)*sin(PI*g%c(1)%hc%f(i))
            enddo;enddo;enddo
            w = 0.0_cp
          case default
@@ -381,12 +381,12 @@
        subroutine cylinder2D(u,v,w,g,dir,vsign)
          ! From
          !      Moffatt
-         ! 
+         !
          ! Computes
          !           U(r) = omega0*r
          ! for
          !           0 < r < r0
-         ! 
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: u,v,w
          type(grid),intent(in) :: g
@@ -407,34 +407,34 @@
            hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
            u = 0.0_cp
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
-                r = sqrt((g%c(2)%hn(j)-hc(2))**two + (g%c(3)%hc(k)-hc(3))**two)
+                r = sqrt((g%c(2)%hn%f(j)-hc(2))**two + (g%c(3)%hc%f(k)-hc(3))**two)
                 if (r.lt.r0) v(i,j,k) =-omega0*r
            enddo;enddo;enddo
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
-                r = sqrt((g%c(2)%hc(j)-hc(2))**two + (g%c(3)%hn(k)-hc(3))**two)
+                r = sqrt((g%c(2)%hc%f(j)-hc(2))**two + (g%c(3)%hn%f(k)-hc(3))**two)
                 if (r.lt.r0) w(i,j,k) = omega0*r
            enddo;enddo;enddo
          case (2)
            hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
-                r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(3)%hn(k)-hc(3))**two)
+                r = sqrt((g%c(1)%hn%f(i)-hc(1))**two + (g%c(3)%hn%f(k)-hc(3))**two)
                 if (r.lt.r0) u(i,j,k) = omega0*r
            enddo;enddo;enddo
            v = 0.0_cp
            do k=1,sz(3);do j=1,sz(2);do i=1,sz(1)
-                r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(3)%hn(k)-hc(3))**two)
+                r = sqrt((g%c(1)%hn%f(i)-hc(1))**two + (g%c(3)%hn%f(k)-hc(3))**two)
                 if (r.lt.r0) w(i,j,k) =-omega0*r
            enddo;enddo;enddo
          case (3)
            hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
            do k=1,sx(3);do j=1,sx(2);do i=1,sx(1)
-                r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(2)%hc(j)-hc(2))**two)
-                theta = atan2(g%c(2)%hc(j),g%c(1)%hn(i))
+                r = sqrt((g%c(1)%hn%f(i)-hc(1))**two + (g%c(2)%hc%f(j)-hc(2))**two)
+                theta = atan2(g%c(2)%hc%f(j),g%c(1)%hn%f(i))
                 if (r.lt.r0) u(i,j,k) =-omega0*r*sin(theta)
            enddo;enddo;enddo
            do k=1,sy(3);do j=1,sy(2);do i=1,sy(1)
-                r = sqrt((g%c(1)%hc(i)-hc(1))**two + (g%c(2)%hn(j)-hc(2))**two)
-                theta = atan2(g%c(2)%hn(j),g%c(1)%hc(i))
+                r = sqrt((g%c(1)%hc%f(i)-hc(1))**two + (g%c(2)%hn%f(j)-hc(2))**two)
+                theta = atan2(g%c(2)%hn%f(j),g%c(1)%hc%f(i))
                 if (r.lt.r0) v(i,j,k) = omega0*r*cos(theta)
            enddo;enddo;enddo
            w = 0.0_cp

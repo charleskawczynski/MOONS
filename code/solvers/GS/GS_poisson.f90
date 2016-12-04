@@ -90,12 +90,12 @@
 
         if (u%is_CC) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
             GS%gt(i) = 1
           enddo; enddo
         elseif(u%is_Node) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gt(i) = 0
           enddo; enddo
         elseif (u%is_Face) then
@@ -136,17 +136,17 @@
 
         if (u%is_CC) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 1; GS%gty(i) = 1; GS%gtz(i) = 1
           enddo; enddo
         elseif(u%is_Node) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 0; GS%gty(i) = 0; GS%gtz(i) = 0
           enddo; enddo
         elseif (u%is_Face) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 0; GS%gty(i) = 0; GS%gtz(i) = 0
           enddo; enddo
         elseif (u%is_Edge) then

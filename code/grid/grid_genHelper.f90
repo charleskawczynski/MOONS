@@ -61,9 +61,9 @@
          real(cp),dimension(:),allocatable :: temp
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend'
+         if (.not.allocated(gg%g%c(dir)%hn%f)) stop 'Error: no existing grid when trying to prepend'
          allocate(temp(s))
-         temp = gg%g%c(dir)%hn
+         temp = gg%g%c(dir)%hn%f
          call init(gg%g,(/h,temp/),dir)
          deallocate(temp)
        end subroutine
@@ -77,9 +77,9 @@
          real(cp),dimension(:),allocatable :: temp
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to append'
+         if (.not.allocated(gg%g%c(dir)%hn%f)) stop 'Error: no existing grid when trying to append'
          allocate(temp(s))
-         temp = gg%g%c(dir)%hn
+         temp = gg%g%c(dir)%hn%f
          call init(gg%g,(/temp,h/),dir)
          deallocate(temp)
        end subroutine
@@ -93,9 +93,9 @@
          real(cp),dimension(:),allocatable :: temp
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
+         if (.not.allocated(gg%g%c(dir)%hn%f)) stop 'Error: no existing grid when trying to prepend mirror'
          allocate(temp(s))
-         temp = gg%g%c(dir)%hn + h0
+         temp = gg%g%c(dir)%hn%f + h0
          call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
@@ -108,9 +108,9 @@
          real(cp),dimension(:),allocatable :: temp
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
+         if (.not.allocated(gg%g%c(dir)%hn%f)) stop 'Error: no existing grid when trying to prepend mirror'
          allocate(temp(s))
-         temp = gg%g%c(dir)%hn(s:1:-1)
+         temp = gg%g%c(dir)%hn%f(s:1:-1)
          call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
@@ -123,9 +123,9 @@
          real(cp),dimension(:),allocatable :: h1,h2
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to prepend mirror'
+         if (.not.allocated(gg%g%c(dir)%hn%f)) stop 'Error: no existing grid when trying to prepend mirror'
          allocate(h1(s-1)); allocate(h2(s))
-         h2 = gg%g%c(dir)%hn; h1 = h2(s:2:-1)
+         h2 = gg%g%c(dir)%hn%f; h1 = h2(s:2:-1)
          call init(gg%g,(/h1,h2/),dir)
          deallocate(h1,h2)
        end subroutine
@@ -138,9 +138,9 @@
          real(cp),dimension(:),allocatable :: h1,h2
          integer :: s
          s = gg%g%c(dir)%sn
-         if (.not.allocated(gg%g%c(dir)%hn)) stop 'Error: no existing grid when trying to append mirror'
+         if (.not.allocated(gg%g%c(dir)%hn%f)) stop 'Error: no existing grid when trying to append mirror'
          allocate(h1(s-1)); allocate(h2(s))
-         h2 = gg%g%c(dir)%hn; h1 = h2(s-1:1:-1)
+         h2 = gg%g%c(dir)%hn%f; h1 = h2(s-1:1:-1)
          call init(gg%g,(/h1,h2/),dir)
          deallocate(h1,h2)
        end subroutine
@@ -155,9 +155,9 @@
          s = gg%g%c(dir)%sn
          allocate(temp(s+1))
          do i=1,s
-          temp(i+1) = gg%g%c(dir)%hn(i)
+          temp(i+1) = gg%g%c(dir)%hn%f(i)
          enddo
-         temp(1) = gg%g%c(dir)%hn(1) - (gg%g%c(dir)%hn(2) - gg%g%c(dir)%hn(1))
+         temp(1) = gg%g%c(dir)%hn%f(1) - (gg%g%c(dir)%hn%f(2) - gg%g%c(dir)%hn%f(1))
          call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
@@ -172,9 +172,9 @@
          s = gg%g%c(dir)%sn
          allocate(temp(s+1))
          do i=1,s
-          temp(i) = gg%g%c(dir)%hn(i)
+          temp(i) = gg%g%c(dir)%hn%f(i)
          enddo
-         temp(s+1) = gg%g%c(dir)%hn(s) + (gg%g%c(dir)%hn(s) - gg%g%c(dir)%hn(s-1))
+         temp(s+1) = gg%g%c(dir)%hn%f(s) + (gg%g%c(dir)%hn%f(s) - gg%g%c(dir)%hn%f(s-1))
          call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine
@@ -188,10 +188,10 @@
          s = gg%g%c(dir)%sn
          allocate(temp(s+2))
          do i=1,s
-          temp(i+1) = gg%g%c(dir)%hn(i)
+          temp(i+1) = gg%g%c(dir)%hn%f(i)
          enddo
-         temp(1) = gg%g%c(dir)%hn(1) - (gg%g%c(dir)%hn(2) - gg%g%c(dir)%hn(1))
-         temp(s+2) = gg%g%c(dir)%hn(s) + (gg%g%c(dir)%hn(s) - gg%g%c(dir)%hn(s-1))
+         temp(1) = gg%g%c(dir)%hn%f(1) - (gg%g%c(dir)%hn%f(2) - gg%g%c(dir)%hn%f(1))
+         temp(s+2) = gg%g%c(dir)%hn%f(s) + (gg%g%c(dir)%hn%f(s) - gg%g%c(dir)%hn%f(s-1))
          call init(gg%g,temp,dir)
          deallocate(temp)
        end subroutine

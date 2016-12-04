@@ -10,7 +10,6 @@
       ! Initialization / Deletion (allocate/deallocate)
       public :: get_3D_index
       public :: get_1D_index
-      public :: get_dA
       public :: get_val
 
       interface get_3D_index;        module procedure get_3D_index_SF;        end interface
@@ -102,21 +101,6 @@
       ! ****************************************************************
       ! **************************** VALUES ****************************
       ! ****************************************************************
-
-      function get_dA(m,index_1D) result(dA)
-        implicit none
-        type(mesh),intent(in) :: m
-        integer,intent(in) :: index_1D
-        real(cp) :: dA
-        integer :: i_3D,j_3D,k_3D,t_3D,N_s
-        N_s = 1
-        call get_3D_index(i_3D,j_3D,k_3D,t_3D,m,index_1D)
-            if (m%B(t_3D)%g%c(1)%N.eq.N_s) then; dA=m%B(t_3D)%g%c(2)%dhn(j_3D)*m%B(t_3D)%g%c(3)%dhn(k_3D)
-        elseif (m%B(t_3D)%g%c(2)%N.eq.N_s) then; dA=m%B(t_3D)%g%c(1)%dhn(i_3D)*m%B(t_3D)%g%c(3)%dhn(k_3D)
-        elseif (m%B(t_3D)%g%c(3)%N.eq.N_s) then; dA=m%B(t_3D)%g%c(1)%dhn(i_3D)*m%B(t_3D)%g%c(2)%dhn(j_3D)
-        else; stop 'Error: dA not found in get_dA (2) in ops_BEM.f90'
-        endif
-      end function
 
       function get_val_SF(u,index_1D) result(val)
         implicit none

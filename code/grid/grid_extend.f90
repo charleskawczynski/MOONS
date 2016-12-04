@@ -88,11 +88,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_uniform in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          call snip(gg,dir) ! Remove ghost nodes
-         dh = gg%g%c(dir)%dhn(1)
+         dh = gg%g%c(dir)%dhn%f(1)
          call snip(gg,dir)
          call prep(gg,(/uniformLeft(g_in%c(dir)%hmin,dh,N)/),dir)
          call prepGhost(gg,dir) ! re-apply ghosts
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -117,11 +117,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_L in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call snip(gg,dir); call snip(gg,dir)
          call prep(gg,(/robertsLeft(hmin-L,hmin,N,beta)/),dir)
          call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -146,11 +146,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_R in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call snip(gg,dir); call snip(gg,dir)
          call prep(gg,(/robertsRight(hmin-L,hmin,N,beta)/),dir)
          call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -175,11 +175,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_B in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call snip(gg,dir); call snip(gg,dir)
          call prep(gg,(/robertsBoth(hmin-L,hmin,N,beta)/),dir)
          call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -203,11 +203,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_B in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_big(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
+         beta = beta_dh_big(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
          call snip(gg,dir); call snip(gg,dir)
          call prep(gg,(/robertsLeft(hmin-L,hmin,N,beta)/),dir)
          call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -232,11 +232,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_uniform in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          call pop(gg,dir) ! Remove ghost nodes
-         dh = gg%g%c(dir)%dhn(gg%g%c(dir)%sn-1)
+         dh = gg%g%c(dir)%dhn%f(gg%g%c(dir)%sn-1)
          call pop(gg,dir)
          call app(gg,(/uniformRight(g_in%c(dir)%hmax,dh,N)/),dir)
          call appGhost(gg,dir) ! re-apply ghosts
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -261,11 +261,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_L in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
+         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn%f(g_in%c(dir)%sn-1))
          call pop(gg,dir); call pop(gg,dir)
          call app(gg,(/robertsLeft(hmax,hmax + L,N,beta)/),dir)
          call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -290,11 +290,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_R in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
+         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn%f(g_in%c(dir)%sn-1))
          call pop(gg,dir); call pop(gg,dir)
          call app(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
          call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -319,11 +319,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_B in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_both(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
+         beta = beta_dh_both(hmax,hmax + L,N,g_in%c(dir)%dhn%f(g_in%c(dir)%sn-1))
          call pop(gg,dir); call pop(gg,dir)
          call app(gg,(/robertsBoth(hmax,hmax + L,N,beta)/),dir)
          call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine
@@ -347,11 +347,11 @@
          if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_C2F in extend_grid.f90'
          call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_big(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
+         beta = beta_dh_big(hmax,hmax + L,N,g_in%c(dir)%dhn%f(g_in%c(dir)%sn-1))
          call pop(gg,dir); call pop(gg,dir)
          call app(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
          call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
+         call init(g,gg%g%c(dir)%hn%f,dir)
          call initProps(g)
          call delete(gg)
        end subroutine

@@ -237,6 +237,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_global\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry\
@@ -244,7 +245,6 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
-	$(SRC_DIR)$(PS)geometric_region\
 	$(SRC_DIR)$(PS)globals\
 	$(SRC_DIR)$(PS)grid\
 	$(SRC_DIR)$(PS)IO\
@@ -330,6 +330,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export$(PS)GF_export.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export$(PS)GF_import.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_sum.f90\
@@ -386,12 +388,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_raw.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_g.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_VF.f90\
-	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
-	$(SRC_DIR)$(PS)IO$(PS)import_g.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_SF.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_VF.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90\
@@ -402,7 +400,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)clock$(PS)stop_clock.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
 	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
-	$(SRC_DIR)$(PS)geometric_region$(PS)geometric_region.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\

@@ -1,13 +1,13 @@
       module import_SF_mod
-      ! This module, along with exportRaw.f90 provide purely functional 
+      ! This module, along with exportRaw.f90 provide purely functional
       ! pipeline routines to export data given inputs. The possible mesh types
       ! can be checked in the getType_3D,getType_2D,getType_1D routines.
-      ! 
+      !
       use current_precision_mod
       use IO_tools_mod
       use mesh_mod
       use SF_mod
-      use import_g_mod
+      use GF_import_mod
       use string_mod
       use string_aux_mod
       implicit none
@@ -24,13 +24,9 @@
         type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un
         character(len=*),intent(in) :: arrfmt,name
-        integer :: i,DT
+        integer :: i
         read(un,*);read(un,*) ! Read tecplot header
-        DT = getType_3D(m%B(1)%g,A%BF(1)%GF%s,name)
-        do i=1,m%s
-          read(un,*) ! Read tecplot header
-          call imp_3D_1C_g(m%B(i)%g,DT,pad,un,arrfmt,A%BF(i)%GF%s,A%BF(i)%GF%f)
-        enddo
+        do i=1,m%s; call imp_3D_1C_GF(m%B(i)%g,A%DL,i,pad,un,A%BF(i)%GF); enddo
       end subroutine
 
       subroutine imp_2D_1C(m,pad,un,arrfmt,name,A,dir)
@@ -39,30 +35,9 @@
         type(mesh),intent(inout) :: m
         integer,intent(in) :: pad,un,dir
         character(len=*),intent(in) :: arrfmt,name
-        integer,dimension(2) :: s
-        integer :: i,DT
+        integer :: i
         read(un,*);read(un,*) ! Read tecplot header
-        select case (dir)
-        case(1); s = (/A%BF(1)%GF%s(2),A%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(2); s = (/A%BF(1)%GF%s(1),A%BF(1)%GF%s(3)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case(3); s = (/A%BF(1)%GF%s(1),A%BF(1)%GF%s(2)/); DT = getType_2D(m%B(1)%g,s,name,dir)
-        case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
-        end select
-        select case (dir)
-        case(1); do i=1,m%s
-                   read(un,*) ! Read tecplot header
-                   call imp_2D_1C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,A%BF(i)%GF%f(2,:,:))
-                 enddo
-        case(2); do i=1,m%s
-                   read(un,*) ! Read tecplot header
-                   call imp_2D_1C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,A%BF(i)%GF%f(:,2,:))
-                 enddo
-        case(3); do i=1,m%s
-                   read(un,*) ! Read tecplot header
-                   call imp_2D_1C_g(m%B(i)%g,DT,pad,un,arrfmt,s,dir,A%BF(i)%GF%f(:,:,2))
-                 enddo
-        case default; stop 'Error: dir must = 1,2,3 in exp_2D_2C in export_SF.f90'
-        end select
+        do i=1,m%s; call imp_2D_1C_GF(m%B(i)%g,A%DL,i,pad,un,A%BF(i)%GF,dir,2); enddo
       end subroutine
 
       end module

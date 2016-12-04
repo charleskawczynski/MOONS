@@ -26,7 +26,7 @@
          real(cp) :: time,dtime
          ! ***************** DEFAULT VALUES *****************
          Re         = 1.0_cp*pow(2)
-         Ha         = 10.0_cp*pow(0)
+         Ha         = 1.0_cp*pow(1)
          Rem        = 10.0_cp*pow(0)
          tw         = 0.5_cp
 
