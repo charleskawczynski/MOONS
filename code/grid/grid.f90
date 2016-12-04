@@ -24,7 +24,11 @@
        public :: mirror_about_hmax
 
        public :: get_shape
-       public :: get_coordinates
+
+       public :: get_coordinates_h
+       public :: get_coordinates_dh
+       public :: get_coordinates_dual_h
+       public :: get_coordinates_dual_dh
 
        public :: get_face_GI
        public :: get_edge_GI
@@ -43,42 +47,46 @@
          logical :: defined = .false.
        end type
 
-       interface init;               module procedure initGridCopy;            end interface
-       interface init;               module procedure initGrid1;               end interface
-       interface init;               module procedure initGrid2;               end interface
-       interface delete;             module procedure deleteGrid;              end interface
-       interface display;            module procedure display_grid;            end interface
-       interface print;              module procedure print_Grid;              end interface
-       interface export;             module procedure export_Grid;             end interface
-       interface import;             module procedure import_Grid;             end interface
+       interface init;                     module procedure initGridCopy;               end interface
+       interface init;                     module procedure initGrid1;                  end interface
+       interface init;                     module procedure initGrid2;                  end interface
+       interface delete;                   module procedure deleteGrid;                 end interface
+       interface display;                  module procedure display_grid;               end interface
+       interface print;                    module procedure print_Grid;                 end interface
+       interface export;                   module procedure export_Grid;                end interface
+       interface import;                   module procedure import_Grid;                end interface
 
-       interface initProps;          module procedure initProps_grid;          end interface
+       interface initProps;                module procedure initProps_grid;             end interface
 
-       interface restrict;           module procedure restrictGrid1;           end interface
-       interface restrict;           module procedure restrictGrid3;           end interface
-       interface restrict_x;         module procedure restrictGrid_x;          end interface
-       interface restrict_xy;        module procedure restrictGrid_xy;         end interface
+       interface restrict;                 module procedure restrictGrid1;              end interface
+       interface restrict;                 module procedure restrictGrid3;              end interface
+       interface restrict_x;               module procedure restrictGrid_x;             end interface
+       interface restrict_xy;              module procedure restrictGrid_xy;            end interface
 
-       interface restrict;           module procedure restrict_dir_g;          end interface
-       interface prolongate;         module procedure prolongate_dir_g;        end interface
+       interface restrict;                 module procedure restrict_dir_g;             end interface
+       interface prolongate;               module procedure prolongate_dir_g;           end interface
 
-       interface snip;               module procedure snip_grid;               end interface
-       interface pop;                module procedure pop_grid;                end interface
+       interface snip;                     module procedure snip_grid;                  end interface
+       interface pop;                      module procedure pop_grid;                   end interface
 
-       interface mirror_about_hmin;  module procedure mirror_about_hmin_g;     end interface
-       interface mirror_about_hmax;  module procedure mirror_about_hmax_g;     end interface
+       interface mirror_about_hmin;        module procedure mirror_about_hmin_g;        end interface
+       interface mirror_about_hmax;        module procedure mirror_about_hmax_g;        end interface
 
-       interface get_shape;          module procedure get_shape_g;             end interface
+       interface get_shape;                module procedure get_shape_g;                end interface
 
-       interface get_face_GI;        module procedure get_face_GI_grid;        end interface
-       interface get_edge_GI;        module procedure get_edge_GI_grid;        end interface
-       interface get_corner_GI;      module procedure get_corner_GI_grid;      end interface
+       interface get_face_GI;              module procedure get_face_GI_grid;           end interface
+       interface get_edge_GI;              module procedure get_edge_GI_grid;           end interface
+       interface get_corner_GI;            module procedure get_corner_GI_grid;         end interface
 
-       interface get_face_b;         module procedure get_face_grid_b;         end interface
-       interface get_edge_b;         module procedure get_edge_grid_b;         end interface
-       interface get_corner_b;       module procedure get_corner_grid_b;       end interface
+       interface get_face_b;               module procedure get_face_grid_b;            end interface
+       interface get_edge_b;               module procedure get_edge_grid_b;            end interface
+       interface get_corner_b;             module procedure get_corner_grid_b;          end interface
 
-       interface get_coordinates;    module procedure get_coordinates_g;       end interface
+       interface get_coordinates_h;        module procedure get_coordinates_h_g;        end interface
+       interface get_coordinates_dh;       module procedure get_coordinates_dh_g;       end interface
+       interface get_coordinates_dual_h;   module procedure get_coordinates_dual_h_g;   end interface
+       interface get_coordinates_dual_dh;  module procedure get_coordinates_dual_dh_g;  end interface
+
 
        contains
 
@@ -361,7 +369,7 @@
          call get_face_b(g,B,f(3))
        end subroutine
 
-      subroutine get_coordinates_g(h,g,DL)
+      subroutine get_coordinates_h_g(h,g,DL)
         implicit none
         type(array),dimension(3),intent(inout) :: h
         type(grid),intent(in) :: g
@@ -370,9 +378,51 @@
         do i=1,3
             if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hn)
         elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hc)
-        else; stop 'Error: bad DL in get_coordinates_g in grid.f90'
+        else; stop 'Error: bad DL in get_coordinates_h_g in grid.f90'
         endif
         enddo
       end subroutine
 
-       end module
+      subroutine get_coordinates_dh_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%dhn)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%dhc)
+        else; stop 'Error: bad DL in get_coordinates_dh_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      subroutine get_coordinates_dual_h_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hc)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hn)
+        else; stop 'Error: bad DL in get_coordinates_dual_h_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      subroutine get_coordinates_dual_dh_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%dhc)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%dhn)
+        else; stop 'Error: bad DL in get_coordinates_dual_dh_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      end module

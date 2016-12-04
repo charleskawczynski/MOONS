@@ -55,7 +55,6 @@
         interface insist_shape_match;       module procedure insist_shape_match_plane_GF;  end interface
         interface insist_shape_staggered;   module procedure insist_shape_staggered_dir_GF;end interface
         interface insist_allocated;         module procedure insist_allocated_GF;          end interface
-        interface get_coordinates;          module procedure get_coordinates_GF;           end interface
 
        contains
 
@@ -271,25 +270,11 @@
           type(array),dimension(3) :: h
           integer :: un,i
           un = new_and_open(dir,name)
-          call get_coordinates_GF(h,g,DL)
+          call get_coordinates_h(h,g,DL)
           call export(a,h(1)%f,h(2)%f,h(3)%f,un,name)
           call close_and_message(un,dir,name)
           do i=1,3; call delete(h(i)); enddo
         end subroutine
-
-       subroutine get_coordinates_GF(h,g,DL)
-         implicit none
-         type(array),dimension(3),intent(inout) :: h
-         type(grid),intent(in) :: g
-         type(data_location),intent(in) :: DL
-         integer :: i
-         do i=1,3
-             if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hn)
-         elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hc)
-         else; stop 'Error: bad DL in get_coordinates in GF_export.f90'
-         endif
-         enddo
-       end subroutine
 
         subroutine insist_shape_match_GF(A,B,caller)
           implicit none

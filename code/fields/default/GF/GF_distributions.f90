@@ -30,46 +30,34 @@
           type(grid_field),intent(inout) :: u
           type(grid),intent(in) :: g
           type(data_location),intent(in) :: DL
-          type(array),dimension(3) :: h
+          type(array),dimension(3) :: dh
           integer :: i,j,k
+          integer,dimension(3) :: e
           call assign(u,0.0_cp)
-          call get_coordinates(h,g,DL)
+          call get_coordinates_dual_dh(dh,g,DL)
+          e = N_eye(DL)
+
 #ifdef _PARALLELIZE_GF_
           !$OMP PARALLEL DO SHARED(g)
 
 #endif
           do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
-              u%f(i,j,k) = h(1)%f(i)*&
-                           h(2)%f(j)*&
-                           h(3)%f(k)
+              u%f(i,j,k) = dh(1)%f(i-e(1))*&
+                           dh(2)%f(j-e(2))*&
+                           dh(3)%f(k-e(3))
           enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
           !$OMP END PARALLEL DO
 
 #endif
-          do i=1,3; call delete(h(i)); enddo
+          do i=1,3; call delete(dh(i)); enddo
         end subroutine
 
         subroutine volume_GF(u,g)
-          ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
           implicit none
           type(grid_field),intent(inout) :: u
           type(grid),intent(in) :: g
-          integer :: i,j,k
-          call assign(u,0.0_cp)
-#ifdef _PARALLELIZE_GF_
-          !$OMP PARALLEL DO SHARED(g)
-
-#endif
-          do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
-              u%f(i,j,k) = g%c(1)%dhn%f(i)*&
-                           g%c(2)%dhn%f(j)*&
-                           g%c(3)%dhn%f(k)
-          enddo; enddo; enddo
-#ifdef _PARALLELIZE_GF_
-          !$OMP END PARALLEL DO
-
-#endif
+          call volume(u,g,DL_CC())
         end subroutine
 
         subroutine sine_waves_GF(f,g,wavenum,phi,DL)
@@ -80,7 +68,7 @@
           type(data_location),intent(in) :: DL
           type(array),dimension(3) :: h
           integer :: i,j,k
-          call get_coordinates(h,g,DL)
+          call get_coordinates_h(h,g,DL)
 #ifdef _PARALLELIZE_GF_
             !$OMP PARALLEL DO SHARED(g)
 
@@ -106,7 +94,7 @@
           type(array),dimension(3) :: h
           integer :: i,j,k
 
-          call get_coordinates(h,g,DL)
+          call get_coordinates_h(h,g,DL)
 #ifdef _PARALLELIZE_GF_
             !$OMP PARALLEL DO SHARED(g)
 

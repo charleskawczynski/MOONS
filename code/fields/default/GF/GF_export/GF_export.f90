@@ -31,7 +31,7 @@
         integer :: i,j,k
         s = get_shape(g,DL)
         call exp_Zone_3I(un,s-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
           write(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -52,7 +52,7 @@
         integer :: i,j,k
         s = get_shape(g,DL)
         call exp_Zone_3I(un,s-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
           write(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -73,7 +73,7 @@
         integer :: i,j,k
         s = get_shape(g,DL)
         call exp_Zone_3I(un,s-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
           write(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -94,7 +94,7 @@
         integer :: i,j,k
         s = get_shape(g,DL)
         call exp_Zone_3I(un,s-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
           write(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -123,7 +123,7 @@
         e = eye_given_dir(dir)
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -152,7 +152,7 @@
         e = eye_given_dir(dir)
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -180,7 +180,7 @@
         e = eye_given_dir(dir)
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -207,7 +207,7 @@
         e = eye_given_dir(dir)
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -241,7 +241,7 @@
         i_line(d(2)) = line(d(2))
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)
@@ -272,7 +272,7 @@
         i_line(d(2)) = line(d(2))
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)
@@ -302,7 +302,7 @@
         i_line(d(2)) = line(d(2))
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)
@@ -331,7 +331,7 @@
         i_line(d(2)) = line(d(2))
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)

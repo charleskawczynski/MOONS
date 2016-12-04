@@ -26,7 +26,7 @@
         character(len=*),intent(in) :: arrfmt,name
         integer :: i
         read(un,*);read(un,*) ! Read tecplot header
-        do i=1,m%s; call imp_3D_1C_GF(m%B(i)%g,A%DL,i,pad,un,A%BF(i)%GF); enddo
+        do i=1,m%s; call imp_3D_1C_GF(m%B(i)%g,A%DL,pad,un,A%BF(i)%GF); enddo
       end subroutine
 
       subroutine imp_2D_1C(m,pad,un,arrfmt,name,A,dir)
@@ -37,7 +37,7 @@
         character(len=*),intent(in) :: arrfmt,name
         integer :: i
         read(un,*);read(un,*) ! Read tecplot header
-        do i=1,m%s; call imp_2D_1C_GF(m%B(i)%g,A%DL,i,pad,un,A%BF(i)%GF,dir,2); enddo
+        do i=1,m%s; call imp_2D_1C_GF(m%B(i)%g,A%DL,pad,un,A%BF(i)%GF,dir,2); enddo
       end subroutine
 
       end module

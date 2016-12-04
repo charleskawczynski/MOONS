@@ -41,8 +41,6 @@
          type(export_now) :: EN
          type(refine_mesh) :: RM
          type(kill_switch) :: KS
-         integer :: i
-         logical,dimension(2) :: steady_solution
          logical :: refine_mesh_now_all
 
          call init(F,mom%U)

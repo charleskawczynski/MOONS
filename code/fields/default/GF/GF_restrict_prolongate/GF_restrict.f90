@@ -71,6 +71,12 @@
                                       u%f(i+x,j+y,k+z)*beta)
            enddo; enddo; enddo
            ! Boundary values, along dir, remain the same:
+           !
+           ! New but untested:
+           ! call assign_plane(r,u,2,2,dir)
+           ! call assign_plane(r,u,r%s(dir)-1,u%s(dir)-1,dir)
+           !
+           ! Depricated but working:
            select case (dir)
            case (1); r%f(2,:,:) = u%f(2,:,:); r%f(r%s(1)-1,:,:) = u%f(u%s(1)-1,:,:)
            case (2); r%f(:,2,:) = u%f(:,2,:); r%f(:,r%s(2)-1,:) = u%f(:,u%s(2)-1,:)

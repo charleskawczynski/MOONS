@@ -48,9 +48,9 @@
          integer :: direction
          type(string) :: s
          call construct_filename(s,name,x%DL)
-         direction = get_plane_direction(m,'export_raw_SF')
          if (.not.export_planar) then; call export_3D_1C(m,x,dir,str(s),pad)
-         else;                         call export_2D_1C(m,x,dir,str(s),pad,direction)
+         else; direction = get_plane_direction(m,'export_raw_SF')
+               call export_2D_1C(m,x,dir,str(s),pad,direction)
          endif
          call delete(s)
        end subroutine

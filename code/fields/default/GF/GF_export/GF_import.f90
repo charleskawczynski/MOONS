@@ -20,11 +20,11 @@
       ! ****************************** 3D FIELDS ******************************
       ! ***********************************************************************
 
-      subroutine imp_3D_3C_GF(g,DL,t,pad,un,u,v,w)
+      subroutine imp_3D_3C_GF(g,DL,pad,un,u,v,w)
         implicit none
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
-        integer,intent(in) :: un,pad,t
+        integer,intent(in) :: un,pad
         type(grid_field),intent(inout) :: u,v,w
         type(array),dimension(3) :: h
         integer,dimension(3) :: s
@@ -32,7 +32,7 @@
         s = get_shape(g,DL)
         ! call exp_Zone_3I(un,s-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
            read(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -42,11 +42,11 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_3D_2C_GF(g,DL,t,pad,un,u,v)
+      subroutine imp_3D_2C_GF(g,DL,pad,un,u,v)
         implicit none
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
-        integer,intent(in) :: un,pad,t
+        integer,intent(in) :: un,pad
         type(grid_field),intent(inout) :: u,v
         type(array),dimension(3) :: h
         integer,dimension(3) :: s
@@ -54,7 +54,7 @@
         s = get_shape(g,DL)
         ! call exp_Zone_3I(un,s-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
            read(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -64,11 +64,11 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_3D_1C_GF(g,DL,t,pad,un,u)
+      subroutine imp_3D_1C_GF(g,DL,pad,un,u)
         implicit none
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
-        integer,intent(in) :: un,pad,t
+        integer,intent(in) :: un,pad
         type(grid_field),intent(inout) :: u
         type(array),dimension(3) :: h
         integer,dimension(3) :: s
@@ -76,7 +76,7 @@
         s = get_shape(g,DL)
         ! call exp_Zone_3I(un,s-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
            read(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -86,11 +86,11 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_3D_0C_GF(g,DL,t,pad,un,u)
+      subroutine imp_3D_0C_GF(g,DL,pad,un,u)
         implicit none
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
-        integer,intent(in) :: un,pad,t
+        integer,intent(in) :: un,pad
         real(cp),intent(inout) :: u
         type(array),dimension(3) :: h
         integer,dimension(3) :: s
@@ -98,7 +98,7 @@
         s = get_shape(g,DL)
         ! call exp_Zone_3I(un,s-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do k=1+pad,s(3)-pad; do j=1+pad,s(2)-pad; do i=1+pad,s(1)-pad
            read(un,*) h(1)%f(i),&
                       h(2)%f(j),&
@@ -112,9 +112,9 @@
       ! ****************************** 2D FIELDS ******************************
       ! ***********************************************************************
 
-      subroutine imp_2D_3C_GF(g,DL,t,pad,un,u,v,w,dir,plane)
+      subroutine imp_2D_3C_GF(g,DL,pad,un,u,v,w,dir,plane)
         implicit none
-        integer,intent(in) :: un,pad,dir,plane,t
+        integer,intent(in) :: un,pad,dir,plane
         type(grid_field),intent(inout) :: u,v,w
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
@@ -128,7 +128,7 @@
         s_2D = adj_shape_given_dir(s,dir)
         ! call exp_Zone_2I(un,s_2D-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -142,9 +142,9 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_2D_2C_GF(g,DL,t,pad,un,u,v,dir,plane)
+      subroutine imp_2D_2C_GF(g,DL,pad,un,u,v,dir,plane)
         implicit none
-        integer,intent(in) :: un,pad,dir,plane,t
+        integer,intent(in) :: un,pad,dir,plane
         type(grid_field),intent(inout) :: u,v
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
@@ -158,7 +158,7 @@
         s_2D = adj_shape_given_dir(s,dir)
         ! call exp_Zone_2I(un,s_2D-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -171,9 +171,9 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_2D_1C_GF(g,DL,t,pad,un,u,dir,plane)
+      subroutine imp_2D_1C_GF(g,DL,pad,un,u,dir,plane)
         implicit none
-        integer,intent(in) :: un,pad,dir,plane,t
+        integer,intent(in) :: un,pad,dir,plane
         type(grid_field),intent(inout) :: u
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
@@ -187,7 +187,7 @@
         s_2D = adj_shape_given_dir(s,dir)
         ! call exp_Zone_2I(un,s_2D-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -199,9 +199,9 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_2D_0C_GF(g,DL,t,pad,un,u,dir,plane)
+      subroutine imp_2D_0C_GF(g,DL,pad,un,u,dir,plane)
         implicit none
-        integer,intent(in) :: un,pad,dir,plane,t
+        integer,intent(in) :: un,pad,dir,plane
         real(cp),intent(inout) :: u
         type(grid),intent(in) :: g
         type(data_location),intent(in) :: DL
@@ -215,7 +215,7 @@
         s_2D = adj_shape_given_dir(s,dir)
         ! call exp_Zone_2I(un,s_2D-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*plane + i*(1-e(1))
           j_p = e(2)*plane + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -231,9 +231,9 @@
       ! ****************************** 1D FIELDS ******************************
       ! ***********************************************************************
 
-      subroutine imp_1D_3C_GF(g,DL,t,pad,un,u,v,w,dir,line)
+      subroutine imp_1D_3C_GF(g,DL,pad,un,u,v,w,dir,line)
         implicit none
-        integer,intent(in) :: un,pad,dir,t
+        integer,intent(in) :: un,pad,dir
         integer,dimension(2),intent(in) :: line
         type(grid_field),intent(inout) :: u,v,w
         type(grid),intent(in) :: g
@@ -250,7 +250,7 @@
         i_line(dir)  = 0 ! multiplied by zero anyway
         ! call exp_Zone_1I(un,s(dir)-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)
@@ -263,9 +263,9 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_1D_2C_GF(g,DL,t,pad,un,u,v,dir,line)
+      subroutine imp_1D_2C_GF(g,DL,pad,un,u,v,dir,line)
         implicit none
-        integer,intent(in) :: un,pad,dir,t
+        integer,intent(in) :: un,pad,dir
         integer,dimension(2),intent(in) :: line
         type(grid_field),intent(inout) :: u,v
         type(grid),intent(in) :: g
@@ -282,7 +282,7 @@
         i_line(dir)  = 0 ! multiplied by zero anyway
         ! call exp_Zone_1I(un,s(dir)-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)
@@ -294,9 +294,9 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_1D_1C_GF(g,DL,t,pad,un,u,dir,line)
+      subroutine imp_1D_1C_GF(g,DL,pad,un,u,dir,line)
         implicit none
-        integer,intent(in) :: un,pad,dir,t
+        integer,intent(in) :: un,pad,dir
         integer,dimension(2),intent(in) :: line
         type(grid_field),intent(inout) :: u
         type(grid),intent(in) :: g
@@ -313,7 +313,7 @@
         i_line(dir)  = 0 ! multiplied by zero anyway
         ! call exp_Zone_1I(un,s(dir)-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)
@@ -324,9 +324,9 @@
         do i=1,3; call delete(h(i)); enddo
       end subroutine
 
-      subroutine imp_1D_0C_GF(g,DL,t,pad,un,u,dir,line)
+      subroutine imp_1D_0C_GF(g,DL,pad,un,u,dir,line)
         implicit none
-        integer,intent(in) :: un,pad,dir,t
+        integer,intent(in) :: un,pad,dir
         integer,dimension(2),intent(in) :: line
         real(cp),intent(inout) :: u
         type(grid),intent(in) :: g
@@ -343,7 +343,7 @@
         i_line(dir)  = 0 ! multiplied by zero anyway
         ! call exp_Zone_1I(un,s(dir)-2*pad,t)
         read(un,*)
-        call get_coordinates(h,g,DL)
+        call get_coordinates_h(h,g,DL)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line(1)
           j_L = i*e(2)+(1-e(2))*i_line(2)

@@ -31,7 +31,7 @@
         integer :: i
         read(un,*);read(un,*) ! Read tecplot header
         do i=1,m%s
-          call imp_3D_3C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,U%z%BF(i)%GF)
+          call imp_3D_3C_GF(m%B(i)%g,U%x%DL,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,U%z%BF(i)%GF)
         enddo
       end subroutine
 
@@ -47,15 +47,15 @@
         select case (dir)
         case(1)
         do i=1,m%s
-        call imp_2D_2C_GF(m%B(i)%g,U%y%DL,i,pad,un,U%y%BF(i)%GF,U%z%BF(i)%GF,dir,2)
+        call imp_2D_2C_GF(m%B(i)%g,U%y%DL,pad,un,U%y%BF(i)%GF,U%z%BF(i)%GF,dir,2)
         enddo
         case(2)
         do i=1,m%s
-        call imp_2D_2C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%z%BF(i)%GF,dir,2)
+        call imp_2D_2C_GF(m%B(i)%g,U%x%DL,pad,un,U%x%BF(i)%GF,U%z%BF(i)%GF,dir,2)
         enddo
         case(3)
         do i=1,m%s
-        call imp_2D_2C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,dir,2)
+        call imp_2D_2C_GF(m%B(i)%g,U%x%DL,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,dir,2)
         enddo
         case default; stop 'Error: dir must = 1,2,3 in imp_2D_2C in import_SF.f90'
         end select
