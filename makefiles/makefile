@@ -242,7 +242,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_global\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap\
@@ -339,8 +339,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export$(PS)GF_export.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export$(PS)GF_import.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_export.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_import.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract$(PS)GF_embed_extract.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\

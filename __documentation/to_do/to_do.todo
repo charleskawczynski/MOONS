@@ -1,8 +1,4 @@
 Right Now:
-  ☐ Remove compiler warnings
-  ☐ Convert embed_extract to GF routines
-  ☐ Re-test BC case with symmetry condition
-  ☐ Push code after confirmation
   ☐ Re-test BC case with symmetry condition and runtime prolongation
   ☐ Push code after confirmation
   ☐ If speedup is significant, start BC sims with symmetry and prolongate on PC_CK
@@ -14,7 +10,7 @@ Long term to do:
  ☐ Code development and benchmarking
  ☐ paper: full BC
  ☐ paper: BC comparison
- ☐ paper: moderate Rem Shercliff/Hunt flows, analytic soln/ perturbation analysis, secondary flow
+ ☐ paper: moderate Rem Shercliff/Hunt flows, analytic soln/ perturbation analysis, 2ndary flow
  ☐ paper: SK flow, analytic solutions / perturbation analysis for secondary flow
  ☐ paper: LM MHD flows in the presence of plasma disruptions
 
