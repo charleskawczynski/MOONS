@@ -1,7 +1,13 @@
 Right Now:
-  ☐ Prepare slides for hypercomp meeting:
-    ☐ Run sim for full 3D case with Mike Ulrickson's data
-    ☐ Prepare dimensional analysis
+  ☐ Remove compiler warnings
+  ☐ Convert embed_extract to GF routines
+  ☐ Re-test BC case with symmetry condition
+  ☐ Push code after confirmation
+  ☐ Re-test BC case with symmetry condition and runtime prolongation
+  ☐ Push code after confirmation
+  ☐ If speedup is significant, start BC sims with symmetry and prolongate on PC_CK
+  ☐ Consider making branches for BC sims and PD sims
+  ☐ Start new PD cases and compute resulting Rem,Re etc. after computations
 
 Long term to do:
  ☐ Write prospectus, and refer to http://fire.pppl.gov/fpa\_annual\_meet.html

@@ -47,7 +47,7 @@
         logical :: skip_loop,suppress_warning
         suppress_warning = x_interior%is_Face
         suppress_warning = MD_interior%D%s.eq.0
-        call apply_BCs(x,m) ! Boundaries
+        call apply_BCs(x) ! Boundaries
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(res,x,Diag)
@@ -64,7 +64,7 @@
             call subtract(Ax,res) ! LU = Ax - Dx
             call subtract(res,f,Ax)
             call multiply(x,Dinv,res)
-            call apply_BCs(x,m)
+            call apply_BCs(x)
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
               call compute(norm,res,vol)
@@ -118,7 +118,7 @@
         integer :: i,i_earlyExit
         logical :: skip_loop
         if (x%is_Face) call embedFace(x,x_interior,MD_interior)
-        call apply_BCs(x,m) ! Boundaries
+        call apply_BCs(x) ! Boundaries
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(res,x,Diag)
@@ -138,7 +138,7 @@
             call multiply(x,0.1_cp)
             call multiply(res,(1.0_cp-0.1_cp))
             call add(x,res) ! x^n+1 = x^n w + (1-w) Dinv (b - LUx)
-            call apply_BCs(x,m)
+            call apply_BCs(x)
             if (x%is_Face) call embedFace(x,x_interior,MD_interior)
 
             N_iter = N_iter + 1

@@ -49,7 +49,7 @@
          call solve(PCG,phi,temp_CC,m,compute_norms)
          call grad(temp_F,phi,m)
          call subtract(X,temp_F)
-         call apply_BCs(X,m)
+         call apply_BCs(x)
        end subroutine
 
        subroutine clean_div_PCG_MG(PCG,X,phi,MG,m,temp_F,temp_CC,compute_norms)
@@ -71,7 +71,7 @@
          call grad(temp_F,phi,m)
          call subtract(X,temp_F)
          call subtract(X,MG)
-         call apply_BCs(X,m)
+         call apply_BCs(x)
        end subroutine
 
        end module

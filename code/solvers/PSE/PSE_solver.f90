@@ -44,13 +44,13 @@
         type(norms) :: norm_res0
 #endif
         integer :: i
-        call apply_BCs(x,m)
+        call apply_BCs(x)
         do i=1,n
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call multiply(r,ds)
           call add(x,r)
-          call apply_BCs(x,m)
+          call apply_BCs(x)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
           if (n.eq.1) call compute(norm_res0,r,vol)
@@ -92,13 +92,13 @@
         type(norms) :: norm_res0
 #endif
         integer :: i
-        call apply_BCs(x,m)
+        call apply_BCs(x)
         do i=1,n
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call multiply(r,ds)
           call add(x,r)
-          call apply_BCs(x,m)
+          call apply_BCs(x)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
           if (n.eq.1) call compute(norm_res0,r,vol)
@@ -108,7 +108,7 @@
 #endif
         enddo
 
-        call apply_BCs(x,m)
+        call apply_BCs(x)
 #ifndef _EXPORT_PSE_CONVERGENCE_
         if (compute_norms) then
           call operator(Ax,x,k,m,MFP,tempk)

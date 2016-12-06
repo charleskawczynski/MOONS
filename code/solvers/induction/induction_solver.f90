@@ -65,7 +65,7 @@
          call add(temp_F1,F)
          call multiply(temp_F1,dt)
          call add(B,temp_F1)
-         call apply_BCs(B,m)
+         call apply_BCs(B)
        end subroutine
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B_interior,curlE,&
@@ -88,7 +88,7 @@
          do i=1,N_induction
            call multiply(VF_F1,curlE,-dt)
            call add(B,VF_F1)
-           call apply_BCs(B,m)
+           call apply_BCs(B)
            call embedFace(B,B_interior,MD_sigma)
          enddo
          call clean_div(PCG_cleanB,B,phi,m,VF_F1,SF_CC,compute_norms)
@@ -116,7 +116,7 @@
            call solve(PCG_cleanB,phi,SF_CC,m,compute_norms)
            call grad(VF_F,phi,m)
            call subtract(B,VF_F)
-           call apply_BCs(B,m)
+           call apply_BCs(B)
          enddo
        end subroutine
 
@@ -178,7 +178,7 @@
            call multiply(temp_F1,dt)
            call add_product(B,temp_F2,-dt)
            call add(B,temp_F1)
-           call apply_BCs(B,m)
+           call apply_BCs(B)
          enddo
        end subroutine
 
@@ -198,7 +198,7 @@
            call multiply(temp_F2,-dt)
            call multiply(temp_F1,dt)
            call add(B,temp_F1,temp_F2)
-           call apply_BCs(B,m)
+           call apply_BCs(B)
          enddo
        end subroutine
 

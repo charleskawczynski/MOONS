@@ -56,7 +56,7 @@
         ! RHS MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
         if (.not.x%is_CC) call assign_wall_Dirichlet(r,0.0_cp,x)
         call assign(p,0.0_cp)
-        call apply_BCs(p,m) ! p has BCs for x
+        call apply_BCs(p) ! p has BCs for x
         call assign_ghost_N_XPeriodic(p,0.0_cp)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call assign_wall_Dirichlet(Ax,0.0_cp,x) ! Does nothing in PPE
@@ -88,7 +88,7 @@
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
             call assign_ghost_N_XPeriodic(p,0.0_cp)
             call add_product(x,p,alpha) ! x = x + alpha p
-            call apply_BCs(x,m) ! Needed for PPE
+            call apply_BCs(x) ! Needed for PPE
             N_iter = N_iter + 1
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
@@ -162,7 +162,7 @@
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
         if (.not.x%is_CC) call assign_wall_Dirichlet(r,0.0_cp,x)
         call assign(p,0.0_cp)
-        call apply_BCs(p,m) ! p has BCs for x
+        call apply_BCs(p) ! p has BCs for x
         call assign_ghost_N_XPeriodic(p,0.0_cp)
         call operator_explicit(Ax,p,k,m,MFP,tempk)
         call assign_wall_Dirichlet(Ax,0.0_cp,x) ! Does nothing in PPE
@@ -194,7 +194,7 @@
             alpha = rhok/dot_product(p,Ax,m,x,tempx)
             call assign_ghost_N_XPeriodic(p,0.0_cp)
             call add_product(x,p,alpha) ! x = x + alpha p
-            call apply_BCs(x,m) ! Needed for PPE
+            call apply_BCs(x) ! Needed for PPE
             N_iter = N_iter + 1
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 

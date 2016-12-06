@@ -135,7 +135,7 @@
 #endif
 
         ! Boundaries
-        call apply_BCs(u,m) ! Necessary with ghost nodes
+        call apply_BCs(u) ! Necessary with ghost nodes
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
         NU = new_and_open('out\','norm_SOR')
@@ -178,7 +178,7 @@
 
 #endif
 
-          call apply_BCs(u,m)
+          call apply_BCs(u)
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
             call lap(SOR%lapu,u,m)

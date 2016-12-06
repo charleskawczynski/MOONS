@@ -45,7 +45,6 @@
        use ops_embedExtract_mod
 
        use apply_BCs_mod
-       use apply_BCs_embed_mod
        use boundary_conditions_mod
        use clean_divergence_mod
 
@@ -197,10 +196,10 @@
          write(*,*) '     Field initialized'
 
          write(*,*) '     about to apply p BCs'
-         call apply_BCs(mom%p,m)
+         call apply_BCs(mom%p)
          write(*,*) '     P BCs applied'
          write(*,*) '     about to apply U BCs'
-         call apply_BCs(mom%U,m)
+         call apply_BCs(mom%U)
          write(*,*) '     U BCs applied'
 
          write(*,*) '     about to assemble Laplacian matrices'
@@ -583,7 +582,7 @@
          enddo
          write(*,*) 'Finished momentum solver prolongation'
          if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
-         call apply_BCs(mom%U,mom%m)
+         call apply_BCs(mom%U)
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
 
          call boost(mom%PCG_P%ISP)

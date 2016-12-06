@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 # FORMAT_OUTPUT = 'FORMATTED'
 # ************* CLUSTER CONFIGURATION ******************
@@ -226,6 +226,10 @@ VPATH =\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
+	$(SRC_DIR)$(PS)BCs$(PS)apply\
+	$(SRC_DIR)$(PS)BCs$(PS)base\
+	$(SRC_DIR)$(PS)BCs$(PS)direct\
+	$(SRC_DIR)$(PS)BCs$(PS)implicit\
 	$(SRC_DIR)$(PS)clock\
 	$(SRC_DIR)$(PS)convergence_rate\
 	$(SRC_DIR)$(PS)coordinates\
@@ -353,8 +357,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)bctype.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)BC_logicals.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)bctype.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)domain$(PS)sub_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)face_SD.f90\
@@ -364,17 +368,17 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)physical_domain.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_edges_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_raw_implicit.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_bridge_implicit.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_raw.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_edges_raw.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_bridge.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_raw_implicit.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_bridge_implicit.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)boundary.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)boundary_conditions.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
@@ -410,12 +414,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\
 	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)check_BCs.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_embed.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_faces_implicit.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply_BCs_implicit.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)check_BCs.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\

@@ -104,7 +104,7 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
       end subroutine
@@ -139,7 +139,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call lap_centered(Ax,x,m) ! Involves dynamic allocations
         ! call lap(Ax,x,m)
         call assign_ghost_XPeriodic(Ax,0.0_cp)
@@ -171,7 +171,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
@@ -202,7 +202,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call curl(tempk,x,m)
         call multiply(tempk,k)
         call curl(Ax,tempk,m)
@@ -236,7 +236,7 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
@@ -280,7 +280,7 @@
         logical :: suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).
         ! The reason this is not as simple as the laplacian operator

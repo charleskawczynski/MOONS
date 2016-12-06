@@ -79,7 +79,7 @@
          ! call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
          call subtract(U,temp_F) ! U = Ustar - grad(p)
-         call apply_BCs(U,m)
+         call apply_BCs(U)
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Unm1,U_E,p,F,Fnm1,m,&
@@ -121,7 +121,7 @@
          call grad(temp_F,p,m)
          call multiply(temp_F,dt)
          call subtract(U,temp_F)
-         call apply_BCs(U,m)
+         call apply_BCs(U)
        end subroutine
 
        ! **********************************************************************
@@ -183,7 +183,7 @@
          call subtract(temp_F1%x,1.0_cp) ! mpg
          call multiply(temp_F1,dt)
          call subtract(U,Ustar,temp_F1)
-         call apply_BCs(U,m)
+         call apply_BCs(U)
        end subroutine
 
        subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,&
@@ -216,7 +216,7 @@
          ! call subtract(temp_F%x,1.0_cp) ! mpg
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
-         call apply_BCs(U,m)
+         call apply_BCs(U)
        end subroutine
 
        subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,&
@@ -248,7 +248,7 @@
          call subtract(temp_F,mpg)
          call multiply(temp_F,dt)
          call subtract(U,Ustar,temp_F)
-         call apply_BCs(U,m)
+         call apply_BCs(U)
        end subroutine
 
        end module

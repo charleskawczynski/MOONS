@@ -69,7 +69,7 @@
           call compute(norm0,res,vol)
         endif
 
-        call apply_BCs(u,m)
+        call apply_BCs(u)
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do PCG if necessary!
           skip_loop = .false.
@@ -86,7 +86,7 @@
             call innerLoop(u,f,m,p,d,D_inv,gt,(/1,0,1/)) ! Odd in even plane
             call innerLoop(u,f,m,p,d,D_inv,gt,(/1,1,0/)) ! Odd in even plane
             !$OMP END PARALLEL
-            call apply_BCs(u,m)
+            call apply_BCs(u)
             N_iter = N_iter + 1
 
             if (mod(i,n_skip_check_res).eq.0) then
@@ -153,7 +153,7 @@
           call compute(norm0,res,vol)
         endif
 
-        call apply_BCs(u,m)
+        call apply_BCs(u)
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do PCG if necessary!
           skip_loop = .false.
@@ -170,7 +170,7 @@
             call innerLoop(u,f,m,p,d,D_inv,gtx,gty,gtz,(/1,0,1/)) ! Odd in even plane
             call innerLoop(u,f,m,p,d,D_inv,gtx,gty,gtz,(/1,1,0/)) ! Odd in even plane
             !$OMP END PARALLEL
-            call apply_BCs(u,m)
+            call apply_BCs(u)
             N_iter = N_iter + 1
 
             if (mod(i,n_skip_check_res).eq.0) then
@@ -228,7 +228,7 @@
           d%B(i)%g%c(2)%dhn%f,&
           d%B(i)%g%c(3)%dhn%f,&
           gt,odd)
-          call apply_BCs(u,m)
+          call apply_BCs(u)
         enddo
       end subroutine
 
@@ -252,7 +252,7 @@
           d%B(i)%g%c(2)%dhn%f,&
           d%B(i)%g%c(3)%dhn%f,&
           gtx,gty,gtz,odd)
-          call apply_BCs(u,m)
+          call apply_BCs(u)
         enddo
       end subroutine
 

@@ -105,7 +105,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call laplacian_matrix_based(Ax,x,m)
       end subroutine
 
@@ -137,7 +137,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call laplacian_matrix_based(Ax,x,m)
       end subroutine
 
@@ -169,7 +169,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call laplacian_matrix_based(Ax,x,m)
       end subroutine
 
@@ -201,7 +201,7 @@
         suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call curl_curl_matrix_based(Ax,x,m)
       end subroutine
 
@@ -233,7 +233,7 @@
         logical :: suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call laplacian_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%coeff)
         call add(Ax,x)
@@ -267,7 +267,7 @@
         logical :: suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
-        call apply_BCs_implicit(x,m)
+        call apply_BCs_implicit(x)
         call laplacian_matrix_based(Ax,x,m)
         call multiply(Ax,MFP%coeff)
         call add(Ax,x)

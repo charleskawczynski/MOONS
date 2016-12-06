@@ -155,7 +155,7 @@
          call initTfield(nrg%T,m,nrg%SP%restartT,str(DT%T))
          write(*,*) '     T-field initialized'
 
-         call apply_BCs(nrg%T,m)
+         call apply_BCs(nrg%T)
          write(*,*) '     BCs applied'
 
          call init_CC(k_cc,m,0.0_cp)

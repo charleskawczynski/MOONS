@@ -240,7 +240,7 @@
         type(SF),intent(inout) :: temp
         real(cp) :: dot
         call multiply(temp,A,B)
-        call assign_wall_Dirichlet(temp,0.0_cp)
+        call assign_wall_Dirichlet(temp,0.0_cp,x)
         dot = sum(temp,1)
       end function
 
