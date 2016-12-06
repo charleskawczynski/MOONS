@@ -72,12 +72,12 @@
 
         if (ISP%export_convergence) then
           call compute(res_norm,r)
-          res_norm%L2 = dot_product(r,r,m,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
+          res_norm%L2 = dot_product(r,r,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
           call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
         endif
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
+        rhok = dot_product(r,z,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
         call update_exit_loop(ISP,1,res_norm%L2,res_norm0%L2)
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           skip_loop = .false.
@@ -85,7 +85,7 @@
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x)
             call multiply(Ax,vol)
-            alpha = rhok/dot_product(p,Ax,m,x,tempx)
+            alpha = rhok/dot_product(p,Ax,x,tempx)
             call assign_ghost_N_XPeriodic(p,0.0_cp)
             call add_product(x,p,alpha) ! x = x + alpha p
             call apply_BCs(x) ! Needed for PPE
@@ -93,7 +93,7 @@
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
             if (check_res(ISP,i)) then
-              res_norm%L2 = dot_product(r,r,m,x,tempx)
+              res_norm%L2 = dot_product(r,r,x,tempx)
               call update_exit_loop(ISP,i,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) then; i_earlyExit=1; exit; endif
             endif
@@ -104,7 +104,7 @@
               call export_norms(un_convergence,res_norm0,res_norm,N_iter,i,i_earlyExit)
             endif
             call multiply(z,Minv,r)
-            rhokp1 = dot_product(z,r,m,x,tempx)
+            rhokp1 = dot_product(z,r,x,tempx)
             call product_add(p,rhokp1/rhok,z) ! p = p beta + z
             rhok = rhokp1
             call update_exit_loop(ISP,i)
@@ -179,19 +179,19 @@
 
         if (ISP%export_convergence) then
           call compute(res_norm,r)
-          res_norm%L2 = dot_product(r,r,m,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
+          res_norm%L2 = dot_product(r,r,x,tempx); N_iter = 0; i = 0 ; i_earlyExit = 0
           call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
         endif
         call multiply(z,Minv,r)
         call assign(p,z)
-        rhok = dot_product(r,z,m,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
+        rhok = dot_product(r,z,x,tempx); res_norm%L2 = abs(rhok); i_earlyExit = 0
         call update_exit_loop(ISP,1,res_norm%L2,res_norm0%L2)
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x)
             call multiply(Ax,vol)
-            alpha = rhok/dot_product(p,Ax,m,x,tempx)
+            alpha = rhok/dot_product(p,Ax,x,tempx)
             call assign_ghost_N_XPeriodic(p,0.0_cp)
             call add_product(x,p,alpha) ! x = x + alpha p
             call apply_BCs(x) ! Needed for PPE
@@ -199,7 +199,7 @@
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
             if (check_res(ISP,i)) then
-              res_norm%L2 = dot_product(r,r,m,x,tempx)
+              res_norm%L2 = dot_product(r,r,x,tempx)
               call update_exit_loop(ISP,i,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) then; i_earlyExit=1; exit; endif
             endif
@@ -210,7 +210,7 @@
               call export_norms(un_convergence,res_norm0,res_norm,N_iter,i,i_earlyExit)
             endif
             call multiply(z,Minv,r)
-            rhokp1 = dot_product(z,r,m,x,tempx)
+            rhokp1 = dot_product(z,r,x,tempx)
             call product_add(p,rhokp1/rhok,z) ! p = p beta + z
             rhok = rhokp1
             call update_exit_loop(ISP,i)

@@ -62,8 +62,8 @@
           call subtract(mg(1)%smooth%res,mg(1)%smooth%b,mg(1)%smooth%Ax)
 
           ! Zero boundary values
-          call zeroGhostPoints(mg(1)%smooth%res)
-          ! call zeroWall_conditional(mg(1)%smooth%res)
+          call assign_wall_Dirichlet(mg(1)%smooth%res)
+          ! call assign_wall_Dirichlet(mg(1)%smooth%res)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, find, "exactly" the error
@@ -122,7 +122,7 @@
 
           ! Zero boundary values
           call zeroGhostPoints(mg(j+1)%smooth%res)
-          ! call zeroWall_conditional(mg(j+1)%smooth%res)
+          ! call assign_wall_Dirichlet(mg(j+1)%smooth%res)
 
           ! 4) Decend to coarser level
           call Vcycle(operator,mg,j+1,n_levels)

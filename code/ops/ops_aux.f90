@@ -85,16 +85,6 @@
        interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
        interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
 
-       public :: zeroWall
-       interface zeroWall;                module procedure zeroWall_SF;               end interface
-       interface zeroWall;                module procedure zeroWall_VF;               end interface
-
-       public :: zeroWall_conditional
-       interface zeroWall_conditional;    module procedure zeroWall_conditional_SF;   end interface
-       interface zeroWall_conditional;    module procedure zeroWall_conditional_VF;   end interface
-       interface zeroWall_conditional;    module procedure zeroWall_conditional_SF2;  end interface
-       interface zeroWall_conditional;    module procedure zeroWall_conditional_VF2;  end interface
-
        public :: treatInterface
        interface treatInterface;          module procedure treatInterface_GF;         end interface
        interface treatInterface;          module procedure treatInterface_VF;         end interface
@@ -222,9 +212,8 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-      function dot_product_VF(A,B,m,x,temp) result(dot)
+      function dot_product_VF(A,B,x,temp) result(dot)
         implicit none
-        type(mesh),intent(in) :: m
         type(VF),intent(in) :: A,B,x
         type(VF),intent(inout) :: temp
         real(cp) :: dot
@@ -233,9 +222,8 @@
         dot = sum(temp%x,1) + sum(temp%y,1) + sum(temp%z,1)
       end function
 
-      function dot_product_SF(A,B,m,x,temp) result(dot)
+      function dot_product_SF(A,B,x,temp) result(dot)
         implicit none
-        type(mesh),intent(in) :: m
         type(SF),intent(in) :: A,B,x
         type(SF),intent(inout) :: temp
         real(cp) :: dot
@@ -361,32 +349,6 @@
          call assign_ghost_XPeriodic(f,0.0_cp)
        end subroutine
 
-       subroutine zeroWall_SF(f,m)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         call assign_wall_Dirichlet(f,0.0_cp)
-       end subroutine
-
-       subroutine zeroWall_conditional_SF(f,m)
-         ! Sets wall coincident values to zero if
-         ! boundary conditions of u are NOT Neumann (bctype=3)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(mesh),intent(in) :: m
-         call assign_wall_Dirichlet(f,0.0_cp)
-       end subroutine
-
-       subroutine zeroWall_conditional_SF2(f,m,u)
-         ! Sets wall coincident values to zero if
-         ! boundary conditions of u are NOT Neumann (bctype=3)
-         implicit none
-         type(SF),intent(inout) :: f
-         type(SF),intent(in) :: u
-         type(mesh),intent(in) :: m
-         call assign_wall_Dirichlet(f,0.0_cp,u)
-       end subroutine
-
        subroutine treatInterface_SF(f,take_high_value)
          implicit none
          type(SF),intent(inout) :: f
@@ -450,34 +412,6 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine zeroWall_VF(V,m)
-         implicit none
-         type(VF),intent(inout) :: V
-         type(mesh),intent(in) :: m
-         call zeroWall(V%x,m)
-         call zeroWall(V%y,m)
-         call zeroWall(V%z,m)
-       end subroutine
-
-       subroutine zeroWall_conditional_VF2(V,m,U)
-         implicit none
-         type(VF),intent(inout) :: V
-         type(VF),intent(in) :: U
-         type(mesh),intent(in) :: m
-         call assign_wall_Dirichlet(V%x,0.0_cp,U%x)
-         call assign_wall_Dirichlet(V%y,0.0_cp,U%y)
-         call assign_wall_Dirichlet(V%z,0.0_cp,U%z)
-       end subroutine
-
-       subroutine zeroWall_conditional_VF(U,m)
-         implicit none
-         type(VF),intent(inout) :: U
-         type(mesh),intent(in) :: m
-         call assign_wall_Dirichlet(U%x,0.0_cp)
-         call assign_wall_Dirichlet(U%y,0.0_cp)
-         call assign_wall_Dirichlet(U%z,0.0_cp)
-       end subroutine
 
        subroutine stabilityTerms_VF(fo,fi,m,n)
          implicit none

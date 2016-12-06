@@ -65,14 +65,14 @@
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call zeroGhostPoints(r)
-          call zeroWall_conditional(r,m,x)
+          call assign_wall_Dirichlet(r,0.0_cp,x)
           call compute(norm,r,vol); call print(norm,'PSE Residuals SF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif
 #endif
       end subroutine
-      
+
       subroutine solve_PSE_VF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r,N_iter)
         implicit none
         procedure(op_VF_explicit) :: operator
@@ -114,7 +114,7 @@
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call zeroGhostPoints(r)
-          call zeroWall_conditional(r,m,x)
+          call assign_wall_Dirichlet(r,0.0_cp,x)
           call compute(norm,r,vol); call print(norm,'PSE Residuals VF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
