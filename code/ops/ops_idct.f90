@@ -1,12 +1,12 @@
       module ops_idct_mod
-      ! Returns the inverse Discrete Cosine Transform of the scalar field, f, wrt direction 
+      ! Returns the inverse Discrete Cosine Transform of the scalar field, f, wrt direction
       ! dir (1,2,3) which corresponds to (x,y,z).
-      ! 
+      !
       ! Flags: (fopenmp,_DEBUG_iDCT_)
-      ! 
+      !
       ! Implementation:
       ! call apply(omega,f,g,dir,pad)
-      ! 
+      !
       ! INPUT:
       !     f            = f(x,y,z)
       !     g            = grid (g%c(1,2,3)%dhn, g%c(1,2,3)%dhc)
@@ -24,6 +24,7 @@
       use current_precision_mod
       use grid_mod
       use ops_fft_mod
+      use constants_mod
       implicit none
 
       private
@@ -31,14 +32,11 @@
 
       interface idct;    module procedure applyiDCT3D;    end interface
 
-       ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
-       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
-
       contains
 
       subroutine idct1D(x)
         ! iDCT    Inverse Discrete cosine transform of type II
-        ! 
+        !
         !        Y = idct(X) returns the discrete cosine transform of X,
         !        based on the staggered-grid definition
         !                    N
@@ -46,7 +44,7 @@
         !                   j=1
         !        The vector Y is the same size as X and contains the
         !        discrete cosine transform coefficients.
-        ! 
+        !
         real(cp),    dimension(:), intent(inout)  :: x
         complex(cp), dimension(:), allocatable  :: xx,xx2,e
         complex(cp)                               :: j
@@ -121,7 +119,7 @@
 
 #ifdef _DEBUG_iDCT_
       subroutine checkDimensions(s1,s2,dir)
-        ! This routine makes sure that the shapes s1 and s2 
+        ! This routine makes sure that the shapes s1 and s2
         ! are equal for orthogonal directions to dir, which
         ! must be the case for all derivatives in del.
         implicit none

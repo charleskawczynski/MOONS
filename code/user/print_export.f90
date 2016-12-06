@@ -111,7 +111,7 @@
          integer :: i
          temp(0) = .true.
          temp(1:6) = (/((mod(n_step,10**i).eq.1).and.(n_step.ne.1),i=1,6)/)
-         temp2(1:6) = (/((mod(n_step,2500).eq.1).and.(n_step.ne.1),i=1,6)/)
+         temp2(1:6) = (/((mod(n_step,500).eq.1).and.(n_step.ne.1),i=1,6)/)
          ! temp(1:6) = (/((mod(n_step+1,10**i).eq.1).and.(n_step.ne.0),i=1,6)/)
 
          PE%info = temp(PE%i_info)

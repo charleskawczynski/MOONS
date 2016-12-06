@@ -28,8 +28,9 @@
 
        public :: get_char
        public :: defined
-
-       public :: get_coordinate_ind
+       public :: indentical
+       public :: insist_collocated
+       public :: is_collocated
 
        type data_location
          logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
@@ -47,6 +48,8 @@
        interface init_Node;           module procedure init_Node_DL;            end interface
        interface init_Face;           module procedure init_Face_DL;            end interface
        interface init_Edge;           module procedure init_Edge_DL;            end interface
+
+       interface indentical;          module procedure indentical_DL;           end interface
 
        interface DL_CC;               module procedure DL_CC_DL;                end interface
        interface DL_Node;             module procedure DL_Node_DL;              end interface
@@ -71,7 +74,8 @@
 
        interface get_char;            module procedure get_char_DL;             end interface
        interface defined;             module procedure defined_DL;              end interface
-       interface get_coordinate_ind;  module procedure get_coordinate_ind_DL;   end interface
+       interface insist_collocated;   module procedure insist_collocated_DL;    end interface
+       interface is_collocated;       module procedure is_collocated_DL;        end interface
 
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
@@ -91,19 +95,39 @@
          type(data_location),intent(in) :: DL_in
          call delete(DL)
          ! call insist_defined(DL_in,'init_copy_DL')
-         DL%C = DL_in%C
-         DL%N = DL_in%N
-         DL%E = DL_in%E
-         DL%F = DL_in%F
-         DL%face = DL_in%face
-         DL%edge = DL_in%edge
-         DL%defined = DL_in%defined
-         DL%CC_along = DL_in%CC_along
-         DL%N_along = DL_in%N_along
+         DL%C         = DL_in%C
+         DL%N         = DL_in%N
+         DL%E         = DL_in%E
+         DL%F         = DL_in%F
+         DL%face      = DL_in%face
+         DL%edge      = DL_in%edge
+         DL%defined   = DL_in%defined
+         DL%CC_along  = DL_in%CC_along
+         DL%N_along   = DL_in%N_along
          DL%volume_ID = DL_in%volume_ID
-         DL%CC_eye = DL_in%CC_eye
-         DL%N_eye = DL_in%N_eye
+         DL%CC_eye    = DL_in%CC_eye
+         DL%N_eye     = DL_in%N_eye
        end subroutine
+
+       function indentical_DL(A,B) result(L_all)
+         implicit none
+         type(data_location),intent(in) :: A,B
+         logical,dimension(12) :: L
+         logical :: L_all
+         L(1)  = A%C         .eqv. B%C
+         L(2)  = A%N         .eqv. B%N
+         L(3)  = A%E         .eqv. B%E
+         L(4)  = A%F         .eqv. B%F
+         L(5)  = A%face      .eq. B%face
+         L(6)  = A%edge      .eq. B%edge
+         L(7)  = A%defined   .eqv. B%defined
+         L(8)  = all(A%CC_along  .eqv. B%CC_along)
+         L(9)  = all(A%N_along   .eqv. B%N_along)
+         L(10) = A%volume_ID .eq. B%volume_ID
+         L(11) = all(A%CC_eye    .eq. B%CC_eye)
+         L(12) = all(A%N_eye     .eq. B%N_eye)
+         L_all = all(L)
+       end function
 
        subroutine init_CC_DL(DL)
          implicit none
@@ -413,13 +437,24 @@
           defined = DL%defined
         end function
 
-        function get_coordinate_ind_DL(DL) result(i)
+        subroutine insist_collocated_DL(DL,caller)
           implicit none
-          type(data_location),intent(in) :: DL
-          integer,dimension(3) :: i
-          ! CC_eye = 0 (N) and 1 (C)
-          ! get_coordinate_ind = 1 (N) and 2 (C)
-          i = CC_eye(DL)+1
+          type(data_location),dimension(3),intent(in) :: DL
+          character(len=*),intent(in) :: caller
+          if (.not.is_collocated(DL)) then
+            call print(DL(1))
+            call print(DL(2))
+            call print(DL(3))
+            write(*,*) 'Error: DLs are not collocated in '//caller//' in data_location.f90'
+            stop 'Done'
+          endif
+        end subroutine
+
+        function is_collocated_DL(DL) result(L)
+          implicit none
+          type(data_location),dimension(3),intent(in) :: DL
+          logical :: L
+          L = all((/indentical(DL(1),DL(2)),indentical(DL(2),DL(3))/))
         end function
 
         function get_char_DL(DL) result(c)

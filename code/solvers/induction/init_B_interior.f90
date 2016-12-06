@@ -1,11 +1,9 @@
        module init_B_interior_mod
        use current_precision_mod
-       use grid_mod
        use mesh_mod
        use mesh_domain_mod
        use VF_mod
-       use IO_VF_mod
-       use IO_SF_mod
+       use IO_import_mod
        implicit none
 
        private

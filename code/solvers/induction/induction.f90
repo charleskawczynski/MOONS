@@ -2,13 +2,11 @@
        use current_precision_mod
        use sim_params_mod
        use IO_tools_mod
-       use export_SF_mod
-       use export_VF_mod
        use SF_mod
        use VF_mod
        use TF_mod
-       use IO_SF_mod
-       use IO_VF_mod
+       use IO_export_mod
+       use IO_import_mod
        use dir_tree_mod
        use string_mod
        use path_mod
@@ -111,6 +109,7 @@
 
          integer :: unit_nrg_budget
          real(cp),dimension(3) :: e_budget
+         logical :: suppress_warning
        end type
 
        interface init;                 module procedure init_induction;                end interface
@@ -129,7 +128,6 @@
 
        interface export_transient1;    module procedure export_transient1_ind;         end interface
        interface export_transient2;    module procedure export_transient2_ind;         end interface
-       interface export_transient3;    module procedure export_transient3_ind;         end interface
 
        contains
 
@@ -506,13 +504,8 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP)
-         call export_processed(ind%m,ind%J,str(DT%B_t),'J',1,ind%TMP)
-       end subroutine
-
-       subroutine export_transient3_ind(ind)
-         implicit none
-         type(induction),intent(inout) :: ind
+         call export_processed(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP,3,35)
+         call export_processed(ind%m,ind%J,str(DT%B_t),'J',1,ind%TMP,3,35)
        end subroutine
 
        subroutine compute_J_ind(ind)

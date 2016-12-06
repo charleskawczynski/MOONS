@@ -1,26 +1,36 @@
       module GF_distributions_mod
         use GF_base_mod
         use GF_assign_mod
+        use GF_assign_plane_mod
+        use GF_multiply_mod
         use grid_mod
         use array_mod
         use data_location_mod
         use current_precision_mod
+        use face_edge_corner_indexing_mod
+        use constants_mod
         implicit none
         private
 
         public :: volume
         public :: sine_waves
+        public :: sinh_waves
         public :: cosine_waves
+        public :: cosh_waves
         public :: random_noise
-
-        real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
+        public :: fringe_ALEX
+        public :: fringe_SERGEY
 
         interface volume;        module procedure volume_DL_GF;          end interface
         interface volume;        module procedure volume_GF;             end interface
         interface sine_waves;    module procedure sine_waves_GF;         end interface
+        interface sinh_waves;    module procedure sinh_waves_GF;         end interface
         interface cosine_waves;  module procedure cosine_waves_GF;       end interface
+        interface cosh_waves;    module procedure cosh_waves_GF;         end interface
         interface random_noise;  module procedure random_noise_GF;       end interface
         interface random_noise;  module procedure random_noise_GF_dir;   end interface
+        interface fringe_ALEX;   module procedure fringe_ALEX_GF;        end interface
+        interface fringe_SERGEY; module procedure fringe_SERGEY_GF;      end interface
 
         contains
 
@@ -70,16 +80,41 @@
           integer :: i,j,k
           call get_coordinates_h(h,g,DL)
 #ifdef _PARALLELIZE_GF_
-            !$OMP PARALLEL DO SHARED(g)
+          !$OMP PARALLEL DO SHARED(g)
 
 #endif
-            do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
-              f%f(i,j,k) = sin(wavenum(1)*PI*(h(1)%f(i) - phi(1)))*&
-                           sin(wavenum(2)*PI*(h(2)%f(j) - phi(2)))*&
-                           sin(wavenum(3)*PI*(h(3)%f(k) - phi(3)))
-            enddo; enddo; enddo
+          do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
+            f%f(i,j,k) = sin(wavenum(1)*PI*(h(1)%f(i) - phi(1)))*&
+                         sin(wavenum(2)*PI*(h(2)%f(j) - phi(2)))*&
+                         sin(wavenum(3)*PI*(h(3)%f(k) - phi(3)))
+          enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
-            !$OMP END PARALLEL DO
+          !$OMP END PARALLEL DO
+
+#endif
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+
+        subroutine sinh_waves_GF(f,g,wavenum,phi,DL)
+          implicit none
+          type(grid_field),intent(inout) :: f
+          type(grid),intent(in) :: g
+          real(cp),dimension(3),intent(in) :: wavenum,phi
+          type(data_location),intent(in) :: DL
+          type(array),dimension(3) :: h
+          integer :: i,j,k
+          call get_coordinates_h(h,g,DL)
+#ifdef _PARALLELIZE_GF_
+          !$OMP PARALLEL DO SHARED(g)
+
+#endif
+          do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
+            f%f(i,j,k) = sinh(wavenum(1)*PI*(h(1)%f(i) - phi(1)))*&
+                         sinh(wavenum(2)*PI*(h(2)%f(j) - phi(2)))*&
+                         sinh(wavenum(3)*PI*(h(3)%f(k) - phi(3)))
+          enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
+          !$OMP END PARALLEL DO
 
 #endif
           do i=1,3; call delete(h(i)); enddo
@@ -96,18 +131,92 @@
 
           call get_coordinates_h(h,g,DL)
 #ifdef _PARALLELIZE_GF_
-            !$OMP PARALLEL DO SHARED(g)
+          !$OMP PARALLEL DO SHARED(g)
 
 #endif
-            do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
-            f%f(i,j,k) = cos(wavenum(1)*PI*(h(1)%f(i) - phi(1)))*&
-                         cos(wavenum(2)*PI*(h(2)%f(j) - phi(2)))*&
-                         cos(wavenum(3)*PI*(h(3)%f(k) - phi(3)))
-            enddo; enddo; enddo
+          do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
+          f%f(i,j,k) = cos(wavenum(1)*PI*(h(1)%f(i) - phi(1)))*&
+                       cos(wavenum(2)*PI*(h(2)%f(j) - phi(2)))*&
+                       cos(wavenum(3)*PI*(h(3)%f(k) - phi(3)))
+          enddo; enddo; enddo
 #ifdef _PARALLELIZE_GF_
-            !$OMP END PARALLEL DO
+          !$OMP END PARALLEL DO
 
 #endif
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+
+        subroutine cosh_waves_GF(f,g,wavenum,phi,DL)
+          implicit none
+          type(grid_field),intent(inout) :: f
+          type(grid),intent(in) :: g
+          real(cp),dimension(3),intent(in) :: wavenum,phi
+          type(data_location),intent(in) :: DL
+          type(array),dimension(3) :: h
+          integer :: i,j,k
+
+          call get_coordinates_h(h,g,DL)
+#ifdef _PARALLELIZE_GF_
+          !$OMP PARALLEL DO SHARED(g)
+
+#endif
+          do k=1,f%s(3); do j=1,f%s(2); do i=1,f%s(1)
+          f%f(i,j,k) = cosh(wavenum(1)*PI*(h(1)%f(i) - phi(1)))*&
+                       cosh(wavenum(2)*PI*(h(2)%f(j) - phi(2)))*&
+                       cosh(wavenum(3)*PI*(h(3)%f(k) - phi(3)))
+          enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
+          !$OMP END PARALLEL DO
+
+#endif
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+
+        subroutine fringe_ALEX_GF(B,g,DL,dir)
+          implicit none
+          type(grid_field),intent(inout) :: B
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          integer,intent(in) :: dir
+          type(array),dimension(3) :: h
+          real(cp) :: Bstretch,Bshift,theta,val
+          integer :: i
+          Bstretch = 0.45_cp   ! stretching parameter
+          Bshift = 12.5_cp     ! shift parameter
+          call get_coordinates_h(h,g,DL)
+          do i=1,B%s(dir)
+            theta = dble(h(dir)%f(i)-Bshift*Bstretch)
+            val = 0.5_cp*(1.0_cp-tanh(theta))
+            call assign_plane(B,val,i,dir)
+          enddo
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+
+        subroutine fringe_SERGEY_GF(B,g,DL,dir)
+          implicit none
+          type(grid_field),intent(inout) :: B
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          integer,intent(in) :: dir
+          type(array),dimension(3) :: h
+          type(grid_field) :: temp
+          real(cp) :: Bstretch,Bshift,theta,val
+          integer :: i,i2
+          Bstretch = 0.2_cp   ! Fringe slope
+          Bshift = 10.0_cp    ! Fringe location
+          call init(temp,B)
+          call get_coordinates_h(h,g,DL)
+          do i=1,B%s(dir)
+            theta = dble((h(dir)%f(i)-Bshift)/Bstretch)
+            val = 0.5_cp*(1.0_cp+tanh(theta))
+            call assign_plane(temp,val,i,dir)
+          enddo
+          call assign(B,temp)
+          i2 = 0
+          do i=1+(B%s(dir)-1)/2,B%s(dir)
+            call assign_plane(B,temp,i,1+(B%s(dir)+1)/2-i2,dir)
+          enddo
+          call delete(temp)
           do i=1,3; call delete(h(i)); enddo
         end subroutine
 

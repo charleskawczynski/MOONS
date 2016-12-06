@@ -150,7 +150,6 @@
          type(mesh),intent(in) :: m
          real(cp) :: BF
          type(VF) :: temp
-         integer :: t
          BF = 0.0_cp
          call init(temp,u); call assign(temp,u)
          call assign_ghost_XPeriodic(temp,0.0_cp)

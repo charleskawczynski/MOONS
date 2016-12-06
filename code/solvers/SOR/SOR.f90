@@ -29,6 +29,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use constants_mod
 
 #ifdef _EXPORT_SOR_CONVERGENCE_
       use IO_tools_mod
@@ -38,9 +39,6 @@
       private
       public :: SORSolver,solve
       public :: init,delete
-
-
-       real(cp),parameter :: PI = 3.14159265358979_cp
 
       logical, parameter :: useGaussSeidel = .true.
 

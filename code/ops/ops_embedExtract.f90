@@ -324,6 +324,7 @@
        ! end type
 
        function EE_shape(f,MD,i) result(s)
+         ! mesh_domain doesn't use mixed for versatility
          implicit none
          type(SF),intent(in) :: f
          type(mesh_domain),intent(in) :: MD
@@ -363,31 +364,6 @@
            call init(s(1),MD%D%sd(i)%physical%N(1))
            call init(s(2),MD%D%sd(i)%physical%N(2))
            call init(s(3),MD%D%sd(i)%physical%N(3))
-         else; stop 'Error: no type found in ops_embedExtract.f90'
-         endif
-       end function
-
-       function EE_shape_short(u,MD,i) result(s)
-         ! mesh_domain doesn't use mixed for versatility
-         implicit none
-         type(SF),intent(in) :: u
-         type(mesh_domain),intent(in) :: MD
-         integer,intent(in) :: i
-         type(overlap),dimension(3) :: s
-         integer,dimension(2) :: adj
-         integer :: j,f,e
-         if (is_Face(u%DL)) then
-           f = get_Face(u%DL); adj = adj_dir_given_dir(f)
-           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%C(adj(j))); enddo
-           call init(s(f),MD%D%sd(i)%physical%N(f))
-         elseif (is_Edge(u%DL)) then
-           e = get_Edge(u%DL); adj = adj_dir_given_dir(e)
-           do j=1,2; call init(s(adj(j)),MD%D%sd(i)%physical%N(adj(j))); enddo
-           call init(s(e),MD%D%sd(i)%physical%C(e))
-         elseif (is_CC(u%DL)) then
-           do j=1,3; call init(s(j),MD%D%sd(i)%physical%C(j)); enddo
-         elseif (is_Node(u%DL)) then
-           do j=1,3; call init(s(j),MD%D%sd(i)%physical%N(j)); enddo
          else; stop 'Error: no type found in ops_embedExtract.f90'
          endif
        end function

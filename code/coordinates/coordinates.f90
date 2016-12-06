@@ -46,6 +46,7 @@
         real(cp) :: hn_e = 0.0_cp                   ! hn(end),hc(end)
         integer :: N = 0                            ! Number of cells
         logical :: defined = .false.
+        integer :: i_midplane = 0                   ! index of midplane,(n must exist at midplay)
 
         ! Requires global information (modified after initialization)
         logical :: stencils_defined = .false.
@@ -229,6 +230,7 @@
         c%defined = d%defined
         c%stencils_defined = d%stencils_defined
         c%stencils_modified = d%stencils_modified
+        c%i_midplane = d%i_midplane
         call init_props(c)
       end subroutine
 
@@ -249,6 +251,7 @@
         c%dhc_e = 0.0_cp
         c%dhn_e = 0.0_cp
         c%defined = .false.
+        c%i_midplane = 0
         c%stencils_defined = .false.
       end subroutine
 
@@ -330,6 +333,7 @@
            c%dhc_e = c%dhc%f(1)
            c%dhn_e = c%dhn%f(1)
          endif
+         c%i_midplane = c%sc/2+1
       end subroutine
 
       ! *****************************************************************

@@ -1,20 +1,20 @@
        module richardsonExtrapolation_mod
-       ! 
+       !
        ! The following analysis closely followed work by
-       ! 
-       !      Roache, P. J. Quantification of Uncertainty in Computational 
+       !
+       !      Roache, P. J. Quantification of Uncertainty in Computational
        !      Fluid Dynamics. Annu. Rev. Fluid Mech. 29, 123–160 (1997).
        ! and
-       !      De Vahl Davis, G. Natural convection of air in a square cavity: a 
+       !      De Vahl Davis, G. Natural convection of air in a square cavity: a
        !      benchmark solution. Int. J. Num. Methods Fluids 3, 249–264 (1983).
-       ! 
+       !
        ! Index 1 indicates finest mesh.
        ! Index Nsims indicates coarsest mesh.
-       ! 
+       !
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
-       ! 
-       ! 
+       !
+       !
        ! NOTE:
        !        It appears that computeGCI_Coarse is supposed to be computed using
        !            GCI = (Fs * abs(eps) * r**p ) / (r**p - real(1.0,cp))
@@ -42,7 +42,7 @@
        public :: richardsonExtrapolation
        public :: reportResults
        public :: computeRE
-      
+
        interface computeRE;    module procedure computeRE_VF;                 end interface
        ! interface computeRE;    module procedure computeRE_RealfromExisting;   end interface
 
@@ -52,7 +52,7 @@
          type(norms) :: p
          type(norms) :: AR ! Should be ~ 1 if in asymptotic range
        end type
-      
+
        contains
 
        subroutine reportResults(RE,name,directory,Nsims,N)
@@ -96,21 +96,20 @@
          type(norms),dimension(:),intent(in) :: e
          integer,dimension(:),intent(in) :: N
          character(len=*),intent(in) :: dir,name
-         integer :: temp,s,sn,i
+         integer :: un,s,sn,i
          s = size(e); sn = size(N)
 
-         temp = new_and_open(dir,name)
+         un = new_and_open(dir,name)
 
          if (sn.eq.s) then
-           write(temp,'(7(A10))') 'N','L1','L2','Linf'
+           write(un,*) 'N','L1','L2','Linf'
            do i=1,s
-             write(temp,'(1I5,4'//arrfmt//')') N(i),e(i)%L1, e(i)%L2, e(i)%Linf
+             write(un,*) N(i),e(i)%L1, e(i)%L2, e(i)%Linf
            enddo
          elseif (sn.eq.s+2) then
-           write(temp,'(6(A10))') 'N1','N2','N3','L1','L2','Linf'
+           write(un,*) 'N1','N2','N3','L1','L2','Linf'
            do i=1,s
-             write(temp,'(3I5,3'//arrfmt//')') N(i),N(i+1),N(i+2),&
-                                               e(i)%L1, e(i)%L2, e(i)%Linf
+             write(un,*) N(i),N(i+1),N(i+2),e(i)%L1,e(i)%L2,e(i)%Linf
            enddo
          else
            stop 'Error: unknown size in exportREList in richardsonExtrapolation.f90'
@@ -145,27 +144,27 @@
 
        function computeRE_Real(f1,f2,f3,m1,m3,r,dir,name) result (RE)
          ! Computes the properties of RE, which include
-         ! 
+         !
          !            |f3 - f2|   /
          !    p = log ---------  / log (maxval(r))
          !            |f2 - f1| /
-         ! 
+         !
          !    e_12 = |f2 - f1|
          !    e_23 = |f3 - f2|
-         ! 
+         !
          !             |f2 - f1|
          !    GCI_12 = ---------
          !               |f1|
-         ! 
+         !
          !             |f3 - f2|
          !    GCI_23 = ---------
          !               |f2|
-         ! 
-         ! Note that 
+         !
+         ! Note that
          !      f1 is the finest mesh
          !      f3 is the coarsest mesh
          !      mesh refinement means that maxval(r) must > 1 for at least one direction
-         ! 
+         !
          implicit none
          type(SF),intent(in) :: f1,f2,f3 ! Cell corner data, (f1 -> finest, f3-> coarsest)
          type(mesh),intent(in) :: m1,m3 ! Mesh for f3
@@ -197,7 +196,7 @@
          RE%GCI_12 = computeGCI_norms(f2_f1,f1_f0,RE%p,r0,Fs,.true.) ! GCI = Fs*|f_2 - f_1|/|f_1|
          ! Coarse GCI
          RE%GCI_23 = computeGCI_norms(f3_f2,f2_f0,RE%p,r0,Fs,.false.) ! GCI = Fs*|f_3 - f_2|/|f_2|
-         
+
          RE%AR = computeAsymtoticRange_Norms(RE%GCI_12,RE%GCI_23,RE%p,r0)
          call delete(f0)
        end function
@@ -210,24 +209,24 @@
 
        function computeMGError(f1,f2,r1,r2,m,dir,name,plotTF) result(n)
          ! Computes
-         ! 
+         !
          !    e = f2 - f1
-         ! 
-         ! On the mesh defined by the shape s. The mesh taken from 
+         !
+         ! On the mesh defined by the shape s. The mesh taken from
          ! f1 and f2 depend on the refinement factors r1 and r2.
-         ! 
+         !
          ! Note that
-         ! 
+         !
          !     r must >= 1
          !     shape(f1)/r1 should = s
          !     shape(f2)/r2 should = s
-         ! 
+         !
          !     r1(dir) = 1 --> f1 need not skip mesh points along direction dir in mesh
          !     r1(dir) = 2 --> f1 needs to skip every other mesh point along direction dir in mesh
-         ! 
+         !
          !     r2(dir) = 1 --> f2 need not skip mesh points along direction dir in mesh
          !     r2(dir) = 2 --> f2 needs to skip every other mesh point along direction dir in mesh
-         ! 
+         !
          implicit none
          type(SF),intent(in) :: f2,f1
          integer,dimension(3),intent(in) :: r1,r2

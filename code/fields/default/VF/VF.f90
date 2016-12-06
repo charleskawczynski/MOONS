@@ -14,6 +14,7 @@
         ! c = b / a => call divide(c,b,a)
 
         use current_precision_mod
+        use data_location_mod
         use mesh_mod
         use mesh_domain_mod
         use SF_mod
@@ -75,6 +76,10 @@
 
         public :: laplacian_matrix_based
         public :: curl_curl_matrix_based
+
+        public :: is_collocated
+        public :: insist_collocated
+        public :: get_DL
 
         type VF
           ! integer :: s = 3  ! number of components
@@ -147,6 +152,10 @@
 
         interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_VF;   end interface
         interface Laplacian_matrix_based;  module procedure Laplacian_matrix_based_VF;   end interface
+
+        interface is_collocated;           module procedure is_collocated_VF;            end interface
+        interface insist_collocated;       module procedure insist_collocated_VF;        end interface
+        interface get_DL;                  module procedure get_DL_VF;                   end interface
 
         interface print_BCs;               module procedure print_BCs_VF;                end interface
         interface init_BCs;                module procedure init_BCs_VF_VF;              end interface
@@ -348,6 +357,33 @@
           call export_BCs(f%x,dir,name//'_x')
           call export_BCs(f%y,dir,name//'_y')
           call export_BCs(f%z,dir,name//'_z')
+        end subroutine
+
+        function is_collocated_VF(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = is_collocated((/f%x%DL,f%y%DL,f%z%DL/))
+        end function
+
+        function get_DL_VF(f) result(DL)
+          implicit none
+          type(VF),intent(in) :: f
+          type(data_location),dimension(3) :: DL
+          DL = (/f%x%DL,f%y%DL,f%z%DL/)
+        end function
+
+        subroutine insist_collocated_VF(f,caller)
+          implicit none
+          type(VF),intent(in) :: f
+          character(len=*),intent(in) :: caller
+          if (.not.is_collocated(f)) then
+            call print(f%x%DL)
+            call print(f%y%DL)
+            call print(f%z%DL)
+            write(*,*) 'Error: DLs are not collocated in '//caller//' in VF.f90'
+            stop 'Done'
+          endif
         end subroutine
 
         subroutine volume_VF(u,m)

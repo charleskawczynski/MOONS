@@ -43,6 +43,10 @@
          logical,intent(inout) :: refine_mesh_now_all
          logical,dimension(3) :: steady_solution
          logical :: continue_refinement
+         logical :: suppress_warning
+         suppress_warning = nrg%suppress_warning
+         suppress_warning = mom%suppress_warning
+         suppress_warning = ind%suppress_warning
 
          continue_refinement = RM%i_level.lt.SP%n_max_refinements
          steady_solution(1) = steady(mom%probe_KE).or.(.not.SP%solveMomentum)

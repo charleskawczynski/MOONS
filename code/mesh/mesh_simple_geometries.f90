@@ -7,6 +7,7 @@
        use grid_mod
        use mesh_domain_mod
        use mesh_mod
+       use constants_mod
        implicit none
 
        private
@@ -19,8 +20,6 @@
        public :: Hunt_duct_magnetic
        public :: Shercliff_duct_magnetic
        public :: duct_with_vacuum
-
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 
@@ -144,33 +143,6 @@
          i = 2; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 3; call ext_Roberts_near_IO(g,L(i),N(i),i)
          call init(m,g)
-         call initProps(m)
-         call patch(m)
-         call delete(g)
-       end subroutine
-
-       subroutine channel_Bandaru(m)
-         implicit none
-         type(mesh),intent(inout) :: m
-         type(grid) :: g
-         real(cp),dimension(3) :: hmin,hmax,beta
-         integer,dimension(3) :: N
-         integer :: i
-         real(cp) :: Ha,Re
-         Ha = 26.0_cp; Re = 10.0_cp**(7.0_cp)
-         call delete(m)
-         N = (/64,1,64/); hmin = -1.0_cp; hmax = 1.0_cp
-
-         hmin(2) = -0.5_cp; hmax(2) = 0.5_cp
-         hmin(1) = 0.0_cp; hmax(1) = 2.0_cp*PI
-         ! beta = ReynoldsBL(Re,hmin,hmax)
-         beta = HartmannBL(Ha,hmin,hmax)
-
-         i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
-         i = 2; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
-         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
-
-         call add(m,g)
          call initProps(m)
          call patch(m)
          call delete(g)

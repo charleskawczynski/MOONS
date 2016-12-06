@@ -27,8 +27,8 @@
        use datatype_conversion_mod
 
        use IO_tools_mod
-       use IO_SF_mod
-       use IO_VF_mod
+       use IO_export_mod
+       use IO_import_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
        use print_export_mod
@@ -71,6 +71,7 @@
        public :: prolongate
 
        type momentum
+         logical :: suppress_warning
          ! Tensor fields
          type(TF) :: U_E
          ! Vector fields
@@ -120,7 +121,6 @@
 
        interface export_transient1;    module procedure export_transient1_mom;      end interface
        interface export_transient2;    module procedure export_transient2_mom;      end interface
-       interface export_transient3;    module procedure export_transient3_mom;      end interface
 
        contains
 
@@ -404,13 +404,8 @@
          implicit none
          type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
-         call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP)
-       end subroutine
-
-       subroutine export_transient3_mom(mom)
-         implicit none
-         type(momentum),intent(inout) :: mom
+         call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP,3,24)
+         call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP,3,24)
        end subroutine
 
        subroutine init_matrix_based_ops_mom(mom)

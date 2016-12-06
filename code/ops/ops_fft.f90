@@ -1,12 +1,12 @@
       module ops_fft_mod
-      ! Returns the Fast Fourier Transform of the scalar field, f, wrt direction 
+      ! Returns the Fast Fourier Transform of the scalar field, f, wrt direction
       ! dir (1,2,3) which corresponds to (x,y,z).
-      ! 
+      !
       ! Flags: (fopenmp,_DEBUG_FFT_)
-      ! 
+      !
       ! Implementation:
       ! call fft(omega,f,dir,pad)
-      ! 
+      !
       ! INPUT:
       !     f    = f(x,y,z)
       !     dir  = direction along which to take the FT (1,2,3)
@@ -19,12 +19,13 @@
       !
       ! CharlieKawczynski@gmail.com
       ! 7/12/2015
-      ! 
+      !
       ! Good references:
-      ! 
+      !
       ! https://jakevdp.github.io/blog/2013/08/28/understanding-the-fft/
 
       use current_precision_mod
+      use constants_mod
       use grid_mod
       implicit none
 
@@ -37,22 +38,18 @@
       interface fft1D;    module procedure fft1D_full;    end interface
 #endif
 
-       ! integer,parameter :: cip = selected_int_kind(64)
-       ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
-       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
-
       contains
 
 #ifdef _FFT_RADIX2_
       recursive subroutine fft1D_Radix2(x) ! In place Cooley-Tukey FFT
         ! Computes
-        ! 
+        !
         !                  N
         !    X(k) =       sum  x(n)*exp(-j*2*PI*(k-1)*(n-1)/N), 1 <= k <= N.
         !                 n=1
-        ! 
+        !
         ! Notes: Only valid for when the number of cells is 2^N, where N>1
-        ! 
+        !
         complex(cp), dimension(:), intent(inout)  :: x
         complex(cp)                               :: t
         integer                                   :: N
@@ -80,16 +77,16 @@
 #else
       subroutine fft1D_full(x) ! Full Discrete Fourier Transform
         ! Computes
-        ! 
+        !
         !                  N
         !    X(k) =       sum  x(n)*exp(-j*2*PI*(k-1)*(n-1)/N), 1 <= k <= N.
         !                 n=1
-        ! 
+        !
         ! Notes: This routine computes the full FT (very slow), allowing for an
         !        arbitrary number of cells. If the number of cells
         !        is 2^N, where N>1, then use the Cooley-Tukey FFT below.
-        ! 
-        ! 
+        !
+        !
         complex(cp), dimension(:), intent(inout)  :: x
         complex(cp), dimension(:), allocatable    :: temp
         complex(cp)                               :: S,j ! sum, sqrt(-1)
@@ -159,7 +156,7 @@
 
 #ifdef _DEBUG_FFT_
       subroutine checkDimensions(s1,s2,dir)
-        ! This routine makes sure that the shapes s1 and s2 
+        ! This routine makes sure that the shapes s1 and s2
         ! are correct
         implicit none
         integer,dimension(3),intent(in) :: s1,s2

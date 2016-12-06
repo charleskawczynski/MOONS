@@ -31,6 +31,7 @@
 
        public :: nhat_given_face
        public :: nhat_given_edge
+       public :: xyz_given_dir
 
        public :: insist_valid_dir,   valid_dir
        public :: insist_valid_face,  valid_face
@@ -334,6 +335,17 @@
          nhat = (/nhat_given_face(faces(1)),nhat_given_face(faces(2))/)
        end function
 
+       function xyz_given_dir(dir) result(c)
+         implicit none
+         integer,intent(in) :: dir
+         character(len=1) :: c
+         select case (dir)
+         case (1); c = 'x'
+         case (2); c = 'y'
+         case (3); c = 'z'
+         case default; stop 'Error: dir must = 1:3 in face_edge_corner_indexing.f90'
+         end select
+       end function
 
        ! *************************************************************************
        ! ********************************* VALID *********************************

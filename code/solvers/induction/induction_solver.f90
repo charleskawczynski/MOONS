@@ -34,6 +34,7 @@
        public :: CT_Finite_Rem
        public :: CT_Finite_Rem_perfect_vacuum
        public :: CT_Low_Rem
+       public :: CT_Low_Rem_matrix_based
        public :: CT_Finite_Rem_interior_solved
        public :: JAC_interior_solved
 
@@ -181,10 +182,10 @@
          enddo
        end subroutine
 
-       subroutine CT_Low_Rem_matrix_based(B,B0,U_E,J,sigmaInv_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
+       subroutine CT_Low_Rem_matrix_based(B,B0,U_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
          implicit none
-         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
-         type(VF),intent(in) :: B0,sigmaInv_E
+         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0
          type(TF),intent(inout) :: temp_E_TF
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m

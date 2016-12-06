@@ -8,7 +8,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
-      use IO_SF_mod
+      use IO_export_mod
       use ops_embedExtract_mod
       use matrix_free_params_mod
       use matrix_free_operators_mod

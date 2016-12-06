@@ -2,13 +2,12 @@
       use current_precision_mod
       use grid_field_mod
       use grid_field_complex_mod
+      use constants_mod
       implicit none
 
       private
       public :: idc_operate
       interface idc_operate;    module procedure idct_3D;    end interface
-
-      real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       contains
 

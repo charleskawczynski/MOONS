@@ -2,6 +2,7 @@
        use current_precision_mod
        use grid_mod
        use coordinates_mod
+       use constants_mod
        implicit none
 
        private
@@ -15,8 +16,6 @@
        public :: singleEddy2D       ! Need to change to func
        public :: cylinder2D         ! Need to change to func
        public :: SH_profile
-
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 

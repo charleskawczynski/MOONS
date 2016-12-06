@@ -1,6 +1,6 @@
       module PSE_mod
       use current_precision_mod
-      use IO_SF_mod
+      use IO_export_mod
       use mesh_mod
       use apply_BCs_mod
       use norms_mod
@@ -20,7 +20,7 @@
       public :: PSE_solver_SF
       public :: PSE_solver_VF
       public :: init,solve,delete
-      
+
       interface init;    module procedure init_PSE_SF;   end interface
       interface init;    module procedure init_PSE_VF;   end interface
 

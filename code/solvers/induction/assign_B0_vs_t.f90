@@ -82,11 +82,4 @@
          B = B1 + (B2-B1)*(t-t1)/(t2-t1)
        end function
 
-       function pow(i) result(p)
-         implicit none
-         integer,intent(in) :: i
-         real(cp) :: p
-         p = 10.0_cp**(real(i,cp))
-       end function
-
        end module

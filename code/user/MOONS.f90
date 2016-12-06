@@ -1,8 +1,8 @@
        module MOONS_mod
        use current_precision_mod
        use IO_tools_mod
-       use IO_SF_mod
-       use IO_VF_mod
+       use IO_import_mod
+       use IO_export_mod
 
        use version_mod
        use mesh_mod
@@ -78,7 +78,7 @@
            call import(mesh_ind,str(DT%restart),'mesh_ind')
            call import(MD_sigma ,str(DT%restart),'MD_sigma')
          else
-           call mesh_generate(mesh_mom,mesh_ind,MD_sigma,DT,Ha,tw,include_vacuum)
+           call mesh_generate(mesh_mom,mesh_ind,MD_sigma,Ha,tw,include_vacuum)
            call export(mesh_mom,str(DT%restart),'mesh_mom')
            call export(mesh_ind,str(DT%restart),'mesh_ind')
            call export(MD_sigma ,str(DT%restart),'MD_sigma')

@@ -8,8 +8,8 @@
        use SF_mod
        use VF_mod
        use datatype_conversion_mod
-       use IO_SF_mod
-       
+       use IO_export_mod
+
        implicit none
 
        public :: export_raw

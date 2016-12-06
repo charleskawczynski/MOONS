@@ -2,8 +2,8 @@
        use current_precision_mod
        use sim_params_mod
        use IO_tools_mod
-       use IO_SF_mod
-       use IO_VF_mod
+       use IO_export_mod
+       use IO_import_mod
        use export_raw_processed_mod
        use SF_mod
        use VF_mod
@@ -80,6 +80,7 @@
          real(cp) :: tol_nrg             ! Time
 
          real(cp) :: Re,Pr,Ec,Ha  ! Reynolds, Prandtl, Eckert, Hartmann
+         logical :: suppress_warning
        end type
 
        interface init;               module procedure init_energy;             end interface

@@ -93,11 +93,10 @@
 
 
 
-       subroutine BC_sim_mom_proper_insulate(m,Ha,DT)
+       subroutine BC_sim_mom_proper_insulate(m,Ha)
          implicit none
          type(mesh),intent(inout) :: m
          real(cp),intent(in) :: Ha
-         type(dir_tree),intent(in) :: DT
          type(grid) :: g
          real(cp),dimension(3) :: hmin,hmax,beta,beta_buffer
          integer,dimension(3) :: N
@@ -130,15 +129,13 @@
 
          call initProps(m)
          call patch(m)
-         call export(m,str(DT%meshes),'mesh_mom')
          call delete(g)
        end subroutine
-       subroutine BC_sim_ind_proper_insulate(m_ind,m_mom,MD_sigma,DT,Ha,tw,include_vacuum)
+       subroutine BC_sim_ind_proper_insulate(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
          type(mesh_domain),intent(inout) :: MD_sigma
-         type(dir_tree),intent(in) :: DT
          real(cp),intent(in) :: Ha,tw
          logical,intent(in) :: include_vacuum
          type(mesh) :: m_sigma
@@ -220,28 +217,6 @@
             stop 'Error: 4 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
          endif
        end function
-
-       function get_N_w_proper_insulate(Ha,tw) result(N_w)
-         implicit none
-         real(cp),intent(in) :: Ha,tw
-         integer :: N_w
-         if (low_tw(tw)) then
-           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
-           elseif (high_Ha(Ha)) then; N_w = 6 ! For Ha = 100
-           else; write(*,*) 'Ha,tw=',Ha,tw
-            stop 'Error: 2 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
-           endif
-         elseif (high_tw(tw)) then
-           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
-           elseif (high_Ha(Ha)) then; N_w = 10 ! For Ha = 100
-           else; write(*,*) 'Ha,tw=',Ha,tw
-            stop 'Error: 3 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
-           endif
-         else; write(*,*) 'Ha,tw=',Ha,tw
-            stop 'Error: 4 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
-         endif
-       end function
-
 
        function low_Ha(Ha) result(L)
          implicit none

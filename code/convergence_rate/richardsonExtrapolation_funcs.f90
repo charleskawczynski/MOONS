@@ -1,20 +1,20 @@
        module richardsonExtrapolation_funcs_mod
-       ! 
+       !
        ! The following analysis closely followed work by
-       ! 
-       !      Roache, P. J. Quantification of Uncertainty in Computational 
+       !
+       !      Roache, P. J. Quantification of Uncertainty in Computational
        !      Fluid Dynamics. Annu. Rev. Fluid Mech. 29, 123–160 (1997).
        ! and
-       !      De Vahl Davis, G. Natural convection of air in a square cavity: a 
+       !      De Vahl Davis, G. Natural convection of air in a square cavity: a
        !      benchmark solution. Int. J. Num. Methods Fluids 3, 249–264 (1983).
-       ! 
+       !
        ! Index 1 indicates finest mesh.
        ! Index Nsims indicates coarsest mesh.
-       ! 
+       !
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
-       ! 
-       ! 
+       !
+       !
        ! NOTE:
        !        It appears that computeGCI_Coarse is supposed to be computed using
        !            GCI = (Fs * abs(eps) * r**p ) / (r**p - real(1.0,cp))
@@ -33,7 +33,7 @@
        public :: richardsonExtrap_norms
        public :: computeGCI_norms
        public :: computeRE
-      
+
        contains
 
        ! *******************************************************************************
@@ -44,11 +44,11 @@
 
        function richardsonExtrap_norms(num,denom,r) result(p)
          ! Computes
-         ! 
+         !
          !            |f3 - f2|   /
          !    p = log ---------  / log (r)
          !            |f2 - f1| /
-         ! 
+         !
          ! Note that r must > 1
          implicit none
          type(norms),intent(in) :: num,denom
@@ -61,11 +61,11 @@
 
        function richardsonExtrap_Real(num,denom,r) result(p)
          ! Computes
-         ! 
+         !
          !            |f3 - f2|   /
          !    p = log ---------  / log (r)
          !            |f2 - f1| /
-         ! 
+         !
          ! Note that r must > 1
          implicit none
          real(cp),intent(in) :: num,denom,r
@@ -81,9 +81,9 @@
 
        function computeGCI_norms(num,denom,p,r,Fs,fine) result(GCI)
          ! Computes
-         ! 
+         !
          !     GCI = (Fs * abs(num/denom) ) / (r**p - 1.0_cp)
-         ! 
+         !
          implicit none
          type(norms),intent(in) :: num,denom,p
          real(cp),intent(in) :: r,Fs

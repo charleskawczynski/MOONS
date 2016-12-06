@@ -115,28 +115,6 @@
          endif
        end function
 
-       function get_N_w_proper_insulate(Ha,tw) result(N_w)
-         implicit none
-         real(cp),intent(in) :: Ha,tw
-         integer :: N_w
-         if (low_tw(tw)) then
-           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
-           elseif (high_Ha(Ha)) then; N_w = 6 ! For Ha = 100
-           else; write(*,*) 'Ha,tw=',Ha,tw
-            stop 'Error: 2 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
-           endif
-         elseif (high_tw(tw)) then
-           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
-           elseif (high_Ha(Ha)) then; N_w = 10 ! For Ha = 100
-           else; write(*,*) 'Ha,tw=',Ha,tw
-            stop 'Error: 3 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
-           endif
-         else; write(*,*) 'Ha,tw=',Ha,tw
-            stop 'Error: 4 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
-         endif
-       end function
-
-
        function low_Ha(Ha) result(L)
          implicit none
          real(cp),intent(in) :: Ha

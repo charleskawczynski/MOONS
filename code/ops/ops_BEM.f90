@@ -7,6 +7,7 @@
        use VF_mod
        use SF_mod
        use index_mapping_mod
+       use constants_mod
 
        implicit none
 
@@ -17,8 +18,6 @@
        interface boundaryFlux;   module procedure boundaryFlux_VF_SD;       end interface
 
        public :: compute_phi_pseudo_time_marching
-
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 

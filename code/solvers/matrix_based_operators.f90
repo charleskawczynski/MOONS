@@ -183,6 +183,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
+        suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call curl_curl_matrix_based(Ax,x,m)
@@ -197,6 +198,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
+        suppress_warning = MFP%suppress_warning
         suppress_warning = k%is_CC
         suppress_warning = tempk%is_CC
         call apply_BCs_implicit(x,m)

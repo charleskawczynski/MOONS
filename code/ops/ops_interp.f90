@@ -1,5 +1,7 @@
        module ops_interp_mod
-       ! Directions are frequently used in this code.
+       ! Compiler flags: ( fopenmp, _DEBUG_INTERP_ )
+       !
+       ! Directions are frequently used in MOONS.
        ! For clarity, some diagrams here show how the
        ! directions are defined.
        !
@@ -32,13 +34,13 @@
        use face_edge_corner_indexing_mod
        use grid_mod
        use mesh_mod
+       use data_location_mod
        use apply_BCs_mod
        use SF_mod
        use VF_mod
        use TF_mod
        implicit none
 
-       ! Compiler flags: ( fopenmp, _DEBUG_INTERP_ )
 
        ! VECTOR INTEGFACES:
        !        face2Face_VF(faceX,faceY,faceZ,face,m,tempCC)
@@ -87,6 +89,8 @@
        public :: node2Edge            ! call node2Edge(edge,node,m,edgeDir)              *
        public :: node2CellCenter      ! call node2CellCenter(CC,node,m,E_x,F_y)          *
 
+       public :: any_to_node
+
        ! ****************** Raw interpolation / extrapolation routines ******************
 
        interface interp;              module procedure interpO2_GF;          end interface
@@ -121,6 +125,8 @@
        interface edge2Node;           module procedure edge2Node_SF;          end interface
        interface edge2Face_no_diag;   module procedure edge2Face_no_diag_TF;  end interface
 
+       interface any_to_node;         module procedure any_to_node_SF;        end interface
+
        ! ********************************** VF routines **********************************
 
        interface face2Face;           module procedure face2Face_VF;          end interface
@@ -142,6 +148,8 @@
 
        interface node2Edge;           module procedure node2Edge_VF;          end interface
        interface node2Edge;           module procedure node2Edge2_VF;         end interface
+
+       interface any_to_node;         module procedure any_to_node_VF;        end interface
 
        contains
 
@@ -836,6 +844,71 @@
          call edge2Face(face%y%z,edge%y,m,2,3)
          call edge2Face(face%z%x,edge%z,m,3,1)
          call edge2Face(face%z%y,edge%z,m,3,2)
+       end subroutine
+
+       subroutine any_to_node_SF(m,node,x,edge,face)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(SF),intent(in) :: x
+         type(SF),intent(inout) :: node,edge,face
+         integer,dimension(3) :: i
+         integer :: i_f,i_e
+         if (is_CC(x%DL)) then
+           call init_Face(face,m,1)
+           call init_Edge(edge,m,3)
+           call init_Node(node,m)
+           call cellcenter2Node(node,x,m,face,edge)
+           call delete(face)
+           call delete(edge)
+         elseif (is_Node(x%DL)) then
+         call init_Node(node,m)
+         call assign(node,x)
+         elseif (is_Face(x%DL)) then
+           i = (/2,1,1/)
+           i_f = get_Face(x%DL)
+           call init_Edge(edge,m,i(i_f))
+           call init_Node(node,m)
+           call face2Node(node,x,m,i_f,edge)
+           call delete(edge)
+         elseif (is_Edge(x%DL)) then
+           i_e = get_Edge(x%DL)
+           call init_Node(node,m)
+           call edge2Node(node,x,m,i_e)
+         else; stop 'Error: bad DL to any_to_node_SF in ops_interp.f90'
+         endif
+       end subroutine
+
+       subroutine any_to_node_VF(m,node,x,edge,face)
+         implicit none
+         type(mesh),intent(in) :: m
+         type(VF),intent(in) :: x
+         type(VF),intent(inout) :: node,edge,face
+         if (is_CC(x%x%DL)) then
+#ifdef _DEBUG_INTERP_
+           call insist_collocated(x,'any_to_node_VF')
+#endif
+           call init_Face(face,m)
+           call init_Edge(edge,m)
+           call init_Node(node,m)
+           call cellcenter2Node(node,x,m,face,edge)
+           call delete(face)
+           call delete(edge)
+         elseif (is_Node(x%x%DL)) then
+#ifdef _DEBUG_INTERP_
+           call insist_collocated(x,'any_to_node_VF')
+#endif
+         call init_Node(node,m)
+         call assign(node,x)
+         elseif (is_Face(x%x%DL)) then
+           call init_Edge(edge,m)
+           call init_Node(node,m)
+           call face2Node(node,x,m,edge)
+           call delete(edge)
+         elseif (is_Edge(x%x%DL)) then
+           call init_Node(node,m)
+           call edge2Node(node,x,m)
+         else; stop 'Error: bad DL to any_to_node_VF in ops_interp.f90'
+         endif
        end subroutine
 
        end module

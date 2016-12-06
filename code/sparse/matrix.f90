@@ -1,8 +1,7 @@
       module matrix_mod
       use current_precision_mod
       use IO_tools_mod
-      use IO_SF_mod
-      use IO_VF_mod
+      use IO_export_mod
       use mesh_mod
       use ops_discrete_mod
       use ops_aux_mod

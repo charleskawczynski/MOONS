@@ -5,7 +5,6 @@
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
-       use IO_auxiliary_mod
        use ops_aux_mod
 
        use grid_mod
@@ -22,34 +21,34 @@
        implicit none
        private
        public :: computeCGFromExisting
-      
+
        contains
 
        subroutine computeCGFromExisting(DT)
-         ! This routine may need some testing again since it hasn't been used in a 
+         ! This routine may need some testing again since it hasn't been used in a
          ! while. The original version that was used ran all tests, while keeping
          ! the data, then performed the convergence rate computations. This approach
          ! is inefficient w.r.t. memory and is very unforgiving. Now, the grids must
          ! be tested individually, and maybe organized in such a way that the data
          ! can be read from existing files to perform convergence rate computations.
-         ! 
-         ! 
+         !
+         !
          ! Convergence rate tests begin at the finest grid
          ! and progress towards coarser grids. This way,
          ! the longest simulation time is known shortly after
          ! the simulation starts.
-         ! 
+         !
          ! The following analysis closely followed work by
-         ! 
-         !      Roache, P. J. Quantification of Uncertainty in Computational 
+         !
+         !      Roache, P. J. Quantification of Uncertainty in Computational
          !      Fluid Dynamics. Annu. Rev. Fluid Mech. 29, 123–160 (1997).
          ! and
-         !      De Vahl Davis, G. Natural convection of air in a square cavity: a 
+         !      De Vahl Davis, G. Natural convection of air in a square cavity: a
          !      benchmark solution. Int. J. Num. Methods Fluids 3, 249–264 (1983).
-         ! 
+         !
          ! Index 1 indicates finest grid.
          ! Index Nsims indicates coarsest grid.
-         ! 
+         !
          ! For convenience
          !                            2^2  = 4
          !                            2^3  = 8
@@ -60,9 +59,9 @@
          !                            2^8  = 256
          !                            2^9  = 512
          !                            2^10 = 1024
-         ! 
+         !
          ! For 2D and 3D simulations, the refinement factor must be changed accordingly.
-         ! 
+         !
          implicit none
          type(dir_tree),intent(in) :: DT
          integer,parameter :: Nstart = 4

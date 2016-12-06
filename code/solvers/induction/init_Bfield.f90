@@ -3,8 +3,7 @@
        use grid_mod
        use mesh_mod
        use VF_mod
-       use IO_VF_mod
-       use IO_SF_mod
+       use IO_import_mod
        implicit none
 
        private

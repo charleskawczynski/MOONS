@@ -2,13 +2,12 @@
       use current_precision_mod
       use grid_mod
       use ops_fft_mod
+      use constants_mod
       implicit none
 
       private
       public :: dct_operate
       interface dct_operate;    module procedure dct_3D;    end interface
-
-      real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       contains
 

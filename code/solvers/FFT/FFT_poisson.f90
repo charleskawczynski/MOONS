@@ -24,13 +24,12 @@
       use ops_aux_mod
       use ops_dct_mod
       use ops_idct_mod
+      use constants_mod
       implicit none
 
       private
       public :: FFTSolver,solve
       private :: init,delete
-
-       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       type FFTSolver
         real(cp),dimension(3) :: dh2 ! Grid spacing (assumed uniform)

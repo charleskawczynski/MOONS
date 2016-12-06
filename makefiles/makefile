@@ -136,6 +136,7 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 # FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
 # FC_DEBUG += -D_DEBUG_APPLY_STITCHES
+FC_DEBUG += -D_DEBUG_IO_EXPORT_
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_DATA_LOCATION_
 FC_DEBUG += -D_DEBUG_ARRAY_
@@ -238,6 +239,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_global\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry\
@@ -249,6 +251,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)grid\
 	$(SRC_DIR)$(PS)IO\
 	$(SRC_DIR)$(PS)lib\
+	$(SRC_DIR)$(PS)material_props\
 	$(SRC_DIR)$(PS)math\
 	$(SRC_DIR)$(PS)mesh\
 	$(SRC_DIR)$(PS)norms\
@@ -277,6 +280,8 @@ VPATH =\
 # **************** SOURCE FILES *********************
 SRCS_F =\
 	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
+	$(SRC_DIR)$(PS)globals$(PS)constants.f90\
+	$(SRC_DIR)$(PS)material_props$(PS)material_props.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
 	$(SRC_DIR)$(PS)string$(PS)string.f90\
@@ -332,6 +337,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export$(PS)GF_export.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export$(PS)GF_import.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract$(PS)GF_embed_extract.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_sum.f90\
@@ -378,6 +384,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries_symmetric.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
@@ -388,12 +395,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_SF.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_VF.f90\
-	$(SRC_DIR)$(PS)IO$(PS)import_SF.f90\
-	$(SRC_DIR)$(PS)IO$(PS)import_VF.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_SF.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_VF.f90\
+	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
+	$(SRC_DIR)$(PS)IO$(PS)base_import.f90\
+	$(SRC_DIR)$(PS)IO$(PS)IO_export.f90\
+	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
 	$(SRC_DIR)$(PS)clock$(PS)unit_conversion.f90\
 	$(SRC_DIR)$(PS)clock$(PS)clock.f90\
@@ -422,6 +427,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)diagonals.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90\

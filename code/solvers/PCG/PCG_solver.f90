@@ -13,7 +13,7 @@
       use VF_mod
       use ops_norms_mod
       use IO_tools_mod
-      use IO_VF_mod
+      use IO_export_mod
 
       use iter_solver_params_mod
       use matrix_free_params_mod

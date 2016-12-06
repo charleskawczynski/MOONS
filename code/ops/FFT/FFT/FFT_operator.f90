@@ -2,6 +2,7 @@
       use current_precision_mod
       use grid_field_mod
       use grid_field_complex_mod
+      use constants_mod
       implicit none
 
       private
@@ -13,8 +14,6 @@
 #else
       interface fft1D;    module procedure fft1D_full;    end interface
 #endif
-
-      real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
 
       contains
 

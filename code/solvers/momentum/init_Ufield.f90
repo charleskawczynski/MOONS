@@ -1,7 +1,7 @@
        module init_Ufield_mod
        use current_precision_mod
-       use IO_SF_mod
-       use IO_VF_mod
+       use IO_import_mod
+       use IO_export_mod
        use grid_mod
        use mesh_mod
        use SF_mod
@@ -9,6 +9,7 @@
        use boundary_conditions_mod
        use ops_aux_mod
        use export_raw_processed_mod
+       use constants_mod
        implicit none
 
        private
@@ -29,8 +30,6 @@
        !
        ! integer :: vortexDirection = 1 ! (1,2,3) = (x,y,z)
        ! integer :: vortexSign      = 1 ! (-1,1) = {clockwise from +, clockwise from -}
-
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 

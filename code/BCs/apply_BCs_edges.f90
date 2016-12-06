@@ -4,12 +4,12 @@
        !         periodic BCs are typically used for simple geometries, not to
        !         mention they would only be applicable across 1 grid (and not 1 mesh)
        !       o Edge BCs defines BCs at a grid's edge. This is necessary
-       !         because edge BCs will not be defined if two adjoining 
-       !         face-stitching occurs. 
-       !       o For example, velocty is enforced 
-       !         at an edge in the below diagram, where the top right block 
+       !         because edge BCs will not be defined if two adjoining
+       !         face-stitching occurs.
+       !       o For example, velocty is enforced
+       !         at an edge in the below diagram, where the top right block
        !         skips face BCs on the left and bottom sides
-       ! 
+       !
        !          --------------
        !                       |
        !          --------     |
@@ -18,23 +18,23 @@
        !              /  |     |
        !             /
        !           Here
-       ! 
-       !       o Data locations that are potentially defined (depending on 
+       !
+       !       o Data locations that are potentially defined (depending on
        !         Dirichlet/Nuemann BCs) are illustrated below with asterisks
-       ! 
-       !        |       |       |     
-       !        |       |       |     
+       !
+       !        |       |       |
+       !        |       |       |
        !         ------- ------- -----
-       !        |       |       |     
-       !        |       |       |     
-       !        |       |       |     
+       !        |       |       |
+       !        |       |       |
+       !        |       |       |
        !        *---*---*------- -----
-       !        |       |       |     
-       !        |   *   *       |     
-       !        |       |       |     
+       !        |       |       |
+       !        |   *   *       |
+       !        |       |       |
        !         -------*------- -----
-       ! 
-       !       o Edge data is separated into 3 (edge) directions. This is 
+       !
+       !       o Edge data is separated into 3 (edge) directions. This is
        !         listed and illustrated below
        !         Edges are organized as follows
        !                minmin(i)
@@ -42,24 +42,24 @@
        !                maxmin(i)
        !                maxmax(i)
        !         for direction i, covering all 12 edge.
-       !         
+       !
        !         To be more explicit:
-       !         
+       !
        !         x:  (i=1)   minmin(1):  ymin,zmin ! Right hand rule
        !                     minmax(2):  ymin,zmax ! Right hand rule
        !                     maxmin(3):  ymax,zmin ! Right hand rule
        !                     maxmax(4):  ymax,zmax ! Right hand rule
-       !         
+       !
        !         y:  (i=2)   minmin(5):  xmin,zmin ! LEFT hand rule
        !                     minmax(6):  xmin,zmax ! LEFT hand rule
        !                     maxmin(7):  xmax,zmin ! LEFT hand rule
        !                     maxmax(8):  xmax,zmax ! LEFT hand rule
-       !         
+       !
        !         z:  (i=3)   minmin(9):  xmin,ymin ! Right hand rule
        !                     minmax(10): xmin,ymax ! Right hand rule
        !                     maxmin(11): xmax,ymin ! Right hand rule
        !                     maxmax(12): xmax,ymax ! Right hand rule
-       ! 
+       !
        !          d2
        !          ^
        !          |
@@ -72,8 +72,8 @@
        !          |---|---------|---|
        ! minmin   |   |         |   | maxmin
        !          ---------------------->d1
-       ! 
-       ! 
+       !
+       !
        use current_precision_mod
        use apply_BCs_edges_raw_mod
        use coordinates_mod
@@ -114,14 +114,14 @@
 
        function BC_TF(GF,g,f,e) result(L)
          !
-         !        z                          x                          y                        
-         !        ^    6                     ^    2                     ^    4                   
-         !        2---------4                2---------4                2---------4              
-         !        |         |                |         |                |         |              
-         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2            
-         !        |         |                |         |                |         |              
-         !        1---------3-> y            1---------3-> z            1---------3-> x          
-         !             5                          1                          3                   
+         !        z                          x                          y
+         !        ^    6                     ^    2                     ^    4
+         !        2---------4                2---------4                2---------4
+         !        |         |                |         |                |         |
+         !      3 |  dir=1  | 4            5 |  dir=2  | 6            1 |  dir=3  | 2
+         !        |         |                |         |                |         |
+         !        1---------3-> y            1---------3-> z            1---------3-> x
+         !             5                          1                          3
          implicit none
          type(grid_field),intent(inout) :: GF
          type(grid),intent(in) :: g
@@ -247,49 +247,49 @@
        end subroutine
 
        subroutine app_CC_GF(f,v,bct,x,y,z,dir,c1,c2,corner)
-         ! At this point, data should be sent in a convention so that the 
+         ! At this point, data should be sent in a convention so that the
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
-         ! 
+         !
          !  NOTES:
          !      $: BC that must be enforced
          !     CC: For Dirichlet, the average of all values must equal BC value
          !         For Neumann, use weighted average, using expression from ref:
          !         Numerical Simulation in Fluid Dynamics a Practical Introduction - M. Griebel et al
-         ! 
-         !        d2                                                   
-         !        ^                                                    
-         !        |                                                    
-         !        |                                                    
-         !         ------- ------- -------- -------- -------          
-         !        |       |       |        |        |       |         
-         !   2    |  *ug  |  *ug1 |        |  *ug1  |  *ug  |    4    
-         !        |       |       |        |        |       |         
-         !         -------$------- -------- --------$-------          
-         !        |       |       |        |        |       |         
-         !        |  *ug2 |  *ui  |        |  *ui   |  *ug2 |         
-         !        |       |       |        |        |       |         
-         !         ------- ------- -------- -------- -------          
-         !        |       |       |        |        |       |         
-         !        |       |       |        |        |       |         
-         !        |       |       |        |        |       |         
-         !         ------- ------- -------- -------- -------          
-         !        |       |       |        |        |       |         
-         !        |  *ug2 |  *ui  |        |  *ui   |  *ug2 |         
-         !        |       |       |        |        |       |         
-         !   1     -------$------- -------- --------$-------     3    
-         !        |       |       |        |        |       |         
-         !        |  *ug  |  *ug1 |        |  *ug1  |  *ug  |         
-         !        |       |       |        |        |       |         
+         !
+         !        d2
+         !        ^
+         !        |
+         !        |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !   2    |  *ug  |  *ug1 |        |  *ug1  |  *ug  |    4
+         !        |       |       |        |        |       |
+         !         -------$------- -------- --------$-------
+         !        |       |       |        |        |       |
+         !        |  *ug2 |  *ui  |        |  *ui   |  *ug2 |
+         !        |       |       |        |        |       |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |  *ug2 |  *ui  |        |  *ui   |  *ug2 |
+         !        |       |       |        |        |       |
+         !   1     -------$------- -------- --------$-------     3
+         !        |       |       |        |        |       |
+         !        |  *ug  |  *ug1 |        |  *ug1  |  *ug  |
+         !        |       |       |        |        |       |
          !         ------- ------- -------- -------- ------- -----> d1
-         ! 
-         !        z                      x                      y                   
-         !        ^                      ^                      ^                   
-         !        |-----                 |-----                 |-----              
+         !
+         !        z                      x                      y
+         !        ^                      ^                      ^
+         !        |-----                 |-----                 |-----
          !        |     |     dir = 1    |     |     dir = 2    |     |     dir = 3
-         !        |     |                |     |                |     |             
-         !         -------> y             -------> z             -------> x         
-         ! 
+         !        |     |                |     |                |     |
+         !         -------> y             -------> z             -------> x
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          real(cp),dimension(:),intent(in) :: v
@@ -331,50 +331,50 @@
        end subroutine
 
        subroutine app_N_GF(f,v,bct,x,y,z,dir,c1,c2,corner)
-         ! At this point, data should be sent in a convention so that the 
+         ! At this point, data should be sent in a convention so that the
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
-         ! 
+         !
          !  NOTES:
          !      $: BC that must be enforced
          !      N: For Dirichlet, the average of all values must equal BC value
          !         For Neumann, use weighted average, using expression from ref:
          !         Numerical Simulation in Fluid Dynamics a Practical Introduction - M. Griebel et al
-         ! 
-         !   N :    d2                                                        
-         !          ^                                                         
-         !                  ug2                             ug2                   
-         !           -------*------- ------ ------- --------*---------            
-         !          |       |       |      |       |        |         |           
+         !
+         !   N :    d2
+         !          ^
+         !                  ug2                             ug2
+         !           -------*------- ------ ------- --------*---------
+         !          |       |       |      |       |        |         |
          !   2      |       |       |      |       |        |         |          4
-         !          |       | ub    | ui1  |       |  ui1   | ub      |           
-         !      ug1 *-------$-------*------*-------*--------$---------* ug1       
-         !          |       |       |      |       |        |         |           
-         !          |       |       |      |       |        |         |           
-         !          |       | ui2   |      |       |        | ui2     |           
-         !           -------*------- ------ ------- --------*---------            
-         !          |       |       |      |       |        |         |           
-         !          |       |       |      |       |        |         |           
-         !           -------*------- ------ ------- --------*---------            
-         !          |       |       |      |       |        |         |           
-         !          |       | ui2   |      |       |        | ui2     |           
-         !           -------*------- ------ ------- --------*---------            
-         !          |       |       |      |       |        |         |           
+         !          |       | ub    | ui1  |       |  ui1   | ub      |
+         !      ug1 *-------$-------*------*-------*--------$---------* ug1
+         !          |       |       |      |       |        |         |
+         !          |       |       |      |       |        |         |
+         !          |       | ui2   |      |       |        | ui2     |
+         !           -------*------- ------ ------- --------*---------
+         !          |       |       |      |       |        |         |
+         !          |       |       |      |       |        |         |
+         !           -------*------- ------ ------- --------*---------
+         !          |       |       |      |       |        |         |
+         !          |       | ui2   |      |       |        | ui2     |
+         !           -------*------- ------ ------- --------*---------
+         !          |       |       |      |       |        |         |
          !   1      |       |       |      |       |        |         |          3
-         !          |       | ub    | ui1  |       |  ui1   | ub      |           
-         !      ug1 *-------$-------*------*-------*--------$---------* ug1       
-         !          |       |       |      |       |        |         |           
-         !          |       |       |      |       |        |         |           
-         !          |       |       |      |       |        |         |           
-         !           -------*------- ------ ------- --------*---------     > d1   
-         !                  ug2                             ug2               
-         !        z                      x                      y                   
-         !        ^                      ^                      ^                   
-         !        |-----                 |-----                 |-----              
+         !          |       | ub    | ui1  |       |  ui1   | ub      |
+         !      ug1 *-------$-------*------*-------*--------$---------* ug1
+         !          |       |       |      |       |        |         |
+         !          |       |       |      |       |        |         |
+         !          |       |       |      |       |        |         |
+         !           -------*------- ------ ------- --------*---------     > d1
+         !                  ug2                             ug2
+         !        z                      x                      y
+         !        ^                      ^                      ^
+         !        |-----                 |-----                 |-----
          !        |     |     dir = 1    |     |     dir = 2    |     |     dir = 3
-         !        |     |                |     |                |     |             
-         !         -------> y             -------> z             -------> x         
-         ! 
+         !        |     |                |     |                |     |
+         !         -------> y             -------> z             -------> x
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          real(cp),dimension(:),intent(in) :: v
@@ -416,49 +416,49 @@
        end subroutine
 
        subroutine app_F1_GF(f,v,bct,x,y,z,dir,c2,corner)
-         ! At this point, data should be sent in a convention so that the 
+         ! At this point, data should be sent in a convention so that the
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
-         ! 
+         !
          !  NOTES:
          !      $: BC that must be enforced
          !  F(d1): For Dirichlet, the average of all values must equal BC value
          !         For Neumann, use weighted average, using expression from ref:
          !         Numerical Simulation in Fluid Dynamics a Practical Introduction - M. Griebel et al
-         ! 
-         !        d2                                                
-         !        ^                                                 
-         !        |                                                 
-         !        |                                                 
-         !         ------- ------- -------- -------- -------        
-         !        |       |       |        |        |       |       
+         !
+         !        d2
+         !        ^
+         !        |
+         !        |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
          !   2    |       | ug    |        |     ug |       |       4
-         !        |       |       |        |        |       |       
-         !         -------$------- -------- --------$-------        
-         !        |       |       |        |        |       |       
-         !        |       | ui    |        |     ui |       |       
-         !        |       |       |        |        |       |       
-         !         ------- ------- -------- -------- -------        
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !         ------- ------- -------- -------- -------        
-         !        |       |       |        |        |       |       
-         !        |       * ui    |        |     ui *       |       
-         !        |       |       |        |        |       |       
+         !        |       |       |        |        |       |
+         !         -------$------- -------- --------$-------
+         !        |       |       |        |        |       |
+         !        |       | ui    |        |     ui |       |
+         !        |       |       |        |        |       |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |       * ui    |        |     ui *       |
+         !        |       |       |        |        |       |
          !   1     -------$-------$-------- --------$-------        3
-         !        |       |       |        |        |       |       
-         !        |       * ug    |        |     ug *       |       
-         !        |       |       |        |        |       |       
+         !        |       |       |        |        |       |
+         !        |       * ug    |        |     ug *       |
+         !        |       |       |        |        |       |
          !         ------- ------- -------- -------- ------- -----> d1
          !
-         !        z                      x                      y                   
-         !        ^                      ^                      ^                   
-         !        |-----                 |-----                 |-----              
+         !        z                      x                      y
+         !        ^                      ^                      ^
+         !        |-----                 |-----                 |-----
          !        |     |     dir = 1    |     |     dir = 2    |     |     dir = 3
-         !        |     |                |     |                |     |             
-         !         -------> y             -------> z             -------> x         
-         ! 
+         !        |     |                |     |                |     |
+         !         -------> y             -------> z             -------> x
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          real(cp),dimension(:),intent(in) :: v
@@ -500,49 +500,49 @@
        end subroutine
 
        subroutine app_F2_GF(f,v,bct,x,y,z,dir,c1,corner)
-         ! At this point, data should be sent in a convention so that the 
+         ! At this point, data should be sent in a convention so that the
          ! next set of routines can handle applying BCs in a systematic way.
          ! Below are some notes and diagrams illustrating this process:
-         ! 
+         !
          !  NOTES:
          !      $: BC that must be enforced
          !  F(d2): For Dirichlet, the average of all values must equal BC value
          !         For Neumann, use weighted average, using expression from ref:
          !         Numerical Simulation in Fluid Dynamics a Practical Introduction - M. Griebel et al
-         ! 
-         !        d2                                                
-         !        ^                                                 
-         !        |                                                 
-         !        |                                                 
-         !         ------- ------- -------- -------- -------        
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
+         !
+         !        d2
+         !        ^
+         !        |
+         !        |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
          !   2     ---*---$--*----$------- -----*---$--*-----       4
-         !        |  ug   |  ui   |        |   ui   |  ug   |       
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !         ------- ------- -------- -------- -------        
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !         ------- ------- -------- -------- -------        
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
+         !        |  ug   |  ui   |        |   ui   |  ug   |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !         ------- ------- -------- -------- -------
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
          !   1     ---*---$--*---- -------- ----*---$--*----        3
-         !        |  ug   |  ui   |        |   ui   |  ug   |       
-         !        |       |       |        |        |       |       
-         !        |       |       |        |        |       |       
+         !        |  ug   |  ui   |        |   ui   |  ug   |
+         !        |       |       |        |        |       |
+         !        |       |       |        |        |       |
          !         ------- ------- -------- -------- ------- -----> d1
          !
-         !        z                      x                      y                   
-         !        ^                      ^                      ^                   
-         !        |-----                 |-----                 |-----              
+         !        z                      x                      y
+         !        ^                      ^                      ^
+         !        |-----                 |-----                 |-----
          !        |     |     dir = 1    |     |     dir = 2    |     |     dir = 3
-         !        |     |                |     |                |     |             
-         !         -------> y             -------> z             -------> x         
-         ! 
+         !        |     |                |     |                |     |
+         !         -------> y             -------> z             -------> x
+         !
          implicit none
          real(cp),dimension(:,:,:),intent(inout) :: f
          real(cp),dimension(:),intent(in) :: v
@@ -591,7 +591,7 @@
          real(cp),dimension(2),intent(in) :: dh
          type(bctype),intent(in) :: bct
          if (is_Dirichlet(bct)) then;   ug = 4.0_cp*bvals - (ui + ug1 + ug2)
-         elseif (is_Neumann(bct)) then; 
+         elseif (is_Neumann(bct)) then;
          ug = (ug1*dh(1) + ug2*dh(2))/(dh(1)+dh(2)) ! (hard coded zero)
          else; stop 'Error: Bad bctype! Caught in a_CC in apply_BCs_edges.f90'
          endif
@@ -605,7 +605,7 @@
          real(cp),dimension(2),intent(in) :: dh ! needed for non-zero Neumann
          type(bctype),intent(in) :: bct
          if (is_Dirichlet(bct)) then;   ub = bvals
-         elseif (is_Neumann(bct)) then; 
+         elseif (is_Neumann(bct)) then;
            ug1 = ui1 - 2.0_cp*dh(1)*bvals
            ug2 = ui2 - 2.0_cp*dh(2)*bvals
          else; stop 'Error: Bad bctype! Caught in a_N in apply_BCs_edges.f90'

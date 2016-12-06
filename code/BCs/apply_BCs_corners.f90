@@ -12,9 +12,6 @@
        private
        public :: apply_BCs_corners
 
-
-
-
        interface apply_BCs_corners;       module procedure apply_BCs_corners_VF;     end interface
        interface apply_BCs_corners;       module procedure apply_BCs_corners_SF;     end interface
 

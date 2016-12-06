@@ -18,7 +18,7 @@
 
        private
        public :: probe
-       public :: init,delete,export
+       public :: init,delete,export,import
        public :: steady,steady_final
        public :: get_data
 
@@ -33,7 +33,7 @@
          real(cp) :: t = 0.0_cp                                ! time
          real(cp) :: dt = 0.0_cp                               ! delta time
          integer :: un = 0                                     ! file unit
-         integer :: n_step = 0                                 ! file unit
+         integer(li) :: n_step = 0                             ! time step
          logical :: restart = .false.                          ! restart probe (append existing)
          real(cp) :: NaN = 0.0_cp                              ! for checking divergent data
          real(cp) :: infinity = huge(1.0_cp)                   ! for checking divergent data
