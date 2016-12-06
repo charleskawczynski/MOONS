@@ -281,7 +281,7 @@
 
           s = shape(mg(1)%res)
           ! Zero boundary values
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, compute, "exactly" the error
@@ -299,7 +299,7 @@
 #ifdef _EXPORT_MG_CONVERGENCE_
             call lap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             mg(1)%res = mg(1)%lapu - mg(1)%f
-            call zeroGhostPoints(mg(1)%res)
+            call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
             call compute(norm,0.0_cp,mg(1)%res)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
@@ -323,7 +323,7 @@
 
           call lap(mg(1)%lapu,u,g)
           mg(1)%res = mg(1)%lapu - mg(1)%f
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
           call compute(norm,0.0_cp,mg(1)%res)
           call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
@@ -362,7 +362,7 @@
           mg(j+1)%res = mg(j+1)%f - mg(j+1)%lapU
           ! Zero boundary values
           s = shape(mg(j+1)%res)
-          call zeroGhostPoints(mg(j+1)%res)
+          call assign_ghost_XPeriodic(mg(j+1)%res,0.0_cp)
 
           ! 4) Decend to coarser level
           call Vcycle(mg,j+1)

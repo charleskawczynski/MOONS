@@ -205,7 +205,7 @@
          write(*,*) '     B-field initialized'
          ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B_f))
          ! call initJ_interior(ind%J_interior,m,ind%MD_sigma,str(DT%J_f))
-         call zeroGhostPoints(ind%B_interior)
+         call assign_ghost_XPeriodic(ind%B_interior,0.0_cp)
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
          if (ind%SP%solveInduction) call print_BCs(ind%B,'B')

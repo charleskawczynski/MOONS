@@ -65,8 +65,8 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%numEl
-        call random_noise(u); call zeroGhostPoints(u)
-        call random_noise(v); call zeroGhostPoints(v)
+        call random_noise(u); call assign_ghost_XPeriodic(u,0.0_cp)
+        call random_noise(v); call assign_ghost_XPeriodic(v,0.0_cp)
         call init_BCs(u,x)
         call init_BCs(v,x)
         call operator(Au,u,k,m,MFP,tempk)
@@ -100,8 +100,8 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%x%numEl+x%y%numEl+x%z%numEl
-        call random_noise(u); call zeroGhostPoints(u)
-        call random_noise(v); call zeroGhostPoints(v)
+        call random_noise(u); call assign_ghost_XPeriodic(u,0.0_cp)
+        call random_noise(v); call assign_ghost_XPeriodic(v,0.0_cp)
         call init_BCs(u,x)
         call init_BCs(v,x)
         call operator(Au,u,k,m,MFP,tempk)

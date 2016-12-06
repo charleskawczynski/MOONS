@@ -303,7 +303,7 @@
           call subtract(mg(1)%res,mg(1)%f,mg(1)%lapU)
 
           ! Zero boundary values
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, find, "exactly" the error
@@ -321,7 +321,7 @@
 #ifdef _EXPORT_MG_CONVERGENCE_
             call compute_Au(mg(1)%lapu,mg(1)%u,mg(1)%sigma,mg(1)%g)
             call subtract(mg(1)%res,mg(1)%lapu,mg(1)%f)
-            call zeroGhostPoints(mg(1)%res)
+            call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
             call compute(norm,mg(1)%res,mg(1)%g)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
@@ -345,7 +345,7 @@
 
           call compute_Au(mg(1)%lapu,u,mg(1)%sigma,g)
           call subtract(mg(1)%res,mg(1)%lapu,mg(1)%f)
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
           call compute(norm,mg(1)%res,mg(1)%g)
           call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
@@ -382,7 +382,7 @@
           call compute_Au(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%sigma,mg(j+1)%g)
           call subtract(mg(j+1)%res,mg(j+1)%f,mg(j+1)%lapU)
           ! Zero boundary values
-          call zeroGhostPoints(mg(j+1)%res)
+          call assign_ghost_XPeriodic(mg(j+1)%res,0.0_cp)
 
           ! 4) Decend to coarser level
           call Vcycle(mg,j+1)

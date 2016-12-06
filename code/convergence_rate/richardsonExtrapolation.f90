@@ -257,7 +257,7 @@
 
 #endif
          enddo
-         call zeroGhostPoints(e)
+         call assign_ghost_XPeriodic(e,0.0_cp)
          if (plotTF) call export_3D_1C(m,e,dir,'MG_Error_'//name,0)
 
          call init(vol,e)

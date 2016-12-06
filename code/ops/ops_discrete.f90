@@ -208,7 +208,7 @@
 
          ! Note that padding above does not zero wall normal values
          ! from being calculated. Removing ghost nodes is still necessary:
-         call zeroGhostPoints(divU) ! padding avoids boundaries
+         call assign_ghost_XPeriodic(divU,0.0_cp) ! padding avoids boundaries
        end subroutine
 
        subroutine grad_SF(gradx,grady,gradz,u,m)

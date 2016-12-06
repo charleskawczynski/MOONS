@@ -183,7 +183,7 @@
 #ifdef _EXPORT_SOR_CONVERGENCE_
             call lap(SOR%lapu,u,m)
             call subtract(SOR%res,SOR%lapu,f)
-            call zeroGhostPoints(SOR%res)
+            call assign_ghost_XPeriodic(SOR%res,0.0_cp)
             call compute(norm,SOR%res,SOR%vol)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
@@ -204,7 +204,7 @@
 
           call lap(SOR%lapu,u,m)
           call subtract(SOR%res,SOR%lapu,f)
-          call zeroGhostPoints(SOR%res)
+          call assign_ghost_XPeriodic(SOR%res,0.0_cp)
           call compute(norm,SOR%res,SOR%vol)
           call print(norm,'SOR Residuals')
         endif

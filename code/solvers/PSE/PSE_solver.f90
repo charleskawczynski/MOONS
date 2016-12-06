@@ -64,7 +64,7 @@
         if (compute_norms) then
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
-          call zeroGhostPoints(r)
+          call assign_ghost_XPeriodic(r,0.0_cp)
           call assign_wall_Dirichlet(r,0.0_cp,x)
           call compute(norm,r,vol); call print(norm,'PSE Residuals SF')
           write(un,*) norm%L1,norm%L2,norm%Linf
@@ -113,7 +113,7 @@
         if (compute_norms) then
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
-          call zeroGhostPoints(r)
+          call assign_ghost_XPeriodic(r,0.0_cp)
           call assign_wall_Dirichlet(r,0.0_cp,x)
           call compute(norm,r,vol); call print(norm,'PSE Residuals VF')
           write(un,*) norm%L1,norm%L2,norm%Linf

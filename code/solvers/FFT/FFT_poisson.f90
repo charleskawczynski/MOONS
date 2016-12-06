@@ -185,7 +185,7 @@
           if (displayTF) then
             call lap(FFT%res,u,m)
             call subtract(FFT%res,f)
-            call zeroGhostPoints(FFT%res)
+            call assign_ghost_XPeriodic(FFT%res,0.0_cp)
             call compute(norm,FFT%res,vol)
             call print(norm,'FFT Residuals')
           endif

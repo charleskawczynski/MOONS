@@ -89,7 +89,7 @@
         call diag_Lap(JAC%D,m)
         call assign(JAC%Dinv,JAC%D)
         call invert(JAC%Dinv)
-        call zeroghostpoints(JAC%Dinv)
+        call assign_ghost_XPeriodic(JAC%Dinv,0.0_cp)
       end subroutine
 
       subroutine solve_Jacobi_VF(JAC,x,f,m,n,compute_norm)

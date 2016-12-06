@@ -82,7 +82,7 @@
         if (x%all_neumann) call subtract(x,mean(x))
         if (compute_norm) then
           if (.not.skip_loop) then
-            call zeroGhostPoints(res)
+            call assign_ghost_XPeriodic(res,0.0_cp)
             call compute(norm,res,vol)
             call print(norm,'Jacobi_SF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
@@ -158,7 +158,7 @@
         ! if (x%all_neumann) call subtract(x,mean(x))
         if (compute_norm) then
           if (.not.skip_loop) then
-            call zeroGhostPoints(res)
+            call assign_ghost_XPeriodic(res,0.0_cp)
             call compute(norm,res,vol)
             call print(norm,'Jacobi_VF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&

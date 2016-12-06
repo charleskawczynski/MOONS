@@ -121,7 +121,7 @@
           call subtract(mg(j+1)%smooth%res,mg(j+1)%smooth%b,mg(j+1)%smooth%Ax)
 
           ! Zero boundary values
-          call zeroGhostPoints(mg(j+1)%smooth%res)
+          call assign_ghost_XPeriodic(mg(j+1)%smooth%res,0.0_cp)
           ! call assign_wall_Dirichlet(mg(j+1)%smooth%res)
 
           ! 4) Decend to coarser level

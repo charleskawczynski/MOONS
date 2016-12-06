@@ -81,10 +81,6 @@
        interface check_symmetry_z;        module procedure check_symmetry_z_SF;       end interface
        interface check_symmetry_z;        module procedure check_symmetry_z_VF;       end interface
 
-       public :: zeroGhostPoints
-       interface zeroGhostPoints;         module procedure zeroGhostPoints_SF;        end interface
-       interface zeroGhostPoints;         module procedure zeroGhostPoints_VF;        end interface
-
        public :: treatInterface
        interface treatInterface;          module procedure treatInterface_GF;         end interface
        interface treatInterface;          module procedure treatInterface_VF;         end interface
@@ -156,7 +152,7 @@
          real(cp) :: meanU
          meanU = physical_mean(u)
          call subtract(u,meanU)
-         call zeroGhostPoints(u)
+         call assign_ghost_XPeriodic(u,0.0_cp)
        end subroutine
 
        subroutine subtract_phys_mean_vol_SF(u,vol,temp)
@@ -169,7 +165,7 @@
          real(cp) :: meanU
          meanU = physical_mean(u,vol,temp)
          call subtract(u,meanU)
-         call zeroGhostPoints(u)
+         call assign_ghost_XPeriodic(u,0.0_cp)
        end subroutine
 
        function phys_mean_vol_SF(u,vol,temp) result(meanU)
@@ -343,12 +339,6 @@
           call check_symmetry_z(m,A%z,dir,name//'_z',pad)
         end subroutine
 
-       subroutine zeroGhostPoints_SF(f)
-         implicit none
-         type(SF),intent(inout) :: f
-         call assign_ghost_XPeriodic(f,0.0_cp)
-       end subroutine
-
        subroutine treatInterface_SF(f,take_high_value)
          implicit none
          type(SF),intent(inout) :: f
@@ -404,7 +394,7 @@
          integer :: i
          call assign(fo,0.0_cp)
          do i=1,fi%s; call stabilityTerms(fo%BF(i)%GF,fi%BF(i)%GF,m%B(i)%g,n,dir); enddo
-         call zeroGhostPoints(fo)
+         call assign_ghost_XPeriodic(fo,0.0_cp)
        end subroutine
 
        ! *********************************************************************************
@@ -440,14 +430,6 @@
          call delete(temp)
          call delete(m_temp)
        end function
-
-       subroutine zeroGhostPoints_VF(f)
-         implicit none
-         type(VF),intent(inout) :: f
-         call zeroGhostPoints(f%x)
-         call zeroGhostPoints(f%y)
-         call zeroGhostPoints(f%z)
-       end subroutine
 
        subroutine treatInterface_VF(f,take_high_value)
          implicit none

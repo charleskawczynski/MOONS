@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 # FORMAT_OUTPUT = 'FORMATTED'
 # ************* CLUSTER CONFIGURATION ******************

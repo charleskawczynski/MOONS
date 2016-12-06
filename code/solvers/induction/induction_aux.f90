@@ -71,7 +71,7 @@
          endif
          call cross_product(temp_F,temp_F1_TF,temp_F2_TF)
          call extractFace(jCrossB,temp_F,D_fluid)
-         call zeroGhostPoints(jCrossB)
+         call assign_ghost_XPeriodic(jCrossB,0.0_cp)
          call multiply(jCrossB,Ha**2.0_cp/Re)
        end subroutine
 

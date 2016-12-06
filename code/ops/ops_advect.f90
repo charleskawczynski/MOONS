@@ -66,7 +66,7 @@
          call multiply(temp_E%y,U_E%z%y,U_E%x%y) ! z (y edge)
          call d%add(div%z,temp_E%x,m,1,2,1)
          call d%add(div%z,temp_E%y,m,1,1,1)
-         call zeroGhostPoints(div)
+         call assign_ghost_XPeriodic(div,0.0_cp)
        end subroutine
 
        subroutine advect_B(adv,U_E,B_F,m,temp_E_TF,temp_E)
