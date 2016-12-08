@@ -68,7 +68,7 @@
         public :: multiply,divide
         public :: add_product
         public :: product_add
-        public :: square,invert,abs,insist_amax_lt_tol
+        public :: square,square_root,invert,abs,insist_amax_lt_tol
         public :: mean,max,amin,amax
         public :: boundary_flux
         ! public :: sum
@@ -216,6 +216,7 @@
         interface boundary_flux;           module procedure boundary_flux_VF;            end interface
 
         interface square;                  module procedure square_VF;                   end interface
+        interface square_root;             module procedure square_root_VF;              end interface
         interface abs;                     module procedure abs_VF;                      end interface
         interface insist_amax_lt_tol;      module procedure insist_amax_lt_tol_VF;       end interface
 
@@ -906,6 +907,12 @@
           implicit none
           type(VF),intent(inout) :: f
           call square(f%x); call square(f%y); call square(f%z)
+        end subroutine
+
+        subroutine square_root_VF(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          call square_root(f%x); call square_root(f%y); call square_root(f%z)
         end subroutine
 
         subroutine abs_VF(f)

@@ -20,6 +20,7 @@
         public :: random_noise
         public :: fringe_ALEX
         public :: fringe_SERGEY
+        public :: smooth_lid
 
         interface volume;        module procedure volume_DL_GF;          end interface
         interface volume;        module procedure volume_GF;             end interface
@@ -31,6 +32,7 @@
         interface random_noise;  module procedure random_noise_GF_dir;   end interface
         interface fringe_ALEX;   module procedure fringe_ALEX_GF;        end interface
         interface fringe_SERGEY; module procedure fringe_SERGEY_GF;      end interface
+        interface smooth_lid;    module procedure smooth_lid_GF;         end interface
 
         contains
 
@@ -217,6 +219,38 @@
             call assign_plane(B,temp,i,1+(B%s(dir)+1)/2-i2,dir)
           enddo
           call delete(temp)
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+
+        subroutine smooth_lid_GF(U,g,DL,plane,n)
+          implicit none
+          type(grid_field),intent(inout) :: U
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          integer,intent(in) :: plane
+          real(cp),intent(in) :: n
+          type(array),dimension(3) :: h
+          real(cp),dimension(3) :: L
+          integer,dimension(2) :: a
+          integer,dimension(3) :: e
+          real(cp) :: xhat,yhat
+          integer :: i,j,i_p,j_p,k_p,p
+          call get_coordinates_h(h,g,DL)
+          a = adj_dir_given_dir(plane)
+          e = eye_given_dir(plane)
+          L = (/(g%c(i)%maxRange/2.0_cp,i=1,3)/)
+          do i=1,U%s(a(1))
+          do j=1,U%s(a(2))
+          do p=1,U%s(plane)
+          i_p = e(1)*p + i*(1-e(1))
+          j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
+          k_p = e(3)*p + j*(1-e(3))
+          xhat = ( h(a(1))%f(i) / L(a(1)) )**n
+          yhat = ( h(a(2))%f(j) / L(a(2)) )**n
+          U%f(i_p,j_p,k_p) = (1.0_cp - xhat)*(1.0_cp - yhat)
+          enddo
+          enddo
+          enddo
           do i=1,3; call delete(h(i)); enddo
         end subroutine
 

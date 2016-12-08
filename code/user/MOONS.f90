@@ -49,7 +49,6 @@
          type(time_marching_params) :: TMP_U,TMP_B,TMP_T,coupled
          ! ********************** SMALL VARIABLES ***********************
          real(cp) :: Re,Ha,Gr,Fr,Pr,Ec,Rem
-         logical :: finite_Rem,include_vacuum
          real(cp) :: tw,sig_local_over_sig_f
 
          ! ************************************************************** Parallel + directory + input parameters
@@ -58,11 +57,12 @@
          call init(DT,dir_target)  ! Initialize + make directory tree
 
          call init(SP)             ! Initializes simulation parameters
+         call export(SP,str(DT%params),'sim_params_initial')
 
          ! Initializes solver parameters, dimensionless groups
-         call readInputFile(SP,DT,Re,Ha,Gr,Fr,Pr,Ec,Rem,finite_Rem,&
+         call readInputFile(SP,DT,Re,Ha,Gr,Fr,Pr,Ec,Rem,&
          coupled,TMP_U,TMP_B,TMP_T,ISP_U,ISP_B,ISP_T,ISP_P,ISP_phi,tw,&
-         sig_local_over_sig_f,include_vacuum)
+         sig_local_over_sig_f)
 
          call init(nrg%ISP_T,ISP_T); call init(nrg%TMP,TMP_T)
          call init(mom%ISP_U,ISP_U); call init(mom%TMP,TMP_U)
@@ -78,7 +78,7 @@
            call import(mesh_ind,str(DT%restart),'mesh_ind')
            call import(MD_sigma ,str(DT%restart),'MD_sigma')
          else
-           call mesh_generate(mesh_mom,mesh_ind,MD_sigma,Ha,tw,include_vacuum)
+           call mesh_generate(mesh_mom,mesh_ind,MD_sigma,Ha,tw,SP%include_vacuum)
            call export(mesh_mom,str(DT%restart),'mesh_mom')
            call export(mesh_ind,str(DT%restart),'mesh_ind')
            call export(MD_sigma ,str(DT%restart),'MD_sigma')
@@ -113,8 +113,8 @@
           call init(nrg,mesh_ind,SP,MD_fluid,TMP_T,ISP_T,Re,Pr,Ec,Ha,DT)
          endif
          if (SP%solveInduction) then
-           call init(ind,mesh_ind,SP,MD_fluid,MD_sigma,include_vacuum,&
-                     sig_local_over_sig_f,finite_Rem,Rem,TMP_B,ISP_B,ISP_phi,DT)
+           call init(ind,mesh_ind,SP,MD_fluid,MD_sigma,&
+                     sig_local_over_sig_f,Rem,TMP_B,ISP_B,ISP_phi,DT)
          endif
 
          ! Clean up constructor copies

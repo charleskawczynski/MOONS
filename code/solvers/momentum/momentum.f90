@@ -556,6 +556,7 @@
          type(refine_mesh),intent(in) :: RM
          logical,intent(in) :: SS_reached
          integer,dimension(3) :: dir
+         type(iter_solver_params) :: temp
          integer :: i
          write(*,*) '#################### Prolongating momentum solver ####################'
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_SS_'//str(RM%level_last),1)
@@ -580,11 +581,20 @@
              call prolongate(mom%PCG_P,mom%m,dir(i))
            endif
          enddo
+         call init_UBCs(mom%U,mom%m) ! Needed (better) if U_BCs is a distribution
          write(*,*) 'Finished momentum solver prolongation'
          if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
          call apply_BCs(mom%U)
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
 
+         ! Doesn't seem to show any usefulness for hydro flows
+         ! call init(temp,mom%PCG_P%ISP)
+         ! call init(mom%PCG_P%ISP,solve_exact(str(DT%U_r)))
+         ! call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
+         ! call init(mom%PCG_P%ISP,temp)
+         ! call delete(temp)
+
+         ! Works perfectly fine for hydro flows
          call boost(mom%PCG_P%ISP)
          call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
          call reset(mom%PCG_P%ISP)

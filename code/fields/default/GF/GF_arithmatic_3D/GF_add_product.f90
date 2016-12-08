@@ -4,11 +4,10 @@
         implicit none
         private
         public :: add_product
+        interface add_product;  module procedure add_product_GF_GF_S;    end interface
+        interface add_product;  module procedure add_product_GF_GF_GF;   end interface
 
-        interface add_product;              module procedure add_product_GF_GF_S;    end interface
-        interface add_product;              module procedure add_product_GF_GF_GF;   end interface
-
-      contains
+        contains
 
         subroutine add_product_GF_GF_S(a,b,c)
           implicit none

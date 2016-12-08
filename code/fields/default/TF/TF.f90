@@ -59,9 +59,9 @@
 
         ! Operators
         public :: assign
-        public :: add,subtract
+        public :: add,add_product,subtract
         public :: multiply,divide
-        public :: square
+        public :: square,square_root
         public :: cross_product
         public :: transpose
 
@@ -113,6 +113,7 @@
         interface add;                 module procedure add_TF_S;                  end interface
         interface add;                 module procedure add_S_TF;                  end interface
         interface add;                 module procedure add_SF_TF;                 end interface
+        interface add_product;         module procedure add_product_TF_TF_S;       end interface
 
         interface subtract;            module procedure subtract_TF_TF;            end interface
         interface subtract;            module procedure subtract_TF_VF;            end interface
@@ -131,6 +132,7 @@
         interface divide;              module procedure divide_S_TF;               end interface
 
         interface square;              module procedure square_TF;                 end interface
+        interface square_root;         module procedure square_root_TF;            end interface
         interface cross_product;       module procedure cross_product_TF;          end interface
 
         interface restrict;            module procedure restrict_TF;               end interface
@@ -217,6 +219,16 @@
           call add(f,g%x%x,g%y%x,g%z%x,&
                      g%x%y,g%y%y,g%z%y,&
                      g%x%z,g%y%z,g%z%z)
+        end subroutine
+
+        subroutine add_product_TF_TF_S(f,g,c)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(TF),intent(in) :: g
+          real(cp),intent(in) :: c
+          call add_product(f%x,g%x,c)
+          call add_product(f%y,g%y,c)
+          call add_product(f%z,g%z,c)
         end subroutine
 
       ! ------------------- SUBTRACT ------------------------
@@ -322,6 +334,12 @@
           implicit none
           type(TF),intent(inout) :: f
           call square(f%x); call square(f%y); call square(f%z)
+        end subroutine
+
+        subroutine square_root_TF(f)
+          implicit none
+          type(TF),intent(inout) :: f
+          call square_root(f%x); call square_root(f%y); call square_root(f%z)
         end subroutine
 
         subroutine cross_product_TF(AcrossB,A,B)

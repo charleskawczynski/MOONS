@@ -17,7 +17,7 @@
        public :: init_UBCs
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = no-slip
-       integer :: preDefinedU_BCs = 1 ! See init_UBCs for details
+       integer :: preDefinedU_BCs = 13 ! See init_UBCs for details
 
        contains
 
@@ -34,17 +34,18 @@
          select case (preDefinedU_BCs)
          case (0);
          case (1); call LDC_1_domain(U)
-         case (2); call LDC_4_domains(U)
-         case (3); call LDC_9_domains(U)
-         case (4); call flow_over_2D_square(U)
-         case (5); call duct_flow_2D_2domains(U)
-         case (6); call Tylers_geometry(U)
-         case (7); call duct_flow(U)
-         case (8); call channel_flow_1domain(U)
-         case (9); call cylinder_driven_cavity(U,m,1)
-         case (10); call fully_developed_duct_flow(U,m,1)
-         case (11); call periodic_duct_flow(U)
-         case (12); call LDC_1_domain_symmetric_zmax(U)
+         case (2); call LDC_1_domain_smooth(U,m)
+         case (3); call LDC_4_domains(U)
+         case (4); call LDC_9_domains(U)
+         case (5); call flow_over_2D_square(U)
+         case (6); call duct_flow_2D_2domains(U)
+         case (7); call Tylers_geometry(U)
+         case (8); call duct_flow(U)
+         case (9); call channel_flow_1domain(U)
+         case (10); call cylinder_driven_cavity(U,m,1)
+         case (11); call fully_developed_duct_flow(U,m,1)
+         case (12); call periodic_duct_flow(U)
+         case (13); call LDC_1_domain_symmetric_zmax(U)
          case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
@@ -55,6 +56,17 @@
          implicit none
          type(VF),intent(inout) :: U
          call init(U%x%BF(1)%BCs,1.0_cp,4)
+       end subroutine
+
+       subroutine LDC_1_domain_smooth(U,m)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         real(cp) :: n
+         call init(U%x%BF(1)%BCs,1.0_cp,4)
+         n = 18.0_cp
+         ! smooth_lid_GF(U,g,DL,plane,n)
+         call smooth_lid(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,n)
        end subroutine
 
        subroutine LDC_1_domain_symmetric_zmax(U)

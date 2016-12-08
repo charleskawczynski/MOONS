@@ -11,7 +11,7 @@
        private
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 1
+       integer :: preDefinedB_BCs = 7
        real(cp) :: cw = 0.0_cp
        ! real(cp) :: cw = 0.05_cp
        ! real(cp) :: cw = 0.01_cp
@@ -60,8 +60,8 @@
          do i=1,m%s
            ! call init_AntiSymmetric(B%x%BF(i)%BCs,6)
            ! call init_AntiSymmetric(B%y%BF(i)%BCs,6)
-           call init_Dirichlet(B%x%BF(i)%BCs,6)
-           call init_Dirichlet(B%y%BF(i)%BCs,6)
+           call init_Dirichlet(B%x%BF(i)%BCs,6) ! effectively same as antisymmetric
+           call init_Dirichlet(B%y%BF(i)%BCs,6) ! effectively same as antisymmetric
            call init_Neumann(B%z%BF(i)%BCs,6)
          enddo
        end subroutine

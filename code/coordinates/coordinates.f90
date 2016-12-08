@@ -506,7 +506,7 @@
             if (c%sn.eq.1) then ! Can't prolongate without interior!
         elseif (c%sn.eq.2) then
         elseif (c%sn.eq.3) then
-        elseif (c%sn.gt.3) then ! typical case
+        elseif (c%sn.gt.3) then ! typical case, check to see if should be (c%sn.gt.4)
           call init(a(1),c%hn%f(2:c%sn-1),c%sn-2)
           call init(a(2),c%hc%f(2:c%sc-1),c%sc-2)
           call init(a(3),a(1)%N+a(2)%N)

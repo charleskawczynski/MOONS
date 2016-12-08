@@ -30,7 +30,7 @@
         public :: sine_waves
         public :: random_noise
 
-        public :: square,abs
+        public :: square,square_root,abs
         public :: insist_amax_lt_tol
 
         public :: assign_ghost_XPeriodic
@@ -104,6 +104,7 @@
        interface cross_product_z;          module procedure cross_product_z_BF;           end interface
 
        interface square;                   module procedure square_BF;                    end interface
+       interface square_root;              module procedure square_root_BF;               end interface
        interface abs;                      module procedure abs_BF;                       end interface
        interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_BF;        end interface
 
@@ -461,6 +462,12 @@
          implicit none
          type(block_field),intent(inout) :: u
          call square(u%GF)
+       end subroutine
+
+       subroutine square_root_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         call square_root(u%GF)
        end subroutine
 
        subroutine abs_BF(u)

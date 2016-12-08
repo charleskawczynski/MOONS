@@ -72,7 +72,7 @@
            if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
            if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
 
-           if (SP%dynamic_refinement) then
+           if (SP%dynamic_refinement.or.RM%any_next) then
              call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,PE,RM,KS,refine_mesh_now_all)
            endif
 

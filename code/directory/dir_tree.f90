@@ -14,6 +14,8 @@
 
       type dir_tree
         type(string) :: PS
+        ! type(string) :: sim_prefix
+        ! type(string) :: sim_suffix
         type(string) :: tar     ! absolute target directory (.exe location)
 
         type(path) :: tar_p,out_dir,LDC,mat,meshes,params,BEM,wall_clock

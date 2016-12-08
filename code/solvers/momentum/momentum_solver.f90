@@ -70,16 +70,8 @@
          call add(Ustar,U)
          call assign(Unm1,U)
 
-         call solve(mom_PCG,U,Ustar,m,compute_norms) ! Solve for Ustar
-
-         call div(temp_CC,U,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call solve(PPE_PCG,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         ! call subtract(temp_F%x,1.0_cp) ! mpg
-         call multiply(temp_F,dt)
-         call subtract(U,temp_F) ! U = Ustar - grad(p)
-         call apply_BCs(U)
+         call solve(mom_PCG,U,Ustar,m,compute_norms) ! Solve for U estimate
+         call clean_div(PPE_PCG,U,p,m,temp_F,temp_CC,compute_norms)
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Unm1,U_E,p,F,Fnm1,m,&
@@ -114,14 +106,7 @@
          call assign(Unm1,U)
 
          call solve(mom_PCG,U,Ustar,m,compute_norms)
-
-         call div(temp_CC,U,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call solve(PPE_GS,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         call multiply(temp_F,dt)
-         call subtract(U,temp_F)
-         call apply_BCs(U)
+         call clean_div(PPE_GS,U,p,m,temp_F,temp_CC,compute_norms)
        end subroutine
 
        ! **********************************************************************
@@ -147,14 +132,12 @@
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          ! call laplacian_matrix_based(temp_F1,U,m) ! O(dx^1) near boundaries
          ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
-         call lap(temp_F1,U,m) ! O(dx^1) near boundaries
+         call lap(temp_F1,U,m) ! O(dx^2) near boundaries
          call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
-         call add(Ustar,F) ! Needs to be prolongated
+         call add(Ustar,F)
          call multiply(Ustar,dt)
-         ! call div_clean_PCG(PCG,U,p,Ustar,m,temp_F1,temp_CC,compute_norms)
          call assign_wall_Dirichlet(Ustar,0.0_cp,U)
-         ! call add(Ustar,U)
          call add(U,Ustar)
          call clean_div(PCG,U,p,m,temp_F1,temp_CC,compute_norms)
        end subroutine
@@ -208,15 +191,8 @@
          call add(Ustar,F)
          call assign_wall_Dirichlet(Ustar,0.0_cp,U)
          call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call div(temp_CC,Ustar,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call solve(GS,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         ! call subtract(temp_F%x,1.0_cp) ! mpg
-         call multiply(temp_F,dt)
-         call subtract(U,Ustar,temp_F)
-         call apply_BCs(U)
+         call add(U,Ustar)
+         call clean_div(GS,U,p,m,temp_F,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,&
@@ -240,15 +216,8 @@
          call add(Ustar,F)
          call assign_wall_Dirichlet(Ustar,0.0_cp,U)
          call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call div(temp_CC,Ustar,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call solve(GS,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         call subtract(temp_F,mpg)
-         call multiply(temp_F,dt)
-         call subtract(U,Ustar,temp_F)
-         call apply_BCs(U)
+         call add(U,Ustar)
+         call clean_div(GS,U,p,mpg,m,temp_F,temp_CC,compute_norms)
        end subroutine
 
        end module

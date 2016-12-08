@@ -29,20 +29,29 @@
          suppress_warning_cp = Ha
          suppress_warning_cp = tw
 
+         ! hydro_3D_Guj_Stella_Re_400(m)
+         ! call hydro_3D_Guj_Stella_Re_400(m_mom)
+         ! call init(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
+
          ! 3D cube uniform no walls
          ! call cube_uniform(m_mom)
          ! call init(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
 
          ! 3D cube uniform with walls
-         call cube_uniform(m_mom)
-         call extend_cube_uniform(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
+         ! call cube_uniform(m_mom)
+         ! call extend_cube_uniform(m_ind,m_mom)
+         ! call init(MD_sigma,m_mom,m_ind)
 
          ! mhd_3D_BMC_102
          ! call mhd_3D_BMC_102(m_mom)
          ! call mhd_3D_BMC_102_extend(m_ind,m_mom)
          ! call init(MD_sigma,m_mom,m_ind)
+
+         ! mhd_3D_BMC_103
+         ! call mhd_3D_BMC_103_mom(m_mom,Ha)
+         ! call mhd_3D_BMC_103_ind(m_ind,m_mom,MD_sigma)
 
          ! For analyzing mesh and stencils
          ! call matrix_export_mesh(m_mom)
@@ -78,8 +87,8 @@
          ! call flow_past_square(m_ind)
          ! call init(MD_sigma,m_mom,m_ind)
 
-         ! call BC_sim_mom_symmetric(m_mom,Ha)
-         ! call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
+         call BC_sim_mom_symmetric(m_mom,Ha)
+         call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
 
          ! call BC_sim_mom_symmetric(m_mom,Ha)
          ! call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)

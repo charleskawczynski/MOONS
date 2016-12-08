@@ -21,6 +21,7 @@
         use GF_cross_product_mod
         use GF_multiply_wall_mod
         use GF_square_mod
+        use GF_square_root_mod
         use GF_laplacian_mod
         use GF_curl_curl_mod
         use GF_mean_along_dir_mod
@@ -45,8 +46,14 @@
         ! GF_distributions_mod
         public :: volume
         public :: sine_waves
+        public :: sinh_waves
         public :: cosine_waves
+        public :: cosh_waves
         public :: random_noise
+        public :: fringe_ALEX
+        public :: fringe_SERGEY
+        public :: smooth_lid
+
         public :: laplacian
         public :: curl_curl_x
         public :: curl_curl_y
@@ -97,7 +104,7 @@
         public :: assign_ghost_zmin_zmax
 
         ! GF_aux_mod
-        public :: abs,insist_amax_lt_tol,square,min,max,amin,amax
+        public :: abs,insist_amax_lt_tol,square,square_root,min,max,amin,amax
         public :: mean,sum,size
 
         public :: cross_product_x

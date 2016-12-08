@@ -68,7 +68,7 @@
         public :: invert
         public :: add_product,product_add,swap
         ! Auxiliary
-        public :: square,min,max,amin,amax
+        public :: square,square_root,min,max,amin,amax
         public :: mean,sum,abs,insist_amax_lt_tol
 
         public :: assign_ghost_xmin_xmax
@@ -215,6 +215,7 @@
 
         interface invert;                  module procedure invert_SF;                    end interface
         interface square;                  module procedure square_SF;                    end interface
+        interface square_root;             module procedure square_root_SF;               end interface
         interface abs;                     module procedure abs_SF;                       end interface
         interface insist_amax_lt_tol;      module procedure insist_amax_lt_tol_SF;        end interface
 
@@ -1234,6 +1235,13 @@
           type(SF),intent(inout) :: f
           integer :: i
           do i=1,f%s; call square(f%BF(i)%GF); enddo
+        end subroutine
+
+        subroutine square_root_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          do i=1,f%s; call square_root(f%BF(i)%GF); enddo
         end subroutine
 
         subroutine abs_SF(u)

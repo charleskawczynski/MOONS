@@ -49,9 +49,14 @@
          suppress_warning = ind%suppress_warning
 
          continue_refinement = RM%i_level.lt.SP%n_max_refinements
-         steady_solution(1) = steady(mom%probe_KE).or.(.not.SP%solveMomentum)
-         steady_solution(2) = steady(ind%ME_fluid(3)).or.(.not.SP%solveInduction)
-         steady_solution(3) = steady(ind%JE_fluid).or.(.not.SP%solveInduction)
+         if (SP%solveMomentum)  then; steady_solution(1) = steady(mom%probe_KE)
+         else;                        steady_solution(1) = .true.;endif
+
+         if (SP%solveInduction) then; steady_solution(2) = steady(ind%ME_fluid(3))
+         else;                        steady_solution(2) = .true.;endif
+
+         if (SP%solveInduction) then; steady_solution(3) = steady(ind%JE_fluid)
+         else;                        steady_solution(3) = .true.;endif
          refine_mesh_now_all = all(steady_solution).and.continue_refinement
 
          if (PE%info) then
@@ -67,16 +72,31 @@
            write(*,*) 'RM%i_level = ',RM%i_level
            write(*,*) 'SP%n_max_refinements = ',SP%n_max_refinements
            call prolongate(RM)
-           ! call prolongate(nrg%TMP); call prolongate(nrg,DT,RM,refine_mesh_now_all)
-           call prolongate(mom%TMP); call prolongate(mom,F,DT,RM,refine_mesh_now_all)
-           call prolongate(ind%TMP); call prolongate(ind,DT,RM,refine_mesh_now_all)
-           call prolongate(coupled)
+           ! if (SP%solveEnergy) then;
+           !   call prolongate(nrg%TMP)
+           !   call prolongate(nrg,DT,RM,refine_mesh_now_all)
+           ! endif
+           if (SP%solveMomentum) then;
+             call prolongate(mom%TMP,SP)
+             call prolongate(mom,F,DT,RM,refine_mesh_now_all)
+           endif
+           if (SP%solveInduction) then
+             call prolongate(ind%TMP,SP)
+             call prolongate(ind,DT,RM,refine_mesh_now_all)
+           endif
+           call prolongate(coupled,SP)
            call reset_Nmax(sc,coupled%n_step_stop-coupled%n_step)
          endif
 
-         steady_solution(1) = steady_final(mom%probe_KE).or.(.not.SP%solveMomentum)
-         steady_solution(2) = steady_final(ind%ME_fluid(3)).or.(.not.SP%solveInduction)
-         steady_solution(3) = steady_final(ind%JE_fluid).or.(.not.SP%solveInduction)
+         if (SP%solveMomentum)  then; steady_solution(1) = steady_final(mom%probe_KE)
+         else;                        steady_solution(1) = .true.;endif
+
+         if (SP%solveInduction) then; steady_solution(2) = steady_final(ind%ME_fluid(3))
+         else;                        steady_solution(2) = .true.;endif
+
+         if (SP%solveInduction) then; steady_solution(3) = steady_final(ind%JE_fluid)
+         else;                        steady_solution(3) = .true.;endif
+
 
          if (all(steady_solution).and.(.not.continue_refinement)) then
            KS%terminate_loop = .true.

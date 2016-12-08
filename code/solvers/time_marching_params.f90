@@ -1,5 +1,6 @@
        module time_marching_params_mod
        use current_precision_mod
+       use sim_params_mod
        use string_mod
        use IO_tools_mod
        implicit none
@@ -145,13 +146,12 @@
          TMP%n_step = coupled%n_step
        end subroutine
 
-       subroutine prolongate_TMP(TMP)
+       subroutine prolongate_TMP(TMP,SP)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         integer :: factor
-         factor = 4                               ! to address dt restriction: dt ~ 1/dx^2
-         TMP%dt = TMP%dt*1.0_cp/(real(factor,cp)) ! reduce dt for finer mesh
-         TMP%n_step_stop = TMP%n_step_stop*factor ! increase n_step_stop to reach final time
+         type(sim_params),intent(in) :: SP
+         TMP%dt = TMP%dt*1.0_cp/real(SP%dt_reduction_factor,cp)
+         TMP%n_step_stop = TMP%n_step_stop*SP%dt_reduction_factor
        end subroutine
 
        end module

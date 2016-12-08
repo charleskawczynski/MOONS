@@ -3,7 +3,9 @@ Right Now:
   ☐ Push code after confirmation
   ☐ If speedup is significant, start BC sims with symmetry and prolongate on PC_CK
   ☐ Consider making branches for BC sims and PD sims
+  ☐ Consider adding a prefix to the output of all "names" (not dir's), so that results can be integrated into the same folder. This may be really useful.
   ☐ Start new PD cases and compute resulting Rem,Re etc. after computations
+  ☐ Look into Sergey's suggested reference "Jenko - energy balance for plasma disruption"
 
 Long term to do:
  ☐ Write prospectus, and refer to http://fire.pppl.gov/fpa\_annual\_meet.html

@@ -12,7 +12,7 @@
 
        integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
        ! Default = dirichlet on all sides
-       integer :: preDefinedphi_BCs = 0 ! see cases in init_phiBCs
+       integer :: preDefinedphi_BCs = 2 ! see cases in init_phiBCs
 
        contains
 

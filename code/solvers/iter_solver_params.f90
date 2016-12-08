@@ -1,5 +1,6 @@
        module iter_solver_params_mod
        use current_precision_mod
+       use datatype_conversion_mod
        use string_mod
        use IO_tools_mod
        implicit none
@@ -58,6 +59,7 @@
        interface reset;             module procedure reset_ISP;             end interface
 
        interface solve_exact;       module procedure solve_exact_ISP;       end interface
+       interface solve_exact;       module procedure solve_exact_N_ISP;     end interface
 
        contains
 
@@ -271,6 +273,21 @@
          iter_max = 10000
          n_skip_check_res = 100
          call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,'solve_exact')
+         ISP%export_convergence = .false.
+       end function
+
+       function solve_exact_N_ISP(dir,N) result(ISP)
+         implicit none
+         character(len=*),intent(in) :: dir
+         integer,intent(in) :: N
+         type(iter_solver_params) :: ISP
+         real(cp) :: tol_rel,tol_abs
+         integer :: iter_max,n_skip_check_res
+         tol_rel = 0.0_cp
+         tol_abs = 10.0_cp*epsilon(1.0_cp)
+         iter_max = N
+         n_skip_check_res = 100
+         call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,'solve_in_'//int2str(N)//'_iter')
          ISP%export_convergence = .false.
        end function
 

@@ -135,14 +135,13 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_induction(ind,m,SP,MD_fluid,MD_sigma,include_vacuum,&
-         sig_local_over_sig_f,finite_Rem,Rem,TMP,ISP_B,ISP_phi,DT)
+       subroutine init_induction(ind,m,SP,MD_fluid,MD_sigma,&
+         sig_local_over_sig_f,Rem,TMP,ISP_B,ISP_phi,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          type(mesh_domain),intent(in) :: MD_fluid,MD_sigma
-         logical,intent(in) :: finite_Rem,include_vacuum
          type(iter_solver_params),intent(in) :: ISP_B,ISP_phi
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: Rem,sig_local_over_sig_f
@@ -155,9 +154,9 @@
          call init(ind%TMP,TMP)
          call init(ind%ISP_B,ISP_B)
          call init(ind%ISP_phi,ISP_phi)
-         ind%finite_Rem = finite_Rem
+         ind%finite_Rem = SP%finite_Rem
+         ind%include_vacuum = SP%include_vacuum
          ind%Rem = Rem
-         ind%include_vacuum = include_vacuum
          ind%sig_local_over_sig_f = sig_local_over_sig_f
          ind%e_budget = 0.0_cp
          call init(ind%SP,SP)
@@ -505,7 +504,7 @@
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
          call export_processed(ind%m,ind%B,str(DT%B_t),'B',1,ind%TMP,3,35)
-         call export_processed(ind%m,ind%J,str(DT%B_t),'J',1,ind%TMP,3,35)
+         call export_processed(ind%m,ind%J,str(DT%J_t),'J',1,ind%TMP,3,35)
        end subroutine
 
        subroutine compute_J_ind(ind)

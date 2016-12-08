@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{../../useful_commands.tex}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Plasma Disruption Scales}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Remaining error estimate}
+Consider a simulation where the difference between the SS energy and instantaneous energy is decaying with time. We may write
+
+\begin{equation}
+	\frac{\PD E}{dt} = B e^{-n t}
+\end{equation}
+
+\begin{equation}
+	n = - \frac{1}{t} \frac{\PD E}{dt} = B e^{- t}
+\end{equation}
+
+From this, we can estimate the energy at time $\theta$, from known information at time $T$, as
+
+\begin{equation}
+	E(SS) = E(T) + \int_{T}^{\theta} \frac{\PD E(\tau)}{dt} d\tau
+\end{equation}
+
+Plugging in and integrating we have
+
+\begin{equation} \begin{aligned}
+	E(SS) &= E(T) + \int_{T}^{\theta} \frac{\PD E}{dt} d\tau \\
+	      &= E(T) + \int_{T}^{\theta} B e^{-n t} d\tau \\
+	      &= E(T) + \frac{B}{n} (e^{-n T} - e^{-n \theta}), \qquad \text{let } \theta \rightarrow \infty \\
+	      &= E(T) + \frac{B}{n} e^{-n T} \\
+\end{aligned} \end{equation}
+
+Let
+
+\begin{equation} \begin{aligned}
+	\varepsilon &= |E(SS)-E(T)| = \frac{B}{n} e^{-n t}
+\end{aligned} \end{equation}
+
+$B$ and $n$ may be estimated by extrapolating $\frac{\PD E}{dt}$ back to $t=0$ from $T$ on a log scale. Following this, we have
+
+
+
+\end{document}
