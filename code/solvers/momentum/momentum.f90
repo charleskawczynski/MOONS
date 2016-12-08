@@ -117,6 +117,8 @@
        interface export_tec;           module procedure export_tec_momentum_no_ext; end interface
        interface solve;                module procedure solve_momentum;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_mom;  end interface
+       interface set_MFP;              module procedure set_MFP_mom;                end interface
+
 
        interface export_transient1;    module procedure export_transient1_mom;      end interface
        interface export_transient2;    module procedure export_transient2_mom;      end interface
@@ -203,6 +205,7 @@
          write(*,*) '     U BCs applied'
 
          write(*,*) '     about to assemble Laplacian matrices'
+         call set_MFP(mom)
          if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
 
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
@@ -405,6 +408,12 @@
          type(dir_tree),intent(in) :: DT
          call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP,3,24)
          call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP,3,24)
+       end subroutine
+
+       subroutine set_MFP_mom(mom)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         mom%MFP%coeff = -0.5_cp*mom%TMP%dt/mom%Re
        end subroutine
 
        subroutine init_matrix_based_ops_mom(mom)

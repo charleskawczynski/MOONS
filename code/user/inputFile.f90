@@ -52,11 +52,11 @@
          call init(ISP_phi,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_phi')
 
          ! BMC 102
-         ! time  = 10.0_cp
-         time  = 200.0_cp
+         time  = 10.0_cp
+         ! time  = 200.0_cp
          ! dtime = 1.0_cp*10.0_cp**(-3.0_cp)
          ! dtime = 1.0_cp*10.0_cp**(-2.0_cp)
-         dtime = 5.0_cp*pow(-5)
+         dtime = 1.0_cp*pow(-4)
          ! dtime = 8.0_cp*pow(-4)
          ! dtime = 1.0_cp*pow(-5)
          ! dtime = 1.0_cp*pow(-4)*4.0**(2.0_cp)

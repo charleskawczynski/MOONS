@@ -24,19 +24,19 @@
        public :: boost,reset
 
        type iter_solver_params
-         integer :: un = 0                      ! file unit
-         type(string) :: dir,name               ! directory / filename
-         integer :: iter_max = 1                    ! Maximum iterations for iterative solver
-         real(cp) :: tol_rel = 10.0_cp**(-10.0_cp)  ! relative tolerance for iterative solver
-         real(cp) :: tol_abs = 10.0_cp**(-10.0_cp)  ! absolute tolerance for iterative solver
-         logical :: export_convergence = .false.  ! exit condition
+         integer :: un = 0                            ! file unit
+         type(string) :: dir,name                     ! directory / filename
+         integer :: iter_max = 1                      ! Maximum iterations for iterative solver
+         real(cp) :: tol_rel = 10.0_cp**(-10.0_cp)    ! relative tolerance for iterative solver
+         real(cp) :: tol_abs = 10.0_cp**(-10.0_cp)    ! absolute tolerance for iterative solver
+         logical :: export_convergence = .false.      ! exit condition
          logical,dimension(3) :: exit_loop = .false.  ! exit condition
-         real(cp) :: smooth                         ! (must be > 0) higher -> more step-like
-         real(cp) :: buffer                     ! percentage of iter_last to start checking more frequently
-         real(cp) :: scale                      ! scale amplitude to allow decreasing predictions
-         integer :: iter_last = 1               ! Number of iterations used last solve
-         integer :: n_skip_check_res = 1        ! number of iterations to skip before checking residual
-         integer :: n_skip_check_res_max = 1    ! number of iterations to skip before checking residual
+         real(cp) :: smooth = 0.0_cp                  ! (must be > 0) higher -> more step-like
+         real(cp) :: buffer = 0.0_cp                  ! percentage of iter_last to start checking more frequently
+         real(cp) :: scale = 0.0_cp                   ! scale amplitude to allow decreasing predictions
+         integer :: iter_last = 1                     ! Number of iterations used last solve
+         integer :: n_skip_check_res = 1              ! number of iterations to skip before checking residual
+         integer :: n_skip_check_res_max = 1          ! number of iterations to skip before checking residual
        end type
 
        interface init;              module procedure init_ISP;              end interface

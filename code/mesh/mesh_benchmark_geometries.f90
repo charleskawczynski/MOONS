@@ -189,8 +189,8 @@
          integer :: i
          integer,dimension(3) :: N
          call delete(m)
-         ! N = 30 ! For full
-         N = 15 ! For refinement
+         N = 30 ! For full
+         ! N = 15 ! For refinement
          hmin = -1.0_cp; hmax =  1.0_cp
          beta = HartmannBL(Ha,hmin,hmax)
          i= 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
@@ -217,8 +217,8 @@
          call add(m_sigma,g)
          call initProps(m_sigma)
          call patch(m_sigma)
-         ! N = 4 ! For full
-         N = 3 ! For refinement
+         N = 4 ! For full
+         ! N = 3 ! For refinement
          L = 0.1_cp
          i = 1; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 2; call ext_Roberts_near_IO(g,L(i),N(i),i)

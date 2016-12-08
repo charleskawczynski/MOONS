@@ -84,7 +84,7 @@
        SP%export_planar          = .false.            ! Export 2D data when N_cell = 1 along given direction
        SP%export_symmetric       = .false.             !
        SP%export_mesh_block      = .false.            ! Export mesh blocks to FECs
-       SP%export_soln_only       = .false.             ! Export mesh blocks to FECs
+       SP%export_soln_only       = .false.             ! Export processed solution only
 
        SP%coupled_time_step      = .true.            ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem             = .true.            ! Ensures all dt are equal to coupled%dt

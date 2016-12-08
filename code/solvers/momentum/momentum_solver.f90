@@ -131,8 +131,8 @@
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
          call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
          ! call laplacian_matrix_based(temp_F1,U,m) ! O(dx^1) near boundaries
-         ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
-         call lap(temp_F1,U,m) ! O(dx^2) near boundaries
+         call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         ! call lap(temp_F1,U,m) ! O(dx^2) near boundaries
          call multiply(temp_F1,1.0_cp/Re)
          call add(Ustar,temp_F1)
          call add(Ustar,F)

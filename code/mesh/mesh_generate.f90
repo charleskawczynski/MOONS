@@ -90,9 +90,6 @@
          call BC_sim_mom_symmetric(m_mom,Ha)
          call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
 
-         ! call BC_sim_mom_symmetric(m_mom,Ha)
-         ! call BC_sim_ind_symmetric(m_ind,m_mom,MD_sigma,Ha,tw,include_vacuum)
-
          ! call straight_duct_fluid(m_mom)
          ! call duct_with_vacuum(m_ind,m_mom,MD_sigma)
 

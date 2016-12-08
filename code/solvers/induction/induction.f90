@@ -271,6 +271,7 @@
          call close_and_message(temp_unit,str(DT%params),'info_ind')
 
          write(*,*) '     About to assemble curl-curl matrix'
+         call set_MFP(ind)
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
 
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
@@ -527,7 +528,6 @@
          implicit none
          type(induction),intent(inout) :: ind
          real(cp),dimension(2) :: diffusion_treatment
-         call set_MFP(ind)
          ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
          diffusion_treatment = (/-ind%MFP_B%coeff,1.0_cp/)    ! diffusion explicit
          ! diffusion_treatment = (/ind%MFP_B%coeff,1.0_cp/)     ! diffusion implicit

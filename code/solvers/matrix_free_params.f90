@@ -15,7 +15,7 @@
 
       type matrix_free_params
         logical :: suppress_warning = .true.
-        real(cp) :: coeff
+        real(cp) :: coeff = 0.0_cp
       end type
 
       contains

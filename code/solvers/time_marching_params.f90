@@ -13,13 +13,13 @@
        public :: prolongate
 
        type time_marching_params
-         integer(li) :: n_step        ! nth time step
-         integer(li) :: n_step_stop   ! nth time step to stop
-         integer(li) :: n_step_start  ! nth time step to start
-         real(cp) :: t                ! time, or pseudo time
-         real(cp) :: dt               ! time step, or pseudo time step
-         integer :: un                ! file unit
-         type(string) :: dir,name     ! directory / name
+         integer(li) :: n_step = 0        ! nth time step
+         integer(li) :: n_step_stop = 0   ! nth time step to stop
+         integer(li) :: n_step_start = 0  ! nth time step to start
+         real(cp) :: t = 0.0_cp           ! time, or pseudo time
+         real(cp) :: dt = 0.0_cp          ! time step, or pseudo time step
+         integer :: un = 0                ! file unit
+         type(string) :: dir,name         ! directory / name
        end type
 
        interface init;             module procedure init_TMP;             end interface

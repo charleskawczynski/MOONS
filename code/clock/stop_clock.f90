@@ -191,8 +191,10 @@
         temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
         write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
 
-        temp4 = (/sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay/)*TMP%dt
-        write(un,*) 'Convective units / (s,m,h,d) = ',temp4
+        ! temp4 = (/sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay/)*TMP%dt
+        ! write(un,*) 'Convective units / (s,m,h,d) = ',temp4
+        temp = sc%iterPerHour*TMP%dt
+        write(un,*) 'Convective units/hour = ',temp
 
         ! Or, as Eldredge did it:
         ! CPU_TIME/(convective unit)
