@@ -1,4 +1,4 @@
-       module mesh_complex_geometries_mod
+       module mesh_complex_BC_geometries_mod
        use current_precision_mod
        use grid_init_mod
        use grid_extend_mod

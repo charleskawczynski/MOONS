@@ -114,7 +114,7 @@
          temp2(1:6) = (/((mod(n_step,500).eq.1).and.(n_step.ne.1),i=1,6)/)
          ! temp(1:6) = (/((mod(n_step+1,10**i).eq.1).and.(n_step.ne.0),i=1,6)/)
 
-         PE%info = temp(PE%i_info)
+         PE%info = temp(PE%i_info).or.(n_step.eq.0)
          PE%transient_0D = temp(PE%i_transient_0D).or.(n_step.eq.0)
          ! PE%transient_2D = temp2(PE%i_transient_2D).or.(n_step.eq.0)
          PE%transient_2D = PE%export_planar.and.(temp(PE%i_transient_2D).or.n_step.eq.1)

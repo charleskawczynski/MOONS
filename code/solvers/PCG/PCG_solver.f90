@@ -262,7 +262,7 @@
         type(iter_solver_params),intent(in) :: ISP
         integer,intent(in) :: i
         character(len=*),intent(in) :: location
-        if (is_nan(res_norm%L2)) then
+        if (is_nan(res_norm%L2).or.is_nan(res_norm%Linf)) then
           write(*,*) 'Error: NaN in ',location
           write(*,*) 'iterations_used = ',i
           write(*,*) 'res_norm%L2 = ',res_norm%L2

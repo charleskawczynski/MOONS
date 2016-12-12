@@ -124,6 +124,7 @@
 
        interface prolongate;           module procedure prolongate_ind;                end interface
        interface set_MFP;              module procedure set_MFP_ind;                   end interface
+       interface set_sigma_inv;        module procedure set_sigma_inv_ind;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_ind;     end interface
 
        interface export_transient1;    module procedure export_transient1_ind;         end interface
@@ -148,7 +149,6 @@
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: sigma,vol_CC
-         type(VF) :: sigma_temp_E,sigma_temp_F
          write(*,*) 'Initializing induction:'
 
          call init(ind%TMP,TMP)
@@ -220,16 +220,7 @@
          call divide(ind%sigmaInv_CC,1.0_cp,sigma)
          call cellCenter2Edge(ind%sigmaInv_edge,ind%sigmaInv_CC,m,ind%temp_F1)
 
-         ! call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
-
-         call init_Edge(sigma_temp_E,ind%m,ind%MD_sigma)
-         call init_Face(sigma_temp_F,ind%m,ind%MD_sigma)
-         call assign(sigma_temp_E,1.0_cp)
-         call assign(sigma_temp_F,1.0_cp)
-         call assign(ind%sigmaInv_edge,1.0_cp/sig_local_over_sig_f)
-         call embedEdge(ind%sigmaInv_edge,sigma_temp_E,MD_sigma)
-         call delete(sigma_temp_E)
-         call delete(sigma_temp_F)
+         call set_sigma_inv(ind)
 
          if (ind%SP%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
          call delete(sigma)
@@ -524,6 +515,17 @@
          endif
        end subroutine
 
+       subroutine set_sigma_inv_ind(ind)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(VF) :: sigma_temp_E
+         call init_Edge(sigma_temp_E,ind%m,ind%MD_sigma)
+         call assign(sigma_temp_E,1.0_cp)
+         call assign(ind%sigmaInv_edge,1.0_cp/ind%sig_local_over_sig_f)
+         call embedEdge(ind%sigmaInv_edge,sigma_temp_E,ind%MD_sigma)
+         call delete(sigma_temp_E)
+       end subroutine
+
        subroutine init_matrix_based_ops_ind(ind)
          implicit none
          type(induction),intent(inout) :: ind
@@ -723,8 +725,10 @@
              call prolongate(ind%phi,ind%m,dir(i))
              call prolongate(ind%temp_CC_SF,ind%m,dir(i))
 
-             call prolongate(ind%PCG_B,ind%m,dir(i))
-             call prolongate(ind%PCG_cleanB,ind%m,dir(i))
+             call set_sigma_inv(ind)
+             call set_MFP(ind)
+             call prolongate(ind%PCG_B,ind%m,ind%sigmaInv_edge,dir(i))
+             call prolongate(ind%PCG_cleanB,ind%m,ind%temp_F1,dir(i))
            endif
          enddo
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)

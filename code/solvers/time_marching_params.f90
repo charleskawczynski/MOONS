@@ -17,6 +17,7 @@
          integer(li) :: n_step_stop = 0   ! nth time step to stop
          integer(li) :: n_step_start = 0  ! nth time step to start
          real(cp) :: t = 0.0_cp           ! time, or pseudo time
+         real(cp) :: t_final = 0.0_cp     ! finale time, or final pseudo time
          real(cp) :: dt = 0.0_cp          ! time step, or pseudo time step
          integer :: un = 0                ! file unit
          type(string) :: dir,name         ! directory / name
@@ -52,22 +53,24 @@
          TMP%n_step_stop = n_step_stop
          TMP%t = 0.0_cp
          TMP%dt = dt
+         TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
          call init(TMP%dir,dir)
          call init(TMP%name,name)
        end subroutine
 
-       subroutine init_copy_TMP(TMP_out,TMP_in)
+       subroutine init_copy_TMP(TMP,TMP_in)
          implicit none
-         type(time_marching_params),intent(inout) :: TMP_out
+         type(time_marching_params),intent(inout) :: TMP
          type(time_marching_params),intent(in) :: TMP_in
-         TMP_out%n_step_start = TMP_in%n_step_start
-         TMP_out%n_step = TMP_in%n_step
-         TMP_out%n_step_stop = TMP_in%n_step_stop
-         TMP_out%t = TMP_in%t
-         TMP_out%dt = TMP_in%dt
-         call init(TMP_out%dir,TMP_in%dir)
-         call init(TMP_out%name,TMP_in%name)
-         TMP_out%un = TMP_in%un
+         TMP%n_step_start = TMP_in%n_step_start
+         TMP%n_step = TMP_in%n_step
+         TMP%n_step_stop = TMP_in%n_step_stop
+         TMP%t = TMP_in%t
+         TMP%t_final = TMP_in%t_final
+         TMP%dt = TMP_in%dt
+         call init(TMP%dir,TMP_in%dir)
+         call init(TMP%name,TMP_in%name)
+         TMP%un = TMP_in%un
        end subroutine
 
        subroutine delete_TMP(TMP)
@@ -77,6 +80,7 @@
          TMP%n_step = 0
          TMP%n_step_stop = 1
          TMP%t = 0.0_cp
+         TMP%t_final = 0.0_cp
          TMP%dt = 10.0_cp**(-10.0_cp)
          call delete(TMP%dir)
          call delete(TMP%name)
@@ -92,6 +96,7 @@
          write(un,*) 'n_step = ';      write(un,*) TMP%n_step
          write(un,*) 'n_step_stop = '; write(un,*) TMP%n_step_stop
          write(un,*) 't = ';           write(un,*) TMP%t
+         write(un,*) 't_final = ';     write(un,*) TMP%t_final
          write(un,*) 'dt = ';          write(un,*) TMP%dt
          call close_and_message(un,str(TMP%dir),str(TMP%name))
        end subroutine
@@ -105,6 +110,7 @@
          read(un,*); read(un,*) TMP%n_step
          read(un,*); read(un,*) TMP%n_step_stop
          read(un,*); read(un,*) TMP%t
+         read(un,*); read(un,*) TMP%t_final
          read(un,*); read(un,*) TMP%dt
          call close_and_message(un,str(TMP%dir),str(TMP%name))
        end subroutine
@@ -119,6 +125,7 @@
          write(un,*) 'n_step = ',TMP%n_step
          write(un,*) 'n_step_stop = ',TMP%n_step_stop
          write(un,*) 't = ',TMP%t
+         write(un,*) 't_final = ',TMP%t_final
          write(un,*) 'dt = ',TMP%dt
        end subroutine
 
@@ -140,6 +147,7 @@
          type(time_marching_params),intent(inout) :: TMP
          type(time_marching_params),intent(in) :: coupled
          TMP%t = coupled%t
+         TMP%t_final = coupled%t_final
          TMP%dt = coupled%dt
          TMP%n_step_start = coupled%n_step_start
          TMP%n_step_stop = coupled%n_step_stop
@@ -150,8 +158,9 @@
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          type(sim_params),intent(in) :: SP
-         TMP%dt = TMP%dt*1.0_cp/real(SP%dt_reduction_factor,cp)
-         TMP%n_step_stop = TMP%n_step_stop*SP%dt_reduction_factor
+         TMP%dt = TMP%dt*1.0_cp/SP%dt_reduction_factor
+         TMP%n_step_stop = TMP%n_step_stop*ceiling(SP%dt_reduction_factor)
+         TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
        end subroutine
 
        end module

@@ -36,7 +36,7 @@
        integer :: n_history
        real(cp) :: SS_tol
        real(cp) :: SS_tol_final
-       integer :: dt_reduction_factor
+       real(cp) :: dt_reduction_factor
 
        logical :: coupled_time_step
        logical :: finite_Rem
@@ -73,18 +73,18 @@
        SP%post_process_only      = .false.            ! Skip solver loop and just post-process results
        SP%post_process           = .true.             ! Skip solver loop and just post-process results
        SP%stop_after_mesh_export = .false.            !
-       SP%stop_before_solve      = .false.            ! Just export ICs, do not run simulation
+       SP%stop_before_solve      = .true.            ! Just export ICs, do not run simulation
        SP%skip_solver_loop       = .false.            ! Skip solver loop
 
        SP%export_analytic        = .false.            ! Export analytic solutions (MOONS.f90)
-       SP%export_meshes          = .false.             ! Export all meshes before starting simulation
-       SP%export_mat_props       = .false.            ! Export material properties before starting simulation
+       SP%export_meshes          = .true.             ! Export all meshes before starting simulation
+       SP%export_mat_props       = .true.            ! Export material properties before starting simulation
        SP%export_ICs             = .false.            ! Export Post-Processed ICs before starting simulation
        SP%export_cell_volume     = .false.            ! Export cell volumes for each mesh
        SP%export_planar          = .false.            ! Export 2D data when N_cell = 1 along given direction
-       SP%export_symmetric       = .false.             !
+       SP%export_symmetric       = .true.             !
        SP%export_mesh_block      = .false.            ! Export mesh blocks to FECs
-       SP%export_soln_only       = .false.             ! Export processed solution only
+       SP%export_soln_only       = .true.             ! Export processed solution only
 
        SP%coupled_time_step      = .true.            ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem             = .true.            ! Ensures all dt are equal to coupled%dt
@@ -95,12 +95,12 @@
        SP%solveInduction         = .true.             ! Solve induction equation
        SP%matrix_based           = .false.            ! Solve induction equation
 
-       SP%dynamic_refinement     = .false.            ! Perform dynamic mesh refinement
+       SP%dynamic_refinement     = .true.            ! Perform dynamic mesh refinement
        SP%n_max_refinements      = 2                  ! Maximum number of mesh refinements after SS reached
        SP%n_history              = 2                  ! number of points to check for SS
-       SP%SS_tol                 = 10.0_cp**(-4.0_cp) ! steady state tolerance
+       SP%SS_tol                 = 10.0_cp**(-1.0_cp) ! steady state tolerance
        SP%SS_tol_final           = 10.0_cp**(-6.0_cp) ! steady state tolerance at finest mesh
-       SP%dt_reduction_factor    = 4                  ! after prolongate: dt = dt/real(dt_reduction_factor,cp)
+       SP%dt_reduction_factor    = 1.2_cp             ! after prolongate: dt = dt/dt_reduction_factor
 
        SP%restartT               = .false.            ! restart T  field
        SP%restartU               = .false.            ! restart U  field

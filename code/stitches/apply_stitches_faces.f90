@@ -36,23 +36,23 @@
          integer,dimension(4) :: fa
          logical,dimension(3) :: L
          integer :: d
-         ! Consider grids i and j with a stitched face f_st between them. 
-         ! Let f(1:4) denote the faces between grids i and j which are 
-         ! co-planar and share an edge. Let us consider co-planar faces 
-         ! p here (faces 4 and 4 are co-planar and share an edge) whose 
+         ! Consider grids i and j with a stitched face f_st between them.
+         ! Let f(1:4) denote the faces between grids i and j which are
+         ! co-planar and share an edge. Let us consider co-planar faces
+         ! p here (faces 4 and 4 are co-planar and share an edge) whose
          ! shared edge is e.
          ! Stitching on cell faces should follow:
          !    - Cell center data should be stitched on all interior cells
-         !    - Cell corner data (or face data) should be stitched on all 
+         !    - Cell corner data (or face data) should be stitched on all
          !      interior nodes. Boundary nodes on the face along edge e
          !      should be stitched ONLY if
          !              - U%BF(i)%GF%st_faces(f(p))%TF and U%GF(j)%st_faces(f(p))%TF are true
          !           or - U%BF(i)%GF%b%f(p)%b%Neumann and U%GF(j)%b%f(p)%b%Neumann
-         ! 
+         !
          ! Alternatively, stitching should NOT occur if
          !              - .not.U%BF(i)%GF%st_faces(f(p))%TF and U%BF(i)%GF%b%f(p)%b%Neumann
          !           or - .not.U%GF(j)%st_faces(f(p))%TF and U%GF(j)%b%f(p)%b%Neumann
-         ! 
+         !
          ! a = 2; b = U%BF(i)%GF%s-1 ! Works for 9 domains but fails to satisfy BCs for 2D flow over square
          ! a = 2; b = U%BF(i)%GF%s-1 Need to get back here IF BCs of i and j are Neumann...
 
@@ -126,12 +126,12 @@
 
        subroutine app_F(Umin,Umax,dir,x,y,z,a,b)
          ! Along direction dir, we have
-         ! 
+         !
          !            Umax (attaches at hmax)
          !       |-------------------------------|        Umin (attaches at hmin)
          !                                       |-----------------------------------|
-         ! 
-         ! x,y,z are pads along dir and a,b,c are 
+         !
+         ! x,y,z are pads along dir and a,b,c are
          ! pads along directions adjacent to dir
          implicit none
          type(grid_field),intent(inout) :: Umin,Umax

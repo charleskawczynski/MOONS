@@ -278,17 +278,18 @@
         flush(un)
       end subroutine
 
-      subroutine prolongate_PCG_SF(PCG,m,dir)
+      subroutine prolongate_PCG_SF(PCG,m,k,dir)
         implicit none
         type(PCG_solver_SF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
+        type(VF),intent(in) :: k
         integer,intent(in) :: dir
         call prolongate(PCG%tempx,m,dir)
         call prolongate(PCG%p,m,dir)
         call prolongate(PCG%r,m,dir)
         call prolongate(PCG%Ax,m,dir)
         call prolongate(PCG%vol,m,dir)
-        call prolongate(PCG%k,m,dir)
+        call prolongate(PCG%k,m,dir); call assign(PCG%k,k)
         call prolongate(PCG%tempk,m,dir)
         call prolongate(PCG%z,m,dir)
         call prolongate(PCG%Minv,m,dir)
@@ -296,17 +297,18 @@
         call volume(PCG%vol,m)
       end subroutine
 
-      subroutine prolongate_PCG_VF(PCG,m,dir)
+      subroutine prolongate_PCG_VF(PCG,m,k,dir)
         implicit none
         type(PCG_solver_VF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
+        type(VF),intent(in) :: k
         integer,intent(in) :: dir
         call prolongate(PCG%tempx,m,dir)
         call prolongate(PCG%p,m,dir)
         call prolongate(PCG%r,m,dir)
         call prolongate(PCG%Ax,m,dir)
         call prolongate(PCG%vol,m,dir)
-        call prolongate(PCG%k,m,dir)
+        call prolongate(PCG%k,m,dir); call assign(PCG%k,k)
         call prolongate(PCG%tempk,m,dir)
         call prolongate(PCG%z,m,dir)
         call prolongate(PCG%Minv,m,dir)

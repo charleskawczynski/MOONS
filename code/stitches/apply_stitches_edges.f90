@@ -30,7 +30,7 @@
          type(mesh),intent(in) :: m
          integer :: i,k,x,y,z
          integer,dimension(4) :: e
-         ! The second if statement is commented because in app_E, 
+         ! The second if statement is commented because in app_E,
          ! both minmin and maxmax, e.g., are assigned, and so calling
          ! maxmax would be redundant and is uneccesary.
          ! These if statements were left here for readability purposes.
@@ -47,23 +47,23 @@
        end subroutine
 
        subroutine app_E(U,V,edge,dir,px,py,pz)
-         ! 
-         !                |       *       |        
-         !                |       *       |   g2   
-         !                |       *       |        
+         !
+         !                |       *       |
+         !                |       *       |   g2
+         !                |       *       |
          !        -------- ------- ---F---N--------
-         !                |       *       |        
-         !                |       *   C   F        
-         !                |       *       |        
+         !                |       *       |
+         !                |       *   C   F
+         !                |       *       |
          !        ******** ******* ******* ********  * = physical boundary
-         !                |       *       |        
-         !                F   C   *       |        
-         !                |       *       |        
+         !                |       *       |
+         !                F   C   *       |
+         !                |       *       |
          !        --------N---F--- ------- --------
-         !                |       *       |        
-         !           g1   |       *       |        
-         !                |       *       |        
-         ! 
+         !                |       *       |
+         !           g1   |       *       |
+         !                |       *       |
+         !
          implicit none
          type(grid_field),intent(inout) :: U,V
          integer,intent(in) :: edge,dir,px,py,pz

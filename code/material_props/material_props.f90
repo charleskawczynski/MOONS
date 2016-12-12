@@ -49,11 +49,4 @@
          MP%mu_m = MP%K_m*mu_m0             ! [NA^-2]
        end subroutine
 
-       function pow(i) result(p)
-         implicit none
-         integer,intent(in) :: i
-         real(cp) :: p
-         p = 10.0_cp**(real(i,cp))
-       end function
-
        end module

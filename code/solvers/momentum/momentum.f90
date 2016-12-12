@@ -566,6 +566,7 @@
          logical,intent(in) :: SS_reached
          integer,dimension(3) :: dir
          type(iter_solver_params) :: temp
+         logical :: clean_exact
          integer :: i
          write(*,*) '#################### Prolongating momentum solver ####################'
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_SS_'//str(RM%level_last),1)
@@ -587,7 +588,9 @@
              call prolongate(mom%divU,mom%m,dir(i))
              call prolongate(mom%U_CC,mom%m,dir(i))
              call prolongate(mom%temp_CC,mom%m,dir(i))
-             call prolongate(mom%PCG_P,mom%m,dir(i))
+             call set_MFP(mom)
+             call prolongate(mom%PCG_P,mom%m,mom%temp_F,dir(i))
+             call prolongate(mom%PCG_U,mom%m,mom%temp_E,dir(i))
            endif
          enddo
          call init_UBCs(mom%U,mom%m) ! Needed (better) if U_BCs is a distribution
@@ -596,17 +599,18 @@
          call apply_BCs(mom%U)
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
 
-         ! Doesn't seem to show any usefulness for hydro flows
-         ! call init(temp,mom%PCG_P%ISP)
-         ! call init(mom%PCG_P%ISP,solve_exact(str(DT%U_r)))
-         ! call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
-         ! call init(mom%PCG_P%ISP,temp)
-         ! call delete(temp)
-
-         ! Works perfectly fine for hydro flows
-         call boost(mom%PCG_P%ISP)
-         call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
-         call reset(mom%PCG_P%ISP)
+         clean_exact = .false.
+         if (clean_exact) then ! Doesn't seem to help any for hydro flows
+           call init(temp,mom%PCG_P%ISP)
+           call init(mom%PCG_P%ISP,solve_exact(str(DT%U_r)))
+           call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
+           call init(mom%PCG_P%ISP,temp)
+           call delete(temp)
+         else
+           call boost(mom%PCG_P%ISP)
+           call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
+           call reset(mom%PCG_P%ISP)
+         endif
 
          call export_processed(mom%m,mom%U,str(DT%U_f),'U_cleaned_'//str(RM%level),1)
          write(*,*) '#############################################################'

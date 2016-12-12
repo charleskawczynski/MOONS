@@ -3,6 +3,8 @@
 
       private
       public :: cp,li
+      public :: pow
+      public :: equal
 
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32) ! Quad precision
@@ -18,5 +20,23 @@
        ! integer,parameter :: ip = selected_int_kind(8)  ! Short int
 
        ! integer,parameter :: cip = selected_int_kind(64)
+
+       contains
+
+       pure function pow(i) result(p)
+         implicit none
+         integer,intent(in) :: i
+         real(cp) :: p
+         p = 10.0_cp**(real(i,cp))
+       end function
+
+       pure function equal(A,B) result(L)
+         implicit none
+         real(cp),intent(in) :: A,B
+         real(cp) :: tol
+         logical :: L
+         tol = 10.0_cp*epsilon(1.0_cp)
+         L = abs(A-B).lt.tol
+       end function
 
       end module

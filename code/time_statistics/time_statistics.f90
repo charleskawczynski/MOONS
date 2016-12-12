@@ -56,10 +56,9 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TS_SF(TS,m,U,t_start,t_stop,dir,name,pad)
+       subroutine init_TS_SF(TS,U,t_start,t_stop,dir,name,pad)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
-         type(mesh),intent(in) :: m
          type(SF),intent(in) :: U
          real(cp),intent(in) :: t_start,t_stop
          character(len=*),intent(in) :: dir,name

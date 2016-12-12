@@ -22,7 +22,7 @@
 
       interface init;   module procedure init_copy;            end interface
       interface delete; module procedure delete_stitch_corner; end interface
-      
+
       contains
 
       subroutine delete_stitch_corner(s)

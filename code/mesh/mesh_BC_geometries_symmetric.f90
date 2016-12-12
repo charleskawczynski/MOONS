@@ -29,10 +29,10 @@
          call delete(m)
          hmin = -1.0_cp; hmax = 1.0_cp; beta = HartmannBL(Ha,hmin,hmax)
          hmax(3) = 0.0_cp
-         ! if (low_Ha(Ha)) then;      N = (/15,15,10/) ! For Ha = 20
-         ! elseif (high_Ha(Ha)) then; N = (/16,16,8/) ! For Ha = 100
-         if (low_Ha(Ha)) then;      N = (/30,30,15/) ! For Ha = 20
-         elseif (high_Ha(Ha)) then; N = (/32,32,16/) ! For Ha = 100
+         if (low_Ha(Ha)) then;      N = (/15,15,10/) ! For Ha = 20
+         elseif (high_Ha(Ha)) then; N = (/16,16,8/) ! For Ha = 100
+         ! if (low_Ha(Ha)) then;      N = (/30,30,15/) ! For Ha = 20
+         ! elseif (high_Ha(Ha)) then; N = (/32,32,16/) ! For Ha = 100
          else; stop 'Error: bad input to geometry in BC_sim_mom in mesh_simple_geometries.f90'
          endif
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
@@ -63,8 +63,8 @@
          Gamma_v = 7.0_cp
          tf = 1.0_cp
          N_w = get_N_w(Ha,tw)
-         N_v = 6
-         N_extra = 6 ! since no wall domain above lid
+         N_v = 5
+         N_extra = N_w ! since no wall domain above lid
 
          ! Wall
          call ext_Roberts_B_IO(g,tw,N_w,1)
@@ -99,14 +99,14 @@
          real(cp),intent(in) :: Ha,tw
          integer :: N_w
          if (low_tw(tw)) then
-           if (low_Ha(Ha)) then;      N_w = 4 ! For Ha = 20
-           elseif (high_Ha(Ha)) then; N_w = 6 ! For Ha = 100
+           if (low_Ha(Ha)) then;      N_w = 2 ! For Ha = 20
+           elseif (high_Ha(Ha)) then; N_w = 3 ! For Ha = 100
            else; write(*,*) 'Ha,tw=',Ha,tw
             stop 'Error: 2 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
            endif
          elseif (high_tw(tw)) then
-           if (low_Ha(Ha)) then;      N_w = 8 ! For Ha = 20
-           elseif (high_Ha(Ha)) then; N_w = 10 ! For Ha = 100
+           if (low_Ha(Ha)) then;      N_w = 4 ! For Ha = 20
+           elseif (high_Ha(Ha)) then; N_w = 5 ! For Ha = 100
            else; write(*,*) 'Ha,tw=',Ha,tw
             stop 'Error: 3 bad input to geometry in BC_sim_ind in mesh_simple_geometries.f90'
            endif

@@ -171,6 +171,7 @@
          ! Total coordinates (non-uniform Roberts stretching function)
          hn = (/( ((b+a)-(b-a)*g**(a-hnbar(i)))/(g**(a-hnbar(i))+a),i=1,N+1)/)
          ! Return coordinates to original scale:
+         call insist_monotonically_increasing(hn,hmin,hmax,beta,'transformation1')
          hn = hmin + (hmax - hmin)*hn
          deallocate(hnbar)
        end function
@@ -204,6 +205,7 @@
          ! with the reference as well as generalize the returned grid
          ! so that it need not start at y=0.
          !
+         implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
          real(cp),intent(in) :: hmin,hmax,alpha,beta
@@ -225,6 +227,9 @@
          b+two*a)/((two*a+one)*(one+&
          g**((hnbar(i)-a)/(one-a)))),i=1,N+1)/)
          ! Return coordinates to original scale:
+         if (abs(alpha).lt.10.0_cp**(-10.0_cp)) then
+          call insist_monotonically_decreasing(hn,hmin,hmax,beta,'transformation2')
+         endif
          hn = hmin + (hmax - hmin)*hn
          deallocate(hnbar)
        end function
@@ -325,6 +330,7 @@
        ! ***************************************************************
 
        subroutine reverseIndex(h,N)
+         implicit none
          integer,intent(in) :: N
          real(cp),dimension(N),intent(inout) :: h
          real(cp),dimension(:),allocatable :: temp
@@ -335,6 +341,48 @@
          enddo
          h = temp
          deallocate(temp)
+       end subroutine
+
+       subroutine insist_monotonically_increasing(h,hmin,hmax,beta,caller)
+         implicit none
+         real(cp),dimension(:),intent(in) :: h
+         real(cp),intent(in) :: hmin,hmax,beta
+         character(len=*),intent(in) :: caller
+         integer :: i,s
+         real(cp) :: R
+         s = size(h)
+         do i=1,s-2
+           R = (h(i+2)-h(i+1))/(h(i+1)-h(i))
+           if (R.lt.1.0_cp) then
+            write(*,*) 'Error: coordinates not monotonically increasing in '//caller
+            write(*,*) 'in coordinate_distribution_funcs.f90'
+            write(*,*) 'hmin,hmax,beta = ',hmin,hmax,beta
+            write(*,*) 'R = ',R
+            write(*,*) 'h = ',h
+            stop 'Done'
+           endif
+         enddo
+       end subroutine
+
+       subroutine insist_monotonically_decreasing(h,hmin,hmax,beta,caller)
+         implicit none
+         real(cp),dimension(:),intent(in) :: h
+         real(cp),intent(in) :: hmin,hmax,beta
+         character(len=*),intent(in) :: caller
+         integer :: i,s
+         real(cp) :: R
+         s = size(h)
+         do i=1,s-2
+           R = (h(i+2)-h(i+1))/(h(i+1)-h(i))
+           if (R.gt.1.0_cp) then
+            write(*,*) 'Error: coordinates not monotonically decreasing in '//caller
+            write(*,*) 'in coordinate_distribution_funcs.f90'
+            write(*,*) 'hmin,hmax,beta = ',hmin,hmax,beta
+            write(*,*) 'R = ',R
+            write(*,*) 'h = ',h
+            stop 'Done'
+           endif
+         enddo
        end subroutine
 
        ! subroutine reverseIndex_new(h,N) ! Probably the same, but faster than above

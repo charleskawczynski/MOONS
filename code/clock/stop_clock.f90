@@ -175,7 +175,7 @@
         type(time_marching_params),intent(in) :: TMP
         integer,intent(in) :: un
         real(cp) :: temp
-        real(cp),dimension(4) :: temp4
+        real(cp),dimension(2) :: temp2
         character(len=1) :: u
         write(un,*) ''
         write(un,*) '******************* KNOWN WALL CLOCK TIME INFO *********************'
@@ -191,10 +191,10 @@
         temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
         write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
 
-        ! temp4 = (/sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay/)*TMP%dt
-        ! write(un,*) 'Convective units / (s,m,h,d) = ',temp4
-        temp = sc%iterPerHour*TMP%dt
-        write(un,*) 'Convective units/hour = ',temp
+        temp2 = (/sc%iterPerHour,sc%iterPerDay/)*TMP%dt
+        write(un,*) 'Convective units/(h,d) = ',temp2
+
+        write(un,*) 'Final convective time = ',TMP%t_final
 
         ! Or, as Eldredge did it:
         ! CPU_TIME/(convective unit)
