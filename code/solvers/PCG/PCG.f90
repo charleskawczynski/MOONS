@@ -278,11 +278,12 @@
         flush(un)
       end subroutine
 
-      subroutine prolongate_PCG_SF(PCG,m,k,dir)
+      subroutine prolongate_PCG_SF(PCG,m,k,MFP,dir)
         implicit none
         type(PCG_solver_SF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: k
+        type(matrix_free_params),intent(in) :: MFP
         integer,intent(in) :: dir
         call prolongate(PCG%tempx,m,dir)
         call prolongate(PCG%p,m,dir)
@@ -293,15 +294,17 @@
         call prolongate(PCG%tempk,m,dir)
         call prolongate(PCG%z,m,dir)
         call prolongate(PCG%Minv,m,dir)
+        call init(PCG%MFP,MFP)
         call PCG%prec(PCG%Minv,m,PCG%k,PCG%MFP%coeff)
         call volume(PCG%vol,m)
       end subroutine
 
-      subroutine prolongate_PCG_VF(PCG,m,k,dir)
+      subroutine prolongate_PCG_VF(PCG,m,k,MFP,dir)
         implicit none
         type(PCG_solver_VF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(VF),intent(in) :: k
+        type(matrix_free_params),intent(in) :: MFP
         integer,intent(in) :: dir
         call prolongate(PCG%tempx,m,dir)
         call prolongate(PCG%p,m,dir)
@@ -312,6 +315,7 @@
         call prolongate(PCG%tempk,m,dir)
         call prolongate(PCG%z,m,dir)
         call prolongate(PCG%Minv,m,dir)
+        call init(PCG%MFP,MFP)
         call PCG%prec(PCG%Minv,m,PCG%k,PCG%MFP%coeff)
         call volume(PCG%vol,m)
       end subroutine

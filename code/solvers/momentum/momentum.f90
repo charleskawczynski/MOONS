@@ -221,7 +221,6 @@
          call init(mom%GS_p,mom%p,mom%m,mom%ISP_P,str(DT%U_r),'p')
          write(*,*) '     GS solver initialized for p'
 
-
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&
          mom%ISP_U,mom%MFP,mom%U,mom%temp_E,str(DT%U_r),'U',.false.,.false.)
          write(*,*) '     PCG solver initialized for U'
@@ -420,7 +419,7 @@
          implicit none
          type(momentum),intent(inout) :: mom
          real(cp),dimension(2) :: diffusion_treatment
-         mom%MFP%coeff = -0.5_cp*mom%TMP%dt/mom%Re
+         call set_MFP(mom)
          call init_Laplacian_SF(mom%m) ! Must come before PPE solver init
          call init_Laplacian_VF(mom%m) ! for lap(U) in momentum
          ! diffusion_treatment = (/-mom%TMP%dt/mom%Re,1.0_cp/) ! diffusion explicit
@@ -589,8 +588,8 @@
              call prolongate(mom%U_CC,mom%m,dir(i))
              call prolongate(mom%temp_CC,mom%m,dir(i))
              call set_MFP(mom)
-             call prolongate(mom%PCG_P,mom%m,mom%temp_F,dir(i))
-             call prolongate(mom%PCG_U,mom%m,mom%temp_E,dir(i))
+             call prolongate(mom%PCG_P,mom%m,mom%temp_F,mom%MFP,dir(i))
+             call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%MFP,dir(i))
            endif
          enddo
          call init_UBCs(mom%U,mom%m) ! Needed (better) if U_BCs is a distribution

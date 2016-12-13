@@ -581,7 +581,6 @@
          end select
          call iterate_step(ind%TMP)
 
-
          call compute_J_ind(ind)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
@@ -727,8 +726,8 @@
 
              call set_sigma_inv(ind)
              call set_MFP(ind)
-             call prolongate(ind%PCG_B,ind%m,ind%sigmaInv_edge,dir(i))
-             call prolongate(ind%PCG_cleanB,ind%m,ind%temp_F1,dir(i))
+             call prolongate(ind%PCG_B,ind%m,ind%sigmaInv_edge,ind%MFP_B,dir(i))
+             call prolongate(ind%PCG_cleanB,ind%m,ind%temp_F1,ind%MFP_cleanB,dir(i))
            endif
          enddo
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
