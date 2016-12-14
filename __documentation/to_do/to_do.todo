@@ -1,9 +1,19 @@
 Right Now:
-  ☐ Re-test BC case with symmetry condition and runtime prolongation
-  ☐ Push code after confirmation
-  ☐ If speedup is significant, start BC sims with symmetry and prolongate on PC_CK
+  ☐ PD cases
+    ☐ Determine actual Re_m,Re,Ha etc
+    ☐ make appropriate changes to slide
+    ☐ Plot source terms to show crudeness
+  ☐ Full BC sims
+    ☐ Plot status of all of them
+    ☐ Do I need o re-perform sigma study?
+    ☐ Suggest using previous results instead and simply nix the PV BC cases
+      ☐ There are more cases this way, the BC comparison can be more limited in scope.
+      ☐ I think this is a better approach
+  ☐
+  ☐ Re-develop stiches
   ☐ Consider making branches for BC sims and PD sims
   ☐ Consider adding a prefix to the output of all "names" (not dir's), so that results can be integrated into the same folder. This may be really useful.
+  ☐ This could also be done in a python script
   ☐ Start new PD cases and compute resulting Rem,Re etc. after computations
   ☐ Look into Sergey's suggested reference "Jenko - energy balance for plasma disruption"
 
