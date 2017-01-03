@@ -13,7 +13,7 @@
        public :: export_Shercliff
        public :: export_Hunt
        public :: export_SH
-       
+
        contains
 
        subroutine export_Shercliff(m,u_numerical,Ha,dpdh,dir,DT)
@@ -41,10 +41,10 @@
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
-         call export_raw(m,temp,str(DT%U),'Shercliff_analytic',0)
-         call export_raw(m,u_numerical,str(DT%U),'Shercliff_numerical',0)
-         call export_processed(m,temp,str(DT%U),'Shercliff_analytic',1)
-         call export_processed(m,u_numerical,str(DT%U),'Shercliff_numerical',1)
+         call export_raw(m,temp,str(DT%U%field),'Shercliff_analytic',0)
+         call export_raw(m,u_numerical,str(DT%U%field),'Shercliff_numerical',0)
+         call export_processed(m,temp,str(DT%U%field),'Shercliff_analytic',1)
+         call export_processed(m,u_numerical,str(DT%U%field),'Shercliff_numerical',1)
          call delete(temp)
        end subroutine
 
@@ -74,10 +74,10 @@
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
-         call export_raw(m,temp,str(DT%U),'Hunt_analytic',0)
-         call export_raw(m,u_numerical,str(DT%U),'Hunt_numerical',0)
-         call export_processed(m,temp,str(DT%U),'Hunt_analytic',1)
-         call export_processed(m,u_numerical,str(DT%U),'Hunt_numerical',1)
+         call export_raw(m,temp,str(DT%U%field),'Hunt_analytic',0)
+         call export_raw(m,u_numerical,str(DT%U%field),'Hunt_numerical',0)
+         call export_processed(m,temp,str(DT%U%field),'Hunt_analytic',1)
+         call export_processed(m,u_numerical,str(DT%U%field),'Hunt_numerical',1)
          call delete(temp)
        end subroutine
 
@@ -106,10 +106,10 @@
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
-         call export_raw(m,temp,str(DT%U),'SH_analytic',0)
-         call export_raw(m,u_numerical,str(DT%U),'SH_numerical',0)
-         call export_processed(m,temp,str(DT%U),'SH_analytic',1)
-         call export_processed(m,u_numerical,str(DT%U),'SH_numerical',1)
+         call export_raw(m,temp,str(DT%U%field),'SH_analytic',0)
+         call export_raw(m,u_numerical,str(DT%U%field),'SH_numerical',0)
+         call export_processed(m,temp,str(DT%U%field),'SH_analytic',1)
+         call export_processed(m,u_numerical,str(DT%U%field),'SH_numerical',1)
          call delete(temp)
        end subroutine
 

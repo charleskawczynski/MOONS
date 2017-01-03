@@ -64,9 +64,10 @@ This transformation clusters more points near $y=0$ as the stretching parameter 
 For this transformation, if $\alpha=0$, the mesh will be refined near $y=h$ only, whereas if $\alpha= \frac{1}{2}$, the mesh will be refined equally near $y=0$ and $y=h$.
 
 \begin{equation} \label{eq:T2}
-	y = h \frac{ (\beta + 2 \alpha) \g^{\theta} - \beta + 2 \alpha}
+	\frac{y}{h}(\theta(i),\beta,\alpha) = \frac{ (\beta + 2 \alpha) \g^{\theta} - \beta + 2 \alpha}
 	{ (2\alpha+1) \left(1+\g^{\theta} \right) }
-	, \qquad \g = \gammadef, \theta = (\bar{y}-\alpha)/(1-\alpha)
+	, \qquad \g = \gammadef, \theta = (\bar{h}-\alpha)/(1-\alpha)
+	, \qquad i=1,...,N
 \end{equation}
 
 Where $h$ is the length of the domain. Note that
@@ -78,7 +79,7 @@ Where $h$ is the length of the domain. Note that
 	\alpha = 1/2 \qquad \rightarrow \text{mesh will be refined near $y=h$ and $y=0$}
 \end{equation}
 \begin{equation}
-	\bar{y} = \text{uniformly spaced grid}
+	\bar{h} = \text{uniformly spaced grid between 0 and 1}
 \end{equation}
 
 If there exists a boundary layer of thickness $\delta$, then an adequate stretching parameter, $\beta$, may be chosen as
@@ -98,20 +99,36 @@ In a slightly different notation, for a scaled grid, not starting at zero, we ma
 	h = h_{min} + (h_{max}-h_{min}) \frac{y_{Roberts}}{h}
 \end{equation}
 
-\subsection{Matching the stretching parameter}
-Note that this section is for node data, and does not apply to cell center data, hence the notation for node indexes ($N$ and $N-1$).
+\subsection{Computing N points to use}
+We seek $N$ such that 1) there are sufficient number of points in the BL and (uniform mesh) 2) the ratio of spatial steps is less than some threshold $\frac{\Delta y_2}{\Delta y_1} \le \varepsilon$ (for variable mesh size).
 
-\subsubsection{Transformation 2}
-We would like to ensure that the ghost cell is the same size as the first interior cell in order to able to linearly extrapolate from the interior cells to the ghost cells.
+\subsection{Computing N points to use}
 
-To do this, we must choose $\beta$ such that
-
+\subsection{Uniform mesh}
 \begin{equation}
-	h_{N} - h_{N-1} = \Delta h
+	N = \frac{N_{\text{cells in BL}}}{\delta_{BL}} = \frac{5}{\delta_{BL}}
 \end{equation}
-Where
+
+\subsection{Non-uniform mesh}
+
+Let the transformation be represented by
+\begin{equation} \label{eq:T2}
+	T(i,\beta,\alpha) = \frac{y}{h} (i,\beta,\alpha), \qquad i=1,...,N
+\end{equation}
+
+\subsubsection{Expression}
 \begin{equation}
-	\Delta h = h_{interior}(2) - h_{interior}(1)
+	R = \frac{T(3,\beta,\alpha)-T(2,\beta,\alpha)}{T(2,\beta,\alpha)-T(1,\beta,\alpha)}
+\end{equation}
+\begin{equation}
+	R =
+	\frac{
+	\frac{(\beta + 2 \alpha)\g^{\theta(3)}-\beta +2\alpha}{\left(1+\g^{\theta(3)} \right)} - 
+	\frac{(\beta + 2 \alpha)\g^{\theta(2)}-\beta +2\alpha}{\left(1+\g^{\theta(2)} \right)}
+	}{
+	\frac{(\beta + 2 \alpha)\g^{\theta(2)}-\beta +2\alpha}{\left(1+\g^{\theta(2)} \right)} - 
+	\frac{(\beta + 2 \alpha)\g^{\theta(1)}-\beta +2\alpha}{\left(1+\g^{\theta(1)} \right)}
+	}
 \end{equation}
 
 Note that this $\Delta h$ is dimensional. Before plugging this in, let's define some useful things the exponent in \ref{eq:T2} and note the definition of $\bar{h}$:
@@ -121,6 +138,14 @@ Note that this $\Delta h$ is dimensional. Before plugging this in, let's define 
 	\qquad i=0,...,N,
 	\qquad \g = \gammadef
 \end{equation}
+
+\subsubsection{Transformation 1}
+
+\subsubsection{Transformation 2}
+
+\subsubsection{Transformation 3}
+
+\subsubsection{Transformation 2}
 So, we must find the roots of:
 \begin{equation}
 	h_{min} + (h_{max}-h_{min}) \frac{(\beta+2\alpha)\g^{\theta(N)} - \beta + 2\alpha}{(2\alpha+1)\left(1+\g^{\theta(N)} \right)}

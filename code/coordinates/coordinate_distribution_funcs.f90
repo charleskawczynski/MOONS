@@ -4,8 +4,22 @@
        implicit none
 
        private
-       public :: uniform,linspace,uniformLeft,uniformRight ! Uniform grids
-       public :: robertsLeft,robertsRight,robertsBoth,cluster ! Stretched grids
+       public :: uniform
+       public :: linspace
+       public :: uniformLeft
+       public :: uniformRight
+       public :: robertsLeft
+       public :: robertsRight
+       public :: robertsBoth
+       public :: cluster
+       interface uniform;           module procedure uniform_func;           end interface
+       interface linspace;          module procedure linspace_func;          end interface
+       interface uniformLeft;       module procedure uniformLeft_func;       end interface
+       interface uniformRight;      module procedure uniformRight_func;      end interface
+       interface robertsLeft;       module procedure robertsLeft_func;       end interface
+       interface robertsRight;      module procedure robertsRight_func;      end interface
+       interface robertsBoth;       module procedure robertsBoth_func;       end interface
+       interface cluster;           module procedure cluster_func;           end interface
 
        real(cp),parameter :: one = 1.0_cp
        real(cp),parameter :: two = 2.0_cp
@@ -18,7 +32,7 @@
        ! *********************** UNIFORM GRIDS *************************
        ! ***************************************************************
 
-       function uniform(hmin,hmax,N) result(hn)
+       function uniform_func(hmin,hmax,N) result(hn)
          ! This routine returns a uniform grid from
          ! hmin to hmax using N+1 points.
          !
@@ -47,7 +61,7 @@
          endif
        end function
 
-       subroutine linspace(hn,hmin,hmax,N)
+       function linspace_func(hmin,hmax,N) result(hn)
          ! This routine returns a uniform grid from
          ! hmin to hmax using N+1 points.
          !
@@ -58,16 +72,16 @@
          !      hmax     = maximum value
          !      N        = N segments of dh
          implicit none
-         real(cp),dimension(N+1),intent(inout) :: hn
          real(cp),intent(in) :: hmin,hmax
          integer,intent(in) :: N
+         real(cp),dimension(N+1) :: hn
          integer :: i
          real(cp) :: dh
          dh = (hmax - hmin)/real(N,cp)
          hn = (/(hmin+real(i-1,cp)*dh,i=1,N+1)/)
-       end subroutine
+       end function
 
-       function uniformDirection(hstart,dh,N,dir) result(hn)
+       function uniformDirection_func(hstart,dh,N,dir) result(hn)
          ! This routine returns a uniform grid beginning
          ! from hstart with uniform step size dh.
          ! The size of the segment depends on the size
@@ -97,7 +111,7 @@
          endif
        end function
 
-       function uniformLeft(hstart,dh,N) result(hn)
+       function uniformLeft_func(hstart,dh,N) result(hn)
          ! Uses uniformDirection. Output:
          !
          !                     |
@@ -108,10 +122,10 @@
          real(cp),intent(in) :: hstart,dh
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
-         hn = uniformDirection(hstart,dh,N,-1)
+         hn = uniformDirection_func(hstart,dh,N,-1)
        end function
 
-       function uniformRight(hstart,dh,N) result(hn)
+       function uniformRight_func(hstart,dh,N) result(hn)
          ! Uses uniformDirection. Output:
          !
          !                     |
@@ -122,7 +136,7 @@
          real(cp),intent(in) :: hstart,dh
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
-         hn = uniformDirection(hstart,dh,N,1)
+         hn = uniformDirection_func(hstart,dh,N,1)
        end function
 
        ! ***************************************************************
@@ -293,7 +307,7 @@
        ! ************************* ALIASES *****************************
        ! ***************************************************************
 
-       function robertsLeft(hmin,hmax,N,beta) result(hn)
+       function robertsLeft_func(hmin,hmax,N,beta) result(hn)
          implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
@@ -301,7 +315,7 @@
          hn = transformation1(hmin,hmax,N,beta)
        end function
 
-       function robertsRight(hmin,hmax,N,beta) result(hn)
+       function robertsRight_func(hmin,hmax,N,beta) result(hn)
          implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
@@ -309,7 +323,7 @@
          hn = transformation2(hmin,hmax,N,0.0_cp,beta)
        end function
 
-       function robertsBoth(hmin,hmax,N,beta) result(hn)
+       function robertsBoth_func(hmin,hmax,N,beta) result(hn)
          implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
@@ -317,7 +331,7 @@
          hn = transformation2(hmin,hmax,N,0.5_cp,beta)
        end function
 
-       function cluster(hmin,hmax,N,yc,tau) result(hn)
+       function cluster_func(hmin,hmax,N,yc,tau) result(hn)
          implicit none
          integer,intent(in) :: N
          real(cp),dimension(N+1) :: hn
@@ -384,10 +398,5 @@
            endif
          enddo
        end subroutine
-
-       ! subroutine reverseIndex_new(h,N) ! Probably the same, but faster than above
-       !   real(cp),dimension(N),intent(inout) :: h
-       !   h = h(N:1:-1)
-       ! end subroutine
 
        end module

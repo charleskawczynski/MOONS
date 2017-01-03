@@ -1,34 +1,39 @@
-       module init_Tfield_mod
+       module init_T_field_mod
        use current_precision_mod
        use SF_mod
        use IO_import_mod
        use mesh_mod
+       use benchmark_case_mod
        implicit none
 
        private
-       public :: initTfield
-       integer :: preDefinedT_ICs = 1 ! NOTE: All cases use B_induced = 0
-       !                              0 : User-defined case (no override)
-       !                              1 : Uniform
+       public :: init_T_field
 
        contains
 
-       subroutine initTfield(T,m,restartT,dir)
+       subroutine init_T_field(T,m,BMC,dir)
          implicit none
          type(SF),intent(inout) :: T
          type(mesh),intent(in) :: m
-         logical,intent(in) :: restartT
          character(len=*),intent(in) :: dir
-         if (restartT) then
-           call initRestartT(T,m,dir)
-         elseif (preDefinedT_ICs.ne.0) then
-           call initPreDefinedT(T)
+         type(benchmark_case),intent(in) :: BMC
+         integer :: preset_ID
+
+         call assign(T,0.0_cp)
+
+         preset_ID = BMC%VS%T%IC
+         if (BMC%VS%T%SS%restart) then
+               call restart_T(T,m,dir)
          else
-           call initUserTfield(T)
+           select case(preset_ID)
+           case (0); call uniformTfield(T)
+           case (1); call initUserTfield(T)
+           case default; stop 'Error: bad preset_ID in init_T_field.f90'
+           end select
          endif
        end subroutine
 
-       subroutine initRestartT(T,m,dir)
+       subroutine restart_T(T,m,dir)
          implicit none
          character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
@@ -37,16 +42,6 @@
          call init(temp,m)
          call import_3D_1C(temp,T,dir,'Tc',1)
          call delete(temp)
-       end subroutine
-
-       subroutine initPreDefinedT(T)
-         implicit none
-         type(SF),intent(inout) :: T
-         select case (preDefinedT_ICs)
-         case (1); call uniformTfield(T)
-         case default
-           write(*,*) 'Incorrect preDefinedT_ICs case in initTfield.'; stop
-         end select
        end subroutine
 
        subroutine uniformTfield(T)

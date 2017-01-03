@@ -35,6 +35,7 @@
          integer :: un = 0                                     ! file unit
          integer(li) :: n_step = 0                             ! time step
          logical :: restart = .false.                          ! restart probe (append existing)
+         logical :: simple = .false.                           ! simple probe (only data)
          real(cp) :: NaN = 0.0_cp                              ! for checking divergent data
          real(cp) :: infinity = huge(1.0_cp)                   ! for checking divergent data
          real(cp) :: SS_tol = 0.0_cp                           ! tolerance for checking for SS
@@ -55,27 +56,28 @@
 
        contains
 
-       subroutine init_probe(p,dir,name,restart,SP)
+       subroutine init_probe(p,dir,name,restart,SP,simple)
          implicit none
          type(probe),intent(inout) :: p
          character(len=*),intent(in) :: dir
          character(len=*),intent(in) :: name
-         logical,intent(in) :: restart
+         logical,intent(in) :: restart,simple
          type(sim_params),intent(in) :: SP
          type(string) :: s
          call delete(p)
          call init(p%dir,dir)
          call init(p%name,name)
          p%restart = restart
+         p%simple = simple
          if (.not.p%restart) then
            p%un = new_and_open(dir,name)
            write(p%un,*) 'TITLE = "'//name//' probe"'
            call init(s,'VARIABLES = t')
            call append(s,','//name)
-           call append(s,',d('//name//')/dt')
-           call append(s,',|d('//name//')/dt|')
-           call append(s,',|d('//name//')/dt|/max(d)_used')
-           call append(s,',max(d)')
+           if (.not.p%simple) call append(s,',d('//name//')/dt')
+           if (.not.p%simple) call append(s,',|d('//name//')/dt|')
+           if (.not.p%simple) call append(s,',|d('//name//')/dt|/max(d)_used')
+           if (.not.p%simple) call append(s,',max(d)')
            write(p%un,*) str(s)
            call delete(s)
            write(p%un,*) 'ZONE DATAPACKING = POINT'
@@ -85,17 +87,17 @@
            ! call import(p,dir,name) ! obviously need this.
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
-         p%n_history = SP%n_history
+         p%n_history = SP%DMR%n_history
          if (p%n_history.lt.2) then
           write(*,*) 'Error: probe history must > 2 for probe '//name
           stop 'Done'
          endif
 
          p%n_step = 0
-         p%SS_tol = SP%SS_tol
-         p%SS_tol_final = SP%SS_tol_final
-         allocate(p%SS_reached(SP%n_history)); p%SS_reached = .false.
-         allocate(p%SS_reached_final(SP%n_history)); p%SS_reached_final = .false.
+         p%SS_tol = SP%DMR%SS_tol
+         p%SS_tol_final = SP%DMR%SS_tol_final
+         allocate(p%SS_reached(SP%DMR%n_history)); p%SS_reached = .false.
+         allocate(p%SS_reached_final(SP%DMR%n_history)); p%SS_reached_final = .false.
          p%infinity = huge(1.0_cp)
          p%d_amax = 0.0_cp
        end subroutine
@@ -177,11 +179,16 @@
          endif
          p%n_step = TMP%n_step
          call check_nans_probe(p)
-         if (p%d_amax.gt.0.0_cp) then
-           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt_by_dmax,p%d_amax
-         else
-           write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt,p%d_amax
+
+         if (.not.p%simple) then
+           if (p%d_amax.gt.0.0_cp) then
+             write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt_by_dmax,p%d_amax
+           else
+             write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt,p%d_amax
+           endif
+         else; write(p%un,*) p%t,p%d
          endif
+
          flush(p%un)
        end subroutine
 

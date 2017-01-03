@@ -57,11 +57,11 @@
 
          ! Make sure that Lap_uniform_VF does not
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
-         ISP,MFP,psi,temp_dummy,str(DT%U_r),'streamfunction',.false.,.false.)
+         ISP,MFP,psi,temp_dummy,str(DT%U%residual),'streamfunction',.false.,.false.)
 
          call compute_vorticity_streamfunction(PCG,psi,omega,U,m,.true.)
-         call export_processed(m,psi  ,str(DT%U_f),'streamfunction',1)
-         call export_processed(m,omega,str(DT%U_f),'vorticity'     ,1)
+         call export_processed(m,psi  ,str(DT%U%field),'streamfunction',1)
+         call export_processed(m,omega,str(DT%U%field),'vorticity'     ,1)
 
          call delete(omega)
          call delete(temp_dummy)

@@ -1,6 +1,18 @@
      module sim_params_mod
      use current_precision_mod
+     use benchmark_case_mod
      use IO_tools_mod
+     use string_mod
+     use path_mod
+     use var_mod
+     use var_set_mod
+     use solver_settings_mod
+     use time_marching_params_mod
+     use dynamic_mesh_refinement_mod
+     use dir_tree_mod
+     use dimensionless_params_mod
+     use export_logicals_mod
+     use mesh_quality_params_mod
      implicit none
 
      private
@@ -8,6 +20,12 @@
      public :: init,export
 
      type sim_params
+       type(mesh_quality_params) :: MQP
+       type(benchmark_case) :: BMC
+       type(time_marching_params) :: coupled
+       type(dynamic_mesh_refinement) :: DMR
+       type(dimensionless_params) :: DP
+       type(export_logicals) :: EL
        logical :: restart_all
 
        logical :: post_process_only        ! depricated
@@ -16,40 +34,11 @@
        logical :: stop_before_solve
        logical :: stop_after_mesh_export
 
-       logical :: export_analytic
-       logical :: export_meshes
-       logical :: export_mat_props
-       logical :: export_cell_volume
-       logical :: export_ICs
-       logical :: export_planar
-       logical :: export_symmetric
-       logical :: export_mesh_block
-       logical :: export_soln_only
-
-       logical :: solveEnergy
-       logical :: solveMomentum
-       logical :: solveInduction
        logical :: matrix_based
-
-       logical :: dynamic_refinement
-       integer :: n_max_refinements
-       integer :: n_history
-       real(cp) :: SS_tol
-       real(cp) :: SS_tol_final
-       real(cp) :: dt_reduction_factor
 
        logical :: coupled_time_step
        logical :: finite_Rem
        logical :: include_vacuum
-
-       integer :: solveTMethod
-       integer :: solveUMethod
-       integer :: solveBMethod
-
-       logical :: restartT
-       logical :: restartU
-       logical :: restartB
-       logical :: restartB0
 
        logical :: addJCrossB
        logical :: addBuoyancy
@@ -65,56 +54,106 @@
 
      contains
 
-     subroutine init_sim_params(SP)
+     subroutine init_sim_params(SP,DT)
        implicit none
        type(sim_params),intent(inout) :: SP
-       SP%restart_all            = .false.            ! restart sim (requires no code changes)
+       type(dir_tree),intent(in) :: DT
+       logical,parameter :: T = .true.
+       logical,parameter :: F = .false.
+       real(cp) :: time,dtime
+       time                      = 30.0_cp
+       dtime                     = 1.0_cp*pow(-2)
+       SP%restart_all            = F ! restart sim (requires no code changes)
 
-       SP%post_process_only      = .false.            ! Skip solver loop and just post-process results
-       SP%post_process           = .true.             ! Skip solver loop and just post-process results
-       SP%stop_after_mesh_export = .false.            !
-       SP%stop_before_solve      = .true.            ! Just export ICs, do not run simulation
-       SP%skip_solver_loop       = .false.            ! Skip solver loop
+       SP%post_process_only      = F ! Skip solver loop and just post-process results
+       SP%post_process           = F ! Skip solver loop and just post-process results
+       SP%stop_after_mesh_export = F !
+       SP%stop_before_solve      = F ! Just export ICs, do not run simulation
+       SP%skip_solver_loop       = F ! Skip solver loop
 
-       SP%export_analytic        = .false.            ! Export analytic solutions (MOONS.f90)
-       SP%export_meshes          = .true.             ! Export all meshes before starting simulation
-       SP%export_mat_props       = .true.            ! Export material properties before starting simulation
-       SP%export_ICs             = .false.            ! Export Post-Processed ICs before starting simulation
-       SP%export_cell_volume     = .false.            ! Export cell volumes for each mesh
-       SP%export_planar          = .false.            ! Export 2D data when N_cell = 1 along given direction
-       SP%export_symmetric       = .true.             !
-       SP%export_mesh_block      = .false.            ! Export mesh blocks to FECs
-       SP%export_soln_only       = .false.             ! Export processed solution only
+       SP%EL%export_analytic     = F ! Export analytic solutions (MOONS.f90)
+       SP%EL%export_meshes       = T ! Export all meshes before starting simulation
+       SP%EL%export_mat_props    = F ! Export material properties before starting simulation
+       SP%EL%export_ICs          = F ! Export Post-Processed ICs before starting simulation
+       SP%EL%export_cell_volume  = F ! Export cell volumes for each mesh
+       SP%EL%export_planar       = F ! Export 2D data when N_cell = 1 along given direction
+       SP%EL%export_symmetric    = F !
+       SP%EL%export_mesh_block   = F ! Export mesh blocks to FECs
+       SP%EL%export_soln_only    = F ! Export processed solution only
 
-       SP%coupled_time_step      = .true.            ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem             = .true.            ! Ensures all dt are equal to coupled%dt
-       SP%include_vacuum         = .true.            ! Ensures all dt are equal to coupled%dt
+       SP%coupled_time_step      = F ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem             = F ! Ensures all dt are equal to coupled%dt
+       SP%include_vacuum         = F ! Ensures all dt are equal to coupled%dt
 
-       SP%solveEnergy            = .false.            ! Solve energy    equation
-       SP%solveMomentum          = .true.             ! Solve momentum  equation
-       SP%solveInduction         = .true.             ! Solve induction equation
-       SP%matrix_based           = .false.            ! Solve induction equation
+       SP%matrix_based           = F ! Solve induction equation
 
-       SP%dynamic_refinement     = .true.            ! Perform dynamic mesh refinement
-       SP%n_max_refinements      = 2                  ! Maximum number of mesh refinements after SS reached
-       SP%n_history              = 2                  ! number of points to check for SS
-       SP%SS_tol                 = 10.0_cp**(-1.0_cp) ! steady state tolerance
-       SP%SS_tol_final           = 10.0_cp**(-6.0_cp) ! steady state tolerance at finest mesh
-       SP%dt_reduction_factor    = 1.2_cp             ! after prolongate: dt = dt/dt_reduction_factor
+       SP%DP%Re                   = 1.0_cp*pow(2)
+       SP%DP%Ha                   = 1.0_cp*pow(1)
+       SP%DP%Rem                  = 1.0_cp*pow(0)
+       SP%DP%tw                   = 0.5_cp
+       SP%BMC%cw                  = 0.0_cp
+       SP%DP%sig_local_over_sig_f = pow(0)
+       SP%DP%Gr                   = 0.0_cp
+       SP%DP%Pr                   = 0.01_cp
+       SP%DP%Fr                   = 1.0_cp
+       SP%DP%Ec                   = 0.0_cp
+       SP%BMC%geometry            = 9
+       SP%BMC%periodic_dir        = (/0,0,0/)
 
-       SP%restartT               = .false.            ! restart T  field
-       SP%restartU               = .false.            ! restart U  field
-       SP%restartB               = .false.            ! restart B  field
-       SP%restartB0              = .false.            ! restart B0 field
+       ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
+       call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
 
-       SP%solveTMethod           = 5                  ! Refer to energy.f90
-       SP%solveUMethod           = 1                  ! Refer to momentum.f90
-       SP%solveBMethod           = 3                  ! Refer to induction.f90
+       ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
+       call init(SP%MQP,F,1.5_cp,1)
 
-       SP%addJCrossB             = .true.             ! add JCrossB      to momentum equation
-       SP%add_Q2D_JCrossB        = .false.            ! add Q2D JCrossB  to momentum equation
-       SP%addBuoyancy            = .false.            ! add Buoyancy     to momentum equation
-       SP%addGravity             = .false.            ! add Gravity      to momentum equation
+       ! call init_IC_BC(var,IC,BC)
+       call init_IC_BC(SP%BMC%VS%T,  0,0)
+       call init_IC_BC(SP%BMC%VS%U,  0,1)
+       call init_IC_BC(SP%BMC%VS%P,  0,0)
+       call init_IC_BC(SP%BMC%VS%B,  0,1)
+       call init_IC_BC(SP%BMC%VS%B0, 1,0)
+       call init_IC_BC(SP%BMC%VS%phi,0,0)
+
+       ! call init(SS,initialize,solve,restart,solve_method)
+       call init(SP%BMC%VS%T%SS,  T,F,F,0)
+       call init(SP%BMC%VS%U%SS,  T,T,F,1)
+       call init(SP%BMC%VS%P%SS,  T,T,F,1)
+       call init(SP%BMC%VS%B%SS,  T,T,F,1)
+       call init(SP%BMC%VS%B0%SS, T,F,F,0)
+       call init(SP%BMC%VS%phi%SS,T,F,F,0)
+
+       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,name)
+       call init(SP%BMC%VS%T%ISP,  1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_T')
+       call init(SP%BMC%VS%U%ISP,  1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_U')
+       call init(SP%BMC%VS%P%ISP,  5   ,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_P')
+       call init(SP%BMC%VS%B%ISP,  5   ,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_B')
+       call init(SP%BMC%VS%B0%ISP, 1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_B0')
+       call init(SP%BMC%VS%phi%ISP,5   ,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_phi')
+
+       call init(SP%coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
+       ! call init(TMP,n_step_stop,dtime,dir,name)
+       call init(SP%BMC%VS%T%TMP,  SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
+       call init(SP%BMC%VS%U%TMP,  SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
+       call init(SP%BMC%VS%P%TMP,  SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
+       call init(SP%BMC%VS%B%TMP,  SP%coupled%n_step_stop,SP%coupled%dt/pow(2),str(DT%TMP),'TMP_B')
+       call init(SP%BMC%VS%B0%TMP, SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
+       call init(SP%BMC%VS%phi%TMP,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+
+       SP%addJCrossB             = T ! add JCrossB      to momentum equation
+       SP%add_Q2D_JCrossB        = F ! add Q2D JCrossB  to momentum equation
+       SP%addBuoyancy            = F ! add Buoyancy     to momentum equation
+       SP%addGravity             = F ! add Gravity      to momentum equation
+
+       if (SP%coupled_time_step) then
+         call couple_time_step(SP%BMC%VS%T%TMP  ,SP%coupled)
+         call couple_time_step(SP%BMC%VS%U%TMP  ,SP%coupled)
+         call couple_time_step(SP%BMC%VS%P%TMP  ,SP%coupled)
+         call couple_time_step(SP%BMC%VS%B%TMP  ,SP%coupled)
+         call couple_time_step(SP%BMC%VS%B0%TMP ,SP%coupled)
+         call couple_time_step(SP%BMC%VS%phi%TMP,SP%coupled)
+       endif
+       call export_import_SS(SP%BMC%VS)
+       if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
       end subroutine
 
      subroutine init_sim_params_copy(SP,SP_in)
@@ -127,84 +166,46 @@
        SP%post_process           = SP_in%post_process
        SP%skip_solver_loop       = SP_in%skip_solver_loop
        SP%post_process_only      = SP_in%post_process_only
-       SP%export_meshes          = SP_in%export_meshes
-       SP%export_mat_props       = SP_in%export_mat_props
-       SP%export_ICs             = SP_in%export_ICs
-       SP%export_planar          = SP_in%export_planar
-       SP%export_cell_volume     = SP_in%export_cell_volume
-       SP%export_analytic        = SP_in%export_analytic
-       SP%export_symmetric       = SP_in%export_symmetric
-       SP%export_mesh_block      = SP_in%export_mesh_block
-       SP%export_soln_only       = SP_in%export_soln_only
        SP%coupled_time_step      = SP_in%coupled_time_step
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
-       SP%solveEnergy            = SP_in%solveEnergy
-       SP%solveMomentum          = SP_in%solveMomentum
-       SP%solveInduction         = SP_in%solveInduction
        SP%matrix_based           = SP_in%matrix_based
-       SP%dynamic_refinement     = SP_in%dynamic_refinement
-       SP%n_max_refinements      = SP_in%n_max_refinements
-       SP%n_history              = SP_in%n_history
-       SP%SS_tol                 = SP_in%SS_tol
-       SP%SS_tol_final           = SP_in%SS_tol_final
-       SP%dt_reduction_factor    = SP_in%dt_reduction_factor
-       SP%solveTMethod           = SP_in%solveTMethod
-       SP%solveUMethod           = SP_in%solveUMethod
-       SP%solveBMethod           = SP_in%solveBMethod
        SP%addJCrossB             = SP_in%addJCrossB
        SP%addBuoyancy            = SP_in%addBuoyancy
        SP%addGravity             = SP_in%addGravity
        SP%add_Q2D_JCrossB        = SP_in%add_Q2D_JCrossB
-       SP%restartT               = SP_in%restartT
-       SP%restartU               = SP_in%restartU
-       SP%restartB               = SP_in%restartB
-       SP%restartB0              = SP_in%restartB0
+       call init(SP%EL,     SP_in%EL)
+       call init(SP%BMC,    SP_in%BMC)
+       call init(SP%DP,     SP_in%DP)
+       call init(SP%coupled,SP_in%coupled)
+       call init(SP%DMR,    SP_in%DMR)
+       call init(SP%MQP,    SP_in%MQP)
       end subroutine
 
      subroutine export_SP(SP,un)
        implicit none
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
-       write(un,*) 'restart_all=',SP%restart_all
-       write(un,*) 'stop_before_solve=',SP%stop_before_solve
-       write(un,*) 'stop_after_mesh_export=',SP%stop_after_mesh_export
-       write(un,*) 'post_process=',SP%post_process
-       write(un,*) 'skip_solver_loop=',SP%skip_solver_loop
-       write(un,*) 'post_process_only=',SP%post_process_only
-       write(un,*) 'export_meshes=',SP%export_meshes
-       write(un,*) 'export_mat_props=',SP%export_mat_props
-       write(un,*) 'export_ICs=',SP%export_ICs
-       write(un,*) 'export_planar=',SP%export_planar
-       write(un,*) 'export_cell_volume=',SP%export_cell_volume
-       write(un,*) 'export_analytic=',SP%export_analytic
-       write(un,*) 'export_symmetric=',SP%export_symmetric
-       write(un,*) 'export_mesh_block=',SP%export_mesh_block
-       write(un,*) 'export_soln_only=',SP%export_soln_only
-       write(un,*) 'coupled_time_step=',SP%coupled_time_step
-       write(un,*) 'finite_Rem=',SP%finite_Rem
-       write(un,*) 'include_vacuum=',SP%include_vacuum
-       write(un,*) 'solveEnergy=',SP%solveEnergy
-       write(un,*) 'solveMomentum=',SP%solveMomentum
-       write(un,*) 'solveInduction=',SP%solveInduction
-       write(un,*) 'matrix_based=',SP%matrix_based
-       write(un,*) 'dynamic_refinement=',SP%dynamic_refinement
-       write(un,*) 'n_max_refinements=',SP%n_max_refinements
-       write(un,*) 'n_history=',SP%n_history
-       write(un,*) 'SS_tol=',SP%SS_tol
-       write(un,*) 'SS_tol_final=',SP%SS_tol_final
-       write(un,*) 'dt_reduction_factor=',SP%dt_reduction_factor
-       write(un,*) 'solveTMethod=',SP%solveTMethod
-       write(un,*) 'solveUMethod=',SP%solveUMethod
-       write(un,*) 'solveBMethod=',SP%solveBMethod
-       write(un,*) 'addJCrossB=',SP%addJCrossB
-       write(un,*) 'addBuoyancy=',SP%addBuoyancy
-       write(un,*) 'addGravity=',SP%addGravity
-       write(un,*) 'add_Q2D_JCrossB=',SP%add_Q2D_JCrossB
-       write(un,*) 'restartT=',SP%restartT
-       write(un,*) 'restartU=',SP%restartU
-       write(un,*) 'restartB=',SP%restartB
-       write(un,*) 'restartB0=',SP%restartB0
+       write(un,*) 'restart_all            = ',SP%restart_all
+       write(un,*) 'stop_before_solve      = ',SP%stop_before_solve
+       write(un,*) 'stop_after_mesh_export = ',SP%stop_after_mesh_export
+       write(un,*) 'post_process           = ',SP%post_process
+       write(un,*) 'skip_solver_loop       = ',SP%skip_solver_loop
+       write(un,*) 'post_process_only      = ',SP%post_process_only
+       write(un,*) 'coupled_time_step      = ',SP%coupled_time_step
+       write(un,*) 'finite_Rem             = ',SP%finite_Rem
+       write(un,*) 'include_vacuum         = ',SP%include_vacuum
+       write(un,*) 'matrix_based           = ',SP%matrix_based
+       write(un,*) 'addJCrossB             = ',SP%addJCrossB
+       write(un,*) 'addBuoyancy            = ',SP%addBuoyancy
+       write(un,*) 'addGravity             = ',SP%addGravity
+       write(un,*) 'add_Q2D_JCrossB        = ',SP%add_Q2D_JCrossB
+       call export(SP%EL,un)
+       call export(SP%BMC,un)
+       call export(SP%DP,un)
+       call export(SP%DMR,un)
+       call export(SP%MQP,un)
+       call export(SP%coupled,un)
       end subroutine
 
      subroutine export_SP_wrapper(SP,dir,name)

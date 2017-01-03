@@ -28,22 +28,14 @@
          Ha         = 1.0_cp*pow(2)
          Rem        = 1.0_cp*pow(0)
          tw         = 0.5_cp
-
-         ! sig_local_over_sig_f = pow(0)  ! sigma* = sigma_wall/sigma_l
-         ! sig_local_over_sig_f = pow(-1) ! sigma* = sigma_wall/sigma_l
-         ! sig_local_over_sig_f = pow(-2) ! sigma* = sigma_wall/sigma_l
-         sig_local_over_sig_f = pow(-3) ! sigma* = sigma_wall/sigma_l
-         ! sig_local_over_sig_f = pow(-4) ! sigma* = sigma_wall/sigma_l
-         ! sig_local_over_sig_f = pow(-5) ! sigma* = sigma_wall/sigma_l
-         ! sig_local_over_sig_f = pow(-6) ! sigma* = sigma_wall/sigma_l
-
+         sig_local_over_sig_f = pow(-3)
          Gr         = 0.0_cp
          Pr         = 0.01_cp
          Fr         = 1.0_cp
          Ec         = 0.0_cp
 
          ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res)
-         ! call init(ISP_B  , 10000, 10.0_cp**(-5.0_cp),  1.0_cp*10.0_cp**(-7.0_cp) , 100, str(DT%ISP),'ISP_B')
+         ! call init(ISP_B  , 10000, pow(-5),  pow(-7) , 100, str(DT%ISP),'ISP_B')
          call init(ISP_B  ,10000 , pow(-5),  pow(-7) , 100, str(DT%ISP),'ISP_B')
          call init(ISP_U  ,  40  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_U')
          call init(ISP_T  ,   5  , pow(-10), pow(-13), 100, str(DT%ISP),'ISP_T')
@@ -92,65 +84,24 @@
          ! NOTE: tol_rel must be > 10^(-10)
          ! for the PPE, div(u) -> 0 as t-> infinity.
          ! Which means b and r⁰ -> 0 as t-> infinity.
-         if (SP%restartU)      call import(TMP_U)
-         if (.not.SP%restartU) call export(TMP_U)
-         if (SP%restartU)      call import(ISP_U)
-         if (.not.SP%restartU) call export(ISP_U)
-         if (SP%restartU)      call import(ISP_P)
-         if (.not.SP%restartU) call export(ISP_P)
+         if (SP%BMC%VS%U%SS%restart)      call import(TMP_U)
+         if (.not.SP%BMC%VS%U%SS%restart) call export(TMP_U)
+         if (SP%BMC%VS%U%SS%restart)      call import(ISP_U)
+         if (.not.SP%BMC%VS%U%SS%restart) call export(ISP_U)
+         if (SP%BMC%VS%U%SS%restart)      call import(ISP_P)
+         if (.not.SP%BMC%VS%U%SS%restart) call export(ISP_P)
 
-         if (SP%restartB)      call import(TMP_B)
-         if (.not.SP%restartB) call export(TMP_B)
-         if (SP%restartB)      call import(ISP_B)
-         if (.not.SP%restartB) call export(ISP_B)
-         if (SP%restartB)      call import(ISP_phi)
-         if (.not.SP%restartB) call export(ISP_phi)
+         if (SP%BMC%VS%B%SS%restart)      call import(TMP_B)
+         if (.not.SP%BMC%VS%B%SS%restart) call export(TMP_B)
+         if (SP%BMC%VS%B%SS%restart)      call import(ISP_B)
+         if (.not.SP%BMC%VS%B%SS%restart) call export(ISP_B)
+         if (SP%BMC%VS%B%SS%restart)      call import(ISP_phi)
+         if (.not.SP%BMC%VS%B%SS%restart) call export(ISP_phi)
 
-         if (SP%restartT)      call import(TMP_T)
-         if (.not.SP%restartT) call export(TMP_T)
-         if (SP%restartT)      call import(ISP_T)
-         if (.not.SP%restartT) call export(ISP_T)
+         if (SP%BMC%VS%T%SS%restart)      call import(TMP_T)
+         if (.not.SP%BMC%VS%T%SS%restart) call export(TMP_T)
+         if (SP%BMC%VS%T%SS%restart)      call import(ISP_T)
+         if (.not.SP%BMC%VS%T%SS%restart) call export(ISP_T)
        end subroutine
-
-       function get_dt_NME(NME) result(dtime)
-         implicit none
-         integer,intent(in) :: NME
-         real(cp) :: dtime
-         select case (NME)
-         case (1);  dtime = 5.0_cp*pow(-5) ! checked
-         case (2);  dtime = 1.0_cp*pow(-4)
-         case (3);  dtime = 5.0_cp*pow(-5)
-         case (4);  dtime = 1.0_cp*pow(-4)
-         case (5);  dtime = 5.0_cp*pow(-5)
-         case (6);  dtime = 1.0_cp*pow(-4)
-         case (7);  dtime = 1.0_cp*pow(-4)
-         case (8);  dtime = 1.0_cp*pow(-4)
-         case (9);  dtime = 1.0_cp*pow(-4)
-         case (10); dtime = 1.0_cp*pow(-4)
-         case (11); dtime = 5.0_cp*pow(-6)
-         case (12); dtime = 1.0_cp*pow(-4)
-         case (13); dtime = 1.0_cp*pow(-4)
-         case (14); dtime = 1.0_cp*pow(-4)
-         case (15); dtime = 5.0_cp*pow(-6)
-         case (16); dtime = 1.0_cp*pow(-4)
-         case (17); dtime = 1.0_cp*pow(-4)
-         case (18); dtime = 1.0_cp*pow(-4)
-         case (19); dtime = 1.0_cp*pow(-4)
-         case (20); dtime = 1.0_cp*pow(-4)
-         case (21); dtime = 1.0_cp*pow(-4) ! checked
-         case (22); dtime = 1.0_cp*pow(-4)
-         case (23); dtime = 1.0_cp*pow(-4)
-         case (24); dtime = 1.0_cp*pow(-4)
-         case (25); dtime = 1.0_cp*pow(-4)
-         case (26); dtime = 1.0_cp*pow(-4)
-         case (27); dtime = 1.0_cp*pow(-4)
-         case (28); dtime = 1.0_cp*pow(-4)
-         case (29); dtime = 1.0_cp*pow(-4)
-         case (30); dtime = 1.0_cp*pow(-4)
-         case (31); dtime = 1.0_cp*pow(-4)
-         case (32); dtime = 1.0_cp*pow(-4)
-         case default; stop 'Error: bad NME in inputFile.f90'
-         end select
-       end function
 
        end module

@@ -6,7 +6,8 @@
       public :: init,delete,display,print,export,import
 
       public :: assign,add,multiply
-      public :: insert,append
+      public :: insert
+      public :: append,prepend
       public :: pop,snip
 
       public :: reverse
@@ -21,6 +22,7 @@
       interface init;               module procedure init_array_size;            end interface
       interface init;               module procedure init_array_value;           end interface
       interface init;               module procedure init_array;                 end interface
+      interface init;               module procedure init_array_defferred;       end interface
       interface init;               module procedure init_array_copy;            end interface
       interface delete;             module procedure delete_array;               end interface
       interface display;            module procedure display_array;              end interface
@@ -40,6 +42,10 @@
 
       interface insert;             module procedure insert_element_array;       end interface
       interface append;             module procedure append_element_array;       end interface
+      interface append;             module procedure append_A_A;                 end interface
+      interface append;             module procedure append_A_cp;                end interface
+      interface prepend;            module procedure prepend_A_A;                end interface
+      interface prepend;            module procedure prepend_A_cp;               end interface
       interface pop;                module procedure pop_element_array;          end interface
       interface snip;               module procedure snip_element_array;         end interface
 
@@ -94,6 +100,13 @@
 #endif
         call init(A,N)
         A%f = f
+      end subroutine
+
+      subroutine init_array_defferred(A,f)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),dimension(:),intent(in) :: f
+        call init(A,f,size(f))
       end subroutine
 
       subroutine init_array_copy(A,A_in)
@@ -271,6 +284,46 @@
         type(array) :: temp
         call init(temp,A)
         call init(A,(/temp%f,value/),temp%N+1)
+        call delete(temp)
+      end subroutine
+
+      subroutine append_A_A(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+        type(array) :: temp
+        call init(temp,A)
+        call init(A,(/temp%f,B%f/),temp%N+B%N)
+        call delete(temp)
+      end subroutine
+
+      subroutine prepend_A_A(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        type(array),intent(in) :: B
+        type(array) :: temp
+        call init(temp,A)
+        call init(A,(/B%f,temp%f/),temp%N+B%N)
+        call delete(temp)
+      end subroutine
+
+      subroutine append_A_cp(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),dimension(:),intent(in) :: B
+        type(array) :: temp
+        call init(temp,A)
+        call init(A,(/temp%f,B/),temp%N+size(B))
+        call delete(temp)
+      end subroutine
+
+      subroutine prepend_A_cp(A,B)
+        implicit none
+        type(array),intent(inout) :: A
+        real(cp),dimension(:),intent(in) :: B
+        type(array) :: temp
+        call init(temp,A)
+        call init(A,(/B,temp%f/),temp%N+size(B))
         call delete(temp)
       end subroutine
 

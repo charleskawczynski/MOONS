@@ -17,10 +17,10 @@
        use mesh_stencils_mod
        use momentum_solver_mod
        use momentum_aux_mod
-       use init_PBCs_mod
-       use init_UBCs_mod
-       use init_UField_mod
-       use init_PField_mod
+       use init_P_BCs_mod
+       use init_U_BCs_mod
+       use init_U_Field_mod
+       use init_P_Field_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use face_SD_mod
@@ -129,41 +129,38 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_mom(mom,m,SP,TMP,ISP_U,ISP_P,Re,Ha,Gr,Fr,DT)
+       subroutine init_mom(mom,m,SP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
-         type(iter_solver_params),intent(in) :: ISP_U,ISP_P
-         type(time_marching_params),intent(in) :: TMP
-         real(cp),intent(in) :: Re,Ha,Gr,Fr
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: vol_CC
          type(mesh_block) :: MB
          write(*,*) 'Initializing momentum:'
 
-         call init(mom%TMP,TMP)
-         call init(mom%ISP_U,ISP_U)
-         call init(mom%ISP_P,ISP_P)
-         mom%Re = Re
-         mom%Ha = Ha
-         mom%Gr = Gr
-         mom%Fr = Fr
-         mom%L_eta = Re**(-3.0_cp/4.0_cp)
-         mom%U_eta = Re**(-1.0_cp/4.0_cp)
-         mom%t_eta = Re**(-1.0_cp/2.0_cp)
+         call init(mom%TMP,SP%BMC%VS%U%TMP)
+         call init(mom%ISP_U,SP%BMC%VS%U%ISP)
+         call init(mom%ISP_P,SP%BMC%VS%P%ISP)
+         mom%Re = SP%DP%Re
+         mom%Ha = SP%DP%Ha
+         mom%Gr = SP%DP%Gr
+         mom%Fr = SP%DP%Fr
+         mom%L_eta = mom%Re**(-3.0_cp/4.0_cp)
+         mom%U_eta = mom%Re**(-1.0_cp/4.0_cp)
+         mom%t_eta = mom%Re**(-1.0_cp/2.0_cp)
          mom%e_budget = 0.0_cp
 
          call init(mom%SP,SP)
          call init(mom%m,m)
 
-         if (SP%export_mesh_block) then
+         if (SP%EL%export_mesh_block) then
            call init(MB,mom%m%B(1))
            call export_mesh(MB%m,str(DT%meshes),'mom_mesh_block',0)
            call delete(MB)
          endif
-         if (mom%SP%export_cell_volume) then
+         if (SP%EL%export_cell_volume) then
            call init_CC(vol_CC,m)
            call volume(vol_CC,m)
            call export_raw(mom%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
@@ -184,17 +181,17 @@
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
          write(*,*) 'about to define U_BCs'
-         call init_UBCs(mom%U,m)
+         call init_U_BCs(mom%U,m,mom%SP%BMC)
          write(*,*) 'U_BCs defined'
-         call init_PBCs(mom%p,m)
+         call init_P_BCs(mom%p,m,mom%SP%BMC)
          write(*,*) '     BCs initialized'
-         if (mom%SP%solveMomentum) call print_BCs(mom%U,'U')
-         if (mom%SP%solveMomentum) call export_BCs(mom%U,str(DT%U_BCs),'U')
-         if (mom%SP%solveMomentum) call print_BCs(mom%p,'p')
-         if (mom%SP%solveMomentum) call export_BCs(mom%p,str(DT%U_BCs),'p')
+         if (mom%SP%BMC%VS%U%SS%solve) call print_BCs(mom%U,'U')
+         if (mom%SP%BMC%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
+         if (mom%SP%BMC%VS%U%SS%solve) call print_BCs(mom%p,'p')
+         if (mom%SP%BMC%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
 
-         call init_Ufield(mom%U,m,mom%SP%restartU,str(DT%U_f))
-         call init_Pfield(mom%p,m,mom%SP%restartU,str(DT%U_f))
+         call init_U_field(mom%U,m,mom%SP%BMC,str(DT%U%field))
+         call init_P_field(mom%p,m,mom%SP%BMC,str(DT%p%field))
          write(*,*) '     Field initialized'
 
          write(*,*) '     about to apply p BCs'
@@ -212,21 +209,23 @@
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%probe_divU,str(DT%U_r),'probe_divU',mom%SP%restartU,SP)
-         call init(mom%probe_KE,str(DT%U_e),'KE',mom%SP%restartU,SP)
-         if (m%plane_xyz) call init(mom%probe_KE_2C,str(DT%U_e),'KE_2C',mom%SP%restartU,SP)
+         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%BMC%VS%U%SS%restart,SP,.true.)
+         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%BMC%VS%U%SS%restart,SP,.false.)
+         if (m%plane_xyz) then
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%BMC%VS%U%SS%restart,SP,.false.)
+         endif
          write(*,*) '     momentum probes initialized'
 
          ! Initialize interior solvers
-         call init(mom%GS_p,mom%p,mom%m,mom%ISP_P,str(DT%U_r),'p')
+         call init(mom%GS_p,mom%p,mom%m,mom%ISP_P,str(DT%p%residual),'p')
          write(*,*) '     GS solver initialized for p'
 
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&
-         mom%ISP_U,mom%MFP,mom%U,mom%temp_E,str(DT%U_r),'U',.false.,.false.)
+         mom%ISP_U,mom%MFP,mom%U,mom%temp_E,str(DT%U%residual),'U',.false.,.false.)
          write(*,*) '     PCG solver initialized for U'
 
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
-         mom%ISP_P,mom%MFP,mom%p,mom%temp_F,str(DT%U_r),'p',.false.,.false.)
+         mom%ISP_P,mom%MFP,mom%p,mom%temp_F,str(DT%p%residual),'p',.false.,.false.)
          write(*,*) '     PCG solver initialized for p'
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
@@ -274,7 +273,8 @@
          write(un,*) 'Re,Ha = ',mom%Re,mom%Ha
          write(un,*) 'Gr,Fr = ',mom%Gr,mom%Fr
          write(un,*) 't,dt = ',mom%TMP%t,mom%TMP%dt
-         write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%solveUMethod,mom%ISP_U%iter_max,mom%ISP_P%iter_max
+         write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%BMC%VS%U%SS%solve_method,&
+         mom%ISP_U%iter_max,mom%ISP_P%iter_max
          write(un,*) 'tol_mom,tol_PPE = ',mom%ISP_U%tol_rel,mom%ISP_P%tol_rel
          write(un,*) 'nstep,KE = ',mom%TMP%n_step,get_data(mom%probe_KE)
          ! call displayPhysicalMinMax(mom%U,'U',un)
@@ -314,9 +314,9 @@
          call export(mom%MFP,un)
          call close_and_message(un,str(DT%restart),'mom_MFP')
 
-         if (.not.mom%SP%export_soln_only) then
-           call export(mom%U     ,str(DT%restart),'U')
-           call export(mom%p     ,str(DT%restart),'p')
+         if (.not.mom%SP%EL%export_soln_only) then
+           call export(mom%U     ,str(DT%U%restart),'U')
+           call export(mom%p     ,str(DT%p%restart),'p')
          endif
        end subroutine
 
@@ -341,9 +341,9 @@
          call import(mom%MFP,un)
          call close_and_message(un,str(DT%restart),'mom_MFP')
 
-         if (.not.mom%SP%export_soln_only) then
-           call import(mom%U     ,str(DT%restart),'U')
-           call import(mom%p     ,str(DT%restart),'p')
+         if (.not.mom%SP%EL%export_soln_only) then
+           call import(mom%U     ,str(DT%U%restart),'U')
+           call import(mom%p     ,str(DT%p%restart),'p')
          endif
        end subroutine
 
@@ -356,9 +356,9 @@
          type(momentum),intent(in) :: mom
          type(VF),intent(in) :: F
          type(dir_tree),intent(in) :: DT
-         if (.not.mom%SP%export_soln_only) then
-         if (mom%SP%solveInduction.or.mom%SP%solveEnergy) then
-           call export_raw(mom%m,F,str(DT%U_f),'F_external',0)
+         if (.not.mom%SP%EL%export_soln_only) then
+         if (mom%SP%BMC%VS%B%SS%solve.or.mom%SP%BMC%VS%T%SS%solve) then
+           call export_raw(mom%m,F,str(DT%U%field),'F_external',0)
          endif
          endif
          call export_tec_momentum_no_ext(mom,DT)
@@ -367,21 +367,21 @@
          implicit none
          type(momentum),intent(in) :: mom
          type(dir_tree),intent(in) :: DT
-         if (mom%SP%restartU.and.(.not.mom%SP%solveMomentum)) then
+         if (mom%SP%BMC%VS%U%SS%restart.and.(.not.mom%SP%BMC%VS%U%SS%solve)) then
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
-           call export_processed(mom%m,mom%U,str(DT%U_f),'U',1)
-           if (.not.mom%SP%export_soln_only) then
-             call export_processed(mom%m,mom%p,str(DT%U_f),'p',1)
-             call export_raw(mom%m,mom%U,str(DT%U_f),'U',0)
-             call export_raw(mom%m,mom%p,str(DT%U_f),'p',0)
-             if (mom%SP%export_symmetric) then
-              call export_processed(mom%m,mom%U,str(DT%U_f),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
-              call export_processed(mom%m,mom%p,str(DT%U_f),'p',1,6,1.0_cp)
+           call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
+           if (.not.mom%SP%EL%export_soln_only) then
+             call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
+             call export_raw(mom%m,mom%U,str(DT%U%field),'U',0)
+             call export_raw(mom%m,mom%p,str(DT%p%field),'p',0)
+             if (mom%SP%EL%export_symmetric) then
+              call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
+              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,6,1.0_cp)
              endif
-             call export_raw(mom%m,mom%divU,str(DT%U_f),'divU',1)
-             ! call export_processed(mom%m,mom%temp_E,str(DT%U_f),'vorticity',1)
+             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',1)
+             ! call export_processed(mom%m,mom%temp_E,str(DT%U%field),'vorticity',1)
              write(*,*) '     finished'
            endif
          endif
@@ -405,8 +405,10 @@
          implicit none
          type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP,3,24)
-         call export_processed(mom%m,mom%p,str(DT%U_t),'p',1,mom%TMP,3,24)
+         call export_processed(mom%m,mom%U,str(DT%U%transient),'U',1,mom%TMP)
+         call export_processed(mom%m,mom%p,str(DT%U%transient),'p',1,mom%TMP)
+         ! call export_processed(mom%m,mom%U,str(DT%U%transient),'U',1,mom%TMP,3,24)
+         ! call export_processed(mom%m,mom%p,str(DT%U%transient),'p',1,mom%TMP,3,24)
        end subroutine
 
        subroutine set_MFP_mom(mom)
@@ -441,7 +443,7 @@
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         select case(mom%SP%solveUMethod)
+         select case(mom%SP%BMC%VS%U%SS%solve_method)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
@@ -473,8 +475,8 @@
          if (PE%transient_0D) call export_transient1(mom)
          if (PE%transient_2D) call export_transient2(mom,DT)
 
-         ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
-         ! if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U_t),'U',1,mom%TMP)
+         ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U%transient),'U',1,mom%TMP)
+         ! if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U%transient),'U',1,mom%TMP)
 
          if (PE%info) call print(mom)
 
@@ -568,7 +570,7 @@
          logical :: clean_exact
          integer :: i
          write(*,*) '#################### Prolongating momentum solver ####################'
-         call export_processed(mom%m,mom%U,str(DT%U_f),'U_SS_'//str(RM%level_last),1)
+         call export_processed(mom%m,mom%U,str(DT%U%field),'U_SS_'//str(RM%level_last),1)
 
          dir = get_dir(RM)
          if (SS_reached) dir = (/1,2,3/)
@@ -592,16 +594,16 @@
              call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%MFP,dir(i))
            endif
          enddo
-         call init_UBCs(mom%U,mom%m) ! Needed (better) if U_BCs is a distribution
+         call init_U_BCs(mom%U,mom%m,mom%SP%BMC) ! Needed (better) if U_BCs is a distribution
          write(*,*) 'Finished momentum solver prolongation'
          if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
          call apply_BCs(mom%U)
-         call export_processed(mom%m,mom%U,str(DT%U_f),'U_prolongated_'//str(RM%level),1)
+         call export_processed(mom%m,mom%U,str(DT%U%field),'U_prolongated_'//str(RM%level),1)
 
          clean_exact = .false.
          if (clean_exact) then ! Doesn't seem to help any for hydro flows
            call init(temp,mom%PCG_P%ISP)
-           call init(mom%PCG_P%ISP,solve_exact(str(DT%U_r)))
+           call init(mom%PCG_P%ISP,solve_exact(str(DT%U%residual)))
            call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
            call init(mom%PCG_P%ISP,temp)
            call delete(temp)
@@ -611,7 +613,7 @@
            call reset(mom%PCG_P%ISP)
          endif
 
-         call export_processed(mom%m,mom%U,str(DT%U_f),'U_cleaned_'//str(RM%level),1)
+         call export_processed(mom%m,mom%U,str(DT%U%field),'U_cleaned_'//str(RM%level),1)
          write(*,*) '#############################################################'
        end subroutine
 

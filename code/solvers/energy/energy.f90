@@ -24,8 +24,8 @@
 
        use energy_aux_mod
        use energy_solver_mod
-       use init_TBCs_mod
-       use init_Tfield_mod
+       use init_T_BCs_mod
+       use init_T_field_mod
        use init_K_mod
 
        use iter_solver_params_mod
@@ -48,6 +48,7 @@
        public :: energy
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_transient,export_tec
+       public :: prolongate
 
        type energy
          ! --- Vector fields ---
@@ -83,16 +84,19 @@
          logical :: suppress_warning
        end type
 
-       interface init;               module procedure init_energy;             end interface
-       interface delete;             module procedure delete_energy;           end interface
-       interface display;            module procedure display_energy;          end interface
-       interface print;              module procedure print_energy;            end interface
-       interface export;             module procedure export_energy;           end interface
-       interface import;             module procedure import_energy;           end interface
+       interface init;             module procedure init_energy;          end interface
+       interface delete;           module procedure delete_energy;        end interface
+       interface display;          module procedure display_energy;       end interface
+       interface print;            module procedure print_energy;         end interface
+       interface export;           module procedure export_energy;        end interface
+       interface import;           module procedure import_energy;        end interface
 
-       interface solve;              module procedure solve_energy;            end interface
-       interface export_transient;   module procedure export_transient_nrg;    end interface
-       interface export_tec;         module procedure export_tec_energy;       end interface
+       interface solve;            module procedure solve_energy;         end interface
+       interface export_transient; module procedure export_transient_nrg; end interface
+       interface export_tec;       module procedure export_tec_energy;    end interface
+
+       interface set_MFP;          module procedure set_MFP_energy;       end interface
+       interface prolongate;       module procedure prolongate_energy;    end interface
 
        contains
 
@@ -100,25 +104,22 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_energy(nrg,m,SP,MD,TMP,ISP_T,Re,Pr,Ec,Ha,DT)
+       subroutine init_energy(nrg,m,SP,DT,MD)
          implicit none
          type(energy),intent(inout) :: nrg
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
          type(sim_params),intent(in) :: SP
-         type(time_marching_params),intent(in) :: TMP
-         type(iter_solver_params),intent(in) :: ISP_T
-         real(cp),intent(in) :: Re,Pr,Ec,Ha
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: k_cc,vol_CC
          write(*,*) 'Initializing energy:'
-         call init(nrg%TMP,TMP)
-         call init(nrg%ISP_T,ISP_T)
-         nrg%Re = Re
-         nrg%Pr = Pr
-         nrg%Ec = Ec
-         nrg%Ha = Ha
+         call init(nrg%TMP,SP%BMC%VS%T%TMP)
+         call init(nrg%ISP_T,SP%BMC%VS%T%ISP)
+         nrg%Re = SP%DP%Re
+         nrg%Pr = SP%DP%Pr
+         nrg%Ec = SP%DP%Ec
+         nrg%Ha = SP%DP%Ha
          call init(nrg%SP,SP)
 
          call init(nrg%m,m)
@@ -140,19 +141,19 @@
          call init_CC(nrg%divQ,m)
          call init_CC(vol_CC,m)
          call volume(vol_CC,m)
-         if (nrg%SP%export_cell_volume) then
+         if (nrg%SP%EL%export_cell_volume) then
            call export_raw(nrg%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
          endif
          call delete(vol_CC)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call init_TBCs(nrg%T,nrg%m)
-         if (nrg%SP%solveEnergy) call print_BCs(nrg%T,'T')
-         if (nrg%SP%solveEnergy) call export_BCs(nrg%T,str(DT%T_BCs),'T')
+         call init_T_BCs(nrg%T,nrg%m,nrg%SP%BMC)
+         if (nrg%SP%BMC%VS%T%SS%solve) call print_BCs(nrg%T,'T')
+         if (nrg%SP%BMC%VS%T%SS%solve) call export_BCs(nrg%T,str(DT%T%BCs),'T')
          write(*,*) '     BCs initialized'
 
-         call initTfield(nrg%T,m,nrg%SP%restartT,str(DT%T))
+         call init_T_field(nrg%T,m,nrg%SP%BMC,str(DT%T%residual))
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T)
@@ -164,11 +165,11 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%probe_divQ,str(DT%T),'probe_divQ',nrg%SP%restartT,SP)
+         call init(nrg%probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%BMC%VS%T%SS%restart,SP,.true.)
 
-         nrg%MFP%coeff = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
+         call set_MFP(nrg)
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
-         nrg%ISP_T,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T),'T',.false.,.false.)
+         nrg%ISP_T,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
          call print(nrg)
@@ -217,7 +218,7 @@
          write(un,*) 'Re,Pr = ',nrg%Re,nrg%Pr
          write(un,*) 'Ec,Ha = ',nrg%Ec,nrg%Ha
          write(un,*) 't,dt = ',nrg%TMP%t,nrg%TMP%dt
-         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%solveTMethod,nrg%ISP_T%iter_max
+         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%BMC%VS%T%SS%solve_method,nrg%ISP_T%iter_max
          write(un,*) 'tol_nrg = ',nrg%ISP_T%tol_rel
          call displayPhysicalMinMax(nrg%T,'T',un)
          call displayPhysicalMinMax(nrg%divQ,'divQ',un)
@@ -282,11 +283,11 @@
          implicit none
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
-         if (nrg%SP%solveEnergy) then
+         if (nrg%SP%BMC%VS%T%SS%solve) then
            write(*,*) 'export_tec_energy at nrg%TMP%n_step = ',nrg%TMP%n_step
-           call export_processed(nrg%m,nrg%T,str(DT%T),'T',0)
-           call export_raw(nrg%m,nrg%T,str(DT%T),'T',0)
-           call export_raw(nrg%m,nrg%divQ,str(DT%T),'divQ',0)
+           call export_processed(nrg%m,nrg%T,str(DT%T%field),'T',0)
+           call export_raw(nrg%m,nrg%T,str(DT%T%field),'T',0)
+           call export_raw(nrg%m,nrg%divQ,str(DT%T%field),'divQ',0)
            write(*,*) '     finished'
          endif
        end subroutine
@@ -297,6 +298,12 @@
          real(cp) :: temp
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
          call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP,temp)
+       end subroutine
+
+       subroutine set_MFP_energy(nrg)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         nrg%MFP%coeff = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
        end subroutine
 
        subroutine solve_energy(nrg,U,PE,EN,DT)
@@ -311,7 +318,7 @@
 
          call embed_velocity_F(nrg%U_F,U,nrg%MD)
 
-         select case (nrg%SP%solveTMethod)
+         select case (nrg%SP%BMC%VS%T%SS%solve_method)
          case (1)
          call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
@@ -355,6 +362,48 @@
            call export(nrg,DT)
            call export_tec(nrg,DT)
          endif
+       end subroutine
+
+       subroutine prolongate_energy(nrg,DT,RM,SS_reached)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(dir_tree),intent(in) :: DT
+         type(refine_mesh),intent(in) :: RM
+         logical,intent(in) :: SS_reached
+         integer,dimension(3) :: dir
+         integer :: i
+         write(*,*) '#################### Prolongating induction solver ####################'
+         call export_processed(nrg%m,nrg%T,str(DT%T%field),'T_SS_'//str(RM%level_last),1)
+
+         dir = get_dir(RM)
+         if (SS_reached) dir = (/1,2,3/)
+         do i=1,3
+           if (dir(i).ne.0) then
+             write(*,*) 'Prolongating energy solver along direction ',i
+             call prolongate(nrg%m,dir(i))
+             call prolongate(nrg%MD,dir(i))
+
+             call prolongate(nrg%T,nrg%m,dir(i))
+             call prolongate(nrg%temp_CC1,nrg%m,dir(i))
+             call prolongate(nrg%temp_CC2,nrg%m,dir(i))
+             call prolongate(nrg%temp_F,nrg%m,dir(i))
+             call prolongate(nrg%k,nrg%m,dir(i))
+             call prolongate(nrg%U_F,nrg%m,dir(i))
+             call prolongate(nrg%gravity,nrg%m,dir(i))
+             call prolongate(nrg%temp_CC1_VF,nrg%m,dir(i))
+             call prolongate(nrg%temp_CC2_VF,nrg%m,dir(i))
+             call prolongate(nrg%divQ,nrg%m,dir(i))
+             call prolongate(nrg%Q_source,nrg%m,dir(i))
+
+             call set_MFP(nrg)
+             call prolongate(nrg%PCG_T,nrg%m,nrg%k,nrg%MFP,dir(i))
+           endif
+         enddo
+
+         write(*,*) 'Finished nrguction solver prolongation'
+         call apply_BCs(nrg%T)
+         call export_processed(nrg%m,nrg%T,str(DT%T%field),'T_prolongated_'//str(RM%level),1)
+         write(*,*) '#############################################################'
        end subroutine
 
        end module

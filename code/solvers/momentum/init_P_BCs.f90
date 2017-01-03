@@ -1,37 +1,41 @@
-       module init_PBCs_mod
+       module init_P_BCs_mod
        use current_precision_mod
        use BC_funcs_mod
        use grid_mod
        use mesh_mod
        use boundary_conditions_mod
        use SF_mod
+       use benchmark_case_mod
        implicit none
 
        private
-       public :: init_PBCs
-
-       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       ! Default = pure Neumann on all sides
-       integer :: preDefinedP_BCs = 0 ! see cases in init_PBCs
+       public :: init_P_BCs
 
        contains
 
-       subroutine init_PBCs(p,m)
+       subroutine init_P_BCs(p,m,BMC)
          implicit none
          type(SF),intent(inout) :: p
          type(mesh),intent(in) :: m
+         type(benchmark_case),intent(in) :: BMC
+         integer,dimension(3) :: periodic_dir
+         integer :: preset_ID
          call init_BC_mesh(p,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          call Neumann_BCs(p,m) ! Default
          p%all_Neumann = .true. ! Needs to be adjusted manually
 
-         select case (preDefinedP_BCs)
+         preset_ID = BMC%VS%P%BC
+         periodic_dir = BMC%periodic_dir
+         ! preset_ID = 1 ! manual override
+
+         select case (preset_ID)
          case (0) ! Pure Neumann default
          case (1); call flow_past_2D_square(p)
          case (2); call duct_flow_2D(p)
          case (3); call duct_flow_2D_2domains(p)
          case (4); call periodic_duct_flow(p)
-         case default; stop 'Error: preDefinedP_BCs must = 1:5 in init_PBCs in init_PBCs.f90.'
+         case default; stop 'Error: bad preset_ID in init_PBCs.f90.'
          end select
          call make_periodic(p,m,periodic_dir)
          call init_BC_props(p)

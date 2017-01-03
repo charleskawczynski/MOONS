@@ -27,6 +27,9 @@
       ! For getting surface / edge corner
       public :: get_GI
       public :: get_boundary
+      public :: add_ghost_nodes
+      public :: prepend_ghost
+      public :: append_ghost
 
 #ifdef _DEBUG_COORDINATES_
       public :: checkCoordinates
@@ -70,6 +73,7 @@
 
       interface init;              module procedure init_c;                 end interface
       interface init;              module procedure init_copy_c;            end interface
+      interface init;              module procedure init_array_c;           end interface
       interface delete;            module procedure delete_c;               end interface
       interface display;           module procedure display_c;              end interface
       interface print;             module procedure print_c;                end interface
@@ -95,12 +99,21 @@
 
       interface init_props;        module procedure init_props_c;           end interface
       interface add_ghost_nodes;   module procedure add_ghost_nodes_c;      end interface
+      interface prepend_ghost;     module procedure prepend_ghost_c;        end interface
+      interface append_ghost;      module procedure append_ghost_c;         end interface
 
       contains
 
       ! **********************************************************
       ! ********************* ESSENTIALS *************************
       ! **********************************************************
+
+      subroutine init_array_c(c,hn)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        type(array),intent(in) :: hn
+        call init(c,hn%f,hn%N)
+      end subroutine
 
       subroutine init_c(c,hn,sn)
         ! Here is a picture how coordinates are initialized for different cases:
@@ -250,6 +263,8 @@
         do i=1,2; call delete(c%colCC(i)); enddo
         c%dhc_e = 0.0_cp
         c%dhn_e = 0.0_cp
+        c%hc_e = 0.0_cp
+        c%hn_e = 0.0_cp
         c%defined = .false.
         c%i_midplane = 0
         c%stencils_defined = .false.
@@ -659,9 +674,31 @@
         implicit none
         type(coordinates),intent(inout) :: c
         if (c%sn.gt.1) then
-        call init(c,(/c%hn%f(1)-c%dhn%f(1),c%hn%f,c%hn%f(c%sn)+(c%dhn%f(c%sn-1))/),c%sn+2)
+          call init(c,(/c%hn%f(1)-c%dhn%f(1),c%hn%f,c%hn%f(c%sn)+c%dhn_e/),c%sn+2)
         else
-          write(*,*) 'Trying to add ghost point to a single point'
+          write(*,*) 'Error: Trying to add ghost point to a single point'
+          stop 'program stopped in coordinates.f90'
+        endif
+      end subroutine
+
+      subroutine prepend_ghost_c(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        if (c%sn.gt.1) then
+        call init(c,(/c%hn%f(1)-c%dhn%f(1),c%hn%f/),c%sn+1)
+        else
+          write(*,*) 'Error: Trying to prepend ghost point to a single point'
+          stop 'program stopped in coordinates.f90'
+        endif
+      end subroutine
+
+      subroutine append_ghost_c(c)
+        implicit none
+        type(coordinates),intent(inout) :: c
+        if (c%sn.gt.1) then
+        call init(c,(/c%hn%f,c%hn%f(c%sn)+c%dhn_e/),c%sn+1)
+        else
+          write(*,*) 'Error: Trying to append ghost point to a single point'
           stop 'program stopped in coordinates.f90'
         endif
       end subroutine

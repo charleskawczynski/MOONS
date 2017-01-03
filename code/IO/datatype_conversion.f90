@@ -1,4 +1,5 @@
       module datatype_conversion_mod
+      ! NOTE: the string length and the fmt must match!
       use current_precision_mod
       use string_mod
       implicit none
@@ -13,7 +14,7 @@
 
       contains
 
-      function log2Str(L) result(s) ! NOTE: the string length and the fmt must match!
+      function log2Str(L) result(s)
         implicit none
         logical,intent(in) :: L
         character(len=2) :: s
@@ -21,7 +22,7 @@
         s = trim(adjustl(s))
       end function
 
-      function int2Str_reg(i) result(s) ! NOTE: the string length and the fmt must match!
+      function int2Str_reg(i) result(s)
         implicit none
         integer,intent(in) :: i
         character(len=15) :: s
@@ -29,7 +30,7 @@
         s = trim(adjustl(s))
       end function
 
-      function int2Str_li(i) result(s) ! NOTE: the string length and the fmt must match!
+      function int2Str_li(i) result(s)
         implicit none
         integer(li),intent(in) :: i
         character(len=15) :: s
@@ -37,7 +38,7 @@
         s = trim(adjustl(s))
       end function
 
-      function cp2Str(f) result(s) ! NOTE: the string length and the fmt must match!
+      function cp2Str(f) result(s)
         implicit none
         real(cp),intent(in) :: f
         character(len=15) :: s
@@ -45,7 +46,7 @@
         s = trim(adjustl(s))
       end function
 
-      function int2Str2(i) result(s) ! NOTE: the string length and the fmt must match!
+      function int2Str2(i) result(s)
         implicit none
         integer,intent(in) :: i
         character(len=15) :: s
@@ -53,7 +54,7 @@
         s = trim(adjustl(s))
       end function
 
-      function num2Str(i) result(s) ! NOTE: the string length and the fmt must match!
+      function num2Str(i) result(s)
         implicit none
         real(cp),intent(in) :: i
         character(len=15) :: s

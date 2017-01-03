@@ -1,7 +1,7 @@
       module dir_tree_mod
-      ! use IO_tools_mod
       use string_mod
       use path_mod
+      use dir_group_mod
       implicit none
 
       private
@@ -18,17 +18,14 @@
         ! type(string) :: sim_suffix
         type(string) :: tar     ! absolute target directory (.exe location)
 
-        type(path) :: tar_p,out_dir,LDC,mat,meshes,params,BEM,wall_clock
+        type(path) :: tar_p,out_dir,LDC
+        type(path) :: mat,meshes,BEM,wall_clock
+        type(path) :: params,ISP,TMP,PE,export_now,refine_mesh
         type(path) :: e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
 
-        type(path) :: ISP,TMP,PE,export_now,refine_mesh
-        type(path) :: U,B,J,T
-        type(path) :: U_e,B_e,J_e,T_e ! energy data
-        type(path) :: U_f,B_f,J_f,T_f ! field data
-        type(path) :: U_r,B_r,J_r,T_r ! residual data
-        type(path) :: U_t,B_t,J_t,T_t ! transient data
-        type(path) :: U_BCs,B_BCs,T_BCs ! BCs
+        type(path) :: unknowns
+        type(dir_group) :: U,B,J,T,p,phi
       end type
 
       contains
@@ -65,36 +62,21 @@
         call init(DT%refine_mesh ,DT%params      ,'refine_mesh',str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
         call init(DT%restart_sim ,DT%LDC         ,'restart'    ,str(DT%PS))
-        call init(DT%U           ,DT%LDC         ,'Ufield'     ,str(DT%PS))
-        call init(DT%B           ,DT%LDC         ,'Bfield'     ,str(DT%PS))
-        call init(DT%J           ,DT%LDC         ,'Jfield'     ,str(DT%PS))
-        call init(DT%T           ,DT%LDC         ,'Tfield'     ,str(DT%PS))
 
         call init(DT%e_budget_N  ,DT%e_budget    ,'e_budget_N' ,str(DT%PS))
         call init(DT%e_budget_C  ,DT%e_budget    ,'e_budget_C' ,str(DT%PS))
         call init(DT%restart1    ,DT%restart_sim ,'restart1'   ,str(DT%PS))
         call init(DT%restart2    ,DT%restart_sim ,'restart2'   ,str(DT%PS))
-        call init(DT%U_e         ,DT%U           ,'energy'     ,str(DT%PS))
-        call init(DT%B_e         ,DT%B           ,'energy'     ,str(DT%PS))
-        call init(DT%J_e         ,DT%J           ,'energy'     ,str(DT%PS))
-        call init(DT%T_e         ,DT%T           ,'energy'     ,str(DT%PS))
-        call init(DT%U_r         ,DT%U           ,'res'        ,str(DT%PS))
-        call init(DT%B_r         ,DT%B           ,'res'        ,str(DT%PS))
-        call init(DT%J_r         ,DT%J           ,'res'        ,str(DT%PS))
-        call init(DT%T_r         ,DT%T           ,'res'        ,str(DT%PS))
-        call init(DT%U_f         ,DT%U           ,'field'      ,str(DT%PS))
-        call init(DT%B_f         ,DT%B           ,'field'      ,str(DT%PS))
-        call init(DT%J_f         ,DT%J           ,'field'      ,str(DT%PS))
-        call init(DT%T_f         ,DT%T           ,'field'      ,str(DT%PS))
-        call init(DT%U_BCs       ,DT%U           ,'BCs'        ,str(DT%PS))
-        call init(DT%B_BCs       ,DT%B           ,'BCs'        ,str(DT%PS))
-        call init(DT%T_BCs       ,DT%T           ,'BCs'        ,str(DT%PS))
-        call init(DT%U_t         ,DT%U_f         ,'transient'  ,str(DT%PS))
-        call init(DT%B_t         ,DT%B_f         ,'transient'  ,str(DT%PS))
-        call init(DT%J_t         ,DT%J_f         ,'transient'  ,str(DT%PS))
-        call init(DT%T_t         ,DT%T_f         ,'transient'  ,str(DT%PS))
 
         call init(DT%restart,DT%restart1)
+
+        call init(DT%unknowns    ,DT%LDC         ,'unknowns'   ,str(DT%PS))
+        call init(DT%U  ,DT%unknowns,'U'  ,str(DT%PS))
+        call init(DT%T  ,DT%unknowns,'T'  ,str(DT%PS))
+        call init(DT%B  ,DT%unknowns,'B'  ,str(DT%PS))
+        call init(DT%J  ,DT%unknowns,'J'  ,str(DT%PS))
+        call init(DT%p  ,DT%unknowns,'p'  ,str(DT%PS))
+        call init(DT%phi,DT%unknowns,'phi',str(DT%PS))
 
         call make_dir_tree(DT)
         call oldest_modified_file(temp,DT%restart1,DT%restart2,'p.dat')
@@ -124,29 +106,13 @@
         call make_dir(str(DT%restart1))
         call make_dir(str(DT%restart2))
 
-        call make_dir(str(DT%U))
-        call make_dir(str(DT%B))
-        call make_dir(str(DT%J))
-        call make_dir(str(DT%T))
-
-        call make_dir(str(DT%U_e))
-        call make_dir(str(DT%B_e))
-        call make_dir(str(DT%J_e))
-        call make_dir(str(DT%T_e))
-
-        call make_dir(str(DT%U_BCs))
-        call make_dir(str(DT%B_BCs))
-        call make_dir(str(DT%T_BCs))
-
-        call make_dir(str(DT%U_r))
-        call make_dir(str(DT%B_r))
-        call make_dir(str(DT%J_r))
-        call make_dir(str(DT%T_r))
-
-        call make_dir(str(DT%U_f)); call make_dir(str(DT%U_t))
-        call make_dir(str(DT%B_f)); call make_dir(str(DT%B_t))
-        call make_dir(str(DT%J_f)); call make_dir(str(DT%J_t))
-        call make_dir(str(DT%T_f)); call make_dir(str(DT%T_t))
+        call make_dir(str(DT%unknowns))
+        call make_dir_group(DT%U)
+        call make_dir_group(DT%T)
+        call make_dir_group(DT%B)
+        call make_dir_group(DT%J)
+        call make_dir_group(DT%p)
+        call make_dir_group(DT%phi)
       end subroutine
 
       subroutine delete_DT(DT)
@@ -173,34 +139,13 @@
         call delete(DT%restart1)
         call delete(DT%restart2)
 
+        call delete(DT%unknowns)
+        call delete(DT%T)
         call delete(DT%U)
         call delete(DT%B)
         call delete(DT%J)
-        call delete(DT%T)
-
-        call delete(DT%U_t)
-        call delete(DT%B_t)
-        call delete(DT%J_t)
-        call delete(DT%T_t)
-
-        call delete(DT%U_BCs)
-        call delete(DT%B_BCs)
-        call delete(DT%T_BCs)
-
-        call delete(DT%U_e)
-        call delete(DT%B_e)
-        call delete(DT%J_e)
-        call delete(DT%T_e)
-
-        call delete(DT%U_r)
-        call delete(DT%B_r)
-        call delete(DT%J_r)
-        call delete(DT%T_r)
-
-        call delete(DT%U_f)
-        call delete(DT%B_f)
-        call delete(DT%J_f)
-        call delete(DT%T_f)
+        call delete(DT%p)
+        call delete(DT%phi)
       end subroutine
 
       subroutine draw_DT()

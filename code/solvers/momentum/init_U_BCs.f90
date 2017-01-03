@@ -1,4 +1,4 @@
-       module init_UBCs_mod
+       module init_U_BCs_mod
        use current_precision_mod
        use BC_funcs_mod
        use grid_mod
@@ -11,27 +11,32 @@
        use VF_mod
        use profile_funcs_mod
        use face_edge_corner_indexing_mod
+       use benchmark_case_mod
        implicit none
 
        private
-       public :: init_UBCs
-       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       ! Default = no-slip
-       integer :: preDefinedU_BCs = 13 ! See init_UBCs for details
+       public :: init_U_BCs
 
        contains
 
-       subroutine init_UBCs(U,m)
+       subroutine init_U_BCs(U,m,BMC)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
+         type(benchmark_case),intent(in) :: BMC
+         integer,dimension(3) :: periodic_dir
+         integer :: preset_ID
          call init_BC_mesh(U%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(U%z,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          call Dirichlet_BCs(U,m)
 
-         select case (preDefinedU_BCs)
+         preset_ID = BMC%VS%U%BC
+         periodic_dir = BMC%periodic_dir
+         ! preset_ID = 1 ! manual override
+
+         select case (preset_ID)
          case (0);
          case (1); call LDC_1_domain(U)
          case (2); call LDC_1_domain_smooth(U,m)
@@ -46,7 +51,7 @@
          case (11); call fully_developed_duct_flow(U,m,1)
          case (12); call periodic_duct_flow(U)
          case (13); call LDC_1_domain_symmetric_zmax(U)
-         case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
+         case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
          call init_BC_props(U)

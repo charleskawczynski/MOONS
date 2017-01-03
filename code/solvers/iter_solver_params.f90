@@ -43,7 +43,9 @@
        interface init;              module procedure init_copy_ISP;         end interface
        interface delete;            module procedure delete_ISP;            end interface
        interface export;            module procedure export_ISP;            end interface
+       interface export;            module procedure export_ISP_wrapper;    end interface
        interface import;            module procedure import_ISP;            end interface
+       interface import;            module procedure import_ISP_wrapper;    end interface
        interface display;           module procedure display_ISP;           end interface
        interface print;             module procedure print_ISP;             end interface
        interface display_exit_loop; module procedure display_exit_loop_ISP; end interface
@@ -126,11 +128,10 @@
          call delete(ISP%name)
        end subroutine
 
-       subroutine export_ISP(ISP)
+       subroutine export_ISP(ISP,un)
          implicit none
          type(iter_solver_params),intent(in) :: ISP
-         integer :: un
-         un = new_and_open(str(ISP%dir),str(ISP%name))
+         integer,intent(in) :: un
          write(un,*) 'iter_max = ';             write(un,*) ISP%iter_max
          write(un,*) 'tol_rel = ';              write(un,*) ISP%tol_rel
          write(un,*) 'tol_abs = ';              write(un,*) ISP%tol_abs
@@ -141,14 +142,21 @@
          write(un,*) 'buffer = ';               write(un,*) ISP%buffer
          write(un,*) 'scale = ';                write(un,*) ISP%scale
          write(un,*) 'exit_loop = ';            write(un,*) ISP%exit_loop
+       end subroutine
+
+       subroutine export_ISP_wrapper(ISP)
+         implicit none
+         type(iter_solver_params),intent(in) :: ISP
+         integer :: un
+         un = new_and_open(str(ISP%dir),str(ISP%name))
+         call export(ISP,un)
          close(un)
        end subroutine
 
-       subroutine import_ISP(ISP)
+       subroutine import_ISP(ISP,un)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         integer :: un
-         un = open_to_read(str(ISP%dir),str(ISP%name))
+         integer,intent(in) :: un
          read(un,*); read(un,*) ISP%iter_max
          read(un,*); read(un,*) ISP%tol_rel
          read(un,*); read(un,*) ISP%tol_abs
@@ -159,6 +167,14 @@
          read(un,*); read(un,*) ISP%buffer
          read(un,*); read(un,*) ISP%scale
          read(un,*); read(un,*) ISP%exit_loop
+       end subroutine
+
+       subroutine import_ISP_wrapper(ISP)
+         implicit none
+         type(iter_solver_params),intent(inout) :: ISP
+         integer :: un
+         un = open_to_read(str(ISP%dir),str(ISP%name))
+         call import(ISP,un)
          close(un)
        end subroutine
 

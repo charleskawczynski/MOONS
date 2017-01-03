@@ -1,6 +1,5 @@
        module time_marching_params_mod
        use current_precision_mod
-       use sim_params_mod
        use string_mod
        use IO_tools_mod
        implicit none
@@ -27,7 +26,9 @@
        interface init;             module procedure init_copy_TMP;        end interface
        interface delete;           module procedure delete_TMP;           end interface
        interface export;           module procedure export_TMP;           end interface
+       interface export;           module procedure export_TMP_wrapper;   end interface
        interface import;           module procedure import_TMP;           end interface
+       interface import;           module procedure import_TMP_wrapper;   end interface
        interface display;          module procedure display_TMP;          end interface
        interface print;            module procedure print_TMP;            end interface
        interface iterate_step;     module procedure iterate_step_TMP;     end interface
@@ -87,31 +88,45 @@
          TMP%un = 0
        end subroutine
 
-       subroutine export_TMP(TMP)
+       subroutine export_TMP(TMP,un)
          implicit none
          type(time_marching_params),intent(in) :: TMP
-         integer :: un
-         un = new_and_open(str(TMP%dir),str(TMP%name))
+         integer,intent(in) :: un
          write(un,*) 'n_step_start = ';write(un,*) TMP%n_step_start
          write(un,*) 'n_step = ';      write(un,*) TMP%n_step
          write(un,*) 'n_step_stop = '; write(un,*) TMP%n_step_stop
          write(un,*) 't = ';           write(un,*) TMP%t
          write(un,*) 't_final = ';     write(un,*) TMP%t_final
          write(un,*) 'dt = ';          write(un,*) TMP%dt
+       end subroutine
+
+       subroutine export_TMP_wrapper(TMP)
+         implicit none
+         type(time_marching_params),intent(in) :: TMP
+         integer :: un
+         un = new_and_open(str(TMP%dir),str(TMP%name))
+         call export(TMP,un)
          call close_and_message(un,str(TMP%dir),str(TMP%name))
        end subroutine
 
-       subroutine import_TMP(TMP)
+       subroutine import_TMP(TMP,un)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         integer :: un
-         un = open_to_read(str(TMP%dir),str(TMP%name))
+         integer,intent(in) :: un
          read(un,*); read(un,*) TMP%n_step_start
          read(un,*); read(un,*) TMP%n_step
          read(un,*); read(un,*) TMP%n_step_stop
          read(un,*); read(un,*) TMP%t
          read(un,*); read(un,*) TMP%t_final
          read(un,*); read(un,*) TMP%dt
+       end subroutine
+
+       subroutine import_TMP_wrapper(TMP)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         integer :: un
+         un = open_to_read(str(TMP%dir),str(TMP%name))
+         call import(TMP,un)
          call close_and_message(un,str(TMP%dir),str(TMP%name))
        end subroutine
 
@@ -154,12 +169,12 @@
          TMP%n_step = coupled%n_step
        end subroutine
 
-       subroutine prolongate_TMP(TMP,SP)
+       subroutine prolongate_TMP(TMP,dt_reduction_factor)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         type(sim_params),intent(in) :: SP
-         TMP%dt = TMP%dt*1.0_cp/SP%dt_reduction_factor
-         TMP%n_step_stop = TMP%n_step_stop*ceiling(SP%dt_reduction_factor)
+         real(cp),intent(in) :: dt_reduction_factor
+         TMP%dt = TMP%dt*1.0_cp/dt_reduction_factor
+         TMP%n_step_stop = TMP%n_step_stop*ceiling(dt_reduction_factor)
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
        end subroutine
 

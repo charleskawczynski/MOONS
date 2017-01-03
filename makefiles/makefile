@@ -224,6 +224,7 @@ TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 # **************** INCLUDE PATHS ********************
 VPATH =\
 	$(TARGET_DIR)\
+	$(SRC_DIR)$(PS)associative_array\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
 	$(SRC_DIR)$(PS)BCs$(PS)apply\
@@ -299,10 +300,21 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)inquire_funcs.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_check.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
+	$(SRC_DIR)$(PS)user$(PS)preset_ID.f90\
+	$(SRC_DIR)$(PS)associative_array$(PS)key_value_pair.f90\
+	$(SRC_DIR)$(PS)associative_array$(PS)associative_array.f90\
+	$(SRC_DIR)$(PS)user$(PS)export_logicals.f90\
+	$(SRC_DIR)$(PS)user$(PS)dimensionless_params.f90\
+	$(SRC_DIR)$(PS)user$(PS)mesh_quality_params.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)solver_settings.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)dynamic_mesh_refinement.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
+	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
@@ -314,8 +326,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs_iterate.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_genHelper.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
@@ -383,23 +395,24 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
+	$(SRC_DIR)$(PS)user$(PS)var.f90\
+	$(SRC_DIR)$(PS)user$(PS)var_set.f90\
+	$(SRC_DIR)$(PS)user$(PS)benchmark_cases.f90\
+	$(SRC_DIR)$(PS)user$(PS)benchmark_case.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_simple_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_PD_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries_symmetric.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_geometries.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_import.f90\
@@ -428,7 +441,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
@@ -449,8 +461,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_TBCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_Tfield.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_solver.f90\
@@ -459,10 +471,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)vorticity_streamfunction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)export_analytic.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_UBCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_PBCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ufield.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Pfield.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
@@ -473,9 +485,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phiBCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_BBCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bfield.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B0_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
@@ -484,7 +498,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
-	$(SRC_DIR)$(PS)user$(PS)inputFile.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90

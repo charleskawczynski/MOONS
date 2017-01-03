@@ -1,4 +1,4 @@
-       module init_BBCs_mod
+       module init_B_BCs_mod
        use current_precision_mod
        use BC_funcs_mod
        use grid_mod
@@ -6,29 +6,22 @@
        use boundary_conditions_mod
        use SF_mod
        use VF_mod
+       use benchmark_case_mod
        implicit none
 
        private
-
-       integer,dimension(3) :: periodic_dir = (/0,0,0/) ! 1 = true, else false
-       integer :: preDefinedB_BCs = 7
-       real(cp) :: cw = 0.0_cp
-       ! real(cp) :: cw = 0.05_cp
-       ! real(cp) :: cw = 0.01_cp
-       !                                      0 : B = 0
-       !                                      1 : Psuedo-vaccuum BCs (dBn/dn = 0, B_tangential = 0)
-       !                                      2 : Bandaru
-       !                                      3 : Periodic duct flow
-       !                                      4 : Thin wall
-
-       public :: init_BBCs
+       public :: init_B_BCs
 
        contains
 
-       subroutine init_BBCs(B,m)
+       subroutine init_B_BCs(B,m,BMC)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
+         type(benchmark_case),intent(in) :: BMC
+         integer,dimension(3) :: periodic_dir
+         integer :: preset_ID
+         real(cp) :: cw
 
          call init_BC_mesh(B%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(B%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
@@ -36,7 +29,12 @@
 
          call Dirichlet_BCs(B,m)
 
-         select case (preDefinedB_BCs)
+         preset_ID = BMC%VS%B%BC
+         periodic_dir = BMC%periodic_dir
+         cw = BMC%cw
+         ! preset_ID = 1 ! manual override
+
+         select case (preset_ID)
          case (0);
          case (1); call pseudo_vacuum(B,m)
          case (2); call initBandaru(B)
@@ -45,7 +43,7 @@
          case (5); call thin_wall_LDC(B,m,cw)
          case (6); call thin_wall_Hunt(B,m,cw)
          case (7); call symmetric_zmax(B,m)
-         case default; stop 'Error: preDefinedU_BCs must = 1:5 in init_UBCs in init_UBCs.f90'
+         case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
 
          call make_periodic(B,m,periodic_dir)

@@ -53,6 +53,11 @@
         public :: fringe_ALEX
         public :: fringe_SERGEY
         public :: smooth_lid
+        public :: fully_developed_duct_velocity
+        public :: isolated_2D_eddy
+        public :: single_2D_eddy
+        public :: cylinder_2D_velocity
+        public :: parabolic_1D
 
         public :: laplacian
         public :: curl_curl_x

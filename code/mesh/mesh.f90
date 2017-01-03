@@ -5,7 +5,6 @@
        use IO_tools_mod
        use grid_mod
        use block_mod
-       use grid_genHelper_mod
        use coordinates_mod
        use face_edge_corner_indexing_mod
        use stitch_mod
@@ -97,17 +96,17 @@
          implicit none
          type(mesh),intent(inout) :: m
          type(mesh),intent(in) :: m_in
-         type(gridGenerator) :: gg
+         type(grid) :: g
          integer :: i,face
          call delete(m)
          do i=1,m_in%s; do face=1,6
-           call init(gg%g,m_in%B(i)%g)
-           call get_boundary_face(gg,face)
-           if ((i.eq.1).and.(face.eq.1)) then; call init(m,gg%g)
-           else;                               call add(m,gg%g)
+           call init(g,m_in%B(i)%g)
+           call get_face_b(g,face)
+           if ((i.eq.1).and.(face.eq.1)) then; call init(m,g)
+           else;                               call add(m,g)
            endif
          enddo; enddo
-         call delete(gg)
+         call delete(g)
          call initProps(m)
          call insist_allocated_mesh(m,'init_surface')
        end subroutine

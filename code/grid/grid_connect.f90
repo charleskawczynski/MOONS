@@ -1,7 +1,8 @@
        module grid_connect_mod
        use current_precision_mod
+       use coordinates_mod
+       use array_mod
        use grid_mod
-       use grid_genHelper_mod
        use coordinate_distribution_funcs_mod
        use coordinate_stretch_param_match_mod
        implicit none
@@ -22,14 +23,14 @@
 
        contains
 
-       subroutine process(g,gg,dir)
+       subroutine process(g,a,dir)
          implicit none
          type(grid),intent(inout) :: g
-         type(gridGenerator),intent(inout) :: gg
+         type(array),intent(inout) :: a
          integer,intent(in) :: dir
-         call applyGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn%f,dir)
-         call delete(gg)
+         call init(g%c(dir),a)
+         call add_ghost_nodes(g%c(dir))
+         call delete(a)
        end subroutine
 
        ! ******************************************************************** Prepend
@@ -39,13 +40,13 @@
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
          integer,intent(in) :: N,dir
-         type(gridGenerator) :: gg
+         type(array) :: a
          real(cp) :: dh
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_uniform in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
-         dh = gg%g%c(dir)%dhn%f(1)
-         call init(gg,(/uniformLeft(g_in%c(dir)%hmin,dh,N)/),dir)
-         call process(g,gg,dir)
+         call check_N(N,'con_prep_uniform')
+         call init(g,g_in)
+         dh = g%c(dir)%dhn%f(1)
+         call init(a,uniformLeft(g_in%c(dir)%hmin,dh,N))
+         call process(g,a,dir)
        end subroutine
 
        subroutine con_prep_Roberts_L(g,g_in,L,N,dir)
@@ -55,13 +56,13 @@
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmin
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_Roberts_L in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
+         type(array) :: a
+         call check_N(N,'con_prep_Roberts_L')
+         call init(g,g_in)
          hmin = g_in%c(dir)%hmin
          beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
-         call init(gg,(/robertsLeft(hmin-L,hmin,N,beta)/),dir)
-         call process(g,gg,dir)
+         call init(a,robertsLeft(hmin-L,hmin,N,beta))
+         call process(g,a,dir)
        end subroutine
 
        subroutine con_prep_Roberts_R(g,g_in,L,N,dir)
@@ -71,13 +72,13 @@
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmin
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_Roberts_R in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
+         type(array) :: a
+         call check_N(N,'con_prep_Roberts_R')
+         call init(g,g_in)
          hmin = g_in%c(dir)%hmin
          beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
-         call init(gg,(/robertsRight(hmin-L,hmin,N,beta)/),dir)
-         call process(g,gg,dir)
+         call init(a,robertsRight(hmin-L,hmin,N,beta))
+         call process(g,a,dir)
        end subroutine
 
        subroutine con_prep_Roberts_B(g,g_in,L,N,dir)
@@ -87,13 +88,13 @@
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmin
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_prep_Roberts_B in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
+         type(array) :: a
+         call check_N(N,'con_prep_Roberts_B')
+         call init(g,g_in)
          hmin = g_in%c(dir)%hmin
          beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
-         call init(gg,(/robertsBoth(hmin-L,hmin,N,beta)/),dir)
-         call process(g,gg,dir)
+         call init(a,robertsBoth(hmin-L,hmin,N,beta))
+         call process(g,a,dir)
        end subroutine
 
        ! ******************************************************************** Append
@@ -103,14 +104,13 @@
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
          integer,intent(in) :: N,dir
-         type(gridGenerator) :: gg
+         type(array) :: a
          real(cp) :: dh
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_uniform in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
-         dh = gg%g%c(dir)%dhn%f(gg%g%c(dir)%sn-1)
-         call init(gg,(/uniformRight(g_in%c(dir)%hmax,dh,N)/),dir)
-         call print(gg%g)
-         call process(g,gg,dir)
+         call check_N(N,'con_app_uniform')
+         call init(g,g_in)
+         dh = g%c(dir)%dhn_e
+         call init(a,uniformRight(g_in%c(dir)%hmax,dh,N))
+         call process(g,a,dir)
        end subroutine
 
        subroutine con_app_Roberts_L(g,g_in,L,N,dir)
@@ -120,13 +120,13 @@
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_Roberts_L in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
+         type(array) :: a
+         call check_N(N,'con_app_Roberts_L')
+         call init(g,g_in)
          hmax = g_in%c(dir)%hmax
          beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn_e)
-         call init(gg,(/robertsLeft(hmax,hmax + L,N,beta)/),dir)
-         call process(g,gg,dir)
+         call init(a,robertsLeft(hmax,hmax + L,N,beta))
+         call process(g,a,dir)
        end subroutine
 
        subroutine con_app_Roberts_R(g,g_in,L,N,dir)
@@ -136,13 +136,13 @@
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_Roberts_R in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
+         type(array) :: a
+         call check_N(N,'con_app_Roberts_R')
+         call init(g,g_in)
          hmax = g_in%c(dir)%hmax
          beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn%f(1))
-         call init(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
-         call process(g,gg,dir)
+         call init(a,robertsRight(hmax,hmax + L,N,beta))
+         call process(g,a,dir)
        end subroutine
 
        subroutine con_app_Roberts_B(g,g_in,L,N,dir)
@@ -152,13 +152,23 @@
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in con_app_Roberts_B in extend_grid.f90'
-         call init(g,g_in); call init(gg%g,g)
+         type(array) :: a
+         call check_N(N,'con_app_Roberts_B')
+         call init(g,g_in)
          hmax = g_in%c(dir)%hmax
          beta = beta_dh_both(hmax,hmax + L,N,g_in%c(dir)%dhn_e)
-         call init(gg,(/robertsBoth(hmax,hmax + L,N,beta)/),dir)
-         call process(g,gg,dir)
+         call init(a,robertsBoth(hmax,hmax + L,N,beta))
+         call process(g,a,dir)
+       end subroutine
+
+       subroutine check_N(N,caller)
+         implicit none
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: N
+         if (.not.(N.gt.0)) then
+           write(*,*) 'Error: N is not > 0 in ',caller,' in extend_grid.f90'
+           stop 'Done'
+         endif
        end subroutine
 
        end module

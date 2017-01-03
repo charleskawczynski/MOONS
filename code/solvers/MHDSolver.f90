@@ -50,7 +50,7 @@
          call init(KS,str(DT%params),'kill_switch'); call export(KS)
          call init(EN,str(DT%export_now),'EN'); call export(EN)
          call init(RM,str(DT%refine_mesh),'RM'); call export(RM)
-         call init(PE,SP%export_planar,str(DT%PE),'PE'); call export(PE)
+         call init(PE,SP%EL%export_planar,str(DT%PE),'PE'); call export(PE)
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          write(*,*) 'Working directory = ',str(DT%tar)
@@ -63,16 +63,16 @@
            call update(PE,coupled%n_step)
            ! write(*,*) 'coupled%n_step = ',coupled%n_step
 
-           if (SP%dynamic_refinement) then
+           if (SP%DMR%dynamic_refinement) then
              if (refine_mesh_now_all.or.RM%any_next) PE%transient_0D = .true.
            endif
 
            ! if (SP%solveDensity)    call solve(dens,mom%U,  PE,EN,DT)
-           if (SP%solveEnergy)    call solve(nrg,mom%U,  PE,EN,DT)
-           if (SP%solveMomentum)  call solve(mom,F,      PE,EN,DT)
-           if (SP%solveInduction) call solve(ind,mom%U_E,PE,EN,DT)
+           if (SP%BMC%VS%T%SS%solve) call solve(nrg,mom%U,  PE,EN,DT)
+           if (SP%BMC%VS%U%SS%solve) call solve(mom,F,      PE,EN,DT)
+           if (SP%BMC%VS%B%SS%solve) call solve(ind,mom%U_E,PE,EN,DT)
 
-           if (SP%dynamic_refinement.or.RM%any_next) then
+           if (SP%DMR%dynamic_refinement.or.RM%any_next) then
              call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,PE,RM,KS,refine_mesh_now_all)
            endif
 
@@ -118,16 +118,16 @@
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc,coupled)
              call export(sc,coupled%t)
-             if (SP%solveMomentum) then
+             if (SP%BMC%VS%T%SS%initialize) then
+               call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
+             endif
+             if (SP%BMC%VS%U%SS%initialize) then
                call import(mom%ISP_U); call init(mom%PCG_U%ISP,mom%ISP_U)
                call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
              endif
-             if (SP%solveInduction) then
+             if (SP%BMC%VS%B%SS%initialize) then
                call import(ind%ISP_B);   call init(ind%PCG_B%ISP,ind%ISP_B)
                call import(ind%ISP_phi); call init(ind%PCG_cleanB%ISP,ind%ISP_phi)
-             endif
-             if (SP%solveEnergy) then
-               call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
              endif
              ! call import(coupled)
              ! if (SP%coupled_time_step) then
@@ -152,9 +152,9 @@
          call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************
-         if (SP%solveEnergy) then;    call export_tec(nrg,DT);   endif ! call export(nrg,DT); endif
-         if (SP%solveMomentum) then;  call export_tec(mom,DT,F); endif ! call export(mom,DT); endif
-         if (SP%solveInduction) then; call export_tec(ind,DT);   endif ! call export(ind,DT); endif
+         if (SP%BMC%VS%T%SS%initialize) then; call export_tec(nrg,DT);   endif ! call export(nrg,DT); endif
+         if (SP%BMC%VS%U%SS%initialize) then; call export_tec(mom,DT,F); endif ! call export(mom,DT); endif
+         if (SP%BMC%VS%B%SS%initialize) then; call export_tec(ind,DT);   endif ! call export(ind,DT); endif
 
          call delete(PE)
          call delete(sc)

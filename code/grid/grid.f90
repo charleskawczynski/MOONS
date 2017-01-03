@@ -79,6 +79,7 @@
        interface get_corner_GI;            module procedure get_corner_GI_grid;         end interface
 
        interface get_face_b;               module procedure get_face_grid_b;            end interface
+       interface get_face_b;               module procedure get_face_grid_b_IO;         end interface
        interface get_edge_b;               module procedure get_edge_grid_b;            end interface
        interface get_corner_b;             module procedure get_corner_grid_b;          end interface
 
@@ -342,6 +343,13 @@
          type(grid),intent(in) :: g_in
          integer,intent(in) :: face
          call init(g,g_in)
+         if (min_face(face)) call get_boundary(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_boundary(g%c(dir_given_face(face)), 1)
+       end subroutine
+       subroutine get_face_grid_b_IO(g,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: face
          if (min_face(face)) call get_boundary(g%c(dir_given_face(face)),-1)
          if (max_face(face)) call get_boundary(g%c(dir_given_face(face)), 1)
        end subroutine
