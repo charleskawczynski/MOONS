@@ -104,7 +104,7 @@
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
-       call init(SP%MQP,F,1.5_cp,1)
+       call init(SP%MQP,F,2.0_cp,50)
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%BMC%VS%T,  0,0)
@@ -120,24 +120,24 @@
        call init(SP%BMC%VS%P%SS,  T,T,F,1)
        call init(SP%BMC%VS%B%SS,  T,T,F,1)
        call init(SP%BMC%VS%B0%SS, T,F,F,0)
-       call init(SP%BMC%VS%phi%SS,T,F,F,0)
+       call init(SP%BMC%VS%phi%SS,T,T,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,name)
        call init(SP%BMC%VS%T%ISP,  1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_T')
        call init(SP%BMC%VS%U%ISP,  1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_U')
        call init(SP%BMC%VS%P%ISP,  5   ,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_P')
-       call init(SP%BMC%VS%B%ISP,  5   ,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_B')
+       call init(SP%BMC%VS%B%ISP,  1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_B')
        call init(SP%BMC%VS%B0%ISP, 1000,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_B0')
        call init(SP%BMC%VS%phi%ISP,5   ,pow(-5),pow(-7),100,str(DT%ISP), 'ISP_phi')
 
-       call init(SP%coupled,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
-       ! call init(TMP,n_step_stop,dtime,dir,name)
-       call init(SP%BMC%VS%T%TMP,  SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
-       call init(SP%BMC%VS%U%TMP,  SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
-       call init(SP%BMC%VS%P%TMP,  SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%BMC%VS%B%TMP,  SP%coupled%n_step_stop,SP%coupled%dt/pow(2),str(DT%TMP),'TMP_B')
-       call init(SP%BMC%VS%B0%TMP, SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
-       call init(SP%BMC%VS%phi%TMP,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+       ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
+       call init(SP%coupled,1,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
+       call init(SP%BMC%VS%T%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
+       call init(SP%BMC%VS%U%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
+       call init(SP%BMC%VS%P%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
+       call init(SP%BMC%VS%B%TMP,  5 ,SP%coupled%n_step_stop,SP%coupled%dt/pow(2),str(DT%TMP),'TMP_B')
+       call init(SP%BMC%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
+       call init(SP%BMC%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
 
        SP%addJCrossB             = T ! add JCrossB      to momentum equation
        SP%add_Q2D_JCrossB        = F ! add Q2D JCrossB  to momentum equation
@@ -153,6 +153,7 @@
          call couple_time_step(SP%BMC%VS%phi%TMP,SP%coupled)
        endif
        call export_import_SS(SP%BMC%VS)
+       if (.not.SP%finite_Rem) SP%DP%Rem = 1.0_cp
        if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
       end subroutine
 

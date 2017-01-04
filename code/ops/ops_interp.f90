@@ -31,6 +31,8 @@
        !                        -------> edgeDir
        !
        use current_precision_mod
+       use GF_interp_mod
+       use GF_extrap_mod
        use face_edge_corner_indexing_mod
        use grid_mod
        use mesh_mod
@@ -93,11 +95,7 @@
 
        ! ****************** Raw interpolation / extrapolation routines ******************
 
-       interface interp;              module procedure interpO2_GF;          end interface
        interface interp;              module procedure interpO2_SF;          end interface
-       interface extrap;              module procedure extrapO2_GF;          end interface
-
-       interface extrap;              module procedure extrapLinear_GF;      end interface
        interface extrap;              module procedure extrapO2_SF;          end interface
 
        ! ********************************** SF routines **********************************
@@ -159,164 +157,13 @@
        ! ****************************************************************************************
        ! ****************************************************************************************
 
-       subroutine interpO2_GF(f,g,gd,sf,sg,f_N,f_C,g_N,g_C,dir,x,y,z)
-         ! interpO2 interpolates g from the primary grid to the
-         ! dual grid using a 2nd order accurate stencil for non-uniform
-         ! grids. f lives on the dual grid. It is expected that
-         ! f lives between g.
-         !
-         ! Reminder: f = interp(g)
-         !
-         ! * = assigned in this routine. This way, the entire
-         ! array of f and g may be passed, without having to
-         ! index.
-         !
-         ! Therefore, shape(g) = shape(f) + 1 along dir
-         ! Otherwise, shape(g) = shape(f)
-         !
-         ! Add internal checking of shape of f and g and grid
-         !
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         real(cp),dimension(:,:,:),intent(in) :: g
-         type(grid),intent(in) :: gd
-         integer,dimension(3),intent(in) :: sg,sf
-         logical,intent(in) :: f_N,f_C,g_N,g_C
-         integer,intent(in) :: dir,x,y,z
-         integer :: i,j,k,t
-
-#ifdef _DEBUG_INTERP_
-         call checkInterpSizes(sf,sg,dir)
-#endif
-
-         if (f_C.and.g_N) then
-           ! f(cc grid), g(node/face grid)
-           !         g  f  g  f  g  f  g  f  g
-           !         |--o--|--o--|--o--|--o--|   --> dir
-           !            *     *     *     *
-
-#ifdef _PARALLELIZE_INTERP_
-           !$OMP PARALLEL DO
-
-#endif
-
-           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
-           f(i,j,k) = 0.5_cp*(g( i , j , k )+&
-                              g(i+x,j+y,k+z))
-           enddo; enddo; enddo
-#ifdef _PARALLELIZE_INTERP_
-           !$OMP END PARALLEL DO
-
-#endif
-         elseif (f_N.and.g_C) then
-           ! f(node/face grid), g(cc grid)
-           !         f  g  f  g  f  g  f  g  f
-           !         |--o--|--o--|--o--|--o--|      --> dir
-           !               *     *     *
-
-#ifdef _PARALLELIZE_INTERP_
-           !$OMP PARALLEL PRIVATE(t)
-           !$OMP DO
-
-#endif
-           do k=1,sg(3)-z; do j=1,sg(2)-y; do i=1,sg(1)-x
-           t = i*x + j*y + k*z
-           f(i+x,j+y,k+z) = g(i+x,j+y,k+z)*gd%c(dir)%theta%D%f(t) + &
-                            g( i , j , k )*gd%c(dir)%theta%U%f(t)
-           enddo; enddo; enddo
-#ifdef _PARALLELIZE_INTERP_
-           !$OMP END DO
-           !$OMP END PARALLEL
-
-#endif
-           call extrap(f,g,sf,sg,dir)
-         else
-           write(*,*) 'dir=',dir
-           write(*,*) 'sg=',sg
-           write(*,*) 'g_C=',g_C
-           write(*,*) 'g_N=',g_N
-           write(*,*) 'sf=',sf
-           write(*,*) 'f_C=',f_C
-           write(*,*) 'f_N=',f_N
-           stop 'gridType must be 1 or 2 in interpO2. Terminating.'
-         endif
-       end subroutine
-
-       subroutine extrapO2_GF(f,g,sf,sg,dir)
-         ! extrapO2 extrapolates g from the primary grid to the
-         ! dual grid using a 2nd order accurate stencil for
-         ! non-uniform grids. f lives on the dual grid.
-         ! It is expected that f lives between g.
-         !
-         ! Reminder: f = extrap(g)
-         !
-         ! For interpO2, this corresponds to the case:
-         ! f(cc grid), g(node/face grid)
-         !
-         !         f  g  f  g  f  g  f  g  f
-         !         |--o--|--o--|--o--|--o--|    --> dir
-         !         *                       *
-         !
-         ! * = assigned in this routine. This way, the entire
-         ! array of f and g may be passed, without having to
-         ! index.
-         !
-         ! Therefore, size(f) = size(g) + 1 along dir
-         ! Otherwise, size(f) = size(g)
-         !
-         implicit none
-         real(cp),dimension(:,:,:),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: sg,sf
-         integer,intent(in) :: dir
-         ! Both cases are simple since the size of the
-         ! first 2 cells are equal, we have
-         !
-         ! f_ghost + f_boundary
-         ! --------------------  = g    -->  f_ghost = 2g - f_boundary
-         !          2
-         !
-         ! BACKWARD EXTRAPOLATION (* = assigned)
-         !         f  g  f  g  f  g  f  g  f
-         !         |--o--|--o--|--o--|--o--|    --> dir
-         !         *
-         !
-         select case (dir)
-         case (1); f(1,:,:) = 2.0_cp*g(1,:,:) - f(2,:,:)
-         case (2); f(:,1,:) = 2.0_cp*g(:,1,:) - f(:,2,:)
-         case (3); f(:,:,1) = 2.0_cp*g(:,:,1) - f(:,:,2)
-         end select
-         ! FORWARD EXTRAPOLATION (* = assigned)
-         !         f  g  f  g  f  g  f  g  f
-         !         |--o--|--o--|--o--|--o--|    --> dir
-         !                                 *
-         select case (dir)
-         case (1); f(sf(1),:,:) = 2.0_cp*g(sg(1),:,:) - f(sf(1)-1,:,:)
-         case (2); f(:,sf(2),:) = 2.0_cp*g(:,sg(2),:) - f(:,sf(2)-1,:)
-         case (3); f(:,:,sf(3)) = 2.0_cp*g(:,:,sg(3)) - f(:,:,sf(3)-1)
-         end select
-       end subroutine
-
-       subroutine extrapLinear_GF(f,sf,dir)
-         ! extrapO2 extrapolates f to ghost points.
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: f
-         integer,dimension(3),intent(in) :: sf
-         integer,intent(in) :: dir
-         select case (dir)
-         case (1); f(1,:,:) = 2.0_cp*f(2,:,:) - f(3,:,:); f(sf(1),:,:) = 2.0_cp*f(sf(1)-1,:,:) - f(sf(1)-2,:,:)
-         case (2); f(:,1,:) = 2.0_cp*f(:,2,:) - f(:,3,:); f(:,sf(2),:) = 2.0_cp*f(:,sf(2)-1,:) - f(:,sf(2)-2,:)
-         case (3); f(:,:,1) = 2.0_cp*f(:,:,2) - f(:,:,3); f(:,:,sf(3)) = 2.0_cp*f(:,:,sf(3)-1) - f(:,:,sf(3)-2)
-         end select
-       end subroutine
-
        subroutine extrapO2_SF(f,m)
          implicit none
          type(SF),intent(inout) :: f
          type(mesh),intent(in) :: m
          integer :: i,k
          do k=1,3; do i=1,m%s
-           call extrap(f%BF(i)%GF%f,f%BF(i)%GF%s,k) ! Calls linear, collocated extrapolation
+           call extrap(f%BF(i)%GF,k) ! self-extrapolation
          enddo; enddo
        end subroutine
 
@@ -327,37 +174,31 @@
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
          integer :: i
-         do i=1,m%s
-           call interp(f%BF(i)%GF%f,g%BF(i)%GF%f,m%B(i)%g,f%BF(i)%GF%s,g%BF(i)%GF%s,&
-           f%N_along(dir),f%CC_along(dir),&
-           g%N_along(dir),g%CC_along(dir),&
-           dir,m%int_tensor(dir)%eye(1),&
-               m%int_tensor(dir)%eye(2),&
-               m%int_tensor(dir)%eye(3))
-         enddo
+         if (N_along(f%DL,dir).and.CC_along(g%DL,dir)) then
+           do i=1,m%s
+             call interp_C2N(f%BF(i)%GF,&
+                             g%BF(i)%GF,&
+                             m%B(i)%g,&
+                             dir,&
+                             m%int_tensor(dir)%eye(1),&
+                             m%int_tensor(dir)%eye(2),&
+                             m%int_tensor(dir)%eye(3))
+           enddo
+         elseif (CC_along(f%DL,dir).and.N_along(g%DL,dir)) then
+           do i=1,m%s
+             call interp_N2C(f%BF(i)%GF,&
+                             g%BF(i)%GF,&
+                             dir,&
+                             m%int_tensor(dir)%eye(1),&
+                             m%int_tensor(dir)%eye(2),&
+                             m%int_tensor(dir)%eye(3))
+           enddo
+         else
+           write(*,*) ' ---------------- f ---------------- '; call print(f%DL)
+           write(*,*) ' ---------------- g ---------------- '; call print(g%DL)
+           stop 'Error: bad DLs in interpO2_SF in ops_interp.f90'
+         endif
        end subroutine
-
-#ifdef _DEBUG_INTERP_
-       subroutine checkInterpSizes(s_in,s_out,dir)
-         implicit none
-         integer,dimension(3),intent(in) :: s_in,s_out
-         integer,intent(in) :: dir
-         integer,dimension(2) :: a
-         a = adj_dir_given_dir(dir)
-         if (s_in(a(1)).ne.s_out(a(1))) call printShape(s_in,s_out,dir)
-         if (s_in(a(2)).ne.s_out(a(2))) call printShape(s_in,s_out,dir)
-       end subroutine
-
-       subroutine printShape(s_in,s_out,dir)
-         implicit none
-         integer,dimension(3),intent(in) :: s_in,s_out
-         integer,intent(in) :: dir
-         write(*,*) 'dir = ',dir
-         write(*,*) 's_in = ',s_in
-         write(*,*) 's_out = ',s_out
-         stop 'Erorr: shape mismatch in interpOps.f90'
-       end subroutine
-#endif
 
        ! ****************************************************************************************
        ! ****************************************************************************************
@@ -883,7 +724,7 @@
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          type(VF),intent(inout) :: node,edge,face
-         if (is_CC(x%x%DL)) then
+         if (is_CC(x)) then
 #ifdef _DEBUG_INTERP_
            call insist_collocated(x,'any_to_node_VF')
 #endif
@@ -893,18 +734,18 @@
            call cellcenter2Node(node,x,m,face,edge)
            call delete(face)
            call delete(edge)
-         elseif (is_Node(x%x%DL)) then
+         elseif (is_Node(x)) then
 #ifdef _DEBUG_INTERP_
            call insist_collocated(x,'any_to_node_VF')
 #endif
          call init_Node(node,m)
          call assign(node,x)
-         elseif (is_Face(x%x%DL)) then
+         elseif (is_Face(x)) then
            call init_Edge(edge,m)
            call init_Node(node,m)
            call face2Node(node,x,m,edge)
            call delete(edge)
-         elseif (is_Edge(x%x%DL)) then
+         elseif (is_Edge(x)) then
            call init_Node(node,m)
            call edge2Node(node,x,m)
          else; stop 'Error: bad DL to any_to_node_VF in ops_interp.f90'

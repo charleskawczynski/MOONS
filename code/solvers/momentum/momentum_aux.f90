@@ -7,10 +7,10 @@
        use ops_interp_mod
        use ops_discrete_mod
        use ops_norms_mod
-       
+
        implicit none
        private
-       
+
        public :: compute_TKE
        public :: compute_TKE_2C
        public :: compute_CoFoRe_grid

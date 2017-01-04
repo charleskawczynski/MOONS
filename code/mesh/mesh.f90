@@ -35,12 +35,13 @@
          type(block),dimension(:),allocatable :: B
          ! Properties
          integer :: s       ! Number of grids
-         integer,dimension(3) :: N_cells ! Number of cells, for export
-         integer :: N_cells_tot ! Total number of cells
-         real(cp) :: volume
-         real(cp),dimension(3) :: hmax,hmin
-         real(cp),dimension(3) :: dhmax,dhmin
-         real(cp) :: dhmax_max,dhmin_min
+         integer,dimension(3) :: N_cells = 0 ! Number of cells, for export
+         integer :: N_cells_tot = 0 ! Total number of cells
+         real(cp) :: volume = 0.0_cp
+         real(cp),dimension(3) :: hmax,hmin = 0.0_cp
+         real(cp),dimension(3) :: dhmax,dhmin = 0.0_cp
+         real(cp) :: dhmax_max = 0.0_cp
+         real(cp) :: dhmin_min = 0.0_cp
          logical :: defined = .false.
          logical :: plane_x = .false.
          logical :: plane_y = .false.

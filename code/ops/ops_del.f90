@@ -29,6 +29,7 @@
       use current_precision_mod
       use grid_mod
       use face_edge_corner_indexing_mod
+      use data_location_mod
       use mesh_mod
       use GF_mod
       use SF_mod
@@ -268,20 +269,20 @@
         type(SF),intent(in) :: f,dfdh
         integer,intent(in) :: dir
         integer :: diffType
-            if (f%CC_along(dir).and.dfdh%CC_along(dir)) then
+            if (CC_along(f%DL,dir).and.CC_along(dfdh%DL,dir)) then
           diffType = 1 ! Collocated derivative (CC)
-        elseif (f%N_along(dir).and.dfdh%N_along(dir)) then
+        elseif (N_along(f%DL,dir).and.N_along(dfdh%DL,dir)) then
           diffType = 2 ! Collocated derivative (N)
-        elseif (f%CC_along(dir).and.dfdh%N_along(dir)) then
+        elseif (CC_along(f%DL,dir).and.N_along(dfdh%DL,dir)) then
           diffType = 3 ! Staggered derivative (CC->N)
-        elseif (f%N_along(dir).and.dfdh%CC_along(dir)) then
+        elseif (N_along(f%DL,dir).and.CC_along(dfdh%DL,dir)) then
           diffType = 4 ! Staggered derivative (N->CC)
         else
-          write(*,*) 'f%CC_along(dir) = ',f%CC_along(dir)
-          write(*,*) 'f%Node_along(dir) = ',f%N_along(dir)
-          write(*,*) 'dfdh%CC_along(dir) = ',dfdh%CC_along(dir)
-          write(*,*) 'dfdh%Node_along(dir) = ',dfdh%N_along(dir)
           write(*,*) 'dir = ',dir
+          write(*,*) ' -------------------- f -------------------- '
+          call print(f%DL)
+          write(*,*) ' ------------------- dfdh -------------------- '
+          call print(dfdh%DL)
           stop 'Error: diffType undetermined in ops_del.f90.'
         endif
       end function

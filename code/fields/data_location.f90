@@ -6,10 +6,10 @@
        public :: data_location
        public :: init,delete,display,print,export,import ! Essentials
 
-       public :: init_CC,   is_CC
-       public :: init_Node, is_Node
-       public :: init_Face, is_Face
-       public :: init_Edge, is_Edge
+       public :: init_CC,   is_CC,   is_CC_VF
+       public :: init_Node, is_Node, is_Node_VF
+       public :: init_Face, is_Face, is_Face_VF
+       public :: init_Edge, is_Edge, is_Edge_VF
 
        public :: DL_CC
        public :: DL_Node
@@ -21,6 +21,10 @@
 
        public :: CC_along,N_along
 
+       public :: insist_collocated
+       public :: is_collocated_VF
+       public :: is_collocated_TF
+
        public :: CC_eye
        public :: N_eye
 
@@ -29,10 +33,9 @@
        public :: get_char
        public :: defined
        public :: indentical
-       public :: insist_collocated
-       public :: is_collocated
 
        type data_location
+         private
          logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
          integer :: face,edge = 0                    ! face direction, edge direction
          logical,dimension(3) :: CC_along = .false.  !
@@ -61,6 +64,11 @@
        interface is_Face;             module procedure is_Face_DL;              end interface
        interface is_Edge;             module procedure is_Edge_DL;              end interface
 
+       interface is_CC_VF;            module procedure is_CC_VF_DL;             end interface
+       interface is_Node_VF;          module procedure is_Node_VF_DL;           end interface
+       interface is_Face_VF;          module procedure is_Face_VF_DL;           end interface
+       interface is_Edge_VF;          module procedure is_Edge_VF_DL;           end interface
+
        interface get_Face;            module procedure get_Face_DL;             end interface
        interface get_Edge;            module procedure get_Edge_DL;             end interface
 
@@ -75,7 +83,8 @@
        interface get_char;            module procedure get_char_DL;             end interface
        interface defined;             module procedure defined_DL;              end interface
        interface insist_collocated;   module procedure insist_collocated_DL;    end interface
-       interface is_collocated;       module procedure is_collocated_DL;        end interface
+       interface is_collocated_VF;    module procedure is_collocated_VF_DL;     end interface
+       interface is_collocated_TF;    module procedure is_collocated_TF_DL;     end interface
 
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
@@ -330,6 +339,46 @@
          L = DL%F
        end function
 
+       function is_CC_VF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(3) :: DL
+         logical,dimension(3) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,3; L(i) = is_CC(DL(i)); enddo
+         L_final = all(L)
+       end function
+
+       function is_Node_VF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(3) :: DL
+         logical,dimension(3) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,3; L(i) = is_Node(DL(i)); enddo
+         L_final = all(L)
+       end function
+
+       function is_Edge_VF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(3) :: DL
+         logical,dimension(3) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,3; L(i) = is_Edge(DL(i)).and.(get_Edge(DL(i)).eq.i); enddo
+         L_final = all(L)
+       end function
+
+       function is_Face_VF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(3) :: DL
+         logical,dimension(3) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,3; L(i) = is_Face(DL(i)).and.(get_Face(DL(i)).eq.i); enddo
+         L_final = all(L)
+       end function
+
        function DL_CC_DL() result(DL)
          implicit none
          type(data_location) :: DL
@@ -441,7 +490,7 @@
           implicit none
           type(data_location),dimension(3),intent(in) :: DL
           character(len=*),intent(in) :: caller
-          if (.not.is_collocated(DL)) then
+          if (.not.is_collocated_VF(DL)) then
             call print(DL(1))
             call print(DL(2))
             call print(DL(3))
@@ -450,11 +499,30 @@
           endif
         end subroutine
 
-        function is_collocated_DL(DL) result(L)
+        function is_collocated_VF_DL(DL) result(L_final)
           implicit none
           type(data_location),dimension(3),intent(in) :: DL
-          logical :: L
-          L = all((/indentical(DL(1),DL(2)),indentical(DL(2),DL(3))/))
+          integer :: i
+          logical :: L_final
+          logical,dimension(4) :: L
+          L(1) = all((/(DL(i)%C,i=1,3)/))
+          L(2) = all((/(DL(i)%N,i=1,3)/))
+          L(3) = all((/(DL(i)%F.and.(DL(i)%face.eq.DL(1)%face),i=1,3)/))
+          L(4) = all((/(DL(i)%E.and.(DL(i)%edge.eq.DL(1)%edge),i=1,3)/))
+          L_final = any(L)
+        end function
+
+        function is_collocated_TF_DL(DL) result(L_final)
+          implicit none
+          type(data_location),dimension(9),intent(in) :: DL
+          integer :: i
+          logical :: L_final
+          logical,dimension(4) :: L
+          L(1) = all((/(DL(i)%C,i=1,9)/))
+          L(2) = all((/(DL(i)%N,i=1,9)/))
+          L(3) = all((/(DL(i)%F.and.(DL(i)%face.eq.DL(1)%face),i=1,9)/))
+          L(4) = all((/(DL(i)%E.and.(DL(i)%edge.eq.DL(1)%edge),i=1,9)/))
+          L_final = any(L)
         end function
 
         function get_char_DL(DL) result(c)

@@ -4,6 +4,7 @@
       use IO_export_mod
       use mesh_mod
       use norms_mod
+      use data_location_mod
       use ops_discrete_mod
       use ops_aux_mod
       use SF_mod
@@ -83,10 +84,10 @@
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(SF) :: temp_Minv
-        if (x%is_CC) then;       call init_CC(PCG%tempx,m)   ! Does not copy BCs of x
-        elseif (x%is_Node) then; call init_Node(PCG%tempx,m) ! Does not copy BCs of x
-        elseif (x%is_Edge) then; call init_Edge(PCG%tempx,m,x%edge) ! Does not copy BCs of x
-        elseif (x%is_Face) then; call init_Face(PCG%tempx,m,x%face) ! Does not copy BCs of x
+              if (is_CC(x%DL)) then; call init_CC(PCG%tempx,m)   ! Does not copy BCs of x
+        elseif (is_Node(x%DL)) then; call init_Node(PCG%tempx,m) ! Does not copy BCs of x
+        elseif (is_Edge(x%DL)) then; call init_Edge(PCG%tempx,m,get_edge(x%DL)) ! Does not copy BCs of x
+        elseif (is_Face(x%DL)) then; call init_Face(PCG%tempx,m,get_face(x%DL)) ! Does not copy BCs of x
         else; stop 'Error: bad input type into init_PCG_SF in PCG.f90'
         endif
         call init(PCG%p,x) ! Copies BCs for x
@@ -149,10 +150,10 @@
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(VF) :: temp_Minv
-        if (x%is_CC) then;       call init_CC(PCG%tempx,m)   ! Does not copy BCs of x
-        elseif (x%is_Node) then; call init_Node(PCG%tempx,m) ! Does not copy BCs of x
-        elseif (x%is_Edge) then; call init_Edge(PCG%tempx,m) ! Does not copy BCs of x
-        elseif (x%is_Face) then; call init_Face(PCG%tempx,m) ! Does not copy BCs of x
+            if (is_CC(x)) then;   call init_CC(PCG%tempx,m)   ! Does not copy BCs of x
+        elseif (is_Node(x)) then; call init_Node(PCG%tempx,m) ! Does not copy BCs of x
+        elseif (is_Edge(x)) then; call init_Edge(PCG%tempx,m) ! Does not copy BCs of x
+        elseif (is_Face(x)) then; call init_Face(PCG%tempx,m) ! Does not copy BCs of x
         else; stop 'Error: bad input type into init_PCG_VF in PCG.f90'
         endif
         call init(PCG%p,x) ! Copies BCs for x

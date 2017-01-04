@@ -78,14 +78,15 @@
         public :: curl_curl_matrix_based
 
         public :: is_collocated
-        public :: insist_collocated
         public :: get_DL
+        public :: is_CC
+        public :: is_Node
+        public :: is_Face
+        public :: is_Edge
+        public :: insist_collocated
 
         type VF
-          ! integer :: s = 3  ! number of components
           type(SF) :: x,y,z ! components
-
-          logical :: is_CC,is_Node,is_Face,is_Edge
         end type
 
         interface init;                    module procedure init_VF_copy_VF;             end interface
@@ -153,9 +154,13 @@
         interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_VF;   end interface
         interface Laplacian_matrix_based;  module procedure Laplacian_matrix_based_VF;   end interface
 
-        interface is_collocated;           module procedure is_collocated_VF;            end interface
+        interface is_collocated;           module procedure is_collocated_VF_DL;         end interface
         interface insist_collocated;       module procedure insist_collocated_VF;        end interface
         interface get_DL;                  module procedure get_DL_VF;                   end interface
+        interface is_CC;                   module procedure is_CC_VF_DL;                 end interface
+        interface is_Node;                 module procedure is_Node_VF_DL;               end interface
+        interface is_Face;                 module procedure is_Face_VF_DL;               end interface
+        interface is_Edge;                 module procedure is_Edge_VF_DL;               end interface
 
         interface print_BCs;               module procedure print_BCs_VF;                end interface
         interface init_BCs;                module procedure init_BCs_VF_VF;              end interface
@@ -231,7 +236,6 @@
           type(VF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-          call copy_props_VF(f1,f2)
         end subroutine
 
         subroutine init_VF_copy_VF_mesh(f1,f2,m)
@@ -240,7 +244,6 @@
           type(VF),intent(in) :: f2
           type(mesh),intent(in) :: m
           call init(f1%x,f2%x,m); call init(f1%y,f2%y,m); call init(f1%z,f2%z,m)
-          call copy_props_VF(f1,f2)
         end subroutine
 
         subroutine init_VF_copy_SF(f1,f2)
@@ -248,27 +251,12 @@
           type(VF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
-        end subroutine
-
-        subroutine copy_props_VF(f1,f2)
-          implicit none
-          type(VF),intent(inout) :: f1
-          type(VF),intent(in) :: f2
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
-          f1%is_Face = f2%is_Face
-          f1%is_Edge = f2%is_Edge
         end subroutine
 
         subroutine delete_VF(f)
           implicit none
           type(VF),intent(inout) :: f
           call delete(f%x); call delete(f%y); call delete(f%z)
-          call delete_logicals(f)
         end subroutine
 
         subroutine display_VF(f,un)
@@ -316,15 +304,6 @@
         ! **********************************************************
         ! **********************************************************
 
-        subroutine delete_logicals(f)
-          implicit none
-          type(VF),intent(inout) :: f
-          f%is_CC = .false.
-          f%is_Node = .false.
-          f%is_Face = .false.
-          f%is_Edge = .false.
-        end subroutine
-
         subroutine print_BCs_VF(f,name)
           implicit none
           type(VF),intent(in) :: f
@@ -360,18 +339,48 @@
           call export_BCs(f%z,dir,name//'_z')
         end subroutine
 
-        function is_collocated_VF(f) result(L)
-          implicit none
-          type(VF),intent(in) :: f
-          logical :: L
-          L = is_collocated((/f%x%DL,f%y%DL,f%z%DL/))
-        end function
-
         function get_DL_VF(f) result(DL)
           implicit none
           type(VF),intent(in) :: f
           type(data_location),dimension(3) :: DL
           DL = (/f%x%DL,f%y%DL,f%z%DL/)
+        end function
+
+        function is_Face_VF_DL(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = is_Face_VF(get_DL(f))
+        end function
+
+        function is_Edge_VF_DL(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = is_Edge_VF(get_DL(f))
+        end function
+
+        function is_CC_VF_DL(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = is_CC_VF(get_DL(f))
+        end function
+
+        function is_Node_VF_DL(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = is_Node_VF(get_DL(f))
+        end function
+
+        function is_collocated_VF_DL(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          type(data_location),dimension(3) :: DL
+          logical :: L
+          DL = get_DL(f)
+          L = is_collocated_VF(DL)
         end function
 
         subroutine insist_collocated_VF(f,caller)
@@ -448,7 +457,6 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
-          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_VF_CC_MD(f,m,MD)
@@ -457,7 +465,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_CC(f%x,m,MD); call init_CC(f%y,m,MD); call init_CC(f%z,m,MD)
-          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_VF_Edge(f,m)
@@ -465,7 +472,6 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
-          call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
         subroutine init_VF_Edge_MD(f,m,MD)
@@ -474,7 +480,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_Edge(f%x,m,1,MD); call init_Edge(f%y,m,2,MD); call init_Edge(f%z,m,3,MD)
-          call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
         subroutine init_VF_Edge_compliment(f,m,dir)
@@ -488,7 +493,6 @@
           case (3); call init_Face(f%x,m,2);call init_Face(f%y,m,1);call init_Node(f%z,m)
           case default; stop 'Error: dir must = 1,2,3 in init_VF_Edge_compliment in VF.f90'
           end select
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_VF_Face(f,m)
@@ -496,7 +500,6 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
-          call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
         subroutine init_VF_Face_MD(f,m,MD)
@@ -505,7 +508,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_Face(f%x,m,1,MD); call init_Face(f%y,m,2,MD); call init_Face(f%z,m,3,MD)
-          call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
         subroutine init_VF_Face_compliment(f,m,dir)
@@ -519,7 +521,6 @@
           case (3); call init_Edge(f%x,m,2);call init_Edge(f%y,m,1);call init_CC  (f%z,m)
           case default; stop 'Error: dir must = 1,2,3 in init_VF_Face_compliment in VF.f90'
           end select
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_VF_Node(f,m)
@@ -527,7 +528,6 @@
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
-          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         subroutine init_VF_Node_MD(f,m,MD)
@@ -536,7 +536,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_Node(f%x,m,MD); call init_Node(f%y,m,MD); call init_Node(f%z,m,MD)
-          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         subroutine init_VF_CC_assign(f,m,val)
@@ -545,7 +544,6 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
-          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_VF_Edge_assign(f,m,val)
@@ -554,7 +552,6 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Edge(f%x,m,1,val); call init_Edge(f%y,m,2,val); call init_Edge(f%z,m,3,val)
-          call delete_logicals(f); f%is_Edge = .true.
         end subroutine
 
         subroutine init_VF_Face_assign(f,m,val)
@@ -563,7 +560,6 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Face(f%x,m,1,val); call init_Face(f%y,m,2,val); call init_Face(f%z,m,3,val)
-          call delete_logicals(f); f%is_Face = .true.
         end subroutine
 
         subroutine init_VF_Node_assign(f,m,val)
@@ -572,7 +568,6 @@
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Node(f%x,m,val); call init_Node(f%y,m,val); call init_Node(f%z,m,val)
-          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         ! ****************************************************************

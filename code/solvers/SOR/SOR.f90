@@ -76,18 +76,18 @@
         call init(SOR%vol,u)
         call volume(SOR%vol,m)
 
-        if (u%is_CC) then
+        if (is_CC(u%DL)) then
           do t=1,u%s; do i=1,3
             call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
             SOR%gt(i) = 1
           enddo; enddo
-        elseif(u%is_Node) then
+        elseif(is_Node(u%DL)) then
           do t=1,u%s; do i=1,3
             call init(SOR%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               SOR%gt(i) = 0
           enddo; enddo
-        elseif (u%is_Face) then
-        elseif (u%is_Edge) then
+        elseif (is_Face(u%DL)) then
+        elseif (is_Edge(u%DL)) then
         else; stop 'Error: mesh type was not determined in SOR.f90'
         endif
 
@@ -184,7 +184,7 @@
             call lap(SOR%lapu,u,m)
             call subtract(SOR%res,SOR%lapu,f)
             call assign_ghost_XPeriodic(SOR%res,0.0_cp)
-            call compute(norm,SOR%res,SOR%vol)
+            call compute(norm,SOR%res,SOR%vol,m%volume)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
@@ -205,7 +205,7 @@
           call lap(SOR%lapu,u,m)
           call subtract(SOR%res,SOR%lapu,f)
           call assign_ghost_XPeriodic(SOR%res,0.0_cp)
-          call compute(norm,SOR%res,SOR%vol)
+          call compute(norm,SOR%res,SOR%vol,m%volume)
           call print(norm,'SOR Residuals')
         endif
 

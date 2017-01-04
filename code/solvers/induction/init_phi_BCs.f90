@@ -24,7 +24,7 @@
 
          call Dirichlet_BCs(phi,m)
 
-         preset_ID = BMC%VS%B%BC
+         preset_ID = BMC%VS%phi%BC
          periodic_dir = BMC%periodic_dir
 
          phi%all_Neumann = .false. ! Needs to be adjusted manually

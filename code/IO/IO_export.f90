@@ -381,8 +381,8 @@
         type(data_location),intent(in) :: DL
         character(len=*),intent(in) :: name
         call init(s,name//get_char(DL))
-            if (is_Face(DL)) then; call append(s,'_'//xyz_given_dir(DL%face))
-        elseif (is_Edge(DL)) then; call append(s,'_'//xyz_given_dir(DL%edge))
+            if (is_Face(DL)) then; call append(s,'_'//xyz_given_dir(get_Face(DL)))
+        elseif (is_Edge(DL)) then; call append(s,'_'//xyz_given_dir(get_Edge(DL)))
         endif
       end subroutine
 
@@ -396,8 +396,8 @@
 #endif
 
         call init(s,name//get_char(DL(1)))
-        if (is_Face(DL(1))) call append(s,'_'//xyz_given_dir(DL(1)%face))
-        if (is_Edge(DL(1))) call append(s,'_'//xyz_given_dir(DL(1)%edge))
+        if (is_Face(DL(1))) call append(s,'_'//xyz_given_dir(get_Face(DL(1))))
+        if (is_Edge(DL(1))) call append(s,'_'//xyz_given_dir(get_Edge(DL(1))))
       end subroutine
 
       end module

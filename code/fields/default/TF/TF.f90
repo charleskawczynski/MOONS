@@ -35,6 +35,7 @@
         ! c = b / a => call divide(c,b,a)
 
         use current_precision_mod
+        use data_location_mod
         use mesh_mod
         use mesh_domain_mod
         use SF_mod
@@ -67,14 +68,13 @@
 
         public :: restrict
         public :: prolongate
+        public :: get_DL
+        public :: is_collocated
         ! public :: sum
         ! public :: assignX,assignY,assignZ
 
         type TF
-          integer :: s = 3  ! number of components
           type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
-
-          logical :: is_CC,is_Node
         end type
 
         interface init;                module procedure init_TF_copy_VF;           end interface
@@ -139,6 +139,9 @@
         interface restrict;            module procedure restrict_dir_TF;           end interface
         interface prolongate;          module procedure prolongate_TF;             end interface
         interface prolongate;          module procedure prolongate_dir_TF;         end interface
+
+        interface get_DL;              module procedure get_DL_TF;                 end interface
+        interface is_collocated;       module procedure is_collocated_TF_DL;       end interface
 
         interface transpose;           module procedure transpose_TF_TF;           end interface
         interface transpose;           module procedure transpose_TF_SF;           end interface
@@ -398,6 +401,24 @@
           call prolongate(A%z,m,dir)
         end subroutine
 
+        function get_DL_TF(A) result(DL)
+          implicit none
+          type(TF),intent(in) :: A
+          type(data_location),dimension(9) :: DL
+          DL(1:3) = get_DL(A%x)
+          DL(4:6) = get_DL(A%y)
+          DL(7:9) = get_DL(A%z)
+        end function
+
+        function is_collocated_TF_DL(A) result(L)
+          implicit none
+          type(TF),intent(in) :: A
+          type(data_location),dimension(9) :: DL
+          logical :: L
+          DL = get_DL(A)
+          L = is_collocated_TF(DL)
+        end function
+
         subroutine transpose_TF_SF(f,g)
           implicit none
           type(TF),intent(inout) :: f
@@ -442,7 +463,6 @@
           type(TF),intent(inout) :: f1
           type(TF),intent(in) :: f2
           call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-          call copy_props_TF(f1,f2)
         end subroutine
 
         subroutine init_TF_copy_TF_mesh(f1,f2,m)
@@ -451,7 +471,6 @@
           type(TF),intent(in) :: f2
           type(mesh),intent(in) :: m
           call init(f1%x,f2%x,m); call init(f1%y,f2%y,m); call init(f1%z,f2%z,m)
-          call copy_props_TF(f1,f2)
         end subroutine
 
         subroutine init_TF_copy_VF(f1,f2)
@@ -459,16 +478,6 @@
           type(TF),intent(inout) :: f1
           type(VF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
-        end subroutine
-
-        subroutine copy_props_TF(f1,f2)
-          implicit none
-          type(TF),intent(inout) :: f1
-          type(TF),intent(in) :: f2
-          f1%is_CC = f2%is_CC
-          f1%is_Node = f2%is_Node
         end subroutine
 
         subroutine init_TF_CC(f,m)
@@ -476,7 +485,6 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
-          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_TF_CC_MD(f,m,MD)
@@ -485,7 +493,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_CC(f%x,m,MD); call init_CC(f%y,m,MD); call init_CC(f%z,m,MD)
-          call delete_logicals(f); f%is_CC = .true.
         end subroutine
 
         subroutine init_TF_Edge(f,m)
@@ -493,7 +500,6 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m); call init_Edge(f%y,m); call init_Edge(f%z,m)
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Edge_MD(f,m,MD)
@@ -502,7 +508,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_Edge(f%x,m,MD); call init_Edge(f%y,m,MD); call init_Edge(f%z,m,MD)
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Edge_compliment(f,m)
@@ -520,7 +525,6 @@
           call init_Face(f%z%x,m,2)
           call init_Face(f%z%y,m,1)
           call init_Node(f%z%z,m)
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Face(f,m)
@@ -528,7 +532,6 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m); call init_Face(f%y,m); call init_Face(f%z,m)
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Face_MD(f,m,MD)
@@ -537,7 +540,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_Face(f%x,m,MD); call init_Face(f%y,m,MD); call init_Face(f%z,m,MD)
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Face_compliment(f,m)
@@ -555,7 +557,6 @@
           call init_Edge(f%z%x,m,2)
           call init_Edge(f%z%y,m,1)
           call init_CC  (f%z%z,m)
-          call delete_logicals(f)
         end subroutine
 
         subroutine init_TF_Node(f,m)
@@ -563,7 +564,6 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
-          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         subroutine init_TF_Node_MD(f,m,MD)
@@ -572,7 +572,6 @@
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
           call init_Node(f%x,m,MD); call init_Node(f%y,m,MD); call init_Node(f%z,m,MD)
-          call delete_logicals(f); f%is_Node = .true.
         end subroutine
 
         subroutine init_TF_CC_assign(f,m,val)
@@ -611,14 +610,6 @@
           implicit none
           type(TF),intent(inout) :: f
           call delete(f%x); call delete(f%y); call delete(f%z)
-          call delete_logicals(f)
-        end subroutine
-
-        subroutine delete_logicals(f)
-          implicit none
-          type(TF),intent(inout) :: f
-          f%is_CC = .false.
-          f%is_Node = .false.
         end subroutine
 
         subroutine print_TF(f)

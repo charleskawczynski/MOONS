@@ -54,7 +54,7 @@
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! RHS MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        if (.not.x%is_CC) call assign_wall_Dirichlet(r,0.0_cp,x)
+        if (.not.is_CC(x%DL)) call assign_wall_Dirichlet(r,0.0_cp,x)
         call assign(p,0.0_cp)
         call apply_BCs(p) ! p has BCs for x
         call assign_ghost_N_XPeriodic(p,0.0_cp)
@@ -160,7 +160,7 @@
         ! ----------------------- MODIFY RHS -----------------------
         ! THE FOLLOWING MODIFICATION SHOULD BE READ VERY CAREFULLY.
         ! MODIFCATIONS ARE EXPLAINED IN DOCUMENTATION.
-        if (.not.x%is_CC) call assign_wall_Dirichlet(r,0.0_cp,x)
+        if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
         call assign(p,0.0_cp)
         call apply_BCs(p) ! p has BCs for x
         call assign_ghost_N_XPeriodic(p,0.0_cp)

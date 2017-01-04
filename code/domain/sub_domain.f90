@@ -208,10 +208,10 @@
          integer :: i
          if (is_Face(DL)) then
           do i=1,3; call init(M(i),C(i)); enddo
-          call init(M(DL%face),N(DL%face))
+          call init(M(get_Face(DL)),N(get_Face(DL)))
          elseif (is_Edge(DL)) then
           do i=1,3; call init(M(i),N(i)); enddo
-          call init(M(DL%edge),C(DL%edge))
+          call init(M(get_Edge(DL)),C(get_Edge(DL)))
          elseif (is_CC(DL)) then
           do i=1,3; call init(M(i),C(i)); enddo
          elseif (is_Node(DL)) then

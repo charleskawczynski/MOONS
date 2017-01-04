@@ -80,15 +80,15 @@
          integer :: i,j,k
          temp = 0.0_cp
 #ifdef _DEBUG_GF_NORMS_
-         call insist_shape_match(u_xx,u_xy,'Ln_GF_3 (1)')
-         call insist_shape_match(u_xx,u_xy,'Ln_GF_3 (2)')
-         call insist_shape_match(u_xx,u_xz,'Ln_GF_3 (3)')
-         call insist_shape_match(u_xx,u_yx,'Ln_GF_3 (4)')
-         call insist_shape_match(u_xx,u_yy,'Ln_GF_3 (5)')
-         call insist_shape_match(u_xx,u_yz,'Ln_GF_3 (6)')
-         call insist_shape_match(u_xx,u_zx,'Ln_GF_3 (7)')
-         call insist_shape_match(u_xx,u_zy,'Ln_GF_3 (8)')
-         call insist_shape_match(u_xx,u_zz,'Ln_GF_3 (9)')
+         call insist_shape_match(u_xx,u_xy,'Ln_GF_9 (1)')
+         call insist_shape_match(u_xx,u_xy,'Ln_GF_9 (2)')
+         call insist_shape_match(u_xx,u_xz,'Ln_GF_9 (3)')
+         call insist_shape_match(u_xx,u_yx,'Ln_GF_9 (4)')
+         call insist_shape_match(u_xx,u_yy,'Ln_GF_9 (5)')
+         call insist_shape_match(u_xx,u_yz,'Ln_GF_9 (6)')
+         call insist_shape_match(u_xx,u_zx,'Ln_GF_9 (7)')
+         call insist_shape_match(u_xx,u_zy,'Ln_GF_9 (8)')
+         call insist_shape_match(u_xx,u_zz,'Ln_GF_9 (9)')
 #endif
 
 #ifdef _PARALLELIZE_GF_NORMS_

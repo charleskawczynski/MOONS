@@ -100,22 +100,22 @@
          if (n.eq.6) then
                if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%fb(i)); enddo
          elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%fb(i)); enddo
-         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%fb(i),DL%face); enddo
-         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%fb(i),DL%edge); enddo
+         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%fb(i),get_Face(DL)); enddo
+         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%fb(i),get_Edge(DL)); enddo
          else; stop 'Error: bad DL f in init_GFs_boundary_DL in boundary.f90'
          endif
          elseif (n.eq.12) then
                if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%eb(i)); enddo
          elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%eb(i)); enddo
-         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%eb(i),DL%face); enddo
-         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%eb(i),DL%edge); enddo
+         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%eb(i),get_Face(DL)); enddo
+         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%eb(i),get_Edge(DL)); enddo
          else; stop 'Error: bad DL e in init_GFs_boundary_DL in boundary.f90'
          endif
          elseif (n.eq.8) then
                if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%cb(i)); enddo
          elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%cb(i)); enddo
-         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%cb(i),DL%face); enddo
-         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%cb(i),DL%edge); enddo
+         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%cb(i),get_Face(DL)); enddo
+         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%cb(i),get_Edge(DL)); enddo
          else; stop 'Error: bad DL c in init_GFs_boundary_DL in boundary.f90'
          endif
          else; stop 'Error: bad input to init_GFs_boundary_DL in B.f90'

@@ -88,18 +88,18 @@
         GS%un = new_and_open(dir,'norm_GS_SF_'//str(GS%name))
         call tecHeader(str(GS%name),GS%un,.false.)
 
-        if (u%is_CC) then
+        if (is_CC(u%DL)) then
           do t=1,m%s; do i=1,3
             call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
             GS%gt(i) = 1
           enddo; enddo
-        elseif(u%is_Node) then
+        elseif(is_Node(u%DL)) then
           do t=1,m%s; do i=1,3
             call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gt(i) = 0
           enddo; enddo
-        elseif (u%is_Face) then
-        elseif (u%is_Edge) then
+        elseif (is_Face(u%DL)) then
+        elseif (is_Edge(u%DL)) then
         else; stop 'Error: mesh type was not determined in GS.f90'
         endif
 
@@ -134,22 +134,22 @@
         GS%un = new_and_open(dir,'norm_GS_SF_'//str(GS%name))
         call tecHeader(str(GS%name),GS%un,.true.)
 
-        if (u%is_CC) then
+        if (is_CC(u)) then
           do t=1,m%s; do i=1,3
             call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 1; GS%gty(i) = 1; GS%gtz(i) = 1
           enddo; enddo
-        elseif(u%is_Node) then
+        elseif(is_Node(u)) then
           do t=1,m%s; do i=1,3
             call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 0; GS%gty(i) = 0; GS%gtz(i) = 0
           enddo; enddo
-        elseif (u%is_Face) then
+        elseif (is_Face(u)) then
           do t=1,m%s; do i=1,3
             call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 0; GS%gty(i) = 0; GS%gtz(i) = 0
           enddo; enddo
-        elseif (u%is_Edge) then
+        elseif (is_Edge(u)) then
         else; stop 'Error: mesh type was not determined in GS.f90'
         endif
 

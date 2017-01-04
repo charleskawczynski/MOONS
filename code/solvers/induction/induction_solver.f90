@@ -43,7 +43,7 @@
 
        contains
 
-       subroutine CT_Finite_Rem(B,B0,U_E,J,F,sigmaInv_E,m,dt,&
+       subroutine CT_Finite_Rem(B,B0,U_E,J,F,sigmaInv_E,m,N_multistep,dt,&
          temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB) + F
          ! Computes:  B (above)
@@ -56,20 +56,97 @@
          type(TF),intent(inout) :: temp_E_TF
          type(TF),intent(in) :: U_E
          type(mesh),intent(in) :: m
+         integer,intent(in) :: N_multistep
          real(cp),intent(in) :: dt
-         call add(temp_F2,B,B0) ! Since finite Rem
-         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-         call multiply(temp_E,J,sigmaInv_E)
-         call curl(temp_F3,temp_E,m)
-         call subtract(temp_F1,temp_F3)
-         call add(temp_F1,F)
-         call multiply(temp_F1,dt)
-         call add(B,temp_F1)
-         call apply_BCs(B)
+         integer :: i
+         do i=1,N_multistep
+           call add(temp_F2,B,B0) ! Since finite Rem
+           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+           call multiply(temp_E,J,sigmaInv_E)
+           call curl(temp_F3,temp_E,m)
+           call subtract(temp_F1,temp_F3)
+           call add(temp_F1,F)
+           call multiply(temp_F1,dt)
+           call add(B,temp_F1)
+           call apply_BCs(B)
+         enddo
        end subroutine
 
+       subroutine CT_Low_Rem(B,B0,U_E,J,sigmaInv_E,m,N_multistep,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
+         implicit none
+         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0,sigmaInv_E
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         integer,intent(in) :: N_multistep
+         integer :: i
+         do i=1,N_multistep
+           call curl_curl_B_matrix_free(temp_F2,J,B,sigmaInv_E,m,temp_E)
+           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
+           call multiply(temp_F1,dt)
+           call add_product(B,temp_F2,-dt)
+           call add(B,temp_F1)
+           call apply_BCs(B)
+         enddo
+       end subroutine
+
+       subroutine CT_Low_Rem_matrix_based(B,B0,U_E,m,N_multistep,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
+         implicit none
+         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2
+         type(VF),intent(in) :: B0
+         type(TF),intent(inout) :: temp_E_TF
+         type(TF),intent(in) :: U_E
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         integer,intent(in) :: N_multistep
+         integer :: i
+         do i=1,N_multistep
+           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
+           call curl_curl_B_matrix_based(temp_F2,B,m) ! A = -(I + curl(curl))
+           call multiply(temp_F2,-dt)
+           call multiply(temp_F1,dt)
+           call add(B,temp_F1,temp_F2)
+           call apply_BCs(B)
+         enddo
+       end subroutine
+
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,F,m,&
+         N_multistep,dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
+         ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
+         ! Computes:  B (above)
+         ! Method:    Preconditioned Conjugate Gradient Method (induction equation)
+         !            Preconditioned Conjugate Gradient Method (elliptic cleaning procedure)
+         ! Info:      cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Finite Rem
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: PCG_B
+         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
+         type(VF),intent(inout) :: B
+         type(VF),intent(in) :: B0,F
+         type(TF),intent(in) :: U_E
+         type(SF),intent(inout) :: temp_CC,phi
+         type(TF),intent(inout) :: temp_E_TF
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         integer,intent(in) :: N_multistep
+         logical,intent(in) :: compute_norms
+         integer :: i
+         do i=1,N_multistep
+           call add(temp_F2,B,B0) ! Since finite Rem
+           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+           call multiply(temp_F1,dt)
+           call add(temp_F1,B)
+           call add_product(temp_F1,F,dt)
+           call solve(PCG_B,B,temp_F1,m,compute_norms)
+           call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
+         enddo
+       end subroutine
+
+
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B_interior,curlE,&
-         phi,m,MD_sigma,dt,N_induction,compute_norms,SF_CC,VF_F1)
+         phi,m,MD_sigma,N_multistep,dt,compute_norms,SF_CC,VF_F1)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:  Constrained Transport (CT)
@@ -82,10 +159,10 @@
          type(mesh_domain),intent(in) :: MD_sigma
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction
+         integer,intent(in) :: N_multistep
          logical,intent(in) :: compute_norms
          integer :: i
-         do i=1,N_induction
+         do i=1,N_multistep
            call multiply(VF_F1,curlE,-dt)
            call add(B,VF_F1)
            call apply_BCs(B)
@@ -96,7 +173,7 @@
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,RHS,phi,m,&
-         n,N_induction,compute_norms,SF_CC,VF_F)
+         N_multistep,N_induction,compute_norms,SF_CC,VF_F)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
@@ -106,10 +183,10 @@
          type(SF),intent(inout) :: SF_CC,phi
          type(VF),intent(inout) :: VF_F
          type(mesh),intent(in) :: m
-         integer,intent(in) :: n,N_induction
+         integer,intent(in) :: N_multistep,N_induction
          logical,intent(in) :: compute_norms
          integer :: i
-         do i=1,n
+         do i=1,N_multistep
            call solve(JAC,B,RHS,m,N_induction,.true.)
            ! Clean B
            call div(SF_CC,B,m)
@@ -159,75 +236,6 @@
          call extractFace(temp,temp_F2,D_conductor)
          call embedFace(B,temp,D_conductor)
          call delete(temp)
-         call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
-       end subroutine
-
-       subroutine CT_Low_Rem(B,B0,U_E,J,sigmaInv_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
-         implicit none
-         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
-         type(VF),intent(in) :: B0,sigmaInv_E
-         type(TF),intent(inout) :: temp_E_TF
-         type(TF),intent(in) :: U_E
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction
-         integer :: i
-         do i=1,N_induction
-           call curl_curl_B_matrix_free(temp_F2,J,B,sigmaInv_E,m,temp_E)
-           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
-           call multiply(temp_F1,dt)
-           call add_product(B,temp_F2,-dt)
-           call add(B,temp_F1)
-           call apply_BCs(B)
-         enddo
-       end subroutine
-
-       subroutine CT_Low_Rem_matrix_based(B,B0,U_E,m,N_induction,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
-         implicit none
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2
-         type(VF),intent(in) :: B0
-         type(TF),intent(inout) :: temp_E_TF
-         type(TF),intent(in) :: U_E
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         integer,intent(in) :: N_induction
-         integer :: i
-         do i=1,N_induction
-           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
-           call curl_curl_B_matrix_based(temp_F2,B,m) ! A = -(I + curl(curl))
-           call multiply(temp_F2,-dt)
-           call multiply(temp_F1,dt)
-           call add(B,temp_F1,temp_F2)
-           call apply_BCs(B)
-         enddo
-       end subroutine
-
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,F,m,&
-         dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
-         ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
-         ! Computes:  B (above)
-         ! Method:    Preconditioned Conjugate Gradient Method (induction equation)
-         !            Preconditioned Conjugate Gradient Method (elliptic cleaning procedure)
-         ! Info:      cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Finite Rem
-         implicit none
-         type(PCG_solver_VF),intent(inout) :: PCG_B
-         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B
-         type(VF),intent(in) :: B0,F
-         type(TF),intent(in) :: U_E
-         type(SF),intent(inout) :: temp_CC,phi
-         type(TF),intent(inout) :: temp_E_TF
-         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         logical,intent(in) :: compute_norms
-         ! Induction
-         call add(temp_F2,B,B0) ! Since finite Rem
-         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-         call multiply(temp_F1,dt)
-         call add(temp_F1,B)
-         call add_product(temp_F1,F,dt)
-         call solve(PCG_B,B,temp_F1,m,compute_norms)
          call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 

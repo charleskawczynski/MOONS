@@ -140,10 +140,10 @@
          call assign(x_temp,x)
          d = dir_given_face(face)
          if (min_face(face)) then
-          call mirror_about_hmin(m_temp,d)
-          call mirror_about_hmin(x_temp%x,d,mirror_sign(1))
-          call mirror_about_hmin(x_temp%y,d,mirror_sign(2))
-          call mirror_about_hmin(x_temp%z,d,mirror_sign(3))
+           call mirror_about_hmin(m_temp,d)
+           call mirror_about_hmin(x_temp%x,d,mirror_sign(1))
+           call mirror_about_hmin(x_temp%y,d,mirror_sign(2))
+           call mirror_about_hmin(x_temp%z,d,mirror_sign(3))
          endif
          if (max_face(face)) then
           call mirror_about_hmax(m_temp,d)

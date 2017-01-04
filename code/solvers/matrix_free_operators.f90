@@ -6,6 +6,7 @@
       !
       use current_precision_mod
       use mesh_mod
+      use data_location_mod
       use SF_mod
       use VF_mod
       use ops_discrete_mod
@@ -88,7 +89,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = k%is_CC
+        suppress_warning = is_CC(k)
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
       end subroutine
@@ -103,7 +104,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = k%is_CC
+        suppress_warning = is_CC(k)
         call apply_BCs_implicit(x)
         call grad(tempk,x,m)
         call div(Ax,tempk,m)
@@ -120,8 +121,8 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
+        suppress_warning = is_CC(k)
+        suppress_warning = is_CC(tempk)
         call lap_centered(Ax,x,m) ! Involves dynamic allocations
         ! call lap(Ax,x,m)
       end subroutine
@@ -136,8 +137,8 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
+        suppress_warning = is_CC(k)
+        suppress_warning = is_CC(tempk)
         call apply_BCs_implicit(x)
         call lap_centered(Ax,x,m) ! Involves dynamic allocations
         ! call lap(Ax,x,m)
@@ -249,8 +250,8 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
+        suppress_warning = is_CC(k)
+        suppress_warning = is_CC(tempk)
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).
         ! The reason this is not as simple as the laplacian operator
@@ -271,8 +272,8 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
-        suppress_warning = k%is_CC
-        suppress_warning = tempk%is_CC
+        suppress_warning = is_CC(k)
+        suppress_warning = is_CC(tempk)
         call apply_BCs_implicit(x)
         ! lap_centered is a very bad and expensive routine. It needs
         ! to be updated (a VF is allocated and deallocated inside).

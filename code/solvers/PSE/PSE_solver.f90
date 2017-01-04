@@ -53,8 +53,8 @@
           call apply_BCs(x)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          if (n.eq.1) call compute(norm_res0,r,vol)
-          call compute(norm,r,vol)
+          if (n.eq.1) call compute(norm_res0,r,vol,m%volume)
+          call compute(norm,r,vol,m%volume)
           write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
@@ -66,7 +66,8 @@
           call subtract(r,Ax,b)
           call assign_ghost_XPeriodic(r,0.0_cp)
           call assign_wall_Dirichlet(r,0.0_cp,x)
-          call compute(norm,r,vol); call print(norm,'PSE Residuals SF')
+          call compute(norm,r,vol,m%volume)
+          call print(norm,'PSE Residuals SF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif
@@ -101,8 +102,8 @@
           call apply_BCs(x)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          if (n.eq.1) call compute(norm_res0,r,vol)
-          call compute(norm,r,vol)
+          if (n.eq.1) call compute(norm_res0,r,vol,m%volume)
+          call compute(norm,r,vol,m%volume)
           write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
@@ -115,7 +116,8 @@
           call subtract(r,Ax,b)
           call assign_ghost_XPeriodic(r,0.0_cp)
           call assign_wall_Dirichlet(r,0.0_cp,x)
-          call compute(norm,r,vol); call print(norm,'PSE Residuals VF')
+          call compute(norm,r,vol,m%volume)
+          call print(norm,'PSE Residuals VF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif

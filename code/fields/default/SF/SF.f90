@@ -37,8 +37,6 @@
 
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
-        public :: N0_C1_tensor
-        public :: C0_N1_tensor
 
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
@@ -76,18 +74,15 @@
         public :: assign_ghost_zmin_zmax
 
         type SF
-          integer :: s ! Number of subdomains in domain decomposition
+          integer :: s = 0 ! Number of subdomains in domain decomposition
           type(block_field),dimension(:),allocatable :: BF
           logical :: all_neumann = .false. ! If necessary to subtract mean
-          integer :: numEl,numPhysEl ! Number of physical elements, number of physical elements
-          real(cp) :: vol
+
+          integer :: numEl = 0
+          integer :: numPhysEl = 0 ! Number of physical elements, number of physical elements
+          real(cp) :: vol = 0.0_cp
 
           type(data_location) :: DL
-          logical,dimension(3) :: CC_along
-          logical,dimension(3) :: N_along
-          logical :: is_CC,is_Node,is_face,is_edge
-          integer :: face = 0 ! Direction of face data
-          integer :: edge = 0 ! Direction of edge data
         end type
 
         interface init;                    module procedure init_SF_copy;                 end interface
@@ -248,15 +243,7 @@
           do i=1,f%s; call init(f%BF(i),f_in%BF(i)); enddo
           f%numEl = f_in%numEl
           f%numPhysEl = f_in%numPhysEl
-          f%is_CC = f_in%is_CC
-          f%is_node = f_in%is_node
-          f%is_face = f_in%is_face
-          f%is_edge = f_in%is_edge
-
-          f%face = f_in%face
-          f%edge = f_in%edge
-          f%CC_along = f_in%CC_along
-          f%N_along = f_in%N_along
+          f%vol = f_in%vol
         end subroutine
 
         subroutine init_SF_copy_mesh(f,f_in,m)
@@ -265,10 +252,10 @@
           type(SF),intent(in) :: f_in
           type(mesh),intent(in) :: m
           type(SF) :: temp
-          if (f_in%is_CC) then;       call init_CC(temp,m)
-          elseif (f_in%is_Node) then; call init_Node(temp,m)
-          elseif (f_in%is_Face) then; call init_Face(temp,m,f_in%face)
-          elseif (f_in%is_Edge) then; call init_Edge(temp,m,f_in%edge)
+                if (is_CC(f_in%DL)) then; call init_CC(temp,m)
+          elseif (is_Node(f_in%DL)) then; call init_Node(temp,m)
+          elseif (is_Face(f_in%DL)) then; call init_Face(temp,m,get_Face(f_in%DL))
+          elseif (is_Edge(f_in%DL)) then; call init_Edge(temp,m,get_Edge(f_in%DL))
           else; stop 'Error: bad datatype in init_SF_copy_mesh in SF.f90'
           endif
           call init(f,temp)
@@ -311,8 +298,8 @@
           integer :: i
           write(un,*) 'f%s'
           write(un,*) f%s
-          write(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
-          write(un,*) f%face,f%edge,f%numEl,f%numPhysEl
+          write(un,*) f%all_neumann
+          write(un,*) f%numEl,f%numPhysEl
           write(un,*) f%vol
           do i=1,f%s; call export(f%BF(i),un); enddo
           call export(f%DL,un)
@@ -326,8 +313,8 @@
           call delete(f)
           read(un,*)
           read(un,*) f%s
-          read(un,*) f%is_CC,f%is_Node,f%is_face,f%is_edge,f%all_neumann
-          read(un,*) f%face,f%edge,f%numEl,f%numPhysEl
+          read(un,*) f%all_neumann
+          read(un,*) f%numEl,f%numPhysEl
           read(un,*) f%vol
           allocate(f%BF(f%s))
           do i=1,f%s; call import(f%BF(i),un); enddo
@@ -359,81 +346,6 @@
        ! **********************************************************
        ! **********************************************************
 
-        subroutine N0_C1_tensor(U,x,y,z)
-          implicit none
-          type(SF),intent(in) :: U
-          integer,intent(inout) :: x,y,z
-          if (U%is_CC) then
-            x = 1; y = 1; z = 1
-          elseif (U%is_Node) then
-            x = 0; y = 0; z = 0
-          elseif (U%is_Face) then
-            select case (U%face)
-            case (1); x = 0; y = 1; z = 1
-            case (2); x = 1; y = 0; z = 1
-            case (3); x = 1; y = 1; z = 0
-            case default; stop 'Error: face must = 1,2,3 in apply_stitches_faces.f90'
-            end select
-          elseif (U%is_Edge) then
-            select case (U%edge)
-            case (1); x = 1; y = 0; z = 0
-            case (2); x = 0; y = 1; z = 0
-            case (3); x = 0; y = 0; z = 1
-            case default; stop 'Error: edge must = 1,2,3 in apply_stitches_faces.f90'
-            end select
-          else
-           write(*,*) 'U%is_CC = ',U%is_CC
-           write(*,*) 'U%is_Node = ',U%is_Node
-           write(*,*) 'U%is_Face = ',U%is_Face
-           write(*,*) 'U%is_Edge = ',U%is_Edge
-           write(*,*) 'U%Face = ',U%Face
-           write(*,*) 'U%Edge = ',U%Edge
-           stop 'Error: data type not found in N0_C1_tensor in SF.f90'
-          endif
-        end subroutine
-
-        subroutine C0_N1_tensor(U,x,y,z)
-          implicit none
-          type(SF),intent(in) :: U
-          integer,intent(inout) :: x,y,z
-          if (U%is_CC) then
-            x = 0; y = 0; z = 0
-          elseif (U%is_Node) then
-            x = 1; y = 1; z = 1
-          elseif (U%is_Face) then
-            select case (U%face)
-            case (1); x = 1; y = 0; z = 0
-            case (2); x = 0; y = 1; z = 0
-            case (3); x = 0; y = 0; z = 1
-            case default; stop 'Error: face must = 1,2,3 in apply_stitches_faces.f90'
-            end select
-          elseif (U%is_Edge) then
-            select case (U%edge)
-            case (1); x = 0; y = 1; z = 1
-            case (2); x = 1; y = 0; z = 1
-            case (3); x = 1; y = 1; z = 0
-            case default; stop 'Error: edge must = 1,2,3 in apply_stitches_faces.f90'
-            end select
-          else
-           write(*,*) 'U%is_CC = ',U%is_CC
-           write(*,*) 'U%is_Node = ',U%is_Node
-           write(*,*) 'U%is_Face = ',U%is_Face
-           write(*,*) 'U%is_Edge = ',U%is_Edge
-           write(*,*) 'U%Face = ',U%Face
-           write(*,*) 'U%Edge = ',U%Edge
-           stop 'Error: data type not found in C0_N1_tensor in SF.f90'
-          endif
-        end subroutine
-
-        subroutine deleteDataLocation(a)
-          implicit none
-          type(SF),intent(inout) :: a
-          a%is_CC = .false.
-          a%is_node = .false.
-          a%is_face = .false.
-          a%is_edge = .false.
-        end subroutine
-
         subroutine computeNumEl(f)
           implicit none
           type(SF),intent(inout) :: f
@@ -446,33 +358,6 @@
           enddo
         end subroutine
 
-        subroutine init_CC_N_along(f)
-          implicit none
-          type(SF),intent(inout) :: f
-          if (f%is_CC) then;       f%CC_along = .true.; f%N_along  = .false.
-          elseif (f%is_Node) then; f%N_along  = .true.; f%CC_along = .false.
-          elseif (f%is_Face) then
-            f%CC_along = .not.diag_true(f%face)
-            f%N_along  =      diag_true(f%face)
-          elseif (f%is_Edge) then
-            f%CC_along =      diag_true(f%edge)
-            f%N_along  = .not.diag_true(f%edge)
-          else; stop 'Error: bad data type in init_CC_N_along in SF.f90'
-          endif
-        end subroutine
-
-        function diag_true(dir) result(L)
-          implicit none
-          integer,intent(in) :: dir
-          logical,dimension(3) :: L
-          select case(dir)
-          case (1);L=(/.true.,.false.,.false./)
-          case (2);L=(/.false.,.true.,.false./)
-          case (3);L=(/.false.,.false.,.true./)
-          case default; stop 'Error: dir must = 1,2,3 in diag_true in SF.f90'
-          end select
-        end function
-
         subroutine init_SF_CC(f,m)
           implicit none
           type(SF),intent(inout) :: f
@@ -481,11 +366,8 @@
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
           do i=1,f%s; call init_CC(f%BF(i),m%B(i)); enddo
-          call deleteDataLocation(f)
           call computeNumEl(f)
-          f%is_CC = .true.
           call init_CC(f%DL)
-          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_CC_D(f,m,MD)
@@ -493,7 +375,7 @@
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
-          if (compare(m,MD%m_R1)) then;     call init_CC(f,MD%m_R2)
+              if (compare(m,MD%m_R1)) then; call init_CC(f,MD%m_R2)
           elseif (compare(m,MD%m_R2)) then; call init_CC(f,MD%m_R1)
           else; stop 'Error: case not found in init_SF_CC_D in SF.f90'
           endif
@@ -516,12 +398,8 @@
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
           do i=1,f%s; call init_Face(f%BF(i),m%B(i),dir); enddo
-          call deleteDataLocation(f)
           call computeNumEl(f)
-          f%is_face = .true.
-          f%face = dir
           call init_Face(f%DL,dir)
-          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_Face_D(f,m,dir,MD)
@@ -530,7 +408,7 @@
           type(mesh),intent(in) :: m
           integer,intent(in) :: dir
           type(mesh_domain),intent(in) :: MD
-          if (compare(m,MD%m_R1)) then;     call init_Face(f,MD%m_R2,dir)
+              if (compare(m,MD%m_R1)) then; call init_Face(f,MD%m_R2,dir)
           elseif (compare(m,MD%m_R2)) then; call init_Face(f,MD%m_R1,dir)
           else; stop 'Error: case not found in init_SF_Face_D in SF.f90'
           endif
@@ -554,12 +432,8 @@
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
           do i=1,f%s; call init_Edge(f%BF(i),m%B(i),dir); enddo
-          call deleteDataLocation(f)
           call computeNumEl(f)
-          f%is_edge = .true.
-          f%edge = dir
-          call init_edge(f%DL,dir)
-          call init_CC_N_along(f)
+          call init_Edge(f%DL,dir)
         end subroutine
 
         subroutine init_SF_Edge_D(f,m,dir,MD)
@@ -568,7 +442,7 @@
           type(mesh),intent(in) :: m
           integer,intent(in) :: dir
           type(mesh_domain),intent(in) :: MD
-          if (compare(m,MD%m_R1)) then;     call init_Edge(f,MD%m_R2,dir)
+              if (compare(m,MD%m_R1)) then; call init_Edge(f,MD%m_R2,dir)
           elseif (compare(m,MD%m_R2)) then; call init_Edge(f,MD%m_R1,dir)
           else; stop 'Error: case not found in init_SF_Edge_D in SF.f90'
           endif
@@ -591,11 +465,8 @@
           call delete(f)
           allocate(f%BF(m%s)); f%s = m%s
           do i=1,f%s; call init_Node(f%BF(i),m%B(i)); enddo
-          call deleteDataLocation(f)
           call computeNumEl(f)
-          f%is_node = .true.
           call init_Node(f%DL)
-          call init_CC_N_along(f)
         end subroutine
 
         subroutine init_SF_Node_D(f,m,MD)
@@ -603,7 +474,7 @@
           type(SF),intent(inout) :: f
           type(mesh),intent(in) :: m
           type(mesh_domain),intent(in) :: MD
-          if (compare(m,MD%m_R1)) then;     call init_Node(f,MD%m_R2)
+              if (compare(m,MD%m_R1)) then; call init_Node(f,MD%m_R2)
           elseif (compare(m,MD%m_R2)) then; call init_Node(f,MD%m_R1)
           else; stop 'Error: case not found in init_SF_Node_D in SF.f90'
           endif

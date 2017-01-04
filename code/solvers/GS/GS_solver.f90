@@ -66,7 +66,7 @@
           call lap_centered(lapu,u,m)
           call subtract(res,lapu,f)
           call assign_ghost_XPeriodic(res,0.0_cp)
-          call compute(norm0,res,vol)
+          call compute(norm0,res,vol,m%volume)
         endif
 
         call apply_BCs(u)
@@ -93,7 +93,7 @@
               call lap_centered(lapu,u,m)
               call subtract(res,lapu,f)
               call assign_ghost_XPeriodic(res,0.0_cp)
-              call compute(norm,res,vol)
+              call compute(norm,res,vol,m%volume)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                        norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -114,7 +114,8 @@
             call lap_centered(lapu,u,m)
             call subtract(res,lapu,f)
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol); call print(norm,'GS_SF Residuals for '//name)
+            call compute(norm,res,vol,m%volume)
+            call print(norm,'GS_SF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                      norm0%L1,norm0%L2,norm0%Linf,i-1+i_earlyExit
             write(*,*) 'GS_SF iterations (executed/max) = ',i-1+i_earlyExit,n
@@ -150,7 +151,7 @@
           call lap(lapu,u,m)
           call subtract(res,lapu,f)
           call assign_ghost_XPeriodic(res,0.0_cp)
-          call compute(norm0,res,vol)
+          call compute(norm0,res,vol,m%volume)
         endif
 
         call apply_BCs(u)
@@ -177,7 +178,7 @@
               call lap(lapu,u,m)
               call subtract(res,lapu,f)
               call assign_ghost_XPeriodic(res,0.0_cp)
-              call compute(norm,res,vol)
+              call compute(norm,res,vol,m%volume)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -198,7 +199,8 @@
             call lap(lapu,u,m)
             call subtract(res,lapu,f)
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol); call print(norm,'GS_SF Residuals for '//name)
+            call compute(norm,res,vol,m%volume)
+            call print(norm,'GS_SF Residuals for '//name)
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
             write(*,*) 'GS_VF iterations (executed/max) = ',i-1+i_earlyExit,n

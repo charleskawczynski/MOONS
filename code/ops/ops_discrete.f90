@@ -33,6 +33,7 @@
        use current_precision_mod
        use ops_del_mod
        use mesh_mod
+       use data_location_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -120,25 +121,25 @@
          type(mesh),intent(in) :: m
          type(TF) :: TF_temp
          type(VF) :: VF_temp
-         if     (U%is_CC) then
+         if     (is_CC(U)) then
            call init_Face(VF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Node) then
+         elseif (is_Node(U)) then
            call init_Edge(VF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Face) then
+         elseif (is_Face(U)) then
            call init_Face_compliment(TF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
            call delete(TF_temp)
-         elseif (U%is_Edge) then
+         elseif (is_Edge(U)) then
            call init_Edge_compliment(TF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
@@ -155,25 +156,25 @@
          type(mesh),intent(in) :: m
          type(TF) :: TF_temp
          type(VF) :: VF_temp
-         if     (U%is_CC) then
+         if     (is_CC(U%DL)) then
            call init_Face(VF_temp,m)
            call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Node) then
+         elseif (is_Node(U%DL)) then
            call init_Edge(VF_temp,m)
            call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Face) then
+         elseif (is_Face(U%DL)) then
            call init_Face_compliment(TF_temp,m)
-           select case (U%face)
+           select case (get_Face(U%DL))
            case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
            end select
            call delete(TF_temp)
-         elseif (U%is_Edge) then
+         elseif (is_Edge(U%DL)) then
            call init_Edge_compliment(TF_temp,m)
-           select case (U%edge)
+           select case (get_Edge(U%DL))
            case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)

@@ -26,30 +26,30 @@
 
         contains
 
-        subroutine mirror_about_hmin_GF(U,dir,mirror_sign)
+        subroutine mirror_about_hmin_GF(U,dir,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
-          integer,intent(in) :: dir
+          integer,intent(in) :: dir,N_along_dir
           real(cp),intent(in) :: mirror_sign
           select case (dir)
-          case (1); call mirror_about_xmin(U,mirror_sign,mod(U%s(1),2))
-          case (2); call mirror_about_ymin(U,mirror_sign,mod(U%s(2),2))
-          case (3); call mirror_about_zmin(U,mirror_sign,mod(U%s(3),2))
+          case (1); call mirror_about_xmin(U,mirror_sign,N_along_dir)
+          case (2); call mirror_about_ymin(U,mirror_sign,N_along_dir)
+          case (3); call mirror_about_zmin(U,mirror_sign,N_along_dir)
           case default
           write(*,*) 'Error: bad dir in mirror_about_hmin_GF in GF_mirror_about_plane.f90'
           stop 'Done'
           end select
         end subroutine
 
-        subroutine mirror_about_hmax_GF(U,dir,mirror_sign)
+        subroutine mirror_about_hmax_GF(U,dir,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
-          integer,intent(in) :: dir
+          integer,intent(in) :: dir,N_along_dir
           real(cp),intent(in) :: mirror_sign
           select case (dir)
-          case (1); call mirror_about_xmax(U,mirror_sign,mod(U%s(1),2))
-          case (2); call mirror_about_ymax(U,mirror_sign,mod(U%s(2),2))
-          case (3); call mirror_about_zmax(U,mirror_sign,mod(U%s(3),2))
+          case (1); call mirror_about_xmax(U,mirror_sign,N_along_dir)
+          case (2); call mirror_about_ymax(U,mirror_sign,N_along_dir)
+          case (3); call mirror_about_zmax(U,mirror_sign,N_along_dir)
           case default
           write(*,*) 'Error: bad dir in mirror_about_hmin_GF in GF_mirror_about_plane.f90'
           stop 'Done'
@@ -60,14 +60,14 @@
         ! *************************************************************
         ! *************************************************************
 
-        subroutine mirror_about_xmin_GF(U,mirror_sign,p)
+        subroutine mirror_about_xmin_GF(U,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: mirror_sign
-          integer,intent(in) :: p
+          integer,intent(in) :: N_along_dir
           type(grid_field) :: temp
           integer :: i,i_reverse,i_temp
-          call init(temp,(/2*U%s(1)-2-p,U%s(2),U%s(3)/))
+          call init(temp,(/2*U%s(1)-2-N_along_dir,U%s(2),U%s(3)/))
           do i=1,U%s(1)
             i_reverse = U%s(1)-i+1
             i_temp = temp%s(1)-i+1
@@ -82,14 +82,14 @@
           call assign(U,temp)
         end subroutine
 
-        subroutine mirror_about_ymin_GF(U,mirror_sign,p)
+        subroutine mirror_about_ymin_GF(U,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: mirror_sign
-          integer,intent(in) :: p
+          integer,intent(in) :: N_along_dir
           type(grid_field) :: temp
           integer :: i,i_reverse,i_temp
-          call init(temp,(/U%s(1),2*U%s(2)-2-p,U%s(3)/))
+          call init(temp,(/U%s(1),2*U%s(2)-2-N_along_dir,U%s(3)/))
           do i=1,U%s(2)
             i_reverse = U%s(2)-i+1
             i_temp = temp%s(2)-i+1
@@ -104,14 +104,14 @@
           call assign(U,temp)
         end subroutine
 
-        subroutine mirror_about_zmin_GF(U,mirror_sign,p)
+        subroutine mirror_about_zmin_GF(U,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: mirror_sign
-          integer,intent(in) :: p
+          integer,intent(in) :: N_along_dir
           type(grid_field) :: temp
           integer :: i,i_reverse,i_temp
-          call init(temp,(/U%s(1),U%s(2),2*U%s(3)-2-p/))
+          call init(temp,(/U%s(1),U%s(2),2*U%s(3)-2-N_along_dir/))
           do i=1,U%s(3)
             i_reverse = U%s(3)-i+1
             i_temp = temp%s(3)-i+1
@@ -126,14 +126,14 @@
           call assign(U,temp)
         end subroutine
 
-        subroutine mirror_about_xmax_GF(U,mirror_sign,p)
+        subroutine mirror_about_xmax_GF(U,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: mirror_sign
-          integer,intent(in) :: p
+          integer,intent(in) :: N_along_dir
           type(grid_field) :: temp
           integer :: i,i_reverse,i_temp
-          call init(temp,(/2*U%s(1)-2-p,U%s(2),U%s(3)/))
+          call init(temp,(/2*U%s(1)-2-N_along_dir,U%s(2),U%s(3)/))
           do i=1,U%s(1)
             call assign_plane_x(temp,U,i,i)
           enddo
@@ -147,14 +147,14 @@
           call assign(U,temp)
         end subroutine
 
-        subroutine mirror_about_ymax_GF(U,mirror_sign,p)
+        subroutine mirror_about_ymax_GF(U,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: mirror_sign
-          integer,intent(in) :: p
+          integer,intent(in) :: N_along_dir
           type(grid_field) :: temp
           integer :: i,i_reverse,i_temp
-          call init(temp,(/U%s(1),2*U%s(2)-2-p,U%s(3)/))
+          call init(temp,(/U%s(1),2*U%s(2)-2-N_along_dir,U%s(3)/))
           do i=1,U%s(2)
             call assign_plane_y(temp,U,i,i)
           enddo
@@ -168,14 +168,14 @@
           call assign(U,temp)
         end subroutine
 
-        subroutine mirror_about_zmax_GF(U,mirror_sign,p)
+        subroutine mirror_about_zmax_GF(U,mirror_sign,N_along_dir)
           implicit none
           type(grid_field),intent(inout) :: U
           real(cp),intent(in) :: mirror_sign
-          integer,intent(in) :: p
+          integer,intent(in) :: N_along_dir
           type(grid_field) :: temp
           integer :: i,i_reverse,i_temp
-          call init(temp,(/U%s(1),U%s(2),2*U%s(3)-2-p/))
+          call init(temp,(/U%s(1),U%s(2),2*U%s(3)-2-N_along_dir/))
           do i=1,U%s(3)
             call assign_plane_z(temp,U,i,i)
           enddo

@@ -435,8 +435,9 @@
              call export_processed(ind%m,ind%B ,str(DT%B%field),'B',1)
              if (.not.ind%SP%EL%export_soln_only) then
              if (ind%SP%EL%export_symmetric) then
-               call export_processed(ind%m,ind%B ,str(DT%B%field),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
-               call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
+               call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
+               write(*,*) 'GH 2'
+               call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
              endif
              call export_raw(ind%m,ind%B ,str(DT%B%field),'B',0)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
@@ -465,27 +466,22 @@
          ! call Ln(temp,ind%dB0dt%x,2.0_cp,ind%m); call export(ind%probe_dB0dt(1),ind%TMP,temp)
          ! call Ln(temp,ind%dB0dt%y,2.0_cp,ind%m); call export(ind%probe_dB0dt(2),ind%TMP,temp)
          ! call Ln(temp,ind%dB0dt%z,2.0_cp,ind%m); call export(ind%probe_dB0dt(3),ind%TMP,temp)
-
          ! call Ln(temp,ind%B0%x,2.0_cp,ind%m); call export(ind%probe_B0(1),ind%TMP,temp)
          ! call Ln(temp,ind%B0%y,2.0_cp,ind%m); call export(ind%probe_B0(2),ind%TMP,temp)
          ! call Ln(temp,ind%B0%z,2.0_cp,ind%m); call export(ind%probe_B0(3),ind%TMP,temp)
-
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
          call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP,ind%m)
          call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
          call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC,ind%TMP,ind%m,ind%MD_sigma)
-
          call face2cellCenter(ind%temp_CC,ind%B0,ind%m)
          call compute_Total_Energy(ind%ME(2),ind%temp_CC,ind%TMP,ind%m)
          call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
          call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC,ind%TMP,ind%m,ind%MD_sigma)
-
          call face2cellCenter(ind%temp_CC,ind%B,ind%m)
          call compute_Total_Energy(ind%ME(3),ind%temp_CC,ind%TMP,ind%m)
          call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
          call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC,ind%TMP,ind%m,ind%MD_sigma)
-
          call edge2cellCenter(ind%temp_CC,ind%J,ind%m,ind%temp_F1)
          call compute_Total_Energy(ind%JE,ind%temp_CC,ind%TMP,ind%m)
          call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%TMP,ind%m,ind%MD_fluid)
@@ -557,14 +553,15 @@
          select case (ind%SP%BMC%VS%B%SS%solve_method)
          case (1)
          call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
-         ind%ISP_B%iter_max,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
+         ind%TMP%multistep_iter,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
          case (2)
          call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
-         ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,ind%temp_E,ind%temp_E_TF)
+         ind%TMP%multistep_iter,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,&
+         ind%temp_E,ind%temp_E_TF)
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
-         ind%dB0dt,ind%m,ind%TMP%dt,PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,&
-         ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
+         ind%dB0dt,ind%m,ind%TMP%multistep_iter,ind%TMP%dt,PE%transient_0D,ind%temp_F1,&
+         ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
          case (4)
          if (ind%TMP%n_step.le.1) then
            call compute_J_ind(ind)
@@ -575,7 +572,7 @@
          endif
          call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,&
          ind%B_interior,ind%curlE,ind%phi,ind%m,ind%MD_sigma,&
-         ind%TMP%dt,ind%ISP_B%iter_max,PE%transient_0D,&
+         ind%TMP%multistep_iter,ind%TMP%dt,PE%transient_0D,&
          ind%temp_CC_SF,ind%temp_F1)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select

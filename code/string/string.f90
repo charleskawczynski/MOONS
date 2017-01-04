@@ -19,7 +19,7 @@
 
       public :: get_str,str ! str does not require length
       public :: len,match,match_index
-      public :: compress,append
+      public :: compress,append,prepend
       public :: get_char,set_char
       public :: remove_element
       public :: identical
@@ -35,6 +35,8 @@
 
       interface append;               module procedure app_string_char;                end interface
       interface append;               module procedure app_string_string;              end interface
+      interface prepend;              module procedure prep_string_char;               end interface
+      interface prepend;              module procedure prep_string_string;             end interface
       interface compress;             module procedure compress_string;                end interface
       interface len;                  module procedure str_len_string;                 end interface
       interface str;                  module procedure get_str_short;                  end interface
@@ -173,6 +175,24 @@
         type(string),intent(inout) :: a
         type(string),intent(in) :: b
         call append(a,str(b))
+      end subroutine
+
+      subroutine prep_string_char(a,b)
+        implicit none
+        type(string),intent(inout) :: a
+        character(len=*),intent(in) :: b
+        type(string) :: temp
+        call init(temp,b)
+        call append(temp,a)
+        call init(a,temp)
+        call delete(temp)
+      end subroutine
+
+      subroutine prep_string_string(a,b)
+        implicit none
+        type(string),intent(inout) :: a
+        type(string),intent(in) :: b
+        call prepend(a,str(b))
       end subroutine
 
       subroutine compress_string(st)

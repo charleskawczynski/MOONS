@@ -398,7 +398,8 @@
            call export(mom%probe_KE_2C,mom%TMP,temp)
          endif
          call div(mom%divU,mom%U,mom%m)
-         call Ln(temp,mom%divU,2.0_cp,mom%m); call export(mom%probe_divU,mom%TMP,temp)
+         call Ln(temp,mom%divU,2.0_cp,mom%m)
+         call export(mom%probe_divU,mom%TMP,temp)
        end subroutine
 
        subroutine export_transient2_mom(mom,DT)

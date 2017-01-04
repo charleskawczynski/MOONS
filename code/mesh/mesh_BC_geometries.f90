@@ -36,7 +36,7 @@
          hmin = -1.0_cp; hmax = 1.0_cp; beta = Re_Ha_BL(Re,Ha,hmin,hmax)
          N = (/30,30,30/)
          N_v = 12
-         N_w = get_N_w(Ha,tw)
+         N_w = 4
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
@@ -58,9 +58,9 @@
          ! Vacuum
          ! Remove the following 4 lines for vacuum-absent case
          if (include_vacuum) then
-           call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,1,MQP) ! x-direction
-           call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3,MQP) ! z-direction
-           call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2,MQP) ! y-direction
+           call ext_Roberts_near_IO  (g,Gamma_v - tw - tf,N_v   ,1,MQP) ! x-direction
+           call ext_Roberts_near_IO  (g,Gamma_v - tw - tf,N_v   ,3,MQP) ! z-direction
+           call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v   ,2,MQP) ! y-direction
            call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2,MQP) ! y-direction
          endif
          call add(m_ind,g)
@@ -87,9 +87,10 @@
          call delete(m_mom)
          hmin = -1.0_cp; hmax = 1.0_cp; beta = Re_Ha_BL(Re,Ha,hmin,hmax)
          hmax(3) = 0.0_cp
-         N = (/15,15,10/)
+         ! N = (/15,15,10/)
+         N = (/32,32,16/)
          N_v = 5
-         N_w = get_N_w(Ha,tw)
+         N_w = 4
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 3; call grid_Roberts_L(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
@@ -112,9 +113,9 @@
          call patch(m_sigma)
          ! Vacuum
          if (include_vacuum) then
-           call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,1,MQP) ! x-direction
-           call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,3,MQP) ! z-direction
-           call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2,MQP) ! y-direction
+           call ext_Roberts_near_IO  (g,Gamma_v - tw - tf,N_v   ,1,MQP) ! x-direction
+           call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v   ,3,MQP) ! z-direction
+           call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v   ,2,MQP) ! y-direction
            call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2,MQP) ! y-direction
          endif
          call add(m_ind,g)
@@ -124,12 +125,5 @@
          call delete(m_sigma)
          call delete(g)
        end subroutine
-
-       function get_N_w(Ha,tw) result(N_w)
-         implicit none
-         real(cp),intent(in) :: Ha,tw
-         integer :: N_w
-         N_w = 4
-       end function
 
        end module

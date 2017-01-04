@@ -288,6 +288,8 @@
             write(*,*) 'Error: shape mismatch in insist_shape_match_GF in ',caller,' in GF_base.f90'
             write(*,*) 'A%s = ',A%s
             write(*,*) 'B%s = ',B%s
+            write(*,*) 'shape(A%f) = ',shape(A%f)
+            write(*,*) 'shape(B%f) = ',shape(B%f)
             stop 'Done'
           endif
         end subroutine

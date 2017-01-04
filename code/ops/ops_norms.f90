@@ -84,7 +84,9 @@
          integer :: t
          e = 0.0_cp
 #ifdef _DEBUG_OPS_NORMS_
-         if (.not.u%is_CC) stop 'Error: must use CC data in Ln_mesh_TF in ops_norms.f90.f90'
+         if (is_collocated(u)) then
+           stop 'Error: must use collocated data in Ln_mesh_TF in ops_norms.f90.f90'
+         endif
 #endif
          do t=1,m%s
            call Ln(temp,u%x%x%BF(t)%GF,&
@@ -108,7 +110,7 @@
          real(cp),intent(in) :: n
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
-         if (compare(m,MD%m_R1)) then;    call Ln(e,u,n,MD%m_R2)
+            if (compare(m,MD%m_R1)) then; call Ln(e,u,n,MD%m_R2)
          elseif(compare(m,MD%m_R2)) then; call Ln(e,u,n,MD%m_R1)
          else; stop 'Error: missed case in Ln_mesh_SF_D in ops_norms.f90'
          endif
@@ -120,7 +122,7 @@
          real(cp),intent(in) :: n
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
-         if (compare(m,MD%m_R1)) then;    call Ln(e,u,n,MD%m_R2)
+            if (compare(m,MD%m_R1)) then; call Ln(e,u,n,MD%m_R2)
          elseif(compare(m,MD%m_R2)) then; call Ln(e,u,n,MD%m_R1)
          else; stop 'Error: missed case in Ln_mesh_VF_D in ops_norms.f90'
          endif
@@ -132,7 +134,7 @@
          real(cp),intent(in) :: n
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
-         if (compare(m,MD%m_R1)) then;    call Ln(e,u,n,MD%m_R2)
+            if (compare(m,MD%m_R1)) then; call Ln(e,u,n,MD%m_R2)
          elseif(compare(m,MD%m_R2)) then; call Ln(e,u,n,MD%m_R1)
          else; stop 'Error: missed case in Ln_mesh_TF_D in ops_norms.f90'
          endif
@@ -175,7 +177,7 @@
          real(cp) :: temp
          integer :: t
          e = 0.0_cp
-         if (u%is_CC.or.u%is_Node) then; call Ln(e,u,n,vol%x)
+         if (is_collocated(u)) then; call Ln(e,u,n,vol%x)
          else
            do t=1,u%x%s
              call Ln(temp,u%x%BF(t)%GF,n,vol%x%BF(t)%GF,'Ln_vol_VF'); e = e + temp
@@ -207,7 +209,7 @@
          real(cp) :: temp
          integer :: t
          e = 0.0_cp
-         if (u%is_CC.or.u%is_Node) then
+         if (is_collocated(u)) then
            do t=1,u%x%s
              call Ln(temp,u%x%BF(t)%GF,u%y%BF(t)%GF,u%z%BF(t)%GF,n); e = e + temp
            enddo

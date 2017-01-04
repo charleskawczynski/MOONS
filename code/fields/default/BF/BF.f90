@@ -669,14 +669,18 @@
          type(block_field),intent(inout) :: u
          integer,intent(in) :: dir
          real(cp),intent(in) :: mirror_sign
-         call mirror_about_hmin(u%GF,dir,mirror_sign)
+         integer,dimension(3) :: N_along_dir
+         N_along_dir = N_eye(u%DL)
+         call mirror_about_hmin(u%GF,dir,mirror_sign,N_along_dir(dir))
        end subroutine
        subroutine mirror_about_hmax_BF(u,dir,mirror_sign)
          implicit none
          type(block_field),intent(inout) :: u
          integer,intent(in) :: dir
          real(cp),intent(in) :: mirror_sign
-         call mirror_about_hmax(u%GF,dir,mirror_sign)
+         integer,dimension(3) :: N_along_dir
+         N_along_dir = N_eye(u%DL)
+         call mirror_about_hmax(u%GF,dir,mirror_sign,N_along_dir(dir))
        end subroutine
 
        function plane_sum_x_BF(u,B,p) result(PS)

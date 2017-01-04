@@ -422,7 +422,7 @@
          real(cp) :: BF
          type(mesh) :: m_temp
          type(VF) :: temp
-         if (.not.f%is_Face) stop 'Error: bad DL in flux_VF_SD in ops_aux.f90'
+         if (.not.is_Face(f)) stop 'Error: bad DL in flux_VF_SD in ops_aux.f90'
          call init_other(m_temp,m,MD)
          call init_Face(temp,m_temp)
          call extractFace(temp,f,MD)

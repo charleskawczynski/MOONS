@@ -50,11 +50,11 @@
         type(SF),intent(inout) :: interior
         type(SF),intent(in) :: total
         type(mesh_domain),intent(in) :: MD
-        if (total%is_CC) then;       call extractCC(interior,total,MD)
-        elseif (total%is_Node) then; ! call extractNode(interior,total,MD)
+        if (is_CC(total%DL)) then;       call extractCC(interior,total,MD)
+        elseif (is_Node(total%DL)) then; ! call extractNode(interior,total,MD)
         stop 'Error: N not supported in extract_SF in ops_embedExtract.f90'
-        elseif (total%is_Face) then; call extractFace(interior,total,MD)
-        elseif (total%is_Edge) then; call extractEdge(interior,total,MD)
+        elseif (is_Face(total%DL)) then; call extractFace(interior,total,MD)
+        elseif (is_Edge(total%DL)) then; call extractEdge(interior,total,MD)
         else; stop 'Error: bad data input to extract_F in embedExtract.f90'
         endif
       end subroutine
@@ -75,8 +75,8 @@
         type(mesh_domain),intent(in) :: MD
         integer :: i
 #ifdef _DEBUG_EMBEDEXTRACT_
-        if (.not.CC_i%is_CC) stop 'Error: CC data not found (1) in extractCC_SF in ops_embedExtract.f90'
-        if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in extractCC_SF in ops_embedExtract.f90'
+        if (.not.is_CC(CC_i%DL)) stop 'Error: CC data not found (1) in extractCC_SF in ops_embedExtract.f90'
+        if (.not.is_CC(CC_t%DL)) stop 'Error: CC data not found (2) in extractCC_SF in ops_embedExtract.f90'
 #endif
         do i=1,MD%D%s
         call EX(CC_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
@@ -101,8 +101,8 @@
         type(mesh_domain),intent(in) :: MD
         integer :: i
 #ifdef _DEBUG_EMBEDEXTRACT_
-        if (.not.face_t%is_Face) stop 'Error: face data not found (1) in extractFace_SF in ops_embedExtract.f90'
-        if (.not.face_i%is_Face) stop 'Error: face data not found (2) in extractFace_SF in ops_embedExtract.f90'
+        if (.not.is_Face(face_t%DL)) stop 'Error: face data not found (1) in extractFace_SF in ops_embedExtract.f90'
+        if (.not.is_Face(face_i%DL)) stop 'Error: face data not found (2) in extractFace_SF in ops_embedExtract.f90'
 #endif
         do i=1,MD%D%s
         call EX(face_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
@@ -127,8 +127,8 @@
         type(mesh_domain),intent(in) :: MD
         integer :: i
 #ifdef _DEBUG_EMBEDEXTRACT_
-        if (.not.edge_i%is_Edge) stop 'Error: edge data not found (1) in extractEdge_SF in ops_embedExtract.f90'
-        if (.not.edge_t%is_Edge) stop 'Error: edge data not found (2) in extractEdge_SF in ops_embedExtract.f90'
+        if (.not.is_Edge(edge_i%DL)) stop 'Error: edge data not found (1) in extractEdge_SF in ops_embedExtract.f90'
+        if (.not.is_Edge(edge_t%DL)) stop 'Error: edge data not found (2) in extractEdge_SF in ops_embedExtract.f90'
 #endif
         do i=1,MD%D%s
         call EX(edge_i%BF(MD%D%sd(i)%physical%g_R1_id)%GF,&
@@ -155,11 +155,11 @@
         type(SF),intent(inout) :: total
         type(SF),intent(in) :: interior
         type(mesh_domain),intent(in) :: MD
-        if (total%is_CC) then;       call embedCC(total,interior,MD)
-        elseif (total%is_Node) then; ! call embedNode(total,interior,MD)
+        if (is_CC(total%DL)) then;       call embedCC(total,interior,MD)
+        elseif (is_Node(total%DL)) then; ! call embedNode(total,interior,MD)
         stop 'Error: N not supported in embed_SF in ops_embedExtract.f90'
-        elseif (total%is_Face) then; call embedFace(total,interior,MD)
-        elseif (total%is_Edge) then; call embedEdge(total,interior,MD)
+        elseif (is_Face(total%DL)) then; call embedFace(total,interior,MD)
+        elseif (is_Edge(total%DL)) then; call embedEdge(total,interior,MD)
         else; stop 'Error: bad data input to extract_F in embedExtract.f90'
         endif
       end subroutine
@@ -180,8 +180,8 @@
         type(mesh_domain),intent(in) :: MD
         integer :: i
 #ifdef _DEBUG_EMBEDEXTRACT_
-        if (.not.CC_i%is_CC) stop 'Error: CC data not found (1) in embedCC_SF in ops_embedExtract.f90'
-        if (.not.CC_t%is_CC) stop 'Error: CC data not found (2) in embedCC_SF in ops_embedExtract.f90'
+        if (.not.is_CC(CC_i%DL)) stop 'Error: CC data not found (1) in embedCC_SF in ops_embedExtract.f90'
+        if (.not.is_CC(CC_t%DL)) stop 'Error: CC data not found (2) in embedCC_SF in ops_embedExtract.f90'
 #endif
         do i=1,MD%D%s
         call EM(CC_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
@@ -206,8 +206,8 @@
         type(mesh_domain),intent(in) :: MD
         integer :: i
 #ifdef _DEBUG_EMBEDEXTRACT_
-        if (.not.Face_i%is_Face) stop 'Error: Face data not found (1) in embedFace_SF in ops_embedExtract.f90'
-        if (.not.Face_t%is_Face) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
+        if (.not.is_Face(Face_i%DL)) stop 'Error: Face data not found (1) in embedFace_SF in ops_embedExtract.f90'
+        if (.not.is_Face(Face_t%DL)) stop 'Error: Face data not found (2) in embedFace_SF in ops_embedExtract.f90'
 #endif
         do i=1,MD%D%s
         call EM(Face_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
@@ -232,8 +232,8 @@
         type(mesh_domain),intent(in) :: MD
         integer :: i
 #ifdef _DEBUG_EMBEDEXTRACT_
-        if (.not.edge_t%is_Edge) stop 'Error: edge data not found (1) in embedEdge_SF in ops_embedExtract.f90'
-        if (.not.edge_i%is_Edge) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
+        if (.not.is_Edge(edge_t%DL)) stop 'Error: edge data not found (1) in embedEdge_SF in ops_embedExtract.f90'
+        if (.not.is_Edge(edge_i%DL)) stop 'Error: edge data not found (2) in embedEdge_SF in ops_embedExtract.f90'
 #endif
         do i=1,MD%D%s
         call EM(Edge_t%BF(MD%D%sd(i)%physical%g_R2_id)%GF,&
@@ -285,8 +285,8 @@
         type(mesh_domain),intent(in) :: MD
         integer,intent(in) :: i
         type(overlap),dimension(3) :: s
-        if (f%is_Face) then
-          select case(f%face)
+        if (is_Face(f%DL)) then
+          select case(get_Face(f%DL))
           case (1); call init(s(1),MD%D%sd(i)%physical%N(1))
                     call init(s(2),MD%D%sd(i)%physical%C(2))
                     call init(s(3),MD%D%sd(i)%physical%C(3))
@@ -298,8 +298,8 @@
                     call init(s(3),MD%D%sd(i)%physical%N(3))
           case default; stop 'Error: bad DL face in ops_embedExtract.f90'
           end select
-        elseif (f%is_Edge) then
-          select case(f%edge)
+        elseif (is_Edge(f%DL)) then
+          select case(get_Edge(f%DL))
           case (1); call init(s(1),MD%D%sd(i)%physical%C(1))
                     call init(s(2),MD%D%sd(i)%physical%N(2))
                     call init(s(3),MD%D%sd(i)%physical%N(3))
@@ -311,11 +311,11 @@
                     call init(s(3),MD%D%sd(i)%physical%C(3))
           case default; stop 'Error: bad DL edge in ops_embedExtract.f90'
           end select
-        elseif (f%is_CC) then
+        elseif (is_CC(f%DL)) then
           call init(s(1),MD%D%sd(i)%physical%C(1))
           call init(s(2),MD%D%sd(i)%physical%C(2))
           call init(s(3),MD%D%sd(i)%physical%C(3))
-        elseif (f%is_Node) then
+        elseif (is_Node(f%DL)) then
           call init(s(1),MD%D%sd(i)%physical%N(1))
           call init(s(2),MD%D%sd(i)%physical%N(2))
           call init(s(3),MD%D%sd(i)%physical%N(3))

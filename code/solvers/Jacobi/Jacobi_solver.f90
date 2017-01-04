@@ -45,7 +45,7 @@
         type(norms) :: norm0
         integer :: i,i_earlyExit
         logical :: skip_loop,suppress_warning
-        suppress_warning = x_interior%is_Face
+        suppress_warning = is_Face(x_interior%DL)
         suppress_warning = MD_interior%D%s.eq.0
         call apply_BCs(x) ! Boundaries
 
@@ -53,7 +53,7 @@
         call multiply(res,x,Diag)
         call subtract(Ax,res) ! LU = Ax - Dx
         call subtract(res,f,Ax)
-        call compute(norm0,res,vol)
+        call compute(norm0,res,vol,m%volume)
 
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do iterations if necessary!
@@ -67,7 +67,7 @@
             call apply_BCs(x)
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
-              call compute(norm,res,vol)
+              call compute(norm,res,vol,m%volume)
 #ifdef _EXPORT_JAC_SF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -83,7 +83,7 @@
         if (compute_norm) then
           if (.not.skip_loop) then
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol)
+            call compute(norm,res,vol,m%volume)
             call print(norm,'Jacobi_SF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -117,14 +117,14 @@
         type(norms) :: norm0
         integer :: i,i_earlyExit
         logical :: skip_loop
-        if (x%is_Face) call embedFace(x,x_interior,MD_interior)
+        if (is_Face(x)) call embedFace(x,x_interior,MD_interior)
         call apply_BCs(x) ! Boundaries
 
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply(res,x,Diag)
         call subtract(Ax,res) ! LU = Ax - Dx
         call subtract(res,f,Ax)
-        call compute(norm0,res,vol)
+        call compute(norm0,res,vol,m%volume)
 
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do iterations if necessary!
@@ -139,11 +139,11 @@
             call multiply(res,(1.0_cp-0.1_cp))
             call add(x,res) ! x^n+1 = x^n w + (1-w) Dinv (b - LUx)
             call apply_BCs(x)
-            if (x%is_Face) call embedFace(x,x_interior,MD_interior)
+            if (is_Face(x)) call embedFace(x,x_interior,MD_interior)
 
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
-              call compute(norm,res,vol)
+              call compute(norm,res,vol,m%volume)
 #ifdef _EXPORT_JAC_VF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -159,7 +159,7 @@
         if (compute_norm) then
           if (.not.skip_loop) then
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol)
+            call compute(norm,res,vol,m%volume)
             call print(norm,'Jacobi_VF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                norm0%L1,norm0%L2,norm0%Linf,i-1
