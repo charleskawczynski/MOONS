@@ -12,6 +12,7 @@
        type mesh_quality_params
          real(cp) :: max_mesh_stretch_ratio = 2.0_cp
          integer :: N_max_points_add = 50
+         integer :: N_iter = 1
          logical :: auto_find_N = .false.
        end type
 
@@ -42,6 +43,11 @@
          MQP%auto_find_N = auto_find_N
          MQP%max_mesh_stretch_ratio = max_mesh_stretch_ratio
          MQP%N_max_points_add = N_max_points_add
+         if (MQP%auto_find_N) then
+         MQP%N_iter = N_max_points_add+1
+         else
+         MQP%N_iter = 1
+         endif
        end subroutine
 
        subroutine init_copy_MQP(MQP,MQP_in)
@@ -49,6 +55,7 @@
          type(mesh_quality_params),intent(inout) :: MQP
          type(mesh_quality_params),intent(in) :: MQP_in
          MQP%auto_find_N = MQP_in%auto_find_N
+         MQP%N_iter = MQP_in%N_iter
          MQP%max_mesh_stretch_ratio = MQP_in%max_mesh_stretch_ratio
          MQP%N_max_points_add = MQP_in%N_max_points_add
        end subroutine
@@ -58,6 +65,7 @@
          type(mesh_quality_params),intent(inout) :: MQP
          MQP%auto_find_N = .false.
          MQP%max_mesh_stretch_ratio = 0.0_cp
+         MQP%N_iter = 1
          MQP%N_max_points_add = 0
        end subroutine
 
@@ -66,6 +74,7 @@
          type(mesh_quality_params),intent(in) :: MQP
          integer,intent(in) :: un
          write(un,*) 'auto_find_N            = ',MQP%auto_find_N
+         write(un,*) 'N_iter                 = ',MQP%N_iter
          write(un,*) 'max_mesh_stretch_ratio = ',MQP%max_mesh_stretch_ratio
          write(un,*) 'N_max_points_add       = ',MQP%N_max_points_add
        end subroutine
@@ -82,6 +91,7 @@
          integer,intent(in) :: un
          write(un,*) MQP%auto_find_N
          write(un,*) MQP%max_mesh_stretch_ratio
+         write(un,*) MQP%N_iter
          write(un,*) MQP%N_max_points_add
        end subroutine
 
@@ -91,6 +101,7 @@
          integer,intent(in) :: un
          read(un,*) MQP%auto_find_N
          read(un,*) MQP%max_mesh_stretch_ratio
+         read(un,*) MQP%N_iter
          read(un,*) MQP%N_max_points_add
        end subroutine
 

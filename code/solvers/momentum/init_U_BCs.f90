@@ -11,7 +11,7 @@
        use VF_mod
        use profile_funcs_mod
        use face_edge_corner_indexing_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -19,11 +19,11 @@
 
        contains
 
-       subroutine init_U_BCs(U,m,BMC)
+       subroutine init_U_BCs(U,m,SP)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer,dimension(3) :: periodic_dir
          integer :: preset_ID
          call init_BC_mesh(U%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
@@ -32,38 +32,39 @@
 
          call Dirichlet_BCs(U,m)
 
-         preset_ID = BMC%VS%U%BC
-         periodic_dir = BMC%periodic_dir
+         preset_ID = SP%VS%U%BC
+         periodic_dir = SP%periodic_dir
          ! preset_ID = 1 ! manual override
 
          select case (preset_ID)
          case (0);
-         case (1); call LDC_1_domain(U)
-         case (2); call LDC_1_domain_smooth(U,m)
-         case (3); call LDC_4_domains(U)
-         case (4); call LDC_9_domains(U)
-         case (5); call flow_over_2D_square(U)
-         case (6); call duct_flow_2D_2domains(U)
-         case (7); call Tylers_geometry(U)
-         case (8); call duct_flow(U)
-         case (9); call channel_flow_1domain(U)
-         case (10); call cylinder_driven_cavity(U,m,1)
-         case (11); call fully_developed_duct_flow(U,m,1)
-         case (12); call periodic_duct_flow(U)
-         case (13); call LDC_1_domain_symmetric_zmax(U)
+         case (1);  call LDC_at_ymax(U)
+         case (2);  call LDC_at_ymax_symmetric_zmax(U)
+         case (3);  call LDC_at_ymax_smooth(U,m)
+         case (4);  call duct_flow_uniform_in_axial_out(U)
+         case (5);  call duct_flow_uniform_in_FD_out(U)
+         case (6);  call duct_flow_periodic_IO(U)
+         case (7);  call duct_flow_FD_in_FD_out(U,m,1)
+         case (8);  call channel_flow_1domain(U)
+         case (9);  call cylinder_driven_cavity(U,m,1)
+         case (10); call Tylers_geometry(U)
+         case (11); call flow_over_2D_square(U)
+         case (12); call LDC_4_domains(U)
+         case (13); call duct_flow_2D_2domains(U)
+         case (14); call LDC_9_domains(U)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
          call init_BC_props(U)
        end subroutine
 
-       subroutine LDC_1_domain(U)
+       subroutine LDC_at_ymax(U)
          implicit none
          type(VF),intent(inout) :: U
          call init(U%x%BF(1)%BCs,1.0_cp,4)
        end subroutine
 
-       subroutine LDC_1_domain_smooth(U,m)
+       subroutine LDC_at_ymax_smooth(U,m)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
@@ -74,7 +75,7 @@
          call smooth_lid(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,n)
        end subroutine
 
-       subroutine LDC_1_domain_symmetric_zmax(U)
+       subroutine LDC_at_ymax_symmetric_zmax(U)
          implicit none
          type(VF),intent(inout) :: U
          call init(U%x%BF(1)%BCs,1.0_cp,4)
@@ -103,18 +104,23 @@
          ! call init(U%x%BF(9)%BCs%e(8+2),1.0_cp)
        end subroutine
 
-       subroutine duct_flow(U)
+       subroutine duct_flow_uniform_in_FD_out(U)
          implicit none
          type(VF),intent(inout) :: U
-         ! Inlet (uniform)
-         call init(U%x%BF(1)%BCs,1.0_cp,1)
-         ! Outlet (fully developed)
-         call init_Neumann(U%x%BF(1)%BCs,2)
-         call init_Neumann(U%y%BF(1)%BCs,2)
-         call init_Neumann(U%z%BF(1)%BCs,2)
+         call init(U%x%BF(1)%BCs,1.0_cp,1)  ! Inlet (uniform)
+         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+         call init_Neumann(U%y%BF(1)%BCs,2) ! Outlet (fully developed)
+         call init_Neumann(U%z%BF(1)%BCs,2) ! Outlet (fully developed)
        end subroutine
 
-       subroutine periodic_duct_flow(U)
+       subroutine duct_flow_uniform_in_axial_out(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         call init(U%x%BF(1)%BCs,1.0_cp,1)  ! Inlet (uniform)
+         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+       end subroutine
+
+       subroutine duct_flow_periodic_IO(U)
          implicit none
          type(VF),intent(inout) :: U
          ! Inlet (periodic)
@@ -221,7 +227,7 @@
          end select
        end subroutine
 
-       subroutine fully_developed_duct_flow(U,m,face)
+       subroutine duct_flow_FD_in_FD_out(U,m,face)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m

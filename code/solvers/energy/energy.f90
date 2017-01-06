@@ -114,8 +114,8 @@
          integer :: temp_unit
          type(SF) :: k_cc,vol_CC
          write(*,*) 'Initializing energy:'
-         call init(nrg%TMP,SP%BMC%VS%T%TMP)
-         call init(nrg%ISP_T,SP%BMC%VS%T%ISP)
+         call init(nrg%TMP,SP%VS%T%TMP)
+         call init(nrg%ISP_T,SP%VS%T%ISP)
          nrg%Re = SP%DP%Re
          nrg%Pr = SP%DP%Pr
          nrg%Ec = SP%DP%Ec
@@ -148,12 +148,12 @@
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call init_T_BCs(nrg%T,nrg%m,nrg%SP%BMC)
-         if (nrg%SP%BMC%VS%T%SS%solve) call print_BCs(nrg%T,'T')
-         if (nrg%SP%BMC%VS%T%SS%solve) call export_BCs(nrg%T,str(DT%T%BCs),'T')
+         call init_T_BCs(nrg%T,nrg%m,nrg%SP)
+         if (nrg%SP%VS%T%SS%solve) call print_BCs(nrg%T,'T')
+         if (nrg%SP%VS%T%SS%solve) call export_BCs(nrg%T,str(DT%T%BCs),'T')
          write(*,*) '     BCs initialized'
 
-         call init_T_field(nrg%T,m,nrg%SP%BMC,str(DT%T%residual))
+         call init_T_field(nrg%T,m,nrg%SP,str(DT%T%residual))
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T)
@@ -165,7 +165,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%BMC%VS%T%SS%restart,SP,.true.)
+         call init(nrg%probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP,.true.)
 
          call set_MFP(nrg)
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
@@ -218,7 +218,7 @@
          write(un,*) 'Re,Pr = ',nrg%Re,nrg%Pr
          write(un,*) 'Ec,Ha = ',nrg%Ec,nrg%Ha
          write(un,*) 't,dt = ',nrg%TMP%t,nrg%TMP%dt
-         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%BMC%VS%T%SS%solve_method,nrg%ISP_T%iter_max
+         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%VS%T%SS%solve_method,nrg%ISP_T%iter_max
          write(un,*) 'tol_nrg = ',nrg%ISP_T%tol_rel
          call displayPhysicalMinMax(nrg%T,'T',un)
          call displayPhysicalMinMax(nrg%divQ,'divQ',un)
@@ -283,7 +283,7 @@
          implicit none
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
-         if (nrg%SP%BMC%VS%T%SS%solve) then
+         if (nrg%SP%VS%T%SS%solve) then
            write(*,*) 'export_tec_energy at nrg%TMP%n_step = ',nrg%TMP%n_step
            call export_processed(nrg%m,nrg%T,str(DT%T%field),'T',0)
            call export_raw(nrg%m,nrg%T,str(DT%T%field),'T',0)
@@ -318,7 +318,7 @@
 
          call embed_velocity_F(nrg%U_F,U,nrg%MD)
 
-         select case (nrg%SP%BMC%VS%T%SS%solve_method)
+         select case (nrg%SP%VS%T%SS%solve_method)
          case (1)
          call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
          nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)

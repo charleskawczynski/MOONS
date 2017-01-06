@@ -4,7 +4,7 @@
        use mesh_mod
        use SF_mod
        use IO_import_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -12,18 +12,20 @@
 
        contains
 
-       subroutine init_phi_field(phi,m,BMC,dir)
+       subroutine init_phi_field(phi,m,SP,dir)
          implicit none
          type(SF),intent(inout) :: phi
          character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer :: preset_ID
 
          call initZeroField(phi)
 
-         preset_ID = BMC%VS%phi%IC
-         if (BMC%VS%phi%SS%restart) then
+         preset_ID = SP%VS%phi%IC
+         ! preset_ID = 0 ! manual override
+
+         if (SP%VS%phi%SS%restart) then
                call restart_phi(phi,m,dir)
          else
            select case(preset_ID)

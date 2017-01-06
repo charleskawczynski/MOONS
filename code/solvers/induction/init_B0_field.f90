@@ -4,7 +4,7 @@
        use mesh_mod
        use VF_mod
        use IO_import_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -12,17 +12,19 @@
 
        contains
 
-       subroutine init_B0_field(B0,m,BMC,dir)
+       subroutine init_B0_field(B0,m,SP,dir)
          implicit none
          type(VF),intent(inout) :: B0
          character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer :: preset_ID
 
          call assign(B0,0.0_cp)
-         preset_ID = BMC%VS%B0%IC
-         if (BMC%VS%B0%SS%restart) then
+         preset_ID = SP%VS%B0%IC
+         ! preset_ID = 0 ! manual override
+
+         if (SP%VS%B0%SS%restart) then
                call restart_B(B0,m,dir)
          else
            select case(preset_ID)

@@ -39,7 +39,8 @@
          type(momentum) :: mom
          type(induction) :: ind
          type(energy) :: nrg
-         type(mesh) :: mesh_mom,mesh_ind,mesh_ind_interior
+         type(mesh) :: mesh_mom,mesh_ind
+         ! type(mesh) :: mesh_ind_interior
          ! ********************** MEDIUM VARIABLES **********************
          type(mesh_domain) :: MD_fluid,MD_sigma
          type(dir_tree) :: DT
@@ -61,23 +62,22 @@
            call import(MD_sigma,str(DT%restart),'MD_sigma')
          else
            call mesh_generate(mesh_mom,mesh_ind,MD_sigma,SP)
-           ! call mesh_generate(mesh_mom,mesh_ind,MD_sigma,SP%DP%Re,&
-           ! SP%DP%Ha,SP%DP%tw,SP%include_vacuum,SP%BMC%geometry)
-           call export(mesh_mom,str(DT%restart),'mesh_mom')
-           call export(mesh_ind,str(DT%restart),'mesh_ind')
-           call export(MD_sigma,str(DT%restart),'MD_sigma')
+           if (SP%EL%export_meshes) call export(mesh_mom,str(DT%restart),'mesh_mom')
+           if (SP%EL%export_meshes) call export(mesh_ind,str(DT%restart),'mesh_ind')
+           if (SP%EL%export_meshes) call export(MD_sigma,str(DT%restart),'MD_sigma')
          endif
-         call init(mesh_ind_interior,MD_sigma%m_R2)
+         ! call init(mesh_ind_interior,MD_sigma%m_R2)
 
-         call initProps(mesh_mom); call patch(mesh_mom)
-         call initProps(mesh_ind); call patch(mesh_ind)
+         if (SP%VS%U%SS%initialize) then; call initProps(mesh_mom); call patch(mesh_mom); endif
+         if (SP%VS%B%SS%initialize) then; call initProps(mesh_ind); call patch(mesh_ind); endif
 
-         call init(MD_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
-
-         call initProps(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
-         call initProps(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
-         call initProps(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
-         call initProps(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
+         if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
+           call init(MD_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
+           call initProps(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
+           call initProps(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
+           call initProps(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
+           call initProps(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
+         endif
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%EL%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
@@ -88,25 +88,25 @@
          endif
 
          ! Initialize energy,momentum,induction
-         if (SP%BMC%VS%U%SS%initialize) call init(mom,mesh_mom,SP,DT)
-         if (SP%BMC%VS%T%SS%initialize) call init(nrg,mesh_ind,SP,DT,MD_fluid)
-         if (SP%BMC%VS%B%SS%initialize) call init(ind,mesh_ind,SP,DT,MD_fluid,MD_sigma)
+         if (SP%VS%U%SS%initialize) call init(mom,mesh_mom,SP,DT)
+         if (SP%VS%T%SS%initialize) call init(nrg,mesh_ind,SP,DT,MD_fluid)
+         if (SP%VS%B%SS%initialize) call init(ind,mesh_ind,SP,DT,MD_fluid,MD_sigma)
 
          ! Clean up constructor copies
          call delete(mesh_mom)
          call delete(mesh_ind)
-         call delete(mesh_ind_interior)
+         ! call delete(mesh_ind_interior)
          call delete(MD_fluid)
          call delete(MD_sigma)
 
          ! ********************* EXPORT RAW ICs *************************
-         if (SP%EL%export_ICs.and.SP%BMC%VS%U%SS%initialize) call export_tec(nrg,DT)
-         if (SP%EL%export_ICs.and.SP%BMC%VS%T%SS%initialize) call export_tec(ind,DT)
-         if (SP%EL%export_ICs.and.SP%BMC%VS%B%SS%initialize) call export_tec(mom,DT,mom%temp_F)
+         if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(nrg,DT)
+         if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(ind,DT)
+         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT,mom%temp_F)
 
-         if (SP%BMC%VS%U%SS%initialize) call print(nrg%m)
-         if (SP%BMC%VS%T%SS%initialize) call print(mom%m)
-         if (SP%BMC%VS%B%SS%initialize) call print(ind%m)
+         if (SP%VS%U%SS%initialize) call print(nrg%m)
+         if (SP%VS%T%SS%initialize) call print(mom%m)
+         if (SP%VS%B%SS%initialize) call print(ind%m)
 
          ! ******************** PREP TIME START/STOP ********************
          if (SP%stop_before_solve) then
@@ -143,6 +143,7 @@
          call delete(mom)
          call delete(ind)
          call delete(DT)
+         call delete(SP)
 
          write(*,*) ' ******************** LAST LINE EXECUTED ********************'
        end subroutine

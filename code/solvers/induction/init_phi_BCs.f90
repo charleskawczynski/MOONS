@@ -5,7 +5,7 @@
        use mesh_mod
        use boundary_conditions_mod
        use SF_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -13,19 +13,20 @@
 
        contains
 
-       subroutine init_phi_BCs(phi,m,BMC)
+       subroutine init_phi_BCs(phi,m,SP)
          implicit none
          type(SF),intent(inout) :: phi
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer,dimension(3) :: periodic_dir
          integer :: preset_ID
          call init_BC_mesh(phi,m) ! MUST COME BEFORE BVAL ASSIGNMENT
 
          call Dirichlet_BCs(phi,m)
 
-         preset_ID = BMC%VS%phi%BC
-         periodic_dir = BMC%periodic_dir
+         preset_ID = SP%VS%phi%BC
+         periodic_dir = SP%periodic_dir
+         ! preset_ID = 0 ! manual override
 
          phi%all_Neumann = .false. ! Needs to be adjusted manually
 

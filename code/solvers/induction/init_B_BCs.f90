@@ -6,7 +6,7 @@
        use boundary_conditions_mod
        use SF_mod
        use VF_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -14,11 +14,11 @@
 
        contains
 
-       subroutine init_B_BCs(B,m,BMC)
+       subroutine init_B_BCs(B,m,SP)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer,dimension(3) :: periodic_dir
          integer :: preset_ID
          real(cp) :: cw
@@ -29,10 +29,10 @@
 
          call Dirichlet_BCs(B,m)
 
-         preset_ID = BMC%VS%B%BC
-         periodic_dir = BMC%periodic_dir
-         cw = BMC%cw
-         ! preset_ID = 1 ! manual override
+         preset_ID = SP%VS%B%BC
+         periodic_dir = SP%periodic_dir
+         cw = SP%DP%cw
+         ! preset_ID = 0 ! manual override
 
          select case (preset_ID)
          case (0);

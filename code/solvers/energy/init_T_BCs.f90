@@ -5,7 +5,7 @@
        use boundary_conditions_mod
        use BC_funcs_mod
        use SF_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -14,11 +14,11 @@
        contains
 
 
-       subroutine init_T_BCs(T,m,BMC)
+       subroutine init_T_BCs(T,m,SP)
          implicit none
          type(SF),intent(inout) :: T
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer,dimension(3) :: periodic_dir
          integer :: preset_ID
          call init_BC_mesh(T,m) ! MUST COME BEFORE BVAL ASSIGNMENT
@@ -26,8 +26,8 @@
          call Neumann_BCs(T,m)
          T%all_Neumann = .false. ! Needs to be adjusted manually
 
-         preset_ID = BMC%VS%T%BC
-         periodic_dir = BMC%periodic_dir
+         preset_ID = SP%VS%T%BC
+         periodic_dir = SP%periodic_dir
          ! preset_ID = 1 ! manual override
 
          select case (preset_ID)

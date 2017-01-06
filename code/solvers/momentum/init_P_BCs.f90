@@ -5,7 +5,7 @@
        use mesh_mod
        use boundary_conditions_mod
        use SF_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -13,11 +13,11 @@
 
        contains
 
-       subroutine init_P_BCs(p,m,BMC)
+       subroutine init_P_BCs(p,m,SP)
          implicit none
          type(SF),intent(inout) :: p
          type(mesh),intent(in) :: m
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer,dimension(3) :: periodic_dir
          integer :: preset_ID
          call init_BC_mesh(p,m) ! MUST COME BEFORE BVAL ASSIGNMENT
@@ -25,16 +25,16 @@
          call Neumann_BCs(p,m) ! Default
          p%all_Neumann = .true. ! Needs to be adjusted manually
 
-         preset_ID = BMC%VS%P%BC
-         periodic_dir = BMC%periodic_dir
-         ! preset_ID = 1 ! manual override
+         preset_ID = SP%VS%P%BC
+         periodic_dir = SP%periodic_dir
+         ! preset_ID = 0 ! manual override
 
          select case (preset_ID)
          case (0) ! Pure Neumann default
-         case (1); call flow_past_2D_square(p)
-         case (2); call duct_flow_2D(p)
-         case (3); call duct_flow_2D_2domains(p)
-         case (4); call periodic_duct_flow(p)
+         case (1); call duct_flow_P0_at_xmax(p)
+         case (2); call duct_flow_periodic_IO(p)
+         case (3); call duct_flow_2domains(p)
+         case (4); call flow_past_2D_square(p)
          case default; stop 'Error: bad preset_ID in init_PBCs.f90.'
          end select
          call make_periodic(p,m,periodic_dir)
@@ -54,14 +54,14 @@
          ! call init_Dirichlet(p%BF(7)%BCs%e(8+4)%BCs)
        end subroutine
 
-       subroutine duct_flow_2D(p)
+       subroutine duct_flow_P0_at_xmax(p)
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .false.
          call init_Dirichlet(p%BF(1)%BCs,2)
        end subroutine
 
-       subroutine periodic_duct_flow(p)
+       subroutine duct_flow_periodic_IO(p)
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .true.
@@ -69,7 +69,7 @@
          call init_periodic(p%BF(1)%BCs,2)
        end subroutine
 
-       subroutine duct_flow_2D_2domains(p)
+       subroutine duct_flow_2domains(p)
          implicit none
          type(SF),intent(inout) :: p
          p%all_Neumann = .false.

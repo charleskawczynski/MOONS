@@ -20,7 +20,7 @@
          real(cp) :: Pr = 0.0_cp
          real(cp) :: Ec = 0.0_cp
          real(cp) :: Rem = 0.0_cp
-         real(cp) :: tw = 0.0_cp
+         real(cp) :: cw = 0.0_cp
          real(cp) :: sig_local_over_sig_f = 0.0_cp
        end type
 
@@ -33,7 +33,7 @@
          DP%Re         = DP_in%Re
          DP%Ha         = DP_in%Ha
          DP%Rem        = DP_in%Rem
-         DP%tw         = DP_in%tw
+         DP%cw         = DP_in%cw
          DP%sig_local_over_sig_f = DP_in%sig_local_over_sig_f
          DP%Gr         = DP_in%Gr
          DP%Pr         = DP_in%Pr
@@ -47,7 +47,7 @@
          DP%Re         = 0.0_cp
          DP%Ha         = 0.0_cp
          DP%Rem        = 0.0_cp
-         DP%tw         = 0.0_cp
+         DP%cw         = 0.0_cp
          DP%sig_local_over_sig_f = 0.0_cp
          DP%Gr         = 0.0_cp
          DP%Pr         = 0.0_cp
@@ -62,7 +62,7 @@
          write(un,*) 'Re = ',DP%Re
          write(un,*) 'Ha = ',DP%Ha
          write(un,*) 'Rem = ',DP%Rem
-         write(un,*) 'tw = ',DP%tw
+         write(un,*) 'cw = ',DP%cw
          write(un,*) 'sig_local_over_sig_f = ',DP%sig_local_over_sig_f
          write(un,*) 'Gr = ',DP%Gr
          write(un,*) 'Pr = ',DP%Pr
@@ -83,7 +83,7 @@
          write(un,*) DP%Re
          write(un,*) DP%Ha
          write(un,*) DP%Rem
-         write(un,*) DP%tw
+         write(un,*) DP%cw
          write(un,*) DP%sig_local_over_sig_f
          write(un,*) DP%Gr
          write(un,*) DP%Pr
@@ -98,7 +98,7 @@
          read(un,*) DP%Re
          read(un,*) DP%Ha
          read(un,*) DP%Rem
-         read(un,*) DP%tw
+         read(un,*) DP%cw
          read(un,*) DP%sig_local_over_sig_f
          read(un,*) DP%Gr
          read(un,*) DP%Pr

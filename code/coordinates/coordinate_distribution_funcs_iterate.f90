@@ -67,17 +67,13 @@
          type(mesh_quality_params),intent(in) :: MQP
          type(array) :: hn
          integer :: i,temp
-         if (MQP%auto_find_N) then
-           temp = N
-           do i=1,MQP%N_max_points_add
-             call init(hn,robertsLeft(hmin,hmax,temp,beta))
-             if (needs_more_points(hn,MQP)) then; temp = temp+1
-             else; exit
-             endif
-           enddo
-         else
-             call init(hn,robertsLeft(hmin,hmax,N,beta))
-         endif
+         temp = N
+         do i=1,MQP%N_iter
+           call init(hn,robertsLeft(hmin,hmax,temp,beta))
+           if (needs_more_points(hn,MQP)) then; temp = temp+1
+           else; exit
+           endif
+         enddo
        end function
 
        function robertsRight_A(hmin,hmax,N,beta,MQP) result(hn)
@@ -87,17 +83,13 @@
          type(mesh_quality_params),intent(in) :: MQP
          type(array) :: hn
          integer :: i,temp
-         if (MQP%auto_find_N) then
-           temp = N
-           do i=1,MQP%N_max_points_add
-             call init(hn,robertsRight(hmin,hmax,temp,beta))
-             if (needs_more_points(hn,MQP)) then; temp = temp+1
-             else; exit
-             endif
-           enddo
-         else
-             call init(hn,robertsRight(hmin,hmax,N,beta))
-         endif
+         temp = N
+         do i=1,MQP%N_iter
+           call init(hn,robertsRight(hmin,hmax,temp,beta))
+           if (needs_more_points(hn,MQP)) then; temp = temp+1
+           else; exit
+           endif
+         enddo
        end function
 
        function robertsBoth_A(hmin,hmax,N,beta,MQP) result(hn)
@@ -107,17 +99,13 @@
          type(mesh_quality_params),intent(in) :: MQP
          type(array) :: hn
          integer :: i,temp
-         if (MQP%auto_find_N) then
-           temp = N
-           do i=1,MQP%N_max_points_add
-             call init(hn,robertsBoth(hmin,hmax,temp,beta))
-             if (needs_more_points(hn,MQP)) then; temp = temp+1
-             else; exit
-             endif
-           enddo
-         else
-             call init(hn,robertsBoth(hmin,hmax,N,beta))
-         endif
+         temp = N
+         do i=1,MQP%N_iter
+           call init(hn,robertsBoth(hmin,hmax,temp,beta))
+           if (needs_more_points(hn,MQP)) then; temp = temp+1
+           else; exit
+           endif
+         enddo
        end function
 
        function cluster_A(hmin,hmax,N,yc,tau,MQP) result(hn)
@@ -127,17 +115,13 @@
          type(mesh_quality_params),intent(in) :: MQP
          type(array) :: hn
          integer :: i,temp
-         if (MQP%auto_find_N) then
-           temp = N
-           do i=1,MQP%N_max_points_add
-             call init(hn,cluster(hmin,hmax,temp,yc,tau))
-             if (needs_more_points(hn,MQP)) then; temp = temp+1
-             else; exit
-             endif
-           enddo
-         else
-             call init(hn,cluster(hmin,hmax,N,yc,tau))
-         endif
+         temp = N
+         do i=1,MQP%N_iter
+           call init(hn,cluster(hmin,hmax,temp,yc,tau))
+           if (needs_more_points(hn,MQP)) then; temp = temp+1
+           else; exit
+           endif
+         enddo
        end function
 
        function needs_more_points_A(hn,MQP) result(L)

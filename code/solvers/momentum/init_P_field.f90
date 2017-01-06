@@ -5,7 +5,7 @@
        use mesh_mod
        use SF_mod
        use boundary_conditions_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -13,18 +13,20 @@
 
        contains
 
-       subroutine init_P_field(p,m,BMC,dir)
+       subroutine init_P_field(p,m,SP,dir)
          implicit none
          type(SF),intent(inout) :: p
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer :: preset_ID
 
          call assign(P,0.0_cp)
 
-         preset_ID = BMC%VS%P%IC
-         if (BMC%VS%P%SS%restart) then
+         preset_ID = SP%VS%P%IC
+         ! preset_ID = 0 ! manual override
+
+         if (SP%VS%P%SS%restart) then
                call restart_P(P,m,dir)
          else
            select case(preset_ID)

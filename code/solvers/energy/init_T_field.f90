@@ -3,7 +3,7 @@
        use SF_mod
        use IO_import_mod
        use mesh_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -11,18 +11,18 @@
 
        contains
 
-       subroutine init_T_field(T,m,BMC,dir)
+       subroutine init_T_field(T,m,SP,dir)
          implicit none
          type(SF),intent(inout) :: T
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer :: preset_ID
 
          call assign(T,0.0_cp)
 
-         preset_ID = BMC%VS%T%IC
-         if (BMC%VS%T%SS%restart) then
+         preset_ID = SP%VS%T%IC
+         if (SP%VS%T%SS%restart) then
                call restart_T(T,m,dir)
          else
            select case(preset_ID)

@@ -140,9 +140,9 @@
          type(mesh_block) :: MB
          write(*,*) 'Initializing momentum:'
 
-         call init(mom%TMP,SP%BMC%VS%U%TMP)
-         call init(mom%ISP_U,SP%BMC%VS%U%ISP)
-         call init(mom%ISP_P,SP%BMC%VS%P%ISP)
+         call init(mom%TMP,SP%VS%U%TMP)
+         call init(mom%ISP_U,SP%VS%U%ISP)
+         call init(mom%ISP_P,SP%VS%P%ISP)
          mom%Re = SP%DP%Re
          mom%Ha = SP%DP%Ha
          mom%Gr = SP%DP%Gr
@@ -181,17 +181,17 @@
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
          write(*,*) 'about to define U_BCs'
-         call init_U_BCs(mom%U,m,mom%SP%BMC)
+         call init_U_BCs(mom%U,m,mom%SP)
          write(*,*) 'U_BCs defined'
-         call init_P_BCs(mom%p,m,mom%SP%BMC)
+         call init_P_BCs(mom%p,m,mom%SP)
          write(*,*) '     BCs initialized'
-         if (mom%SP%BMC%VS%U%SS%solve) call print_BCs(mom%U,'U')
-         if (mom%SP%BMC%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
-         if (mom%SP%BMC%VS%U%SS%solve) call print_BCs(mom%p,'p')
-         if (mom%SP%BMC%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
+         if (mom%SP%VS%U%SS%solve) call print_BCs(mom%U,'U')
+         if (mom%SP%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
+         if (mom%SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
+         if (mom%SP%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
 
-         call init_U_field(mom%U,m,mom%SP%BMC,str(DT%U%field))
-         call init_P_field(mom%p,m,mom%SP%BMC,str(DT%p%field))
+         call init_U_field(mom%U,m,mom%SP,str(DT%U%field))
+         call init_P_field(mom%p,m,mom%SP,str(DT%p%field))
          write(*,*) '     Field initialized'
 
          write(*,*) '     about to apply p BCs'
@@ -209,10 +209,10 @@
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%BMC%VS%U%SS%restart,SP,.true.)
-         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%BMC%VS%U%SS%restart,SP,.false.)
+         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,SP,.true.)
+         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,SP,.false.)
          if (m%plane_xyz) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%BMC%VS%U%SS%restart,SP,.false.)
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP,.false.)
          endif
          write(*,*) '     momentum probes initialized'
 
@@ -273,7 +273,7 @@
          write(un,*) 'Re,Ha = ',mom%Re,mom%Ha
          write(un,*) 'Gr,Fr = ',mom%Gr,mom%Fr
          write(un,*) 't,dt = ',mom%TMP%t,mom%TMP%dt
-         write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%BMC%VS%U%SS%solve_method,&
+         write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%VS%U%SS%solve_method,&
          mom%ISP_U%iter_max,mom%ISP_P%iter_max
          write(un,*) 'tol_mom,tol_PPE = ',mom%ISP_U%tol_rel,mom%ISP_P%tol_rel
          write(un,*) 'nstep,KE = ',mom%TMP%n_step,get_data(mom%probe_KE)
@@ -357,7 +357,7 @@
          type(VF),intent(in) :: F
          type(dir_tree),intent(in) :: DT
          if (.not.mom%SP%EL%export_soln_only) then
-         if (mom%SP%BMC%VS%B%SS%solve.or.mom%SP%BMC%VS%T%SS%solve) then
+         if (mom%SP%VS%B%SS%solve.or.mom%SP%VS%T%SS%solve) then
            call export_raw(mom%m,F,str(DT%U%field),'F_external',0)
          endif
          endif
@@ -367,7 +367,7 @@
          implicit none
          type(momentum),intent(in) :: mom
          type(dir_tree),intent(in) :: DT
-         if (mom%SP%BMC%VS%U%SS%restart.and.(.not.mom%SP%BMC%VS%U%SS%solve)) then
+         if (mom%SP%VS%U%SS%restart.and.(.not.mom%SP%VS%U%SS%solve)) then
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
@@ -444,7 +444,7 @@
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         select case(mom%SP%BMC%VS%U%SS%solve_method)
+         select case(mom%SP%VS%U%SS%solve_method)
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
@@ -459,7 +459,7 @@
          case (4)
            call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E)
-         case default; stop 'Error: solveUMethod must = 1,2 in momentum.f90.'
+         case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
          call iterate_step(mom%TMP)
 
@@ -595,7 +595,7 @@
              call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%MFP,dir(i))
            endif
          enddo
-         call init_U_BCs(mom%U,mom%m,mom%SP%BMC) ! Needed (better) if U_BCs is a distribution
+         call init_U_BCs(mom%U,mom%m,mom%SP) ! Needed (better) if U_BCs is a distribution
          write(*,*) 'Finished momentum solver prolongation'
          if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
          call apply_BCs(mom%U)

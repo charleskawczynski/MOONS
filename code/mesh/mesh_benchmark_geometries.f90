@@ -8,7 +8,6 @@
        use mesh_domain_mod
        use mesh_mod
        use constants_mod
-       use benchmark_cases_mod
        use mesh_PD_geometries_mod
        use mesh_BC_geometries_mod
        use mesh_quality_params_mod
@@ -28,21 +27,21 @@
          logical,intent(in) :: include_vacuum
          integer,intent(in) :: preset_ID
          select case (preset_ID)
-         case (1);  call user_defined(             m_mom,m_ind,MQP,MD_sigma)
-         case (2);  call Hydro_2D_LDC_Ghia(        m_mom,m_ind,MQP,Re)
-         case (3);  call Hydro_2D_duct(            m_mom,m_ind,MQP,Re)
-         case (4);  call Hydro_3D_LDC_Guj_stella(  m_mom,m_ind,MQP,Re)
-         case (5);  call Hydro_3D_duct(            m_mom,m_ind,MQP,Re)
-         case (6);  call kinetic_MHD_2D_Weiss(     m_mom,m_ind,MD_sigma)
-         case (7);  call kinetic_MHD_2D_Parker(    m_mom,m_ind,MD_sigma)
-         case (8);  call MHD_2D_Bandaru(           m_mom,m_ind,MQP,MD_sigma,Re,Ha)
-         case (9);  call MHD_3D_LDC_Sergey_uniform(m_mom,m_ind,MD_sigma)
-         case (10); call MHD_3D_LDC_Sergey(        m_mom,m_ind,MQP,MD_sigma,Re,Ha)
-         case (11); call MHD_3D_Shercliff(         m_mom,m_ind,MQP,MD_sigma,Re,Ha)
-         case (12); call MHD_3D_Hunt(              m_mom,m_ind,MQP,MD_sigma,Re,Ha)
-         case (13); call MHD_3D_LDC_BC(            m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
-         case (14); call MHD_3D_LDC_BC_symmetric(  m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
-         case (15); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (1);  call Hydro_2D_LDC_Ghia(        m_mom,m_ind,MQP,Re)
+         case (2);  call Hydro_2D_duct_along_x(    m_mom,m_ind,MQP,Re)
+         case (3);  call Hydro_3D_LDC_Guj_stella(  m_mom,m_ind,MQP,Re)
+         case (4);  call Hydro_3D_duct_along_x(    m_mom,m_ind,MQP,Re)
+         case (5);  call kinetic_MHD_2D_Weiss(     m_mom,m_ind,MD_sigma)
+         case (6);  call kinetic_MHD_2D_Parker(    m_mom,m_ind,MD_sigma)
+         case (7);  call MHD_2D_Bandaru(           m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (8);  call MHD_3D_LDC_Sergey_uniform(m_mom,m_ind,MD_sigma)
+         case (9);  call MHD_3D_LDC_Sergey(        m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (10); call MHD_3D_Shercliff(         m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (11); call MHD_3D_Hunt(              m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (12); call MHD_3D_LDC_BC(            m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
+         case (13); call MHD_3D_LDC_BC_symmetric(  m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
+         case (14); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (15); call user_defined(             m_mom,m_ind,MQP,MD_sigma)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine
@@ -50,31 +49,6 @@
        ! ********************************************************************
        ! ***************************** HYDRO ********************************
        ! ********************************************************************
-
-       subroutine user_defined(m_mom,m_ind,MQP,MD_sigma)
-         implicit none
-         type(mesh),intent(inout) :: m_mom,m_ind
-         type(mesh_quality_params),intent(in) :: MQP
-         type(mesh_domain),intent(inout) :: MD_sigma
-         type(grid) :: g
-         real(cp),dimension(3) :: hmin,hmax,beta
-         integer,dimension(3) :: N
-         integer :: i
-         real(cp) :: Re
-         Re = 400.0_cp
-         call delete(m_mom)
-         N = (/60,60,1/); hmin = -0.5_cp; hmax = 0.5_cp
-         beta = ReynoldsBL(Re,hmin,hmax)
-         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         call add(m_mom,g)
-         call initProps(m_mom)
-         call patch(m_mom)
-         call delete(g)
-         call init(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
-       end subroutine
 
        subroutine Hydro_2D_LDC_Ghia(m_mom,m_ind,MQP,Re)
          implicit none
@@ -98,7 +72,7 @@
          call init(m_ind,m_mom)
        end subroutine
 
-       subroutine Hydro_2D_duct(m_mom,m_ind,MQP,Re)
+       subroutine Hydro_2D_duct_along_x(m_mom,m_ind,MQP,Re)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
@@ -108,11 +82,11 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m_mom)
-         hmin = -0.5_cp; hmax = 0.5_cp
-         hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
-         N = (/100,60,1/)
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = 0.0_cp; hmax(1) = 40.0_cp
+         N = (/40,20,1/)
          beta = ReynoldsBL(Re,hmin,hmax)
-         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m_mom,g)
@@ -144,7 +118,7 @@
          call init(m_ind,m_mom)
        end subroutine
 
-       subroutine Hydro_3D_duct(m_mom,m_ind,MQP,Re)
+       subroutine Hydro_3D_duct_along_x(m_mom,m_ind,MQP,Re)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
@@ -158,7 +132,7 @@
          hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
          N = (/100,60,60/)
          beta = ReynoldsBL(Re,hmin,hmax)
-         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          call add(m_mom,g)
@@ -363,6 +337,31 @@
          call initProps(m_ind)
          call patch(m_ind)
          call delete(g)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine user_defined(m_mom,m_ind,MQP,MD_sigma)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         real(cp) :: Re
+         Re = 400.0_cp
+         call delete(m_mom)
+         N = (/60,60,1/); hmin = -0.5_cp; hmax = 0.5_cp
+         beta = ReynoldsBL(Re,hmin,hmax)
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         call add(m_mom,g)
+         call initProps(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
          call init(MD_sigma,m_mom,m_ind)
        end subroutine
 

@@ -182,27 +182,25 @@
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
-         write(un,*) 'iter_max = ',ISP%iter_max
-         write(un,*) 'tol_rel = ',ISP%tol_rel
-         write(un,*) 'tol_abs = ',ISP%tol_abs
-         write(un,*) 'iter_last = ',ISP%iter_last
-         write(un,*) 'n_skip_check_res = ',ISP%n_skip_check_res
+         write(un,*) 'iter_max             = ',ISP%iter_max
+         write(un,*) 'tol_rel              = ',ISP%tol_rel
+         write(un,*) 'tol_abs              = ',ISP%tol_abs
+         write(un,*) 'iter_last            = ',ISP%iter_last
+         write(un,*) 'n_skip_check_res     = ',ISP%n_skip_check_res
          write(un,*) 'n_skip_check_res_max = ',ISP%n_skip_check_res_max
-         write(un,*) 'smooth = ',ISP%smooth
-         write(un,*) 'buffer = ',ISP%buffer
-         write(un,*) 'scale = ',ISP%scale
-         write(un,*) 'exit_loop = ',ISP%exit_loop
+         write(un,*) 'smooth               = ',ISP%smooth
+         write(un,*) 'buffer               = ',ISP%buffer
+         write(un,*) 'scale                = ',ISP%scale
+         write(un,*) 'exit_loop            = ',ISP%exit_loop
        end subroutine
 
        subroutine display_exit_loop_ISP(ISP,un)
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
-         write(un,*) 'exit_loop = ',ISP%exit_loop
-         write(un,*) 'iter_max = ',ISP%iter_max
-         write(un,*) 'tol_abs = ',ISP%tol_abs
-         write(un,*) 'tol_rel = ',ISP%tol_rel
-         write(un,*) 'n_skip_check_res = ',ISP%n_skip_check_res
+         write(un,*) 'exit_loop         = ',ISP%exit_loop
+         write(un,*) 'tol (rel,abs)     = ',ISP%tol_rel,ISP%tol_abs
+         write(un,*) 'iter (max,n_skip) = ',ISP%iter_max,ISP%n_skip_check_res
        end subroutine
 
        subroutine print_exit_loop_ISP(ISP)

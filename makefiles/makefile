@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 # FORMAT_OUTPUT = 'FORMATTED'
 # ************* CLUSTER CONFIGURATION ******************
@@ -39,7 +39,7 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -397,10 +397,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)user$(PS)var.f90\
 	$(SRC_DIR)$(PS)user$(PS)var_set.f90\
-	$(SRC_DIR)$(PS)user$(PS)benchmark_cases.f90\
-	$(SRC_DIR)$(PS)user$(PS)benchmark_case.f90\
-	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
+	$(SRC_DIR)$(PS)user$(PS)momentum_forces.f90\
+	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\

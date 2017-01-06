@@ -114,7 +114,7 @@
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_small(hmin - L,hmin,N_final,dh)
            call init(b,robertsLeft(hmin-L,hmin,N_final,beta))
            N_final = b%N
@@ -136,7 +136,7 @@
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_small(hmin - L,hmin,N_final,dh)
            call init(b,robertsRight(hmin-L,hmin,N_final,beta))
            N_final = b%N
@@ -158,7 +158,7 @@
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_both(hmin - L,hmin,N_final,dh)
            call init(b,robertsBoth(hmin-L,hmin,N_final,beta))
            N_final = b%N
@@ -180,7 +180,7 @@
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_big(hmin - L,hmin,N_final,dh)
            call init(b,robertsLeft(hmin-L,hmin,N_final,beta))
            N_final = b%N
@@ -230,7 +230,7 @@
          call check_N(N,'ext_app_Roberts_L_IO')
          hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_small(hmax,hmax + L,N_final,dh)
            call init(b,robertsLeft(hmax,hmax + L,N_final,beta))
            N_final = b%N
@@ -251,7 +251,7 @@
          call check_N(N,'ext_app_Roberts_R_IO')
          hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_small(hmax,hmax + L,N_final,dh)
            call init(b,robertsRight(hmax,hmax + L,N_final,beta))
            N_final = b%N
@@ -272,7 +272,7 @@
          call check_N(N,'ext_app_Roberts_B_IO')
          hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_both(hmax,hmax + L,N_final,dh)
            call init(b,robertsBoth(hmax,hmax + L,N_final,beta))
            N_final = b%N
@@ -293,7 +293,7 @@
          call check_N(N,'ext_app_Roberts_C2F_IO')
          hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
          N_final = N
-         do i=1,MQP%N_max_points_add
+         do i=1,MQP%N_iter
            beta = beta_dh_big(hmax,hmax + L,N_final,dh)
            call init(b,robertsRight(hmax,hmax + L,N_final,beta))
            N_final = b%N

@@ -13,7 +13,7 @@
        use ops_aux_mod
        use export_raw_processed_mod
        use constants_mod
-       use benchmark_case_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -21,16 +21,18 @@
 
        contains
 
-       subroutine init_U_field(U,m,BMC,dir)
+       subroutine init_U_field(U,m,SP,dir)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
          character(len=*),intent(in) :: dir
-         type(benchmark_case),intent(in) :: BMC
+         type(sim_params),intent(in) :: SP
          integer :: preset_ID
          call assign(U,0.0_cp)
-         preset_ID = BMC%VS%U%IC
-         if (BMC%VS%U%SS%restart) then
+         preset_ID = SP%VS%U%IC
+         ! preset_ID = 0 ! manual override
+
+         if (SP%VS%U%SS%restart) then
                call restart_U(U,m,dir)
          else
            select case(preset_ID)

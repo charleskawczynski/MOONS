@@ -610,7 +610,7 @@
            call init(BC%f_BCs,B%g,B%f)
            ! call init(BC%e_BCs,B%g,B%e)
            ! call init(BC%c_BCs,B%g,B%c)
-           call init_props_BCs(BC)
+           call init_props(BC)
          endif
        end subroutine
 
@@ -630,7 +630,7 @@
            call init(BC%f_BCs,B%g,B%f)
            ! call init(BC%e_BCs,B%g,B%e)
            ! call init(BC%c_BCs,B%g,B%c)
-           call init_props_BCs(BC)
+           call init_props(BC)
          endif
        end subroutine
 
