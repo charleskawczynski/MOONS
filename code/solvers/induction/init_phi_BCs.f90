@@ -25,7 +25,7 @@
          call Dirichlet_BCs(phi,m)
 
          preset_ID = SP%VS%phi%BC
-         periodic_dir = SP%periodic_dir
+         periodic_dir = SP%GP%periodic_dir
          ! preset_ID = 0 ! manual override
 
          phi%all_Neumann = .false. ! Needs to be adjusted manually

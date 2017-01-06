@@ -66,7 +66,7 @@
           call lap_centered(lapu,u,m)
           call subtract(res,lapu,f)
           call assign_ghost_XPeriodic(res,0.0_cp)
-          call compute(norm0,res,vol,m%volume)
+          call compute(norm0,res,vol,m%MP%volume)
         endif
 
         call apply_BCs(u)
@@ -93,7 +93,7 @@
               call lap_centered(lapu,u,m)
               call subtract(res,lapu,f)
               call assign_ghost_XPeriodic(res,0.0_cp)
-              call compute(norm,res,vol,m%volume)
+              call compute(norm,res,vol,m%MP%volume)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                        norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -114,7 +114,7 @@
             call lap_centered(lapu,u,m)
             call subtract(res,lapu,f)
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol,m%volume)
+            call compute(norm,res,vol,m%MP%volume)
             call print(norm,'GS_SF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                      norm0%L1,norm0%L2,norm0%Linf,i-1+i_earlyExit
@@ -151,7 +151,7 @@
           call lap(lapu,u,m)
           call subtract(res,lapu,f)
           call assign_ghost_XPeriodic(res,0.0_cp)
-          call compute(norm0,res,vol,m%volume)
+          call compute(norm0,res,vol,m%MP%volume)
         endif
 
         call apply_BCs(u)
@@ -178,7 +178,7 @@
               call lap(lapu,u,m)
               call subtract(res,lapu,f)
               call assign_ghost_XPeriodic(res,0.0_cp)
-              call compute(norm,res,vol,m%volume)
+              call compute(norm,res,vol,m%MP%volume)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -199,7 +199,7 @@
             call lap(lapu,u,m)
             call subtract(res,lapu,f)
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol,m%volume)
+            call compute(norm,res,vol,m%MP%volume)
             call print(norm,'GS_SF Residuals for '//name)
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1

@@ -51,13 +51,13 @@
          continue_refinement = RM%i_level.lt.SP%DMR%n_max_refinements
 
          if (SP%VS%T%SS%solve) then; steady_solution(1) = steady(nrg%probe_divQ)
-         else;                           steady_solution(1) = .true.;endif
+         else;                       steady_solution(1) = .true.;endif
          if (SP%VS%U%SS%solve) then; steady_solution(2) = steady(mom%probe_KE)
-         else;                           steady_solution(2) = .true.;endif
+         else;                       steady_solution(2) = .true.;endif
          if (SP%VS%B%SS%solve) then; steady_solution(3) = steady(ind%ME_fluid(3))
-         else;                           steady_solution(3) = .true.;endif
+         else;                       steady_solution(3) = .true.;endif
          if (SP%VS%B%SS%solve) then; steady_solution(4) = steady(ind%JE_fluid)
-         else;                           steady_solution(4) = .true.;endif
+         else;                       steady_solution(4) = .true.;endif
 
          refine_mesh_now_all = all(steady_solution).and.continue_refinement
 
@@ -91,13 +91,13 @@
          endif
 
          if (SP%VS%T%SS%solve) then; steady_solution(1) = steady_final(nrg%probe_divQ)
-         else;                           steady_solution(1) = .true.;endif
+         else;                       steady_solution(1) = .true.;endif
          if (SP%VS%U%SS%solve) then; steady_solution(2) = steady_final(mom%probe_KE)
-         else;                           steady_solution(2) = .true.;endif
+         else;                       steady_solution(2) = .true.;endif
          if (SP%VS%B%SS%solve) then; steady_solution(3) = steady_final(ind%ME_fluid(3))
-         else;                           steady_solution(3) = .true.;endif
+         else;                       steady_solution(3) = .true.;endif
          if (SP%VS%B%SS%solve) then; steady_solution(4) = steady_final(ind%JE_fluid)
-         else;                           steady_solution(4) = .true.;endif
+         else;                       steady_solution(4) = .true.;endif
 
 
          if (all(steady_solution).and.(.not.continue_refinement)) then

@@ -26,7 +26,7 @@
          p%all_Neumann = .true. ! Needs to be adjusted manually
 
          preset_ID = SP%VS%P%BC
-         periodic_dir = SP%periodic_dir
+         periodic_dir = SP%GP%periodic_dir
          ! preset_ID = 0 ! manual override
 
          select case (preset_ID)

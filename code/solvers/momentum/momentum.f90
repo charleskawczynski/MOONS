@@ -211,7 +211,7 @@
 
          call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,SP,.true.)
          call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,SP,.false.)
-         if (m%plane_xyz) then
+         if (m%MP%plane_any) then
           call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP,.false.)
          endif
          write(*,*) '     momentum probes initialized'
@@ -393,7 +393,7 @@
          real(cp) :: temp
          call compute_TKE(temp,mom%U_CC,mom%m)
          call export(mom%probe_KE,mom%TMP,temp)
-         if (mom%m%plane_xyz) then
+         if (mom%m%MP%plane_any) then
            call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,mom%temp_CC)
            call export(mom%probe_KE_2C,mom%TMP,temp)
          endif

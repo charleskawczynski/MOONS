@@ -180,18 +180,18 @@
                              g%BF(i)%GF,&
                              m%B(i)%g,&
                              dir,&
-                             m%int_tensor(dir)%eye(1),&
-                             m%int_tensor(dir)%eye(2),&
-                             m%int_tensor(dir)%eye(3))
+                             m%MP%int_tensor(dir)%eye(1),&
+                             m%MP%int_tensor(dir)%eye(2),&
+                             m%MP%int_tensor(dir)%eye(3))
            enddo
          elseif (CC_along(f%DL,dir).and.N_along(g%DL,dir)) then
            do i=1,m%s
              call interp_N2C(f%BF(i)%GF,&
                              g%BF(i)%GF,&
                              dir,&
-                             m%int_tensor(dir)%eye(1),&
-                             m%int_tensor(dir)%eye(2),&
-                             m%int_tensor(dir)%eye(3))
+                             m%MP%int_tensor(dir)%eye(1),&
+                             m%MP%int_tensor(dir)%eye(2),&
+                             m%MP%int_tensor(dir)%eye(3))
            enddo
          else
            write(*,*) ' ---------------- f ---------------- '; call print(f%DL)

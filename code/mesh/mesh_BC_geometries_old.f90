@@ -37,7 +37,7 @@
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          call add(m,g)
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -69,7 +69,7 @@
 
          ! Define domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
 
          ! Vacuum
@@ -82,7 +82,7 @@
          endif
 
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(MD_sigma,m_sigma,m_ind)
@@ -127,7 +127,7 @@
 
          call add(m,g)
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -171,7 +171,7 @@
 
          ! Define domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
          i = 1; call ext_prep_uniform_IO(g,1,i)
          i = 1; call ext_app_uniform_IO(g,1,i)
@@ -189,7 +189,7 @@
          endif
 
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(MD_sigma,m_sigma,m_ind)

@@ -53,7 +53,7 @@
         call multiply(res,x,Diag)
         call subtract(Ax,res) ! LU = Ax - Dx
         call subtract(res,f,Ax)
-        call compute(norm0,res,vol,m%volume)
+        call compute(norm0,res,vol,m%MP%volume)
 
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do iterations if necessary!
@@ -67,7 +67,7 @@
             call apply_BCs(x)
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
-              call compute(norm,res,vol,m%volume)
+              call compute(norm,res,vol,m%MP%volume)
 #ifdef _EXPORT_JAC_SF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -83,7 +83,7 @@
         if (compute_norm) then
           if (.not.skip_loop) then
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol,m%volume)
+            call compute(norm,res,vol,m%MP%volume)
             call print(norm,'Jacobi_SF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -124,7 +124,7 @@
         call multiply(res,x,Diag)
         call subtract(Ax,res) ! LU = Ax - Dx
         call subtract(res,f,Ax)
-        call compute(norm0,res,vol,m%volume)
+        call compute(norm0,res,vol,m%MP%volume)
 
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do iterations if necessary!
@@ -143,7 +143,7 @@
 
             N_iter = N_iter + 1
             if (mod(i,n_skip_check_res).eq.0) then
-              call compute(norm,res,vol,m%volume)
+              call compute(norm,res,vol,m%MP%volume)
 #ifdef _EXPORT_JAC_VF_CONVERGENCE_
               write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
@@ -159,7 +159,7 @@
         if (compute_norm) then
           if (.not.skip_loop) then
             call assign_ghost_XPeriodic(res,0.0_cp)
-            call compute(norm,res,vol,m%volume)
+            call compute(norm,res,vol,m%MP%volume)
             call print(norm,'Jacobi_VF Residuals for '//name)
             write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                norm0%L1,norm0%L2,norm0%Linf,i-1

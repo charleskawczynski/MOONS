@@ -186,7 +186,7 @@
             call lap(FFT%res,u,m)
             call subtract(FFT%res,f)
             call assign_ghost_XPeriodic(FFT%res,0.0_cp)
-            call compute(norm,FFT%res,vol,m%volume)
+            call compute(norm,FFT%res,vol,m%MP%volume)
             call print(norm,'FFT Residuals')
           endif
           call delete(FFT)

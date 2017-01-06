@@ -38,7 +38,7 @@
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          call add(m_mom,g)
-         call initProps(m_mom)
+         call init_props(m_mom)
          call patch(m_mom)
          call delete(g)
          call init(m_ind,m_mom)

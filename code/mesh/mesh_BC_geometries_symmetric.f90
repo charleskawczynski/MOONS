@@ -36,7 +36,7 @@
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 3; call grid_Roberts_L(g,hmin(i),hmax(i),N(i),beta(i),i)
          call add(m_mom,g)
-         call initProps(m_mom)
+         call init_props(m_mom)
          call patch(m_mom)
          call delete(g)
          call MHD_3D_LDC_RVBC_Ha20_symmetric_extend(m_ind,m_mom,MD_sigma)
@@ -65,7 +65,7 @@
          call ext_prep_Roberts_B_IO(g,tw,N_w,2)
          ! Define domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
          ! Vacuum
          call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,1) ! x-direction
@@ -73,7 +73,7 @@
          call ext_prep_Roberts_R_IO(g,Gamma_v - tw - tf,N_v,2) ! y-direction
          call ext_app_Roberts_L_IO (g,Gamma_v - tf,N_v+N_extra,2) ! y-direction
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
          call init(MD_sigma,m_sigma,m_ind)
          call delete(m_sigma)

@@ -68,15 +68,17 @@
          endif
          ! call init(mesh_ind_interior,MD_sigma%m_R2)
 
-         if (SP%VS%U%SS%initialize) then; call initProps(mesh_mom); call patch(mesh_mom); endif
-         if (SP%VS%B%SS%initialize) then; call initProps(mesh_ind); call patch(mesh_ind); endif
+         if (SP%VS%U%SS%initialize) then; call init_props(mesh_mom); call patch(mesh_mom); endif
+         if (SP%VS%B%SS%initialize) then; call init_props(mesh_ind); call patch(mesh_ind); endif
+         if (SP%VS%U%SS%initialize) then; call init_apply_BC_order(mesh_mom,SP%GP%apply_BC_order); endif
+         if (SP%VS%B%SS%initialize) then; call init_apply_BC_order(mesh_ind,SP%GP%apply_BC_order); endif
 
          if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
            call init(MD_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
-           call initProps(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
-           call initProps(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
-           call initProps(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
-           call initProps(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
+           call init_props(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
+           call init_props(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
+           call init_props(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
+           call init_props(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
          endif
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)

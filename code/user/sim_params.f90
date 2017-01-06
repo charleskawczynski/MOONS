@@ -14,6 +14,7 @@
      use mesh_quality_params_mod
      use print_export_mod
      use momentum_forces_mod
+     use geometry_props_mod
      implicit none
 
      private
@@ -36,12 +37,9 @@
        type(export_logicals) :: EL
        type(print_export) :: PE
        type(momentum_forces) :: MF
+       type(geometry_props) :: GP
 
        logical :: restart_all
-       integer :: geometry = 0
-       real(cp) :: tw = 0.0_cp
-       integer,dimension(3) :: periodic_dir = 0
-       integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
 
        logical :: post_process_only        ! depricated
        logical :: post_process
@@ -102,10 +100,10 @@
        SP%DP%Fr                   = 1.0_cp
        SP%DP%Ec                   = 0.0_cp
 
-       SP%tw                      = 0.5_cp
-       SP%geometry                = 2
-       SP%periodic_dir            = (/0,0,1/)
-       SP%apply_BC_order          = (/3,4,5,6,1,2/)
+       SP%GP%tw                   = 0.5_cp
+       SP%GP%geometry             = 2
+       SP%GP%periodic_dir         = (/0,0,1/)
+       SP%GP%apply_BC_order       = (/3,4,5,6,1,2/)
 
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
@@ -181,10 +179,7 @@
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
        SP%matrix_based           = SP_in%matrix_based
-       SP%tw                     = SP_in%tw
-       SP%periodic_dir           = SP_in%periodic_dir
-       SP%apply_BC_order         = SP_in%apply_BC_order
-       SP%geometry               = SP_in%geometry
+       call init(SP%GP,     SP_in%GP)
        call init(SP%EL,     SP_in%EL)
        call init(SP%VS,     SP_in%VS)
        call init(SP%MF,     SP_in%MF)
@@ -198,6 +193,7 @@
      subroutine delete_SP(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
+       call delete(SP%GP)
        call delete(SP%EL)
        call delete(SP%VS)
        call delete(SP%MF)
@@ -222,10 +218,7 @@
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
        write(un,*) 'matrix_based           = ',SP%matrix_based
-       write(un,*) 'geometry               = ',SP%geometry
-       write(un,*) 'tw                     = ',SP%tw
-       write(un,*) 'periodic_dir           = ',SP%periodic_dir
-       write(un,*) 'apply_BC_order         = ',SP%apply_BC_order
+       call export(SP%GP,un)
        call export(SP%EL,un)
        call export(SP%MF,un)
        call export(SP%VS,un)

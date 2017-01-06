@@ -18,6 +18,7 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: init_FEC
+       public :: init_apply_BC_order
 
        public :: restrict
        public :: prolongate
@@ -41,6 +42,7 @@
          type(stencil_3D),dimension(3) :: curl_curlZ   ! Z component data
          type(stencil_3D),dimension(3) :: lap_VF
          type(stencil_3D) :: lap_SF
+         integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -54,6 +56,7 @@
        interface import;             module procedure import_block_wrapper;     end interface
 
        interface init_FEC;           module procedure init_FEC_block;           end interface
+       interface init_apply_BC_order;module procedure init_apply_BC_order_block;end interface
 
        interface restrict;           module procedure restrict_dir_b;           end interface
        interface prolongate;         module procedure prolongate_dir_b;         end interface
@@ -124,6 +127,13 @@
          i=8;  allocate(B%cb(i)); do i=1,8; call get_corner_b(B%cb(i),B%g,i); enddo
        end subroutine
 
+       subroutine init_apply_BC_order_block(B,apply_BC_order)
+         implicit none
+         type(block),intent(inout) :: B
+         integer,dimension(6),intent(in) :: apply_BC_order
+         B%apply_BC_order = apply_BC_order
+       end subroutine
+
        subroutine mirror_about_hmin_b(B,dir)
          implicit none
          type(block),intent(inout) :: B
@@ -165,6 +175,7 @@
           call init(B%vol(i),B_in%vol(i))
           call assign(B%vol(i),B_in%vol(i))
          enddo
+         B%apply_BC_order = B_in%apply_BC_order
        end subroutine
 
        subroutine delete_block(B)
@@ -176,6 +187,7 @@
            do i=1,8; call delete(B%vol(i)); enddo
            deallocate(B%vol)
          endif
+         B%apply_BC_order = (/1,2,3,4,5,6/)
          call delete(B%lap_SF)
          do i=1,3; call delete(B%lap_VF(i)); enddo
          do i=1,3; call delete(B%curl_curlX(i)); enddo

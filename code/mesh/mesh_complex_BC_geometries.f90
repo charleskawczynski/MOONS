@@ -46,7 +46,7 @@
          call add(m,g1)
 
          call con_app_uniform(g2,g1,N(1),1); call add(m,g2)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -72,7 +72,7 @@
          call add(m,g1)
 
          call con_app_uniform(g2,g1,N(2),2); call add(m,g2)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -102,7 +102,7 @@
 
          call con_app_Roberts_R(g2,g1,0.5_cp,N(3),3)
          call add(m,g2)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -129,7 +129,7 @@
 
          call con_app_Roberts_R(g2,g1,0.5_cp,N(2),2)
          call add(m,g2)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -161,7 +161,7 @@
          call con_app_Roberts_R(g2,g1,0.5_cp,N(2),2); call add(m,g2)
          call con_app_Roberts_R(g1,g2,0.5_cp,N(2),1); call add(m,g1)
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -207,7 +207,7 @@
          call con_app_Roberts_R(g3,g1,0.5_cp,N(2),2); call add(m,g3) ! 8
          call con_app_Roberts_R(g2,g3,0.5_cp,N(1),1); call add(m,g2) ! 9
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -250,7 +250,7 @@
          call con_app_uniform(g3,g1,N(2),2); call add(m,g3) ! 8
          call con_app_uniform(g2,g3,N(1),1); call add(m,g2) ! 9
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -282,7 +282,7 @@
 
          call con_app_Roberts_R(g2,g1,0.5_cp,N(2),2); call add(m,g2) ! 2
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -307,7 +307,7 @@
          call grid_Roberts_B(g1,hmin(2),hmax(2),N(2),beta(2),2)
          call grid_uniform(g1,hmin(3),hmax(3),N(3),3)
          call add(m,g1) ! 1
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -330,7 +330,7 @@
          call con_app_Roberts_B(g2,g1,1.0_cp,N(1),1); call add(m,g2)
          call con_app_Roberts_L(g1,g2,1.0_cp,N(1),2); call add(m,g1)
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -357,7 +357,7 @@
          call con_app_Roberts_B (g2,g1,1.0_cp,N(2),2); call add(m,g2) ! second corner
          call con_prep_Roberts_R(g1,g2,5.0_cp, 40 ,1); call add(m,g1) ! exit
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call print(m)
          call delete(g1)
@@ -383,7 +383,7 @@
          call con_app_Roberts_B (g2,g1,1.0_cp,N(2),2); call add(m,g2)
          call con_prep_Roberts_B(g2,g1,1.0_cp,N(2),2); call add(m,g2)
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -415,7 +415,7 @@
          call con_prep_Roberts_B(g3,g2,1.0_cp,N(2),2); call add(m,g3) ! right entrance
          call con_app_Roberts_L (g2,g3,5.0_cp,N(1),1); call add(m,g2) ! right channel
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -467,7 +467,7 @@
          call con_app_Roberts_B (g2,g3,L_chan,N(1) ,1); call add(m,g2) ! right channel
          call con_app_Roberts_L (g3,g2,L_exit,N(1) ,1); call add(m,g3) ! right exit
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)
@@ -509,7 +509,7 @@
 
          call con_app_Roberts_B(g2,g3,1.0_cp,N(2),2); call add(m,g2) ! trailing cube
 
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g1)
          call delete(g2)

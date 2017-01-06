@@ -20,7 +20,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-% \setlength{\headsep}{0in}        
+% \setlength{\headsep}{0in}
 \setlength{\textheight}{525pt}   %\textheight: height of main text
 \setlength{\textwidth}{10in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -60,7 +60,7 @@ The results in this document are generated from a linear system solver, using Py
 
 Where the unknowns are the derivatives $f_i^{(j)}$. The input arguments, $n_{left}$ and $n_{right}$, are the number of points to the left and right of $i$ respectively. $f_{i+k}\forall k$ is assumed to be known. The distance between $f_{i}$ and $f_{i+k}$ is
 \begin{equation}
-  \alpha_{i+k} 
+  \alpha_{i+k}
   =
   h_{i+k} - h_{i}
 \end{equation}
@@ -96,25 +96,25 @@ Again, to reiterate, the indexing convention is:
 The following finite difference schemes are the result of the above analysis.
 
 \subsubsection{1st Derivative}
-\begin{equation} 
+\begin{equation}
 f^{{(1)}}_{i} = \left(- \frac{\Delta h_{{i}}}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(\frac{- \Delta h_{{i-1}} + \Delta h_{{i}}}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{\Delta h_{{i-1}}}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
   , \qquad
   i \in (3,s-2)
- \end{equation} 
+ \end{equation}
 
 \subsubsection{2nd Derivative}
-\begin{equation} 
+\begin{equation}
 f^{{(2)}}_{i} = \left(\frac{2}{\Delta h_{{i-1}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i-1}}+ \left(- \frac{2}{\Delta h_{{i-1}} \Delta h_{{i}}}\right)f_{{i}}+ \left(\frac{2}{\Delta h_{{i}} \left(\Delta h_{{i-1}} + \Delta h_{{i}}\right)}\right)f_{{i+1}}
 , \qquad
   i \in (3,s-2)
- \end{equation} 
+ \end{equation}
 
 \subsection{Symmetrizing}
 
 \subsubsection{Laplacian}
 To symmetrize the Laplacian, we ask: What can we multiply row $i$ by to ensure that $L_i=U_{i-1}$. Note that the Laplacian in a 2-step process, this is actually
 \begin{equation}
-   D 
+   D
    = \frac{\Delta h_{i-1} + \Delta h_{i-1}}{2} = \Delta h_{d,i}
 \end{equation}
 Where $\Delta h_{d,i}$ lives on the dual grid. This just turns out to be the cell volume in 3D for CC data.
@@ -158,8 +158,8 @@ or
 \end{equation}
 Which yields
 \begin{equation}
-  c_i (\Delta h_{{i-2}} + \Delta h_{{i-1}}) = 
-  c_{i-1} (\Delta h_{{i-1}} + \Delta h_{{i}}) 
+  c_i (\Delta h_{{i-2}} + \Delta h_{{i-1}}) =
+  c_{i-1} (\Delta h_{{i-1}} + \Delta h_{{i}})
 \end{equation}
 
 \section{Matrix diagonal}

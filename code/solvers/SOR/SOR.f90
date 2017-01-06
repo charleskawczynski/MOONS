@@ -184,7 +184,7 @@
             call lap(SOR%lapu,u,m)
             call subtract(SOR%res,SOR%lapu,f)
             call assign_ghost_XPeriodic(SOR%res,0.0_cp)
-            call compute(norm,SOR%res,SOR%vol,m%volume)
+            call compute(norm,SOR%res,SOR%vol,m%MP%volume)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
 
@@ -205,7 +205,7 @@
           call lap(SOR%lapu,u,m)
           call subtract(SOR%res,SOR%lapu,f)
           call assign_ghost_XPeriodic(SOR%res,0.0_cp)
-          call compute(norm,SOR%res,SOR%vol,m%volume)
+          call compute(norm,SOR%res,SOR%vol,m%MP%volume)
           call print(norm,'SOR Residuals')
         endif
 

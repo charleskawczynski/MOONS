@@ -94,6 +94,7 @@
          type(procedure_array) :: PA_corners_BCs         ! procedure array for face BCs
          type(procedure_array) :: PA_corners_implicit_BCs! procedure array for face BCs
          ! type(corner_SD) :: c_BCs                      ! Not yet developed
+         integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
        end type
 
        interface init;                module procedure init_GFs_BCs_DL;         end interface
@@ -149,7 +150,7 @@
          call init(BC%face,B,DL,6,'face')
          ! call init(BC%edge,B,DL,12,'edge')
          ! call init(BC%corner,B,DL,8,'corner')
-
+         BC%apply_BC_order = B%apply_BC_order
          call init(BC%DL,DL)
          call init(BC%f_BCs,B%g,B%f)
          ! call init(BC%e_BCs,B%g,B%e)
@@ -170,6 +171,7 @@
          call delete(BC)
          call init(BC%BCL,BC_in%BCL)
          call init(BC%DL,BC_in%DL)
+         BC%apply_BC_order = BC_in%apply_BC_order
 
          call init(BC%face,BC_in%face)
          call init(BC%PA_face_BCs,BC_in%PA_face_BCs)
@@ -590,8 +592,8 @@
          type(boundary_conditions),intent(inout) :: BC
          call define_logicals(BC)
          call init_mixed(BC%f_BCs,BC%DL)
-         call sort(BC%PA_face_BCs,(/3,4,5,6,1,2/),6)
-         call sort(BC%PA_face_implicit_BCs,(/3,4,5,6,1,2/),6)
+         call sort(BC%PA_face_BCs,BC%apply_BC_order,6)
+         call sort(BC%PA_face_implicit_BCs,BC%apply_BC_order,6)
        end subroutine
 
        subroutine restrict_BCs(BC,B,dir)

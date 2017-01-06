@@ -30,7 +30,7 @@
          call Dirichlet_BCs(B,m)
 
          preset_ID = SP%VS%B%BC
-         periodic_dir = SP%periodic_dir
+         periodic_dir = SP%GP%periodic_dir
          cw = SP%DP%cw
          ! preset_ID = 0 ! manual override
 

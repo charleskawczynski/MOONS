@@ -387,7 +387,7 @@
        subroutine init_BC_props_BF(BF)
          implicit none
          type(block_field),intent(inout) :: BF
-         call init_props(BF%BCs )
+         call init_props(BF%BCs)
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
@@ -810,7 +810,7 @@
          else; stop 'Error: bad DL in restrict_BF in BF.f90'
          endif
 
-         if (u%BCs%BCL%defined) then
+         if (defined(u%BCs)) then
          do i=1,6
          if (dir_given_face(i).ne.dir) then ! only restrict BCs along surface tangent directions
            if (CC_along(u%DL,dir))    then; call restrict_C(u%BCs%face%b(i),B%fb(i),dir,x,y,z)
@@ -819,6 +819,8 @@
            endif
          endif
          enddo
+         call restrict(u%BCs,B,dir)
+         call init_BC_props(u)
          endif
        end subroutine
 
@@ -851,8 +853,10 @@
          elseif ( N_along(u%DL,dir)) then; call prolongate_N(u%GF,dir,x,y,z)
          else; stop 'Error: bad DL in prolongate_BF in BF.f90'
          endif
-         call prolongate(u%BCs,B,dir)
-         if (defined(u%BCs)) call init_BC_props(u)
+         if (defined(u%BCs)) then
+           call prolongate(u%BCs,B,dir)
+           call init_BC_props(u)
+         endif
        end subroutine
 
        subroutine laplacian_matrix_based_VF_BF(lapX,lapY,lapZ,X,Y,Z,B)

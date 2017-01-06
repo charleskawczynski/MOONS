@@ -47,7 +47,7 @@
          i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -79,7 +79,7 @@
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -102,7 +102,7 @@
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -123,7 +123,7 @@
          i = 2; call ext_uniform_IO(g,N(i),i)
          i = 3; call ext_uniform_IO(g,N(i),i)
          call init(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -143,7 +143,7 @@
          i = 2; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 3; call ext_Roberts_near_IO(g,L(i),N(i),i)
          call init(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -169,7 +169,7 @@
          ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
 
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -202,7 +202,7 @@
 
          ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
 
          ! Vacuum
@@ -211,7 +211,7 @@
          ! call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3) ! z-direction
 
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(D_sigma,m_sigma,m_ind)
@@ -233,7 +233,7 @@
          i = 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -255,11 +255,11 @@
          call ext_Roberts_near_IO(g,tw,N_w,2) ! Comment / uncomment for Shercliff / Hunt flow
          ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
          ! Define mesh_domain for magnetic field mesh_domain
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(D_sigma,m_sigma,m_ind)
@@ -280,11 +280,11 @@
          N_w = 3
          ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
          ! Define mesh_domain for magnetic field mesh_domain
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(D_sigma,m_sigma,m_ind)
