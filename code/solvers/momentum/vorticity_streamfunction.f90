@@ -42,7 +42,7 @@
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
-         call init(ISP,1000,10.0_cp**(-12.0_cp),10.0_cp**(-15.0_cp),1,str(DT%ISP),'vorticity_streamfunction')
+         call init(ISP,1000,pow(-12),pow(-15),1,.false.,str(DT%ISP),'vorticity_streamfunction')
 
          call init_Edge(omega,m)
          call init_Edge(psi,m)

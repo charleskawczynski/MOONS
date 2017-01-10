@@ -218,9 +218,9 @@
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
          type(del) :: d
-         call d%assign(gradx,u,m,1,1,1) ! Padding avoids calcs on fictive cells
-         call d%assign(grady,u,m,1,2,1) ! Padding avoids calcs on fictive cells
-         call d%assign(gradz,u,m,1,3,1) ! Padding avoids calcs on fictive cells
+         call d%assign(gradx,u,m,1,1,0) ! Padding avoids calcs on fictive cells
+         call d%assign(grady,u,m,1,2,0) ! Padding avoids calcs on fictive cells
+         call d%assign(gradz,u,m,1,3,0) ! Padding avoids calcs on fictive cells
        end subroutine
 
        subroutine curl_SF(curlU,u,v,w,m,dir)

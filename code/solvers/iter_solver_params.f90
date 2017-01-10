@@ -69,11 +69,12 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_ISP(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,name)
+       subroutine init_ISP(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
          integer,intent(in) :: iter_max,n_skip_check_res
          real(cp),intent(in) :: tol_rel,tol_abs
+         logical,intent(in) :: export_convergence
          character(len=*),intent(in) :: dir,name
          ISP%iter_max = iter_max
          ISP%tol_rel = tol_rel
@@ -82,10 +83,10 @@
          ISP%smooth = i_smooth
          ISP%buffer = i_buffer
          ISP%scale = i_scale
+         ISP%export_convergence = export_convergence
          ISP%n_skip_check_res = n_skip_check_res
          ISP%n_skip_check_res_max = n_skip_check_res
          ISP%exit_loop = .false.
-         ISP%export_convergence = .false.
          call init(ISP%dir,dir)
          call init(ISP%name,name)
        end subroutine
@@ -286,8 +287,7 @@
          tol_abs = 10.0_cp*epsilon(1.0_cp)
          iter_max = 10000
          n_skip_check_res = 100
-         call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,'solve_exact')
-         ISP%export_convergence = .false.
+         call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,.false.,dir,'solve_exact')
        end function
 
        function solve_exact_N_ISP(dir,N) result(ISP)
@@ -301,8 +301,8 @@
          tol_abs = 10.0_cp*epsilon(1.0_cp)
          iter_max = N
          n_skip_check_res = 100
-         call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,dir,'solve_in_'//int2str(N)//'_iter')
-         ISP%export_convergence = .false.
+         call init(ISP,iter_max,tol_rel,tol_abs,&
+         n_skip_check_res,.false.,dir,'solve_in_'//int2str(N)//'_iter')
        end function
 
        end module

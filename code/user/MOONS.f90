@@ -46,7 +46,10 @@
          type(dir_tree) :: DT
          type(sim_params) :: SP
          ! ************************************************************** Parallel + directory + input parameters
+
+#ifdef fopenmp
          call omp_set_num_threads(12) ! Set number of openMP threads
+#endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
 

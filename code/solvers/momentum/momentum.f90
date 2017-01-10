@@ -192,6 +192,7 @@
 
          call init_U_field(mom%U,m,mom%SP,str(DT%U%field))
          call init_P_field(mom%p,m,mom%SP,str(DT%p%field))
+         call assign(mom%Unm1,mom%U)
          write(*,*) '     Field initialized'
 
          write(*,*) '     about to apply p BCs'
@@ -452,7 +453,6 @@
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
          case (3)
-           call assign(mom%Unm1,mom%U) ! If Unm1 is needed
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%TMP%dt,mom%Ustar,&
            mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)

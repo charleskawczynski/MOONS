@@ -66,36 +66,31 @@
         call init(FFT%res,u)
 
         ! THESE FORMULAS ARE ONLY VALID WHEN DX1 = DX2 WHERE DIR = 3
-        !$OMP PARALLEL DO PRIVATE(cosj,cosk)
-        do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
+        do t=1,m%s; do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
         cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
         cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
         if (.not.((i.eq.2).and.(j.eq.2))) then
               FFT%coeff_x%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosj+cosk-2.0_cp)*FFT%dh2(1)
         else; FFT%coeff_x%BF(t)%GF%f(i,j,k) = 1.0_cp
         endif
-        enddo; enddo; enddo
-        !$OMP END PARALLEL DO
-        !$OMP PARALLEL DO PRIVATE(cosi,cosk)
-        do k=2,FFT%s(3)-1; do j=1,FFT%s(2); do i=2,FFT%s(1)-1
+        enddo; enddo; enddo; enddo
+        do t=1,m%s; do k=2,FFT%s(3)-1; do j=1,FFT%s(2); do i=2,FFT%s(1)-1
         cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
         cosk = cos(PI*real(k-2,cp)/real(FFT%Nz,cp))
         if (.not.((i.eq.2).and.(k.eq.2))) then
               FFT%coeff_y%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosi+cosk-2.0_cp)*FFT%dh2(2)
         else; FFT%coeff_y%BF(t)%GF%f(i,j,k) = 1.0_cp
         endif
-        enddo; enddo; enddo
-        !$OMP END PARALLEL DO
-        !$OMP PARALLEL DO PRIVATE(cosi,cosj)
-        do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
+        enddo; enddo; enddo; enddo
+
+        do t=1,m%s; do k=1,FFT%s(3); do j=2,FFT%s(2)-1; do i=2,FFT%s(1)-1
         cosi = cos(PI*real(i-2,cp)/real(FFT%Nx,cp))
         cosj = cos(PI*real(j-2,cp)/real(FFT%Ny,cp))
         if (.not.((i.eq.2).and.(j.eq.2))) then
               FFT%coeff_z%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosi+cosj-2.0_cp)*FFT%dh2(3)
         else; FFT%coeff_z%BF(t)%GF%f(i,j,k) = 1.0_cp
         endif
-        enddo; enddo; enddo
-        !$OMP END PARALLEL DO
+        enddo; enddo; enddo; enddo
 
       end subroutine
 

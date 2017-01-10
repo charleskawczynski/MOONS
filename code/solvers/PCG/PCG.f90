@@ -133,7 +133,7 @@
           call export_operator(operator,'PCG_SF_'//str(PCG%name),dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
           call export_matrix(PCG%Minv,dir,'PCG_SF_diag_'//str(PCG%name))
         endif
-        PCG%N_iter = 1
+        PCG%N_iter = 0
       end subroutine
 
       subroutine init_PCG_VF(PCG,operator,operator_explicit,prec,m,ISP,MFP,&
@@ -197,7 +197,7 @@
         if (exportOperator) then
           call export_operator(operator,'PCG_VF_op_mat_'//str(PCG%name),dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
-        PCG%N_iter = 1
+        PCG%N_iter = 0
       end subroutine
 
       subroutine solve_PCG_SF(PCG,x,b,m,compute_norms)
@@ -239,7 +239,7 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
-        PCG%N_iter = 1
+        PCG%N_iter = 0
         close(PCG%un)
         close(PCG%un_convergence)
         call delete(PCG%dir)
@@ -259,7 +259,7 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
-        PCG%N_iter = 1
+        PCG%N_iter = 0
         close(PCG%un)
         close(PCG%un_convergence)
         call delete(PCG%dir)
@@ -271,11 +271,17 @@
         character(len=*),intent(in) :: name
         integer,intent(in) :: un
         logical,intent(in) :: VF
+        type(string) :: s
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        write(un,*) 'VARIABLES = N,stop_criteria,L1,L2,Linf,norm_r0_L1,norm_r0_L2,norm_r0_Linf,iter_used'
+        call init(s,'VARIABLES = N,stop_criteria')
+        call append(s,',res_norm_L1,res_norm_L2,res_norm_Linf')
+        call append(s,',res0_norm_L1,res0_norm_L2,res0_norm_Linf')
+        call append(s,',iter_used')
+        write(un,*) str(s)
         write(un,*) 'ZONE DATAPACKING = POINT'
+        call delete(s)
         flush(un)
       end subroutine
 
