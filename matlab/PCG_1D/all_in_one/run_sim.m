@@ -1,7 +1,5 @@
 function run_sim(N_cells,forceType,p,BCs,N_inner,N_outer,print_full)
-disp('*******************************************************************')
 disp('********************** STARTED RUN ********************************')
-disp('*******************************************************************')
 %% PARAMS
 N_total = N_outer*N_inner;
 
@@ -22,6 +20,8 @@ print_symmetry(A)
 %% FORCING TERM
 b_initial.c.vals = forcing(c.hc,p,forceType);
 b_initial.n.vals = forcing(c.hn,p,forceType);
+
+b_initial = disrupt_mean_pure_Neumann(b_initial,BCs);
 
 b.c.vals = b_initial.c.vals;
 b.n.vals = b_initial.n.vals;
@@ -78,7 +78,5 @@ residual_norms_fig([4 4 13],N_inner,N_outer,CG_MIT.norms,'CG MIT')
 residual_norms_fig([4 4 14],N_inner,N_outer,CG_CK.norms,'CG CK')
 new_fig(           [4 4 15],c.h,u_ana,'u','Analytic')
 
-disp('*******************************************************************')
 disp('********************* FINISHED RUN ********************************')
-disp('*******************************************************************')
 end

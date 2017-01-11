@@ -201,7 +201,7 @@
          call init_B_field(ind%B,m,ind%SP,str(DT%B%field))
          call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%field))
          call init_B0_field(ind%B0,m,ind%SP,str(DT%B%field))
-         ! call assign_B0_vs_t(ind%B0,ind%TMP)
+         call assign_B0_vs_t(ind%B0,ind%TMP)
          write(*,*) '     B-field initialized'
          ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%field))
          ! call initJ_interior(ind%J_interior,m,ind%MD_sigma,str(DT%J%field))
@@ -545,10 +545,15 @@
          if (ind%SP%VS%U%SS%solve) then; call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          elseif (ind%TMP%n_step.le.1) then;  call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          endif
-         ! call assign_B0_vs_t(ind%B0,ind%TMP)
-         ! call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
-         ! call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
-         call assign(ind%dB0dt,0.0_cp)
+         call assign_B0_vs_t(ind%B0,ind%TMP)
+         call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
+         call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
+         call assign(ind%B0%x,0.0_cp)
+         call assign(ind%B0%y,0.0_cp)
+         call assign(ind%dB0dt%x,0.0_cp)
+         call assign(ind%dB0dt%y,0.0_cp)
+
+         ! call assign(ind%dB0dt,0.0_cp)
 
          select case (ind%SP%VS%B%SS%solve_method)
          case (1)

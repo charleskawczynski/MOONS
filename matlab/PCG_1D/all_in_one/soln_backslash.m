@@ -13,8 +13,9 @@ BS.x.n.vals = zeros(size(bn));
 BS.r.c.vals = zeros(size(bc));
 BS.r.n.vals = zeros(size(bn));
 
-disp(['cond(Ac) = ' num2str(cond(Ac(z.c,z.c)))])
-disp(['cond(An) = ' num2str(cond(An(z.n,z.n)))])
+cond_c = cond(Ac(z.c,z.c));
+cond_n = cond(An(z.n,z.n));
+disp(['cond     (c,n) = ' num2str(cond_c) ' , ' num2str(cond_n)])
 
 BS.x.c.vals(z.c) = Ac(z.c,z.c)\bc(z.c);
 BS.x.n.vals(z.n) = An(z.n,z.n)\bn(z.n);

@@ -9,9 +9,6 @@
        public :: assign_B0_vs_t
        public :: assign_dB0_dt_vs_t
        integer,parameter :: n_data_points = 58
-       real(cp),parameter :: micro_seconds_to_seconds = 10.0_cp**(-6.0_cp)
-       real(cp),parameter :: t_c = 0.0047033684935_cp ! From python script
-       real(cp),parameter :: B_c = 1.2236862935_cp    ! From python script
 
        contains
 

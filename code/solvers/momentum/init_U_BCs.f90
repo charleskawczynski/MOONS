@@ -45,13 +45,14 @@
          case (5);  call duct_flow_uniform_in_FD_out(U)
          case (6);  call duct_flow_periodic_IO(U)
          case (7);  call duct_flow_FD_in_FD_out(U,m,1)
-         case (8);  call channel_flow_1domain(U)
-         case (9);  call cylinder_driven_cavity(U,m,1)
-         case (10); call Tylers_geometry(U)
-         case (11); call flow_over_2D_square(U)
-         case (12); call LDC_4_domains(U)
-         case (13); call duct_flow_2D_2domains(U)
-         case (14); call LDC_9_domains(U)
+         case (8);  call channel_flow_uniform_in_FD_out(U)
+         case (9);  call channel_flow_parabolic_in_FD_out(U,m,2)
+         case (10); call cylinder_driven_cavity(U,m,1)
+         case (11); call Tylers_geometry(U)
+         case (12); call flow_over_2D_square(U)
+         case (13); call LDC_4_domains(U)
+         case (14); call duct_flow_2D_2domains(U)
+         case (15); call LDC_9_domains(U)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
@@ -123,14 +124,12 @@
        subroutine duct_flow_periodic_IO(U)
          implicit none
          type(VF),intent(inout) :: U
-         ! Inlet (periodic)
-         call init_periodic(U%x%BF(1)%BCs,1)
-         call init_periodic(U%y%BF(1)%BCs,1)
-         call init_periodic(U%z%BF(1)%BCs,1)
-         ! Outlet (periodic)
-         call init_periodic(U%x%BF(1)%BCs,2)
-         call init_periodic(U%y%BF(1)%BCs,2)
-         call init_periodic(U%z%BF(1)%BCs,2)
+         call init_periodic(U%x%BF(1)%BCs,1) ! Inlet (periodic)
+         call init_periodic(U%y%BF(1)%BCs,1) ! Inlet (periodic)
+         call init_periodic(U%z%BF(1)%BCs,1) ! Inlet (periodic)
+         call init_periodic(U%x%BF(1)%BCs,2) ! Outlet (periodic)
+         call init_periodic(U%y%BF(1)%BCs,2) ! Outlet (periodic)
+         call init_periodic(U%z%BF(1)%BCs,2) ! Outlet (periodic)
        end subroutine
 
        subroutine duct_flow_2D_2domains(U)
@@ -141,20 +140,26 @@
          call init(U%x%BF(2)%BCs,1.0_cp,1)
          ! call init(U%x%BF(1)%BCs%e(8+2),1.0_cp)
          ! call init(U%x%BF(2)%BCs%e(8+1),1.0_cp)
-         ! Outlet (fully developed)
-         call init_Neumann(U%x%BF(1)%BCs,2)
-         call init_Neumann(U%x%BF(2)%BCs,2)
+         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+         call init_Neumann(U%x%BF(2)%BCs,2) ! Outlet (fully developed)
 
        end subroutine
 
-       subroutine channel_flow_1domain(U)
+       subroutine channel_flow_uniform_in_FD_out(U)
          implicit none
          type(VF),intent(inout) :: U
-         ! Inlet (uniform)
-         call init(U%x%BF(1)%BCs,1.0_cp,1)
-         ! Outlet (fully developed)
-         call init_Neumann(U%x%BF(1)%BCs,2)
-         call init_Neumann(U%y%BF(1)%BCs,2)
+         call init(U%x%BF(1)%BCs,1.0_cp,1) ! Inlet (uniform)
+         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+         call init_Neumann(U%y%BF(1)%BCs,2) ! Outlet (fully developed)
+       end subroutine
+
+       subroutine channel_flow_parabolic_in_FD_out(U,m,dir)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         call parabolic_1D(U%x%BF(1)%BCs%face%b(1),m%B(1)%g,U%x%DL,dir) ! Inlet (parabolic)
+         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
        end subroutine
 
        subroutine flow_over_2D_square(U)

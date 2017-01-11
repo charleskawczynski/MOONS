@@ -377,6 +377,7 @@
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
              call export_raw(mom%m,mom%U,str(DT%U%field),'U',0)
              call export_raw(mom%m,mom%p,str(DT%p%field),'p',0)
+             ! call export_raw(mom%m,mom%PCG_U%r,str(DT%U%field),'PCG_U_residual',0)
              if (mom%SP%EL%export_symmetric) then
               call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
               call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,6,1.0_cp)

@@ -42,6 +42,18 @@ class mat_props:
 		self.mu_m  = self.K_m*mu_m0
 		return self
 
+	def Lead_lithium_Sergey(self):
+		self.name  = 'Lead_lithium'
+		# "use for blanket for 700 C"
+		self.sigma = 0.7*pow(6)
+		self.rho   = 9300.0
+		self.mu    = 0.001
+		self.nu    = self.mu/self.rho
+		self.Xi_m  = 1.4*pow(-5)
+		self.K_m   = self.Xi_m+1.0
+		self.mu_m  = self.K_m*mu_m0
+		return self
+
 	def Lead_Lithium(self,T): # http://oa.upm.es/11738/1/INVE_MEM_2011_103029.pdf
 		# Schulz, B. "Thermophysical properties of the Li (17) Pb (83) alloy."
 		# Fusion Engineering and Design 14.3 (1991): 199-205.
@@ -53,7 +65,7 @@ class mat_props:
 		# self.rho         = 9486.0 # Gautam
 		# self.mu          = 0.0022 # Gautam
 		self.rho         = 9.70*(1-72.1*10**(-6.0)*T) # For 80 at %Pb (T_m=533 K)
-		self.rho         = 11.47*(1-118.0*10**(-6.0)*T) # For 100 at %Pb (T_m=600 K)
+		# self.rho         = 11.47*(1-118.0*10**(-6.0)*T) # For 100 at %Pb (T_m=600 K)
 		R = 8.314 # Gas constant, check if universal or not.
 		self.mu          = 0.187*np.exp(11640/(R*T))
 		self.nu          = self.mu/self.rho

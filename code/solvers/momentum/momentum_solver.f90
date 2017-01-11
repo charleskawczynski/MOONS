@@ -57,8 +57,8 @@
          call AB2_overwrite(Ustar,temp_F)
          call multiply(Ustar,-1.0_cp) ! Because advect_div gives positive
 
-         call lap(temp_F,U,m)
-         ! call lap_centered(temp_F,U,m)
+         ! call lap(temp_F,U,m)
+         call lap_centered(temp_F,U,m)
          call multiply(temp_F,0.5_cp/Re)
          call add(Ustar,temp_F)
 
@@ -71,7 +71,10 @@
          call assign(Unm1,U)
 
          call solve(mom_PCG,U,Ustar,m,compute_norms) ! Solve for U estimate
+         if (compute_norms) write(*,*) 'L2(U_pre_PPE) = ',dot_product(U,U,U,temp_F)
          call clean_div(PPE_PCG,U,p,m,temp_F,temp_CC,compute_norms)
+         if (compute_norms) write(*,*) 'L2(U_post_PPE) = ',dot_product(U,U,U,temp_F)
+         ! stop 'Done in momentum_solver.f90'
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Unm1,U_E,p,F,Fnm1,m,&

@@ -4,12 +4,25 @@ L2 = zeros(N_inner,1);
 Linf = zeros(N_inner,1);
 p=x;
 
-Ax_BC = compute_Ax_BC_MF(operator_explicit,x,c);
-b_temp=b; b_temp = multiply_wall_Neumann(b,0.5,x);
+r=b;
+r = multiply_wall_Neumann(r,0.5,x);
+tempx = compute_Ax_BC_MF(operator_explicit,x,c);
+r.vals = r.vals - tempx.vals;
 Ax = operator(x,c);
-% Ax = multiply_wall_Neumann(Ax,0.5,x); % Needs to be present when not in operator
-r.vals = vol.*(b_temp.vals - Ax_BC.vals - Ax.vals);
+% multiply_wall_Neumann is inside operator
+r.vals = r.vals - Ax.vals;
+r.vals = vol.*r.vals;
 r = assign_wall_Dirichlet(r,0,x);
+
+% Works
+% Ax_BC = compute_Ax_BC_MF(operator_explicit,x,c);
+% b_temp=b; b_temp = multiply_wall_Neumann(b,0.5,x);
+% Ax = operator(x,c);
+% % Ax = multiply_wall_Neumann(Ax,0.5,x); % Needs to be present when not in operator
+% r.vals = vol.*(b_temp.vals - Ax_BC.vals - Ax.vals);
+% r = assign_wall_Dirichlet(r,0,x);
+
+disp(['mean(b) = ' num2str(mean(b.vals))])
 
 z.vals = r.vals;
 p.vals = z.vals;
@@ -37,10 +50,10 @@ for i = 1:N_inner
    Linf(i) = norms.Linf;
 end
 
-Ax = operator(x,c);
+% Ax = operator(x,c);
 % Ax = multiply_wall_Neumann(Ax,0.5,x); % Needs to be present when not in operator
-r.vals = vol.*(b_temp.vals - Ax_BC.vals - Ax.vals);
-r = assign_wall_Dirichlet(r,0,x);
+% r.vals = vol.*(b_temp.vals - Ax_BC.vals - Ax.vals);
+% r = assign_wall_Dirichlet(r,0,x);
 % norms = Ln_norms(r.vals);
 % L1(N_inner+1) = norms.L1;
 % L2(N_inner+1) = norms.L2;

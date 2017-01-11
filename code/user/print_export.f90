@@ -158,7 +158,11 @@
          temp1(1:6) = (/((mod(n_step,1*10**i).eq.1).and.past_first_step,i=1,6)/)
          temp2(1:6) = (/((mod(n_step,5*10**i).eq.1).and.past_first_step,i=1,6)/)
          PE%info         = temp1(PE%i_info).or.first_step
-         PE%transient_0D = temp1(PE%i_transient_0D).or.first_step
+         if (PE%i_transient_0D.eq.0) then
+           PE%transient_0D = .true.
+         else
+           PE%transient_0D = temp1(PE%i_transient_0D).or.first_step
+         endif
          PE%transient_2D = PE%export_planar.and.(temp1(PE%i_transient_2D).or.first_step)
          PE%solution     = temp1(PE%i_solution).and.past_first_step
        end subroutine

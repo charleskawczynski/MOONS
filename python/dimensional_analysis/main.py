@@ -20,48 +20,42 @@ T = 700
 Li = mp.mat_props(); Li.Lithium()
 LiPb = mp.mat_props(); LiPb.Lead_Lithium(T)
 liq_lead = mp.mat_props(); liq_lead.liquid_lead(T)
+MP = mp.mat_props();
+MP = MP.Lead_lithium_Sergey()
 
 print '***************** CHOSEN MATERIAL PROPERTY *****************'
-# mat = LiPb
+mat = MP
 # mat = Li
-mat = liq_lead
+# mat = liq_lead
 mat.print_MP()
 
 print '\n***************** KNOWN SCALES *****************'
-L_r = 40.0*pow(-2)                   # [m]
-L_p = 200.0*pow(-2)                  # [m]
-# L_r = 5.0*pow(-2)                   # [m]
-L = L_r/2
-L = L_p/2
-
-L = L/2 # 2 ducts
-# L = 100.0*pow(-3)
+L = 0.1
 # tau = abs(7069.62 - 45000.0)*pow(-6) # [s]
-tau = abs(45000.0)*pow(-6)           # [s]
-B0 = 1.00357                           # [T]
+tau = abs(50.0)*pow(-6)           # [s]
+# B0 = 1.00357                           # [T]
+B0 = 0.010357                           # [T]
+B0_T = 0.01
+B0_P = 0.1
+
 print 'L   = '+str(L)
 print 'tau = '+str(tau)
-print 'B0  = '+str(B0)
+print 'B0_P  = '+str(B0_P)
+print 'B0_T  = '+str(B0_T)
 print '\n***************** ESTIMATED SCALES *****************'
-B1 = B0*0.1                          # [T]
-# B1 = B0*0.1                          # [T]
-B = B0+B1
-U = velocity(mat,B0,L,tau)
+U = velocity(mat,B0_P,L,tau)
 t_c = L/U
 print 'U   = '+str(U)
 print 't_c = '+str(t_c)
 print '\n***************** DIMENSIONLESS PARAMETERS *****************'
 Rem = magnetic_Reynolds(mat,U,L)
 Re  = Reynolds(mat,U,L)
-Ha  = Hartmann(mat,B,L)
-Ha0 = Hartmann(mat,B0,L)
+Ha = Hartmann(mat,B0_T,L)
 print 'Rem      = '+str(Rem)
 print 'Re       = '+str(Re)
 print 'Rex10^-6 = '+str(Re*pow(-6))
 print 'Ha       = '+str(Ha)
-print 'Ha0      = '+str(Ha0)
 print '\n'
-print 'B0*Rem = '+str(B0*Rem)
 
 
 

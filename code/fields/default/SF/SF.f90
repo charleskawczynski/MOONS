@@ -19,6 +19,11 @@
         public :: init_Face
         public :: init_Edge
 
+        public :: is_CC
+        public :: is_Node
+        public :: is_Face
+        public :: is_Edge
+
         public :: volume
         public :: sine_waves
         public :: cosine_waves
@@ -122,6 +127,11 @@
         interface multiply_volume;         module procedure multiply_volume_SF;           end interface
         interface mean_along_dir;          module procedure mean_along_dir_SF;            end interface
         interface subtract_mean_along_dir; module procedure subtract_mean_along_dir_SF;   end interface
+
+        interface is_CC;                   module procedure is_CC_SF;                     end interface
+        interface is_Node;                 module procedure is_Node_SF;                   end interface
+        interface is_Face;                 module procedure is_Face_SF;                   end interface
+        interface is_Edge;                 module procedure is_Edge_SF;                   end interface
 
         interface volume;                  module procedure volume_SF;                    end interface
         interface sine_waves;              module procedure sine_waves_SF;                end interface
@@ -537,6 +547,34 @@
         ! ***********************************************************
         ! ***********************************************************
         ! ***********************************************************
+
+        function is_CC_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          L = is_CC(u%DL)
+        end function
+
+        function is_Node_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          L = is_Node(u%DL)
+        end function
+
+        function is_Face_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          L = is_Face(u%DL)
+        end function
+
+        function is_Edge_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          L = is_Edge(u%DL)
+        end function
 
         subroutine volume_SF(u,m) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
           implicit none
