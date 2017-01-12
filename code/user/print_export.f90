@@ -5,7 +5,7 @@
        implicit none
        private
        public :: print_export
-       public :: init,delete,export,import
+       public :: init,delete,display,print,export,import
        public :: update
 
        integer,parameter :: i_default_info = 2
@@ -13,15 +13,17 @@
        integer,parameter :: i_default_transient_2D = 4
        integer,parameter :: i_default_solution = 6
 
-       interface init;     module procedure init_PE;            end interface
-       interface init;     module procedure init_PE_copy;       end interface
-       interface delete;   module procedure delete_PE;          end interface
-       interface export;   module procedure export_PE;          end interface
-       interface export;   module procedure export_PE_wrapper;  end interface
-       interface import;   module procedure import_PE;          end interface
-       interface import;   module procedure import_PE_wrapper;  end interface
+       interface init;    module procedure init_PE;           end interface
+       interface init;    module procedure init_PE_copy;      end interface
+       interface delete;  module procedure delete_PE;         end interface
+       interface display; module procedure display_PE;        end interface
+       interface print;   module procedure print_PE;          end interface
+       interface export;  module procedure export_PE;         end interface
+       interface export;  module procedure export_PE_wrapper; end interface
+       interface import;  module procedure import_PE;         end interface
+       interface import;  module procedure import_PE_wrapper; end interface
 
-       interface update;   module procedure update_PE;          end interface
+       interface update;  module procedure update_PE;         end interface
 
        type print_export
          logical :: solution = .false.
@@ -94,6 +96,23 @@
          call delete(PE%name)
        end subroutine
 
+       subroutine display_PE(PE,un)
+         implicit none
+         type(print_export),intent(in) :: PE
+         integer,intent(in) :: un
+         write(un,*) 'i_info = ',PE%i_info
+         write(un,*) 'i_transient_0D = ',PE%i_transient_0D
+         write(un,*) 'i_transient_2D = ',PE%i_transient_2D
+         write(un,*) 'i_solution = ',PE%i_solution
+         write(un,*) 'export_planar = ',PE%export_planar
+       end subroutine
+
+       subroutine print_PE(PE)
+         implicit none
+         type(print_export),intent(in) :: PE
+         call display(PE,6)
+       end subroutine
+
        subroutine export_PE(PE,un)
          implicit none
          type(print_export),intent(in) :: PE
@@ -103,15 +122,6 @@
          write(un,*) 'i_transient_2D = '; write(un,*) PE%i_transient_2D
          write(un,*) 'i_solution = ';     write(un,*) PE%i_solution
          write(un,*) 'export_planar = ';  write(un,*) PE%export_planar
-       end subroutine
-
-       subroutine export_PE_wrapper(PE)
-         implicit none
-         type(print_export),intent(in) :: PE
-         integer :: un
-         un = new_and_open(str(PE%dir),str(PE%name))
-         call export(PE,un)
-         close(un)
        end subroutine
 
        subroutine import_PE(PE,un)
@@ -124,6 +134,15 @@
          read(un,*) ; read(un,*) PE%i_solution
          read(un,*) ; read(un,*) PE%export_planar
          call safegaurd_import(PE)
+       end subroutine
+
+       subroutine export_PE_wrapper(PE)
+         implicit none
+         type(print_export),intent(in) :: PE
+         integer :: un
+         un = new_and_open(str(PE%dir),str(PE%name))
+         call export(PE,un)
+         close(un)
        end subroutine
 
        subroutine import_PE_wrapper(PE)
@@ -158,11 +177,7 @@
          temp1(1:6) = (/((mod(n_step,1*10**i).eq.1).and.past_first_step,i=1,6)/)
          temp2(1:6) = (/((mod(n_step,5*10**i).eq.1).and.past_first_step,i=1,6)/)
          PE%info         = temp1(PE%i_info).or.first_step
-         if (PE%i_transient_0D.eq.0) then
-           PE%transient_0D = .true.
-         else
-           PE%transient_0D = temp1(PE%i_transient_0D).or.first_step
-         endif
+         PE%transient_0D = temp1(PE%i_transient_0D).or.first_step
          PE%transient_2D = PE%export_planar.and.(temp1(PE%i_transient_2D).or.first_step)
          PE%solution     = temp1(PE%i_solution).and.past_first_step
        end subroutine

@@ -75,6 +75,7 @@
          ! --- Vector fields ---
          type(VF) :: J,temp_E                         ! Edge data
          type(VF) :: B,B0,B_interior,temp_F1,temp_F2  ! Face data
+         type(VF) :: Bstar                            ! Intermediate magnetic field
          type(VF) :: dB0dt
          type(VF) :: temp_CC                          ! CC data
          type(VF) :: sigmaInv_edge
@@ -208,6 +209,10 @@
          call assign_ghost_XPeriodic(ind%B_interior,0.0_cp)
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
+         call init(ind%Bstar,ind%B)
+         call assign(ind%Bstar,ind%B)
+         write(*,*) '     Intermediate B-field initialized'
+
          if (ind%SP%VS%B%SS%solve) call print_BCs(ind%B,'B')
          if (ind%SP%VS%B%SS%solve) call export_BCs(ind%B,str(DT%B%BCs),'B')
          if (ind%SP%VS%B%SS%solve) call print_BCs(ind%phi,'phi')
@@ -289,6 +294,7 @@
          call delete(ind%U_E)
 
          call delete(ind%B)
+         call delete(ind%Bstar)
          call delete(ind%B_interior)
          call delete(ind%B0)
          call delete(ind%dB0dt)
@@ -436,10 +442,10 @@
              if (.not.ind%SP%EL%export_soln_only) then
              if (ind%SP%EL%export_symmetric) then
                call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
-               write(*,*) 'GH 2'
                call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
              endif
              call export_raw(ind%m,ind%B ,str(DT%B%field),'B',0)
+             call export_raw(ind%m,ind%Bstar,str(DT%B%field),'Bstar',0)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
              call export_raw(ind%m,ind%J ,str(DT%J%field),'J',0)
              call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
@@ -463,12 +469,12 @@
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP,temp)
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP,temp)
-         ! call Ln(temp,ind%dB0dt%x,2.0_cp,ind%m); call export(ind%probe_dB0dt(1),ind%TMP,temp)
-         ! call Ln(temp,ind%dB0dt%y,2.0_cp,ind%m); call export(ind%probe_dB0dt(2),ind%TMP,temp)
-         ! call Ln(temp,ind%dB0dt%z,2.0_cp,ind%m); call export(ind%probe_dB0dt(3),ind%TMP,temp)
-         ! call Ln(temp,ind%B0%x,2.0_cp,ind%m); call export(ind%probe_B0(1),ind%TMP,temp)
-         ! call Ln(temp,ind%B0%y,2.0_cp,ind%m); call export(ind%probe_B0(2),ind%TMP,temp)
-         ! call Ln(temp,ind%B0%z,2.0_cp,ind%m); call export(ind%probe_B0(3),ind%TMP,temp)
+         call export(ind%probe_dB0dt(1),ind%TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
+         call export(ind%probe_dB0dt(2),ind%TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
+         call export(ind%probe_dB0dt(3),ind%TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
+         call export(ind%probe_B0(1),ind%TMP,ind%B0%x%BF(1)%GF%f(1,1,1))
+         call export(ind%probe_B0(2),ind%TMP,ind%B0%y%BF(1)%GF%f(1,1,1))
+         call export(ind%probe_B0(3),ind%TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
          call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP,ind%m)
@@ -491,8 +497,10 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%transient),'B',1,ind%TMP,3,35)
-         call export_processed(ind%m,ind%J,str(DT%J%transient),'J',1,ind%TMP,3,35)
+         call export_processed(ind%m,ind%B,str(DT%B%transient),'B',1,ind%TMP)
+         call export_processed(ind%m,ind%J,str(DT%J%transient),'J',1,ind%TMP)
+         ! call export_processed(ind%m,ind%B,str(DT%B%transient),'B',1,ind%TMP,3,35)
+         ! call export_processed(ind%m,ind%J,str(DT%J%transient),'J',1,ind%TMP,3,35)
        end subroutine
 
        subroutine compute_J_ind(ind)
@@ -545,15 +553,15 @@
          if (ind%SP%VS%U%SS%solve) then; call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          elseif (ind%TMP%n_step.le.1) then;  call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
          endif
-         call assign_B0_vs_t(ind%B0,ind%TMP)
-         call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
-         call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
-         call assign(ind%B0%x,0.0_cp)
-         call assign(ind%B0%y,0.0_cp)
-         call assign(ind%dB0dt%x,0.0_cp)
-         call assign(ind%dB0dt%y,0.0_cp)
+         ! call assign_B0_vs_t(ind%B0,ind%TMP)
+         ! call assign_dB0_dt_vs_t(ind%dB0dt,ind%TMP)
+         ! call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
+         ! call assign(ind%B0%x,0.0_cp)
+         ! call assign(ind%B0%y,0.0_cp)
+         ! call assign(ind%dB0dt%x,0.0_cp)
+         ! call assign(ind%dB0dt%y,0.0_cp)
 
-         ! call assign(ind%dB0dt,0.0_cp)
+         call assign(ind%dB0dt,0.0_cp)
 
          select case (ind%SP%VS%B%SS%solve_method)
          case (1)
@@ -564,9 +572,10 @@
          ind%TMP%multistep_iter,ind%TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,&
          ind%temp_E,ind%temp_E_TF)
          case (3)
-         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%B0,ind%U_E,&
-         ind%dB0dt,ind%m,ind%TMP%multistep_iter,ind%TMP%dt,PE%transient_0D,ind%temp_F1,&
-         ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%temp_CC_SF,ind%phi)
+         call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
+         ind%B0,ind%U_E,ind%dB0dt,ind%m,ind%TMP%multistep_iter,ind%TMP%dt,&
+         PE%transient_0D,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,&
+         ind%temp_CC_SF,ind%phi)
          case (4)
          if (ind%TMP%n_step.le.1) then
            call compute_J_ind(ind)
@@ -575,7 +584,7 @@
            call curl(ind%curlE,ind%J,ind%m)
            call subtract(ind%curlE,ind%curlUCrossB)
          endif
-         call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,&
+         call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%Bstar,&
          ind%B_interior,ind%curlE,ind%phi,ind%m,ind%MD_sigma,&
          ind%TMP%multistep_iter,ind%TMP%dt,PE%transient_0D,&
          ind%temp_CC_SF,ind%temp_F1)
@@ -710,6 +719,7 @@
              call prolongate(ind%dB0dt,ind%m,dir(i))
              call prolongate(ind%temp_E,ind%m,dir(i))
              call prolongate(ind%B,ind%m,dir(i))
+             call prolongate(ind%Bstar,ind%m,dir(i))
              call prolongate(ind%B0,ind%m,dir(i))
              call prolongate(ind%B_interior,ind%m,dir(i))
              call prolongate(ind%temp_F1,ind%m,dir(i))
@@ -740,7 +750,9 @@
 
          call init(temp,ind%PCG_cleanB%ISP)
          call init(ind%PCG_cleanB%ISP,solve_exact(str(DT%B%residual)))
-         call clean_div(ind%PCG_cleanB,ind%B,ind%phi,ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
+         call assign(ind%Bstar,ind%B)
+         call clean_div(ind%PCG_cleanB,ind%B,ind%Bstar,ind%phi,&
+         ind%m,ind%temp_F1,ind%temp_CC_SF,.true.)
          call init(ind%PCG_cleanB%ISP,temp)
          call delete(temp)
 

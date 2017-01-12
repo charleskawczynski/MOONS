@@ -43,6 +43,9 @@
         public :: multiply_volume
         public :: mean_along_dir,subtract_mean_along_dir
 
+        public :: assign_BCs
+        public :: assign_Neumann_BCs
+        public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
@@ -90,151 +93,154 @@
           type(data_location) :: DL
         end type
 
-        interface init;                    module procedure init_SF_copy;                 end interface
-        interface init;                    module procedure init_SF_copy_mesh;            end interface
-        interface delete;                  module procedure delete_SF;                    end interface
-        interface display;                 module procedure display_SF;                   end interface
-        interface print;                   module procedure print_SF;                     end interface
-        interface export;                  module procedure export_SF;                    end interface
-        interface import;                  module procedure import_SF;                    end interface
-        interface export;                  module procedure export_wrapper_SF;            end interface
-        interface import;                  module procedure import_wrapper_SF;            end interface
+        interface init;                     module procedure init_SF_copy;                 end interface
+        interface init;                     module procedure init_SF_copy_mesh;            end interface
+        interface delete;                   module procedure delete_SF;                    end interface
+        interface display;                  module procedure display_SF;                   end interface
+        interface print;                    module procedure print_SF;                     end interface
+        interface export;                   module procedure export_SF;                    end interface
+        interface import;                   module procedure import_SF;                    end interface
+        interface export;                   module procedure export_wrapper_SF;            end interface
+        interface import;                   module procedure import_wrapper_SF;            end interface
 
-        interface init_CC;                 module procedure init_SF_CC;                   end interface
-        interface init_Node;               module procedure init_SF_Node;                 end interface
-        interface init_Face;               module procedure init_SF_Face;                 end interface
-        interface init_Edge;               module procedure init_SF_Edge;                 end interface
+        interface init_CC;                  module procedure init_SF_CC;                   end interface
+        interface init_Node;                module procedure init_SF_Node;                 end interface
+        interface init_Face;                module procedure init_SF_Face;                 end interface
+        interface init_Edge;                module procedure init_SF_Edge;                 end interface
 
-        interface init_CC;                 module procedure init_SF_CC_D;                 end interface
-        interface init_Node;               module procedure init_SF_Node_D;               end interface
-        interface init_Face;               module procedure init_SF_Face_D;               end interface
-        interface init_Edge;               module procedure init_SF_Edge_D;               end interface
+        interface init_CC;                  module procedure init_SF_CC_D;                 end interface
+        interface init_Node;                module procedure init_SF_Node_D;               end interface
+        interface init_Face;                module procedure init_SF_Face_D;               end interface
+        interface init_Edge;                module procedure init_SF_Edge_D;               end interface
 
-        interface init_CC;                 module procedure init_SF_CC_assign;            end interface
-        interface init_Node;               module procedure init_SF_Node_assign;          end interface
-        interface init_Face;               module procedure init_SF_Face_assign;          end interface
-        interface init_Edge;               module procedure init_SF_Edge_assign;          end interface
+        interface init_CC;                  module procedure init_SF_CC_assign;            end interface
+        interface init_Node;                module procedure init_SF_Node_assign;          end interface
+        interface init_Face;                module procedure init_SF_Face_assign;          end interface
+        interface init_Edge;                module procedure init_SF_Edge_assign;          end interface
 
-        interface init_BCs;                module procedure init_BCs_SF_SF;               end interface
-        interface init_BC_Dirichlet;       module procedure init_BC_Dirichlet_SF;         end interface
-        interface init_BCs;                module procedure init_BC_val_SF;               end interface
-        interface init_BC_mesh;            module procedure init_BC_mesh_SF;              end interface
-        interface init_BC_props;           module procedure init_BC_props_SF;             end interface
+        interface init_BCs;                 module procedure init_BCs_SF_SF;               end interface
+        interface init_BC_Dirichlet;        module procedure init_BC_Dirichlet_SF;         end interface
+        interface init_BCs;                 module procedure init_BC_val_SF;               end interface
+        interface init_BC_mesh;             module procedure init_BC_mesh_SF;              end interface
+        interface init_BC_props;            module procedure init_BC_props_SF;             end interface
 
-        interface print_BCs;               module procedure print_BCs_SF;                 end interface
-        interface export_BCs;              module procedure export_BCs_SF;                end interface
+        interface print_BCs;                module procedure print_BCs_SF;                 end interface
+        interface export_BCs;               module procedure export_BCs_SF;                end interface
 
-        interface multiply_volume;         module procedure multiply_volume_SF;           end interface
-        interface mean_along_dir;          module procedure mean_along_dir_SF;            end interface
-        interface subtract_mean_along_dir; module procedure subtract_mean_along_dir_SF;   end interface
+        interface multiply_volume;          module procedure multiply_volume_SF;           end interface
+        interface mean_along_dir;           module procedure mean_along_dir_SF;            end interface
+        interface subtract_mean_along_dir;  module procedure subtract_mean_along_dir_SF;   end interface
 
-        interface is_CC;                   module procedure is_CC_SF;                     end interface
-        interface is_Node;                 module procedure is_Node_SF;                   end interface
-        interface is_Face;                 module procedure is_Face_SF;                   end interface
-        interface is_Edge;                 module procedure is_Edge_SF;                   end interface
+        interface is_CC;                    module procedure is_CC_SF;                     end interface
+        interface is_Node;                  module procedure is_Node_SF;                   end interface
+        interface is_Face;                  module procedure is_Face_SF;                   end interface
+        interface is_Edge;                  module procedure is_Edge_SF;                   end interface
 
-        interface volume;                  module procedure volume_SF;                    end interface
-        interface sine_waves;              module procedure sine_waves_SF;                end interface
-        interface cosine_waves;            module procedure cosine_waves_SF;              end interface
-        interface random_noise;            module procedure random_noise_SF;              end interface
-        interface random_noise;            module procedure random_noise_SF_dir;          end interface
+        interface volume;                   module procedure volume_SF;                    end interface
+        interface sine_waves;               module procedure sine_waves_SF;                end interface
+        interface cosine_waves;             module procedure cosine_waves_SF;              end interface
+        interface random_noise;             module procedure random_noise_SF;              end interface
+        interface random_noise;             module procedure random_noise_SF_dir;          end interface
 
-        interface laplacian_matrix_based;  module procedure laplacian_matrix_based_SF_SF; end interface
-        interface laplacian_matrix_based;  module procedure laplacian_matrix_based_VF_SF; end interface
-        interface curl_curl_matrix_based;  module procedure curl_curl_matrix_based_SF;    end interface
+        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_SF_SF; end interface
+        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_VF_SF; end interface
+        interface curl_curl_matrix_based;   module procedure curl_curl_matrix_based_SF;    end interface
 
-        interface assign_ghost_XPeriodic;  module procedure assign_ghost_XPeriodic_SF;    end interface
-        interface assign_ghost_XPeriodic;  module procedure assign_ghost_XPeriodic_SF2;   end interface
-        interface assign_ghost_N_XPeriodic;module procedure assign_ghost_N_XPeriodic_SF;  end interface
-        interface assign_ghost_N_XPeriodic;module procedure assign_ghost_N_XPeriodic_SF2; end interface
-        interface assign_wall_Dirichlet;   module procedure assign_wall_Dirichlet_SF;     end interface
-        interface assign_wall_Dirichlet;   module procedure assign_wall_Dirichlet_SF2;    end interface
-        interface multiply_wall_Neumann;   module procedure multiply_wall_Neumann_SF;     end interface
-        interface multiply_wall_Neumann;   module procedure multiply_wall_Neumann_SF2;    end interface
+        interface assign_BCs;               module procedure assign_BCs_SF;                end interface
+        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_SF;        end interface
+        interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_SF;      end interface
+        interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_SF;    end interface
+        interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_SF2;   end interface
+        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF;  end interface
+        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF2; end interface
+        interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_SF;     end interface
+        interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_SF2;    end interface
+        interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF;     end interface
+        interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF2;    end interface
 
-        interface plane_sum_x;             module procedure plane_sum_x_SF;               end interface
-        interface plane_sum_y;             module procedure plane_sum_y_SF;               end interface
-        interface plane_sum_z;             module procedure plane_sum_z_SF;               end interface
-        interface boundary_flux;           module procedure boundary_flux_SF;             end interface
+        interface plane_sum_x;              module procedure plane_sum_x_SF;               end interface
+        interface plane_sum_y;              module procedure plane_sum_y_SF;               end interface
+        interface plane_sum_z;              module procedure plane_sum_z_SF;               end interface
+        interface boundary_flux;            module procedure boundary_flux_SF;             end interface
 
-        interface symmetry_error_x;        module procedure symmetry_error_x_SF;          end interface
-        interface symmetry_error_y;        module procedure symmetry_error_y_SF;          end interface
-        interface symmetry_error_z;        module procedure symmetry_error_z_SF;          end interface
+        interface symmetry_error_x;         module procedure symmetry_error_x_SF;          end interface
+        interface symmetry_error_y;         module procedure symmetry_error_y_SF;          end interface
+        interface symmetry_error_z;         module procedure symmetry_error_z_SF;          end interface
 
-        interface symmetry_local_x;        module procedure symmetry_local_x_SF;          end interface
-        interface symmetry_local_y;        module procedure symmetry_local_y_SF;          end interface
-        interface symmetry_local_z;        module procedure symmetry_local_z_SF;          end interface
+        interface symmetry_local_x;         module procedure symmetry_local_x_SF;          end interface
+        interface symmetry_local_y;         module procedure symmetry_local_y_SF;          end interface
+        interface symmetry_local_z;         module procedure symmetry_local_z_SF;          end interface
 
-        interface mirror_about_hmin;       module procedure mirror_about_hmin_SF;         end interface
-        interface mirror_about_hmax;       module procedure mirror_about_hmax_SF;         end interface
+        interface mirror_about_hmin;        module procedure mirror_about_hmin_SF;         end interface
+        interface mirror_about_hmax;        module procedure mirror_about_hmax_SF;         end interface
 
-        interface assign_ghost_xmin_xmax;  module procedure assign_ghost_xmin_xmax_SF;    end interface
-        interface assign_ghost_ymin_ymax;  module procedure assign_ghost_ymin_ymax_SF;    end interface
-        interface assign_ghost_zmin_zmax;  module procedure assign_ghost_zmin_zmax_SF;    end interface
+        interface assign_ghost_xmin_xmax;   module procedure assign_ghost_xmin_xmax_SF;    end interface
+        interface assign_ghost_ymin_ymax;   module procedure assign_ghost_ymin_ymax_SF;    end interface
+        interface assign_ghost_zmin_zmax;   module procedure assign_ghost_zmin_zmax_SF;    end interface
 
-        interface cross_product_x;         module procedure cross_product_x_SF;           end interface
-        interface cross_product_y;         module procedure cross_product_y_SF;           end interface
-        interface cross_product_z;         module procedure cross_product_z_SF;           end interface
+        interface cross_product_x;          module procedure cross_product_x_SF;           end interface
+        interface cross_product_y;          module procedure cross_product_y_SF;           end interface
+        interface cross_product_z;          module procedure cross_product_z_SF;           end interface
 
-        interface restrict;                module procedure restrict_SF;                  end interface
-        interface restrict;                module procedure restrict_reset_SF;            end interface
-        interface restrict;                module procedure restrict_all_reset_SF;        end interface
-        interface prolongate;              module procedure prolongate_SF;                end interface
-        interface prolongate;              module procedure prolongate_reset_SF;          end interface
-        interface prolongate;              module procedure prolongate_all_reset_SF;      end interface
+        interface restrict;                 module procedure restrict_SF;                  end interface
+        interface restrict;                 module procedure restrict_reset_SF;            end interface
+        interface restrict;                 module procedure restrict_all_reset_SF;        end interface
+        interface prolongate;               module procedure prolongate_SF;                end interface
+        interface prolongate;               module procedure prolongate_reset_SF;          end interface
+        interface prolongate;               module procedure prolongate_all_reset_SF;      end interface
 
         ! COMPUTATION ROUTINES:
 
-        interface assign;                  module procedure assign_SF_S;                  end interface
-        interface assign;                  module procedure assign_SF_SF;                 end interface
-        interface assign_negative;         module procedure assign_negative_SF_SF;        end interface
+        interface assign;                   module procedure assign_SF_S;                  end interface
+        interface assign;                   module procedure assign_SF_SF;                 end interface
+        interface assign_negative;          module procedure assign_negative_SF_SF;        end interface
 
-        interface add;                     module procedure add_SF_SF;                    end interface
-        interface add;                     module procedure add_SF_SF_SF;                 end interface
-        interface add;                     module procedure add_SF_SF_SF_SF;              end interface
-        interface add;                     module procedure add_SF_S;                     end interface
-        interface add;                     module procedure add_S_SF;                     end interface
-        interface add;                     module procedure add_SF_SF9;                   end interface
+        interface add;                      module procedure add_SF_SF;                    end interface
+        interface add;                      module procedure add_SF_SF_SF;                 end interface
+        interface add;                      module procedure add_SF_SF_SF_SF;              end interface
+        interface add;                      module procedure add_SF_S;                     end interface
+        interface add;                      module procedure add_S_SF;                     end interface
+        interface add;                      module procedure add_SF_SF9;                   end interface
 
-        interface add_product;             module procedure add_product_SF_SF_S;          end interface
-        interface add_product;             module procedure add_product_SF_SF_SF;         end interface
-        interface product_add;             module procedure product_add_SF_SF_S;          end interface
-        interface product_add;             module procedure product_add_SF_SF_SF;         end interface
+        interface add_product;              module procedure add_product_SF_SF_S;          end interface
+        interface add_product;              module procedure add_product_SF_SF_SF;         end interface
+        interface product_add;              module procedure product_add_SF_SF_S;          end interface
+        interface product_add;              module procedure product_add_SF_SF_SF;         end interface
 
-        interface multiply;                module procedure multiply_SF_SF;               end interface
-        interface multiply;                module procedure multiply_SF_SF_SF;            end interface
-        interface multiply;                module procedure multiply_SF_SF_S;             end interface
-        interface multiply;                module procedure multiply_SF_S;                end interface
-        interface multiply;                module procedure multiply_S_SF;                end interface
+        interface multiply;                 module procedure multiply_SF_SF;               end interface
+        interface multiply;                 module procedure multiply_SF_SF_SF;            end interface
+        interface multiply;                 module procedure multiply_SF_SF_S;             end interface
+        interface multiply;                 module procedure multiply_SF_S;                end interface
+        interface multiply;                 module procedure multiply_S_SF;                end interface
 
-        interface subtract;                module procedure subtract_SF_SF;               end interface
-        interface subtract;                module procedure subtract_SF_SF_SF;            end interface
-        interface subtract;                module procedure subtract_SF_S;                end interface
-        interface subtract;                module procedure subtract_S_SF;                end interface
+        interface subtract;                 module procedure subtract_SF_SF;               end interface
+        interface subtract;                 module procedure subtract_SF_SF_SF;            end interface
+        interface subtract;                 module procedure subtract_SF_S;                end interface
+        interface subtract;                 module procedure subtract_S_SF;                end interface
 
-        interface divide;                  module procedure divide_SF_SF;                 end interface
-        interface divide;                  module procedure divide_SF_SF_SF;              end interface
-        interface divide;                  module procedure divide_SF_S_SF;               end interface
-        interface divide;                  module procedure divide_SF_S;                  end interface
-        interface divide;                  module procedure divide_S_SF;                  end interface
+        interface divide;                   module procedure divide_SF_SF;                 end interface
+        interface divide;                   module procedure divide_SF_SF_SF;              end interface
+        interface divide;                   module procedure divide_SF_S_SF;               end interface
+        interface divide;                   module procedure divide_SF_S;                  end interface
+        interface divide;                   module procedure divide_S_SF;                  end interface
 
-        interface invert;                  module procedure invert_SF;                    end interface
-        interface square;                  module procedure square_SF;                    end interface
-        interface square_root;             module procedure square_root_SF;               end interface
-        interface abs;                     module procedure abs_SF;                       end interface
-        interface insist_amax_lt_tol;      module procedure insist_amax_lt_tol_SF;        end interface
+        interface invert;                   module procedure invert_SF;                    end interface
+        interface square;                   module procedure square_SF;                    end interface
+        interface square_root;              module procedure square_root_SF;               end interface
+        interface abs;                      module procedure abs_SF;                       end interface
+        interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_SF;        end interface
 
-        interface swap;                    module procedure swap_SF;                      end interface
-        interface min;                     module procedure min_SF;                       end interface
-        interface max;                     module procedure max_SF;                       end interface
-        interface min;                     module procedure min_pad_SF;                   end interface
-        interface max;                     module procedure max_pad_SF;                   end interface
-        interface amin;                    module procedure amin_SF;                      end interface
-        interface amax;                    module procedure amax_SF;                      end interface
-        interface mean;                    module procedure mean_SF;                      end interface
-        interface sum;                     module procedure sum_SF;                       end interface
-        interface sum;                     module procedure sum_SF_pad;                   end interface
-        interface dot_product;             module procedure dot_product_SF;               end interface
+        interface swap;                     module procedure swap_SF;                      end interface
+        interface min;                      module procedure min_SF;                       end interface
+        interface max;                      module procedure max_SF;                       end interface
+        interface min;                      module procedure min_pad_SF;                   end interface
+        interface max;                      module procedure max_pad_SF;                   end interface
+        interface amin;                     module procedure amin_SF;                      end interface
+        interface amax;                     module procedure amax_SF;                      end interface
+        interface mean;                     module procedure mean_SF;                      end interface
+        interface sum;                      module procedure sum_SF;                       end interface
+        interface sum;                      module procedure sum_SF_pad;                   end interface
+        interface dot_product;              module procedure dot_product_SF;               end interface
 
       contains
 
@@ -248,12 +254,14 @@
           type(SF),intent(in) :: f_in
           integer :: i
           call delete(f)
-          allocate(f%BF(f_in%s)); f%s = f_in%s
+          allocate(f%BF(f_in%s));
+          f%s = f_in%s
           call init(f%DL,f_in%DL)
           do i=1,f%s; call init(f%BF(i),f_in%BF(i)); enddo
           f%numEl = f_in%numEl
           f%numPhysEl = f_in%numPhysEl
           f%vol = f_in%vol
+          f%all_neumann = f_in%all_Neumann
         end subroutine
 
         subroutine init_SF_copy_mesh(f,f_in,m)
@@ -650,6 +658,28 @@
           do i=1,m%s; call curl_curl_matrix_based(CX%BF(i),CY%BF(i),CZ%BF(i),&
                                                   X%BF(i),Y%BF(i),Z%BF(i),&
                                                   m%B(i)); enddo
+        end subroutine
+
+        subroutine assign_BCs_SF(u,f)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(SF),intent(in) :: f
+          integer :: i
+          do i=1,u%s; call assign_BCs(u%BF(i),f%BF(i)); enddo
+        end subroutine
+        subroutine assign_Neumann_BCs_SF(u,f)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(SF),intent(in) :: f
+          integer :: i
+          do i=1,u%s; call assign_Neumann_BCs(u%BF(i),f%BF(i)); enddo
+        end subroutine
+        subroutine multiply_Neumann_BCs_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call multiply_Neumann_BCs(u%BF(i),val); enddo
         end subroutine
 
         subroutine assign_ghost_XPeriodic_SF(u,val)

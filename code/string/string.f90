@@ -119,7 +119,7 @@
         write(6,*) ''
       end subroutine
 
-      subroutine export_string(st,un)
+      subroutine export_string_old(st,un)
         implicit none
         type(string),intent(in) :: st
         integer,intent(in) :: un
@@ -128,6 +128,14 @@
         do i=1,st%n
           write(un,'(A1)',advance='no') st%s(i)%c
         enddo
+      end subroutine
+
+      subroutine export_string(st,un)
+        implicit none
+        type(string),intent(in) :: st
+        integer,intent(in) :: un
+        call insist_allocated(st,'export_string')
+        write(un,*) str(st)
       end subroutine
 
       subroutine import_string(s,un)

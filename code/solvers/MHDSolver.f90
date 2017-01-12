@@ -83,20 +83,20 @@
                                      ind%MD_fluid,mom%Ha,mom%Re,&
                                      ind%finite_Rem,ind%temp_CC_SF,&
                                      ind%temp_F1,ind%temp_F1_TF,&
-                                     ind%temp_F2_TF,mom%temp_F)
+                                     ind%temp_F2_TF,mom%temp_F1)
            endif
            if (SP%MF%Q2D_JCrossB) then
-             call compute_add_Q2D_JCrossB(F,mom%U,mom%Ha,mom%Re,mom%temp_F)
+             call compute_add_Q2D_JCrossB(F,mom%U,mom%Ha,mom%Re,mom%temp_F1)
            endif
            if (SP%MF%Buoyancy) then
              call compute_AddBuoyancy(F,nrg%T,nrg%gravity,&
                                       mom%Gr,mom%Re,nrg%m,nrg%MD,&
-                                      nrg%temp_F,nrg%temp_CC1_VF,mom%temp_F)
+                                      nrg%temp_F,nrg%temp_CC1_VF,mom%temp_F1)
            endif
            if (SP%MF%Gravity) then
              call compute_AddGravity(F,nrg%gravity,mom%Fr,nrg%m,&
                                      nrg%MD,nrg%temp_F,nrg%temp_CC1_VF,&
-                                     mom%temp_F)
+                                     mom%temp_F1)
            endif
 
            call iterate_step(coupled)

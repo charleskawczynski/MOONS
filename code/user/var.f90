@@ -102,8 +102,8 @@
          implicit none
          type(var),intent(in) :: V
          integer,intent(in) :: un
-         write(un,*) V%IC
-         write(un,*) V%BC
+         write(un,*) 'IC = ',V%IC
+         write(un,*) 'BC = ',V%BC
          call display(V%SS,un)
          call display(V%TMP,un)
          call display(V%ISP,un)

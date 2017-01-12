@@ -35,7 +35,7 @@
 
        contains
 
-       subroutine clean_div_PCG(PCG,X,phi,m,temp_F,temp_CC,compute_norms)
+       subroutine clean_div_PCG(PCG,X,Xstar,phi,m,temp_F,temp_CC,compute_norms)
          ! Computes:
          !      ∇²φ_{n+1} = ∇•K_{n}
          !      X_{n+1} = X_{*} - ∇φ_{n+1}
@@ -44,18 +44,19 @@
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
          type(SF),intent(inout) :: phi
+         type(VF),intent(in) :: Xstar
          type(VF),intent(inout) :: X,temp_F
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call div(temp_CC,X,m)
+         call div(temp_CC,Xstar,m)
          call solve(PCG,phi,temp_CC,m,compute_norms)
          call grad(temp_F,phi,m)
-         call subtract(X,temp_F)
-         call apply_BCs(x)
+         call subtract(X,Xstar,temp_F)
+         call apply_BCs(X)
        end subroutine
 
-       subroutine clean_div_PCG_MG(PCG,X,phi,MG,m,temp_F,temp_CC,compute_norms)
+       subroutine clean_div_PCG_MG(PCG,X,Xstar,phi,MG,m,temp_F,temp_CC,compute_norms)
          ! Computes:
          !      ∇²φ_{n+1} = ∇•K_{n}
          !      X_{n+1} = X_{*} - ∇φ_{n+1} - MG
@@ -64,21 +65,22 @@
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
          type(SF),intent(inout) :: phi
+         type(VF),intent(in) :: Xstar
          type(VF),intent(inout) :: X,temp_F
          type(VF),intent(in) :: MG
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call div(temp_CC,X,m)
+         call div(temp_CC,Xstar,m)
          call solve(PCG,phi,temp_CC,m,compute_norms)
          call grad(temp_F,phi,m)
-         call subtract(X,temp_F)
+         call subtract(X,Xstar,temp_F)
          call subtract(X,MG)
-         call apply_BCs(x)
+         call apply_BCs(X)
        end subroutine
 
 
-       subroutine clean_div_GS(GS,X,phi,m,temp_F,temp_CC,compute_norms)
+       subroutine clean_div_GS(GS,X,Xstar,phi,m,temp_F,temp_CC,compute_norms)
          ! Computes:
          !      ∇²φ_{n+1} = ∇•K_{n}
          !      X_{n+1} = X_{*} - ∇φ_{n+1}
@@ -87,18 +89,19 @@
          implicit none
          type(GS_Poisson_SF),intent(inout) :: GS
          type(SF),intent(inout) :: phi
+         type(VF),intent(in) :: Xstar
          type(VF),intent(inout) :: X,temp_F
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call div(temp_CC,X,m)
+         call div(temp_CC,Xstar,m)
          call solve(GS,phi,temp_CC,m,compute_norms)
          call grad(temp_F,phi,m)
-         call subtract(X,temp_F)
-         call apply_BCs(x)
+         call subtract(X,Xstar,temp_F)
+         call apply_BCs(X)
        end subroutine
 
-       subroutine clean_div_GS_MG(GS,X,phi,MG,m,temp_F,temp_CC,compute_norms)
+       subroutine clean_div_GS_MG(GS,X,Xstar,phi,MG,m,temp_F,temp_CC,compute_norms)
          ! Computes:
          !      ∇²φ_{n+1} = ∇•K_{n}
          !      X_{n+1} = X_{*} - ∇φ_{n+1} - MG
@@ -107,17 +110,18 @@
          implicit none
          type(GS_Poisson_SF),intent(inout) :: GS
          type(SF),intent(inout) :: phi
+         type(VF),intent(in) :: Xstar
          type(VF),intent(inout) :: X,temp_F
          type(VF),intent(in) :: MG
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call div(temp_CC,X,m)
+         call div(temp_CC,Xstar,m)
          call solve(GS,phi,temp_CC,m,compute_norms)
          call grad(temp_F,phi,m)
-         call subtract(X,temp_F)
+         call subtract(X,Xstar,temp_F)
          call subtract(X,MG)
-         call apply_BCs(x)
+         call apply_BCs(X)
        end subroutine
 
        end module

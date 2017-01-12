@@ -32,7 +32,8 @@
          hmin = -1.0_cp; hmax = 1.0_cp
          hmin(3) = -5.0_cp
          hmax(3) = 5.0_cp
-         beta = Re_Ha_BL(Re,Ha,hmin,hmax)
+         beta = HartmannBL(Ha,hmin,hmax)
+         ! beta = Re_Ha_BL(Re,Ha,hmin,hmax)
          N = (/50,50,100/)
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)

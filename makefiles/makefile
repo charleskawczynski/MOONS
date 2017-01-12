@@ -459,6 +459,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)diagonals.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)update_intermediate_field_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\

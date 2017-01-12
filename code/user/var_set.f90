@@ -92,12 +92,12 @@
          implicit none
          type(var_set),intent(in) :: VS
          integer,intent(in) :: un
-         call export(VS%T,un)
-         call export(VS%U,un)
-         call export(VS%P,un)
-         call export(VS%B,un)
-         call export(VS%B0,un)
-         call export(VS%phi,un)
+         write(un,*) '---------- VAR T ----------';   call display(VS%T,un)
+         write(un,*) '---------- VAR U ----------';   call display(VS%U,un)
+         write(un,*) '---------- VAR P ----------';   call display(VS%P,un)
+         write(un,*) '---------- VAR B ----------';   call display(VS%B,un)
+         write(un,*) '---------- VAR B0 ----------';  call display(VS%B0,un)
+         write(un,*) '---------- VAR phi ----------'; call display(VS%phi,un)
        end subroutine
 
        subroutine print_VS(VS)

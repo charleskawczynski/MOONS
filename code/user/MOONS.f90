@@ -54,7 +54,7 @@
          call init(DT,dir_target)  ! Initialize + make directory tree
 
          call init(SP,DT)             ! Initializes simulation parameters
-         call export(SP,str(DT%params),'sim_params_initial')
+         call display(SP,str(DT%params),'sim_params_initial')
          call print_version()
          call export_version(str(DT%LDC))
 
@@ -107,7 +107,7 @@
          ! ********************* EXPORT RAW ICs *************************
          if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(nrg,DT)
          if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(ind,DT)
-         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT,mom%temp_F)
+         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT,mom%temp_F1)
 
          if (SP%VS%U%SS%initialize) call print(nrg%m)
          if (SP%VS%T%SS%initialize) call print(mom%m)

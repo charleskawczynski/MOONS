@@ -49,6 +49,10 @@
        interface lap;             module procedure lapVarCoeff_SF;            end interface
        interface lap;             module procedure lapVarCoeff_VF;            end interface
 
+       public :: lap_component
+       interface lap_component;   module procedure lap_component_SF;          end interface
+       interface lap_component;   module procedure lap_component_VF;          end interface
+
        public :: lap_centered
        interface lap_centered;    module procedure lap_centered_SF_dynamic;   end interface
        interface lap_centered;    module procedure lap_centered_VF_dynamic;   end interface
@@ -61,6 +65,10 @@
        interface grad;            module procedure grad_SF;                   end interface
        interface grad;            module procedure grad_VF;                   end interface
        interface grad;            module procedure grad_TF;                   end interface
+
+       public :: grad_component
+       interface grad_component;  module procedure grad_component_SF;         end interface
+       interface grad_component;  module procedure grad_component_VF;         end interface
 
        public :: divGrad
        interface divGrad;         module procedure divGrad_VF;                end interface
@@ -100,6 +108,26 @@
          call d%assign(lapU,u,m,2,1,0)
             call d%add(lapU,u,m,2,2,0)
             call d%add(lapU,u,m,2,3,0)
+       end subroutine
+
+       subroutine lap_component_SF(lapU,u,m,dir)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         type(del) :: d
+         call d%assign(lapU,u,m,2,dir,0)
+       end subroutine
+
+       subroutine lap_component_VF(lapU,u,m)
+         implicit none
+         type(VF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call lap_component(lapU%x,u,m,1)
+         call lap_component(lapU%y,u,m,2)
+         call lap_component(lapU%z,u,m,3)
        end subroutine
 
        subroutine lap_centered_SF_given_both(lapU,U,m,tempx,tempy,tempz)
@@ -221,6 +249,26 @@
          call d%assign(gradx,u,m,1,1,0) ! Padding avoids calcs on fictive cells
          call d%assign(grady,u,m,1,2,0) ! Padding avoids calcs on fictive cells
          call d%assign(gradz,u,m,1,3,0) ! Padding avoids calcs on fictive cells
+       end subroutine
+
+       subroutine grad_component_SF(grad,u,m,dir)
+         implicit none
+         type(SF),intent(inout) :: grad
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         type(del) :: d
+         call d%assign(grad,u,m,1,dir,0)
+       end subroutine
+
+       subroutine grad_component_VF(grad,u,m)
+         implicit none
+         type(VF),intent(inout) :: grad
+         type(VF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call grad_component(grad%x,u%x,m,1)
+         call grad_component(grad%y,u%y,m,2)
+         call grad_component(grad%z,u%z,m,3)
        end subroutine
 
        subroutine curl_SF(curlU,u,v,w,m,dir)

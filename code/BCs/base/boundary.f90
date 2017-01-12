@@ -158,6 +158,7 @@
          endif
          call delete(B%BCL)
          call delete(B%name)
+         B%n = 0
        end subroutine
 
        subroutine init_vals_all_S(B,val)

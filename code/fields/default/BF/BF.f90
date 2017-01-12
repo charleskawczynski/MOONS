@@ -33,6 +33,9 @@
         public :: square,square_root,abs
         public :: insist_amax_lt_tol
 
+        public :: assign_BCs
+        public :: assign_Neumann_BCs
+        public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
@@ -108,6 +111,9 @@
        interface abs;                      module procedure abs_BF;                       end interface
        interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_BF;        end interface
 
+       interface assign_BCs;               module procedure assign_BCs_BF;                end interface
+       interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_BF;        end interface
+       interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_BF;      end interface
        interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_BF;    end interface
        interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_BF2;   end interface
        interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_BF;  end interface
@@ -314,11 +320,10 @@
          call init(BF%GF,BF_in%GF)
          call init(BF%DL,BF_in%DL)
          if (BF_in%BCs%BCL%defined) call init(BF%BCs,BF_in%BCs)
-
          call init(BF%PA_assign_ghost_XPeriodic,BF_in%PA_assign_ghost_XPeriodic)
-         if (BF_in%PA_assign_ghost_N_XPeriodic%defined) call init(BF%PA_assign_ghost_N_XPeriodic,BF_in%PA_assign_ghost_N_XPeriodic)
-         if (BF_in%PA_assign_wall_Dirichlet%defined) call init(BF%PA_assign_wall_Dirichlet,BF_in%PA_assign_wall_Dirichlet)
-         if (BF_in%PA_multiply_wall_Neumann%defined) call init(BF%PA_multiply_wall_Neumann,BF_in%PA_multiply_wall_Neumann)
+         call init(BF%PA_assign_ghost_N_XPeriodic,BF_in%PA_assign_ghost_N_XPeriodic)
+         call init(BF%PA_assign_wall_Dirichlet,BF_in%PA_assign_wall_Dirichlet)
+         call init(BF%PA_multiply_wall_Neumann,BF_in%PA_multiply_wall_Neumann)
        end subroutine
 
        subroutine delete_BF(BF)
@@ -327,7 +332,6 @@
          call delete(BF%GF)
          call delete(BF%DL)
          call delete(BF%BCs)
-
          call delete(BF%PA_assign_ghost_XPeriodic)
          call delete(BF%PA_assign_ghost_N_XPeriodic)
          call delete(BF%PA_assign_wall_Dirichlet)
@@ -481,6 +485,48 @@
          type(block_field),intent(in) :: u
          character(len=*),intent(in) :: caller
          call insist_amax_lt_tol(u%GF,caller)
+       end subroutine
+
+       subroutine assign_BCs_BF(u,f)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block_field),intent(in) :: f
+         if (defined(u%BCs)) then
+           call assign_plane(u%BCs%face%b(1),f%GF,1,     2     ,1)
+           call assign_plane(u%BCs%face%b(2),f%GF,1,f%GF%s(1)-1,1)
+           call assign_plane(u%BCs%face%b(3),f%GF,1,     2     ,2)
+           call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
+           call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
+           call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
+         endif
+       end subroutine
+
+       subroutine assign_Neumann_BCs_BF(u,f)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block_field),intent(in) :: f
+         if (defined(u%BCs)) then
+           if (is_Neumann(u%BCs%face%bct(1))) call assign_plane(u%BCs%face%b(1),f%GF,1,     2     ,1)
+           if (is_Neumann(u%BCs%face%bct(2))) call assign_plane(u%BCs%face%b(2),f%GF,1,f%GF%s(1)-1,1)
+           if (is_Neumann(u%BCs%face%bct(3))) call assign_plane(u%BCs%face%b(3),f%GF,1,     2     ,2)
+           if (is_Neumann(u%BCs%face%bct(4))) call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
+           if (is_Neumann(u%BCs%face%bct(5))) call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
+           if (is_Neumann(u%BCs%face%bct(6))) call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
+         endif
+       end subroutine
+
+       subroutine multiply_Neumann_BCs_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         if (defined(u%BCs)) then
+           if (is_Neumann(u%BCs%face%bct(1))) call multiply(u%BCs%face%b(1),val)
+           if (is_Neumann(u%BCs%face%bct(2))) call multiply(u%BCs%face%b(2),val)
+           if (is_Neumann(u%BCs%face%bct(3))) call multiply(u%BCs%face%b(3),val)
+           if (is_Neumann(u%BCs%face%bct(4))) call multiply(u%BCs%face%b(4),val)
+           if (is_Neumann(u%BCs%face%bct(5))) call multiply(u%BCs%face%b(5),val)
+           if (is_Neumann(u%BCs%face%bct(6))) call multiply(u%BCs%face%b(6),val)
+         endif
        end subroutine
 
        subroutine assign_ghost_XPeriodic_BF(u,val)

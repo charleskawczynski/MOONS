@@ -64,29 +64,29 @@
          implicit none
          type(solver_settings),intent(in) :: SS
          integer,intent(in) :: un
-         write(un,*) 'initialize = ';  write(un,*) SS%initialize
-         write(un,*) 'solve = ';       write(un,*) SS%solve
-         write(un,*) 'restart = ';     write(un,*) SS%restart
-         write(un,*) 'solve_method = ';write(un,*) SS%solve_method
+         write(un,*) SS%initialize
+         write(un,*) SS%solve
+         write(un,*) SS%restart
+         write(un,*) SS%solve_method
        end subroutine
 
        subroutine import_SS(SS,un)
          implicit none
          type(solver_settings),intent(inout) :: SS
          integer,intent(in) :: un
-         read(un,*); read(un,*) SS%initialize
-         read(un,*); read(un,*) SS%solve
-         read(un,*); read(un,*) SS%restart
-         read(un,*); read(un,*) SS%solve_method
+         read(un,*) SS%initialize
+         read(un,*) SS%solve
+         read(un,*) SS%restart
+         read(un,*) SS%solve_method
        end subroutine
 
        subroutine display_SS(SS,un)
          implicit none
          type(solver_settings),intent(in) :: SS
          integer,intent(in) :: un
-         write(un,*) 'initialize = ',SS%initialize
-         write(un,*) 'solve = ',SS%solve
-         write(un,*) 'restart = ',SS%restart
+         write(un,*) 'initialize   = ',SS%initialize
+         write(un,*) 'solve        = ',SS%solve
+         write(un,*) 'restart      = ',SS%restart
          write(un,*) 'solve_method = ',SS%solve_method
        end subroutine
 

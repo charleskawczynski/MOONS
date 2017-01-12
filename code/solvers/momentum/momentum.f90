@@ -74,9 +74,9 @@
          ! Tensor fields
          type(TF) :: U_E
          ! Vector fields
-         type(VF) :: U,Ustar
-         type(VF) :: Unm1,U_CC
-         type(VF) :: temp_F
+         type(VF) :: U,Ustar,Unm1
+         type(VF) :: U_CC
+         type(VF) :: temp_F1,temp_F2
          type(VF) :: temp_E
          ! Scalar fields
          type(SF) :: p,divU,temp_CC
@@ -169,9 +169,9 @@
 
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
-         call init_Face(mom%Ustar     ,m,0.0_cp)
          call init_Face(mom%Unm1      ,m,0.0_cp)
-         call init_Face(mom%temp_F    ,m,0.0_cp)
+         call init_Face(mom%temp_F1   ,m,0.0_cp)
+         call init_Face(mom%temp_F2   ,m,0.0_cp)
          call init_Edge(mom%temp_E    ,m,0.0_cp)
          call init_CC(mom%p           ,m,0.0_cp)
          call init_CC(mom%divU        ,m,0.0_cp)
@@ -202,6 +202,11 @@
          call apply_BCs(mom%U)
          write(*,*) '     U BCs applied'
 
+         call init(mom%Ustar,mom%U)
+         call assign(mom%Ustar,mom%U)
+         ! call init_BC_Dirichlet(mom%Ustar)
+         write(*,*) '     Intermediate field initialized'
+
          write(*,*) '     about to assemble Laplacian matrices'
          call set_MFP(mom)
          if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
@@ -222,11 +227,11 @@
          write(*,*) '     GS solver initialized for p'
 
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&
-         mom%ISP_U,mom%MFP,mom%U,mom%temp_E,str(DT%U%residual),'U',.false.,.false.)
+         mom%ISP_U,mom%MFP,mom%Ustar,mom%temp_E,str(DT%U%residual),'U',.false.,.false.)
          write(*,*) '     PCG solver initialized for U'
 
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
-         mom%ISP_P,mom%MFP,mom%p,mom%temp_F,str(DT%p%residual),'p',.false.,.false.)
+         mom%ISP_P,mom%MFP,mom%p,mom%temp_F1,str(DT%p%residual),'p',.false.,.false.)
          write(*,*) '     PCG solver initialized for p'
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
@@ -245,7 +250,8 @@
          call delete(mom%U_E)
          call delete(mom%Unm1)
          call delete(mom%Ustar)
-         call delete(mom%temp_F)
+         call delete(mom%temp_F1)
+         call delete(mom%temp_F2)
          call delete(mom%p)
          call delete(mom%temp_CC)
          call delete(mom%divU)
@@ -354,7 +360,7 @@
 
        subroutine export_tec_momentum(mom,DT,F)
          implicit none
-         type(momentum),intent(in) :: mom
+         type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F
          type(dir_tree),intent(in) :: DT
          if (.not.mom%SP%EL%export_soln_only) then
@@ -366,13 +372,18 @@
        end subroutine
        subroutine export_tec_momentum_no_ext(mom,DT)
          implicit none
-         type(momentum),intent(in) :: mom
+         type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
          if (mom%SP%VS%U%SS%restart.and.(.not.mom%SP%VS%U%SS%solve)) then
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
            call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
+           call export_processed(mom%m,mom%Ustar,str(DT%U%field),'Ustar',1)
+           call assign(mom%Ustar,0.0_cp)
+           call apply_BCs(mom%Ustar)
+           call export_processed(mom%m,mom%Ustar,str(DT%U%field),'Ustar_BCs',1)
+
            if (.not.mom%SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
              call export_raw(mom%m,mom%U,str(DT%U%field),'U',0)
@@ -409,7 +420,7 @@
          type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
          call export_processed(mom%m,mom%U,str(DT%U%transient),'U',1,mom%TMP)
-         call export_processed(mom%m,mom%p,str(DT%U%transient),'p',1,mom%TMP)
+         call export_processed(mom%m,mom%p,str(DT%P%transient),'p',1,mom%TMP)
          ! call export_processed(mom%m,mom%U,str(DT%U%transient),'U',1,mom%TMP,3,24)
          ! call export_processed(mom%m,mom%p,str(DT%U%transient),'p',1,mom%TMP,3,24)
        end subroutine
@@ -448,18 +459,20 @@
 
          select case(mom%SP%VS%U%SS%solve_method)
          case (1)
-           call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
-           mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
+           call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
+           mom%Re,mom%TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,&
+           PE%transient_0D)
          case (2)
-           call Euler_GS_Donor(mom%GS_p,mom%U,mom%U_E,mom%p,F,mom%m,mom%Re,mom%TMP%dt,&
-           mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
+           call Euler_GS_Donor(mom%GS_p,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
+           mom%Re,mom%TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,&
+           PE%transient_0D)
          case (3)
-           call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Unm1,&
-           mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%TMP%dt,mom%Ustar,&
-           mom%temp_F,mom%temp_CC,mom%temp_E,PE%transient_0D)
+           call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
+           mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%TMP%dt,mom%temp_F1,&
+           mom%temp_F2,mom%temp_CC,mom%temp_E,PE%transient_0D)
          case (4)
            call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%Re,mom%TMP%dt,&
-           mom%Ustar,mom%temp_F,mom%temp_CC,mom%temp_E)
+           mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
          call iterate_step(mom%TMP)
@@ -585,14 +598,15 @@
              call prolongate(mom%U,mom%m,dir(i))
              call prolongate(mom%Ustar,mom%m,dir(i))
              call prolongate(mom%Unm1,mom%m,dir(i))
-             call prolongate(mom%temp_F,mom%m,dir(i))
+             call prolongate(mom%temp_F1,mom%m,dir(i))
+             call prolongate(mom%temp_F2,mom%m,dir(i))
              call prolongate(mom%temp_E,mom%m,dir(i))
              call prolongate(mom%p,mom%m,dir(i))
              call prolongate(mom%divU,mom%m,dir(i))
              call prolongate(mom%U_CC,mom%m,dir(i))
              call prolongate(mom%temp_CC,mom%m,dir(i))
              call set_MFP(mom)
-             call prolongate(mom%PCG_P,mom%m,mom%temp_F,mom%MFP,dir(i))
+             call prolongate(mom%PCG_P,mom%m,mom%temp_F1,mom%MFP,dir(i))
              call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%MFP,dir(i))
            endif
          enddo
@@ -603,15 +617,16 @@
          call export_processed(mom%m,mom%U,str(DT%U%field),'U_prolongated_'//str(RM%level),1)
 
          clean_exact = .false.
+         call assign(mom%Ustar,mom%U)
          if (clean_exact) then ! Doesn't seem to help any for hydro flows
            call init(temp,mom%PCG_P%ISP)
            call init(mom%PCG_P%ISP,solve_exact(str(DT%U%residual)))
-           call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
+           call clean_div(mom%PCG_P,mom%U,mom%Ustar,mom%p,mom%m,mom%temp_F1,mom%temp_CC,.true.)
            call init(mom%PCG_P%ISP,temp)
            call delete(temp)
          else
            call boost(mom%PCG_P%ISP)
-           call clean_div(mom%PCG_P,mom%U,mom%p,mom%m,mom%temp_F,mom%temp_CC,.true.)
+           call clean_div(mom%PCG_P,mom%U,mom%Ustar,mom%p,mom%m,mom%temp_F1,mom%temp_CC,.true.)
            call reset(mom%PCG_P%ISP)
          endif
 

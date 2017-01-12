@@ -193,20 +193,17 @@
          type(boundary_conditions),intent(inout) :: BC
          call delete(BC%DL)
          call delete(BC%BCL)
-
          call delete(BC%face)
          call delete(BC%PA_face_BCs)
          call delete(BC%PA_face_implicit_BCs)
          call delete(BC%f_BCs)
-
          call delete(BC%edge)
          call delete(BC%PA_edges_BCs)
          call delete(BC%PA_edges_implicit_BCs)
-         ! call delete(BC%e_BCs)
-
          call delete(BC%corner)
          call delete(BC%PA_corners_BCs)
          call delete(BC%PA_corners_implicit_BCs)
+         ! call delete(BC%e_BCs)
          ! call delete(BC%c_BCs)
        end subroutine
 

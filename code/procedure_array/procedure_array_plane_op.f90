@@ -26,9 +26,6 @@
        interface export;           module procedure export_PA_wrapper;   end interface
        interface import;           module procedure import_PA_wrapper;   end interface
 
-       interface insist_defined;   module procedure insist_defined_PA;   end interface
-       interface insist_allocated; module procedure insist_allocated_PA; end interface
-
        interface add;              module procedure add_PA;              end interface
        interface add;              module procedure add_PA_SP;           end interface
        interface remove;           module procedure remove_PA;           end interface
@@ -53,15 +50,17 @@
          type(procedure_array_plane_op),intent(inout) :: PA
          type(procedure_array_plane_op),intent(in) :: PA_in
          integer :: i
-         call insist_defined(PA_in,'init_copy_PA')
-         call insist_allocated(PA_in,'init_copy_PA')
          call delete(PA)
-         call init(PA,PA_in%N)
-         do i=1,PA%N
-          call init(PA%SP(i),PA_in%SP(i))
-         enddo
-         PA%defined = PA_in%defined
-         PA%N = PA_in%N
+         if (PA_in%N.gt.0) then
+           call init(PA,PA_in%N)
+           do i=1,PA%N
+            call init(PA%SP(i),PA_in%SP(i))
+           enddo
+           PA%defined = PA_in%defined
+           PA%N = PA_in%N
+         else
+          call delete(PA)
+         endif
        end subroutine
 
        subroutine delete_PA(PA)
@@ -244,30 +243,6 @@
            if (temp%SP(j)%ID.eq.order(i)) call add(PA,temp%SP(j))
          enddo; enddo
          call delete(temp)
-       end subroutine
-
-       subroutine insist_defined_PA(PA,caller)
-         implicit none
-         type(procedure_array_plane_op),intent(in) :: PA
-         character(len=*),intent(in) :: caller
-         integer :: i
-         do i=1,PA%N
-         call insist_defined(PA%SP(i),caller)
-         enddo
-         if (.not.PA%defined) then
-           write(*,*) 'Error: PA must be defined in ',caller,' in procedure_array_plane_op.f90'
-           stop 'Done'
-         endif
-       end subroutine
-
-       subroutine insist_allocated_PA(PA,caller)
-         implicit none
-         type(procedure_array_plane_op),intent(in) :: PA
-         character(len=*),intent(in) :: caller
-         if (.not.allocated(PA%SP)) then
-           write(*,*) 'Error: PA must be allocated in ',caller,' in procedure_array_plane_op.f90'
-           stop 'Done'
-         endif
        end subroutine
 
        end module

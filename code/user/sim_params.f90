@@ -19,14 +19,18 @@
 
      private
      public :: sim_params
-     public :: init,delete,export
+     public :: init,delete,display,print,export,import
 
      interface init;    module procedure init_SP;           end interface
      interface delete;  module procedure delete_SP;         end interface
      interface init;    module procedure init_SP_copy;      end interface
+     interface display; module procedure display_SP;        end interface
+     interface display; module procedure display_SP_wrapper;end interface
+     interface print;   module procedure print_SP;          end interface
      interface export;  module procedure export_SP;         end interface
      interface export;  module procedure export_SP_wrapper; end interface
-
+     interface import;  module procedure import_SP;         end interface
+     interface import;  module procedure import_SP_wrapper; end interface
 
      type sim_params
        type(var_set) :: VS
@@ -73,11 +77,11 @@
 
        SP%EL%export_analytic      = F ! Export analytic solutions (MOONS.f90)
        SP%EL%export_meshes        = T ! Export all meshes before starting simulation
-       SP%EL%export_mat_props     = T ! Export material properties before starting simulation
+       SP%EL%export_mat_props     = F ! Export material properties before starting simulation
        SP%EL%export_ICs           = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume   = F ! Export cell volumes for each mesh
-       SP%EL%export_planar        = F ! Export 2D data when N_cell = 1 along given direction
-       SP%EL%export_symmetric     = T !
+       SP%EL%export_planar        = T ! Export 2D data when N_cell = 1 along given direction
+       SP%EL%export_symmetric     = F !
        SP%EL%export_mesh_block    = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only     = F ! Export processed solution only
 
@@ -87,26 +91,26 @@
 
        SP%matrix_based            = F ! Solve induction equation
 
-       time                       = 200.0_cp
+       time                       = 100.0_cp
        dtime                      = 1.0_cp*pow(-3)
 
        SP%DP%Re                   = 1.0_cp*pow(2)
-       SP%DP%Ha                   = 1.0_cp*pow(2)
+       SP%DP%Ha                   = 3.0_cp*pow(1)
        SP%DP%Rem                  = 1.0_cp*pow(0)
        SP%DP%cw                   = 0.0_cp
-       SP%DP%sig_local_over_sig_f = pow(-3)
+       SP%DP%sig_local_over_sig_f = pow(0)
        SP%DP%Gr                   = 0.0_cp
        SP%DP%Pr                   = 0.01_cp
        SP%DP%Fr                   = 1.0_cp
        SP%DP%Ec                   = 0.0_cp
 
-       SP%GP%tw                   = 0.5_cp
+       SP%GP%tw                   = 0.0_cp
        SP%GP%geometry             = 2
        SP%GP%periodic_dir         = (/0,0,1/)
 
-       ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for LDC
+       SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
-       SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
+       ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
@@ -119,9 +123,9 @@
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
-       call init_IC_BC(SP%VS%U,  0,9)
+       call init_IC_BC(SP%VS%U,  0,8)
        call init_IC_BC(SP%VS%P,  0,1)
-       call init_IC_BC(SP%VS%B,  0,7)
+       call init_IC_BC(SP%VS%B,  0,1)
        call init_IC_BC(SP%VS%B0, 1,0)
        call init_IC_BC(SP%VS%phi,0,0)
 
@@ -135,9 +139,9 @@
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  1000 ,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  1000 ,pow(-5),pow(-12),100,T,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5    ,pow(-5),pow(-12),100,T,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  10000,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%U%ISP,  10   ,pow(-5),pow(-12),100,T,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5    ,pow(-7),pow(-12),100,T,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  10000,pow(-7),pow(-12),100,F,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 1000 ,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_B0')
        call init(SP%VS%phi%ISP,5    ,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_phi')
 
@@ -146,7 +150,7 @@
        call init(SP%VS%T%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
        call init(SP%VS%U%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
        call init(SP%VS%P%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  5 ,SP%coupled%n_step_stop,SP%coupled%dt/pow(2),str(DT%TMP),'TMP_B')
+       call init(SP%VS%B%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
        call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
 
@@ -207,9 +211,9 @@
        call delete(SP%PE)
       end subroutine
 
-     subroutine export_SP(SP,un)
+     subroutine display_SP(SP,un)
        implicit none
-       type(sim_params),intent(inout) :: SP
+       type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
        write(un,*) 'restart_all            = ',SP%restart_all
        write(un,*) 'stop_before_solve      = ',SP%stop_before_solve
@@ -221,6 +225,47 @@
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
        write(un,*) 'matrix_based           = ',SP%matrix_based
+       call display(SP%GP,un)
+       call display(SP%EL,un)
+       call display(SP%MF,un)
+       call display(SP%VS,un)
+       call display(SP%DP,un)
+       call display(SP%DMR,un)
+       call display(SP%MQP,un)
+       call display(SP%PE,un)
+       call display(SP%coupled,un)
+      end subroutine
+
+     subroutine display_SP_wrapper(SP,dir,name)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       character(len=*),intent(in) :: dir,name
+       integer :: un
+       un = new_and_open(dir,name)
+       call display(SP,un)
+       call close_and_message(un,dir,name)
+      end subroutine
+
+     subroutine print_SP(SP)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       call display(SP,6)
+      end subroutine
+
+     subroutine export_SP(SP,un)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       integer,intent(in) :: un
+       write(un,*) SP%restart_all
+       write(un,*) SP%stop_before_solve
+       write(un,*) SP%stop_after_mesh_export
+       write(un,*) SP%post_process
+       write(un,*) SP%skip_solver_loop
+       write(un,*) SP%post_process_only
+       write(un,*) SP%couple_time_steps
+       write(un,*) SP%finite_Rem
+       write(un,*) SP%include_vacuum
+       write(un,*) SP%matrix_based
        call export(SP%GP,un)
        call export(SP%EL,un)
        call export(SP%MF,un)
@@ -232,13 +277,48 @@
        call export(SP%coupled,un)
       end subroutine
 
+     subroutine import_SP(SP,un)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       integer,intent(in) :: un
+       read(un,*) SP%restart_all
+       read(un,*) SP%stop_before_solve
+       read(un,*) SP%stop_after_mesh_export
+       read(un,*) SP%post_process
+       read(un,*) SP%skip_solver_loop
+       read(un,*) SP%post_process_only
+       read(un,*) SP%couple_time_steps
+       read(un,*) SP%finite_Rem
+       read(un,*) SP%include_vacuum
+       read(un,*) SP%matrix_based
+       call import(SP%GP,un)
+       call import(SP%EL,un)
+       call import(SP%MF,un)
+       call import(SP%VS,un)
+       call import(SP%DP,un)
+       call import(SP%DMR,un)
+       call import(SP%MQP,un)
+       call import(SP%PE,un)
+       call import(SP%coupled,un)
+      end subroutine
+
      subroutine export_SP_wrapper(SP,dir,name)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       character(len=*),intent(in) :: dir,name
+       integer :: un
+       un = new_and_open(dir,name)
+       call export(SP,un)
+       call close_and_message(un,dir,name)
+      end subroutine
+
+     subroutine import_SP_wrapper(SP,dir,name)
        implicit none
        type(sim_params),intent(inout) :: SP
        character(len=*),intent(in) :: dir,name
        integer :: un
        un = new_and_open(dir,name)
-       call export(SP,un)
+       call import(SP,un)
        call close_and_message(un,dir,name)
       end subroutine
 

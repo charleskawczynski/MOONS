@@ -50,10 +50,10 @@
         logical :: skip_loop
         integer :: i,i_earlyExit
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
+        ! ----------------------- MODIFY RHS -----------------------
         call assign(r,b)                              ! r = b
         call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
         if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
-        ! ----------------------- MODIFY RHS -----------------------
         call compute_Ax_BC(operator_explicit,tempx,p,x,k,m,MFP,tempk)
         call subtract(r,tempx)                        ! r = (b_mod - Ax_BC - Ax)
         ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
@@ -62,7 +62,6 @@
         call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
         call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
         if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
-
         ! ----------------------------------------------------------
 
         ! ********************* START PCG ALGORITHM *********************
@@ -146,24 +145,19 @@
         integer :: i,i_earlyExit
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
-        type(VF) :: x_diff
-        ! call export_raw(m,b,'out/LDC/','source',0)
-        call init(x_diff,x)
-        call assign(x_diff,x)
-        if (compute_norms) write(*,*) 'L2(x_start_mom) = ',dot_product(x,x,x,tempx)
-
         ! ----------------------- MODIFY RHS -----------------------
         call assign(r,b)                              ! r = b
         call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
+        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
         call compute_Ax_BC(operator_explicit,tempx,p,x,k,m,MFP,tempk)
         call subtract(r,tempx)                        ! r = (b_mod - Ax_BC - Ax)
+        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply_wall_Neumann(Ax,0.5_cp,x)
         call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
         call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
-        call assign_wall_Dirichlet(r,0.0_cp,x)
+        if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
         ! ----------------------------------------------------------
-        ! call export_raw(m,r,'out/LDC/','r_start',0)
 
         ! ********************* START PCG ALGORITHM *********************
         call compute(res_norm0,r)
@@ -209,25 +203,19 @@
         else; i=1; skip_loop = .true.
         endif
         call update_last_iter(ISP,i)
-        ! call export_raw(m,r,'out/LDC/','r_final',0)
 
         call check_nans(res_norm0,res_norm,ISP,i,'check_nans after loop for '//name)
 
-        if (compute_norms) write(*,*) 'L2(x_finish_mom) = ',dot_product(x,x,x,tempx)
-        call subtract(x_diff,x)
         if (compute_norms) then
           if (.not.skip_loop) then
             call compute(res_norm,r)
             call export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)
             call print_info(name,ISP,res_norm,res_norm0,i,i_earlyExit)
-            write(*,*) 'L2(x_diff) = ',dot_product(x_diff,x_diff,x,tempx)
           else
             write(*,*) name//' skip_loop = ',skip_loop
           endif
           write(*,*) ''
         endif
-        ! call export_raw(m,x_diff,'out/LDC/','x_diff',0)
-        call delete(x_diff)
       end subroutine
 
       subroutine export_norms(un,res_norm0,res_norm,N_iter,i,i_earlyExit)

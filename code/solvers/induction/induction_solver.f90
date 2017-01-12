@@ -112,7 +112,7 @@
          enddo
        end subroutine
 
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,B0,U_E,F,m,&
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,B0,U_E,F,m,&
          N_multistep,dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:  B (above)
@@ -122,7 +122,7 @@
          implicit none
          type(PCG_solver_VF),intent(inout) :: PCG_B
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B
+         type(VF),intent(inout) :: B,Bstar
          type(VF),intent(in) :: B0,F
          type(TF),intent(in) :: U_E
          type(SF),intent(inout) :: temp_CC,phi
@@ -139,13 +139,13 @@
            call multiply(temp_F1,dt)
            call add(temp_F1,B)
            call add_product(temp_F1,F,dt)
-           call solve(PCG_B,B,temp_F1,m,compute_norms)
-           call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
+           call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
+           call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
          enddo
        end subroutine
 
 
-       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B_interior,curlE,&
+       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,Bstar,B_interior,curlE,&
          phi,m,MD_sigma,N_multistep,dt,compute_norms,SF_CC,VF_F1)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
@@ -153,7 +153,7 @@
          ! Info:    Cell face => B,cell edge => J,sigmaInv_E,U_E,Finite Rem
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B,VF_F1
+         type(VF),intent(inout) :: B,Bstar,VF_F1
          type(VF),intent(in) :: B_interior,curlE
          type(SF),intent(inout) :: SF_CC,phi
          type(mesh_domain),intent(in) :: MD_sigma
@@ -168,7 +168,7 @@
            call apply_BCs(B)
            call embedFace(B,B_interior,MD_sigma)
          enddo
-         call clean_div(PCG_cleanB,B,phi,m,VF_F1,SF_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,m,VF_F1,SF_CC,compute_norms)
          call embedFace(B,B_interior,MD_sigma)
        end subroutine
 
@@ -197,7 +197,7 @@
          enddo
        end subroutine
 
-       subroutine CT_Finite_Rem_perfect_vacuum(PCG_B,PCG_cleanB,B,B0,U_E,J,m,&
+       subroutine CT_Finite_Rem_perfect_vacuum(PCG_B,PCG_cleanB,B,Bstar,B0,U_E,J,m,&
          D_conductor,dt,compute_norms,temp_CC,temp_F1,&
          temp_F2,temp_E,temp_E_TF,phi)
          ! This has not yet been tested and is likely flawed currently.
@@ -210,7 +210,7 @@
          implicit none
          type(PCG_solver_VF),intent(inout) :: PCG_B
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2
+         type(VF),intent(inout) :: B,Bstar,temp_E,temp_F1,temp_F2
          type(SF),intent(inout) :: temp_CC,phi
          type(VF),intent(in) :: B0,J
          type(TF),intent(inout) :: temp_E_TF
@@ -236,7 +236,7 @@
          call extractFace(temp,temp_F2,D_conductor)
          call embedFace(B,temp,D_conductor)
          call delete(temp)
-         call clean_div(PCG_cleanB,B,phi,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        end module
