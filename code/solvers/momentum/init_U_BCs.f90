@@ -148,9 +148,8 @@
        subroutine channel_flow_uniform_in_FD_out(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%BF(1)%BCs,1.0_cp,1) ! Inlet (uniform)
+         call init(U%x%BF(1)%BCs,1.0_cp,1)  ! Inlet (uniform)
          call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
-         call init_Neumann(U%y%BF(1)%BCs,2) ! Outlet (fully developed)
        end subroutine
 
        subroutine channel_flow_parabolic_in_FD_out(U,m,dir)

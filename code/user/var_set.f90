@@ -98,6 +98,7 @@
          write(un,*) '---------- VAR B ----------';   call display(VS%B,un)
          write(un,*) '---------- VAR B0 ----------';  call display(VS%B0,un)
          write(un,*) '---------- VAR phi ----------'; call display(VS%phi,un)
+         write(un,*) '-----------------------------'
        end subroutine
 
        subroutine print_VS(VS)

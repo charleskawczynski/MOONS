@@ -91,7 +91,7 @@
 
        SP%matrix_based            = F ! Solve induction equation
 
-       time                       = 100.0_cp
+       time                       = 200.0_cp
        dtime                      = 1.0_cp*pow(-3)
 
        SP%DP%Re                   = 1.0_cp*pow(2)
@@ -123,7 +123,7 @@
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
-       call init_IC_BC(SP%VS%U,  0,8)
+       call init_IC_BC(SP%VS%U,  0,4)
        call init_IC_BC(SP%VS%P,  0,1)
        call init_IC_BC(SP%VS%B,  0,1)
        call init_IC_BC(SP%VS%B0, 1,0)
@@ -138,12 +138,12 @@
        call init(SP%VS%phi%SS,F,F,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  1000 ,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  10   ,pow(-5),pow(-12),100,T,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5    ,pow(-7),pow(-12),100,T,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  10000,pow(-7),pow(-12),100,F,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 1000 ,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5    ,pow(-5),pow(-12),100,F,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%T%ISP,  5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_T')
+       call init(SP%VS%U%ISP,  5    ,pow(-3),pow(-7),100,T,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5    ,pow(-3),pow(-7),100,T,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B0%ISP, 5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_B0')
+       call init(SP%VS%phi%ISP,5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_phi')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
        call init(SP%coupled,1,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')

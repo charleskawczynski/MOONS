@@ -46,7 +46,7 @@
         type(VF) :: tempk,k
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
         type(norms) :: norm
-        integer :: un,un_convergence,N_iter
+        integer :: un,un_convergence
         type(iter_solver_params) :: ISP
         type(string) :: dir,name
         procedure(preconditioner_SF),pointer,nopass :: prec
@@ -59,7 +59,7 @@
         type(VF) :: tempk,k
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
         type(norms) :: norm
-        integer :: un,un_convergence,N_iter
+        integer :: un,un_convergence
         type(iter_solver_params) :: ISP
         type(string) :: dir,name
         procedure(preconditioner_VF),pointer,nopass :: prec
@@ -133,7 +133,6 @@
           call export_operator(operator,'PCG_SF_'//str(PCG%name),dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
           call export_matrix(PCG%Minv,dir,'PCG_SF_diag_'//str(PCG%name))
         endif
-        PCG%N_iter = 0
       end subroutine
 
       subroutine init_PCG_VF(PCG,operator,operator_explicit,prec,m,ISP,MFP,&
@@ -197,7 +196,6 @@
         if (exportOperator) then
           call export_operator(operator,'PCG_VF_op_mat_'//str(PCG%name),dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
-        PCG%N_iter = 0
       end subroutine
 
       subroutine solve_PCG_SF(PCG,x,b,m,compute_norms)
@@ -209,7 +207,7 @@
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
         x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
-        PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,&
+        PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
       end subroutine
 
@@ -222,7 +220,7 @@
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
         x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
-        PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,PCG%N_iter,&
+        PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
       end subroutine
 
@@ -239,7 +237,6 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
-        PCG%N_iter = 0
         close(PCG%un)
         close(PCG%un_convergence)
         call delete(PCG%dir)
@@ -259,7 +256,6 @@
         call delete(PCG%z)
         call delete(PCG%Minv)
         call delete(PCG%MFP)
-        PCG%N_iter = 0
         close(PCG%un)
         close(PCG%un_convergence)
         call delete(PCG%dir)
@@ -275,10 +271,10 @@
         if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
         else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
         endif
-        call init(s,'VARIABLES = N,stop_criteria')
+        call init(s,'VARIABLES = iter_total,stop_criteria')
         call append(s,',res_norm_L1,res_norm_L2,res_norm_Linf')
         call append(s,',res0_norm_L1,res0_norm_L2,res0_norm_Linf')
-        call append(s,',iter_used')
+        call append(s,',iter_per_call')
         write(un,*) str(s)
         write(un,*) 'ZONE DATAPACKING = POINT'
         call delete(s)

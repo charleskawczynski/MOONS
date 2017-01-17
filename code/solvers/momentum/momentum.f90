@@ -380,9 +380,6 @@
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
            call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
            call export_processed(mom%m,mom%Ustar,str(DT%U%field),'Ustar',1)
-           call assign(mom%Ustar,0.0_cp)
-           call apply_BCs(mom%Ustar)
-           call export_processed(mom%m,mom%Ustar,str(DT%U%field),'Ustar_BCs',1)
 
            if (.not.mom%SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)

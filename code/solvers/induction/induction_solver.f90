@@ -23,6 +23,7 @@
        use induction_aux_mod
        use export_raw_processed_mod
        use clean_divergence_mod
+       use update_intermediate_field_BCs_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
 
@@ -139,6 +140,7 @@
            call multiply(temp_F1,dt)
            call add(temp_F1,B)
            call add_product(temp_F1,F,dt)
+           call update_intermediate_field_BCs(Bstar,B,m,temp_F2)
            call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
            call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
          enddo
@@ -172,13 +174,13 @@
          call embedFace(B,B_interior,MD_sigma)
        end subroutine
 
-       subroutine JAC_interior_solved(JAC,PCG_cleanB,B,RHS,phi,m,&
+       subroutine JAC_interior_solved(JAC,PCG_cleanB,B,Bstar,RHS,phi,m,&
          N_multistep,N_induction,compute_norms,SF_CC,VF_F)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B
+         type(VF),intent(inout) :: B,Bstar
          type(VF),intent(in) :: RHS
          type(SF),intent(inout) :: SF_CC,phi
          type(VF),intent(inout) :: VF_F
@@ -187,13 +189,9 @@
          logical,intent(in) :: compute_norms
          integer :: i
          do i=1,N_multistep
+           call update_intermediate_field_BCs(Bstar,B,m,VF_F)
            call solve(JAC,B,RHS,m,N_induction,.true.)
-           ! Clean B
-           call div(SF_CC,B,m)
-           call solve(PCG_cleanB,phi,SF_CC,m,compute_norms)
-           call grad(VF_F,phi,m)
-           call subtract(B,VF_F)
-           call apply_BCs(B)
+           call clean_div(PCG_cleanB,B,Bstar,phi,m,VF_F,SF_CC,compute_norms)
          enddo
        end subroutine
 

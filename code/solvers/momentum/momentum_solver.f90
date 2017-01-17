@@ -18,6 +18,7 @@
        use GS_poisson_mod
        use matrix_free_operators_mod
        use clean_divergence_mod
+       use update_intermediate_field_BCs_mod
 
        implicit none
        private
@@ -67,11 +68,7 @@
          call add(temp_F1,U)
          call assign(Unm1,U)
 
-         call grad_component(temp_F2,U,m)
-         ! call assign_wall_Dirichlet(temp_F2,0.0_cp,U)
-         ! call add(temp_F1,temp_F2)
-         call assign_Neumann_BCs(Ustar,temp_F2)
-
+         call update_intermediate_field_BCs(Ustar,U,m,temp_F2)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
          call clean_div(PPE_PCG,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
        end subroutine
@@ -107,6 +104,7 @@
          call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
          call assign(Unm1,U)
 
+         call update_intermediate_field_BCs(Ustar,U,m,temp_F2)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms)
          call clean_div(PPE_GS,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
        end subroutine

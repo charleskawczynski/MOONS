@@ -20,6 +20,8 @@
        public :: update_exit_loop
        public :: update_check_res
        public :: update_last_iter
+       public :: update_iter
+       public :: init_iter_per_call
 
        public :: boost,reset
 
@@ -35,6 +37,8 @@
          real(cp) :: buffer = 0.0_cp                  ! percentage of iter_last to start checking more frequently
          real(cp) :: scale = 0.0_cp                   ! scale amplitude to allow decreasing predictions
          integer :: iter_last = 1                     ! Number of iterations used last solve
+         integer :: iter_total = 0                    ! Number of iterations (total)
+         integer :: iter_per_call = 0                 ! Number of iterations per call
          integer :: n_skip_check_res = 1              ! number of iterations to skip before checking residual
          integer :: n_skip_check_res_max = 1          ! number of iterations to skip before checking residual
        end type
@@ -56,6 +60,8 @@
        interface update_exit_loop;  module procedure update_exit_loop_ISP2; end interface
        interface update_check_res;  module procedure update_check_res_ISP;  end interface
        interface update_last_iter;  module procedure update_last_iter_ISP;  end interface
+       interface update_iter;       module procedure update_iter_ISP;       end interface
+       interface init_iter_per_call;module procedure init_iter_per_call_ISP;end interface
 
        interface boost;             module procedure boost_ISP;             end interface
        interface reset;             module procedure reset_ISP;             end interface
@@ -77,9 +83,11 @@
          logical,intent(in) :: export_convergence
          character(len=*),intent(in) :: dir,name
          ISP%iter_max = iter_max
+         ISP%iter_last = 1
+         ISP%iter_total = 0
+         ISP%iter_per_call = 0
          ISP%tol_rel = tol_rel
          ISP%tol_abs = tol_abs
-         ISP%iter_last = 1
          ISP%smooth = i_smooth
          ISP%buffer = i_buffer
          ISP%scale = i_scale
@@ -95,18 +103,20 @@
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
          type(iter_solver_params),intent(in) :: ISP_in
-         ISP%iter_max = ISP_in%iter_max
-         ISP%tol_rel = ISP_in%tol_rel
-         ISP%tol_abs = ISP_in%tol_abs
-         ISP%n_skip_check_res = ISP_in%n_skip_check_res
+         ISP%iter_max             = ISP_in%iter_max
+         ISP%iter_last            = ISP_in%iter_last
+         ISP%iter_total           = ISP_in%iter_total
+         ISP%iter_per_call        = ISP_in%iter_per_call
+         ISP%tol_rel              = ISP_in%tol_rel
+         ISP%tol_abs              = ISP_in%tol_abs
+         ISP%n_skip_check_res     = ISP_in%n_skip_check_res
          ISP%n_skip_check_res_max = ISP_in%n_skip_check_res_max
-         ISP%smooth = ISP_in%smooth
-         ISP%buffer = ISP_in%buffer
-         ISP%scale = ISP_in%scale
-         ISP%un = ISP_in%un
-         ISP%exit_loop = ISP_in%exit_loop
-         ISP%iter_last = ISP_in%iter_last
-         ISP%export_convergence = ISP_in%export_convergence
+         ISP%smooth               = ISP_in%smooth
+         ISP%buffer               = ISP_in%buffer
+         ISP%scale                = ISP_in%scale
+         ISP%un                   = ISP_in%un
+         ISP%exit_loop            = ISP_in%exit_loop
+         ISP%export_convergence   = ISP_in%export_convergence
          call init(ISP%dir,ISP_in%dir)
          call init(ISP%name,ISP_in%name)
        end subroutine
@@ -118,6 +128,8 @@
          ISP%n_skip_check_res_max = 1
          ISP%iter_max = 1
          ISP%iter_last = 1
+         ISP%iter_total = 0
+         ISP%iter_per_call = 0
          ISP%smooth = i_smooth
          ISP%buffer = i_buffer
          ISP%scale = i_scale
@@ -134,9 +146,11 @@
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
          write(un,*) 'iter_max = ';             write(un,*) ISP%iter_max
+         write(un,*) 'iter_last = ';            write(un,*) ISP%iter_last
+         write(un,*) 'iter_total = ';           write(un,*) ISP%iter_total
+         write(un,*) 'iter_per_call = ';        write(un,*) ISP%iter_per_call
          write(un,*) 'tol_rel = ';              write(un,*) ISP%tol_rel
          write(un,*) 'tol_abs = ';              write(un,*) ISP%tol_abs
-         write(un,*) 'iter_last = ';            write(un,*) ISP%iter_last
          write(un,*) 'n_skip_check_res = ';     write(un,*) ISP%n_skip_check_res
          write(un,*) 'n_skip_check_res_max = '; write(un,*) ISP%n_skip_check_res_max
          write(un,*) 'smooth = ';               write(un,*) ISP%smooth
@@ -159,9 +173,11 @@
          type(iter_solver_params),intent(inout) :: ISP
          integer,intent(in) :: un
          read(un,*); read(un,*) ISP%iter_max
+         read(un,*); read(un,*) ISP%iter_last
+         read(un,*); read(un,*) ISP%iter_total
+         read(un,*); read(un,*) ISP%iter_per_call
          read(un,*); read(un,*) ISP%tol_rel
          read(un,*); read(un,*) ISP%tol_abs
-         read(un,*); read(un,*) ISP%iter_last
          read(un,*); read(un,*) ISP%n_skip_check_res
          read(un,*); read(un,*) ISP%n_skip_check_res_max
          read(un,*); read(un,*) ISP%smooth
@@ -184,9 +200,11 @@
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
          write(un,*) 'iter_max             = ',ISP%iter_max
+         write(un,*) 'iter_last            = ',ISP%iter_last
+         write(un,*) 'iter_total           = ',ISP%iter_total
+         write(un,*) 'iter_per_call        = ',ISP%iter_per_call
          write(un,*) 'tol_rel              = ',ISP%tol_rel
          write(un,*) 'tol_abs              = ',ISP%tol_abs
-         write(un,*) 'iter_last            = ',ISP%iter_last
          write(un,*) 'n_skip_check_res     = ',ISP%n_skip_check_res
          write(un,*) 'n_skip_check_res_max = ',ISP%n_skip_check_res_max
          write(un,*) 'smooth               = ',ISP%smooth
@@ -216,20 +234,18 @@
          call display(ISP,6)
        end subroutine
 
-       function check_res_ISP(ISP,iter) result(L)
+       function check_res_ISP(ISP) result(L)
          implicit none
          type(iter_solver_params),intent(in) :: ISP
-         integer,intent(in) :: iter
          logical :: L
-         L = mod(iter,ISP%n_skip_check_res).eq.0
+         L = mod(ISP%iter_per_call,ISP%n_skip_check_res).eq.0
        end function
 
-       subroutine update_check_res_ISP(ISP,iter)
+       subroutine update_check_res_ISP(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         integer,intent(in) :: iter
          real(cp) :: n_skip_check,theta,f,amplitude
-         theta = real(iter,cp) - real(ISP%iter_last,cp)*ISP%buffer
+         theta = real(ISP%iter_per_call,cp) - real(ISP%iter_last,cp)*ISP%buffer
          ! f is a down-ramp from 1 to zero with a shift (buffer) and slope (smoooth)
          f = 0.5_cp*(1.0_cp-tanh(theta*ISP%smooth))
          ! Modify amplitude, within bounds, based off last number of iterations
@@ -242,11 +258,10 @@
          ISP%n_skip_check_res = maxval((/1,ceiling(n_skip_check)/))
        end subroutine
 
-       subroutine update_last_iter_ISP(ISP,iter)
+       subroutine update_last_iter_ISP(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         integer,intent(in) :: iter
-         ISP%iter_last = iter
+         ISP%iter_last = ISP%iter_per_call
        end subroutine
 
        subroutine boost_ISP(ISP)
@@ -260,21 +275,32 @@
          ISP%iter_max = ISP%iter_max/4
        end subroutine
 
-       subroutine update_exit_loop_ISP(ISP,iter,res,res0)
+       subroutine update_exit_loop_ISP(ISP,res,res0)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         integer,intent(in) :: iter
          real(cp),intent(in) :: res,res0
-         ISP%exit_loop(1) = sqrt(res)/res0.lt.ISP%tol_rel
-         ISP%exit_loop(2) = sqrt(res).lt.ISP%tol_abs
-         ISP%exit_loop(3) = iter.ge.ISP%iter_max
+         ISP%exit_loop(1) = res/res0.lt.ISP%tol_rel
+         ISP%exit_loop(2) = res.lt.ISP%tol_abs
+         ISP%exit_loop(3) = ISP%iter_per_call.ge.ISP%iter_max
        end subroutine
 
-       subroutine update_exit_loop_ISP2(ISP,iter)
+       subroutine update_exit_loop_ISP2(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         integer,intent(in) :: iter
-         ISP%exit_loop(3) = iter.ge.ISP%iter_max
+         ISP%exit_loop(3) = ISP%iter_per_call.ge.ISP%iter_max
+       end subroutine
+
+       subroutine update_iter_ISP(ISP)
+         implicit none
+         type(iter_solver_params),intent(inout) :: ISP
+         ISP%iter_total = ISP%iter_total + 1
+         ISP%iter_per_call = ISP%iter_per_call + 1
+       end subroutine
+
+       subroutine init_iter_per_call_ISP(ISP)
+         implicit none
+         type(iter_solver_params),intent(inout) :: ISP
+         ISP%iter_per_call = 0
        end subroutine
 
        function solve_exact_ISP(dir) result(ISP)

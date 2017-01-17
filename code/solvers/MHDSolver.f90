@@ -118,17 +118,17 @@
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
              call print(sc,coupled)
              call export(sc,coupled%t)
-             if (SP%VS%T%SS%initialize) then
-               call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
-             endif
-             if (SP%VS%U%SS%initialize) then
-               call import(mom%ISP_U); call init(mom%PCG_U%ISP,mom%ISP_U)
-               call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
-             endif
-             if (SP%VS%B%SS%initialize) then
-               call import(ind%ISP_B);   call init(ind%PCG_B%ISP,ind%ISP_B)
-               call import(ind%ISP_phi); call init(ind%PCG_cleanB%ISP,ind%ISP_phi)
-             endif
+             ! if (SP%VS%T%SS%initialize) then
+             !   call import(nrg%ISP_T); call init(nrg%PCG_T%ISP,nrg%ISP_T)
+             ! endif
+             ! if (SP%VS%U%SS%initialize) then
+             !   call import(mom%ISP_U); call init(mom%PCG_U%ISP,mom%ISP_U)
+             !   call import(mom%ISP_P); call init(mom%PCG_P%ISP,mom%ISP_P)
+             ! endif
+             ! if (SP%VS%B%SS%initialize) then
+             !   call import(ind%ISP_B);   call init(ind%PCG_B%ISP,ind%ISP_B)
+             !   call import(ind%ISP_phi); call init(ind%PCG_cleanB%ISP,ind%ISP_phi)
+             ! endif
              ! call import(coupled)
              ! if (SP%couple_time_steps) then
              !   call couple_time_step(nrg%TMP,coupled)
