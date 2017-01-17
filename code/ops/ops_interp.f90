@@ -97,6 +97,7 @@
 
        interface interp;              module procedure interpO2_SF;          end interface
        interface extrap;              module procedure extrapO2_SF;          end interface
+       interface extrap;              module procedure extrapO2_VF;          end interface
 
        ! ********************************** SF routines **********************************
 
@@ -156,6 +157,15 @@
        ! ********************************* BASE INTERPOLATION ***********************************
        ! ****************************************************************************************
        ! ****************************************************************************************
+
+       subroutine extrapO2_VF(f,m)
+         implicit none
+         type(VF),intent(inout) :: f
+         type(mesh),intent(in) :: m
+         call extrap(f%x,m)
+         call extrap(f%y,m)
+         call extrap(f%z,m)
+       end subroutine
 
        subroutine extrapO2_SF(f,m)
          implicit none

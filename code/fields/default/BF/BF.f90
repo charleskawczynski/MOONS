@@ -35,6 +35,7 @@
 
         public :: assign_BCs
         public :: assign_Neumann_BCs
+        public :: assign_Dirichlet_BCs
         public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
@@ -113,6 +114,7 @@
 
        interface assign_BCs;               module procedure assign_BCs_BF;                end interface
        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_BF;        end interface
+       interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_BF;      end interface
        interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_BF;      end interface
        interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_BF;    end interface
        interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_BF2;   end interface
@@ -512,6 +514,20 @@
            if (is_Neumann(u%BCs%face%bct(4))) call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
            if (is_Neumann(u%BCs%face%bct(5))) call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
            if (is_Neumann(u%BCs%face%bct(6))) call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
+         endif
+       end subroutine
+
+       subroutine assign_Dirichlet_BCs_BF(u,f)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block_field),intent(in) :: f
+         if (defined(u%BCs)) then
+           if (is_Dirichlet(u%BCs%face%bct(1))) call assign_plane(u%BCs%face%b(1),f%GF,1,     2     ,1)
+           if (is_Dirichlet(u%BCs%face%bct(2))) call assign_plane(u%BCs%face%b(2),f%GF,1,f%GF%s(1)-1,1)
+           if (is_Dirichlet(u%BCs%face%bct(3))) call assign_plane(u%BCs%face%b(3),f%GF,1,     2     ,2)
+           if (is_Dirichlet(u%BCs%face%bct(4))) call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
+           if (is_Dirichlet(u%BCs%face%bct(5))) call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
+           if (is_Dirichlet(u%BCs%face%bct(6))) call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
          endif
        end subroutine
 

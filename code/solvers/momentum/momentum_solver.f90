@@ -40,12 +40,12 @@
        contains
 
        subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
+         Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,Ustar,Unm1
+         type(VF),intent(inout) :: U,Ustar,Unm1,temp_CC_VF
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
@@ -68,9 +68,9 @@
          call add(temp_F1,U)
          call assign(Unm1,U)
 
-         call update_intermediate_field_BCs(Ustar,U,m,temp_F2)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
          call clean_div(PPE_PCG,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
+         call update_intermediate_field_BCs_new(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&

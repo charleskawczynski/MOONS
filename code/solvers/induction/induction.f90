@@ -270,7 +270,7 @@
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
 
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
-         ind%ISP_B,ind%MFP_B,ind%B,ind%sigmaInv_edge,str(DT%B%residual),'B',.false.,.false.)
+         ind%ISP_B,ind%MFP_B,ind%Bstar,ind%sigmaInv_edge,str(DT%B%residual),'B',.false.,.false.)
          write(*,*) '     PCG Solver initialized for B'
 
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,&
@@ -438,7 +438,9 @@
          else
            if (ind%SP%VS%B%SS%solve) then
              write(*,*) 'export_tec_induction at ind%TMP%n_step = ',ind%TMP%n_step
-             call export_processed(ind%m,ind%B ,str(DT%B%field),'B',1)
+             call export_processed(ind%m,ind%B,str(DT%B%field),'B',1)
+             call export_raw(ind%m,ind%phi,str(DT%phi%field),'phi',1)
+             call export_processed(ind%m,ind%phi ,str(DT%phi%field),'phi',1)
              if (.not.ind%SP%EL%export_soln_only) then
              if (ind%SP%EL%export_symmetric) then
                call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))

@@ -380,6 +380,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_curl_curl.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
+	$(SRC_DIR)$(PS)sparse$(PS)sparse_mult.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)bctype.f90\

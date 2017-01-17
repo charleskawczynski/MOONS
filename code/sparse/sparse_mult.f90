@@ -32,9 +32,9 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=2,N_x-1
-          Ax(i) = x(i-1)*A%L%a(i) + &
-                  x( i )*A%D%a(i) + &
-                  x(i+1)*A%U%a(i)
+          Ax(i) = x(i-1)*A%L%f(i) + &
+                  x( i )*A%D%f(i) + &
+                  x(i+1)*A%U%f(i)
         enddo
       end subroutine
       pure subroutine assign_N2C_LDU(Ax,x,A,N_x,N_Ax)
@@ -46,9 +46,9 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=2,N_x-1
-          Ax(i) = x(i-1)*A%L%a(i) + &
-                  x( i )*A%D%a(i) + &
-                  x(i+1)*A%U%a(i)
+          Ax(i) = x(i-1)*A%L%f(i) + &
+                  x( i )*A%D%f(i) + &
+                  x(i+1)*A%U%f(i)
         enddo
       end subroutine
       pure subroutine assign_C2N_DU(Ax,x,A,N_x,N_Ax)
@@ -60,8 +60,8 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=1,N_x-1
-          Ax(i) = x( i )*A%D%a(i) + &
-                  x(i+1)*A%U%a(i)
+          Ax(i) = x( i )*A%D%f(i) + &
+                  x(i+1)*A%U%f(i)
         enddo
       end subroutine
       pure subroutine assign_N2C_DU(Ax,x,A,N_x,N_Ax)
@@ -73,8 +73,8 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=1,N_x-1
-          Ax(i) = x( i )*A%D%a(i) + &
-                  x(i+1)*A%U%a(i)
+          Ax(i) = x( i )*A%D%f(i) + &
+                  x(i+1)*A%U%f(i)
         enddo
       end subroutine
 
@@ -87,9 +87,9 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=2,N_x-1
-          Ax(i) = Ax(i)+ x(i-1)*A%L%a(i) + &
-                         x( i )*A%D%a(i) + &
-                         x(i+1)*A%U%a(i)
+          Ax(i) = Ax(i)+ x(i-1)*A%L%f(i) + &
+                         x( i )*A%D%f(i) + &
+                         x(i+1)*A%U%f(i)
         enddo
       end subroutine
       pure subroutine add_N2C_LDU(Ax,x,A,N_x,N_Ax)
@@ -101,9 +101,9 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=2,N_x-1
-          Ax(i) = Ax(i)+ x(i-1)*A%L%a(i) + &
-                         x( i )*A%D%a(i) + &
-                         x(i+1)*A%U%a(i)
+          Ax(i) = Ax(i)+ x(i-1)*A%L%f(i) + &
+                         x( i )*A%D%f(i) + &
+                         x(i+1)*A%U%f(i)
         enddo
       end subroutine
       pure subroutine add_C2N_DU(Ax,x,A,N_x,N_Ax)
@@ -115,8 +115,8 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=1,N_x-1
-          Ax(i) = Ax(i)+ x( i )*A%D%a(i) + &
-                         x(i+1)*A%U%a(i)
+          Ax(i) = Ax(i)+ x( i )*A%D%f(i) + &
+                         x(i+1)*A%U%f(i)
         enddo
       end subroutine
       pure subroutine add_N2C_DU(Ax,x,A,N_x,N_Ax)
@@ -128,8 +128,8 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=1,N_x-1
-          Ax(i) = Ax(i)+ x( i )*A%D%a(i) + &
-                         x(i+1)*A%U%a(i)
+          Ax(i) = Ax(i)+ x( i )*A%D%f(i) + &
+                         x(i+1)*A%U%f(i)
         enddo
       end subroutine
 
@@ -142,9 +142,9 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=2,N_x-1
-          Ax(i) = Ax(i) - (x(i-1)*A%L%a(i) + &
-                           x( i )*A%D%a(i) + &
-                           x(i+1)*A%U%a(i))
+          Ax(i) = Ax(i) - (x(i-1)*A%L%f(i) + &
+                           x( i )*A%D%f(i) + &
+                           x(i+1)*A%U%f(i))
         enddo
       end subroutine
       pure subroutine subtract_N2C_LDU(Ax,x,A,N_x,N_Ax)
@@ -156,9 +156,9 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=2,N_x-1
-          Ax(i) = Ax(i) - (x(i-1)*A%L%a(i) + &
-                           x( i )*A%D%a(i) + &
-                           x(i+1)*A%U%a(i))
+          Ax(i) = Ax(i) - (x(i-1)*A%L%f(i) + &
+                           x( i )*A%D%f(i) + &
+                           x(i+1)*A%U%f(i))
         enddo
       end subroutine
       pure subroutine subtract_C2N_DU(Ax,x,A,N_x,N_Ax)
@@ -170,8 +170,8 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=1,N_x-1
-          Ax(i) = Ax(i) - (x( i )*A%D%a(i) + &
-                           x(i+1)*A%U%a(i))
+          Ax(i) = Ax(i) - (x( i )*A%D%f(i) + &
+                           x(i+1)*A%U%f(i))
         enddo
       end subroutine
       pure subroutine subtract_N2C_DU(Ax,x,A,N_x,N_Ax)
@@ -183,8 +183,8 @@
         integer :: i
         Ax(1) = 0.0_cp; Ax(N_Ax) = 0.0_cp
         do i=1,N_x-1
-          Ax(i) = Ax(i) - (x( i )*A%D%a(i) + &
-                           x(i+1)*A%U%a(i))
+          Ax(i) = Ax(i) - (x( i )*A%D%f(i) + &
+                           x(i+1)*A%U%f(i))
         enddo
       end subroutine
 

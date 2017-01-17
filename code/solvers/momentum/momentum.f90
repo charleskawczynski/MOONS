@@ -77,7 +77,7 @@
          type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
          type(VF) :: temp_F1,temp_F2
-         type(VF) :: temp_E
+         type(VF) :: temp_E,temp_CC_VF
          ! Scalar fields
          type(SF) :: p,divU,temp_CC
 
@@ -177,6 +177,7 @@
          call init_CC(mom%divU        ,m,0.0_cp)
          call init_CC(mom%U_CC        ,m,0.0_cp)
          call init_CC(mom%temp_CC     ,m,0.0_cp)
+         call init_CC(mom%temp_CC_VF  ,m,0.0_cp)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -204,7 +205,6 @@
 
          call init(mom%Ustar,mom%U)
          call assign(mom%Ustar,mom%U)
-         ! call init_BC_Dirichlet(mom%Ustar)
          write(*,*) '     Intermediate field initialized'
 
          write(*,*) '     about to assemble Laplacian matrices'
@@ -254,6 +254,7 @@
          call delete(mom%temp_F2)
          call delete(mom%p)
          call delete(mom%temp_CC)
+         call delete(mom%temp_CC_VF)
          call delete(mom%divU)
          call delete(mom%U_CC)
          call delete(mom%probe_divU)
@@ -466,7 +467,7 @@
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
            mom%U_E,mom%p,F,F,mom%m,mom%Re,mom%TMP%dt,mom%temp_F1,&
-           mom%temp_F2,mom%temp_CC,mom%temp_E,PE%transient_0D)
+           mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,mom%temp_E,PE%transient_0D)
          case (4)
            call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%Re,mom%TMP%dt,&
            mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E)
@@ -602,6 +603,7 @@
              call prolongate(mom%divU,mom%m,dir(i))
              call prolongate(mom%U_CC,mom%m,dir(i))
              call prolongate(mom%temp_CC,mom%m,dir(i))
+             call prolongate(mom%temp_CC_VF,mom%m,dir(i))
              call set_MFP(mom)
              call prolongate(mom%PCG_P,mom%m,mom%temp_F1,mom%MFP,dir(i))
              call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%MFP,dir(i))

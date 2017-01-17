@@ -67,7 +67,6 @@
          call cosineWaves(f%x,m,(/2.0_cp,2.0_cp,2.0_cp/))
          call cosineWaves(f%y,m,(/2.0_cp,2.0_cp,2.0_cp/))
          call cosineWaves(f%z,m,(/2.0_cp,2.0_cp,2.0_cp/))
-         ! call extract_F_surface(f_surface,f,D_surface) depricated
          call export_raw(m_surface,f_surface,str(DT%BEM),'f_surface',0)
 
          write(*,*) 'initializing GS'

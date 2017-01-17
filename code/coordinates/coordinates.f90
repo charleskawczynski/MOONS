@@ -64,11 +64,6 @@
         type(array) :: dhn,dhc                      ! Cell coordinates spacing
         integer :: sn = 0                           ! size of hn
         integer :: sc = 0                           ! size of hc
-        ! Depricated:
-        ! real(cp),dimension(:),allocatable :: hn     ! Cell corner coordinates
-        ! real(cp),dimension(:),allocatable :: hc     ! Cell center coordinates
-        ! real(cp),dimension(:),allocatable :: dhn    ! Difference in cell corner coordinates
-        ! real(cp),dimension(:),allocatable :: dhc    ! Difference in cell center coordinates
       end type
 
       interface init;              module procedure init_c;                 end interface

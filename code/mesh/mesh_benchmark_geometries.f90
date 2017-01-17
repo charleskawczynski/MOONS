@@ -83,8 +83,8 @@
          integer :: i
          call delete(m_mom)
          hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = 0.0_cp; hmax(1) = 30.0_cp
-         N = (/50,20,1/)
+         hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
+         N = (/70,20,1/)
          beta = ReynoldsBL(Re,hmin,hmax)
          i = 1; call grid_Roberts_L(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)

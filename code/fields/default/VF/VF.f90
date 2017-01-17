@@ -46,6 +46,7 @@
 
         public :: assign_BCs
         public :: assign_Neumann_BCs
+        public :: assign_Dirichlet_BCs
         public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
@@ -138,6 +139,7 @@
 
         interface assign_BCs;               module procedure assign_BCs_VF;                 end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF;         end interface
+        interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_VF;       end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_VF;       end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_VF;     end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_VF2;    end interface
@@ -1073,6 +1075,14 @@
           call assign_Neumann_BCs(A%x,B%x)
           call assign_Neumann_BCs(A%y,B%y)
           call assign_Neumann_BCs(A%z,B%z)
+        end subroutine
+        subroutine assign_Dirichlet_BCs_VF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Dirichlet_BCs(A%x,B%x)
+          call assign_Dirichlet_BCs(A%y,B%y)
+          call assign_Dirichlet_BCs(A%z,B%z)
         end subroutine
         subroutine multiply_Neumann_BCs_VF(A,val)
           implicit none
