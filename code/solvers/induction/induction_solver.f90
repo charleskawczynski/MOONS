@@ -113,8 +113,8 @@
          enddo
        end subroutine
 
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,B0,U_E,F,m,&
-         N_multistep,dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,phi)
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,phi,B0,U_E,F,m,&
+         N_multistep,dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,temp_CC_VF)
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:  B (above)
          ! Method:    Preconditioned Conjugate Gradient Method (induction equation)
@@ -128,7 +128,7 @@
          type(TF),intent(in) :: U_E
          type(SF),intent(inout) :: temp_CC,phi
          type(TF),intent(inout) :: temp_E_TF
-         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E,temp_CC_VF
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_multistep
@@ -143,9 +143,9 @@
            call update_intermediate_field_BCs(Bstar,B,m,temp_F2)
            call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
            call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
+           call update_intermediate_field_BCs_new(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
          enddo
        end subroutine
-
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,Bstar,B_interior,curlE,&
          phi,m,MD_sigma,N_multistep,dt,compute_norms,SF_CC,VF_F1)

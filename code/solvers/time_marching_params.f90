@@ -10,6 +10,7 @@
        public :: iterate_step
        public :: couple_time_step
        public :: prolongate
+       public :: update_dt
 
        type time_marching_params
          integer(li) :: n_step = 0         ! nth time step
@@ -37,6 +38,7 @@
        interface couple_time_step; module procedure couple_time_step_TMP; end interface
 
        interface prolongate;       module procedure prolongate_TMP;       end interface
+       interface update_dt;        module procedure update_dt_TMP;        end interface
 
        contains
 
@@ -185,6 +187,14 @@
          TMP%dt = TMP%dt*1.0_cp/dt_reduction_factor
          TMP%n_step_stop = TMP%n_step_stop*ceiling(dt_reduction_factor)
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
+       end subroutine
+
+       subroutine update_dt_TMP(TMP,dt)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         real(cp),intent(in) :: dt
+         TMP%dt = dt
+         TMP%n_step_stop = ceiling(TMP%t_final/TMP%dt)
        end subroutine
 
        end module

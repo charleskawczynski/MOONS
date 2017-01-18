@@ -74,7 +74,7 @@
        end subroutine
 
        subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
+         Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(GS_Poisson_SF),intent(inout) :: PPE_GS
@@ -84,7 +84,7 @@
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E,temp_CC_VF
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
@@ -104,9 +104,9 @@
          call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
          call assign(Unm1,U)
 
-         call update_intermediate_field_BCs(Ustar,U,m,temp_F2)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms)
          call clean_div(PPE_GS,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
+         call update_intermediate_field_BCs_new(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
        ! **********************************************************************

@@ -52,6 +52,7 @@
        logical :: stop_after_mesh_export
 
        logical :: matrix_based
+       logical :: unsteady_B0
 
        logical :: couple_time_steps
        logical :: finite_Rem
@@ -80,8 +81,8 @@
        SP%EL%export_mat_props     = F ! Export material properties before starting simulation
        SP%EL%export_ICs           = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume   = F ! Export cell volumes for each mesh
-       SP%EL%export_planar        = T ! Export 2D data when N_cell = 1 along given direction
-       SP%EL%export_symmetric     = F !
+       SP%EL%export_planar        = F ! Export 2D data when N_cell = 1 along given direction
+       SP%EL%export_symmetric     = T !
        SP%EL%export_mesh_block    = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only     = F ! Export processed solution only
 
@@ -90,23 +91,24 @@
        SP%include_vacuum          = T ! Ensures all dt are equal to coupled%dt
 
        SP%matrix_based            = F ! Solve induction equation
+       SP%unsteady_B0             = F ! Add unsteady applied field to induction eq.
 
-       time                       = 200.0_cp
+       time                       = 20.0_cp
        dtime                      = 1.0_cp*pow(-3)
 
-       SP%DP%Re                   = 1.0_cp*pow(2)
-       SP%DP%Ha                   = 3.0_cp*pow(1)
+       SP%DP%Re                   = 4.0_cp*pow(2)
+       SP%DP%Ha                   = 1.0_cp*pow(2)
        SP%DP%Rem                  = 1.0_cp*pow(0)
        SP%DP%cw                   = 0.0_cp
-       SP%DP%sig_local_over_sig_f = pow(0)
+       SP%DP%sig_local_over_sig_f = pow(-3)
        SP%DP%Gr                   = 0.0_cp
        SP%DP%Pr                   = 0.01_cp
        SP%DP%Fr                   = 1.0_cp
        SP%DP%Ec                   = 0.0_cp
 
-       SP%GP%tw                   = 0.0_cp
-       SP%GP%geometry             = 2
-       SP%GP%periodic_dir         = (/0,0,1/)
+       SP%GP%tw                   = 0.5_cp
+       SP%GP%geometry             = 13
+       SP%GP%periodic_dir         = (/0,0,0/)
 
        SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
@@ -123,9 +125,9 @@
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
-       call init_IC_BC(SP%VS%U,  0,4)
-       call init_IC_BC(SP%VS%P,  0,1)
-       call init_IC_BC(SP%VS%B,  0,1)
+       call init_IC_BC(SP%VS%U,  0,2)
+       call init_IC_BC(SP%VS%P,  0,0)
+       call init_IC_BC(SP%VS%B,  0,7)
        call init_IC_BC(SP%VS%B0, 1,0)
        call init_IC_BC(SP%VS%phi,0,0)
 
@@ -133,17 +135,17 @@
        call init(SP%VS%T%SS,  F,F,F,0)
        call init(SP%VS%U%SS,  T,T,F,3)
        call init(SP%VS%P%SS,  T,T,F,1)
-       call init(SP%VS%B%SS,  F,F,F,3)
-       call init(SP%VS%B0%SS, F,F,F,0)
-       call init(SP%VS%phi%SS,F,F,F,0)
+       call init(SP%VS%B%SS,  T,T,F,3)
+       call init(SP%VS%B0%SS, T,T,F,0)
+       call init(SP%VS%phi%SS,T,T,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5    ,pow(-3),pow(-7),100,T,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5    ,pow(-3),pow(-7),100,T,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5    ,pow(-3),pow(-7),100,F,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_T')
+       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  100,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B0')
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_phi')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
        call init(SP%coupled,1,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
@@ -154,7 +156,7 @@
        call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
 
-       SP%MF%JCrossB             = F ! add JCrossB      to momentum equation
+       SP%MF%JCrossB             = T ! add JCrossB      to momentum equation
        SP%MF%Q2D_JCrossB         = F ! add Q2D JCrossB  to momentum equation
        SP%MF%Buoyancy            = F ! add Buoyancy     to momentum equation
        SP%MF%Gravity             = F ! add Gravity      to momentum equation
@@ -186,6 +188,7 @@
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
        SP%matrix_based           = SP_in%matrix_based
+       SP%unsteady_B0            = SP_in%unsteady_B0
        call init(SP%GP,     SP_in%GP)
        call init(SP%EL,     SP_in%EL)
        call init(SP%VS,     SP_in%VS)
@@ -225,6 +228,7 @@
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
        write(un,*) 'matrix_based           = ',SP%matrix_based
+       write(un,*) 'unsteady_B0            = ',SP%unsteady_B0
        call display(SP%GP,un)
        call display(SP%EL,un)
        call display(SP%MF,un)
@@ -266,6 +270,7 @@
        write(un,*) SP%finite_Rem
        write(un,*) SP%include_vacuum
        write(un,*) SP%matrix_based
+       write(un,*) SP%unsteady_B0
        call export(SP%GP,un)
        call export(SP%EL,un)
        call export(SP%MF,un)
@@ -291,6 +296,7 @@
        read(un,*) SP%finite_Rem
        read(un,*) SP%include_vacuum
        read(un,*) SP%matrix_based
+       read(un,*) SP%unsteady_B0
        call import(SP%GP,un)
        call import(SP%EL,un)
        call import(SP%MF,un)
