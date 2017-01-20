@@ -40,8 +40,9 @@
          case (11); call MHD_3D_Hunt(              m_mom,m_ind,MQP,MD_sigma,Re,Ha)
          case (12); call MHD_3D_LDC_BC(            m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
          case (13); call MHD_3D_LDC_BC_symmetric(  m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
-         case (14); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,Re,Ha)
-         case (15); call user_defined(             m_mom,m_ind,MQP,MD_sigma)
+         case (14); call MHD_3D_LDC_BC_symmetric_fine_top(m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
+         case (15); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (16); call user_defined(             m_mom,m_ind,MQP,MD_sigma)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine

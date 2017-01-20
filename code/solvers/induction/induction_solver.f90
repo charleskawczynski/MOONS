@@ -140,10 +140,9 @@
            call multiply(temp_F1,dt)
            call add(temp_F1,B)
            call add_product(temp_F1,F,dt)
-           call update_intermediate_field_BCs(Bstar,B,m,temp_F2)
            call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
            call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
-           call update_intermediate_field_BCs_new(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
+           call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
          enddo
        end subroutine
 
@@ -175,7 +174,7 @@
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,Bstar,RHS,phi,m,&
-         N_multistep,N_induction,compute_norms,SF_CC,VF_F)
+         N_multistep,N_induction,compute_norms,SF_CC,temp_F1,temp_F2,temp_CC_VF)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
@@ -183,15 +182,15 @@
          type(VF),intent(inout) :: B,Bstar
          type(VF),intent(in) :: RHS
          type(SF),intent(inout) :: SF_CC,phi
-         type(VF),intent(inout) :: VF_F
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_CC_VF
          type(mesh),intent(in) :: m
          integer,intent(in) :: N_multistep,N_induction
          logical,intent(in) :: compute_norms
          integer :: i
          do i=1,N_multistep
-           call update_intermediate_field_BCs(Bstar,B,m,VF_F)
            call solve(JAC,B,RHS,m,N_induction,.true.)
-           call clean_div(PCG_cleanB,B,Bstar,phi,m,VF_F,SF_CC,compute_norms)
+           call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,SF_CC,compute_norms)
+           call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
          enddo
        end subroutine
 

@@ -78,7 +78,7 @@
 
        SP%EL%export_analytic      = F ! Export analytic solutions (MOONS.f90)
        SP%EL%export_meshes        = T ! Export all meshes before starting simulation
-       SP%EL%export_mat_props     = F ! Export material properties before starting simulation
+       SP%EL%export_mat_props     = T ! Export material properties before starting simulation
        SP%EL%export_ICs           = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume   = F ! Export cell volumes for each mesh
        SP%EL%export_planar        = F ! Export 2D data when N_cell = 1 along given direction
@@ -93,12 +93,12 @@
        SP%matrix_based            = F ! Solve induction equation
        SP%unsteady_B0             = F ! Add unsteady applied field to induction eq.
 
-       time                       = 20.0_cp
+       time                       = 200.0_cp
        dtime                      = 1.0_cp*pow(-3)
 
        SP%DP%Re                   = 4.0_cp*pow(2)
-       SP%DP%Ha                   = 1.0_cp*pow(2)
-       SP%DP%Rem                  = 1.0_cp*pow(0)
+       SP%DP%Ha                   = 2.0_cp*pow(1)
+       SP%DP%Rem                  = 5.0_cp*pow(0)
        SP%DP%cw                   = 0.0_cp
        SP%DP%sig_local_over_sig_f = pow(-3)
        SP%DP%Gr                   = 0.0_cp
@@ -106,8 +106,8 @@
        SP%DP%Fr                   = 1.0_cp
        SP%DP%Ec                   = 0.0_cp
 
-       SP%GP%tw                   = 0.5_cp
-       SP%GP%geometry             = 13
+       SP%GP%tw                   = 0.05_cp
+       SP%GP%geometry             = 14
        SP%GP%periodic_dir         = (/0,0,0/)
 
        SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for LDC
